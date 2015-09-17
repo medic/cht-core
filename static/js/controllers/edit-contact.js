@@ -120,16 +120,39 @@ var modal = require('../modules/modal');
       };
 
       function saveDoc(form, pane, doc) {
-        DB.get().post(doc)
-          .then(function(doc) {
-            form.resetView();
-            delete $scope.enketo_contact;
-            $rootScope.$broadcast('ContactUpdated', doc);
-            pane.done();
-          })
-          .catch(function(err) {
-            pane.done(translateFilter('Error updating contact'), err);
-          });
+        if(!doc.parent) {
+          doc.parent = {};
+        }
+        if(typeof doc.parent === 'string') {
+          DB.get().get(doc.parent)
+            .then(function(parent) {
+              doc.parent = parent;
+              DB.get().post(doc)
+                .then(function(doc) {
+                  form.resetView();
+                  delete $scope.enketo_contact;
+                  $rootScope.$broadcast('ContactUpdated', doc);
+                  pane.done();
+                })
+                .catch(function(err) {
+                  pane.done(translateFilter('Error updating contact'), err);
+                });
+            })
+            .catch(function(err) {
+              pane.done(translateFilter('Error updating contact'), err);
+            });
+        } else {
+          DB.get().post(doc)
+            .then(function(doc) {
+              form.resetView();
+              delete $scope.enketo_contact;
+              $rootScope.$broadcast('ContactUpdated', doc);
+              pane.done();
+            })
+            .catch(function(err) {
+              pane.done(translateFilter('Error updating contact'), err);
+            });
+        }
       }
     }
   ]);
