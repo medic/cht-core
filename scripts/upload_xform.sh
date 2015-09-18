@@ -2,6 +2,14 @@
 
 SELF=$(basename $0)
 
+FORCE=false
+while getopts "f" opt; do
+    case $opt in
+        f) FORCE=true ;;
+    esac
+    shift $((OPTIND-1))
+done
+
 ID="$1"
 shift
 XFORM_PATH="$1"
@@ -11,7 +19,10 @@ DB="${COUCH_URL-http://127.0.0.1:5984/medic}"
 _usage () {
     echo ""
     echo "Usage:"
-    echo "  $SELF <form id> <path to xform> [attachments ...]"
+    echo "  $SELF [options] <form id> <path to xform> [attachments ...]"
+    echo ""
+    echo "Options:"
+    echo "  -f  force-overwrite "
     echo ""
     echo "Examples: "
     echo "  COUCH_URL=http://localhost:8000/medic $SELF registration /home/henry/forms/RegisterPregnancy.xml"
@@ -34,6 +45,8 @@ echo "[$SELF] parsing XML to get form title and internal ID..."
 formTitle="$(grep h:title $XFORM_PATH | sed -E -e 's_.*<h:title>(.*)</h:title>.*_\1_')"
 formInternalId="$(grep -E 'id="[^"]+"' $XFORM_PATH | head -n1 | sed -E -e 's_.*id="([^"]+)".*_\1_')"
 
+docUrl="${DB}/form:${ID}"
+
 cat <<EOF
 [$SELF] -----
 [$SELF] Summary
@@ -41,13 +54,21 @@ cat <<EOF
 [$SELF]   doc ID: form:$ID
 [$SELF]   form title: $formTitle
 [$SELF]   form internal ID: $formInternalId
+[$SELF]   force override: $FORCE
 [$SELF] -----
 EOF
+
+if $FORCE; then
+    echo "[$SELF] Trying to delete existing doc..."
+    revResponse=$(curl -s "$docUrl")
+    rev=$(jq -r ._rev <<< "$revResponse")
+    curl -s -X DELETE "${docUrl}?rev=${rev}" >/dev/null
+fi
 
 check_rev() {
     # exit if we don't see a rev property
     if [ -z "$rev" ] || [ "$rev" = "null" ]; then
-        echo "Failed to create doc: $revResponse"
+        echo "[$SELF] Failed to create doc: $revResponse"
         exit 1
     fi
 }
@@ -56,14 +77,14 @@ revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d '{
     "type":"form",
     "title":"'"${formTitle}"'",
     "internalId":"'"${formInternalId}"'"
-}' "$DB/form:${ID}")
+}' "$docUrl")
 rev=$(jq -r .rev <<< "$revResponse")
 check_rev
 
 echo "[$SELF] Uploading form: $ID..."
 revResponse=$(curl -# -f -X PUT -H "Content-Type: text/xml" \
     --data-binary "@${XFORM_PATH}" \
-    "${DB}/form:${ID}/xml?rev=${rev}")
+    "${docUrl}/xml?rev=${rev}")
 rev=$(jq -r .rev <<< "$revResponse")
 
 while [ $# -gt 0 ]; do
@@ -72,7 +93,7 @@ while [ $# -gt 0 ]; do
     echo "[$SELF] Uploading media attachment: $attachment..."
     revResponse=$(curl -# -f -X PUT -H "Content-Type: text/xml" \
             --data-binary "@${attachment}" \
-            "${DB}/form:${ID}/${attachment}?rev=${rev}")
+            "${docUrl}/${attachment}?rev=${rev}")
     rev=$(jq -r .rev <<< "$revResponse")
     check_rev
 done
