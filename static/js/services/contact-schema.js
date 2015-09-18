@@ -3,6 +3,7 @@ var _ = require('underscore');
 var CLINIC = {
   title: '{{name}}',
   badge: 'fa-home',
+  icon: 'fa-home',
   fields: {
     name: {
       type: 'string',
@@ -24,6 +25,7 @@ var CLINIC = {
 var DISTRICT_HOSPITAL = {
   title: '{{name}}',
   badge: 'fa-building',
+  icon: 'fa-building',
   fields: {
     name: {
       type: 'string',
@@ -41,6 +43,7 @@ var DISTRICT_HOSPITAL = {
 var HEALTH_CENTER = {
   title: '{{name}}',
   badge: 'fa-hospital-a',
+  icon: 'fa-hospital-o',
   fields: {
     name: {
       type: 'string',
