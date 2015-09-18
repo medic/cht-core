@@ -26,6 +26,29 @@ describe('Enketo service', function() {
     });
   };
 
+  var visitForm = '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">' +
+  '  <h:head>' +
+  '    <h:title>Visit</h:title>' +
+  '    <model>' +
+  '      <instance>' +
+  '        <data id="V" version="2015-06-05">' +
+  '          <patient_id tag="id"/>' +
+  '          <name tag="name"/>' +
+  '        </data>' +
+  '      </instance>' +
+  '      <itext>' +
+  '        <translation lang="eng">' +
+  '          <text id="patient_id:label">' +
+  '            <value>Patient ID</value>' +
+  '          </text>' +
+  '        </translation>' +
+  '      </itext>' +
+  '      <bind nodeset="/data/patient_id" type="medicPatientSelect" required="true()" />' +
+  '      <bind nodeset="/data/name" type="string" required="true()" />' +
+  '    </model>' +
+  '  </h:head>' +
+  '</h:html>';
+
   var service,
       enketoInit = sinon.stub(),
       transform = sinon.stub(),
@@ -44,16 +67,16 @@ describe('Enketo service', function() {
         resetView: sinon.stub()
       },
       Auth = sinon.stub(),
+      EnketoForm = sinon.stub(),
       $rootScope;
 
   beforeEach(function() {
     module('inboxApp');
 
-    window.EnketoForm = function() {
-      return {
-        init: enketoInit
-      };
-    };
+    window.EnketoForm = EnketoForm;
+    EnketoForm.returns({
+      init: enketoInit
+    });
 
     module(function($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({
@@ -76,7 +99,7 @@ describe('Enketo service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(enketoInit, dbGetAttachment, dbGet, dbQuery, dbPost, dbPut, transform, createObjectURL, FileReader, UserSettings, form.validate, form.isValid, form.getDataStr, form.resetView, Auth);
+    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbQuery, dbPost, dbPut, transform, createObjectURL, FileReader, UserSettings, form.validate, form.isValid, form.getDataStr, form.resetView, Auth);
   });
 
   describe('render', function() {
@@ -240,6 +263,50 @@ describe('Enketo service', function() {
       digest(3);
     });
 
+    it('passes xml instance data through to Enketo', function(done) {
+      Auth.returns(KarmaUtils.mockPromise());
+      UserSettings.callsArgWith(0, null, { contact_id: '123' });
+      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
+      dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
+      enketoInit.returns([]);
+      FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
+      transform
+        .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, 'my model'));
+      var data = '<data><patient_id>123</patient_id></data>';
+      service
+        .render($('<div></div>'), 'ok', data)
+        .then(function() {
+          chai.expect(EnketoForm.callCount).to.equal(1);
+          chai.expect(EnketoForm.args[0][1].modelStr).to.equal('my model');
+          chai.expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
+          done();
+        })
+        .catch(done);
+      digest(3);
+    });
+
+    it('passes json instance data through to Enketo', function(done) {
+      Auth.returns(KarmaUtils.mockPromise());
+      UserSettings.callsArgWith(0, null, { contact_id: '123' });
+      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
+      dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
+      enketoInit.returns([]);
+      FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
+      transform
+        .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, visitForm));
+      service
+        .render($('<div></div>'), 'ok', { patient_id: 123, name: 'sharon' })
+        .then(function() {
+          chai.expect(EnketoForm.callCount).to.equal(1);
+          chai.expect(EnketoForm.args[0][1].modelStr).to.equal(visitForm);
+          chai.expect(EnketoForm.args[0][1].instanceStr).to.equal('        <data xmlns="http://www.w3.org/2002/xforms" id="V" version="2015-06-05">          <patient_id tag="id">123</patient_id>          <name tag="name">sharon</name>        </data>      ');
+          done();
+        })
+        .catch(done);
+      digest(3);
+    });
   });
 
   describe('withAllForms', function() {

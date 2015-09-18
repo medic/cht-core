@@ -5,8 +5,10 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsContentCtrl', 
-    ['$scope', '$stateParams', 'DB',
-    function ($scope, $stateParams, DB) {
+    ['$scope', '$stateParams', '$q', '$state', '$log', 'DB', 'Enketo',
+    function ($scope, $stateParams, $q, $state, $log, DB, Enketo) {
+
+      $scope.form = null;
 
       var getContact = function(id) {
         return DB.get().get(id);
@@ -31,7 +33,7 @@
 
       var selectContact = function(id) {
         $scope.setLoadingContent(id);
-        Promise.all([ getContact(id), getChildren(id), getContactFor(id) ])
+        $q.all([ getContact(id), getChildren(id), getContactFor(id) ])
           .then(function(results) {
             var doc = results[0];
             doc.children = results[1].rows;
@@ -52,6 +54,21 @@
       } else {
         $scope.clearSelected();
       }
+
+      $scope.submitReport = function(form) {
+        $scope.loadingForm = true;
+        var instanceData = { patient_id: $state.params.id };
+        Enketo.render($('#contact-report'), form.internalId, instanceData)
+          .then(function(form) {
+            $scope.form = form;
+            $scope.loadingForm = false;
+          })
+          .catch(function(err) {
+            $scope.contentError = true;
+            $scope.loadingForm = false;
+            $log.error('Error loading form.', err);
+          });
+      };
 
       $scope.$on('ContactUpdated', function(e, contact) {
         if (!contact) {

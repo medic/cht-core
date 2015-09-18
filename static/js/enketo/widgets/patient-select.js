@@ -32,7 +32,7 @@ define(function(require, exports, module) {
     var initialValue = $elem.val();
     var formatResult = function(doc) {
       return doc && format.contact(doc);
-    }
+    };
     DB.get()
       .query('medic/doc_by_type', { include_docs: true, key: [ 'person' ]})
       .then(function(results) {

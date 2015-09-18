@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 /* globals EnketoForm */
 angular.module('inboxServices').service('Enketo', [
   '$window', '$log', '$q', 'DB', 'XSLT', 'FileReader', 'UserSettings', 'Auth',
@@ -80,7 +82,16 @@ angular.module('inboxServices').service('Enketo', [
         });
     };
 
-    this.render = function(wrapper, formInternalId, formInstanceData) {
+    var getInstanceStrFromJson = function(model, data) {
+      var xml = $($.parseXML(model));
+      var instanceRoot = xml.find('model instance');
+      _.pairs(data).forEach(function(pair) {
+        instanceRoot.find(pair[0]).text(pair[1]);
+      });
+      return instanceRoot.html();
+    };
+
+    this.render = function(wrapper, formInternalId, instanceStr) {
       return checkPermissions()
         .then(function() {
           return withFormByFormInternalId(formInternalId)
@@ -91,9 +102,12 @@ angular.module('inboxServices').service('Enketo', [
                      .addClass('disabled');
               var formContainer = wrapper.find('.container').first();
               formContainer.html(doc.html);
+              if (_.isObject(instanceStr)) {
+                instanceStr = getInstanceStrFromJson(doc.model, instanceStr);
+              }
               var form = new EnketoForm(wrapper.find('form').first(), {
                 modelStr: doc.model,
-                instanceStr: formInstanceData
+                instanceStr: instanceStr
               });
               var loadErrors = form.init();
               if (loadErrors && loadErrors.length) {
