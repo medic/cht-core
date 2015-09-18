@@ -57,10 +57,17 @@ define( function( require, exports, module ) {
             .query('medic/doc_by_type', {include_docs:true, key:[dbObjectType]})
             .then(function(res) {
                 loader.remove();
-                var selecter = $('<select/>');
+                // TODO only include `new` option if it's configured for that
+                var selecter = $('<select><option></option></select>');
                 selecter.attr('name', textInput.attr('name'));
+                selecter.attr('required', textInput.attr('required'));
                 selecter.attr('data-type-xml', textInput.attr('data-type-xml'));
                 container.append(selecter);
+
+                // add 'new' option TODO this should only be added if requested
+                $('<option>', { value:'NEW', text:'{{\'' + dbObjectType + '.new\'}}' })
+                        .appendTo(selecter);
+
                 var rows = _.sortBy(res.rows, function(row) {
                     return titleFor(row.doc);
                 });

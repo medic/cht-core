@@ -1,6 +1,6 @@
 describe('Mega service', function() {
   'use strict';
-  
+
   var service,
       assert = chai.assert;
 
@@ -206,6 +206,79 @@ describe('Mega service', function() {
           '<h:body>' +
             '<input ref="/person/parent">' +
               '<label>{{\'person.parent\' | translate}}</label></input>' +
+          '</h:body></h:html>');
+    });
+
+    it('generates a double XForm when supplied with an object-pair schema', function() {
+      // given
+      var schema = {
+        type: 'clinic',
+        title: 'name',
+        fields: {
+          name: {
+            type: 'string',
+            required: true,
+          },
+          external_id: {
+            type: 'string',
+          },
+          parent: {
+            type: 'db',
+            db_type: 'district_hospital',
+          },
+          contact: {
+            type: 'db',
+            db_type: 'person',
+            required: true,
+          },
+        },
+      };
+      var contactSchema = {
+        type: 'person',
+        title: 'name',
+        fields: {
+          name: {
+            type: 'string',
+            required: true,
+          },
+          phonenumber: {
+            type: 'phone',
+            required: true,
+          },
+        },
+      };
+
+      // when
+      var xform = service.generateXform(schema, { contact:contactSchema });
+
+      // then
+      assert.equal(xform,
+          '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head><h:title>{{\'clinic.new\' | translate}}</h:title>' +
+          '<model><instance><data id="clinic" version="1">' +
+          '<clinic><name/><external_id/><parent/><contact/></clinic>' +
+          '<contact><name/><phonenumber/></contact>' +
+          '<meta><instanceID/></meta>' +
+          '</data></instance>' +
+          '<bind nodeset="/data/clinic/name" type="string" required="true()"/>' +
+          '<bind nodeset="/data/clinic/external_id" type="string"/>' +
+          '<bind nodeset="/data/clinic/parent" type="string"/>' +
+          '<bind nodeset="/data/clinic/contact" type="string" required="true()"/>' +
+          '<bind nodeset="/data/contact" relevant="/data/clinic/contact = \'NEW\'"/>' +
+          '<bind nodeset="/data/contact/name" type="string" required="true()"/>' +
+          '<bind nodeset="/data/contact/phonenumber" type="phone" required="true()"/>' +
+          '</model></h:head>' +
+          '<h:body class="pages">' +
+          '<group appearance="field-list" ref="/data/clinic">' +
+          '<input ref="/data/clinic/name"><label>{{\'clinic.name\' | translate}}</label></input>' +
+          '<input ref="/data/clinic/external_id"><label>{{\'clinic.external_id\' | translate}}</label></input>' +
+          '<input ref="/data/clinic/parent" appearance="db-object" data-db-type="district_hospital"><label>{{\'clinic.parent\' | translate}}</label></input>' +
+          '<input ref="/data/clinic/contact" appearance="db-object" data-db-type="person"><label>{{\'clinic.contact\' | translate}}</label></input>' +
+          '</group>' +
+          '<group appearance="field-list" ref="/data/contact">' +
+          '<label>{{\'person.new\' | translate}}</label>' +
+          '<input ref="/data/contact/name"><label>{{\'person.name\' | translate}}</label></input>' +
+          '<input ref="/data/contact/phonenumber"><label>{{\'person.phonenumber\' | translate}}</label></input>' +
+          '</group>' +
           '</h:body></h:html>');
     });
   });
