@@ -36,6 +36,7 @@ var modal = require('../modules/modal');
 
       populateParents();
 
+      $scope.unmodifiedSchema = ContactSchema.get();
       $scope.schemas = ContactSchema.get();
       // TODO shouldn't really remove person like this, but it's quite useful
       // in this particular use of `schemas`.  Maybe this var just needs a better
@@ -52,11 +53,11 @@ var modal = require('../modules/modal');
         // forms, and load this one fresh every time.
         modal.find('.form .container').empty();
         if(true || enketoContainer.find('.container').is(':empty')) {
-          var personSchema = ContactSchema.get().person;
+          var personSchema = $scope.unmodifiedSchema.person;
           delete personSchema.fields.parent;
 
           Enketo.renderFromXml(enketoContainer,
-              Mega.generateXform(ContactSchema.get()[type], { contact:personSchema }))
+              Mega.generateXform($scope.unmodifiedSchema[type], { contact:personSchema }))
             .then(function(form) {
               $scope.enketo_contact = {
                 type: type,
@@ -105,7 +106,7 @@ var modal = require('../modules/modal');
 
         if(contact.type) {
           Enketo.renderFromXml(modal.find('.form.' + contact.type),
-              Mega.generateXform(ContactSchema.get()[contact.type]),
+              Mega.generateXform($scope.unmodifiedSchema[contact.type]),
               formInstanceData)
             .then(function(form) {
               $scope.enketo_contact = {

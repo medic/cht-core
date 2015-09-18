@@ -90,18 +90,15 @@ var PERSON = {
 function normalise(type, schema) {
   var clone = _.clone(schema);
   clone.type = type;
-  var fields = clone.fields;
+  var fields = _.clone(clone.fields);
   _.forEach(fields, function(conf, name) {
     if(typeof conf === 'string') {
-      conf = { type: conf };
-      fields[name] = conf;
-    }
-    var matches = conf.type.match('^(db):');
-    if(matches) {
-      conf[matches[1] + '_type'] = conf.type.substring(matches[0].length);
-      conf.type = matches[1];
+      fields[name] = { type: conf };
+    } else {
+      fields[name] = _.clone(conf);
     }
   });
+  clone.fields = fields;
   return clone;
 }
 

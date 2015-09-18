@@ -6,17 +6,12 @@ angular.module('inboxServices').service('Mega', [
       extraAttributesFor: function(conf) {
         var extras = {};
         var typeString = conf.type;
-        if(typeString === 'db' || typeString === 'custom') {
-          extras.appearance = typeString + '-object';
-          extras['data-' + typeString + '-type'] = conf[typeString + '_type'];
+        if(/^db:/.test(typeString)) {
+          extras.appearance = 'db-object';
         }
         return extras;
       },
       getBindingType: function(conf) {
-        var typeString = conf.type;
-        if(typeString === 'db' || typeString === 'custom') {
-          return 'string';
-        }
         return conf.type;
       },
       getInputType: function(conf) {

@@ -161,8 +161,7 @@ describe('Mega service', function() {
         title: '{{name}}',
         fields: {
           loc: {
-            type: 'db',
-            db_type: 'location',
+            type: 'db:location',
           },
         },
       };
@@ -175,9 +174,9 @@ describe('Mega service', function() {
           '<h:head><h:title>{{\'person.new\' | translate}}</h:title>' +
           '<model><instance><person id="person" version="1">' +
             '<loc/><meta><instanceID/></meta></person></instance>' +
-            '<bind nodeset="/person/loc" type="string"/></model></h:head>' +
+            '<bind nodeset="/person/loc" type="db:location"/></model></h:head>' +
           '<h:body>' +
-            '<input ref="/person/loc" appearance="db-object" data-db-type="location">' +
+            '<input ref="/person/loc" appearance="db-object">' +
               '<label>{{\'person.loc\' | translate}}</label></input>' +
           '</h:body></h:html>');
     });
@@ -223,12 +222,10 @@ describe('Mega service', function() {
             type: 'string',
           },
           parent: {
-            type: 'db',
-            db_type: 'district_hospital',
+            type: 'db:district_hospital',
           },
           contact: {
-            type: 'db',
-            db_type: 'person',
+            type: 'db:person',
             required: true,
           },
         },
@@ -261,8 +258,8 @@ describe('Mega service', function() {
           '</data></instance>' +
           '<bind nodeset="/data/clinic/name" type="string" required="true()"/>' +
           '<bind nodeset="/data/clinic/external_id" type="string"/>' +
-          '<bind nodeset="/data/clinic/parent" type="string"/>' +
-          '<bind nodeset="/data/clinic/contact" type="string" required="true()"/>' +
+          '<bind nodeset="/data/clinic/parent" type="db:district_hospital"/>' +
+          '<bind nodeset="/data/clinic/contact" type="db:person" required="true()"/>' +
           '<bind nodeset="/data/contact" relevant="/data/clinic/contact = \'NEW\'"/>' +
           '<bind nodeset="/data/contact/name" type="string" required="true()"/>' +
           '<bind nodeset="/data/contact/phonenumber" type="phone" required="true()"/>' +
@@ -271,8 +268,8 @@ describe('Mega service', function() {
           '<group appearance="field-list" ref="/data/clinic">' +
           '<input ref="/data/clinic/name"><label>{{\'clinic.name\' | translate}}</label></input>' +
           '<input ref="/data/clinic/external_id"><label>{{\'clinic.external_id\' | translate}}</label></input>' +
-          '<input ref="/data/clinic/parent" appearance="db-object" data-db-type="district_hospital"><label>{{\'clinic.parent\' | translate}}</label></input>' +
-          '<input ref="/data/clinic/contact" appearance="db-object" data-db-type="person"><label>{{\'clinic.contact\' | translate}}</label></input>' +
+          '<input ref="/data/clinic/parent" appearance="db-object"><label>{{\'clinic.parent\' | translate}}</label></input>' +
+          '<input ref="/data/clinic/contact" appearance="db-object"><label>{{\'clinic.contact\' | translate}}</label></input>' +
           '</group>' +
           '<group appearance="field-list" ref="/data/contact">' +
           '<label>{{\'person.new\' | translate}}</label>' +

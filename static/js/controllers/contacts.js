@@ -19,25 +19,28 @@ var _ = require('underscore'),
         if(!doc) {
           return '';
         }
-        var titleFormat = ContactSchema.get()[doc.type].title;
+        var titleFormat = $scope.schema[doc.type].title;
         return titleFormat.replace(/\{\{([^}]+)\}\}/g, function(all, name) {
           return doc[name];
         });
       };
 
+      $scope.schema = ContactSchema.get();
+      $scope.schemaNormalFields = ContactSchema.get();
+      _.each($scope.schemaNormalFields, function(schema) {
+        _.each(schema.fields, function(field) {
+          // TODO we should parse `title` for `selected.type` and remove referenced fields
+          delete field.name;
+          delete field.parent;
+        });
+      });
+
       $scope.selectedSchema = function() {
-        return $scope.selected && ContactSchema.get()[$scope.selected.type];
+        return $scope.selected && $scope.schema[$scope.selected.type];
       };
 
       $scope.selectedSchemaNormalFields = function() {
-        // TODO we should parse `title` for `selected.type` and remove referenced fields
-        if(!$scope.selected) {
-          return;
-        }
-        var fields = _.clone(ContactSchema.get()[$scope.selected.type].fields);
-        delete fields.name;
-        delete fields.parent;
-        return fields;
+        return $scope.selected && $scope.schemaNormalFields[$scope.selected.type].fields;
       };
 
       $scope.query = function(options) {

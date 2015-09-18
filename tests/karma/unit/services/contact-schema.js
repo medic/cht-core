@@ -42,6 +42,17 @@ describe('ContactSchema service', function() {
       assert.typeOf(service.get, 'function');
     });
 
+    it('provides a read-only schema', function() {
+      // given
+      var version_one = service.get();
+
+      // when
+      delete version_one.person.fields.parent;
+
+      // then
+      assert.isDefined(service.get().person.fields.parent);
+    });
+
     describe('`person`', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().person, {
@@ -77,14 +88,14 @@ describe('ContactSchema service', function() {
           type: 'district_hospital',
           title: '{{name}}',
           badge: 'fa-building',
+          icon: 'fa-building',
           fields: {
             name: {
               type: 'string',
               required: true,
             },
             contact: {
-              type: 'db',
-              db_type: 'person',
+              type: 'db:person',
               required: true,
             },
             external_id: {
@@ -104,19 +115,18 @@ describe('ContactSchema service', function() {
           type: 'health_center',
           title: '{{name}}',
           badge: 'fa-hospital-a',
+          icon: 'fa-hospital-o',
           fields: {
             name: {
               type: 'string',
               required: true,
             },
             parent: {
-              type: 'db',
-              db_type: 'district_hospital',
+              type: 'db:district_hospital',
               required: true,
             },
             contact: {
-              type: 'db',
-              db_type: 'person',
+              type: 'db:person',
               required: true,
             },
             external_id: {
@@ -136,19 +146,18 @@ describe('ContactSchema service', function() {
           type: 'clinic',
           title: '{{name}}',
           badge: 'fa-home',
+          icon: 'fa-home',
           fields: {
             name: {
               type: 'string',
               required: true,
             },
             parent: {
-              type: 'db',
-              db_type: 'health_center',
+              type: 'db:health_center',
               required: true,
             },
             contact: {
-              type: 'db',
-              db_type: 'person',
+              type: 'db:person',
               required: true,
             },
             external_id: {
