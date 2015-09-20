@@ -14,6 +14,7 @@
   "devDependencies": {
     "async": "^1.4.0",
     "autoprefixer-core": "^5.2.1",
+    "browserify": "^11.1",
     "chai": "^2.1.0",
     "enketo-core": "git://github.com/alxndrsn/enketo-core.git#medic-0.4.1",
     "enketo-xslt": "git://github.com/alxndrsn/enketo-client-side-transformer.git#30b5a5e3deb300740a78d9302293d71a45759813",
