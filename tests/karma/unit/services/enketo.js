@@ -218,17 +218,20 @@ describe('Enketo service', function() {
       service
         .render(wrapper, 'ok')
         .then(function() {
-          var img = wrapper.find('img').first();
-          chai.expect(img.attr('src')).to.equal('myobjurl');
-          chai.expect(img.css('visibility')).to.satisfy(function(val) {
-            // different browsers return different values but both are equivalent
-            return val === '' || val === 'visible';
+          setTimeout(function() {
+            // need to wait for async get attachment to complete
+            var img = wrapper.find('img').first();
+            chai.expect(img.attr('src')).to.equal('myobjurl');
+            chai.expect(img.css('visibility')).to.satisfy(function(val) {
+              // different browsers return different values but both are equivalent
+              return val === '' || val === 'visible';
+            });
+            chai.expect(transform.callCount).to.equal(2);
+            chai.expect(enketoInit.callCount).to.equal(1);
+            chai.expect(createObjectURL.callCount).to.equal(1);
+            chai.expect(createObjectURL.args[0][0]).to.equal('myobjblob');
+            done();
           });
-          chai.expect(transform.callCount).to.equal(2);
-          chai.expect(enketoInit.callCount).to.equal(1);
-          chai.expect(createObjectURL.callCount).to.equal(1);
-          chai.expect(createObjectURL.args[0][0]).to.equal('myobjblob');
-          done();
         })
         .catch(done);
       digest(3);
