@@ -63,11 +63,11 @@ var _ = require('underscore'),
         });
       };
 
-      $scope.setSelected = function(doc) {
-        $scope.selected = doc;
+      $scope.setSelected = function(selected) {
+        $scope.selected = selected;
         $scope.setActionBar({
-          _id: doc._id,
-          sendTo: doc
+          _id: selected.doc._id,
+          sendTo: selected.doc
         });
       };
 
@@ -93,7 +93,7 @@ var _ = require('underscore'),
       });
 
       $scope.$on('EditContact', function(e, record) {
-        $rootScope.$broadcast('EditContactInit', record || $scope.selected);
+        $rootScope.$broadcast('EditContactInit', record || $scope.selected.doc);
       });
 
       $scope.$on('ContactUpdated', function(e, contact) {

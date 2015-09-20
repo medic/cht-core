@@ -31,115 +31,122 @@
       <div class="status">
         <span class="mm-badge mm-badge-round">
           <span class="fa" ng-class="{
-            'fa-user': selected.type === 'person',
-            'fa-home': selected.type === 'clinic',
-            'fa-hospital-o': selected.type === 'health_center',
-            'fa-building': selected.type === 'district_hospital'
+            'fa-user': selected.doc.type === 'person',
+            'fa-home': selected.doc.type === 'clinic',
+            'fa-hospital-o': selected.doc.type === 'health_center',
+            'fa-building': selected.doc.type === 'district_hospital'
           }"></span>
         </span>
       </div>
 
       <div class="body">
-        <h2>{{selected.name}}</h2>
-        <h5 ng-show="selected.type === 'person'">{{'Person' | translate}}</h5>
-        <h5 ng-show="selected.type === 'clinic'">{{'Clinic' | translate}}</h5>
-        <h5 ng-show="selected.type === 'health_center'">{{'Health Center' | translate}}</h5>
-        <h5 ng-show="selected.type === 'district_hospital'">{{'District Hospital' | translate}}</h5>
+        <h2>{{selected.doc.name}}</h2>
+        <h5 ng-show="selected.doc.type === 'person'">{{'Person' | translate}}</h5>
+        <h5 ng-show="selected.doc.type === 'clinic'">{{'Clinic' | translate}}</h5>
+        <h5 ng-show="selected.doc.type === 'health_center'">{{'Health Center' | translate}}</h5>
+        <h5 ng-show="selected.doc.type === 'district_hospital'">{{'District Hospital' | translate}}</h5>
         <ul>
-          <li ng-show="selected.type !== 'person'">
+          <li ng-show="selected.doc.type !== 'person'">
             <label>{{'Contact' | translate}}</label>
             <p>
-              <span ng-show="!selected.contact._id">{{selected.contact.name}}</span>
-              <a ng-click="select(selected.contact._id)" ng-show="selected.contact._id">{{selected.contact.name}}</a>
+              <span ng-show="!selected.doc.contact._id">{{selected.doc.contact.name}}</span>
+              <a ng-click="select(selected.doc.contact._id)" ng-show="selected.doc.contact._id">{{selected.doc.contact.name}}</a>
             </p>
           </li>
           <li>
             <label>{{'Phone Number' | translate}}</label>
-            <p><a href="tel:{{selected.phone || selected.contact.phone}}">
-              {{selected.phone || selected.contact.phone}}
+            <p><a href="tel:{{selected.doc.phone || selected.doc.contact.phone}}">
+              {{selected.doc.phone || selected.doc.contact.phone}}
             </a></p>
           </li>
-          <li ng-show="selected.type !== 'person'">
+          <li ng-show="selected.doc.type !== 'person'">
             <label>{{'External ID' | translate}}</label>
-            <p>{{selected.external_id}}</p>
+            <p>{{selected.doc.external_id}}</p>
           </li>
-          <li ng-show="selected.type === 'person'">
+          <li ng-show="selected.doc.type === 'person'">
             <label>{{'RC Code' | translate}}</label>
-            <p>{{selected.rc_code}}</p>
+            <p>{{selected.doc.rc_code}}</p>
           </li>
           <li>
             <label>{{'Notes' | translate}}</label>
-            <p>{{selected.notes}}</p>
+            <p>{{selected.doc.notes}}</p>
           </li>
-          <li ng-if="selected.parent._id">
-            <label ng-show="selected.parent.type === 'clinic'">{{'Clinic' | translate}}</label>
-            <label ng-show="selected.parent.type === 'health_center'">{{'Health Center' | translate}}</label>
-            <label ng-show="selected.parent.type === 'district_hospital'">{{'District Hospital' | translate}}</label>
+          <li ng-if="selected.doc.parent._id">
+            <label ng-show="selected.doc.parent.type === 'clinic'">{{'Clinic' | translate}}</label>
+            <label ng-show="selected.doc.parent.type === 'health_center'">{{'Health Center' | translate}}</label>
+            <label ng-show="selected.doc.parent.type === 'district_hospital'">{{'District Hospital' | translate}}</label>
             <p>
-              <a ng-click="select(selected.parent._id)">
-                {{selected.parent.name}}
+              <a ng-click="select(selected.doc.parent._id)">
+                {{selected.doc.parent.name}}
               </a>
             </p>
           </li>
-          <li ng-if="selected.parent.parent._id">
-            <label ng-show="selected.parent.parent.type === 'health_center'">{{'Health Center' | translate}}</label>
-            <label ng-show="selected.parent.parent.type === 'district_hospital'">{{'District Hospital' | translate}}</label>
+          <li ng-if="selected.doc.parent.parent._id">
+            <label ng-show="selected.doc.parent.parent.type === 'health_center'">{{'Health Center' | translate}}</label>
+            <label ng-show="selected.doc.parent.parent.type === 'district_hospital'">{{'District Hospital' | translate}}</label>
             <p>
-              <a ng-click="select(selected.parent.parent._id)">
-                {{selected.parent.parent.name}}
+              <a ng-click="select(selected.doc.parent.parent._id)">
+                {{selected.doc.parent.parent.name}}
               </a>
             </p>
           </li>
-          <li ng-if="selected.parent.parent.parent._id">
+          <li ng-if="selected.doc.parent.parent.parent._id">
             <label>{{'District Hospital' | translate}}</label>
             <p>
-              <a ng-click="select(selected.parent.parent.parent._id)">
-                {{selected.parent.parent.parent.name}}
+              <a ng-click="select(selected.doc.parent.parent.parent._id)">
+                {{selected.doc.parent.parent.parent.name}}
               </a>
             </p>
           </li>
-        </ul>
-
-        <h2 ng-show="selected.type === 'person'">{{'Submit Report' | translate}}</h2>
-        <ul ng-show="selected.type === 'person'">
-          <li ng-repeat="form in formDefinitions">
-            <a class="btn btn-default" ng-click="submitReport(form)">{{ form.title }}</a>
+          <li ng-if="selected.contactFor.length">
+            <label>{{'Primary Contact For' | translate}}</label>
+            <ul>
+              <li class="row" ng-repeat="place in selected.contactFor">
+                <div class="col-sm-4">
+                  <a ng-click="select(place.doc._id)">{{place.doc.name}}</a>
+                </div>
+                <div class="col-sm-8">
+                  {{place.doc.parent | clinic}}
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li ng-if="selected.children.length">
+            <label ng-show="selected.type === 'district_hospital'">{{'Health Centers' | translate}}</label>
+            <label ng-show="selected.type === 'health_center'">{{'Clinics' | translate}}</label>
+            <ul>
+              <li class="row" ng-repeat="child in selected.children">
+                <div class="col-sm-4">
+                  <a ng-click="select(child.doc._id)">{{child.doc.name}}</a>
+                </div>
+                <div class="col-sm-4">
+                  {{child.doc.contact.name}}
+                </div>
+                <div class="col-sm-4">
+                  {{child.doc.contact.phone}}
+                </div>
+              </li>
+            </ul>
+          </li>
+          <li ng-if="selected.doc.type === 'person'" class="contact-tasks">
+            <label>{{'Tasks' | translate}}</label>
+            <ul>
+              <li ng-repeat="task in selected.doc.tasks">
+                <a class="btn btn-default" ui-sref="tasks.detail({ id: task._id })">{{task.title | translateFrom:task}}</a>
+                <span ng-bind-html="task.date | relativeDate"></span>
+              </li>
+            </ul>
+          </li>
+          <li ng-if="selected.doc.type === 'person'">
+            <label>{{'Submit Report' | translate}}</label>
+            <ul>
+              <li ng-repeat="form in formDefinitions">
+                <a class="btn btn-default" ng-click="submitReport(form)">{{form.title}}</a>
+              </li>
+            </ul>
           </li>
         </ul>
       </div>
-
-      <div class="body" ng-if="selected.children.length">
-        <h2 ng-show="selected.type === 'district_hospital'">{{'Health Centers' | translate}}</h2>
-        <h2 ng-show="selected.type === 'health_center'">{{'Clinics' | translate}}</h2>
-        <ul>
-          <li class="row" ng-repeat="child in selected.children">
-            <div class="col-sm-4">
-              <a ng-click="select(child.doc._id)">{{child.doc.name}}</a>
-            </div>
-            <div class="col-sm-4">
-              {{child.doc.contact.name}}
-            </div>
-            <div class="col-sm-4">
-              {{child.doc.contact.phone}}
-            </div>
-          </li>
-        </ul>
-      </div>
-
-      <div class="body" ng-if="selected.contactFor.length">
-        <h2>{{'Primary Contact For' | translate}}</h2>
-        <ul>
-          <li class="row" ng-repeat="place in selected.contactFor">
-            <div class="col-sm-4">
-              <a ng-click="select(place.doc._id)">{{place.doc.name}}</a>
-            </div>
-            <div class="col-sm-8">
-              {{place.doc.parent | clinic}}
-            </div>
-          </li>
-        </ul>
-      </div>
-
     </div>
   </div>
 </div>

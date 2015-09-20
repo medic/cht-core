@@ -216,9 +216,7 @@ describe('TaskGenerator service', function() {
       chai.expect(Search.callCount).to.equal(1);
       chai.expect(actual).to.deep.equal([]);
       done();
-    }).catch(function(err) {
-      console.error(err.toString());
-    });
+    }).catch(done);
     setTimeout(function() {
       $rootScope.$digest();
     });
@@ -231,9 +229,7 @@ describe('TaskGenerator service', function() {
       chai.expect(Settings.callCount).to.equal(1);
       chai.expect(actual).to.deep.equal([]);
       done();
-    }).catch(function(err) {
-      console.error(err.toString());
-    });
+    }).catch(done);
     $rootScope.$digest();
   });
 
@@ -283,11 +279,10 @@ describe('TaskGenerator service', function() {
       expectations(actual, dataRecords[3], schedules[0].events[1], false);
       expectations(actual, dataRecords[3], schedules[0].events[2], false);
       done();
-    }).catch(function(err) {
-      console.error(err.toString());
-    });
+    }).catch(done);
     setTimeout(function() {
       $rootScope.$digest();
     });
   });
+
 });
