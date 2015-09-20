@@ -260,12 +260,12 @@ module.exports = function(grunt) {
       unit: {
         configFile: './tests/karma/karma-unit.conf.js',
         singleRun: true,
-        browsers: ['Firefox']
+        browsers: ['Chrome']
       },
       unit_ci: {
         configFile: './tests/karma/karma-unit.conf.js',
         singleRun: true,
-        browsers: ['Chrome', 'Firefox']
+        browsers: ['Firefox']
       }
     },
     protractor: {
