@@ -144,6 +144,7 @@ angular.module('inboxServices').service('Enketo', [
         });
     };
 
+    /** TODO this method should take `record` as XML - provided by enketo-form.getModel().getXML() - rather than taking a string and then parsing it */
     var recordToJs = function(record) {
       var i, n, fields = {},
           data = $.parseXML(record).firstChild.childNodes;
