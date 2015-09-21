@@ -131,8 +131,8 @@
           <li ng-if="selected.doc.type === 'person'" class="contact-tasks">
             <label>{{'Tasks' | translate}}</label>
             <ul>
-              <li ng-repeat="task in selected.doc.tasks">
-                <a class="btn btn-default" ui-sref="tasks.detail({ id: task._id })">{{task.title | translateFrom:task}}</a>
+              <li ng-repeat="task in selected.tasks">
+                <a ui-sref="tasks.detail({ id: task._id })">{{task.title | translateFrom:task}}</a>
                 <span ng-bind-html="task.date | relativeDate"></span>
               </li>
             </ul>
@@ -141,7 +141,16 @@
             <label>{{'Submit Report' | translate}}</label>
             <ul>
               <li ng-repeat="form in formDefinitions">
-                <a class="btn btn-default" ng-click="submitReport(form)">{{form.title}}</a>
+                <a ng-click="submitReport(form)">{{form.title}}</a>
+              </li>
+            </ul>
+          </li>
+          <li ng-if="selected.doc.type === 'person'">
+            <label>{{'Reports' | translate}}</label>
+            <ul>
+              <li ng-repeat="report in selected.reports">
+                <a ui-sref="reports.detail({ id: report._id })">{{report | title:forms}}</a>
+                <span ng-bind-html="report.reported_date | relativeDate"></span>
               </li>
             </ul>
           </li>

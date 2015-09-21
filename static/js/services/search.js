@@ -51,7 +51,7 @@ var _ = require('underscore'),
       var view = function(request, options, callback) {
         DbView(
           request.view,
-          { targetScope: options.type, params: request.params },
+          { params: request.params },
           callback
         );
       };

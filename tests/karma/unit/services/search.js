@@ -101,7 +101,6 @@ describe('Search service', function() {
       chai.expect(DbView.calledOnce).to.equal(true);
       chai.expect(DbView.args[0][0]).to.equal('reports_by_date');
       chai.expect(DbView.args[0][1]).to.deep.equal({
-        targetScope: 'reports',
         params: { include_docs: true, descending: true, limit: 50, skip: 0 }
       });
       done();
@@ -126,7 +125,6 @@ describe('Search service', function() {
       chai.expect(DbView.calledOnce).to.equal(true);
       chai.expect(DbView.args[0][0]).to.equal('reports_by_date');
       chai.expect(DbView.args[0][1]).to.deep.equal({
-        targetScope: 'reports',
         params: { include_docs: true, descending: true, limit: 10, skip: 5 }
       });
       done();
@@ -144,7 +142,6 @@ describe('Search service', function() {
       chai.expect(DbView.calledOnce).to.equal(true);
       chai.expect(DbView.args[0][0]).to.equal('get_stuff');
       chai.expect(DbView.args[0][1]).to.deep.equal({
-        targetScope: 'reports',
         params: { key: [ 'a' ] }
       });
       chai.expect(allDocs.calledOnce).to.equal(true);
@@ -164,7 +161,6 @@ describe('Search service', function() {
       chai.expect(DbView.calledOnce).to.equal(true);
       chai.expect(DbView.args[0][0]).to.equal('get_stuff');
       chai.expect(DbView.args[0][1]).to.deep.equal({
-        targetScope: 'reports',
         params: { key: [ 'a' ] }
       });
       chai.expect(allDocs.calledOnce).to.equal(true);
@@ -230,12 +226,10 @@ describe('Search service', function() {
       chai.expect(DbView.calledTwice).to.equal(true);
       chai.expect(DbView.args[0][0]).to.equal('get_stuff');
       chai.expect(DbView.args[0][1]).to.deep.equal({
-        targetScope: 'reports',
         params: { key: [ 'a' ] }
       });
       chai.expect(DbView.args[1][0]).to.equal('get_moar_stuff');
       chai.expect(DbView.args[1][1]).to.deep.equal({
-        targetScope: 'reports',
         params: { startkey: [ {} ] }
       });
       chai.expect(allDocs.calledOnce).to.equal(true);

@@ -17,6 +17,9 @@ var _ = require('underscore'),
         if (!view) {
           return;
         }
+        if (!$scope.filterModel.date) {
+          return;
+        }
         if ($scope.filterModel.date.to || $scope.filterModel.date.from) {
           // increment end date so it's inclusive
           var to = moment($scope.filterModel.date.to).add(1, 'days');
@@ -37,6 +40,9 @@ var _ = require('underscore'),
           return;
         }
         var selected = $scope.filterModel.forms;
+        if (!selected) {
+          return;
+        }
         if (selected.length > 0 && selected.length < $scope.forms.length) {
           var keys = _.map(selected, function(form) {
             return [ form.code ];
@@ -88,6 +94,9 @@ var _ = require('underscore'),
           return;
         }
         var selected = $scope.filterModel.facilities;
+        if (!selected) {
+          return;
+        }
         if (selected.length > 0 && selected.length < $scope.facilitiesCount) {
           var keys = _.map(selected, function(facility) {
             return [ facility ];
@@ -106,7 +115,7 @@ var _ = require('underscore'),
         if (!view) {
           return;
         }
-        var freetext = $scope.filterQuery.value;
+        var freetext = $scope.filterQuery && $scope.filterQuery.value;
         if (freetext) {
           freetext = freetext.toLowerCase();
           var params = {};
@@ -127,12 +136,31 @@ var _ = require('underscore'),
         }
       };
 
+      var patient = function($scope, type) {
+        var view = type.views.patient;
+        if (!view) {
+          return;
+        }
+        var patientId = $scope.filterModel.patientId;
+        if (patientId) {
+          return {
+            view: view,
+            params: {
+              key: [ patientId ]
+            }
+          };
+        }
+      };
+
       var documentType = function($scope, type) {
         var view = type.views.documentType;
         if (!view) {
           return;
         }
         var selected = $scope.filterModel.contactTypes;
+        if (!selected) {
+          return;
+        }
         var numberOfTypes = 4;
         if (selected.length > 0 && selected.length < numberOfTypes) {
           var keys = _.map(selected, function(t) {
@@ -164,7 +192,8 @@ var _ = require('underscore'),
             validity: 'reports_by_validity',
             verification: 'reports_by_verification',
             place: 'reports_by_place',
-            freetext: 'reports_by_freetext'
+            freetext: 'reports_by_freetext',
+            patient: 'reports_by_patient'
           }
         },
         contacts: {
@@ -193,6 +222,7 @@ var _ = require('underscore'),
         requests.push(place($scope, type));
         requests.push(freetext($scope, type));
         requests.push(documentType($scope, type));
+        requests.push(patient($scope, type));
         requests = _.compact(requests);
         return requests.length ? requests : [ type.getUnfiltered() ];
       };

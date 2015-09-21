@@ -7,10 +7,24 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsContentCtrl', 
-    ['$scope', '$stateParams', '$q', '$state', '$log', 'DB', 'Enketo', 'TaskGenerator',
-    function ($scope, $stateParams, $q, $state, $log, DB, Enketo, TaskGenerator) {
+    ['$scope', '$stateParams', '$q', '$state', '$log', 'DB', 'Enketo', 'TaskGenerator', 'Search',
+    function ($scope, $stateParams, $q, $state, $log, DB, Enketo, TaskGenerator, Search) {
 
       $scope.form = null;
+
+      var getReports = function(id) {
+        var scope = {
+          filterModel: { patientId: id, type: 'reports' }
+        };
+        return $q(function(resolve, reject) {
+          Search(scope, { }, function(err, data) {
+            if (err) {
+              return reject(err);
+            }
+            resolve(data);
+          });
+        });
+      };
 
       var getTasks = function(id) {
         return TaskGenerator().then(function(tasks) {
@@ -49,14 +63,16 @@ var _ = require('underscore');
           getContact(id),
           getChildren(id),
           getContactFor(id),
-          getTasks(id)
+          getTasks(id),
+          getReports(id)
         ])
           .then(function(results) {
             var selected = {
               doc: results[0],
               children: results[1].rows,
               contactFor: results[2].rows,
-              tasks: results[3]
+              tasks: results[3],
+              reports: results[4]
             };
             var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
             $scope.setSelected(selected);
