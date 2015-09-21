@@ -12,6 +12,12 @@ var _ = require('underscore'),
   inboxServices.factory('GenerateSearchRequests', [
     function() {
 
+      var getKeysArray = function(keys) {
+        return _.map(keys, function(t) {
+          return [ t ];
+        });
+      };
+
       var reportedDate = function($scope, type) {
         var view = type.views.reportedDate;
         if (!view) {
@@ -94,17 +100,13 @@ var _ = require('underscore'),
           return;
         }
         var selected = $scope.filterModel.facilities;
-        if (!selected) {
-          return;
-        }
-        if (selected.length > 0 && selected.length < $scope.facilitiesCount) {
-          var keys = _.map(selected, function(facility) {
-            return [ facility ];
-          });
+        if (selected &&
+            selected.length > 0 &&
+            selected.length < $scope.facilitiesCount) {
           return {
             view: view,
             params: {
-              keys: keys
+              keys: getKeysArray(selected)
             }
           };
         }
@@ -141,12 +143,12 @@ var _ = require('underscore'),
         if (!view) {
           return;
         }
-        var patientId = $scope.filterModel.patientId;
-        if (patientId) {
+        var patientIds = $scope.filterModel.patientIds;
+        if (patientIds && patientIds.length) {
           return {
             view: view,
             params: {
-              key: [ patientId ]
+              keys: getKeysArray(patientIds)
             }
           };
         }
@@ -158,18 +160,14 @@ var _ = require('underscore'),
           return;
         }
         var selected = $scope.filterModel.contactTypes;
-        if (!selected) {
-          return;
-        }
         var numberOfTypes = 4;
-        if (selected.length > 0 && selected.length < numberOfTypes) {
-          var keys = _.map(selected, function(t) {
-            return [ t ];
-          });
+        if (selected &&
+            selected.length > 0 &&
+            selected.length < numberOfTypes) {
           return {
             view: type.views.documentType,
             params: {
-              keys: keys
+              keys: getKeysArray(selected)
             }
           };
         }

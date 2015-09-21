@@ -129,7 +129,7 @@
               </li>
             </ul>
           </li>
-          <li ng-if="selected.doc.type === 'person'" class="contact-tasks">
+          <li ng-if="selected.tasks" class="contact-tasks">
             <label>{{'Tasks' | translate}}</label>
             <ul>
               <li ng-repeat="task in selected.tasks">
@@ -146,7 +146,7 @@
               </li>
             </ul>
           </li>
-          <li ng-if="selected.doc.type === 'person'">
+          <li ng-if="selected.reports">
             <label>{{'Reports' | translate}}</label>
             <ul>
               <li ng-repeat="report in selected.reports">

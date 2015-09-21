@@ -12,9 +12,9 @@ var _ = require('underscore');
 
       $scope.form = null;
 
-      var getReports = function(id) {
+      var getReports = function(ids) {
         var scope = {
-          filterModel: { patientId: id, type: 'reports' }
+          filterModel: { patientIds: ids, type: 'reports' }
         };
         return $q(function(resolve, reject) {
           Search(scope, { }, function(err, data) {
@@ -26,11 +26,11 @@ var _ = require('underscore');
         });
       };
 
-      var getTasks = function(id) {
+      var getTasks = function(ids) {
         return TaskGenerator().then(function(tasks) {
           tasks = _.filter(tasks, function(task) {
             var subjectId = task.doc.patient_id || task.doc.fields.patient_id;
-            return !task.resolved && subjectId === id;
+            return !task.resolved && _.contains(ids, subjectId);
           });
           return $q.resolve(tasks);
         });
@@ -57,23 +57,41 @@ var _ = require('underscore');
         return DB.get().query('medic/facilities_by_contact', options);
       };
 
-      var selectContact = function(id) {
-        $scope.setLoadingContent(id);
-        $q.all([
-          getContact(id),
-          getChildren(id),
-          getContactFor(id),
-          getTasks(id),
-          getReports(id)
-        ])
+      var getInitialData = function(id) {
+        return $q.all([ getContact(id), getChildren(id), getContactFor(id) ])
           .then(function(results) {
-            var selected = {
+            return $q.resolve({
               doc: results[0],
               children: results[1].rows,
-              contactFor: results[2].rows,
-              tasks: results[3],
-              reports: results[4]
-            };
+              contactFor: results[2].rows
+            });
+          });
+      };
+
+      var getSecondaryData = function(selected) {
+        if (selected.doc.type === 'district_hospital' ||
+            selected.doc.type === 'health_center') {
+          return $q.resolve(selected);
+        }
+        var patientIds;
+        if (selected.doc.type === 'clinic') {
+          patientIds = _.pluck(selected.children, 'id');
+        } else { // person
+          patientIds = [ selected.doc._id ];
+        }
+        return $q.all([ getTasks(patientIds), getReports(patientIds) ])
+          .then(function(results) {
+            selected.tasks = results[0];
+            selected.reports = results[1];
+            return $q.resolve(selected);
+          });
+      };
+
+      var selectContact = function(id) {
+        $scope.setLoadingContent(id);
+        getInitialData(id)
+          .then(getSecondaryData)
+          .then(function(selected) {
             var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
             $scope.setSelected(selected);
             $scope.settingSelected(refreshing);

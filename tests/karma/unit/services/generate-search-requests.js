@@ -113,6 +113,16 @@ describe('GenerateSearchRequests service', function() {
     });
   });
 
+  it('creates requests for reports with patientIds filter', function() {
+    scope.filterModel.patientIds = [ 'a', 'b', 'c' ];
+    var result = service(scope);
+    chai.expect(result.length).to.equal(1);
+    chai.expect(result[0].view).to.equal('reports_by_patient');
+    chai.expect(result[0].params).to.deep.equal({
+      keys: [ [ 'a' ], [ 'b' ], [ 'c' ] ]
+    });
+  });
+
   it('creates requests for reports with date filter', function() {
     scope.filterModel.date.from = date20130208;
     scope.filterModel.date.to = date20130612;
