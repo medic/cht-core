@@ -13,6 +13,9 @@ var _ = require('underscore');
       $scope.form = null;
 
       var getReports = function(ids) {
+        if (ids.length === 0) {
+          return $q.resolve([]);
+        }
         var scope = {
           filterModel: { patientIds: ids, type: 'reports' }
         };
@@ -27,6 +30,9 @@ var _ = require('underscore');
       };
 
       var getTasks = function(ids) {
+        if (ids.length === 0) {
+          return $q.resolve([]);
+        }
         return TaskGenerator().then(function(tasks) {
           tasks = _.filter(tasks, function(task) {
             var subjectId = task.doc.patient_id || task.doc.fields.patient_id;
