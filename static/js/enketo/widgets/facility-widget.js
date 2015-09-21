@@ -34,6 +34,7 @@ define( function( require, exports, module ) {
     Facilitywidget.prototype.constructor = Facilitywidget;
 
     Facilitywidget.prototype._init = function() {
+        var DB = angular.element(document.body).injector().get('DB').get();
         var e = $(this.element).parent();
 
         var loader = $('<div class="loader"/></div>');
@@ -51,20 +52,18 @@ define( function( require, exports, module ) {
             });
         };
 
-        /* global PouchDB */
-        new PouchDB('http://localhost:5988/medic')
-            .query('medic/facilities', {include_docs:true})
+        DB.query('medic/facilities', {include_docs:true})
             .then(function(res) {
                 loader.remove();
                 var selecter = $('<select/>');
                 selecter.attr('name', textInput.attr('name'));
                 selecter.attr('data-type-xml', textInput.attr('data-type-xml'));
                 container.append(selecter);
-		// TODO we shouldn't have to manually remove persons here!
+                // TODO we shouldn't have to manually remove persons here!
                 var rows = _.filter(res.rows, function(row) {
-		    return row.doc.type !== 'person';
-		});
-		rows = _.sortBy(rows, function(row) {
+                    return row.doc.type !== 'person';
+                });
+                rows = _.sortBy(rows, function(row) {
                     return titleFor(row.doc);
                 });
                 _.forEach(rows, function(row) {

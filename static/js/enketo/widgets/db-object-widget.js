@@ -34,6 +34,7 @@ define( function( require, exports, module ) {
     Dbobjectwidget.prototype.constructor = Dbobjectwidget;
 
     Dbobjectwidget.prototype._init = function() {
+        var DB = angular.element(document.body).injector().get('DB').get();
         var e = $(this.element);
 
         var loader = $('<div class="loader"/></div>');
@@ -52,9 +53,7 @@ define( function( require, exports, module ) {
             });
         };
 
-        /* global PouchDB */
-        new PouchDB('http://localhost:5988/medic')
-            .query('medic/doc_by_type', {include_docs:true, key:[dbObjectType]})
+        DB.query('medic/doc_by_type', {include_docs:true, key:[dbObjectType]})
             .then(function(res) {
                 loader.remove();
                 // TODO only include `new` option if it's configured for that
