@@ -72,17 +72,6 @@
         $scope.settingSelected(refreshing);
       };
 
-      $scope.select = function(id) {
-        if ($state.params.id === id) {
-          $scope.$broadcast('UpdateContactConversation');
-          $scope.settingSelected(true);
-        } else if (id) {
-          $state.go('messages.detail', { id: id });
-        } else {
-          $state.go('messages');
-        }
-      };
-
       $scope.allLoaded = false;
       $scope.filterModel.type = 'messages';
       $scope.messages = [];

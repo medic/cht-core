@@ -20,10 +20,6 @@ var _ = require('underscore');
         }
       };
 
-      $scope.select = function(id) {
-        $state.go('tasks.detail', { id: id });
-      };
-
       var updateTasks = function(options) {
         options = options || {};
         if (!options.silent) {

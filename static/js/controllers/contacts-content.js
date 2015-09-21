@@ -136,14 +136,14 @@ var _ = require('underscore');
       };
 
       $scope.$on('ContactUpdated', function(e, contact) {
-        if (!contact) {
-          $scope.select();
-        } else if(contact._deleted &&
-            $scope.selected &&
-            $scope.selected._id === contact._id) {
-          $scope.clearSelected();
-        } else if ($scope.selected && $scope.selected._id === contact._id) {
-          $scope.selectContact(contact._id);
+        if (contact) {
+          if(contact._deleted &&
+              $scope.selected &&
+              $scope.selected._id === contact._id) {
+            $scope.clearSelected();
+          } else if ($scope.selected && $scope.selected._id === contact._id) {
+            $scope.selectContact(contact._id);
+          }
         }
       });
 

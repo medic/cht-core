@@ -79,14 +79,6 @@ var _ = require('underscore'),
         return types.indexOf(contact.type);
       };
 
-      $scope.select = function(id) {
-        if (id) {
-          $state.go('contacts.detail', { id: id });
-        } else {
-          $state.go('contacts');
-        }
-      };
-
       $scope.$on('ClearSelected', function() {
         $scope.selected = null;
       });

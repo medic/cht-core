@@ -81,21 +81,6 @@ var _ = require('underscore'),
         $scope.settingSelected(refreshing);
       };
 
-      $scope.select = function(id) {
-        if ($state.params.id === id) {
-          var report = _.findWhere($scope.reports, { _id: id });
-          if (report) {
-            return $scope.setSelected(report);
-          }
-          $state.reload();
-          $scope.query();
-        } else if (id) {
-          $state.go('reports.detail', { id: id });
-        } else {
-          $state.go('reports');
-        }
-      };
-
       $scope.selectMessage = function(id) {
         if ($scope.selected && $scope.selected._id && $scope.selected._id === id) {
           return;
