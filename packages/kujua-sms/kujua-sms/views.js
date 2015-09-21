@@ -332,7 +332,10 @@ exports.data_records_by_district = {
 
 exports.facility_by_parent = {
     map: function (doc) {
-        if (doc.type === 'clinic' || doc.type === 'health_center' || doc.type === 'district_hospital') {
+        if (doc.type === 'clinic' ||
+            doc.type === 'health_center' ||
+            doc.type === 'district_hospital' ||
+            doc.type === 'person') {
             emit([doc.parent._id, doc.name, doc.type], true);
         }
     }
