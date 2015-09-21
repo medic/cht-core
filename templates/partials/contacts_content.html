@@ -112,8 +112,8 @@
             </ul>
           </li>
           <li ng-if="selected.children.length">
-            <label ng-show="selected.type === 'district_hospital'">{{'Health Centers' | translate}}</label>
-            <label ng-show="selected.type === 'health_center'">{{'Clinics' | translate}}</label>
+            <label ng-show="selected.doc.type === 'district_hospital'">{{'Health Centers' | translate}}</label>
+            <label ng-show="selected.doc.type === 'health_center'">{{'Clinics' | translate}}</label>
             <ul>
               <li class="row" ng-repeat="child in selected.children">
                 <div class="col-sm-4">
