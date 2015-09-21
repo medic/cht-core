@@ -138,17 +138,17 @@ var _ = require('underscore'),
         }
       };
 
-      var patient = function($scope, type) {
-        var view = type.views.patient;
+      var subject = function($scope, type) {
+        var view = type.views.subject;
         if (!view) {
           return;
         }
-        var patientIds = $scope.filterModel.patientIds;
-        if (patientIds && patientIds.length) {
+        var subjectIds = $scope.filterModel.subjectIds;
+        if (subjectIds && subjectIds.length) {
           return {
             view: view,
             params: {
-              keys: getKeysArray(patientIds)
+              keys: getKeysArray(subjectIds)
             }
           };
         }
@@ -191,7 +191,7 @@ var _ = require('underscore'),
             verification: 'reports_by_verification',
             place: 'reports_by_place',
             freetext: 'reports_by_freetext',
-            patient: 'reports_by_patient'
+            subject: 'reports_by_subject'
           }
         },
         contacts: {
@@ -220,7 +220,7 @@ var _ = require('underscore'),
         requests.push(place($scope, type));
         requests.push(freetext($scope, type));
         requests.push(documentType($scope, type));
-        requests.push(patient($scope, type));
+        requests.push(subject($scope, type));
         requests = _.compact(requests);
         return requests.length ? requests : [ type.getUnfiltered() ];
       };

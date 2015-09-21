@@ -12,12 +12,9 @@ var _ = require('underscore');
 
       $scope.form = null;
 
-      var getReports = function(ids) {
-        if (ids.length === 0) {
-          return $q.resolve([]);
-        }
+      var getReports = function(id) {
         var scope = {
-          filterModel: { patientIds: ids, type: 'reports' }
+          filterModel: { subjectIds: [ id ], type: 'reports' }
         };
         return $q(function(resolve, reject) {
           Search(scope, { }, function(err, data) {
@@ -64,12 +61,18 @@ var _ = require('underscore');
       };
 
       var getInitialData = function(id) {
-        return $q.all([ getContact(id), getChildren(id), getContactFor(id) ])
+        return $q.all([
+          getContact(id),
+          getChildren(id),
+          getContactFor(id),
+          getReports(id)
+        ])
           .then(function(results) {
             return $q.resolve({
               doc: results[0],
               children: results[1].rows,
-              contactFor: results[2].rows
+              contactFor: results[2].rows,
+              reports: results[3]
             });
           });
       };
@@ -79,16 +82,14 @@ var _ = require('underscore');
             selected.doc.type === 'health_center') {
           return $q.resolve(selected);
         }
-        var patientIds;
+        var patientIds = [];
         if (selected.doc.type === 'clinic') {
           patientIds = _.pluck(selected.children, 'id');
-        } else { // person
-          patientIds = [ selected.doc._id ];
         }
-        return $q.all([ getTasks(patientIds), getReports(patientIds) ])
-          .then(function(results) {
-            selected.tasks = results[0];
-            selected.reports = results[1];
+        patientIds.push(selected.doc._id);
+        return getTasks(patientIds)
+          .then(function(tasks) {
+            selected.tasks = tasks;
             return $q.resolve(selected);
           });
       };
