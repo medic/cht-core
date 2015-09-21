@@ -92,7 +92,12 @@ var _ = require('underscore');
 
       $scope.submitReport = function(form) {
         $scope.loadingForm = true;
-        var instanceData = { patient_id: $state.params.id };
+        var instanceData = {};
+        if ($scope.selected.type === 'person') {
+          instanceData.patient_id = $state.params.id;
+        } else {
+          instanceData.place_id = $state.params.id;
+        }
         Enketo.render($('#contact-report'), form.internalId, instanceData)
           .then(function(form) {
             $scope.form = form;
