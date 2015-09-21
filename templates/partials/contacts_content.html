@@ -40,12 +40,11 @@
         <ul>
           <li ng-repeat="(name, conf) in selectedSchemaNormalFields()">
             <label>{{selected.doc.type + '.field.' + name | translate}}</label>
-            <p ng-switch="conf.type">
+            <p>
               <!-- TODO links to `select()` should probably be using ui-sref instead -->
-              <span ng-switch-when="phone"><a href="tel:{{selected[name]}}">{{selected[name]}}</a></span>
-              <span ng-switch-when="db"><a ng-click="select(selected[name]._id)">{{titleFor(selected[name])}}</a></span>
-              <span ng-switch-when="custom"><a ng-click="select(selected[name]._id)">{{titleFor(selected[name])}}</a></span>
-              <span ng-switch-default>{{selected[name]}}</span>
+              <span ng-if="conf.type === 'phone'"><a href="tel:{{selected[name]}}">{{selected[name]}}</a></span>
+              <span ng-if="conf.type.indexOf('db:') === 0"><a ng-click="select(selected[name]._id)">{{titleFor(selected[name])}}</a></span>
+              <span ng-if="conf.type !== 'phone' && conf.type.indexOf('db:') !== 0">{{selected[name]}}</span>
             </p>
           </li>
           <li ng-repeat="parent in selected.parents">
