@@ -27,12 +27,10 @@ var _ = require('underscore'),
 
       $scope.schema = ContactSchema.get();
       $scope.schemaNormalFields = ContactSchema.get();
+      // remove special fields with custom display
       _.each($scope.schemaNormalFields, function(schema) {
-        _.each(schema.fields, function(field) {
-          // TODO we should parse `title` for `selected.type` and remove referenced fields
-          delete field.name;
-          delete field.parent;
-        });
+        delete schema.fields.name; // TODO we should remove fields set in `title` here, as this may be e.g. first_name+last_name
+        delete schema.fields.parent;
       });
 
       $scope.selectedSchema = function() {
