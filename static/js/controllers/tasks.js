@@ -37,7 +37,8 @@ var _ = require('underscore');
             var curr = _.findWhere(tasks, { _id: $state.params.id });
             if (curr) {
               $scope.selected = curr;
-            } else if (!$('#back').is(':visible')) {
+            } else if (!$('#back').is(':visible') &&
+                       $scope.filterModel.type === 'tasks') {
               $timeout(function() {
                 var id = $('.inbox-items li').first().attr('data-record-id');
                 $state.go('tasks.detail', { id: id }, { location: 'replace' });

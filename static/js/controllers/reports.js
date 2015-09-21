@@ -167,7 +167,8 @@ var _ = require('underscore'),
                 $scope.setSelected(curr);
               } else if (!$('#back').is(':visible') &&
                          !$scope.selected &&
-                         $state.is('reports.detail')) {
+                         $state.is('reports.detail') &&
+                         $scope.filterModel.type === 'reports') {
                 // TODO improve double timeout here - I think it's required
                 // because of the nested promises
                 $timeout(function() {

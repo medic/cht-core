@@ -89,7 +89,10 @@
       $scope.selected = null;
       setMessages();
       updateContacts({ }, function() {
-        if (!$state.params.id && $scope.messages.length && !$('#back').is(':visible')) {
+        if (!$state.params.id &&
+            $scope.messages.length &&
+            !$('#back').is(':visible') &&
+            $scope.filterModel.type === 'messages') {
           $timeout(function() {
             var id = $('.inbox-items li').first().attr('data-record-id');
             $state.go('messages.detail', { id: id }, { location: 'replace' });
