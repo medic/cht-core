@@ -144,18 +144,41 @@ angular.module('inboxServices').service('Enketo', [
         });
     };
 
-    /** TODO this method should take `record` as XML - provided by enketo-form.getModel().getXML() - rather than taking a string and then parsing it */
-    var recordToJs = function(record) {
-      var i, n, fields = {},
-          data = $.parseXML(record).firstChild.childNodes;
-      for(i = 0; i < data.length; ++i) {
-        n = data[i];
-        if (n.nodeType !== Node.ELEMENT_NODE || n.nodeName === 'meta') {
+    var __rToJs = function(data) {
+      var fields = {};
+      for(var i = 0; i < data.length; ++i) {
+        var n = data[i];
+        if(n.nodeType !== Node.ELEMENT_NODE ||
+            n.nodeName === 'meta') {
           continue;
         }
         fields[n.nodeName] = n.textContent;
       }
       return fields;
+    };
+
+    /** TODO this method should take `record` as XML - provided by enketo-form.getModel().getXML() - rather than taking a string and then parsing it */
+    var recordToJs = function(record) {
+      var root = $.parseXML(record).firstChild;
+console.log('record: ' + record);
+console.log('root: ' + root);
+      if(root.nodeName === 'data') {
+        var siblings = {};
+        var first = null;
+        _.each(root.childNodes, function(child) {
+          if(child.nodeType !== Node.ELEMENT_NODE ||
+              child.nodeName === 'meta') {
+            return;
+          }
+          if(!first) {
+            first = child;
+            return;
+          }
+          siblings[child.nodeName] = __rToJs(child.childNodes);
+        });
+        return [ __rToJs(first.childNodes), siblings ];
+      }
+      return __rToJs(root.childNodes);
     };
     this.recordToJs = recordToJs;
 

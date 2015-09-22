@@ -76,7 +76,7 @@ var PERSON = {
     },
     code: 'string',
     notes: 'text',
-    parent: 'facility',
+    parent: 'custom:facility',
   },
 };
 

@@ -1,6 +1,41 @@
 describe('Enketo service', function() {
   'use strict';
 
+  var assert = chai.assert;
+
+  var sortedJson = function(o) {
+    var s;
+    if(typeof o !== 'object') {
+      return JSON.stringify(o);
+    }
+    if(_.isArray(o)) {
+      s = '[ ';
+      o.forEach(function(e) {
+        s += sortedJson(e) + ', ';
+      });
+      return s + ']';
+    }
+    var keys = Object.keys(o).sort();
+    s = '{ ';
+    for(var i=0; i<keys.length; ++i) {
+      var k = keys[i];
+      s += '"' + k + '":' + sortedJson(o[k]) + ', ';
+    }
+    // N.B. not valid JSON, as an extra comma will appear
+    return s + '}';
+  };
+
+  var deepEqual = assert.deepEqual;
+  assert.deepEqual = function() {
+    try {
+      deepEqual.apply(this, arguments);
+    } catch(e) {
+      throw new Error(e +
+          '\nA: ' + sortedJson(arguments[0]) +
+          '\nB: ' + sortedJson(arguments[1]));
+    }
+  };
+
   /** @return a mock form ready for putting in #dbContent */
   var mockEnketoDoc = function(formInternalId, docId) {
     return {
@@ -422,6 +457,104 @@ describe('Enketo service', function() {
       digest(3);
     });
 
+  });
+
+  describe('#recordToJs()', function() {
+    it('should convert a simple record to JS', function() {
+      // given
+      var xml =
+        '<person id="person" version="1">' +
+          '<name>Denise Degraffenreid</name>' +
+          '<phone>+123456789</phone>' +
+          '<parent>eeb17d6d-5dde-c2c0-a0f2a91e2d232c51</parent>' +
+          '<meta>' +
+            '<instanceID>uuid:9bbd57b0-5557-4d69-915c-f8049c81f6d8</instanceID>' +
+          '<deprecatedID/></meta>' +
+        '</person>';
+
+      // when
+      var js = service.recordToJs(xml);
+
+      // then
+      assert.deepEqual(js,
+        {
+          name: 'Denise Degraffenreid',
+          phone: '+123456789',
+          parent: 'eeb17d6d-5dde-c2c0-a0f2a91e2d232c51',
+        });
+    });
+
+    it('should convert a complex record without new instance to JS', function() {
+      // given
+      var xml =
+        '<data id="clinic" version="1">' +
+          '<clinic>' +
+            '<name>A New Catchmnent Area</name>' +
+            '<parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>' +
+            '<contact>abc-123-xyz-987</contact>' +
+          '</clinic>' +
+          '<contact>' +
+            '<name></name>' +
+            '<phone></phone>' +
+          '</contact>' +
+          '<meta>' +
+            '<instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>' +
+          '</meta>' +
+        '</data>';
+
+      // when
+      var js = service.recordToJs(xml);
+
+      // then
+      assert.deepEqual(js, [
+        {
+          name: 'A New Catchmnent Area',
+          parent: 'eeb17d6d-5dde-c2c0-48ac53f275043126',
+          contact: 'abc-123-xyz-987',
+        },
+        {
+          contact: {
+            name: '',
+            phone: '',
+          },
+        }]);
+    });
+
+    it('should convert a complex record with new instance to JS', function() {
+      // given
+      var xml =
+        '<data id="clinic" version="1">' +
+          '<clinic>' +
+            '<name>A New Catchmnent Area</name>' +
+            '<parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>' +
+            '<contact>NEW</contact>' +
+          '</clinic>' +
+          '<contact>' +
+            '<name>Jeremy Fisher</name>' +
+            '<phone>+123456789</phone>' +
+          '</contact>' +
+          '<meta>' +
+            '<instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>' +
+          '</meta>' +
+        '</data>';
+
+      // when
+      var js = service.recordToJs(xml);
+
+      // then
+      assert.deepEqual(js, [
+        {
+          name: 'A New Catchmnent Area',
+          parent: 'eeb17d6d-5dde-c2c0-48ac53f275043126',
+          contact: 'NEW',
+        },
+        {
+          contact: {
+            name: 'Jeremy Fisher',
+            phone: '+123456789',
+          },
+        }]);
+    });
   });
 
 });

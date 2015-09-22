@@ -82,7 +82,9 @@ angular.module('inboxServices').service('Mega', [
     var modelFor = function(schema, rootNode) {
       var node = new N(rootNode || schema.type);
       _.each(schema.fields, function(conf, name) {
-        node.append(new N(name));
+        if(!_.contains([ 'contactfor' ], name)) { // TODO surely this check is unnecessary - contactfor does not appear in any schema
+          node.append(new N(name));
+        }
       });
       return node;
     };
@@ -227,11 +229,14 @@ angular.module('inboxServices').service('Mega', [
       return xml;
     };
 
-    this.jsToFormInstanceData = function(obj) {
+    this.jsToFormInstanceData = function(obj, fields) {
+      if(arguments.length !== 2) {
+        throw new Error('Illegal args.');
+      }
       var root = $('<' + obj.type + '>');
       _.each(obj, function(val, key) {
-        val = val._id || val;
-        if(!/^(_|type$)/.test(key)) {
+        if(_.contains(fields, key)) {
+          val = val._id || val;
           $('<' + key + '>', { text: val }).appendTo(root);
         }
       });

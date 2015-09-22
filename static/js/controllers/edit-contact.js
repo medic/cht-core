@@ -41,6 +41,9 @@ var modal = require('../modules/modal');
       // TODO shouldn't really remove person like this, but it's quite useful
       // in this particular use of `schemas`.  Maybe this var just needs a better
       // name... e.g. `placeSchemas`
+      $scope.dependentPersonSchema = $scope.schemas.person;
+      delete $scope.dependentPersonSchema.fields.parent;
+
       delete $scope.schemas.person;
 
       $scope.setContactType = function(type) {
@@ -53,11 +56,10 @@ var modal = require('../modules/modal');
         // forms, and load this one fresh every time.
         modal.find('.form .container').empty();
         if(true || enketoContainer.find('.container').is(':empty')) {
-          var personSchema = $scope.unmodifiedSchema.person;
-          delete personSchema.fields.parent;
+          // TODO might want to match schemas to fields automatically
 
           Enketo.renderFromXml(enketoContainer,
-              Mega.generateXform($scope.unmodifiedSchema[type], { contact:personSchema }))
+              Mega.generateXform($scope.unmodifiedSchema[type], { contact:$scope.dependentPersonSchema }))
             .then(function(form) {
               $scope.enketo_contact = {
                 type: type,
@@ -93,7 +95,8 @@ var modal = require('../modules/modal');
           };
           $scope.contactId = contact._id;
           $scope.category = contact.type === 'person' ? 'person' : 'place';
-          formInstanceData = Mega.jsToFormInstanceData(contact);
+          var fields = Object.keys($scope.unmodifiedSchema[contact.type].fields);
+          formInstanceData = Mega.jsToFormInstanceData(contact, fields);
         } else {
           $scope.contact = {
             type: contact.type || 'district_hospital'
@@ -135,53 +138,87 @@ var modal = require('../modules/modal');
         // don't `start` the modal until form validation is handled - otherwise
         // fields are disabled, and ignored for validation.
         var pane = modal.start($modal);
-        if(docId) {
-          DB.get().get(docId)
-            .then(function(doc) {
-              $.extend(doc, Enketo.recordToJs(form.getDataStr()));
-              saveDoc(form, pane, doc);
-            });
-        } else {
-          var doc = Enketo.recordToJs(form.getDataStr());
-          doc.type = $scope.enketo_contact.type;
-          saveDoc(form, pane, doc);
-        }
+        Promise.resolve()
+          .then(function() {
+            if(docId) {
+              return DB.get().get(docId);
+            }
+            return null;
+          })
+          .then(function(original) {
+            var submitted = Enketo.recordToJs(form.getDataStr());
+            var extras;
+            if(_.isArray(submitted)) {
+              extras = submitted[1];
+              submitted = submitted[0];
+            } else {
+              extras = {};
+            }
+            if(original) {
+              submitted = $.extend({}, original, submitted);
+            } else {
+              submitted.type = $scope.enketo_contact.type;
+            }
+
+            return saveDoc(submitted, original, extras);
+          })
+          .then(function(doc) {
+            form.resetView();
+            delete $scope.enketo_contact;
+            $rootScope.$broadcast('ContactUpdated', doc);
+            pane.done();
+          })
+          .catch(function(err) {
+            pane.done(translateFilter('Error updating contact'), err);
+          });
       };
 
-      function saveDoc(form, pane, doc) {
-        if(!doc.parent) {
-          doc.parent = {};
-        }
-        if(typeof doc.parent === 'string') {
-          DB.get().get(doc.parent)
-            .then(function(parent) {
-              doc.parent = parent;
-              DB.get().post(doc)
-                .then(function(doc) {
-                  form.resetView();
-                  delete $scope.enketo_contact;
-                  $rootScope.$broadcast('ContactUpdated', doc);
-                  pane.done();
-                })
-                .catch(function(err) {
-                  pane.done(translateFilter('Error updating contact'), err);
+      function saveDoc(doc, original, extras) {
+        return Promise.resolve()
+          .then(function() {
+            var schema = $scope.unmodifiedSchema[doc.type];
+
+            // sequentially update all dirty db fields
+            var result = Promise.resolve(doc);
+            _.each(schema.fields, function(conf, f) {
+              var customType = conf.type.match(/^(db|custom):(.*)$/);
+              if (customType) {
+                result = result.then(function(doc) {
+                  if(!doc[f]) {
+                    doc[f] = {};
+                  } else if(doc[f] === 'NEW') {
+                    var extra = extras[f];
+                    extra.type = customType[2];
+                    return DB.get().post(extra)
+                      .then(function(response) {
+                        return DB.get().get(response.id);
+                      })
+                      .then(function(newlySavedObject) {
+                        doc[f] = newlySavedObject;
+                        return doc;
+                      });
+                  } else if(original && doc[f] === original[f]._id) {
+                    doc[f] = original[f];
+                  } else {
+                    return DB.get().get(doc[f])
+                      .then(function(dbFieldValue) {
+                        doc[f] = dbFieldValue;
+                        return doc;
+                      });
+                  }
+                  return doc;
                 });
-            })
-            .catch(function(err) {
-              pane.done(translateFilter('Error updating contact'), err);
+              }
             });
-        } else {
-          DB.get().post(doc)
-            .then(function(doc) {
-              form.resetView();
-              delete $scope.enketo_contact;
-              $rootScope.$broadcast('ContactUpdated', doc);
-              pane.done();
-            })
-            .catch(function(err) {
-              pane.done(translateFilter('Error updating contact'), err);
-            });
-        }
+            return result;
+          })
+          .then(function(doc) {
+            if(doc._id) {
+              return DB.get().put(doc);
+            } else {
+              return DB.get().post(doc);
+            }
+          });
       }
     }
   ]);

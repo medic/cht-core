@@ -29,6 +29,7 @@ describe('Mega service', function() {
   describe('#jsToFormInstanceData()', function() {
     it('generates simple XML structure when supplied with form JS', function() {
       // given
+      var fields = [ 'name', 'phone', 'code', 'notes', 'parent' ];
       var js = {
         _id: 'abc-123-xyz',
         type: 'person',
@@ -40,7 +41,7 @@ describe('Mega service', function() {
       };
 
       // when
-      var xml = service.jsToFormInstanceData(js);
+      var xml = service.jsToFormInstanceData(js, fields);
 
       // then
       assert.equal(xml,
@@ -63,7 +64,7 @@ describe('Mega service', function() {
       };
 
       // when
-      var xml = service.jsToFormInstanceData(js);
+      var xml = service.jsToFormInstanceData(js, [ 'name', 'parent' ]);
 
       // then
       assert.equal(xml,
@@ -71,6 +72,41 @@ describe('Mega service', function() {
           '<name>huxley</name>' +
           '<parent>xxx-111</parent>' +
         '</person>');
+    });
+
+    it('filters irrelevant fields', function() {
+      var fields = [ 'name', 'contact', 'external_id', 'notes' ];
+      var js = {
+        _id: 'eeb17d6d-5dde-c2c0-a0f2a91e2d232c51',
+        _rev: '7-8be7cf82a68ac40b9653a1ac0207bdba',
+        name: 'District 2',
+        type: 'district_hospital',
+        contact: {
+          phone: '+2884615402',
+          _id: '0abf501d3fbeffaf98bae6c9d6015b9a',
+          name: 'Denise Degraffenreid',
+          type: 'person'
+        },
+        parent: {},
+        external_id: 'XXX',
+        notes: '-- notes here --',
+        parents: [{ some_irrelevant_object:1 }],
+        children: [{ some_irrelevant_object:2 }, { some_irrelevant_object:3 }],
+        contactfor: '',
+        contactFor: []
+      };
+
+      // when
+      var xml = service.jsToFormInstanceData(js, fields);
+
+      // then
+      assert.equal(xml,
+        '<district_hospital>' +
+          '<name>District 2</name>' +
+          '<contact>0abf501d3fbeffaf98bae6c9d6015b9a</contact>' +
+          '<external_id>XXX</external_id>' +
+          '<notes>-- notes here --</notes>' +
+        '</district_hospital>');
     });
   });
 

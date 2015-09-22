@@ -75,7 +75,7 @@ describe('ContactSchema service', function() {
               type: 'text',
             },
             parent: {
-              type: 'facility',
+              type: 'custom:facility',
             },
           },
         });
