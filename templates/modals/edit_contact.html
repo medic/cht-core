@@ -10,7 +10,7 @@
         <div class="form-group" ng-show="category === 'place'">
           <label>{{'Contact type' | translate}} *</label>
           <p class="horizontal-options">
-            <a class="icon" ng-class="{'selected': contact.type === t}" ng-click="setContactType(t)" ng-repeat="(t, props) in schemas">
+            <a class="icon" ng-class="{'selected': contact.type === t}" ng-click="setContactType(t)" ng-repeat="(t, props) in placeSchemas">
               <span class="rectangle">
                 <span class="fa" ng-class="props.icon"></span>{{'contact.type.' + props.type | translate}}
               </span>
@@ -18,22 +18,7 @@
           </p>
         </div>
 
-        <!-- TODO these containers should be generated using ng-repeat -->
-        <div class="person form" ng-show="contact.type === 'person'">
-          <div class="container pages"></div>
-        </div>
-
-        <div class="district_hospital form" ng-show="contact.type === 'district_hospital'">
-          <div class="container pages"></div>
-        </div>
-
-        <div class="health_center form" ng-show="contact.type === 'health_center'">
-          <div class="container pages"></div>
-        </div>
-
-        <div class="clinic form" ng-show="contact.type === 'clinic'">
-          <div class="container pages"></div>
-        </div>
+        <div class="container pages">Some content might help?</div>
 
       </div>
       <div class="modal-footer form-footer">

@@ -37,38 +37,28 @@ var modal = require('../modules/modal');
       populateParents();
 
       $scope.unmodifiedSchema = ContactSchema.get();
-      $scope.schemas = ContactSchema.get();
-      // TODO shouldn't really remove person like this, but it's quite useful
-      // in this particular use of `schemas`.  Maybe this var just needs a better
-      // name... e.g. `placeSchemas`
-      $scope.dependentPersonSchema = $scope.schemas.person;
+      $scope.contactTypes = Object.keys($scope.unmodifiedSchema);
+      $scope.placeSchemas = ContactSchema.get();
+      $scope.dependentPersonSchema = $scope.placeSchemas.person;
       delete $scope.dependentPersonSchema.fields.parent;
 
-      delete $scope.schemas.person;
+      delete $scope.placeSchemas.person;
 
       $scope.setContactType = function(type) {
         $scope.contact.type = type;
 
         var modal = $('#edit-contact');
-        var enketoContainer = modal.find('.form.' + type);
-        // TODO would be nice if we didn't have to reset the form every time
-        // but doesn't work nicely right now.  So instead, discard all other
-        // forms, and load this one fresh every time.
-        modal.find('.form .container').empty();
-        if(true || enketoContainer.find('.container').is(':empty')) {
-          // TODO might want to match schemas to fields automatically
 
-          Enketo.renderFromXml(enketoContainer,
-              Mega.generateXform($scope.unmodifiedSchema[type], { contact:$scope.dependentPersonSchema }))
-            .then(function(form) {
-              $scope.enketo_contact = {
-                type: type,
-                formInstance: form,
-                docId: type === $scope.contact.type? $scope.contactId: null,
-              };
-              $scope.$apply();
-            });
-        }
+        Enketo.renderFromXml(modal,
+            Mega.generateXform($scope.unmodifiedSchema[type], { contact:$scope.dependentPersonSchema }))
+          .then(function(form) {
+            $scope.enketo_contact = {
+              type: type,
+              formInstance: form,
+              docId: type === $scope.contact.type? $scope.contactId: null,
+            };
+            $scope.$apply();
+          });
       };
 
       $scope.$on('ContactUpdated', populateParents);
@@ -99,7 +89,7 @@ var modal = require('../modules/modal');
           formInstanceData = Mega.jsToFormInstanceData(contact, fields);
         } else {
           $scope.contact = {
-            type: contact.type || 'district_hospital'
+            type: contact.type || Object.keys($scope.placeSchemas)[0],
           };
           $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
           $scope.contactId = null;
@@ -107,23 +97,19 @@ var modal = require('../modules/modal');
 
         var modal = $('#edit-contact');
 
-        if(contact.type) {
-          Enketo.renderFromXml(modal.find('.form.' + contact.type),
-              Mega.generateXform($scope.unmodifiedSchema[contact.type]),
-              formInstanceData)
-            .then(function(form) {
-              $scope.enketo_contact = {
-                type: contact.type,
-                formInstance: form,
-                docId: $scope.contactId,
-              };
-            });
-        } else {
-          var types = Object.keys($scope.schemas);
-          $scope.setContactType(types[0] === 'person'? types[1]: types[0]);
-        }
-
-        modal.modal('show');
+        Enketo.renderFromXml(modal,
+            Mega.generateXform($scope.unmodifiedSchema[$scope.contact.type]),
+            formInstanceData)
+          .then(function(form) {
+            $scope.enketo_contact = {
+              type: $scope.contact.type,
+              formInstance: form,
+              docId: $scope.contactId,
+            };
+          })
+          .then(function() {
+            modal.modal('show');
+          }).catch(console.log.bind(console));
       });
 
       $scope.save = function() {
