@@ -53,6 +53,16 @@ describe('ContactSchema service', function() {
       assert.isDefined(service.get().person.fields.parent);
     });
 
+    it('provides a map of objects when called with no args', function() {
+      // expect
+      assert.isDefined(service.get().person);
+    });
+
+    it('provides a specific schema when called with an arg', function() {
+      // expect
+      assert.equal(service.get('person').type, 'person');
+    });
+
     describe('`person`', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().person, {

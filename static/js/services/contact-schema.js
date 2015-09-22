@@ -102,16 +102,24 @@ function normalise(type, schema) {
   return clone;
 }
 
+function getSchema() {
+  return {
+    clinic: normalise('clinic', CLINIC),
+    district_hospital: normalise('district_hospital', DISTRICT_HOSPITAL),
+    health_center: normalise('health_center', HEALTH_CENTER),
+    person: normalise('person', PERSON),
+  };
+}
+
 angular.module('inboxServices').service('ContactSchema', [
   function() {
     return {
       get: function() {
-        return {
-          clinic: normalise('clinic', CLINIC),
-          district_hospital: normalise('district_hospital', DISTRICT_HOSPITAL),
-          health_center: normalise('health_center', HEALTH_CENTER),
-          person: normalise('person', PERSON),
-        };
+        var schema = getSchema();
+        if(arguments.length) {
+          return schema[arguments[0]];
+        }
+        return schema;
       },
     };
   }
