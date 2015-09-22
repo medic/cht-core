@@ -105,9 +105,7 @@
                 <div class="col-sm-4">
                   <a ng-click="select(place.doc._id)">{{place.doc.name}}</a>
                 </div>
-                <div class="col-sm-8">
-                  {{place.doc.parent | clinic}}
-                </div>
+                <div class="col-sm-8" ng-bind-html="place.doc.parent | clinic"></div>
               </li>
             </ul>
           </li>
