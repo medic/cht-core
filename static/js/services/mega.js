@@ -14,9 +14,6 @@ angular.module('inboxServices').service('Mega', [
       getBindingType: function(conf) {
         return conf.type;
       },
-      getInputType: function(conf) {
-        return 'TODO:' + conf;
-      },
       pathTo: function() {
         return '/' + Array.prototype.slice.call(arguments).join('/');
       },
@@ -82,9 +79,7 @@ angular.module('inboxServices').service('Mega', [
     var modelFor = function(schema, rootNode) {
       var node = new N(rootNode || schema.type);
       _.each(schema.fields, function(conf, name) {
-        if(!_.contains([ 'contactfor' ], name)) { // TODO surely this check is unnecessary - contactfor does not appear in any schema
-          node.append(new N(name));
-        }
+        node.append(new N(name));
       });
       return node;
     };
