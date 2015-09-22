@@ -117,8 +117,9 @@ var _ = require('underscore');
 
       $scope.submitReport = function(form) {
         $scope.loadingForm = true;
+        $scope.setActionBar();
         var instanceData = {};
-        if ($scope.selected.type === 'person') {
+        if ($scope.selected.doc.type === 'person') {
           instanceData.patient_id = $state.params.id;
         } else {
           instanceData.place_id = $state.params.id;
@@ -139,9 +140,10 @@ var _ = require('underscore');
         if (contact) {
           if(contact._deleted &&
               $scope.selected &&
-              $scope.selected._id === contact._id) {
+              $scope.selected.doc._id === contact._id) {
             $scope.clearSelected();
-          } else if ($scope.selected && $scope.selected._id === contact._id) {
+          } else if ($scope.selected &&
+              $scope.selected.doc._id === contact._id) {
             $scope.selectContact(contact._id);
           }
         }
