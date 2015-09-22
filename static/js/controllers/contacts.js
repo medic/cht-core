@@ -29,7 +29,13 @@ var _ = require('underscore'),
       $scope.schemaNormalFields = ContactSchema.get();
       // remove special fields with custom display
       _.each($scope.schemaNormalFields, function(schema) {
-        delete schema.fields.name; // TODO we should remove fields set in `title` here, as this may be e.g. first_name+last_name
+        // Remove fields included in the title, so they are not duplicated below
+        // it in the form
+        _.map(schema.title.match(/\{\{[^}]+\}\}/g), function(key) {
+          return key.substring(2, key.length-2);
+        }).forEach(function(key) {
+          delete schema.fields[key];
+        });
         delete schema.fields.parent;
       });
 
