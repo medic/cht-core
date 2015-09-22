@@ -23,8 +23,9 @@ angular.module('inboxServices').service('Mega', [
       },
     };
 
-    var N = function(tagName, text, attrs, children) {
-      this.tagName = tagName;
+    var N = function N(tagName, text, attrs, children) {
+      var self = this;
+      self.tagName = tagName;
       if(arguments.length === 2) {
         if(_.isArray(text)) {
           children = text; text = null;
@@ -34,37 +35,45 @@ angular.module('inboxServices').service('Mega', [
       } else if(arguments.length === 3) {
         if(_.isArray(attrs)) {
           children = attrs; attrs = null;
+          if(typeof text === 'object') {
+            attrs = text;
+            text = null;
+          }
         }
       }
 
-      this.text = text;
-      this.attrs = attrs;
-      this.children = children || [];
+      self.text = text;
+      self.attrs = attrs || {};
+      self.children = children || [];
 
-      this.prepend = function(child) {
-        this.children.unshift(child);
+      self.prepend = function(child) {
+        self.children.unshift(child);
       };
 
-      this.append = function(child) {
-        this.children.push(child);
+      self.append = function(child_or_children) {
+        if(_.isArray(child_or_children)) {
+          self.children = self.children.concat(child_or_children);
+        } else {
+          self.children.push(child_or_children);
+        }
       };
 
-      this.appendTo = function(parent) {
-        parent.children.push(this);
+      self.appendTo = function(parent) {
+        parent.children.push(self);
       };
 
-      this.xml = function() {
-        var xml = '<' + this.tagName;
-        _.each(this.attrs, function(val, name) {
-          xml += ' ' + name + '="' + val + '"';
+      self.xml = function() {
+        var xml = '<' + self.tagName;
+        _.each(Object.keys(self.attrs).sort(), function(key) {
+          xml += ' ' + key + '="' + self.attrs[key] + '"';
         });
-        if(this.text || this.children.length) {
+        if(self.text || self.children.length) {
           xml += '>';
-          if(this.text) {
+          if(self.text) {
             xml += text;
           }
-          if(this.children) {
-            _.each(this.children, function(child) {
+          if(self.children) {
+            _.each(self.children, function(child) {
               xml += child.xml();
             });
           }
@@ -122,8 +131,11 @@ angular.module('inboxServices').service('Mega', [
           });
           instanceContainer.append(meta);
         } else {
-          instance.append(modelFor(principle));
-          instance.append(meta);
+          var modelData = modelFor(principle);
+          modelData.attrs.id = principle.type;
+          modelData.attrs.version = 1;
+          modelData.append(meta);
+          instance.append(modelData);
         }
         // add some meta (not sure what this is for)
 
@@ -152,23 +164,34 @@ angular.module('inboxServices').service('Mega', [
 
       var body = (function generateBody() {
         // N.B. we may not want pages for single-object forms
-        var body = new N('h:body', { class: 'pages' });
+        var body = new N('h:body');
+        if(extras) {
+          body.attrs.class = 'pages';
+        }
+
+        var groupFor = function(schema, mapping) {
+          return new N('group',
+              { appearance: 'field-list', ref: xPath(mapping) },
+              fieldsFor(schema, mapping));
+        };
 
         var fieldsFor = function(schema, mapping) {
-          var group = new N('group', { appearance: 'field-list', ref: xPath(mapping) });
-          _.each(schema.fields, function(conf, f) {
+          return _.map(schema.fields, function(conf, f) {
             var attrs = _.extend({ ref: xPath(mapping, f) }, X.extraAttributesFor(conf));
             var input = new N('input', attrs);
             input.append(new N('label', X.translationFor(schema.type, f)));
-            group.append(input);
+            return input;
           });
-          return group;
         };
 
-        body.append(fieldsFor(principle, principle.type));
+        if(extras) {
+          body.append(groupFor(principle, principle.type));
+        } else {
+          body.append(fieldsFor(principle, principle.type));
+        }
 
         _.each(extras, function(extra, mapping) {
-          var group = fieldsFor(extra, mapping);
+          var group = groupFor(extra, mapping);
           group.prepend(new N('label', X.translationFor(extra.type, 'new')));
           body.append(group);
         });
@@ -181,47 +204,9 @@ angular.module('inboxServices').service('Mega', [
     };
 
     this.generateXform = function(schema, options) {
-      if(options) {
+      if(options || true) {
         return generateXformWithOptions(schema, options);
       }
-      var type = schema.type;
-      var dataNode = type;
-      var xml = '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
-          '<h:head>' +
-          '<h:title>' + X.translationFor(type, 'new') + '</h:title>' +
-          '<model><instance>' +
-          '<' + dataNode + ' id="' + type + '" version="1">';
-      _.forEach(schema.fields, function(conf, f) {
-        xml += '<' + f + '/>';
-      });
-      xml += '<meta><instanceID/></meta>' +
-          '</' + dataNode + '>' +
-          '</instance>';
-      _.forEach(schema.fields, function(conf, f) {
-        var dataType = X.getBindingType(conf),
-            path = X.pathTo(dataNode, f);
-        xml += '<bind nodeset="' + path + '" ';
-        if(conf.required) {
-          xml += 'required="true()" ';
-        }
-        xml += 'type="' + dataType + '"/>';
-      });
-      xml += '</model></h:head><h:body>';
-      _.forEach(schema.fields, function(conf, f) {
-        var path = X.pathTo(dataNode, f),
-            tr = X.translationFor(type, f),
-            extras = X.extraAttributesFor(conf);
-        xml += '<input ref="' + path + '"';
-        var extraString = _.map(extras, function(val, name) {
-          return name + '="' + val + '"';
-        }).join(' ');
-        if(extraString) {
-          xml += ' ' + extraString;
-        }
-        xml += '><label>' + tr + '</label></input>';
-      });
-      xml += '</h:body></h:html>';
-      return xml;
     };
 
     this.jsToFormInstanceData = function(obj, fields) {

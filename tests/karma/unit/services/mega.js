@@ -212,7 +212,7 @@ describe('Mega service', function() {
             '<loc/><meta><instanceID/></meta></person></instance>' +
             '<bind nodeset="/person/loc" type="db:location"/></model></h:head>' +
           '<h:body>' +
-            '<input ref="/person/loc" appearance="db-object">' +
+            '<input appearance="db-object" ref="/person/loc">' +
               '<label>{{\'person.loc\' | translate}}</label></input>' +
           '</h:body></h:html>');
     });
@@ -292,20 +292,20 @@ describe('Mega service', function() {
           '<contact><name/><phonenumber/></contact>' +
           '<meta><instanceID/></meta>' +
           '</data></instance>' +
-          '<bind nodeset="/data/clinic/name" type="string" required="true()"/>' +
+          '<bind nodeset="/data/clinic/name" required="true()" type="string"/>' +
           '<bind nodeset="/data/clinic/external_id" type="string"/>' +
           '<bind nodeset="/data/clinic/parent" type="db:district_hospital"/>' +
-          '<bind nodeset="/data/clinic/contact" type="db:person" required="true()"/>' +
+          '<bind nodeset="/data/clinic/contact" required="true()" type="db:person"/>' +
           '<bind nodeset="/data/contact" relevant="/data/clinic/contact = \'NEW\'"/>' +
-          '<bind nodeset="/data/contact/name" type="string" required="true()"/>' +
-          '<bind nodeset="/data/contact/phonenumber" type="phone" required="true()"/>' +
+          '<bind nodeset="/data/contact/name" required="true()" type="string"/>' +
+          '<bind nodeset="/data/contact/phonenumber" required="true()" type="phone"/>' +
           '</model></h:head>' +
           '<h:body class="pages">' +
           '<group appearance="field-list" ref="/data/clinic">' +
           '<input ref="/data/clinic/name"><label>{{\'clinic.name\' | translate}}</label></input>' +
           '<input ref="/data/clinic/external_id"><label>{{\'clinic.external_id\' | translate}}</label></input>' +
-          '<input ref="/data/clinic/parent" appearance="db-object"><label>{{\'clinic.parent\' | translate}}</label></input>' +
-          '<input ref="/data/clinic/contact" appearance="db-object"><label>{{\'clinic.contact\' | translate}}</label></input>' +
+          '<input appearance="db-object" ref="/data/clinic/parent"><label>{{\'clinic.parent\' | translate}}</label></input>' +
+          '<input appearance="db-object" ref="/data/clinic/contact"><label>{{\'clinic.contact\' | translate}}</label></input>' +
           '</group>' +
           '<group appearance="field-list" ref="/data/contact">' +
           '<label>{{\'person.new\' | translate}}</label>' +
