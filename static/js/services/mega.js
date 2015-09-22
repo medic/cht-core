@@ -70,7 +70,10 @@ angular.module('inboxServices').service('Mega', [
         if(self.text || self.children.length) {
           xml += '>';
           if(self.text) {
-            xml += text;
+            xml += self.text
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
           }
           if(self.children) {
             _.each(self.children, function(child) {
@@ -210,17 +213,13 @@ angular.module('inboxServices').service('Mega', [
     };
 
     this.jsToFormInstanceData = function(obj, fields) {
-      if(arguments.length !== 2) {
-        throw new Error('Illegal args.');
-      }
-      var root = $('<' + obj.type + '>');
+      var root = new N(obj.type);
       _.each(obj, function(val, key) {
         if(_.contains(fields, key)) {
-          val = val._id || val;
-          $('<' + key + '>', { text: val }).appendTo(root);
+          root.append(new N(key, val._id || val));
         }
       });
-      return root[0].outerHTML;
+      return root.xml();
     };
   }
 ]);
