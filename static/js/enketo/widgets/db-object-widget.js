@@ -35,6 +35,7 @@ define( function( require, exports, module ) {
 
     Dbobjectwidget.prototype._init = function() {
         var DB = angular.element(document.body).injector().get('DB').get();
+        var ContactSchema = angular.element(document.body).injector().get('ContactSchema');
         var e = $(this.element);
 
         var loader = $('<div class="loader"/></div>');
@@ -45,8 +46,7 @@ define( function( require, exports, module ) {
         container.append(loader);
         textInput.replaceWith(container);
 
-        // TODO this may be configured per-type
-        var titleString = '{{name}} ({{phone}})';
+        var titleString = ContactSchema.get(dbObjectType).title;
         var titleFor = function(doc) {
             return titleString.replace(/\{\{[^}]*\}\}/g, function(m) {
                 return doc[m.substring(2, m.length-2)];
