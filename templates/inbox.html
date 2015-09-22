@@ -7,7 +7,11 @@
     <link rel="shortcut icon" href="{baseURL}/static/img/ico/icon_48.ico">
     <title>Medic Mobile</title>
   </head>
-  <body class="inbox {~lb}{~lb}filterModel.type{~rb}{~rb}" ng-controller="InboxCtrl" ng-class="{'show-content': showContent}" ng-cloak>
+  <body class="inbox {~lb}{~lb}filterModel.type{~rb}{~rb}" ng-controller="InboxCtrl" ng-class="{'show-content': showContent, 'bootstrapped': version}">
+
+    <div class="bootstrap-layer">
+      <div class="loader"></div>
+    </div>
 
     <ng-include src="'templates/partials/actionbar.html'"></ng-include>
 

@@ -367,7 +367,8 @@ _.templateSettings = {
         })
         .then(bootstrapApplication)
         .catch(function(err) {
-          console.error('Could not get ddoc from remote server. Check your connection and try again.', err);
+          $('.bootstrap-layer').html('<div>Loading error. Check your connection and try again.</div>');
+          console.error('Error fetching ddoc from remote server', err);
         });
     });
 

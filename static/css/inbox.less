@@ -66,6 +66,22 @@ body {
   }
 }
 
+.bootstrap-layer {
+  z-index: 1;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bootstrapped .bootstrap-layer {
+  display: none;
+}
+
 .row .inner {
   max-width: @content-width;
   margin: 0 auto;
