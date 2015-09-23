@@ -10,6 +10,12 @@ var modal = require('../modules/modal');
     ['$q', '$scope', '$rootScope', 'translateFilter', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'Mega',
     function ($q, $scope, $rootScope, translateFilter, ContactSchema, DbView, DB, Enketo, Mega) {
 
+      $(document).on('hidden.bs.modal', '#edit-contact', function() {
+        $(this).find('.form-wrapper .container').empty();
+        Enketo.unload($scope.enketo_contact && $scope.enketo_contact.formInstance);
+        delete $scope.enketo_contact;
+      });
+
       var populateParents = function() {
         var options = {
           params: {
