@@ -132,7 +132,7 @@ angular.module('inboxServices').service('Enketo', [
         });
     };
 
-    var __rToJs = function(data) {
+    var nodesToJs = function(data) {
       var fields = {};
       for(var i = 0; i < data.length; ++i) {
         var n = data[i];
@@ -160,11 +160,11 @@ angular.module('inboxServices').service('Enketo', [
             first = child;
             return;
           }
-          siblings[child.nodeName] = __rToJs(child.childNodes);
+          siblings[child.nodeName] = nodesToJs(child.childNodes);
         });
-        return [ __rToJs(first.childNodes), siblings ];
+        return [ nodesToJs(first.childNodes), siblings ];
       }
-      return __rToJs(root.childNodes);
+      return nodesToJs(root.childNodes);
     };
     this.recordToJs = recordToJs;
 
