@@ -138,7 +138,7 @@ var modal = require('../modules/modal');
             return null;
           })
           .then(function(original) {
-            var submitted = Enketo.recordToJs(form.getDataStr());
+            var submitted = EnketoTranslation.recordToJs(form.getDataStr());
             var extras;
             if(_.isArray(submitted)) {
               extras = submitted[1];
