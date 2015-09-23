@@ -224,14 +224,13 @@ angular.module('inboxServices').service('EnketoTranslation', [
 
     var nodesToJs = function(data) {
       var fields = {};
-      for(var i = 0; i < data.length; ++i) {
-        var n = data[i];
+      _.each(data, function(n) {
         if(n.nodeType !== Node.ELEMENT_NODE ||
             n.nodeName === 'meta') {
-          continue;
+          return;
         }
         fields[n.nodeName] = n.textContent;
-      }
+      });
       return fields;
     };
 
