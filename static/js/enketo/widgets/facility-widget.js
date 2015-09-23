@@ -53,7 +53,11 @@ define( function( require, exports, module ) {
             });
         };
 
-        DB.query('medic/facilities', {include_docs:true})
+        var placeTypes = _.map(_.without(Object.keys(ContactSchema.get()), 'person'), function(type) {
+            return [ type ];
+        });
+
+        DB.query('medic/doc_by_type', { include_docs: true, keys: placeTypes })
             .then(function(res) {
                 loader.remove();
                 var selecter = $('<select/>');
