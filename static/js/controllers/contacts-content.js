@@ -144,7 +144,7 @@ var _ = require('underscore');
             $scope.clearSelected();
           } else if ($scope.selected &&
               $scope.selected.doc._id === contact._id) {
-            $scope.selectContact(contact._id);
+            selectContact(contact._id);
           }
         }
       });
