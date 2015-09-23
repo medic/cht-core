@@ -164,6 +164,41 @@ describe('EnketoTranslation service', function() {
           '</h:body></h:html>');
     });
 
+    it('handles text data type', function() {
+      // given
+      var schema = {
+        type: 'dog',
+        title: '{{name}}',
+        fields: {
+          name: {
+            type: 'string',
+            required: true,
+          },
+          habits: {
+            type: 'text',
+          },
+        }
+      };
+
+      // when
+      var xform = service.generateXform(schema);
+
+      // then
+      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head><h:title>contact.type.dog.new</h:title>' +
+          '<model><instance><dog id="dog" version="1">' +
+            '<name/><habits/><meta><instanceID/></meta></dog></instance>' +
+            '<bind nodeset="/dog/name" required="true()" type="string"/>' +
+            '<bind nodeset="/dog/habits" type="text"/>' +
+          '</model></h:head>' +
+          '<h:body>' +
+            '<input ref="/dog/name">' +
+              '<label>dog.field.name</label></input>' +
+            '<input appearance="multiline" ref="/dog/habits">' +
+              '<label>dog.field.habits</label></input>' +
+          '</h:body></h:html>');
+    });
+
+
     it('handles phone number data type', function() {
       // given
       var schema = {

@@ -75,6 +75,8 @@ angular.module('inboxServices').service('EnketoTranslation', [
         var typeString = conf.type;
         if(/^db:/.test(typeString)) {
           extras.appearance = 'db-object';
+        } else if(typeString === 'text') {
+          extras.appearance = 'multiline';
         }
         return extras;
       },
