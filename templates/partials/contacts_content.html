@@ -50,7 +50,7 @@
             <label>{{'Contact' | translate}}</label>
             <p>
               <span ng-show="!selected.doc.contact._id">{{selected.doc.contact.name}}</span>
-              <a ng-click="select(selected.doc.contact._id)" ng-show="selected.doc.contact._id">{{selected.doc.contact.name}}</a>
+              <a ui-sref="contacts.detail({ id: selected.doc.contact._id })" ng-show="selected.doc.contact._id">{{selected.doc.contact.name}}</a>
             </p>
           </li>
           <li>
@@ -76,7 +76,7 @@
             <label ng-show="selected.doc.parent.type === 'health_center'">{{'Health Center' | translate}}</label>
             <label ng-show="selected.doc.parent.type === 'district_hospital'">{{'District Hospital' | translate}}</label>
             <p>
-              <a ng-click="select(selected.doc.parent._id)">
+              <a ui-sref="contacts.detail({ id: selected.doc.parent._id })">
                 {{selected.doc.parent.name}}
               </a>
             </p>
@@ -85,7 +85,7 @@
             <label ng-show="selected.doc.parent.parent.type === 'health_center'">{{'Health Center' | translate}}</label>
             <label ng-show="selected.doc.parent.parent.type === 'district_hospital'">{{'District Hospital' | translate}}</label>
             <p>
-              <a ng-click="select(selected.doc.parent.parent._id)">
+              <a ui-sref="contacts.detail({ id: selected.doc.parent.parent._id })">
                 {{selected.doc.parent.parent.name}}
               </a>
             </p>
@@ -93,7 +93,7 @@
           <li ng-if="selected.doc.parent.parent.parent._id">
             <label>{{'District Hospital' | translate}}</label>
             <p>
-              <a ng-click="select(selected.doc.parent.parent.parent._id)">
+              <a ui-sref="contacts.detail({ id: selected.doc.parent.parent.parent._id })">
                 {{selected.doc.parent.parent.parent.name}}
               </a>
             </p>
@@ -103,7 +103,7 @@
             <ul>
               <li class="row" ng-repeat="place in selected.contactFor">
                 <div class="col-sm-4">
-                  <a ng-click="select(place.doc._id)">{{place.doc.name}}</a>
+                  <a ui-sref="contacts.detail({ id: place.doc._id })">{{place.doc.name}}</a>
                 </div>
                 <div class="col-sm-8" ng-bind-html="place.doc.parent | clinic"></div>
               </li>
@@ -116,7 +116,7 @@
             <ul>
               <li class="row" ng-repeat="child in selected.children">
                 <div class="col-sm-4">
-                  <a ng-click="select(child.doc._id)">{{child.doc.name}}</a>
+                  <a ui-sref="contacts.detail({ id: child.doc._id })">{{child.doc.name}}</a>
                 </div>
                 <div class="col-sm-4">
                   {{child.doc.contact.name}}
