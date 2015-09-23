@@ -4,6 +4,7 @@ var _ = require('underscore');
 angular.module('inboxServices').service('Enketo', [
   '$window', '$log', '$q', 'DB', 'XSLT', 'FileReader', 'UserSettings', 'Auth',
   function($window, $log, $q, DB, XSLT, FileReader, UserSettings, Auth) {
+    var self = this;
     var objUrls = [];
 
     var replaceJavarosaMediaWithLoaders = function(formDocId, form) {
@@ -93,54 +94,42 @@ angular.module('inboxServices').service('Enketo', [
       return instanceRoot.html();
     };
 
+    var renderFromXmls = function(doc, wrapper, instanceStr) {
+      wrapper.find('.form-footer')
+             .addClass('end')
+             .find('.previous-page,.next-page')
+             .addClass('disabled');
+      var formContainer = wrapper.find('.container').first();
+      formContainer.html(doc.html);
+      if (_.isObject(instanceStr)) {
+        instanceStr = getInstanceStrFromJson(doc.model, instanceStr);
+      }
+      var form = new EnketoForm(wrapper.find('form').first(), {
+        modelStr: doc.model,
+        instanceStr: instanceStr
+      });
+      var loadErrors = form.init();
+      if (loadErrors && loadErrors.length) {
+        return $q.reject(loadErrors);
+      }
+      wrapper.show();
+      return form;
+    };
+
     this.render = function(wrapper, formInternalId, instanceStr) {
       return checkPermissions()
         .then(function() {
           return withFormByFormInternalId(formInternalId)
-            .then(function(doc) {
-              wrapper.find('.form-footer')
-                     .addClass('end')
-                     .find('.previous-page,.next-page')
-                     .addClass('disabled');
-              var formContainer = wrapper.find('.container').first();
-              formContainer.html(doc.html);
-              if (_.isObject(instanceStr)) {
-                instanceStr = getInstanceStrFromJson(doc.model, instanceStr);
-              }
-              var form = new EnketoForm(wrapper.find('form').first(), {
-                modelStr: doc.model,
-                instanceStr: instanceStr
-              });
-              var loadErrors = form.init();
-              if (loadErrors && loadErrors.length) {
-                return $q.reject(loadErrors);
-              }
-              wrapper.show();
-              return $q.resolve(form);
-            });
-          });
+        })
+        .then(function(doc) {
+          return renderFromXmls(doc, wrapper, instanceStr);
+        });
     };
 
-    this.renderFromXml = function(wrapper, xmlString, formInstanceData) {
+    this.renderFromXmlString = function(wrapper, xmlString, formInstanceData) {
       return transformXml($.parseXML(xmlString))
         .then(function(doc) {
-          // TODO refactor with `.render()` when upstream changes have been merged
-          wrapper.find('.form-footer')
-                 .addClass('end')
-                 .find('.previous-page,.next-page')
-                 .addClass('disabled');
-          var formContainer = wrapper.find('.container').first();
-          formContainer.html(doc.html);
-          var form = new EnketoForm(wrapper.find('form').first(), {
-            modelStr: doc.model,
-            instanceStr: formInstanceData
-          });
-          var loadErrors = form.init();
-          if (loadErrors && loadErrors.length) {
-            return Promise.reject(loadErrors);
-          }
-          wrapper.show();
-          return Promise.resolve(form);
+          return renderFromXmls(doc, wrapper, formInstanceData);
         });
     };
 

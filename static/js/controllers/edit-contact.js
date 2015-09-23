@@ -55,7 +55,7 @@ var modal = require('../modules/modal');
 
         var modal = $('#edit-contact');
 
-        Enketo.renderFromXml(modal,
+        Enketo.renderFromXmlString(modal,
             Mega.generateXform($scope.unmodifiedSchema[type], { contact:$scope.dependentPersonSchema }))
           .then(function(form) {
             $scope.enketo_contact = {
@@ -103,7 +103,7 @@ var modal = require('../modules/modal');
 
         var modal = $('#edit-contact');
 
-        Enketo.renderFromXml(modal,
+        Enketo.renderFromXmlString(modal,
             Mega.generateXform($scope.unmodifiedSchema[$scope.contact.type]),
             formInstanceData)
           .then(function(form) {
