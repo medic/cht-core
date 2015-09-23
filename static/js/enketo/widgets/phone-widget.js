@@ -66,6 +66,6 @@ define( function( require, exports, module ) {
 
     module.exports = {
         'name': pluginName,
-        'selector': 'input[data-type-xml=phone]', // TODO we don't use this right now, so perhaps unnecessary?
+        'selector': '',
     };
 } );
