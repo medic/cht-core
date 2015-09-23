@@ -221,5 +221,40 @@ angular.module('inboxServices').service('EnketoTranslation', [
       });
       return root.xml();
     };
+
+    var nodesToJs = function(data) {
+      var fields = {};
+      for(var i = 0; i < data.length; ++i) {
+        var n = data[i];
+        if(n.nodeType !== Node.ELEMENT_NODE ||
+            n.nodeName === 'meta') {
+          continue;
+        }
+        fields[n.nodeName] = n.textContent;
+      }
+      return fields;
+    };
+
+    /** TODO this method should take `record` as XML - provided by enketo-form.getModel().getXML() - rather than taking a string and then parsing it */
+    this.recordToJs = function(record) {
+      var root = $.parseXML(record).firstChild;
+      if(root.nodeName === 'data') {
+        var siblings = {};
+        var first = null;
+        _.each(root.childNodes, function(child) {
+          if(child.nodeType !== Node.ELEMENT_NODE ||
+              child.nodeName === 'meta') {
+            return;
+          }
+          if(!first) {
+            first = child;
+            return;
+          }
+          siblings[child.nodeName] = nodesToJs(child.childNodes);
+        });
+        return [ nodesToJs(first.childNodes), siblings ];
+      }
+      return nodesToJs(root.childNodes);
+    };
   }
 ]);
