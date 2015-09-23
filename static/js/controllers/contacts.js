@@ -15,6 +15,9 @@ var _ = require('underscore'),
       $scope.contacts = [];
       $scope.selected = null;
 
+      $scope.schema = ContactSchema.get();
+      $scope.schemaNormalFields = ContactSchema.getWithoutSpecialFields();
+
       $scope.titleFor = function(doc) {
         if(!doc) {
           return '';
@@ -24,20 +27,6 @@ var _ = require('underscore'),
           return doc[name];
         });
       };
-
-      $scope.schema = ContactSchema.get();
-      $scope.schemaNormalFields = ContactSchema.get();
-      // remove special fields with custom display
-      _.each($scope.schemaNormalFields, function(schema) {
-        // Remove fields included in the title, so they are not duplicated below
-        // it in the form
-        _.map(schema.title.match(/\{\{[^}]+\}\}/g), function(key) {
-          return key.substring(2, key.length-2);
-        }).forEach(function(key) {
-          delete schema.fields[key];
-        });
-        delete schema.fields.parent;
-      });
 
       $scope.selectedSchema = function() {
         return $scope.selected && $scope.schema[$scope.selected.doc.type];

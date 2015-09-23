@@ -10,6 +10,14 @@ var modal = require('../modules/modal');
     ['$q', '$scope', '$rootScope', 'translateFilter', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'EnketoTranslation',
     function ($q, $scope, $rootScope, translateFilter, ContactSchema, DbView, DB, Enketo, EnketoTranslation) {
 
+      $scope.unmodifiedSchema = ContactSchema.get();
+      $scope.contactTypes = Object.keys($scope.unmodifiedSchema);
+      $scope.placeSchemas = ContactSchema.get();
+      $scope.dependentPersonSchema = $scope.placeSchemas.person;
+      delete $scope.dependentPersonSchema.fields.parent;
+      delete $scope.placeSchemas.person;
+
+      // Close listener for modal to discard Enketo data
       $(document).on('hidden.bs.modal', '#edit-contact', function() {
         $(this).find('.form-wrapper .container').empty();
         Enketo.unload($scope.enketo_contact && $scope.enketo_contact.formInstance);
@@ -41,14 +49,6 @@ var modal = require('../modules/modal');
       };
 
       populateParents();
-
-      $scope.unmodifiedSchema = ContactSchema.get();
-      $scope.contactTypes = Object.keys($scope.unmodifiedSchema);
-      $scope.placeSchemas = ContactSchema.get();
-      $scope.dependentPersonSchema = $scope.placeSchemas.person;
-      delete $scope.dependentPersonSchema.fields.parent;
-
-      delete $scope.placeSchemas.person;
 
       $scope.setContactType = function(type) {
         $scope.contact.type = type;

@@ -121,6 +121,22 @@ angular.module('inboxServices').service('ContactSchema', [
         }
         return schema;
       },
+      getWithoutSpecialFields: function() {
+        // return a modified schema, missing special fields such as `parent`, and
+        // anything included in the `title` attribute
+        var schema = getSchema();
+        _.each(schema, function(s) {
+          // Remove fields included in the title, so they are not duplicated below
+          // it in the form
+          _.map(s.title.match(/\{\{[^}]+\}\}/g), function(key) {
+            return key.substring(2, key.length-2);
+          }).forEach(function(key) {
+            delete s.fields[key];
+          });
+          delete s.fields.parent;
+        });
+        return schema;
+      },
     };
   }
 ]);
