@@ -1,4 +1,4 @@
-describe('Mega service', function() {
+describe('EnketoTranslation service', function() {
   'use strict';
 
   var service,
@@ -17,8 +17,8 @@ describe('Mega service', function() {
 
   beforeEach(function() {
     module('inboxApp');
-    inject(function(_Mega_) {
-      service = _Mega_;
+    inject(function(_EnketoTranslation_) {
+      service = _EnketoTranslation_;
     });
   });
 

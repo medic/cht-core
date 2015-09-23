@@ -20,6 +20,7 @@
   require('./download-url');
   require('./edit-group');
   require('./enketo');
+  require('./enketo-translation');
   require('./facility');
   require('./facility-hierarchy');
   require('./file-reader');
@@ -33,7 +34,6 @@
   require('./kanso-packages');
   require('./language');
   require('./mark-read');
-  require('./mega');
   require('./message-contacts');
   require('./message-state');
   require('./outgoing-messages-configuration');

@@ -7,8 +7,8 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditContactCtrl',
-    ['$q', '$scope', '$rootScope', 'translateFilter', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'Mega',
-    function ($q, $scope, $rootScope, translateFilter, ContactSchema, DbView, DB, Enketo, Mega) {
+    ['$q', '$scope', '$rootScope', 'translateFilter', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'EnketoTranslation',
+    function ($q, $scope, $rootScope, translateFilter, ContactSchema, DbView, DB, Enketo, EnketoTranslation) {
 
       $(document).on('hidden.bs.modal', '#edit-contact', function() {
         $(this).find('.form-wrapper .container').empty();
@@ -56,7 +56,7 @@ var modal = require('../modules/modal');
         var modal = $('#edit-contact');
 
         Enketo.renderFromXmlString(modal,
-            Mega.generateXform($scope.unmodifiedSchema[type], { contact:$scope.dependentPersonSchema }))
+            EnketoTranslation.generateXform($scope.unmodifiedSchema[type], { contact:$scope.dependentPersonSchema }))
           .then(function(form) {
             $scope.enketo_contact = {
               type: type,
@@ -92,7 +92,7 @@ var modal = require('../modules/modal');
           $scope.contactId = contact._id;
           $scope.category = contact.type === 'person' ? 'person' : 'place';
           var fields = Object.keys($scope.unmodifiedSchema[contact.type].fields);
-          formInstanceData = Mega.jsToFormInstanceData(contact, fields);
+          formInstanceData = EnketoTranslation.jsToFormInstanceData(contact, fields);
         } else {
           $scope.contact = {
             type: contact.type || Object.keys($scope.placeSchemas)[0],
@@ -104,7 +104,7 @@ var modal = require('../modules/modal');
         var modal = $('#edit-contact');
 
         Enketo.renderFromXmlString(modal,
-            Mega.generateXform($scope.unmodifiedSchema[$scope.contact.type]),
+            EnketoTranslation.generateXform($scope.unmodifiedSchema[$scope.contact.type]),
             formInstanceData)
           .then(function(form) {
             $scope.enketo_contact = {

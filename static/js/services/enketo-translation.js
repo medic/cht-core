@@ -66,7 +66,7 @@ function N(tagName, text, attrs, children) {
 }
 
 
-angular.module('inboxServices').service('Mega', [
+angular.module('inboxServices').service('EnketoTranslation', [
   'translateFilter',
   function(translateFilter) {
     var X = {
