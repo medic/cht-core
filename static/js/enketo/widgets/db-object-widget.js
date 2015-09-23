@@ -36,8 +36,8 @@ define( function( require, exports, module ) {
     Dbobjectwidget.prototype._init = function() {
         var angularServices = angular.element(document.body).injector();
         var translate = angularServices.get('translateFilter');
-        var DB = angularServices.get('DB').get();
         var ContactSchema = angularServices.get('ContactSchema');
+        var DB = angularServices.get('DB').get();
         var e = $(this.element);
 
         var loader = $('<div class="loader"/></div>');

@@ -34,7 +34,9 @@ define( function( require, exports, module ) {
     Facilitywidget.prototype.constructor = Facilitywidget;
 
     Facilitywidget.prototype._init = function() {
-        var DB = angular.element(document.body).injector().get('DB').get();
+        var angularServices = angular.element(document.body).injector();
+        var ContactSchema = angularServices.get('ContactSchema');
+        var DB = angularServices.get('DB').get();
         var e = $(this.element).parent();
 
         var loader = $('<div class="loader"/></div>');
@@ -44,9 +46,8 @@ define( function( require, exports, module ) {
         container.append(loader);
         textInput.replaceWith(container);
 
-        // TODO this may be configured per-type
-        var titleString = '{{name}}';
         var titleFor = function(doc) {
+            var titleString = ContactSchema.get(doc.type).title;
             return titleString.replace(/\{\{[^}]*\}\}/g, function(m) {
                 return doc[m.substring(2, m.length-2)];
             });
