@@ -29,7 +29,7 @@ var _ = require('underscore'),
         });
 
         if (options.skip) {
-          options.skip = $scope.items.length;
+          options.skip = $scope.contacts.length;
         }
         Search($scope, options, function(err, data) {
           $scope.loading = false;
@@ -40,7 +40,9 @@ var _ = require('underscore'),
           }
           $scope.moreItems = data.length >= options.limit;
           if (options.skip) {
-            $scope.items.push.apply($scope.items, data);
+            $timeout(function() {
+              $scope.contacts.push.apply($scope.contacts, data);
+            });
           } else {
             $scope.contacts = data;
             scrollLoader.init(function() {
@@ -101,7 +103,7 @@ var _ = require('underscore'),
           return;
         }
         $state.go('contacts.detail', { id: contact._id });
-        var outdated = _.findWhere($scope.items, { _id: contact._id });
+        var outdated = _.findWhere($scope.contacts, { _id: contact._id });
         if (!outdated) {
           return $scope.query({ stay: true });
         }
