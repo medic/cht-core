@@ -85,6 +85,8 @@ var _ = require('underscore');
 
             var refreshing = ($scope.selected && $scope.selected._id) === id;
             $scope.setSelected(doc);
+
+            return doc;
           });
       };
 
