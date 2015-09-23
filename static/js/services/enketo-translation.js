@@ -234,7 +234,6 @@ angular.module('inboxServices').service('EnketoTranslation', [
       return fields;
     };
 
-    /** TODO this method should take `record` as XML - provided by enketo-form.getModel().getXML() - rather than taking a string and then parsing it */
     this.recordToJs = function(record) {
       var root = $.parseXML(record).firstChild;
       if(root.nodeName === 'data') {
