@@ -97,8 +97,6 @@ angular.module('inboxServices').service('Mega', [
     };
 
     var generateXformWithOptions = function(principle, extras) {
-      console.log('generateXformWithOptions()', principle, extras);
-
       var xPath = function() {
         var path = Array.prototype.slice.call(arguments).join('/');
         if(extras) {

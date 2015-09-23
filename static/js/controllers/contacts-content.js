@@ -78,7 +78,6 @@ var _ = require('underscore');
 
             var parent = selected.doc.parent;
             while(parent && Object.keys(parent).length) {
-              console.log('Pushing parent: ' + JSON.stringify(parent));
               selected.parents.push(parent);
               parent = parent.parent;
             }
@@ -115,7 +114,7 @@ var _ = require('underscore');
           })
           .catch(function(err) {
             $scope.clearSelected();
-            console.log('Error fetching doc', err);
+            console.error('Error fetching doc', err);
           });
       };
 

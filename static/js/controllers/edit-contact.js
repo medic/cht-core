@@ -7,8 +7,8 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditContactCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'Mega',
-    function ($scope, $rootScope, translateFilter, ContactSchema, DbView, DB, Enketo, Mega) {
+    ['$q', '$scope', '$rootScope', 'translateFilter', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'Mega',
+    function ($q, $scope, $rootScope, translateFilter, ContactSchema, DbView, DB, Enketo, Mega) {
 
       var populateParents = function() {
         var options = {
@@ -109,7 +109,7 @@ var modal = require('../modules/modal');
           })
           .then(function() {
             modal.modal('show');
-          }).catch(console.log.bind(console));
+          }).catch(console.error.bind(console));
       });
 
       $scope.save = function() {
@@ -119,7 +119,7 @@ var modal = require('../modules/modal');
 
         form.validate();
         if(!form.isValid()) {
-          return console.log('[enketo] form invalid');
+          return $q.reject(new Error('Form is invalid'));
         }
         // don't `start` the modal until form validation is handled - otherwise
         // fields are disabled, and ignored for validation.
