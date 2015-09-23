@@ -40,11 +40,11 @@ var _ = require('underscore'),
       });
 
       $scope.selectedSchema = function() {
-        return $scope.selected && $scope.schema[$scope.selected.type];
+        return $scope.selected && $scope.schema[$scope.selected.doc.type];
       };
 
       $scope.selectedSchemaNormalFields = function() {
-        return $scope.selected && $scope.schemaNormalFields[$scope.selected.type].fields;
+        return $scope.selected && $scope.schemaNormalFields[$scope.selected.doc.type].fields;
       };
 
       $scope.query = function(options) {

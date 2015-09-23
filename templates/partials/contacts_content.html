@@ -35,21 +35,20 @@
       </div>
 
       <div class="body">
-        <h2>{{titleFor(selected)}}</h2>
+        <h2>{{titleFor(selected.doc)}}</h2>
         <h5>{{'contact.type.' + selected.doc.type | translate}}</h5>
         <ul>
           <li ng-repeat="(name, conf) in selectedSchemaNormalFields()">
             <label>{{selected.doc.type + '.field.' + name | translate}}</label>
             <p>
-              <!-- TODO links to `select()` should probably be using ui-sref instead -->
-              <span ng-if="conf.type === 'phone'"><a href="tel:{{selected[name]}}">{{selected[name]}}</a></span>
-              <span ng-if="conf.type.indexOf('db:') === 0"><a ng-click="select(selected[name]._id)">{{titleFor(selected[name])}}</a></span>
-              <span ng-if="conf.type !== 'phone' && conf.type.indexOf('db:') !== 0">{{selected[name]}}</span>
+              <span ng-if="conf.type === 'phone'"><a href="tel:{{selected.doc[name]}}">{{selected.doc[name]}}</a></span>
+              <span ng-if="conf.type.indexOf('db:') === 0"><a ui-sref="contacts.detail({ id: selected.doc[name]._id })">{{titleFor(selected.doc[name])}}</a></span>
+              <span ng-if="conf.type !== 'phone' && conf.type.indexOf('db:') !== 0">{{selected.doc[name]}}</span>
             </p>
           </li>
           <li ng-repeat="parent in selected.parents">
             <label>{{'contact.type.' + parent.type | translate}}</label>
-            <p><a ng-click="select(parent._id)">{{titleFor(parent)}}</a></p>
+            <p><a ui-sref="contacts.detail({ id: parent._id })">{{titleFor(parent)}}</a></p>
           </li>
           <li ng-if="selected.contactFor.length">
             <label>{{'Primary Contact For' | translate}}</label>

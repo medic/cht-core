@@ -68,7 +68,7 @@ var _ = require('underscore');
           getReports(id)
         ])
           .then(function(results) {
-            var doc = {
+            var selected = {
               doc: results[0],
               parents: [],
               children: results[1].rows,
@@ -76,17 +76,14 @@ var _ = require('underscore');
               reports: results[3],
             };
 
-            var parent = doc.parent;
+            var parent = selected.doc.parent;
             while(parent && Object.keys(parent).length) {
               console.log('Pushing parent: ' + JSON.stringify(parent));
-              doc.parents.push(parent);
+              selected.parents.push(parent);
               parent = parent.parent;
             }
 
-            var refreshing = ($scope.selected && $scope.selected._id) === id;
-            $scope.setSelected(doc);
-
-            return doc;
+            return selected;
           });
       };
 
