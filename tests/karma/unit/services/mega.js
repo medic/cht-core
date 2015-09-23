@@ -127,13 +127,13 @@ describe('Mega service', function() {
       var xform = service.generateXform(schema);
 
       // then
-      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head><h:title>{{\'person.new\' | translate}}</h:title>' +
+      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head><h:title>contact.type.person.new</h:title>' +
           '<model><instance><person id="person" version="1">' +
             '<name/><meta><instanceID/></meta></person></instance>' +
             '<bind nodeset="/person/name" type="string"/></model></h:head>' +
           '<h:body>' +
             '<input ref="/person/name">' +
-              '<label>{{\'person.name\' | translate}}</label></input>' +
+              '<label>person.field.name</label></input>' +
           '</h:body></h:html>');
     });
 
@@ -154,13 +154,13 @@ describe('Mega service', function() {
       var xform = service.generateXform(schema);
 
       // then
-      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head><h:title>{{\'person.new\' | translate}}</h:title>' +
+      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head><h:title>contact.type.person.new</h:title>' +
           '<model><instance><person id="person" version="1">' +
             '<name/><meta><instanceID/></meta></person></instance>' +
             '<bind nodeset="/person/name" required="true()" type="string"/></model></h:head>' +
           '<h:body>' +
             '<input ref="/person/name">' +
-              '<label>{{\'person.name\' | translate}}</label></input>' +
+              '<label>person.field.name</label></input>' +
           '</h:body></h:html>');
     });
 
@@ -180,13 +180,13 @@ describe('Mega service', function() {
       var xform = service.generateXform(schema);
 
       // then
-      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head><h:title>{{\'contact.new\' | translate}}</h:title>' +
+      assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head><h:title>contact.type.contact.new</h:title>' +
           '<model><instance><contact id="contact" version="1">' +
             '<number/><meta><instanceID/></meta></contact></instance>' +
             '<bind nodeset="/contact/number" type="phone"/></model></h:head>' +
           '<h:body>' +
             '<input ref="/contact/number">' +
-              '<label>{{\'contact.number\' | translate}}</label></input>' +
+              '<label>contact.field.number</label></input>' +
           '</h:body></h:html>');
     });
 
@@ -207,13 +207,13 @@ describe('Mega service', function() {
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
-          '<h:head><h:title>{{\'person.new\' | translate}}</h:title>' +
+          '<h:head><h:title>contact.type.person.new</h:title>' +
           '<model><instance><person id="person" version="1">' +
             '<loc/><meta><instanceID/></meta></person></instance>' +
             '<bind nodeset="/person/loc" type="db:location"/></model></h:head>' +
           '<h:body>' +
             '<input appearance="db-object" ref="/person/loc">' +
-              '<label>{{\'person.loc\' | translate}}</label></input>' +
+              '<label>person.field.loc</label></input>' +
           '</h:body></h:html>');
     });
 
@@ -234,13 +234,13 @@ describe('Mega service', function() {
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
-          '<h:head><h:title>{{\'person.new\' | translate}}</h:title>' +
+          '<h:head><h:title>contact.type.person.new</h:title>' +
           '<model><instance><person id="person" version="1">' +
             '<parent/><meta><instanceID/></meta></person></instance>' +
             '<bind nodeset="/person/parent" type="facility"/></model></h:head>' +
           '<h:body>' +
             '<input ref="/person/parent">' +
-              '<label>{{\'person.parent\' | translate}}</label></input>' +
+              '<label>person.field.parent</label></input>' +
           '</h:body></h:html>');
     });
 
@@ -286,7 +286,7 @@ describe('Mega service', function() {
 
       // then
       assert.equal(xform,
-          '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head><h:title>{{\'clinic.new\' | translate}}</h:title>' +
+          '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head><h:title>contact.type.clinic.new</h:title>' +
           '<model><instance><data id="clinic" version="1">' +
           '<clinic><name/><external_id/><parent/><contact/></clinic>' +
           '<contact><name/><phonenumber/></contact>' +
@@ -302,15 +302,15 @@ describe('Mega service', function() {
           '</model></h:head>' +
           '<h:body class="pages">' +
           '<group appearance="field-list" ref="/data/clinic">' +
-          '<input ref="/data/clinic/name"><label>{{\'clinic.name\' | translate}}</label></input>' +
-          '<input ref="/data/clinic/external_id"><label>{{\'clinic.external_id\' | translate}}</label></input>' +
-          '<input appearance="db-object" ref="/data/clinic/parent"><label>{{\'clinic.parent\' | translate}}</label></input>' +
-          '<input appearance="db-object" ref="/data/clinic/contact"><label>{{\'clinic.contact\' | translate}}</label></input>' +
+          '<input ref="/data/clinic/name"><label>clinic.field.name</label></input>' +
+          '<input ref="/data/clinic/external_id"><label>clinic.field.external_id</label></input>' +
+          '<input appearance="db-object" ref="/data/clinic/parent"><label>clinic.field.parent</label></input>' +
+          '<input appearance="db-object" ref="/data/clinic/contact"><label>clinic.field.contact</label></input>' +
           '</group>' +
           '<group appearance="field-list" ref="/data/contact">' +
-          '<label>{{\'person.new\' | translate}}</label>' +
-          '<input ref="/data/contact/name"><label>{{\'person.name\' | translate}}</label></input>' +
-          '<input ref="/data/contact/phonenumber"><label>{{\'person.phonenumber\' | translate}}</label></input>' +
+          '<label>contact.type.person.new</label>' +
+          '<input ref="/data/contact/name"><label>person.field.name</label></input>' +
+          '<input ref="/data/contact/phonenumber"><label>person.field.phonenumber</label></input>' +
           '</group>' +
           '</h:body></h:html>');
     });

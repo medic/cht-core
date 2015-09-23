@@ -34,8 +34,10 @@ define( function( require, exports, module ) {
     Dbobjectwidget.prototype.constructor = Dbobjectwidget;
 
     Dbobjectwidget.prototype._init = function() {
-        var DB = angular.element(document.body).injector().get('DB').get();
-        var ContactSchema = angular.element(document.body).injector().get('ContactSchema');
+        var angularServices = angular.element(document.body).injector();
+        var translate = angularServices.get('translateFilter');
+        var DB = angularServices.get('DB').get();
+        var ContactSchema = angularServices.get('ContactSchema');
         var e = $(this.element);
 
         var loader = $('<div class="loader"/></div>');
@@ -64,7 +66,7 @@ define( function( require, exports, module ) {
                 container.append(selecter);
 
                 // add 'new' option TODO this should only be added if requested
-                $('<option>', { value:'NEW', text:'{{\'' + dbObjectType + '.new\'}}' })
+                $('<option>', { value:'NEW', text:translate('contact.type.' + dbObjectType + '.new') })
                         .appendTo(selecter);
 
                 var rows = _.sortBy(res.rows, function(row) {

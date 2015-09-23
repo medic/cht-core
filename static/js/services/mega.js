@@ -1,7 +1,8 @@
 var _ = require('underscore');
 
 angular.module('inboxServices').service('Mega', [
-  function() {
+  'translateFilter',
+  function(translateFilter) {
     var X = {
       extraAttributesFor: function(conf) {
         var extras = {};
@@ -19,7 +20,7 @@ angular.module('inboxServices').service('Mega', [
       },
       translationFor: function() {
         var key = Array.prototype.slice.call(arguments).join('.');
-        return '{{\'' + key + '\' | translate}}';
+        return translateFilter(key);
       },
     };
 
@@ -117,7 +118,7 @@ angular.module('inboxServices').service('Mega', [
 
       var head = (function generateHead() {
         var head = new N('h:head');
-        head.append(new N('h:title', X.translationFor(principle.type, 'new')));
+        head.append(new N('h:title', X.translationFor('contact.type', principle.type, 'new')));
         var model = new N('model');
         head.append(model);
         var instance = new N('instance');
@@ -180,7 +181,7 @@ angular.module('inboxServices').service('Mega', [
           return _.map(schema.fields, function(conf, f) {
             var attrs = _.extend({ ref: xPath(mapping, f) }, X.extraAttributesFor(conf));
             var input = new N('input', attrs);
-            input.append(new N('label', X.translationFor(schema.type, f)));
+            input.append(new N('label', X.translationFor(schema.type, 'field', f)));
             return input;
           });
         };
@@ -193,7 +194,7 @@ angular.module('inboxServices').service('Mega', [
 
         _.each(extras, function(extra, mapping) {
           var group = groupFor(extra, mapping);
-          group.prepend(new N('label', X.translationFor(extra.type, 'new')));
+          group.prepend(new N('label', X.translationFor('contact.type', extra.type, 'new')));
           body.append(group);
         });
 
