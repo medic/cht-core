@@ -4,7 +4,6 @@ var _ = require('underscore');
 angular.module('inboxServices').service('Enketo', [
   '$window', '$log', '$q', 'DB', 'XSLT', 'FileReader', 'UserSettings', 'Auth',
   function($window, $log, $q, DB, XSLT, FileReader, UserSettings, Auth) {
-    var self = this;
     var objUrls = [];
 
     var replaceJavarosaMediaWithLoaders = function(formDocId, form) {
@@ -119,7 +118,7 @@ angular.module('inboxServices').service('Enketo', [
     this.render = function(wrapper, formInternalId, instanceStr) {
       return checkPermissions()
         .then(function() {
-          return withFormByFormInternalId(formInternalId)
+          return withFormByFormInternalId(formInternalId);
         })
         .then(function(doc) {
           return renderFromXmls(doc, wrapper, instanceStr);
