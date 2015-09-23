@@ -1,5 +1,71 @@
 var _ = require('underscore');
 
+function N(tagName, text, attrs, children) {
+  var self = this;
+  self.tagName = tagName;
+  if(arguments.length === 2) {
+    if(_.isArray(text)) {
+      children = text; text = null;
+    } else if(typeof text === 'object') {
+      attrs = text; text = null;
+    }
+  } else if(arguments.length === 3) {
+    if(_.isArray(attrs)) {
+      children = attrs; attrs = null;
+      if(typeof text === 'object') {
+        attrs = text;
+        text = null;
+      }
+    }
+  }
+
+  self.text = text;
+  self.attrs = attrs || {};
+  self.children = children || [];
+
+  self.prepend = function(child) {
+    self.children.unshift(child);
+  };
+
+  self.append = function(child_or_children) {
+    if(_.isArray(child_or_children)) {
+      self.children = self.children.concat(child_or_children);
+    } else {
+      self.children.push(child_or_children);
+    }
+  };
+
+  self.appendTo = function(parent) {
+    parent.children.push(self);
+  };
+
+  self.xml = function() {
+    var xml = '<' + self.tagName;
+    _.each(Object.keys(self.attrs).sort(), function(key) {
+      xml += ' ' + key + '="' + self.attrs[key] + '"';
+    });
+    if(self.text || self.children.length) {
+      xml += '>';
+      if(self.text) {
+        xml += self.text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+      }
+      if(self.children) {
+        _.each(self.children, function(child) {
+          xml += child.xml();
+        });
+      }
+      xml += '</' + tagName + '>';
+    } else {
+      xml += '/>';
+    }
+    return xml;
+  };
+}
+
+
 angular.module('inboxServices').service('Mega', [
   'translateFilter',
   function(translateFilter) {
@@ -22,71 +88,6 @@ angular.module('inboxServices').service('Mega', [
         var key = Array.prototype.slice.call(arguments).join('.');
         return translateFilter(key);
       },
-    };
-
-    var N = function N(tagName, text, attrs, children) {
-      var self = this;
-      self.tagName = tagName;
-      if(arguments.length === 2) {
-        if(_.isArray(text)) {
-          children = text; text = null;
-        } else if(typeof text === 'object') {
-          attrs = text; text = null;
-        }
-      } else if(arguments.length === 3) {
-        if(_.isArray(attrs)) {
-          children = attrs; attrs = null;
-          if(typeof text === 'object') {
-            attrs = text;
-            text = null;
-          }
-        }
-      }
-
-      self.text = text;
-      self.attrs = attrs || {};
-      self.children = children || [];
-
-      self.prepend = function(child) {
-        self.children.unshift(child);
-      };
-
-      self.append = function(child_or_children) {
-        if(_.isArray(child_or_children)) {
-          self.children = self.children.concat(child_or_children);
-        } else {
-          self.children.push(child_or_children);
-        }
-      };
-
-      self.appendTo = function(parent) {
-        parent.children.push(self);
-      };
-
-      self.xml = function() {
-        var xml = '<' + self.tagName;
-        _.each(Object.keys(self.attrs).sort(), function(key) {
-          xml += ' ' + key + '="' + self.attrs[key] + '"';
-        });
-        if(self.text || self.children.length) {
-          xml += '>';
-          if(self.text) {
-            xml += self.text
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-          }
-          if(self.children) {
-            _.each(self.children, function(child) {
-              xml += child.xml();
-            });
-          }
-          xml += '</' + tagName + '>';
-        } else {
-          xml += '/>';
-        }
-        return xml;
-      };
     };
 
     var modelFor = function(schema, rootNode) {
