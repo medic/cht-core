@@ -1,6 +1,6 @@
 <div class="content-pane right-pane">
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent || loadingForm">
+  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
     <div>
       <div class="loader"></div>
     </div>
@@ -10,23 +10,7 @@
     <div>{{'No contact selected' | translate}}</div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && !loadingForm && contentError">
-    <div>{{'error.loading.form' | translate}}</div>
-  </div>
-
-  <div class="col-sm-8 item-content item-body" ng-show="selected && form && !loadingContent && !loadingForm">
-    <div id="contact-report" class="enketo">
-      <div class="container pages"></div>
-      <div class="form-footer">
-        <button class="btn btn-default previous-page">&lt; {{'Previous' | translate}}</button>
-        <button class="btn btn-primary next-page">{{'Next' | translate}} &gt;</button>
-        <a class="btn submit btn-primary" ng-click="save()" ng-disabled="saving">{{'Submit' | translate}}</a>
-        <div class="loader inline small" ng-show="saving"></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-sm-8 item-content item-body" ng-show="selected && !loadingContent && !form">
+  <div class="col-sm-8 item-content item-body" ng-show="selected && !loadingContent">
     <div>
       <div class="status">
         <span class="mm-badge mm-badge-round">
