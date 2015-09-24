@@ -109,6 +109,15 @@ _.templateSettings = {
           controller: 'ContactsCtrl',
           templateUrl: 'templates/partials/contacts.html'
         })
+        .state('contacts.report', {
+          url: '/:id/report/:formId',
+          views: {
+            content: {
+              controller: 'ContactsReportCtrl',
+              templateUrl: 'templates/partials/contacts_report.html'
+            }
+          }
+        })
         .state('contacts.detail', {
           url: '/:id',
           views: {

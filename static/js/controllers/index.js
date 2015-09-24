@@ -18,6 +18,7 @@
   require('./configuration-users');
   require('./contacts');
   require('./contacts-content');
+  require('./contacts-report');
   require('./delete-language');
   require('./delete-user');
   require('./edit-contact');

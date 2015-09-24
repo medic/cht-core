@@ -7,10 +7,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsContentCtrl', 
-    ['$scope', '$stateParams', '$q', '$state', '$log', 'DB', 'Enketo', 'TaskGenerator', 'Search',
-    function ($scope, $stateParams, $q, $state, $log, DB, Enketo, TaskGenerator, Search) {
-
-      $scope.form = null;
+    ['$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search',
+    function ($scope, $stateParams, $q, $log, DB, TaskGenerator, Search) {
 
       var getReports = function(id) {
         var scope = {
@@ -114,7 +112,7 @@ var _ = require('underscore');
           })
           .catch(function(err) {
             $scope.clearSelected();
-            console.error('Error fetching doc', err);
+            $log.error('Error fetching doc', err);
           });
       };
 
@@ -123,27 +121,6 @@ var _ = require('underscore');
       } else {
         $scope.clearSelected();
       }
-
-      $scope.submitReport = function(form) {
-        $scope.loadingForm = true;
-        $scope.setActionBar();
-        var instanceData = {};
-        if ($scope.selected.doc.type === 'person') {
-          instanceData.patient_id = $state.params.id;
-        } else {
-          instanceData.place_id = $state.params.id;
-        }
-        Enketo.render($('#contact-report'), form.internalId, instanceData)
-          .then(function(form) {
-            $scope.form = form;
-            $scope.loadingForm = false;
-          })
-          .catch(function(err) {
-            $scope.contentError = true;
-            $scope.loadingForm = false;
-            $log.error('Error loading form.', err);
-          });
-      };
 
       $scope.$on('ContactUpdated', function(e, contact) {
         if (contact) {
