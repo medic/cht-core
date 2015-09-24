@@ -218,7 +218,7 @@ First clone the repo recursively so you get both submodules `api` and
 `sentinel`, then change directories:
 
 ```
-git clone --recursive https://github.com/medic/medic-webapp
+git clone --depth=50 --recursive https://github.com/medic/medic-webapp
 cd medic-webapp
 ```
 
