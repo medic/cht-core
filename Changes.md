@@ -9,8 +9,7 @@
 - Improved error handling when notifications (start/stop) configs are
   misconfigured. #1144
 
-- Fixed bug in `exists` validation where it fails on some unicode characters.
-  #1147
+- Fixed bug in `exists` validation where it fails on some unicode characters. #1147
 
 - Fixed Reporting Rates interface that was neglected and broken. #1030
 
