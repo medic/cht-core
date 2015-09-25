@@ -320,27 +320,32 @@
                     "registration": {
                         "type": "string",
                         "title": "Pregnancy Registration Form Code",
-                        "default": "R"
+                        "default": "R",
+                        "description": "This form must also be installed."
                     },
                     "registrationLmp": {
                         "type": "string",
                         "title": "Pregnancy Registration LMP Form Code",
-                        "default": "P"
+                        "default": "P",
+                        "description": "This form must also be installed."
                     },
                     "visit": {
                         "type": "string",
                         "title": "Completed ANC Visit Form Code",
-                        "default": "V"
+                        "default": "V",
+                        "description": "This form must also be installed."
                     },
                     "delivery": {
                         "type": "string",
                         "title": "Delivery Report Form Code",
-                        "default": "D"
+                        "default": "D",
+                        "description": "This form must also be installed."
                     },
                     "flag": {
                         "type": "string",
                         "title": "Flag Pregnancy Form Code",
-                        "default": "F"
+                        "default": "F",
+                        "description": "This form must also be installed."
                     }
                 }
             },
