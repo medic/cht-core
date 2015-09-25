@@ -13,8 +13,20 @@ var nools = require('nools'),
 
       var getUtils = function(settings) {
         return {
+          isTimely: function(date, event) {
+            var today = new Date();
+            var due = new Date(date);
+            var start = this.addDate(null, event.start * -1);
+            var end = this.addDate(null, event.end);
+            return due.getTime() > start.getTime() && due.getTime() < end.getTime();
+          },
           addDate: function(date, days) {
-            var result = new Date(date.getTime());
+            var result;
+            if (date) {
+              result = new Date(date.getTime());
+            } else {
+              result = new Date();
+            }
             result.setDate(result.getDate() + days);
             return result;
           },

@@ -1127,8 +1127,18 @@
                                                 "type": "string"
                                             },
                                             "days": {
-                                                "title": "Days after date that task is due",
+                                                "title": "Number of days after event that task is due",
                                                 "type": "integer"
+                                            },
+                                            "start": {
+                                                "title": "Number of days before due date to show task",
+                                                "type": "integer",
+                                                "default": 356
+                                            },
+                                            "end": {
+                                                "title": "Number of days after due date to show task",
+                                                "type": "integer",
+                                                "default": 356
                                             },
                                             "type": {
                                                 "title": "Task type",
