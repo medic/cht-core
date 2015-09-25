@@ -21,8 +21,6 @@ var _ = require('underscore'),
     ['$scope', '$route', '$location', '$log', 'Settings', 'AnalyticsModules',
     function ($scope, $route, $location, $log, Settings, AnalyticsModules) {
 
-      $log.debug('AnalyticsCtrl');
-      $log.debug('$route', $route.current.params);
       $scope.setSelectedModule();
       $scope.filterModel.type = 'analytics';
       $scope.loading = true;
