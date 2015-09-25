@@ -14,7 +14,6 @@ var nools = require('nools'),
       var getUtils = function(settings) {
         return {
           isTimely: function(date, event) {
-            var today = new Date();
             var due = new Date(date);
             var start = this.addDate(null, event.start * -1);
             var end = this.addDate(null, event.end);
