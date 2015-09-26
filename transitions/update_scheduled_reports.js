@@ -4,13 +4,13 @@ var _ = require('underscore'),
 
 module.exports = {
     filter: function(doc) {
+        var self = module.exports;
         return Boolean(
             doc &&
             doc.form &&
             utils.getClinicPhone(doc) &&
             (doc.errors ? doc.errors.length === 0 : true) &&
-            (doc.month || doc.month_num || doc.week || doc.week_number) &&
-            doc.year
+            self._isFormScheduled(doc)
         );
     },
     /**
@@ -75,13 +75,13 @@ module.exports = {
             view,
             clinic_id = utils.getClinicID(doc);
 
-        if (doc.week || doc.week_number) {
-            q.startkey = [doc.form, doc.year, doc.week || doc.week_number, clinic_id];
-            q.endkey = [doc.form, doc.year, doc.week || doc.week_number, clinic_id, {}];
+        if (doc.fields.week || doc.fields.week_number) {
+            q.startkey = [doc.form, doc.fields.year, doc.fields.week || doc.fields.week_number, clinic_id];
+            q.endkey = [doc.form, doc.fields.year, doc.fields.week || doc.fields.week_number, clinic_id, {}];
             view = 'data_records_by_form_year_week_clinic_id_and_reported_date';
-        } else if (doc.month || doc.month_num) {
-            q.startkey = [doc.form, doc.year, doc.month || doc.month_num, clinic_id];
-            q.endkey = [doc.form, doc.year, doc.month || doc.month_num, clinic_id, {}];
+        } else if (doc.fields.month || doc.fields.month_num) {
+            q.startkey = [doc.form, doc.fields.year, doc.fields.month || doc.fields.month_num, clinic_id];
+            q.endkey = [doc.form, doc.fields.year, doc.fields.month || doc.fields.month_num, clinic_id, {}];
             view = 'data_records_by_form_year_month_clinic_id_and_reported_date';
         } else {
             return callback();
@@ -90,5 +90,13 @@ module.exports = {
         db.medic.view('kujua-sentinel', view, q, function(err, data) {
             callback(err, data && data.rows);
         });
+    },
+    _isFormScheduled: function(doc) {
+        return doc.fields && (
+            doc.fields.month ||
+            doc.fields.month_num ||
+            doc.fields.week ||
+            doc.fields.week_number
+        ) && doc.fields.year;
     }
 };
