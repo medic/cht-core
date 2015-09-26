@@ -23,9 +23,6 @@ exports['filter signature'] = function(test) {
 };
 
 exports['filter fails when scheduled form not present'] = function(test) {
-    var contact = {
-        phone: 'x'
-    };
     test.equals(transition.filter({}), false);
     test.equals(transition.filter({
         patient_id: 'x',
