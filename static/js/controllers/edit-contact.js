@@ -7,8 +7,8 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditContactCtrl',
-    ['$q', '$scope', '$rootScope', 'translateFilter', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'EnketoTranslation',
-    function ($q, $scope, $rootScope, translateFilter, ContactSchema, DbView, DB, Enketo, EnketoTranslation) {
+    ['$q', '$rootScope', '$scope', '$state', 'translateFilter', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'EnketoTranslation',
+    function ($q, $rootScope, $scope, $state, translateFilter, ContactSchema, DbView, DB, Enketo, EnketoTranslation) {
 
       $scope.unmodifiedSchema = ContactSchema.get();
       $scope.contactTypes = Object.keys($scope.unmodifiedSchema);
@@ -155,9 +155,9 @@ var modal = require('../modules/modal');
             return saveDoc(submitted, original, extras);
           })
           .then(function(doc) {
-            form.resetView();
             delete $scope.enketo_contact;
             $rootScope.$broadcast('ContactUpdated', doc);
+            $state.go('contacts.detail', { id: doc.id });
             pane.done();
           })
           .catch(function(err) {
