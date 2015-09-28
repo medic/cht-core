@@ -20,7 +20,7 @@
 
 ### Jul 14, 2015
 
-- Added SMS parser fixes from dev branch:
+- Added SMS parser fixes from dev branch #974:
    
   - parse string fields with exclamation marks
   - compact textforms format handles quotes in quotes
