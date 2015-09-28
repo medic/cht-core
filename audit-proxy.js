@@ -49,12 +49,13 @@ AuditProxy.prototype.audit = function(proxy, req, res) {
     var endFn = function(cb) {
       var self = this;
       var options = { buffer: buffer };
-      var data = dataBuffer.join('');
-      var doc = parse(data);
+      var doc = parse(dataBuffer.join(''));
       if (!doc) {
         // ignore non-json requests
         proxy.web(req, res, options);
-        self.push(data);
+        dataBuffer.forEach(function(item) {
+          self.push(item);
+        });
         return cb();
       }
 
@@ -64,7 +65,7 @@ AuditProxy.prototype.audit = function(proxy, req, res) {
           if (err) {
             return cb(err);
           }
-          data = JSON.stringify(doc);
+          var data = JSON.stringify(doc);
           // audit might modify the doc (eg: generating an id)
           // so we need to update the content-length header
           req.headers['content-length'] = Buffer.byteLength(data);

@@ -81,10 +81,7 @@ exports['audit does not audit non json request'] = function(test) {
     web: function() {}
   };
   var passStreamFn = function(writeFn, endFn) {
-    var chunks = doc.match(/.{1,4}/g);
-    chunks.forEach(function(chunk){
-      writeFn(chunk, 'UTF-8', function() {});
-    });
+    writeFn(doc, 'UTF-8', function() {});
     endFn.call({push: function(body) {
       test.equals(body, doc);
     }}, function() {});
