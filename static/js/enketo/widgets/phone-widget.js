@@ -16,7 +16,7 @@ define( function( require, exports, module ) {
 
     // Set up enketo validation for `phone` input type
     var settings = {}; // TODO these should come from Settings service
-    FormModel.types.phone = {
+    FormModel.prototype.types.phone = {
         validate: function( x ) {
             // TODO if number passes validation, check in DB that it's not a duplicate
             return libphonenumber.validate(settings, x);
