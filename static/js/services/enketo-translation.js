@@ -1,5 +1,8 @@
 var _ = require('underscore');
 
+/**
+ * An internal representation of an XML node.
+ */
 function N(tagName, text, attrs, children) {
   var self = this;
   self.tagName = tagName;
@@ -69,38 +72,35 @@ function N(tagName, text, attrs, children) {
 angular.module('inboxServices').service('EnketoTranslation', [
   'translateFilter',
   function(translateFilter) {
-    var X = {
-      extraAttributesFor: function(conf) {
-        var extras = {};
-        var typeString = conf.type;
-        if(/^db:/.test(typeString)) {
-          extras.appearance = 'db-object';
-        } else if(typeString === 'text') {
-          extras.appearance = 'multiline';
-        }
-        return extras;
-      },
-      getBindingType: function(conf) {
-        return conf.type;
-      },
-      pathTo: function() {
-        return '/' + Array.prototype.slice.call(arguments).join('/');
-      },
-      translationFor: function() {
-        var key = Array.prototype.slice.call(arguments).join('.');
-        return translateFilter(key);
-      },
-    };
+    function extraAttributesFor(conf) {
+      var extras = {};
+      var typeString = conf.type;
+      if(/^db:/.test(typeString)) {
+        extras.appearance = 'db-object';
+      } else if(typeString === 'text') {
+        extras.appearance = 'multiline';
+      }
+      return extras;
+    }
 
-    var modelFor = function(schema, rootNode) {
+    function getBindingType(conf) {
+      return conf.type;
+    }
+
+    function translationFor() {
+      var key = Array.prototype.slice.call(arguments).join('.');
+      return translateFilter(key);
+    }
+
+    function modelFor(schema, rootNode) {
       var node = new N(rootNode || schema.type);
       _.each(schema.fields, function(conf, name) {
         node.append(new N(name));
       });
       return node;
-    };
+    }
 
-    var generateXformWithOptions = function(principle, extras) {
+    function generateXformWithOptions(principle, extras) {
       var xPath = function() {
         var path = Array.prototype.slice.call(arguments).join('/');
         if(extras) {
@@ -121,7 +121,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
 
       var head = (function generateHead() {
         var head = new N('h:head');
-        head.append(new N('h:title', X.translationFor('contact.type', principle.type, 'new')));
+        head.append(new N('h:title', translationFor('contact.type', principle.type, 'new')));
         var model = new N('model');
         head.append(model);
         var instance = new N('instance');
@@ -149,7 +149,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
           _.each(schema.fields, function(conf, f) {
             var props = {
               nodeset: xPath(mapping, f),
-              type: X.getBindingType(conf),
+              type: getBindingType(conf),
             };
             if(conf.required) {
               props.required = 'true()';
@@ -182,9 +182,9 @@ angular.module('inboxServices').service('EnketoTranslation', [
 
         var fieldsFor = function(schema, mapping) {
           return _.map(schema.fields, function(conf, f) {
-            var attrs = _.extend({ ref: xPath(mapping, f) }, X.extraAttributesFor(conf));
+            var attrs = _.extend({ ref: xPath(mapping, f) }, extraAttributesFor(conf));
             var input = new N('input', attrs);
-            input.append(new N('label', X.translationFor(schema.type, 'field', f)));
+            input.append(new N('label', translationFor(schema.type, 'field', f)));
             return input;
           });
         };
@@ -197,7 +197,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
 
         _.each(extras, function(extra, mapping) {
           var group = groupFor(extra, mapping);
-          group.prepend(new N('label', X.translationFor('contact.type', extra.type, 'new')));
+          group.prepend(new N('label', translationFor('contact.type', extra.type, 'new')));
           body.append(group);
         });
 
@@ -206,7 +206,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
       root.append(body);
 
       return root.xml();
-    };
+    }
 
     this.generateXform = function(schema, options) {
       if(options || true) {
