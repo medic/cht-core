@@ -159,9 +159,11 @@ var modal = require('../modules/modal');
           })
           .then(function(doc) {
             delete $scope.enketo_contact;
-            $rootScope.$broadcast('ContactUpdated', doc);
-            $state.go('contacts.detail', { id: doc.id });
             pane.done();
+            return DB.get().get(doc.id);
+          })
+          .then(function(doc) {
+            $rootScope.$broadcast('ContactUpdated', doc);
           })
           .catch(function(err) {
             pane.done(translateFilter('Error updating contact'), err);
