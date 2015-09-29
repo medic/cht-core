@@ -13,8 +13,6 @@ define( function( require, exports, module ) {
         require( 'enketo-core/src/widget/date/datepicker-extended' ),
         require( 'enketo-core/src/widget/time/timepicker-extended' ),
         require( 'enketo-core/src/widget/datetime/datetimepicker-extended' ),
-        require( './widgets/patient-select' ),
-        require( './widgets/place-select' ),
         require( './widgets/db-object-widget' ),
         require( './widgets/medic-place-widget' ),
         require( './widgets/phone-widget' ),
