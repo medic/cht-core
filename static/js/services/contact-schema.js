@@ -104,9 +104,9 @@ function normalise(type, schema) {
 
 function getSchema() {
   return {
-    clinic: normalise('clinic', CLINIC),
     district_hospital: normalise('district_hospital', DISTRICT_HOSPITAL),
     health_center: normalise('health_center', HEALTH_CENTER),
+    clinic: normalise('clinic', CLINIC),
     person: normalise('person', PERSON),
   };
 }
