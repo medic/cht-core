@@ -64,8 +64,6 @@ define( function( require, exports, module ) {
             return [ type ];
         });
 
-        var flatPlaceTypes = _.flatten(placeTypes);
-
         DB.query('medic/doc_by_type', { include_docs: true, keys: placeTypes })
             .then(function(res) {
                 loader.remove();
@@ -113,5 +111,3 @@ define( function( require, exports, module ) {
         'selector': 'input[data-type-xml=medic-place]',
     };
 } );
-
-
