@@ -25,11 +25,8 @@ var modal = require('../modules/modal');
       });
 
       var updateTitle = function(doc) {
-        // TODO eventually, this method should be the *only* place that title
-        // is generated, so the `titleFor()` function can be removed from
-        // ContactsCtrl.
         if(!doc) {
-          return '';
+          return;
         }
         var nameFormat = $scope.unmodifiedSchema[doc.type].name;
         if(nameFormat) {
