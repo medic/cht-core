@@ -10,6 +10,7 @@
   require('./configuration');
   require('./configuration-export');
   require('./configuration-forms');
+  require('./configuration-icons');
   require('./configuration-settings-advanced');
   require('./configuration-settings-basic');
   require('./configuration-translation-application');

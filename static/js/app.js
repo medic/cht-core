@@ -238,6 +238,15 @@ _.templateSettings = {
             }
           }
         })
+        .state('configuration.icons', {
+          url: '/icons',
+          views: {
+            content: {
+              controller: 'ConfigurationIconsCtrl',
+              templateUrl: 'templates/partials/configuration_icons.html'
+            }
+          }
+        })
 
         // help
         .state('help', {

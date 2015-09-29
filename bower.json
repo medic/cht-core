@@ -28,7 +28,7 @@
     "moment": "~2.10.6",
     "ng-file-upload": "~6.0.3",
     "nvd3": "~1.1.15-beta",
-    "pouchdb": "~4.0.0",
+    "pouchdb": "~4.0.3",
     "select2": "~3.5.2",
     "select2-bootstrap-css": "~1.4.6",
     "underscore": "~1.8.3"
