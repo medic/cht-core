@@ -21,6 +21,7 @@ describe('TaskGenerator service', function() {
     "  date: null," +
     "  title: null," +
     "  fields: null," +
+    "  reports: null," + // exposed for testing only
     "  resolved: null" +
     "}" +
     "" +
@@ -49,6 +50,7 @@ describe('TaskGenerator service', function() {
     "              value: s.description" +
     "            }" +
     "          ]," +
+    "          reports: r.reports," +
     "          resolved: visitCount > 0" +
     "        });" +
     "        emit('task', visit);" +
@@ -69,6 +71,7 @@ describe('TaskGenerator service', function() {
     "              value: s.description" +
     "            }" +
     "          ]," +
+    "          reports: r.reports," +
     "          resolved: visitCount > 0" +
     "        });" +
     "        emit('task', visit);" +
@@ -84,8 +87,8 @@ describe('TaskGenerator service', function() {
       _id: 1,
       form: 'P',
       reported_date: 1437618272360,
-      patient_id: '059',
       fields: {
+        patient_id: '059',
         patient_name: 'Jenny',
         last_menstrual_period: 10
       }
@@ -94,8 +97,8 @@ describe('TaskGenerator service', function() {
       _id: 2,
       form: 'P',
       reported_date: 1437820272360,
-      patient_id: '946',
       fields: {
+        patient_id: '946',
         patient_name: 'Sally',
         last_menstrual_period: 20
       }
@@ -112,8 +115,8 @@ describe('TaskGenerator service', function() {
       _id: 4,
       form: 'R',
       reported_date: 1437920272360,
-      patient_id: '555',
       fields: {
+        patient_id: '555',
         patient_name: 'Rachel'
       }
     }
@@ -250,7 +253,7 @@ describe('TaskGenerator service', function() {
       }
     });
 
-    var expectations = function(actual, registration, schedule, resolved) {
+    var expectations = function(actual, registration, schedule, reports, resolved) {
       var task = _.findWhere(actual, { _id: registration._id + '-' + schedule.id });
       if (!task) {
         console.log('Failed to generate task: ' + registration._id + '-' + schedule.id);
@@ -263,26 +266,26 @@ describe('TaskGenerator service', function() {
       chai.expect(task.fields[0].value).to.deep.equal(schedule.description);
       chai.expect(task.doc._id).to.equal(registration._id);
       chai.expect(task.resolved).to.equal(resolved);
+      chai.expect(task.reports).to.deep.equal(reports);
     };
     service().then(function(actual) {
       chai.expect(Search.callCount).to.equal(1);
       chai.expect(Settings.callCount).to.equal(1);
       chai.expect(actual.length).to.equal(10);
-      expectations(actual, dataRecords[0], schedules[0].events[0], true);
-      expectations(actual, dataRecords[0], schedules[0].events[1], false);
-      expectations(actual, dataRecords[0], schedules[0].events[2], false);
-      expectations(actual, dataRecords[1], schedules[0].events[0], false);
-      expectations(actual, dataRecords[1], schedules[0].events[1], false);
-      expectations(actual, dataRecords[1], schedules[0].events[2], false);
-      expectations(actual, dataRecords[2], schedules[1].events[0], false);
-      expectations(actual, dataRecords[3], schedules[0].events[0], false);
-      expectations(actual, dataRecords[3], schedules[0].events[1], false);
-      expectations(actual, dataRecords[3], schedules[0].events[2], false);
+      expectations(actual, dataRecords[0], schedules[0].events[0], [ dataRecords[2] ], true);
+      expectations(actual, dataRecords[0], schedules[0].events[1], [ dataRecords[2] ], false);
+      expectations(actual, dataRecords[0], schedules[0].events[2], [ dataRecords[2] ], false);
+      expectations(actual, dataRecords[1], schedules[0].events[0], [ ], false);
+      expectations(actual, dataRecords[1], schedules[0].events[1], [ ], false);
+      expectations(actual, dataRecords[1], schedules[0].events[2], [ ], false);
+      expectations(actual, dataRecords[2], schedules[1].events[0], [ dataRecords[0] ], false);
+      expectations(actual, dataRecords[3], schedules[0].events[0], [ ], false);
+      expectations(actual, dataRecords[3], schedules[0].events[1], [ ], false);
+      expectations(actual, dataRecords[3], schedules[0].events[2], [ ], false);
       done();
     }).catch(done);
     setTimeout(function() {
       $rootScope.$digest();
     });
   });
-
 });

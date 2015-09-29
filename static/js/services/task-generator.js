@@ -67,22 +67,23 @@ var nools = require('nools'),
         Search(scope, options, callback);
       };
 
+      var getGroupId = function(doc) {
+        // get the associated patient or place id to group reports by
+        return doc.patient_id || doc.place_id ||
+          (doc.fields && (doc.fields.patient_id || doc.fields.place_id));
+      };
+
       var groupReports = function(dataRecords) {
-        var reports = _.map(dataRecords, function(report) {
-          return { doc: report, reports: [] };
-        });
-        reports.forEach(function(report) {
-          var patientId = report.doc.fields && report.doc.fields.patient_id;
-          if (patientId) {
-            var group = _.find(reports, function(group) {
-              return group.doc.patient_id === patientId;
+        return _.map(dataRecords, function(report) {
+          var result = { doc: report, reports: [] };
+          var groupId = getGroupId(report);
+          if (groupId) {
+            result.reports = _.filter(dataRecords, function(r) {
+              return r._id !== report._id && getGroupId(r) === groupId;
             });
-            if (group) {
-              group.reports.push(report.doc);
-            }
           }
+          return result;
         });
-        return reports;
       };
 
       var getTasks = function(dataRecords, settings, callback) {
