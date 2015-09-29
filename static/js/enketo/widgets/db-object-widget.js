@@ -37,7 +37,6 @@ define( function( require, exports, module ) {
     Dbobjectwidget.prototype._init = function() {
         var angularServices = angular.element(document.body).injector();
         var translate = angularServices.get('$translate').instant;
-        var ContactSchema = angularServices.get('ContactSchema');
         var DB = angularServices.get('DB').get();
 
         var formatResult = function(row) {
@@ -57,19 +56,12 @@ define( function( require, exports, module ) {
         var loader = $('<div class="loader"/></div>');
         textInput.after(loader);
 
-        var titleString = ContactSchema.get(dbObjectType).title;
-        var titleFor = function(doc) {
-            return titleString.replace(/\{\{[^}]*\}\}/g, function(m) {
-                return doc[m.substring(2, m.length-2)];
-            });
-        };
-
         DB.query('medic/doc_by_type', {include_docs:true, key:[dbObjectType]})
             .then(function(res) {
                 loader.remove();
 
                 var rows = _.sortBy(res.rows, function(row) {
-                    return titleFor(row.doc);
+                    return row.doc.name;
                 });
 
                 // add 'new' option TODO this should only be added if requested

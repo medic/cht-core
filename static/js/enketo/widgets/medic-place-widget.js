@@ -46,13 +46,6 @@ define( function( require, exports, module ) {
         var loader = $('<div class="loader"/></div>');
         textInput.after(loader);
 
-        var titleFor = function(doc) {
-            var titleString = ContactSchema.get(doc.type).title;
-            return titleString.replace(/\{\{[^}]*\}\}/g, function(m) {
-                return doc[m.substring(2, m.length-2)];
-            });
-        };
-
         var formatResult = function(row) {
             if(row.doc) {
                 return placeSelectFormat(row.doc);
@@ -74,7 +67,7 @@ define( function( require, exports, module ) {
                         })
                         .collect(function(children, type) {
                             children.sort(function(a, b) {
-                                return titleFor(a.doc) < titleFor(b.doc) ? -1 : 1;
+                                return a.doc.name < b.doc.name ? -1 : 1;
                             });
                             return { text: type, children: children, id: type };
                         })

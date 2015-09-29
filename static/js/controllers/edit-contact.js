@@ -24,6 +24,21 @@ var modal = require('../modules/modal');
         delete $scope.enketo_contact;
       });
 
+      var updateTitle = function(doc) {
+        // TODO eventually, this method should be the *only* place that title
+        // is generated, so the `titleFor()` function can be removed from
+        // ContactsCtrl.
+        if(!doc) {
+          return '';
+        }
+        var nameFormat = $scope.unmodifiedSchema[doc.type].name;
+        if(nameFormat) {
+          doc.name = nameFormat.replace(/\{\{([^}]+)\}\}/g, function(all, name) {
+            return doc[name];
+          });
+        }
+      };
+
       var populateParents = function() {
         var options = {
           params: {
@@ -186,6 +201,7 @@ var modal = require('../modules/modal');
                   } else if(doc[f] === 'NEW') {
                     var extra = extras[f];
                     extra.type = customType[2];
+                    updateTitle(extra);
                     return DB.get().post(extra)
                       .then(function(response) {
                         return DB.get().get(response.id);
@@ -210,6 +226,7 @@ var modal = require('../modules/modal');
             return result;
           })
           .then(function(doc) {
+            updateTitle(doc);
             if(doc._id) {
               return DB.get().put(doc);
             } else {

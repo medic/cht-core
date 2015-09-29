@@ -67,20 +67,58 @@ describe('ContactSchema service', function() {
       it('will return `true` if validation passes (simple example)', function() {
         // given
         var schema = {
-          title: '{{name}}',
+          name: '{{thing_name}}',
+          fields: {
+            thing_name: 'string',
+          },
+        };
+
+        // then
+        assert.isTrue(service.validate('contact', schema));
+      });
+
+      it('will return `true` if validation passes (simple example)', function() {
+        // given
+        var schema = {
+          name: '{{thing_name}}',
+          fields: {
+            thing_name: 'string',
+          },
+        };
+
+        // then
+        assert.isTrue(service.validate('contact', schema));
+      });
+
+      it('does not require a name property if `name` is a field', function() {
+        // given
+        var schema = {
           fields: {
             name: 'string',
           },
         };
 
-        // then
-        assert.isTrue(service.validate(schema));
+        // expect
+        assert.isTrue(service.validate('contact', schema));
+      });
+
+      it('validation fails if `name` property not specified and no `name` field exists', function() {
+        // given
+        var schema = {
+          fields: {
+          },
+        };
+
+        // expect
+        assert.throws(function() {
+          service.validate('contact', schema);
+        }, Error, /No `name` property specified and no `name` field present./);
       });
 
       it('will return `true` if validation passes (complex example)', function() {
         // given
         var schema = {
-          title: '{{first_name}} {{last_name}}',
+          name: '{{first_name}} {{last_name}}',
           fields: {
             first_name: 'string',
             last_name: 'string',
@@ -88,18 +126,16 @@ describe('ContactSchema service', function() {
         };
 
         // then
-        assert.isTrue(service.validate(schema));
+        assert.isTrue(service.validate('contact', schema));
       });
 
       _.forEach([
         'children',
         'parents',
-        'title',
       ], function(badFieldName) {
         it('will throw an Error if restricted name "' + badFieldName + '" is used for a field', function() {
           // given
           var schema = {
-            title: '{{name}}',
             fields: {
               name: 'string',
             },
@@ -107,23 +143,39 @@ describe('ContactSchema service', function() {
           schema.fields[badFieldName] = 'string';
 
           assert.throw(function() {
-            service.validate(schema);
+            service.validate('contact', schema);
           }, Error, /Reserved name used for field./);
         });
       });
 
-      it('will throw an Error if non-existent fields are referenced in `title`', function() {
+      it('will throw an Error if non-existent fields are referenced in `name`', function() {
         // given
         var schema = {
-          title: '{{bad}}',
+          name: '{{bad}}',
           fields: {
             good: 'string',
           }
         };
 
         assert.throw(function() {
-          service.validate(schema);
-        }, Error, 'Non-existent field referenced in title: "bad"');
+          service.validate('contact', schema);
+        }, Error, 'Non-existent field referenced in name: "bad"');
+      });
+
+      it('should fail if `name` field is defined as well as `name` property', function() {
+        // given
+        var schema = {
+          name: '{{honorific}} {{name}}',
+          fields: {
+            honorific: 'string',
+            name: 'string',
+          },
+        };
+
+        // expect
+        assert.throw(function() {
+          service.validate('contact', schema);
+        }, Error, 'Cannot define calculated `name` if there is also a field called `name`.');
       });
     });
 
@@ -131,7 +183,6 @@ describe('ContactSchema service', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().person, {
           type: 'person',
-          title: '{{name}}',
           badge: 'fa-user',
           fields: {
             name: {
@@ -160,7 +211,6 @@ describe('ContactSchema service', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().district_hospital, {
           type: 'district_hospital',
-          title: '{{name}}',
           badge: 'fa-building',
           icon: 'fa-building',
           fields: {
@@ -187,7 +237,6 @@ describe('ContactSchema service', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().health_center, {
           type: 'health_center',
-          title: '{{name}}',
           badge: 'fa-hospital-a',
           icon: 'fa-hospital-o',
           fields: {
@@ -218,7 +267,6 @@ describe('ContactSchema service', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().clinic, {
           type: 'clinic',
-          title: '{{name}}',
           badge: 'fa-home',
           icon: 'fa-home',
           fields: {

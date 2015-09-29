@@ -18,16 +18,6 @@ var _ = require('underscore'),
       $scope.schema = ContactSchema.get();
       $scope.schemaNormalFields = ContactSchema.getWithoutSpecialFields();
 
-      $scope.titleFor = function(doc) {
-        if(!doc) {
-          return '';
-        }
-        var titleFormat = $scope.schema[doc.type].title;
-        return titleFormat.replace(/\{\{([^}]+)\}\}/g, function(all, name) {
-          return doc[name];
-        });
-      };
-
       $scope.selectedSchema = function() {
         return $scope.selected && $scope.schema[$scope.selected.doc.type];
       };
