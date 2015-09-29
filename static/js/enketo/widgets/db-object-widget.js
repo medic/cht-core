@@ -9,6 +9,7 @@ define( function( require, exports, module ) {
     var Widget = require( 'enketo-core/src/js/Widget' );
     var $ = require( 'jquery' );
     require( 'enketo-core/src/js/plugins' );
+    var format = require('../../modules/format');
 
     var pluginName = 'dbobjectwidget';
 
@@ -38,15 +39,23 @@ define( function( require, exports, module ) {
         var translate = angularServices.get('translateFilter');
         var ContactSchema = angularServices.get('ContactSchema');
         var DB = angularServices.get('DB').get();
-        var e = $(this.element);
+
+        var formatResult = function(row) {
+            if(!row.doc) {
+                return row.text;
+            }
+            if(row.doc.type === 'person') {
+                return format.contact(row.doc);
+            }
+            return format.clinic(row.doc);
+        };
+
+        var textInput = $(this.element).find('input');
+        textInput.attr('type', 'hidden');
+        var dbObjectType = textInput.attr('data-type-xml');
 
         var loader = $('<div class="loader"/></div>');
-        var textInput = e.find('input');
-        var initialValue = textInput.val();
-        var container = $('<div/>');
-        var dbObjectType = textInput.attr('data-type-xml');
-        container.append(loader);
-        textInput.replaceWith(container);
+        textInput.after(loader);
 
         var titleString = ContactSchema.get(dbObjectType).title;
         var titleFor = function(doc) {
@@ -58,24 +67,24 @@ define( function( require, exports, module ) {
         DB.query('medic/doc_by_type', {include_docs:true, key:[dbObjectType]})
             .then(function(res) {
                 loader.remove();
-                // TODO only include `new` option if it's configured for that
-                var selecter = $('<select><option></option></select>');
-                selecter.attr('name', textInput.attr('name'));
-                selecter.attr('required', textInput.attr('required'));
-                selecter.attr('data-type-xml', textInput.attr('data-type-xml'));
-                container.append(selecter);
-
-                // add 'new' option TODO this should only be added if requested
-                $('<option>', { value:'NEW', text:translate('contact.type.' + dbObjectType + '.new') })
-                        .appendTo(selecter);
 
                 var rows = _.sortBy(res.rows, function(row) {
                     return titleFor(row.doc);
                 });
-                _.forEach(rows, function(row) {
-                    var val = row.id;
-                    var selected = row.id === initialValue? 'selected' : '';
-                    selecter.append('<option value="' + val + '" ' + selected + '>' + titleFor(row.doc) + '</option>');
+
+                // add 'new' option TODO this should only be added if requested
+                rows.unshift({
+                    id: 'NEW',
+                    text: translate('contact.type.' + dbObjectType + '.new'),
+                });
+                // add blank option
+                rows.unshift({ id: '', text: '&nbsp;' });
+
+                textInput.select2({
+                    data: rows,
+                    formatResult: formatResult,
+                    formatSelection: formatResult,
+                    width: '100%',
                 });
             });
     };
