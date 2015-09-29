@@ -63,6 +63,70 @@ describe('ContactSchema service', function() {
       assert.equal(service.get('person').type, 'person');
     });
 
+    describe('#validate()', function() {
+      it('will return `true` if validation passes (simple example)', function() {
+        // given
+        var schema = {
+          title: '{{name}}',
+          fields: {
+            name: 'string',
+          },
+        };
+
+        // then
+        assert.isTrue(service.validate(schema));
+      });
+
+      it('will return `true` if validation passes (complex example)', function() {
+        // given
+        var schema = {
+          title: '{{first_name}} {{last_name}}',
+          fields: {
+            first_name: 'string',
+            last_name: 'string',
+          },
+        };
+
+        // then
+        assert.isTrue(service.validate(schema));
+      });
+
+      _.forEach([
+        'children',
+        'parents',
+        'title',
+      ], function(badFieldName) {
+        it('will throw an Error if restricted name "' + badFieldName + '" is used for a field', function() {
+          // given
+          var schema = {
+            title: '{{name}}',
+            fields: {
+              name: 'string',
+            },
+          };
+          schema.fields[badFieldName] = 'string';
+
+          assert.throw(function() {
+            service.validate(schema);
+          }, Error, /Reserved name used for field./);
+        });
+      });
+
+      it('will throw an Error if non-existent fields are referenced in `title`', function() {
+        // given
+        var schema = {
+          title: '{{bad}}',
+          fields: {
+            good: 'string',
+          }
+        };
+
+        assert.throw(function() {
+          service.validate(schema);
+        }, Error, 'Non-existent field referenced in title: "bad"');
+      });
+    });
+
     describe('`person`', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().person, {

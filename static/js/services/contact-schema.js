@@ -111,6 +111,36 @@ function getSchema() {
   };
 }
 
+var RESERVED_FIELD_NAMES = [
+  'children',
+  'parents',
+  'title',
+];
+
+function validateSchema(schema) {
+  var fieldNames = Object.keys(schema.fields);
+
+  // check for reserved fields
+  if(_.some(RESERVED_FIELD_NAMES, function(restricted) {
+        return _.contains(fieldNames, restricted);
+      })) {
+    throw new Error('Reserved name used for field.  Do not name fields any of: ' + RESERVED_FIELD_NAMES);
+  }
+
+  // check for fields in `title` which do not exist
+  _.chain(schema.title.match(/\{\{[^}]*\}\}/g))
+      .map(function(m) {
+        return m.substring(2, m.length-2);
+      })
+      .each(function(key) {
+        if(fieldNames.indexOf(key) === -1) {
+          throw new Error('Non-existent field referenced in title: "' + key + '"');
+        }
+      });
+
+  return true;
+}
+
 angular.module('inboxServices').service('ContactSchema', [
   function() {
     return {
@@ -137,6 +167,7 @@ angular.module('inboxServices').service('ContactSchema', [
         });
         return schema;
       },
+      validate: validateSchema,
     };
   }
 ]);
