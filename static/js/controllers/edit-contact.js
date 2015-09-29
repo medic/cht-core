@@ -78,6 +78,8 @@ var modal = require('../modules/modal');
         $scope.primaryContact = {};
 
         $scope.original = contact;
+
+        var extras;
         if (contact._id) {
           $scope.contact = {
             name: contact.name,
@@ -99,12 +101,13 @@ var modal = require('../modules/modal');
           };
           $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
           $scope.contactId = null;
+          extras = { contact:$scope.dependentPersonSchema };
         }
 
         var modal = $('#edit-contact');
 
         Enketo.renderFromXmlString(modal,
-            EnketoTranslation.generateXform($scope.unmodifiedSchema[$scope.contact.type]),
+            EnketoTranslation.generateXform($scope.unmodifiedSchema[$scope.contact.type], extras),
             formInstanceData)
           .then(function(form) {
             $scope.enketo_contact = {
