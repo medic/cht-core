@@ -70,8 +70,8 @@ function N(tagName, text, attrs, children) {
 
 
 angular.module('inboxServices').service('EnketoTranslation', [
-  'translateFilter',
-  function(translateFilter) {
+  '$translate',
+  function($translate) {
     function extraAttributesFor(conf) {
       var extras = {};
       var typeString = conf.type;
@@ -89,7 +89,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
 
     function translationFor() {
       var key = Array.prototype.slice.call(arguments).join('.');
-      return translateFilter(key);
+      return $translate.instant(key);
     }
 
     function modelFor(schema, rootNode) {
