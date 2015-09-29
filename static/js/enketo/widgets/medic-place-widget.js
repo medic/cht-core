@@ -8,12 +8,13 @@ define( function( require, exports, module ) {
     'use strict';
     var Widget = require( 'enketo-core/src/js/Widget' );
     var $ = require( 'jquery' );
+    var placeSelectFormat = require('../../modules/format').clinic;
     require( 'enketo-core/src/js/plugins' );
 
-    var pluginName = 'facilitywidget';
+    var pluginName = 'medicplacewidget';
 
     /**
-     * Allows drop-down selecters for db objects.
+     * Allows drop-down selecters for places.
      *
      * @constructor
      * @param {Element} element [description]
@@ -21,30 +22,29 @@ define( function( require, exports, module ) {
      * @param {*=} e     event
      */
 
-    function Facilitywidget( element, options ) {
+    function Medicplacewidget( element, options ) {
         this.namespace = pluginName;
         Widget.call( this, element, options );
         this._init();
     }
 
     //copy the prototype functions from the Widget super class
-    Facilitywidget.prototype = Object.create( Widget.prototype );
+    Medicplacewidget.prototype = Object.create( Widget.prototype );
 
     //ensure the constructor is the new one
-    Facilitywidget.prototype.constructor = Facilitywidget;
+    Medicplacewidget.prototype.constructor = Medicplacewidget;
 
-    Facilitywidget.prototype._init = function() {
+    Medicplacewidget.prototype._init = function() {
         var angularServices = angular.element(document.body).injector();
         var ContactSchema = angularServices.get('ContactSchema');
         var DB = angularServices.get('DB').get();
-        var e = $(this.element).parent();
+        var translate = angularServices.get('$translate').instant;
+
+        var textInput = $(this.element);
+        textInput.attr('type', 'hidden');
 
         var loader = $('<div class="loader"/></div>');
-        var textInput = e.find('input');
-        var initialValue = textInput.val();
-        var container = $('<div/>');
-        container.append(loader);
-        textInput.replaceWith(container);
+        textInput.after(loader);
 
         var titleFor = function(doc) {
             var titleString = ContactSchema.get(doc.type).title;
@@ -53,33 +53,45 @@ define( function( require, exports, module ) {
             });
         };
 
+        var formatResult = function(row) {
+            if(row.doc) {
+                return placeSelectFormat(row.doc);
+            }
+            return translate('contact.type.' + row.text);
+        };
+
         var placeTypes = _.map(_.without(Object.keys(ContactSchema.get()), 'person'), function(type) {
             return [ type ];
         });
 
+        var flatPlaceTypes = _.flatten(placeTypes);
+
         DB.query('medic/doc_by_type', { include_docs: true, keys: placeTypes })
             .then(function(res) {
                 loader.remove();
-                var selecter = $('<select/>');
-                selecter.attr('name', textInput.attr('name'));
-                selecter.attr('data-type-xml', textInput.attr('data-type-xml'));
-                container.append(selecter);
-                // TODO we shouldn't have to manually remove persons here!
-                var rows = _.filter(res.rows, function(row) {
-                    return row.doc.type !== 'person';
-                });
-                rows = _.sortBy(rows, function(row) {
-                    return titleFor(row.doc);
-                });
-                _.forEach(rows, function(row) {
-                    var val = row.id;
-                    var selected = row.id === initialValue? 'selected' : '';
-                    selecter.append('<option value="' + val + '" ' + selected + '>' + titleFor(row.doc) + '</option>');
+
+                var groups = _.chain(res.rows)
+                        .groupBy(function(row) {
+                            return row.doc.type;
+                        })
+                        .collect(function(children, type) {
+                            children.sort(function(a, b) {
+                                return titleFor(a.doc) < titleFor(b.doc) ? -1 : 1;
+                            });
+                            return { text: type, children: children, id: type };
+                        })
+                        .value();
+
+                textInput.select2({
+                    data: groups,
+                    formatResult: formatResult,
+                    formatSelection: formatResult,
+                    width: '100%',
                 });
             });
     };
 
-    Facilitywidget.prototype.destroy = function( /* element */ ) {};
+    Medicplacewidget.prototype.destroy = function( /* element */ ) {};
 
     $.fn[ pluginName ] = function( options, event ) {
         return this.each( function() {
@@ -89,7 +101,7 @@ define( function( require, exports, module ) {
             options = options || {};
 
             if ( !data && typeof options === 'object' ) {
-                $this.data( pluginName, ( data = new Facilitywidget( this, options, event ) ) );
+                $this.data( pluginName, ( data = new Medicplacewidget( this, options, event ) ) );
             } else if ( data && typeof options === 'string' ) {
                 data[ options ]( this );
             }
@@ -98,7 +110,7 @@ define( function( require, exports, module ) {
 
     module.exports = {
         'name': pluginName,
-        'selector': 'input[data-type-xml=facility]',
+        'selector': 'input[data-type-xml=medic-place]',
     };
 } );
 
