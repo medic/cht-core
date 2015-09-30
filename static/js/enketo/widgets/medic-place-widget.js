@@ -41,7 +41,6 @@ define( function( require, exports, module ) {
         var translate = angularServices.get('$translate').instant;
 
         var textInput = $(this.element);
-        textInput.attr('type', 'hidden');
 
         var loader = $('<div class="loader"/></div>');
         textInput.after(loader);
@@ -79,6 +78,12 @@ define( function( require, exports, module ) {
                     formatSelection: formatResult,
                     width: '100%',
                 });
+
+                // apologies - here we open and close the select2 - this works
+                // around a bug which would otherwise ignore the `required`
+                // attribute.
+                textInput.select2('open');
+                textInput.select2('close');
             });
     };
 

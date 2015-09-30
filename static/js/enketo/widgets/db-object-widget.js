@@ -50,7 +50,6 @@ define( function( require, exports, module ) {
         };
 
         var textInput = $(this.element).find('input');
-        textInput.attr('type', 'hidden');
         var dbObjectType = textInput.attr('data-type-xml');
 
         var loader = $('<div class="loader"/></div>');
@@ -78,6 +77,15 @@ define( function( require, exports, module ) {
                     formatSelection: formatResult,
                     width: '100%',
                 });
+
+                // Tell enketo to ignore the new <input> field that select2 adds
+                textInput.parent().find('input.select2-focusser').addClass('ignore');
+
+                // apologies - here we open and close the select2 - this works
+                // around a bug which would otherwise ignore the `required`
+                // attribute.
+                textInput.select2('open');
+                textInput.select2('close');
             });
     };
 
