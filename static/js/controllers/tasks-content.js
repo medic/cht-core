@@ -9,17 +9,17 @@
     function ($scope, $state, $log, $stateParams, Enketo) {
 
       var hasOneFormAndNoFields = function(task) {
-          return Boolean(
-            task &&
-            task.actions &&
-            task.actions.length === 1 &&
-            (
-              !task.fields ||
-              task.fields.length === 0 ||
-              !task.fields[0].value ||
-              task.fields[0].value.length === 0
-            )
-          );
+        return Boolean(
+          task &&
+          task.actions &&
+          task.actions.length === 1 &&
+          (
+            !task.fields ||
+            task.fields.length === 0 ||
+            !task.fields[0].value ||
+            task.fields[0].value.length === 0
+          )
+        );
       };
 
       $scope.performAction = function(action) {
