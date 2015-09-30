@@ -4,13 +4,23 @@
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('TasksContentCtrl', 
+  inboxControllers.controller('TasksContentCtrl',
     ['$scope', '$state', '$log', '$stateParams', 'Enketo',
     function ($scope, $state, $log, $stateParams, Enketo) {
 
-      $scope.setSelected($stateParams.id);
-      $scope.form = null;
-      $scope.formId = null;
+      var hasOneFormAndNoFields = function(task) {
+          return Boolean(
+            task &&
+            task.actions &&
+            task.actions.length === 1 &&
+            (
+              !task.fields ||
+              task.fields.length === 0 ||
+              !task.fields[0].value ||
+              task.fields[0].value.length === 0
+            )
+          );
+      };
 
       $scope.performAction = function(action) {
         $scope.contentError = false;
@@ -47,6 +57,14 @@
       $scope.$on('$destroy', function() {
         Enketo.unload($scope.form);
       });
+
+      $scope.form = null;
+      $scope.formId = null;
+      $scope.setSelected($stateParams.id);
+      if (hasOneFormAndNoFields($scope.selected)) {
+        $scope.performAction($scope.selected.actions[0]);
+      }
+      $log.info('TasksContentCtrl loaded');
 
     }
   ]);

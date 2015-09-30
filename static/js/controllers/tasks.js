@@ -11,9 +11,10 @@ var _ = require('underscore');
     function ($timeout, $scope, $state, TaskGenerator, Changes) {
 
       $scope.setSelected = function(id) {
-        if (id) {
-          var refreshing = ($scope.selected && $scope.selected._id) === id;
-          $scope.selected = _.findWhere($scope.tasks, { _id: id });
+        var refreshing = ($scope.selected && $scope.selected._id) === id,
+            task = _.findWhere($scope.tasks, { _id: id });
+        if (task) {
+          $scope.selected = task;
           $scope.settingSelected(refreshing);
         } else {
           $scope.clearSelected();
@@ -30,11 +31,10 @@ var _ = require('underscore');
           .then(function(tasks) {
             $scope.tasks = _.where(tasks, { resolved: false });
             $scope.loading = false;
-            var curr = _.findWhere(tasks, { _id: $state.params.id });
-            if (curr) {
-              $scope.selected = curr;
-            } else if (!$('#back').is(':visible') &&
-                       $scope.filterModel.type === 'tasks') {
+            $scope.setSelected($state.params.id);
+            if (!$scope.selected &&
+                !$('#back').is(':visible') &&
+                $scope.filterModel.type === 'tasks') {
               $timeout(function() {
                 var id = $('.inbox-items li').first().attr('data-record-id');
                 $state.go('tasks.detail', { id: id }, { location: 'replace' });
@@ -74,6 +74,7 @@ var _ = require('underscore');
           return true;
         }
       });
+      console.log('TasksCtrl loaded');
     }
   ]);
 
