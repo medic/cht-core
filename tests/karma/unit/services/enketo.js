@@ -201,17 +201,22 @@ describe('Enketo service', function() {
         .onSecondCall().returns(KarmaUtils.mockPromise(null, 'my model'));
       var expected = [ 'nope', 'still nope' ];
       enketoInit.returns(expected);
+      console.log('calling render');
       service
         .render($('<div></div>'), 'ok')
         .then(function() {
+          console.log('in then');
           done('Should not call callback');
         })
         .catch(function(actual) {
+          console.log('in catch');
+          console.log('cc', enketoInit.callCount);
+          console.log('actual', JSON.stringify(actual));
           chai.expect(enketoInit.callCount).to.equal(1);
           chai.expect(actual).to.deep.equal(expected);
           done();
         });
-      digest(3);
+      digest(4);
     });
 
     it('return form when everything works', function(done) {
