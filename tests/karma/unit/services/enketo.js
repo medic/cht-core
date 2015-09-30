@@ -99,7 +99,6 @@ describe('Enketo service', function() {
       translateFromFilter = sinon.stub(),
       form = {
         validate: sinon.stub(),
-        isValid: sinon.stub(),
         getDataStr: sinon.stub(),
         resetView: sinon.stub()
       },
@@ -140,7 +139,7 @@ describe('Enketo service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbQuery, dbPost, dbPut, transform, createObjectURL, FileReader, UserSettings, form.validate, form.isValid, form.getDataStr, form.resetView, Auth, Language, translateFromFilter);
+    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbQuery, dbPost, dbPut, transform, createObjectURL, FileReader, UserSettings, form.validate, form.getDataStr, form.resetView, Auth, Language, translateFromFilter);
   });
 
   describe('render', function() {
@@ -380,19 +379,18 @@ describe('Enketo service', function() {
   describe('save', function() {
 
     it('rejects on invalid form', function(done) {
-      form.isValid.returns(false);
+      form.validate.returns(KarmaUtils.mockPromise(null, false));
       service.save('V', form)
         .catch(function(actual) {
           chai.expect(actual.message).to.equal('Form is invalid');
           chai.expect(form.validate.callCount).to.equal(1);
-          chai.expect(form.isValid.callCount).to.equal(1);
           done();
         });
       digest(1);
     });
 
     it('creates report', function(done) {
-      form.isValid.returns(true);
+      form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
       form.getDataStr.returns(content);
       dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
@@ -401,7 +399,6 @@ describe('Enketo service', function() {
       service.save('V', form)
         .then(function(actual) {
           chai.expect(form.validate.callCount).to.equal(1);
-          chai.expect(form.isValid.callCount).to.equal(1);
           chai.expect(form.getDataStr.callCount).to.equal(1);
           chai.expect(form.resetView.callCount).to.equal(1);
           chai.expect(dbPost.callCount).to.equal(1);
@@ -425,7 +422,7 @@ describe('Enketo service', function() {
     });
 
     it('updates report', function(done) {
-      form.isValid.returns(true);
+      form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
       form.getDataStr.returns(content);
       dbGet.returns(KarmaUtils.mockPromise(null, {
@@ -442,7 +439,6 @@ describe('Enketo service', function() {
       service.save('V', form, '6')
         .then(function(actual) {
           chai.expect(form.validate.callCount).to.equal(1);
-          chai.expect(form.isValid.callCount).to.equal(1);
           chai.expect(form.getDataStr.callCount).to.equal(1);
           chai.expect(form.resetView.callCount).to.equal(1);
           chai.expect(dbGet.callCount).to.equal(1);
