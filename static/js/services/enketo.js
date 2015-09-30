@@ -203,9 +203,10 @@ angular.module('inboxServices').service('Enketo', [
           } else {
             result = create(formInternalId, record);
           }
-          return result.then(function() {
+          result.then(function() {
             form.resetView();
           });
+          return result;
         });
     };
 
