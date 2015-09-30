@@ -61,8 +61,13 @@ var HEALTH_CENTER = {
 
 var PERSON = {
   badge: 'fa-user',
+  name: '{{first_name}} {{last_name}}',
   fields: {
-    name: {
+    first_name: {
+      type: 'string',
+      required: true,
+    },
+    last_name: {
       type: 'string',
       required: true,
     },
@@ -70,7 +75,9 @@ var PERSON = {
       type: 'tel',
       required: true,
     },
-    code: 'string',
+    national_id_number: 'string',
+    date_of_birth: 'date',
+    alternate_phone: 'phone',
     notes: 'text',
     parent: 'custom:medic-place',
   },
