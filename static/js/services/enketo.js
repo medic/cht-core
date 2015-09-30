@@ -2,8 +2,8 @@ var _ = require('underscore');
 
 /* globals EnketoForm */
 angular.module('inboxServices').service('Enketo', [
-  '$window', '$log', '$q', 'Auth', 'DB', 'EnketoTranslation', 'FileReader', 'UserSettings', 'XSLT',
-  function($window, $log, $q, Auth, DB, EnketoTranslation, FileReader, UserSettings, XSLT) {
+  '$window', '$log', '$q', 'Auth', 'DB', 'EnketoTranslation', 'FileReader', 'UserSettings', 'XSLT', 'Language', 'translateFromFilter',
+  function($window, $log, $q, Auth, DB, EnketoTranslation, FileReader, UserSettings, XSLT, Language, translateFromFilter) {
     var objUrls = [];
 
     var replaceJavarosaMediaWithLoaders = function(formDocId, form) {
@@ -33,7 +33,7 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     var transformXml = function(doc, formDocId) {
-      return Promise
+      return $q
         .all([
           XSLT.transform('openrosa2html5form.xsl', doc),
           XSLT.transform('openrosa2xmlmodel.xsl', doc),
@@ -46,7 +46,7 @@ angular.module('inboxServices').service('Enketo', [
           if(formDocId) {
             replaceJavarosaMediaWithLoaders(formDocId, result.html);
           }
-          return Promise.resolve(result);
+          return $q.resolve(result);
         });
     };
 
@@ -62,7 +62,13 @@ angular.module('inboxServices').service('Enketo', [
             .getAttachment(form.id, 'xml')
             .then(FileReader)
             .then(function(text) {
-              return transformXml($.parseXML(text), form.id);
+              return Language().then(function(language) {
+                var xml = $.parseXML(text);
+                var $xml = $(xml);
+                $xml.find('model itext translation[lang="' + language + '"]').attr('default', '');
+                $xml.find('h\\:title,title').text(translateFromFilter(form.doc.title));
+                return transformXml(xml, form.id);
+              });
             });
         });
     };
