@@ -74,7 +74,7 @@
             <label>{{'Submit Report' | translate}}</label>
             <ul>
               <li ng-repeat="form in formDefinitions">
-                <a ui-sref="contacts.report({ id: selected.doc._id, formId: form.internalId })">{{form.title}}</a>
+                <a ui-sref="contacts.report({ id: selected.doc._id, formId: form.internalId })">{{form.title | translateFrom}}</a>
               </li>
             </ul>
           </li>
