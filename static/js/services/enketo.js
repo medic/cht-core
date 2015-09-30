@@ -55,7 +55,7 @@ angular.module('inboxServices').service('Enketo', [
         .query('medic/forms', { include_docs: true, key: formInternalId })
         .then(function(res) {
           if (!res.rows.length) {
-            return $q.reject(new Error('Requested form not found'));
+            throw new Error('Requested form not found');
           }
           var form = res.rows[0];
           return DB.get()
@@ -191,21 +191,22 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     this.save = function(formInternalId, form, docId) {
-      form.validate();
-      if (!form.isValid()) {
-        return $q.reject(new Error('Form is invalid'));
-      }
-      var result;
-      var record = form.getDataStr();
-      if (docId) {
-        result = update(formInternalId, record, docId);
-      } else {
-        result = create(formInternalId, record);
-      }
-      result.then(function() {
-        form.resetView();
-      });
-      return result;
+      return form.validate()
+        .then(function(valid) {
+          if (!valid) {
+            return $q.reject(new Error('Form is invalid'));
+          }
+          var result;
+          var record = form.getDataStr();
+          if (docId) {
+            result = update(formInternalId, record, docId);
+          } else {
+            result = create(formInternalId, record);
+          }
+          return result.then(function() {
+            form.resetView();
+          });
+        });
     };
 
     this.withAllForms = function() {

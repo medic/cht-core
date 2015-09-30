@@ -138,48 +138,50 @@ var modal = require('../modules/modal');
             docId = $scope.enketo_contact.docId,
             $modal = $('#edit-contact');
 
-        form.validate();
-        if(!form.isValid()) {
-          return $q.reject(new Error('Form is invalid'));
-        }
-        // don't `start` the modal until form validation is handled - otherwise
-        // fields are disabled, and ignored for validation.
-        var pane = modal.start($modal);
-        Promise.resolve()
-          .then(function() {
-            if(docId) {
-              return DB.get().get(docId);
+        return form.validate()
+          .then(function(valid) {
+            if(!valid) {
+              throw new Error('Form is invalid');
             }
-            return null;
-          })
-          .then(function(original) {
-            var submitted = EnketoTranslation.recordToJs(form.getDataStr());
-            var extras;
-            if(_.isArray(submitted)) {
-              extras = submitted[1];
-              submitted = submitted[0];
-            } else {
-              extras = {};
-            }
-            if(original) {
-              submitted = $.extend({}, original, submitted);
-            } else {
-              submitted.type = $scope.enketo_contact.type;
-            }
+            // don't `start` the modal until form validation is handled - otherwise
+            // fields are disabled, and ignored for validation.
+            var pane = modal.start($modal);
+            return Promise.resolve()
+              .then(function() {
+                if(docId) {
+                  return DB.get().get(docId);
+                }
+                return null;
+              })
+              .then(function(original) {
+                var submitted = EnketoTranslation.recordToJs(form.getDataStr());
+                var extras;
+                if(_.isArray(submitted)) {
+                  extras = submitted[1];
+                  submitted = submitted[0];
+                } else {
+                  extras = {};
+                }
+                if(original) {
+                  submitted = $.extend({}, original, submitted);
+                } else {
+                  submitted.type = $scope.enketo_contact.type;
+                }
 
-            return saveDoc(submitted, original, extras);
-          })
-          .then(function(doc) {
-            delete $scope.enketo_contact;
-            pane.done();
-            return DB.get().get(doc.id);
-          })
-          .then(function(doc) {
-            $rootScope.$broadcast('ContactUpdated', doc);
-          })
-          .catch(function(err) {
-            pane.done(translateFilter('Error updating contact'), err);
-          });
+                return saveDoc(submitted, original, extras);
+              })
+              .then(function(doc) {
+                delete $scope.enketo_contact;
+                pane.done();
+                return DB.get().get(doc.id);
+              })
+              .then(function(doc) {
+                $rootScope.$broadcast('ContactUpdated', doc);
+              })
+              .catch(function(err) {
+                pane.done(translateFilter('Error updating contact'), err);
+              });
+            });
       };
 
       function saveDoc(doc, original, extras) {
