@@ -75,10 +75,10 @@ angular.module('inboxServices').service('EnketoTranslation', [
     function extraAttributesFor(conf) {
       var extras = {};
       var typeString = conf.type;
-      if(/^db:/.test(typeString)) {
-        extras.appearance = 'db-object';
-      } else if(typeString === 'text') {
+      if(typeString === 'text') {
         extras.appearance = 'multiline';
+      } else if(/^db:/.test(typeString)) {
+        extras.appearance = 'db-object';
       }
       return extras;
     }
