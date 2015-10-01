@@ -52,6 +52,14 @@
   .question .geopicker input {
     width: 80%;
   }
+  input[type="tel"] {
+    /* inherit all standard TEXT input styles */
+    &:extend(.enketo input[type="text"]);
+  }
+  .question input[type="tel"] {
+    /* inherit all standard TEXT input styles */
+    &:extend(.enketo .question input[type="text"]);
+  }
   .invalid-constraint, .invalid-required {
     margin: 0;
     padding-left: 15px;

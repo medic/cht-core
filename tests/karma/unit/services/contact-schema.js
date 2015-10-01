@@ -190,7 +190,7 @@ describe('ContactSchema service', function() {
               required: true,
             },
             phone: {
-              type: 'phone',
+              type: 'tel',
               required: true,
             },
             code: {

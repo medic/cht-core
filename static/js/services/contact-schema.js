@@ -67,7 +67,7 @@ var PERSON = {
       required: true,
     },
     phone: {
-      type: 'phone',
+      type: 'tel',
       required: true,
     },
     code: 'string',
