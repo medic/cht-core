@@ -51,8 +51,29 @@ var nools = require('nools'),
         return nools.compile(settings.tasks.rules, options);
       };
 
-      var getDataRecords = function(callback) {
-        var scope = {
+      var search = function(scope) {
+        return $q(function(resolve, reject) {
+          var options = { limit: 99999999 };
+          Search(scope, options, function(err, docs) {
+            if (err) {
+              return reject(err);
+            }
+            resolve(docs);
+          });
+        });
+      };
+
+      var getContacts = function() {
+        return search({
+          filterModel: {
+            type: 'contacts'
+          },
+          filterQuery: ''
+        });
+      };
+
+      var getDataRecords = function() {
+        return search({
           filterModel: {
             type: 'reports',
             valid: true,
@@ -62,75 +83,79 @@ var nools = require('nools'),
           },
           filterQuery: '',
           forms: [ ]
-        };
-        var options = { limit: 99999999 };
-        Search(scope, options, callback);
+        });
       };
 
-      var getGroupId = function(doc) {
+      var getContactId = function(doc) {
         // get the associated patient or place id to group reports by
         return doc.patient_id || doc.place_id ||
           (doc.fields && (doc.fields.patient_id || doc.fields.place_id));
       };
 
-      var groupReports = function(dataRecords) {
-        return _.map(dataRecords, function(report) {
-          var result = { doc: report, reports: [] };
-          var groupId = getGroupId(report);
-          if (groupId) {
-            result.reports = _.filter(dataRecords, function(r) {
-              return r._id !== report._id && getGroupId(r) === groupId;
-            });
-          }
-          return result;
+      var groupReports = function(dataRecords, contacts) {
+        var results = _.map(contacts, function(contact) {
+          return { contact: contact, reports: [] };
         });
+        dataRecords.forEach(function(report) {
+          var groupId = getContactId(report);
+          var group = _.find(results, function(result) {
+            return result.contact && result.contact._id === groupId;
+          });
+          if (!group) {
+            group = { reports: [] };
+            results.push(group);
+          }
+          group.reports.push(report);
+        });
+        return results;
       };
 
-      var getTasks = function(dataRecords, settings, callback) {
-        var reports = groupReports(dataRecords);
+      var getData = function() {
+        return $q.all([ getDataRecords(), getContacts() ])
+          .then(function(results) {
+            return groupReports(results[0], results[1]);
+          });
+      };
+
+      var getTasks = function(contacts, settings) {
         var flow = getFlow(settings);
-        var Report = flow.getDefined('report');
+        var Contact = flow.getDefined('contact');
         var session = flow.getSession();
         var tasks = [];
         session.on('task', function(task) {
           tasks.push(task);
         });
-        reports.forEach(function(report) {
-          session.assert(new Report(report));
+        contacts.forEach(function(contact) {
+          session.assert(new Contact(contact));
         });
-        return session.match().then(
-          function() {
-            callback(null, tasks);
-          },
-          callback
-        );
+        return session.match().then(function() {
+          return tasks;
+        });
+      };
+
+      var getSettings = function() {
+        return $q(function(resolve, reject) {
+          Settings(function(err, settings) {
+            if (err) {
+              return reject(err);
+            }
+            resolve(settings);
+          });
+        });
       };
 
       return function() {
-        var deferred = $q.defer();
-        Settings(function(err, settings) {
-          if (err) {
-            return deferred.reject(err);
-          }
+        return getSettings().then(function(settings) {
           if (!settings.tasks ||
               !settings.tasks.rules ||
               !settings.tasks.schedules) {
             // no rules or schedules configured
-            return deferred.resolve([]);
+            return [];
           }
-          getDataRecords(function(err, dataRecords) {
-            if (err) {
-              return deferred.reject(err);
-            }
-            getTasks(dataRecords, settings, function(err, tasks) {
-              if (err) {
-                return deferred.reject(err);
-              }
-              deferred.resolve(tasks);
-            });
+          return getData().then(function(contacts) {
+            return getTasks(contacts, settings);
           });
         });
-        return deferred.promise;
       };
     }
   ]);
