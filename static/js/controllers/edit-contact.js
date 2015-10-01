@@ -141,7 +141,9 @@ var modal = require('../modules/modal');
         return form.validate()
           .then(function(valid) {
             if(!valid) {
-              throw new Error('Form is invalid');
+              // validation messages will be displayed for individual fields.
+              // That's all we want, really.
+              return;
             }
             // don't `start` the modal until form validation is handled - otherwise
             // fields are disabled, and ignored for validation.
