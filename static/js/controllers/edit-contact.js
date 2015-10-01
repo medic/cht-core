@@ -209,7 +209,7 @@ var modal = require('../modules/modal');
                         doc[f] = newlySavedObject;
                         return doc;
                       });
-                  } else if(original && doc[f] === original[f]._id) {
+                  } else if(original && original[f] && doc[f] === original[f]._id) {
                     doc[f] = original[f];
                   } else {
                     return DB.get().get(doc[f])
