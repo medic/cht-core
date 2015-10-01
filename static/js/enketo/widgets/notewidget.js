@@ -58,7 +58,9 @@ define( function( require, exports, module ) {
         }
     };
 
-    Notewidget.prototype.destroy = function( element ) {};
+    Notewidget.prototype.destroy = function( element ) {
+        /* jshint unused:false */
+    };
 
     $.fn[ pluginName ] = function( options, event ) {
         return this.each( function() {
