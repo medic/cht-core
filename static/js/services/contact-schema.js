@@ -16,6 +16,7 @@ var CLINIC = {
       type: 'db:person',
       required: true,
     },
+    location: 'geopoint',
   },
 };
 
@@ -75,7 +76,7 @@ var PERSON = {
     },
     national_id_number: 'string',
     date_of_birth: 'date',
-    alternate_phone: 'phone',
+    alternate_phone: 'tel',
     notes: 'text',
     parent: 'custom:medic-place',
   },
