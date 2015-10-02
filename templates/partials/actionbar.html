@@ -41,18 +41,31 @@
         </div>
       </div>
       <div class="col-sm-8 detail-actions right-pane">
-        <div class="actions" ng-show="showActionBar && actionBar._id && !loadingContent && (('reports.detail' | isState) || ('contacts.detail' | isState))">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" data-send-to="{{actionBar.sendTo}}">
+        <div class="actions dropup" ng-show="showActionBar && actionBar._id && !loadingContent && (('reports.detail' | isState) || ('contacts.detail' | isState))">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="tel:{{actionBar.sendTo.phone}}" ng-show="filterModel.type === 'contacts'" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
+            <span class="fa fa-phone"></span>
+            <p>{{'call' | translate}}</p>
+          </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{actionBar.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
             <span class="fa fa-envelope"></span>
             <p>{{'Send Message' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" ng-show="filterModel.type === 'contacts' && actionBar.sendTo.type !== 'person'" ng-class="{'mm-icon-disabled': actionBar.sendTo.type !== 'health_center'}" data-send-to="{{actionBar.sendTo}}" data-everyone-at="true">
-            <span class="fa-stack">
-              <i class="fa fa-envelope fa-stack-1x stack-bottom-left"></i>
-              <i class="fa fa-envelope fa-stack-1x stack-top-right"></i>
-            </span>
-            <p>{{'Message All' | translate}}</p>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" data-send-to="{{actionBar.sendTo}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}" ng-show="filterModel.type !== 'contacts' || actionBar.sendTo.type !== 'health_center'">
+            <span class="fa fa-envelope"></span>
+            <p>{{'Send Message' | translate}}</p>
           </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption desktop-only dropdown-toggle" ng-show="filterModel.type === 'contacts' && actionBar.sendTo.type === 'health_center'" data-toggle="dropdown">
+            <span class="fa fa-envelope"></span>
+            <p>{{'Send Message' | translate}}</p>
+          </a>
+          <ul class="dropdown-menu">
+            <li>
+              <a class="send-message" data-send-to="{{actionBar.sendTo}}">{{'Send Message' | translate}}</a>
+            </li>
+            <li>
+              <a class="send-message" data-send-to="{{actionBar.sendTo}}" data-everyone-at="true">{{'Message All' | translate}}</a>
+            </li>
+          </ul>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="filterModel.type === 'reports' && !actionBar.verified" ng-click="emit('VerifyReport', true)">
             <span class="fa fa-check"></span>
             <p>{{'Verify' | translate}}</p>
@@ -73,7 +86,7 @@
             <span class="fa fa-pencil"></span>
             <p>{{'Edit' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="deleteDoc(actionBar._id)">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="actionBar.disableDelete || deleteDoc(actionBar._id)" ng-class="{'mm-icon-disabled': actionBar.disableDelete}">
             <span class="fa fa-trash-o"></span>
             <p>{{'Delete' | translate}}</p>
           </a>

@@ -25,7 +25,10 @@
           <li ng-repeat="(name, conf) in selectedSchemaNormalFields()">
             <label>{{selected.doc.type + '.field.' + name | translate}}</label>
             <p>
-              <span ng-if="conf.type === 'tel'"><a href="tel:{{selected.doc[name]}}">{{selected.doc[name]}}</a></span>
+              <span ng-if="conf.type === 'tel'">
+                <a href="tel:{{selected.doc[name]}}" class="mobile-only">{{selected.doc[name]}}</a>
+                <span class="desktop-only">{{selected.doc[name]}}</span>
+              </span>
               <span ng-if="conf.type.indexOf('db:') === 0"><a ui-sref="contacts.detail({ id: selected.doc[name]._id })">{{selected.doc[name].name}}</a></span>
               <span ng-if="conf.type !== 'tel' && conf.type.indexOf('db:') !== 0">{{selected.doc[name]}}</span>
             </p>

@@ -1171,6 +1171,10 @@ a.fa:hover {
   margin-bottom: 1em;
 }
 
+.mobile-only {
+  display: none;
+}
+
 @media (max-width: 767px) {
   .item-content {
     border-width: 0;
@@ -1433,6 +1437,12 @@ a.fa:hover {
     }
   }
   .header .tabs .configuration-tab {
+    display: none;
+  }
+  .mobile-only {
+    display: initial;
+  }
+  .desktop-only {
     display: none;
   }
 }
