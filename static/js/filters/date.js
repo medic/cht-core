@@ -98,8 +98,8 @@
         if (!date) {
           return '';
         }
-        return  '<div class="relative-date-content">' + FormatDate.relative(date) + '</div>' +
-                '<div class="full-date">' + FormatDate.datetime(date) + '</div>';
+        return '<div class="relative-date-content">' + FormatDate.relative(date) + '</div>' +
+               '<div class="full-date">' + FormatDate.datetime(date) + '</div>';
       };
     }
   ]);
@@ -118,7 +118,7 @@
           classes.push('approximate');
         }
         var attr = classes.length ? ' class="' + classes.join(' ') + '"' : '';
-        return  '<span' + attr + '>' + weeks.number + '</span>';
+        return '<span' + attr + '>' + weeks.number + '</span>';
       };
     }
   ]);

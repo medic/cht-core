@@ -2,8 +2,8 @@ var _ = require('underscore');
 
 /* globals EnketoForm */
 angular.module('inboxServices').service('Enketo', [
-  '$window', '$log', '$q', 'Auth', 'DB', 'EnketoTranslation', 'FileReader', 'UserSettings', 'XSLT',
-  function($window, $log, $q, Auth, DB, EnketoTranslation, FileReader, UserSettings, XSLT) {
+  '$window', '$log', '$q', 'Auth', 'DB', 'EnketoTranslation', 'FileReader', 'UserSettings', 'XSLT', 'Language', 'translateFromFilter',
+  function($window, $log, $q, Auth, DB, EnketoTranslation, FileReader, UserSettings, XSLT, Language, translateFromFilter) {
     var objUrls = [];
 
     var replaceJavarosaMediaWithLoaders = function(formDocId, form) {
@@ -33,7 +33,7 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     var transformXml = function(doc, formDocId) {
-      return Promise
+      return $q
         .all([
           XSLT.transform('openrosa2html5form.xsl', doc),
           XSLT.transform('openrosa2xmlmodel.xsl', doc),
@@ -46,7 +46,7 @@ angular.module('inboxServices').service('Enketo', [
           if(formDocId) {
             replaceJavarosaMediaWithLoaders(formDocId, result.html);
           }
-          return Promise.resolve(result);
+          return $q.resolve(result);
         });
     };
 
@@ -55,14 +55,20 @@ angular.module('inboxServices').service('Enketo', [
         .query('medic/forms', { include_docs: true, key: formInternalId })
         .then(function(res) {
           if (!res.rows.length) {
-            return $q.reject(new Error('Requested form not found'));
+            throw new Error('Requested form not found');
           }
           var form = res.rows[0];
           return DB.get()
             .getAttachment(form.id, 'xml')
             .then(FileReader)
             .then(function(text) {
-              return transformXml($.parseXML(text), form.id);
+              return Language().then(function(language) {
+                var xml = $.parseXML(text);
+                var $xml = $(xml);
+                $xml.find('model itext translation[lang="' + language + '"]').attr('default', '');
+                $xml.find('h\\:title,title').text(translateFromFilter(form.doc.title));
+                return transformXml(xml, form.id);
+              });
             });
         });
     };
@@ -185,21 +191,23 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     this.save = function(formInternalId, form, docId) {
-      form.validate();
-      if (!form.isValid()) {
-        return $q.reject(new Error('Form is invalid'));
-      }
-      var result;
-      var record = form.getDataStr();
-      if (docId) {
-        result = update(formInternalId, record, docId);
-      } else {
-        result = create(formInternalId, record);
-      }
-      result.then(function() {
-        form.resetView();
-      });
-      return result;
+      return form.validate()
+        .then(function(valid) {
+          if (!valid) {
+            return $q.reject(new Error('Form is invalid'));
+          }
+          var result;
+          var record = form.getDataStr();
+          if (docId) {
+            result = update(formInternalId, record, docId);
+          } else {
+            result = create(formInternalId, record);
+          }
+          result.then(function() {
+            form.resetView();
+          });
+          return result;
+        });
     };
 
     this.withAllForms = function() {

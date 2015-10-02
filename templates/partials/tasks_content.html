@@ -16,14 +16,6 @@
 
   <div class="col-sm-8 item-content item-body" ng-show="selected && !form && !loadingContent && !loadingForm && !contentError">
     <div>
-      <div class="status">
-        <span class="mm-badge mm-badge-round">
-          <span class="fa" ng-class="{
-            'fa-user': selected.type === 'visit',
-            'fa-calendar': selected.type !== 'visit'
-          }"></span>
-        </span>
-      </div>
 
       <div class="body">
         <h2>{{selected.title | translateFrom:selected}}</h2>
@@ -32,6 +24,16 @@
           <li>
             <label>{{'task.date' | translate}}</label>
             <p ng-bind-html="selected.date | simpleDate"></p>
+          </li>
+          <li>
+            <label>{{'task.priority' | translate}}</label>
+            <p ng-class="{'high-priority': selected.priority === 'high', 'medium-priority': selected.priority === 'medium'}">
+              <span class="priority">
+                <i class="fa fa-exclamation-triangle high-priority-icon"></i>
+                <i class="fa fa-info-circle medium-priority-icon"></i>
+              </span>
+              {{selected.priorityLabel | translateFrom:selected}}
+            </p>
           </li>
           <li ng-repeat="field in selected.fields">
             <label>{{field.label | translateFrom:selected}}</label>

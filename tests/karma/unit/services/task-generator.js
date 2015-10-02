@@ -9,72 +9,80 @@ describe('TaskGenerator service', function() {
 
   /* jshint quotmark: false */
   var rules =
-    "define Report {" +
-    "  doc: null," +
+    "define Contact {" +
+    "  contact: null," +
     "  reports: null" +
     "}" +
     "" +
     "define Task {" +
     "  _id: null," +
     "  doc: null," +
+    "  contact: null," +
     "  type: null," +
     "  date: null," +
     "  title: null," +
     "  fields: null," +
+    "  reports: null," + // exposed for testing only
     "  resolved: null" +
     "}" +
     "" +
     "rule GenerateEvents {" +
     "  when {" +
-    "    r: Report" +
+    "    c: Contact" +
     "  }" +
     "  then {" +
-    "    if (r.doc.form === 'P' || r.doc.form === 'R') {" +
-    "      var visitCount = 0;" +
-    "      r.reports.forEach(function(report) {" +
-    "        if (report.form === 'V') {" +
-    "          visitCount++;" +
-    "        }" +
-    "      });" +
-    "      Utils.getSchedule('anc-registration').events.forEach(function(s) {" +
-    "        var visit = new Task({" +
-    "          _id: r.doc._id + '-' + s.id," +
-    "          doc: r.doc," +
-    "          type: s.type," +
-    "          date: Utils.addDate(Utils.getLmpDate(r.doc), s.days).toISOString()," +
-    "          title: s.title," +
-    "          fields: [" +
-    "            {" +
-    "              label: [{ content: 'Description', locale: 'en' }]," +
-    "              value: s.description" +
-    "            }" +
-    "          ]," +
-    "          resolved: visitCount > 0" +
+    "    var visitCount = 0;" +
+    "    c.reports.forEach(function(r) {" +
+    "      if (r.form === 'V') {" +
+    "        visitCount++;" +
+    "      }" +
+    "    });" +
+    "    c.reports.forEach(function(r) {" +
+    "      if (r.form === 'P' || r.form === 'R') {" +
+    "        Utils.getSchedule('anc-registration').events.forEach(function(s) {" +
+    "          var visit = new Task({" +
+    "            _id: r._id + '-' + s.id," +
+    "            doc: r," +
+    "            contact: c.contact," +
+    "            type: s.type," +
+    "            date: Utils.addDate(Utils.getLmpDate(r), s.days).toISOString()," +
+    "            title: s.title," +
+    "            fields: [" +
+    "              {" +
+    "                label: [{ content: 'Description', locale: 'en' }]," +
+    "                value: s.description" +
+    "              }" +
+    "            ]," +
+    "            reports: c.reports," +
+    "            resolved: visitCount > 0" +
+    "          });" +
+    "          emit('task', visit);" +
+    "          assert(visit);" +
+    "          visitCount--;" +
     "        });" +
-    "        emit('task', visit);" +
-    "        assert(visit);" +
-    "        visitCount--;" +
-    "      });" +
-    "    } else if (r.doc.form === 'V') {" +
-    "      Utils.getSchedule('anc-follow-up').events.forEach(function(s) {" +
-    "        var visit = new Task({" +
-    "          _id: r.doc._id + '-' + s.id," +
-    "          doc: r.doc," +
-    "          type: s.type," +
-    "          date: Utils.addDate(Utils.getLmpDate(r.doc), s.days).toISOString()," +
-    "          title: s.title," +
-    "          fields: [" +
-    "            {" +
-    "              label: [{ content: 'Description', locale: 'en' }]," +
-    "              value: s.description" +
-    "            }" +
-    "          ]," +
-    "          resolved: visitCount > 0" +
+    "      } else if (r.form === 'V') {" +
+    "        Utils.getSchedule('anc-follow-up').events.forEach(function(s) {" +
+    "          var visit = new Task({" +
+    "            _id: r._id + '-' + s.id," +
+    "            doc: r," +
+    "            contact: c.contact," +
+    "            type: s.type," +
+    "            date: Utils.addDate(Utils.getLmpDate(r), s.days).toISOString()," +
+    "            title: s.title," +
+    "            fields: [" +
+    "              {" +
+    "                label: [{ content: 'Description', locale: 'en' }]," +
+    "                value: s.description" +
+    "              }" +
+    "            ]," +
+    "            reports: c.reports," +
+    "            resolved: visitCount > 0" +
+    "          });" +
+    "          emit('task', visit);" +
+    "          assert(visit);" +
     "        });" +
-    "        emit('task', visit);" +
-    "        assert(visit);" +
-    "      });" +
     "    }" +
+    "      });" +
     "  }" +
     "}";
   /* jshint quotmark: true */
@@ -84,8 +92,8 @@ describe('TaskGenerator service', function() {
       _id: 1,
       form: 'P',
       reported_date: 1437618272360,
-      patient_id: '059',
       fields: {
+        patient_id: 1,
         patient_name: 'Jenny',
         last_menstrual_period: 10
       }
@@ -94,8 +102,8 @@ describe('TaskGenerator service', function() {
       _id: 2,
       form: 'P',
       reported_date: 1437820272360,
-      patient_id: '946',
       fields: {
+        patient_id: 2,
         patient_name: 'Sally',
         last_menstrual_period: 20
       }
@@ -105,18 +113,24 @@ describe('TaskGenerator service', function() {
       form: 'V',
       reported_date: 1438820272360,
       fields: {
-        patient_id: '059'
+        patient_id: 1
       }
     },
     {
       _id: 4,
       form: 'R',
       reported_date: 1437920272360,
-      patient_id: '555',
       fields: {
+        patient_id: 3,
         patient_name: 'Rachel'
       }
     }
+  ];
+
+  var contacts = [
+    { _id: 1, name: 'Jenny' },
+    { _id: 2, name: 'Sally' },
+    { _id: 3, name: 'Rachel' }
   ];
 
   var schedules = [
@@ -127,22 +141,22 @@ describe('TaskGenerator service', function() {
           id: 'visit-1',
           days: 50,
           type: 'visit',
-          title: [{ content: 'ANC visit #1 for {{doc.fields.patient_name}}', locale: 'en' }],
-          description: [{ content: 'Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #1. Remember to check for danger signs!', locale: 'en' }]
+          title: [{ content: 'ANC visit #1 for {{contact.name}}', locale: 'en' }],
+          description: [{ content: 'Please visit {{contact.name}} in Harrisa Village and refer her for ANC visit #1. Remember to check for danger signs!', locale: 'en' }]
         },
         {
           id: 'visit-2',
           days: 100,
           type: 'visit',
-          title: [{ content: 'ANC visit #2 for {{doc.fields.patient_name}}', locale: 'en' }],
-          description: [{ content: 'Please visit {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #2. Remember to check for danger signs!', locale: 'en' }]
+          title: [{ content: 'ANC visit #2 for {{contact.name}}', locale: 'en' }],
+          description: [{ content: 'Please visit {{contact.name}} in Harrisa Village and refer her for ANC visit #2. Remember to check for danger signs!', locale: 'en' }]
         },
         {
           id: 'immunisation-1',
           days: 150,
           type: 'immunisation',
-          title: [{ content: 'ANC immunisation #1 for {{doc.fields.patient_name}}', locale: 'en' }],
-          description: [{ content: 'Please immunise {{doc.fields.patient_name}} in Harrisa Village.', locale: 'en' }]
+          title: [{ content: 'ANC immunisation #1 for {{contact.name}}', locale: 'en' }],
+          description: [{ content: 'Please immunise {{contact.name}} in Harrisa Village.', locale: 'en' }]
         }
       ]
     },
@@ -153,8 +167,8 @@ describe('TaskGenerator service', function() {
           id: 'follow-up-1',
           days: 50,
           type: 'visit',
-          title: [{ content: 'ANC follow up #1 for {{doc.fields.patient_name}}', locale: 'en' }],
-          description: [{ content: 'Please follow up {{doc.fields.patient_name}} in Harrisa Village and refer her for ANC visit #1. Remember to check for danger signs!', locale: 'en' }]
+          title: [{ content: 'ANC follow up #1 for {{contact.name}}', locale: 'en' }],
+          description: [{ content: 'Please follow up {{contact.name}} in Harrisa Village and refer her for ANC visit #1. Remember to check for danger signs!', locale: 'en' }]
         }
       ]
     }
@@ -188,7 +202,7 @@ describe('TaskGenerator service', function() {
     });
     service().catch(function(err) {
       chai.expect(err).to.equal('boom');
-      chai.expect(Search.callCount).to.equal(1);
+      chai.expect(Search.callCount).to.equal(2);
       done();
     });
     $rootScope.$digest();
@@ -202,24 +216,6 @@ describe('TaskGenerator service', function() {
       done();
     });
     $rootScope.$digest();
-  });
-
-  it('returns empty when search returns no documents', function(done) {
-    Search.callsArgWith(2, null, []);
-    Settings.callsArgWith(0, null, {
-      tasks: {
-        rules: rules,
-        schedules: schedules
-      }
-    });
-    service().then(function(actual) {
-      chai.expect(Search.callCount).to.equal(1);
-      chai.expect(actual).to.deep.equal([]);
-      done();
-    }).catch(done);
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
   });
 
   it('returns empty when settings returns no config', function(done) {
@@ -242,7 +238,8 @@ describe('TaskGenerator service', function() {
         .toISOString();
     };
 
-    Search.callsArgWith(2, null, dataRecords);
+    Search.onFirstCall().callsArgWith(2, null, dataRecords);
+    Search.onSecondCall().callsArgWith(2, null, contacts);
     Settings.callsArgWith(0, null, {
       tasks: {
         rules: rules,
@@ -250,7 +247,7 @@ describe('TaskGenerator service', function() {
       }
     });
 
-    var expectations = function(actual, registration, schedule, resolved) {
+    var expectations = function(actual, registration, schedule, reports, resolved) {
       var task = _.findWhere(actual, { _id: registration._id + '-' + schedule.id });
       if (!task) {
         console.log('Failed to generate task: ' + registration._id + '-' + schedule.id);
@@ -263,26 +260,29 @@ describe('TaskGenerator service', function() {
       chai.expect(task.fields[0].value).to.deep.equal(schedule.description);
       chai.expect(task.doc._id).to.equal(registration._id);
       chai.expect(task.resolved).to.equal(resolved);
+      chai.expect(task.reports).to.deep.equal(reports);
     };
     service().then(function(actual) {
-      chai.expect(Search.callCount).to.equal(1);
+      chai.expect(Search.callCount).to.equal(2);
       chai.expect(Settings.callCount).to.equal(1);
       chai.expect(actual.length).to.equal(10);
-      expectations(actual, dataRecords[0], schedules[0].events[0], true);
-      expectations(actual, dataRecords[0], schedules[0].events[1], false);
-      expectations(actual, dataRecords[0], schedules[0].events[2], false);
-      expectations(actual, dataRecords[1], schedules[0].events[0], false);
-      expectations(actual, dataRecords[1], schedules[0].events[1], false);
-      expectations(actual, dataRecords[1], schedules[0].events[2], false);
-      expectations(actual, dataRecords[2], schedules[1].events[0], false);
-      expectations(actual, dataRecords[3], schedules[0].events[0], false);
-      expectations(actual, dataRecords[3], schedules[0].events[1], false);
-      expectations(actual, dataRecords[3], schedules[0].events[2], false);
+      expectations(actual, dataRecords[0], schedules[0].events[0], [ dataRecords[0], dataRecords[2] ], true);
+      expectations(actual, dataRecords[0], schedules[0].events[1], [ dataRecords[0], dataRecords[2] ], false);
+      expectations(actual, dataRecords[0], schedules[0].events[2], [ dataRecords[0], dataRecords[2] ], false);
+      expectations(actual, dataRecords[1], schedules[0].events[0], [ dataRecords[1] ], false);
+      expectations(actual, dataRecords[1], schedules[0].events[1], [ dataRecords[1] ], false);
+      expectations(actual, dataRecords[1], schedules[0].events[2], [ dataRecords[1] ], false);
+      expectations(actual, dataRecords[2], schedules[1].events[0], [ dataRecords[0], dataRecords[2] ], false);
+      expectations(actual, dataRecords[3], schedules[0].events[0], [ dataRecords[3] ], false);
+      expectations(actual, dataRecords[3], schedules[0].events[1], [ dataRecords[3] ], false);
+      expectations(actual, dataRecords[3], schedules[0].events[2], [ dataRecords[3] ], false);
       done();
     }).catch(done);
     setTimeout(function() {
       $rootScope.$digest();
+      setTimeout(function() {
+        $rootScope.$digest();
+      });
     });
   });
-
 });

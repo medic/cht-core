@@ -37,7 +37,6 @@ define( function( require, exports, module ) {
     Dbobjectwidget.prototype._init = function() {
         var angularServices = angular.element(document.body).injector();
         var translate = angularServices.get('$translate').instant;
-        var ContactSchema = angularServices.get('ContactSchema');
         var DB = angularServices.get('DB').get();
 
         var formatResult = function(row) {
@@ -51,25 +50,17 @@ define( function( require, exports, module ) {
         };
 
         var textInput = $(this.element).find('input');
-        textInput.attr('type', 'hidden');
         var dbObjectType = textInput.attr('data-type-xml');
 
         var loader = $('<div class="loader"/></div>');
         textInput.after(loader);
-
-        var titleString = ContactSchema.get(dbObjectType).title;
-        var titleFor = function(doc) {
-            return titleString.replace(/\{\{[^}]*\}\}/g, function(m) {
-                return doc[m.substring(2, m.length-2)];
-            });
-        };
 
         DB.query('medic/doc_by_type', {include_docs:true, key:[dbObjectType]})
             .then(function(res) {
                 loader.remove();
 
                 var rows = _.sortBy(res.rows, function(row) {
-                    return titleFor(row.doc);
+                    return row.doc.name;
                 });
 
                 // add 'new' option TODO this should only be added if requested
@@ -86,6 +77,15 @@ define( function( require, exports, module ) {
                     formatSelection: formatResult,
                     width: '100%',
                 });
+
+                // Tell enketo to ignore the new <input> field that select2 adds
+                textInput.parent().find('input.select2-focusser').addClass('ignore');
+
+                // apologies - here we open and close the select2 - this works
+                // around a bug which would otherwise ignore the `required`
+                // attribute.
+                textInput.select2('open');
+                textInput.select2('close');
             });
     };
 

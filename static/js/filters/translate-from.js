@@ -22,7 +22,12 @@ var _ = require('underscore');
     }
 
     // second format: { en: 'Hello' }
-    return labels[locale] ||_.values(labels)[0];
+    if (_.isObject(labels)) {
+      return labels[locale] || _.values(labels)[0];
+    }
+
+    // we've tried everything, just return the input
+    return labels;
   };
 
   module.filter('translateFrom', ['$translate',

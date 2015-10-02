@@ -52,11 +52,9 @@ var _ = require('underscore');
 
   inboxServices.factory('FacilityHierarchy', ['Facility',
     function(Facility) {
-      return function(district, callback) {
+      return function(callback) {
         var options = {
-          types: [ 'clinic', 'health_center', 'district_hospital' ],
-          district: district,
-          targetScope: 'root'
+          types: [ 'clinic', 'health_center', 'district_hospital' ]
         };
         Facility(options, function(err, facilities) {
           if (err) {

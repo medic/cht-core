@@ -15,11 +15,44 @@ define( function( require, exports, module ) {
     var pluginName = 'phonewidget';
 
     // Set up enketo validation for `phone` input type
-    var settings = {}; // TODO these should come from Settings service
-    FormModel.prototype.types.phone = {
-        validate: function( x ) {
-            // TODO if number passes validation, check in DB that it's not a duplicate
-            return libphonenumber.validate(settings, x);
+    FormModel.prototype.types.tel = {
+        validate: function( fieldValue ) {
+            var angularServices = angular.element(document.body).injector();
+            var Settings = angularServices.get('SettingsP');
+
+            return Settings()
+                .then(function(settings) {
+                    var phoneNumber = libphonenumber.format(settings, fieldValue);
+                    if (!libphonenumber.validate(settings, phoneNumber)) {
+                        throw new Error('invalid phone number: "' + phoneNumber + '"');
+                    }
+                    return phoneNumber;
+                })
+                .then(function(phoneNumber) {
+                    // Check the phone number is unique.  N.B. this makes the
+                    // assumption that we have an object type `person` with a
+                    // field `phone`.
+
+                    var options = { params: { key: [ phoneNumber ] } };
+                    var DbView = angularServices.get('DbViewP');
+                    return DbView('person_by_phone', options);
+                })
+                .then(function(res) {
+                    var results = res.results;
+                    if (results.rows.length === 0) {
+                        return true;
+                    }
+
+                    // TODO surely there's a nicer way to get this.  We should
+                    // probably include the ID(s) of entities we're editing in
+                    // then enketo model.
+                    var contactId = angular.element($('.enketo form')).scope().enketo_contact.docId;
+                    if (results.rows[0].id !== contactId) {
+                        throw new Error('phone number not unique: "' + fieldValue + '"');
+                    }
+
+                    return true;
+                });
         },
     };
 

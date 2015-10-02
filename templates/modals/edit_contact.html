@@ -3,11 +3,12 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{'contact.type.' + category + (contactId? '.edit': '.new') | translate}}</h3>
+        <h3 ng-if="contactId">{{'contact.type.' + contact.type + '.edit' | translate}}</h3>
+        <h3 ng-if="!contactId">{{'contact.type.' + category + '.new' | translate}}</h3>
       </div>
       <div class="modal-body enketo">
 
-        <div class="form-group" ng-show="category === 'place'">
+        <div class="form-group" ng-show="category === 'place' && !contactId">
           <label>{{'Contact type' | translate}} *</label>
           <p class="horizontal-options">
             <a class="icon" ng-class="{'selected': contact.type === t}" ng-click="setContactType(t)" ng-repeat="(t, props) in placeSchemas">

@@ -11,6 +11,7 @@
   require('./cache');
   require('./changes');
   require('./conflict-resolution');
+  require('./contact-form');
   require('./contact-schema');
   require('./count-messages');
   require('./db');

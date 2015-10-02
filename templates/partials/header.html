@@ -16,6 +16,36 @@
           </div>
         </a>
         <ul role="menu" class="dropdown-menu mm-dropdown-menu">
+          <li role="presentation" mm-auth="!can_view_messages">
+            <a role="menuitem" tabindex="-1" ui-sref="messages.detail">
+              <i class="fa fa-envelope"></i>
+              {{'Messages' | translate}}
+            </a>
+          </li>
+          <li role="presentation" mm-auth="!can_view_tasks">
+            <a role="menuitem" tabindex="-1" ui-sref="tasks.detail">
+              <i class="fa fa-flag"></i>
+              {{'Tasks' | translate}}
+            </a>
+          </li>
+          <li role="presentation" mm-auth="!can_view_reports">
+            <a role="menuitem" tabindex="-1" ui-sref="reports.detail">
+              <i class="fa fa-list-alt"></i>
+              {{'Reports' | translate}}
+            </a>
+          </li>
+          <li role="presentation" mm-auth="!can_view_analytics">
+            <a role="menuitem" tabindex="-1" ui-sref="analytics">
+              <i class="fa fa-bar-chart-o"></i>
+              {{'Analytics' | translate}}
+            </a>
+          </li>
+          <li role="presentation" mm-auth="!can_view_contacts">
+            <a role="menuitem" tabindex="-1" ui-sref="contacts.detail">
+              <i class="fa fa-user"></i>
+              {{'Contacts' | translate}}
+            </a>
+          </li>
           <li role="presentation" mm-auth="can_configure">
             <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#guided-setup">
               <i class="fa fa-fw fa-list-ol"></i>

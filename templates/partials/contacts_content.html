@@ -11,84 +11,94 @@
   </div>
 
   <div class="col-sm-8 item-content item-body" ng-show="selected && !loadingContent">
-    <div>
-      <div class="status">
-        <span class="mm-badge mm-badge-round">
-          <span class="fa" ng-class="selectedSchema().badge"></span>
-        </span>
-      </div>
+    <div class="material">
 
-      <div class="body">
-        <h2>{{titleFor(selected.doc)}}</h2>
-        <h5>{{'contact.type.' + selected.doc.type | translate}}</h5>
-        <ul>
+      <div class="body card col-sm-12">
+        <h2>{{selected.doc.name}}</h2>
+        <ul class="field-list">
           <li ng-repeat="(name, conf) in selectedSchemaNormalFields()">
             <label>{{selected.doc.type + '.field.' + name | translate}}</label>
             <p>
-              <span ng-if="conf.type === 'phone'"><a href="tel:{{selected.doc[name]}}">{{selected.doc[name]}}</a></span>
-              <span ng-if="conf.type.indexOf('db:') === 0"><a ui-sref="contacts.detail({ id: selected.doc[name]._id })">{{titleFor(selected.doc[name])}}</a></span>
-              <span ng-if="conf.type !== 'phone' && conf.type.indexOf('db:') !== 0">{{selected.doc[name]}}</span>
+              <span ng-if="conf.type === 'tel'">
+                <a href="tel:{{selected.doc[name]}}" class="mobile-only">{{selected.doc[name]}}</a>
+                <span class="desktop-only">{{selected.doc[name]}}</span>
+              </span>
+              <span ng-if="conf.type.indexOf('db:') === 0"><a ui-sref="contacts.detail({ id: selected.doc[name]._id })">{{selected.doc[name].name}}</a></span>
+              <span ng-if="conf.type !== 'tel' && conf.type.indexOf('db:') !== 0">{{selected.doc[name]}}</span>
             </p>
           </li>
           <li ng-repeat="parent in selected.parents">
             <label>{{'contact.type.' + parent.type | translate}}</label>
-            <p><a ui-sref="contacts.detail({ id: parent._id })">{{titleFor(parent)}}</a></p>
+            <p><a ui-sref="contacts.detail({ id: parent._id })">{{parent.name}}</a></p>
           </li>
           <li ng-if="selected.contactFor.length">
             <label>{{'Primary Contact For' | translate}}</label>
             <ul>
               <li class="row" ng-repeat="place in selected.contactFor">
                 <div class="col-sm-4">
-                  <a ui-sref="contacts.detail({ id: place.doc._id })">{{titleFor(place.doc)}}</a>
+                  <a ui-sref="contacts.detail({ id: place.doc._id })">{{place.doc.name}}</a>
                 </div>
                 <div class="col-sm-8" ng-bind-html="place.doc.parent | clinic"></div>
               </li>
             </ul>
           </li>
-          <li ng-if="selected.children.length">
-            <label>{{selected.doc.type + '.field.children' | translate}}</label>
-            <ul>
-              <li class="row" ng-repeat="child in selected.children">
-                <div class="col-sm-4">
-                  <a ui-sref="contacts.detail({ id: child.doc._id })">{{child.doc.name}}</a>
-                </div>
-                <div class="col-sm-4">
-                  {{child.doc.contact.name}}
-                </div>
-                <div class="col-sm-4">
-                  {{child.doc.contact.phone}}
-                </div>
-              </li>
-            </ul>
-          </li>
-          <li ng-if="selected.tasks" class="contact-tasks">
-            <label>{{'Tasks' | translate}}</label>
-            <ul>
-              <li ng-repeat="task in selected.tasks">
-                <a ui-sref="tasks.detail({ id: task._id })">{{task.title | translateFrom:task}}</a>
-                <span ng-bind-html="task.date | relativeDate"></span>
-              </li>
-            </ul>
-          </li>
-          <li>
-            <label>{{'Submit Report' | translate}}</label>
-            <ul>
-              <li ng-repeat="form in formDefinitions">
-                <a ui-sref="contacts.report({ id: selected.doc._id, formId: form.internalId })">{{form.title}}</a>
-              </li>
-            </ul>
-          </li>
-          <li ng-if="selected.reports">
-            <label>{{'Reports' | translate}}</label>
-            <ul>
-              <li ng-repeat="report in selected.reports">
-                <a ui-sref="reports.detail({ id: report._id })">{{report | title:forms}}</a>
-                <span ng-bind-html="report.reported_date | relativeDate"></span>
-              </li>
-            </ul>
-          </li>
         </ul>
       </div>
+      <div>
+        <div class="col-sm-4" ng-if="selected.children.length">
+          <h3>{{selected.doc.type + '.field.children' | translate}}</h3>
+          <div class="card">
+            <ul class="action-list">
+              <li ng-repeat="child in selected.children">
+                <a ui-sref="contacts.detail({ id: child.doc._id })">
+                  <div>{{child.doc.name}}</div>
+                  <div>{{child.doc.contact.name}}</div>
+                  <div>{{child.doc.contact.phone}}</div>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-sm-4" ng-if="selected.tasks.length">
+          <h3>{{'Tasks' | translate}}</h3>
+          <div class="card">
+            <ul class="action-list">
+              <li ng-repeat="task in selected.tasks">
+                <a ui-sref="tasks.detail({ id: task._id })">
+                  <div>{{task.title | translateFrom:task}}</div>
+                  <div ng-bind-html="task.date | relativeDate"></div>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <h3>{{'Submit Report' | translate}}</h3>
+          <div class="card">
+            <ul class="action-list">
+              <li ng-repeat="form in formDefinitions">
+                <a ui-sref="contacts.report({ id: selected.doc._id, formId: form.internalId })">
+                  {{form.title | translateFrom}}
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-sm-4" ng-if="selected.reports.length">
+          <h3>{{'Reports' | translate}}</h3>
+          <div class="card">
+            <ul class="action-list">
+              <li ng-repeat="report in selected.reports">
+                <a ui-sref="reports.detail({ id: report._id })">
+                  <div>{{report | title:forms}}</div>
+                  <div ng-bind-html="report.reported_date | relativeDate"></div>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="padding"></div>
     </div>
   </div>
 </div>

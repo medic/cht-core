@@ -238,6 +238,15 @@ _.templateSettings = {
             }
           }
         })
+        .state('configuration.icons', {
+          url: '/icons',
+          views: {
+            content: {
+              controller: 'ConfigurationIconsCtrl',
+              templateUrl: 'templates/partials/configuration_icons.html'
+            }
+          }
+        })
 
         // help
         .state('help', {
@@ -288,7 +297,7 @@ _.templateSettings = {
 
       $urlRouterProvider.when('', '/home');
       $translateProvider.useLoader('SettingsLoader', {});
-      $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|file|blob):/);
+      $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
     }
   ]);
 

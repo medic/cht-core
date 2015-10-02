@@ -15,6 +15,7 @@
 @import "analytics";
 @import "configuration";
 @import "help";
+@import "material";
 
 @import "enketo/medic";
 
@@ -521,17 +522,8 @@ body {
   margin-top: 0;
 }
 
-.tasks,
-.contacts {
-  .item-content .status,
-  .message-wrapper {
-    .fa {
-      color: @ok-color;
-    }
-  }
-  .item-content > div {
-    margin-top: 1em;
-  }
+.contacts .message-wrapper .fa {
+  color: @ok-color;
 }
 
 .inbox-items {
@@ -652,23 +644,29 @@ body {
 }
 
 .item-content {
-
   padding: 0;
   border: 1px solid @seperator-color;
   border-width: 0 1px;
-
   .status {
     clear: both;
     font-size: 1.5em;
     text-align: center;
     margin-bottom: -1.3em;
   }
-
   .body p {
     word-wrap: break-word;
     margin: 0;
   }
-
+  > div {
+    margin-top: 1em;
+    &.enketo, &.material {
+      margin-top: 0;
+    }
+  }
+  .padding {
+    height: 10em;
+    clear: left;
+  }
 }
 
 .incomplete .body h2 {
@@ -762,7 +760,6 @@ a.fa:hover {
 }
 
 .reports .item-content,
-.contacts .item-content,
 .tasks .item-content {
 
   > div {
@@ -771,6 +768,7 @@ a.fa:hover {
 
   .meta {
     padding: 2em;
+    padding-top: 1em;
   }
 
   .body {
@@ -826,6 +824,46 @@ a.fa:hover {
     margin-top: 1em;
   }
 
+}
+
+.tasks {
+  .inbox-items {
+    .mm-badge {
+      background-color: inherit;
+    }
+    .message-wrapper:after {
+      visibility: hidden;
+      display: block;
+      font-size: 0;
+      content: " ";
+      clear: both;
+      height: 0;
+    }
+    .priority {
+      float: right;
+      margin-top: 0.2em;
+    }
+  }
+  .priority .fa {
+    display: none;
+  }
+  .high-priority {
+    .priority,
+    .priority-label {
+      color: @high-risk-color;
+    }
+    .high-priority-icon {
+      display: inherit;
+    }
+  }
+  .medium-priority {
+    .priority {
+      color: @warning-color;
+    }
+    .medium-priority-icon {
+      display: inherit;
+    }
+  }
 }
 
 .time {
@@ -1130,6 +1168,14 @@ a.fa:hover {
   margin-top: 2em;
 }
 
+.resources-list li {
+  margin-bottom: 1em;
+}
+
+.mobile-only {
+  display: none;
+}
+
 @media (max-width: 767px) {
   .item-content {
     border-width: 0;
@@ -1248,7 +1294,7 @@ a.fa:hover {
       padding-bottom: 0;
     }
   }
-  .reports, .contacts, .tasks {
+  .reports, .tasks {
     .content .item-content .body > ul > li {
       padding: 1em;
     }
@@ -1359,9 +1405,6 @@ a.fa:hover {
       display: none;
     }
   }
-  .item-content .body > ul > li li {
-    margin-left: 0;
-  }
   .message-content-wrapper {
     .item-content {
       top: 3em;
@@ -1392,6 +1435,12 @@ a.fa:hover {
     }
   }
   .header .tabs .configuration-tab {
+    display: none;
+  }
+  .mobile-only {
+    display: initial;
+  }
+  .desktop-only {
     display: none;
   }
 }

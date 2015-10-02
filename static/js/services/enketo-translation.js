@@ -75,10 +75,10 @@ angular.module('inboxServices').service('EnketoTranslation', [
     function extraAttributesFor(conf) {
       var extras = {};
       var typeString = conf.type;
-      if(/^db:/.test(typeString)) {
-        extras.appearance = 'db-object';
-      } else if(typeString === 'text') {
+      if(typeString === 'text') {
         extras.appearance = 'multiline';
+      } else if(/^db:/.test(typeString)) {
+        extras.appearance = 'db-object';
       }
       return extras;
     }
@@ -121,7 +121,6 @@ angular.module('inboxServices').service('EnketoTranslation', [
 
       var head = (function generateHead() {
         var head = new N('h:head');
-        head.append(new N('h:title', translationFor('contact.type', principle.type, 'new')));
         var model = new N('model');
         head.append(model);
         var instance = new N('instance');

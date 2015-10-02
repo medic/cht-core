@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    scrollLoader = require('../modules/scroll-loader');
+    scrollLoader = require('../modules/scroll-loader'),
+    types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
 
 (function () {
 
@@ -8,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', 
-    ['$rootScope', '$scope', '$state', '$timeout', 'ContactSchema', 'DB', 'Search',
-    function ($rootScope, $scope, $state, $timeout, ContactSchema, DB, Search) {
+    ['$rootScope', '$scope', '$state', '$timeout', 'ContactSchema', 'Search', 'Changes',
+    function ($rootScope, $scope, $state, $timeout, ContactSchema, Search, Changes) {
 
       $scope.filterModel.type = 'contacts';
       $scope.contacts = [];
@@ -17,16 +18,6 @@ var _ = require('underscore'),
 
       $scope.schema = ContactSchema.get();
       $scope.schemaNormalFields = ContactSchema.getWithoutSpecialFields();
-
-      $scope.titleFor = function(doc) {
-        if(!doc) {
-          return '';
-        }
-        var titleFormat = $scope.schema[doc.type].title;
-        return titleFormat.replace(/\{\{([^}]+)\}\}/g, function(all, name) {
-          return doc[name];
-        });
-      };
 
       $scope.selectedSchema = function() {
         return $scope.selected && $scope.schema[$scope.selected.doc.type];
@@ -36,13 +27,25 @@ var _ = require('underscore'),
         return $scope.selected && $scope.schemaNormalFields[$scope.selected.doc.type].fields;
       };
 
+      var _merge = function(to, from) {
+        if (from._rev !== to._rev) {
+          for (var prop in from) {
+            if (from.hasOwnProperty(prop)) {
+              to[prop] = from[prop];
+            }
+          }
+        }
+      };
+
       $scope.query = function(options) {
         options = options || {};
         options.limit = 50;
 
-        $scope.loading = true;
-        $scope.appending = options.skip;
-        $scope.error = false;
+        if (!options.silent) {
+          $scope.loading = true;
+          $scope.appending = options.skip;
+          $scope.error = false;
+        }
 
         _.defaults(options, {
           index: 'contacts',
@@ -63,6 +66,15 @@ var _ = require('underscore'),
           if (options.skip) {
             $timeout(function() {
               $scope.contacts.push.apply($scope.contacts, data);
+            });
+          } else if (options.silent) {
+            _.each(data, function(update) {
+              var existing = _.findWhere($scope.contacts, { _id: update._id });
+              if (existing) {
+                _merge(existing, update);
+              } else {
+                $scope.contacts.push(update);
+              }
             });
           } else {
             $scope.contacts = data;
@@ -93,12 +105,13 @@ var _ = require('underscore'),
         $scope.selected = selected;
         $scope.setActionBar({
           _id: selected.doc._id,
-          sendTo: selected.doc
+          sendTo: selected.doc,
+          disableDelete: (selected.children && selected.children.length) ||
+                         (selected.contactFor && selected.contactFor.length)
         });
       };
 
       $scope.orderByType = function(contact) {
-        var types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
         return types.indexOf(contact.type);
       };
 
@@ -114,22 +127,22 @@ var _ = require('underscore'),
         $rootScope.$broadcast('EditContactInit', record || $scope.selected.doc);
       });
 
-      $scope.$on('ContactUpdated', function(e, contact) {
-        if (!contact) {
-          return $scope.query();
-        } else if (contact._deleted) {
-          $scope.contacts = _.filter($scope.contacts, function(i) {
-            return i._id !== contact._id;
-          });
-          return;
+      Changes({
+        key: 'contacts-list',
+        callback: function() {
+          $scope.query({ silent: true, stay: true });
+        },
+        filter: function(change) {
+          if ($scope.filterModel.type !== 'contacts') {
+            return false;
+          }
+          if (change.newDoc) {
+            return types.indexOf(change.newDoc.type) !== -1;
+          }
+          return _.findWhere($scope.contacts, { _id: change.id });
         }
-        $state.go('contacts.detail', { id: contact._id });
-        var outdated = _.findWhere($scope.contacts, { _id: contact._id });
-        if (!outdated) {
-          return $scope.query({ stay: true });
-        }
-        _.extend(outdated, contact);
       });
+
     }
   ]);
 

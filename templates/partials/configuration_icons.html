@@ -1,0 +1,42 @@
+<div class="col-sm-12">
+
+  <form id="icon-upload">
+    <legend>{{'upload.icon' | translate}}</legend>
+
+    <div class="form-group">
+      <label for="name">{{'Name' | translate}} *</label>
+      <input id="name" name="name" class="form-control small" ng-model="name">
+    </div>
+
+    <div class="form-group">
+      <label>{{'icon' | translate}} *</label>
+      <div>
+        <button type="button" class="btn btn-default choose" ng-disabled="uploading">
+          <i class="fa fa-arrow-up"></i> {{'Choose file' | translate}}
+        </button>
+        <div class="loader" ng-show="uploading"></div>
+        <div class="hide">
+          <input class="uploader" type="file">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting">{{'Submit' | translate}}</button>
+      <div class="loader inline small" ng-show="submitting"></div>
+      <p class="error">{{error}}</p>
+    </div>
+  </form>
+  
+  <div>
+    <legend>{{'Icons' | translate}}</legend>
+    <div class="loader" ng-show="loading"></div>
+    <ul class="resources-list">
+      <li ng-repeat="icon in icons" class="row">
+        <div class="col-sm-2">{{icon.name}}</div>
+        <div class="col-sm-10"><img data-ng-src="data:{{icon.type}};base64,{{icon.data}}"/></div>
+      </li>
+    </ul>
+  </div>
+
+</div>

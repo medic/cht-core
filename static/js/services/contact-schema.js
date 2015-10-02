@@ -1,7 +1,6 @@
 var _ = require('underscore');
 
 var CLINIC = {
-  title: '{{name}}',
   badge: 'fa-home',
   icon: 'fa-home',
   fields: {
@@ -23,7 +22,6 @@ var CLINIC = {
 };
 
 var DISTRICT_HOSPITAL = {
-  title: '{{name}}',
   badge: 'fa-building',
   icon: 'fa-building',
   fields: {
@@ -41,7 +39,6 @@ var DISTRICT_HOSPITAL = {
 };
 
 var HEALTH_CENTER = {
-  title: '{{name}}',
   badge: 'fa-hospital-a',
   icon: 'fa-hospital-o',
   fields: {
@@ -63,7 +60,6 @@ var HEALTH_CENTER = {
 };
 
 var PERSON = {
-  title: '{{name}}',
   badge: 'fa-user',
   fields: {
     name: {
@@ -71,7 +67,7 @@ var PERSON = {
       required: true,
     },
     phone: {
-      type: 'phone',
+      type: 'tel',
       required: true,
     },
     code: 'string',
@@ -111,6 +107,46 @@ function getSchema() {
   };
 }
 
+var RESERVED_FIELD_NAMES = [
+  'children',
+  'parents',
+];
+
+function validateSchema(type, schema) {
+  schema = normalise(type, schema);
+
+  var fieldNames = Object.keys(schema.fields);
+
+  // check for reserved fields
+  if(_.some(RESERVED_FIELD_NAMES, function(restricted) {
+        return _.contains(fieldNames, restricted);
+      })) {
+    throw new Error('Reserved name used for field.  Do not name fields any of: ' + RESERVED_FIELD_NAMES);
+  }
+
+  // check for fields in `name` which do not exist
+  if(schema.fields.hasOwnProperty('name')) {
+    if(schema.name) {
+      throw new Error('Cannot define calculated `name` if there is also a field called `name`.');
+    }
+  } else {
+    if(!schema.name) {
+      throw new Error('No `name` property specified and no `name` field present.');
+    }
+    _.chain(schema.name.match(/\{\{[^}]*\}\}/g))
+        .map(function(m) {
+          return m.substring(2, m.length-2);
+        })
+        .each(function(key) {
+          if(fieldNames.indexOf(key) === -1) {
+            throw new Error('Non-existent field referenced in name: "' + key + '"');
+          }
+        });
+  }
+
+  return true;
+}
+
 angular.module('inboxServices').service('ContactSchema', [
   function() {
     return {
@@ -123,20 +159,23 @@ angular.module('inboxServices').service('ContactSchema', [
       },
       getWithoutSpecialFields: function() {
         // return a modified schema, missing special fields such as `parent`, and
-        // anything included in the `title` attribute
+        // anything included in the `name` attribute
         var schema = getSchema();
         _.each(schema, function(s) {
-          // Remove fields included in the title, so they are not duplicated below
+          // Remove fields included in the name, so they are not duplicated below
           // it in the form
-          _.map(s.title.match(/\{\{[^}]+\}\}/g), function(key) {
-            return key.substring(2, key.length-2);
-          }).forEach(function(key) {
-            delete s.fields[key];
-          });
+          if(s.name) {
+            _.map(s.name.match(/\{\{[^}]+\}\}/g), function(key) {
+              return key.substring(2, key.length-2);
+            }).forEach(function(key) {
+              delete s.fields[key];
+            });
+          }
           delete s.fields.parent;
         });
         return schema;
       },
+      validate: validateSchema,
     };
   }
 ]);

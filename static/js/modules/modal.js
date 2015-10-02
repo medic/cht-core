@@ -28,7 +28,7 @@
       done: function(description, err) {
         var message = '';
         if (err) {
-          console.log(description, err);
+          console.error(description, err);
           message = description;
         } else {
           modal.modal('hide');
