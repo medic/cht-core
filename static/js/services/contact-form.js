@@ -28,7 +28,7 @@ angular.module('inboxServices').service('ContactForm', [
           throw err;
         });
     }
-    
+
     // EnketoTranslation.generateXform($scope.unmodifiedSchema[type], { contact:$scope.dependentPersonSchema })
 
     return {
