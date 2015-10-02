@@ -23,7 +23,7 @@ define( function( require, exports, module ) {
             return Settings()
                 .then(function(settings) {
                     var phoneNumber = libphonenumber.format(settings, fieldValue);
-                    if (!phoneNumber) {
+                    if (!libphonenumber.validate(settings, phoneNumber)) {
                         throw new Error('invalid phone number: "' + phoneNumber + '"');
                     }
                     return phoneNumber;
