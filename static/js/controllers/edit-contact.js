@@ -7,8 +7,8 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditContactCtrl',
-    ['$q', '$rootScope', '$scope', '$state', 'translateFilter', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'EnketoTranslation',
-    function ($q, $rootScope, $scope, $state, translateFilter, ContactSchema, DbView, DB, Enketo, EnketoTranslation) {
+    ['$q', '$rootScope', '$scope', '$state', 'translateFilter', 'ContactForm', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'EnketoTranslation',
+    function ($q, $rootScope, $scope, $state, translateFilter, ContactForm, ContactSchema, DbView, DB, Enketo, EnketoTranslation) {
 
       $scope.unmodifiedSchema = ContactSchema.get();
       $scope.contactTypes = Object.keys($scope.unmodifiedSchema);
@@ -67,15 +67,17 @@ var modal = require('../modules/modal');
 
         var modal = $('#edit-contact');
 
-        Enketo.renderFromXmlString(modal,
-            EnketoTranslation.generateXform($scope.unmodifiedSchema[type], { contact:$scope.dependentPersonSchema }))
+        ContactForm.forCreate(type, { contact:$scope.dependentPersonSchema })
           .then(function(form) {
-            $scope.enketo_contact = {
-              type: type,
-              formInstance: form,
-              docId: type === $scope.contact.type? $scope.contactId: null,
-            };
-            $scope.$apply();
+            Enketo.renderFromXmlString(modal, form)
+              .then(function(form) {
+                $scope.enketo_contact = {
+                  type: type,
+                  formInstance: form,
+                  docId: type === $scope.contact.type? $scope.contactId: null,
+                };
+                $scope.$apply();
+              });
           });
       };
 
@@ -91,7 +93,7 @@ var modal = require('../modules/modal');
 
         $scope.original = contact;
 
-        var extras;
+        var form;
         if (contact._id) {
           $scope.contact = {
             name: contact.name,
@@ -107,30 +109,33 @@ var modal = require('../modules/modal');
           $scope.category = contact.type === 'person' ? 'person' : 'place';
           var fields = Object.keys($scope.unmodifiedSchema[contact.type].fields);
           formInstanceData = EnketoTranslation.jsToFormInstanceData(contact, fields);
+
+          form = ContactForm.forEdit(contact.type);
         } else {
           $scope.contact = {
             type: contact.type || Object.keys($scope.placeSchemas)[0],
           };
           $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
           $scope.contactId = null;
-          extras = { contact:$scope.dependentPersonSchema };
+
+          form = ContactForm.forCreate($scope.contact.type, { contact:$scope.dependentPersonSchema });
         }
 
         var modal = $('#edit-contact');
 
-        Enketo.renderFromXmlString(modal,
-            EnketoTranslation.generateXform($scope.unmodifiedSchema[$scope.contact.type], extras),
-            formInstanceData)
-          .then(function(form) {
-            $scope.enketo_contact = {
-              type: $scope.contact.type,
-              formInstance: form,
-              docId: $scope.contactId,
-            };
-          })
-          .then(function() {
-            modal.modal('show');
-          }).catch(console.error.bind(console));
+        form.then(function(form) {
+          Enketo.renderFromXmlString(modal, form, formInstanceData)
+            .then(function(form) {
+              $scope.enketo_contact = {
+                type: $scope.contact.type,
+                formInstance: form,
+                docId: $scope.contactId,
+              };
+            })
+            .then(function() {
+              modal.modal('show');
+            }).catch(console.error.bind(console));
+        });
       });
 
       $scope.save = function() {
