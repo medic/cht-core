@@ -1,10 +1,11 @@
 angular.module('inboxServices').service('ContactForm', [
-  'ContactSchema', 'DB', 'EnketoTranslation',
-  function(ContactSchema, DB, EnketoTranslation) {
+  'ContactSchema', 'DB', 'EnketoTranslation', 'FileReader',
+  function(ContactSchema, DB, EnketoTranslation, FileReader) {
     var db = DB.get();
 
     function getXmlAttachment(doc) {
-      return db.getAttachment(doc.id, 'xml');
+      return db.getAttachment(doc._id, 'xml')
+        .then(FileReader);
     }
 
     function getForm(type, mode, extras) {
@@ -14,15 +15,15 @@ angular.module('inboxServices').service('ContactForm', [
           if(err.status === 404) {
             // Couldn't find a specific form for this action, so check for a
             // generic one
-            return db.get('form:contact:' + type);
-          }
-          throw err;
-        })
-        .then(getXmlAttachment)
-        .catch(function(err) {
-          if(err.status === 404) {
-            // Couldn't find generic form for this contact type, so generate one
-            return EnketoTranslation.generateXform(ContactSchema.get(type), extras);
+            return db.get('form:contact:' + type)
+              .then(getXmlAttachment)
+              .catch(function(err) {
+                if(err.status === 404) {
+                  // Couldn't find generic form for this contact type, so generate one
+                  return EnketoTranslation.generateXform(ContactSchema.get(type), extras);
+                }
+                throw err;
+              });
           }
           throw err;
         });
