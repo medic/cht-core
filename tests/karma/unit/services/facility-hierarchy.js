@@ -27,7 +27,7 @@ describe('FacilityHierarchy service', function() {
 
     error = 'boom';
 
-    service(null, function(err) {
+    service(function(err) {
       chai.expect(err).to.equal('boom');
       done();
     });
@@ -38,7 +38,7 @@ describe('FacilityHierarchy service', function() {
 
     facilities = [];
 
-    service(null, function(err, actual, actualTotal) {
+    service(function(err, actual, actualTotal) {
       chai.expect(err).to.equal(null);
       chai.expect(actual.length).to.equal(0);
       chai.expect(actualTotal).to.equal(0);
@@ -58,7 +58,7 @@ describe('FacilityHierarchy service', function() {
 
     facilities = [ a, b, c, d, e, f ];
 
-    service(null, function(err, actual, actualTotal) {
+    service(function(err, actual, actualTotal) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([
         {

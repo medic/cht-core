@@ -24,7 +24,7 @@
         </span>
       </span>
 
-      <span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="Number of facilities" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'">
+      <span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="Number of facilities" ng-show="facilities.length && (filterModel.type === 'reports' || filterModel.type === 'contacts')">
         <span id="facility" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-hospital-o"></span>
@@ -88,7 +88,7 @@
         </span>
       </span>
 
-      <span id="contactTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All contact types" data-filter-label="Number of contact types" ng-show="filterModel.type === 'contacts'">
+      <span id="contactTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All contact types" data-filter-label="Number of contact types" ng-show="facilities.length && filterModel.type === 'contacts'">
         <span class="mm-button mm-button-nudge-down" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-user"></span>

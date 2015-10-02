@@ -152,67 +152,63 @@ require('moment/locales');
       });
 
       $scope.updateAvailableFacilities = function() {
-        UserDistrict(function(err, district) {
+        FacilityHierarchy(function(err, hierarchy, total) {
           if (err) {
-            return console.log('Error fetching district', err);
+            return console.log('Error loading facilities', err);
           }
-          FacilityHierarchy(district, function(err, hierarchy, total) {
-            if (err) {
-              return console.log('Error loading facilities', err);
-            }
-            $scope.facilities = hierarchy;
-            $scope.facilitiesCount = total;
-          });
-          Facility({ district: district, types: [ 'person' ] }, function(err, facilities) {
-            if (err) {
-              return console.log('Failed to retrieve facilities', err);
-            }
-            function formatResult(doc) {
-              return doc && format.contact(doc);
-            }
-            $('.update-facility [name=facility], #edit-user-profile [name=contact]').select2({
-              id: function(doc) {
-                return doc._id;
-              },
-              width: '100%',
-              escapeMarkup: function(m) {
-                return m;
-              },
-              formatResult: formatResult,
-              formatSelection: formatResult,
-              initSelection: function (element, callback) {
-                var e = element.val();
-                if (!e) {
-                  return callback();
-                }
-                var row = _.findWhere(facilities, { _id: e });
-                if (!row) {
-                  return callback();
-                }
-                callback(row);
-              },
-              query: function(options) {
-                var terms = options.term.toLowerCase().split(/\s+/);
-                var matches = _.filter(facilities, function(doc) {
-                  var contact = doc.contact;
-                  var name = contact && contact.name;
-                  var phone = contact && contact.phone;
-                  var tags = [ doc.name, name, phone ].join(' ').toLowerCase();
-                  return _.every(terms, function(term) {
-                    return tags.indexOf(term) > -1;
-                  });
-                });
-                options.callback({ results: matches });
-              },
-              sortResults: function(results) {
-                results.sort(function(a, b) {
-                  var aName = formatResult(a).toLowerCase();
-                  var bName = formatResult(b).toLowerCase();
-                  return aName.localeCompare(bName);
-                });
-                return results;
+          console.log('hierarchy', hierarchy);
+          $scope.facilities = hierarchy;
+          $scope.facilitiesCount = total;
+        });
+        Facility({ types: [ 'person' ] }, function(err, facilities) {
+          if (err) {
+            return console.log('Failed to retrieve facilities', err);
+          }
+          function formatResult(doc) {
+            return doc && format.contact(doc);
+          }
+          $('.update-facility [name=facility], #edit-user-profile [name=contact]').select2({
+            id: function(doc) {
+              return doc._id;
+            },
+            width: '100%',
+            escapeMarkup: function(m) {
+              return m;
+            },
+            formatResult: formatResult,
+            formatSelection: formatResult,
+            initSelection: function (element, callback) {
+              var e = element.val();
+              if (!e) {
+                return callback();
               }
-            });
+              var row = _.findWhere(facilities, { _id: e });
+              if (!row) {
+                return callback();
+              }
+              callback(row);
+            },
+            query: function(options) {
+              var terms = options.term.toLowerCase().split(/\s+/);
+              var matches = _.filter(facilities, function(doc) {
+                var contact = doc.contact;
+                var name = contact && contact.name;
+                var phone = contact && contact.phone;
+                var tags = [ doc.name, name, phone ].join(' ').toLowerCase();
+                return _.every(terms, function(term) {
+                  return tags.indexOf(term) > -1;
+                });
+              });
+              options.callback({ results: matches });
+            },
+            sortResults: function(results) {
+              results.sort(function(a, b) {
+                var aName = formatResult(a).toLowerCase();
+                var bName = formatResult(b).toLowerCase();
+                return aName.localeCompare(bName);
+              });
+              return results;
+            }
           });
         });
       };
