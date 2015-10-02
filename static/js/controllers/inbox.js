@@ -156,7 +156,6 @@ require('moment/locales');
           if (err) {
             return console.log('Error loading facilities', err);
           }
-          console.log('hierarchy', hierarchy);
           $scope.facilities = hierarchy;
           $scope.facilitiesCount = total;
         });
