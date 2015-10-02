@@ -180,7 +180,7 @@ var modal = require('../modules/modal');
               .then(function(doc) {
                 delete $scope.enketo_contact;
                 pane.done();
-                return DB.get().get(doc.id);
+                return doc;
               })
               .then(function(doc) {
                 $rootScope.$broadcast('ContactUpdated', doc);
@@ -192,6 +192,7 @@ var modal = require('../modules/modal');
       };
 
       function saveDoc(doc, original, extras) {
+        var children = [];
         return Promise.resolve()
           .then(function() {
             var schema = $scope.unmodifiedSchema[doc.type];
@@ -206,14 +207,24 @@ var modal = require('../modules/modal');
                     doc[f] = {};
                   } else if(doc[f] === 'NEW') {
                     var extra = extras[f];
+                    var isChild = false;
                     extra.type = customType[2];
+
+                    if(extra.parent === 'PARENT') {
+                      delete extra.parent;
+                      isChild = true;
+                    }
+
                     updateTitle(extra);
                     return DB.get().post(extra)
                       .then(function(response) {
                         return DB.get().get(response.id);
                       })
-                      .then(function(newlySavedObject) {
-                        doc[f] = newlySavedObject;
+                      .then(function(newlySavedDoc) {
+                        doc[f] = newlySavedDoc;
+                        if(isChild) {
+                          children.push(newlySavedDoc);
+                        }
                         return doc;
                       });
                   } else if(original && original[f] && doc[f] === original[f]._id) {
@@ -238,6 +249,19 @@ var modal = require('../modules/modal');
             } else {
               return DB.get().post(doc);
             }
+          })
+          .then(function(doc) {
+            return DB.get().get(doc.id);
+          })
+          .then(function(doc) {
+            return Promise
+              .all(_.map(children, function(child) {
+                child.parent = doc;
+                return DB.get().put(child);
+              }))
+              .then(function() {
+                return doc;
+              });
           });
       }
     }
