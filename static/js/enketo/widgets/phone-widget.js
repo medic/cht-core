@@ -15,7 +15,7 @@ define( function( require, exports, module ) {
     var pluginName = 'phonewidget';
 
     // Set up enketo validation for `phone` input type
-    FormModel.prototype.types.phone = {
+    FormModel.prototype.types.tel = {
         validate: function( fieldValue ) {
             var angularServices = angular.element(document.body).injector();
             var Settings = angularServices.get('SettingsP');
