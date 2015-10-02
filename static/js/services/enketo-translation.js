@@ -121,7 +121,6 @@ angular.module('inboxServices').service('EnketoTranslation', [
 
       var head = (function generateHead() {
         var head = new N('h:head');
-        head.append(new N('h:title', translationFor('contact.type', principle.type, 'new')));
         var model = new N('model');
         head.append(model);
         var instance = new N('instance');
