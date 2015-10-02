@@ -55,6 +55,7 @@ cat <<EOF
 [$SELF]   form title: $formTitle
 [$SELF]   form internal ID: $formInternalId
 [$SELF]   force override: $FORCE
+[$SELF]   uploading to: $docUrl
 [$SELF] -----
 EOF
 
