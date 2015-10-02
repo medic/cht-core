@@ -15,6 +15,7 @@
 @import "analytics";
 @import "configuration";
 @import "help";
+@import "material";
 
 @import "enketo/medic";
 
@@ -521,11 +522,8 @@ body {
   margin-top: 0;
 }
 
-.contacts {
-  .item-content .status,
-  .message-wrapper .fa {
-    color: @ok-color;
-  }
+.contacts .message-wrapper .fa {
+  color: @ok-color;
 }
 
 .inbox-items {
@@ -661,9 +659,13 @@ body {
   }
   > div {
     margin-top: 1em;
-    &.enketo {
+    &.enketo, &.material {
       margin-top: 0;
     }
+  }
+  .padding {
+    height: 10em;
+    clear: left;
   }
 }
 
@@ -758,7 +760,6 @@ a.fa:hover {
 }
 
 .reports .item-content,
-.contacts .item-content,
 .tasks .item-content {
 
   > div {
@@ -1293,7 +1294,7 @@ a.fa:hover {
       padding-bottom: 0;
     }
   }
-  .reports, .contacts, .tasks {
+  .reports, .tasks {
     .content .item-content .body > ul > li {
       padding: 1em;
     }
@@ -1403,9 +1404,6 @@ a.fa:hover {
     .button-label {
       display: none;
     }
-  }
-  .item-content .body > ul > li li {
-    margin-left: 0;
   }
   .message-content-wrapper {
     .item-content {
