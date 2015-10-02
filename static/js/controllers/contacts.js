@@ -106,7 +106,8 @@ var _ = require('underscore'),
         $scope.setActionBar({
           _id: selected.doc._id,
           sendTo: selected.doc,
-          disableDelete: selected.children.length || selected.contactFor.length
+          disableDelete: (selected.children && selected.children.length) ||
+                         (selected.contactFor && selected.contactFor.length)
         });
       };
 
