@@ -184,8 +184,13 @@ describe('ContactSchema service', function() {
         assert.deepEqual(service.get().person, {
           type: 'person',
           badge: 'fa-user',
+          name: '{{first_name}} {{last_name}}',
           fields: {
-            name: {
+            first_name: {
+              type: 'string',
+              required: true,
+            },
+            last_name: {
               type: 'string',
               required: true,
             },
@@ -193,8 +198,14 @@ describe('ContactSchema service', function() {
               type: 'tel',
               required: true,
             },
-            code: {
+            national_id_number: {
               type: 'string',
+            },
+            date_of_birth: {
+              type: 'date',
+            },
+            alternate_phone: {
+              type: 'tel',
             },
             notes: {
               type: 'text',
@@ -282,11 +293,8 @@ describe('ContactSchema service', function() {
               type: 'db:person',
               required: true,
             },
-            external_id: {
-              type: 'string',
-            },
-            notes: {
-              type: 'text',
+            location: {
+              type: 'geopoint',
             },
           },
         });
