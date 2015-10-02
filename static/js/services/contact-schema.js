@@ -16,8 +16,6 @@ var CLINIC = {
       type: 'db:person',
       required: true,
     },
-    external_id: 'string',
-    notes: 'text',
   },
 };
 
