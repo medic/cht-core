@@ -30,8 +30,9 @@ var _ = require('underscore');
         }
         return TaskGenerator().then(function(tasks) {
           tasks = _.filter(tasks, function(task) {
-            var subjectId = task.doc.patient_id || task.doc.fields.patient_id;
-            return !task.resolved && _.contains(ids, subjectId);
+            return !task.resolved &&
+              task.contact &&
+              _.contains(ids, task.contact._id);
           });
           return $q.resolve(tasks);
         });
