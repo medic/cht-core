@@ -9,13 +9,16 @@ describe('TasksContentCtrl', function() {
 
   describe('$scope.performAction', function() {
     var $scope,
-        task,
-        render = sinon.stub();
+        task;
+
+    var Enketo = {
+      render: sinon.stub()
+    };
 
     var createController = function() {
       $controller('TasksContentCtrl', {
         $scope: $scope,
-        Enketo: { render: render }
+        Enketo: Enketo
       });
     };
 
@@ -29,7 +32,7 @@ describe('TasksContentCtrl', function() {
     });
 
     afterEach(function() {
-      KarmaUtils.restore(render);
+      KarmaUtils.restore(Enketo.render);
     });
 
     it('loads form when task has one action', function() {
@@ -39,10 +42,12 @@ describe('TasksContentCtrl', function() {
           form: 'A'
         }]
       };
-      render.returns(KarmaUtils.mockPromise());
+      Enketo.render.returns(KarmaUtils.mockPromise());
       createController();
       chai.expect($scope.formId).to.equal('A');
       chai.expect($scope.loadingForm).to.equal(true);
+      chai.expect(Enketo.render.callCount).to.equal(1);
+      chai.expect(Enketo.render.getCall(0).args.length).to.equal(3);
     });
 
     it('does not load form when task has more than one action', function() {
@@ -52,6 +57,7 @@ describe('TasksContentCtrl', function() {
       createController();
       chai.expect($scope.formId).to.equal(null);
       chai.expect($scope.loadingForm).to.equal(undefined);
+      chai.expect(Enketo.render.callCount).to.equal(0);
     });
   });
 });
