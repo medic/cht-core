@@ -17,6 +17,7 @@ describe('TasksCtrl controller', function() {
     scope.setSelectedModule = function() {};
     scope.filterModel = {};
     scope.setSelected = function() {};
+    scope.clearSelected = function() {};
 
     TaskGenerator = sinon.stub();
     Changes = sinon.stub();
