@@ -29,20 +29,20 @@ describe('TasksContentCtrl', function() {
           $scope.selected = task;
         }
       };
+      Enketo.render.returns(KarmaUtils.mockPromise());
     });
 
     afterEach(function() {
       KarmaUtils.restore(Enketo.render);
     });
 
-    it('loads form when task has one action', function() {
+    it('loads form when task has one action and no fields', function() {
       task = {
         actions: [{
           type: 'report',
           form: 'A'
         }]
       };
-      Enketo.render.returns(KarmaUtils.mockPromise());
       createController();
       chai.expect($scope.formId).to.equal('A');
       chai.expect($scope.loadingForm).to.equal(true);
@@ -59,6 +59,30 @@ describe('TasksContentCtrl', function() {
       chai.expect($scope.loadingForm).to.equal(undefined);
       chai.expect(Enketo.render.callCount).to.equal(0);
     });
+
+    it('does not load form when task has fields (e.g. description)', function() {
+      task = {
+        actions: [{
+          type: 'report',
+          form: 'B'
+        }],
+        fields: [{
+          label: [{
+            content: "Description",
+            locale: "en"
+          }],
+          value: [{
+            content: "{{contact.name}} survey due",
+            locale: "en"
+          }]
+        }]
+      };
+      createController();
+      chai.expect($scope.formId).to.equal(null);
+      chai.expect($scope.loadingForm).to.equal(undefined);
+      chai.expect(Enketo.render.callCount).to.equal(0);
+    });
+
   });
 });
 
