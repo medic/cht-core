@@ -64,7 +64,6 @@
       if (hasOneFormAndNoFields($scope.selected)) {
         $scope.performAction($scope.selected.actions[0]);
       }
-      $log.info('TasksContentCtrl loaded');
 
     }
   ]);

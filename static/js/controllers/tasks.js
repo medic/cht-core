@@ -74,7 +74,6 @@ var _ = require('underscore');
           return true;
         }
       });
-      console.log('TasksCtrl loaded');
     }
   ]);
 
