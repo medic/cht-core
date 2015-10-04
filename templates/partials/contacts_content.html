@@ -13,36 +13,38 @@
   <div class="col-sm-8 item-content item-body" ng-show="selected && !loadingContent">
     <div class="material">
 
-      <div class="body card col-sm-12">
+      <div class="body col-sm-12">
         <h2>{{selected.doc.name}}</h2>
-        <ul class="field-list">
-          <li ng-repeat="(name, conf) in selectedSchemaNormalFields()">
-            <label>{{selected.doc.type + '.field.' + name | translate}}</label>
-            <p>
-              <span ng-if="conf.type === 'tel'">
-                <a href="tel:{{selected.doc[name]}}" class="mobile-only">{{selected.doc[name]}}</a>
-                <span class="desktop-only">{{selected.doc[name]}}</span>
-              </span>
-              <span ng-if="conf.type.indexOf('db:') === 0"><a ui-sref="contacts.detail({ id: selected.doc[name]._id })">{{selected.doc[name].name}}</a></span>
-              <span ng-if="conf.type !== 'tel' && conf.type.indexOf('db:') !== 0">{{selected.doc[name]}}</span>
-            </p>
-          </li>
-          <li ng-repeat="parent in selected.parents">
-            <label>{{'contact.type.' + parent.type | translate}}</label>
-            <p><a ui-sref="contacts.detail({ id: parent._id })">{{parent.name}}</a></p>
-          </li>
-          <li ng-if="selected.contactFor.length">
-            <label>{{'Primary Contact For' | translate}}</label>
-            <ul>
-              <li class="row" ng-repeat="place in selected.contactFor">
-                <div class="col-sm-4">
-                  <a ui-sref="contacts.detail({ id: place.doc._id })">{{place.doc.name}}</a>
-                </div>
-                <div class="col-sm-8" ng-bind-html="place.doc.parent | clinic"></div>
-              </li>
-            </ul>
-          </li>
-        </ul>
+        <div class="card">
+          <ul class="field-list">
+            <li ng-repeat="(name, conf) in selectedSchemaNormalFields()">
+              <label>{{selected.doc.type + '.field.' + name | translate}}</label>
+              <p>
+                <span ng-if="conf.type === 'tel'">
+                  <a href="tel:{{selected.doc[name]}}" class="mobile-only">{{selected.doc[name]}}</a>
+                  <span class="desktop-only">{{selected.doc[name]}}</span>
+                </span>
+                <span ng-if="conf.type.indexOf('db:') === 0"><a ui-sref="contacts.detail({ id: selected.doc[name]._id })">{{selected.doc[name].name}}</a></span>
+                <span ng-if="conf.type !== 'tel' && conf.type.indexOf('db:') !== 0">{{selected.doc[name]}}</span>
+              </p>
+            </li>
+            <li ng-repeat="parent in selected.parents">
+              <label>{{'contact.type.' + parent.type | translate}}</label>
+              <p><a ui-sref="contacts.detail({ id: parent._id })">{{parent.name}}</a></p>
+            </li>
+            <li ng-if="selected.contactFor.length">
+              <label>{{'Primary Contact For' | translate}}</label>
+              <ul>
+                <li class="row" ng-repeat="place in selected.contactFor">
+                  <div class="col-sm-4">
+                    <a ui-sref="contacts.detail({ id: place.doc._id })">{{place.doc.name}}</a>
+                  </div>
+                  <div class="col-sm-8" ng-bind-html="place.doc.parent | clinic"></div>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
       </div>
       <div>
         <div class="col-sm-4" ng-if="selected.children.length">
@@ -52,8 +54,7 @@
               <li ng-repeat="child in selected.children">
                 <a ui-sref="contacts.detail({ id: child.doc._id })">
                   <div>{{child.doc.name}}</div>
-                  <div>{{child.doc.contact.name}}</div>
-                  <div>{{child.doc.contact.phone}}</div>
+                  <div class="subtext">{{child.doc.contact.name}}</div>
                 </a>
               </li>
             </ul>
@@ -66,7 +67,7 @@
               <li ng-repeat="task in selected.tasks">
                 <a ui-sref="tasks.detail({ id: task._id })">
                   <div>{{task.title | translateFrom:task}}</div>
-                  <div ng-bind-html="task.date | relativeDate"></div>
+                  <div ng-bind-html="task.date | relativeDate" class="subtext"></div>
                 </a>
               </li>
             </ul>
@@ -91,7 +92,7 @@
               <li ng-repeat="report in selected.reports">
                 <a ui-sref="reports.detail({ id: report._id })">
                   <div>{{report | title:forms}}</div>
-                  <div ng-bind-html="report.reported_date | relativeDate"></div>
+                  <div ng-bind-html="report.reported_date | relativeDate" class="subtext"></div>
                 </a>
               </li>
             </ul>
