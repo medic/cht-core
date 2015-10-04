@@ -9,8 +9,15 @@ describe('TasksContentCtrl', function() {
 
   describe('$scope.performAction', function() {
     var $scope,
-        controller,
-        task;
+        task,
+        render = sinon.stub();
+
+    var createController = function() {
+      $controller('TasksContentCtrl', {
+        $scope: $scope,
+        Enketo: { render: render }
+      });
+    };
 
     beforeEach(function() {
       $scope = {
@@ -19,10 +26,10 @@ describe('TasksContentCtrl', function() {
           $scope.selected = task;
         }
       };
-      controller = $controller('TasksContentCtrl', {
-        $scope: $scope,
-        Enketo: sinon.stub()
-      });
+    });
+
+    afterEach(function() {
+      KarmaUtils.restore(render);
     });
 
     it('loads form when task has one action', function() {
@@ -32,6 +39,8 @@ describe('TasksContentCtrl', function() {
           form: 'A'
         }]
       };
+      render.returns(KarmaUtils.mockPromise());
+      createController();
       chai.expect($scope.formId).to.equal('A');
       chai.expect($scope.loadingForm).to.equal(true);
     });
@@ -40,8 +49,10 @@ describe('TasksContentCtrl', function() {
       task = {
         actions: [{}, {}] // two forms
       };
+      createController();
       chai.expect($scope.formId).to.equal(null);
       chai.expect($scope.loadingForm).to.equal(undefined);
     });
   });
 });
+
