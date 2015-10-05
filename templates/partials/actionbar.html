@@ -16,19 +16,19 @@
               <a ui-sref="reports.add({ formId: form.internalId })">{{form.title | translateFrom}}</a>
             </li>
           </ul>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="emit('EditContact', { type: 'person' })" ng-show="filterModel.type === 'contacts'">
-            <span class="fa-stack">
-              <i class="fa fa-user fa-stack-1x"></i>
-              <i class="fa fa-plus fa-stack-1x"></i>
-            </span>
-            <p>{{'Add person' | translate}}</p>
-          </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="emit('EditContact', {})" ng-show="filterModel.type === 'contacts'">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="emit('EditContact', {})" ng-show="filterModel.type === 'contacts'" mm-auth="can_configure">
             <span class="fa-stack">
               <i class="fa fa-building fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
             <p>{{'Add place' | translate}}</p>
+          </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="emit('EditContact', {})" ng-show="filterModel.type === 'contacts'" mm-auth="!can_configure">
+            <span class="fa-stack">
+              <i class="fa fa-home fa-stack-1x"></i>
+              <i class="fa fa-plus fa-stack-1x"></i>
+            </span>
+            <p>{{'action.clinic.add' | translate}}</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'" ng-click="download()" mm-auth="can_access_directly">
             <span class="fa fa-arrow-down"></span>
