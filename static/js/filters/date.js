@@ -7,7 +7,7 @@ var _ = require('underscore');
   var module = angular.module('inboxFilters');
 
   var getRelativeDate = function(date, options) {
-    var options = options || {};
+    options = options || {};
     _.defaults(options, { prefix: '', suffix: '' });
     if (!date) {
       return '<span>' + options.prefix + options.suffix + '</span>';
