@@ -107,9 +107,16 @@ var modal = require('../modules/modal');
 
           form = ContactForm.forEdit(contact.type);
         } else {
-          $scope.contact = {
-            type: contact.type,
+          $scope.contact = {};
+          if(contact.type) {
+            $scope.contact.type = contact.type;
+          } else {
+            var placeTypes = Object.keys($scope.placeSchemas);
+            if (placeTypes.length === 1) {
+              $scope.contact.type = placeTypes[0];
+            }
           };
+
           $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
           $scope.contactId = null;
 
