@@ -4,7 +4,7 @@
       <a class="message-wrapper" ui-sref="tasks.detail({ id: task._id })">
         <span ng-bind-html="task.icon | resourceIcon" class="mm-badge"></span>
         <div class="detail">
-          <span class="time" ng-bind-html="task.date | relativeDate"></span>
+          <span class="time" ng-bind-html="task.date | relativeDay"></span>
           <div class="description">{{task.title | translateFrom:task}}</div>
           <div class="description priority-label">
             <span class="priority">

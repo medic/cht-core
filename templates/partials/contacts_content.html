@@ -67,7 +67,7 @@
               <li ng-repeat="task in selected.tasks">
                 <a ui-sref="tasks.detail({ id: task._id })">
                   <div>{{task.title | translateFrom:task}}</div>
-                  <div ng-bind-html="task.date | relativeDate" class="subtext"></div>
+                  <div ng-bind-html="task.date | relativeDay" class="subtext"></div>
                 </a>
               </li>
             </ul>
