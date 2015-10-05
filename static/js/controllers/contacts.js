@@ -123,8 +123,8 @@ var _ = require('underscore'),
         $scope.query();
       });
 
-      $scope.$on('EditContact', function(e, record) {
-        $rootScope.$broadcast('EditContactInit', record || $scope.selected.doc);
+      $scope.$on('EditContact', function(e, record, instanceData) {
+        $rootScope.$broadcast('EditContactInit', record || $scope.selected.doc, instanceData);
       });
 
       Changes({

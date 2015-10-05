@@ -428,8 +428,8 @@ require('moment/locales');
         $scope.actionBar = model;
       };
 
-      $scope.emit = function(name, param) {
-        $rootScope.$broadcast(name, param);
+      $scope.emit = function() {
+        $rootScope.$broadcast.apply($rootScope, arguments);
       };
 
       var deleteMessageId;

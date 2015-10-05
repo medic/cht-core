@@ -83,17 +83,13 @@ var modal = require('../modules/modal');
 
       $scope.$on('ContactUpdated', populateParents);
 
-      $scope.$on('EditContactInit', function(e, contact) {
-
-        var formInstanceData;
+      $scope.$on('EditContactInit', function(e, contact, formInstanceData) {
 
         contact = contact || {};
-
         $scope.primaryContact = {};
-
         $scope.original = contact;
-
         var form;
+
         if (contact._id) {
           $scope.contact = {
             name: contact.name,

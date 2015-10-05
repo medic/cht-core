@@ -47,7 +47,7 @@
         </div>
       </div>
       <div>
-        <div class="col-sm-4" ng-if="selected.children.length">
+        <div class="col-sm-4" ng-if="selected.doc.type !== 'person'">
           <h3>{{selected.doc.type + '.field.children' | translate}}</h3>
           <div class="card">
             <ul class="action-list">
@@ -55,6 +55,24 @@
                 <a ui-sref="contacts.detail({ id: child.doc._id })">
                   <div>{{child.doc.name}}</div>
                   <div class="subtext">{{child.doc.contact.name}}</div>
+                </a>
+              </li>
+              <li class="add" ng-show="selected.doc.type === 'clinic'">
+                <a ng-click="emit('EditContact', { type: 'person' }, { parent: selected.doc._id })">
+                  <i class="fa fa-plus"></i>
+                  <div>{{'Add person' | translate}}</div>
+                </a>
+              </li>
+              <li class="add" ng-show="selected.doc.type === 'health_center'">
+                <a ng-click="emit('EditContact', { type: 'clinic' }, { parent: selected.doc._id })">
+                  <i class="fa fa-plus"></i>
+                  <div>{{'Add place' | translate}}</div>
+                </a>
+              </li>
+              <li class="add" ng-show="selected.doc.type === 'district_hospital'">
+                <a ng-click="emit('EditContact', { type: 'health_center' }, { parent: selected.doc._id })">
+                  <i class="fa fa-plus"></i>
+                  <div>{{'Add place' | translate}}</div>
                 </a>
               </li>
             </ul>
