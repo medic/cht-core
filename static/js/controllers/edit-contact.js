@@ -260,13 +260,12 @@ var modal = require('../modules/modal');
                     doc[f] = {};
                   } else if(doc[f] === 'NEW') {
                     var extra = extras[f];
-                    extra.reported_date = Date.now();
-                    var isChild = false;
                     extra.type = customType[2];
+                    extra.reported_date = Date.now();
 
-                    if(extra.parent === 'PARENT') {
+                    var isChild = extra.parent === 'PARENT';
+                    if(isChild) {
                       delete extra.parent;
-                      isChild = true;
                     }
 
                     updateTitle(extra);
