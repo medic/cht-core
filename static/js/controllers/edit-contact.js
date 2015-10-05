@@ -7,8 +7,8 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditContactCtrl',
-    ['$q', '$rootScope', '$scope', '$state', 'translateFilter', 'ContactForm', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'EnketoTranslation',
-    function ($q, $rootScope, $scope, $state, translateFilter, ContactForm, ContactSchema, DbView, DB, Enketo, EnketoTranslation) {
+    ['$q', '$rootScope', '$scope', '$state', 'translateFilter', 'ContactForm', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'EnketoTranslation', 'UserDistrict',
+    function ($q, $rootScope, $scope, $state, translateFilter, ContactForm, ContactSchema, DbView, DB, Enketo, EnketoTranslation, UserDistrict) {
 
       $scope.unmodifiedSchema = ContactSchema.get();
       $scope.contactTypes = Object.keys($scope.unmodifiedSchema);
@@ -16,6 +16,47 @@ var modal = require('../modules/modal');
       $scope.dependentPersonSchema = $scope.placeSchemas.person;
       delete $scope.dependentPersonSchema.fields.parent;
       delete $scope.placeSchemas.person;
+
+      $scope.canCreateDifferentPlaceTypes = true;
+      var removePlaceSchemasAtOrAbove = function(topType) {
+        var deleting = false;
+        var types = Object.keys($scope.placeSchemas).reverse();
+        _.each(types, function(t) {
+          if (topType === t) {
+            deleting = true;
+          }
+          if (deleting) {
+            delete $scope.placeSchemas[t];
+            return;
+          }
+        });
+        $scope.canCreateDifferentPlaceTypes = Object.keys($scope.placeSchemas).length > 1;
+      };
+
+      // Delete place schemas which are too high in the hierarchy for this user
+      // to see
+      UserDistrict(function(err, facility_id) {
+        if (err) {
+          return console.err(err);
+        }
+        if (!facility_id) {
+          // user not tied to a facility can create any kind of place
+          return;
+        }
+        DB.get().get(facility_id)
+          .then(function(doc) {
+            removePlaceSchemasAtOrAbove(doc.type);
+          })
+          .catch(function(err) {
+            if (err.status !== 404) {
+              return console.err(err);
+            }
+
+            // TODO it seems like my user can't access its own facility object.
+            // This is likely a local issue, so here's what should happen above.
+            removePlaceSchemasAtOrAbove('health_center');
+          });
+      });
 
       // Close listener for modal to discard Enketo data
       $(document).on('hidden.bs.modal', '#edit-contact', function() {

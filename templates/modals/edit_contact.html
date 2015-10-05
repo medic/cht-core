@@ -8,7 +8,7 @@
       </div>
       <div class="modal-body enketo">
 
-        <div class="form-group" ng-show="category === 'place' && !contactId">
+        <div class="form-group" ng-show="category === 'place' && !contactId && canCreateDifferentPlaceTypes">
           <label>{{'Contact type' | translate}} *</label>
           <p class="horizontal-options">
             <a class="icon" ng-class="{'selected': contact.type === t}" ng-click="setContactType(t)" ng-repeat="(t, props) in placeSchemas">
