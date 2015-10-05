@@ -108,17 +108,24 @@ var modal = require('../modules/modal');
           form = ContactForm.forEdit(contact.type);
         } else {
           $scope.contact = {
-            type: contact.type || Object.keys($scope.placeSchemas)[0],
+            type: contact.type,
           };
           $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
           $scope.contactId = null;
 
-          form = ContactForm.forCreate($scope.contact.type, { contact:$scope.dependentPersonSchema });
+          if ($scope.contact.type) {
+            form = ContactForm.forCreate($scope.contact.type, { contact:$scope.dependentPersonSchema });
+          } else {
+            form = $q.resolve();
+          }
         }
 
         var modal = $('#edit-contact');
 
         form.then(function(form) {
+          if (!form) {
+            return;
+          }
           Enketo.renderFromXmlString(modal, form, formInstanceData)
             .then(function(form) {
               $scope.enketo_contact = {
@@ -126,11 +133,11 @@ var modal = require('../modules/modal');
                 formInstance: form,
                 docId: $scope.contactId,
               };
-            })
-            .then(function() {
-              modal.modal('show');
-            }).catch(console.error.bind(console));
-        });
+            });
+        })
+        .then(function() {
+          modal.modal('show');
+        }).catch(console.error.bind(console));
       });
 
       $scope.save = function() {
