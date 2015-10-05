@@ -76,7 +76,6 @@ var modal = require('../modules/modal');
                   formInstance: form,
                   docId: type === $scope.contact.type? $scope.contactId: null,
                 };
-                $scope.$apply();
               });
           });
       };
