@@ -158,7 +158,7 @@ var modal = require('../modules/modal');
             if (placeTypes.length === 1) {
               $scope.contact.type = placeTypes[0];
             }
-          };
+          }
 
           $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
           $scope.contactId = null;
