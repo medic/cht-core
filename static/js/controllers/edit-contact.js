@@ -104,6 +104,7 @@ var modal = require('../modules/modal');
       populateParents();
 
       $scope.setContactType = function(type) {
+        $scope.loading = true;
         $scope.contact.type = type;
 
         var modal = $('#edit-contact');
@@ -117,6 +118,7 @@ var modal = require('../modules/modal');
                   formInstance: form,
                   docId: type === $scope.contact.type? $scope.contactId: null,
                 };
+                $scope.loading = false;
               });
           });
       };
