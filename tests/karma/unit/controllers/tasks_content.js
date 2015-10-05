@@ -68,12 +68,12 @@ describe('TasksContentCtrl', function() {
         }],
         fields: [{
           label: [{
-            content: "Description",
-            locale: "en"
+            content: 'Description',
+            locale: 'en'
           }],
           value: [{
-            content: "{{contact.name}} survey due",
-            locale: "en"
+            content: '{{contact.name}} survey due',
+            locale: 'en'
           }]
         }]
       };
