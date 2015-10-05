@@ -163,7 +163,7 @@ module.exports = {
       ]
     },
     {
-      "name": "can_view_tasks",
+      "name": "can_view_tasks_tab",
       "roles": [
         "national_admin"
       ]
@@ -175,28 +175,28 @@ module.exports = {
       ]
     },
     {
-      "name": "can_view_messages",
+      "name": "can_view_messages_tab",
       "roles": [
         "national_admin",
         "district_admin"
       ]
     },
     {
-      "name": "can_view_reports",
+      "name": "can_view_reports_tab",
       "roles": [
         "national_admin",
         "district_admin"
       ]
     },
     {
-      "name": "can_view_analytics",
+      "name": "can_view_analytics_tab",
       "roles": [
         "national_admin",
         "district_admin"
       ]
     },
     {
-      "name": "can_view_contacts",
+      "name": "can_view_contacts_tab",
       "roles": [
         "national_admin",
         "district_admin"
