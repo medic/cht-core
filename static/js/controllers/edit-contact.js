@@ -124,6 +124,7 @@ var modal = require('../modules/modal');
 
         form.then(function(form) {
           if (!form) {
+            modal.find('.container.pages').empty();
             return;
           }
           Enketo.renderFromXmlString(modal, form, formInstanceData)
