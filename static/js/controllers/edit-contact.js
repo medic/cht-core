@@ -203,6 +203,7 @@ var modal = require('../modules/modal');
                     doc[f] = {};
                   } else if(doc[f] === 'NEW') {
                     var extra = extras[f];
+                    extra.reported_date = Date.now();
                     var isChild = false;
                     extra.type = customType[2];
 
@@ -243,6 +244,7 @@ var modal = require('../modules/modal');
             if(doc._id) {
               return DB.get().put(doc);
             } else {
+              doc.reported_date = Date.now();
               return DB.get().post(doc);
             }
           })
