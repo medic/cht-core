@@ -1,42 +1,38 @@
 angular.module('inboxServices').service('ContactForm', [
-  'ContactSchema', 'DB', 'EnketoTranslation', 'FileReader',
-  function(ContactSchema, DB, EnketoTranslation, FileReader) {
+  '$q', 'ContactSchema', 'DB', 'EnketoTranslation', 'FileReader',
+  function($q, ContactSchema, DB, EnketoTranslation, FileReader) {
     var db = DB.get();
+
+    var availableForms = [];
+    db.query('medic/forms')
+      .then(function(res) {
+        availableForms = _.pluck(res.rows, 'id');
+      });
 
     function getXmlAttachment(doc) {
       return db.getAttachment(doc._id, 'xml')
         .then(FileReader);
     }
 
-    function getForm(type, mode, extras) {
-      return db.get('form:contact:' + type + ':' + mode)
-        .then(getXmlAttachment)
-        .catch(function(err) {
-          if(err.status === 404) {
-            // Couldn't find a specific form for this action, so check for a
-            // generic one
-            return db.get('form:contact:' + type)
-              .then(getXmlAttachment)
-              .catch(function(err) {
-                if(err.status === 404) {
-                  // Couldn't find generic form for this contact type, so generate one
-                  return EnketoTranslation.generateXform(ContactSchema.get(type), extras);
-                }
-                throw err;
-              });
-          }
-          throw err;
-        });
+    function getFormById(id) {
+      if (_.contains(availableForms, id)) {
+        return db.get(id).then(getXmlAttachment);
+      }
     }
 
-    // EnketoTranslation.generateXform($scope.unmodifiedSchema[type], { contact:$scope.dependentPersonSchema })
+    function getFormFor(type, mode, extras) {
+      return getFormById('form:contact:' + type + ':' + mode) ||
+        getFormById('form:contact:' + type) ||
+        $q.resolve(
+          EnketoTranslation.generateXform(ContactSchema.get(type), extras));
+    }
 
     return {
       forCreate: function(type, extras) {
-        return getForm(type, 'create', extras);
+        return getFormFor(type, 'create', extras);
       },
       forEdit: function(type, extras) {
-        return getForm(type, 'edit', extras);
+        return getFormFor(type, 'edit', extras);
       },
     };
   }
