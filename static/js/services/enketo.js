@@ -65,7 +65,9 @@ angular.module('inboxServices').service('Enketo', [
               return Language().then(function(language) {
                 var xml = $.parseXML(text);
                 var $xml = $(xml);
+                // set the user's language as default so it'll be used for itext translations
                 $xml.find('model itext translation[lang="' + language + '"]').attr('default', '');
+                // manually translate the title as itext doesn't seem to work
                 $xml.find('h\\:title,title').text(translateFromFilter(form.doc.title));
                 return transformXml(xml, form.id);
               });
