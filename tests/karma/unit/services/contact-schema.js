@@ -301,4 +301,21 @@ describe('ContactSchema service', function() {
       });
     });
   });
+
+  describe('#getBelow()', function() {
+    _.each({
+      district_hospital: [ 'health_center', 'clinic', 'person' ],
+      health_center: [  'clinic', 'person' ],
+      clinic: [ 'person' ],
+      person: [],
+    }, function(expected, limit) {
+      it('should provide all schemas below ' + limit, function() {
+        // when
+        var actual = service.getBelow(limit);
+
+        // expect
+        assert.deepEqual(Object.keys(actual), expected);
+      });
+    });
+  });
 });

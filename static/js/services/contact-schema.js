@@ -163,6 +163,19 @@ angular.module('inboxServices').service('ContactSchema', [
         }
         return schema;
       },
+      getBelow: function(limit) {
+        var schema = getSchema();
+        var deleting;
+        _.each(Object.keys(schema).reverse(), function(key) {
+          if (key === limit) {
+            deleting = true;
+          }
+          if (deleting) {
+            delete schema[key];
+          }
+        });
+        return schema;
+      },
       getWithoutSpecialFields: function() {
         // return a modified schema, missing special fields such as `parent`, and
         // anything included in the `name` attribute

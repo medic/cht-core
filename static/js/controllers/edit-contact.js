@@ -10,28 +10,21 @@ var modal = require('../modules/modal');
     ['$q', '$rootScope', '$scope', '$state', 'translateFilter', 'ContactForm', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'EnketoTranslation', 'UserDistrict',
     function ($q, $rootScope, $scope, $state, translateFilter, ContactForm, ContactSchema, DbView, DB, Enketo, EnketoTranslation, UserDistrict) {
 
-      $scope.unmodifiedSchema = ContactSchema.get();
-      $scope.contactTypes = Object.keys($scope.unmodifiedSchema);
-      $scope.placeSchemas = ContactSchema.get();
-      $scope.dependentPersonSchema = $scope.placeSchemas.person;
-      delete $scope.dependentPersonSchema.fields.parent;
-      delete $scope.placeSchemas.person;
+      $scope.loading = true;
 
-      $scope.canCreateDifferentPlaceTypes = true;
-      var removePlaceSchemasAtOrAbove = function(topType) {
-        var deleting = false;
-        var types = Object.keys($scope.placeSchemas).reverse();
-        _.each(types, function(t) {
-          if (topType === t) {
-            deleting = true;
-          }
-          if (deleting) {
-            delete $scope.placeSchemas[t];
-            return;
-          }
-        });
+      function setupSchemas(limit) {
+        $scope.unmodifiedSchema = ContactSchema.get();
+        $scope.contactTypes = Object.keys($scope.unmodifiedSchema);
+
+        $scope.placeSchemas = limit ? ContactSchema.getBelow(limit) : ContactSchema.get();
+
+        $scope.dependentPersonSchema = $scope.placeSchemas.person;
+        delete $scope.dependentPersonSchema.fields.parent;
+        delete $scope.placeSchemas.person;
+
         $scope.canCreateDifferentPlaceTypes = Object.keys($scope.placeSchemas).length > 1;
-      };
+        $scope.loading = false;
+      }
 
       // Delete place schemas which are too high in the hierarchy for this user
       // to see
@@ -41,11 +34,12 @@ var modal = require('../modules/modal');
         }
         if (!facility_id) {
           // user not tied to a facility can create any kind of place
+          setupSchemas();
           return;
         }
         DB.get().get(facility_id)
           .then(function(doc) {
-            removePlaceSchemasAtOrAbove(doc.type);
+            setupSchemas(doc.type);
           })
           .catch(function(err) {
             if (err.status !== 404) {
@@ -54,8 +48,9 @@ var modal = require('../modules/modal');
 
             // TODO it seems like my user can't access its own facility object.
             // This is likely a local issue, so here's what should happen above.
-            removePlaceSchemasAtOrAbove('health_center');
-          });
+            setupSchemas('health_center');
+          })
+          .catch(console.error.bind(console));
       });
 
       // Close listener for modal to discard Enketo data
