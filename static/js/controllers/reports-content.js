@@ -23,10 +23,9 @@
         group.loading = true;
         var id = $scope.selected._id;
         var groupNumber = group.rows[0].group;
-        MessageState.set(id, groupNumber, from, to, function(err) {
-          if (err) {
-            console.log(err);
-          }
+        MessageState.set(id, groupNumber, from, to).catch(function(err) {
+          group.loading = false;
+          console.log('Error setting message state', err);
         });
       };
 
@@ -37,7 +36,6 @@
       $scope.schedule = function(group) {
         setMessageState(group, 'muted', 'scheduled');
       };
-
     }
   ]);
 

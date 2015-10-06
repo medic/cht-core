@@ -235,6 +235,25 @@ exports.makeDataRecordReadable = function(doc, appinfo, language) {
     return data_record;
 };
 
+
+/**
+ * Return a title-case version of the supplied string.
+ * @name titleize(str)
+ * @param str The string to transform.
+ * @returns {String}
+ * @api public
+ */
+var titleize = function (s) {
+    return s.trim()
+        .toLowerCase()
+        .replace(/([a-z\d])([A-Z]+)/g, '$1_$2')
+        .replace(/[-\s]+/g, '_')
+        .replace(/_/g, ' ')
+        .replace(/(?:^|\s|-)\S/g, function(c) {
+            return c.toUpperCase();
+        });
+};
+
 /*
  * @api private
  */
@@ -255,7 +274,7 @@ exports.fieldsToHtml = function(keys, labels, data_record, def) {
 
     _.each(keys, function(key) {
         if(_.isArray(key)) {
-            fields.headers.push({head: utils.titleize(key[0])});
+            fields.headers.push({head: titleize(key[0])});
             fields.data.push(_.extend(
                 exports.fieldsToHtml(key[1], labels, data[key[0]], def),
                 {isArray: true}
@@ -290,7 +309,7 @@ function translateKey(key, field, locale) {
     }
     // still haven't found a proper label; then titleize
     if (key === label) {
-        return utils.titleize(key);
+        return titleize(key);
     } else {
         return label;
     }

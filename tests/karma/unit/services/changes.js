@@ -3,74 +3,102 @@ describe('Changes service', function() {
   'use strict';
 
   var service,
+      getDoc,
       changesCallback,
-      changesCount,
-      filter;
+      changesCount;
 
   beforeEach(function () {
+    changesCallback = undefined;
+    getDoc = undefined;
+    changesCount = 0;
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('db', {
-        changes: function(options, callback) {
-          changesCount++;
-          chai.expect(options.filter).to.equal(filter);
-          changesCallback = callback;
+      $provide.value('DB', {
+        get: function() {
+          return {
+            get: function() {
+              return {
+                then: function(callback) {
+                  callback(getDoc);
+                }
+              };
+            },
+            changes: function() {
+              changesCount++;
+              return {
+                on: function(type, callback) {
+                  changesCallback = callback;
+                }
+              };
+            }
+          };
         }
       });
     });
     inject(function(_Changes_) {
       service = _Changes_;
     });
-    changesCallback = undefined;
-    changesCount = 0;
-    filter = 'medic/data_records';
   });
 
   it('calls the callback', function(done) {
 
-    var expected = [{ id: 'x' }];
+    var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
 
-    service(function(actual) {
-      chai.expect(actual).to.equal(expected);
-      chai.expect(changesCount).to.equal(1);
-      done();
+    service({
+      key: 'test',
+      callback: function(actual) {
+        chai.expect(actual).to.equal(expected);
+        chai.expect(changesCount).to.equal(1);
+        done();
+      }
     });
 
-    changesCallback(null, { results: expected });
+    changesCallback(expected);
   });
 
-  it('calls the most recent callback with no key only', function(done) {
+  it('calls the most recent callback only', function(done) {
 
-    var expected = [{ id: 'x' }];
+    var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
 
-    service(function() {
-      chai.expect(false).to.equal(true);
+    service({
+      key: 'test',
+      callback: function() {
+        chai.expect(false).to.equal(true);
+      }
     });
 
-    service(function(actual) {
-      chai.expect(actual).to.equal(expected);
-      chai.expect(changesCount).to.equal(1);
-      done();
+    service({
+      key: 'test',
+      callback: function(actual) {
+        chai.expect(actual).to.equal(expected);
+        chai.expect(changesCount).to.equal(1);
+        done();
+      }
     });
 
-    changesCallback(null, { results: expected });
+    changesCallback(expected);
   });
 
   it('calls all registered callbacks', function(done) {
 
-    var expected = [{ id: 'x' }];
+    var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
     var results = { key1: [], key2: [] };
 
-    service({ key: 'key1' }, function(actual) {
-      results.key1.push(actual);
+    service({
+      key: 'key1',
+      callback: function(actual) {
+        results.key1.push(actual);
+      }
     });
 
-
-    service({ key: 'key2' }, function(actual) {
-      results.key2.push(actual);
+    service({
+      key: 'key2',
+      callback: function(actual) {
+        results.key2.push(actual);
+      }
     });
 
-    changesCallback(null, { results: expected });
+    changesCallback(expected);
 
     chai.expect(results.key1.length).to.equal(1);
     chai.expect(results.key2.length).to.equal(1);
@@ -81,40 +109,58 @@ describe('Changes service', function() {
     done();
   });
 
-  it('errors are ignored', function(done) {
+  it('calls the callback if filter passes', function(done) {
+    var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
+    var results = { key1: [], key2: [] };
 
-    service(function() {
-      chai.expect(false).to.equal(true);
+    service({
+      key: 'key1',
+      filter: function() {
+        return false;
+      },
+      callback: function(actual) {
+        results.key1.push(actual);
+      }
     });
 
-    changesCallback('bugger');
-    changesCallback(null, {});
+    service({
+      key: 'key2',
+      filter: function() {
+        return true;
+      },
+      callback: function(actual) {
+        results.key2.push(actual);
+      }
+    });
+
+    changesCallback(expected);
+
+    chai.expect(results.key1.length).to.equal(0);
+    chai.expect(results.key2.length).to.equal(1);
+    chai.expect(results.key2[0]).to.equal(expected);
+    chai.expect(changesCount).to.equal(1);
 
     done();
   });
 
-  it('no results is ignored', function(done) {
+  it('gets the doc if new', function(done) {
+    var expected = { id: 'x', changes: [ { rev: '1-abc' } ] };
+    getDoc = { id: 'x', rev: '1-abc', name: 'gareth' };
 
-    service(function() {
-      chai.expect(false).to.equal(true);
+    service({
+      key: 'test',
+      filter: function(change) {
+        return change.newDoc.name === 'gareth';
+      },
+      callback: function(actual) {
+        chai.expect(actual).to.equal(expected);
+        chai.expect(changesCount).to.equal(1);
+        done();
+      }
     });
 
-    changesCallback(null, {});
+    changesCallback(expected);
 
-    done();
   });
 
-  it('passes through the filter', function(done) {
-
-    var expected = [{ id: 'x' }];
-    filter = 'medic/ddoc';
-
-    service({ filter: filter }, function(actual) {
-      chai.expect(actual).to.equal(expected);
-      chai.expect(changesCount).to.equal(1);
-      done();
-    });
-
-    changesCallback(null, { results: expected });
-  });
 });

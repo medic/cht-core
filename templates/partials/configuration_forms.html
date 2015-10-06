@@ -13,9 +13,7 @@
         <button type="button" class="btn btn-default choose" ng-disabled="uploading">
           <i class="fa fa-arrow-up"></i> {{'Import' | translate}}
         </button>
-        <span class="loading-wrapper" ng-show="uploading">
-          <i class="fa fa-spin fa-spinner"></i>
-        </span>
+        <div class="loader" ng-show="uploading"></div>
         <span class="help-block">{{'Upload forms help' | translate}}</span>
         <div class="hide">
           <input class="uploader" type="file" accept="application/json">

@@ -21,6 +21,7 @@ describe('AnalyticsCtrl controller', function() {
     scope.setAnalyticsModules = function (modules) {
       scope.analyticsModules = modules;
     };
+    scope.clearSelected = function() {};
     createController = function() {
       return $controller('AnalyticsCtrl', {
         '$scope': scope,

@@ -4,11 +4,18 @@ describe('DeleteUser service', function() {
 
   var service,
       $httpBackend,
+      DeleteDoc,
       cacheRemove;
 
   beforeEach(function() {
     module('inboxApp');
     cacheRemove = sinon.stub();
+    DeleteDoc = sinon.stub();
+    module(function ($provide) {
+      $provide.factory('DeleteDoc', function() {
+        return DeleteDoc;
+      });
+    });
     inject(function($injector) {
       $httpBackend = $injector.get('$httpBackend');
       var $cacheFactory = $injector.get('$cacheFactory');
@@ -25,22 +32,20 @@ describe('DeleteUser service', function() {
   afterEach(function() {
     $httpBackend.verifyNoOutstandingExpectation();
     $httpBackend.verifyNoOutstandingRequest();
-    if (cacheRemove.restore) {
-      cacheRemove.restore();
-    }
+    KarmaUtils.restore(cacheRemove, DeleteDoc);
   });
 
   it('returns errors', function(done) {
 
     $httpBackend
-      .expect('GET', '/_users/org.couchdb.user:gareth')
+      .expect('GET', '/_users/org.couchdb.user%3Agareth')
       .respond({ 
         _id: 'org.couchdb.user:gareth',
         name: 'gareth',
         starsign: 'aries'
       });
     $httpBackend
-      .expect('PUT', '/_users/org.couchdb.user:gareth', {
+      .expect('PUT', '/_users/org.couchdb.user%3Agareth', {
         _id: 'org.couchdb.user:gareth',
         name: 'gareth',
         starsign: 'aries',
@@ -60,14 +65,14 @@ describe('DeleteUser service', function() {
   it('deletes the user and clears the cache', function(done) {
 
     $httpBackend
-      .expect('GET', '/_users/org.couchdb.user:gareth')
+      .expect('GET', '/_users/org.couchdb.user%3Agareth')
       .respond({ 
         _id: 'org.couchdb.user:gareth',
         name: 'gareth',
         starsign: 'aries'
       });
     $httpBackend
-      .expect('PUT', '/_users/org.couchdb.user:gareth', {
+      .expect('PUT', '/_users/org.couchdb.user%3Agareth', {
         _id: 'org.couchdb.user:gareth',
         name: 'gareth',
         starsign: 'aries',
@@ -75,11 +80,15 @@ describe('DeleteUser service', function() {
       })
       .respond({ success: true });
 
+    DeleteDoc.callsArgWith(1);
+
     service({
       id: 'org.couchdb.user:gareth',
       name: 'gareth'
     }, function(err) {
       chai.expect(err).to.equal(undefined);
+      chai.expect(DeleteDoc.callCount).to.equal(1);
+      chai.expect(DeleteDoc.firstCall.args[0]).to.equal('org.couchdb.user:gareth');
       chai.expect(cacheRemove.callCount).to.equal(3);
       chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Agareth');
       chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');

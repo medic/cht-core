@@ -42,7 +42,7 @@
     <button type="submit" class="btn btn-primary" ng-click="submitBasicSettings()" ng-disabled="status.loading">{{'Submit' | translate}}</button>
     <span ng-if="status.success" class="success">{{status.msg}}</span>
     <span ng-if="status.error" class="error">{{status.msg}}</span>
-    <span ng-if="status.loading" class="loading"><i class="fa fa-spin fa-spinner"></i></span>
+    <div class="loader inline" ng-show="status.loading"></div>
   </div>
 
 </form>

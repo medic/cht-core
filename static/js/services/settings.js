@@ -7,21 +7,40 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Settings', ['HttpWrapper', 'BaseUrlService',
-    function(HttpWrapper, BaseUrlService) {
-      return function(options, callback) {
-        if (!callback) {
-          callback = options;
-          options = {};
+  inboxServices.factory('Settings', ['DB', 'Cache',
+    function(DB, Cache) {
+
+      var cache = Cache({
+        get: function(callback) {
+          DB.get()
+            .get('_design/medic')
+            .then(function(ddoc) {
+              callback(null, _.defaults(ddoc.app_settings, defaults));
+            }).catch(callback);
+        },
+        filter: function(doc) {
+          return doc._id === '_design/medic';
         }
-        options = options || {};
-        options.cache = options.cache || true;
-        HttpWrapper.get(BaseUrlService() + '/app_settings/medic', options)
-          .success(function(res) {
-            callback(null, _.defaults(res.settings, defaults));
-          })
-          .error(function(data) {
-            callback(new Error(data));
+      });
+
+      return function(callback) {
+        cache(callback);
+      };
+
+    }
+  ]);
+
+  // TODO this service should be removed if there is a simple way to Promisify
+  // the alread-existing service above.
+  // TODO if this service is to be kept, it should probably be using `Cache`
+  inboxServices.factory('SettingsP',
+    ['DB',
+    function(DB) {
+      return function() {
+        return DB.get()
+          .get('_design/medic')
+          .then(function(ddoc) {
+            return _.defaults(ddoc.app_settings, defaults);
           });
       };
     }

@@ -1,5 +1,4 @@
-var async = require('async'),
-    _ = require('underscore');
+var _ = require('underscore');
 
 (function () {
 
@@ -8,91 +7,54 @@ var async = require('async'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('MessageContactsRaw', [
-    'HttpWrapper', 'BaseUrlService',
-    function(HttpWrapper, BaseUrlService) {
-      return function(params, callback, targetScope) {
-        var url = BaseUrlService() + '/message_contacts';
-        HttpWrapper.get(url, { params: params, targetScope: targetScope })
-          .success(function(res) {
+    'DB',
+    function(DB) {
+      return function(params, callback) {
+        DB.get()
+          .query('medic/data_records_by_contact', params)
+          .then(function(res) {
             callback(null, res.rows);
           })
-          .error(function(data, status) {
-            if(status === 0) {
-              // request failed unnaturally.  It was probably cancelled by a
-              // state change, so we can safely ignore it.
-              return;
-            }
-            callback(new Error(data));
+          .catch(function(err) {
+            callback(err);
           });
       };
     }
   ]);
 
-  var generateQuery = function(options, districtId) {
-    var startkey = [ districtId ];
-    var endkey = [ districtId ];
-    if (options.id) {
-      startkey.push(options.id);
-      endkey.push(options.id);
-    }
-    (options.queryOptions.descending ? startkey : endkey).push({});
-
+  var generateQuery = function(options) {
     var query = _.clone(options.queryOptions);
-    query.startkey = JSON.stringify(startkey);
-    query.endkey = JSON.stringify(endkey);
+    query.startkey = [ ];
+    query.endkey = [ ];
+    if (options.id) {
+      query.startkey.push(options.id);
+      query.endkey.push(options.id);
+    }
+    (options.queryOptions.descending ? query.startkey : query.endkey).push({});
     return query;
   };
 
-  var query = function($rootScope, MessageContactsRaw, UserDistrict, Settings, options, callback) {
-    async.auto({
-      district: function(callback) {
-        UserDistrict(callback);
-      },
-      request: ['district', function(callback, results) {
-        var query = generateQuery(options, results.district || 'admin');
-        MessageContactsRaw(query, callback, options.targetScope);
-      }],
-      unallocated: function(callback) {
-        if (!options.districtAdmin) {
-          return callback(null, false);
-        }
-        Settings(function(err, settings) {
-          var result = settings && settings.district_admins_access_unallocated_messages;
-          callback(err, result);
-        });
-      },
-      requestUnallocated: ['unallocated', function(callback, results) {
-        if (!results.unallocated) {
-          return callback();
-        }
-        MessageContactsRaw(generateQuery(options, 'none'), callback, options.targetScope);
-      }]
-    }, function(err, results) {
-      var merged;
-      if (results.request && results.requestUnallocated) {
-        merged = results.request.concat(results.requestUnallocated);
-      } else {
-        merged = results.request;
-      }
-      callback(err, merged);
+  var query = function($rootScope, MessageContactsRaw, options, callback) {
+    MessageContactsRaw(generateQuery(options), function(err, results) {
+      callback(err, results);
       if (!$rootScope.$$phase) {
         $rootScope.$apply();
       }
     });
   };
   
-  inboxServices.factory('MessageContact', ['$rootScope', 'MessageContactsRaw', 'UserDistrict', 'Settings',
-    function($rootScope, MessageContactsRaw, UserDistrict, Settings) {
+  inboxServices.factory('MessageContact', ['$rootScope', 'MessageContactsRaw',
+    function($rootScope, MessageContactsRaw) {
       return function(options, callback) {
         options.targetScope = 'messages';
-        options.queryOptions = { group_level: 2 };
-        query($rootScope, MessageContactsRaw, UserDistrict, Settings, options, callback);
+        options.queryOptions = { group_level: 1 };
+        query($rootScope, MessageContactsRaw, options, callback);
       };
     }
   ]);
   
-  inboxServices.factory('ContactConversation', ['$rootScope', 'MessageContactsRaw', 'UserDistrict', 'Settings',
-    function($rootScope, MessageContactsRaw, UserDistrict, Settings) {
+  inboxServices.factory('ContactConversation', ['$rootScope', 'MessageContactsRaw',
+    function($rootScope, MessageContactsRaw) {
       return function(options, callback) {
         options.targetScope = 'messages.details';
         options.queryOptions = {
@@ -102,7 +64,7 @@ var async = require('async'),
           skip: options.skip,
           limit: 50
         };
-        query($rootScope, MessageContactsRaw, UserDistrict, Settings, options, callback);
+        query($rootScope, MessageContactsRaw, options, callback);
       };
     }
   ]);

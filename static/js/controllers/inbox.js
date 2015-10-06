@@ -1,8 +1,6 @@
-var utils = require('kujua-utils'),
-    feedback = require('feedback'),
+var feedback = require('feedback'),
     _ = require('underscore'),
     moment = require('moment'),
-    version = require('settings/root').version,
     sendMessage = require('../modules/send-message'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
@@ -17,9 +15,25 @@ require('moment/locales');
 
   var inboxControllers = angular.module('inboxControllers', []);
 
-  inboxControllers.controller('InboxCtrl', 
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'User', 'UserDistrict', 'UserCtxService', 'Verified', 'DeleteDoc', 'UpdateFacility', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'Changes',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, User, UserDistrict, UserCtxService, Verified, DeleteDoc, UpdateFacility, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, Changes) {
+  inboxControllers.controller('InboxCtrl',
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'ConflictResolution', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, ConflictResolution, UserSettings, APP_CONFIG, DB, Session, Enketo) {
+
+      Session.init();
+      DBSync();
+      feedback.init(
+        function(doc, callback) {
+          DB.get()
+            .post(doc)
+            .then(function() {
+              callback();
+            })
+            .catch(callback);
+        },
+        function(callback) {
+          callback(null, Session.userCtx());
+        }
+      );
 
       $scope.loadingContent = false;
       $scope.error = false;
@@ -28,14 +42,19 @@ require('moment/locales');
       $scope.languages = [];
       $scope.forms = [];
       $scope.facilities = [];
-      $scope.items = [];
       $scope.totalItems = undefined;
-      $scope.selected = undefined;
       $scope.filterQuery = { value: undefined };
       $scope.analyticsModules = undefined;
-      $scope.version = version;
+      $scope.version = APP_CONFIG.version;
+      $scope.actionBar = {};
+      $scope.formDefinitions = [];
+      $scope.title = undefined;
 
       $scope.baseUrl = BaseUrlService();
+
+      $scope.logout = function() {
+        Session.logout();
+      };
 
       $scope.setFilterQuery = function(query) {
         if (query) {
@@ -51,48 +70,34 @@ require('moment/locales');
         $scope.filterModel.module = module;
       };
 
-      var clearSelectedTimer;
+      $scope.back = function() {
+        $scope.clearSelected();
+        $state.go($scope.filterModel.type);
+      };
 
-      $scope.setSelected = function(selected) {
-        $timeout.cancel(clearSelectedTimer);
+      $scope.clearSelected = function() {
+        $scope.showContent = false;
         $scope.loadingContent = false;
-        if (selected) {
-          $scope.selected = selected;
-          $timeout(function() {
-            $scope.showContent = true;
+        $scope.showActionBar = false;
+        $scope.setTitle();
+        $scope.$broadcast('ClearSelected');
+      };
+
+      $scope.settingSelected = function(refreshing) {
+        $scope.loadingContent = false;
+        $timeout(function() {
+          $scope.showContent = true;
+          $scope.showActionBar = true;
+          if (!refreshing) {
             $timeout(function() {
               $('.item-body').scrollTop(0);
             });
-          });
-        } else if($scope.selected) {
-          $scope.showContent = false;
-          if ($('#back').is(':visible')) {
-            clearSelectedTimer = $timeout(function() {
-              $scope.selected = undefined;
-            }, 500);
-          } else {
-            $scope.selected = undefined;
           }
-        }
+        });
       };
 
-      $scope.select = function(id) {
-        if ($stateParams.id === id) {
-          // message already set - make sure we're showing content
-          if ($scope.filterModel.type === 'messages') {
-            return;
-          }
-          var message = _.findWhere($scope.items, { _id: id });
-          if (message) {
-            return $scope.setSelected(message);
-          }
-          $state.reload();
-          $scope.$broadcast('query');
-        } else if (id) {
-          $state.go($scope.filterModel.type + '.detail', { id: id });
-        } else {
-          $state.go($scope.filterModel.type);
-        }
+      $scope.setTitle = function(title) {
+        $scope.title = title;
       };
 
       $scope.setLoadingContent = function(id) {
@@ -102,63 +107,8 @@ require('moment/locales');
         });
       };
 
-      var removeDeletedMessages = function(messages) {
-        var existingKey;
-        var checkExisting = function(updated) {
-          return existingKey === updated.key[1];
-        };
-        for (var i = $scope.items.length - 1; i >= 0; i--) {
-          existingKey = $scope.items[i].key[1];
-          if (!_.some(messages, checkExisting)) {
-            $scope.items.splice(i, 1);
-          }
-        }
-      };
-
-      var mergeUpdatedMessages = function(messages) {
-        _.each(messages, function(updated) {
-          var match = _.find($scope.items, function(existing) {
-            return existing.key[1] === updated.key[1];
-          });
-          if (match) {
-            if (!_.isEqual(updated.value, match.value)) {
-              match.value = updated.value;
-            }
-          } else {
-            $scope.items.push(updated);
-          }
-        });
-      };
-
-      $scope.setMessages = function(options) {
-        options = options || {};
-        if (options.changes) {
-          removeDeletedMessages(options.messages);
-          mergeUpdatedMessages(options.messages);
-        } else {
-          $scope.items = options.messages || [];
-        }
-      };
-
-      $scope.setReports = function(reports) {
-        $scope.items = reports || [];
-      };
-
-      $scope.setContacts = function(contacts) {
-        $scope.items = contacts || [];
-      };
-
       $scope.isRead = function(message) {
-        return _.contains(message.read, UserCtxService().name);
-      };
-
-      $scope.permissions = {
-        admin: utils.isUserAdmin(UserCtxService()),
-        nationalAdmin: utils.isUserNationalAdmin(UserCtxService()),
-        districtAdmin: utils.isUserDistrictAdmin(UserCtxService()),
-        district: undefined,
-        canExport: utils.hasPerm(UserCtxService(), 'can_export_messages') || 
-                   utils.hasPerm(UserCtxService(), 'can_export_forms')
+        return _.contains(message.read, Session.userCtx().name);
       };
 
       $scope.readStatus = { forms: 0, messages: 0 };
@@ -197,108 +147,86 @@ require('moment/locales');
         });
       };
 
-      $scope.removeContact = function(contact) {
-        $scope.items = _.filter($scope.items, function(i) {
-            return i._id !== contact._id; });
-      };
-
       $scope.$on('ContactUpdated', function() {
         $scope.updateAvailableFacilities();
       });
 
       $scope.updateAvailableFacilities = function() {
-        UserDistrict(function(err, district) {
+        FacilityHierarchy(function(err, hierarchy, total) {
           if (err) {
-            return console.log('Error fetching district', err);
+            return console.log('Error loading facilities', err);
           }
-          FacilityHierarchy(district, function(err, hierarchy, total) {
-            if (err) {
-              return console.log('Error loading facilities', err);
-            }
-            $scope.facilities = hierarchy;
-            $scope.facilitiesCount = total;
-          });
-          Facility({ district: district, types: [ 'person' ] }, function(err, facilities) {
-            if (err) {
-              return console.log('Failed to retrieve facilities', err);
-            }
-            function formatResult(row) {
-              return row && format.contact(row.doc);
-            }
-            $('#update-facility [name=facility]').select2({
-              width: '100%',
-              escapeMarkup: function(m) {
-                return m;
-              },
-              formatResult: formatResult,
-              formatSelection: formatResult,
-              initSelection: function (element, callback) {
-                var e = element.val();
-                if (!e) {
-                  return callback();
-                }
-                var row = _.findWhere(facilities, { id: e });
-                if (!row) {
-                  return callback();
-                }
-                callback(row);
-              },
-              query: function(options) {
-                var terms = options.term.toLowerCase().split(/\s+/);
-                var matches = _.filter(facilities, function(val) {
-                  var contact = val.doc.contact;
-                  var name = contact && contact.name;
-                  var phone = contact && contact.phone;
-                  var tags = [ val.doc.name, name, phone ].join(' ').toLowerCase();
-                  return _.every(terms, function(term) {
-                    return tags.indexOf(term) > -1;
-                  });
-                });
-                options.callback({ results: matches });
-              },
-              sortResults: function(results) {
-                results.sort(function(a, b) {
-                  var aName = formatResult(a).toLowerCase();
-                  var bName = formatResult(b).toLowerCase();
-                  return aName.localeCompare(bName);
-                });
-                return results;
+          $scope.facilities = hierarchy;
+          $scope.facilitiesCount = total;
+        });
+        Facility({ types: [ 'person' ] }, function(err, facilities) {
+          if (err) {
+            return console.log('Failed to retrieve facilities', err);
+          }
+          function formatResult(doc) {
+            return doc && format.contact(doc);
+          }
+          $('.update-facility [name=facility], #edit-user-profile [name=contact]').select2({
+            id: function(doc) {
+              return doc._id;
+            },
+            width: '100%',
+            escapeMarkup: function(m) {
+              return m;
+            },
+            formatResult: formatResult,
+            formatSelection: formatResult,
+            initSelection: function (element, callback) {
+              var e = element.val();
+              if (!e) {
+                return callback();
               }
-            });
+              var row = _.findWhere(facilities, { _id: e });
+              if (!row) {
+                return callback();
+              }
+              callback(row);
+            },
+            query: function(options) {
+              var terms = options.term.toLowerCase().split(/\s+/);
+              var matches = _.filter(facilities, function(doc) {
+                var contact = doc.contact;
+                var name = contact && contact.name;
+                var phone = contact && contact.phone;
+                var tags = [ doc.name, name, phone ].join(' ').toLowerCase();
+                return _.every(terms, function(term) {
+                  return tags.indexOf(term) > -1;
+                });
+              });
+              options.callback({ results: matches });
+            },
+            sortResults: function(results) {
+              results.sort(function(a, b) {
+                var aName = formatResult(a).toLowerCase();
+                var bName = formatResult(b).toLowerCase();
+                return aName.localeCompare(bName);
+              });
+              return results;
+            }
           });
         });
       };
 
-      $scope.updateReadStatus = function () {
-        ReadMessages({
-          user: UserCtxService().name,
-          district: $scope.permissions.district,
-          targetScope: 'messages'
-        }, function(err, data) {
+      $scope.updateReadStatus = function() {
+        ReadMessages(function(err, data) {
           if (err) {
-            return console.log(err);
+            return console.log('Error fetching read status', err);
           }
           $scope.readStatus = data;
         });
       };
-
-      UserDistrict(function(err, district) {
-        if (err) {
-          console.log('Error fetching user district', err);
-          if (err !== 'Not logged in') {
-            $('body').html(err);
-          }
-          return;
-        }
-        $scope.permissions.district = district;
-        $scope.updateReadStatus();
-      });
+      $scope.updateReadStatus();
 
       $scope.setupSendMessage = function() {
         sendMessage.init(Settings, Contact, translateFilter);
       };
 
-      Form({ targetScope: 'root' }, function(err, forms) {
+      Form(function(err, forms) {
         if (err) {
           return console.log('Failed to retrieve forms', err);
         }
@@ -332,7 +260,7 @@ require('moment/locales');
           var selected = $(this).closest('.modal-content')
                                 .find('.selected')
                                 .attr('data-value');
-          var id = 'org.couchdb.user:' + UserCtxService().name;
+          var id = 'org.couchdb.user:' + Session.userCtx().name;
           UpdateUser(id, { language: selected }, function(err) {
             btn.removeClass('disabled');
             if (err) {
@@ -394,7 +322,7 @@ require('moment/locales');
           },
           render: function() {
             tour.start('intro', translateFilter);
-            var id = 'org.couchdb.user:' + UserCtxService().name;
+            var id = 'org.couchdb.user:' + Session.userCtx().name;
             UpdateUser(id, { known: true }, function(err) {
               if (err) {
                 console.log('Error updating user', err);
@@ -435,7 +363,7 @@ require('moment/locales');
       });
 
       var updateEditUserModel = function(callback) {
-        User({ targetScope: 'root' }, function(err, user) {
+        UserSettings(function(err, user) {
           if (err) {
             return console.log('Error getting user', err);
           }
@@ -446,7 +374,8 @@ require('moment/locales');
             fullname: user.fullname,
             email: user.email,
             phone: user.phone,
-            language: { code: user.language }
+            language: { code: user.language },
+            contact_id: user.contact_id
           };
           if (callback) {
             callback(user);
@@ -454,7 +383,7 @@ require('moment/locales');
         });
       };
 
-      Settings({ targetScope: 'root' }, function(err, settings) {
+      Settings(function(err, settings) {
         if (err) {
           return console.log('Error fetching settings', err);
         }
@@ -471,38 +400,36 @@ require('moment/locales');
 
       moment.locale(['en']);
 
-      Language({ targetScope: 'root' }, function(err, language) {
-        if (err) {
-          return console.log('Error loading language', err);
-        }
-        moment.locale([language, 'en']);
-        $translate.use(language);
-      });
+      Language()
+        .then(function(language) {
+          moment.locale([language, 'en']);
+          $translate.use(language);
+        })
+        .catch(function(err) {
+          console.log('Error loading language', err);
+        });
 
       $scope.sendMessage = function(event) {
         sendMessage.validate(event.target, function(recipients, message) {
           var pane = modal.start($(event.target).closest('.message-form'));
-          SendMessage(recipients, message).then(
-            function() {
+          SendMessage(recipients, message)
+            .then(function() {
               $('#message-footer').removeClass('sending');
               $('#message-footer textarea').val('');
               pane.done();
-            },
-            function(err) {
+            })
+            .catch(function(err) {
               pane.done(translateFilter('Error sending message'), err);
-            }
-          );
+            });
         });
       };
 
-      $scope.verify = function(verify) {
-        if ($scope.selected.form) {
-          Verified($scope.selected._id, verify, function(err) {
-            if (err) {
-              console.log('Error verifying message', err);
-            }
-          });
-        }
+      $scope.setActionBar = function(model) {
+        $scope.actionBar = model;
+      };
+
+      $scope.emit = function() {
+        $rootScope.$broadcast.apply($rootScope, arguments);
       };
 
       var deleteMessageId;
@@ -520,29 +447,6 @@ require('moment/locales');
           });
         } else {
           pane.done(translateFilter('Error deleting document'), 'No deleteMessageId set');
-        }
-      };
-
-      $scope.updateFacility = function() {
-        var $modal = $('#update-facility');
-        var facilityId = $modal.find('[name=facility]').val();
-        if (!facilityId) {
-          $modal.find('.modal-footer .note')
-            .text(translateFilter('Please select a facility'));
-          return;
-        }
-        var pane = modal.start($modal);
-        UpdateFacility($scope.selected._id, facilityId, function(err) {
-          pane.done(translateFilter('Error updating facility'), err);
-        });
-      };
-      $scope.edit = function(record) {
-        if ($scope.filterModel.type === 'reports') {
-          var val = (record.contact && record.contact._id) || '';
-          $('#update-facility [name=facility]').select2('val', val);
-          $('#update-facility').modal('show');
-        } else {
-          $rootScope.$broadcast('EditContactInit', record);
         }
       };
 
@@ -623,7 +527,7 @@ require('moment/locales');
         });
 
         // we have to wait for language to respond before initing the multidropdowns
-        Language({ targetScope: 'root' }, function(err, language) {
+        Language().then(function(language) {
 
           $translate.use(language);
 
@@ -750,9 +654,16 @@ require('moment/locales');
               });
             });
           });
-
         });
       };
+
+      Enketo.withAllForms()
+        .then(function(forms) {
+          $scope.formDefinitions = forms;
+        })
+        .catch(function(err) {
+          console.error('Error fetching form definitions', err);
+        });
 
       $scope.setupTour = function() {
         $('#tour-select').on('click', 'a.tour-option', function() {
@@ -763,19 +674,9 @@ require('moment/locales');
       $scope.submitFeedback = function() {
         var pane = modal.start($('#feedback'));
         var message = $('#feedback [name=feedback]').val();
-        feedback.submit(message, function(err) {
+        feedback.submit(message, APP_CONFIG, function(err) {
           pane.done(translateFilter('Error saving feedback'), err);
         });
-      };
-
-      $scope.setupHeader = function() {
-        Settings({ targetScope: 'root' }, function(err, settings) {
-          if (err) {
-            return console.log('Error retrieving settings', err);
-          }
-          require('../modules/add-record').init(settings.muvuku_webapp_url);
-        });
-        require('../modules/manage-session').init();
       };
 
       UserDistrict(function() {
@@ -803,42 +704,15 @@ require('moment/locales');
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
           showUpdateReady();
         }
-        Changes({ key: 'appcache', filter: 'medic/ddoc' }, function() {
-          window.applicationCache.update();
-        });
       }
+
+      DB.watchDesignDoc(function() {
+        if (window.applicationCache) {
+          window.applicationCache.update();
+        }
+      });
 
     }
   ]);
-
-  require('./messages');
-  require('./messages-content');
-  require('./reports');
-  require('./reports-content');
-  require('./analytics');
-  require('./contacts');
-  require('./contacts-content');
-  require('./configuration');
-  require('./edit-language');
-  require('./delete-language');
-  require('./edit-translation');
-  require('./import-translation');
-  require('./import-contacts');
-  require('./tour-select');
-  require('./configuration-settings-basic');
-  require('./configuration-settings-advanced');
-  require('./configuration-translation-languages');
-  require('./configuration-translation-application');
-  require('./configuration-translation-messages');
-  require('./configuration-forms');
-  require('./configuration-users');
-  require('./configuration-export');
-  require('./delete-user');
-  require('./edit-user');
-  require('./edit-contact');
-  require('./help');
-  require('./help-search');
-  require('./theme');
-  require('./error');
 
 }());

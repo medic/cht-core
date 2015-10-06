@@ -119,7 +119,10 @@ var _ = require('underscore'),
           placeholder: ' ',
           allowClear: true
         });
-        $('#outgoing-phone-replace-match').select2('val', res.outgoing_phone_replace.match);
+        if (res.outgoing_phone_replace) {
+          $('#outgoing-phone-replace-match')
+            .select2('val', res.outgoing_phone_replace.match);
+        }
       });
 
     }

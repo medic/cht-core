@@ -6,8 +6,17 @@ var async = require('async');
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('UpdateContact', ['SaveDoc', 'DbView', 'ClearFacilityCache',
-    function(SaveDoc, DbView, ClearFacilityCache) {
+  inboxServices.factory('UpdateContact', ['DB',
+    function(DB) {
+
+      var updateDoc = function(doc, updates) {
+        var updated = _.extend(doc || {}, updates);
+        if (updated._id) {
+          return DB.get().put(updated);
+        } else {
+          return DB.get().post(updated);
+        }
+      };
 
       var updateChildren = function(parent, callback) {
         if (parent.type === 'person') {
@@ -15,82 +24,89 @@ var async = require('async');
           return callback();
         }
 
-        var options = { params: {
+        var options = {
           startkey: [ parent._id ],
           endkey: [ parent._id, {} ],
           include_docs: true
-        } };
-        DbView('facility_by_parent', options, function(err, children) {
-          if (err) {
-            return callback(err);
-          }
-          async.each(
-            children,
-            function(child, callback) {
-              if (child.parent._id === parent._id && child.parent._rev === parent._rev) {
-                // nothing to update
-                return callback();
-              }
-              SaveDoc(child._id, { parent: parent }, function(err, updated) {
-                if (err) {
-                  return callback(err);
+        };
+        DB.get()
+          .query('medic/facility_by_parent', options)
+          .then(function(response) {
+            async.each(
+              response.rows,
+              function(row, callback) {
+                if (row.doc.parent._id === parent._id &&
+                    row.doc.parent._rev === parent._rev) {
+                  // nothing to update
+                  return callback();
                 }
-                updateChildren(updated, callback);
-              });
-            },
-            callback
-          );
-        });
+                updateDoc(row.doc, { parent: parent })
+                  .then(function(response) {
+                    row.doc._rev = response._rev;
+                    updateChildren(row.doc, callback);
+                  })
+                  .catch(callback);
+              },
+              callback
+            );
+          })
+          .catch(callback);
       };
 
       var updateParents = function(contact, callback) {
-        var options = { params: {
+        // delete the parent to avoid infinite loops
+        contact = _.clone(contact);
+        delete contact.parent;
+
+        var options = {
           startkey: [ contact._id ],
           endkey: [ contact._id, {} ],
           include_docs: true
-        } };
-        DbView('facilities_by_contact', options, function(err, parents) {
-          if (err) {
-            return callback(err);
-          }
-          async.each(
-            parents,
-            function(parent, callback) {
-              if (parent.contact._id === contact._id && parent.contact._rev === contact._rev) {
-                // nothing to update
-                return callback();
-              }
-              // delete the parent to avoid infinite loops
-              delete contact.parent;
-              SaveDoc(parent._id, { contact: contact }, callback);
-            },
-            callback
-          );
-        });
+        };
+        DB.get()
+          .query('medic/facilities_by_contact', options)
+          .then(function(response) {
+            async.each(
+              response.rows,
+              function(row, callback) {
+                if (row.doc.contact._id === contact._id &&
+                    row.doc.contact._rev === contact._rev) {
+                  // nothing to update
+                  return callback();
+                }
+                updateDoc(row.doc, { contact: contact })
+                  .then(function(response) {
+                    row.doc._rev = response._rev;
+                    callback();
+                  })
+                  .catch(callback);
+              },
+              callback
+            );
+          })
+          .catch(callback);
       };
 
-      return function(id, updates, callback) {
-        if (!callback) {
-          callback = updates;
-          updates = id;
-          id = null;
-        }
-
+      return function(doc, updates, callback) {
         if (updates.contact) {
           // null out the contact's parent to avoid infinite loops
           delete updates.contact.parent;
         }
-
-        SaveDoc(id, updates, function(err, doc) {
-          if (err) {
-            return callback(err);
-          }
-          var updateFn = doc.type === 'person' ? updateParents : updateChildren;
-          updateFn(doc, function(err) {
-            ClearFacilityCache();
-            callback(err, doc);
-          });
-        });
+        updateDoc(doc, updates)
+          .then(function(response) {
+            if (!doc) {
+              doc = updates;
+              doc._id = response._id;
+              doc._rev = response._rev;
+              return callback(null, doc);
+            }
+            doc._rev = response._rev;
+            var updateFn = doc.type === 'person' ? updateParents : updateChildren;
+            updateFn(doc, function(err) {
+              callback(err, doc);
+            });
+          })
+          .catch(callback);
       };
     }
   ]);

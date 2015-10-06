@@ -3,64 +3,73 @@ describe('AppInfo service', function() {
   'use strict';
 
   var service,
-      settings,
-      settingsError,
+      Settings,
       $rootScope;
 
   beforeEach(function() {
-    settings = {};
+    Settings = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('Settings', function(callback) {
-        callback(settingsError, settings);
-      });
+      $provide.value('Settings', Settings);
     });
     inject(function(_$rootScope_, _AppInfo_) {
       $rootScope = _$rootScope_;
       service = _AppInfo_;
     });
-    settingsError = null;
   });
 
   it('returns errors', function(done) {
-    settingsError = 'boom';
-    service(function(err) {
-      chai.expect(err).to.equal(settingsError);
-      done();
-    });
+    Settings.callsArgWith(0, 'boom');
+    service()
+      .then(function() {
+        done('SHOULD NOT GET HERE');
+      })
+      .catch(function(err) {
+        chai.expect(err).to.equal('boom');
+        done();
+      });
+    $rootScope.$digest();
   });
 
   it('gets the form', function(done) {
-    settings = {
+    Settings.callsArgWith(0, null, {
       forms: {
         a: { id: 'a' },
         b: { id: 'b' }
       }
-    };
-    service(function(err, appinfo) {
-      chai.expect(err).to.equal(null);
-      var form = appinfo.getForm('a');
-      chai.expect(form.id).to.equal('a');
-      done();
     });
+    service()
+      .then(function(appinfo) {
+        var form = appinfo.getForm('a');
+        chai.expect(form.id).to.equal('a');
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
+    $rootScope.$digest();
   });
 
   it('formats the date', function(done) {
-    settings = {
+    Settings.callsArgWith(0, null, {
       date_format: 'YYYY'
-    };
-    service(function(err, appinfo) {
-      chai.expect(err).to.equal(null);
-      var date = moment().add(1, 'years');
-      var expected = date.format('YYYY') + ' (in a year)';
-      var actual = appinfo.formatDate(date);
-      chai.expect(actual).to.equal(expected);
-      done();
     });
+    service()
+      .then(function(appinfo) {
+        var date = moment().add(1, 'years');
+        var expected = date.format('YYYY') + ' (in a year)';
+        var actual = appinfo.formatDate(date);
+        chai.expect(actual).to.equal(expected);
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
+    $rootScope.$digest();
   });
 
   it('translates the key', function(done) {
-    settings = {
+    Settings.callsArgWith(0, null, {
       translations: [
         { 
           key: 'welcome', 
@@ -71,17 +80,21 @@ describe('AppInfo service', function() {
           translations: [{ locale: 'en', content: 'bye' }]
         }
       ]
-    };
-    service(function(err, appinfo) {
-      chai.expect(err).to.equal(null);
-      var actual = appinfo.translate('welcome', 'en_NZ');
-      chai.expect(actual).to.equal('kia ora');
-      done();
     });
+    service()
+      .then(function(appinfo) {
+        var actual = appinfo.translate('welcome', 'en_NZ');
+        chai.expect(actual).to.equal('kia ora');
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
+    $rootScope.$digest();
   });
 
   it('translates the key to the default locale if none provided', function(done) {
-    settings = {
+    Settings.callsArgWith(0, null, {
       locale: 'en',
       translations: [
         { 
@@ -93,13 +106,17 @@ describe('AppInfo service', function() {
           translations: [{ locale: 'en', content: 'bye' }]
         }
       ]
-    };
-    service(function(err, appinfo) {
-      chai.expect(err).to.equal(null);
-      var actual = appinfo.translate('welcome');
-      chai.expect(actual).to.equal('hi');
-      done();
     });
+    service()
+      .then(function(appinfo) {
+        var actual = appinfo.translate('welcome');
+        chai.expect(actual).to.equal('hi');
+        done();
+      })
+      .catch(function(err) {
+        done(err);
+      });
+    $rootScope.$digest();
   });
 
 });

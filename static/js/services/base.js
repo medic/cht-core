@@ -1,14 +1,8 @@
-var db = require('db');
-
 (function () {
 
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
-  
-  inboxServices.factory('db', function() {
-    return db.current();
-  });
 
   inboxServices.factory('BaseUrlService', function() {
     return function() {
@@ -16,10 +10,15 @@ var db = require('db');
     };
   });
 
-  inboxServices.factory('UserCtxService', function() {
-    return function() {
-      return $('html').data('user');
-    };
-  });
+  inboxServices.factory('DbNameService', ['BaseUrlService',
+    function(BaseUrlService) {
+      return function() {
+        var parts = BaseUrlService().split('/');
+        if (parts.length > 1) {
+          return parts[1];
+        }
+      };
+    }
+  ]);
 
 }());

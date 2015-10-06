@@ -2,10 +2,8 @@
   <div class="widget-body error" ng-show="deliveryLocation.error">
     {{'analytics.connection.error' | translate}}
   </div>
-  <div class="widget-body" ng-hide="!deliveryLocation.loading">
-    <div class="loading">
-      <span class="fa fa-spinner fa-spin"></span>
-    </div>
+  <div class="widget-body loading" ng-hide="!deliveryLocation.loading">
+    <div class="loader"></div>
   </div>
   <div class="widget-body" ng-if="!deliveryLocation.loading && !deliveryLocation.error">
     <div class="title">

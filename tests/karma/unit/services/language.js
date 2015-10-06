@@ -3,94 +3,91 @@ describe('Language service', function() {
   'use strict';
 
   var service,
-      user,
-      settings,
-      cookieVal,
-      cookieCalledWith;
+      UserSettings = sinon.stub(),
+      Settings = sinon.stub(),
+      ipCookie = sinon.stub(),
+      $rootScope;
 
   beforeEach(function() {
-    user = {};
-    settings = {};
-    cookieVal = null;
-    cookieCalledWith = null;
     module('inboxApp');
-    module(function ($provide) {
-      $provide.value('User', function(options, callback) {
-        callback(null, user);
-      });
-      $provide.value('Settings', function(options, callback) {
-        callback(null, settings);
-      });
-      $provide.value('ipCookie', function() {
-        if (arguments.length === 1) {
-          return cookieVal;
-        }
-        cookieCalledWith = arguments;
-        return null;
-      });
+    module(function($provide) {
+      $provide.value('UserSettings', UserSettings);
+      $provide.value('Settings', Settings);
+      $provide.value('ipCookie', ipCookie);
     });
-    inject(function(_Language_) {
+    inject(function(_Language_, _$rootScope_) {
+      $rootScope = _$rootScope_;
       service = _Language_;
     });
   });
 
+  afterEach(function() {
+    KarmaUtils.restore(UserSettings, Settings, ipCookie);
+  });
+
   it('uses the language configured in user', function(done) {
-
-    user = { language: 'latin' };
-    settings = {};
-
-    service(function(err, actual) {
+    ipCookie.returns(null);
+    UserSettings.callsArgWith(0, null, { language: 'latin' });
+    service().then(function(actual) {
       chai.expect(actual).to.equal('latin');
-      chai.expect(cookieCalledWith[0]).to.equal('locale');
-      chai.expect(cookieCalledWith[1]).to.equal('latin');
-      chai.expect(cookieCalledWith[2]).to.deep.equal({ expires: 365, path: '/' });
+      chai.expect(UserSettings.callCount).to.equal(1);
+      chai.expect(Settings.callCount).to.equal(0);
+      chai.expect(ipCookie.callCount).to.equal(2);
+      chai.expect(ipCookie.args[0][0]).to.equal('locale');
+      chai.expect(ipCookie.args[1][0]).to.equal('locale');
+      chai.expect(ipCookie.args[1][1]).to.equal('latin');
+      chai.expect(ipCookie.args[1][2]).to.deep.equal({ expires: 365, path: '/' });
       done();
     });
-
+    $rootScope.$digest();
   });
 
   it('uses the language configured in settings', function(done) {
-
-    user = {};
-    settings = { locale: 'yiddish' };
-
-    service(function(err, actual) {
+    ipCookie.returns(null);
+    UserSettings.callsArgWith(0, null, { });
+    Settings.callsArgWith(0, null, { locale: 'yiddish' });
+    service().then(function(actual) {
       chai.expect(actual).to.equal('yiddish');
-      chai.expect(cookieCalledWith[0]).to.equal('locale');
-      chai.expect(cookieCalledWith[1]).to.equal('yiddish');
-      chai.expect(cookieCalledWith[2]).to.deep.equal({ expires: 365, path: '/' });
+      chai.expect(UserSettings.callCount).to.equal(1);
+      chai.expect(Settings.callCount).to.equal(1);
+      chai.expect(ipCookie.callCount).to.equal(2);
+      chai.expect(ipCookie.args[0][0]).to.equal('locale');
+      chai.expect(ipCookie.args[1][0]).to.equal('locale');
+      chai.expect(ipCookie.args[1][1]).to.equal('yiddish');
+      chai.expect(ipCookie.args[1][2]).to.deep.equal({ expires: 365, path: '/' });
       done();
     });
-
+    $rootScope.$digest();
   });
 
   it('defaults', function(done) {
-
-    user = {};
-    settings = {};
-
-    service(function(err, actual) {
-      chai.expect(cookieCalledWith[0]).to.equal('locale');
-      chai.expect(cookieCalledWith[1]).to.equal('en');
-      chai.expect(cookieCalledWith[2]).to.deep.equal({ expires: 365, path: '/' });
+    ipCookie.returns(null);
+    UserSettings.callsArgWith(0, null, { });
+    Settings.callsArgWith(0, null, { });
+    service().then(function(actual) {
       chai.expect(actual).to.equal('en');
+      chai.expect(UserSettings.callCount).to.equal(1);
+      chai.expect(Settings.callCount).to.equal(1);
+      chai.expect(ipCookie.callCount).to.equal(2);
+      chai.expect(ipCookie.args[0][0]).to.equal('locale');
+      chai.expect(ipCookie.args[1][0]).to.equal('locale');
+      chai.expect(ipCookie.args[1][1]).to.equal('en');
+      chai.expect(ipCookie.args[1][2]).to.deep.equal({ expires: 365, path: '/' });
       done();
     });
-
+    $rootScope.$digest();
   });
 
   it('uses cookie if set', function(done) {
-
-    user = {};
-    settings = {};
-    cookieVal = 'ca';
-
-    service(function(err, actual) {
+    ipCookie.returns('ca');
+    service().then(function(actual) {
+      chai.expect(UserSettings.callCount).to.equal(0);
+      chai.expect(Settings.callCount).to.equal(0);
+      chai.expect(ipCookie.callCount).to.equal(1);
       chai.expect(actual).to.equal('ca');
-      chai.expect(cookieCalledWith).to.equal(null);
       done();
     });
-
+    $rootScope.$digest();
   });
 
 });

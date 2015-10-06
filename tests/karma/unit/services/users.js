@@ -6,9 +6,10 @@ describe('Users service', function() {
       $httpBackend,
       facilitiesError,
       adminsError,
-      facilitya = { name: 'aaron' },
-      facilityb = { name: 'brian' },
-      facilityc = { name: 'cathy' };
+      userSettings,
+      facilitya = { _id: 'a', name: 'aaron' },
+      facilityb = { _id: 'b', name: 'brian' },
+      facilityc = { _id: 'c', name: 'cathy' };
 
   beforeEach(function() {
     module('inboxApp');
@@ -17,17 +18,16 @@ describe('Users service', function() {
         if (facilitiesError) {
           return callback(facilitiesError);
         }
-        callback(null, [
-          { id: 'a', doc: facilitya },
-          { id: 'b', doc: facilityb },
-          { id: 'c', doc: facilityc }
-        ]);
+        callback(null, [ facilitya, facilityb, facilityc ]);
       });
       $provide.value('Admins', function(callback) {
         if (adminsError) {
           return callback(adminsError);
         }
         callback(null, { gareth: 'abc' });
+      });
+      $provide.value('DbView', function(name, options, callback) {
+        callback(null, userSettings);
       });
     });
     inject(function($injector) {
@@ -36,6 +36,7 @@ describe('Users service', function() {
     });
     facilitiesError = null;
     adminsError = null;
+    userSettings = [];
   });
 
   afterEach(function() {
@@ -46,29 +47,40 @@ describe('Users service', function() {
   it('retrieves users', function(done) {
 
     var users = [
-      { 
+      {
         id: 'org.couchdb.user:x',
         doc: {
           name: 'lucas',
           facility_id: 'c',
-          fullname: 'Lucas M',
-          email: 'l@m.com',
-          phone: '123456789',
           roles: [ 'national-admin', 'data-entry' ]
-        } 
+        }
       },
-      { 
+      {
         id: 'org.couchdb.user:y',
         doc: {
           name: 'milan',
           facility_id: 'b',
-          fullname: 'Milan A',
-          email: 'm@a.com',
-          phone: '987654321',
           roles: [ 'district-admin' ]
-        } 
+        }
       }
     ];
+
+    userSettings = [[
+      {
+        _id: 'org.couchdb.user:x',
+        name: 'lucas',
+        fullname: 'Lucas M',
+        email: 'l@m.com',
+        phone: '123456789'
+      },
+      {
+        _id: 'org.couchdb.user:y',
+        name: 'milan',
+        fullname: 'Milan A',
+        email: 'm@a.com',
+        phone: '987654321'
+      }
+    ]];
 
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
@@ -129,6 +141,23 @@ describe('Users service', function() {
         } 
       }
     ];
+
+    userSettings = [[
+      {
+        _id: 'org.couchdb.user:x',
+        name: 'lucas',
+        fullname: 'Lucas M',
+        email: 'l@m.com',
+        phone: '123456789'
+      },
+      {
+        _id: 'org.couchdb.user:y',
+        name: 'milan',
+        fullname: 'Milan A',
+        email: 'm@a.com',
+        phone: '987654321'
+      }
+    ]];
 
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
@@ -227,7 +256,7 @@ describe('Users service', function() {
       .respond(404, 'Not found');
 
     service(function(err) {
-      chai.expect(err.message).to.equal('Not found');
+      chai.expect(err).to.equal('Not found');
       done();
     });
 

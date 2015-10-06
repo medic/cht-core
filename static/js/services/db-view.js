@@ -1,37 +1,55 @@
-var _ = require('underscore'),
-    escape = ['startkey','endkey','key'];
+var _ = require('underscore');
 
 (function () {
 
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
-  
-  inboxServices.factory('DbView', ['HttpWrapper', 'BaseUrlService',
-    function(HttpWrapper, BaseUrlService) {
+
+  inboxServices.factory('DbView', ['DB',
+    function(DB) {
+
       return function(viewName, options, callback) {
-        if (!options.params) {
-          options.params = {};
-        }
-        escape.forEach(function(key) {
-          if (options.params[key]) {
-            options.params[key] = JSON.stringify(options.params[key]);
-          }
-        });
-        var url = BaseUrlService() + '/../_view/' + viewName;
-        HttpWrapper.get(url, options)
-          .success(function(results) {
+        return DB.get()
+          .query('medic/' + viewName, options.params)
+          .then(function(results) {
             var meta = {
               total_rows: results.total_rows,
               offset: results.offset
             };
-            if (options.params.include_docs) {
+            if (options.params && options.params.include_docs) {
               results = _.pluck(results && results.rows, 'doc');
             }
-            callback(null, results, meta);
+            if (callback) {
+              callback(null, results, meta);
+            }
           })
-          .error(function(data) {
-            callback(new Error(data));
+          .catch(function(data) {
+            if (callback) {
+              callback(new Error(data));
+            }
+          });
+      };
+    }
+  ]);
+
+  // TODO this service should be removed if there is a simple way to Promisify
+  // the alread-existing service above.
+  inboxServices.factory('DbViewP', ['DB',
+    function(DB) {
+
+      return function(viewName, options) {
+        return DB.get()
+          .query('medic/' + viewName, options.params)
+          .then(function(results) {
+            var meta = {
+              total_rows: results.total_rows,
+              offset: results.offset
+            };
+            if (options.params && options.params.include_docs) {
+              results = _.pluck(results && results.rows, 'doc');
+            }
+            return { meta: meta, results: results };
           });
       };
     }

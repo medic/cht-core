@@ -1,6 +1,6 @@
 var _ = require('underscore'),
-    async = require('async'),
-    scrollLoader = require('../modules/scroll-loader');
+    scrollLoader = require('../modules/scroll-loader'),
+    types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
 
 (function () {
 
@@ -9,18 +9,43 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', 
-    ['$scope', '$state', '$timeout', 'db', 'Search', 'DbView',
-    function ($scope, $state, $timeout, db, Search, DbView) {
+    ['$rootScope', '$scope', '$state', '$timeout', 'ContactSchema', 'Search', 'Changes',
+    function ($rootScope, $scope, $state, $timeout, ContactSchema, Search, Changes) {
 
       $scope.filterModel.type = 'contacts';
-      $scope.setContacts();
+      $scope.contacts = [];
+      $scope.selected = null;
+
+      $scope.schema = ContactSchema.get();
+      $scope.schemaNormalFields = ContactSchema.getWithoutSpecialFields();
+
+      $scope.selectedSchema = function() {
+        return $scope.selected && $scope.schema[$scope.selected.doc.type];
+      };
+
+      $scope.selectedSchemaNormalFields = function() {
+        return $scope.selected && $scope.schemaNormalFields[$scope.selected.doc.type].fields;
+      };
+
+      var _merge = function(to, from) {
+        if (from._rev !== to._rev) {
+          for (var prop in from) {
+            if (from.hasOwnProperty(prop)) {
+              to[prop] = from[prop];
+            }
+          }
+        }
+      };
 
       $scope.query = function(options) {
         options = options || {};
+        options.limit = 50;
 
-        $scope.loading = true;
-        $scope.appending = options.skip;
-        $scope.error = false;
+        if (!options.silent) {
+          $scope.loading = true;
+          $scope.appending = options.skip;
+          $scope.error = false;
+        }
 
         _.defaults(options, {
           index: 'contacts',
@@ -28,7 +53,7 @@ var _ = require('underscore'),
         });
 
         if (options.skip) {
-          options.skip = $scope.items.length;
+          options.skip = $scope.contacts.length;
         }
         Search($scope, options, function(err, data) {
           $scope.loading = false;
@@ -37,95 +62,82 @@ var _ = require('underscore'),
             $scope.error = true;
             return console.log('Error searching for contacts', err);
           }
-          $scope.totalItems = data.total_rows;
+          $scope.moreItems = data.length >= options.limit;
           if (options.skip) {
-            $scope.items.push.apply($scope.items, data.results);
+            $timeout(function() {
+              $scope.contacts.push.apply($scope.contacts, data);
+            });
+          } else if (options.silent) {
+            _.each(data, function(update) {
+              var existing = _.findWhere($scope.contacts, { _id: update._id });
+              if (existing) {
+                _merge(existing, update);
+              } else {
+                $scope.contacts.push(update);
+              }
+            });
           } else {
-            $scope.setContacts(data.results);
+            $scope.contacts = data;
             scrollLoader.init(function() {
-              if (!$scope.loading && $scope.totalItems > $scope.items.length) {
+              if (!$scope.loading && $scope.moreItems) {
                 $timeout(function() {
                   $scope.query({ skip: true });
                 });
               }
             });
-            if (!data.results.length) {
-              $scope.selectContact();
-            } else if (!options.stay && !$('#back').is(':visible')) {
+            if (!data.length) {
+              $scope.clearSelected();
+            } else if (!$state.params.id &&
+                       !options.stay &&
+                       !$('#back').is(':visible') &&
+                       $scope.filterModel.type === 'contacts') {
               // wait for selected to be set before checking
               $timeout(function() {
-                if (!$scope.selected) {
-                  var id = $('.inbox-items li').first().attr('data-record-id');
-                  $state.go('contacts.detail', { id: id });
-                }
+                var id = $('.inbox-items li').first().attr('data-record-id');
+                $state.go('contacts.detail', { id: id }, { location: 'replace' });
               });
             }
           }
         });
       };
 
-      var getContact = function(id, callback) {
-        var doc = _.findWhere($scope.items, { _id: id });
-        if (doc) {
-          return callback(null, doc);
-        }
-        db.getDoc(id, callback);
+      $scope.setSelected = function(selected) {
+        $scope.selected = selected;
+        $scope.setActionBar({
+          _id: selected.doc._id,
+          disableDelete: (selected.children && selected.children.length) ||
+                         (selected.contactFor && selected.contactFor.length)
+        });
       };
 
-      $scope.selectContact = function(id) {
-        if (id) {
-          $scope.setLoadingContent(id);
-          async.auto({
-            doc: function(callback) {
-              getContact(id, callback);
-            },
-            children: function(callback) {
-              var options = { params: {
-                startkey: [ id ],
-                endkey: [ id, {} ],
-                include_docs: true
-              } };
-              DbView('facility_by_parent', options, callback);
-            },
-            contactFor: function(callback) {
-              var options = { params: {
-                key: [ id ],
-                include_docs: true
-              } };
-              DbView('facilities_by_contact', options, callback);
-            }
-          }, function(err, results) {
-            if (err) {
-              $scope.setSelected();
-              return console.log('Error fetching doc', err);
-            }
-            results.doc.children = results.children[0];
-            results.doc.contactFor = results.contactFor[0];
-            $scope.setSelected(results.doc);
-          });
-        } else {
-          $scope.setSelected();
-        }
+      $scope.orderByType = function(contact) {
+        return types.indexOf(contact.type);
       };
+
+      $scope.$on('ClearSelected', function() {
+        $scope.selected = null;
+      });
 
       $scope.$on('query', function() {
         $scope.query();
       });
 
-      $scope.$on('ContactUpdated', function(e, contact) {
-        if (!contact) {
-          return $scope.query();
-        } else if (contact._deleted) {
-          $scope.removeContact(contact);
-          return;
+      Changes({
+        key: 'contacts-list',
+        callback: function() {
+          $scope.query({ silent: true, stay: true });
+        },
+        filter: function(change) {
+          if ($scope.filterModel.type !== 'contacts') {
+            return false;
+          }
+          if (change.newDoc) {
+            return types.indexOf(change.newDoc.type) !== -1;
+          }
+          return _.findWhere($scope.contacts, { _id: change.id });
         }
-        $state.go('contacts.detail', { id: contact._id });
-        var outdated = _.findWhere($scope.items, { _id: contact._id });
-        if (!outdated) {
-          return $scope.query({ stay: true });
-        }
-        _.extend(outdated, contact);
       });
+
     }
   ]);
 

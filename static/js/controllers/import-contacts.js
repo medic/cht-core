@@ -7,23 +7,22 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ImportContactsCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'ImportContacts',
-    function ($scope, $rootScope, translateFilter, ImportContacts) {
+    ['$scope', '$rootScope', 'translateFilter', 'ImportContacts', 'FileReader',
+    function ($scope, $rootScope, translateFilter, ImportContacts, FileReader) {
 
       $scope.data = null;
       $scope.overwrite = false;
 
       var read = function(file, callback) {
-        var reader = new FileReader();
-        reader.onload = function(event) {
-          try {
-            return callback(null, JSON.parse(event.target.result));
-          } catch(e) {
-            return callback(e);
-          }
-        };
-        reader.onerror = callback;
-        reader.readAsText(file);
+        FileReader(file)
+          .then(function(result) {
+            try {
+              return callback(null, JSON.parse(result));
+            } catch(e) {
+              return callback(e);
+            }
+          })
+          .catch(callback);
       };
 
       $scope.save = function() {

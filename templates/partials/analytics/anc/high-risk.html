@@ -2,10 +2,8 @@
   <div class="widget-body error" ng-show="highRisk.error">
     {{'analytics.connection.error' | translate}}
   </div>
-  <div class="widget-body" ng-hide="!highRisk.loading">
-    <div class="loading">
-      <span class="fa fa-spinner fa-spin"></span>
-    </div>
+  <div class="widget-body loading" ng-hide="!highRisk.loading">
+    <div class="loader"></div>
   </div>
   <div class="widget-body" ng-if="!highRisk.loading && !highRisk.error">
     <div class="title">

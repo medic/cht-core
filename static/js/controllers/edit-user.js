@@ -7,8 +7,8 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditUserCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'UpdateUser', 'Facility', 'UserCtxService',
-    function ($scope, $rootScope, translateFilter, UpdateUser, Facility, UserCtxService) {
+    ['$scope', '$rootScope', 'translateFilter', 'UpdateUser', 'Facility', 'Session',
+    function ($scope, $rootScope, translateFilter, UpdateUser, Facility, Session) {
 
       Facility({ types: [ 'clinic', 'health_center', 'district_hospital' ] }, function(err, facilities) {
         if (err) {
@@ -44,26 +44,22 @@ var modal = require('../modules/modal');
             fullname: user.fullname,
             email: user.email,
             phone: user.phone,
-            facility: { doc: user.facility },
+            facility: user.facility,
             type: getType(user.type),
             language: user.language
           };
+          $('#edit-user-profile [name=contact]').select2('val', user.contact_id || '');
         } else {
           $scope.editUserModel = {};
         }
       });
 
       $scope.typeName = function(facility) {
-        return typeMap[facility.doc.type];
+        return typeMap[facility.type];
       };
-      
-      var validate = function() {
+
+      var validatePassword = function() {
         $scope.errors = {};
-        if (!$scope.editUserModel.name) {
-          $scope.errors.name = translateFilter('field is required', {
-            field: translateFilter('User Name')
-          });
-        }
         if (!$scope.editUserModel.id && !$scope.editUserModel.password) {
           $scope.errors.password = translateFilter('field is required', {
             field: translateFilter('Password')
@@ -74,36 +70,80 @@ var modal = require('../modules/modal');
         return !Object.keys($scope.errors).length;
       };
 
+      var validate = function() {
+        $scope.errors = {};
+        validatePassword();
+        if (!$scope.editUserModel.name) {
+          $scope.errors.name = translateFilter('field is required', {
+            field: translateFilter('User Name')
+          });
+        }
+        return !Object.keys($scope.errors).length;
+      };
+
       var getRoles = function(type) {
         // create a new array with the type first, by convention
         return type ? [type].concat(rolesMap[type]) : [];
       };
 
-      $scope.editUser = function() {
-        if (validate()) {
-          var pane = modal.start($('#edit-user-profile'));
-          var language = $scope.editUserModel.language && $scope.editUserModel.language.code;
-          if (language && UserCtxService().name === $scope.editUserModel.name) {
-            // editing current user's language, so update UI
-            $scope.changeLanguage(language);
+      var getSettingsUpdates = function() {
+        return {
+          name: $scope.editUserModel.name,
+          fullname: $scope.editUserModel.fullname,
+          email: $scope.editUserModel.email,
+          phone: $scope.editUserModel.phone,
+          language: $scope.editUserModel.language &&
+                    $scope.editUserModel.language.code,
+          facility_id: $scope.editUserModel.facility &&
+                       $scope.editUserModel.facility._id,
+          contact_id: $('#edit-user-profile [name=contact]').val()
+        };
+      };
+
+      var getUserUpdates = function() {
+        return {
+          name: $scope.editUserModel.name,
+          password: $scope.editUserModel.password,
+          roles: getRoles($scope.editUserModel.type),
+          facility_id: $scope.editUserModel.facility &&
+                       $scope.editUserModel.facility._id
+        };
+      };
+
+      var updateComplete = function(pane, err) {
+        if (!err) {
+          if ($scope.editUserModel.password) {
+            // reload the page so the user can log in with the new password
+            document.location.reload(true);
           }
-          UpdateUser($scope.editUserModel.id, {
-            name: $scope.editUserModel.name,
-            fullname: $scope.editUserModel.fullname,
-            email: $scope.editUserModel.email,
-            phone: $scope.editUserModel.phone,
-            language: language,
-            password: $scope.editUserModel.password,
-            roles: getRoles($scope.editUserModel.type),
-            facility_id: $scope.editUserModel.facility &&
-                         $scope.editUserModel.facility.doc &&
-                         $scope.editUserModel.facility.doc._id
-          }, function(err) {
-            if (!err) {
-              $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
-              $scope.editUserModel = null;
-            }
-            pane.done(translateFilter('Error updating user'), err);
+          $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
+          $scope.editUserModel = null;
+        }
+        pane.done(translateFilter('Error updating user'), err);
+      };
+
+      $scope.updatePassword = function() {
+        if (validatePassword()) {
+          var pane = modal.start($('#update-password'));
+          var updates = { password: $scope.editUserModel.password };
+          UpdateUser($scope.editUserModel.id, null, updates, function(err) {
+            updateComplete(pane, err);
+          });
+        }
+      };
+
+      $scope.editUser = function(settingsOnly) {
+        if (settingsOnly || validate()) {
+          var modalId = settingsOnly ? '#edit-user-settings' : '#edit-user-profile';
+          var pane = modal.start($(modalId));
+          var settings = getSettingsUpdates();
+          var user = settingsOnly ? null : getUserUpdates();
+          if (settings.language && Session.userCtx().name === $scope.editUserModel.name) {
+            // editing current user's language, so update UI
+            $scope.changeLanguage(settings.language);
+          }
+          UpdateUser($scope.editUserModel.id, settings, user, function(err) {
+            updateComplete(pane, err);
           });
         }
       };

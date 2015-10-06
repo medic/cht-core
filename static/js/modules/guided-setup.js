@@ -62,7 +62,7 @@ var libphonenumber = require('libphonenumber/utils'),
     }
 
     $('#setup-wizard-save').addClass('disabled');
-    $('#guided-setup .fa-spinner').show();
+    $('#guided-setup .loader').show();
     $('#guided-setup .error').hide();
     var settings = {};
     var val;
@@ -97,7 +97,7 @@ var libphonenumber = require('libphonenumber/utils'),
     }
     UpdateSettings(settings, function(err) {
       $('#setup-wizard-save').removeClass('disabled');
-      $('#guided-setup .fa-spinner').hide();
+      $('#guided-setup .loader').hide();
       if (err) {
         console.log('Error updating settings', err);
         $('#guided-setup .error')

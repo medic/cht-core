@@ -9,12 +9,13 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, translateFilter, Settings, MarkRead, Search, Changes, EditGroup) {
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, translateFilter, Settings, MarkRead, Search, Changes, EditGroup, FormatDataRecord, DB, Verified) {
 
       $scope.filterModel.type = 'reports';
-      $scope.selectedGroup = undefined;
-      $scope.setReports();
+      $scope.selectedGroup = null;
+      $scope.reports = [];
+      $scope.selected = null;
 
       $scope.setSelectedGroup = function(group) {
         $scope.selectedGroup = angular.copy(group);
@@ -22,9 +23,13 @@ var _ = require('underscore'),
 
       $scope.updateGroup = function(group) {
         var pane = modal.start($('#edit-message-group'));
-        EditGroup($scope.selected._id, group, function(err) {
-          pane.done(translateFilter('Error updating group'), err);
-        });
+        EditGroup($scope.selected._id, group)
+          .then(function() {
+            pane.done();
+          })
+          .catch(function(err) {
+            pane.done(translateFilter('Error updating group'), err);
+          });
       };
 
       var _merge = function(to, from) {
@@ -42,14 +47,14 @@ var _ = require('underscore'),
           if ($scope.selected && $scope.selected._id === newMsg._id) {
             _merge($scope.selected, newMsg);
           }
-          var oldMsg = _.findWhere($scope.items, { _id: newMsg._id });
+          var oldMsg = _.findWhere($scope.reports, { _id: newMsg._id });
           if (oldMsg) {
             _merge(oldMsg, newMsg);
             if (!$scope.selected && $stateParams.id === oldMsg._id) {
               _setSelected(oldMsg);
             }
           } else {
-            $scope.items.push(newMsg);
+            $scope.reports.push(newMsg);
           }
         });
       };
@@ -59,86 +64,73 @@ var _ = require('underscore'),
         if (!$scope.isRead(message)) {
           $scope.readStatus.forms--;
         }
-        MarkRead(message._id, true, function(err) {
-          if (err) {
-            console.log(err);
-          }
+        MarkRead(message._id, true).catch(function(err) {
+          console.log(err);
         });
+      };
+
+      $scope.setSelected = function(doc) {
+        var refreshing = doc && $scope.selected && $scope.selected.id === doc._id;
+        $scope.selected = doc;
+        $scope.setActionBar({
+          _id: doc._id,
+          verified: doc.verified,
+          type: doc.content_type,
+          sendTo: doc
+        });
+        $scope.settingSelected(refreshing);
       };
 
       $scope.selectMessage = function(id) {
         if ($scope.selected && $scope.selected._id && $scope.selected._id === id) {
           return;
         }
-        $scope.setSelected();
-        if (id && $scope.items) {
+        $scope.clearSelected();
+        if (id && $scope.reports) {
           $scope.setLoadingContent(id);
-          var message = _.findWhere($scope.items, { _id: id });
+          var message = _.findWhere($scope.reports, { _id: id });
           if (message) {
             _setSelected(message);
           } else {
-            var options = {
-              changes: [ { id: id } ],
-              ignoreFilter: true
-            };
-            Search($scope, options, function(err, data) {
-              if (err) {
-                return console.log(err);
-              }
-              if (data.results.length) {
-                _setSelected(data.results[0]);
-                _initScroll();
-              }
-            });
-          }
-        }
-      };
-
-      var _deleteMessage = function(message) {
-        if ($scope.selected && $scope.selected._id === message.id) {
-          $scope.setSelected();
-        }
-        for (var i = 0; i < $scope.items.length; i++) {
-          if (message.id === $scope.items[i]._id) {
-            $scope.items.splice(i, 1);
-            return;
+            DB.get()
+              .get(id)
+              .then(FormatDataRecord)
+              .then(function(doc) {
+                if (doc) {
+                  _setSelected(doc[0]);
+                  _initScroll();
+                }
+              })
+              .catch(function(err) {
+                $scope.setSelected();
+                console.error(err);
+              });
           }
         }
       };
 
       $scope.query = function(options) {
         options = options || {};
-        if (options.changes) {
-          $scope.updateReadStatus();
-          var deletedRows = _.where(options.changes, { deleted: true });
-          _.each(deletedRows, _deleteMessage);
-          if (deletedRows.length === options.changes.length) {
-            // nothing to update
-            return;
-          }
-          options.changes = _.filter(options.changes, function(change) {
-            return !change.deleted;
-          });
-        } else if ($('#back').is(':visible')) {
-          $scope.selectMessage();
-        }
+        options.limit = 50;
         if (!options.silent) {
           $scope.error = false;
           $scope.errorSyntax = false;
           $scope.loading = true;
+          if ($('#back').is(':visible')) {
+            $scope.selectMessage();
+          }
         }
         if (options.skip) {
           $scope.appending = true;
-          options.skip = $scope.items.length;
+          options.skip = $scope.reports.length;
         } else if (!options.silent) {
-          $scope.setReports([]);
+          $scope.reports = [];
         }
 
         Search($scope, options, function(err, data) {
-          $scope.loading = false;
-          $scope.appending = false;
           if (err) {
             $scope.error = true;
+            $scope.loading = false;
             if ($scope.filterQuery.value &&
                 err.reason &&
                 err.reason.toLowerCase().indexOf('bad query syntax') !== -1) {
@@ -147,31 +139,36 @@ var _ = require('underscore'),
             }
             return console.log('Error loading messages', err);
           }
-          $scope.error = false;
-          $scope.errorSyntax = false;
 
-          $scope.update(data.results);
-          if (!options.changes) {
-            $scope.totalItems = data.total_rows;
-          }
-          if (!options.changes && !options.skip) {
-            if (!data.results.length) {
-              $scope.selectMessage();
-            } else {
-              var curr = _.find(data.results, function(result) {
-                return result._id === $state.params.id;
-              });
+          FormatDataRecord(data)
+            .then(function(data) {
+              $scope.loading = false;
+              $scope.appending = false;
+              $scope.error = false;
+              $scope.errorSyntax = false;
+              $scope.update(data);
+              var curr = _.findWhere(data, { _id: $state.params.id });
               if (curr) {
                 $scope.setSelected(curr);
-              } else if (!$('#back').is(':visible')) {
+              } else if (!$('#back').is(':visible') &&
+                         !$scope.selected &&
+                         $state.is('reports.detail') &&
+                         $scope.filterModel.type === 'reports') {
+                // TODO improve double timeout here - I think it's required
+                // because of the nested promises
                 $timeout(function() {
-                  var id = $('.inbox-items li').first().attr('data-record-id');
-                  $state.go('reports.detail', { id: id });
+                  $timeout(function() {
+                    var id = $('.inbox-items li').first().attr('data-record-id');
+                    $state.go('reports.detail', { id: id }, { location: 'replace' });
+                  });
                 });
               }
-            }
-          }
-          _initScroll();
+              _initScroll();
+            })
+            .catch(function(err) {
+              $scope.error = true;
+              console.log('Error formatting record', err);
+            });
         });
       };
 
@@ -179,9 +176,30 @@ var _ = require('underscore'),
         $scope.query();
       });
 
+      $scope.$on('ClearSelected', function() {
+        $scope.selected = null;
+      });
+
+      $scope.$on('VerifyReport', function(e, verify) {
+        if ($scope.selected.form) {
+          Verified($scope.selected._id, verify, function(err) {
+            if (err) {
+              console.log('Error verifying message', err);
+            }
+          });
+        }
+      });
+
+      $scope.$on('EditReport', function() {
+        var val = ($scope.selected.contact && $scope.selected.contact._id) || '';
+        $('#edit-report [name=id]').val($scope.selected._id);
+        $('#edit-report [name=facility]').select2('val', val);
+        $('#edit-report').modal('show');
+      });
+
       var _initScroll = function() {
         scrollLoader.init(function() {
-          if (!$scope.loading && $scope.totalItems > $scope.items.length) {
+          if (!$scope.loading && $scope.moreItems) {
             $timeout(function() {
               $scope.query({ skip: true });
             });
@@ -189,9 +207,19 @@ var _ = require('underscore'),
         });
       };
 
-      Changes({ key: 'reports-list' }, function(data) {
-        if ($scope.filterModel.type === 'reports') {
-          $scope.query({ silent: true, changes: data });
+      Changes({
+        key: 'reports-list',
+        callback: function() {
+          $scope.query({ silent: true, changes: true });
+        },
+        filter: function(change) {
+          if ($scope.filterModel.type !== 'reports') {
+            return false;
+          }
+          if (change.newDoc) {
+            return change.newDoc.form;
+          }
+          return _.findWhere($scope.reports, { _id: change.id });
         }
       });
 
@@ -254,6 +282,7 @@ var _ = require('underscore'),
         });
         initEditMessageModal();
       };
+
     }
   ]);
 

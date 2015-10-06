@@ -8,40 +8,104 @@
     ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'MessageContact', 'Changes',
     function ($scope, $rootScope, $state, $stateParams, $timeout, MessageContact, Changes) {
 
-      $scope.loadingContent = false;
-      $scope.allLoaded = false;
-      $scope.filterModel.type = 'messages';
-      $scope.setMessages();
+      var removeDeletedMessages = function(messages) {
+        var existingKey;
+        var checkExisting = function(updated) {
+          return existingKey === updated.key[0];
+        };
+        for (var i = $scope.messages.length - 1; i >= 0; i--) {
+          existingKey = $scope.messages[i].key[0];
+          if (!_.some(messages, checkExisting)) {
+            $scope.messages.splice(i, 1);
+          }
+        }
+      };
+
+      var mergeUpdatedMessages = function(messages) {
+        _.each(messages, function(updated) {
+          var match = _.find($scope.messages, function(existing) {
+            return existing.key[0] === updated.key[0];
+          });
+          if (match) {
+            if (!_.isEqual(updated.value, match.value)) {
+              match.value = updated.value;
+            }
+          } else {
+            $scope.messages.push(updated);
+          }
+          if ($scope.selected.id === updated.key[0]) {
+            $scope.$broadcast('UpdateContactConversation', { silent: true});
+          }
+        });
+      };
+
+      var setMessages = function(options) {
+        options = options || {};
+        if (options.changes) {
+          removeDeletedMessages(options.messages);
+          mergeUpdatedMessages(options.messages);
+        } else {
+          $scope.messages = options.messages || [];
+        }
+      };
 
       var updateContacts = function(options, callback) {
         if (!options.changes) {
           $scope.loading = true;
         }
-        MessageContact({ districtAdmin: $scope.permissions.districtAdmin }, function(err, data) {
+        MessageContact({ }, function(err, data) {
           if (err) {
             return console.log('Error fetching contact', err);
           }
           $scope.loading = false;
           options.messages = data;
-          $scope.setMessages(options);
+          setMessages(options);
           if (callback) {
             callback();
           }
         });
       };
 
-      updateContacts({}, function() {
-        if (!$state.params.id && $scope.items.length && !$('#back').is(':visible')) {
+      $scope.setSelected = function(doc) {
+        var refreshing = ($scope.selected && $scope.selected.id) === doc.id;
+        $scope.selected = doc;
+        $scope.settingSelected(refreshing);
+      };
+
+      $scope.allLoaded = false;
+      $scope.filterModel.type = 'messages';
+      $scope.messages = [];
+      $scope.selected = null;
+      setMessages();
+      updateContacts({ }, function() {
+        if (!$state.params.id &&
+            $scope.messages.length &&
+            !$('#back').is(':visible') &&
+            $scope.filterModel.type === 'messages') {
           $timeout(function() {
             var id = $('.inbox-items li').first().attr('data-record-id');
-            $state.go('messages.detail', { id: id });
+            $state.go('messages.detail', { id: id }, { location: 'replace' });
           });
         }
       });
 
-      Changes({ key: 'messages-list' }, function(data) {
-        if ($scope.filterModel.type === 'messages') {
-          updateContacts({ changes: data });
+      $scope.$on('ClearSelected', function() {
+        $scope.selected = null;
+      });
+
+      Changes({
+        key: 'messages-list',
+        callback: function() {
+          updateContacts({ changes: true });
+        },
+        filter: function(change) {
+          if ($scope.filterModel.type !== 'messages') {
+            return false;
+          }
+          if (change.newDoc) {
+            return change.newDoc.kujua_message || change.newDoc.sms_message;
+          }
+          return true;
         }
       });
 

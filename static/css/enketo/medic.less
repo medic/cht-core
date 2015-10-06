@@ -1,0 +1,76 @@
+/**
+ * Some of the widths set up in the enketo.css file assume the form is being
+ * viewed full-screen.  These overrides are required when enketo is embedded in
+ * a modal dialog.
+ */
+.enketo {
+  @import "../../build/enketo.less";
+}
+
+.enketo {
+  background-color: #FFFFFF;
+  padding-bottom: 2em;
+  h2, h3, h4 {
+    text-align: left;
+  }
+  .or h2, .or h3, .or h4 {
+    padding: 0 15px;
+  }
+  .form-footer {
+    margin: 0;
+    margin-bottom: 1em;
+    padding: 0 15px;
+    .next-page, .submit, .loader {
+      float: right;
+    }
+  }
+  label, .question, .note {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  .note {
+    border: 0;
+  }
+  .container {
+    padding: 0;
+  }
+  .container, .form-footer {
+    width: 100%;
+  }
+  .or-appearance-hidden {
+    display: none !important;
+  }
+  .question, .note {
+    input[type="text"],
+    input[type="password"],
+    input[type="url"],
+    input[type="email"],
+    input[type="file"] {
+      width: 100%;
+    }
+  }
+  .question .geopicker input {
+    width: 80%;
+  }
+  input[type="tel"] {
+    /* inherit all standard TEXT input styles */
+    &:extend(.enketo input[type="text"]);
+  }
+  .question input[type="tel"] {
+    /* inherit all standard TEXT input styles */
+    &:extend(.enketo .question input[type="text"]);
+  }
+  .invalid-constraint, .invalid-required {
+    margin: 0;
+    padding-left: 15px;
+    padding-right: 15px;
+    border-radius: 0;
+  }
+  .or-required-msg.active, .or-constraint-msg.active {
+    padding-top: 0;
+  }
+
+  .horizontal-options a.icon {
+    width: inherit;
+  }
+}

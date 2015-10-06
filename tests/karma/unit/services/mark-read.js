@@ -3,17 +3,21 @@ describe('MarkRead service', function() {
   'use strict';
 
   var service,
-      db,
-      message;
+      get,
+      put;
 
   beforeEach(function() {
-    db = {};
-    message = {};
+    put = sinon.stub();
+    get = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('db', db);
-      $provide.value('UserCtxService', function() {
-        return { name: 'james' };
+      $provide.factory('DB', KarmaUtils.mockDB({ put: put, get: get }));
+      $provide.factory('Session', function() {
+        return {
+          userCtx: function() {
+            return { name: 'james' };
+          }
+        };
       });
     });
     inject(function(_MarkRead_) {
@@ -21,98 +25,60 @@ describe('MarkRead service', function() {
     });
   });
 
+  afterEach(function() {
+    KarmaUtils.restore(put, get);
+  });
+
   it('marks the message read', function(done) {
-
-    db.getDoc = function(id, callback) {
-      chai.expect(id).to.equal('abc');
-      callback(null, { _id: 'xyz' });
-    };
-
-    db.saveDoc = function(message, callback) {
-      callback(null);
-    };
-
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz' }));
+    put.returns(KarmaUtils.mockPromise());
     var expected = { _id: 'xyz', read: [ 'james' ] };
-
-    service('abc', true, function(err, actual) {
-      chai.expect(actual).to.deep.equal(expected);
+    service('abc', true).then(function() {
+      chai.expect(get.args[0][0]).to.deep.equal('abc');
+      chai.expect(put.args[0][0]).to.deep.equal(expected);
       done();
     });
   });
 
   it('marks the message unread', function(done) {
-
-    db.getDoc = function(id, callback) {
-      chai.expect(id).to.equal('abc');
-      callback(null, { _id: 'xyz', read: [ 'james' ] });
-    };
-
-    db.saveDoc = function(message, callback) {
-      callback(null);
-    };
-
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz', read: [ 'james' ] }));
+    put.returns(KarmaUtils.mockPromise());
     var expected = { _id: 'xyz', read: [ ] };
-
-    service('abc', false, function(err, actual) {
-      chai.expect(actual).to.deep.equal(expected);
+    service('abc', false).then(function() {
+      chai.expect(get.args[0][0]).to.deep.equal('abc');
+      chai.expect(put.args[0][0]).to.deep.equal(expected);
       done();
     });
   });
 
   it('marks the message read when already read', function(done) {
-
-    db.getDoc = function(id, callback) {
-      chai.expect(id).to.equal('abc');
-      callback(null, { _id: 'xyz', read: [ 'james' ] });
-    };
-
-    var expected = { _id: 'xyz', read: [ 'james' ] };
-
-    service('abc', true, function(err, actual) {
-      chai.expect(actual).to.deep.equal(expected);
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz', read: [ 'james' ] }));
+    service('abc', true).then(function() {
+      chai.expect(get.args[0][0]).to.deep.equal('abc');
       done();
     });
   });
 
   it('marks the message unread when already unread', function(done) {
-
-    db.getDoc = function(id, callback) {
-      chai.expect(id).to.equal('abc');
-      callback(null, { _id: 'xyz' });
-    };
-    
-    var expected = { _id: 'xyz' };
-
-    service('abc', false, function(err, actual) {
-      chai.expect(actual).to.deep.equal(expected);
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz' }));
+    service('abc', false).then(function() {
+      chai.expect(get.args[0][0]).to.deep.equal('abc');
       done();
     });
   });
 
   it('returns db errors', function(done) {
-
-    db.getDoc = function(id, callback) {
-      chai.expect(id).to.equal('abc');
-      callback('errcode1');
-    };
-
-    service('abc', true, function(err) {
+    get.returns(KarmaUtils.mockPromise('errcode1'));
+    service('abc', true).catch(function(err) {
       chai.expect(err).to.equal('errcode1');
       done();
     });
   });
 
-  it('returns audit errors', function(done) {
-
-    db.getDoc = function(id, callback) {
-      callback(null, { _id: 'xyz' });
-    };
-
-    db.saveDoc = function(message, callback) {
-      callback('errcode2');
-    };
-
-    service('abc', true, function(err) {
+  it('returns save errors', function(done) {
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz' }));
+    put.returns(KarmaUtils.mockPromise('errcode2'));
+    service('abc', true).catch(function(err) {
       chai.expect(err).to.equal('errcode2');
       done();
     });

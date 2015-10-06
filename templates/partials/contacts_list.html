@@ -1,7 +1,7 @@
-<div id="contacts-list" class="col-sm-4 inbox-items">
-  <ul>
-    <li ng-show="!loading || appending" ng-repeat="contact in items | orderBy:'name'" ng-click="select(contact._id)" data-record-id="{{contact._id}}" ng-class="{'selected': contact._id === loadingContent || !loadingContent && contact._id === selected._id, 'orphan': !contact.parent._id}">
-      <div class="message-wrapper">
+<div id="contacts-list" class="col-sm-4 inbox-items left-pane">
+  <ul ng-show="!loading || appending">
+    <li ng-repeat="contact in contacts | orderBy:[orderByType, 'name']" ng-class="{'selected': contact._id === loadingContent || !loadingContent && contact._id === selected.doc._id, 'orphan': !contact.parent._id}">
+      <a class="message-wrapper" ui-sref="contacts.detail({ id: contact._id, contactType: contact.type })">
         <span class="mm-badge">
           <span class="fa" ng-class="{
             'fa-user': contact.type === 'person',
@@ -18,13 +18,12 @@
             <div class="position" ng-bind-html="contact.parent | clinic"></div>
           </div>
         </div>
-      </div>
+      </a>
     </li>
   </ul>
   <p ng-show="error" class="alert alert-danger" role="alert">{{'Error fetching contacts' | translate}}</p>
-  <p class="loading-status" ng-show="!error && !loading && !items.length">{{'No contacts found' | translate}}</p>
-  <p class="loading-status" ng-show="!error && !loading && items.length && items.length === totalItems">{{'No more contacts' | translate}}</p>
-  <span class="mm-loader" ng-show="loading">
-    <span class="fa fa-spinner fa-spin"></span>
-  </span>
+  <p class="loading-status" ng-show="!error && !loading && !contacts.length">{{'No contacts found' | translate}}</p>
+  <p class="loading-status" ng-show="!error && !loading && contacts.length && !moreItems">{{'No more contacts' | translate}}</p>
+  <div class="loader" ng-show="loading"></div>
+  <div class="padding"></div>
 </div>

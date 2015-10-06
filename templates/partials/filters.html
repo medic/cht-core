@@ -1,60 +1,6 @@
 <div class="row filters">
   <div class="inner">
-
-    <span class="slide-back" ng-click="setSelected()" ng-show="filterModel.type === 'reports' || filterModel.type === 'messages' || filterModel.type === 'contacts'">
-      <a id="back" ng-class="{'disabled': !selected && !loadingContent}">
-        <span class="fa fa-chevron-left" title="{{'Back' | translate}}"></span>
-      </a>
-    </span>
-
-    <span class="basic-filters">
-
-      <span class="filter-buttons">
-
-        <a tabindex="-1" ng-click="edit({ type: 'person' })" ng-show="filterModel.type === 'contacts'" ng-attr-title="{{'Add person' | translate}}">
-          <span class="fa-stack">
-            <i class="fa fa-user fa-stack-1x"></i>
-            <i class="fa fa-plus fa-stack-1x"></i>
-          </span>
-        </a>
-
-        <a tabindex="-1" ng-click="edit()" ng-show="filterModel.type === 'contacts'" ng-attr-title="{{'Add place' | translate}}">
-          <span class="fa-stack">
-            <i class="fa fa-building fa-stack-1x"></i>
-            <i class="fa fa-plus fa-stack-1x"></i>
-          </span>
-        </a>
-
-        <a tabindex="-1" class="send-message" ng-show="filterModel.type === 'messages'" ng-attr-title="{{'Start new conversation' | translate}}">
-          <span class="fa-stack">
-            <i class="fa fa-envelope fa-stack-1x"></i>
-            <i class="fa fa-plus fa-stack-1x"></i>
-          </span>
-        </a>
-
-        <span class="dropdown" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'">
-          <a data-toggle="dropdown">
-            <div class="mm-icon">
-              <span class="fa fa-fw fa-bars"></span>
-            </div>
-          </a>
-          <ul role="menu" class="dropdown-menu mm-dropdown-menu">
-            <li role="presentation" ng-show="permissions.admin">
-              <a tabindex="-1" ng-click="download()" ng-show="filterModel.type === 'messages' || filterModel.type === 'reports' || filterModel.type === 'contacts'">
-                <i class="fa fa-arrow-down"></i>
-                {{'Export' | translate}}
-              </a>
-            </li>
-            <li role="presentation">
-              <a tabindex="-1" ng-show="filterModel.type === 'contacts'" data-toggle="modal" data-target="#import-contacts">
-                <i class="fa fa-arrow-up"></i>
-                {{'Import' | translate}}
-              </a>
-            </li>
-          </ul>
-        </span>
-
-      </span>
+    <div class="basic-filters left-pane">
 
       <span id="formTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All form types" data-filter-label="Number of form types" ng-show="filterModel.type === 'reports'">
         <span id="form_type" class="mm-button mm-button-nudge-down" data-toggle="dropdown">
@@ -78,8 +24,7 @@
         </span>
       </span>
 
-  
-      <span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="Number of facilities" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'">
+      <span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="Number of facilities" ng-show="facilities.length && (filterModel.type === 'reports' || filterModel.type === 'contacts')">
         <span id="facility" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-hospital-o"></span>
@@ -143,8 +88,7 @@
         </span>
       </span>
 
-
-      <span id="contactTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All contact types" data-filter-label="Number of contact types" ng-show="filterModel.type === 'contacts'">
+      <span id="contactTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All contact types" data-filter-label="Number of contact types" ng-show="facilities.length && filterModel.type === 'contacts'">
         <span class="mm-button mm-button-nudge-down" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-user"></span>
@@ -249,6 +193,9 @@
           <span class="mm-button-icon" ng-show="'configuration.users' | isState">
             <i class="fa fa-user"></i>
           </span>
+          <span class="mm-button-icon" ng-show="'configuration.icons' | isState">
+            <i class="fa fa-file-image-o"></i>
+          </span>
           <span class="mm-button-dropdown">
             <i class="fa fa-chevron-down"></i>
           </span>
@@ -271,49 +218,65 @@
             <span ng-show="'configuration.users' | isState">
               {{'Users' | translate}}
             </span>
+            <span ng-show="'configuration.icons' | isState">
+              {{'icons' | translate}}
+            </span>
           </span>
         </span>
         <ul role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
-          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+          <li class="ng-scope" role="presentation" mm-auth="can_configure">
             <a ui-sref="configuration.settings.basic" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-cog"></i>
               <span>{{'Settings' | translate}}</span>
             </a>
           </li>
-          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+          <li class="ng-scope" role="presentation" mm-auth="can_configure">
             <a ui-sref="configuration.translation.languages" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-language"></i>
               <span>{{'Languages' | translate}}</span>
             </a>
           </li>
-          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+          <li class="ng-scope" role="presentation" mm-auth="can_configure">
             <a ui-sref="configuration.forms" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-list-alt"></i>
               <span>{{'Forms' | translate}}</span>
             </a>
           </li>
-          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+          <li class="ng-scope" role="presentation" mm-auth="can_configure">
             <a href="{{baseUrl}}/schedules" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-clock-o"></i>
               <span>{{'Schedules' | translate}}</span>
             </a>
           </li>
-          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+          <li class="ng-scope" role="presentation" mm-auth="can_configure">
             <a ui-sref="configuration.export" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-arrow-circle-o-down"></i>
               <span>{{'Export' | translate}}</span>
             </a>
           </li>
-          <li class="ng-scope" role="presentation" ng-show="permissions.admin">
+          <li class="ng-scope" role="presentation" mm-auth="can_configure">
             <a ui-sref="configuration.users" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-user"></i>
               <span>{{'Users' | translate}}</span>
             </a>
           </li>
+          <li class="ng-scope" role="presentation" mm-auth="can_configure">
+            <a ui-sref="configuration.icons" role="menuitem" tabindex="-1">
+              <i class="fa fa-fw fa-file-image-o"></i>
+              <span>{{'icons' | translate}}</span>
+            </a>
+          </li>
         </ul>
       </span>
+    </div>
 
-    </span>
-
+    <div class="right-pane">
+      <span class="slide-back" ng-click="back()" ng-show="filterModel.type === 'reports' || filterModel.type === 'messages' || filterModel.type === 'contacts' || filterModel.type === 'tasks'">
+        <a id="back">
+          <span class="fa fa-chevron-left" title="{{'Back' | translate}}"></span>
+        </a>
+      </span>
+      <h2>{{title}}</h2>
+    </div>
   </div>
 </div>

@@ -8,8 +8,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesContentCtrl', 
-    ['$scope', '$stateParams', '$timeout', 'ContactConversation', 'MarkAllRead', 'Changes', 'UserCtxService',
-    function ($scope, $stateParams, $timeout, ContactConversation, MarkAllRead, Changes, UserCtxService) {
+    ['$scope', '$stateParams', '$timeout', 'ContactConversation', 'MarkAllRead', 'Changes', 'Session',
+    function ($scope, $stateParams, $timeout, ContactConversation, MarkAllRead, Changes, Session) {
 
       var scrollToUnread = function() {
         var content = $('#message-content');
@@ -26,12 +26,11 @@ var _ = require('underscore'),
 
       var markAllRead = function() {
         var docs = _.pluck($scope.selected.messages, 'doc');
-        MarkAllRead(docs, true, function(err) {
-          if (err) {
+        MarkAllRead(docs, true)
+          .then($scope.updateReadStatus)
+          .catch(function(err) {
             return console.log('Error marking all as read', err);
-          }
-          $scope.updateReadStatus();
-        });
+          });
       };
 
       var findMostRecentFacility = function(messages) {
@@ -50,22 +49,20 @@ var _ = require('underscore'),
         return [];
       };
 
-      var selectContact = function(id) {
+      var selectContact = function(id, options) {
+        options = options || {};
         if (!id) {
           $scope.error = false;
           $scope.loadingContent = false;
-          $scope.setSelected();
+          $scope.clearSelected();
           return;
         }
         $('#message-content').off('scroll', _checkScroll);
-        $scope.loadingContent = true;
         $scope.setSelected({ id: id });
-        $scope.setLoadingContent(id);
-        var opts = {
-          id: id,
-          districtAdmin: $scope.permissions.districtAdmin
-        };
-        ContactConversation(opts, function(err, data) {
+        if (!options.silent) {
+          $scope.setLoadingContent(id);
+        }
+        ContactConversation({ id: id }, function(err, data) {
           if (err) {
             $scope.loadingContent = false;
             $scope.error = true;
@@ -77,7 +74,7 @@ var _ = require('underscore'),
             return;
           }
           sendMessage.setRecipients(findMostRecentFacility(data));
-          $scope.loadingContent = false;
+          $scope.setLoadingContent(false);
           $scope.error = false;
           var unread = _.filter(data, function(message) {
             return !$scope.isRead(message.doc);
@@ -95,18 +92,7 @@ var _ = require('underscore'),
         var selectedId = $scope.selected && $scope.selected.id;
         if (selectedId) {
           options = options || {};
-          if (options.changes && options.changes.length) {
-            for (var i = $scope.selected.messages.length - 1; i >= 0; i--) {
-              var msgId = $scope.selected.messages[i].id;
-              if (_.findWhere(options.changes, { id: msgId, deleted: true })) {
-                $scope.selected.messages.splice(i, 1);
-              }
-            }
-          }
-          var opts = {
-            id: selectedId,
-            districtAdmin: $scope.permissions.districtAdmin
-          };
+          var opts = { id: selectedId };
           if (options.skip) {
             opts.skip = $scope.selected.messages.length;
             $timeout(function() {
@@ -127,7 +113,7 @@ var _ = require('underscore'),
                 angular.extend(match, updated);
               } else {
                 $scope.selected.messages.push(updated);
-                if (updated.doc.sent_by === UserCtxService().name) {
+                if (updated.doc.sent_by === Session.userCtx().name) {
                   scrollToBottom = true;
                 }
               }
@@ -166,12 +152,23 @@ var _ = require('underscore'),
         });
       };
 
-      Changes({ key: 'messages-content' }, function(data) {
-        updateContact({ changes: data });
+      Changes({
+        key: 'messages-content',
+        callback: function() {
+          updateContact({ changes: true });
+        },
+        filter: function(change) {
+          return $scope.filterModel.type === 'messages' &&
+            $scope.selected &&
+            $scope.selected.id === change.id;
+        }
       });
 
       $('.tooltip').remove();
       selectContact($stateParams.id);
+      $scope.$on('UpdateContactConversation', function(e, options) {
+        selectContact($stateParams.id, options);
+      });
 
       $('body')
         .on('focus', '#message-footer textarea', function() {

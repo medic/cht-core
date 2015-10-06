@@ -20,6 +20,7 @@ describe('MessagesCtrl controller', function() {
     scope.setSelected = function(obj) {
       scope.selected = obj;
     };
+    scope.setLoadingContent = function() {};
 
     UserDistrict = function(callback) {
       callback();

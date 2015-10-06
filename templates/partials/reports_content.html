@@ -1,15 +1,17 @@
-<div class="content-pane">
+<div class="content-pane right-pane">
 
   <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
-    <div><span class="fa fa-spinner fa-spin"></span></div>
+    <div>
+      <div class="loader"></div>
+    </div>
   </div>
 
   <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && (!selected || selected.form === undefined)">
     <div>{{'No report selected' | translate}}</div>
   </div>
 
-  <div id="reports-content" class="col-sm-8 item-content item-body">
-    <div ng-show="!loadingContent && selected && selected.form !== undefined">
+  <div id="reports-content" class="col-sm-8 item-content item-body" ng-show="!loadingContent && selected && selected.form !== undefined">
+    <div>
 
       <div class="meta">
         <div class="time" ng-bind-html="selected.reported_date | fullDate"></div>
@@ -23,7 +25,7 @@
       </div>
 
       <div class="body report-body">
-        <h2 ng-bind-html="selected | title:forms"></h2>
+        <h2>{{selected | title:forms}}</h2>
         <ul>
           <li ng-if="selected.form" ng-repeat="field in selected.fields.data">
             <label>
@@ -41,7 +43,7 @@
             </ul>
           </li>
           <li ng-if="selected.sms_message.message">
-            <label>{{'Raw Report Content' | translate}}</label>
+            <label>{{'report.content.raw' | translate}}</label>
             <p>{{selected.sms_message.message}}</p>
           </li>
           <li ng-if="selected.tasks.length">
@@ -62,8 +64,8 @@
         </ul>
       </div>
 
-      <div class="body" ng-if="selected.scheduled_tasks_by_group.length">
-        <h2>{{'Outgoing Messages' | translate}}</h2>
+      <div class="body scheduled-tasks" ng-if="selected.scheduled_tasks_by_group.length">
+        <h2>{{'tasks' | translate}}</h2>
         <ul>
           <li ng-repeat="group in selected.scheduled_tasks_by_group">
             <p>
@@ -73,9 +75,7 @@
                 <a class="btn btn-link" ng-click="mute(group)" ng-show="canMute(group)">{{'Mute' | translate}}</a>
                 <a class="btn btn-link" ng-click="schedule(group)" ng-show="canSchedule(group)">{{'Schedule' | translate}}</a>
               </span>
-              <span class="loading-button" ng-show="group.loading">
-                <span class="fa fa-spinner fa-spin"></span>
-              </span>
+              <span class="inline loader" ng-show="group.loading"></span>
             </p>
             <ul class="task-list">
               <li ng-repeat="task in group.rows | orderBy:'timestamp'">

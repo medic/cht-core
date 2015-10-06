@@ -1,7 +1,9 @@
-<div class="content-pane">
+<div class="content-pane right-pane">
 
   <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
-    <div><span class="fa fa-spinner fa-spin"></span></div>
+    <div>
+      <div class="loader"></div>
+    </div>
   </div>
 
   <div class="col-sm-8 item-content empty-selection" ng-show="!selected && !loadingContent">
@@ -9,110 +11,113 @@
   </div>
 
   <div class="col-sm-8 item-content item-body" ng-show="selected && !loadingContent">
-    <div>
-      <div class="status">
-        <span class="mm-badge mm-badge-round">
-          <span class="fa" ng-class="{
-            'fa-user': selected.type === 'person',
-            'fa-home': selected.type === 'clinic',
-            'fa-hospital-o': selected.type === 'health_center',
-            'fa-building': selected.type === 'district_hospital'
-          }"></span>
-        </span>
-      </div>
+    <div class="material">
 
-      <div class="body">
-        <h2>{{selected.name}}</h2>
-        <h5 ng-show="selected.type === 'person'">{{'Person' | translate}}</h5>
-        <h5 ng-show="selected.type === 'clinic'">{{'Clinic' | translate}}</h5>
-        <h5 ng-show="selected.type === 'health_center'">{{'Health Center' | translate}}</h5>
-        <h5 ng-show="selected.type === 'district_hospital'">{{'District Hospital' | translate}}</h5>
-        <ul>
-          <li ng-show="selected.type !== 'person'">
-            <label>{{'Contact' | translate}}</label>
-            <p>
-              <span ng-show="!selected.contact._id">{{selected.contact.name}}</span>
-              <a ng-click="select(selected.contact._id)" ng-show="selected.contact._id">{{selected.contact.name}}</a>
-            </p>
-          </li>
-          <li>
-            <label>{{'Phone Number' | translate}}</label>
-            <p>{{selected.phone || selected.contact.phone}}</p>
-          </li>
-          <li ng-show="selected.type !== 'person'">
-            <label>{{'External ID' | translate}}</label>
-            <p>{{selected.external_id}}</p>
-          </li>
-          <li ng-show="selected.type === 'person'">
-            <label>{{'RC Code' | translate}}</label>
-            <p>{{selected.rc_code}}</p>
-          </li>
-          <li>
-            <label>{{'Notes' | translate}}</label>
-            <p>{{selected.notes}}</p>
-          </li>
-          <li ng-if="selected.parent._id">
-            <label ng-show="selected.parent.type === 'clinic'">{{'Clinic' | translate}}</label>
-            <label ng-show="selected.parent.type === 'health_center'">{{'Health Center' | translate}}</label>
-            <label ng-show="selected.parent.type === 'district_hospital'">{{'District Hospital' | translate}}</label>
-            <p>
-              <a ng-click="select(selected.parent._id)">
-                {{selected.parent.name}}
-              </a>
-            </p>
-          </li>
-          <li ng-if="selected.parent.parent._id">
-            <label ng-show="selected.parent.parent.type === 'health_center'">{{'Health Center' | translate}}</label>
-            <label ng-show="selected.parent.parent.type === 'district_hospital'">{{'District Hospital' | translate}}</label>
-            <p>
-              <a ng-click="select(selected.parent.parent._id)">
-                {{selected.parent.parent.name}}
-              </a>
-            </p>
-          </li>
-          <li ng-if="selected.parent.parent.parent._id">
-            <label>{{'District Hospital' | translate}}</label>
-            <p>
-              <a ng-click="select(selected.parent.parent.parent._id)">
-                {{selected.parent.parent.parent.name}}
-              </a>
-            </p>
-          </li>
-        </ul>
+      <div class="body col-sm-12">
+        <h2>{{selected.doc.name}}</h2>
+        <div class="card">
+          <ul class="field-list">
+            <li ng-repeat="(name, conf) in selectedSchemaNormalFields()">
+              <label>{{selected.doc.type + '.field.' + name | translate}}</label>
+              <p>
+                <span ng-if="conf.type === 'tel'">
+                  <a href="tel:{{selected.doc[name]}}" class="mobile-only">{{selected.doc[name]}}</a>
+                  <span class="desktop-only">{{selected.doc[name]}}</span>
+                </span>
+                <span ng-if="conf.type.indexOf('db:') === 0"><a ui-sref="contacts.detail({ id: selected.doc[name]._id })">{{selected.doc[name].name}}</a></span>
+                <span ng-if="conf.type !== 'tel' && conf.type.indexOf('db:') !== 0">{{selected.doc[name]}}</span>
+              </p>
+            </li>
+            <li ng-repeat="parent in selected.parents">
+              <label>{{'contact.type.' + parent.type | translate}}</label>
+              <p><a ui-sref="contacts.detail({ id: parent._id })">{{parent.name}}</a></p>
+            </li>
+            <li ng-if="selected.contactFor.length">
+              <label>{{'Primary Contact For' | translate}}</label>
+              <ul>
+                <li class="row" ng-repeat="place in selected.contactFor">
+                  <div class="col-sm-4">
+                    <a ui-sref="contacts.detail({ id: place.doc._id })">{{place.doc.name}}</a>
+                  </div>
+                  <div class="col-sm-8" ng-bind-html="place.doc.parent | clinic"></div>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
       </div>
-
-      <div class="body" ng-if="selected.children.length">
-        <h2 ng-show="selected.type === 'district_hospital'">{{'Health Centers' | translate}}</h2>
-        <h2 ng-show="selected.type === 'health_center'">{{'Clinics' | translate}}</h2>
-        <ul>
-          <li class="row" ng-repeat="child in selected.children">
-            <div class="col-sm-4">
-              <a ng-click="select(child._id)">{{child.name}}</a>
-            </div>
-            <div class="col-sm-4">
-              {{child.contact.name}}
-            </div>
-            <div class="col-sm-4">
-              {{child.contact.phone}}
-            </div>
-          </li>
-        </ul>
+      <div>
+        <div class="col-sm-4" ng-if="selected.doc.type !== 'person'">
+          <h3>{{selected.doc.type + '.field.children' | translate}}</h3>
+          <div class="card">
+            <ul class="action-list">
+              <li ng-repeat="child in selected.children">
+                <a ui-sref="contacts.detail({ id: child.doc._id })">
+                  <div>{{child.doc.name}}</div>
+                  <div class="subtext">{{child.doc.contact.name}}</div>
+                </a>
+              </li>
+              <li class="add" ng-show="selected.doc.type === 'clinic'">
+                <a ng-click="emit('EditContact', { type: 'person' }, { parent: selected.doc._id })">
+                  <i class="fa fa-plus"></i>
+                  <div>{{'Add person' | translate}}</div>
+                </a>
+              </li>
+              <li class="add" ng-show="selected.doc.type === 'health_center'">
+                <a ng-click="emit('EditContact', { type: 'clinic' }, { parent: selected.doc._id })">
+                  <i class="fa fa-plus"></i>
+                  <div>{{'Add place' | translate}}</div>
+                </a>
+              </li>
+              <li class="add" ng-show="selected.doc.type === 'district_hospital'">
+                <a ng-click="emit('EditContact', { type: 'health_center' }, { parent: selected.doc._id })">
+                  <i class="fa fa-plus"></i>
+                  <div>{{'Add place' | translate}}</div>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-sm-4" ng-if="selected.tasks.length">
+          <h3>{{'Tasks' | translate}}</h3>
+          <div class="card">
+            <ul class="action-list">
+              <li ng-repeat="task in selected.tasks">
+                <a ui-sref="tasks.detail({ id: task._id })">
+                  <div>{{task.title | translateFrom:task}}</div>
+                  <div ng-bind-html="task.date | relativeDay" class="subtext"></div>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <h3>{{'Submit Report' | translate}}</h3>
+          <div class="card">
+            <ul class="action-list">
+              <li ng-repeat="form in formDefinitions">
+                <a ui-sref="contacts.report({ id: selected.doc._id, formId: form.internalId })">
+                  {{form.title | translateFrom}}
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-sm-4" ng-if="selected.reports.length">
+          <h3>{{'Reports' | translate}}</h3>
+          <div class="card">
+            <ul class="action-list">
+              <li ng-repeat="report in selected.reports">
+                <a ui-sref="reports.detail({ id: report._id })">
+                  <div>{{report | title:forms}}</div>
+                  <div ng-bind-html="report.reported_date | relativeDate" class="subtext"></div>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
       </div>
-
-      <div class="body" ng-if="selected.contactFor.length">
-        <h2>{{'Primary Contact For' | translate}}</h2>
-        <ul>
-          <li class="row" ng-repeat="place in selected.contactFor">
-            <div class="col-sm-4">
-              <a ng-click="select(place._id)">{{place.name}}</a>
-            </div>
-            <div class="col-sm-8">
-              {{place.parent | clinic}}
-            </div>
-          </li>
-        </ul>
-      </div>
-
+      <div class="padding"></div>
     </div>
   </div>
 </div>

@@ -1,18 +1,17 @@
-<div id="message-list" class="col-sm-4 inbox-items">
+<div id="message-list" class="col-sm-4 inbox-items left-pane">
   <ul>
-    <li class="animate-repeat" ng-show="!loading || appending" ng-repeat="message in items | orderBy:'-value.date'" ng-click="select(message.key[1])" data-record-id="{{message.key[1]}}" ng-class="{'selected': message.key[1] === loadingContent || !loadingContent && message.key[1] === selected.id, 'read': isRead(message.value)}">
-      <div class="message-wrapper">
+    <li ng-show="!loading || appending" ng-repeat="message in messages | orderBy:'-value.date'" ng-class="{'selected': message.key[0] === loadingContent || !loadingContent && message.key[0] === selected.id, 'read': isRead(message.value)}">
+      <a class="message-wrapper" ui-sref="messages.detail({ id: message.key[0] })">
         <div class="detail">
           <span class="time" ng-bind-html="message.value.date | relativeDate"></span>
           <mm-sender message="message.value"></mm-sender>
           <div class="description" ng-bind="message.value.message"></div>
         </div>
-      </div>
+      </a>
     </li>
   </ul>
   <p ng-show="error" class="alert alert-danger" role="alert">{{'Error fetching messages' | translate}}</p>
-  <p class="loading-status" ng-show="!error && !loading && !items.length">{{'No messages found' | translate}}</p>
-  <span class="mm-loader" ng-show="loading">
-    <span class="fa fa-spinner fa-spin"></span>
-  </span>
+  <p class="loading-status" ng-show="!error && !loading && !messages.length">{{'No messages found' | translate}}</p>
+  <div class="loader" ng-show="loading"></div>
+  <div class="padding"></div>
 </div>

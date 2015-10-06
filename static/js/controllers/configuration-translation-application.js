@@ -53,18 +53,19 @@
 
         $scope.locales = res.locales;
 
-        Language(function(err, language) {
-          if (err) {
-            return console.log('Error loading language', err);
-          }
-          $scope.localeModel = createLanguageModel(language, res.locales);
-          updateTranslationModels();
-          $scope.$watch('localeModel', function(curr, prev) {
-            if (prev.lhs !== curr.lhs || prev.rhs !== curr.rhs) {
-              updateTranslationModels();
-            }
-          }, true);
-        });
+        Language()
+          .then(function(language) {
+            $scope.localeModel = createLanguageModel(language, res.locales);
+            updateTranslationModels();
+            $scope.$watch('localeModel', function(curr, prev) {
+              if (prev.lhs !== curr.lhs || prev.rhs !== curr.rhs) {
+                updateTranslationModels();
+              }
+            }, true);
+          })
+          .catch(function(err) {
+            console.log('Error loading language', err);
+          });
       });
 
       $scope.prepareEditTranslation = function(translation) {

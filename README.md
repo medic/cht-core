@@ -17,9 +17,9 @@ For more information about Medic Mobile's tools, visit http://medicmobile.org/to
 
 You will need to install the following:
 
-[Node.js](http://nodejs.org)
+[Node.js](http://nodejs.org) v0.12.x
 
-[CouchDB](http://couchdb.apache.org)
+[CouchDB](http://couchdb.apache.org) v1.6.1
 
 [couchdb-lucene](https://github.com/rnewson/couchdb-lucene) v1.0.2 or greater
 
@@ -172,7 +172,8 @@ http://localhost:5988/medic/_design/medic/_rewrite/
 
 To run precommit tests:
 
-1. Start API: `COUCH_URL=http://user:pass@localhost:5984/medic node api/server.js`
+0. Start CouchDB
+1. Start API: `TEST_ENV=1 COUCH_URL=http://admin:pass@localhost:5984/medic node api/server.js`
 2. Update Webdriver: `node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update`
 3. Start Webdriver: `node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager start`
 4. Run tests: `grunt test`
@@ -217,7 +218,7 @@ First clone the repo recursively so you get both submodules `api` and
 `sentinel`, then change directories:
 
 ```
-git clone --recursive https://github.com/medic/medic-webapp
+git clone --depth=50 --recursive https://github.com/medic/medic-webapp
 cd medic-webapp
 ```
 

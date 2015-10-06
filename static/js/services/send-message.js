@@ -9,8 +9,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('SendMessage', ['$q', 'db', 'User', 'Settings',
-    function($q, db, User, Settings) {
+  inboxServices.factory('SendMessage', ['DB', 'UserSettings', 'Settings',
+    function(DB, UserSettings, Settings) {
 
       var createMessageDoc = function(user, recipients) {
         var name = user && user.name;
@@ -38,13 +38,13 @@ var _ = require('underscore'),
 
       var mapRecipients = function(recipients) {
         var results = _.filter(recipients, function(recipient) {
-          return recipient.doc.phone ||
-                 recipient.doc.contact && recipient.doc.contact.phone;
+          return recipient.phone ||
+                 recipient.contact && recipient.contact.phone;
         });
         return _.map(results, function(recipient) {
           return {
-            phone: recipient.doc.phone || recipient.doc.contact.phone,
-            facility: recipient.doc
+            phone: recipient.phone || recipient.contact.phone,
+            facility: recipient
           };
         });
       };
@@ -75,52 +75,52 @@ var _ = require('underscore'),
 
       return function(recipients, message) {
 
-        var deferred = $q.defer();
+        return new Promise(function(resolve, reject) {
 
-        if (!_.isArray(recipients)) {
-          recipients = [recipients];
-        }
-
-        User(function(err, user) {
-          if (err) {
-            return console.log('Error fetching user', err);
+          if (!_.isArray(recipients)) {
+            recipients = [recipients];
           }
 
-          Settings(function(err, settings) {
+          UserSettings(function(err, user) {
             if (err) {
-              return console.log('Error fetching settings', err);
+              return console.log('Error fetching user', err);
             }
 
-            var doc = createMessageDoc(user, recipients);
-            var explodedRecipients = formatRecipients(recipients);
-
-            async.forEachSeries(
-              explodedRecipients,
-              function(data, callback) {
-                db.newUUID(100, function (err, uuid) {
-                  if (!err) {
-                    doc.tasks.push(createTask(settings, data, message, user, uuid));
-                  }
-                  callback(err);
-                });
-              },
-              function(err) {
-                if (err) {
-                  return deferred.reject(err);
-                }
-                db.saveDoc(doc, function(err) {
-                  if (err) {
-                    deferred.reject(err);
-                  } else {
-                    deferred.resolve();
-                  }
-                });
+            Settings(function(err, settings) {
+              if (err) {
+                return console.log('Error fetching settings', err);
               }
-            );
+
+              var doc = createMessageDoc(user, recipients);
+              var explodedRecipients = formatRecipients(recipients);
+
+              async.forEachSeries(
+                explodedRecipients,
+                function(data, callback) {
+                  DB.get()
+                    .id()
+                    .then(function(id) {
+                      doc.tasks.push(createTask(settings, data, message, user, id));
+                      callback();
+                    })
+                    .catch(function(err) {
+                      callback(err);
+                    });
+                },
+                function(err) {
+                  if (err) {
+                    return reject(err);
+                  }
+                  DB.get()
+                    .post(doc)
+                    .then(resolve)
+                    .catch(reject);
+                }
+              );
+            });
           });
         });
 
-        return deferred.promise;
       };
     }
   ]);

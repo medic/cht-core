@@ -50,21 +50,16 @@
   inboxServices.factory('Form', [
     'Language', 'Settings',
     function(Language, Settings) {
-      return function(options, callback) {
-        if (!callback) {
-          callback = options;
-          options = {};
-        }
-        Settings(options, function(err, res) {
+      return function(callback) {
+        Settings(function(err, res) {
           if (err) {
             return callback(err);
           }
-          Language(options, function(err, language) {
-            if (err) {
-              return callback(err);
-            }
-            callback(null, formatResults(res.forms, language));
-          });
+          Language()
+            .then(function(language) {
+              callback(null, formatResults(res.forms, language));
+            })
+            .catch(callback);
         });
       };
     }

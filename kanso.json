@@ -1,7 +1,7 @@
 {
     "name": "medic",
     "display_name": "Medic Mobile",
-    "version": "0.5.0",
+    "version": "0.6.0",
     "description": "Medic Mobile combines SMS messaging, data collection, and analytics for health workers and health systems in hard-to-reach areas with or without internet connectivity.",
     "long_description" : "Medic Mobile is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
     "url": "https://github.com/medic/medic-webapp",
@@ -22,7 +22,7 @@
     ],
     "loglevel": "info",
     "load": "lib/app",
-    "modules": ["lib", "tests/kanso"],
+    "modules": ["lib"],
     "attachments": [
         "static/dist",
         "static/fonts",
@@ -234,13 +234,11 @@
                     "match": {
                         "type": "string",
                         "title": "Match",
-                        "default": "",
                         "description": "The prefix to match.  e.g. +997"
                     },
                     "replace": {
                         "type": "string",
                         "title": "Replace with",
-                        "default": "",
                         "description": "The value to replace the match with"
                     }
                 }
@@ -255,13 +253,11 @@
                         "match": {
                             "type": "string",
                             "title": "Match",
-                            "default": "",
                             "description": "A regular expression used to match a phone number.  e.g. \\+997"
                         },
                         "replace": {
                             "type": "string",
                             "title": "Replace with",
-                            "default": "",
                             "description": "Replace the match with this value."
                         }
                     }
@@ -330,25 +326,20 @@
                         "code": {
                             "type": "string",
                             "title": "Form Code",
-                            "default": ""
+                            "description": "e.g. ZDIS"
                         },
                         "reporting_freq": {
                             "type": "string",
                             "title": "Frequency",
+                            "default": "weekly",
                             "enum": [
                                 "weekly",
                                 "monthly"
-                            ],
-                            "default": "weekly"
+                            ]
                         }
                     }
                 },
-                "default": [
-                    {
-                        "code": "ZDIS",
-                        "frequency": "weekly"
-                    }
-                ]
+                "default": []
             },
             "anc_forms": {
                 "title": "ANC Reports",
@@ -357,27 +348,48 @@
                     "registration": {
                         "type": "string",
                         "title": "Pregnancy Registration Form Code",
-                        "default": "R"
+                        "description": "e.g. R"
                     },
                     "registrationLmp": {
                         "type": "string",
                         "title": "Pregnancy Registration LMP Form Code",
-                        "default": "P"
+                        "description": "e.g. P"
                     },
                     "visit": {
                         "type": "string",
                         "title": "Completed ANC Visit Form Code",
-                        "default": "V"
+                        "description": "e.g. V"
                     },
                     "delivery": {
                         "type": "string",
                         "title": "Delivery Report Form Code",
-                        "default": "D"
+                        "description": "e.g. D"
                     },
                     "flag": {
                         "type": "string",
                         "title": "Flag Pregnancy Form Code",
-                        "default": "F"
+                        "description": "e.g. F"
+                    }
+                }
+            },
+            "permissions": {
+                "title": "Permissions",
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Permission"
+                        },
+                        "roles": {
+                            "title": "Roles",
+                            "type": "array",
+                            "default": [],
+                            "items": {
+                                "type": "string"
+                            }
+                        }
                     }
                 }
             },
@@ -407,13 +419,11 @@
                                 "rows": 2
                             },
                             "title": "Alert Text",
-                            "default": "",
                             "description": "Text that will be sent out in the alert. Variables names can be used. E.g.: {{clinic.name}}, {{s1_name}}."
                         },
                         "recipient": {
                             "type": "string",
                             "title": "Send Alerts To",
-                            "default": "",
                             "description": "The email or phone number to receive alerts. Can also use variable name to receive alert. E.g.: reporting_unit, parent, grandparent, name@ngo.org, +15559870000"
                         }
                     }
@@ -466,8 +476,7 @@
                         "form": {
                             "type": "string",
                             "title": "Registration Form",
-                            "description": "Form code of a registration form. e.g. ANCR",
-                            "default": "ANCR"
+                            "description": "Form code of a registration form. e.g. ANCR"
                         },
                         "fields": {
                             "title": "Fields",
@@ -491,8 +500,7 @@
                         "help": {
                             "title": "Help",
                             "type": "string",
-                            "description": "Instructions explaining how to use this form, including description and form submission examples in <a href=\"http://daringfireball.net/projects/markdown/syntax\">Markdown format</a>.",
-                            "default": "Register for this message workflow by sending an SMS with the following format: `ANCR <patientname>`.\n\nFor example, to register \"Maria Soleil\" you would send: `ANCR Maria Soleil`",
+                            "description": "Instructions explaining how to use this form, including description and form submission examples in <a href=\"http://daringfireball.net/projects/markdown/syntax\">Markdown format</a>. e.g. Register for this message workflow by sending an SMS with the following format: `ANCR <patientname>`.\n\nFor example, to register \"Maria Soleil\" you would send: `ANCR Maria Soleil`",
                             "je:hint": "textarea",
                             "je:textarea": {
                                 "rows": 4
@@ -516,8 +524,8 @@
                                     "trigger": {
                                         "type": "string",
                                         "title": "Trigger",
+                                        "default": "assign_schedule",
                                         "description": "When form is received trigger actions like enrolling in schedule.",
-                                        "default": "add_patient_id",
                                         "enum": ["assign_schedule", "add_patient_id", "add_expected_date", "add_birth_date"],
                                         "je:hint": "enumlabels",
                                         "je:enumlabels": {
@@ -530,14 +538,12 @@
                                     "params": {
                                         "type": "string",
                                         "title": "Parameters",
-                                        "description": "i.e. if assigning a schedule provide the name.",
-                                        "default": ""
+                                        "description": "i.e. if assigning a schedule provide the name."
                                     },
                                     "bool_expr": {
                                         "type": "string",
                                         "title": "Boolean expression",
-                                        "description": "If this expression evaluates to false the trigger will be skipped.",
-                                        "default": ""
+                                        "description": "If this expression evaluates to false the trigger will be skipped."
                                     }
                                 }
                             },
@@ -549,7 +555,6 @@
                                 "join_responses": {
                                     "title": "Join Validation Responses",
                                     "type": "boolean",
-                                    "default": false,
                                     "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
                                 },
                                 "list": {
@@ -560,14 +565,12 @@
                                             "property": {
                                                 "type": "string",
                                                 "title": "Property",
-                                                "description": "The property on the JSON form to validate.",
-                                                "default": "patient_name"
+                                                "description": "The property on the JSON form to validate. e.g. patient_name"
                                             },
                                             "rule": {
                                                 "type": "string",
                                                 "title": "Validation Rule",
-                                                "description": "The <a href='/medic/_design/medic/_rewrite/#/help/validation' rel='external'>validation rule</a>. Backslashes must be double escaped.",
-                                                "default": "lenMin(5) && lenMax(50)"
+                                                "description": "The <a href='/medic/_design/medic/_rewrite/#/help/validation' rel='external'>validation rule</a>. Backslashes must be double escaped. e.g. lenMin(5) && lenMax(50)"
                                             },
                                             "message": {
                                                 "type": "array",
@@ -579,7 +582,7 @@
                                                         "content": {
                                                             "type": "string",
                                                             "title": "Message Content",
-                                                            "default": "'{{patient_name}}' is not a valid patient name. Please submit a patient name between 5 and 50 characters.",
+                                                            "description": "e.g. '{{patient_name}}' is not a valid patient name. Please submit a patient name between 5 and 50 characters.",
                                                             "je:hint": "textarea",
                                                             "je:textarea": {
                                                                 "rows": 2
@@ -588,8 +591,7 @@
                                                         "locale": {
                                                             "title": "Locale",
                                                             "type": "string",
-                                                            "description": "Set the locale if you need to support responses in multiple languages.",
-                                                            "default": "en"
+                                                            "description": "Set the locale if you need to support responses in multiple languages. e.g. en"
                                                         }
                                                     }
                                                 },
@@ -616,7 +618,6 @@
                                                 "content": {
                                                     "type": "string",
                                                     "title": "Message Content",
-                                                    "default": "",
                                                     "je:hint": "textarea",
                                                     "je:textarea": {
                                                         "rows": 2
@@ -625,8 +626,7 @@
                                                 "locale": {
                                                     "title": "Locale",
                                                     "type": "string",
-                                                    "description": "Set the locale if you need to support responses in multiple languages.",
-                                                    "default": "en"
+                                                    "description": "Set the locale if you need to support responses in multiple languages. e.g. en"
                                                 }
                                             }
                                         },
@@ -635,8 +635,7 @@
                                     "recipient": {
                                         "type": "string",
                                         "title": "Recipient",
-                                        "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
-                                        "default": "reporting_unit"
+                                        "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent. e.g. reporting_unit"
                                     }
                                 }
                             },
@@ -654,30 +653,25 @@
                         "form": {
                             "type": "string",
                             "title": "Report Form",
-                            "description": "Form code of the report. e.g. ANCV",
-                            "default": "ANCV"
+                            "description": "Form code of the report. e.g. ANCV"
                         },
                         "name": {
                             "type": "string",
-                            "title": "Display Name",
-                            "default": "Visits"
+                            "title": "Display Name e.g. Visits"
                         },
                         "format": {
                             "type": "string",
-                            "title": "Expected Format",
-                            "default": "V <patientid>"
+                            "title": "Expected Format e.g. V <patientid>"
                         },
                         "silence_type": {
                             "type": "string",
                             "title": "Schedule Name",
-                            "description": "Name of reminder schedule(s) to clear after receiving this report.  Name needs to match exactly, e.g. ANC Reminders.  If you need to support clearing multiple schedules then separate the names with commas.",
-                            "default": "ANC Reminders"
+                            "description": "Name of reminder schedule(s) to clear after receiving this report.  Name needs to match exactly, e.g. ANC Reminders.  If you need to support clearing multiple schedules then separate the names with commas."
                         },
                         "silence_for": {
                             "type": "string",
                             "title": "Silence Window",
-                            "description": "The length of time used to find the next reminder group to clear.  Leave blank to clear all reminder groups.  Supported units: years, months, weeks, days, hours, minutes. e.g. 25 days",
-                            "default": "25 days"
+                            "description": "The length of time used to find the next reminder group to clear.  Leave blank to clear all reminder groups.  Supported units: years, months, weeks, days, hours, minutes. e.g. 25 days"
                         },
                         "fields": {
                             "title": "Fields",
@@ -704,7 +698,6 @@
                                 "join_responses": {
                                     "title": "Join Validation Responses",
                                     "type": "boolean",
-                                    "default": false,
                                     "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
                                 },
                                 "list": {
@@ -715,14 +708,12 @@
                                             "property": {
                                                 "type": "string",
                                                 "title": "Property",
-                                                "description": "The property on the JSON form to validate.",
-                                                "default": "patient_id"
+                                                "description": "The property on the JSON form to validate. e.g. patient_id"
                                             },
                                             "rule": {
                                                 "type": "string",
                                                 "title": "Validation Rule",
-                                                "description": "The <a href='/medic/_design/medic/_rewrite/#/help/validation' rel='external'>validation rule</a>. Backslashes must be double escaped.",
-                                                "default": "regex('[0-9]{5}')"
+                                                "description": "The <a href='/medic/_design/medic/_rewrite/#/help/validation' rel='external'>validation rule</a>. Backslashes must be double escaped. e.g. regex('[0-9]{5}')"
                                             },
                                             "message": {
                                                 "title": "Response Message",
@@ -734,7 +725,7 @@
                                                         "content": {
                                                             "type": "string",
                                                             "title": "Message Content",
-                                                            "default": "'{{patient_id}}' is not a valid.",
+                                                            "description": "e.g. '{{patient_id}}' is not a valid.",
                                                             "je:hint": "textarea",
                                                             "je:textarea": {
                                                                 "rows": 2
@@ -743,7 +734,7 @@
                                                         "locale": {
                                                             "title": "Locale",
                                                             "type": "string",
-                                                            "default": "en"
+                                                            "description": "e.g. en"
                                                         }
                                                     }
                                                 },
@@ -770,7 +761,7 @@
                                                 "content": {
                                                     "type": "string",
                                                     "title": "Message Content",
-                                                    "default": "'{{patient_id}}' is not a valid.",
+                                                    "description": "e.g. '{{patient_id}}' is not a valid.",
                                                     "je:hint": "textarea",
                                                     "je:textarea": {
                                                         "rows": 2
@@ -779,7 +770,7 @@
                                                 "locale": {
                                                     "title": "Locale",
                                                     "type": "string",
-                                                    "default": "en"
+                                                    "description": "e.g. en"
                                                 }
                                             }
                                         },
@@ -803,8 +794,7 @@
                                     "recipient": {
                                         "type": "string",
                                         "title": "Recipient",
-                                        "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
-                                        "default": "reporting_unit"
+                                        "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent. e.g. reporting_unit"
                                     }
                                 }
                             },
@@ -823,20 +813,17 @@
                         "name": {
                             "type": "string",
                             "title": "Name",
-                            "description": "A unique name to define this schedule. e.g. ANC Reminders",
-                            "default": ""
+                            "description": "A unique name to define this schedule. e.g. ANC Reminders"
                         },
                         "summary": {
                             "type": "string",
                             "title": "Summary",
-                            "description": "A brief summary of this schedule",
-                            "default": ""
+                            "description": "A brief summary of this schedule"
                         },
                         "description": {
                             "type": "string",
                             "title": "Description",
                             "description": "A complete description of this schedule in <a href=\"http://daringfireball.net/projects/markdown/syntax\">markdown format</a>",
-                            "default": "",
                             "je:hint": "textarea",
                             "je:textarea": {
                                 "rows": 2
@@ -845,8 +832,7 @@
                         "start_from": {
                             "type": "string",
                             "title": "Timestamp Property Name",
-                            "description": "A timestamp or date property on the record that is used to calculate when messages are sent. e.g. lmp_date.  Use reported_date if you want to reference the date and time the report was received.",
-                            "default": ""
+                            "description": "A timestamp or date property on the record that is used to calculate when messages are sent. e.g. lmp_date.  Use reported_date if you want to reference the date and time the report was received."
                         },
                         "messages": {
                             "type": "array",
@@ -863,7 +849,6 @@
                                                 "content": {
                                                     "type": "string",
                                                     "title": "Message Content",
-                                                    "default": "",
                                                     "je:hint": "textarea",
                                                     "je:textarea": {
                                                         "rows": 2
@@ -872,8 +857,7 @@
                                                 "locale": {
                                                     "title": "Locale",
                                                     "type": "string",
-                                                    "description": "Set the locale if you need to support responses in multiple languages.",
-                                                    "default": "en"
+                                                    "description": "Set the locale if you need to support responses in multiple languages. e.g. en"
                                                 }
                                             }
                                         },
@@ -882,18 +866,18 @@
                                     "group": {
                                         "type": "integer",
                                         "title": "Message Group Number",
-                                        "description": "You can group reminders together by assigning a group number so they can be cleared in batches.",
-                                        "default": 1
+                                        "default": 1,
+                                        "description": "You can group reminders together by assigning a group number so they can be cleared in batches. e.g. 1"
                                     },
                                     "offset": {
                                         "type": "string",
                                         "title": "Send Message After",
-                                        "description": "This value is added to the timestamp property value to determine when to send the message.  Supported units: years, months, weeks, days, hours, minutes. e.g. 5 days",
-                                        "default": "12 weeks"
+                                        "description": "This value is added to the timestamp property value to determine when to send the message.  Supported units: years, months, weeks, days, hours, minutes. e.g. 5 days"
                                     },
                                     "send_day": {
                                         "type": "string",
                                         "title": "Send Day",
+                                        "default": "monday",
                                         "description": "Optionally specify the nearest day to offset.",
                                         "enum": ["", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
                                         "je:hint": "enumlabels",
@@ -906,8 +890,7 @@
                                             "friday": "Friday",
                                             "saturday": "Saturday",
                                             "sunday": "Sunday"
-                                        },
-                                        "default": ""
+                                        }
                                     },
                                     "send_time": {
                                         "type": "string",
@@ -918,8 +901,7 @@
                                     "recipient": {
                                         "type": "string",
                                         "title": "Recipient",
-                                        "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
-                                        "default": "reporting_unit"
+                                        "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent. e.g. reporting_unit"
                                     }
                                 }
                             },
@@ -935,20 +917,17 @@
                     "off_form": {
                         "type": "string",
                         "title": "Stop Notifications Form",
-                        "description": "When receiving a form of this type, stop sending notifications",
-                        "default": "OFF"
+                        "description": "When receiving a form of this type, stop sending notifications. e.g. OFF"
                     },
                     "on_form": {
                         "type": "string",
                         "title": "Resume Notifications Form",
-                        "description": "When receiving a form of this type, resume sending notifications",
-                        "default": "ON"
+                        "description": "When receiving a form of this type, resume sending notifications. e.g. ON"
                     },
                     "confirm_deactivation": {
                         "type": "boolean",
                         "title": "Confirm Muting Notifications?",
-                        "description": "Disable stopping of notification based on reports, requires administrator action.",
-                        "default": false
+                        "description": "Disable stopping of notification based on reports, requires administrator action."
                     },
                     "validations": {
                         "type": "object",
@@ -956,7 +935,6 @@
                             "join_responses": {
                                 "title": "Join Validation Responses",
                                 "type": "boolean",
-                                "default": false,
                                 "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
                             },
                             "list": {
@@ -967,14 +945,12 @@
                                         "property": {
                                             "type": "string",
                                             "title": "Property",
-                                            "description": "The property on the JSON form to validate.",
-                                            "default": "patient_id"
+                                            "description": "The property on the JSON form to validate. e.g. patient_id"
                                         },
                                         "rule": {
                                             "type": "string",
                                             "title": "Validation Rule",
-                                            "description": "The <a href='/medic/_design/medic/_rewrite/#/help/validation' rel='external'>validation rule</a>. Backslashes must be double escaped.",
-                                            "default": "regex('[0-9]{5}')"
+                                            "description": "The <a href='/medic/_design/medic/_rewrite/#/help/validation' rel='external'>validation rule</a>. Backslashes must be double escaped. e.g. regex('[0-9]{5}')"
                                         },
                                         "message": {
                                             "title": "Response Message",
@@ -986,7 +962,7 @@
                                                     "content": {
                                                         "type": "string",
                                                         "title": "Message Content",
-                                                        "default": "'{{patient_id}}' is not a valid.",
+                                                        "description": "e.g. '{{patient_id}}' is not a valid.",
                                                         "je:hint": "textarea",
                                                         "je:textarea": {
                                                             "rows": 2
@@ -995,7 +971,7 @@
                                                     "locale": {
                                                         "title": "Locale",
                                                         "type": "string",
-                                                        "default": "en"
+                                                        "description": "e.g. en"
                                                     }
                                                 }
                                             },
@@ -1022,7 +998,6 @@
                                             "content": {
                                                 "type": "string",
                                                 "title": "Message Content",
-                                                "default": "",
                                                 "je:hint": "textarea",
                                                 "je:textarea": {
                                                     "rows": 2
@@ -1031,8 +1006,7 @@
                                             "locale": {
                                                 "title": "Locale",
                                                 "type": "string",
-                                                "description": "Set the locale if you need to support responses in multiple languages.",
-                                                "default": "en"
+                                                "description": "Set the locale if you need to support responses in multiple languages. e.g. en"
                                             }
                                         }
                                     },
@@ -1042,7 +1016,7 @@
                                     "type": "string",
                                     "title": "Event Type",
                                     "description": "What should trigger this message?",
-                                    "default": "confirm_deactivation",
+                                    "default": "patient_not_found",
                                     "enum": [
                                         "patient_not_found",
                                         "confirm_deactivation",
@@ -1060,12 +1034,114 @@
                                 "recipient": {
                                     "type": "string",
                                     "title": "Recipient",
-                                    "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent.",
-                                    "default": "reporting_unit"
+                                    "description": "Contact to recieve the message. Use a field name on registration form or one of the following to reference the facility: reporting_unit, parent, grandparent. e.g. reporting_unit"
                                 }
                             }
                         },
                         "default": []
+                    }
+                }
+            },
+            "tasks": {
+                "title": "Task Generation",
+                "type": "object",
+                "properties": {
+                    "rules": {
+                        "title": "Rules",
+                        "type": "string",
+                        "description": "The <a href='https://github.com/C2FO/nools#dsl' rel='external'>Nools DSL</a> rule definition.",
+                        "je:hint": "textarea",
+                        "je:textarea": {
+                            "rows": 20
+                        }
+                    },
+                    "schedules": {
+                        "title": "Schedules",
+                        "type": "array",
+                        "default": [],
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "title": "Name",
+                                    "type": "string"
+                                },
+                                "events": {
+                                    "title": "Events",
+                                    "type": "array",
+                                    "description": "The schedule of tasks to generate",
+                                    "default": [],
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "id": {
+                                                "title": "Task ID",
+                                                "type": "string"
+                                            },
+                                            "days": {
+                                                "title": "Number of days after event that task is due",
+                                                "type": "integer",
+                                                "default": 356
+                                            },
+                                            "start": {
+                                                "title": "Number of days before due date to show task",
+                                                "type": "integer",
+                                                "default": 356
+                                            },
+                                            "end": {
+                                                "title": "Number of days after due date to show task",
+                                                "type": "integer",
+                                                "default": 356
+                                            },
+                                            "type": {
+                                                "title": "Task type",
+                                                "type": "string"
+                                            },
+                                            "title": {
+                                                "title": "Title",
+                                                "type": "array",
+                                                "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                                                "default": [],
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "content": {
+                                                            "type": "string",
+                                                            "title": "Title Content"
+                                                        },
+                                                        "locale": {
+                                                            "title": "Locale",
+                                                            "type": "string",
+                                                            "default": "en"
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                            "description": {
+                                                "title": "Description",
+                                                "type": "array",
+                                                "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                                                "default": [],
+                                                "items": {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "content": {
+                                                            "type": "string",
+                                                            "title": "Description Content"
+                                                        },
+                                                        "locale": {
+                                                            "title": "Locale",
+                                                            "type": "string",
+                                                            "default": "en"
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             },

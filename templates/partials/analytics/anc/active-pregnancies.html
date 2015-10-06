@@ -2,10 +2,8 @@
   <div class="widget-body error" ng-show="activePregnancies.error">
     {{'analytics.connection.error' | translate}}
   </div>
-  <div class="widget-body" ng-hide="!activePregnancies.loading">
-    <div class="loading">
-      <span class="fa fa-spinner fa-spin"></span>
-    </div>
+  <div class="widget-body loading" ng-hide="!activePregnancies.loading">
+    <div class="loader"></div>
   </div>
   <div class="widget-body" ng-if="!activePregnancies.loading && !activePregnancies.error">
     <div class="title">

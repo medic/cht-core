@@ -225,21 +225,13 @@ exports.data_records_by_contact = {
                 }
             }
         };
-        var getDistrictId = function(facility) {
-            while (facility && facility.type !== 'district_hospital') {
-                facility = facility.parent;
-            }
-            return facility && facility._id;
-        };
-        var emitContact = function(districtId, key, date, value) {
+        var emitContact = function(key, date, value) {
             if (key) {
-                emit([districtId || 'none', key, date], value);
-                emit(['admin', key, date], value);
+                emit([key, date], value);
             }
         };
 
-        var districtId,
-            message,
+        var message,
             facility,
             contactName,
             key,
@@ -254,13 +246,11 @@ exports.data_records_by_contact = {
                     if (!facility) {
                         contactName = message.to;
                         position = undefined;
-                        districtId = undefined
                     } else {
                         position = getPosition(facility.parent);
                         contactName = facility.name;
-                        districtId = getDistrictId(facility);
                     }
-                    emitContact(districtId, key, doc.reported_date, {
+                    emitContact(key, doc.reported_date, {
                         date: doc.reported_date,
                         read: doc.read,
                         facility: facility,
@@ -274,12 +264,11 @@ exports.data_records_by_contact = {
             } else if (doc.sms_message) {
                 // incoming
                 facility = doc.contact;
-                districtId = getDistrictId(facility);
                 message = doc.sms_message;
                 position = facility && getPosition(facility.parent) || doc.from;
                 contactName = (facility && facility.name) || doc.from;
                 key = (facility && facility._id) || doc.from;
-                emitContact(districtId, key, doc.reported_date, {
+                emitContact(key, doc.reported_date, {
                     date: doc.reported_date,
                     read: doc.read,
                     facility: facility,
@@ -343,7 +332,10 @@ exports.data_records_by_district = {
 
 exports.facility_by_parent = {
     map: function (doc) {
-        if (doc.type === 'clinic' || doc.type === 'health_center' || doc.type === 'district_hospital') {
+        if (doc.type === 'clinic' ||
+            doc.type === 'health_center' ||
+            doc.type === 'district_hospital' ||
+            doc.type === 'person') {
             emit([doc.parent._id, doc.name, doc.type], true);
         }
     }
@@ -504,13 +496,9 @@ exports.duplicate_form_submissions = {
  */
 exports.forms = {
     map: function(doc) {
-        if (doc.type !== 'form') {
+        if (doc.type !== 'form' || !doc._attachments.xml) {
             return;
         }
-        // removes form: prefix on form docs
-        function removePrefix(str) {
-           return str.split(':').slice(1).join(':');
-        };
-        emit(removePrefix(doc._id));
+        emit(doc.internalId);
     }
 };

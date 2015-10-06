@@ -1,45 +1,58 @@
-var _ = require('underscore');
-
 /**
  * Module to ensure changes listeners are singletons. Registering a
  * listener with this module will replace the previously registered
- * listener.
+ * listener with the same key.
  */
 (function () {
 
   'use strict';
   
   var inboxServices = angular.module('inboxServices');
-  
-  inboxServices.factory('Changes', ['db',
 
-    function(db) {
+  inboxServices.factory('Changes', ['E2ETESTING', 'DB',
+
+    function(E2ETESTING, DB) {
 
       var callbacks = {};
-      var inited = [];
-      
-      return function(options, callback) {
-        if (!callback) {
-          callback = options;
-          options = {};
-        }
-        _.defaults(options, {
-          key: 'unlabelled',
-          filter: 'medic/data_records'
-        });
-        callbacks[options.key] = callback;
-        if (!_.contains(inited, options.filter)) {
-          inited.push(options.filter);
-          db.changes({ filter: options.filter }, function(err, data) {
-            if (!err && data && data.results) {
-              Object.keys(callbacks).forEach(function(key) {
-                callbacks[key](data.results);
-              });
-            }
-          });
+
+      var isNew = function(change) {
+        return change.changes[0].rev.indexOf('1-') === 0;
+      };
+
+      var collectData = function(change, callback) {
+        if (isNew(change)) {
+          DB.get()
+            .get(change.id)
+            .then(function(doc) {
+              change.newDoc = doc;
+              callback();
+            });
+        } else {
+          callback();
         }
       };
 
+      var notifyAll = function(change) {
+        Object.keys(callbacks).forEach(function(key) {
+          var options = callbacks[key];
+          if (!options.filter || options.filter(change)) {
+            options.callback(change);
+          }
+        });
+      };
+
+      if (!E2ETESTING) {
+        DB.get()
+          .changes({ live: true, since: 'now' })
+          .on('change', function(change) {
+            collectData(change, function() {
+              notifyAll(change);
+            });
+          });
+      }
+      return function(options) {
+        callbacks[options.key] = options;
+      };
     }
 
   ]);

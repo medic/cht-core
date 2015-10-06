@@ -1,6 +1,8 @@
 var http = require('http'),
     auth = require('./auth');
 
+var originalSettings;
+
 var request = function(options) {
   var deferred = protractor.promise.defer();
 
@@ -38,9 +40,7 @@ var request = function(options) {
 
 module.exports = {
 
-  load: function(path) {
-    browser.get('http://' + auth.getAuthString() + '@localhost:5988/medic/_design/medic/_rewrite' + path);
-  },
+  request: request,
 
   saveDoc: function(doc) {
     var postData = JSON.stringify(doc);
@@ -66,6 +66,44 @@ module.exports = {
     return request({
       path: '/medic/_design/medic/_view/audit_records_by_doc?include_docs=true&key=["' + id + '"]',
       method: 'GET'
+    });
+  },
+
+  deleteDoc: function(id) {
+    return module.exports.getDoc(id)
+      .then(function(doc) {
+        doc._deleted = true;
+        return module.exports.saveDoc(doc);
+      });
+  },
+
+  updateSettings: function(updates) {
+    if (originalSettings) {
+      throw new Error('A previous test did not call revertSettings');
+    }
+    return request({
+      path: '/medic/_design/medic/_rewrite/app_settings/medic',
+      method: 'GET'
+    }).then(function(settings) {
+      originalSettings = settings;
+      return request({
+        path: '/medic/_design/medic/_rewrite/update_settings/medic',
+        method: 'PUT',
+        body: JSON.stringify(updates)
+      });
+    });
+  },
+
+  revertSettings: function() {
+    if (!originalSettings) {
+      throw new Error('No original settings to revert to');
+    }
+    return request({
+      path: '/medic/_design/medic/_rewrite/update_settings/medic',
+      method: 'PUT',
+      body: JSON.stringify(originalSettings)
+    }).then(function() {
+      originalSettings = null;
     });
   }
 

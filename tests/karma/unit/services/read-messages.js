@@ -3,99 +3,61 @@ describe('ReadMessages service', function() {
   'use strict';
 
   var service,
-      $httpBackend;
+      query,
+      userCtx;
 
-  beforeEach(function (){
+  beforeEach(function() {
+    query = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('BaseUrlService', function() {
-        return 'BASE';
+      $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
+      $provide.factory('Session', function() {
+        return {
+          userCtx: function() {
+            return userCtx;
+          }
+        };
       });
     });
     inject(function($injector) {
-      $httpBackend = $injector.get('$httpBackend');
       service = $injector.get('ReadMessages');
     });
   });
 
   afterEach(function() {
-    $httpBackend.verifyNoOutstandingExpectation();
-    $httpBackend.verifyNoOutstandingRequest();
+    KarmaUtils.restore(query);
   });
 
   it('returns zero when no messages', function(done) {
-
-    $httpBackend
-      .expect('GET', 'BASE/read_records?group=true')
-      .respond({ rows: [] });
-
-    service({
-      user: 'gareth',
-      district: 'dunedin'
-    }, function(err, res) {
+    userCtx = { name: 'gareth' };
+    query.returns(KarmaUtils.mockPromise(null, { rows: [] }));
+    service(function(err, res) {
       chai.expect(res).to.deep.equal({
         forms: 0,
         messages: 0
       });
       done();
     });
-
-    $httpBackend.flush();
   });
 
-  it('returns total when no district', function(done) {
-
-    $httpBackend
-      .expect('GET', 'BASE/read_records?group=true')
-      .respond({ rows: [
-        {'key': ['_total', 'forms',    'christchurch'], 'value': 5 },
-        {'key': ['_total', 'forms',    'dunedin'],      'value': 31},
-        {'key': ['_total', 'messages', 'dunedin'],      'value': 10},
-        {'key': ['gareth', 'forms',    'christchurch'], 'value': 3 },
-        {'key': ['gareth', 'forms',    'dunedin'],      'value': 23},
-        {'key': ['gareth', 'messages', 'dunedin'],      'value': 5 },
-        {'key': ['test3',  'messages', 'dunedin'],      'value': 2 }
-      ] });
-
-    service({
-      user: 'gareth'
-    }, function(err, res) {
+  it('returns total', function(done) {
+    userCtx = { name: 'gareth' };
+    query.returns(KarmaUtils.mockPromise(null, { rows: [
+      {'key': ['_total', 'forms',    'christchurch'], 'value': 5 },
+      {'key': ['_total', 'forms',    'dunedin'],      'value': 31},
+      {'key': ['_total', 'messages', 'dunedin'],      'value': 10},
+      {'key': ['gareth', 'forms',    'christchurch'], 'value': 3 },
+      {'key': ['gareth', 'forms',    'dunedin'],      'value': 23},
+      {'key': ['gareth', 'messages', 'dunedin'],      'value': 5 },
+      {'key': ['test3',  'messages', 'dunedin'],      'value': 2 }
+    ] }));
+    service(function(err, res) {
       chai.expect(res).to.deep.equal({
         forms: 10,
         messages: 5
       });
       done();
     });
-
-    $httpBackend.flush();
-  });
-
-  it('returns total when district', function(done) {
-
-    $httpBackend
-      .expect('GET', 'BASE/read_records?group=true')
-      .respond({ rows: [
-        {'key': ['_total', 'forms',    'christchurch'], 'value': 5 },
-        {'key': ['_total', 'forms',    'dunedin'],      'value': 31},
-        {'key': ['_total', 'messages', 'dunedin'],      'value': 10},
-        {'key': ['gareth', 'forms',    'christchurch'], 'value': 3 },
-        {'key': ['gareth', 'forms',    'dunedin'],      'value': 23},
-        {'key': ['gareth', 'messages', 'dunedin'],      'value': 5 },
-        {'key': ['test3',  'messages', 'dunedin'],      'value': 2 }
-      ] });
-
-    service({
-      user: 'gareth',
-      district: 'dunedin'
-    }, function(err, res) {
-      chai.expect(res).to.deep.equal({
-        forms: 8,
-        messages: 5
-      });
-      done();
-    });
-
-    $httpBackend.flush();
   });
 
 });

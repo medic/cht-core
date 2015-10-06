@@ -2,10 +2,8 @@
   <div class="widget-body error" ng-show="upcomingDueDates.error">
     {{'analytics.connection.error' | translate}}
   </div>
-  <div class="widget-body" ng-hide="!upcomingDueDates.loading">
-    <div class="loading">
-      <span class="fa fa-spinner fa-spin"></span>
-    </div>
+  <div class="widget-body loading" ng-hide="!upcomingDueDates.loading">
+    <div class="loader"></div>
   </div>
   <div class="widget-body" ng-if="!upcomingDueDates.loading && !upcomingDueDates.error">
     <div class="title">

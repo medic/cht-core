@@ -3,39 +3,37 @@ describe('EditGroup service', function() {
   'use strict';
 
   var service,
-      db,
-      doc;
+      get,
+      put;
 
   beforeEach(function() {
-    db = {
-      getDoc: function(recordId, callback) {
-        callback(null, doc);
-      },
-      saveDoc: function(record, callback) {
-        callback();
-      }
-    };
+    put = sinon.stub();
+    get = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('db', db);
+      $provide.factory('DB', KarmaUtils.mockDB({ put: put, get: get }));
     });
     inject(function(_EditGroup_) {
       service = _EditGroup_;
     });
   });
 
-  it('returns get errors', function() {
-    db.getDoc = function(recordId, callback) {
-      callback('db messed up');
-    };
-    var group = {};
-    service('123', group, function(err) {
-      chai.expect(err).to.equal('db messed up');
-    });
+  afterEach(function() {
+    KarmaUtils.restore(put, get);
   });
 
-  it('does not save if nothing changed', function() {
-    doc = {
+  it('returns get errors', function(done) {
+    get.returns(KarmaUtils.mockPromise('db messed up'));
+    var group = {};
+    service('123', group)
+      .catch(function(err) {
+        chai.expect(err).to.equal('db messed up');
+        done();
+      });
+  });
+
+  it('does not save if nothing changed', function(done) {
+    var doc = {
       scheduled_tasks: [
         { group: 1 },
         { group: 2 },
@@ -45,34 +43,35 @@ describe('EditGroup service', function() {
     var group = {
       rows: [ { group: 1, state: 'muted' } ]
     };
-    service('123', group, function(err, actual) {
-      chai.expect(err).to.equal(null);
+    get.returns(KarmaUtils.mockPromise(null, doc));
+    service('123', group).then(function(actual) {
       chai.expect(actual).to.deep.equal(doc);
+      done();
     });
   });
 
-  it('returns save errors', function() {
-    doc = {
+  it('returns save errors', function(done) {
+    var doc = {
       scheduled_tasks: [
         { group: 1 },
         { group: 2 },
         { group: 3 }
       ]
     };
-    db.saveDoc = function(record, callback) {
-      callback('audit borked');
-    };
+    get.returns(KarmaUtils.mockPromise(null, doc));
+    put.returns(KarmaUtils.mockPromise('audit borked'));
     var group = {
       number: 1,
       rows: [ { group: 1, state: 'scheduled' } ]
     };
-    service('123', group, function(err) {
+    service('123', group).catch(function(err) {
       chai.expect(err).to.equal('audit borked');
+      done();
     });
   });
 
-  it('saves updated doc', function() {
-    doc = {
+  it('saves updated doc', function(done) {
+    var doc = {
       scheduled_tasks: [
         { group: 1, due: '1', messages: [ { message: 'a' } ] },
         { group: 2, due: '2', messages: [ { message: 'b' } ] },
@@ -87,8 +86,9 @@ describe('EditGroup service', function() {
         { group: 2, state: 'muted', due: '6', messages: [ { message: 'f' } ] }
       ]
     };
-    service('123', group, function(err, actual) {
-      chai.expect(err).to.equal(undefined);
+    get.returns(KarmaUtils.mockPromise(null, doc));
+    put.returns(KarmaUtils.mockPromise());
+    service('123', group).then(function(actual) {
       chai.expect(actual.scheduled_tasks.length).to.equal(4);
 
       chai.expect(actual.scheduled_tasks[0].group).to.equal(1);
@@ -110,11 +110,13 @@ describe('EditGroup service', function() {
       chai.expect(actual.scheduled_tasks[3].due).to.equal('4');
       chai.expect(actual.scheduled_tasks[3].messages.length).to.equal(1);
       chai.expect(actual.scheduled_tasks[3].messages[0].message).to.equal('d');
+
+      done();
     });
   });
 
-  it('removes deleted messages', function() {
-    doc = {
+  it('removes deleted messages', function(done) {
+    var doc = {
       scheduled_tasks: [
         { group: 2, due: '2', messages: [ { message: 'b' } ] },
         { group: 2, due: '3', messages: [ { message: 'c' } ] },
@@ -129,19 +131,21 @@ describe('EditGroup service', function() {
         { group: 2, state: 'scheduled', due: '7', messages: [ { message: 'g' } ], deleted: true }
       ]
     };
-    service('123', group, function(err, actual) {
-      chai.expect(err).to.equal(undefined);
+    get.returns(KarmaUtils.mockPromise(null, doc));
+    put.returns(KarmaUtils.mockPromise());
+    service('123', group).then(function(actual) {
       chai.expect(actual.scheduled_tasks.length).to.equal(1);
-
       chai.expect(actual.scheduled_tasks[0].group).to.equal(2);
       chai.expect(actual.scheduled_tasks[0].due).to.equal('6');
       chai.expect(actual.scheduled_tasks[0].messages.length).to.equal(1);
       chai.expect(actual.scheduled_tasks[0].messages[0].message).to.equal('f');
+
+      done();
     });
   });
 
-  it('adds new messages', function() {
-    doc = {
+  it('adds new messages', function(done) {
+    var doc = {
       scheduled_tasks: [
         { group: 2, due: '2', messages: [ { to: '5551234', message: 'b' } ] }
       ]
@@ -154,8 +158,9 @@ describe('EditGroup service', function() {
         { group: 2, state: 'scheduled', due: '7', messages: [ { message: 'g' } ], added: true }
       ]
     };
-    service('123', group, function(err, actual) {
-      chai.expect(err).to.equal(undefined);
+    get.returns(KarmaUtils.mockPromise(null, doc));
+    put.returns(KarmaUtils.mockPromise());
+    service('123', group).then(function(actual) {
       chai.expect(actual.scheduled_tasks.length).to.equal(2);
 
       var task = actual.scheduled_tasks[0];
@@ -171,11 +176,13 @@ describe('EditGroup service', function() {
       chai.expect(task.messages.length).to.equal(1);
       chai.expect(task.messages[0].message).to.equal('g');
       chai.expect(task.messages[0].to).to.equal('5551234');
+
+      done();
     });
   });
 
-  it('gets the to number from the data_record', function() {
-    doc = {
+  it('gets the to number from the data_record', function(done) {
+    var doc = {
       from: '5554321',
       scheduled_tasks: []
     };
@@ -185,8 +192,9 @@ describe('EditGroup service', function() {
         { group: 2, state: 'scheduled', due: '7', messages: [ { message: 'g' } ], added: true }
       ]
     };
-    service('123', group, function(err, actual) {
-      chai.expect(err).to.equal(undefined);
+    get.returns(KarmaUtils.mockPromise(null, doc));
+    put.returns(KarmaUtils.mockPromise());
+    service('123', group).then(function(actual) {
       chai.expect(actual.scheduled_tasks.length).to.equal(1);
 
       var task = actual.scheduled_tasks[0];
@@ -195,6 +203,8 @@ describe('EditGroup service', function() {
       chai.expect(task.messages.length).to.equal(1);
       chai.expect(task.messages[0].message).to.equal('g');
       chai.expect(task.messages[0].to).to.equal('5554321');
+
+      done();
     });
   });
 

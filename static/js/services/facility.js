@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    types = [ 'district_hospital', 'catchment_area', 'health_center', 'person' ];
 
 (function () {
 
@@ -6,48 +7,34 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
 
-  var getFacilitiesUrl = function(BaseUrlService, district) {
-    var url = BaseUrlService() + '/facilities.json';
-    if (district) {
-      url += '/' + district;
-    }
-    return url;
-  };
+  inboxServices.factory('Facility', ['DbView', 'Cache',
+    function(DbView, Cache) {
 
-  inboxServices.factory('ClearFacilityCache', ['$cacheFactory', 'BaseUrlService', 'UserDistrict',
-    function($cacheFactory, BaseUrlService, UserDistrict) {
-      return function() {
-        UserDistrict(function(err, district) {
-          if (err) {
-            console.log('Error fetching district', err);
-          }
-          $cacheFactory.get('$http')
-            .remove(getFacilitiesUrl(BaseUrlService, district));
-        });
-      };
-    }
-  ]);
+      var cache = Cache({
+        get: function(callback) {
+          DbView('facilities', { params: { include_docs: true } }, callback);
+        },
+        filter: function(doc) {
+          return _.contains(types, doc.type);
+        }
+      });
 
-  inboxServices.factory('Facility', ['HttpWrapper', 'BaseUrlService',
-    function(HttpWrapper, BaseUrlService) {
       return function(options, callback) {
         if (!callback) {
           callback = options;
           options = {};
         }
-        var url = getFacilitiesUrl(BaseUrlService, options.district);
-        HttpWrapper.get(url, { cache: true, targetScope: options.targetScope })
-          .success(function(res) {
-            if (options.types) {
-              return callback(null, _.filter(res.rows, function(row) {
-                return options.types.indexOf(row.doc.type) !== -1;
-              }));
-            }
-            callback(null, res.rows);
-          })
-          .error(function(data) {
-            callback(new Error(data));
-          });
+        cache(function(err, res) {
+          if (err) {
+            return callback(err);
+          }
+          if (options.types) {
+            return callback(null, _.filter(res, function(doc) {
+              return options.types.indexOf(doc.type) !== -1;
+            }));
+          }
+          callback(null, res);
+        });
       };
     }
   ]);
@@ -80,57 +67,19 @@ var _ = require('underscore');
             }
             var contacts = [];
             _.each(res, function(contact) {
-              if (contact.doc.type === 'person' && contact.doc.phone) {
+              if (contact.type === 'person' && contact.phone) {
                 contacts.push(contact);
-              } else if (contact.doc.type === 'health_center') {
+              } else if (contact.type === 'health_center') {
                 contacts.push(_.extend({
                   everyoneAt: true,
                   descendants: _.filter(res, function(child) {
-                    return descendant(contact.id, child.doc.parent);
+                    return descendant(contact._id, child.parent);
                   })
                 }, contact));
               }
             });
             callback(null, contacts);
           });
-        });
-      };
-    }
-  ]);
-
-  inboxServices.factory('FacilityHierarchy', ['Facility',
-    function(Facility) {
-      return function(district, callback) {
-        var options = {
-          types: ['clinic','health_center','district_hospital'],
-          district: district,
-          targetScope: 'root'
-        };
-        Facility(options, function(err, facilities) {
-          if (err) {
-            return callback(err);
-          }
-          var results = [];
-          var total = 0;
-          facilities.forEach(function(row) {
-            var parentId = row.doc.parent && row.doc.parent._id;
-            if (parentId) {
-              var parent = _.find(facilities, function(curr) {
-                return curr.doc._id === parentId;
-              });
-              if (parent) {
-                if (!parent.children) {
-                  parent.children = [];
-                }
-                parent.children.push(row);
-                total++;
-              }
-            } else {
-              total++;
-              results.push(row);
-            }
-          });
-          callback(null, results, total);
         });
       };
     }

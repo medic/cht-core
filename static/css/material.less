@@ -1,0 +1,74 @@
+.material {
+  padding: 0.5em;
+  .card {
+    border: 1px solid @seperator-color;
+    background-color: white;
+    padding: 15px;
+  }
+  h2 {
+    margin-top: 0;
+  }
+  .field-list {
+    label {
+      color: @label-color;
+      font-style: italic;
+      font-weight: normal;
+    }
+    li {
+      margin-bottom: 1em;
+    }
+  }
+  .action-list {
+    margin-bottom: 0;
+    margin: -15px;
+    li {
+      border-bottom: 1px solid @seperator-color;
+      &:last-child {
+        border-bottom: 0;
+      }
+    }
+    a {
+      display: inline-block;
+      width: 100%;
+      padding: 15px;
+      padding-left: 10px;
+      border-left: 5px solid transparent;
+      color: inherit;
+      &:hover {
+        text-decoration: none;
+        border-left-color: @contacts-color;
+      }
+    }
+    .add {
+      .fa {
+        float: right;
+        line-height: 1.5em;
+      }
+      a:hover {
+        border-left-color: @ok-color;
+        .fa {
+          color: @ok-color;
+        }
+      }
+    }
+  }
+  .col-sm-12 .card {
+    margin-right: -15px;
+  }
+  .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12 {
+    .card {
+      margin-left: -15px;
+    }
+  }
+  .col-sm-4:nth-child(3n+1) {
+    clear: left;
+  }
+}
+
+@media (max-width: 767px) {
+  .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12 {
+    .card {
+      margin-right: -15px;
+    }
+  }
+}
