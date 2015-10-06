@@ -16,6 +16,7 @@ module.exports = {
             && !doc.kujua_message
             && self._isReportedAfterStartDate(doc)
             && !self._isMessageFromGateway(doc)
+            && self._isResponseAllowed(doc)
         );
     },
     /*
@@ -29,6 +30,24 @@ module.exports = {
             return libphonenumber.phoneUtil.isNumberMatch(gw, from) >= 3;
         }
         return false;
+    },
+    /*
+     * Return false when the recipient phone matches the denied list.
+     */
+    _isResponseAllowed: function(doc) {
+        var self = module.exports,
+            conf = self._getConfig('outgoing_deny_list') || '',
+            from = doc.sms_message && doc.sms_message.from,
+            ret = true;
+        _.each(conf.split(','), function(s) {
+            // short circuit if we have a match and skip empty strings
+            if (!s || !ret) {
+                return;
+            }
+            var re = new RegExp('^' + utils.escapeRegex(s.trim()), 'i');
+            ret = from.match(re) ? false : true;
+        });
+        return ret;
     },
     _isReportedAfterStartDate: function(doc) {
         var self = module.exports,

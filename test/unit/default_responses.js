@@ -23,6 +23,7 @@ exports.tearDown = function(callback) {
         transition._isFormNotFound,
         transition._isConfigFormsOnlyMode,
         transition._isReportedAfterStartDate,
+        transition._isResponseAllowed,
         transition._getConfig,
         transition._getLocale,
         transition._translate,
@@ -76,7 +77,7 @@ exports['when doc has errors still pass filter'] = function(test) {
 };
 
 exports['do not pass filter when message is from gateway'] = function(test) {
-    sinon.stub(transition, '_getConfig').returns('+774455558888');
+    sinon.stub(transition, '_getConfig').withArgs('gateway_number').returns('+774455558888');
     test.equals(transition.filter({
         from: '+222',
         type: 'data_record',
@@ -88,7 +89,7 @@ exports['do not pass filter when message is from gateway'] = function(test) {
 };
 
 exports['do not pass filter when gateway config is missing country code'] = function(test) {
-    sinon.stub(transition, '_getConfig').returns('446681800');
+    sinon.stub(transition, '_getConfig').withArgs('gateway_number').returns('446681800');
     test.equals(transition.filter({
         from: '+222',
         type: 'data_record',
@@ -100,7 +101,7 @@ exports['do not pass filter when gateway config is missing country code'] = func
 };
 
 exports['do not pass filter when numbers are same but different formats'] = function(test) {
-    sinon.stub(transition, '_getConfig').returns('77-44-5555-8888');
+    sinon.stub(transition, '_getConfig').withArgs('gateway_number').returns('77-44-5555-8888');
     test.equals(transition.filter({
         from: '+222',
         type: 'data_record',
@@ -112,7 +113,7 @@ exports['do not pass filter when numbers are same but different formats'] = func
 };
 
 exports['pass filter when message is not from gateway'] = function(test) {
-    sinon.stub(transition, '_getConfig').returns('+774455558889')
+    sinon.stub(transition, '_getConfig').withArgs('gateway_number').returns('+774455558889')
     test.equals(transition.filter({
         from: '+222',
         type: 'data_record',
@@ -120,6 +121,40 @@ exports['pass filter when message is not from gateway'] = function(test) {
             from: '+774455558888'
         }
     }), true);
+    test.done();
+};
+
+exports['filter respects outgoing deny configurations'] = function(test) {
+    sinon.stub(transition, '_isResponseAllowed').returns(false);
+    test.equals(transition.filter({
+        from: 'x',
+        type: 'data_record',
+        sms_message: {
+            from: 'x'
+        }
+    }), false);
+    test.done();
+};
+
+exports['describe _isResponseAllowed'] = function(test) {
+    var tests = [
+      ['+123', '+123', false],
+      ['+123', '+999', true],
+      ['+123', '+123999999', false],
+      ['SAFARI', 'SAFARICOM', false],
+      ['Safari', 'SAFARICOM', false],
+      ['+123,+456,+789', '+456', false],
+      ['+123,+456,+789', '+4569999999', false],
+      ['SAFARI, ORANGE', 'ORANGE NET', false],
+      ['SAFARI, ORANGE NET', 'ORANGE', true],
+      ['VIVO', 'EM VIVO', true]
+    ];
+    _.each(tests, function(t) {
+      var s = sinon.stub(transition, '_getConfig');
+      s.withArgs('outgoing_deny_list').returns(t[0]);
+      test.equals(transition._isResponseAllowed({sms_message: {from: t[1]}}), t[2]);
+      s.restore();
+    });
     test.done();
 };
 
@@ -162,14 +197,14 @@ exports['when doc has no errors, form is not found returns false'] = function(te
 
 exports['isReportedAfterStartDate returns false if config start date is whitespace'] = function(test) {
     transition._isReportedAfterStartDate.restore();
-    sinon.stub(transition, '_getConfig').returns({ start_date: ' ' });
+    sinon.stub(transition, '_getConfig').withArgs('default_responses').returns({ start_date: ' ' });
     test.equals(transition._isReportedAfterStartDate({}), false);
     test.done();
 };
 
 exports['isReportedAfterStartDate returns true when reported date is after start date'] = function(test) {
     transition._isReportedAfterStartDate.restore();
-    sinon.stub(transition, '_getConfig').returns({ start_date: '2014-01-01' });
+    sinon.stub(transition, '_getConfig').withArgs('default_responses').returns({ start_date: '2014-01-01' });
     test.equals(transition._isReportedAfterStartDate({
         reported_date: 1412641215000
     }), true);
@@ -178,7 +213,7 @@ exports['isReportedAfterStartDate returns true when reported date is after start
 
 exports['isReportedAfterStartDate returns false when reported date is before start date'] = function(test) {
     transition._isReportedAfterStartDate.restore();
-    sinon.stub(transition, '_getConfig').returns({ start_date: '2014-12-01' });
+    sinon.stub(transition, '_getConfig').withArgs('default_responses').returns({ start_date: '2014-12-01' });
     test.equals(transition._isReportedAfterStartDate({
         reported_date: 1412641215000
     }), false);
