@@ -1,4 +1,5 @@
-var utils = require('kujua-utils');
+var utils = require('kujua-utils'),
+    async = require('async');
 
 (function () {
 
@@ -7,8 +8,8 @@ var utils = require('kujua-utils');
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('DB', [
-    '$http', 'pouchDB', 'Session', 'DbNameService',
-    function($http, pouchDB, Session, DbNameService) {
+    '$http', '$timeout', 'pouchDB', 'Session', 'DbNameService',
+    function($http, $timeout, pouchDB, Session, DbNameService) {
 
       var cache = {};
 
@@ -81,27 +82,34 @@ var utils = require('kujua-utils');
           });
       };
 
-      return {
-        get: get,
-        getRemote: getRemote,
-        getRemoteUrl: getRemoteUrl,
-        watchDesignDoc: function(callback) {
-          // Check current ddoc revision
-          $http({
-            method: 'HEAD',
-            url: getRemoteUrl() + '/_design/medic'
-          }).success(function(data, status, headers) {
-            var rev = headers().etag.replace(/"/g, '');
-            checkLocalDesignDoc(rev);
-          });
-
-          // Listen for remote ddoc changes
+      var watchDesignDoc = function(callback) {
+        // Listen for remote ddoc changes
+        async.forever(function(next) {
           getRemote()
             .changes({ live: true, since: 'now', doc_ids: [ '_design/medic' ] })
             .on('change', function(change) {
               checkLocalDesignDoc(change.changes[0].rev, callback);
+            })
+            .on('error', function() {
+              $timeout(next, 10000);
             });
-        }
+        });
+      };
+
+      // Check current ddoc revision
+      $http({
+        method: 'HEAD',
+        url: getRemoteUrl() + '/_design/medic'
+      }).success(function(data, status, headers) {
+        var rev = headers().etag.replace(/"/g, '');
+        checkLocalDesignDoc(rev);
+      });
+
+      return {
+        get: get,
+        getRemote: getRemote,
+        getRemoteUrl: getRemoteUrl,
+        watchDesignDoc: watchDesignDoc
       };
     }
   ]);
