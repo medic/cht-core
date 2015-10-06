@@ -16,14 +16,14 @@
               <a ui-sref="reports.add({ formId: form.internalId })">{{form.title | translateFrom}}</a>
             </li>
           </ul>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="emit('EditContact', {})" ng-show="filterModel.type === 'contacts'" mm-auth="can_configure">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.add()" ng-show="filterModel.type === 'contacts'" mm-auth="can_configure">
             <span class="fa-stack">
               <i class="fa fa-building fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
             <p>{{'Add place' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="emit('EditContact', {})" ng-show="filterModel.type === 'contacts'" mm-auth="!can_configure">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.add()" ng-show="filterModel.type === 'contacts'" mm-auth="!can_configure">
             <span class="fa-stack">
               <i class="fa fa-home fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
@@ -82,7 +82,7 @@
             <span class="fa fa-pencil"></span>
             <p>{{'Edit' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="filterModel.type === 'contacts'" ng-click="emit('EditContact')">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="filterModel.type === 'contacts'" ui-sref="contacts.edit({ id: actionBar._id })">
             <span class="fa fa-pencil"></span>
             <p>{{'Edit' | translate}}</p>
           </a>

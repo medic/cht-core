@@ -1,16 +1,14 @@
-var modal = require('../modules/modal');
-
 (function () {
 
   'use strict';
 
   var inboxControllers = angular.module('inboxControllers');
+  inboxControllers.controller('ContactsEditCtrl', [
+    '$log', '$scope', '$state', '$q', 'ContactForm', 'ContactSchema', 'DB', 'Enketo', 'EnketoTranslation', 'UserDistrict',
+    function ($log, $scope, $state, $q, ContactForm, ContactSchema, DB, Enketo, EnketoTranslation, UserDistrict) {
 
-  inboxControllers.controller('EditContactCtrl',
-    ['$q', '$rootScope', '$scope', '$state', 'translateFilter', 'ContactForm', 'ContactSchema', 'DbView', 'DB', 'Enketo', 'EnketoTranslation', 'UserDistrict',
-    function ($q, $rootScope, $scope, $state, translateFilter, ContactForm, ContactSchema, DbView, DB, Enketo, EnketoTranslation, UserDistrict) {
-
-      $scope.loading = true;
+      $scope.loadingContent = true;
+      $scope.loadingTypes = true;
 
       function setupSchemas(limit) {
         $scope.unmodifiedSchema = ContactSchema.get();
@@ -23,7 +21,7 @@ var modal = require('../modules/modal');
         delete $scope.placeSchemas.person;
 
         $scope.canCreateDifferentPlaceTypes = Object.keys($scope.placeSchemas).length > 1;
-        $scope.loading = false;
+        $scope.loadingTypes = false;
       }
 
       // Delete place schemas which are too high in the hierarchy for this user
@@ -53,143 +51,90 @@ var modal = require('../modules/modal');
           .catch(console.error.bind(console));
       });
 
-      // Close listener for modal to discard Enketo data
-      $(document).on('hidden.bs.modal', '#edit-contact', function() {
-        $(this).find('.form-wrapper .container').empty();
-        Enketo.unload($scope.enketo_contact && $scope.enketo_contact.formInstance);
-        delete $scope.enketo_contact;
-      });
-
-      var updateTitle = function(doc) {
-        if(!doc) {
-          return;
-        }
-        var nameFormat = $scope.unmodifiedSchema[doc.type].name;
-        if(nameFormat) {
-          doc.name = nameFormat.replace(/\{\{([^}]+)\}\}/g, function(all, name) {
-            return doc[name];
-          });
-        }
-      };
-
-      var populateParents = function() {
-        var options = {
-          params: {
-            startkey: [],
-            endkey: [{}],
-            reduce: false,
-            include_docs: true
-          },
-          targetScope: 'root'
-        };
-        DbView('facilities', options, function(err, results) {
-          if (err) {
-            return console.log('Error fetching parents', err);
-          }
-          results.push({
-            name: translateFilter('New person'),
-            type: 'person',
-            _id: 'NEW',
-            order: 1
-          });
-          $scope.parents = results;
-        });
-      };
-
-      populateParents();
-
       $scope.setContactType = function(type) {
-        $scope.loading = true;
+        $scope.loadingContent = true;
         $scope.contact.type = type;
-
-        var modal = $('#edit-contact');
 
         ContactForm.forCreate(type, { contact:$scope.dependentPersonSchema })
           .then(function(form) {
-            Enketo.renderFromXmlString(modal, form)
-              .then(function(form) {
-                $scope.enketo_contact = {
-                  type: type,
-                  formInstance: form,
-                  docId: type === $scope.contact.type? $scope.contactId: null,
-                };
-                $scope.loading = false;
-              });
+            return Enketo.renderFromXmlString($('#contact-form'), form);
+          })
+          .then(function(form) {
+            $scope.enketo_contact = {
+              type: type,
+              formInstance: form,
+              docId: type === $scope.contact.type? $scope.contactId: null,
+            };
+            $scope.loadingContent = false;
           });
       };
 
-      $scope.$on('ContactUpdated', populateParents);
+      (function init() {
+        var withContact = $state.params.id ?
+            DB.get().get($state.params.id) :
+            $q.resolve();
 
-      $scope.$on('EditContactInit', function(e, contact, formInstanceData) {
+        withContact
+          .then(function(contact) {
+            $scope.primaryContact = {};
+            $scope.original = contact;
 
-        contact = contact || {};
-        $scope.primaryContact = {};
-        $scope.original = contact;
-        var form;
+            var form, formInstanceData;
 
-        if (contact._id) {
-          $scope.contact = {
-            name: contact.name,
-            phone: contact.phone,
-            type: contact.type,
-            parent: contact.parent,
-            contact: contact.contact,
-            external_id: contact.external_id,
-            rc_code: contact.rc_code,
-            notes: contact.notes
-          };
-          $scope.contactId = contact._id;
-          $scope.category = contact.type === 'person' ? 'person' : 'place';
-          var fields = Object.keys($scope.unmodifiedSchema[contact.type].fields);
-          formInstanceData = EnketoTranslation.jsToFormInstanceData(contact, fields);
+            if (contact) {
+              $scope.contact = contact;
+              $scope.contactId = contact._id;
+              $scope.category = contact.type === 'person' ? 'person' : 'place';
+              var fields = Object.keys($scope.unmodifiedSchema[contact.type].fields);
+              formInstanceData = EnketoTranslation.jsToFormInstanceData(contact, fields);
 
-          form = ContactForm.forEdit(contact.type);
-        } else {
-          $scope.contact = {};
-          if(contact.type) {
-            $scope.contact.type = contact.type;
-          } else {
-            var placeTypes = Object.keys($scope.placeSchemas);
-            if (placeTypes.length === 1) {
-              $scope.contact.type = placeTypes[0];
+              form = ContactForm.forEdit(contact.type);
+            } else {
+              $scope.contact = {};
+              var placeTypes = Object.keys($scope.placeSchemas);
+              if (placeTypes.length === 1) {
+                $scope.contact.type = placeTypes[0];
+              }
+
+              $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
+              $scope.contactId = null;
+
+              if ($scope.contact.type) {
+                form = ContactForm.forCreate($scope.contact.type, { contact:$scope.dependentPersonSchema });
+              } else {
+                form = $q.resolve();
+              }
             }
-          }
 
-          $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
-          $scope.contactId = null;
+            var container = $('#contact-form');
 
-          if ($scope.contact.type) {
-            form = ContactForm.forCreate($scope.contact.type, { contact:$scope.dependentPersonSchema });
-          } else {
-            form = $q.resolve();
-          }
-        }
-
-        var modal = $('#edit-contact');
-
-        form.then(function(form) {
-          if (!form) {
-            modal.find('.container.pages').empty();
-            return;
-          }
-          Enketo.renderFromXmlString(modal, form, formInstanceData)
-            .then(function(form) {
-              $scope.enketo_contact = {
-                type: $scope.contact.type,
-                formInstance: form,
-                docId: $scope.contactId,
-              };
+            form.then(function(form) {
+              if (!form) {
+                return;
+              }
+              Enketo.renderFromXmlString(container, form, formInstanceData)
+                .then(function(form) {
+                  $scope.enketo_contact = {
+                    type: $scope.contact.type,
+                    formInstance: form,
+                    docId: $scope.contactId,
+                  };
+                });
+            })
+            .then(function() {
+              $scope.loadingContent = false;
+            }).catch(function(err) {
+              $scope.loadingContent = false;
+              $scope.contentError = true;
+              $log.error('Error loading contact form.', err);
             });
-        })
-        .then(function() {
-          modal.modal('show');
-        }).catch(console.error.bind(console));
-      });
+          });
+
+      }());
 
       $scope.save = function() {
-        var form = $scope.enketo_contact.formInstance,
-            docId = $scope.enketo_contact.docId,
-            $modal = $('#edit-contact');
+        var form = $scope.enketo_contact.formInstance;
+        var docId = $scope.enketo_contact.docId;
 
         return form.validate()
           .then(function(valid) {
@@ -198,9 +143,7 @@ var modal = require('../modules/modal');
               // That's all we want, really.
               return;
             }
-            // don't `start` the modal until form validation is handled - otherwise
-            // fields are disabled, and ignored for validation.
-            var pane = modal.start($modal);
+
             return Promise.resolve()
               .then(function() {
                 if(docId) {
@@ -226,15 +169,13 @@ var modal = require('../modules/modal');
                 return saveDoc(submitted, original, extras);
               })
               .then(function(doc) {
-                delete $scope.enketo_contact;
-                pane.done();
-                return doc;
-              })
-              .then(function(doc) {
-                $rootScope.$broadcast('ContactUpdated', doc);
+                $log.debug('saved report', doc);
+                $scope.saving = false;
+                $state.go('contacts.detail', { id: doc._id });
               })
               .catch(function(err) {
-                pane.done(translateFilter('Error updating contact'), err);
+                $scope.saving = false;
+                $log.error('Error submitting form data: ', err);
               });
             });
       };
@@ -313,6 +254,19 @@ var modal = require('../modules/modal');
               });
           });
       }
+
+      function updateTitle(doc) {
+        if(!doc) {
+          return;
+        }
+        var nameFormat = $scope.unmodifiedSchema[doc.type].name;
+        if(nameFormat) {
+          doc.name = nameFormat.replace(/\{\{([^}]+)\}\}/g, function(all, name) {
+            return doc[name];
+          });
+        }
+      }
+
     }
   ]);
 

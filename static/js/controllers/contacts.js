@@ -105,7 +105,6 @@ var _ = require('underscore'),
         $scope.selected = selected;
         $scope.setActionBar({
           _id: selected.doc._id,
-          sendTo: selected.doc,
           disableDelete: (selected.children && selected.children.length) ||
                          (selected.contactFor && selected.contactFor.length)
         });
@@ -121,10 +120,6 @@ var _ = require('underscore'),
 
       $scope.$on('query', function() {
         $scope.query();
-      });
-
-      $scope.$on('EditContact', function(e, record, instanceData) {
-        $rootScope.$broadcast('EditContactInit', record || $scope.selected.doc, instanceData);
       });
 
       Changes({

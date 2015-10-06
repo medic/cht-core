@@ -127,6 +127,24 @@ _.templateSettings = {
             }
           }
         })
+        .state('contacts.add', {
+          url: '/add',
+          views: {
+            content: {
+              controller: 'ContactsEditCtrl',
+              templateUrl: 'templates/partials/contacts_edit.html'
+            }
+          }
+        })
+        .state('contacts.edit', {
+          url: '/:id/edit',
+          views: {
+            content: {
+              controller: 'ContactsEditCtrl',
+              templateUrl: 'templates/partials/contacts_edit.html'
+            }
+          }
+        })
 
         // tasks
         .state('tasks', {
