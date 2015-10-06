@@ -3,10 +3,9 @@ angular.module('inboxServices').service('ContactForm', [
   function($q, ContactSchema, DB, EnketoTranslation, FileReader) {
     var db = DB.get();
 
-    var availableForms = [];
-    db.query('medic/forms')
+    var withAvailableForms = db.query('medic/forms')
       .then(function(res) {
-        availableForms = _.pluck(res.rows, 'id');
+        return _.pluck(res.rows, 'id');
       });
 
     function getXmlAttachment(doc) {
@@ -14,17 +13,21 @@ angular.module('inboxServices').service('ContactForm', [
         .then(FileReader);
     }
 
-    function getFormById(id) {
+    function getFormById(availableForms, id) {
       if (_.contains(availableForms, id)) {
-        return db.get(id).then(getXmlAttachment);
+        return db.get(id)
+          .then(getXmlAttachment);
       }
     }
 
     function getFormFor(type, mode, extras) {
-      return getFormById('form:contact:' + type + ':' + mode) ||
-        getFormById('form:contact:' + type) ||
-        $q.resolve(
-          EnketoTranslation.generateXform(ContactSchema.get(type), extras));
+      return withAvailableForms
+        .then(function(availableForms) {
+          return getFormById(availableForms, 'form:contact:' + type + ':' + mode) ||
+            getFormById(availableForms, 'form:contact:' + type) ||
+            $q.resolve(
+              EnketoTranslation.generateXform(ContactSchema.get(type), extras));
+        });
     }
 
     return {
