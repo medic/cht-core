@@ -32,7 +32,7 @@ var utils = require('kujua-utils');
 
       var getFromCache = function(name) {
         if (!cache[name]) {
-          cache[name] = pouchDB(name);
+          cache[name] = pouchDB(name, { auto_compaction: true });
         }
         return cache[name];
       };
