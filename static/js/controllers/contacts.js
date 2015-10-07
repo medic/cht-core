@@ -17,14 +17,14 @@ var _ = require('underscore'),
       $scope.selected = null;
 
       $scope.schema = ContactSchema.get();
-      $scope.schemaNormalFields = ContactSchema.getWithoutSpecialFields();
+      $scope.schemaVisible = ContactSchema.getVisibleFields();
 
       $scope.selectedSchema = function() {
         return $scope.selected && $scope.schema[$scope.selected.doc.type];
       };
 
-      $scope.selectedSchemaNormalFields = function() {
-        return $scope.selected && $scope.schemaNormalFields[$scope.selected.doc.type].fields;
+      $scope.selectedSchemaVisibleFields = function() {
+        return $scope.selected && $scope.schemaVisible[$scope.selected.doc.type].fields;
       };
 
       var _merge = function(to, from) {

@@ -179,7 +179,7 @@ angular.module('inboxServices').service('ContactSchema', [
         });
         return schema;
       },
-      getWithoutSpecialFields: function() {
+      getVisibleFields: function() {
         // return a modified schema, missing special fields such as `parent`, and
         // anything included in the `name` attribute
         var schema = getSchema();

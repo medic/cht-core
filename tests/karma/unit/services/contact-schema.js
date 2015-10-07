@@ -320,26 +320,26 @@ describe('ContactSchema service', function() {
     });
   });
 
-  describe('#getWithoutSpecialFields()', function() {
+  describe('#getVisibleFields()', function() {
     it('should not include `name` field', function() {
       // expect
-      assert.ok   (service.get()                    .clinic.fields.hasOwnProperty('name'));
-      assert.notOk(service.getWithoutSpecialFields().clinic.fields.hasOwnProperty('name'));
+      assert.ok   (service.get()             .clinic.fields.hasOwnProperty('name'));
+      assert.notOk(service.getVisibleFields().clinic.fields.hasOwnProperty('name'));
     });
 
     it('should not include fields listed in calculated `name` field', function() {
       // expect
-      assert.ok   (service.get()                    .person.fields.hasOwnProperty('first_name'));
-      assert.notOk(service.getWithoutSpecialFields().person.fields.hasOwnProperty('first_name'));
-      assert.ok   (service.get()                    .person.fields.hasOwnProperty('last_name'));
+      assert.ok   (service.get()             .person.fields.hasOwnProperty('first_name'));
+      assert.notOk(service.getVisibleFields().person.fields.hasOwnProperty('first_name'));
+      assert.ok   (service.get()             .person.fields.hasOwnProperty('last_name'));
 
-      assert.notOk(service.getWithoutSpecialFields().person.fields.hasOwnProperty('last_name'));
+      assert.notOk(service.getVisibleFields().person.fields.hasOwnProperty('last_name'));
     });
 
     it('should not include fields marked `hide_in_view`', function() {
       // expect
-      assert.ok   (service.get()                    .clinic.fields.hasOwnProperty('location'));
-      assert.notOk(service.getWithoutSpecialFields().clinic.fields.hasOwnProperty('location'));
+      assert.ok   (service.get()             .clinic.fields.hasOwnProperty('location'));
+      assert.notOk(service.getVisibleFields().clinic.fields.hasOwnProperty('location'));
     });
   });
 });
