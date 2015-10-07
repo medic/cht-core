@@ -318,4 +318,17 @@ describe('ContactSchema service', function() {
       });
     });
   });
+
+  describe('#getWithoutSpecialFields()', function() {
+    it('should not include `name` field', function() {
+      // expect
+      assert.notOk(service.getWithoutSpecialFields().clinic.fields.hasOwnProperty('name'));
+    });
+
+    it('should not include fields listed in calculated `name` field', function() {
+      // expect
+      assert.notOk(service.getWithoutSpecialFields().person.fields.hasOwnProperty('first_name'));
+      assert.notOk(service.getWithoutSpecialFields().person.fields.hasOwnProperty('last_name'));
+    });
+  });
 });

@@ -190,6 +190,7 @@ angular.module('inboxServices').service('ContactSchema', [
               delete s.fields[key];
             });
           }
+          delete s.fields.name;
           delete s.fields.parent;
         });
         return schema;
