@@ -16,7 +16,10 @@ var CLINIC = {
       type: 'db:person',
       required: true,
     },
-    location: 'geopoint',
+    location: {
+      type: 'geopoint',
+      hide_in_view: true,
+    },
   },
 };
 
@@ -192,6 +195,12 @@ angular.module('inboxServices').service('ContactSchema', [
           }
           delete s.fields.name;
           delete s.fields.parent;
+
+          _.each(s.fields, function(props, name) {
+            if (props.hide_in_view) {
+              delete s.fields[name];
+            }
+          });
         });
         return schema;
       },
