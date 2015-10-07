@@ -109,6 +109,15 @@ _.templateSettings = {
           controller: 'ContactsCtrl',
           templateUrl: 'templates/partials/contacts.html'
         })
+        .state('contacts.add', {
+          url: '/add',
+          views: {
+            content: {
+              controller: 'ContactsEditCtrl',
+              templateUrl: 'templates/partials/contacts_edit.html'
+            }
+          }
+        })
         .state('contacts.report', {
           url: '/:id/report/:formId',
           views: {
@@ -124,15 +133,6 @@ _.templateSettings = {
             content: {
               controller: 'ContactsContentCtrl',
               templateUrl: 'templates/partials/contacts_content.html'
-            }
-          }
-        })
-        .state('contacts.add', {
-          url: '/add',
-          views: {
-            content: {
-              controller: 'ContactsEditCtrl',
-              templateUrl: 'templates/partials/contacts_edit.html'
             }
           }
         })
