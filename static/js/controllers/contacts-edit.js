@@ -110,6 +110,8 @@
 
             form.then(function(form) {
               if (!form) {
+                // Disable next and prev buttons
+                container.find('.form-footer .btn').addClass('disabled');
                 return;
               }
               Enketo.renderFromXmlString(container, form, formInstanceData)
