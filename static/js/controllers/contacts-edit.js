@@ -147,7 +147,7 @@
               return;
             }
 
-            return Promise.resolve()
+            return $q.resolve()
               .then(function() {
                 if(docId) {
                   return DB.get().get(docId);
@@ -185,12 +185,12 @@
 
       function saveDoc(doc, original, extras) {
         var children = [];
-        return Promise.resolve()
+        return $q.resolve()
           .then(function() {
             var schema = $scope.unmodifiedSchema[doc.type];
 
             // sequentially update all dirty db fields
-            var result = Promise.resolve(doc);
+            var result = $q.resolve(doc);
             _.each(schema.fields, function(conf, f) {
               var customType = conf.type.match(/^(db|custom):(.*)$/);
               if (customType) {
@@ -247,7 +247,7 @@
             return DB.get().get(doc.id);
           })
           .then(function(doc) {
-            return Promise
+            return $q
               .all(_.map(children, function(child) {
                 child.parent = doc;
                 return DB.get().put(child);
