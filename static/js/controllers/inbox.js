@@ -96,6 +96,10 @@ require('moment/locales');
         });
       };
 
+      $scope.setShowContent = function(showContent) {
+        $scope.showContent = showContent;
+      }
+
       $scope.setTitle = function(title) {
         $scope.title = title;
       };

@@ -9,6 +9,7 @@
 
       $scope.loadingContent = true;
       $scope.loadingTypes = true;
+      $scope.setShowContent(true);
 
       function setupSchemas(limit) {
         $scope.unmodifiedSchema = ContactSchema.get();
