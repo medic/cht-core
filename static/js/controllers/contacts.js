@@ -105,6 +105,7 @@ var _ = require('underscore'),
         $scope.selected = selected;
         $scope.setActionBar({
           _id: selected.doc._id,
+          sendTo: selected.doc,
           disableDelete: (selected.children && selected.children.length) ||
                          (selected.contactFor && selected.contactFor.length)
         });
