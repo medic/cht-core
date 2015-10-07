@@ -28,7 +28,7 @@
                 <span ng-if="conf.type !== 'tel' && conf.type.indexOf('db:') !== 0">{{selected.doc[name]}}</span>
               </p>
             </li>
-            <li ng-repeat="parent in selected.parents">
+            <li ng-repeat="parent in selected.parents" ng-if="facilities.length">
               <label>{{'contact.type.' + parent.type | translate}}</label>
               <p><a ui-sref="contacts.detail({ id: parent._id })">{{parent.name}}</a></p>
             </li>
