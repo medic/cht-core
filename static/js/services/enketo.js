@@ -196,19 +196,14 @@ angular.module('inboxServices').service('Enketo', [
       return form.validate()
         .then(function(valid) {
           if (!valid) {
-            return $q.reject(new Error('Form is invalid'));
+            throw new Error('Form is invalid');
           }
-          var result;
           var record = form.getDataStr();
           if (docId) {
-            result = update(formInternalId, record, docId);
+            return update(formInternalId, record, docId);
           } else {
-            result = create(formInternalId, record);
+            return create(formInternalId, record);
           }
-          result.then(function() {
-            form.resetView();
-          });
-          return result;
         });
     };
 
