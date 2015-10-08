@@ -16,8 +16,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'ConflictResolution', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, ConflictResolution, UserSettings, APP_CONFIG, DB, Session, Enketo) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'ConflictResolution', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, ConflictResolution, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes) {
 
       Session.init();
       DBSync();
@@ -235,6 +235,24 @@ require('moment/locales');
           return console.log('Failed to retrieve forms', err);
         }
         $scope.forms = forms;
+      });
+
+      var updateFormDefinitions = function() {
+        Enketo.withAllForms()
+          .then(function(forms) {
+            $scope.formDefinitions = forms;
+          })
+          .catch(function(err) {
+            console.error('Error fetching form definitions', err);
+          });
+      };
+      updateFormDefinitions();
+      Changes({
+        key: 'index-form-definitions',
+        filter: function(change) {
+          return change.id.indexOf('form:') === 0;
+        },
+        callback: updateFormDefinitions
       });
 
       $scope.setupGuidedSetup = function() {
@@ -660,14 +678,6 @@ require('moment/locales');
           });
         });
       };
-
-      Enketo.withAllForms()
-        .then(function(forms) {
-          $scope.formDefinitions = forms;
-        })
-        .catch(function(err) {
-          console.error('Error fetching form definitions', err);
-        });
 
       $scope.setupTour = function() {
         $('#tour-select').on('click', 'a.tour-option', function() {

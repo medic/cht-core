@@ -105,7 +105,7 @@
           if (change.newDoc) {
             return change.newDoc.kujua_message || change.newDoc.sms_message;
           }
-          return true;
+          return false;
         }
       });
 
