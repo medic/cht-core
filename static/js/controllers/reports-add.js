@@ -5,17 +5,17 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsAddCtrl', 
-    ['$scope', '$state', '$log', 'DB', 'Enketo',
-    function ($scope, $state, $log, DB, Enketo) {
+    ['$log', '$scope', '$state', '$q', 'DB', 'Enketo',
+    function ($log, $scope, $state, $q, DB, Enketo) {
 
       var getSelected = function() {
         if ($state.params.formId) { // adding
-          return Promise.resolve({ form: $state.params.formId });
+          return $q.resolve({ form: $state.params.formId });
         }
         if ($state.params.reportId) { // editing
           return DB.get().get($state.params.reportId);
         }
-        return Promise.reject(new Error('Must have either formId or reportId'));
+        return $q.reject(new Error('Must have either formId or reportId'));
       };
 
       $scope.loadingContent = true;
