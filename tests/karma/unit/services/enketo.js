@@ -100,7 +100,6 @@ describe('Enketo service', function() {
       form = {
         validate: sinon.stub(),
         getDataStr: sinon.stub(),
-        resetView: sinon.stub()
       },
       Auth = sinon.stub(),
       EnketoForm = sinon.stub(),
@@ -139,7 +138,7 @@ describe('Enketo service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbQuery, dbPost, dbPut, transform, createObjectURL, FileReader, UserSettings, form.validate, form.getDataStr, form.resetView, Auth, Language, translateFromFilter);
+    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbQuery, dbPost, dbPut, transform, createObjectURL, FileReader, UserSettings, form.validate, form.getDataStr, Auth, Language, translateFromFilter);
   });
 
   describe('render', function() {
@@ -400,7 +399,6 @@ describe('Enketo service', function() {
         .then(function(actual) {
           chai.expect(form.validate.callCount).to.equal(1);
           chai.expect(form.getDataStr.callCount).to.equal(1);
-          chai.expect(form.resetView.callCount).to.equal(1);
           chai.expect(dbPost.callCount).to.equal(1);
           chai.expect(UserSettings.callCount).to.equal(1);
           chai.expect(dbGet.callCount).to.equal(1);
@@ -440,7 +438,6 @@ describe('Enketo service', function() {
         .then(function(actual) {
           chai.expect(form.validate.callCount).to.equal(1);
           chai.expect(form.getDataStr.callCount).to.equal(1);
-          chai.expect(form.resetView.callCount).to.equal(1);
           chai.expect(dbGet.callCount).to.equal(1);
           chai.expect(dbGet.args[0][0]).to.equal('6');
           chai.expect(dbPut.callCount).to.equal(1);
