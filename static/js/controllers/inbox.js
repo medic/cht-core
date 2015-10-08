@@ -249,6 +249,13 @@ require('moment/locales');
         });
       };
       $scope.updateReadStatus();
+      Changes({
+        key: 'inbox-read-status',
+        filter: function(change) {
+          return change.newDoc && change.newDoc.type === 'data_record';
+        },
+        callback: $scope.updateReadStatus
+      });
 
       $scope.setupSendMessage = function() {
         sendMessage.init(Settings, Contact, translateFilter);
