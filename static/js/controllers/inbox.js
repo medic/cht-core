@@ -409,12 +409,6 @@ require('moment/locales');
         $rootScope.$broadcast('EditUserInit', editUserModel);
       };
 
-      $scope.$on('UsersUpdated', function(e, userId) {
-        if (editUserModel.id === userId) {
-          updateEditUserModel();
-        }
-      });
-
       var updateEditUserModel = function(callback) {
         UserSettings(function(err, user) {
           if (err) {
@@ -435,6 +429,16 @@ require('moment/locales');
           }
         });
       };
+
+      Changes({
+        key: 'inbox-user',
+        filter: function(change) {
+          return change.id === editUserModel.id;
+        },
+        callback: function() {
+          updateEditUserModel();
+        }
+      });
 
       Settings(function(err, settings) {
         if (err) {
