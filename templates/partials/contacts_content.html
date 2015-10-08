@@ -32,7 +32,7 @@
               <label>{{'contact.type.' + parent.type | translate}}</label>
               <p><a ui-sref="contacts.detail({ id: parent._id })">{{parent.name}}</a></p>
             </li>
-            <li ng-if="selected.contactFor.length">
+            <li ng-if="selected.contactFor.length && facilities.length">
               <label>{{'Primary Contact For' | translate}}</label>
               <ul>
                 <li class="row" ng-repeat="place in selected.contactFor">
