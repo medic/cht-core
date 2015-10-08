@@ -42,6 +42,7 @@ require('moment/locales');
       $scope.languages = [];
       $scope.forms = [];
       $scope.facilities = [];
+      $scope.people = [];
       $scope.totalItems = undefined;
       $scope.filterQuery = { value: undefined };
       $scope.analyticsModules = undefined;
@@ -151,11 +152,7 @@ require('moment/locales');
         });
       };
 
-      $scope.$on('ContactUpdated', function() {
-        $scope.updateAvailableFacilities();
-      });
-
-      $scope.updateAvailableFacilities = function() {
+      var updateAvailableFacilities = function() {
         FacilityHierarchy(function(err, hierarchy, total) {
           if (err) {
             return console.log('Error loading facilities', err);
@@ -163,10 +160,11 @@ require('moment/locales');
           $scope.facilities = hierarchy;
           $scope.facilitiesCount = total;
         });
-        Facility({ types: [ 'person' ] }, function(err, facilities) {
+        Facility({ types: [ 'person' ] }, function(err, people) {
           if (err) {
-            return console.log('Failed to retrieve facilities', err);
+            return console.log('Failed to retrieve people', err);
           }
+          $scope.people = people;
           function formatResult(doc) {
             return doc && format.contact(doc);
           }
@@ -185,7 +183,7 @@ require('moment/locales');
               if (!e) {
                 return callback();
               }
-              var row = _.findWhere(facilities, { _id: e });
+              var row = _.findWhere(people, { _id: e });
               if (!row) {
                 return callback();
               }
@@ -193,7 +191,7 @@ require('moment/locales');
             },
             query: function(options) {
               var terms = options.term.toLowerCase().split(/\s+/);
-              var matches = _.filter(facilities, function(doc) {
+              var matches = _.filter(people, function(doc) {
                 var contact = doc.contact;
                 var name = contact && contact.name;
                 var phone = contact && contact.phone;
@@ -215,6 +213,32 @@ require('moment/locales');
           });
         });
       };
+      updateAvailableFacilities();
+
+      var findIdInContactHierarchy = function(id, hierarchy) {
+        return _.find(hierarchy, function(entry) {
+          return entry.doc._id === id ||
+            findIdInContactHierarchy(id, entry.children);
+        });
+      };
+
+      Changes({
+        key: 'inbox-facilities',
+        filter: function(change) {
+          if (change.newDoc) {
+            // check if new document is a contact
+            return ['person','clinic','health_center','district_hospital']
+              .indexOf(change.newDoc.type) !== -1;
+          }
+          // check known people
+          if (_.findWhere($scope.people, { _id: change.id })) {
+            return true;
+          }
+          // check known places
+          return findIdInContactHierarchy(change.id, $scope.facilities);
+        },
+        callback: updateAvailableFacilities
+      });
 
       $scope.updateReadStatus = function() {
         ReadMessages(function(err, data) {
@@ -248,7 +272,7 @@ require('moment/locales');
       };
       updateFormDefinitions();
       Changes({
-        key: 'index-form-definitions',
+        key: 'inbox-form-definitions',
         filter: function(change) {
           return change.id.indexOf('form:') === 0;
         },

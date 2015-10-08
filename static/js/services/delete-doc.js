@@ -4,8 +4,8 @@
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('DeleteDoc', ['$rootScope', 'DB',
-    function($rootScope, DB) {
+  inboxServices.factory('DeleteDoc', ['DB',
+    function(DB) {
 
       var updateParent = function(doc, callback) {
         if (doc.type === 'person' && doc.parent && doc.parent._id) {
@@ -19,7 +19,6 @@
               DB.get()
                 .put(parent)
                 .then(function() {
-                  $rootScope.$broadcast('ContactUpdated', parent);
                   callback();
                 })
                 .catch(function(err) {
@@ -49,12 +48,6 @@
               DB.get()
                 .put(doc)
                 .then(function() {
-                  if (doc.type === 'clinic' ||
-                      doc.type === 'health_center' ||
-                      doc.type === 'district_hospital' ||
-                      doc.type === 'person') {
-                    $rootScope.$broadcast('ContactUpdated', doc);
-                  }
                   callback(null, doc);
                 })
                 .catch(function(err) {

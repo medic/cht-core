@@ -7,8 +7,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsContentCtrl', 
-    ['$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search',
-    function ($scope, $stateParams, $q, $log, DB, TaskGenerator, Search) {
+    ['$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search', 'Changes',
+    function ($scope, $stateParams, $q, $log, DB, TaskGenerator, Search, Changes) {
 
       var getReports = function(id) {
         var scope = {
@@ -123,15 +123,16 @@ var _ = require('underscore');
         $scope.clearSelected();
       }
 
-      $scope.$on('ContactUpdated', function(e, contact) {
-        if (contact) {
-          if(contact._deleted &&
-              $scope.selected &&
-              $scope.selected.doc._id === contact._id) {
+      Changes({
+        key: 'contacts-content',
+        filter: function(change) {
+          return $scope.selected && $scope.selected.doc._id === change.id;
+        },
+        callback: function(change) {
+          if (change.deleted) {
             $scope.clearSelected();
-          } else if ($scope.selected &&
-              $scope.selected.doc._id === contact._id) {
-            selectContact(contact._id);
+          } else {
+            selectContact(change.id);
           }
         }
       });
