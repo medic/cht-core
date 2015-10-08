@@ -15,8 +15,6 @@ module.exports = {
             && doc.type === 'data_record'
             && !doc.kujua_message
             && self._isReportedAfterStartDate(doc)
-            && !self._isMessageFromGateway(doc)
-            && self._isResponseAllowed(doc)
         );
     },
     /*
@@ -24,10 +22,9 @@ module.exports = {
      */
     _isMessageFromGateway: function(doc) {
         var self = module.exports,
-            gw = self._getConfig('gateway_number'),
-            from = doc.sms_message && doc.sms_message.from;
-        if (typeof gw === 'string' && typeof from === 'string') {
-            return libphonenumber.phoneUtil.isNumberMatch(gw, from) >= 3;
+            gw = self._getConfig('gateway_number');
+        if (typeof gw === 'string' && typeof doc.from === 'string') {
+            return libphonenumber.phoneUtil.isNumberMatch(gw, doc.from) >= 3;
         }
         return false;
     },
@@ -37,15 +34,17 @@ module.exports = {
     _isResponseAllowed: function(doc) {
         var self = module.exports,
             conf = self._getConfig('outgoing_deny_list') || '',
-            from = doc.sms_message && doc.sms_message.from,
             ret = true;
+        if (self._isMessageFromGateway(doc)) {
+            return false;
+        }
         _.each(conf.split(','), function(s) {
             // short circuit if we have a match and skip empty strings
             if (!s || !ret) {
                 return;
             }
             var re = new RegExp('^' + utils.escapeRegex(s.trim()), 'i');
-            ret = from.match(re) ? false : true;
+            ret = doc.from.match(re) ? false : true;
         });
         return ret;
     },
@@ -97,11 +96,16 @@ module.exports = {
         return utils.translate(key, locale);
     },
     _addMessage: function(doc, msg) {
-        messages.addMessage({
-            doc: doc,
-            phone: doc.from,
-            message: msg
-        });
+        var self = module.exports,
+            opts = {
+                doc: doc,
+                phone: doc.from,
+                message: msg
+            };
+        if (!self._isResponseAllowed(doc)) {
+            opts.state = 'denied';
+        }
+        messages.addMessage(opts);
     },
     onMatch: function(change, db, audit, callback) {
 
