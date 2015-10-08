@@ -8,6 +8,10 @@
     ['$scope',
     function ($scope) {
       $scope.filterModel.type = 'help';
+
+      $scope.reload = function() {
+        window.location.reload(false);
+      };
     }
   ]);
 
