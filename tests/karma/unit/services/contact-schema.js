@@ -212,6 +212,7 @@ describe('ContactSchema service', function() {
             },
             parent: {
               type: 'custom:medic-place',
+              hide_in_form: true,
             },
           },
         });

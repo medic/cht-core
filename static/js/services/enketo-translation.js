@@ -146,6 +146,9 @@ angular.module('inboxServices').service('EnketoTranslation', [
         // bindings
         var bindingsFor = function(schema, mapping) {
           _.each(schema.fields, function(conf, f) {
+            if (conf.hide_in_form) {
+              return;
+            }
             var props = {
               nodeset: xPath(mapping, f),
               type: getBindingType(conf),
@@ -180,12 +183,17 @@ angular.module('inboxServices').service('EnketoTranslation', [
         };
 
         var fieldsFor = function(schema, mapping) {
-          return _.map(schema.fields, function(conf, f) {
+          var fields = [];
+          _.each(schema.fields, function(conf, f) {
+            if (conf.hide_in_form) {
+              return;
+            }
             var attrs = _.extend({ ref: xPath(mapping, f) }, extraAttributesFor(conf));
             var input = new N('input', attrs);
             input.append(new N('label', translationFor(schema.type, 'field', f)));
-            return input;
+            fields.push(input);
           });
+          return fields;
         };
 
         if(extras) {

@@ -81,7 +81,10 @@ var PERSON = {
     },
     alternate_phone: 'tel',
     notes: 'text',
-    parent: 'custom:medic-place',
+    parent: {
+      type: 'custom:medic-place',
+      hide_in_form: true,
+    },
   },
 };
 
