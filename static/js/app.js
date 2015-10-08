@@ -136,6 +136,15 @@ _.templateSettings = {
             }
           }
         })
+        .state('contacts.addChild', {
+          url: '/:parent_id/add/:type',
+          views: {
+            content: {
+              controller: 'ContactsEditCtrl',
+              templateUrl: 'templates/partials/contacts_edit.html'
+            }
+          }
+        })
         .state('contacts.edit', {
           url: '/:id/edit',
           views: {

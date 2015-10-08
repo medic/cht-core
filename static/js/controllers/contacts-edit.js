@@ -80,32 +80,43 @@
             $scope.primaryContact = {};
             $scope.original = contact;
 
-            var form, formInstanceData;
+            var form;
 
             if (contact) {
               $scope.contact = contact;
               $scope.contactId = contact._id;
               $scope.category = contact.type === 'person' ? 'person' : 'place';
-              var fields = Object.keys($scope.unmodifiedSchema[contact.type].fields);
-              formInstanceData = EnketoTranslation.jsToFormInstanceData(contact, fields);
 
               form = ContactForm.forEdit(contact.type);
             } else {
               $scope.contact = {};
-              var placeTypes = Object.keys($scope.placeSchemas);
-              if (placeTypes.length === 1) {
-                $scope.contact.type = placeTypes[0];
+
+              if ($state.params.type) {
+                $scope.contact.type = $state.params.type;
+              } else {
+                var placeTypes = Object.keys($scope.placeSchemas);
+                if (placeTypes.length === 1) {
+                  $scope.contact.type = placeTypes[0];
+                }
+              }
+
+              if ($state.params.parent_id) {
+                $scope.contact.parent = $state.params.parent_id;
               }
 
               $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
               $scope.contactId = null;
 
               if ($scope.contact.type) {
-                form = ContactForm.forCreate($scope.contact.type, { contact:$scope.dependentPersonSchema });
+                var extras = $scope.contact.type === 'person' ? null : { contact:$scope.dependentPersonSchema };
+                form = ContactForm.forCreate($scope.contact.type, extras);
               } else {
                 form = $q.resolve();
               }
             }
+
+            var fields = $scope.contact.type ? Object.keys($scope.unmodifiedSchema[$scope.contact.type].fields) : null;
+            var formInstanceData = EnketoTranslation.jsToFormInstanceData($scope.contact, fields);
 
             var container = $('#contact-form');
 

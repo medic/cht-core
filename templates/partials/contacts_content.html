@@ -58,19 +58,19 @@
                 </a>
               </li>
               <li class="add" ng-show="selected.doc.type === 'clinic'">
-                <a ng-click="emit('EditContact', { type: 'person' }, { parent: selected.doc._id })">
+                <a ui-sref="contacts.addChild({ type: 'person', parent_id: selected.doc._id })">
                   <i class="fa fa-plus"></i>
                   <div>{{'Add person' | translate}}</div>
                 </a>
               </li>
               <li class="add" ng-show="selected.doc.type === 'health_center'">
-                <a ng-click="emit('EditContact', { type: 'clinic' }, { parent: selected.doc._id })">
+                <a ui-sref="contacts.addChild({ type: 'clinic', parent_id: selected.doc._id })">
                   <i class="fa fa-plus"></i>
                   <div>{{'Add place' | translate}}</div>
                 </a>
               </li>
               <li class="add" ng-show="selected.doc.type === 'district_hospital'">
-                <a ng-click="emit('EditContact', { type: 'health_center' }, { parent: selected.doc._id })">
+                <a ui-sref="contacts.addChild({ type: 'health_center', parent_id: selected.doc._id })">
                   <i class="fa fa-plus"></i>
                   <div>{{'Add place' | translate}}</div>
                 </a>
