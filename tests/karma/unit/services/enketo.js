@@ -69,6 +69,9 @@ describe('Enketo service', function() {
     '        <data id="V" version="2015-06-05">' +
     '          <patient_id tag="id"/>' +
     '          <name tag="name"/>' +
+    '          <inputs>' +
+    '            <patient_id tag="n"/>' +
+    '          </inputs>' +
     '        </data>' +
     '      </instance>' +
     '      <itext>' +
@@ -343,7 +346,7 @@ describe('Enketo service', function() {
         .then(function() {
           chai.expect(EnketoForm.callCount).to.equal(1);
           chai.expect(EnketoForm.args[0][1].modelStr).to.equal(visitForm);
-          chai.expect(EnketoForm.args[0][1].instanceStr).to.equal('        <data xmlns="http://www.w3.org/2002/xforms" id="V" version="2015-06-05">          <patient_id tag="id">123</patient_id>          <name tag="name">sharon</name>        </data>      ');
+          chai.expect(EnketoForm.args[0][1].instanceStr).to.equal('        <data xmlns="http://www.w3.org/2002/xforms" id="V" version="2015-06-05">          <patient_id tag="id"/>          <name tag="name"/>          <inputs>            <patient_id tag="n">123</patient_id>          </inputs>        </data>      ');
           done();
         })
         .catch(done);

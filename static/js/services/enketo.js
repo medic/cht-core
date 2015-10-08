@@ -95,8 +95,9 @@ angular.module('inboxServices').service('Enketo', [
     var getInstanceStrFromJson = function(model, data) {
       var xml = $($.parseXML(model));
       var instanceRoot = xml.find('model instance');
+      var inputs = instanceRoot.find('inputs');
       _.pairs(data).forEach(function(pair) {
-        instanceRoot.find(pair[0]).text(pair[1]);
+        inputs.find(pair[0]).text(pair[1]);
       });
       return instanceRoot.html();
     };
