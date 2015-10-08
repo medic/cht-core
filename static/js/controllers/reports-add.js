@@ -52,7 +52,7 @@
             $state.go('reports.detail', { id: doc._id });
           })
           .catch(function(err) {
-            $scope.saving = false;
+            $scope.$apply('saving = false');
             $log.error('Error submitting form data: ', err);
           });
       };
