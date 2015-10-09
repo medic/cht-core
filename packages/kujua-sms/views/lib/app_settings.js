@@ -581,6 +581,11 @@ module.exports = {
            "en": "Muted Timestamp"
        },
        {
+           "key": "denied",
+           "default": "Denied Timestamp",
+           "en": "Denied Timestamp"
+       },
+       {
            "key": "task.type",
            "default": "Message Type",
            "en": "Message Type"
