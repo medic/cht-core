@@ -30,6 +30,12 @@ module.exports = {
     },
     /*
      * Return false when the recipient phone matches the denied list.
+     *
+     * outgoing_deny_list is a comma separated list of strings. If a string in
+     * that list matches the beginning of the phone then we set up a response
+     * with a denied state. The pending message process will ignore these
+     * messages and those reports will be left without an auto-reply. The
+     * denied messages still show up in the messages export.
      */
     _isResponseAllowed: function(doc) {
         var self = module.exports,
