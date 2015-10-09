@@ -84,6 +84,7 @@ module.exports = function(grunt) {
             'openrosa-xpath-extensions': './node_modules/enketo-core/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions.js',
             'libphonenumber/phoneformat': './packages/libphonenumber/libphonenumber/phoneformat.js',
             'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils.js',
+            q:'./static/js/enketo/q-shim.js',
           },
         },
       },
