@@ -368,7 +368,7 @@ describe('EnketoTranslation service', function() {
           '<input ref="/data/clinic/name"><label>clinic.field.name</label></input>' +
           '<input ref="/data/clinic/external_id"><label>clinic.field.external_id</label></input>' +
           '<input appearance="db-object" ref="/data/clinic/parent"><label>clinic.field.parent</label></input>' +
-          '<input appearance="db-object" ref="/data/clinic/contact"><label>clinic.field.contact</label></input>' +
+          '<input appearance="db-object allow-new" ref="/data/clinic/contact"><label>clinic.field.contact</label></input>' +
           '</group>' +
           '<group appearance="field-list" ref="/data/contact">' +
           '<label>contact.type.person.new</label>' +
