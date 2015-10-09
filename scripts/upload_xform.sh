@@ -10,12 +10,6 @@ while getopts "f" opt; do
     shift $((OPTIND-1))
 done
 
-ID="$1"
-shift
-XFORM_PATH="$1"
-shift
-DB="${COUCH_URL-http://127.0.0.1:5984/medic}"
-
 _usage () {
     echo ""
     echo "Usage:"
@@ -28,17 +22,17 @@ _usage () {
     echo "  COUCH_URL=http://localhost:8000/medic $SELF registration /home/henry/forms/RegisterPregnancy.xml"
 }
 
-if [ -z "$ID" ]; then
-    echo "Missing ID parameter."
-    _usage
-    exit 1 
-fi
-
-if [ ! -f "$XFORM_PATH" ]; then
-    echo "Can't find XFORM_PATH"
+if [[ $# < 2 ]]; then
+    echo "[$SELF] Missing parameters."
     _usage
     exit 1
 fi
+
+ID="$1"
+shift
+XFORM_PATH="$1"
+shift
+DB="${COUCH_URL-http://127.0.0.1:5984/medic}"
 
 echo "[$SELF] parsing XML to get form title and internal ID..."
 # Yeah, it's ugly.  But we control the input.
