@@ -99,7 +99,7 @@
           <h3>{{'Submit Report' | translate}}</h3>
           <div class="card">
             <ul class="action-list">
-              <li ng-repeat="form in formDefinitions">
+              <li ng-repeat="form in formDefinitions" ng-show="(selected.doc.type === 'person' && form.context.person) || (selected.doc.type !== 'person' && form.context.place)">
                 <a ui-sref="contacts.report({ id: selected.doc._id, formId: form.internalId })">
                   {{form.title | translateFrom}}
                 </a>
