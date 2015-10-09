@@ -189,6 +189,13 @@ angular.module('inboxServices').service('EnketoTranslation', [
               return;
             }
             var attrs = _.extend({ ref: xPath(mapping, f) }, extraAttributesFor(conf));
+            if (extras && extras.hasOwnProperty(f)) {
+              if (attrs.appearance) {
+                attrs.appearance += ' allow-new';
+              } else {
+                attrs.appearance = 'allow-new';
+              }
+            }
             var input = new N('input', attrs);
             input.append(new N('label', translationFor(schema.type, 'field', f)));
             fields.push(input);

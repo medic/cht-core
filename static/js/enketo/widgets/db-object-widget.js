@@ -49,7 +49,8 @@ define( function( require, exports, module ) {
             return format.clinic(row.doc);
         };
 
-        var textInput = $(this.element).find('input');
+        var $question = $(this.element);
+        var textInput = $question.find('input');
         var dbObjectType = textInput.attr('data-type-xml');
 
         var loader = $('<div class="loader"/></div>');
@@ -63,11 +64,13 @@ define( function( require, exports, module ) {
                     return row.doc.name;
                 });
 
-                // add 'new' option TODO this should only be added if requested
-                rows.unshift({
-                    id: 'NEW',
-                    text: translate('contact.type.' + dbObjectType + '.new'),
-                });
+                // add 'new' option if requested
+                if ($question.hasClass('or-appearance-allow-new')) {
+                    rows.unshift({
+                        id: 'NEW',
+                        text: translate('contact.type.' + dbObjectType + '.new'),
+                    });
+                }
                 // add blank option
                 rows.unshift({ id: '', text: '&nbsp;' });
 

@@ -17,7 +17,7 @@
     "browserify": "^11.1",
     "chai": "^2.1.0",
     "enketo-core": "git://github.com/medic/enketo-core.git#medic-0.6.5",
-    "enketo-xslt": "git://github.com/alxndrsn/enketo-client-side-transformer.git#392bbfcab587c4719bbcfbd6fc581bfa168ca4db",
+    "enketo-xslt": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cb8e9cba8fa9996834be0405ecc96349f0882dd1",
     "grunt": "^0.4.5",
     "grunt-angular-templates": "^0.5.7",
     "grunt-appcache": "^0.1.8",
