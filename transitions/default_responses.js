@@ -33,20 +33,19 @@ module.exports = {
      */
     _isResponseAllowed: function(doc) {
         var self = module.exports,
-            conf = self._getConfig('outgoing_deny_list') || '',
-            ret = true;
+            conf = self._getConfig('outgoing_deny_list') || '';
         if (self._isMessageFromGateway(doc)) {
             return false;
         }
-        _.each(conf.split(','), function(s) {
-            // short circuit if we have a match and skip empty strings
-            if (!s || !ret) {
-                return;
+        return _.every(conf.split(','), function(s) {
+            // skip empty strings
+            if (!s) {
+                return true;
             }
-            var re = new RegExp('^' + utils.escapeRegex(s.trim()), 'i');
-            ret = doc.from.match(re) ? false : true;
+            return !doc.from.match(
+                new RegExp('^' + utils.escapeRegex(s.trim()), 'i')
+            );
         });
-        return ret;
     },
     _isReportedAfterStartDate: function(doc) {
         var self = module.exports,
