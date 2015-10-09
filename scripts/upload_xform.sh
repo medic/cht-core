@@ -39,6 +39,16 @@ echo "[$SELF] parsing XML to get form title and internal ID..."
 formTitle="$(grep h:title $XFORM_PATH | sed -E -e 's_.*<h:title>(.*)</h:title>.*_\1_')"
 formInternalId="$(grep -E 'id="[^"]+"' $XFORM_PATH | head -n1 | sed -E -e 's_.*id="([^"]+)".*_\1_')"
 
+contextPatient=false
+contextPlace=false
+if grep -Fq '/inputs/_patient_id' $XFORM_PATH; then
+    contextPatient=true
+fi
+if grep -Fq '/inputs/_place_id' $XFORM_PATH; then
+    contextPlace=true
+fi
+formContext="{ 'person':$contextPatient, 'place':$contextPlace}"
+
 docUrl="${DB}/form:${ID}"
 
 cat <<EOF
@@ -71,7 +81,8 @@ check_rev() {
 revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d '{
     "type":"form",
     "title":"'"${formTitle}"'",
-    "internalId":"'"${formInternalId}"'"
+    "internalId":"'"${formInternalId}"'",
+    "context":"'"${formContext}"'"
 }' "$docUrl")
 rev=$(jq -r .rev <<< "$revResponse")
 check_rev
