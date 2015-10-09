@@ -137,7 +137,7 @@ exports['describe _isResponseAllowed'] = function(test) {
      * or MNO (mobile network operator) defined string.
      */
     var tests = [
-      // rejected
+      // denied
       ['+123', '+123', false],
       ['+123', '+123999999', false],
       ['SAFARI', 'SAFARICOM', false],
@@ -145,10 +145,18 @@ exports['describe _isResponseAllowed'] = function(test) {
       ['+123,+456,+789', '+456', false],
       ['+123,+456,+789', '+4569999999', false],
       ['SAFARI, ORANGE', 'ORANGE NET', false],
+      ['0', '0000123', false],
+      ['0', '0', false],
       // allowed
       ['+123', '+999', true],
       ['SAFARI, ORANGE NET', 'ORANGE', true],
-      ['VIVO', 'EM VIVO', true]
+      ['VIVO', 'EM VIVO', true],
+      ['0', '-1', true],
+      // allow falsey inputs
+      ['snarf', undefined, true],
+      ['snarf', null, true],
+      ['', '+123', true],
+      ['', '', true]
     ];
     _.each(tests, function(t) {
       var s = sinon.stub(transition, '_getConfig');

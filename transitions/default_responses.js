@@ -38,8 +38,8 @@ module.exports = {
             return false;
         }
         return _.every(conf.split(','), function(s) {
-            // skip empty strings
-            if (!s) {
+            // ignore falsey inputs
+            if (!s || !doc.from) {
                 return true;
             }
             return !doc.from.match(
