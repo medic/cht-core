@@ -47,7 +47,7 @@ fi
 if grep -Fq '/inputs/_place_id' $XFORM_PATH; then
     contextPlace=true
 fi
-formContext="{ 'person':$contextPatient, 'place':$contextPlace}"
+formContext='{ "person":'"$contextPatient"', "place":'"$contextPlace"'}'
 
 docUrl="${DB}/form:${ID}"
 
@@ -82,7 +82,7 @@ revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d '{
     "type":"form",
     "title":"'"${formTitle}"'",
     "internalId":"'"${formInternalId}"'",
-    "context":"'"${formContext}"'"
+    "context":'"${formContext}"'
 }' "$docUrl")
 rev=$(jq -r .rev <<< "$revResponse")
 check_rev
