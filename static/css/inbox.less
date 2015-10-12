@@ -248,6 +248,7 @@ body {
   display: inline-block;
   text-align: center;
   color: @grayDark;
+  font-size: 2em;
 }
 
 .filters {
@@ -352,7 +353,7 @@ body {
     overflow: hidden;
     font-weight: bold;
     margin: 0;
-    text-align: center;
+    display: none;
   }
 }
 
@@ -1205,7 +1206,7 @@ a.fa:hover {
       top: 0;
     }
     h2 {
-      text-align: left;
+      display: initial;
     }
     .dropdown, .slide-back .mm-button {
       vertical-align: top;
@@ -1385,6 +1386,14 @@ a.fa:hover {
   }
   .mm-button-icon {
     padding-right: 0.1em;
+  }
+  .message-content-wrapper {
+    .name-header {
+      display: none;
+    }
+    .item-content {
+      top: 0;
+    }
   }
 }
 

@@ -15,8 +15,8 @@ var format = require('../modules/format');
     return message.form;
   };
 
-  module.filter('summary', ['translateFilter',
-    function(translateFilter) {
+  module.filter('summary', ['$translate',
+    function($translate) {
       return function(record, forms) {
         if (!record || !forms) {
           return '';
@@ -33,13 +33,13 @@ var format = require('../modules/format');
             record.tasks[0].messages[0]) {
           return record.tasks[0].messages[0].message;
         }
-        return translateFilter('tasks.0.messages.0.message');
+        return $translate.instant('tasks.0.messages.0.message');
       };
     }
   ]);
 
-  module.filter('title', ['translateFilter',
-    function(translateFilter) {
+  module.filter('title', ['$translate',
+    function($translate) {
       return function(message, forms) {
         if (!message || !forms) {
           return '';
@@ -48,9 +48,9 @@ var format = require('../modules/format');
           return getFormName(message, forms);
         }
         if (message.kujua_message) {
-          return translateFilter('Outgoing Message');
+          return $translate.instant('Outgoing Message');
         }
-        return translateFilter('sms_message.message');
+        return $translate.instant('sms_message.message');
       };
     }
   ]);

@@ -2,8 +2,8 @@ var _ = require('underscore');
 
 /* globals EnketoForm */
 angular.module('inboxServices').service('Enketo', [
-  '$window', '$log', '$q', 'Auth', 'DB', 'EnketoTranslation', 'FileReader', 'UserSettings', 'XSLT', 'Language', 'translateFromFilter',
-  function($window, $log, $q, Auth, DB, EnketoTranslation, FileReader, UserSettings, XSLT, Language, translateFromFilter) {
+  '$window', '$log', '$q', 'Auth', 'DB', 'EnketoTranslation', 'FileReader', 'UserSettings', 'XSLT', 'Language', 'TranslateFrom',
+  function($window, $log, $q, Auth, DB, EnketoTranslation, FileReader, UserSettings, XSLT, Language, TranslateFrom) {
     var objUrls = [];
 
     var replaceJavarosaMediaWithLoaders = function(formDocId, form) {
@@ -68,7 +68,7 @@ angular.module('inboxServices').service('Enketo', [
                 // set the user's language as default so it'll be used for itext translations
                 $xml.find('model itext translation[lang="' + language + '"]').attr('default', '');
                 // manually translate the title as itext doesn't seem to work
-                $xml.find('h\\:title,title').text(translateFromFilter(form.doc.title));
+                $xml.find('h\\:title,title').text(TranslateFrom(form.doc.title));
                 return transformXml(xml, form.id);
               });
             });

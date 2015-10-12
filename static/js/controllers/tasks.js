@@ -7,8 +7,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksCtrl',
-    ['$timeout', '$scope', '$state', 'TaskGenerator', 'Changes',
-    function ($timeout, $scope, $state, TaskGenerator, Changes) {
+    ['$timeout', '$scope', '$state', 'TranslateFrom', 'TaskGenerator', 'Changes',
+    function ($timeout, $scope, $state, TranslateFrom, TaskGenerator, Changes) {
 
       $scope.setSelected = function(id) {
         var refreshing = ($scope.selected && $scope.selected._id) === id,
@@ -16,6 +16,7 @@ var _ = require('underscore');
         if (task) {
           $scope.selected = task;
           $scope.settingSelected(refreshing);
+          $scope.setTitle(TranslateFrom(task.title, task));
         } else {
           $scope.clearSelected();
         }

@@ -99,7 +99,7 @@ describe('Enketo service', function() {
       createObjectURL = sinon.stub(),
       FileReader = sinon.stub(),
       Language = sinon.stub(),
-      translateFromFilter = sinon.stub(),
+      TranslateFrom = sinon.stub(),
       form = {
         validate: sinon.stub(),
         getDataStr: sinon.stub(),
@@ -130,18 +130,18 @@ describe('Enketo service', function() {
       $provide.value('UserSettings', UserSettings);
       $provide.value('Auth', Auth);
       $provide.value('Language', Language);
-      $provide.value('translateFromFilter', translateFromFilter);
+      $provide.value('TranslateFrom', TranslateFrom);
     });
     inject(function(_$rootScope_, _Enketo_) {
       service = _Enketo_;
       $rootScope = _$rootScope_;
     });
     Language.returns(KarmaUtils.mockPromise(null, 'en'));
-    translateFromFilter.returns('translated');
+    TranslateFrom.returns('translated');
   });
 
   afterEach(function() {
-    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbQuery, dbPost, dbPut, transform, createObjectURL, FileReader, UserSettings, form.validate, form.getDataStr, Auth, Language, translateFromFilter);
+    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbQuery, dbPost, dbPut, transform, createObjectURL, FileReader, UserSettings, form.validate, form.getDataStr, Auth, Language, TranslateFrom);
   });
 
   describe('render', function() {

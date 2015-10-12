@@ -83,9 +83,18 @@ var _ = require('underscore'),
             return message.doc.reported_date;
           });
           $scope.selected.messages = data;
+          setTitle(data[0].value);
           markAllRead();
           $timeout(scrollToUnread);
         });
+      };
+
+      var setTitle = function(message) {
+        var title = message.contact.name ||
+          (!message.form && message.name) ||
+          message.from ||
+          message.sent_by;
+        $scope.setTitle(title);
       };
 
       var updateContact = function(options) {

@@ -71,9 +71,15 @@ var _ = require('underscore'),
           });
       };
 
+      var setTitle = function(doc) {
+        var form = _.findWhere($scope.forms, { code: doc.form });
+        $scope.setTitle((form && form.name) || doc.form);
+      };
+
       $scope.setSelected = function(doc) {
         var refreshing = doc && $scope.selected && $scope.selected.id === doc._id;
         $scope.selected = doc;
+        setTitle(doc);
         $scope.setActionBar({
           _id: doc._id,
           verified: doc.verified,

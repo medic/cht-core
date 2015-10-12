@@ -45,6 +45,7 @@
   require('./session');
   require('./settings');
   require('./task-generator');
+  require('./translate-from');
   require('./update-contact');
   require('./update-facility');
   require('./update-settings');
