@@ -82,87 +82,89 @@
         $translate(key).then($scope.setTitle);
       };
 
-      (function init() {
-        setupSchemas()
-          .then(function() {
-            if ($state.params.id) {
-              return DB.get().get($state.params.id);
-            }
-            return $q.resolve();
-          })
-          .then(function(contact) {
-            $scope.primaryContact = {};
-            $scope.original = contact;
+      var getFormInstanceData = function() {
+        if (!$scope.contact || !$scope.contact.type) {
+          return null;
+        }
+        var fields = Object.keys($scope.unmodifiedSchema[$scope.contact.type].fields);
+        return EnketoTranslation.jsToFormInstanceData($scope.contact, fields);
+      };
 
-            var form;
+      var getContact = function() {
+        if ($state.params.id) {
+          return DB.get().get($state.params.id);
+        }
+        return $q.resolve();
+      };
 
-            if (contact) {
-              $scope.contact = contact;
-              $scope.contactId = contact._id;
-              $scope.category = contact.type === 'person' ? 'person' : 'place';
-              setTitle();
-              form = ContactForm.forEdit(contact.type);
-            } else {
-              $scope.contact = {};
+      var getForm = function(contact) {
+        $scope.primaryContact = {};
+        $scope.original = contact;
+        if (contact) {
+          $scope.contact = contact;
+          $scope.contactId = contact._id;
+          $scope.category = contact.type === 'person' ? 'person' : 'place';
+          setTitle();
+          return ContactForm.forEdit(contact.type);
+        }
 
-              if ($state.params.type) {
-                $scope.contact.type = $state.params.type;
-              } else {
-                var placeTypes = Object.keys($scope.placeSchemas);
-                if (placeTypes.length === 1) {
-                  $scope.contact.type = placeTypes[0];
-                }
-              }
+        $scope.contact = {};
 
-              if ($state.params.parent_id) {
-                $scope.contact.parent = $state.params.parent_id;
-              }
+        if ($state.params.type) {
+          $scope.contact.type = $state.params.type;
+        } else {
+          var placeTypes = Object.keys($scope.placeSchemas);
+          if (placeTypes.length === 1) {
+            $scope.contact.type = placeTypes[0];
+          }
+        }
 
-              $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
-              $scope.contactId = null;
-              setTitle();
+        if ($state.params.parent_id) {
+          $scope.contact.parent = $state.params.parent_id;
+        }
 
-              if ($scope.contact.type) {
-                var extras = $scope.contact.type === 'person' ? null : { contact:$scope.dependentPersonSchema };
-                form = ContactForm.forCreate($scope.contact.type, extras);
-              } else {
-                form = $q.resolve();
-              }
-            }
+        $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
+        $scope.contactId = null;
+        setTitle();
 
-            var fields = $scope.contact.type ? Object.keys($scope.unmodifiedSchema[$scope.contact.type].fields) : null;
-            var formInstanceData = EnketoTranslation.jsToFormInstanceData($scope.contact, fields);
+        if ($scope.contact.type) {
+          var extras = $scope.contact.type === 'person' ? null : { contact: $scope.dependentPersonSchema };
+          return ContactForm.forCreate($scope.contact.type, extras);
+        }
+        return $q.resolve();
+      };
 
-            var container = $('#contact-form');
-
-            return form.then(function(form) {
-              if (!form) {
-                // Disable next and prev buttons
-                container.find('.form-footer .btn')
-                    .filter('.previous-page, .next-page')
-                    .addClass('disabled');
-                return;
-              }
-              return Enketo.renderFromXmlString(container, form, formInstanceData)
-                .then(function(form) {
-                  $scope.enketo_contact = {
-                    type: $scope.contact.type,
-                    formInstance: form,
-                    docId: $scope.contactId,
-                  };
-                });
-            });
-          })
-          .then(function() {
-            $scope.loadingContent = false;
-          })
-          .catch(function(err) {
-            $scope.loadingContent = false;
-            $scope.contentError = true;
-            $log.error('Error loading contact form.', err);
+      var renderForm = function(form) {
+        var container = $('#contact-form');
+        if (!form) {
+          // Disable next and prev buttons
+          container.find('.form-footer .btn')
+              .filter('.previous-page, .next-page')
+              .addClass('disabled');
+          return;
+        }
+        return Enketo.renderFromXmlString(container, form, getFormInstanceData())
+          .then(function(form) {
+            $scope.enketo_contact = {
+              type: $scope.contact.type,
+              formInstance: form,
+              docId: $scope.contactId,
+            };
           });
+      };
 
-      }());
+      setupSchemas()
+        .then(getContact)
+        .then(getForm)
+        .then(renderForm)
+        .then(function() {
+          $scope.loadingContent = false;
+        })
+        .catch(function(err) {
+          $scope.loadingContent = false;
+          $scope.contentError = true;
+          $log.error('Error loading contact form.', err);
+        });
 
       $scope.save = function() {
         var form = $scope.enketo_contact.formInstance;
