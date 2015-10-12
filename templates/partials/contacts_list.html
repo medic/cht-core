@@ -1,6 +1,6 @@
 <div id="contacts-list" class="col-sm-4 inbox-items left-pane">
   <ul ng-show="!loading || appending">
-    <li ng-repeat="contact in contacts | orderBy:[orderByType, 'name']" ng-class="{'selected': contact._id === loadingContent || !loadingContent && contact._id === selected.doc._id, 'orphan': !contact.parent._id}">
+    <li ng-repeat="contact in contacts | orderBy:[orderByType, 'name']" ng-class="{'selected': contact._id === loadingContent || !loadingContent && contact._id === selected.doc._id, 'orphan': !contact.parent._id}" data-record-id="{{contact._id}}">
       <a class="message-wrapper" ui-sref="contacts.detail({ id: contact._id, contactType: contact.type })">
         <span class="mm-badge">
           <span class="fa" ng-class="{

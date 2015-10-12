@@ -81,7 +81,7 @@
         if (!$state.params.id &&
             $scope.messages.length &&
             !$('#back').is(':visible') &&
-            $scope.filterModel.type === 'messages') {
+            $state.is('messages.detail')) {
           $timeout(function() {
             var id = $('.inbox-items li').first().attr('data-record-id');
             $state.go('messages.detail', { id: id }, { location: 'replace' });

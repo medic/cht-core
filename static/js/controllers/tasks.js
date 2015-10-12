@@ -35,7 +35,7 @@ var _ = require('underscore');
             $scope.setSelected($state.params.id);
             if (!$scope.selected &&
                 !$('#back').is(':visible') &&
-                $scope.filterModel.type === 'tasks') {
+                $state.is('tasks.detail')) {
               $timeout(function() {
                 var id = $('.inbox-items li').first().attr('data-record-id');
                 $state.go('tasks.detail', { id: id }, { location: 'replace' });

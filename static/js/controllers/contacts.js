@@ -87,10 +87,9 @@ var _ = require('underscore'),
             });
             if (!data.length) {
               $scope.clearSelected();
-            } else if (!$state.params.id &&
-                       !options.stay &&
+            } else if (!options.stay &&
                        !$('#back').is(':visible') &&
-                       $scope.filterModel.type === 'contacts') {
+                       $state.is('contacts.detail')) {
               // wait for selected to be set before checking
               $timeout(function() {
                 var id = $('.inbox-items li').first().attr('data-record-id');

@@ -160,15 +160,10 @@ var _ = require('underscore'),
                 $scope.setSelected(curr);
               } else if (!$('#back').is(':visible') &&
                          !$scope.selected &&
-                         $state.is('reports.detail') &&
-                         $scope.filterModel.type === 'reports') {
-                // TODO improve double timeout here - I think it's required
-                // because of the nested promises
+                         $state.is('reports.detail')) {
                 $timeout(function() {
-                  $timeout(function() {
-                    var id = $('.inbox-items li').first().attr('data-record-id');
-                    $state.go('reports.detail', { id: id }, { location: 'replace' });
-                  });
+                  var id = $('.inbox-items li').first().attr('data-record-id');
+                  $state.go('reports.detail', { id: id }, { location: 'replace' });
                 });
               }
               _initScroll();
