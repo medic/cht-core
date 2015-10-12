@@ -11,46 +11,49 @@
       $scope.loadingTypes = true;
       $scope.setShowContent(true);
 
-      function setupSchemas(limit) {
-        $scope.unmodifiedSchema = ContactSchema.get();
-        $scope.contactTypes = Object.keys($scope.unmodifiedSchema);
-
-        $scope.placeSchemas = limit ? ContactSchema.getBelow(limit) : ContactSchema.get();
-
-        $scope.dependentPersonSchema = $scope.placeSchemas.person;
-        delete $scope.dependentPersonSchema.fields.parent;
-        delete $scope.placeSchemas.person;
-
-        $scope.canCreateDifferentPlaceTypes = Object.keys($scope.placeSchemas).length > 1;
-        $scope.loadingTypes = false;
-      }
-
-      // Delete place schemas which are too high in the hierarchy for this user
-      // to see
-      UserDistrict(function(err, facility_id) {
-        if (err) {
-          return console.err(err);
-        }
-        if (!facility_id) {
-          // user not tied to a facility can create any kind of place
-          setupSchemas();
-          return;
-        }
-        DB.get().get(facility_id)
-          .then(function(doc) {
-            setupSchemas(doc.type);
-          })
-          .catch(function(err) {
-            if (err.status !== 404) {
-              return console.err(err);
+      var getVisibleLevel = function() {
+        return $q(function(resolve, reject) {
+          UserDistrict(function(err, facility_id) {
+            if (err) {
+              return reject(err);
             }
+            if (!facility_id) {
+              return resolve();
+            }
+            DB.get().get(facility_id)
+              .then(function(doc) {
+                resolve(doc.type);
+              })
+              .catch(function(err) {
+                if (err.status !== 404) {
+                  return reject(err);
+                }
 
-            // TODO it seems like my user can't access its own facility object.
-            // This is likely a local issue, so here's what should happen above.
-            setupSchemas('health_center');
-          })
-          .catch(console.error.bind(console));
-      });
+                // TODO it seems like my user can't access its own facility object.
+                // This is likely a local issue, so here's what should happen above.
+                resolve('health_center');
+              })
+              .catch(reject);
+          });
+        });
+      };
+
+      var setupSchemas = function() {
+        return getVisibleLevel()
+          .then(function(limit) {
+            $scope.unmodifiedSchema = ContactSchema.get();
+            $scope.contactTypes = Object.keys($scope.unmodifiedSchema);
+
+            $scope.placeSchemas = limit ? ContactSchema.getBelow(limit) : ContactSchema.get();
+            $scope.dependentPersonSchema = $scope.placeSchemas.person;
+            delete $scope.dependentPersonSchema.fields.parent;
+            delete $scope.placeSchemas.person;
+
+            // one schema for person, and at least two place types
+            $scope.canCreateDifferentPlaceTypes = Object.keys($scope.placeSchemas).length > 2;
+            $scope.loadingTypes = false;
+          });
+      };
 
       $scope.setContactType = function(type) {
         $scope.loadingContent = true;
@@ -80,11 +83,13 @@
       };
 
       (function init() {
-        var withContact = $state.params.id ?
-            DB.get().get($state.params.id) :
-            $q.resolve();
-
-        withContact
+        setupSchemas()
+          .then(function() {
+            if ($state.params.id) {
+              return DB.get().get($state.params.id);
+            }
+            return $q.resolve();
+          })
           .then(function(contact) {
             $scope.primaryContact = {};
             $scope.original = contact;
@@ -130,7 +135,7 @@
 
             var container = $('#contact-form');
 
-            form.then(function(form) {
+            return form.then(function(form) {
               if (!form) {
                 // Disable next and prev buttons
                 container.find('.form-footer .btn')
@@ -138,7 +143,7 @@
                     .addClass('disabled');
                 return;
               }
-              Enketo.renderFromXmlString(container, form, formInstanceData)
+              return Enketo.renderFromXmlString(container, form, formInstanceData)
                 .then(function(form) {
                   $scope.enketo_contact = {
                     type: $scope.contact.type,
@@ -146,14 +151,15 @@
                     docId: $scope.contactId,
                   };
                 });
-            })
-            .then(function() {
-              $scope.loadingContent = false;
-            }).catch(function(err) {
-              $scope.loadingContent = false;
-              $scope.contentError = true;
-              $log.error('Error loading contact form.', err);
             });
+          })
+          .then(function() {
+            $scope.loadingContent = false;
+          })
+          .catch(function(err) {
+            $scope.loadingContent = false;
+            $scope.contentError = true;
+            $log.error('Error loading contact form.', err);
           });
 
       }());

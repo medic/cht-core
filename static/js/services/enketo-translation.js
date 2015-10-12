@@ -229,12 +229,20 @@ angular.module('inboxServices').service('EnketoTranslation', [
     };
 
     this.jsToFormInstanceData = function(obj, fields) {
+      if (!obj || !obj.type) {
+        return;
+      }
+      var empty = true;
       var root = new N(obj.type);
       _.each(obj, function(val, key) {
         if(_.contains(fields, key)) {
           root.append(new N(key, val._id || val));
+          empty = false;
         }
       });
+      if (empty) {
+        return;
+      }
       return root.xml();
     };
 
