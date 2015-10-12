@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsReportCtrl', 
-    ['$scope', '$state', '$log', 'DB', 'Enketo',
-    function ($scope, $state, $log, DB, Enketo) {
+    ['$scope', '$state', '$log', 'DB', 'Enketo', 'TranslateFrom',
+    function ($scope, $state, $log, DB, Enketo, TranslateFrom) {
 
       var render = function(doc) {
         $scope.setSelected({ doc: doc });
@@ -41,9 +41,18 @@
       $scope.form = null;
       $scope.loadingForm = true;
       $scope.setActionBar();
+      $scope.setShowContent(true);
       DB.get()
         .get($state.params.id)
         .then(render)
+        .then(function() {
+          return DB.get().query('medic/forms', { include_docs: true, key: $state.params.formId });
+        })
+        .then(function(res) {
+          if (res.rows[0]) {
+            $scope.setTitle(TranslateFrom(res.rows[0].doc.title));
+          }
+        })
         .catch(function(err) {
           $log.error('Error loading form', err);
           $scope.contentError = true;

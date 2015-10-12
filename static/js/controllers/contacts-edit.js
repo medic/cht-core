@@ -4,8 +4,8 @@
 
   var inboxControllers = angular.module('inboxControllers');
   inboxControllers.controller('ContactsEditCtrl', [
-    '$log', '$scope', '$state', '$q', 'ContactForm', 'ContactSchema', 'DB', 'Enketo', 'EnketoTranslation', 'UserDistrict',
-    function ($log, $scope, $state, $q, ContactForm, ContactSchema, DB, Enketo, EnketoTranslation, UserDistrict) {
+    '$log', '$scope', '$state', '$q', '$translate', 'ContactForm', 'ContactSchema', 'DB', 'Enketo', 'EnketoTranslation', 'UserDistrict',
+    function ($log, $scope, $state, $q, $translate, ContactForm, ContactSchema, DB, Enketo, EnketoTranslation, UserDistrict) {
 
       $scope.loadingContent = true;
       $scope.loadingTypes = true;
@@ -70,6 +70,15 @@
           });
       };
 
+      var setTitle = function() {
+        var key = [
+          'contact.type',
+          $scope.category,
+          ($scope.contactId ? 'edit' : 'new')
+        ].join('.');
+        $translate(key).then($scope.setTitle);
+      };
+
       (function init() {
         var withContact = $state.params.id ?
             DB.get().get($state.params.id) :
@@ -86,7 +95,7 @@
               $scope.contact = contact;
               $scope.contactId = contact._id;
               $scope.category = contact.type === 'person' ? 'person' : 'place';
-
+              setTitle();
               form = ContactForm.forEdit(contact.type);
             } else {
               $scope.contact = {};
@@ -106,6 +115,7 @@
 
               $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
               $scope.contactId = null;
+              setTitle();
 
               if ($scope.contact.type) {
                 var extras = $scope.contact.type === 'person' ? null : { contact:$scope.dependentPersonSchema };

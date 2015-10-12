@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksContentCtrl',
-    ['$scope', '$state', '$log', '$stateParams', 'Enketo',
-    function ($scope, $state, $log, $stateParams, Enketo) {
+    ['$scope', '$state', '$log', '$stateParams', 'Enketo', 'DB', 'TranslateFrom',
+    function ($scope, $state, $log, $stateParams, Enketo, DB, TranslateFrom) {
 
       var hasOneFormAndNoFields = function(task) {
         return Boolean(
@@ -31,6 +31,14 @@
             .then(function(form) {
               $scope.form = form;
               $scope.loadingForm = false;
+            })
+            .then(function() {
+              return DB.get().query('medic/forms', { include_docs: true, key: action.form });
+            })
+            .then(function(res) {
+              if (res.rows[0]) {
+                $scope.setTitle(TranslateFrom(res.rows[0].doc.title));
+              }
             })
             .catch(function(err) {
               $scope.contentError = true;
