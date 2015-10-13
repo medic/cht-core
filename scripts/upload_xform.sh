@@ -47,7 +47,7 @@ fi
 if grep -Fq '/inputs/_place_id' $XFORM_PATH; then
     contextPlace=true
 fi
-formContext='{ "person":'"$contextPatient"', "place":'"$contextPlace"'}'
+formContext='{ "person":'"$contextPatient"', "place":'"$contextPlace"' }'
 
 docUrl="${DB}/form:${ID}"
 
@@ -60,6 +60,7 @@ cat <<EOF
 [$SELF]   form internal ID: $formInternalId
 [$SELF]   force override: $FORCE
 [$SELF]   uploading to: $docUrl
+[$SELF]   form context: $formContext
 [$SELF] -----
 EOF
 
