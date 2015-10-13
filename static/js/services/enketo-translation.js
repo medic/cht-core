@@ -232,15 +232,13 @@ angular.module('inboxServices').service('EnketoTranslation', [
       if (!obj || !obj.type) {
         return;
       }
-      var empty = true;
       var root = new N(obj.type);
       _.each(obj, function(val, key) {
         if(_.contains(fields, key)) {
           root.append(new N(key, val._id || val));
-          empty = false;
         }
       });
-      if (empty) {
+      if (root.children.length === 0) {
         return;
       }
       return root.xml();
