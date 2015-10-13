@@ -1,5 +1,14 @@
 # Medic Mobile Release Notes
 
+## 0.4.10
+
+### TBD
+
+- Added support for Outgoing Deny List, a comma separated list of phone numbers
+  or strings to deny outgoing service to. #750
+
+- Fixed bug in records export. #1273
+
 ## 0.4.9
 
 ### Aug 26, 2015

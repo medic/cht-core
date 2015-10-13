@@ -55,7 +55,11 @@ exports.rules = [
     },
     {
         from: '/export/forms/:form',
-        to: '_list/export_data_records/data_records'
+        to: '_list/export_data_records/data_records',
+        query: {
+            include_docs: 'true',
+            descending: 'true'
+        }
     },
     {
         from: '/:form/data_record/add/clinic/:phone',
