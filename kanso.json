@@ -241,6 +241,11 @@
                     }
                 }
             },
+            "outgoing_deny_list": {
+                "type": "string",
+                "title": "Outgoing Deny List",
+                "description": "Case insensitive, comma separated list of strings or numbers to never send messages to. e.g. +5511986, +551198765432, Orange"
+            },
             "schedule_morning_hours" : {
                 "title": "Scheduled Message Morning Hours",
                 "description": "Only send messages on or after this hour.",
