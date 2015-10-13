@@ -15,7 +15,6 @@ module.exports = {
             && doc.type === 'data_record'
             && !doc.kujua_message
             && self._isReportedAfterStartDate(doc)
-            && !self._isMessageFromGateway(doc)
         );
     },
     /*
@@ -23,12 +22,36 @@ module.exports = {
      */
     _isMessageFromGateway: function(doc) {
         var self = module.exports,
-            gw = self._getConfig('gateway_number'),
-            from = doc.sms_message && doc.sms_message.from;
-        if (typeof gw === 'string' && typeof from === 'string') {
-            return libphonenumber.phoneUtil.isNumberMatch(gw, from) >= 3;
+            gw = self._getConfig('gateway_number');
+        if (typeof gw === 'string' && typeof doc.from === 'string') {
+            return libphonenumber.phoneUtil.isNumberMatch(gw, doc.from) >= 3;
         }
         return false;
+    },
+    /*
+     * Return false when the recipient phone matches the denied list.
+     *
+     * outgoing_deny_list is a comma separated list of strings. If a string in
+     * that list matches the beginning of the phone then we set up a response
+     * with a denied state. The pending message process will ignore these
+     * messages and those reports will be left without an auto-reply. The
+     * denied messages still show up in the messages export.
+     */
+    _isResponseAllowed: function(doc) {
+        var self = module.exports,
+            conf = self._getConfig('outgoing_deny_list') || '';
+        if (self._isMessageFromGateway(doc)) {
+            return false;
+        }
+        return _.every(conf.split(','), function(s) {
+            // ignore falsey inputs
+            if (!s || !doc.from) {
+                return true;
+            }
+            return !doc.from.match(
+                new RegExp('^' + utils.escapeRegex(s.trim()), 'i')
+            );
+        });
     },
     _isReportedAfterStartDate: function(doc) {
         var self = module.exports,
@@ -78,11 +101,16 @@ module.exports = {
         return utils.translate(key, locale);
     },
     _addMessage: function(doc, msg) {
-        messages.addMessage({
-            doc: doc,
-            phone: doc.from,
-            message: msg
-        });
+        var self = module.exports,
+            opts = {
+                doc: doc,
+                phone: doc.from,
+                message: msg
+            };
+        if (!self._isResponseAllowed(doc)) {
+            opts.state = 'denied';
+        }
+        messages.addMessage(opts);
     },
     onMatch: function(change, db, audit, callback) {
 

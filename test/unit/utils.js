@@ -3,11 +3,15 @@ process.env.TEST_ENV = 'hello'; // required for ../../db.js
 var _ = require('underscore'),
     db = require('../../db'),
     sinon = require('sinon'),
-    utils = require('../../lib/utils');
+    utils = require('../../lib/utils'),
+    config = require('../../config');
 
 exports.tearDown = function(callback) {
     if (db.view.restore) {
         db.view.restore();
+    }
+    if (config.get.restore) {
+        config.get.restore();
     }
     callback();
 }
@@ -410,5 +414,22 @@ exports['applyPhoneFilters performs replace'] = function(test) {
     test.equals(utils.applyPhoneFilters(config, '456'), '456');
     test.equals(utils.applyPhoneFilters(config, '159841125'), '29841125');
 
+    test.done();
+}
+
+exports['translate returns message if key found in translations'] = function(test) {
+    sinon.stub(config, 'get').withArgs('translations').returns([
+        {
+          key: 'sms_received',
+          default: 'got it!'
+        }
+    ]);
+    test.equals(utils.translate('sms_received'), 'got it!');
+    test.done();
+}
+
+exports['translate returns key if translations not found'] = function(test) {
+    sinon.stub(config, 'get').withArgs('translations').returns([]);
+    test.equals(utils.translate('sms_received'), 'sms_received');
     test.done();
 }

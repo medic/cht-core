@@ -19,7 +19,7 @@ if (!process.env.TEST_ENV) {
             transitions[key] = require('../' + conf.load);
         } catch(e) {
             // only log exceptions
-            logger.error(e);
+            logger.error('loading transition failed: ' + e);
         }
     });
 }
