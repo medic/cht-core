@@ -1,7 +1,7 @@
 {
     "name": "medic",
     "display_name": "Medic Mobile",
-    "version": "0.4.9",
+    "version": "0.4.10",
     "description": "SMS data collection designed for rural environments.",
     "long_description" : "Medic Mobile is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
     "url": "https://github.com/medic/medic-webapp",
