@@ -52,8 +52,8 @@
       <div>
         <div class="col-sm-4" ng-if="selected.doc.type !== 'person'">
           <h3>{{selected.doc.type + '.field.children' | translate}}</h3>
-          <div class="card">
-            <ul class="action-list">
+          <div class="card action-list">
+            <ul>
               <li ng-repeat="child in selected.children">
                 <a ui-sref="contacts.detail({ id: child.doc._id })">
                   <div>{{child.doc.name}}</div>
@@ -83,8 +83,8 @@
         </div>
         <div class="col-sm-4" ng-if="selected.tasks.length">
           <h3>{{'Tasks' | translate}}</h3>
-          <div class="card">
-            <ul class="action-list">
+          <div class="card action-list">
+            <ul>
               <li ng-repeat="task in selected.tasks">
                 <a ui-sref="tasks.detail({ id: task._id })">
                   <div>{{task.title | translateFrom:task}}</div>
@@ -96,8 +96,8 @@
         </div>
         <div class="col-sm-4">
           <h3>{{'Submit Report' | translate}}</h3>
-          <div class="card">
-            <ul class="action-list">
+          <div class="card action-list">
+            <ul>
               <li ng-repeat="form in formDefinitions" ng-show="(selected.doc.type === 'person' && form.context.person) || (selected.doc.type !== 'person' && form.context.place)">
                 <a ui-sref="contacts.report({ id: selected.doc._id, formId: form.internalId })">
                   {{form.title | translateFrom}}
@@ -108,8 +108,8 @@
         </div>
         <div class="col-sm-4" ng-if="selected.reports.length">
           <h3>{{'Reports' | translate}}</h3>
-          <div class="card">
-            <ul class="action-list">
+          <div class="card action-list">
+            <ul>
               <li ng-repeat="report in selected.reports">
                 <a ui-sref="reports.detail({ id: report._id })">
                   <div>{{report | title:forms}}</div>
