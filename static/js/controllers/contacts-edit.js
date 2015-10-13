@@ -266,6 +266,16 @@
             return result;
           })
           .then(function(doc) {
+            if (_.isString(doc.parent)) {
+              return DB.get().get(doc.parent).then(function(parent) {
+                doc.parent = parent;
+                return doc;
+              });
+            } else {
+              return doc;
+            }
+          })
+          .then(function(doc) {
             updateTitle(doc);
             if(doc._id) {
               return DB.get().put(doc);

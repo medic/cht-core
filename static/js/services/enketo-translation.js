@@ -263,7 +263,8 @@ angular.module('inboxServices').service('EnketoTranslation', [
         var first = null;
         _.each(root.childNodes, function(child) {
           if(child.nodeType !== Node.ELEMENT_NODE ||
-              child.nodeName === 'meta') {
+              child.nodeName === 'meta' ||
+              child.nodeName === 'inputs') {
             return;
           }
           if(!first) {

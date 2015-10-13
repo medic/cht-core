@@ -71,6 +71,8 @@ describe('Enketo service', function() {
     '          <name tag="name"/>' +
     '          <inputs>' +
     '            <_patient_id tag="n"/>' +
+    '            <_user_id tag="ui"/>' +
+    '            <_user_facility_id tag="ufi"/>' +
     '          </inputs>' +
     '        </data>' +
     '      </instance>' +
@@ -200,7 +202,7 @@ describe('Enketo service', function() {
       dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xml'));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, 'my model'));
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, visitForm));
       var expected = [ 'nope', 'still nope' ];
       enketoInit.returns(expected);
       service
@@ -225,12 +227,12 @@ describe('Enketo service', function() {
       FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, 'my model'));
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, visitForm));
       service
         .render($('<div></div>'), 'ok')
         .then(function() {
           chai.expect(Auth.callCount).to.equal(1);
-          chai.expect(UserSettings.callCount).to.equal(1);
+          chai.expect(UserSettings.callCount).to.equal(2);
           chai.expect(transform.callCount).to.equal(2);
           chai.expect(transform.args[0][0]).to.equal('openrosa2html5form.xsl');
           chai.expect(transform.args[1][0]).to.equal('openrosa2xmlmodel.xsl');
@@ -249,7 +251,7 @@ describe('Enketo service', function() {
       dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, '<div><img src="jr://myimg"></div>'))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, 'my model'));
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, visitForm));
       dbGetAttachment
         .onFirstCall().returns(KarmaUtils.mockPromise(null, 'xmlblob'))
         .onSecondCall().returns(KarmaUtils.mockPromise(null, 'myobjblob'));
@@ -285,7 +287,7 @@ describe('Enketo service', function() {
       dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, '<div><img src="jr://myimg"></div>'))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, 'my model'));
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, visitForm));
       dbGetAttachment
         .onFirstCall().returns(KarmaUtils.mockPromise(null, 'xmlblob'))
         .onSecondCall().returns(KarmaUtils.mockPromise('not found'));
@@ -333,7 +335,11 @@ describe('Enketo service', function() {
 
     it('passes json instance data through to Enketo', function(done) {
       Auth.returns(KarmaUtils.mockPromise());
-      UserSettings.callsArgWith(0, null, { contact_id: '123' });
+      UserSettings.callsArgWith(0, null, {
+        _id: '456',
+        contact_id: '123',
+        facility_id: '789'
+      });
       dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
       dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
       enketoInit.returns([]);
@@ -346,7 +352,7 @@ describe('Enketo service', function() {
         .then(function() {
           chai.expect(EnketoForm.callCount).to.equal(1);
           chai.expect(EnketoForm.args[0][1].modelStr).to.equal(visitForm);
-          chai.expect(EnketoForm.args[0][1].instanceStr).to.equal('        <data xmlns="http://www.w3.org/2002/xforms" id="V" version="2015-06-05">          <patient_id tag="id"/>          <name tag="name"/>          <inputs>            <_patient_id tag="n">123</_patient_id>          </inputs>        </data>      ');
+          chai.expect(EnketoForm.args[0][1].instanceStr).to.equal('        <data xmlns="http://www.w3.org/2002/xforms" id="V" version="2015-06-05">          <patient_id tag="id"/>          <name tag="name"/>          <inputs>            <_patient_id tag="n">123</_patient_id>            <_user_id tag="ui">456</_user_id>            <_user_facility_id tag="ufi">789</_user_facility_id>          </inputs>        </data>      ');
           done();
         })
         .catch(done);
