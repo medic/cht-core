@@ -88,11 +88,17 @@ revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d '{
 rev=$(jq -r .rev <<< "$revResponse")
 check_rev
 
+# Upload a temp file with the title stripped
+cp $XFORM_PATH $XFORM_PATH.tmp
+sed -i '/<h:title>/d' $XFORM_PATH.tmp
+
 echo "[$SELF] Uploading form: $ID..."
 revResponse=$(curl -# -f -X PUT -H "Content-Type: text/xml" \
-    --data-binary "@${XFORM_PATH}" \
+    --data-binary "@${XFORM_PATH}.tmp" \
     "${docUrl}/xml?rev=${rev}")
 rev=$(jq -r .rev <<< "$revResponse")
+
+rm $XFORM_PATH.tmp
 
 while [ $# -gt 0 ]; do
     attachment="$1"
