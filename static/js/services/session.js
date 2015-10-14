@@ -33,7 +33,11 @@ var COOKIE_NAME = 'userCtx';
         KansoPackages.session.logout(navigateToLogin);
       };
 
-      var checkCurrentSession = function(userCtx) {
+      var checkCurrentSession = function() {
+        var userCtx = getUserCtx();
+        if (!userCtx || !userCtx.name) {
+          return logout();
+        }
         KansoPackages.session.info(function(err, response) {
           if (err && err.status === 401) {
             // connected to the internet but no session on the server
@@ -47,22 +51,14 @@ var COOKIE_NAME = 'userCtx';
 
       var listenForSessionChanges = function() {
         // listen for logout events
-        KansoPackages.session.on('change', function(remoteUserCtx) {
-          if (!remoteUserCtx.name) {
-            navigateToLogin();
-          }
-        });
+        KansoPackages.session.on('change', checkCurrentSession);
       };
 
       return {
         logout: logout,
         userCtx: getUserCtx,
         init: function() {
-          var userCtx = getUserCtx();
-          if (!userCtx || !userCtx.name) {
-            return logout();
-          }
-          checkCurrentSession(userCtx);
+          checkCurrentSession();
           listenForSessionChanges();
         }
       };
