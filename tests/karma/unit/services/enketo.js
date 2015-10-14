@@ -70,9 +70,11 @@ describe('Enketo service', function() {
     '          <patient_id tag="id"/>' +
     '          <name tag="name"/>' +
     '          <inputs>' +
-    '            <_patient_id tag="n"/>' +
-    '            <_user_id tag="ui"/>' +
-    '            <_user_facility_id tag="ufi"/>' +
+    '            <patient_id tag="n"/>' +
+    '            <user>' +
+    '              <_id tag="ui"/>' +
+    '              <facility_id tag="ufi"/>' +
+    '            </user>' +
     '          </inputs>' +
     '        </data>' +
     '      </instance>' +
@@ -352,7 +354,7 @@ describe('Enketo service', function() {
         .then(function() {
           chai.expect(EnketoForm.callCount).to.equal(1);
           chai.expect(EnketoForm.args[0][1].modelStr).to.equal(visitForm);
-          chai.expect(EnketoForm.args[0][1].instanceStr).to.equal('        <data xmlns="http://www.w3.org/2002/xforms" id="V" version="2015-06-05">          <patient_id tag="id"/>          <name tag="name"/>          <inputs>            <_patient_id tag="n">123</_patient_id>            <_user_id tag="ui">456</_user_id>            <_user_facility_id tag="ufi">789</_user_facility_id>          </inputs>        </data>      ');
+          chai.expect(EnketoForm.args[0][1].instanceStr).to.equal('        <data xmlns="http://www.w3.org/2002/xforms" id="V" version="2015-06-05">          <patient_id tag="id"/>          <name tag="name"/>          <inputs>            <patient_id tag="n">123</patient_id>            <user>              <_id tag="ui">456</_id>              <facility_id tag="ufi">789</facility_id>            </user>          </inputs>        </data>      ');
           done();
         })
         .catch(done);

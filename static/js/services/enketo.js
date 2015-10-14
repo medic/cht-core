@@ -92,6 +92,18 @@ angular.module('inboxServices').service('Enketo', [
         });
     };
 
+    var bindJsonToXml = function(elem, data) {
+      _.pairs(data).forEach(function(pair) {
+        var current = elem.find(pair[0]);
+        var value = pair[1];
+        if (_.isObject(value)) {
+          bindJsonToXml(current, value);
+        } else {
+          current.text(value);
+        }
+      });
+    };
+
     var getInstanceStr = function(model, data) {
       if (data && _.isString(data)) {
         return $q.resolve(data);
@@ -106,14 +118,10 @@ angular.module('inboxServices').service('Enketo', [
         });
       })
       .then(function(settings) {
-        data.user_id = settings._id;
-        data.user_facility_id = settings.facility_id;
+        data.user = settings;
         var xml = $($.parseXML(model));
         var instanceRoot = xml.find('model instance');
-        var inputs = instanceRoot.find('inputs');
-        _.pairs(data).forEach(function(pair) {
-          inputs.find('_' + pair[0]).text(pair[1]);
-        });
+        bindJsonToXml(instanceRoot.find('inputs'), data);
         return instanceRoot.html();
       });
     };
