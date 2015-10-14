@@ -12,7 +12,7 @@ var modal = require('../modules/modal');
 
       Facility({ types: [ 'clinic', 'health_center', 'district_hospital' ] }, function(err, facilities) {
         if (err) {
-          return console.log('Error fetching factilities', err);
+          return console.log('Error fetching facilities', err);
         }
         $scope.facilities = facilities;
       });
