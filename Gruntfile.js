@@ -60,7 +60,7 @@ module.exports = function(grunt) {
         src: [ 'static/dist/inbox.css' ],
         overwrite: true,
         replacements: [{
-          from: /(\/fonts\/fontawesome-webfont[^\?']*)[^']*/gi,
+          from: /(\/fonts\/fontawesome-webfont[^?]*)[^']*/gi,
           to: '$1'
         }]
       }
