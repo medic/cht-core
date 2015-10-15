@@ -7,6 +7,7 @@ var fs = require('fs'),
     db = require('../db'),
     config = require('../config'),
     SESSION_COOKIE_RE = /AuthSession\=([^;]*);/,
+    ONE_YEAR = 31536000000,
     loginTemplate;
 
 _.templateSettings = {
@@ -108,7 +109,7 @@ var setSessionCookie = function(res, cookie) {
 };
 
 var setUserCtxCookie = function(res, userCtx) {
-  res.cookie('userCtx', JSON.stringify(userCtx));
+  res.cookie('userCtx', JSON.stringify(userCtx), { maxAge: ONE_YEAR });
 };
 
 var setCookies = function(res, sessionRes) {
