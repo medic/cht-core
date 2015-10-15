@@ -110,6 +110,16 @@ var _ = require('underscore');
             var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
             $scope.setSelected(selected);
             $scope.settingSelected(refreshing);
+
+            $scope.relevantForms = _.filter($scope.formDefinitions, function(form) {
+              if (!form.context) {
+                return false;
+              }
+              if ($scope.selected.doc.type === 'person') {
+                return form.context.person;
+              }
+              return form.context.place;
+            });
           })
           .catch(function(err) {
             $scope.clearSelected();

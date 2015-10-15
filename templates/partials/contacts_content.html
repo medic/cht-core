@@ -94,11 +94,13 @@
             </ul>
           </div>
         </div>
-        <div class="col-sm-4">
+        <p>
+        </p>
+        <div class="col-sm-4" ng-if="relevantForms.length">
           <h3>{{'Submit Report' | translate}}</h3>
           <div class="card action-list">
             <ul>
-              <li ng-repeat="form in formDefinitions" ng-show="(selected.doc.type === 'person' && form.context.person) || (selected.doc.type !== 'person' && form.context.place)">
+              <li ng-repeat="form in relevantForms">
                 <a ui-sref="contacts.report({ id: selected.doc._id, formId: form.internalId })">
                   {{form.title | translateFrom}}
                 </a>
