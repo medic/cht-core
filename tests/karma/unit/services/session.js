@@ -142,13 +142,30 @@ describe('Session service', function() {
     ipCookie.returns({ name: 'bryan' });
     location.href = 'CURRENT_URL';
     DbNameService.returns('DB_NAME');
-    kansoInfo.callsArgWith(0, null, { userCtx: { name: 'bryan' } });
+    kansoLogout.callsArg(0);
+    kansoInfo
+      .onFirstCall().callsArgWith(0, null, { userCtx: { name: 'bryan' } })
+      .onSecondCall().callsArgWith(0, null, { userCtx: { name: 'dave' } });
     service.init();
     kansoSessionListener.args[0][1]({});
-    chai.expect(kansoLogout.callCount).to.equal(0);
+    chai.expect(kansoLogout.callCount).to.equal(1);
     chai.expect(location.href).to.equal('/DB_NAME/login?redirect=CURRENT_URL');
     chai.expect(ipCookieRemove.args[0][0]).to.equal('userCtx');
     chai.expect(kansoSessionListener.args[0][0]).to.equal('change');
+    done();
+  });
+
+  it('does not redirect to login on remote session change if offline', function(done) {
+    ipCookie.returns({ name: 'bryan' });
+    location.href = 'CURRENT_URL';
+    DbNameService.returns('DB_NAME');
+    kansoInfo
+      .onFirstCall().callsArgWith(0, null, { userCtx: { name: 'bryan' } })
+      .onSecondCall().callsArgWith(0, { status: 404 });
+    service.init();
+    kansoSessionListener.args[0][1]({});
+    chai.expect(kansoLogout.callCount).to.equal(0);
+    chai.expect(ipCookieRemove.callCount).to.equal(0);
     done();
   });
 
