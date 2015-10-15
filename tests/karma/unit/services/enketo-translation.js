@@ -108,6 +108,25 @@ describe('EnketoTranslation service', function() {
           '<notes>-- notes here --</notes>' +
         '</district_hospital>');
     });
+
+    it('returns a <data> element when extras are implied', function() {
+      var fields = ['name'];
+      var js = {
+        type: 'person',
+        name: 'bob',
+      };
+
+      // when
+      var xml = service.jsToFormInstanceData(js, fields, true);
+
+      // then
+      assert.equal(xml,
+        '<data>' +
+          '<person>' +
+            '<name>bob</name>' +
+          '</person>' +
+        '</data>');
+    });
   });
 
   describe('XForm generation', function() {
