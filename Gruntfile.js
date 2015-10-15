@@ -39,7 +39,7 @@ module.exports = function(grunt) {
         }]
       },
       monkeypatchdate: {
-        src: ['bower_components/concat.js'],
+        src: [ 'bower_components/concat.js' ],
         overwrite: true,
         replacements: [{
           from: /clickDate: function \(e\) \{/g,
@@ -47,11 +47,21 @@ module.exports = function(grunt) {
         }]
       },
       monkeypatchselect: {
-        src: ['bower_components/concat.js'],
+        src: [ 'bower_components/concat.js' ],
         overwrite: true,
         replacements: [{
           from: /if \(self\.opts\.selectOnBlur\) \{/g,
           to: 'if (self.opts.selectOnBlur\n// MONKEY PATCH BY GRUNT: Needed for select freetext on blur #699.\n || (self.opts.selectFreetextOnBlur && self.results.find(".select2-highlighted .freetext").length)) {\n'
+        }]
+      },
+      // replace cache busting which breaks appcache, needed until this is fixed:
+      // https://github.com/FortAwesome/Font-Awesome/issues/3286
+      monkeypatchfontawesome: {
+        src: [ 'static/dist/inbox.css' ],
+        overwrite: true,
+        replacements: [{
+          from: /(\/fonts\/fontawesome-webfont[^\?']*)[^']*/gi,
+          to: '$1'
         }]
       }
     },
@@ -351,6 +361,7 @@ module.exports = function(grunt) {
   grunt.registerTask('mmcss', 'Build the CSS resources', [
     'sass',
     'less',
+    'replace:monkeypatchfontawesome',
     'postcss'
   ]);
 
