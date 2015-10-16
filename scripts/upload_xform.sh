@@ -28,11 +28,17 @@ if [[ $# < 2 ]]; then
     exit 1
 fi
 
+if [[ -z "${COUCH_URL-}" ]]; then
+    echo "[$SELF] ERROR: 'COUCH_URL' not set."
+    _usage
+    exit 1
+fi
+
 ID="$1"
 shift
 XFORM_PATH="$1"
 shift
-DB="${COUCH_URL-http://127.0.0.1:5984/medic}"
+DB="${COUCH_URL}"
 
 echo "[$SELF] parsing XML to get form title and internal ID..."
 # Yeah, it's ugly.  But we control the input.
