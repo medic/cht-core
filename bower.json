@@ -37,6 +37,7 @@
     "d3": "~3.4.11",
     "angular": "~1.4.3",
     "moment": "~2.10.6",
-    "pouchdb": "~5.0.0"
+    "pouchdb": "~5.0.0",
+    "select2": "android-debounce-fix"
   }
 }
