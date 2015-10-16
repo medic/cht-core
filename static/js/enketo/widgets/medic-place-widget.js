@@ -84,7 +84,38 @@ define( function( require, exports, module ) {
                 // attribute.
                 textInput.select2('open');
                 textInput.select2('close');
+
+                textInput.on('change', function(e) {
+                    var form = textInput.closest('form.or');
+                    var field = textInput.find('input[name]').attr('name');
+                    var objectRoot = field.substring(0, field.lastIndexOf('/'));
+                    updateFields(form, e.added.doc, objectRoot, field);
+                });
             });
+    };
+
+    var updateFields = function(form, doc, objectRoot, keyPath) {
+        Object.keys(doc).forEach(function(key) {
+            var path = objectRoot + '/' + key;
+            if (path === keyPath) {
+                // don't update the field that fired the update
+                return;
+            }
+            var value = doc[key];
+            if (_.isArray(value)) {
+                // arrays aren't currently handled
+                return;
+            }
+            if (_.isObject(value)) {
+                // recursively set fields for children
+                return updateFields(form, value, path, keyPath);
+            }
+            var input = form.find('[name="' + path + '"]');
+            if (input.length) {
+                input.val(value);
+                input.trigger('change');
+            }
+        });
     };
 
     Medicplacewidget.prototype.destroy = function( /* element */ ) {};

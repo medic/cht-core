@@ -12,9 +12,9 @@
         $scope.setSelected({ doc: doc });
         var instanceData = {};
         if (doc.type === 'person') {
-          instanceData.patient_id = doc._id;
+          instanceData.patient = doc;
         } else {
-          instanceData.place_id = doc._id;
+          instanceData.place = doc;
         }
         return Enketo
           .render($('#contact-report'), $state.params.formId, instanceData)
