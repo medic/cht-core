@@ -81,7 +81,7 @@ var _ = require('underscore'),
                 });
 
                 request('/api/missing-delivery-reports', district, function(err, data) {
-                  scope.missingDeliveryReports = { error: err, data: data, order: 'edd' };
+                  scope.missingDeliveryReports = { error: err, data: data, order: 'edd.date' };
                 });
 
                 var deliveryCodeMap = {
