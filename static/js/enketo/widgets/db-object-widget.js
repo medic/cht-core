@@ -115,11 +115,9 @@ define( function( require, exports, module ) {
                 // recursively set fields for children
                 return updateFields(form, value, path, keyPath);
             }
-            var input = form.find('[name="' + path + '"]');
-            if (input.length) {
-                input.val(value);
-                input.trigger('change');
-            }
+            form.find('[name="' + path + '"]')
+                .val(value)
+                .trigger('change');
         });
     };
 
