@@ -7,7 +7,7 @@
     '$log', '$scope', '$state', '$q', '$translate', 'ContactForm', 'ContactSchema', 'DB', 'Enketo', 'EnketoTranslation', 'UserDistrict',
     function ($log, $scope, $state, $q, $translate, ContactForm, ContactSchema, DB, Enketo, EnketoTranslation, UserDistrict) {
 
-      var DB = DB.get();
+      DB = DB.get();
 
       $scope.loadingContent = true;
       $scope.loadingTypes = true;
