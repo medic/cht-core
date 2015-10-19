@@ -180,31 +180,7 @@
               return;
             }
 
-            return $q.resolve()
-              .then(function() {
-                if(docId) {
-                  return DB.get(docId);
-                }
-                return null;
-              })
-              .then(function(original) {
-                var submitted = EnketoTranslation.recordToJs(form.getDataStr());
-                var extras, repeated;
-                if(_.isArray(submitted)) {
-                  repeated = submitted[2];
-                  extras = submitted[1];
-                  submitted = submitted[0];
-                } else {
-                  extras = {};
-                }
-                if(original) {
-                  submitted = $.extend({}, original, submitted);
-                } else {
-                  submitted.type = $scope.enketo_contact.type;
-                }
-
-                return saveDoc(submitted, original, extras, repeated);
-              })
+            return save(form, docId)
               .then(function(doc) {
                 $log.debug('saved report', doc);
                 $scope.saving = false;
@@ -214,98 +190,144 @@
                 $scope.saving = false;
                 $log.error('Error submitting form data: ', err);
               });
-            });
+          });
       };
 
-      function saveDoc(doc, original, extras, repeated) {
-        var children = [];
+      function save(form, docId) {
         return $q.resolve()
           .then(function() {
-            if (!(repeated && repeated.childs)) {
-              return;
+            if(docId) {
+              return DB.get(docId);
             }
-            return $q.all(_.map(repeated.childs, function(child) {
-              updateTitle(child);
-              return DB
-                .post(child)
-                .then(function(response) {
-                  return DB.get(response.id);
-                })
-                .then(function(savedChild) {
-                  children.push(savedChild);
-                });
-            }));
+            return null;
           })
-          .then(function() {
-            var schema = $scope.unmodifiedSchema[doc.type];
+          .then(function(original) {
+            var submitted = EnketoTranslation.recordToJs(form.getDataStr());
+            var extras, repeated;
+            if(_.isArray(submitted)) {
+              repeated = submitted[2];
+              extras = submitted[1];
+              submitted = submitted[0];
+            } else {
+              extras = {};
+            }
+            if(original) {
+              submitted = $.extend({}, original, submitted);
+            } else {
+              submitted.type = $scope.enketo_contact.type;
+            }
 
-            // sequentially update all dirty db fields
-            var result = $q.resolve(doc);
-            _.each(schema.fields, function(conf, f) {
-              var customType = conf.type.match(/^(db|custom):(.*)$/);
-              if (customType) {
-                result = result.then(function(doc) {
-                  if(!doc[f]) {
-                    doc[f] = {};
-                  } else if(doc[f] === 'NEW') {
-                    var extra = extras[f];
-                    extra.type = customType[2];
-                    extra.reported_date = Date.now();
+            return saveDoc(submitted, original, extras, repeated);
+          });
+      }
 
-                    var isChild = extra.parent === 'PARENT';
-                    if(isChild) {
-                      delete extra.parent;
-                    }
+      function persist(doc) {
+        updateTitle(doc);
 
-                    updateTitle(extra);
-                    return DB.post(extra)
-                      .then(function(response) {
-                        return DB.get(response.id);
-                      })
-                      .then(function(newlySavedDoc) {
-                        doc[f] = newlySavedDoc;
-                        if(isChild) {
-                          children.push(newlySavedDoc);
-                        }
-                        return doc;
-                      });
-                  } else if(original && original[f] && doc[f] === original[f]._id) {
-                    doc[f] = original[f];
-                  } else {
-                    return DB.get(doc[f])
-                      .then(function(dbFieldValue) {
-                        doc[f] = dbFieldValue;
-                        return doc;
-                      });
-                  }
-                  return doc;
-                });
-              }
-            });
-            return result;
-          })
-          .then(function(doc) {
-            if (_.isString(doc.parent)) {
-              return DB.get(doc.parent).then(function(parent) {
-                doc.parent = parent;
-                return doc;
+        var put;
+        if(doc._id) {
+          put = DB.put(doc);
+        } else {
+          doc.reported_date = Date.now();
+          put = DB.post(doc);
+        }
+        return put
+          .then(function(response) {
+            return DB.get(response.id);
+          });
+      }
+
+      function setParent(doc) {
+        if (_.isString(doc.parent)) {
+          return DB.get(doc.parent).then(function(parent) {
+            doc.parent = parent;
+            return doc;
+          });
+        } else {
+          return $q.resolve(doc);
+        }
+      }
+
+      function saveRepeated(repeated) {
+        if (!(repeated && repeated.childs)) {
+          return $q.resolve();
+        }
+
+        var children = [];
+        return $q
+          .all(_.map(repeated.childs, function(child) {
+            return persist(child)
+              .then(function(savedChild) {
+                children.push(savedChild);
               });
-            } else {
+          }))
+          .then(function() {
+            return children;
+          });
+      }
+
+      function saveExtras(doc, original, extras) {
+        var children = [];
+        var schema = $scope.unmodifiedSchema[doc.type];
+
+        // sequentially update all dirty db fields
+        var result = $q.resolve(doc);
+        _.each(schema.fields, function(conf, f) {
+          var customType = conf.type.match(/^(db|custom):(.*)$/);
+          if (customType) {
+            result = result.then(function(doc) {
+              if(!doc[f]) {
+                doc[f] = {};
+              } else if(doc[f] === 'NEW') {
+                var extra = extras[f];
+                extra.type = customType[2];
+                extra.reported_date = Date.now();
+
+                var isChild = extra.parent === 'PARENT';
+                if(isChild) {
+                  delete extra.parent;
+                }
+
+                return persist(extra)
+                  .then(function(newlySavedDoc) {
+                    doc[f] = newlySavedDoc;
+                    if(isChild) {
+                      children.push(newlySavedDoc);
+                    }
+                    return doc;
+                  });
+              } else if(original && original[f] && doc[f] === original[f]._id) {
+                doc[f] = original[f];
+              } else {
+                return DB.get(doc[f])
+                  .then(function(dbFieldValue) {
+                    doc[f] = dbFieldValue;
+                    return doc;
+                  });
+              }
               return doc;
-            }
-          })
+            });
+          }
+        });
+        return result
           .then(function(doc) {
-            updateTitle(doc);
-            if(doc._id) {
-              return DB.put(doc);
-            } else {
-              doc.reported_date = Date.now();
-              return DB.post(doc);
-            }
+            return { doc: doc, children: children };
+          });
+      }
+
+      function saveDoc(doc, original, extras, repeated) {
+        var children;
+        return saveRepeated(repeated)
+          .then(function(repeatedChildren) {
+            children = repeatedChildren || [];
+            return saveExtras(doc, original, extras);
           })
-          .then(function(doc) {
-            return DB.get(doc.id);
+          .then(function(res) {
+            children = children.concat(res.children);
+            return res.doc;
           })
+          .then(setParent)
+          .then(persist)
           .then(function(doc) {
             return $q
               .all(_.map(children, function(child) {
