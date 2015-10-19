@@ -446,7 +446,7 @@ var outputToCsv = function(options, tabs, callback) {
 
 var outputToXml = function(options, tabs, callback) {
 
-  var workbook = xmlbuilder.create('Workbook', { encoding: 'UTF-8' })
+  var workbook = xmlbuilder.create('Workbook', { encoding: 'UTF-8' }, {}, { allowSurrogateChars: true })
     .ins('mso-application', 'progid="Excel.Sheet"')
     .att('xmlns', 'urn:schemas-microsoft-com:office:spreadsheet')
     .att('xmlns:o', 'urn:schemas-microsoft-com:office:office')

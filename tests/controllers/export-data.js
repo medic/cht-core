@@ -693,7 +693,7 @@ exports['get audit log'] = function(test) {
         _id: 'abc',
         record_id: 'abc',
         history: [
-          { 
+          {
             doc: { type: 'data_record', number: 1 },
             timestamp: 12345678,
             user: 'gareth',
@@ -711,7 +711,7 @@ exports['get audit log'] = function(test) {
         _id: 'def',
         record_id: 'def',
         history: [
-          { 
+          {
             doc: { type: 'feedback', description: 'broken' },
             timestamp: 12345679,
             user: 'gareth',
@@ -726,6 +726,33 @@ exports['get audit log'] = function(test) {
                  'abc,data_record,"01, Jan 1970, 03:25:45 +00:00",milan,create,"{""type"":""data_record"",""number"":2}"\n' +
                  'def,feedback,"01, Jan 1970, 03:25:45 +00:00",gareth,create,"{""type"":""feedback"",""description"":""broken""}"';
   controller.get({ type: 'audit', tz: '0' }, function(err, results) {
+    test.equals(results, expected);
+    test.equals(getView.callCount, 1);
+    test.equals(getView.firstCall.args[1], 'audit_records_by_doc');
+    test.done();
+  });
+};
+
+exports['get audit log handles special characters'] = function(test) {
+  test.expect(3);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    rows: [
+      { doc: {
+        _id: 'def',
+        record_id: 'def',
+        history: [
+          {
+            doc: { type: 'feedback', description: '😎😎😎' },
+            timestamp: 12345679,
+            user: 'gareth',
+            action: 'create'
+          }
+        ]
+      } }
+    ]
+  });
+  var expected = '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html140" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="{Audit:en}"><Table><Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell><Cell><Data ss:Type="String">{Type:en}</Data></Cell><Cell><Data ss:Type="String">{Timestamp:en}</Data></Cell><Cell><Data ss:Type="String">{Author:en}</Data></Cell><Cell><Data ss:Type="String">{Action:en}</Data></Cell><Cell><Data ss:Type="String">{Document:en}</Data></Cell></Row><Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">feedback</Data></Cell><Cell><Data ss:Type="String">01, Jan 1970, 03:25:45 +00:00</Data></Cell><Cell><Data ss:Type="String">gareth</Data></Cell><Cell><Data ss:Type="String">create</Data></Cell><Cell><Data ss:Type="String">{"type":"feedback","description":"😎😎😎"}</Data></Cell></Row></Table></Worksheet></Workbook>';
+  controller.get({ type: 'audit', tz: '0', format: 'xml' }, function(err, results) {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
     test.equals(getView.firstCall.args[1], 'audit_records_by_doc');
