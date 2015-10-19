@@ -494,5 +494,225 @@ describe('EnketoTranslation service', function() {
           },
         }]);
     });
+
+    it('should support repeated elements', function() {
+      // given
+      var xml =
+        '<data id="clinic" version="1">' +
+          '<clinic>' +
+            '<name>A House in the Woods</name>' +
+            '<parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>' +
+            '<contact>abc-123-xyz-987</contact>' +
+          '</clinic>' +
+          '<contact>' +
+            '<name>Mummy Bear</name>' +
+            '<phone>123</phone>' +
+          '</contact>' +
+          '<repeat>' +
+            '<child>' +
+              '<name>Daddy Bear</name>' +
+            '</child>' +
+            '<child>' +
+              '<name>Baby Bear</name>' +
+            '</child>' +
+            '<child>' +
+              '<name>Goldilocks</name>' +
+            '</child>' +
+          '</repeat>' +
+          '<meta>' +
+            '<instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>' +
+          '</meta>' +
+        '</data>';
+
+      // when
+      var js = service.recordToJs(xml);
+
+      // then
+      assert.deepEqual(js, [
+        {
+          name: 'A House in the Woods',
+          parent: 'eeb17d6d-5dde-c2c0-48ac53f275043126',
+          contact: 'abc-123-xyz-987',
+        },
+        {
+          contact: {
+            name: 'Mummy Bear',
+            phone: '123',
+          },
+        },
+        {
+          childs: [
+            { name: 'Daddy Bear', },
+            { name: 'Baby Bear', },
+            { name: 'Goldilocks', },
+          ],
+        },
+      ]);
+    });
+
+    it('should ignore text in repeated elements', function() {
+      // given
+      var xml =
+        '<data id="clinic" version="1">' +
+          '<clinic>' +
+            '<name>A House in the Woods</name>' +
+            '<parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>' +
+            '<contact>abc-123-xyz-987</contact>' +
+          '</clinic>' +
+          '<contact>' +
+            '<name>Mummy Bear</name>' +
+            '<phone>123</phone>' +
+          '</contact>' +
+          '<repeat>' +
+            'All text nodes should be ignored.' +
+            '<child>' +
+              '<name>Daddy Bear</name>' +
+            '</child>' +
+            'All text nodes should be ignored.' +
+            '<child>' +
+              '<name>Baby Bear</name>' +
+            '</child>' +
+            'All text nodes should be ignored.' +
+            '<child>' +
+              '<name>Goldilocks</name>' +
+            '</child>' +
+            'All text nodes should be ignored.' +
+          '</repeat>' +
+          '<meta>' +
+            '<instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>' +
+          '</meta>' +
+        '</data>';
+
+      // when
+      var js = service.recordToJs(xml);
+
+      // then
+      assert.deepEqual(js, [
+        {
+          name: 'A House in the Woods',
+          parent: 'eeb17d6d-5dde-c2c0-48ac53f275043126',
+          contact: 'abc-123-xyz-987',
+        },
+        {
+          contact: {
+            name: 'Mummy Bear',
+            phone: '123',
+          },
+        },
+        {
+          childs: [
+            { name: 'Daddy Bear', },
+            { name: 'Baby Bear', },
+            { name: 'Goldilocks', },
+          ],
+        },
+      ]);
+    });
+
+    it('should include repeats if they are explicitly requested', function() {
+      // given
+      var xml =
+        '<data id="clinic" version="1">' +
+          '<clinic>' +
+            '<name>A House in the Woods</name>' +
+            '<parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>' +
+            '<contact>abc-123-xyz-987</contact>' +
+          '</clinic>' +
+          '<contact>' +
+            '<name>Mummy Bear</name>' +
+            '<phone>123</phone>' +
+          '</contact>' +
+          '<repeat-relevant><child>true</child></repeat-relevant>' +
+          '<repeat>' +
+            '<child>' +
+              '<name>Daddy Bear</name>' +
+            '</child>' +
+            '<child>' +
+              '<name>Baby Bear</name>' +
+            '</child>' +
+            '<child>' +
+              '<name>Goldilocks</name>' +
+            '</child>' +
+          '</repeat>' +
+          '<meta>' +
+            '<instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>' +
+          '</meta>' +
+        '</data>';
+
+      // when
+      var js = service.recordToJs(xml);
+
+      // then
+      assert.deepEqual(js, [
+        {
+          name: 'A House in the Woods',
+          parent: 'eeb17d6d-5dde-c2c0-48ac53f275043126',
+          contact: 'abc-123-xyz-987',
+        },
+        {
+          contact: {
+            name: 'Mummy Bear',
+            phone: '123',
+          },
+        },
+        {
+          childs: [
+            { name: 'Daddy Bear', },
+            { name: 'Baby Bear', },
+            { name: 'Goldilocks', },
+          ],
+        },
+      ]);
+    });
+
+    it('should exclude repeats if they are explicitly excluded', function() {
+      // given
+      var xml =
+        '<data id="clinic" version="1">' +
+          '<clinic>' +
+            '<name>A House in the Woods</name>' +
+            '<parent>eeb17d6d-5dde-c2c0-48ac53f275043126</parent>' +
+            '<contact>abc-123-xyz-987</contact>' +
+          '</clinic>' +
+          '<contact>' +
+            '<name>Mummy Bear</name>' +
+            '<phone>123</phone>' +
+          '</contact>' +
+          '<repeat-relevant><child>false</child></repeat-relevant>' +
+          '<repeat>' +
+            '<child>' +
+              '<name>Daddy Bear</name>' +
+            '</child>' +
+            '<child>' +
+              '<name>Baby Bear</name>' +
+            '</child>' +
+            '<child>' +
+              '<name>Goldilocks</name>' +
+            '</child>' +
+          '</repeat>' +
+          '<meta>' +
+            '<instanceID>uuid:ecded7c5-5c8d-4195-8e08-296de6557f1e</instanceID>' +
+          '</meta>' +
+        '</data>';
+
+      // when
+      var js = service.recordToJs(xml);
+
+      // then
+      assert.deepEqual(js, [
+        {
+          name: 'A House in the Woods',
+          parent: 'eeb17d6d-5dde-c2c0-48ac53f275043126',
+          contact: 'abc-123-xyz-987',
+        },
+        {
+          contact: {
+            name: 'Mummy Bear',
+            phone: '123',
+          },
+        },
+        {},
+      ]);
+    });
   });
 });

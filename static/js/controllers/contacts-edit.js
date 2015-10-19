@@ -187,8 +187,9 @@
               })
               .then(function(original) {
                 var submitted = EnketoTranslation.recordToJs(form.getDataStr());
-                var extras;
+                var extras, repeated;
                 if(_.isArray(submitted)) {
+                  repeated = submitted[2];
                   extras = submitted[1];
                   submitted = submitted[0];
                 } else {
@@ -200,7 +201,7 @@
                   submitted.type = $scope.enketo_contact.type;
                 }
 
-                return saveDoc(submitted, original, extras);
+                return saveDoc(submitted, original, extras, repeated);
               })
               .then(function(doc) {
                 $log.debug('saved report', doc);
@@ -214,9 +215,25 @@
             });
       };
 
-      function saveDoc(doc, original, extras) {
+      function saveDoc(doc, original, extras, repeated) {
         var children = [];
         return $q.resolve()
+          .then(function() {
+            if (!(repeated && repeated.childs)) {
+              return;
+            }
+            return $q.all(_.map(repeated.childs, function(child) {
+              updateTitle(child);
+              return DB.get()
+                .post(child)
+                .then(function(response) {
+                  return DB.get().get(response.id);
+                })
+                .then(function(savedChild) {
+                  children.push(savedChild);
+                });
+            }));
+          })
           .then(function() {
             var schema = $scope.unmodifiedSchema[doc.type];
 
