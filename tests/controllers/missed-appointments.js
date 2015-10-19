@@ -151,7 +151,7 @@ exports['get ignores registrations with no missed appointments'] = function(test
           patient_id: 3,
           scheduled_tasks: [ {
             group: 1,
-            due: moment().subtract(13, 'days').toISOString()
+            due: moment().subtract(11, 'days').toISOString()
           } ]
         } 
       }
