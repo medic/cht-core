@@ -35,6 +35,7 @@ var _ = require('underscore'),
     forms = require('./controllers/forms'),
     fti = require('./controllers/fti'),
     createDomain = require('domain').create,
+    staticResources = /\/(templates|static)\//,
     appcacheManifest = /manifest\.appcache/,
     pathPrefix = '/' + db.settings.db + '/',
     appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/';
@@ -469,7 +470,7 @@ proxy.on('proxyReq', function(proxyReq, req, res) {
       [ 'Last-Modified', 'Tue, 28 Apr 2015 02:23:40 GMT' ],
       [ 'Expires', 'Tue, 28 Apr 2015 02:21:40 GMT' ]
     ]);
-  } else if (req.url.indexOf(appPrefix) !== -1) {
+  } else if (!staticResources.test(req.url) && req.url.indexOf(appPrefix) !== -1) {
     // requesting other application files
     writeHeaders(req, res, [], true);
   } else {
