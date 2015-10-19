@@ -7,6 +7,8 @@
     '$log', '$scope', '$state', '$q', '$translate', 'ContactForm', 'ContactSchema', 'DB', 'Enketo', 'EnketoTranslation', 'UserDistrict',
     function ($log, $scope, $state, $q, $translate, ContactForm, ContactSchema, DB, Enketo, EnketoTranslation, UserDistrict) {
 
+      var DB = DB.get();
+
       $scope.loadingContent = true;
       $scope.loadingTypes = true;
       $scope.setShowContent(true);
@@ -20,7 +22,7 @@
             if (!facility_id) {
               return resolve();
             }
-            DB.get().get(facility_id)
+            DB.get(facility_id)
               .then(function(doc) {
                 resolve(doc.type);
               })
@@ -92,7 +94,7 @@
 
       var getContact = function() {
         if ($state.params.id) {
-          return DB.get().get($state.params.id);
+          return DB.get($state.params.id);
         }
         return $q.resolve();
       };
@@ -181,7 +183,7 @@
             return $q.resolve()
               .then(function() {
                 if(docId) {
-                  return DB.get().get(docId);
+                  return DB.get(docId);
                 }
                 return null;
               })
@@ -224,10 +226,10 @@
             }
             return $q.all(_.map(repeated.childs, function(child) {
               updateTitle(child);
-              return DB.get()
+              return DB
                 .post(child)
                 .then(function(response) {
-                  return DB.get().get(response.id);
+                  return DB.get(response.id);
                 })
                 .then(function(savedChild) {
                   children.push(savedChild);
@@ -256,9 +258,9 @@
                     }
 
                     updateTitle(extra);
-                    return DB.get().post(extra)
+                    return DB.post(extra)
                       .then(function(response) {
-                        return DB.get().get(response.id);
+                        return DB.get(response.id);
                       })
                       .then(function(newlySavedDoc) {
                         doc[f] = newlySavedDoc;
@@ -270,7 +272,7 @@
                   } else if(original && original[f] && doc[f] === original[f]._id) {
                     doc[f] = original[f];
                   } else {
-                    return DB.get().get(doc[f])
+                    return DB.get(doc[f])
                       .then(function(dbFieldValue) {
                         doc[f] = dbFieldValue;
                         return doc;
@@ -284,7 +286,7 @@
           })
           .then(function(doc) {
             if (_.isString(doc.parent)) {
-              return DB.get().get(doc.parent).then(function(parent) {
+              return DB.get(doc.parent).then(function(parent) {
                 doc.parent = parent;
                 return doc;
               });
@@ -295,20 +297,20 @@
           .then(function(doc) {
             updateTitle(doc);
             if(doc._id) {
-              return DB.get().put(doc);
+              return DB.put(doc);
             } else {
               doc.reported_date = Date.now();
-              return DB.get().post(doc);
+              return DB.post(doc);
             }
           })
           .then(function(doc) {
-            return DB.get().get(doc.id);
+            return DB.get(doc.id);
           })
           .then(function(doc) {
             return $q
               .all(_.map(children, function(child) {
                 child.parent = doc;
-                return DB.get().put(child);
+                return DB.put(child);
               }))
               .then(function() {
                 return doc;
