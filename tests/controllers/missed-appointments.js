@@ -91,7 +91,7 @@ exports['get returns zero if all registrations have visits'] = function(test) {
     rows: [
       { 
         doc: { 
-          patient_id: 1,
+          patient_id: '1',
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
@@ -100,7 +100,7 @@ exports['get returns zero if all registrations have visits'] = function(test) {
       },
       { 
         doc: { 
-          patient_id: 2,
+          patient_id: '2',
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
@@ -111,12 +111,12 @@ exports['get returns zero if all registrations have visits'] = function(test) {
   });
   fti.onSecondCall().callsArgWith(2, null, {
     rows: [
-      { doc: { fields: { patient_id: 1 } } }
+      { doc: { fields: { patient_id: '1' } } }
     ]
   });
   fti.onThirdCall().callsArgWith(2, null, {
     rows: [
-      { doc: { fields: { patient_id: 2 } } }
+      { doc: { fields: { patient_id: '2' } } }
     ]
   });
   controller.get({}, function(err, results) {

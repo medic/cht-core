@@ -44,7 +44,7 @@ var rejectVisits = function(appointments, callback) {
   }
   var options = {
     patientIds: _.pluck(appointments, 'patient_id'),
-    startDate: moment().subtract(7, 'days')
+    startDate: moment().subtract(23, 'days')
   };
   utils.getVisits(options, function(err, visits) {
     if (err) {
@@ -52,7 +52,7 @@ var rejectVisits = function(appointments, callback) {
     }
     callback(null, _.reject(appointments, function(appointment) {
       return _.some(visits.rows, function(visit) {
-        return visit.doc.fields.patient_id === appointment.patient_id;
+        return visit.doc.fields.patient_id.toString() === appointment.patient_id.toString();
       });
     }));
   });
