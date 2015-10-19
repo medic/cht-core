@@ -22,6 +22,11 @@ function findChildNode(root, childNodeName) {
       .value();
 }
 
+function xPath() {
+  var path = Array.prototype.slice.call(arguments).join('/');
+  return '/data/' + path;
+}
+
 /**
  * An internal representation of an XML node.
  */
@@ -123,15 +128,6 @@ angular.module('inboxServices').service('EnketoTranslation', [
     }
 
     function generateXformWithOptions(principle, extras) {
-      var xPath = function() {
-        var path = Array.prototype.slice.call(arguments).join('/');
-        if(extras) {
-          return '/data/' + path;
-        } else {
-          return '/' + path;
-        }
-      };
-
       var root = new N('h:html', {
         xmlns: 'http://www.w3.org/2002/xforms',
         'xmlns:ev': 'http://www.w3.org/2001/xml-events',
@@ -147,23 +143,18 @@ angular.module('inboxServices').service('EnketoTranslation', [
         head.append(model);
         var instance = new N('instance');
         model.append(instance);
-        var meta = new N('meta', [ new N('instanceID') ]);
+
+        var instanceContainer = new N('data', { id:principle.type, version:1 });
+        instanceContainer.append(modelFor(principle));
         if(extras) {
-          var instanceContainer = new N('data', { id:principle.type, version:1 });
-          instance.append(instanceContainer);
-          instanceContainer.append(modelFor(principle));
           _.each(extras, function(extra, mapping) {
             instanceContainer.append(modelFor(extra, mapping));
           });
-          instanceContainer.append(meta);
-        } else {
-          var modelData = modelFor(principle);
-          modelData.attrs.id = principle.type;
-          modelData.attrs.version = 1;
-          modelData.append(meta);
-          instance.append(modelData);
         }
         // add some meta (not sure what this is for)
+        instanceContainer.append(new N('meta', [ new N('instanceID') ]));
+
+        instance.append(instanceContainer);
 
         // bindings
         var bindingsFor = function(schema, mapping) {
@@ -250,17 +241,14 @@ angular.module('inboxServices').service('EnketoTranslation', [
       }
     };
 
-    this.jsToFormInstanceData = function(obj, fields, extras) {
+    this.jsToFormInstanceData = function(obj, fields) {
       var root = new N(obj.type);
       _.each(obj, function(val, key) {
         if(_.contains(fields, key)) {
           root.append(new N(key, val._id || val));
         }
       });
-      if(extras) {
-        root = new N('data', [ root ]);
-      }
-      return root.xml();
+      return new N('data', [ root ]).xml();
     };
 
     var nodesToJs = function(data) {

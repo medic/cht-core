@@ -88,9 +88,8 @@
         if (!$scope.contact || !$scope.contact.type) {
           return null;
         }
-        var hasExtras = !$scope.contactId && $scope.contact.type !== 'person';
         var fields = Object.keys($scope.unmodifiedSchema[$scope.contact.type].fields);
-        return EnketoTranslation.jsToFormInstanceData($scope.contact, fields, hasExtras);
+        return EnketoTranslation.jsToFormInstanceData($scope.contact, fields);
       };
 
       var getContact = function() {
@@ -204,14 +203,11 @@
           })
           .then(function(original) {
             var submitted = EnketoTranslation.recordToJs(form.getDataStr());
-            var extras, repeated;
-            if(_.isArray(submitted)) {
-              repeated = submitted[2];
-              extras = submitted[1];
-              submitted = submitted[0];
-            } else {
-              extras = {};
-            }
+
+            var repeated = submitted[2];
+            var extras = submitted[1];
+            submitted = submitted[0];
+
             if(original) {
               submitted = $.extend({}, original, submitted);
             } else {

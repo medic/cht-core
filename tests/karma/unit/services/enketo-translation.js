@@ -45,13 +45,15 @@ describe('EnketoTranslation service', function() {
 
       // then
       assert.equal(xml,
-        '<person>' +
-          '<name>Abraham Apple</name>' +
-          '<phone>+447890123456</phone>' +
-          '<code>morse</code>' +
-          '<notes>Mr. Apple is a big-time Charlie.  1 &lt; 2.</notes>' +
-          '<parent>asdf-123-zxcv</parent>' +
-        '</person>');
+        '<data>' +
+          '<person>' +
+            '<name>Abraham Apple</name>' +
+            '<phone>+447890123456</phone>' +
+            '<code>morse</code>' +
+            '<notes>Mr. Apple is a big-time Charlie.  1 &lt; 2.</notes>' +
+            '<parent>asdf-123-zxcv</parent>' +
+          '</person>' +
+        '</data>');
     });
 
     it('converts couch object values to IDs', function() {
@@ -68,10 +70,12 @@ describe('EnketoTranslation service', function() {
 
       // then
       assert.equal(xml,
-        '<person>' +
-          '<name>huxley</name>' +
-          '<parent>xxx-111</parent>' +
-        '</person>');
+        '<data>' +
+          '<person>' +
+            '<name>huxley</name>' +
+            '<parent>xxx-111</parent>' +
+          '</person>' +
+        '</data>');
     });
 
     it('filters irrelevant fields', function() {
@@ -101,30 +105,13 @@ describe('EnketoTranslation service', function() {
 
       // then
       assert.equal(xml,
-        '<district_hospital>' +
-          '<name>District 2</name>' +
-          '<contact>0abf501d3fbeffaf98bae6c9d6015b9a</contact>' +
-          '<external_id>XXX</external_id>' +
-          '<notes>-- notes here --</notes>' +
-        '</district_hospital>');
-    });
-
-    it('returns a <data> element when extras are implied', function() {
-      var fields = ['name'];
-      var js = {
-        type: 'person',
-        name: 'bob',
-      };
-
-      // when
-      var xml = service.jsToFormInstanceData(js, fields, true);
-
-      // then
-      assert.equal(xml,
         '<data>' +
-          '<person>' +
-            '<name>bob</name>' +
-          '</person>' +
+          '<district_hospital>' +
+            '<name>District 2</name>' +
+            '<contact>0abf501d3fbeffaf98bae6c9d6015b9a</contact>' +
+            '<external_id>XXX</external_id>' +
+            '<notes>-- notes here --</notes>' +
+          '</district_hospital>' +
         '</data>');
     });
   });
@@ -147,11 +134,14 @@ describe('EnketoTranslation service', function() {
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
-          '<model><instance><person id="person" version="1">' +
-            '<name/><meta><instanceID/></meta></person></instance>' +
-            '<bind nodeset="/person/name" type="string"/></model></h:head>' +
+          '<model>' +
+            '<instance><data id="person" version="1">' +
+              '<person><name/></person>' +
+              '<meta><instanceID/></meta>' +
+            '</data></instance>' +
+            '<bind nodeset="/data/person/name" type="string"/></model></h:head>' +
           '<h:body>' +
-            '<input ref="/person/name">' +
+            '<input ref="/data/person/name">' +
               '<label>person.field.name</label></input>' +
           '</h:body></h:html>');
     });
@@ -174,11 +164,14 @@ describe('EnketoTranslation service', function() {
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
-          '<model><instance><person id="person" version="1">' +
-            '<name/><meta><instanceID/></meta></person></instance>' +
-            '<bind nodeset="/person/name" required="true()" type="string"/></model></h:head>' +
+          '<model>' +
+            '<instance><data id="person" version="1">' +
+              '<person><name/></person>' +
+              '<meta><instanceID/></meta>' +
+            '</data></instance>' +
+            '<bind nodeset="/data/person/name" required="true()" type="string"/></model></h:head>' +
           '<h:body>' +
-            '<input ref="/person/name">' +
+            '<input ref="/data/person/name">' +
               '<label>person.field.name</label></input>' +
           '</h:body></h:html>');
     });
@@ -204,15 +197,18 @@ describe('EnketoTranslation service', function() {
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
-          '<model><instance><dog id="dog" version="1">' +
-            '<name/><habits/><meta><instanceID/></meta></dog></instance>' +
-            '<bind nodeset="/dog/name" required="true()" type="string"/>' +
-            '<bind nodeset="/dog/habits" type="text"/>' +
+          '<model>' +
+            '<instance><data id="dog" version="1">' +
+              '<dog><name/><habits/></dog>' +
+              '<meta><instanceID/></meta>' +
+            '</data></instance>' +
+            '<bind nodeset="/data/dog/name" required="true()" type="string"/>' +
+            '<bind nodeset="/data/dog/habits" type="text"/>' +
           '</model></h:head>' +
           '<h:body>' +
-            '<input ref="/dog/name">' +
+            '<input ref="/data/dog/name">' +
               '<label>dog.field.name</label></input>' +
-            '<input appearance="multiline" ref="/dog/habits">' +
+            '<input appearance="multiline" ref="/data/dog/habits">' +
               '<label>dog.field.habits</label></input>' +
           '</h:body></h:html>');
     });
@@ -234,11 +230,14 @@ describe('EnketoTranslation service', function() {
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
-          '<model><instance><contact id="contact" version="1">' +
-            '<number/><meta><instanceID/></meta></contact></instance>' +
-            '<bind nodeset="/contact/number" type="tel"/></model></h:head>' +
+          '<model><instance>' +
+            '<data id="contact" version="1">' +
+              '<contact><number/></contact>' +
+              '<meta><instanceID/></meta>' +
+            '</data></instance>' +
+            '<bind nodeset="/data/contact/number" type="tel"/></model></h:head>' +
           '<h:body>' +
-            '<input ref="/contact/number">' +
+            '<input ref="/data/contact/number">' +
               '<label>contact.field.number</label></input>' +
           '</h:body></h:html>');
     });
@@ -263,11 +262,13 @@ describe('EnketoTranslation service', function() {
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
-          '<model><instance><contact id="contact" version="1">' +
-            '<number/><secret/><meta><instanceID/></meta></contact></instance>' +
-            '<bind nodeset="/contact/number" type="tel"/></model></h:head>' +
+          '<model><instance><data id="contact" version="1">' +
+              '<contact><number/><secret/></contact>' +
+              '<meta><instanceID/></meta>' +
+            '</data></instance>' +
+            '<bind nodeset="/data/contact/number" type="tel"/></model></h:head>' +
           '<h:body>' +
-            '<input ref="/contact/number">' +
+            '<input ref="/data/contact/number">' +
               '<label>contact.field.number</label></input>' +
           '</h:body></h:html>');
     });
@@ -290,11 +291,13 @@ describe('EnketoTranslation service', function() {
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
           '<h:head>' +
-          '<model><instance><person id="person" version="1">' +
-            '<loc/><meta><instanceID/></meta></person></instance>' +
-            '<bind nodeset="/person/loc" type="db:location"/></model></h:head>' +
+          '<model><instance><data id="person" version="1">' +
+              '<person><loc/></person>' +
+              '<meta><instanceID/></meta>' +
+            '</data></instance>' +
+            '<bind nodeset="/data/person/loc" type="db:location"/></model></h:head>' +
           '<h:body>' +
-            '<input appearance="db-object" ref="/person/loc">' +
+            '<input appearance="db-object" ref="/data/person/loc">' +
               '<label>person.field.loc</label></input>' +
           '</h:body></h:html>');
     });
@@ -317,11 +320,13 @@ describe('EnketoTranslation service', function() {
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
           '<h:head>' +
-          '<model><instance><person id="person" version="1">' +
-            '<parent/><meta><instanceID/></meta></person></instance>' +
-            '<bind nodeset="/person/parent" type="facility"/></model></h:head>' +
+          '<model><instance><data id="person" version="1">' +
+              '<person><parent/></person>' +
+              '<meta><instanceID/></meta>' +
+            '</data></instance>' +
+            '<bind nodeset="/data/person/parent" type="facility"/></model></h:head>' +
           '<h:body>' +
-            '<input ref="/person/parent">' +
+            '<input ref="/data/person/parent">' +
               '<label>person.field.parent</label></input>' +
           '</h:body></h:html>');
     });
@@ -402,25 +407,29 @@ describe('EnketoTranslation service', function() {
     it('should convert a simple record to JS', function() {
       // given
       var xml =
-        '<person id="person" version="1">' +
-          '<name>Denise Degraffenreid</name>' +
-          '<phone>+123456789</phone>' +
-          '<parent>eeb17d6d-5dde-c2c0-a0f2a91e2d232c51</parent>' +
+        '<data id="person" version="1">' +
+          '<person>' +
+            '<name>Denise Degraffenreid</name>' +
+            '<phone>+123456789</phone>' +
+            '<parent>eeb17d6d-5dde-c2c0-a0f2a91e2d232c51</parent>' +
+          '</person>' +
           '<meta>' +
             '<instanceID>uuid:9bbd57b0-5557-4d69-915c-f8049c81f6d8</instanceID>' +
           '<deprecatedID/></meta>' +
-        '</person>';
+        '</data>';
 
       // when
       var js = service.recordToJs(xml);
 
       // then
-      assert.deepEqual(js,
+      assert.deepEqual(js, [
         {
           name: 'Denise Degraffenreid',
           phone: '+123456789',
           parent: 'eeb17d6d-5dde-c2c0-a0f2a91e2d232c51',
-        });
+        },
+        {}
+      ]);
     });
 
     it('should convert a complex record without new instance to JS', function() {
