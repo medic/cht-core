@@ -34,6 +34,11 @@ if [[ -z "${COUCH_URL-}" ]]; then
     exit 1
 fi
 
+if ! curl "$COUCH_URL"; then
+    echo "[$SELF] ERROR: Could not find server at $COUCH_URL.  Is CouchDB running?"
+    exit 1
+fi
+
 ID="$1"
 shift
 XFORM_PATH="$1"
