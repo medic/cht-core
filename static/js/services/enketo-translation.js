@@ -256,7 +256,12 @@ angular.module('inboxServices').service('EnketoTranslation', [
       withElements(data)
         .filter(without('meta'))
         .each(function(n) {
-          fields[n.nodeName] = n.textContent;
+          var hasChildren = withElements(n.childNodes).size().value();
+          if(hasChildren) {
+            fields[n.nodeName] = nodesToJs(n.childNodes);
+          } else {
+            fields[n.nodeName] = n.textContent;
+          }
         });
       return fields;
     };
@@ -292,7 +297,9 @@ angular.module('inboxServices').service('EnketoTranslation', [
 
     this.recordToJs = function(record) {
       var root = $.parseXML(record).firstChild;
-      if(root.nodeName === 'data') {
+      if(root.nodeName !== 'data') {
+        return nodesToJs(root.childNodes);
+      } else {
         var repeats = repeatsToJs(root);
         var siblings = {};
         var first = null;
@@ -312,7 +319,6 @@ angular.module('inboxServices').service('EnketoTranslation', [
         }
         return res;
       }
-      return nodesToJs(root.childNodes);
     };
   }
 ]);

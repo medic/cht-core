@@ -725,5 +725,49 @@ describe('EnketoTranslation service', function() {
         {},
       ]);
     });
+
+    it('should convert nested nodes to nested JSON', function() {
+      // given
+      var xml =
+        '<treatments id="ASDF" version="abc123">' +
+          '<date>Last Friday</date>' +
+          '<district>' +
+            '<id>d1</id>' +
+            '<name>DISTRICT ONE</name>' +
+          '</district>' +
+          '<patient>' +
+            '<condition>' +
+              '<temperature>41</temperature>' +
+              '<weight>100</weight>' +
+            '</condition>' +
+            '<prescription>' +
+              '<name>paracetamol</name>' +
+              '<dose>1g * 4, 1/7</dose>' +
+            '</prescription>' +
+          '</patient>' +
+        '</treatments>';
+
+      // when
+      var js = service.recordToJs(xml);
+
+      // then
+      assert.deepEqual(js, {
+        date: 'Last Friday',
+        district: {
+          id: 'd1',
+          name: 'DISTRICT ONE',
+        },
+        patient: {
+          condition: {
+            temperature: '41',
+            weight: '100',
+          },
+          prescription: {
+            name: 'paracetamol',
+            dose: '1g * 4, 1/7',
+          },
+        },
+      });
+    });
   });
 });
