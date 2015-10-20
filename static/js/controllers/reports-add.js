@@ -27,7 +27,11 @@
           $log.debug('setting selected', doc);
           $scope.setSelected(doc);
           $scope.$on('$stateChangeStart', function(event) {
-            if(!confirm($translate.instant('confirm.destructive.navigation'))) {
+            var btnPrev = $('#report-form .form-footer .previous-page:visible:enabled');
+            if (btnPrev.length) {
+              event.preventDefault();
+              btnPrev.click();
+            } else if(!confirm($translate.instant('confirm.destructive.navigation'))) {
               event.preventDefault();
             }
           });
