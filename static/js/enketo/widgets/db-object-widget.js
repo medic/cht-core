@@ -90,12 +90,14 @@ define( function( require, exports, module ) {
                 textInput.select2('open');
                 textInput.select2('close');
 
-                textInput.on('change', function(e) {
-                    var form = $question.closest('form.or');
-                    var field = $question.find('input[name]').attr('name');
-                    var objectRoot = field.substring(0, field.lastIndexOf('/'));
-                    updateFields(form, e.added.doc, objectRoot, field);
-                });
+                if (!$question.hasClass('or-appearance-bind-id-only')) {
+                    textInput.on('change', function(e) {
+                        var form = $question.closest('form.or');
+                        var field = $question.find('input[name]').attr('name');
+                        var objectRoot = field.substring(0, field.lastIndexOf('/'));
+                        updateFields(form, e.added.doc, objectRoot, field);
+                    });
+                }
             });
     };
 

@@ -105,7 +105,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
       if(typeString === 'text') {
         extras.appearance = 'multiline';
       } else if(/^db:/.test(typeString)) {
-        extras.appearance = 'db-object';
+        extras.appearance = 'db-object bind-id-only';
       }
       return extras;
     }
