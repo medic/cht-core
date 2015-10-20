@@ -405,7 +405,7 @@ describe('EnketoTranslation service', function() {
     });
   });
 
-  describe('#recordToJs()', function() {
+  describe('#contactRecordToJs()', function() {
     it('should convert a simple record to JS', function() {
       // given
       var xml =
@@ -421,7 +421,7 @@ describe('EnketoTranslation service', function() {
         '</data>';
 
       // when
-      var js = service.recordToJs(xml);
+      var js = service.contactRecordToJs(xml);
 
       // then
       assert.deepEqual(js, [
@@ -453,7 +453,7 @@ describe('EnketoTranslation service', function() {
         '</data>';
 
       // when
-      var js = service.recordToJs(xml);
+      var js = service.contactRecordToJs(xml);
 
       // then
       assert.deepEqual(js, [
@@ -489,7 +489,7 @@ describe('EnketoTranslation service', function() {
         '</data>';
 
       // when
-      var js = service.recordToJs(xml);
+      var js = service.contactRecordToJs(xml);
 
       // then
       assert.deepEqual(js, [
@@ -536,7 +536,7 @@ describe('EnketoTranslation service', function() {
         '</data>';
 
       // when
-      var js = service.recordToJs(xml);
+      var js = service.contactRecordToJs(xml);
 
       // then
       assert.deepEqual(js, [
@@ -595,7 +595,7 @@ describe('EnketoTranslation service', function() {
         '</data>';
 
       // when
-      var js = service.recordToJs(xml);
+      var js = service.contactRecordToJs(xml);
 
       // then
       assert.deepEqual(js, [
@@ -651,7 +651,7 @@ describe('EnketoTranslation service', function() {
         '</data>';
 
       // when
-      var js = service.recordToJs(xml);
+      var js = service.contactRecordToJs(xml);
 
       // then
       assert.deepEqual(js, [
@@ -707,7 +707,7 @@ describe('EnketoTranslation service', function() {
         '</data>';
 
       // when
-      var js = service.recordToJs(xml);
+      var js = service.contactRecordToJs(xml);
 
       // then
       assert.deepEqual(js, [
@@ -725,7 +725,9 @@ describe('EnketoTranslation service', function() {
         {},
       ]);
     });
+  });
 
+  describe('#reportRecordToJs()', function() {
     it('should convert nested nodes to nested JSON', function() {
       // given
       var xml =
@@ -748,7 +750,7 @@ describe('EnketoTranslation service', function() {
         '</treatments>';
 
       // when
-      var js = service.recordToJs(xml);
+      var js = service.reportRecordToJs(xml);
 
       // then
       assert.deepEqual(js, {

@@ -171,7 +171,7 @@ angular.module('inboxServices').service('Enketo', [
       // edits, but is not ideal.
       return DB.get().get(docId).then(function(doc) {
         doc.content = record;
-        doc.fields = EnketoTranslation.recordToJs(record);
+        doc.fields = EnketoTranslation.reportRecordToJs(record).outputs;
         return DB.get().put(doc).then(function(res) {
           doc._rev = res.rev;
           return $q.resolve(doc);
@@ -201,7 +201,7 @@ angular.module('inboxServices').service('Enketo', [
         .then(function(contact) {
           var doc = {
             content: record,
-            fields: EnketoTranslation.recordToJs(record),
+            fields: EnketoTranslation.reportRecordToJs(record).outputs,
             form: formInternalId,
             type: 'data_record',
             content_type: 'xml',

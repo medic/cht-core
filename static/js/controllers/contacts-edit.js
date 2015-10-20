@@ -202,7 +202,7 @@
             return null;
           })
           .then(function(original) {
-            var submitted = EnketoTranslation.recordToJs(form.getDataStr());
+            var submitted = EnketoTranslation.contactRecordToJs(form.getDataStr());
 
             var repeated = submitted[2];
             var extras = submitted[1];

@@ -295,30 +295,31 @@ angular.module('inboxServices').service('EnketoTranslation', [
       return repeats;
     };
 
-    this.recordToJs = function(record) {
+    this.reportRecordToJs = function(record) {
       var root = $.parseXML(record).firstChild;
-      if(root.nodeName !== 'data') {
-        return nodesToJs(root.childNodes);
-      } else {
-        var repeats = repeatsToJs(root);
-        var siblings = {};
-        var first = null;
-        withElements(root.childNodes)
-          // TODO repeat-relevant may be unnecessary if https://github.com/enketo/enketo-core/issues/336 is resolved
-          .filter(without('meta', 'inputs', 'repeat', 'repeat-relevant'))
-          .each(function(child) {
-            if(!first) {
-              first = child;
-              return;
-            }
-            siblings[child.nodeName] = nodesToJs(child.childNodes);
-          });
-        var res = [ nodesToJs(first.childNodes), siblings ];
-        if(repeats) {
-          res.push(repeats);
-        }
-        return res;
+      return nodesToJs(root.childNodes);
+    };
+
+    this.contactRecordToJs = function(record) {
+      var root = $.parseXML(record).firstChild;
+      var repeats = repeatsToJs(root);
+      var siblings = {};
+      var first = null;
+      withElements(root.childNodes)
+        // TODO repeat-relevant may be unnecessary if https://github.com/enketo/enketo-core/issues/336 is resolved
+        .filter(without('meta', 'inputs', 'repeat', 'repeat-relevant'))
+        .each(function(child) {
+          if(!first) {
+            first = child;
+            return;
+          }
+          siblings[child.nodeName] = nodesToJs(child.childNodes);
+        });
+      var res = [ nodesToJs(first.childNodes), siblings ];
+      if(repeats) {
+        res.push(repeats);
       }
+      return res;
     };
   }
 ]);

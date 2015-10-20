@@ -403,7 +403,7 @@ describe('Enketo service', function() {
 
     it('creates report', function(done) {
       form.validate.returns(KarmaUtils.mockPromise(null, true));
-      var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+      var content = '<doc><outputs><name>Sally</name><lmp>10</lmp></outputs></doc>';
       form.getDataStr.returns(content);
       dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
       UserSettings.callsArgWith(0, null, { contact_id: '123' });
@@ -434,7 +434,7 @@ describe('Enketo service', function() {
 
     it('updates report', function(done) {
       form.validate.returns(KarmaUtils.mockPromise(null, true));
-      var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
+      var content = '<doc><outputs><name>Sally</name><lmp>10</lmp></outputs></doc>';
       form.getDataStr.returns(content);
       dbGet.returns(KarmaUtils.mockPromise(null, {
         _id: '6',
