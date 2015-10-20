@@ -246,13 +246,13 @@
       }
 
       function saveRepeated(repeated) {
-        if (!(repeated && repeated.childs)) {
+        if (!(repeated && repeated.child_data)) {
           return $q.resolve();
         }
 
         var children = [];
         return $q
-          .all(_.map(repeated.childs, function(child) {
+          .all(_.map(repeated.child_data, function(child) {
             return persist(child)
               .then(function(savedChild) {
                 children.push(savedChild);

@@ -280,11 +280,11 @@ angular.module('inboxServices').service('EnketoTranslation', [
             }
           }
 
-          var plural = repeated.nodeName + 's';
-          if(!repeats[plural]) {
-            repeats[plural] = [];
+          var key = repeated.nodeName + '_data';
+          if(!repeats[key]) {
+            repeats[key] = [];
           }
-          repeats[plural].push(nodesToJs(repeated.childNodes));
+          repeats[key].push(nodesToJs(repeated.childNodes));
         });
 
       return repeats;

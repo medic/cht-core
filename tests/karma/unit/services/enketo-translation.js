@@ -550,7 +550,7 @@ describe('EnketoTranslation service', function() {
           },
         },
         {
-          childs: [
+          child_data: [
             { name: 'Daddy Bear', },
             { name: 'Baby Bear', },
             { name: 'Goldilocks', },
@@ -609,7 +609,7 @@ describe('EnketoTranslation service', function() {
           },
         },
         {
-          childs: [
+          child_data: [
             { name: 'Daddy Bear', },
             { name: 'Baby Bear', },
             { name: 'Goldilocks', },
@@ -665,7 +665,7 @@ describe('EnketoTranslation service', function() {
           },
         },
         {
-          childs: [
+          child_data: [
             { name: 'Daddy Bear', },
             { name: 'Baby Bear', },
             { name: 'Goldilocks', },
