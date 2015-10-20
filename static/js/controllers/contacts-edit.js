@@ -9,6 +9,19 @@
 
       DB = DB.get();
 
+      var closeListenerApplied;
+      function applyCloseListener() {
+        if (closeListenerApplied) {
+          return;
+        }
+        $scope.$on('$stateChangeStart', function(event) {
+          if(!confirm($translate.instant('confirm.destructive.navigation'))) {
+            event.preventDefault();
+          }
+        });
+        closeListenerApplied = true;
+      }
+
       $scope.loadingContent = true;
       $scope.loadingTypes = true;
       $scope.setShowContent(true);
@@ -60,6 +73,8 @@
       $scope.setContactType = function(type) {
         $scope.loadingContent = true;
         $scope.contact.type = type;
+
+        applyCloseListener();
 
         ContactForm.forCreate(type, { contact:$scope.dependentPersonSchema })
           .then(function(form) {
@@ -145,6 +160,7 @@
               .addClass('disabled');
           return;
         }
+        applyCloseListener();
         return Enketo.renderFromXmlString(container, form, getFormInstanceData())
           .then(function(form) {
             $scope.enketo_contact = {
