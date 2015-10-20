@@ -25,6 +25,8 @@ describe('Enketo service', function() {
     return s + '}';
   };
 
+  // TODO this definition is leaked to other tests.  It's quite useful, so it
+  // should be moved to a common place
   var deepEqual = assert.deepEqual;
   assert.deepEqual = function() {
     try {
