@@ -90,6 +90,7 @@ var _ = require('underscore'),
       };
 
       $scope.selectMessage = function(id) {
+        $scope.showBackButton();
         if ($scope.selected && $scope.selected._id && $scope.selected._id === id) {
           return;
         }

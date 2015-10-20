@@ -271,12 +271,12 @@
     </div>
 
     <div class="right-pane">
-      <span class="slide-back" ng-click="back()" ng-show="filterModel.type === 'reports' || filterModel.type === 'messages' || filterModel.type === 'contacts' || filterModel.type === 'tasks'">
+      <span class="slide-back" ng-click="back()" ng-show="!hideTitleBarBackButton">
         <a id="back">
           <span class="fa fa-chevron-left" title="{{'Back' | translate}}"></span>
         </a>
       </span>
-      <h2>{{title}}</h2>
+      <h2 ng-class="hideTitleBarBackButton ? 'no-back' : 'show-back'">{{title}}</h2>
     </div>
   </div>
 </div>

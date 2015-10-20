@@ -29,6 +29,7 @@
       $scope.loadingContent = true;
       $scope.loadingTypes = true;
       $scope.setShowContent(true);
+      $scope.showBackButton(false);
 
       var getVisibleLevel = function() {
         return $q(function(resolve, reject) {

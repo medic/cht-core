@@ -26,6 +26,7 @@
         .then(function(doc) {
           $log.debug('setting selected', doc);
           $scope.setSelected(doc);
+          $scope.showBackButton(false);
           $scope.$on('$stateChangeStart', function(event) {
             var btnPrev = $('#report-form .form-footer .previous-page:visible:enabled');
             if (btnPrev.length) {

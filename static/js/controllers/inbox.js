@@ -101,6 +101,12 @@ require('moment/locales');
         $scope.showContent = showContent;
       };
 
+      $scope.showBackButton = function(show) {
+        $scope.hideTitleBarBackButton = show === false ||
+            !_.contains(['reports', 'messages', 'contacts', 'tasks'],
+                $scope.filterModel.type);
+      }
+
       $scope.setTitle = function(title) {
         $scope.title = title;
       };
