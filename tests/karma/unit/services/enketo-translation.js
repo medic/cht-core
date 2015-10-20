@@ -297,7 +297,7 @@ describe('EnketoTranslation service', function() {
             '</data></instance>' +
             '<bind nodeset="/data/person/loc" type="db:location"/></model></h:head>' +
           '<h:body>' +
-            '<input appearance="db-object" ref="/data/person/loc">' +
+            '<input appearance="db-object bind-id-only" ref="/data/person/loc">' +
               '<label>person.field.loc</label></input>' +
           '</h:body></h:html>');
     });
@@ -391,8 +391,8 @@ describe('EnketoTranslation service', function() {
           '<group appearance="field-list" ref="/data/clinic">' +
           '<input ref="/data/clinic/name"><label>clinic.field.name</label></input>' +
           '<input ref="/data/clinic/external_id"><label>clinic.field.external_id</label></input>' +
-          '<input appearance="db-object" ref="/data/clinic/parent"><label>clinic.field.parent</label></input>' +
-          '<input appearance="db-object allow-new" ref="/data/clinic/contact"><label>clinic.field.contact</label></input>' +
+          '<input appearance="db-object bind-id-only" ref="/data/clinic/parent"><label>clinic.field.parent</label></input>' +
+          '<input appearance="db-object bind-id-only allow-new" ref="/data/clinic/contact"><label>clinic.field.contact</label></input>' +
           '</group>' +
           '<group appearance="field-list" ref="/data/contact">' +
           '<label>contact.type.person.new</label>' +

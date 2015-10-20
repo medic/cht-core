@@ -85,7 +85,7 @@ define( function( require, exports, module ) {
                 textInput.select2('open');
                 textInput.select2('close');
 
-                if (!$question.hasClass('or-appearance-bind-id-only')) {
+                if (!textInput.closest('.question').hasClass('or-appearance-bind-id-only')) {
                     textInput.on('change', function(e) {
                         var form = textInput.closest('form.or');
                         var field = textInput.find('input[name]').attr('name');
