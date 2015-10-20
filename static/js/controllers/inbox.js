@@ -105,7 +105,7 @@ require('moment/locales');
         $scope.hideTitleBarBackButton = show === false ||
             !_.contains(['reports', 'messages', 'contacts', 'tasks'],
                 $scope.filterModel.type);
-      }
+      };
 
       $scope.setTitle = function(title) {
         $scope.title = title;
