@@ -59,12 +59,12 @@ var _ = require('underscore'),
         });
       };
 
-      var _setSelected = function(message) {
-        $scope.setSelected(message);
-        if (!$scope.isRead(message)) {
+      var _setSelected = function(report) {
+        $scope.setSelected(report);
+        if (!$scope.isRead(report)) {
           $scope.readStatus.forms--;
         }
-        MarkRead(message._id, true)
+        MarkRead(report._id, true)
           .then($scope.updateReadStatus)
           .catch(function(err) {
             console.log(err);
