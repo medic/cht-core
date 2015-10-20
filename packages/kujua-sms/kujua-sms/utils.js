@@ -115,7 +115,7 @@ exports.makeDataRecordReadable = function(doc, appinfo, language) {
     var language = language || getLocale(doc);
 
     // adding a fields property for ease of rendering code
-    if(data_record.form) {
+    if(data_record.form && data_record.content_type !== 'xml') {
         var keys = getFormKeys(exports.info.getForm(data_record.form));
         var labels = exports.getLabels(keys, data_record.form, language);
         data_record.fields = exports.fieldsToHtml(keys, labels, data_record);

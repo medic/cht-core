@@ -27,12 +27,19 @@
       <div class="body report-body">
         <h2>{{selected | title:forms}}</h2>
         <ul>
-          <li ng-if="selected.form" ng-repeat="field in selected.fields.data">
+          <li ng-if="selected.form && selected.content_type !== 'xml'" ng-repeat="field in selected.fields.data">
             <label>
               {{field.label}}
               <span class="fa fa-cogs" ng-show="field.generated" ng-attr-title="{{'Generated report field' | translate}}"></span>
             </label>
             <p>{{field.value}}</p>
+          </li>
+          <li ng-if="selected.form && selected.content_type === 'xml'" ng-repeat="(k, v) in selected.fields">
+            <label>
+              {{'report.' + selected.form + '.' + k | translate}}
+              <span class="fa fa-cogs" ng-show="field.generated" ng-attr-title="{{'Generated report field' | translate}}"></span>
+            </label>
+            <p>{{v}}</p>
           </li>
           <li ng-if="selected.errors.length">
             <label>{{'Errors' | translate}}</label>
