@@ -24,20 +24,6 @@ var _ = require('underscore');
         });
       };
 
-      var getTasks = function(ids) {
-        if (ids.length === 0) {
-          return $q.resolve([]);
-        }
-        return TaskGenerator().then(function(tasks) {
-          tasks = _.filter(tasks, function(task) {
-            return !task.resolved &&
-              task.contact &&
-              _.contains(ids, task.contact._id);
-          });
-          return $q.resolve(tasks);
-        });
-      };
-
       var getContact = function(id) {
         return DB.get().get(id);
       };
@@ -85,31 +71,52 @@ var _ = require('underscore');
           });
       };
 
-      var getSecondaryData = function(selected) {
-        if (selected.doc.type === 'district_hospital' ||
-            selected.doc.type === 'health_center') {
-          return $q.resolve(selected);
+      var mergeTasks = function(tasks) {
+        var selectedTasks = $scope.selected.tasks;
+        tasks.forEach(function(task) {
+          for (var i = 0; i < selectedTasks.length; i++) {
+            if (selectedTasks[i]._id === task._id) {
+              selectedTasks[i] = task;
+              return;
+            }
+          }
+          selectedTasks.push(task);
+        });
+      };
+
+      var getTasks = function() {
+        $scope.selected.tasks = [];
+        if ($scope.selected.doc.type === 'district_hospital' ||
+            $scope.selected.doc.type === 'health_center') {
+          return;
         }
         var patientIds = [];
-        if (selected.doc.type === 'clinic') {
-          patientIds = _.pluck(selected.children, 'id');
+        if ($scope.selected.doc.type === 'clinic') {
+          patientIds = _.pluck($scope.selected.children, 'id');
         }
-        patientIds.push(selected.doc._id);
-        return getTasks(patientIds)
-          .then(function(tasks) {
-            selected.tasks = tasks;
-            return $q.resolve(selected);
-          });
+        patientIds.push($scope.selected.doc._id);
+        TaskGenerator('ContactsContentCtrl', function(err, tasks) {
+          if (err) {
+            return $log.error('Error getting tasks', err);
+          }
+          mergeTasks(_.filter(tasks, function(task) {
+            return !task.resolved &&
+              task.contact &&
+              _.contains(patientIds, task.contact._id);
+          }));
+        });
+
       };
 
       var selectContact = function(id) {
         $scope.setLoadingContent(id);
         getInitialData(id)
-          .then(getSecondaryData)
           .then(function(selected) {
+
             var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
             $scope.setSelected(selected);
             $scope.settingSelected(refreshing);
+            getTasks();
 
             $scope.relevantForms = _.filter($scope.formDefinitions, function(form) {
               if (!form.context) {
