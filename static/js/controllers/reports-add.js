@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsAddCtrl', 
-    ['$log', '$scope', '$state', '$translate', '$q', 'DB', 'Enketo',
-    function ($log, $scope, $state, $translate, $q, DB, Enketo) {
+    ['$log', '$scope', '$state', '$q', 'DB', 'Enketo',
+    function ($log, $scope, $state, $q, DB, Enketo) {
 
       var getSelected = function() {
         if ($state.params.formId) { // adding
@@ -26,16 +26,6 @@
         .then(function(doc) {
           $log.debug('setting selected', doc);
           $scope.setSelected(doc);
-          $scope.showBackButton(false);
-          $scope.$on('$stateChangeStart', function(event) {
-            var btnPrev = $('#report-form .form-footer .previous-page:visible:enabled');
-            if (btnPrev.length) {
-              event.preventDefault();
-              btnPrev.click();
-            } else if(!confirm($translate.instant('confirm.destructive.navigation'))) {
-              event.preventDefault();
-            }
-          });
           Enketo.render($('#report-form'), doc.form, doc.content)
             .then(function(form) {
               $scope.form = form;
