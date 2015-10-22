@@ -212,14 +212,16 @@ describe('Enketo service', function() {
       service
         .render($('<div></div>'), 'ok')
         .then(function() {
+          console.log('~~~~~~ called the callback');
           done('Should not call callback');
         })
         .catch(function(actual) {
+          console.log('~~~~~~ returned as expected', enketoInit.callCount, JSON.stringify(actual));
           chai.expect(enketoInit.callCount).to.equal(1);
           chai.expect(actual).to.deep.equal(expected);
           done();
         });
-      digest(4);
+      digest(3);
     });
 
     it('return form when everything works', function(done) {
