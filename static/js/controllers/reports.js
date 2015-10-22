@@ -76,6 +76,15 @@ var _ = require('underscore'),
         $scope.setTitle((form && form.name) || doc.form);
       };
 
+      function removeDeletedReport(id) {
+        var idx = _.findIndex($scope.reports, function(doc) {
+          return doc._id === id;
+        });
+        if (idx !== -1) {
+          $scope.reports.splice(idx, 1);
+        }
+      }
+
       $scope.setSelected = function(doc) {
         var refreshing = doc && $scope.selected && $scope.selected.id === doc._id;
         $scope.selected = doc;
@@ -89,7 +98,7 @@ var _ = require('underscore'),
         $scope.settingSelected(refreshing);
       };
 
-      $scope.selectMessage = function(id) {
+      $scope.selectReport = function(id) {
         $scope.showBackButton();
         if ($scope.selected && $scope.selected._id && $scope.selected._id === id) {
           return;
@@ -97,9 +106,9 @@ var _ = require('underscore'),
         $scope.clearSelected();
         if (id && $scope.reports) {
           $scope.setLoadingContent(id);
-          var message = _.findWhere($scope.reports, { _id: id });
-          if (message) {
-            _setSelected(message);
+          var report = _.findWhere($scope.reports, { _id: id });
+          if (report) {
+            _setSelected(report);
           } else {
             DB.get()
               .get(id)
@@ -111,7 +120,7 @@ var _ = require('underscore'),
                 }
               })
               .catch(function(err) {
-                $scope.setSelected();
+                $scope.clearSelected();
                 console.error(err);
               });
           }
@@ -126,7 +135,7 @@ var _ = require('underscore'),
           $scope.errorSyntax = false;
           $scope.loading = true;
           if ($('#back').is(':visible')) {
-            $scope.selectMessage();
+            $scope.selectReport();
           }
         }
         if (options.skip) {
@@ -213,8 +222,14 @@ var _ = require('underscore'),
 
       Changes({
         key: 'reports-list',
-        callback: function() {
-          $scope.query({ silent: true, changes: true });
+        callback: function(change) {
+          if (change.deleted) {
+            $scope.$apply(function() {
+              removeDeletedReport(change.id);
+            });
+          } else {
+            $scope.query({ silent: true, changes: true });
+          }
         },
         filter: function(change) {
           if ($scope.filterModel.type !== 'reports') {
@@ -228,7 +243,7 @@ var _ = require('underscore'),
       });
 
       if (!$stateParams.id) {
-        $scope.selectMessage();
+        $scope.selectReport();
       }
 
       $scope.setFilterQuery($stateParams.query);
