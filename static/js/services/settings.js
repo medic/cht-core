@@ -30,18 +30,19 @@ var _ = require('underscore'),
     }
   ]);
 
-  // TODO this service should be removed if there is a simple way to Promisify
-  // the alread-existing service above.
-  // TODO if this service is to be kept, it should probably be using `Cache`
   inboxServices.factory('SettingsP',
-    ['DB',
-    function(DB) {
+    ['Settings',
+    function(Settings) {
       return function() {
-        return DB.get()
-          .get('_design/medic')
-          .then(function(ddoc) {
-            return _.defaults(ddoc.app_settings, defaults);
+        return new Promise(function(resolve, reject) {
+          Settings(function(err, settings) {
+            if(err) {
+              reject(err);
+            } else {
+              resolve(settings);
+            }
           });
+        });
       };
     }
   ]);
