@@ -49,7 +49,7 @@
         }
       };
 
-      var updateContacts = function(options, callback) {
+      var updateConversations = function(options, callback) {
         if (!options.changes) {
           $scope.loading = true;
         }
@@ -77,7 +77,7 @@
       $scope.messages = [];
       $scope.selected = null;
       setMessages();
-      updateContacts({ }, function() {
+      updateConversations({ }, function() {
         if (!$state.params.id &&
             $scope.messages.length &&
             !$('#back').is(':visible') &&
@@ -96,7 +96,7 @@
       Changes({
         key: 'messages-list',
         callback: function() {
-          updateContacts({ changes: true });
+          updateConversations({ changes: true });
         },
         filter: function(change) {
           if ($scope.filterModel.type !== 'messages') {

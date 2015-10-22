@@ -97,7 +97,7 @@ var _ = require('underscore'),
         $scope.setTitle(title);
       };
 
-      var updateContact = function(options) {
+      var updateConversation = function(options) {
         var selectedId = $scope.selected && $scope.selected.id;
         if (selectedId) {
           options = options || {};
@@ -150,7 +150,7 @@ var _ = require('underscore'),
 
       var _checkScroll = function() {
         if (this.scrollTop === 0 && !$scope.allLoaded) {
-          updateContact({ skip: true });
+          updateConversation({ skip: true });
         }
       };
 
@@ -164,7 +164,7 @@ var _ = require('underscore'),
       Changes({
         key: 'messages-content',
         callback: function() {
-          updateContact({ changes: true });
+          updateConversation({ changes: true });
         },
         filter: function(change) {
           return $scope.filterModel.type === 'messages' &&
