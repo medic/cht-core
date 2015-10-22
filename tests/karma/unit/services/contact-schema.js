@@ -198,9 +198,6 @@ describe('ContactSchema service', function() {
               type: 'tel',
               required: true,
             },
-            national_id_number: {
-              type: 'string',
-            },
             date_of_birth: {
               type: 'date',
             },

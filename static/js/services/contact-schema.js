@@ -73,7 +73,6 @@ var PERSON = {
       type: 'string',
       required: true,
     },
-    national_id_number: 'string',
     date_of_birth: 'date',
     phone: {
       type: 'tel',
