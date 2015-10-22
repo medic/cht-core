@@ -209,6 +209,7 @@ describe('Enketo service', function() {
         .onSecondCall().returns(KarmaUtils.mockPromise(null, visitForm));
       var expected = [ 'nope', 'still nope' ];
       enketoInit.returns(expected);
+      console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
       service
         .render($('<div></div>'), 'ok')
         .then(function() {
