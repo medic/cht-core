@@ -37,7 +37,6 @@
           <li ng-if="selected.form && selected.content_type === 'xml'" ng-repeat="(k, v) in selected.fields">
             <label>
               {{'report.' + selected.form + '.' + k | translate}}
-              <span class="fa fa-cogs" ng-show="field.generated" ng-attr-title="{{'Generated report field' | translate}}"></span>
             </label>
             <p>{{v}}</p>
           </li>
