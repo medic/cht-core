@@ -37,6 +37,15 @@ var _ = require('underscore'),
         }
       };
 
+      function removeDeletedContact(id) {
+        var idx = _.findIndex($scope.contacts, function(doc) {
+          return doc._id === id;
+        });
+        if (idx !== -1) {
+          $scope.contacts.splice(idx, 1);
+        }
+      }
+
       $scope.query = function(options) {
         options = options || {};
         options.limit = 50;
@@ -126,8 +135,12 @@ var _ = require('underscore'),
 
       Changes({
         key: 'contacts-list',
-        callback: function() {
-          $scope.query({ silent: true, stay: true });
+        callback: function(change) {
+          if(change.deleted) {
+            removeDeletedContact(change.id);
+          } else {
+            $scope.query({ silent: true, stay: true });
+          }
         },
         filter: function(change) {
           if ($scope.filterModel.type !== 'contacts') {
