@@ -112,6 +112,38 @@ angular.module('inboxServices').service('Enketo', [
       return deferred.promise;
     };
 
+    var handleKeypressOnInputField = function(e) {
+      if(e.keyCode !== 13) {
+        return;
+      }
+      var $thisQuestion = $(this).closest('.question');
+
+      // If there's another question on the current page, focus on that
+      if($thisQuestion.attr('role') !== 'page') {
+        var $nextQuestion = $thisQuestion.find('~ .question');
+        if($nextQuestion.length) {
+          return $nextQuestion.first().trigger('focus');
+        }
+      }
+
+      // FIXME don't use a timeout here - it's clearly wrong.  It's been
+      // done because of an incomplete understanding of how enketo field
+      // validation works.  There is an outstanding query to resolve this
+      // at https://github.com/enketo/enketo-core/issues/338
+      setTimeout(
+        function() {
+          // If there's no question on the current page, try to go to next
+          // page, or submit the form.
+          var enketoContainer = $thisQuestion.closest('.enketo');
+          var next = enketoContainer.find('.btn.next-page:enabled:not(.disabled)');
+          if(next.length) {
+            next.trigger('click');
+          } else {
+            angular.element(enketoContainer.find('.btn.submit')).triggerHandler('click');
+          }
+        }, 10);
+    };
+
     var renderFromXmls = function(doc, wrapper, instanceData) {
       wrapper.find('.form-footer')
              .addClass('end')
@@ -130,6 +162,9 @@ angular.module('inboxServices').service('Enketo', [
             return $q.reject(loadErrors);
           }
           wrapper.show();
+
+          wrapper.find('input').on('keydown', handleKeypressOnInputField);
+
           return form;
         });
     };
