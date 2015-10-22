@@ -73,9 +73,7 @@ var _ = require('underscore'),
           .success(function(data) {
             callback(null, data);
           })
-          .error(function(data) {
-            callback(new Error(data));
-          });
+          .error(callback);
       };
     }
   ]);
@@ -206,6 +204,10 @@ var _ = require('underscore'),
         }
         Admins(function(err, admins) {
           if (err) {
+            if (err.error === 'unauthorized') {
+              // not an admin
+              return callback();
+            }
             return callback(err);
           }
           if (!admins[updated.name]) {
@@ -232,7 +234,6 @@ var _ = require('underscore'),
             return callback(err);
           }
           $log.debug('user being updated', user);
-          $log.debug('updates', updates);
           var updated = _.extend(user, updates);
           if (updated.password) {
             updated.derived_key = undefined;
@@ -246,9 +247,7 @@ var _ = require('underscore'),
                 callback(err, updated);
               });
             })
-            .error(function(data) {
-              callback(new Error(data));
-            });
+            .error(callback);
         });
       };
 

@@ -247,6 +247,15 @@ _.templateSettings = {
             }
           }
         })
+        .state('configuration.user', {
+          url: '/user',
+          views: {
+            content: {
+              controller: 'ConfigurationUserCtrl',
+              templateUrl: 'templates/partials/configuration_user.html'
+            }
+          }
+        })
         .state('configuration.users', {
           url: '/users',
           views: {

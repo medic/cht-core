@@ -16,6 +16,7 @@
   require('./configuration-translation-application');
   require('./configuration-translation-languages');
   require('./configuration-translation-messages');
+  require('./configuration-user');
   require('./configuration-users');
   require('./contacts');
   require('./contacts-content');

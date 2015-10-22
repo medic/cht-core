@@ -190,8 +190,11 @@
           <span class="mm-button-icon" ng-show="'configuration.export' | isState">
             <i class="fa fa-arrow-circle-o-down"></i>
           </span>
-          <span class="mm-button-icon" ng-show="'configuration.users' | isState">
+          <span class="mm-button-icon" ng-show="'configuration.user' | isState">
             <i class="fa fa-user"></i>
+          </span>
+          <span class="mm-button-icon" ng-show="'configuration.users' | isState">
+            <i class="fa fa-users"></i>
           </span>
           <span class="mm-button-icon" ng-show="'configuration.icons' | isState">
             <i class="fa fa-file-image-o"></i>
@@ -214,6 +217,9 @@
             </span>
             <span ng-show="'configuration.export' | isState">
               {{'Export' | translate}}
+            </span>
+            <span ng-show="'configuration.user' | isState">
+              {{'edit.user.settings' | translate}}
             </span>
             <span ng-show="'configuration.users' | isState">
               {{'Users' | translate}}
@@ -254,9 +260,15 @@
               <span>{{'Export' | translate}}</span>
             </a>
           </li>
+          <li class="ng-scope" role="presentation">
+            <a ui-sref="configuration.user" role="menuitem" tabindex="-1">
+              <i class="fa fa-fw fa-user"></i>
+              <span>{{'edit.user.settings' | translate}}</span>
+            </a>
+          </li>
           <li class="ng-scope" role="presentation" mm-auth="can_configure">
             <a ui-sref="configuration.users" role="menuitem" tabindex="-1">
-              <i class="fa fa-fw fa-user"></i>
+              <i class="fa fa-fw fa-users"></i>
               <span>{{'Users' | translate}}</span>
             </a>
           </li>
