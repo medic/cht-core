@@ -142,6 +142,9 @@ angular.module('inboxServices').service('Enketo', [
             angular.element(enketoContainer.find('.btn.submit')).triggerHandler('click');
           }
         }, 10);
+
+      // stop the keypress from being handled elsewhere
+      return false;
     };
 
     var renderFromXmls = function(doc, wrapper, instanceData) {
