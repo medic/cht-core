@@ -759,13 +759,13 @@ require('moment/locales');
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
           showUpdateReady();
         }
-      }
-
-      DB.watchDesignDoc(function() {
-        if (window.applicationCache) {
+        DB.watchDesignDoc(function() {
+          // if the manifest hasn't changed, prompt user to reload settings
+          window.applicationCache.addEventListener('noupdate', showUpdateReady);
+          // check if the manifest has changed. if it has, download and prompt
           window.applicationCache.update();
-        }
-      });
+        });
+      }
 
     }
   ]);

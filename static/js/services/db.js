@@ -55,10 +55,6 @@ var utils = require('kujua-utils'),
       };
 
       var checkLocalDesignDoc = function(rev, callback) {
-        if (isAdmin()) {
-          // admins access ddoc from remote db directly so don't update them
-          return callback();
-        }
         getLocal()
           .get('_design/medic')
           .then(function(localDdoc) {
@@ -81,19 +77,26 @@ var utils = require('kujua-utils'),
 
       var watchDesignDoc = function(callback) {
         async.forever(function(next) {
-          // Check current ddoc revision
-          $http({
-            method: 'HEAD',
-            url: getRemoteUrl() + '/_design/medic'
-          }).success(function(data, status, headers) {
-            var rev = headers().etag.replace(/"/g, '');
-            checkLocalDesignDoc(rev, callback);
-          });
+          if (!isAdmin()) {
+            // check current ddoc revision vs local pouch version
+            $http({
+              method: 'HEAD',
+              url: getRemoteUrl() + '/_design/medic'
+            }).success(function(data, status, headers) {
+              var rev = headers().etag.replace(/"/g, '');
+              checkLocalDesignDoc(rev, callback);
+            });
+          }
 
           // Listen for remote ddoc changes
           getRemote()
             .changes({ live: true, since: 'now', doc_ids: [ '_design/medic' ] })
             .on('change', function(change) {
+              if (isAdmin()) {
+                // admins access ddoc from remote db directly so
+                // no need to check local ddoc
+                return callback();
+              }
               checkLocalDesignDoc(change.changes[0].rev, callback);
             })
             .on('error', function() {
