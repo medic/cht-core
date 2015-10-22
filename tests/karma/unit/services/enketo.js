@@ -54,15 +54,6 @@ describe('Enketo service', function() {
     return { doc: { _attachments: {} } };
   };
 
-  var digest = function(times) {
-    setTimeout(function() {
-      $rootScope.$digest();
-      if (times > 1) {
-        digest(times - 1);
-      }
-    });
-  };
-
   var visitForm = '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">' +
     '  <h:head>' +
     '    <h:title>Visit</h:title>' +
@@ -111,8 +102,7 @@ describe('Enketo service', function() {
         getDataStr: sinon.stub(),
       },
       Auth = sinon.stub(),
-      EnketoForm = sinon.stub(),
-      $rootScope;
+      EnketoForm = sinon.stub();
 
   beforeEach(function() {
     module('inboxApp');
@@ -137,10 +127,10 @@ describe('Enketo service', function() {
       $provide.value('Auth', Auth);
       $provide.value('Language', Language);
       $provide.value('TranslateFrom', TranslateFrom);
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
-    inject(function(_$rootScope_, _Enketo_) {
+    inject(function(_Enketo_) {
       service = _Enketo_;
-      $rootScope = _$rootScope_;
     });
     Language.returns(KarmaUtils.mockPromise(null, 'en'));
     TranslateFrom.returns('translated');
@@ -179,7 +169,6 @@ describe('Enketo service', function() {
           chai.expect(actual.message).to.equal('Your user does not have an associated contact. Talk to your administrator to correct this.');
           done();
         });
-      digest(1);
     });
 
     it('return error when form not found', function(done) {
@@ -196,7 +185,6 @@ describe('Enketo service', function() {
           chai.expect(actual.message).to.equal('Requested form not found');
           done();
         });
-      digest(2);
     });
 
     it('return error when form initialisation fails', function(done) {
@@ -209,20 +197,16 @@ describe('Enketo service', function() {
         .onSecondCall().returns(KarmaUtils.mockPromise(null, visitForm));
       var expected = [ 'nope', 'still nope' ];
       enketoInit.returns(expected);
-      console.log('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~');
       service
         .render($('<div></div>'), 'ok')
         .then(function() {
-          console.log('~~~~~~ called the callback');
           done('Should not call callback');
         })
         .catch(function(actual) {
-          console.log('~~~~~~ returned as expected', enketoInit.callCount, JSON.stringify(actual));
           chai.expect(enketoInit.callCount).to.equal(1);
           chai.expect(actual).to.deep.equal(expected);
           done();
         });
-      digest(3);
     });
 
     it('return form when everything works', function(done) {
@@ -249,7 +233,6 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
-      digest(3);
     });
 
     it('replaces img src with obj urls', function(done) {
@@ -285,7 +268,6 @@ describe('Enketo service', function() {
           });
         })
         .catch(done);
-      digest(3);
     });
 
     it('leaves img wrapped if failed to load', function(done) {
@@ -314,7 +296,6 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
-      digest(3);
     });
 
     it('passes xml instance data through to Enketo', function(done) {
@@ -337,7 +318,6 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
-      digest(3);
     });
 
     it('passes json instance data through to Enketo', function(done) {
@@ -363,7 +343,6 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
-      digest(3);
     });
   });
 
@@ -387,7 +366,6 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
-      digest(1);
     });
   });
 
@@ -401,7 +379,6 @@ describe('Enketo service', function() {
           chai.expect(form.validate.callCount).to.equal(1);
           done();
         });
-      digest(1);
     });
 
     it('creates report', function(done) {
@@ -432,7 +409,6 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
-      digest(4);
     });
 
     it('updates report', function(done) {
@@ -469,7 +445,6 @@ describe('Enketo service', function() {
           done();
         })
         .catch(done);
-      digest(3);
     });
 
   });

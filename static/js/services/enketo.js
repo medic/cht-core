@@ -39,7 +39,6 @@ angular.module('inboxServices').service('Enketo', [
           XSLT.transform('openrosa2xmlmodel.xsl', doc),
         ])
         .then(function(results) {
-          console.log('xml transformed');
           var result = {
             html: $(results[0]),
             model: results[1]
@@ -47,7 +46,6 @@ angular.module('inboxServices').service('Enketo', [
           if(formDocId) {
             replaceJavarosaMediaWithLoaders(formDocId, result.html);
           }
-          console.log('resolving');
           return $q.resolve(result);
         });
     };
@@ -56,7 +54,6 @@ angular.module('inboxServices').service('Enketo', [
       return DB.get()
         .query('medic/forms', { include_docs: true, key: formInternalId })
         .then(function(res) {
-          console.log('got forms', res.rows.length);
           if (!res.rows.length) {
             throw new Error('Requested form not found');
           }
@@ -64,11 +61,9 @@ angular.module('inboxServices').service('Enketo', [
           return DB.get()
             .getAttachment(form.id, 'xml')
             .then(function(a) {
-              console.log('FileReader');
               return FileReader(a); 
             })
             .then(function(text) {
-              console.log('Language');
               return Language().then(function(language) {
                 var xml = $.parseXML(text);
                 var $xml = $(xml);
@@ -76,7 +71,6 @@ angular.module('inboxServices').service('Enketo', [
                 $xml.find('model itext translation[lang="' + language + '"]').attr('default', '');
                 // manually translate the title as itext doesn't seem to work
                 $xml.find('h\\:title,title').text(TranslateFrom(form.doc.title));
-                console.log('transformXml');
                 return transformXml(xml, form.id);
               });
             });
@@ -84,20 +78,7 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     var checkPermissions = function() {
-      return Auth('can_create_records')
-        .then(function() {
-          return $q(function(resolve, reject) {
-            UserSettings(function(err, settings) {
-              if (err) {
-                return reject(err);
-              }
-              if (!settings.contact_id) {
-                return reject(new Error('Your user does not have an associated contact. Talk to your administrator to correct this.'));
-              }
-              resolve();
-            });
-          });
-        });
+      return Auth('can_create_records').then(getContactId);
     };
 
     var bindJsonToXml = function(elem, data) {
@@ -117,23 +98,18 @@ angular.module('inboxServices').service('Enketo', [
         return $q.resolve(data);
       }
       data = data || {};
-      return $q(function(resolve, reject) {
-        console.log('UserSettings');
+      var deferred = $q.defer();
         UserSettings(function(err, settings) {
           if (err) {
-            return reject(err);
+            return deferred.reject(err);
           }
-          resolve(settings);
+          data.user = settings;
+          var xml = $($.parseXML(model));
+          var instanceRoot = xml.find('model instance');
+          bindJsonToXml(instanceRoot.find('inputs'), data);
+          deferred.resolve(instanceRoot.html());
         });
-      })
-      .then(function(settings) {
-        console.log('got settings', settings);
-        data.user = settings;
-        var xml = $($.parseXML(model));
-        var instanceRoot = xml.find('model instance');
-        bindJsonToXml(instanceRoot.find('inputs'), data);
-        return instanceRoot.html();
-      });
+      return deferred.promise;
     };
 
     var renderFromXmls = function(doc, wrapper, instanceData) {
@@ -143,7 +119,6 @@ angular.module('inboxServices').service('Enketo', [
              .addClass('disabled');
       var formContainer = wrapper.find('.container').first();
       formContainer.html(doc.html);
-      console.log('getInstanceStr', instanceData);
       return getInstanceStr(doc.model, instanceData)
         .then(function(instanceStr) {
           var form = new EnketoForm(wrapper.find('form').first(), {
@@ -152,7 +127,6 @@ angular.module('inboxServices').service('Enketo', [
           });
           var loadErrors = form.init();
           if (loadErrors && loadErrors.length) {
-            console.log('rejecting');
             return $q.reject(loadErrors);
           }
           wrapper.show();
@@ -161,14 +135,11 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     this.render = function(wrapper, formInternalId, instanceData) {
-      console.log('checking perms');
       return checkPermissions()
         .then(function() {
-          console.log('withFormByFormInternalId');
           return withFormByFormInternalId(formInternalId);
         })
         .then(function(doc) {
-          console.log('renderFromXmls');
           return renderFromXmls(doc, wrapper, instanceData);
         });
     };
@@ -195,17 +166,17 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     var getContactId = function() {
-      return $q(function(resolve, reject) {
-        UserSettings(function(err, user) {
-          if (err) {
-            return reject(err);
-          }
-          if (!user || !user.contact_id) {
-            return reject(new Error('User has no associated contact.'));
-          }
-          resolve(user.contact_id);
-        });
+      var deferred = $q.defer();
+      UserSettings(function(err, user) {
+        if (err) {
+          return deferred.reject(err);
+        }
+        if (!user || !user.contact_id) {
+          return deferred.reject(new Error('Your user does not have an associated contact. Talk to your administrator to correct this.'));
+        }
+        deferred.resolve(user.contact_id);
       });
+      return deferred.promise;
     };
 
     var create = function(formInternalId, record) {
