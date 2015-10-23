@@ -4,8 +4,8 @@
 
   var inboxControllers = angular.module('inboxControllers');
   inboxControllers.controller('ContactsEditCtrl', [
-    '$log', '$scope', '$state', '$q', '$translate', 'ContactForm', 'ContactSchema', 'DB', 'Enketo', 'EnketoTranslation', 'UserDistrict',
-    function ($log, $scope, $state, $q, $translate, ContactForm, ContactSchema, DB, Enketo, EnketoTranslation, UserDistrict) {
+    '$log', '$scope', '$state', '$q', '$translate', 'ContactForm', 'ContactSchema', 'DB', 'Enketo', 'EnketoTranslation', 'UserDistrict', 'Snackbar',
+    function ($log, $scope, $state, $q, $translate, ContactForm, ContactSchema, DB, Enketo, EnketoTranslation, UserDistrict, Snackbar) {
 
       DB = DB.get();
 
@@ -185,6 +185,7 @@
               .then(function(doc) {
                 $log.debug('saved report', doc);
                 $scope.saving = false;
+                Snackbar($translate.instant(docId ? 'contact.updated' : 'contact.created'));
                 $state.go('contacts.detail', { id: doc._id });
               })
               .catch(function(err) {

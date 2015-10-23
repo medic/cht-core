@@ -44,6 +44,7 @@
   require('./send-message');
   require('./session');
   require('./settings');
+  require('./snackbar');
   require('./task-generator');
   require('./translate-from');
   require('./update-contact');

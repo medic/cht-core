@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsAddCtrl', 
-    ['$log', '$scope', '$state', '$q', 'DB', 'Enketo',
-    function ($log, $scope, $state, $q, DB, Enketo) {
+    ['$log', '$scope', '$state', '$q', '$translate', 'DB', 'Enketo', 'Snackbar',
+    function ($log, $scope, $state, $q, $translate, DB, Enketo, Snackbar) {
 
       var getSelected = function() {
         if ($state.params.formId) { // adding
@@ -49,6 +49,7 @@
           .then(function(doc) {
             $log.debug('saved report', doc);
             $scope.saving = false;
+            Snackbar($translate.instant($state.params.reportId ? 'report.updated' : 'report.created'));
             $state.go('reports.detail', { id: doc._id });
           })
           .catch(function(err) {
