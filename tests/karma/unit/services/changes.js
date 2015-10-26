@@ -28,6 +28,9 @@ describe('Changes service', function() {
               return {
                 on: function(type, callback) {
                   changesCallback = callback;
+                  return {
+                    on: function() {}
+                  }
                 }
               };
             }
