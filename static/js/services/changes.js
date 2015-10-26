@@ -9,9 +9,10 @@
   
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Changes', ['E2ETESTING', 'DB',
+  inboxServices.factory('Changes', [
+    '$log', 'E2ETESTING', 'DB',
 
-    function(E2ETESTING, DB) {
+    function($log, E2ETESTING, DB) {
 
       var callbacks = {};
 
@@ -48,6 +49,9 @@
             collectData(change, function() {
               notifyAll(change);
             });
+          })
+          .on('error', function(err) {
+            $log.error('Error watching for db changes', err);
           });
       }
       return function(options) {

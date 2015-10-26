@@ -18,8 +18,8 @@ var _ = require('underscore'),
   };
 
   inboxServices.factory('DBSync', [
-    'DB', 'UserDistrict', 'Session', 'Settings',
-    function(DB, UserDistrict, Session, Settings) {
+    '$log', 'DB', 'UserDistrict', 'Session', 'Settings',
+    function($log, DB, UserDistrict, Session, Settings) {
 
       var replicate = function(from, options) {
         options = options || {};
@@ -32,10 +32,10 @@ var _ = require('underscore'),
         var fn = DB.get().replicate[direction];
         return fn(DB.getRemoteUrl(), options)
           .on('denied', function(err) {
-            console.error('Denied replicating ' + direction + ' remote server', err);
+            $log.error('Denied replicating ' + direction + ' remote server', err);
           })
           .on('error', function(err) {
-            console.error('Error replicating ' + direction + ' remote server', err);
+            $log.error('Error replicating ' + direction + ' remote server', err);
           });
       };
 
@@ -67,7 +67,7 @@ var _ = require('underscore'),
         });
         getQueryParams(userCtx, function(err, params) {
           if (err) {
-            return console.log('Error initializing DB sync', err);
+            return $log.error('Error initializing DB sync', err);
           }
           replicate(true, {
             filter: 'medic/doc_by_place',

@@ -8,8 +8,8 @@ var utils = require('kujua-utils'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('DB', [
-    '$http', '$timeout', 'pouchDB', 'Session', 'DbNameService',
-    function($http, $timeout, pouchDB, Session, DbNameService) {
+    '$http', '$timeout', '$log', 'pouchDB', 'Session', 'DbNameService',
+    function($http, $timeout, $log, pouchDB, Session, DbNameService) {
 
       var cache = {};
 
@@ -50,7 +50,7 @@ var utils = require('kujua-utils'),
           .put(ddoc)
           .then(callback)
           .catch(function(err) {
-            console.error('Error updating local ddoc.', err);
+            $log.error('Error updating local ddoc.', err);
           });
       };
 
@@ -67,11 +67,11 @@ var utils = require('kujua-utils'),
                 updateLocalDesignDoc(localDdoc, remoteDdoc, callback);
               })
               .catch(function(err) {
-                console.error('Error updating ddoc. Check your connection and try again.', err);
+                $log.error('Error updating ddoc. Check your connection and try again.', err);
               });
           })
           .catch(function(err) {
-            console.error('Error updating ddoc. Check your connection and try again.', err);
+            $log.error('Error updating ddoc. Check your connection and try again.', err);
           });
       };
 
@@ -99,7 +99,8 @@ var utils = require('kujua-utils'),
               }
               checkLocalDesignDoc(change.changes[0].rev, callback);
             })
-            .on('error', function() {
+            .on('error', function(err) {
+              $log.debug('Error watching for changes on the design doc', err);
               $timeout(next, 10000);
             });
         });
