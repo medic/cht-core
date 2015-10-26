@@ -30,7 +30,7 @@ describe('Changes service', function() {
                   changesCallback = callback;
                   return {
                     on: function() {}
-                  }
+                  };
                 }
               };
             }
