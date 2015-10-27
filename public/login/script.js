@@ -61,9 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('login').addEventListener('click', submit, false);
 
   var user = document.getElementById('user');
-
-  user.addEventListener('click', submit, false);
   user.addEventListener('keydown', nextField, false);
-
   user.focus();
 });
