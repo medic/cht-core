@@ -229,7 +229,11 @@ exports['pass uniqueWithin validation on old doc'] = function(test) {
         xyz: '444'
     };
     validation.validate(doc, validations, function(errors) {
-        var start = moment().subtract('weeks', 2).toISOString();
+        // lucene date range query bug:
+        // https://github.com/rnewson/couchdb-lucene/issues/225
+        // fails: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
+        // works: "yyyy-MM-dd'T'HH:mm:ss.SSS"
+        var start = moment().subtract('weeks', 2).toISOString().replace('Z','');
         test.ok(fti.calledWith('data_records', {
             q: 'xyz:"444" AND reported_date<date>:[' + start + ' TO 3000-01-01T00:00:00]',
             include_docs: true
@@ -261,6 +265,22 @@ exports['formatParam rejects quotes in field names'] = function(test) {
     test.same(
         validation._formatParam('*:"everything', 'xyz'),
         '*:everything:"xyz"'
+    );
+    test.done();
+};
+
+exports['formatParam quotes strings'] = function(test) {
+    test.same(
+        validation._formatParam('birds', 'pigeon'),
+        'birds:"pigeon"'
+    );
+    test.done();
+};
+
+exports['formatParam use <int> query on integers'] = function(test) {
+    test.same(
+        validation._formatParam('lmp', 11),
+        'lmp<int>:11'
     );
     test.done();
 };

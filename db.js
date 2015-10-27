@@ -42,6 +42,8 @@ module.exports.user = settings.username;
 module.exports.fti = function(index, data, cb) {
     var path = '/_fti/local' + settings.db 
         + '/_design' + settings.db + '/' + index;
+    logger.debug('fti path: ', path);
+    logger.debug('fti query: ', data);
     client.request({
         path: path,
         query: data
