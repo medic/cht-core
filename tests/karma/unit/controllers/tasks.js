@@ -24,7 +24,10 @@ describe('TasksCtrl controller', function() {
     createController = function() {
       return $controller('TasksCtrl', {
         '$scope': scope,
-        'TaskGenerator': TaskGenerator
+        'TaskGenerator': TaskGenerator,
+        '$timeout': function(cb) {
+          cb();
+        }
       });
     };
   }));
@@ -41,7 +44,7 @@ describe('TasksCtrl controller', function() {
       chai.expect(scope.error).to.equal(false);
       chai.expect(scope.loading).to.equal(false);
       done();
-    });
+    }, 100);
   });
 
   it('shows task generator errors', function(done) {

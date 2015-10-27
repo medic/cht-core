@@ -86,25 +86,25 @@ var _ = require('underscore'),
               }
             });
           } else {
-            $scope.contacts = data;
-            scrollLoader.init(function() {
-              if (!$scope.loading && $scope.moreItems) {
-                $timeout(function() {
+            $timeout(function() {
+              $scope.contacts = data;
+              scrollLoader.init(function() {
+                if (!$scope.loading && $scope.moreItems) {
                   $scope.query({ skip: true });
+                }
+              });
+              if (!data.length) {
+                $scope.clearSelected();
+              } else if (!options.stay &&
+                         !$('#back').is(':visible') &&
+                         $state.is('contacts.detail')) {
+                // wait for selected to be set before checking
+                $timeout(function() {
+                  var id = $('.inbox-items li').first().attr('data-record-id');
+                  $state.go('contacts.detail', { id: id }, { location: 'replace' });
                 });
               }
             });
-            if (!data.length) {
-              $scope.clearSelected();
-            } else if (!options.stay &&
-                       !$('#back').is(':visible') &&
-                       $state.is('contacts.detail')) {
-              // wait for selected to be set before checking
-              $timeout(function() {
-                var id = $('.inbox-items li').first().attr('data-record-id');
-                $state.go('contacts.detail', { id: id }, { location: 'replace' });
-              });
-            }
           }
         });
       };

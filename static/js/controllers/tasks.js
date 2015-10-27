@@ -7,8 +7,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksCtrl',
-    ['$scope', '$state', '$log', 'TranslateFrom', 'TaskGenerator',
-    function ($scope, $state, $log, TranslateFrom, TaskGenerator) {
+    ['$scope', '$state', '$log', '$timeout', 'TranslateFrom', 'TaskGenerator',
+    function ($scope, $state, $log, $timeout, TranslateFrom, TaskGenerator) {
 
       var setSelectedTask = function(task) {
         $scope.selected = task;
@@ -27,19 +27,21 @@ var _ = require('underscore');
       };
 
       var mergeTasks = function(tasks) {
-        var unresolved = _.where(tasks, { resolved: false });
-        unresolved.forEach(function(task) {
-          if ($scope.selected && task._id === $scope.selected._id ||
-             (!$scope.selected && task._id === $state.params.id)) {
-            setSelectedTask(task);
-          }
-          for (var i = 0; i < $scope.tasks.length; i++) {
-            if ($scope.tasks[i]._id === task._id) {
-              $scope.tasks[i] = task;
-              return;
+        $timeout(function() {
+          var unresolved = _.where(tasks, { resolved: false });
+          unresolved.forEach(function(task) {
+            if ($scope.selected && task._id === $scope.selected._id ||
+               (!$scope.selected && task._id === $state.params.id)) {
+              setSelectedTask(task);
             }
-          }
-          $scope.tasks.push(task);
+            for (var i = 0; i < $scope.tasks.length; i++) {
+              if ($scope.tasks[i]._id === task._id) {
+                $scope.tasks[i] = task;
+                return;
+              }
+            }
+            $scope.tasks.push(task);
+          });
         });
       };
 
