@@ -50,10 +50,16 @@ var submit = function(e) {
   post(url, payload, handleResponse);
 };
 
-var nextField = function(e) {
+var focusOnPassword = function(e) {
   if (e.keyCode === 13) {
     e.preventDefault();
     document.getElementById('password').focus();
+  }
+};
+
+var focusOnSubmit = function(e) {
+  if (e.keyCode === 13) {
+    document.getElementById('login').focus();
   }
 };
 
@@ -61,6 +67,9 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('login').addEventListener('click', submit, false);
 
   var user = document.getElementById('user');
-  user.addEventListener('keydown', nextField, false);
+  user.addEventListener('keydown', focusOnPassword, false);
   user.focus();
+
+  document.getElementById('password')
+      .addEventListener('keydown', focusOnSubmit, false);
 });
