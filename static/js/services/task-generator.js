@@ -121,8 +121,8 @@ var nools = require('nools'),
         }
         var task;
         if (_task) {
+          tasks[ _task._id ] = _task;
           task = [ _task ];
-          tasks[ _task.id ] = _task;
         }
         _.values(callbacks).forEach(function(callback) {
           callback(err, task);

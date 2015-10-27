@@ -334,24 +334,58 @@ describe('TaskGenerator service', function() {
 
     var service = injector.get('TaskGenerator');
     var callbackCount = 0;
-    service('test', function(err, actual) {
-      chai.expect(actual.length).to.equal(1);
-      var expected = expectations[actual[0]._id];
-      chai.expect(actual[0].type).to.equal(expected.schedule.type);
-      chai.expect(actual[0].date).to.equal(calculateDate(expected.registration, expected.schedule.days));
-      chai.expect(actual[0].title).to.deep.equal(expected.schedule.title);
-      chai.expect(actual[0].fields[0].label).to.deep.equal([{ content: 'Description', locale: 'en' }]);
-      chai.expect(actual[0].fields[0].value).to.deep.equal(expected.schedule.description);
-      chai.expect(actual[0].doc._id).to.equal(expected.registration._id);
-      chai.expect(actual[0].resolved).to.equal(expected.resolved);
-      chai.expect(actual[0].reports).to.deep.equal(expected.reports);
-      callbackCount++;
-      if (callbackCount === 10) {
-        chai.expect(Search.callCount).to.equal(2);
-        chai.expect(Settings.callCount).to.equal(1);
-        done();
+    service('test', function(err, actuals) {
+      actuals.forEach(function(actual) {
+        var expected = expectations[actual._id];
+        chai.expect(actual.type).to.equal(expected.schedule.type);
+        chai.expect(actual.date).to.equal(calculateDate(expected.registration, expected.schedule.days));
+        chai.expect(actual.title).to.deep.equal(expected.schedule.title);
+        chai.expect(actual.fields[0].label).to.deep.equal([{ content: 'Description', locale: 'en' }]);
+        chai.expect(actual.fields[0].value).to.deep.equal(expected.schedule.description);
+        chai.expect(actual.doc._id).to.equal(expected.registration._id);
+        chai.expect(actual.resolved).to.equal(expected.resolved);
+        chai.expect(actual.reports).to.deep.equal(expected.reports);
+        callbackCount++;
+        if (callbackCount === 10) {
+          chai.expect(Search.callCount).to.equal(2);
+          chai.expect(Settings.callCount).to.equal(1);
+          done();
+        }
+      });
+    });
+    $rootScope.$digest();
+  });
+
+  it('caches tasks', function(done) {
+
+    Search.onFirstCall().callsArgWith(2, null, dataRecords);
+    Search.onSecondCall().callsArgWith(2, null, contacts);
+    Settings.callsArgWith(0, null, {
+      tasks: {
+        rules: rules,
+        schedules: schedules
       }
     });
+
+    var service = injector.get('TaskGenerator');
+    var expected = {};
+    service('test', function(err, results) {
+      results.forEach(function(result) {
+        expected[result._id] = result;
+      });
+      if (_.values(expected).length === 10) {
+        service('another-test', function(err, actual) {
+          // Search and Settings shouldn't be called again, and
+          // results should be the same
+          chai.expect(Search.callCount).to.equal(2);
+          chai.expect(Settings.callCount).to.equal(1);
+          chai.expect(actual).to.deep.equal(_.values(expected));
+          done();
+        });
+        $rootScope.$digest();
+      }
+    });
+
     $rootScope.$digest();
   });
 
