@@ -118,7 +118,7 @@
         </span>
       </span>
       
-      <span class="filter input-group freetext-filter" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'">
+      <span class="filter input-group freetext-filter" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'" ng-class="{'only-filter': filterModel.type === 'contacts' && !facilities.length}">
         <input id="freetext" class="form-control" type="text" ng-model="filterQuery.value" ng-attr-placeholder="{{'freetext.search' | translate}}">
         <span class="input-group-btn">
           <button id="search" class="btn btn-default" type="button">
