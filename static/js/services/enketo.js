@@ -116,6 +116,10 @@ angular.module('inboxServices').service('Enketo', [
       if(e.keyCode !== 13) {
         return;
       }
+
+      // stop the keypress from being handled elsewhere
+      e.preventDefault();
+
       var $thisQuestion = $(this).closest('.question');
 
       // If there's another question on the current page, focus on that
@@ -142,9 +146,6 @@ angular.module('inboxServices').service('Enketo', [
             angular.element(enketoContainer.find('.btn.submit')).triggerHandler('click');
           }
         }, 10);
-
-      // stop the keypress from being handled elsewhere
-      return false;
     };
 
     var renderFromXmls = function(doc, wrapper, instanceData) {
