@@ -184,22 +184,22 @@ describe('ContactSchema service', function() {
         assert.deepEqual(service.get().person, {
           type: 'person',
           badge: 'fa-user',
-          name: '{{first_name}} {{last_name}}',
+          name: '{{last_name}} {{first_name}}',
           fields: {
-            first_name: {
-              type: 'string',
-              required: true,
-            },
             last_name: {
               type: 'string',
               required: true,
             },
-            phone: {
-              type: 'tel',
+            first_name: {
+              type: 'string',
               required: true,
             },
             date_of_birth: {
               type: 'date',
+            },
+            phone: {
+              type: 'tel',
+              required: true,
             },
             alternate_phone: {
               type: 'tel',

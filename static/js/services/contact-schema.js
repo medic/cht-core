@@ -63,13 +63,13 @@ var HEALTH_CENTER = {
 
 var PERSON = {
   badge: 'fa-user',
-  name: '{{first_name}} {{last_name}}',
+  name: '{{last_name}} {{first_name}}',
   fields: {
-    first_name: {
+    last_name: {
       type: 'string',
       required: true,
     },
-    last_name: {
+    first_name: {
       type: 'string',
       required: true,
     },
