@@ -31,8 +31,8 @@ var _ = require('underscore'),
   ]);
 
   inboxServices.factory('SettingsP',
-    ['Settings',
-    function(Settings) {
+    ['$q', 'Settings',
+    function($q, Settings) {
       return function() {
         return $q(function(resolve, reject) {
           Settings(function(err, settings) {
