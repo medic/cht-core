@@ -56,8 +56,20 @@ var pressed = function(e) {
   }
 };
 
+var nextField = function(e) {
+  if (e.keyCode === 13) {
+    e.preventDefault();
+    document.getElementById('password').focus();
+  }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('user').focus();
   document.getElementById('login').addEventListener('click', submit, false);
-  document.getElementById('password').addEventListener('keypress', pressed, false);
+
+  var user = document.getElementById('user');
+
+  user.addEventListener('click', submit, false);
+  user.addEventListener('keydown', nextField, false);
+
+  user.focus();
 });
