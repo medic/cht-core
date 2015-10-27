@@ -9,6 +9,8 @@
 
 - Fixed bug in records export. #1273
 
+- Fixed bugs in uniqueWithin validation. medic-sentinel#74
+
 ## 0.4.9
 
 ### Aug 26, 2015
