@@ -50,12 +50,6 @@ var submit = function(e) {
   post(url, payload, handleResponse);
 };
 
-var pressed = function(e) {
-  if (e.keyCode === 13) {
-    submit(e);
-  }
-};
-
 var nextField = function(e) {
   if (e.keyCode === 13) {
     e.preventDefault();
