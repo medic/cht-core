@@ -7,8 +7,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Settings', ['DB', 'Cache',
-    function(DB, Cache) {
+  inboxServices.factory('Settings', ['$q', 'DB', 'Cache',
+    function($q, DB, Cache) {
 
       var cache = Cache({
         get: function(callback) {
@@ -34,7 +34,7 @@ var _ = require('underscore'),
     ['Settings',
     function(Settings) {
       return function() {
-        return new Promise(function(resolve, reject) {
+        return $q(function(resolve, reject) {
           Settings(function(err, settings) {
             if(err) {
               reject(err);
