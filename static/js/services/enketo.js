@@ -126,7 +126,10 @@ angular.module('inboxServices').service('Enketo', [
       if($thisQuestion.attr('role') !== 'page') {
         var $nextQuestion = $thisQuestion.find('~ .question');
         if($nextQuestion.length) {
-          return $nextQuestion.first().trigger('click');
+          $nextQuestion.first().trigger('focus');
+          // click-after-focus to pop up keyboard on android
+          $nextQuestion.first().trigger('click');
+          return;
         }
       }
 
