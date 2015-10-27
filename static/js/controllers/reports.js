@@ -76,14 +76,14 @@ var _ = require('underscore'),
         $scope.setTitle((form && form.name) || doc.form);
       };
 
-      function removeDeletedReport(id) {
+      var removeDeletedReport = function(id) {
         var idx = _.findIndex($scope.reports, function(doc) {
           return doc._id === id;
         });
         if (idx !== -1) {
           $scope.reports.splice(idx, 1);
         }
-      }
+      };
 
       $scope.setSelected = function(doc) {
         var refreshing = doc && $scope.selected && $scope.selected.id === doc._id;
