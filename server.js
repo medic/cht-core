@@ -244,15 +244,10 @@ var getExportPermission = function(type) {
   return 'can_export_messages';
 };
 
-app.get(db.getPath() + '/export/:type/:form?', function(req, res) {
-  var url = '/api/v1/export/' + req.params.type;
-  if (req.params.form) {
-    url += '/' + req.params.form;
-  }
-  res.redirect(301, url);
-});
-
-app.get('/api/v1/export/:type/:form?', function(req, res) {
+app.get([
+  '/api/v1/export/:type/:form?',
+  '/' + db.getPath() + '/export/:type/:form?'
+], function(req, res) {
   auth.check(req, getExportPermission(req.params.type), req.query.district, function(err, ctx) {
     if (err) {
       return error(err, req, res, true);
