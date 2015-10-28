@@ -1,8 +1,8 @@
 var _ = require('underscore');
 
 var CLINIC = {
-  badge: 'fa-home',
-  icon: 'fa-home',
+  badge: 'fa-group',
+  icon: 'fa-group',
   fields: {
     name: {
       type: 'string',
