@@ -97,7 +97,8 @@ var _ = require('underscore'),
                 $scope.clearSelected();
               } else if (!options.stay &&
                          !$('#back').is(':visible') &&
-                         $state.is('contacts.detail')) {
+                         $state.is('contacts.detail') &&
+                         !$state.params.id) {
                 // wait for selected to be set before checking
                 $timeout(function() {
                   var id = $('.inbox-items li').first().attr('data-record-id');
