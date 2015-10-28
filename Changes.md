@@ -11,6 +11,8 @@
 
 - Fixed bugs in uniqueWithin validation. medic-sentinel#74
 
+- Added link to Help page in main menu.
+
 ## 0.4.9
 
 ### Aug 26, 2015
