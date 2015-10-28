@@ -57,6 +57,7 @@ var _ = require('underscore'),
         var userCtx = Session.userCtx();
         if (utils.isUserAdmin(userCtx)) {
           // admins have potentially too much data so bypass local pouch
+          $log.debug("You have administrative privileges; not replicating");
           return;
         }
         replicate(false, {

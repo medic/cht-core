@@ -29,7 +29,7 @@ var _ = require('underscore'),
     function(DB, UserSettings, Session) {
       return function(callback) {
         var userCtx = Session.userCtx();
-        if (!userCtx.name) {
+        if (!userCtx || !userCtx.name) {
           return callback(new Error('Not logged in'));
         }
         if (utils.isUserAdmin(userCtx)) {
