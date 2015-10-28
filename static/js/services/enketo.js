@@ -121,14 +121,18 @@ angular.module('inboxServices').service('Enketo', [
       e.preventDefault();
 
       var $thisQuestion = $(this).closest('.question');
+      $thisQuestion.blur();
 
       // If there's another question on the current page, focus on that
       if($thisQuestion.attr('role') !== 'page') {
         var $nextQuestion = $thisQuestion.find('~ .question');
         if($nextQuestion.length) {
-          $nextQuestion.first().trigger('focus');
-          // click-after-focus to pop up keyboard on android
-          $nextQuestion.first().trigger('click');
+          // Hack for Android: delay focussing on the next field, so that
+          // keybaord close and open events both register.  This should mean
+          // that the on-screen keyboard is maintained between fields.
+          setTimeout(function() {
+            $nextQuestion.first().trigger('focus');
+          }, 10);
           return;
         }
       }
