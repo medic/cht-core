@@ -203,7 +203,7 @@ curl -i -u gateway:123qwe \
     --data-urlencode 'from=+13125551212' \
     --data-urlencode 'sent_timestamp=1403965605868' \
     -X POST \
-    http://localhost:5988/medic/_design/medic/_rewrite/add
+    http://localhost:5988/api/v1/records
 ```
 
 
