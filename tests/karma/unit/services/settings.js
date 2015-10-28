@@ -1,4 +1,4 @@
-describe('Settings service', function() {
+describe('SettingsP service', function() {
 
   'use strict';
 
@@ -9,13 +9,16 @@ describe('Settings service', function() {
     get = sinon.stub();
     module('inboxApp');
     module(function($provide) {
-      $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
+      $provide.value('$q', function(promiseHandler) {
+        return new Promise(promiseHandler);
+      });
       $provide.value('Cache', function(options) {
         return options.get;
       });
+      $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
     });
     inject(function($injector) {
-      service = $injector.get('Settings');
+      service = $injector.get('SettingsP');
     });
   });
 
@@ -29,12 +32,13 @@ describe('Settings service', function() {
       isString: 'hello'
     };
     get.returns(KarmaUtils.mockPromise(null, { app_settings: expected }));
-    service(function(err, actual) {
-      chai.expect(err).to.equal(null);
-      chai.expect(actual.isTrue).to.equal(expected.isTrue);
-      chai.expect(actual.isString).to.equal(expected.isString);
-      done();
-    });
+    service()
+      .then(function(actual) {
+        chai.expect(actual.isTrue).to.equal(expected.isTrue);
+        chai.expect(actual.isString).to.equal(expected.isString);
+        done();
+      })
+      .catch(done);
   });
 
   it('merges settings with defaults', function(done) {
@@ -42,22 +46,27 @@ describe('Settings service', function() {
       date_format: 'YYYY'
     };
     get.returns(KarmaUtils.mockPromise(null, { app_settings: expected }));
-    service(function(err, actual) {
-      chai.expect(err).to.equal(null);
-      chai.expect(actual.date_format).to.equal(expected.date_format);
-      // date format from defaults: kujua_sms/views/lib/app_settings
-      chai.expect(actual.reported_date_format).to.equal('DD-MMM-YYYY HH:mm:ss');
-      chai.expect(get.args[0][0]).to.equal('_design/medic');
-      done();
-    });
+    service()
+      .then(function(actual) {
+        chai.expect(actual.date_format).to.equal(expected.date_format);
+        // date format from defaults: kujua_sms/views/lib/app_settings
+        chai.expect(actual.reported_date_format).to.equal('DD-MMM-YYYY HH:mm:ss');
+        chai.expect(get.args[0][0]).to.equal('_design/medic');
+        done();
+      })
+      .catch(done);
   });
 
   it('returns errors', function(done) {
     get.returns(KarmaUtils.mockPromise('Not found'));
-    service(function(err) {
-      chai.expect(err).to.equal('Not found');
-      done();
-    });
+    service()
+      .then(function() {
+        done('Unexpected resolution of promise.');
+      })
+      .catch(function(err) {
+        chai.expect(err).to.equal('Not found');
+        done();
+      });
   });
 
 });
