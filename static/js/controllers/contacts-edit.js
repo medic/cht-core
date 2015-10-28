@@ -172,12 +172,14 @@
       $scope.save = function() {
         var form = $scope.enketo_contact.formInstance;
         var docId = $scope.enketo_contact.docId;
+        $scope.saving = true;
 
         return form.validate()
           .then(function(valid) {
             if(!valid) {
               // validation messages will be displayed for individual fields.
               // That's all we want, really.
+              $scope.saving = false;
               return;
             }
 
