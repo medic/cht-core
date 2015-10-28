@@ -7,11 +7,11 @@
             <span class="fa fa-plus"></span>
             <p>{{'Send Message' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" ng-show="filterModel.type === 'reports'" data-toggle="dropdown">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" ng-show="filterModel.type === 'reports'" data-toggle="dropdown" ng-class="{'mm-icon-disabled': !formDefinitions.length}">
             <span class="fa fa-plus"></span>
             <p>{{'Submit Report' | translate}}</p>
           </a>
-          <ul class="dropdown-menu">
+          <ul class="dropdown-menu" ng-show="formDefinitions.length">
             <li ng-repeat="form in formDefinitions">
               <a ui-sref="reports.add({ formId: form.internalId })">{{form.title | translateFrom}}</a>
             </li>
