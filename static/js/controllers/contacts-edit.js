@@ -177,10 +177,7 @@
         return form.validate()
           .then(function(valid) {
             if(!valid) {
-              // validation messages will be displayed for individual fields.
-              // That's all we want, really.
-              $scope.saving = false;
-              return;
+              throw new Error('Validation failed.');
             }
 
             return save(form, docId)
@@ -194,6 +191,12 @@
                 $scope.saving = false;
                 $log.error('Error submitting form data: ', err);
               });
+          })
+          .catch(function(err) {
+            // validation messages will be displayed for individual fields.
+            // That's all we want, really.
+            $scope.saving = false;
+            $scope.$apply();
           });
       };
 
