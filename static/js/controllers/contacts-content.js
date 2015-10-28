@@ -28,13 +28,44 @@ var _ = require('underscore');
         return DB.get().get(id);
       };
 
+      var sortChildren = function(children) {
+        children.sort(function(lhs, rhs) {
+          if (lhs.doc.date_of_birth &&
+              rhs.doc.date_of_birth &&
+              lhs.doc.date_of_birth !== rhs.doc.date_of_birth) {
+            return lhs.doc.date_of_birth < rhs.doc.date_of_birth ? -1 : 1;
+          }
+          if (lhs.doc.date_of_birth && !rhs.doc.date_of_birth) {
+            return 1;
+          }
+          if (!lhs.doc.date_of_birth && rhs.doc.date_of_birth) {
+            return -1;
+          }
+          if (!lhs.doc.name && !rhs.doc.name) {
+            return 0;
+          }
+          if (!rhs.doc.name) {
+            return 1;
+          }
+          if (!lhs.doc.name) {
+            return -1;
+          }
+          return lhs.doc.name.localeCompare(rhs.doc.name);
+        });
+      };
+
       var getChildren = function(id) {
         var options = {
           startkey: [ id ],
           endkey: [ id, {} ],
           include_docs: true
         };
-        return DB.get().query('medic/facility_by_parent', options);
+        return DB.get()
+          .query('medic/facility_by_parent', options)
+          .then(function(children) {
+            sortChildren(children.rows);
+            return children;
+          });
       };
 
       var getContactFor = function(id) {

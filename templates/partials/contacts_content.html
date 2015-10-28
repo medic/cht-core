@@ -62,6 +62,7 @@
                     {{child.doc.name}}
                   </div>
                   <div class="subtext">{{child.doc.contact.name}}</div>
+                  <div class="subtext" ng-bind-html="child.doc.date_of_birth | age"></div>
                 </a>
               </li>
               <li class="add" ng-show="selected.doc.type === 'clinic'">
