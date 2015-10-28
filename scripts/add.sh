@@ -53,7 +53,7 @@ if [ -n "$5" ]; then
 fi
 
 function _curl {
-    curl -k -u "$AUTH" \
+    curl -u "$AUTH" \
         --data-urlencode "message=$MSG" \
         --data-urlencode "from=$FROM" \
         --data-urlencode "sent_timestamp=$TIMESTAMP" \
