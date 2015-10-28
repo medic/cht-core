@@ -117,11 +117,12 @@ angular.module('inboxServices').service('Enketo', [
         return;
       }
 
+      var $this = $(this);
+
       // stop the keypress from being handled elsewhere
       e.preventDefault();
 
-      var $thisQuestion = $(this).closest('.question');
-      $thisQuestion.blur();
+      var $thisQuestion = $this.closest('.question');
 
       // If there's another question on the current page, focus on that
       if($thisQuestion.attr('role') !== 'page') {
@@ -137,22 +138,20 @@ angular.module('inboxServices').service('Enketo', [
         }
       }
 
-      // FIXME don't use a timeout here - it's clearly wrong.  It's been
-      // done because of an incomplete understanding of how enketo field
-      // validation works.  There is an outstanding query to resolve this
-      // at https://github.com/enketo/enketo-core/issues/338
-      setTimeout(
-        function() {
-          // If there's no question on the current page, try to go to next
-          // page, or submit the form.
-          var enketoContainer = $thisQuestion.closest('.enketo');
-          var next = enketoContainer.find('.btn.next-page:enabled:not(.disabled)');
-          if(next.length) {
-            next.trigger('click');
-          } else {
-            angular.element(enketoContainer.find('.btn.submit')).triggerHandler('click');
-          }
-        }, 10);
+      // If there's no question on the current page, try to go to next
+      // page, or submit the form.
+
+      // Trigger the change listener on the current field to update the enketo
+      // model
+      $this.trigger('change');
+
+      var enketoContainer = $thisQuestion.closest('.enketo');
+      var next = enketoContainer.find('.btn.next-page:enabled:not(.disabled)');
+      if(next.length) {
+        next.trigger('click');
+      } else {
+        angular.element(enketoContainer.find('.btn.submit')).triggerHandler('click');
+      }
     };
 
     var renderFromXmls = function(doc, wrapper, instanceData) {
