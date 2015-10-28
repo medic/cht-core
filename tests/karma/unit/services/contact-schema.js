@@ -276,8 +276,8 @@ describe('ContactSchema service', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().clinic, {
           type: 'clinic',
-          badge: 'fa-home',
-          icon: 'fa-home',
+          badge: 'fa-group',
+          icon: 'fa-group',
           fields: {
             name: {
               type: 'string',
