@@ -233,7 +233,7 @@ var _ = require('underscore'),
           if (err) {
             return callback(err);
           }
-          $log.debug('user being updated', user);
+          $log.debug('user being updated', user._id);
           var updated = _.extend(user, updates);
           if (updated.password) {
             updated.derived_key = undefined;
