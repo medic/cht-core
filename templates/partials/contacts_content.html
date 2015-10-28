@@ -57,7 +57,10 @@
             <ul>
               <li ng-repeat="child in selected.children">
                 <a ui-sref="contacts.detail({ id: child.doc._id })">
-                  <div>{{child.doc.name}}</div>
+                  <div>
+                    <i class="fa fa-star" ng-show="child.doc._id === selected.doc.contact._id" title="{{'Primary contact' | translate}}"></i>
+                    {{child.doc.name}}
+                  </div>
                   <div class="subtext">{{child.doc.contact.name}}</div>
                 </a>
               </li>
