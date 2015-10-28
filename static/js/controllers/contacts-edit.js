@@ -192,7 +192,7 @@
                 $log.error('Error submitting form data: ', err);
               });
           })
-          .catch(function(err) {
+          .catch(function() {
             // validation messages will be displayed for individual fields.
             // That's all we want, really.
             $scope.saving = false;
