@@ -16,8 +16,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'ConflictResolution', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, ConflictResolution, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'ConflictResolution', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, ConflictResolution, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth) {
 
       Session.init();
       DBSync();
@@ -45,11 +45,12 @@ require('moment/locales');
       $scope.people = [];
       $scope.totalItems = undefined;
       $scope.filterQuery = { value: undefined };
-      $scope.analyticsModules = undefined;
+      $scope.analyticsModules = [];
       $scope.version = APP_CONFIG.version;
       $scope.actionBar = {};
       $scope.formDefinitions = [];
       $scope.title = undefined;
+      $scope.tours = [];
 
       $scope.baseUrl = BaseUrlService();
 
@@ -61,14 +62,6 @@ require('moment/locales');
         if (query) {
           $scope.filterQuery.value = query;
         }
-      };
-
-      $scope.setAnalyticsModules = function(modules) {
-        $scope.analyticsModules = modules;
-      };
-
-      $scope.setSelectedModule = function(module) {
-        $scope.filterModel.module = module;
       };
 
       $scope.back = function() {
@@ -719,6 +712,50 @@ require('moment/locales');
           });
         });
       };
+
+      Auth('can_view_messages_tab').then(function() {
+        $scope.tours.push({
+          order: 1,
+          id: 'messages',
+          icon: 'fa-envelope',
+          name: 'Messages'
+        });
+      });
+
+      Auth('can_view_reports_tab').then(function() {
+        $scope.tours.push({
+          order: 2,
+          id: 'reports',
+          icon: 'fa-list-alt',
+          name: 'Reports'
+        });
+      });
+
+      $scope.setSelectedModule = function(module) {
+        $scope.filterModel.module = module;
+      };
+
+      $scope.fetchAnalyticsModules = function() {
+        return AnalyticsModules().then(function(modules) {
+          $scope.analyticsModules = modules;
+          return modules;
+        });
+      };
+
+      $scope.fetchAnalyticsModules()
+        .then(function(modules) {
+          console.log('checking for anc', modules);
+          if (_.findWhere(modules, { id: 'anc' })) {
+            Auth('can_view_analytics').then(function() {
+              $scope.tours.push({
+                order: 3,
+                id: 'analytics',
+                icon: 'fa-bar-chart-o',
+                name: 'Analytics'
+              });
+            });
+          }
+        });
 
       $scope.setupTour = function() {
         $('#tour-select').on('click', 'a.tour-option', function() {

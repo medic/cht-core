@@ -4,50 +4,42 @@ describe('AnalyticsCtrl controller', function() {
 
   var createController,
       scope,
-      modules,
       moduleId,
-      AnalyticsModules,
-      Settings;
+      fetch;
 
   beforeEach(module('inboxApp'));
 
   beforeEach(inject(function($rootScope, $controller) {
+    fetch = sinon.stub();
     scope = $rootScope.$new();
     scope.filterModel = { };
     scope.setSelectedModule = function (module) {
       scope.filterModel.module = module;
     };
-    scope.analyticsModules = undefined;
-    scope.setAnalyticsModules = function (modules) {
-      scope.analyticsModules = modules;
-    };
     scope.clearSelected = function() {};
+    scope.fetchAnalyticsModules = fetch;
     createController = function() {
       return $controller('AnalyticsCtrl', {
         '$scope': scope,
-        '$stateParams': { module: moduleId },
-        'Settings': Settings,
-        'AnalyticsModules': AnalyticsModules
+        '$stateParams': { module: moduleId }
       });
     };
-    modules = [];
     moduleId = undefined;
-    AnalyticsModules = function() {
-      return modules;
-    };
-    Settings = function(callback) {
-      callback(null, {});
-    };
   }));
 
+  afterEach(function() {
+    KarmaUtils.restore(fetch);
+  });
+
   it('set up controller with no modules', function() {
+    fetch.returns(KarmaUtils.mockPromise(null, []));
     createController();
     chai.expect(scope.filterModel.type).to.equal('analytics');
     chai.expect(scope.filterModel.module).to.equal(undefined);
   });
 
   it('renders first module', function(done) {
-    modules = [
+    fetch.returns(KarmaUtils.mockPromise(null, [
       {
         id: 'anc',
         render: function() {
@@ -59,13 +51,13 @@ describe('AnalyticsCtrl controller', function() {
       { 
         id: 'stock'
       }
-    ];
+    ]));
     createController();
   });
 
   it('renders specified module', function(done) {
     moduleId = 'anc';
-    modules = [
+    fetch.returns(KarmaUtils.mockPromise(null, [
       { 
         id: 'stock'
       },
@@ -77,7 +69,7 @@ describe('AnalyticsCtrl controller', function() {
           done();
         }
       }
-    ];
+    ]));
     createController();
   });
 

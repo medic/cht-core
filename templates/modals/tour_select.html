@@ -7,17 +7,9 @@
       </div>
       <div class="modal-body">
         <p>{{'tour.select.description' | translate}}</p>
-        <a ng-click="start('messages')" class="tour-option tour-option-messages btn">
-          <div class="fa fa-envelope"></div>
-          <div class="button-label">{{'Messages' | translate}}</div>
-        </a>
-        <a ng-click="start('reports')" class="tour-option tour-option-reports btn">
-          <div class="fa fa-list-alt"></div>
-          <div class="button-label">{{'Reports' | translate}}</div>
-        </a>
-        <a ng-click="start('analytics')" class="tour-option tour-option-analytics btn">
-          <div class="fa fa-bar-chart-o"></div>
-          <div class="button-label">{{'Analytics' | translate}}</div>
+        <a ng-repeat="tour in tours | orderBy:'order'" class="btn tour-option" ng-click="start(tour.id)" ng-class="'tour-option-' + tour.id">
+          <div class="fa" ng-class="tour.icon"></div>
+          <div class="button-label">{{tour.name | translate}}</div>
         </a>
       </div>
       <div class="modal-footer">
