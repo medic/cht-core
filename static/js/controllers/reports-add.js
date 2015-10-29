@@ -21,6 +21,7 @@
       $scope.loadingContent = true;
       $scope.contentError = false;
       $scope.saving = false;
+      $scope.showBackButton(false);
 
       getSelected()
         .then(function(doc) {
