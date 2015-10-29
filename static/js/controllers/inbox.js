@@ -744,7 +744,6 @@ require('moment/locales');
 
       $scope.fetchAnalyticsModules()
         .then(function(modules) {
-          console.log('checking for anc', modules);
           if (_.findWhere(modules, { id: 'anc' })) {
             Auth('can_view_analytics').then(function() {
               $scope.tours.push({
