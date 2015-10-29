@@ -25,8 +25,6 @@ var _ = require('underscore'),
     ['$q', 'Cache', 'DB',
     function($q, Cache, DB) {
 
-      var listeners = {};
-
       var cache = Cache({
         get: function(callback) {
           DB.get()
@@ -41,24 +39,9 @@ var _ = require('underscore'),
       });
 
       return function() {
-        var self = $q(function(resolve, reject) {
-          cache(function(err, settings) {
-            if (err) {
-              return reject(err);
-            }
-            resolve(settings);
-          });
-        });
+        var listeners = {};
 
-        self.then(function(settings) {
-          self.emit('change', settings);
-        });
-
-        self.catch(function(err) {
-          self.emit('error', err);
-        });
-
-        self.emit = function(event, data) {
+        function emit(event, data) {
           _.each(listeners[event], function(callback) {
             try {
               callback(data);
@@ -66,20 +49,29 @@ var _ = require('underscore'),
               console.error('Error triggering listener callback.', event, data, callback);
             }
           });
+        }
 
-          return self;
-        };
+        var deferred = $q(function(resolve, reject) {
+          cache(function(err, settings) {
+            if (err) {
+              emit('error', err);
+              return reject(err);
+            }
+            emit('change', settings);
+            resolve(settings);
+          });
+        });
 
-        self.on = function(event, callback) {
+        deferred.on = function(event, callback) {
           if (!listeners[event]) {
             listeners[event] = [];
           }
           listeners[event].push(callback);
 
-          return self;
+          return deferred;
         };
 
-        return self;
+        return deferred;
       };
     }
   ]);
