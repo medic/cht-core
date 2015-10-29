@@ -59,7 +59,7 @@ var _ = require('underscore'),
         });
 
         self.emit = function(event, data) {
-          _.each(listeners[event] || [], function(callback) {
+          _.each(listeners[event], function(callback) {
             try {
               callback(data);
             } catch(e) {
