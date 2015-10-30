@@ -175,8 +175,49 @@ angular.module('inboxServices').service('Enketo', [
 
           wrapper.find('input').on('keydown', handleKeypressOnInputField);
 
+          // handle page turning using browser history
+          window.history.replaceState({ enketo_page_number: 0 }, '');
+          overrideNavigationButtons(form, wrapper);
+          addPopStateHandler(form, wrapper);
+
           return form;
         });
+    };
+
+    var overrideNavigationButtons = function(form, $wrapper) {
+      $wrapper.find('.btn.next-page')
+        .off('.pagemode')
+        .on('click.pagemode', function() {
+          form.getView().pages.next()
+            .then(function(newPageIndex) {
+              if(typeof newPageIndex === 'number') {
+                window.history.pushState({ enketo_page_number: newPageIndex }, '');
+              }
+            });
+          return false;
+        });
+
+      $wrapper.find('.btn.previous-page')
+        .off('.pagemode')
+        .on('click.pagemode', function() {
+          window.history.back();
+          return false;
+        });
+    };
+
+    var addPopStateHandler = function(form, $wrapper) {
+      $(window).on('popstate.enketo-pagemode', function(event) {
+        if(event.originalEvent &&
+            event.originalEvent.state &&
+            typeof event.originalEvent.state.enketo_page_number === 'number') {
+          var targetPage = event.originalEvent.state.enketo_page_number;
+
+          if ($wrapper.find('.container').not(':empty')) {
+            var pages = form.getView().pages;
+            pages.flipTo(pages.getAllActive()[targetPage], targetPage);
+          }
+        }
+      });
     };
 
     this.render = function(wrapper, formInternalId, instanceData) {
@@ -277,6 +318,7 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     this.unload = function(form) {
+      $(window).off('.enketo-pagemode');
       if (form) {
         form.resetView();
       }

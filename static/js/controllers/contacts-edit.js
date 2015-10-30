@@ -14,6 +14,12 @@
       $scope.setShowContent(true);
       $scope.showBackButton(false);
 
+      $scope.$on('$destroy', function() {
+        if ($scope.enketo_contact && $scope.enketo_contact.formInstance) {
+          Enketo.unload($scope.enketo_contact.formInstance);
+        }
+      });
+
       var getVisibleLevel = function() {
         return $q(function(resolve, reject) {
           UserDistrict(function(err, facility_id) {
