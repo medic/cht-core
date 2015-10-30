@@ -1,6 +1,7 @@
 <div class="inner" data-page="reporting_rates" ng-cloak>
   <ng-include src="'templates/partials/analytics/stock.html'"></ng-include>
   <ng-include src="'templates/partials/analytics/anc.html'"></ng-include>
+  <ng-include src="'templates/partials/analytics/targets.html'"></ng-include>
   <div class="col-sm-12 no-records" ng-show="!loading && !analyticsModules.length">
     {{'analytics.unconfigured' | translate}}
   </div>

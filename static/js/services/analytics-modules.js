@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('AnalyticsModules',
-    ['$rootScope', '$timeout', 'SettingsP', 'HttpWrapper', 'translateFilter', 'DB', 'UserDistrict', 'District', 'DbView', 'ChildFacility', 'FormatDataRecord',
-    function($rootScope, $timeout, SettingsP, HttpWrapper, translateFilter, DB, UserDistrict, District, DbView, ChildFacility, FormatDataRecord) {
+    ['$rootScope', '$timeout', '$log', 'SettingsP', 'HttpWrapper', 'translateFilter', 'DB', 'UserDistrict', 'District', 'DbView', 'ChildFacility', 'FormatDataRecord', 'Search',
+    function($rootScope, $timeout, $log, SettingsP, HttpWrapper, translateFilter, DB, UserDistrict, District, DbView, ChildFacility, FormatDataRecord, Search) {
 
       var request = function(url, district, callback) {
         HttpWrapper.get(url, { params: { district: district, cache: true } })
@@ -18,7 +18,7 @@ var _ = require('underscore'),
             callback(null, data);
           })
           .error(function(data) {
-            console.log('Error requesting module', data);
+            $log.error('Error requesting module', data);
             callback(new Error(data));
           });
       };
@@ -52,7 +52,7 @@ var _ = require('underscore'),
             UserDistrict(function(err, district) {
 
               if (err) {
-                return console.log('Error fetching district', err);
+                return $log.error('Error fetching district', err);
               }
 
               request('/api/active-pregnancies', district, function(err, data) {
@@ -199,6 +199,37 @@ var _ = require('underscore'),
         };
       };
 
+      var getTargetsModule = function() {
+        return {
+          id: 'targets',
+          label: 'analytics.targets',
+          available: function() {
+            // TODO replace this with logic when we have configuration to check
+            return true;
+          },
+          render: function(scope) {
+            scope.targets = [];
+            var searchScope = {
+              filterModel: {
+                type: 'contacts',
+                contactTypes: [ 'clinic' ]
+              },
+              filterQuery: ''
+            };
+            Search(searchScope, { limit: 10000 }, function(err, data) {
+              if (err) {
+                $log.error('Error fetching number of registrations', err);
+                return;
+              }
+              scope.targets.push({
+                name: 'analytics.targets.registrations',
+                value: data.length
+              });
+            });
+          }
+        };
+      };
+
       var getStockMonitoringModule = function(settings) {
         return {
           id: 'stock',
@@ -247,7 +278,7 @@ var _ = require('underscore'),
                     });
                   })
                   .catch(function(err) {
-                    console.log('Error getting doc', err);
+                    $log.error('Error getting doc', err);
                   });
               }
             };
@@ -280,7 +311,7 @@ var _ = require('underscore'),
                 .then(function(district) {
                   ChildFacility(district, function(err, facilities) {
                     if (err) {
-                      return console.log(err);
+                      return $log.error(err);
                     }
                     getViewReports(DbView, district, dates, function(err, reports) {
                       scope.totals = stockUtils.getTotals(facilities, reports, dates);
@@ -320,14 +351,14 @@ var _ = require('underscore'),
                   });
                 })
                 .catch(function(err) {
-                  console.log(err);
+                  $log.error(err);
                 });
             };
 
             UserDistrict(function(err, district) {
 
               if (err) {
-                return console.log('Error fetching district', err);
+                return $log.error('Error fetching district', err);
               }
 
               if (district) {
@@ -336,7 +367,7 @@ var _ = require('underscore'),
                 // national admin
                 District(function(err, districts) {
                   if (err) {
-                    console.log(err);
+                    $log.error(err);
                   }
                   scope.districts = districts;
                 });
@@ -350,7 +381,8 @@ var _ = require('underscore'),
       var getModules = function(settings) {
         return _.filter([
           getAncModule(settings),
-          getStockMonitoringModule(settings)
+          getStockMonitoringModule(settings),
+          getTargetsModule(settings)
         ], function(module) {
           return module.available();
         });
