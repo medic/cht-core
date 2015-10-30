@@ -1,5 +1,6 @@
 var _ = require('underscore'),
     scrollLoader = require('../modules/scroll-loader'),
+    async = require('async'),
     types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
 
 (function () {
@@ -9,8 +10,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', 
-    ['$rootScope', '$scope', '$state', '$timeout', 'ContactSchema', 'Search', 'Changes',
-    function ($rootScope, $scope, $state, $timeout, ContactSchema, Search, Changes) {
+    ['$rootScope', '$scope', '$state', '$timeout', '$log', 'ContactSchema', 'UserDistrict', 'Search', 'Changes',
+    function ($rootScope, $scope, $state, $timeout, $log, ContactSchema, UserDistrict, Search, Changes) {
 
       $scope.filterModel.type = 'contacts';
       $scope.contacts = [];
@@ -64,12 +65,19 @@ var _ = require('underscore'),
         if (options.skip) {
           options.skip = $scope.contacts.length;
         }
-        Search($scope, options, function(err, data) {
+        async.parallel([_.partial(Search, $scope, options), UserDistrict ], function(err, results) {
           $scope.loading = false;
           $scope.appending = false;
           if (err) {
             $scope.error = true;
-            return console.log('Error searching for contacts', err);
+            return $log.error('Error searching for contacts', err);
+          }
+          var data = results[0];
+          var district = results[1];
+          if (district) {
+            data = _.reject(data, function(c) {
+              return c._id === district;
+            });
           }
           $scope.moreItems = data.length >= options.limit;
           if (options.skip) {
