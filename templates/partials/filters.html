@@ -283,10 +283,14 @@
     </div>
 
     <div class="right-pane">
-      <span class="slide-back" ng-click="back()">
+      <span class="slide-back" ng-click="back()" ng-hide="hideTitleBarBackButton">
         <a id="back">
-          <span class="fa fa-chevron-left" title="{{'Back' | translate}}" ng-hide="hideTitleBarBackButton"></span>
-          <span class="fa fa-times" title="{{'Close' | translate}}" ng-show="hideTitleBarBackButton"></span>
+          <span class="fa fa-chevron-left" title="{{'Back' | translate}}"></span>
+        </a>
+      </span>
+      <span class="slide-back" ng-click="closeContentPane()" ng-show="hideTitleBarBackButton">
+        <a id="back">
+          <span class="fa fa-times" title="{{'Close' | translate}}"></span>
         </a>
       </span>
       <h2>{{title}}</h2>

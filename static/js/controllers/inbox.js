@@ -65,6 +65,10 @@ require('moment/locales');
       };
 
       $scope.back = function() {
+        window.history.back();
+      };
+
+      $scope.closeContentPane = function() {
         $scope.clearSelected();
         $state.go($scope.filterModel.type);
       };
