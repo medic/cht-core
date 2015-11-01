@@ -106,7 +106,12 @@ angular.module('inboxServices').service('Enketo', [
         data.user = settings;
         var xml = $($.parseXML(model));
         var instanceRoot = xml.find('model instance');
-        bindJsonToXml(instanceRoot.find('inputs'), data);
+        var bindRoot = instanceRoot.find('inputs');
+        if (!bindRoot.length) {
+          // used for the default contact schema forms
+          bindRoot = instanceRoot.find('data');
+        }
+        bindJsonToXml(bindRoot, data);
         deferred.resolve(instanceRoot.html());
       });
       return deferred.promise;

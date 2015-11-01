@@ -95,8 +95,9 @@
         if (!$scope.contact || !$scope.contact.type) {
           return null;
         }
-        var fields = Object.keys($scope.unmodifiedSchema[$scope.contact.type].fields);
-        return EnketoTranslation.jsToFormInstanceData($scope.contact, fields);
+        var result = {};
+        result[$scope.contact.type] = $scope.contact;
+        return result;
       };
 
       var getContact = function() {
