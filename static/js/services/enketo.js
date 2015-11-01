@@ -99,16 +99,16 @@ angular.module('inboxServices').service('Enketo', [
       }
       data = data || {};
       var deferred = $q.defer();
-        UserSettings(function(err, settings) {
-          if (err) {
-            return deferred.reject(err);
-          }
-          data.user = settings;
-          var xml = $($.parseXML(model));
-          var instanceRoot = xml.find('model instance');
-          bindJsonToXml(instanceRoot.find('inputs'), data);
-          deferred.resolve(instanceRoot.html());
-        });
+      UserSettings(function(err, settings) {
+        if (err) {
+          return deferred.reject(err);
+        }
+        data.user = settings;
+        var xml = $($.parseXML(model));
+        var instanceRoot = xml.find('model instance');
+        bindJsonToXml(instanceRoot.find('inputs'), data);
+        deferred.resolve(instanceRoot.html());
+      });
       return deferred.promise;
     };
 
