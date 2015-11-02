@@ -164,19 +164,21 @@ var _ = require('underscore'),
               $scope.appending = false;
               $scope.error = false;
               $scope.errorSyntax = false;
-              $scope.update(data);
-              var curr = _.findWhere(data, { _id: $state.params.id });
-              if (curr) {
-                $scope.setSelected(curr);
-              } else if (!$('#back').is(':visible') &&
-                         !$scope.selected &&
-                         $state.is('reports.detail')) {
-                $timeout(function() {
-                  var id = $('.inbox-items li').first().attr('data-record-id');
-                  $state.go('reports.detail', { id: id }, { location: 'replace' });
-                });
-              }
-              _initScroll();
+              $timeout(function() {
+                $scope.update(data);
+                var curr = _.findWhere(data, { _id: $state.params.id });
+                if (curr) {
+                  $scope.setSelected(curr);
+                } else if (!$('#back').is(':visible') &&
+                           !$scope.selected &&
+                           $state.is('reports.detail')) {
+                  $timeout(function() {
+                    var id = $('.inbox-items li').first().attr('data-record-id');
+                    $state.go('reports.detail', { id: id }, { location: 'replace' });
+                  });
+                }
+                _initScroll();
+              });
             })
             .catch(function(err) {
               $scope.error = true;
