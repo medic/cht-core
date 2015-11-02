@@ -65,7 +65,10 @@ var _ = require('underscore'),
         if (options.skip) {
           options.skip = $scope.contacts.length;
         }
-        async.parallel([_.partial(Search, $scope, options), UserDistrict ], function(err, results) {
+        // curry the Search service so async.parallel can provide the
+        // callback as the final callback argument
+        var contactSearch = _.partial(Search, $scope, options);
+        async.parallel([ contactSearch, UserDistrict ], function(err, results) {
           $scope.loading = false;
           $scope.appending = false;
           if (err) {
