@@ -101,10 +101,10 @@ function markdownToHtml( e ) {
         html = $( this ).html();
 
         // Convert markdown
-        html = html.replace( /__([^\s][^_]*[^\s])__/gm, '<strong>$1</strong>' );
-        html = html.replace( /\*\*([^\s][^\*]*[^\s])\*\*/gm, '<strong>$1</strong>' );
-        html = html.replace( /_([^\s][^_]*[^\s])_/gm, '<em>$1</em>' );
-        html = html.replace( /\*([^\s][^\*]*[^\s])\*/gm, '<em>$1</em>' );
+        html = html.replace( /__([^\s]([^_]*[^\s])?)__/gm, '<strong>$1</strong>' );
+        html = html.replace( /\*\*([^\s]([^*]*[^\s])?)\*\*/gm, '<strong>$1</strong>' );
+        html = html.replace( /_([^_\s]([^_]*[^_\s])?)_/gm, '<em>$1</em>' );
+        html = html.replace( /\*([^*\s]([^\*]*[^*\s])?)\*/gm, '<em>$1</em>' );
         html = html.replace( /\[([^\]]*)\]\(([^\)]+)\)/gm, '<a href="$2" target="_blank">$1</a>' );
         html = html.replace( /\n/gm, '<br />' );
 
