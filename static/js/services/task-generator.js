@@ -164,6 +164,18 @@ var nools = require('nools'),
         });
       };
 
+      var updateReport = function(doc) {
+        for (var j = 0; j < facts.length; j++) {
+          var fact = facts[j];
+          for (var i = 0; i < fact.reports.length; i++) {
+            if (fact.reports[i]._id === doc._id) {
+              fact.reports[i] = doc;
+              return fact;
+            }
+          }
+        }
+      };
+
       var updateTasks = function(change) {
         var fact;
         if (change.deleted) {
@@ -182,8 +194,13 @@ var nools = require('nools'),
           if (change.newDoc.form) {
             // new report
             fact = findFact(getContactId(change.newDoc));
-            fact.reports.push(change.newDoc);
-            session.modify(fact);
+            if (fact) {
+              fact.reports.push(change.newDoc);
+              session.modify(fact);
+            } else {
+              // new report for unknown contact
+              session.assert(new Contact({ reports: [ change.newDoc ] }));
+            }
           } else {
             // new contact
             session.assert(new Contact({ contact: change.newDoc, reports: [] }));
@@ -191,20 +208,17 @@ var nools = require('nools'),
         } else {
           DB.get().get(change.id)
             .then(function(doc) {
-              fact = findFact(change.id);
               if (doc.form) {
                 // updated report
-                for (var i = 0; i < fact.reports.length; i++) {
-                  if (fact.reports[i]._id === change.id) {
-                    fact.reports[i] = doc;
-                    break;
-                  }
-                }
+                fact = updateReport(doc);
               } else {
                 // updated contact
+                fact = findFact(change.id);
                 fact.contact = doc;
               }
-              session.modify(fact);
+              if (fact) {
+                session.modify(fact);
+              }
             })
             .catch(notifyCallbacks);
         }

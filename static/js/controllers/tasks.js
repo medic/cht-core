@@ -28,8 +28,7 @@ var _ = require('underscore');
 
       var mergeTasks = function(tasks) {
         $timeout(function() {
-          var unresolved = _.where(tasks, { resolved: false });
-          unresolved.forEach(function(task) {
+          tasks.forEach(function(task) {
             if ($scope.selected && task._id === $scope.selected._id ||
                (!$scope.selected && task._id === $state.params.id)) {
               setSelectedTask(task);
