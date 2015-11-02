@@ -9,6 +9,7 @@
     function ($scope, $stateParams, Changes, MessageState) {
 
       $scope.selectReport($stateParams.id);
+      $scope.showBackButton();
       $('.tooltip').remove();
 
       $scope.canMute = function(group) {
