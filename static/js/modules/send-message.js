@@ -185,15 +185,6 @@ var _ = require('underscore'),
         templateSelection: formatResult,
       });
     });
-
-/*
-    if(false) { $phone.select2({
-      createSearchChoice: function(term, data) {
-        if (/^\+?\d*$/.test(term) && data.length === 0) {
-          return createChoiceFromNumber(term);
-        }
-      }
-    }) }; */
   };
 
   exports.showModal = function(options) {
