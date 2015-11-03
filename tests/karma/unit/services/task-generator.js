@@ -6,7 +6,6 @@ describe('TaskGenerator service', function() {
       SettingsP,
       Changes,
       DBGet,
-      $rootScope,
       injector;
 
   /* jshint quotmark: false */
@@ -199,10 +198,10 @@ describe('TaskGenerator service', function() {
       $provide.value('Search', Search);
       $provide.value('SettingsP', SettingsP);
       $provide.value('Changes', Changes);
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.factory('DB', KarmaUtils.mockDB({ get: DBGet }));
     });
-    inject(function($injector, _$rootScope_) {
-      $rootScope = _$rootScope_;
+    inject(function($injector) {
       injector = $injector;
     });
   });
@@ -225,9 +224,6 @@ describe('TaskGenerator service', function() {
       chai.expect(Search.callCount).to.equal(2);
       done();
     });
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
   });
 
   it('returns settingsP errors', function(done) {
@@ -237,9 +233,6 @@ describe('TaskGenerator service', function() {
       chai.expect(err).to.equal('boom');
       chai.expect(SettingsP.callCount).to.equal(1);
       done();
-    });
-    setTimeout(function() {
-      $rootScope.$digest();
     });
   });
 
@@ -251,9 +244,6 @@ describe('TaskGenerator service', function() {
       chai.expect(SettingsP.callCount).to.equal(1);
       chai.expect(actual).to.deep.equal([]);
       done();
-    });
-    setTimeout(function() {
-      $rootScope.$digest();
     });
   });
 
@@ -359,9 +349,6 @@ describe('TaskGenerator service', function() {
         }
       });
     });
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
   });
 
   it('caches tasks', function(done) {
@@ -390,15 +377,9 @@ describe('TaskGenerator service', function() {
           chai.expect(actual).to.deep.equal(_.values(expected));
           done();
         });
-        setTimeout(function() {
-          $rootScope.$digest();
-        });
       }
     });
 
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
   });
 
   it('updates when a contact is deleted', function(done) {
@@ -442,9 +423,6 @@ describe('TaskGenerator service', function() {
         chai.expect(actual[0].contact).to.equal(null);
         done();
       }
-    });
-    setTimeout(function() {
-      $rootScope.$digest();
     });
   });
 
@@ -501,9 +479,6 @@ describe('TaskGenerator service', function() {
         done();
       }
     });
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
   });
 
   it('updates when a contact is added', function(done) {
@@ -549,9 +524,6 @@ describe('TaskGenerator service', function() {
         chai.expect(actual[0].contact._id).to.equal(4);
         done();
       }
-    });
-    setTimeout(function() {
-      $rootScope.$digest();
     });
   });
 
@@ -607,9 +579,6 @@ describe('TaskGenerator service', function() {
         done();
       }
     });
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
   });
 
   it('updates when a contact is updated', function(done) {
@@ -655,9 +624,6 @@ describe('TaskGenerator service', function() {
         chai.expect(actual[0].contact.name).to.equal('Jennifer');
         done();
       }
-    });
-    setTimeout(function() {
-      $rootScope.$digest();
     });
   });
 
@@ -713,9 +679,6 @@ describe('TaskGenerator service', function() {
         chai.expect(actual[0].doc.fields.last_menstrual_period).to.equal(15);
         done();
       }
-    });
-    setTimeout(function() {
-      $rootScope.$digest();
     });
   });
 

@@ -49,15 +49,15 @@ var nools = require('nools'),
       };
 
       var search = function(scope) {
-        return $q(function(resolve, reject) {
-          var options = { limit: 99999999 };
-          Search(scope, options, function(err, docs) {
-            if (err) {
-              return reject(err);
-            }
-            resolve(docs);
-          });
+        var deferred = $q.defer();
+        var options = { limit: 99999999 };
+        Search(scope, options, function(err, docs) {
+          if (err) {
+            return deferred.reject(err);
+          }
+          deferred.resolve(docs);
         });
+        return deferred.promise;
       };
 
       var getContacts = function() {
@@ -108,11 +108,7 @@ var nools = require('nools'),
       };
 
       var getData = function() {
-        return $q.all([ getDataRecords(), getContacts() ])
-          .then(function(results) {
-            facts = deriveFacts(results[0], results[1]);
-            $q.resolve();
-          });
+        return $q.all([ getDataRecords(), getContacts() ]);
       };
 
       var notifyCallbacks = function(_err, _task) {
@@ -241,20 +237,26 @@ var nools = require('nools'),
 
       var init = SettingsP()
         .then(function(settings) {
+          var deferred = $q.defer();
           if (!settings.tasks ||
               !settings.tasks.rules ||
               !settings.tasks.schedules) {
             // no rules or schedules configured
-            return $q.resolve();
+            deferred.resolve();
+            return deferred.promise;
           }
           if (!flow) {
             initNools(settings);
           }
           registerListener();
-          return getData().then(function() {
-            getTasks();
-            return $q.resolve();
-          });
+          getData()
+            .then(function(results) {
+              facts = deriveFacts(results[0], results[1]);
+              getTasks();
+              deferred.resolve();
+            })
+            .catch(deferred.reject);
+          return deferred.promise;
         });
 
       return function(name, callback) {
