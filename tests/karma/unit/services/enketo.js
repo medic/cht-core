@@ -411,6 +411,43 @@ describe('Enketo service', function() {
         .catch(done);
     });
 
+    it('creates report with hidden outputs', function(done) {
+      form.validate.returns(KarmaUtils.mockPromise(null, true));
+      var content =
+        '<doc><outputs>' +
+          '<name>Sally</name>' +
+          '<lmp>10</lmp>' +
+          '<secret_code_name tag="hidden">S4L</secret_code_name>' +
+        '</outputs></doc>';
+      form.getDataStr.returns(content);
+      dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
+      UserSettings.callsArgWith(0, null, { contact_id: '123' });
+      dbGet.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' } ));
+      service.save('V', form)
+        .then(function(actual) {
+          chai.expect(form.validate.callCount).to.equal(1);
+          chai.expect(form.getDataStr.callCount).to.equal(1);
+          chai.expect(dbPost.callCount).to.equal(1);
+          chai.expect(UserSettings.callCount).to.equal(1);
+          chai.expect(dbGet.callCount).to.equal(1);
+          chai.expect(dbGet.args[0][0]).to.equal('123');
+          chai.expect(actual._id).to.equal('5');
+          chai.expect(actual._rev).to.equal('1-abc');
+          chai.expect(actual.content).to.equal(content);
+          chai.expect(actual.fields.name).to.equal('Sally');
+          chai.expect(actual.fields.lmp).to.equal('10');
+          chai.expect(actual.fields.secret_code_name).to.equal('S4L');
+          chai.expect(actual.form).to.equal('V');
+          chai.expect(actual.type).to.equal('data_record');
+          chai.expect(actual.content_type).to.equal('xml');
+          chai.expect(actual.contact._id).to.equal('123');
+          chai.expect(actual.from).to.equal('555');
+          chai.expect(actual.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+          done();
+        })
+        .catch(done);
+    });
+
     it('updates report', function(done) {
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content = '<doc><outputs><name>Sally</name><lmp>10</lmp></outputs></doc>';

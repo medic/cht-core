@@ -85,7 +85,22 @@ var _ = require('underscore'),
         }
       };
 
+      var updateDisplayFields = function(report) {
+        // calculate fields to display
+        var keys = Object.keys(report.fields);
+        report.display_fields = {};
+        _.each(keys, function(k) {
+          if(!(report.hidden_fields && _.contains(report.hidden_fields, k))) {
+            report.display_fields[k] = report.fields[k];
+          }
+        });
+      };
+
       $scope.setSelected = function(doc) {
+        if (doc.type === 'data_record') {
+          updateDisplayFields(doc);
+        }
+
         var refreshing = doc && $scope.selected && $scope.selected.id === doc._id;
         $scope.selected = doc;
         setTitle(doc);

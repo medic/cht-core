@@ -235,6 +235,20 @@ angular.module('inboxServices').service('EnketoTranslation', [
       return root.xml();
     }
 
+    this.getHiddenFieldList = function(model) {
+      model = $.parseXML(model).firstChild;
+      var outputs = findChildNode(model, 'outputs');
+      return withElements(outputs.childNodes)
+        .filter(function(n) {
+          var attr = n.attributes.getNamedItem('tag');
+          return attr && attr.value === 'hidden';
+        })
+        .map(function(n) {
+          return n.nodeName;
+        })
+        .value();
+    };
+
     this.generateXform = function(schema, options) {
       if(options || true) {
         return generateXformWithOptions(schema, options);

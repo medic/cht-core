@@ -34,7 +34,7 @@
             </label>
             <p>{{field.value}}</p>
           </li>
-          <li ng-if="selected.form && selected.content_type === 'xml'" ng-repeat="(k, v) in selected.fields">
+          <li ng-if="selected.form && selected.content_type === 'xml'" ng-repeat="(k, v) in selected.display_fields">
             <label>
               {{'report.' + selected.form + '.' + k | translate}}
             </label>

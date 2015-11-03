@@ -682,4 +682,39 @@ describe('EnketoTranslation service', function() {
       });
     });
   });
+
+  describe('#getHiddenFieldList()', function() {
+    it('returns of one an empty array if no fields are hidden', function() {
+      // given
+      var xml =
+        '<doc><outputs>' +
+          '<name>Sally</name>' +
+          '<lmp>10</lmp>' +
+        '</outputs></doc>';
+
+      // when
+      var hidden_fields = service.getHiddenFieldList(xml);
+
+      // then
+      assert.deepEqual(hidden_fields, []);
+    });
+
+    it('returns an array containing fields tagged `hidden`', function() {
+      // given
+      var xml =
+        '<doc><outputs>' +
+          '<name>Sally</name>' +
+          '<secret_code_name_one tag="hidden">S4L</secret_code_name_one>' +
+          '<secret_code_name_two tag="hidden">S5L</secret_code_name_two>' +
+          '<lmp>10</lmp>' +
+        '</outputs></doc>';
+
+      // when
+      var hidden_fields = service.getHiddenFieldList(xml);
+
+      // then
+      assert.deepEqual(hidden_fields, [ 'secret_code_name_one', 'secret_code_name_two' ]);
+    });
+  });
+
 });

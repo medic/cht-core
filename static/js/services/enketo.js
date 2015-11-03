@@ -284,7 +284,8 @@ angular.module('inboxServices').service('Enketo', [
             content_type: 'xml',
             reported_date: Date.now(),
             contact: contact,
-            from: contact && contact.phone
+            from: contact && contact.phone,
+            hidden_fields: EnketoTranslation.getHiddenFieldList(record),
           };
           return DB.get().post(doc).then(function(res) {
             doc._id = res.id;
