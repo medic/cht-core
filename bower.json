@@ -26,7 +26,6 @@
     "fontawesome": "~4.4.0",
     "jquery": "~2.1.4",
     "moment": "~2.10.6",
-    "ng-file-upload": "~6.0.3",
     "nvd3": "~1.1.15-beta",
     "pouchdb": "~5.0.0",
     "select2": "https://github.com/mandric/select2.git#android-debounce-fix",

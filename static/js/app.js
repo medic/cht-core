@@ -22,7 +22,6 @@ _.templateSettings = {
     'inboxServices',
     'pascalprecht.translate',
     'nvd3ChartDirectives',
-    'ngFileUpload',
     'pouchdb'
   ]);
 

@@ -10,11 +10,14 @@ var _ = require('underscore'),
   inboxServices.factory('Settings', ['SettingsP',
     function(SettingsP) {
       return function(callback) {
-        SettingsP()
-          .on('change', function(settings) {
-            callback(null, settings);
-          })
-          .on('error', callback);
+        var p = SettingsP();
+        p.then(function(settings) {
+          callback(null, settings);
+        });
+        p.on('change', function(settings) {
+          callback(null, settings);
+        });
+        p.on('error', callback);
       };
     }
   ]);
