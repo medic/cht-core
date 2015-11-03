@@ -90,7 +90,12 @@ var utils = require('kujua-utils'),
 
           // Listen for remote ddoc changes
           getRemote()
-            .changes({ live: true, since: 'now', doc_ids: [ '_design/medic' ] })
+            .changes({
+              live: true,
+              since: 'now',
+              doc_ids: [ '_design/medic' ],
+              timeout: 1000 * 60 * 60
+            })
             .on('change', function(change) {
               if (isAdmin()) {
                 // admins access ddoc from remote db directly so

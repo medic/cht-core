@@ -44,7 +44,11 @@
 
       if (!E2ETESTING) {
         DB.get()
-          .changes({ live: true, since: 'now' })
+          .changes({
+            live: true,
+            since: 'now',
+            timeout: 1000 * 60 * 60
+          })
           .on('change', function(change) {
             collectData(change, function() {
               notifyAll(change);
