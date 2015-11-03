@@ -41,16 +41,27 @@ define( function( require, exports, module ) {
 
         var formatResult = function(row) {
             if(!row.doc) {
-                return row.text;
+                return $('<p>' + (row.text || '&nbsp;') + '</p>');
             }
             if(row.doc.type === 'person') {
-                return format.contact(row.doc);
+                return $(format.contact(row.doc));
             }
             return format.clinic(row.doc);
         };
 
+        var formatSelection = function(row) {
+            if(row.doc) {
+                return row.doc.name;
+            }
+            return row.text;
+        };
+
         var $question = $(this.element);
+
         var textInput = $question.find('input');
+        textInput.replaceWith(textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
+        textInput = $question.find('select');
+
         var dbObjectType = textInput.attr('data-type-xml');
 
         var loader = $('<div class="loader"/></div>');
@@ -72,23 +83,17 @@ define( function( require, exports, module ) {
                     });
                 }
                 // add blank option
-                rows.unshift({ id: '', text: '&nbsp;' });
+                rows.unshift({ id: '' });
 
                 textInput.select2({
                     data: rows,
-                    formatResult: formatResult,
-                    formatSelection: formatResult,
+                    templateResult: formatResult,
+                    templateSelection: formatSelection,
                     width: '100%',
                 });
 
                 // Tell enketo to ignore the new <input> field that select2 adds
                 textInput.parent().find('input.select2-focusser').addClass('ignore');
-
-                // apologies - here we open and close the select2 - this works
-                // around a bug which would otherwise ignore the `required`
-                // attribute.
-                textInput.select2('open');
-                textInput.select2('close');
 
                 if (!$question.hasClass('or-appearance-bind-id-only')) {
                     textInput.on('change', function(e) {
