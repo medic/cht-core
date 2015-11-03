@@ -171,29 +171,35 @@ require('moment/locales');
           function formatResult(doc) {
             return doc && format.contact(doc);
           }
-          $('.update-facility [name=facility], #edit-user-profile [name=contact]').select2({
-            id: function(doc) {
-              return doc._id;
-            },
-            width: '100%',
-            escapeMarkup: function(m) {
-              return m;
-            },
-            formatResult: formatResult,
-            formatSelection: formatResult,
-            initSelection: function (element, callback) {
-              var e = element.val();
-              if (!e) {
-                return callback();
-              }
-              var row = _.findWhere(people, { _id: e });
-              if (!row) {
-                return callback();
-              }
-              callback(row);
-            },
-            query: function(options) {
-              var terms = options.term.toLowerCase().split(/\s+/);
+
+          function $formatResult(data) {
+            if (data.text) {
+              return data.text;
+            }
+            return $(formatResult(data.doc));
+          }
+
+          $.fn.select2.amd.require(
+          ['select2/data/array', 'select2/utils'],
+          function (ArrayData, Utils) {
+            function CustomData ($element, options) {
+              CustomData.__super__.constructor.call(this, $element, options);
+            }
+
+            Utils.Extend(CustomData, ArrayData);
+
+            function sortResults(results) {
+              results.sort(function(a, b) {
+                var aName = formatResult(a).toLowerCase();
+                var bName = formatResult(b).toLowerCase();
+                return aName.localeCompare(bName);
+              });
+              return results;
+            }
+
+            CustomData.prototype.query = function (params, callback) {
+              var terms = params.term ? params.term.toLowerCase().split(/\s+/) : [];
+
               var matches = _.filter(people, function(doc) {
                 var contact = doc.contact;
                 var name = contact && contact.name;
@@ -203,17 +209,24 @@ require('moment/locales');
                   return tags.indexOf(term) > -1;
                 });
               });
-              options.callback({ results: matches });
-            },
-            sortResults: function(results) {
-              results.sort(function(a, b) {
-                var aName = formatResult(a).toLowerCase();
-                var bName = formatResult(b).toLowerCase();
-                return aName.localeCompare(bName);
+
+              matches = sortResults(matches);
+              matches = _.map(matches, function(doc) {
+                return { id: doc._id, doc: doc };
               });
-              return results;
-            }
+
+              callback({ results: matches });
+            };
+
+            $('.update-facility [name=facility], #edit-user-profile [name=contact]').select2({
+              dataAdapter: CustomData,
+              templateResult: $formatResult,
+              templateSelection: $formatResult,
+              width: '100%',
+            });
+
           });
+
         });
       };
       updateAvailableFacilities();
