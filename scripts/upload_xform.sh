@@ -41,8 +41,14 @@ fi
 
 ID="$1"
 shift
+
 XFORM_PATH="$1"
+if ! [[ -f "$XFORM_PATH" ]]; then
+    echo "[$SELF] ERROR: could not find xform at path: $XFORM_PATH"
+    exit 1
+fi
 shift
+
 DB="${COUCH_URL}"
 
 echo "[$SELF] parsing XML to get form title and internal ID..."
