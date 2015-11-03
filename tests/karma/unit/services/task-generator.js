@@ -3,7 +3,7 @@ describe('TaskGenerator service', function() {
   'use strict';
 
   var Search,
-      Settings,
+      SettingsP,
       Changes,
       DBGet,
       $rootScope,
@@ -191,13 +191,13 @@ describe('TaskGenerator service', function() {
 
   beforeEach(function() {
     Search = sinon.stub();
-    Settings = sinon.stub();
+    SettingsP = sinon.stub();
     Changes = sinon.stub();
     DBGet = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.value('Search', Search);
-      $provide.value('Settings', Settings);
+      $provide.value('SettingsP', SettingsP);
       $provide.value('Changes', Changes);
       $provide.factory('DB', KarmaUtils.mockDB({ get: DBGet }));
     });
@@ -208,47 +208,53 @@ describe('TaskGenerator service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(Search, Settings, Changes, DBGet);
+    KarmaUtils.restore(Search, SettingsP, Changes, DBGet);
   });
 
   it('returns search errors', function(done) {
     Search.callsArgWith(2, 'boom');
-    Settings.callsArgWith(0, null, {
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
       }
-    });
+    }));
     var service = injector.get('TaskGenerator');
     service('test', function(err) {
       chai.expect(err).to.equal('boom');
       chai.expect(Search.callCount).to.equal(2);
       done();
     });
-    $rootScope.$digest();
+    setTimeout(function() {
+      $rootScope.$digest();
+    });
   });
 
-  it('returns settings errors', function(done) {
-    Settings.callsArgWith(0, 'boom');
+  it('returns settingsP errors', function(done) {
+    SettingsP.returns(KarmaUtils.mockPromise('boom'));
     var service = injector.get('TaskGenerator');
     service('test', function(err) {
       chai.expect(err).to.equal('boom');
-      chai.expect(Settings.callCount).to.equal(1);
+      chai.expect(SettingsP.callCount).to.equal(1);
       done();
     });
-    $rootScope.$digest();
+    setTimeout(function() {
+      $rootScope.$digest();
+    });
   });
 
-  it('returns empty when settings returns no config', function(done) {
-    Settings.callsArgWith(0, null, {});
+  it('returns empty when settingsP returns no config', function(done) {
+    SettingsP.returns(KarmaUtils.mockPromise(null, {}));
     var service = injector.get('TaskGenerator');
     service('test', function(err, actual) {
       chai.expect(Search.callCount).to.equal(0);
-      chai.expect(Settings.callCount).to.equal(1);
+      chai.expect(SettingsP.callCount).to.equal(1);
       chai.expect(actual).to.deep.equal([]);
       done();
     });
-    $rootScope.$digest();
+    setTimeout(function() {
+      $rootScope.$digest();
+    });
   });
 
   it('generates tasks when given registrations', function(done) {
@@ -262,12 +268,12 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    Settings.callsArgWith(0, null, {
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
       }
-    });
+    }));
 
     var expectations = {
       '1-visit-1': {
@@ -348,24 +354,26 @@ describe('TaskGenerator service', function() {
         callbackCount++;
         if (callbackCount === 10) {
           chai.expect(Search.callCount).to.equal(2);
-          chai.expect(Settings.callCount).to.equal(1);
+          chai.expect(SettingsP.callCount).to.equal(1);
           done();
         }
       });
     });
-    $rootScope.$digest();
+    setTimeout(function() {
+      $rootScope.$digest();
+    });
   });
 
   it('caches tasks', function(done) {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    Settings.callsArgWith(0, null, {
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
       }
-    });
+    }));
 
     var service = injector.get('TaskGenerator');
     var expected = {};
@@ -375,18 +383,22 @@ describe('TaskGenerator service', function() {
       });
       if (_.values(expected).length === 10) {
         service('another-test', function(err, actual) {
-          // Search and Settings shouldn't be called again, and
+          // Search and SettingsP shouldn't be called again, and
           // results should be the same
           chai.expect(Search.callCount).to.equal(2);
-          chai.expect(Settings.callCount).to.equal(1);
+          chai.expect(SettingsP.callCount).to.equal(1);
           chai.expect(actual).to.deep.equal(_.values(expected));
           done();
         });
-        $rootScope.$digest();
+        setTimeout(function() {
+          $rootScope.$digest();
+        });
       }
     });
 
-    $rootScope.$digest();
+    setTimeout(function() {
+      $rootScope.$digest();
+    });
   });
 
   it('updates when a contact is deleted', function(done) {
@@ -410,12 +422,12 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    Settings.callsArgWith(0, null, {
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
       }
-    });
+    }));
 
     var callbackCount = 0;
     var service = injector.get('TaskGenerator');
@@ -431,7 +443,9 @@ describe('TaskGenerator service', function() {
         done();
       }
     });
-    $rootScope.$digest();
+    setTimeout(function() {
+      $rootScope.$digest();
+    });
   });
 
   it('updates when a report is deleted', function(done) {
@@ -465,12 +479,12 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    Settings.callsArgWith(0, null, {
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
       }
-    });
+    }));
 
     var callbackCount = 0;
     var service = injector.get('TaskGenerator');
@@ -487,7 +501,9 @@ describe('TaskGenerator service', function() {
         done();
       }
     });
-    $rootScope.$digest();
+    setTimeout(function() {
+      $rootScope.$digest();
+    });
   });
 
   it('updates when a contact is added', function(done) {
@@ -513,12 +529,12 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    Settings.callsArgWith(0, null, {
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
       }
-    });
+    }));
 
     var callbackCount = 0;
     var service = injector.get('TaskGenerator');
@@ -534,7 +550,9 @@ describe('TaskGenerator service', function() {
         done();
       }
     });
-    $rootScope.$digest();
+    setTimeout(function() {
+      $rootScope.$digest();
+    });
   });
 
   it('updates when a report is added', function(done) {
@@ -569,12 +587,12 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    Settings.callsArgWith(0, null, {
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
       }
-    });
+    }));
 
     var callbackCount = 0;
     var service = injector.get('TaskGenerator');
@@ -589,7 +607,9 @@ describe('TaskGenerator service', function() {
         done();
       }
     });
-    $rootScope.$digest();
+    setTimeout(function() {
+      $rootScope.$digest();
+    });
   });
 
   it('updates when a contact is updated', function(done) {
@@ -613,12 +633,12 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    Settings.callsArgWith(0, null, {
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
       }
-    });
+    }));
     DBGet.returns(KarmaUtils.mockPromise(null, { _id: 1, name: 'Jennifer' }));
 
     var callbackCount = 0;
@@ -636,7 +656,9 @@ describe('TaskGenerator service', function() {
         done();
       }
     });
-    $rootScope.$digest();
+    setTimeout(function() {
+      $rootScope.$digest();
+    });
   });
 
   it('updates when a report is updated', function(done) {
@@ -660,12 +682,12 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    Settings.callsArgWith(0, null, {
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
       }
-    });
+    }));
     DBGet.returns(KarmaUtils.mockPromise(null, {
       _id: 2,
       form: 'P',
@@ -692,7 +714,9 @@ describe('TaskGenerator service', function() {
         done();
       }
     });
-    $rootScope.$digest();
+    setTimeout(function() {
+      $rootScope.$digest();
+    });
   });
 
 });

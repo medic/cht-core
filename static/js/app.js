@@ -337,16 +337,9 @@ _.templateSettings = {
     }
   ]);
 
-  app.factory('SettingsLoader', ['$q', 'Settings', function ($q, Settings) {
+  app.factory('SettingsLoader', ['SettingsP', function (SettingsP) {
     return function (options) {
-
-      var deferred = $q.defer();
-
-      Settings(function(err, res) {
-        if (err) {
-          return deferred.reject(err);
-        }
-
+      return SettingsP().then(function(res) {
         options.key = options.key || res.locale || 'en';
 
         var test = false;
@@ -371,10 +364,8 @@ _.templateSettings = {
             data[key] = value;
           });
         }
-        deferred.resolve(data);
+        return data;
       });
-      
-      return deferred.promise;
     };
   }]);
 

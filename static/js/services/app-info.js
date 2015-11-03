@@ -8,22 +8,17 @@ var _ = require('underscore');
   
   var settings;
 
-  inboxServices.factory('AppInfo', ['$q', 'Settings',
-    function($q, Settings) {
+  inboxServices.factory('AppInfo', ['SettingsP',
+    function(SettingsP) {
       return function() {
-        return $q(function(resolve, reject) {
-          Settings(function(err, res) {
-            if (err) {
-              return reject(err);
-            }
-            settings = res;
-            resolve({
-              getForm: getForm,
-              getMessage: getMessage,
-              translate: translate,
-              formatDate: formatDate
-            });
-          });
+        return SettingsP().then(function(res) {
+          settings = res;
+          return {
+            getForm: getForm,
+            getMessage: getMessage,
+            translate: translate,
+            formatDate: formatDate
+          };
         });
       };
     }

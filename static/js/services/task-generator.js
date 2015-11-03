@@ -8,8 +8,8 @@ var nools = require('nools'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TaskGenerator', ['$q', 'DB', 'Search', 'Settings', 'Changes',
-    function($q, DB, Search, Settings, Changes) {
+  inboxServices.factory('TaskGenerator', ['$q', 'DB', 'Search', 'SettingsP', 'Changes',
+    function($q, DB, Search, SettingsP, Changes) {
 
       var contactTypes = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
       var callbacks = {};
@@ -146,17 +146,6 @@ var nools = require('nools'),
         );
       };
 
-      var getSettings = function() {
-        return $q(function(resolve, reject) {
-          Settings(function(err, settings) {
-            if (err) {
-              return reject(err);
-            }
-            resolve(settings);
-          });
-        });
-      };
-
       var findFact = function(id) {
         return _.find(facts, function(fact) {
           return fact.contact && fact.contact._id === id ||
@@ -250,7 +239,7 @@ var nools = require('nools'),
         session = flow.getSession();
       };
 
-      var init = getSettings()
+      var init = SettingsP()
         .then(function(settings) {
           if (!settings.tasks ||
               !settings.tasks.rules ||

@@ -9,7 +9,6 @@ var _ = require('underscore'),
 
   inboxServices.factory('Settings', ['SettingsP',
     function(SettingsP) {
-
       return function(callback) {
         SettingsP()
           .on('change', function(settings) {
@@ -17,7 +16,6 @@ var _ = require('underscore'),
           })
           .on('error', callback);
       };
-
     }
   ]);
 
@@ -25,21 +23,21 @@ var _ = require('underscore'),
     ['$q', 'Cache', 'DB',
     function($q, Cache, DB) {
 
+      var cache = Cache({
+        get: function(callback) {
+          DB.get()
+            .get('_design/medic')
+            .then(function(ddoc) {
+              callback(null, _.defaults(ddoc.app_settings, defaults));
+            }).catch(callback);
+        },
+        filter: function(doc) {
+          return doc._id === '_design/medic';
+        }
+      });
+
       return function() {
         var listeners = {};
-
-        var cache = Cache({
-          get: function(callback) {
-            DB.get()
-              .get('_design/medic')
-              .then(function(ddoc) {
-                callback(null, _.defaults(ddoc.app_settings, defaults));
-              }).catch(callback);
-          },
-          filter: function(doc) {
-            return doc._id === '_design/medic';
-          },
-        });
 
         function emit(event, data) {
           _.each(listeners[event], function(callback) {
