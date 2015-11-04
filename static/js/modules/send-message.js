@@ -201,7 +201,7 @@ var _ = require('underscore'),
         val.push({ id: to._id, doc: to, everyoneAt: options.everyoneAt });
       }
     }
-    $modal.find('[name=phone]').select2('data', val);
+    $modal.find('[name=phone]').val(val).trigger('change');
     $modal.find('[name=message]').val(options.message || '');
     $modal.find('.count').text('');
     $modal.modal('show');
