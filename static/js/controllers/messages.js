@@ -80,7 +80,7 @@
       updateConversations({ }, function() {
         if (!$state.params.id &&
             $scope.messages.length &&
-            !$('#back').is(':visible') &&
+            !$scope.isMobile() &&
             $state.is('messages.detail')) {
           $timeout(function() {
             var id = $('.inbox-items li').first().attr('data-record-id');

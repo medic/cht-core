@@ -58,6 +58,10 @@ require('moment/locales');
         Session.logout();
       };
 
+      $scope.isMobile = function() {
+        return $('#mobile-detection').is(':visible');
+      };
+
       $scope.setFilterQuery = function(query) {
         if (query) {
           $scope.filterQuery.value = query;
@@ -666,7 +670,7 @@ require('moment/locales');
               }
             })
             .on('mm.dateSelected.daterangepicker', function(e, picker) {
-              if ($('#back').is(':visible')) {
+              if ($scope.isMobile()) {
                 // mobile version - only show one calendar at a time
                 if (picker.container.is('.show-from')) {
                   picker.container.removeClass('show-from').addClass('show-to');

@@ -1173,11 +1173,14 @@ a.fa:hover {
   margin-bottom: 1em;
 }
 
-.mobile-only {
+.mobile-only, #mobile-detection {
   display: none;
 }
 
 @media (max-width: 767px) {
+  #mobile-detection {
+    display: inline;
+  }
   .item-content {
     border-width: 0;
     h2 {
