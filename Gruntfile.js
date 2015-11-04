@@ -20,7 +20,6 @@ module.exports = function(grunt) {
         exclude: [
           'fontawesome',
           'async',
-          'select2-bootstrap-css',
           'bootstrap-tour', // Including this includes two copies. Manually included in concat.
           'angular-mocks'
         ]
