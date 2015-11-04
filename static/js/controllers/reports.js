@@ -97,7 +97,7 @@ var _ = require('underscore'),
       };
 
       $scope.setSelected = function(doc) {
-        if (doc.type === 'data_record') {
+        if (doc.fields) {
           updateDisplayFields(doc);
         }
 

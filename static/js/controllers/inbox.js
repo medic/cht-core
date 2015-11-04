@@ -65,12 +65,11 @@ require('moment/locales');
       };
 
       $scope.back = function() {
-        window.history.back();
+        $window.history.back();
       };
 
       $scope.closeContentPane = function() {
-        $scope.clearSelected();
-        $state.go($scope.filterModel.type);
+        $state.go($scope.filterModel.type + '.detail');
       };
 
       $scope.clearSelected = function() {
