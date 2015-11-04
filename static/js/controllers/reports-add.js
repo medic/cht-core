@@ -50,7 +50,8 @@
           .then(function(doc) {
             $log.debug('saved report', doc);
             $scope.saving = false;
-            Snackbar($translate.instant($state.params.reportId ? 'report.updated' : 'report.created'));
+            $translate($state.params.reportId ? 'report.updated' : 'report.created')
+              .then(Snackbar);
             $state.go('reports.detail', { id: doc._id });
           })
           .catch(function(err) {

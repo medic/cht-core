@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsReportCtrl', 
-    ['$scope', '$state', '$log', 'DB', 'Enketo', 'TranslateFrom',
-    function ($scope, $state, $log, DB, Enketo, TranslateFrom) {
+    ['$scope', '$state', '$log', '$translate', 'DB', 'Enketo', 'TranslateFrom', 'Snackbar',
+    function ($scope, $state, $log, $translate, DB, Enketo, TranslateFrom, Snackbar) {
 
       var render = function(doc) {
         $scope.setSelected({ doc: doc });
@@ -30,6 +30,7 @@
           .then(function(doc) {
             $log.debug('saved report', doc);
             $scope.saving = false;
+            $translate('report.created').then(Snackbar);
             $state.go('contacts.detail', { id: $state.params.id });
           })
           .catch(function(err) {

@@ -191,7 +191,7 @@
               .then(function(doc) {
                 $log.debug('saved report', doc);
                 $scope.saving = false;
-                Snackbar($translate.instant(docId ? 'contact.updated' : 'contact.created'));
+                $translate(docId ? 'contact.updated' : 'contact.created').then(Snackbar);
                 $state.go('contacts.detail', { id: doc._id });
               })
               .catch(function(err) {
