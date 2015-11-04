@@ -117,12 +117,13 @@ var _ = require('underscore'),
   };
 
   var filter = function(options, contacts) {
-    var terms = _.map(options.term.toLowerCase().split(/\s+/), function(term) {
-      if (libphonenumber.validate(settings, term)) {
-        return libphonenumber.format(settings, term);
-      }
-      return term;
-    });
+    var terms = options.term ?
+      _.map(options.term.toLowerCase().split(/\s+/), function(term) {
+        if (libphonenumber.validate(settings, term)) {
+          return libphonenumber.format(settings, term);
+        }
+        return term;
+      }) : [];
     var matches = _.filter(contacts, function(val) {
       var tags = [ val.name, val.phone ];
       var parent = val.parent;
