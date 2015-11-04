@@ -90,7 +90,7 @@
           <h3>{{'Tasks' | translate}}</h3>
           <div class="card action-list">
             <ul>
-              <li ng-repeat="task in selected.tasks">
+              <li ng-repeat="task in selected.tasks | filter:{resolved:false}:strict | orderBy:'date'">
                 <a ui-sref="tasks.detail({ id: task._id })">
                   <span ng-bind-html="task.icon | resourceIcon" class="action-icon"></span>
                   <div>{{task.title | translateFrom:task}}</div>

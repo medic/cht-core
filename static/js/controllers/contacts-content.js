@@ -133,12 +133,12 @@ var _ = require('underscore');
             return $log.error('Error getting tasks', err);
           }
           mergeTasks(_.filter(tasks, function(task) {
-            return !task.resolved &&
-              task.contact &&
-              _.contains(patientIds, task.contact._id);
+            return task.contact && _.contains(patientIds, task.contact._id);
           }));
+          if (!$scope.$$phase) {
+            $scope.$apply();
+          }
         });
-
       };
 
       var selectContact = function(id) {
