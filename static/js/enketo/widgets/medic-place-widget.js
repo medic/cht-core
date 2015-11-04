@@ -41,15 +41,25 @@ define( function( require, exports, module ) {
         var translate = angularServices.get('$translate').instant;
 
         var textInput = $(this.element);
+        var $parent = textInput.parent();
+        textInput.replaceWith(textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
+        textInput = $parent.find('select');
 
         var loader = $('<div class="loader"/></div>');
         textInput.after(loader);
 
         var formatResult = function(row) {
             if(row.doc) {
-                return placeSelectFormat(row.doc);
+                return $(placeSelectFormat(row.doc));
             }
             return translate('contact.type.' + row.text);
+        };
+
+        var formatSelection = function(row) {
+            if(row.doc) {
+                return row.doc.name;
+            }
+            return row.text;
         };
 
         var placeTypes = _.map(_.without(Object.keys(ContactSchema.get()), 'person'), function(type) {
@@ -74,16 +84,10 @@ define( function( require, exports, module ) {
 
                 textInput.select2({
                     data: groups,
-                    formatResult: formatResult,
-                    formatSelection: formatResult,
+                    templateResult: formatResult,
+                    templateSelection: formatSelection,
                     width: '100%',
                 });
-
-                // apologies - here we open and close the select2 - this works
-                // around a bug which would otherwise ignore the `required`
-                // attribute.
-                textInput.select2('open');
-                textInput.select2('close');
 
                 if (!textInput.closest('.question').hasClass('or-appearance-bind-id-only')) {
                     textInput.on('change', function(e) {

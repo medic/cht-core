@@ -25,7 +25,7 @@ var libphonenumber = require('libphonenumber/utils'),
 
   var updateNumbers = function() {
     var gatewayNumber = $('#guided-setup input[name=gateway-number]').val();
-    var defaultCountryCode = $('#guided-setup input[name=default-country-code]').select2('val');
+    var defaultCountryCode = $('#guided-setup input[name=default-country-code]').val();
     var parts = [];
     if (defaultCountryCode) {
       parts.push('+' + defaultCountryCode);
@@ -40,7 +40,7 @@ var libphonenumber = require('libphonenumber/utils'),
   };
 
   var validate = function(translateFilter) {
-    var countryCode = $('#guided-setup [name=default-country-code]').select2('val');
+    var countryCode = $('#guided-setup [name=default-country-code]').val();
     var gatewayNumber = $('#guided-setup [name=gateway-number]').val();
     if (gatewayNumber &&
         !libphonenumber.validate({ default_country_code: countryCode }, gatewayNumber)) {
@@ -71,7 +71,7 @@ var libphonenumber = require('libphonenumber/utils'),
     if (val) {
       settings.gateway_number = val;
     }
-    val = $('#guided-setup [name=default-country-code]').select2('val');
+    val = $('#guided-setup [name=default-country-code]').val();
     if (val) {
       settings.default_country_code = val;
     }

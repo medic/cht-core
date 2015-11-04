@@ -34,7 +34,7 @@
     <label>{{'Phone number conversion' | translate}}</label>
     <p>
       {{'Replace country code for' | translate}}
-      <input type="hidden" id="outgoing-phone-replace-match"/>
+      <select id="outgoing-phone-replace-match"></select>
       {{'with' | translate}}
       <input type="text" class="form-control tiny inline" ng-model="advancedSettingsModel.outgoing_phone_replace.replace">
     </p>

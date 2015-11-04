@@ -28,15 +28,13 @@
     "moment": "~2.10.6",
     "nvd3": "~1.1.15-beta",
     "pouchdb": "~5.1.0",
-    "select2": "https://github.com/mandric/select2.git#android-debounce-fix",
-    "select2-bootstrap-css": "~1.4.6",
-    "underscore": "~1.8.3"
+    "underscore": "~1.8.3",
+    "select2": "~4.0.0"
   },
   "resolutions": {
     "d3": "~3.4.11",
     "angular": "~1.4.3",
     "moment": "~2.10.6",
-    "select2": "android-debounce-fix",
     "pouchdb": "~5.1.0"
   }
 }
