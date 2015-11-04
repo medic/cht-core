@@ -97,7 +97,7 @@ var _ = require('underscore'),
       };
 
       $scope.setSelected = function(doc) {
-        if (doc.type === 'data_record') {
+        if (doc.fields) {
           updateDisplayFields(doc);
         }
 
@@ -148,7 +148,7 @@ var _ = require('underscore'),
           $scope.error = false;
           $scope.errorSyntax = false;
           $scope.loading = true;
-          if ($('#back').is(':visible')) {
+          if ($scope.isMobile()) {
             $scope.selectReport();
           }
         }
@@ -182,7 +182,7 @@ var _ = require('underscore'),
               var curr = _.findWhere(data, { _id: $state.params.id });
               if (curr) {
                 $scope.setSelected(curr);
-              } else if (!$('#back').is(':visible') &&
+              } else if (!$scope.isMobile() &&
                          !$scope.selected &&
                          $state.is('reports.detail')) {
                 $timeout(function() {

@@ -27,6 +27,9 @@ describe('ReportsCtrl controller', function() {
     scope.reports = [ report, { _id: 'a' } ];
     scope.clearSelected = function() {};
     scope.showBackButton = function() {};
+    scope.isMobile = function() {
+      return false;
+    };
 
     UserDistrict = function() {
       return { 

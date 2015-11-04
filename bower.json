@@ -11,7 +11,7 @@
     "angular-animate": "1.4.3",
     "angular-cookie": "~4.0.9",
     "angular-mocks": "1.4.3",
-    "angular-pouchdb": "~2.1.0",
+    "angular-pouchdb": "~4.0.0",
     "angular-resource": "1.4.3",
     "angular-route": "1.4.3",
     "angular-sanitize": "1.4.3",
@@ -27,7 +27,7 @@
     "jquery": "~2.1.4",
     "moment": "~2.10.6",
     "nvd3": "~1.1.15-beta",
-    "pouchdb": "~5.0.0",
+    "pouchdb": "~5.1.0",
     "underscore": "~1.8.3",
     "select2": "~4.0.0"
   },
@@ -35,6 +35,6 @@
     "d3": "~3.4.11",
     "angular": "~1.4.3",
     "moment": "~2.10.6",
-    "pouchdb": "~5.0.0"
+    "pouchdb": "~5.1.0"
   }
 }

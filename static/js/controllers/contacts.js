@@ -107,7 +107,7 @@ var _ = require('underscore'),
               if (!data.length) {
                 $scope.clearSelected();
               } else if (!options.stay &&
-                         !$('#back').is(':visible') &&
+                         !$scope.isMobile() &&
                          $state.is('contacts.detail') &&
                          !$state.params.id) {
                 // wait for selected to be set before checking
