@@ -48,8 +48,9 @@ var modal = require('../modules/modal');
             type: getType(user.type),
             language: user.language
           };
-          $('#edit-user-profile [name=contact]').select2('val', user.contact_id || '');
+          $('#edit-user-profile [name=contact]').val(user.contact_id || '').trigger('change');
         } else {
+          $('#edit-user-profile [name=contact]').val(null).trigger('change');
           $scope.editUserModel = {};
         }
       });
