@@ -280,6 +280,20 @@ describe('Search service', function() {
     });
   });
 
+  it('does not debounce if the same query is executed twice with the force option', function() {
+    GenerateSearchRequests.returns([ { view: 'get_stuff', params: { } } ]);
+    DbView.callsArgWithAsync(2, null, { rows: [ { id: 'a', value: 1 } ] });
+    allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } } ] }));
+    service(scope, function(err, actual) {
+      chai.expect(err).to.equal(null);
+      chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
+    });
+    service(scope, { force: true }, function() {
+      // this callback should never be called
+      chai.expect(true).to.equal(false);
+    });
+  });
+
   it('does not debounce different queries', function() {
     GenerateSearchRequests
       .onFirstCall().returns([ { view: 'get_stuff', params: { id: 'a' } } ])

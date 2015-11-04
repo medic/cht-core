@@ -50,7 +50,7 @@ var nools = require('nools'),
 
       var search = function(scope) {
         var deferred = $q.defer();
-        var options = { limit: 99999999 };
+        var options = { limit: 99999999, force: true };
         Search(scope, options, function(err, docs) {
           if (err) {
             return deferred.reject(err);
