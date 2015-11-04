@@ -104,15 +104,17 @@ var _ = require('underscore');
 
       var mergeTasks = function(tasks) {
         var selectedTasks = $scope.selected.tasks;
-        tasks.forEach(function(task) {
-          for (var i = 0; i < selectedTasks.length; i++) {
-            if (selectedTasks[i]._id === task._id) {
-              selectedTasks[i] = task;
-              return;
+        if (selectedTasks) {
+          tasks.forEach(function(task) {
+            for (var i = 0; i < selectedTasks.length; i++) {
+              if (selectedTasks[i]._id === task._id) {
+                selectedTasks[i] = task;
+                return;
+              }
             }
-          }
-          selectedTasks.push(task);
-        });
+            selectedTasks.push(task);
+          });
+        }
       };
 
       var getTasks = function() {
