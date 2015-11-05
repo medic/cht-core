@@ -59,7 +59,7 @@ require('moment/locales');
       };
 
       $scope.isMobile = function() {
-        return $('#mobile-detection').is(':visible');
+        return $('#mobile-detection').css('display') === 'inline';
       };
 
       $scope.setFilterQuery = function(query) {
