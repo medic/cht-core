@@ -95,6 +95,7 @@ define( function( require, exports, module ) {
 
                     textInput.select2({
                         data: groups,
+                        dropdownAdapter: CustomAdapter,
                         templateResult: formatResult,
                         templateSelection: formatSelection,
                         width: '100%',
