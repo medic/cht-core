@@ -54,7 +54,7 @@
           .then(function(doc) {
             $log.debug('saved report', doc);
             $scope.saving = false;
-            $state.go('tasks', null, { reload: true });
+            $state.go('tasks.detail', null, { reload: true });
           })
           .catch(function(err) {
             $scope.saving = false;
