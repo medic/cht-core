@@ -7,8 +7,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsContentCtrl', 
-    ['$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search', 'Changes',
-    function ($scope, $stateParams, $q, $log, DB, TaskGenerator, Search, Changes) {
+    ['$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search', 'Changes', 'ContactSchema',
+    function ($scope, $stateParams, $q, $log, DB, TaskGenerator, Search, Changes, ContactSchema) {
 
       var getReports = function(id) {
         var scope = {
@@ -76,6 +76,15 @@ var _ = require('underscore');
         return DB.get().query('medic/facilities_by_contact', options);
       };
 
+      var selectedSchemaVisibleFields = function(selected) {
+        var fields = ContactSchema.getVisibleFields()[selected.doc.type].fields;
+        if (_.findWhere(selected.children, { id: selected.doc.contact._id })) {
+          // the contact will be shown in the children pane, so remove contact field
+          delete fields.contact;
+        }
+        return fields;
+      };
+
       var getInitialData = function(id) {
         return $q.all([
           getContact(id),
@@ -89,15 +98,14 @@ var _ = require('underscore');
               parents: [],
               children: results[1].rows,
               contactFor: results[2].rows,
-              reports: results[3],
+              reports: results[3]
             };
-
+            selected.fields = selectedSchemaVisibleFields(selected);
             var parent = selected.doc.parent;
             while(parent && Object.keys(parent).length) {
               selected.parents.push(parent);
               parent = parent.parent;
             }
-
             return selected;
           });
       };

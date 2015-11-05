@@ -17,7 +17,7 @@
         <h2>{{selected.doc.name}}</h2>
         <div class="card">
           <ul class="field-list">
-            <li ng-repeat="(name, conf) in selectedSchemaVisibleFields()">
+            <li ng-repeat="(name, conf) in selected.fields">
               <label>{{selected.doc.type + '.field.' + name | translate}}</label>
               <p>
                 <span ng-if="conf.type === 'tel'">

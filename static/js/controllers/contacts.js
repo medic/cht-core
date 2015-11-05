@@ -10,23 +10,12 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', 
-    ['$rootScope', '$scope', '$state', '$timeout', '$log', 'ContactSchema', 'UserDistrict', 'Search', 'Changes',
-    function ($rootScope, $scope, $state, $timeout, $log, ContactSchema, UserDistrict, Search, Changes) {
+    ['$rootScope', '$scope', '$state', '$timeout', '$log', 'UserDistrict', 'Search', 'Changes',
+    function ($rootScope, $scope, $state, $timeout, $log, UserDistrict, Search, Changes) {
 
       $scope.filterModel.type = 'contacts';
       $scope.contacts = [];
       $scope.selected = null;
-
-      $scope.schema = ContactSchema.get();
-      $scope.schemaVisible = ContactSchema.getVisibleFields();
-
-      $scope.selectedSchema = function() {
-        return $scope.selected && $scope.schema[$scope.selected.doc.type];
-      };
-
-      $scope.selectedSchemaVisibleFields = function() {
-        return $scope.selected && $scope.schemaVisible[$scope.selected.doc.type].fields;
-      };
 
       var _merge = function(to, from) {
         if (from._rev !== to._rev) {
