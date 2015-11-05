@@ -182,6 +182,10 @@ require('moment/locales');
             return $(formatResult(data.doc));
           }
 
+          function formatSelection(data) {
+            return data.text || data.doc.name;
+          }
+
           $.fn.select2.amd.require(
           ['select2/data/array', 'select2/utils'],
           function (ArrayData, Utils) {
@@ -224,7 +228,7 @@ require('moment/locales');
             $('.update-facility [name=facility], #edit-user-profile [name=contact]').select2({
               dataAdapter: CustomData,
               templateResult: $formatResult,
-              templateSelection: $formatResult,
+              templateSelection: formatSelection,
               width: '100%',
             });
 
