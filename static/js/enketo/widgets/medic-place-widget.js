@@ -41,6 +41,7 @@ define( function( require, exports, module ) {
         var translate = angularServices.get('$translate').instant;
 
         var textInput = $(this.element);
+        var $question = textInput.closest('.question');
         var $parent = textInput.parent();
         textInput.replaceWith(textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
         textInput = $parent.find('select');
@@ -50,7 +51,7 @@ define( function( require, exports, module ) {
 
         var formatResult = function(row) {
             if(row.doc) {
-                return $(placeSelectFormat(row.doc));
+                return placeSelectFormat(row.doc);
             }
             return translate('contact.type.' + row.text);
         };
@@ -82,19 +83,35 @@ define( function( require, exports, module ) {
                         })
                         .value();
 
-                textInput.select2({
-                    data: groups,
-                    templateResult: formatResult,
-                    templateSelection: formatSelection,
-                    width: '100%',
+                $.fn.select2.amd.require([
+                'select2/dropdown/attachContainer',
+                'select2/dropdown/closeOnSelect',
+                'select2/dropdown',
+                'select2/dropdown/search',
+                'select2/utils',
+                ], function (AttachContainer, CloseOnSelect, DropdownAdapter, DropdownSearch, Utils) {
+                    var CustomAdapter = Utils.Decorate(Utils.Decorate(Utils.Decorate(
+                        DropdownAdapter, DropdownSearch), AttachContainer), CloseOnSelect);
+
+                    textInput.select2({
+                        data: groups,
+                        templateResult: formatResult,
+                        templateSelection: formatSelection,
+                        width: '100%',
+                    });
+
+                    // Tell enketo to ignore the new <input> field that select2 adds
+                    $question.find('input.select2-search__field').addClass('ignore');
                 });
 
-                if (!textInput.closest('.question').hasClass('or-appearance-bind-id-only')) {
+                if (!$question.hasClass('or-appearance-bind-id-only')) {
                     textInput.on('change', function(e) {
-                        var form = textInput.closest('form.or');
-                        var field = textInput.find('input[name]').attr('name');
-                        var objectRoot = field.substring(0, field.lastIndexOf('/'));
-                        updateFields(form, e.added.doc, objectRoot, field);
+                        if (e.added && e.added.doc) {
+                            var form = textInput.closest('form.or');
+                            var field = textInput.attr('name');
+                            var objectRoot = field.substring(0, field.lastIndexOf('/'));
+                            updateFields(form, e.added.doc, objectRoot, field);
+                        }
                     });
                 }
             });
