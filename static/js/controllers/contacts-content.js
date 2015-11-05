@@ -78,7 +78,8 @@ var _ = require('underscore');
 
       var selectedSchemaVisibleFields = function(selected) {
         var fields = ContactSchema.getVisibleFields()[selected.doc.type].fields;
-        if (_.findWhere(selected.children, { id: selected.doc.contact._id })) {
+        if (selected.doc.contact &&
+            _.findWhere(selected.children, { id: selected.doc.contact._id })) {
           // the contact will be shown in the children pane, so remove contact field
           delete fields.contact;
         }
