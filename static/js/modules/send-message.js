@@ -182,6 +182,7 @@ var _ = require('underscore'),
       $phone.select2({
         allowClear: true,
         dataAdapter: CustomData,
+        dropdownParent: $('#send-message'),
         templateResult: formatResult,
         templateSelection: formatResult,
         width: '100%',
