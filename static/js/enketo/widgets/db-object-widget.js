@@ -85,15 +85,27 @@ define( function( require, exports, module ) {
                 // add blank option
                 rows.unshift({ id: '' });
 
-                textInput.select2({
-                    data: rows,
-                    templateResult: formatResult,
-                    templateSelection: formatSelection,
-                    width: '100%',
-                });
+                $.fn.select2.amd.require([
+                'select2/dropdown/attachContainer',
+                'select2/dropdown/closeOnSelect',
+                'select2/dropdown',
+                'select2/dropdown/search',
+                'select2/utils',
+                ], function (AttachContainer, CloseOnSelect, DropdownAdapter, DropdownSearch, Utils) {
+                    var CustomAdapter = Utils.Decorate(Utils.Decorate(Utils.Decorate(
+                        DropdownAdapter, DropdownSearch), AttachContainer), CloseOnSelect);
 
-                // Tell enketo to ignore the new <input> field that select2 adds
-                textInput.parent().find('input.select2-focusser').addClass('ignore');
+                    textInput.select2({
+                        data: rows,
+                        dropdownAdapter: CustomAdapter,
+                        templateResult: formatResult,
+                        templateSelection: formatSelection,
+                        width: '100%',
+                    });
+
+                    // Tell enketo to ignore the new <input> field that select2 adds
+                    $question.find('input.select2-search__field').addClass('ignore');
+                });
 
                 if (!$question.hasClass('or-appearance-bind-id-only')) {
                     textInput.on('change', function(e) {

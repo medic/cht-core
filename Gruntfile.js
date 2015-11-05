@@ -21,7 +21,8 @@ module.exports = function(grunt) {
           'fontawesome',
           'async',
           'bootstrap-tour', // Including this includes two copies. Manually included in concat.
-          'angular-mocks'
+          'angular-mocks',
+          'select2', // need to manually include the extended version of the lib
         ]
       }
     },
@@ -102,6 +103,7 @@ module.exports = function(grunt) {
         src: [
           'bower_components/concat.js',
           'bower_components/bootstrap-tour/build/js/bootstrap-tour.js',
+          'bower_components/select2/dist/js/select2.full.js',
           'static/js/bootstrap-multidropdown.js'
         ],
         dest: 'static/dist/dependencies.js',
@@ -200,7 +202,7 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: [ 'bower_components/select2/select2.js' ],
+            src: [ 'bower_components/select2/select2.full.js' ],
             dest: 'static/dist/'
           }
         ]
