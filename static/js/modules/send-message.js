@@ -184,6 +184,7 @@ var _ = require('underscore'),
         dataAdapter: CustomData,
         templateResult: formatResult,
         templateSelection: formatResult,
+        width: '100%',
       });
     });
   };
