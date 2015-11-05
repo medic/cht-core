@@ -46,14 +46,6 @@ module.exports = function(grunt) {
           to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'mm.dateSelected.daterangepicker\', this);\n'
         }]
       },
-      monkeypatchselect: {
-        src: [ 'bower_components/concat.js' ],
-        overwrite: true,
-        replacements: [{
-          from: /if \(self\.opts\.selectOnBlur\) \{/g,
-          to: 'if (self.opts.selectOnBlur\n// MONKEY PATCH BY GRUNT: Needed for select freetext on blur #699.\n || (self.opts.selectFreetextOnBlur && self.results.find(".select2-highlighted .freetext").length)) {\n'
-        }]
-      },
       // replace cache busting which breaks appcache, needed until this is fixed:
       // https://github.com/FortAwesome/Font-Awesome/issues/3286
       monkeypatchfontawesome: {
@@ -182,29 +174,10 @@ module.exports = function(grunt) {
             expand: true,
             flatten: true,
             src: [
-              'bower_components/select2/*.gif',
-              'bower_components/select2/*.png'
-            ],
-            dest: 'static/dist/'
-          },
-          {
-            expand: true,
-            flatten: true,
-            src: [
               'bower_components/fontawesome/fonts/*'
             ],
             dest: 'static/fonts'
           },
-        ]
-      },
-      admin: {
-        files: [
-          {
-            expand: true,
-            flatten: true,
-            src: [ 'bower_components/select2/select2.full.js' ],
-            dest: 'static/dist/'
-          }
         ]
       },
       'enketo-xslt': {
@@ -371,7 +344,6 @@ module.exports = function(grunt) {
     'bower:install',
     'bower_concat',
     'replace:monkeypatchdate',
-    'replace:monkeypatchselect',
     'copy:inbox',
     'copy:admin'
   ]);
