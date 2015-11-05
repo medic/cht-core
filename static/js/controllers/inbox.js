@@ -814,6 +814,9 @@ require('moment/locales');
       if (window.applicationCache) {
         var showUpdateReady = function() {
           $('#version-update').modal('show');
+
+          // close select2 dropdowns in the background
+          $('select.select2-hidden-accessible').select2('close');
         };
         window.applicationCache.addEventListener('updateready', showUpdateReady);
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
