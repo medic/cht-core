@@ -344,8 +344,7 @@ module.exports = function(grunt) {
     'bower:install',
     'bower_concat',
     'replace:monkeypatchdate',
-    'copy:inbox',
-    'copy:admin'
+    'copy:inbox'
   ]);
 
   grunt.registerTask('deploy', 'Deploy the webapp', [
