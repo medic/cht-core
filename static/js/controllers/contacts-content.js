@@ -78,6 +78,8 @@ var _ = require('underscore');
 
       var selectedSchemaVisibleFields = function(selected) {
         var fields = ContactSchema.getVisibleFields()[selected.doc.type].fields;
+        // date of birth is shown already
+        delete fields.date_of_birth;
         if (selected.doc.contact &&
             _.findWhere(selected.children, { id: selected.doc.contact._id })) {
           // the contact will be shown in the children pane, so remove contact field
@@ -96,17 +98,11 @@ var _ = require('underscore');
           .then(function(results) {
             var selected = {
               doc: results[0],
-              parents: [],
               children: results[1].rows,
               contactFor: results[2].rows,
               reports: results[3]
             };
             selected.fields = selectedSchemaVisibleFields(selected);
-            var parent = selected.doc.parent;
-            while(parent && Object.keys(parent).length) {
-              selected.parents.push(parent);
-              parent = parent.parent;
-            }
             return selected;
           });
       };

@@ -14,40 +14,48 @@
     <div class="material">
 
       <div class="body col-sm-12">
-        <h2>{{selected.doc.name}}</h2>
-        <div class="card">
-          <ul class="field-list">
-            <li ng-repeat="(name, conf) in selected.fields" ng-if="selected.doc[name]">
-              <label>{{selected.doc.type + '.field.' + name | translate}}</label>
-              <p>
-                <span ng-if="conf.type === 'tel'">
-                  <a href="tel:{{selected.doc[name]}}" class="mobile-only">{{selected.doc[name]}}</a>
-                  <span class="desktop-only">{{selected.doc[name]}}</span>
-                </span>
-                <span ng-if="conf.type.indexOf('db:') === 0"><a ui-sref="contacts.detail({ id: selected.doc[name]._id })">{{selected.doc[name].name}}</a></span>
-                <span ng-if="conf.type !== 'tel' && conf.type.indexOf('db:') !== 0">{{selected.doc[name]}}</span>
-              </p>
-            </li>
-            <li ng-if="!facilities.length && contact.type === 'person'">
-              <label>{{'contact.type.' + contact.parent.type | translate}}</label>
-              <p><a ui-sref="contacts.detail({ id: parent._id })">{{contact.parent.name}}</a></p>
-            </li>
-            <li ng-repeat="parent in selected.parents" ng-if="facilities.length">
-              <label>{{'contact.type.' + parent.type | translate}}</label>
-              <p><a ui-sref="contacts.detail({ id: parent._id })">{{parent.name}}</a></p>
-            </li>
-            <li ng-if="selected.contactFor.length && facilities.length">
-              <label>{{'Primary Contact For' | translate}}</label>
-              <ul>
-                <li class="row" ng-repeat="place in selected.contactFor">
-                  <div class="col-sm-4">
-                    <a ui-sref="contacts.detail({ id: place.doc._id })">{{place.doc.name}}</a>
-                  </div>
-                  <div class="col-sm-8" ng-bind-html="place.doc.parent | clinic"></div>
+        <div class="meta">
+          <h2>{{selected.doc.name}}</h2>
+          <p ng-show="selected.doc.date_of_birth" ng-bind-html="selected.doc.date_of_birth | age"></p>
+          <p ng-show="selected.doc.parent">
+            <a ui-sref="contacts.detail({ id: selected.doc.parent._id })">{{selected.doc.parent.name}}</a>
+          </p>
+        </div>
+        <div id="details" class="panel-group" ng-show="selected.fields.length || selected.contactFor.length">
+          <div class="panel-heading">
+            <span class="panel-title">
+              <a class="collapsed" data-toggle="collapse" data-parent="#details" href="#detailsContent" aria-controls="detailsContent">Details</a>
+            </span>
+          </div>
+          <div id="detailsContent" class="collapse">
+            <div class="card">
+              <ul class="field-list">
+                <li ng-repeat="(name, conf) in selected.fields" ng-if="selected.doc[name]">
+                  <label>{{selected.doc.type + '.field.' + name | translate}}</label>
+                  <p>
+                    <span ng-if="conf.type === 'tel'">
+                      <a href="tel:{{selected.doc[name]}}" class="mobile-only">{{selected.doc[name]}}</a>
+                      <span class="desktop-only">{{selected.doc[name]}}</span>
+                    </span>
+                    <span ng-if="conf.type === 'date' && name !== 'date_of_birth'" ng-bind-html="selected.doc[name] | fullDate"></span>
+                    <span ng-if="conf.type.indexOf('db:') === 0"><a ui-sref="contacts.detail({ id: selected.doc[name]._id })">{{selected.doc[name].name}}</a></span>
+                    <span ng-if="conf.type !== 'tel' && conf.type !== 'date' && conf.type.indexOf('db:') !== 0">{{selected.doc[name]}} : {{conf.type}}</span>
+                  </p>
+                </li>
+                <li ng-if="selected.contactFor.length">
+                  <label>{{'Primary Contact For' | translate}}</label>
+                  <ul>
+                    <li class="row" ng-repeat="place in selected.contactFor">
+                      <div class="col-sm-4">
+                        <a ui-sref="contacts.detail({ id: place.doc._id })">{{place.doc.name}}</a>
+                      </div>
+                      <div class="col-sm-8" ng-bind-html="place.doc.parent | clinic"></div>
+                    </li>
+                  </ul>
                 </li>
               </ul>
-            </li>
-          </ul>
+            </div>
+          </div>
         </div>
       </div>
       <div>
