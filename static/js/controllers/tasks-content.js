@@ -45,6 +45,8 @@
               $scope.loadingForm = false;
               $log.error('Error loading form.', err);
             });
+        } else if (action.type === 'contact') {
+          $state.go('contacts.addChild', action.content);
         }
       };
 
