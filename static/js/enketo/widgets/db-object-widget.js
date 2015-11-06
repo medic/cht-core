@@ -58,14 +58,14 @@ define( function( require, exports, module ) {
 
         var $question = $(this.element);
 
-        var textInput = $question.find('input');
-        textInput.replaceWith(textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
-        textInput = $question.find('select');
+        var $textInput = $question.find('input');
+        $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
+        $textInput = $question.find('select');
 
-        var dbObjectType = textInput.attr('data-type-xml');
+        var dbObjectType = $textInput.attr('data-type-xml');
 
         var loader = $('<div class="loader"/></div>');
-        textInput.after(loader);
+        $textInput.after(loader);
 
         DB.query('medic/doc_by_type', {include_docs:true, key:[dbObjectType]})
             .then(function(res) {
@@ -95,7 +95,7 @@ define( function( require, exports, module ) {
                     var CustomAdapter = Utils.Decorate(Utils.Decorate(Utils.Decorate(
                         DropdownAdapter, DropdownSearch), AttachContainer), CloseOnSelect);
 
-                    textInput.select2({
+                    $textInput.select2({
                         data: rows,
                         dropdownAdapter: CustomAdapter,
                         templateResult: formatResult,
@@ -108,7 +108,7 @@ define( function( require, exports, module ) {
                 });
 
                 if (!$question.hasClass('or-appearance-bind-id-only')) {
-                    textInput.on('change', function(e) {
+                    $textInput.on('change', function(e) {
                         if (e.added && e.added.doc) {
                             var form = $question.closest('form.or');
                             var field = $question.find('select[name]').attr('name');
