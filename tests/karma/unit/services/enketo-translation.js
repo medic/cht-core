@@ -717,4 +717,119 @@ describe('EnketoTranslation service', function() {
     });
   });
 
+  describe('#bindJsonToXml()', function() {
+    it('binds simple data', function() {
+      // given
+      var model =
+        '<data id="district_hospital" version="1">' +
+          '<district_hospital>' +
+            '<name/>' +
+            '<external_id/>' +
+            '<notes/>' +
+          '</district_hospital>' +
+          '<meta>' +
+            '<instanceID/>' +
+          '</meta>' +
+        '</data>';
+      var element = $($.parseXML(model));
+      var data = {
+          district_hospital: {
+            name: 'Davesville',
+            external_id: 'THING',
+            notes: 'Some notes',
+            type: 'district_hospital',
+          },
+        };
+
+      // when
+      service.bindJsonToXml(element, data);
+
+      // then
+      assert.equal(element.find('name').text(), 'Davesville');
+      assert.equal(element.find('external_id').text(), 'THING');
+      assert.equal(element.find('notes').text(), 'Some notes');
+    });
+
+    it('binds embedded objects to id-only fields', function() {
+      // given
+      var model =
+        '<data id="district_hospital" version="1">' +
+          '<district_hospital>' +
+            '<name/>' +
+            '<contact/>' +
+            '<external_id/>' +
+            '<notes/>' +
+          '</district_hospital>' +
+          '<meta>' +
+            '<instanceID/>' +
+          '</meta>' +
+        '</data>';
+      var element = $($.parseXML(model));
+      var data = {
+          district_hospital: {
+            name: 'Davesville',
+            contact: {
+              _id: 'abc-123',
+              name: 'Dr. D',
+            },
+            external_id: 'THING',
+            notes: 'Some notes',
+            type: 'district_hospital',
+          },
+        };
+
+      // when
+      service.bindJsonToXml(element, data);
+
+      // then
+      assert.equal(element.find('name').text(), 'Davesville');
+      assert.equal(element.find('contact').text(), 'abc-123');
+      assert.equal(element.find('external_id').text(), 'THING');
+      assert.equal(element.find('notes').text(), 'Some notes');
+    });
+
+    it('binds embedded objects to trees', function() {
+      // given
+      var model =
+        '<data id="district_hospital" version="1">' +
+          '<district_hospital>' +
+            '<name/>' +
+            '<contact>' +
+              '<_id/>' +
+              '<name/>' +
+            '</contact>' +
+            '<external_id/>' +
+            '<notes/>' +
+          '</district_hospital>' +
+          '<meta>' +
+            '<instanceID/>' +
+          '</meta>' +
+        '</data>';
+      var element = $($.parseXML(model));
+      var data = {
+          district_hospital: {
+            name: 'Davesville',
+            contact: {
+              _id: 'abc-123',
+              name: 'Dr. D',
+            },
+            external_id: 'THING',
+            notes: 'Some notes',
+            type: 'district_hospital',
+          },
+        };
+
+      // when
+      service.bindJsonToXml(element, data);
+
+      // then
+      assert.equal(element.find('district_hospital > name').text(), 'Davesville');
+      assert.equal(element.find('district_hospital > external_id').text(), 'THING');
+      assert.equal(element.find('district_hospital > notes').text(), 'Some notes');
+
+      assert.equal(element.find('contact > _id').text(), 'abc-123');
+      assert.equal(element.find('contact > name').text(), 'Dr. D');
+    });
+  });
+
 });

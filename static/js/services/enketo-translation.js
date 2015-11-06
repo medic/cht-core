@@ -99,6 +99,8 @@ function N(tagName, text, attrs, children) {
 angular.module('inboxServices').service('EnketoTranslation', [
   '$translate',
   function($translate) {
+    var self = this;
+
     function extraAttributesFor(conf) {
       var extras = {};
       var typeString = conf.type;
@@ -235,7 +237,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
       return root.xml();
     }
 
-    this.getHiddenFieldList = function(model) {
+    self.getHiddenFieldList = function(model) {
       model = $.parseXML(model).firstChild;
       var outputs = findChildNode(model, 'outputs');
       return withElements(outputs.childNodes)
@@ -249,7 +251,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
         .value();
     };
 
-    this.generateXform = function(schema, options) {
+    self.generateXform = function(schema, options) {
       if(options || true) {
         return generateXformWithOptions(schema, options);
       }
@@ -299,12 +301,12 @@ angular.module('inboxServices').service('EnketoTranslation', [
       return repeats;
     };
 
-    this.reportRecordToJs = function(record) {
+    self.reportRecordToJs = function(record) {
       var root = $.parseXML(record).firstChild;
       return nodesToJs(root.childNodes);
     };
 
-    this.contactRecordToJs = function(record) {
+    self.contactRecordToJs = function(record) {
       var root = $.parseXML(record).firstChild;
       var repeats = repeatsToJs(root);
       var siblings = {};
@@ -325,5 +327,22 @@ angular.module('inboxServices').service('EnketoTranslation', [
       }
       return res;
     };
+
+    self.bindJsonToXml = function(elem, data) {
+      _.pairs(data).forEach(function(pair) {
+        var current = elem.find(pair[0]);
+        var value = pair[1];
+        if (_.isObject(value)) {
+          if(current.children().length) {
+            self.bindJsonToXml(current, value);
+          } else {
+            current.text(value._id);
+          }
+        } else {
+          current.text(value);
+        }
+      });
+    };
+
   }
 ]);

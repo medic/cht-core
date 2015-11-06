@@ -81,18 +81,6 @@ angular.module('inboxServices').service('Enketo', [
       return Auth('can_create_records').then(getContactId);
     };
 
-    var bindJsonToXml = function(elem, data) {
-      _.pairs(data).forEach(function(pair) {
-        var current = elem.find(pair[0]);
-        var value = pair[1];
-        if (_.isObject(value)) {
-          bindJsonToXml(current, value);
-        } else {
-          current.text(value);
-        }
-      });
-    };
-
     var getInstanceStr = function(model, data) {
       if (data && _.isString(data)) {
         return $q.resolve(data);
@@ -111,7 +99,7 @@ angular.module('inboxServices').service('Enketo', [
           // used for the default contact schema forms
           bindRoot = instanceRoot.find('data');
         }
-        bindJsonToXml(bindRoot, data);
+        EnketoTranslation.bindJsonToXml(bindRoot, data);
         deferred.resolve(instanceRoot.html());
       });
       return deferred.promise;
