@@ -23,6 +23,8 @@ var _ = require('underscore'),
   var validatePhoneNumber = function(data) {
     if (data.everyoneAt) {
       return true;
+    } else if(data.freetext) {
+      return libphonenumber.validate(settings, data.id);
     }
     var contact = data.doc.contact || data.doc;
     return contact && libphonenumber.validate(settings, contact.phone);
