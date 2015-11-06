@@ -56,7 +56,11 @@ var modal = require('../modules/modal');
           DB.get().get(user.contact_id)
             .then(function(contact) {
               $contact
-                  .append('<option selected value="' + contact._id + '">' + contact.name + '</option>')
+                  .append($('<option>', {
+                    selected: 'selected',
+                    value: contact._id,
+                    text: contact.name,
+                  }))
                   .val(contact._id)
                   .trigger('change');
             });
