@@ -59,6 +59,7 @@ define( function( require, exports, module ) {
         var $question = $(this.element);
 
         var $textInput = $question.find('input');
+        var initialValue = $textInput.val();
         $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
         $textInput = $question.find('select');
 
@@ -84,6 +85,19 @@ define( function( require, exports, module ) {
                 }
                 // add blank option
                 rows.unshift({ id: '' });
+
+                if(initialValue) {
+                    var selected = _.find(rows, function(row) {
+                        return row.doc && row.doc._id === initialValue;
+                    });
+                    if(selected) {
+                        $textInput.append($('<option>', {
+                            selected: 'selected',
+                            value: selected.doc._id,
+                            text: selected.doc.name,
+                        }));
+                    }
+                }
 
                 $.fn.select2.amd.require([
                 'select2/dropdown/attachContainer',
