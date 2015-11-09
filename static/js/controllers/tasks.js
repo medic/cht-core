@@ -13,6 +13,7 @@ var _ = require('underscore');
       var setSelectedTask = function(task) {
         $scope.selected = task;
         $scope.setTitle(TranslateFrom(task.title, task));
+        $scope.setShowContent(true);
       };
 
       $scope.setSelected = function(id) {
