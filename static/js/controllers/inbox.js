@@ -72,6 +72,19 @@ require('moment/locales');
         $window.history.back();
       };
 
+      $scope.handleAndroidBack = function() {
+        if($('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
+          window.history.back();
+        } else if($scope.showContent) {
+          $scope.setShowContent(false);
+          $scope.$apply();
+        } else if(!$state.includes('messages')) {
+          $state.go('messages');
+        } else {
+          medicmobile_android.closeActivity();
+        }
+      };
+
       $scope.closeContentPane = function() {
         $state.go($scope.filterModel.type + '.detail');
       };
