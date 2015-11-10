@@ -118,7 +118,7 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
         var hex;
         if(arguments.length === 1) {
             hex = Math.round(arguments[0]).toString(16);
-            if(hex.length === 1) hex = '0' + hex;
+            if(hex.length === 1) { hex = '0' + hex; }
             return hex;
         }
         return toHex(arguments[0]) +
@@ -181,7 +181,7 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
     function animate(start) {
         var offset = Date.now() - start;
 
-        if(!running) return;
+        if(!running) { return; }
 
         if(offset < LIM*2) {
             drawAnimation(offset);
@@ -207,8 +207,11 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
         resetTimer();
 
         canvas.addEventListener('click', function() {
-            if(running) resetTimer();
-            else startTimer();
+            if(running) {
+                resetTimer();
+            } else {
+                startTimer();
+            }
         });
     }());
 }
