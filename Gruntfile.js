@@ -276,6 +276,7 @@ module.exports = function(grunt) {
         dest: 'static/dist/manifest.appcache',
         cache: {
           patterns: [
+            'static/audio/**/*',
             'static/dist/**/*',
             'static/fonts/**/*',
             'static/img/**/*',

@@ -14,6 +14,7 @@ define( function( require, exports, module ) {
         require( 'enketo-core/src/widget/datetime/datetimepicker-extended' ),
         require( 'enketo-core/src/widget/horizontal-choices/horizontalchoices' ),
         require( './widgets/notewidget' ),
+        require( './widgets/countdown-widget' ),
         require( './widgets/db-object-widget' ),
         require( './widgets/medic-place-widget' ),
         require( './widgets/phone-widget' ),
