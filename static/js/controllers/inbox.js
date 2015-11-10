@@ -72,16 +72,25 @@ require('moment/locales');
         $window.history.back();
       };
 
+      /**
+       * Handle hardware back-button presses when inside the android app.
+       * @return {boolean} `true` if angular handled the back button; otherwise
+       *   the android app will handle it as it sees fit.
+       */
       $scope.handleAndroidBack = function() {
+        // On an Enketo form, go to the previous page (if there is one)
         if ($('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
           window.history.back();
           return true;
+
+        // If viewing RHS content, go back to the LHS list
         } else if ($scope.showContent) {
           $scope.setShowContent(false);
           $scope.$apply();
           return true;
         }
 
+        // If we're viewing a tab, but not the primary tab, go to primary tab
         var primaryState = $('#messages-tab:visible').length ? 'messages' : 'tasks';
         if (!$state.includes(primaryState)) {
           $state.go(primaryState);
