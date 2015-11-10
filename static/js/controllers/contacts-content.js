@@ -19,7 +19,22 @@ var _ = require('underscore');
             if (err) {
               return reject(err);
             }
-            resolve(data);
+            $q.all(_.map(data, function(report) {
+              return $q(function(resolve, reject) {
+                DB.get()
+                  .query('medic/forms', { include_docs: true, key: report.form })
+                  .then(function(res) {
+                    if (!res.rows.length) {
+                      throw new Error('Form not found with ID: ' + report.form);
+                    }
+                    report.formTitle = res.rows[0].doc.title;
+                    resolve(report);
+                  })
+                  .catch(reject);
+              });
+            }))
+            .then(resolve)
+            .catch(reject);
           });
         });
       };
