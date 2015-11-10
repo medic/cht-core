@@ -80,10 +80,14 @@ require('moment/locales');
           $scope.setShowContent(false);
           $scope.$apply();
           return true;
-        } else if(!$state.includes('messages')) {
-          $state.go('messages');
+        }
+
+        var primaryState = $('#messages-tab:visible').length ? 'messages' : 'tasks';
+        if(!$state.includes(primaryState)) {
+          $state.go(primaryState);
           return true;
         }
+
         return false;
       };
 
