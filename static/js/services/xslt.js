@@ -1,9 +1,9 @@
 /* globals XSLTProcessor */
 angular.module('inboxServices').service('XSLT', [
-  '$http', '$q', 'DbNameService',
-  function($http, $q, DbNameService) {
+  '$http', '$q', 'BaseUrlService',
+  function($http, $q, BaseUrlService) {
 
-    var staticRoot = '/' + DbNameService() + '/_design/medic/static/dist/xslt/';
+    var staticRoot = BaseUrlService() + '/static/dist/xslt/';
     var processors = {};
     var xmlSerializer = new XMLSerializer();
 
