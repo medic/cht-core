@@ -73,17 +73,17 @@ require('moment/locales');
       };
 
       $scope.handleAndroidBack = function() {
-        if($('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
+        if ($('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
           window.history.back();
           return true;
-        } else if($scope.showContent) {
+        } else if ($scope.showContent) {
           $scope.setShowContent(false);
           $scope.$apply();
           return true;
         }
 
         var primaryState = $('#messages-tab:visible').length ? 'messages' : 'tasks';
-        if(!$state.includes(primaryState)) {
+        if (!$state.includes(primaryState)) {
           $state.go(primaryState);
           return true;
         }
