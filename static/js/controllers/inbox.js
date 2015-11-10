@@ -75,14 +75,16 @@ require('moment/locales');
       $scope.handleAndroidBack = function() {
         if($('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
           window.history.back();
+          return true;
         } else if($scope.showContent) {
           $scope.setShowContent(false);
           $scope.$apply();
+          return true;
         } else if(!$state.includes('messages')) {
           $state.go('messages');
-        } else {
-          medicmobile_android.closeActivity();
+          return true;
         }
+        return false;
       };
 
       $scope.closeContentPane = function() {
