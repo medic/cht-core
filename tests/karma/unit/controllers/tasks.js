@@ -44,7 +44,7 @@ describe('TasksCtrl controller', function() {
       chai.expect(scope.error).to.equal(false);
       chai.expect(scope.loading).to.equal(false);
       done();
-    }, 100);
+    });
   });
 
   it('shows task generator errors', function(done) {

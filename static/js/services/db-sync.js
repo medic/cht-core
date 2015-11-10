@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    utils = require('kujua-utils'),
-    async = require('async');
+    utils = require('kujua-utils');
 
 (function () {
 
@@ -18,8 +17,8 @@ var _ = require('underscore'),
   };
 
   inboxServices.factory('DBSync', [
-    '$log', 'DB', 'UserDistrict', 'Session', 'Settings',
-    function($log, DB, UserDistrict, Session, Settings) {
+    '$log', 'DB', 'UserDistrict', 'Session', 'SettingsP',
+    function($log, DB, UserDistrict, Session, SettingsP) {
 
       var replicate = function(from, options) {
         options = options || {};
@@ -40,17 +39,21 @@ var _ = require('underscore'),
       };
 
       var getQueryParams = function(userCtx, callback) {
-        async.parallel([ Settings, UserDistrict ], function(err, results) {
-          if (err) {
-            return callback(err);
-          }
-          var params = { id: results[1] };
-          if (utils.hasPerm(userCtx, 'can_view_unallocated_data_records') &&
-              results[0].district_admins_access_unallocated_messages) {
-            params.unassigned = true;
-          }
-          callback(null, params);
-        });
+        SettingsP()
+          .then(function(settings) {
+            UserDistrict(function(err, district) {
+              if (err) {
+                return callback(err);
+              }
+              var params = { id: district };
+              if (utils.hasPerm(userCtx, 'can_view_unallocated_data_records') &&
+                  settings.district_admins_access_unallocated_messages) {
+                params.unassigned = true;
+              }
+              callback(null, params);
+            });
+          })
+          .catch(callback);
       };
 
       return function() {

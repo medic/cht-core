@@ -7,7 +7,7 @@ describe('DBSync service', function() {
       from,
       getRemoteUrl,
       UserDistrict,
-      Settings,
+      SettingsP,
       userCtx;
 
   beforeEach(function() {
@@ -15,7 +15,7 @@ describe('DBSync service', function() {
     from = sinon.stub();
     UserDistrict = sinon.stub();
     getRemoteUrl = sinon.stub();
-    Settings = sinon.stub();
+    SettingsP = sinon.stub();
     userCtx = {};
     module('inboxApp');
     module(function ($provide) {
@@ -26,8 +26,8 @@ describe('DBSync service', function() {
       $provide.factory('UserDistrict', function() {
         return UserDistrict;
       });
-      $provide.factory('Settings', function() {
-        return Settings;
+      $provide.factory('SettingsP', function() {
+        return SettingsP;
       });
       $provide.factory('Session', function() {
         return {
@@ -43,7 +43,7 @@ describe('DBSync service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(to, from, getRemoteUrl, UserDistrict, Settings);
+    KarmaUtils.restore(to, from, getRemoteUrl, UserDistrict, SettingsP);
   });
 
   it('does nothing for admin', function(done) {
@@ -61,25 +61,27 @@ describe('DBSync service', function() {
     to.returns(KarmaUtils.mockPromise());
     from.returns(KarmaUtils.mockPromise());
     UserDistrict.callsArgWith(0, null, 'a');
-    Settings.callsArgWith(0, null, {});
+    SettingsP.returns(KarmaUtils.mockPromise(null, {}));
     service();
-    chai.expect(to.callCount).to.equal(1);
-    chai.expect(from.callCount).to.equal(1);
-    chai.expect(UserDistrict.callCount).to.equal(1);
-    chai.expect(to.args[0][0]).to.equal('REMOTEDBURL');
-    chai.expect(to.args[0][1].live).to.equal(true);
-    chai.expect(to.args[0][1].retry).to.equal(true);
-    chai.expect(from.args[0][0]).to.equal('REMOTEDBURL');
-    chai.expect(from.args[0][1].live).to.equal(true);
-    chai.expect(from.args[0][1].retry).to.equal(true);
-    chai.expect(from.args[0][1].filter).to.equal('medic/doc_by_place');
-    chai.expect(from.args[0][1].query_params.id).to.equal('a');
-    chai.expect(from.args[0][1].query_params.unassigned).to.equal(undefined);
-    var backoff = to.args[0][1].back_off_function;
-    chai.expect(backoff(0)).to.equal(1000);
-    chai.expect(backoff(2000)).to.equal(4000);
-    chai.expect(backoff(31000)).to.equal(60000);
-    done();
+    setTimeout(function() {
+      chai.expect(to.callCount).to.equal(1);
+      chai.expect(from.callCount).to.equal(1);
+      chai.expect(UserDistrict.callCount).to.equal(1);
+      chai.expect(to.args[0][0]).to.equal('REMOTEDBURL');
+      chai.expect(to.args[0][1].live).to.equal(true);
+      chai.expect(to.args[0][1].retry).to.equal(true);
+      chai.expect(from.args[0][0]).to.equal('REMOTEDBURL');
+      chai.expect(from.args[0][1].live).to.equal(true);
+      chai.expect(from.args[0][1].retry).to.equal(true);
+      chai.expect(from.args[0][1].filter).to.equal('medic/doc_by_place');
+      chai.expect(from.args[0][1].query_params.id).to.equal('a');
+      chai.expect(from.args[0][1].query_params.unassigned).to.equal(undefined);
+      var backoff = to.args[0][1].back_off_function;
+      chai.expect(backoff(0)).to.equal(1000);
+      chai.expect(backoff(2000)).to.equal(4000);
+      chai.expect(backoff(31000)).to.equal(60000);
+      done();
+    });
   });
 
   it('requests unassigned docs if setting set and district admin', function(done) {
@@ -88,10 +90,12 @@ describe('DBSync service', function() {
     to.returns(KarmaUtils.mockPromise());
     from.returns(KarmaUtils.mockPromise());
     UserDistrict.callsArgWith(0, null, 'a');
-    Settings.callsArgWith(0, null, { district_admins_access_unallocated_messages: true });
+    SettingsP.returns(KarmaUtils.mockPromise(null, { district_admins_access_unallocated_messages: true }));
     service();
-    chai.expect(from.args[0][1].query_params.unassigned).to.equal(true);
-    done();
+    setTimeout(function() {
+      chai.expect(from.args[0][1].query_params.unassigned).to.equal(true);
+      done();
+    });
   });
 
   it('does not request unassigned docs if setting set and not district admin', function(done) {
@@ -100,10 +104,12 @@ describe('DBSync service', function() {
     to.returns(KarmaUtils.mockPromise());
     from.returns(KarmaUtils.mockPromise());
     UserDistrict.callsArgWith(0, null, 'a');
-    Settings.callsArgWith(0, null, { district_admins_access_unallocated_messages: true });
+    SettingsP.returns(KarmaUtils.mockPromise(null, { district_admins_access_unallocated_messages: true }));
     service();
-    chai.expect(from.args[0][1].query_params.unassigned).to.equal(undefined);
-    done();
+    setTimeout(function() {
+      chai.expect(from.args[0][1].query_params.unassigned).to.equal(undefined);
+      done();
+    });
   });
 
 });
