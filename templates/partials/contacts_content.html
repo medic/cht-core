@@ -126,7 +126,7 @@
             <ul>
               <li ng-repeat="report in selected.reports">
                 <a ui-sref="reports.detail({ id: report._id })">
-                  <div>{{report.formTitle}}</div>
+                  <div>{{report.formTitle | translateFrom}}</div>
                   <div ng-bind-html="report.reported_date | relativeDate" class="subtext"></div>
                 </a>
               </li>
