@@ -244,7 +244,7 @@
             "outgoing_deny_list": {
                 "type": "string",
                 "title": "Outgoing Deny List",
-                "description": "Case insensitive, comma separated list of strings or numbers to never send messages to. e.g. +5511986, +551198765432, Orange"
+                "description": "Case insensitive, comma separated list of strings or numbers to never send messages to. If any number in the list matches the beginning of a recipient phone number, the message will be marked with a denied state and never sent.  e.g. +5511986, +551198765432, Orange"
             },
             "schedule_morning_hours" : {
                 "title": "Scheduled Message Morning Hours",
