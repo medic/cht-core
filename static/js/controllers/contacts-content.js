@@ -24,10 +24,11 @@ var _ = require('underscore');
                 DB.get()
                   .query('medic/forms', { include_docs: true, key: report.form })
                   .then(function(res) {
-                    if (!res.rows.length) {
-                      throw new Error('Form not found with ID: ' + report.form);
+                    if (res.rows.length) {
+                      report.formTitle = res.rows[0].doc.title;
+                    } else {
+                      report.formTitle = report.form;
                     }
-                    report.formTitle = res.rows[0].doc.title;
                     resolve(report);
                   })
                   .catch(reject);
