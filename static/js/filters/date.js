@@ -83,12 +83,11 @@ var _ = require('underscore');
         if (!task) {
           return '';
         }
-        var options = {
+        return getRelativeDate(getTaskDate(task), {
           FormatDate: FormatDate,
           prefix: getState(task.state || 'received', translateFilter) + '&nbsp;',
           suffix: getRecipient(task, translateFilter)
-        };
-        return getRelativeDate(getTaskDate(task), options);
+        });
       };
     }
   ]);

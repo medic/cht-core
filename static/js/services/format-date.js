@@ -66,6 +66,7 @@ var moment = require('moment');
           return format(date, 'datetime');
         },
         relative: function(date, options) {
+          options = options || {};
           if (options.withoutTime) {
             return relativeDate(date, true);
           }
