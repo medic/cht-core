@@ -55,6 +55,16 @@ module.exports = function(grunt) {
           from: /(\/fonts\/fontawesome-webfont[^?]*)[^']*/gi,
           to: '$1'
         }]
+      },
+      // add pass through for timeout parameter, needed until this is fixed:
+      // https://github.com/pouchdb/pouchdb/issues/4540
+      monkeypatchpouch: {
+        src: [ 'bower_components/concat.js' ],
+        overwrite: true,
+        replacements: [{
+          from: /return_docs: true \/\/ required so we know when we\'re done\n        };/g,
+          to: 'return_docs: true \/\/ required so we know when we\'re done\n        };\n\n// MONKEY PATCH BY GRUNT: Needed for continuous replication\n        if (opts.timeout) { changesOpts.timeout = opts.timeout; }\n'
+        }]
       }
     },
     browserify: {
@@ -345,6 +355,7 @@ module.exports = function(grunt) {
     'bower:install',
     'bower_concat',
     'replace:monkeypatchdate',
+    'replace:monkeypatchpouch',
     'copy:inbox'
   ]);
 
