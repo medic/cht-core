@@ -14,13 +14,10 @@ var _ = require('underscore');
   };
 
   var getRelativeDateString = function(date, options) {
-    if (options.withoutTime && date.isSame(moment(), 'd')) {
-      return options.$translate.instant('today');
-    }
     if (options.age) {
       return options.FormatDate.age(date);
     }
-    return options.FormatDate.relative(date);
+    return options.FormatDate.relative(date, options);
   };
 
   var getRelativeDate = function(date, options) {
@@ -116,11 +113,10 @@ var _ = require('underscore');
     }
   ]);
 
-  module.filter('relativeDay', ['$translate', 'FormatDate',
-    function ($translate, FormatDate) {
+  module.filter('relativeDay', ['FormatDate',
+    function (FormatDate) {
       return function (date) {
         return getRelativeDate(date, {
-          $translate: $translate,
           FormatDate: FormatDate,
           withoutTime: true
         });

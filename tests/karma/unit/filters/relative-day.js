@@ -44,6 +44,7 @@ describe('relativeDay filter', function() {
 
   it('should render "today"', function() {
     date.returns('1st Jan 2020');
+    relative.returns('today');
     scope.date = moment().valueOf();
     var element = compile('<div ng-bind-html="date | relativeDay"></div>')(scope);
     scope.$digest();
