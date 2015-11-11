@@ -13,9 +13,9 @@ var moment = require('moment');
         date: 'DD-MMM-YYYY',
         datetime: 'DD-MMM-YYYY HH:mm:ss',
         ageBreaks: [
-          { unit: 'years', key: 'yy', min: 1 },
-          { unit: 'months', key: 'MM', min: 1 },
-          { unit: 'days', key: 'dd', min: 0 }
+          { unit: 'years', key: 'y', min: 1 },
+          { unit: 'months', key: 'M', min: 1 },
+          { unit: 'days', key: 'd', min: 0 }
         ]
       };
 
@@ -49,7 +49,9 @@ var moment = require('moment');
           return $translate.instant('today');
         }
         var locale = moment.localeData();
-        var output = locale.relativeTime(Math.abs(diff.quantity), true, diff.key);
+        var quantity = Math.abs(diff.quantity);
+        var key = quantity === 1 ? diff.key : diff.key + diff.key;
+        var output = locale.relativeTime(quantity, true, key);
         if (withSuffix) {
           return locale.pastFuture(diff.quantity, output);
         }
