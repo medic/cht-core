@@ -248,17 +248,6 @@
           });
       }
 
-      function setParent(doc) {
-        if (_.isString(doc.parent)) {
-          return DB.get(doc.parent).then(function(parent) {
-            doc.parent = parent;
-            return doc;
-          });
-        } else {
-          return $q.resolve(doc);
-        }
-      }
-
       function saveRepeated(repeated) {
         if (!(repeated && repeated.child_data)) {
           return $q.resolve();
@@ -337,7 +326,6 @@
             children = children.concat(res.children);
             return res.doc;
           })
-          .then(setParent)
           .then(persist)
           .then(function(doc) {
             return $q
