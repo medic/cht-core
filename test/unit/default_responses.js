@@ -20,17 +20,17 @@ exports.tearDown = function(callback) {
     restore([
         transition.filter,
         transition._isMessageEmpty,
-        transition._isMessageFromGateway,
         transition._isFormNotFound,
         transition._isConfigFormsOnlyMode,
         transition._isReportedAfterStartDate,
-        transition._isResponseAllowed,
         transition._getConfig,
         transition._getLocale,
         transition._translate,
         transition._addMessage,
         config.get,
-        messages.addMessage
+        messages.addMessage,
+        utils.isOutgoingAllowed,
+        utils._isMessageFromGateway
     ]);
     callback();
 }
@@ -78,7 +78,7 @@ exports['when doc has errors still pass filter'] = function(test) {
 };
 
 exports['filter passes when message is from gateway'] = function(test) {
-    sinon.stub(transition, '_isMessageFromGateway').returns(true);
+    sinon.stub(utils, '_isMessageFromGateway').returns(true);
     test.equals(transition.filter({
         from: 'x',
         type: 'data_record'
@@ -87,7 +87,7 @@ exports['filter passes when message is from gateway'] = function(test) {
 };
 
 exports['filter passes when message is not from gateway'] = function(test) {
-    sinon.stub(transition, '_isMessageFromGateway').returns(false);
+    sinon.stub(utils, '_isMessageFromGateway').returns(false);
     test.equals(transition.filter({
         from: 'x',
         type: 'data_record'
@@ -95,25 +95,9 @@ exports['filter passes when message is not from gateway'] = function(test) {
     test.done();
 };
 
-exports['describe _isMessageFromGateway'] = function(test) {
-    var tests = [
-      ['+774455558888', '77-44-5555-8888', true],
-      ['+774455558889', '77-44-5555-8888', false],
-      // missing country code matches
-      ['+41446681800', '446681800', true]
-    ];
-    _.each(tests, function(t) {
-      var s = sinon.stub(transition, '_getConfig');
-      s.withArgs('gateway_number').returns(t[0]);
-      test.equals(transition._isMessageFromGateway({from: t[1]}), t[2]);
-      s.restore();
-    });
-    test.done();
-};
-
 exports['filter passes when response is allowed'] = function(test) {
     // Filter passes because message is added with a 'denied' state.
-    sinon.stub(transition, '_isResponseAllowed').returns(true);
+    sinon.stub(utils, 'isOutgoingAllowed').returns(true);
     test.equals(transition.filter({
         from: 'x',
         type: 'data_record'
@@ -123,47 +107,11 @@ exports['filter passes when response is allowed'] = function(test) {
 
 exports['filter passes when response is not allowed'] = function(test) {
     // Filter passes because message is added with a 'denied' state.
-    sinon.stub(transition, '_isResponseAllowed').returns(false);
+    sinon.stub(utils, 'isOutgoingAllowed').returns(false);
     test.equals(transition.filter({
         from: 'x',
         type: 'data_record'
     }), true);
-    test.done();
-};
-
-exports['describe _isResponseAllowed'] = function(test) {
-    /*
-     * Support comma separated string config to match an outgoing phone number
-     * or MNO (mobile network operator) defined string.
-     */
-    var tests = [
-      // denied
-      ['+123', '+123', false],
-      ['+123', '+123999999', false],
-      ['SAFARI', 'SAFARICOM', false],
-      ['Safari', 'SAFARICOM', false],
-      ['+123,+456,+789', '+456', false],
-      ['+123,+456,+789', '+4569999999', false],
-      ['SAFARI, ORANGE', 'ORANGE NET', false],
-      ['0', '0000123', false],
-      ['0', '0', false],
-      // allowed
-      ['+123', '+999', true],
-      ['SAFARI, ORANGE NET', 'ORANGE', true],
-      ['VIVO', 'EM VIVO', true],
-      ['0', '-1', true],
-      // allow falsey inputs
-      ['snarf', undefined, true],
-      ['snarf', null, true],
-      ['', '+123', true],
-      ['', '', true]
-    ];
-    _.each(tests, function(t) {
-      var s = sinon.stub(transition, '_getConfig');
-      s.withArgs('outgoing_deny_list').returns(t[0]);
-      test.equals(transition._isResponseAllowed({from: t[1]}), t[2]);
-      s.restore();
-    });
     test.done();
 };
 
@@ -467,7 +415,7 @@ exports['add response to empty message'] = function (test) {
 };
 
 exports['add response when recipient is allowed'] = function (test) {
-    sinon.stub(transition, '_isResponseAllowed').returns(true);
+    sinon.stub(utils, 'isOutgoingAllowed').returns(true);
     sinon.stub(config, 'get').withArgs('translations').returns([
         {
             'key': 'sms_received',
@@ -494,7 +442,7 @@ exports['add response when recipient is allowed'] = function (test) {
 };
 
 exports['add response with denied state when recipient is denied'] = function (test) {
-    sinon.stub(transition, '_isResponseAllowed').returns(false);
+    sinon.stub(utils, 'isOutgoingAllowed').returns(false);
     sinon.stub(config, 'get').withArgs('translations').returns([
         {
             'key': 'sms_received',
