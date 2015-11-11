@@ -13,9 +13,9 @@ var moment = require('moment');
         date: 'DD-MMM-YYYY',
         datetime: 'DD-MMM-YYYY HH:mm:ss',
         ageBreaks: [
-          { unit: 'years', key: 'y', min: 1 },
-          { unit: 'months', key: 'M', min: 1 },
-          { unit: 'days', key: 'd', min: 0 }
+          { unit: 'years', key: { singular: 'y', plural: 'yy' }, min: 1 },
+          { unit: 'months', key: { singular: 'M', plural: 'MM' }, min: 1 },
+          { unit: 'days', key: { singular: 'd', plural: 'dd' }, min: 0 }
         ]
       };
 
@@ -40,7 +40,7 @@ var moment = require('moment');
             return { quantity: diff, key: ageBreak.key };
           }
         }
-        return { quantity: 0, key: 'd' };
+        return { quantity: 0, key: { singular: 'd', plural: 'dd' } };
       };
 
       var relativeDate = function(date, withSuffix) {
@@ -50,7 +50,7 @@ var moment = require('moment');
         }
         var locale = moment.localeData();
         var quantity = Math.abs(diff.quantity);
-        var key = quantity === 1 ? diff.key : diff.key + diff.key;
+        var key = quantity === 1 ? diff.key.singular : diff.key.plural;
         var output = locale.relativeTime(quantity, true, key);
         if (withSuffix) {
           return locale.pastFuture(diff.quantity, output);
