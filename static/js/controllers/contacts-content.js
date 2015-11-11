@@ -125,6 +125,7 @@ var _ = require('underscore');
 
       var mergeTasks = function(tasks) {
         var selectedTasks = $scope.selected.tasks;
+        $log.debug('Updating contact tasks', selectedTasks, tasks);
         if (selectedTasks) {
           tasks.forEach(function(task) {
             for (var i = 0; i < selectedTasks.length; i++) {

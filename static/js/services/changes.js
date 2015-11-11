@@ -34,6 +34,7 @@
       };
 
       var notifyAll = function(change) {
+        $log.debug('Change notification firing', change);
         Object.keys(callbacks).forEach(function(key) {
           var options = callbacks[key];
           if (!options.filter || options.filter(change)) {
