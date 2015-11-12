@@ -74,8 +74,24 @@ require('moment/locales');
        *   the android app will handle it as it sees fit.
        */
       $scope.handleAndroidBack = function() {
+        // If there are any select2 dropdowns open, close them.  The select
+        // boxes are closed while they are checked - this saves us having to
+        // iterate over them twice
+        if(_.chain($('select.select2-hidden-accessible'))
+            .map(function(e) {
+              e = $(e);
+              if(e.select2('isOpen')) {
+                e.select2('close');
+                return true;
+              }
+            })
+            .contains(true)
+            .value()) {
+          return true;
+        }
+
         // On an Enketo form, go to the previous page (if there is one)
-        if ($('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
+        else if ($('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
           window.history.back();
           return true;
 
