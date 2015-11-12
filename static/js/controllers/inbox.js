@@ -79,9 +79,13 @@ require('moment/locales');
           window.history.back();
           return true;
 
-        // If viewing RHS content, go back to the LHS list
+        // If viewing RHS content, do as the filter-bar X/< button does
         } else if ($scope.showContent) {
-          $scope.setShowContent(false);
+          if ($scope.backTarget) {
+            $scope.back();
+          } else {
+            $scope.setShowContent(false);
+          }
           $scope.$apply();
           return true;
         }
