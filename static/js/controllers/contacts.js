@@ -113,7 +113,7 @@ var _ = require('underscore'),
       $scope.setSelected = function(selected) {
         $scope.selected = selected;
         $scope.setTitle(selected.doc.name);
-        $scope.showBackButton();
+        $scope.clearBackTarget();
         $scope.setActionBar({
           _id: selected.doc._id,
           sendTo: selected.doc,

@@ -100,8 +100,13 @@ require('moment/locales');
         return false;
       };
 
+      $scope.back = function() {
+        var t = $scope.backTarget;
+        $state.go(t.to, t.params, t.options);
+      };
+
       $scope.closeContentPane = function() {
-        $state.go($scope.filterModel.type + '.detail');
+        $scope.setShowContent(false);
       };
 
       $scope.clearSelected = function() {
@@ -129,10 +134,12 @@ require('moment/locales');
         $scope.showContent = showContent;
       };
 
-      $scope.showBackButton = function(show) {
-        $scope.hideTitleBarBackButton = show === false ||
-            !_.contains(['reports', 'messages', 'contacts', 'tasks'],
-                $scope.filterModel.type);
+      $scope.clearBackTarget = function() {
+        delete $scope.backTarget;
+      };
+
+      $scope.setBackTarget = function(to, id) {
+        $scope.backTarget = { to: to, params: { id: id } };
       };
 
       $scope.setTitle = function(title) {

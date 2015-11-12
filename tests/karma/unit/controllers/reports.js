@@ -26,7 +26,7 @@ describe('ReportsCtrl controller', function() {
     scope.setFilterQuery = function() {};
     scope.reports = [ report, { _id: 'a' } ];
     scope.clearSelected = function() {};
-    scope.showBackButton = function() {};
+    scope.setBackTarget = function() {};
     scope.isMobile = function() {
       return false;
     };

@@ -12,7 +12,11 @@
       $scope.loadingContent = true;
       $scope.loadingTypes = true;
       $scope.setShowContent(true);
-      $scope.showBackButton(false);
+      if ($state.params.id || $state.params.parent_id) {
+        $scope.setBackTarget('contacts.detail', $state.params.id || $state.params.parent_id);
+      } else {
+        $scope.clearBackTarget();
+      }
 
       $scope.$on('$destroy', function() {
         if ($scope.enketo_contact && $scope.enketo_contact.formInstance) {

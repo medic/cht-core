@@ -10,6 +10,7 @@
 
       var render = function(doc) {
         $scope.setSelected({ doc: doc });
+        $scope.setBackTarget('contacts.detail', $state.params.id);
         var instanceData = {};
         if (doc.type === 'person') {
           instanceData.patient = doc;
@@ -43,6 +44,7 @@
       $scope.loadingForm = true;
       $scope.setActionBar();
       $scope.setShowContent(true);
+      $scope.setBackTarget('contacts.detail', $state.params.id);
       DB.get()
         .get($state.params.id)
         .then(render)

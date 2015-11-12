@@ -21,7 +21,11 @@
       $scope.loadingContent = true;
       $scope.contentError = false;
       $scope.saving = false;
-      $scope.showBackButton(false);
+      if($state.params.reportId) {
+        $scope.setBackTarget('reports.detail', $state.params.reportId);
+      } else {
+        $scope.clearBackTarget();
+      }
 
       getSelected()
         .then(function(doc) {
