@@ -68,10 +68,6 @@ require('moment/locales');
         }
       };
 
-      $scope.back = function() {
-        $window.history.back();
-      };
-
       /**
        * Handle hardware back-button presses when inside the android app.
        * @return {boolean} `true` if angular handled the back button; otherwise
