@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksContentCtrl',
-    ['$scope', '$state', '$log', '$stateParams', 'Enketo', 'DB', 'TranslateFrom',
-    function ($scope, $state, $log, $stateParams, Enketo, DB, TranslateFrom) {
+    ['$log', '$scope', '$state', 'DB', 'Enketo', 'TranslateFrom',
+    function ($log, $scope, $state, DB, Enketo, TranslateFrom) {
 
       var hasOneFormAndNoFields = function(task) {
         return Boolean(
@@ -22,7 +22,11 @@
         );
       };
 
-      $scope.performAction = function(action) {
+      $scope.performAction = function(action, backToList) {
+        if (!backToList) {
+          $scope.setBackTarget('tasks.detail', $state.params.id);
+        }
+
         $scope.contentError = false;
         if (action.type === 'report') {
           $scope.loadingForm = true;
@@ -70,9 +74,9 @@
 
       $scope.form = null;
       $scope.formId = null;
-      $scope.setSelected($stateParams.id);
+      $scope.setSelected($state.params.id);
       if (hasOneFormAndNoFields($scope.selected)) {
-        $scope.performAction($scope.selected.actions[0]);
+        $scope.performAction($scope.selected.actions[0], true);
       }
 
     }
