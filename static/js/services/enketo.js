@@ -100,7 +100,8 @@ angular.module('inboxServices').service('Enketo', [
           bindRoot = instanceRoot.find('data');
         }
         EnketoTranslation.bindJsonToXml(bindRoot, data);
-        deferred.resolve(instanceRoot.html());
+        var serialized = (new XMLSerializer()).serializeToString(bindRoot.parent()[0]);
+        deferred.resolve(serialized);
       });
       return deferred.promise;
     };
