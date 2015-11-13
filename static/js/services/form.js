@@ -51,16 +51,15 @@
     'Language', 'Settings',
     function(Language, Settings) {
       return function(callback) {
-        Settings(function(err, res) {
-          if (err) {
-            return callback(err);
-          }
-          Language()
-            .then(function(language) {
-              callback(null, formatResults(res.forms, language));
-            })
-            .catch(callback);
-        });
+        Settings()
+          .then(function(res) {
+            Language()
+              .then(function(language) {
+                callback(null, formatResults(res.forms, language));
+              })
+              .catch(callback);
+          })
+          .catch(callback);
       };
     }
   ]);

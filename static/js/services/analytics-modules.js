@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('AnalyticsModules',
-    ['$rootScope', '$timeout', '$log', 'SettingsP', 'HttpWrapper', 'translateFilter', 'DB', 'UserDistrict', 'District', 'DbView', 'ChildFacility', 'FormatDataRecord', 'Search',
-    function($rootScope, $timeout, $log, SettingsP, HttpWrapper, translateFilter, DB, UserDistrict, District, DbView, ChildFacility, FormatDataRecord, Search) {
+    ['$rootScope', '$timeout', '$log', 'Settings', 'HttpWrapper', 'translateFilter', 'DB', 'UserDistrict', 'District', 'DbView', 'ChildFacility', 'FormatDataRecord', 'Search',
+    function($rootScope, $timeout, $log, Settings, HttpWrapper, translateFilter, DB, UserDistrict, District, DbView, ChildFacility, FormatDataRecord, Search) {
 
       var request = function(url, district, callback) {
         HttpWrapper.get(url, { params: { district: district, cache: true } })
@@ -389,7 +389,7 @@ var _ = require('underscore'),
       };
 
       return function() {
-        return SettingsP().then(function(settings) {
+        return Settings().then(function(settings) {
           return getModules(settings);
         });
       };

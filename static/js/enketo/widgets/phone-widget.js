@@ -18,7 +18,7 @@ define( function( require, exports, module ) {
     FormModel.prototype.types.tel = {
         validate: function( fieldValue ) {
             var angularServices = angular.element(document.body).injector();
-            var Settings = angularServices.get('SettingsP');
+            var Settings = angularServices.get('Settings');
 
             return Settings()
                 .then(function(settings) {

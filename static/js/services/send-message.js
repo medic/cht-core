@@ -9,8 +9,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('SendMessage', ['DB', 'UserSettings', 'Settings',
-    function(DB, UserSettings, Settings) {
+  inboxServices.factory('SendMessage', ['$q', 'DB', 'UserSettings', 'Settings',
+    function($q, DB, UserSettings, Settings) {
 
       var createMessageDoc = function(user, recipients) {
         var name = user && user.name;
@@ -75,7 +75,7 @@ var _ = require('underscore'),
 
       return function(recipients, message) {
 
-        return new Promise(function(resolve, reject) {
+        return $q(function(resolve, reject) {
 
           if (!_.isArray(recipients)) {
             recipients = [recipients];
@@ -86,38 +86,38 @@ var _ = require('underscore'),
               return console.log('Error fetching user', err);
             }
 
-            Settings(function(err, settings) {
-              if (err) {
-                return console.log('Error fetching settings', err);
-              }
+            Settings()
+              .then(function(settings) {
+                var doc = createMessageDoc(user, recipients);
+                var explodedRecipients = formatRecipients(recipients);
 
-              var doc = createMessageDoc(user, recipients);
-              var explodedRecipients = formatRecipients(recipients);
-
-              async.forEachSeries(
-                explodedRecipients,
-                function(data, callback) {
-                  DB.get()
-                    .id()
-                    .then(function(id) {
-                      doc.tasks.push(createTask(settings, data, message, user, id));
-                      callback();
-                    })
-                    .catch(function(err) {
-                      callback(err);
-                    });
-                },
-                function(err) {
-                  if (err) {
-                    return reject(err);
+                async.forEachSeries(
+                  explodedRecipients,
+                  function(data, callback) {
+                    DB.get()
+                      .id()
+                      .then(function(id) {
+                        doc.tasks.push(createTask(settings, data, message, user, id));
+                        callback();
+                      })
+                      .catch(function(err) {
+                        callback(err);
+                      });
+                  },
+                  function(err) {
+                    if (err) {
+                      return reject(err);
+                    }
+                    DB.get()
+                      .post(doc)
+                      .then(resolve)
+                      .catch(reject);
                   }
-                  DB.get()
-                    .post(doc)
-                    .then(resolve)
-                    .catch(reject);
-                }
-              );
-            });
+                );
+              })
+              .catch(function(err) {
+                console.log('Error fetching settings', err);
+              });
           });
         });
 

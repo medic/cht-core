@@ -67,20 +67,22 @@ var _ = require('underscore');
         });
       };
 
-      Settings(function(err, res) {
-        if (err) {
-          return console.log('Error loading settings', err);
-        }
-        $scope.languagesModel = {
-          default: {
-            locale: res.locale,
-            outgoing: res.locale_outgoing
-          },
-          locales: _.map(res.locales, function(locale) {
-            return createLocaleModel(res, locale);
-          })
-        };
-      });
+      Settings()
+        .then(function(res) {
+          $scope.languagesModel = {
+            default: {
+              locale: res.locale,
+              outgoing: res.locale_outgoing
+            },
+            locales: _.map(res.locales, function(locale) {
+              return createLocaleModel(res, locale);
+            })
+          };
+        })
+        .catch(function(err) {
+          console.log('Error loading settings', err);
+        });
+
       $scope.prepareEditLanguage = function(locale) {
         $rootScope.$broadcast('EditLanguageInit', locale);
       };

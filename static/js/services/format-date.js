@@ -19,13 +19,14 @@ var moment = require('moment');
         ]
       };
 
-      Settings(function(err, res) {
-        if (err) {
-          return console.log('Error fetching settings', err);
-        }
-        config.date = res.date_format;
-        config.datetime = res.reported_date_format;
-      });
+      Settings()
+        .then(function(res) {
+          config.date = res.date_format;
+          config.datetime = res.reported_date_format;
+        })
+        .catch(function(err) {
+          console.log('Error fetching settings', err);
+        });
 
       var format = function(date, key) {
         return moment(date).format(config[key]);

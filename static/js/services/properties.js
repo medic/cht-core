@@ -45,19 +45,20 @@ var _ = require('underscore'),
           if (err) {
             return callback(translateFilter('Error parsing properties file') + '. ' + err);
           }
-          Settings(function(err, settings) {
-            if (err) {
-              return callback(translateFilter('Error retrieving settings') + '. ' + err);
-            }
-            mergeTranslations(parsed[applicationTextSection], settings, locale);
-            mergeSettings(parsed[outgoingMessagesSection], settings, locale);
-            UpdateSettings(settings, function(err) {
-              if (err) {
-                return callback(translateFilter('Error saving settings') + '. ' + err);
-              }
-              callback();
+          Settings()
+            .then(function(settings) {
+              mergeTranslations(parsed[applicationTextSection], settings, locale);
+              mergeSettings(parsed[outgoingMessagesSection], settings, locale);
+              UpdateSettings(settings, function(err) {
+                if (err) {
+                  return callback(translateFilter('Error saving settings') + '. ' + err);
+                }
+                callback();
+              });
+            })
+            .catch(function(err) {
+              callback(translateFilter('Error retrieving settings') + '. ' + err);
             });
-          });
         });
       };
     }

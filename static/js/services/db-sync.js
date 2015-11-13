@@ -17,8 +17,8 @@ var _ = require('underscore'),
   };
 
   inboxServices.factory('DBSync', [
-    '$log', 'DB', 'UserDistrict', 'Session', 'SettingsP',
-    function($log, DB, UserDistrict, Session, SettingsP) {
+    '$log', 'DB', 'UserDistrict', 'Session', 'Settings',
+    function($log, DB, UserDistrict, Session, Settings) {
 
       var replicate = function(from, options) {
         options = options || {};
@@ -40,7 +40,7 @@ var _ = require('underscore'),
       };
 
       var getQueryParams = function(userCtx, callback) {
-        SettingsP()
+        Settings()
           .then(function(settings) {
             UserDistrict(function(err, district) {
               if (err) {

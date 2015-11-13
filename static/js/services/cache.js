@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    eventEmittingPromise = require('../modules/event-emitting-promise');
 
 (function () {
 
@@ -11,53 +12,29 @@ var _ = require('underscore');
 
       var caches = [];
 
-      var contains = function(cache, change) {
-        return _.findWhere(cache.docs, { _id: change.id });
-      };
-
       Changes({
         key: 'cache',
         callback: function(change) {
           caches.forEach(function(cache) {
-            if ((change.newDoc && (!cache.filter || cache.filter(change.newDoc))) ||
-                (!change.newDoc && contains(cache, change))) {
-              cache.docs = null;
-              cache.pending = false;
+            if (cache.promise && cache.filter(change)) {
+              cache.promise.emit('change', change);
+              cache.promise = null;
             }
           });
         }
       });
 
       return function(options) {
-
-        var cache = {
-          docs: null,
-          pending: false,
-          filter: options.filter,
-          callbacks: []
+        var cache = {};
+        cache.filter = options.filter || function() {
+          return true;
         };
-
         caches.push(cache);
-
-        return function(callback) {
-          if (cache.docs) {
-            return callback(null, cache.docs);
+        return function() {
+          if (!cache.promise) {
+            cache.promise = eventEmittingPromise(options.get());
           }
-          cache.callbacks.push(callback);
-          if (cache.pending) {
-            return;
-          }
-          cache.pending = true;
-          options.get(function(err, result) {
-            cache.pending = false;
-            if (!err) {
-              cache.docs = result;
-            }
-            cache.callbacks.forEach(function(callback) {
-              callback(err, result);
-            });
-            cache.callbacks = [];
-          });
+          return cache.promise;
         };
       };
     }

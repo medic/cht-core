@@ -46,27 +46,26 @@
         });
       };
 
-      Settings(function(err, res) {
-        if (err) {
-          return console.log('Error loading settings', err);
-        }
-
-        $scope.locales = res.locales;
-
-        Language()
-          .then(function(language) {
-            $scope.localeModel = createLanguageModel(language, res.locales);
-            updateTranslationModels();
-            $scope.$watch('localeModel', function(curr, prev) {
-              if (prev.lhs !== curr.lhs || prev.rhs !== curr.rhs) {
-                updateTranslationModels();
-              }
-            }, true);
-          })
-          .catch(function(err) {
-            console.log('Error loading language', err);
-          });
-      });
+      Settings()
+        .then(function(res) {
+          $scope.locales = res.locales;
+          Language()
+            .then(function(language) {
+              $scope.localeModel = createLanguageModel(language, res.locales);
+              updateTranslationModels();
+              $scope.$watch('localeModel', function(curr, prev) {
+                if (prev.lhs !== curr.lhs || prev.rhs !== curr.rhs) {
+                  updateTranslationModels();
+                }
+              }, true);
+            })
+            .catch(function(err) {
+              console.log('Error loading language', err);
+            });
+        })
+        .catch(function(err) {
+          console.log('Error loading settings', err);
+        });
 
       $scope.prepareEditTranslation = function(translation) {
         $rootScope.$broadcast('EditTranslationInit', translation, $scope.locales);

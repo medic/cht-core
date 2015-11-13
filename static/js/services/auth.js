@@ -65,16 +65,15 @@ var _ = require('underscore');
             }
             return resolve();
           }
-          Settings(function(err, settings) {
-            if (err) {
-              return reject(err);
-            }
-            if (check(requiredPermissions, roles, settings, true) &&
-                check(disallowedPermissions, roles, settings, false)) {
-              return resolve();
-            }
-            return reject();
-          });
+          Settings()
+            .then(function(settings) {
+              if (check(requiredPermissions, roles, settings, true) &&
+                  check(disallowedPermissions, roles, settings, false)) {
+                return resolve();
+              }
+              return reject();
+            })
+            .catch(reject);
         });
       };
 

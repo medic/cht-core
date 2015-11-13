@@ -7,6 +7,7 @@
     "url": "git://github.com/medic/medic-webapp.git"
   },
   "dependencies": {
+    "event-emitter": "^0.3.4",
     "lie": "^3.0.1",
     "nools": "^0.4.1",
     "properties": "^1.2.1"

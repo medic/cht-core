@@ -278,25 +278,22 @@ var _ = require('underscore'),
       };
 
       var initEditMessageModal = function() {
-        $timeout(function() {
-          Settings(function(err, res) {
-            if (!err) {
-              $('#edit-message-group .datepicker').daterangepicker({
-                singleDatePicker: true,
-                timePicker: true,
-                applyClass: 'btn-primary',
-                cancelClass: 'btn-link',
-                parentEl: '#edit-message-group .modal-dialog .modal-content',
-                format: res.reported_date_format,
-                minDate: getNextHalfHour()
-              },
-              function(date) {
-                var i = this.element.closest('fieldset').attr('data-index');
-                $scope.selectedGroup.rows[i].due = date.toISOString();
-              });
-            }
+        Settings()
+          .then(function(res) {
+            $('#edit-message-group .datepicker').daterangepicker({
+              singleDatePicker: true,
+              timePicker: true,
+              applyClass: 'btn-primary',
+              cancelClass: 'btn-link',
+              parentEl: '#edit-message-group .modal-dialog .modal-content',
+              format: res.reported_date_format,
+              minDate: getNextHalfHour()
+            },
+            function(date) {
+              var i = this.element.closest('fieldset').attr('data-index');
+              $scope.selectedGroup.rows[i].due = date.toISOString();
+            });
           });
-        });
       };
 
       $scope.edit = function(group) {

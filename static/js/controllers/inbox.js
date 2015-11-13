@@ -491,20 +491,21 @@ require('moment/locales');
         }
       });
 
-      Settings(function(err, settings) {
-        if (err) {
-          return console.log('Error fetching settings', err);
-        }
-        $scope.enabledLocales = _.reject(settings.locales, function(locale) {
-          return !!locale.disabled;
-        });
-        updateEditUserModel(function(user) {
-          filteredModals = _.filter(startupModals, function(modal) {
-            return modal.required(settings, user);
+      Settings()
+        .then(function(settings) {
+          $scope.enabledLocales = _.reject(settings.locales, function(locale) {
+            return !!locale.disabled;
           });
-          showModals();
+          updateEditUserModel(function(user) {
+            filteredModals = _.filter(startupModals, function(modal) {
+              return modal.required(settings, user);
+            });
+            showModals();
+          });
+        })
+        .catch(function(err) {
+          console.log('Error fetching settings', err);
         });
-      });
 
       moment.locale(['en']);
 

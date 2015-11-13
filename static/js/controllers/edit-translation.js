@@ -84,17 +84,18 @@ var _ = require('underscore'),
 
       $scope.saveTranslation = function() {
         var pane = modal.start($('#edit-translation'));
-        Settings(function(err, res) {
-          if (err) {
-            return pane.done(translateFilter('Error retrieving settings'), err);
-          }
-          updateTranslation(res, function(err) {
-            if (err) {
-              return pane.done(translateFilter('Error saving settings'), err);
-            }
-            pane.done();
+        Settings()
+          .then(function(res) {
+            updateTranslation(res, function(err) {
+              if (err) {
+                return pane.done(translateFilter('Error saving settings'), err);
+              }
+              pane.done();
+            });
+          })
+          .catch(function(err) {
+            pane.done(translateFilter('Error retrieving settings'), err);
           });
-        });
       };
 
     }

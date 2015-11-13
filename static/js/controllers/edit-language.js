@@ -52,27 +52,27 @@ var _ = require('underscore'),
         $scope.errors = validate($scope.language, translateFilter);
         if (!$scope.errors) {
           var pane = modal.start($('#edit-language'));
-          Settings(function(err, res) {
-            if (err) {
-              return pane.done(translateFilter('Error retrieving settings'), err);
-            }
-
-            var locales = _.clone(res.locales);
-            update(locales, $scope.language, $scope.editing);
-            UpdateSettings({ locales: locales }, function(err) {
-              if (err) {
-                return pane.done(translateFilter('Error saving settings'), err);
-              }
-              $scope.language = null;
-              $scope.editing = null;
-              $scope.errors = {};
-              $rootScope.$broadcast('LanguageUpdated', {
-                locales: locales,
-                settings: res
+          Settings()
+            .then(function(res) {
+              var locales = _.clone(res.locales);
+              update(locales, $scope.language, $scope.editing);
+              UpdateSettings({ locales: locales }, function(err) {
+                if (err) {
+                  return pane.done(translateFilter('Error saving settings'), err);
+                }
+                $scope.language = null;
+                $scope.editing = null;
+                $scope.errors = {};
+                $rootScope.$broadcast('LanguageUpdated', {
+                  locales: locales,
+                  settings: res
+                });
+                pane.done();
               });
-              pane.done();
+            })
+            .catch(function(err) {
+              pane.done(translateFilter('Error retrieving settings'), err);
             });
-          });
         }
       };
     }

@@ -16,14 +16,13 @@ var modal = require('../modules/modal'),
         if ($state.is(route)) {
           // already on required page - show tour
           // load settings to ensure translations are available
-          Settings(function(err) {
-            if (err) {
-              return console.log('Error loading settings', err);
-            }
-            $timeout(function() {
+          Settings()
+            .then(function(settings) {
               tour.start(name, translateFilter);
+            })
+            .catch(function(err) {
+              console.log('Error loading settings', err);
             });
-          });
         } else {
           // navigate to the correct page
           $state.go(route, { tour: name });
