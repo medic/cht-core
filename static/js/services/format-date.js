@@ -6,8 +6,8 @@ var moment = require('moment');
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('FormatDate', ['$translate', 'Settings',
-    function($translate, Settings) {
+  inboxServices.factory('FormatDate', ['$translate', 'Settings', 'MomentLocaleData',
+    function($translate, Settings, MomentLocaleData) {
 
       var config = {
         date: 'DD-MMM-YYYY',
@@ -45,15 +45,14 @@ var moment = require('moment');
 
       var relativeDate = function(date, withSuffix) {
         var diff = getDateDiff(date);
-        if (diff.quantity === 0 && diff.key === 'd') {
+        if (diff.quantity === 0) {
           return $translate.instant('today');
         }
-        var locale = moment.localeData();
         var quantity = Math.abs(diff.quantity);
         var key = quantity === 1 ? diff.key.singular : diff.key.plural;
-        var output = locale.relativeTime(quantity, true, key);
+        var output = MomentLocaleData().relativeTime(quantity, true, key);
         if (withSuffix) {
-          return locale.pastFuture(diff.quantity, output);
+          return MomentLocaleData().pastFuture(diff.quantity, output);
         }
         return output;
       };
