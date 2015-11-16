@@ -75,10 +75,13 @@
       $scope.form = null;
       $scope.formId = null;
       $scope.setSelected($state.params.id);
-      if (hasOneFormAndNoFields($scope.selected)) {
-        $scope.performAction($scope.selected.actions[0], true);
-      }
-
+      // Wait for `selected` to be set during tasks generation and load the
+      // form if we have no other description or instructions in the task.
+      $scope.$watch('selected', function() {
+        if (hasOneFormAndNoFields($scope.selected)) {
+          $scope.performAction($scope.selected.actions[0], true);
+        }
+      });
     }
   ]);
 
