@@ -95,18 +95,16 @@ angular.module('inboxServices').service('Enketo', [
         var xml = $($.parseXML(model));
         var instanceRoot = xml.find('model instance');
         var bindRoot = instanceRoot.find('inputs');
-        if (!bindRoot.length) {
+        if (bindRoot.length) {
+          bindRoot = bindRoot.parent();
+        } else {
           // used for the default contact schema forms
           bindRoot = instanceRoot.find('data');
         }
         EnketoTranslation.bindJsonToXml(bindRoot, data);
 
-        if(bindRoot.parent().length) {
-          var serialized = new XMLSerializer().serializeToString(bindRoot.parent()[0]);
-          deferred.resolve(serialized);
-        } else {
-          deferred.resolve();
-        }
+        var serialized = new XMLSerializer().serializeToString(bindRoot[0]);
+        deferred.resolve(serialized);
       });
       return deferred.promise;
     };
