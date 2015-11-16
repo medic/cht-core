@@ -3,7 +3,7 @@
   "description": "An npm and Kanso module for auditing changes to CouchDB documents",
   "main": "./couchdb-audit/node",
   "author": "Gareth Bowen <gareth@bowenwebdesign.co.nz>",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "scripts": {
     "test": "nodeunit tests/node"
   },
