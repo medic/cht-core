@@ -2,7 +2,7 @@
 
 ## 0.4.10
 
-### TBD
+### Nov 16, 2015
 
 - Added support for Outgoing Deny List, a comma separated list of phone numbers
   or strings to deny outgoing service to. #750
