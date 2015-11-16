@@ -72,9 +72,7 @@
         Enketo.unload($scope.form);
       });
 
-      $scope.form = null;
-      $scope.formId = null;
-      $scope.setSelected($state.params.id);
+
       // Wait for `selected` to be set during tasks generation and load the
       // form if we have no other description or instructions in the task.
       $scope.$watch('selected', function() {
@@ -82,6 +80,10 @@
           $scope.performAction($scope.selected.actions[0], true);
         }
       });
+
+      $scope.form = null;
+      $scope.formId = null;
+      $scope.setSelected($state.params.id);
     }
   ]);
 
