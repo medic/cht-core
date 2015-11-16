@@ -25,6 +25,9 @@ describe('TasksContentCtrl', function() {
     beforeEach(function() {
       $scope = {
         $on: function() {},
+        $watch: function(prop, cb) {
+          cb();
+        },
         setSelected: function() {
           $scope.selected = task;
         }
