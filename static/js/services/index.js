@@ -37,6 +37,7 @@
   require('./mark-read');
   require('./message-contacts');
   require('./message-state');
+  require('./moment-locale-data');
   require('./outgoing-messages-configuration');
   require('./properties');
   require('./read-messages');
