@@ -100,7 +100,7 @@ require('moment/locales');
           if ($scope.backTarget) {
             $scope.back();
           } else {
-            $scope.setShowContent(false);
+            $scope.closeContentPane();
           }
           $scope.$apply();
           return true;
@@ -127,7 +127,8 @@ require('moment/locales');
       };
 
       $scope.closeContentPane = function() {
-        $scope.setShowContent(false);
+        $scope.clearSelected();
+        $state.go($state.current.name.replace(/^([^\.]*)(\..*)?/, '$1'));
       };
 
       $scope.clearSelected = function() {
