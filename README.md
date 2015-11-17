@@ -26,12 +26,12 @@ You will need to install the following:
 ### Setup CouchDB
 
 Setup admin access:
-```
+```sh
 curl -X PUT http://localhost:5984/_config/admins/admin -d '"pass"'
 ```
 
 Reconfigure CouchDB to require authentication:
-```
+```sh
 curl -X PUT http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user \
   -d '"true"' -H "Content-Type: application/json"
 ```
@@ -43,7 +43,7 @@ require_valid_user = true
 ```
 
 Create an admin user:
-```
+```sh
 curl -X POST http://admin:pass@localhost:5984/_users \
   -H "Content-Type: application/json" \
   -d '{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}'
@@ -53,7 +53,7 @@ curl -X POST http://admin:pass@localhost:5984/_users \
 
 [Kanso](http://kan.so) is required to build and deploy.
 
-```
+```sh
 npm install kanso -g
 ```
 
