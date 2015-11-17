@@ -117,6 +117,11 @@ require('moment/locales');
       };
 
       $scope.back = function() {
+        $('#navigation-confirm').modal('show');
+      };
+
+      $scope.backConfirm = function() {
+        $('#navigation-confirm').modal('hide');
         var t = $scope.backTarget;
         $state.go(t.to, t.params, t.options);
       };
