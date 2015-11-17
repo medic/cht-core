@@ -4,8 +4,11 @@
       <h3>{{'about' | translate}}</h3>
     </div>
     <div>
-      {{'version' | translate}} {{version}}
-      <a ng-click="reload()">{{'Reload' | translate}}</a>
+      <ul>
+        <li>{{'version' | translate}} {{version}}</li>
+        <li>{{url}}</li>
+        <li><a ng-click="reload()">{{'Reload' | translate}}</a></li>
+      </ul>
     </div>
     <div>
       <h3>{{'Help' | translate}}</h3>
