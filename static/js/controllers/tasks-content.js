@@ -60,7 +60,10 @@
           .then(function(doc) {
             $log.debug('saved report', doc);
             $scope.saving = false;
-            $state.go('tasks.detail', null, { reload: true });
+            Enketo.unload($scope.form);
+            $scope.clearSelected();
+            $scope.clearBackTarget();
+            $state.go('tasks.detail', { id: null });
           })
           .catch(function(err) {
             $scope.saving = false;
@@ -71,7 +74,6 @@
       $scope.$on('$destroy', function() {
         Enketo.unload($scope.form);
       });
-
 
       // Wait for `selected` to be set during tasks generation and load the
       // form if we have no other description or instructions in the task.
