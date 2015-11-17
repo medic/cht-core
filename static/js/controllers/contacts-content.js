@@ -7,8 +7,10 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsContentCtrl', 
-    ['$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search', 'Changes', 'ContactSchema',
-    function ($scope, $stateParams, $q, $log, DB, TaskGenerator, Search, Changes, ContactSchema) {
+    ['$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search', 'Changes', 'ContactSchema', 'UserDistrict',
+    function ($scope, $stateParams, $q, $log, DB, TaskGenerator, Search, Changes, ContactSchema, UserDistrict) {
+
+      $scope.showParentLink = true;
 
       var getReports = function(id) {
         var scope = {
@@ -123,6 +125,18 @@ var _ = require('underscore');
           });
       };
 
+      var updateParentLink = function() {
+        UserDistrict(function(err, district) {
+          if (err) {
+            return $log.error('Error getting user district', err);
+          }
+          var parentId = $scope.selected.doc &&
+                         $scope.selected.doc.parent &&
+                         $scope.selected.doc.parent._id;
+          $scope.showParentLink = district !== parentId;
+        });
+      };
+
       var mergeTasks = function(tasks) {
         var selectedTasks = $scope.selected.tasks;
         $log.debug('Updating contact tasks', selectedTasks, tasks);
@@ -172,6 +186,7 @@ var _ = require('underscore');
             $scope.setSelected(selected);
             $scope.settingSelected(refreshing);
             getTasks();
+            updateParentLink();
 
             $scope.relevantForms = _.filter($scope.formDefinitions, function(form) {
               if (!form.context) {

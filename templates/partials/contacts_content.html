@@ -17,8 +17,11 @@
         <div class="meta">
           <h2>{{selected.doc.name}}</h2>
           <p ng-show="selected.doc.date_of_birth" ng-bind-html="selected.doc.date_of_birth | age"></p>
-          <p ng-show="selected.doc.parent">
+          <p ng-show="selected.doc.parent && showParentLink">
             <a ui-sref="contacts.detail({ id: selected.doc.parent._id })">{{selected.doc.parent.name}}</a>
+          </p>
+          <p ng-show="selected.doc.parent && !showParentLink">
+            {{selected.doc.parent.name}}
           </p>
         </div>
         <div id="details" class="panel-group" ng-show="selected.fields.length || selected.contactFor.length">
