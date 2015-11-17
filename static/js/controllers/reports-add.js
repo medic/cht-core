@@ -21,7 +21,7 @@
       $scope.loadingContent = true;
       $scope.contentError = false;
       $scope.saving = false;
-      if($state.params.reportId) {
+      if ($state.params.reportId || $state.params.formId) {
         $scope.setBackTarget('reports.detail', $state.params.reportId);
       } else {
         $scope.clearBackTarget();
