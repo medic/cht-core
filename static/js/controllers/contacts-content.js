@@ -10,7 +10,7 @@ var _ = require('underscore');
     ['$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search', 'Changes', 'ContactSchema', 'UserDistrict',
     function ($scope, $stateParams, $q, $log, DB, TaskGenerator, Search, Changes, ContactSchema, UserDistrict) {
 
-      $scope.showParentLink = true;
+      $scope.showParentLink = false;
 
       var getReports = function(id) {
         var scope = {
@@ -133,7 +133,7 @@ var _ = require('underscore');
           var parentId = $scope.selected.doc &&
                          $scope.selected.doc.parent &&
                          $scope.selected.doc.parent._id;
-          $scope.showParentLink = district !== parentId;
+          $scope.showParentLink = parentId && district !== parentId;
         });
       };
 
