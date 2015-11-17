@@ -12,11 +12,7 @@
       $scope.loadingContent = true;
       $scope.loadingTypes = true;
       $scope.setShowContent(true);
-      if ($state.params.id || $state.params.parent_id) {
-        $scope.setBackTarget('contacts.detail', $state.params.id || $state.params.parent_id);
-      } else {
-        $scope.clearBackTarget();
-      }
+      $scope.setBackTarget('contacts.detail', $state.params.id || $state.params.parent_id);
 
       $scope.$on('$destroy', function() {
         if ($scope.enketo_contact && $scope.enketo_contact.formInstance) {
