@@ -116,14 +116,6 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
         }
 
         return {
-            warm_up: function() {
-                if(isAndroid()) {
-                    // no need to warm it up :-)
-                } else {
-                    cached.play();
-                    cached.pause();
-                }
-            },
             play: function() {
                 if(isAndroid()) {
                     medicmobile_android.playAlert();
@@ -196,7 +188,6 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
         setTimeout(function() {
             animate(Date.now());
         }, 0);
-        audio.warm_up();
     }
 
     function animate(start) {
