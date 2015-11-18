@@ -101,15 +101,36 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
 
 //> AUDIO
     var audio = (function() {
-        var cached = loadSound();
+        var cached;
+
+        if(!isAndroid()) {
+            cached = loadSound();
+        }
+
+        function isAndroid() {
+            return !!medicmobile_android;
+        }
 
         function loadSound() {
             return new Audio('./static/audio/alert.mp3');
         }
 
         return {
-            play_cached_object: function() { cached.play(); },
-            play_cached_silently: function() { cached.play(); cached.pause(); },
+            warm_up: function() {
+                if(isAndroid()) {
+                    // no need to warm it up :-)
+                } else {
+                    cached.play();
+                    cached.pause();
+                }
+            },
+            play: function() {
+                if(isAndroid()) {
+                    medicmobile_android.playAlert();
+                } else {
+                    cached.play();
+                }
+            },
         };
     }());
 
@@ -175,7 +196,7 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
         setTimeout(function() {
             animate(Date.now());
         }, 0);
-        audio.play_cached_silently();
+        audio.warm_up();
     }
 
     function animate(start) {
@@ -192,7 +213,7 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
             drawBigCircle(LIM*2);
             running = false;
 
-            audio.play_cached_object();
+            audio.play();
         }
     }
 
