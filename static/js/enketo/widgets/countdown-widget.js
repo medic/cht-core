@@ -108,7 +108,7 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
         }
 
         function isAndroid() {
-            return !!medicmobile_android;
+            return typeof medicmobile_android !== 'undefined';
         }
 
         function loadSound() {
