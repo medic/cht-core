@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksContentCtrl',
-    ['$log', '$scope', '$state', 'DB', 'Enketo', 'TranslateFrom',
-    function ($log, $scope, $state, DB, Enketo, TranslateFrom) {
+    ['$log', '$scope', '$state', '$translate', 'DB', 'Enketo', 'TranslateFrom', 'Snackbar',
+    function ($log, $scope, $state, $translate, DB, Enketo, TranslateFrom, Snackbar) {
 
       var hasOneFormAndNoFields = function(task) {
         return Boolean(
@@ -59,6 +59,7 @@
         Enketo.save($scope.formId, $scope.form)
           .then(function(doc) {
             $log.debug('saved report', doc);
+            $translate('report.created').then(Snackbar);
             $scope.saving = false;
             Enketo.unload($scope.form);
             $scope.clearSelected();
