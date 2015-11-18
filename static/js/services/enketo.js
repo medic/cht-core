@@ -101,6 +101,11 @@ angular.module('inboxServices').service('Enketo', [
         } else {
           // used for the default contact schema forms
           bindRoot = instanceRoot.find('data');
+          if (!bindRoot.length) {
+            // used for forms defining a primary object with a tag name
+            // other than `data`
+            bindRoot = instanceRoot.children().eq(0);
+          }
           serializeRoot = bindRoot;
         }
         EnketoTranslation.bindJsonToXml(bindRoot, data);
