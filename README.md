@@ -236,7 +236,7 @@ mv new.json kanso.json
 Finally, push to the [Medic Alpha
 Market](https://staging.dev.medicmobile.org/markets-alpha/):
 
-```
+```sh
 kanso push https://staging.dev.medicmobile.org/markets-alpha/upload
 ```
 
