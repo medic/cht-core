@@ -126,7 +126,7 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
                 toHex(arguments[2]);
     }
 
-    function drawCircle(c) {
+    function drawCircle(ctx, c) {
         ctx.beginPath();
         ctx.arc(c.x, c.y, c.r, 0, 2*pi, false);
         ctx.fillStyle = c.color;
@@ -144,25 +144,25 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
 
 //> ANIMATION
     function drawAnimation(offset) {
-        var bigColor, littleOffset;
-
-        // draw big coloured circle
-        if(offset < LIM) {
+        drawBigCircle(offset);
+        drawLittleCircle(offset);
+    }
+    function drawBigCircle(offset) {
+        var bigColor = '#' + (offset < LIM ?
             // big color between blue & grey
-            bigColor = '#' + fade(offset, LIM, startColor, midColor);
-        } else {
+                fade(offset, LIM, startColor, midColor):
             // big color between gray & orange
-            bigColor = '#' + fade(offset - LIM, LIM, midColor, endColor);
-        }
-        drawCircle({
+                fade(offset - LIM, LIM, midColor, endColor));
+        drawCircle(ctx, {
             x: centre.x, y: centre.y, r: bigR, color: bigColor });
-
+    }
+    function drawLittleCircle(offset) {
         // draw little white circle
-        littleOffset = {
+        var littleOffset = {
             x: littleOffsetMax * Math.sin(pi*offset/LIM),
             y: littleOffsetMax * Math.cos(pi*offset/LIM),
         };
-        drawCircle({
+        drawCircle(ctx, {
             x: centre.x + littleOffset.x,
             y: centre.y - littleOffset.y,
             r: littleR,
@@ -189,7 +189,7 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
                 animate(start);
             });
         } else {
-            drawAnimation(LIM*2);
+            drawBigCircle(LIM*2);
             running = false;
 
             audio.play_cached_object();
@@ -200,7 +200,7 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
     (function() {
         function resetTimer() {
             running = false;
-            drawAnimation(0);
+            drawBigCircle(0);
         }
 
         // set up initial state
