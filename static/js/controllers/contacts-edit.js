@@ -180,6 +180,7 @@
         var form = $scope.enketo_contact.formInstance;
         var docId = $scope.enketo_contact.docId;
         $scope.saving = true;
+        $scope.savingError = null;
 
         return form.validate()
           .then(function(valid) {
@@ -196,7 +197,10 @@
               })
               .catch(function(err) {
                 $scope.saving = false;
-                $log.error('Error submitting form data: ', err);
+                $log.error('Error submitting form data', err);
+                $translate('Error updating contact').then(function(msg) {
+                  $scope.savingError = msg;
+                });
               });
           })
           .catch(function() {
