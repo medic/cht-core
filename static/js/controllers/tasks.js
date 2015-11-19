@@ -42,6 +42,14 @@ var _ = require('underscore');
             }
             $scope.tasks.push(task);
           });
+
+          // Remove any tasks which no longer exist
+          if($scope.tasks.length > tasks.length) {
+            var newIds = _.pluck(tasks, '_id');
+            $scope.tasks = _.filter($scope.tasks, function(task) {
+              return _.contains(newIds, task._id);
+            });
+          }
         });
       };
 
