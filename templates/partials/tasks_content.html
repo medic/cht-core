@@ -16,10 +16,8 @@
 
   <div class="col-sm-8 item-content item-body" ng-show="selected && !form && !loadingContent && !loadingForm && !contentError">
     <div>
-
       <div class="body">
         <h2>{{selected.title | translateFrom:selected}}</h2>
-
         <ul>
           <li>
             <label>{{'task.date' | translate}}</label>
@@ -39,12 +37,11 @@
             <label>{{field.label | translateFrom:selected}}</label>
             <p>{{field.value | translateFrom:selected}}</p>
           </li>
-          <li>
+          <li class="actions">
             <a class="btn btn-default" ng-click="performAction(action)" ng-repeat="action in selected.actions">{{action.label}}</a>
           </li>
         </ul>
       </div>
-
     </div>
   </div>
 

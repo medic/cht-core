@@ -19,13 +19,13 @@
     }
   }
   .action-list {
-    margin-bottom: 0;
-    margin: -15px;
+    border-bottom: 0;
+    ul {
+      margin-bottom: 0;
+      margin: -15px;
+    }
     li {
       border-bottom: 1px solid @seperator-color;
-      &:last-child {
-        border-bottom: 0;
-      }
     }
     a {
       display: inline-block;
@@ -51,6 +51,9 @@
         }
       }
     }
+    .action-icon {
+      float: left;
+    }
   }
   .col-sm-12 .card {
     margin-right: -15px;
@@ -63,6 +66,52 @@
   .col-sm-4:nth-child(3n+1) {
     clear: left;
   }
+  .panel-group {
+    margin-left: -15px;
+    margin-right: -15px;
+    .panel-heading {
+      margin-left: 15px;
+      margin-right: 15px;
+    }
+    .card {
+      margin-left: 0;
+      margin-right: 0;
+    }
+  }
+}
+
+#snackbar {
+  position: fixed;
+  bottom: 0;
+  cursor: default;
+  z-index: 10000;
+  will-change: transform;
+  transform: translate3d(0, 50px, 0) rotateZ(0deg);
+  transition: 0.25s linear;
+  max-height: 50px;
+  left: 0px;
+  right: 0px;
+  text-align: center;
+  pointer-events: none;
+  .snackbar-content {
+    pointer-events: initial;
+    text-align: left;
+    display: inline-block;
+    padding: 14px 24px;
+    vertical-align: middle;
+    min-width: 288px;
+    max-width: 568px;
+    border-radius: 2px 2px 0 0;
+    background-color: @medic-slate-color;
+    color: #FFFFFF;
+    margin: 0 auto;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  &.active {
+    transform: translate3d(0, 0, 0);
+  }
 }
 
 @media (max-width: 767px) {
@@ -70,5 +119,12 @@
     .card {
       margin-right: -15px;
     }
+  }
+  #snackbar .snackbar-content {
+    width: 100%;
+    min-width: 100%;
+    max-width: 100%;
+    left: 0;
+    border-radius: 0;
   }
 }

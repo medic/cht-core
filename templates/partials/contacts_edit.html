@@ -11,14 +11,17 @@
     <div id="contact-form" class="enketo">
 
       <div class="form-group" ng-show="category === 'place' && !contactId && canCreateDifferentPlaceTypes">
-        <label>{{'Contact type' | translate}} *</label>
-        <p class="horizontal-options">
-          <a class="icon" ng-class="{'selected': contact.type === t}" ng-click="setContactType(t)" ng-repeat="(t, props) in placeSchemas">
-            <span class="rectangle">
-              <span class="fa" ng-class="props.icon"></span>{{'contact.type.' + props.type | translate}}
-            </span>
-          </a>
-        </p>
+        <label class="question">
+          <span class="question-label active">{{'Contact type' | translate}}</span>
+          <span class="required">*</span>
+          <p class="horizontal-options">
+            <a class="icon" ng-class="{'selected': contact.type === t}" ng-click="setContactType(t)" ng-repeat="(t, props) in placeSchemas">
+              <span class="rectangle">
+                <span class="fa" ng-class="props.icon"></span>{{'contact.type.' + props.type | translate}}
+              </span>
+            </a>
+          </p>
+        </label>
       </div>
 
       <div class="container pages"></div>
@@ -27,7 +30,9 @@
         <button class="btn btn-primary next-page">{{'Next' | translate}} &gt;</button>
         <a class="btn submit btn-primary" ng-click="save()" ng-disabled="saving">{{'Submit' | translate}}</a>
         <div class="loader inline small" ng-show="saving"></div>
+        <div class="error">{{savingError}}</div>
       </div>
+
     </div>
   </div>
 </div>

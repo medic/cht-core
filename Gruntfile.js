@@ -20,9 +20,9 @@ module.exports = function(grunt) {
         exclude: [
           'fontawesome',
           'async',
-          'select2-bootstrap-css',
           'bootstrap-tour', // Including this includes two copies. Manually included in concat.
-          'angular-mocks'
+          'angular-mocks',
+          'select2', // need to manually include the extended version of the lib
         ]
       }
     },
@@ -39,19 +39,31 @@ module.exports = function(grunt) {
         }]
       },
       monkeypatchdate: {
-        src: ['bower_components/concat.js'],
+        src: [ 'bower_components/concat.js' ],
         overwrite: true,
         replacements: [{
           from: /clickDate: function \(e\) \{/g,
           to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'mm.dateSelected.daterangepicker\', this);\n'
         }]
       },
-      monkeypatchselect: {
-        src: ['bower_components/concat.js'],
+      // replace cache busting which breaks appcache, needed until this is fixed:
+      // https://github.com/FortAwesome/Font-Awesome/issues/3286
+      monkeypatchfontawesome: {
+        src: [ 'static/dist/inbox.css' ],
         overwrite: true,
         replacements: [{
-          from: /if \(self\.opts\.selectOnBlur\) \{/g,
-          to: 'if (self.opts.selectOnBlur\n// MONKEY PATCH BY GRUNT: Needed for select freetext on blur #699.\n || (self.opts.selectFreetextOnBlur && self.results.find(".select2-highlighted .freetext").length)) {\n'
+          from: /(\/fonts\/fontawesome-webfont[^?]*)[^']*/gi,
+          to: '$1'
+        }]
+      },
+      // add pass through for timeout parameter, needed until this is fixed:
+      // https://github.com/pouchdb/pouchdb/issues/4540
+      monkeypatchpouch: {
+        src: [ 'bower_components/concat.js' ],
+        overwrite: true,
+        replacements: [{
+          from: /return_docs: true \/\/ required so we know when we\'re done\n        };/g,
+          to: 'return_docs: true \/\/ required so we know when we\'re done\n        };\n\n// MONKEY PATCH BY GRUNT: Needed for continuous replication\n        if (opts.timeout) { changesOpts.timeout = opts.timeout; }\n'
         }]
       }
     },
@@ -80,8 +92,8 @@ module.exports = function(grunt) {
             'text!enketo-config': './static/js/enketo/config.json',
             'widgets': './static/js/enketo/widgets.js',
             './XPathEvaluatorBinding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding.js',
-            'extended-xpath': './node_modules/enketo-core/node_modules/openrosa-xpath-evaluator/src/extended-xpath.js',
-            'openrosa-xpath-extensions': './node_modules/enketo-core/node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions.js',
+            'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath.js',
+            'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions.js',
             'libphonenumber/phoneformat': './packages/libphonenumber/libphonenumber/phoneformat.js',
             'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils.js',
           },
@@ -93,6 +105,7 @@ module.exports = function(grunt) {
         src: [
           'bower_components/concat.js',
           'bower_components/bootstrap-tour/build/js/bootstrap-tour.js',
+          'bower_components/select2/dist/js/select2.full.js',
           'static/js/bootstrap-multidropdown.js'
         ],
         dest: 'static/dist/dependencies.js',
@@ -125,7 +138,8 @@ module.exports = function(grunt) {
           'static/js/bootstrap-datetimepicker.js',
           'static/js/jquery-ext.js',
           'static/js/json2.js',
-          'static/js/browser.js'
+          'static/js/browser.js',
+          'tests/karma/q.js'
         ]
       },
       all: [
@@ -170,29 +184,10 @@ module.exports = function(grunt) {
             expand: true,
             flatten: true,
             src: [
-              'bower_components/select2/*.gif',
-              'bower_components/select2/*.png'
-            ],
-            dest: 'static/dist/'
-          },
-          {
-            expand: true,
-            flatten: true,
-            src: [
               'bower_components/fontawesome/fonts/*'
             ],
             dest: 'static/fonts'
           },
-        ]
-      },
-      admin: {
-        files: [
-          {
-            expand: true,
-            flatten: true,
-            src: [ 'bower_components/select2/select2.js' ],
-            dest: 'static/dist/'
-          }
         ]
       },
       'enketo-xslt': {
@@ -291,6 +286,7 @@ module.exports = function(grunt) {
         dest: 'static/dist/manifest.appcache',
         cache: {
           patterns: [
+            'static/audio/**/*',
             'static/dist/**/*',
             'static/fonts/**/*',
             'static/img/**/*',
@@ -351,6 +347,7 @@ module.exports = function(grunt) {
   grunt.registerTask('mmcss', 'Build the CSS resources', [
     'sass',
     'less',
+    'replace:monkeypatchfontawesome',
     'postcss'
   ]);
 
@@ -358,9 +355,8 @@ module.exports = function(grunt) {
     'bower:install',
     'bower_concat',
     'replace:monkeypatchdate',
-    'replace:monkeypatchselect',
-    'copy:inbox',
-    'copy:admin'
+    'replace:monkeypatchpouch',
+    'copy:inbox'
   ]);
 
   grunt.registerTask('deploy', 'Deploy the webapp', [

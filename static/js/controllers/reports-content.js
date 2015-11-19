@@ -5,10 +5,11 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsContentCtrl', 
-    ['$scope', '$stateParams', 'MessageState',
-    function ($scope, $stateParams, MessageState) {
+    ['$scope', '$stateParams', 'Changes', 'MessageState',
+    function ($scope, $stateParams, Changes, MessageState) {
 
-      $scope.selectMessage($stateParams.id);
+      $scope.selectReport($stateParams.id);
+      $scope.clearBackTarget();
       $('.tooltip').remove();
 
       $scope.canMute = function(group) {
@@ -36,6 +37,22 @@
       $scope.schedule = function(group) {
         setMessageState(group, 'muted', 'scheduled');
       };
+
+      Changes({
+        key: 'reports-content',
+        filter: function(change) {
+          return $scope.selected && $scope.selected._id === change.id;
+        },
+        callback: function(change) {
+          if (change.deleted) {
+            $scope.$apply(function() {
+              $scope.selectReport();
+            });
+          } else {
+            $scope.selectReport(change.id);
+          }
+        }
+      });
     }
   ]);
 

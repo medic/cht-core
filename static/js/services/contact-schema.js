@@ -1,8 +1,8 @@
 var _ = require('underscore');
 
 var CLINIC = {
-  badge: 'fa-home',
-  icon: 'fa-home',
+  badge: 'fa-group',
+  icon: 'fa-group',
   fields: {
     name: {
       type: 'string',
@@ -16,7 +16,10 @@ var CLINIC = {
       type: 'db:person',
       required: true,
     },
-    location: 'geopoint',
+    location: {
+      type: 'geopoint',
+      hide_in_view: true,
+    },
   },
 };
 
@@ -60,17 +63,16 @@ var HEALTH_CENTER = {
 
 var PERSON = {
   badge: 'fa-user',
-  name: '{{first_name}} {{last_name}}',
+  name: '{{last_name}} {{first_name}}',
   fields: {
-    first_name: {
-      type: 'string',
-      required: true,
-    },
     last_name: {
       type: 'string',
       required: true,
     },
-    national_id_number: 'string',
+    first_name: {
+      type: 'string',
+      required: true,
+    },
     date_of_birth: 'date',
     phone: {
       type: 'tel',
@@ -78,7 +80,10 @@ var PERSON = {
     },
     alternate_phone: 'tel',
     notes: 'text',
-    parent: 'custom:medic-place',
+    parent: {
+      type: 'custom:medic-place',
+      hide_in_form: true,
+    },
   },
 };
 
@@ -176,7 +181,7 @@ angular.module('inboxServices').service('ContactSchema', [
         });
         return schema;
       },
-      getWithoutSpecialFields: function() {
+      getVisibleFields: function() {
         // return a modified schema, missing special fields such as `parent`, and
         // anything included in the `name` attribute
         var schema = getSchema();
@@ -190,7 +195,14 @@ angular.module('inboxServices').service('ContactSchema', [
               delete s.fields[key];
             });
           }
+          delete s.fields.name;
           delete s.fields.parent;
+
+          _.each(s.fields, function(props, name) {
+            if (props.hide_in_view) {
+              delete s.fields[name];
+            }
+          });
         });
         return schema;
       },

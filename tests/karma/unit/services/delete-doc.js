@@ -5,20 +5,15 @@ describe('DeleteDoc service', function() {
   var service,
       get,
       put,
-      broadcast,
       message;
 
   beforeEach(function() {
     get = sinon.stub();
     put = sinon.stub();
-    broadcast = sinon.stub();
     message = {};
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ put: put, get: get }));
-      $provide.factory('$rootScope', function() {
-        return { $broadcast: broadcast };
-      });
     });
     inject(function(_DeleteDoc_) {
       service = _DeleteDoc_;
@@ -26,7 +21,7 @@ describe('DeleteDoc service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(get, put, broadcast);
+    KarmaUtils.restore(get, put);
   });
 
   it('returns db errors', function(done) {
@@ -57,24 +52,7 @@ describe('DeleteDoc service', function() {
     service('abc', function(err, actual) {
       chai.expect(get.calledOnce).to.equal(true);
       chai.expect(put.calledOnce).to.equal(true);
-      chai.expect(broadcast.calledOnce).to.equal(false);
       chai.expect(get.firstCall.args[0]).to.equal('abc');
-      chai.expect(actual).to.deep.equal(expected);
-      done();
-    });
-  });
-
-  it('broadcasts event if clinic', function(done) {
-    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz', type: 'clinic' }));
-    put.returns(KarmaUtils.mockPromise());
-    var expected = { _id: 'xyz', type: 'clinic', _deleted: true };
-    service('abc', function(err, actual) {
-      chai.expect(get.calledOnce).to.equal(true);
-      chai.expect(put.calledOnce).to.equal(true);
-      chai.expect(broadcast.calledOnce).to.equal(true);
-      chai.expect(get.firstCall.args[0]).to.equal('abc');
-      chai.expect(broadcast.firstCall.args[0]).to.equal('ContactUpdated');
-      chai.expect(broadcast.firstCall.args[1]).to.deep.equal(expected);
       chai.expect(actual).to.deep.equal(expected);
       done();
     });
@@ -105,14 +83,9 @@ describe('DeleteDoc service', function() {
     service('a', function(err, actual) {
       chai.expect(get.calledTwice).to.equal(true);
       chai.expect(put.calledTwice).to.equal(true);
-      chai.expect(broadcast.calledTwice).to.equal(true);
       chai.expect(get.firstCall.args[0]).to.equal('a');
       chai.expect(get.secondCall.args[0]).to.equal('b');
       chai.expect(put.firstCall.args[0].contact).to.equal(null);
-      chai.expect(broadcast.firstCall.args[0]).to.equal('ContactUpdated');
-      chai.expect(broadcast.firstCall.args[1]._id).to.equal('b');
-      chai.expect(broadcast.secondCall.args[0]).to.equal('ContactUpdated');
-      chai.expect(broadcast.secondCall.args[1]._id).to.equal('a');
       chai.expect(actual._deleted).to.equal(true);
       done();
     });
@@ -143,7 +116,6 @@ describe('DeleteDoc service', function() {
     service('a', function(err, actual) {
       chai.expect(get.calledTwice).to.equal(true);
       chai.expect(put.calledOnce).to.equal(true);
-      chai.expect(broadcast.calledOnce).to.equal(true);
       chai.expect(get.firstCall.args[0]).to.equal('a');
       chai.expect(get.secondCall.args[0]).to.equal('b');
       chai.expect(actual._deleted).to.equal(true);

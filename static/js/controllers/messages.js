@@ -49,7 +49,7 @@
         }
       };
 
-      var updateContacts = function(options, callback) {
+      var updateConversations = function(options, callback) {
         if (!options.changes) {
           $scope.loading = true;
         }
@@ -77,11 +77,11 @@
       $scope.messages = [];
       $scope.selected = null;
       setMessages();
-      updateContacts({ }, function() {
+      updateConversations({ }, function() {
         if (!$state.params.id &&
             $scope.messages.length &&
-            !$('#back').is(':visible') &&
-            $scope.filterModel.type === 'messages') {
+            !$scope.isMobile() &&
+            $state.is('messages.detail')) {
           $timeout(function() {
             var id = $('.inbox-items li').first().attr('data-record-id');
             $state.go('messages.detail', { id: id }, { location: 'replace' });
@@ -96,7 +96,7 @@
       Changes({
         key: 'messages-list',
         callback: function() {
-          updateContacts({ changes: true });
+          updateConversations({ changes: true });
         },
         filter: function(change) {
           if ($scope.filterModel.type !== 'messages') {
@@ -105,7 +105,7 @@
           if (change.newDoc) {
             return change.newDoc.kujua_message || change.newDoc.sms_message;
           }
-          return true;
+          return change.deleted;
         }
       });
 

@@ -1,6 +1,6 @@
 <div id="reports-list" class="col-sm-4 inbox-items left-pane">
   <ul ng-show="!loading || appending">
-    <li ng-repeat="report in reports | orderBy:'-reported_date'" ng-class="{'selected': report._id === loadingContent || !loadingContent && report._id === selected._id, 'read': isRead(report)}">
+    <li ng-repeat="report in reports | orderBy:'-reported_date'" ng-class="{'selected': report._id === loadingContent || !loadingContent && report._id === selected._id, 'read': isRead(report)}" data-record-id="{{report._id}}">
       <a class="message-wrapper" ui-sref="reports.detail({ id: report._id })">
         <span class="mm-badge mm-badge-round mm-badge-border" ng-class="report.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
           <span class="fa" ng-class="{'fa-check': report.verified}"></span>

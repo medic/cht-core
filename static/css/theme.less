@@ -41,11 +41,15 @@ a {
   display: inline-block;
 }
 
-.form-actions, .form-group {
+.form-actions, .form-group, .form-footer {
   .error {
     color: @error-color;
     font-weight: bold;
   }
+}
+.form-footer .error {
+  text-align: right;
+  clear: right;
 }
 .form-actions {
   line-height: 2em;

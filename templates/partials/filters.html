@@ -118,8 +118,8 @@
         </span>
       </span>
       
-      <span class="filter input-group freetext-filter" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'">
-        <input id="freetext" class="form-control" type="text" ng-model="filterQuery.value" ng-attr-placeholder="{{'Extra search words' | translate}}">
+      <span class="filter input-group freetext-filter" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'" ng-class="{'only-filter': filterModel.type === 'contacts' && !facilities.length}">
+        <input id="freetext" class="form-control" type="text" ng-model="filterQuery.value" ng-attr-placeholder="{{'freetext.search' | translate}}">
         <span class="input-group-btn">
           <button id="search" class="btn btn-default" type="button">
             <span class="fa fa-search"></span>
@@ -127,7 +127,7 @@
         </span>
       </span>
 
-      <span class="filter dropdown mobile-freetext-filter" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'">
+      <span class="filter dropdown mobile-freetext-filter" ng-show="filterModel.type === 'reports' || (filterModel.type === 'contacts' && facilities.length)">
         <span id="mobile-search" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-search"></span>
@@ -138,7 +138,7 @@
         </span>
         <div class="search-pane dropdown-menu mm-dropdown-menu" role="menu" aria-labelledby="mobile-search">
           <span class="input-group">
-            <input id="mobile-freetext" class="form-control" type="text" ng-model="filterQuery.value" ng-attr-placeholder="{{'Extra search words' | translate}}">
+            <input id="mobile-freetext" class="form-control" type="text" ng-model="filterQuery.value" ng-attr-placeholder="{{'freetext.search' | translate}}">
             <span class="input-group-btn">
               <button id="mobile-search-go" class="btn btn-default" type="button">
                 <span class="fa fa-search"></span>
@@ -148,7 +148,7 @@
         </div>
       </span>
 
-      <span class="filter dropdown mm-dropdown analytics-module" ng-show="filterModel.type === 'analytics' && analyticsModules.length">
+      <span class="filter dropdown mm-dropdown analytics-module" ng-show="filterModel.type === 'analytics' && analyticsModules.length > 1">
         <span id="module" class="mm-button" data-toggle="dropdown">
           <span class="mm-button-icon">
             <span class="fa fa-bar-chart-o"></span>
@@ -190,8 +190,11 @@
           <span class="mm-button-icon" ng-show="'configuration.export' | isState">
             <i class="fa fa-arrow-circle-o-down"></i>
           </span>
-          <span class="mm-button-icon" ng-show="'configuration.users' | isState">
+          <span class="mm-button-icon" ng-show="'configuration.user' | isState">
             <i class="fa fa-user"></i>
+          </span>
+          <span class="mm-button-icon" ng-show="'configuration.users' | isState">
+            <i class="fa fa-users"></i>
           </span>
           <span class="mm-button-icon" ng-show="'configuration.icons' | isState">
             <i class="fa fa-file-image-o"></i>
@@ -214,6 +217,9 @@
             </span>
             <span ng-show="'configuration.export' | isState">
               {{'Export' | translate}}
+            </span>
+            <span ng-show="'configuration.user' | isState">
+              {{'edit.user.settings' | translate}}
             </span>
             <span ng-show="'configuration.users' | isState">
               {{'Users' | translate}}
@@ -254,9 +260,15 @@
               <span>{{'Export' | translate}}</span>
             </a>
           </li>
+          <li class="ng-scope" role="presentation">
+            <a ui-sref="configuration.user" role="menuitem" tabindex="-1">
+              <i class="fa fa-fw fa-user"></i>
+              <span>{{'edit.user.settings' | translate}}</span>
+            </a>
+          </li>
           <li class="ng-scope" role="presentation" mm-auth="can_configure">
             <a ui-sref="configuration.users" role="menuitem" tabindex="-1">
-              <i class="fa fa-fw fa-user"></i>
+              <i class="fa fa-fw fa-users"></i>
               <span>{{'Users' | translate}}</span>
             </a>
           </li>
@@ -271,9 +283,14 @@
     </div>
 
     <div class="right-pane">
-      <span class="slide-back" ng-click="back()" ng-show="filterModel.type === 'reports' || filterModel.type === 'messages' || filterModel.type === 'contacts' || filterModel.type === 'tasks'">
-        <a id="back">
-          <span class="fa fa-chevron-left" title="{{'Back' | translate}}"></span>
+      <span class="slide-back" ng-click="back()" ng-show="backTarget">
+        <a>
+          <span class="fa fa-times" title="{{'Back' | translate}}"></span>
+        </a>
+      </span>
+      <span class="slide-back" ng-click="closeContentPane()" ng-hide="backTarget">
+        <a>
+          <span class="fa fa-chevron-left" title="{{'Close' | translate}}"></span>
         </a>
       </span>
       <h2>{{title}}</h2>

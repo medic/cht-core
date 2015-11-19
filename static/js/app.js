@@ -22,7 +22,6 @@ _.templateSettings = {
     'inboxServices',
     'pascalprecht.translate',
     'nvd3ChartDirectives',
-    'ngFileUpload',
     'pouchdb'
   ]);
 
@@ -109,6 +108,15 @@ _.templateSettings = {
           controller: 'ContactsCtrl',
           templateUrl: 'templates/partials/contacts.html'
         })
+        .state('contacts.add', {
+          url: '/add',
+          views: {
+            content: {
+              controller: 'ContactsEditCtrl',
+              templateUrl: 'templates/partials/contacts_edit.html'
+            }
+          }
+        })
         .state('contacts.report', {
           url: '/:id/report/:formId',
           views: {
@@ -127,8 +135,8 @@ _.templateSettings = {
             }
           }
         })
-        .state('contacts.add', {
-          url: '/add',
+        .state('contacts.addChild', {
+          url: '/:parent_id/add/:type',
           views: {
             content: {
               controller: 'ContactsEditCtrl',
@@ -238,6 +246,15 @@ _.templateSettings = {
             }
           }
         })
+        .state('configuration.user', {
+          url: '/user',
+          views: {
+            content: {
+              controller: 'ConfigurationUserCtrl',
+              templateUrl: 'templates/partials/configuration_user.html'
+            }
+          }
+        })
         .state('configuration.users', {
           url: '/users',
           views: {
@@ -319,16 +336,9 @@ _.templateSettings = {
     }
   ]);
 
-  app.factory('SettingsLoader', ['$q', 'Settings', function ($q, Settings) {
+  app.factory('SettingsLoader', ['SettingsP', function (SettingsP) {
     return function (options) {
-
-      var deferred = $q.defer();
-
-      Settings(function(err, res) {
-        if (err) {
-          return deferred.reject(err);
-        }
-
+      return SettingsP().then(function(res) {
         options.key = options.key || res.locale || 'en';
 
         var test = false;
@@ -353,10 +363,8 @@ _.templateSettings = {
             data[key] = value;
           });
         }
-        deferred.resolve(data);
+        return data;
       });
-      
-      return deferred.promise;
     };
   }]);
 

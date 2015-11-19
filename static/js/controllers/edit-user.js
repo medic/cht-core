@@ -7,12 +7,12 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditUserCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'UpdateUser', 'Facility', 'Session',
-    function ($scope, $rootScope, translateFilter, UpdateUser, Facility, Session) {
+    ['$rootScope', '$scope', 'DB', 'Facility', 'Session', 'UpdateUser', 'translateFilter',
+    function ($rootScope, $scope, DB, Facility, Session, UpdateUser, translateFilter) {
 
       Facility({ types: [ 'clinic', 'health_center', 'district_hospital' ] }, function(err, facilities) {
         if (err) {
-          return console.log('Error fetching factilities', err);
+          return console.log('Error fetching facilities', err);
         }
         $scope.facilities = facilities;
       });
@@ -48,9 +48,26 @@ var modal = require('../modules/modal');
             type: getType(user.type),
             language: user.language
           };
-          $('#edit-user-profile [name=contact]').select2('val', user.contact_id || '');
+        }
+
+        var $contact = $('#edit-user-profile [name=contact]');
+        if(user && user.contact_id) {
+          $contact.empty();
+          DB.get().get(user.contact_id)
+            .then(function(contact) {
+              $contact
+                  .append($('<option>', {
+                    selected: 'selected',
+                    value: contact._id,
+                    text: contact.name,
+                  }))
+                  .val(contact._id)
+                  .trigger('change');
+            });
         } else {
-          $scope.editUserModel = {};
+          $contact
+              .val(null)
+              .trigger('change');
         }
       });
 

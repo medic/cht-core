@@ -1,6 +1,6 @@
 <div id="tasks-list" class="col-sm-4 inbox-items left-pane">
   <ul ng-show="!loading && !error">
-    <li ng-repeat="task in tasks | orderBy:'date'" ng-class="{'selected': task._id === loadingContent || !loadingContent && task._id === selected._id, 'high-priority': task.priority === 'high', 'medium-priority': task.priority === 'medium'}">
+    <li ng-repeat="task in tasks | filter:{resolved:false}:strict | orderBy:'date'" ng-class="{'selected': task._id === loadingContent || !loadingContent && task._id === selected._id, 'high-priority': task.priority === 'high', 'medium-priority': task.priority === 'medium'}" data-record-id="{{task._id}}">
       <a class="message-wrapper" ui-sref="tasks.detail({ id: task._id })">
         <span ng-bind-html="task.icon | resourceIcon" class="mm-badge"></span>
         <div class="detail">

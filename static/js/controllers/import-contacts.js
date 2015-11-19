@@ -7,8 +7,8 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ImportContactsCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'ImportContacts', 'FileReader',
-    function ($scope, $rootScope, translateFilter, ImportContacts, FileReader) {
+    ['$scope', 'translateFilter', 'ImportContacts', 'FileReader',
+    function ($scope, translateFilter, ImportContacts, FileReader) {
 
       $scope.data = null;
       $scope.overwrite = false;
@@ -27,7 +27,7 @@ var modal = require('../modules/modal');
 
       $scope.save = function() {
         var pane = modal.start($('#import-contacts'));
-        var file = $scope.data && $scope.data[0];
+        var file = $('#import-contacts [name="contacts"]').prop('files')[0];
         if (!file) {
           return pane.done(translateFilter('field is required', {
             field: translateFilter('Contacts')
@@ -39,7 +39,6 @@ var modal = require('../modules/modal');
           }
           ImportContacts(contacts, $scope.overwrite, function(err) {
             pane.done(translateFilter('Error parsing file'), err);
-            $rootScope.$broadcast('ContactUpdated');
           });
         });
       };

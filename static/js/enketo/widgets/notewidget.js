@@ -99,14 +99,22 @@ function markdownToHtml( e ) {
             $( this ).replaceWith( name );
         } );
         html = $( this ).html();
-        html = html.replace( /__([^\s][^_]*[^\s])__/gm, '<strong>$1</strong>' );
-        html = html.replace( /\*\*([^\s][^\*]*[^\s])\*\*/gm, '<strong>$1</strong>' );
-        html = html.replace( /_([^\s][^_]*[^\s])_/gm, '<em>$1</em>' );
-        html = html.replace( /\*([^\s][^\*]*[^\s])\*/gm, '<em>$1</em>' );
-        //only replaces if url is valid (worthwhile feature?)
-        //html = html.replace( /\[(.*)\]\(((https?:\/\/)(([\da-z\.\-]+)\.([a-z\.]{2,6})|(([0-9]{1,3}\.){3}[0-9]{1,3}))([\/\w \.\-]*)*\/?[\/\w \.\-\=\&\?]*)\)/gm, '<a href="$2">$1</a>' );
+
+        // Convert markdown
+        html = html.replace( /__([^\s]([^_]*[^\s])?)__/gm, '<strong>$1</strong>' );
+        html = html.replace( /\*\*([^\s]([^*]*[^\s])?)\*\*/gm, '<strong>$1</strong>' );
+        html = html.replace( /_([^_\s]([^_]*[^_\s])?)_/gm, '<em>$1</em>' );
+        html = html.replace( /\*([^*\s]([^\*]*[^*\s])?)\*/gm, '<em>$1</em>' );
         html = html.replace( /\[([^\]]*)\]\(([^\)]+)\)/gm, '<a href="$2" target="_blank">$1</a>' );
         html = html.replace( /\n/gm, '<br />' );
+
+        // Convert embedded HTML
+        html = html.replace(/&amp;/g, '&');
+        html = html.replace(/&lt;/g, '<');
+        html = html.replace(/&gt;/g, '>');
+        html = html.replace(/&quot;/g, '"');
+        html = html.replace(/&#039;/g, '\'');
+
         $childStore.children().each( function( i ) {
             var regex = new RegExp( '\\$\\$\\$' + i );
             html = html.replace( regex, $( this )[ 0 ].outerHTML );

@@ -1,6 +1,6 @@
 {
     "name": "couchdb-audit",
-    "version": "0.2.0",
+    "version": "0.2.2",
     "description": "For auditing changes to couchdb documents",
     "modules": ["couchdb-audit", "tests"],
     "load": "couchdb-audit/app",

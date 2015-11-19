@@ -1,5 +1,32 @@
 var _ = require('underscore');
 
+function withElements(nodes) {
+  return _.chain(nodes)
+    .filter(function(n) {
+      return n.nodeType === Node.ELEMENT_NODE;
+    });
+}
+
+function without() {
+  var unwanted = Array.prototype.slice.call(arguments, 0);
+  return function(n) {
+    return !_.contains(unwanted, n.nodeName);
+  };
+}
+
+function findChildNode(root, childNodeName) {
+  return withElements(root.childNodes)
+      .find(function(n) {
+        return n.nodeName === childNodeName;
+      })
+      .value();
+}
+
+function xPath() {
+  var path = Array.prototype.slice.call(arguments).join('/');
+  return '/data/' + path;
+}
+
 /**
  * An internal representation of an XML node.
  */
@@ -72,13 +99,15 @@ function N(tagName, text, attrs, children) {
 angular.module('inboxServices').service('EnketoTranslation', [
   '$translate',
   function($translate) {
+    var self = this;
+
     function extraAttributesFor(conf) {
       var extras = {};
       var typeString = conf.type;
       if(typeString === 'text') {
         extras.appearance = 'multiline';
       } else if(/^db:/.test(typeString)) {
-        extras.appearance = 'db-object';
+        extras.appearance = 'db-object bind-id-only';
       }
       return extras;
     }
@@ -101,15 +130,6 @@ angular.module('inboxServices').service('EnketoTranslation', [
     }
 
     function generateXformWithOptions(principle, extras) {
-      var xPath = function() {
-        var path = Array.prototype.slice.call(arguments).join('/');
-        if(extras) {
-          return '/data/' + path;
-        } else {
-          return '/' + path;
-        }
-      };
-
       var root = new N('h:html', {
         xmlns: 'http://www.w3.org/2002/xforms',
         'xmlns:ev': 'http://www.w3.org/2001/xml-events',
@@ -125,27 +145,25 @@ angular.module('inboxServices').service('EnketoTranslation', [
         head.append(model);
         var instance = new N('instance');
         model.append(instance);
-        var meta = new N('meta', [ new N('instanceID') ]);
+
+        var instanceContainer = new N('data', { id:principle.type, version:1 });
+        instanceContainer.append(modelFor(principle));
         if(extras) {
-          var instanceContainer = new N('data', { id:principle.type, version:1 });
-          instance.append(instanceContainer);
-          instanceContainer.append(modelFor(principle));
           _.each(extras, function(extra, mapping) {
             instanceContainer.append(modelFor(extra, mapping));
           });
-          instanceContainer.append(meta);
-        } else {
-          var modelData = modelFor(principle);
-          modelData.attrs.id = principle.type;
-          modelData.attrs.version = 1;
-          modelData.append(meta);
-          instance.append(modelData);
         }
         // add some meta (not sure what this is for)
+        instanceContainer.append(new N('meta', [ new N('instanceID') ]));
+
+        instance.append(instanceContainer);
 
         // bindings
         var bindingsFor = function(schema, mapping) {
           _.each(schema.fields, function(conf, f) {
+            if (conf.hide_in_form) {
+              return;
+            }
             var props = {
               nodeset: xPath(mapping, f),
               type: getBindingType(conf),
@@ -180,12 +198,24 @@ angular.module('inboxServices').service('EnketoTranslation', [
         };
 
         var fieldsFor = function(schema, mapping) {
-          return _.map(schema.fields, function(conf, f) {
+          var fields = [];
+          _.each(schema.fields, function(conf, f) {
+            if (conf.hide_in_form) {
+              return;
+            }
             var attrs = _.extend({ ref: xPath(mapping, f) }, extraAttributesFor(conf));
+            if (extras && extras.hasOwnProperty(f)) {
+              if (attrs.appearance) {
+                attrs.appearance += ' allow-new';
+              } else {
+                attrs.appearance = 'allow-new';
+              }
+            }
             var input = new N('input', attrs);
             input.append(new N('label', translationFor(schema.type, 'field', f)));
-            return input;
+            fields.push(input);
           });
+          return fields;
         };
 
         if(extras) {
@@ -207,53 +237,112 @@ angular.module('inboxServices').service('EnketoTranslation', [
       return root.xml();
     }
 
-    this.generateXform = function(schema, options) {
+    self.getHiddenFieldList = function(model) {
+      model = $.parseXML(model).firstChild;
+      var outputs = findChildNode(model, 'outputs');
+      return withElements(outputs.childNodes)
+        .filter(function(n) {
+          var attr = n.attributes.getNamedItem('tag');
+          return attr && attr.value === 'hidden';
+        })
+        .map(function(n) {
+          return n.nodeName;
+        })
+        .value();
+    };
+
+    self.generateXform = function(schema, options) {
       if(options || true) {
         return generateXformWithOptions(schema, options);
       }
     };
 
-    this.jsToFormInstanceData = function(obj, fields) {
-      var root = new N(obj.type);
-      _.each(obj, function(val, key) {
-        if(_.contains(fields, key)) {
-          root.append(new N(key, val._id || val));
-        }
-      });
-      return root.xml();
-    };
-
     var nodesToJs = function(data) {
       var fields = {};
-      _.each(data, function(n) {
-        if(n.nodeType !== Node.ELEMENT_NODE ||
-            n.nodeName === 'meta') {
-          return;
-        }
-        fields[n.nodeName] = n.textContent;
-      });
+      withElements(data)
+        .filter(without('meta'))
+        .each(function(n) {
+          var hasChildren = withElements(n.childNodes).size().value();
+          if(hasChildren) {
+            fields[n.nodeName] = nodesToJs(n.childNodes);
+          } else {
+            fields[n.nodeName] = n.textContent;
+          }
+        });
       return fields;
     };
 
-    this.recordToJs = function(record) {
-      var root = $.parseXML(record).firstChild;
-      if(root.nodeName === 'data') {
-        var siblings = {};
-        var first = null;
-        _.each(root.childNodes, function(child) {
-          if(child.nodeType !== Node.ELEMENT_NODE ||
-              child.nodeName === 'meta') {
-            return;
+    // TODO repeat-relevant may be unnecessary if https://github.com/enketo/enketo-core/issues/336 is resolved
+    var repeatsToJs = function(data) {
+      var repeatNode = findChildNode(data, 'repeat');
+      if(!repeatNode) {
+        return;
+      }
+
+      var repeatRelevantNode = findChildNode(data, 'repeat-relevant');
+      var repeats = {};
+
+      withElements(repeatNode.childNodes)
+        .each(function(repeated) {
+          if(repeatRelevantNode) {
+            var repeatedRelevant = findChildNode(repeatRelevantNode, repeated.nodeName);
+            if(repeatedRelevant && repeatedRelevant.textContent !== 'true') {
+              return;
+            }
           }
+
+          var key = repeated.nodeName + '_data';
+          if(!repeats[key]) {
+            repeats[key] = [];
+          }
+          repeats[key].push(nodesToJs(repeated.childNodes));
+        });
+
+      return repeats;
+    };
+
+    self.reportRecordToJs = function(record) {
+      var root = $.parseXML(record).firstChild;
+      return nodesToJs(root.childNodes);
+    };
+
+    self.contactRecordToJs = function(record) {
+      var root = $.parseXML(record).firstChild;
+      var repeats = repeatsToJs(root);
+      var siblings = {};
+      var first = null;
+      withElements(root.childNodes)
+        // TODO repeat-relevant may be unnecessary if https://github.com/enketo/enketo-core/issues/336 is resolved
+        .filter(without('meta', 'inputs', 'repeat', 'repeat-relevant'))
+        .each(function(child) {
           if(!first) {
             first = child;
             return;
           }
           siblings[child.nodeName] = nodesToJs(child.childNodes);
         });
-        return [ nodesToJs(first.childNodes), siblings ];
+      var res = [ nodesToJs(first.childNodes), siblings ];
+      if(repeats) {
+        res.push(repeats);
       }
-      return nodesToJs(root.childNodes);
+      return res;
     };
+
+    self.bindJsonToXml = function(elem, data) {
+      _.pairs(data).forEach(function(pair) {
+        var current = elem.find(pair[0]);
+        var value = pair[1];
+        if (_.isObject(value)) {
+          if(current.children().length) {
+            self.bindJsonToXml(current, value);
+          } else {
+            current.text(value._id);
+          }
+        } else {
+          current.text(value);
+        }
+      });
+    };
+
   }
 ]);

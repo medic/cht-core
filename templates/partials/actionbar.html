@@ -7,25 +7,25 @@
             <span class="fa fa-plus"></span>
             <p>{{'Send Message' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" ng-show="filterModel.type === 'reports'" data-toggle="dropdown">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" ng-show="filterModel.type === 'reports'" data-toggle="dropdown" ng-class="{'mm-icon-disabled': !formDefinitions.length}">
             <span class="fa fa-plus"></span>
             <p>{{'Submit Report' | translate}}</p>
           </a>
-          <ul class="dropdown-menu">
+          <ul class="dropdown-menu" ng-show="formDefinitions.length">
             <li ng-repeat="form in formDefinitions">
               <a ui-sref="reports.add({ formId: form.internalId })">{{form.title | translateFrom}}</a>
             </li>
           </ul>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.add()" ng-show="filterModel.type === 'contacts'" mm-auth="can_configure">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.add()" ng-show="filterModel.type === 'contacts' && facilities.length">
             <span class="fa-stack">
               <i class="fa fa-building fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
             <p>{{'Add place' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.add()" ng-show="filterModel.type === 'contacts'" mm-auth="!can_configure">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.add()" ng-show="filterModel.type === 'contacts' && !facilities.length">
             <span class="fa-stack">
-              <i class="fa fa-home fa-stack-1x"></i>
+              <i class="fa fa-group fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
             <p>{{'action.clinic.add' | translate}}</p>

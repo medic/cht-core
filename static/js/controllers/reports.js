@@ -59,19 +59,51 @@ var _ = require('underscore'),
         });
       };
 
-      var _setSelected = function(message) {
-        $scope.setSelected(message);
-        if (!$scope.isRead(message)) {
+      var _setSelected = function(report) {
+        $scope.setSelected(report);
+        if (!$scope.isRead(report)) {
           $scope.readStatus.forms--;
         }
-        MarkRead(message._id, true).catch(function(err) {
-          console.log(err);
+        MarkRead(report._id, true)
+          .then($scope.updateReadStatus)
+          .catch(function(err) {
+            console.log(err);
+          });
+      };
+
+      var setTitle = function(doc) {
+        var form = _.findWhere($scope.forms, { code: doc.form });
+        $scope.setTitle((form && form.name) || doc.form);
+      };
+
+      var removeDeletedReport = function(id) {
+        var idx = _.findIndex($scope.reports, function(doc) {
+          return doc._id === id;
+        });
+        if (idx !== -1) {
+          $scope.reports.splice(idx, 1);
+        }
+      };
+
+      var updateDisplayFields = function(report) {
+        // calculate fields to display
+        var keys = Object.keys(report.fields);
+        report.display_fields = {};
+        _.each(keys, function(k) {
+          if(!(report.hidden_fields && _.contains(report.hidden_fields, k))) {
+            report.display_fields[k] = report.fields[k];
+          }
         });
       };
 
       $scope.setSelected = function(doc) {
+        if (doc.fields) {
+          updateDisplayFields(doc);
+        }
+
         var refreshing = doc && $scope.selected && $scope.selected.id === doc._id;
         $scope.selected = doc;
+        setTitle(doc);
         $scope.setActionBar({
           _id: doc._id,
           verified: doc.verified,
@@ -81,16 +113,16 @@ var _ = require('underscore'),
         $scope.settingSelected(refreshing);
       };
 
-      $scope.selectMessage = function(id) {
+      $scope.selectReport = function(id) {
         if ($scope.selected && $scope.selected._id && $scope.selected._id === id) {
           return;
         }
         $scope.clearSelected();
         if (id && $scope.reports) {
           $scope.setLoadingContent(id);
-          var message = _.findWhere($scope.reports, { _id: id });
-          if (message) {
-            _setSelected(message);
+          var report = _.findWhere($scope.reports, { _id: id });
+          if (report) {
+            _setSelected(report);
           } else {
             DB.get()
               .get(id)
@@ -102,7 +134,7 @@ var _ = require('underscore'),
                 }
               })
               .catch(function(err) {
-                $scope.setSelected();
+                $scope.clearSelected();
                 console.error(err);
               });
           }
@@ -116,8 +148,8 @@ var _ = require('underscore'),
           $scope.error = false;
           $scope.errorSyntax = false;
           $scope.loading = true;
-          if ($('#back').is(':visible')) {
-            $scope.selectMessage();
+          if ($scope.isMobile()) {
+            $scope.selectReport();
           }
         }
         if (options.skip) {
@@ -150,17 +182,12 @@ var _ = require('underscore'),
               var curr = _.findWhere(data, { _id: $state.params.id });
               if (curr) {
                 $scope.setSelected(curr);
-              } else if (!$('#back').is(':visible') &&
+              } else if (!$scope.isMobile() &&
                          !$scope.selected &&
-                         $state.is('reports.detail') &&
-                         $scope.filterModel.type === 'reports') {
-                // TODO improve double timeout here - I think it's required
-                // because of the nested promises
+                         $state.is('reports.detail')) {
                 $timeout(function() {
-                  $timeout(function() {
-                    var id = $('.inbox-items li').first().attr('data-record-id');
-                    $state.go('reports.detail', { id: id }, { location: 'replace' });
-                  });
+                  var id = $('.inbox-items li').first().attr('data-record-id');
+                  $state.go('reports.detail', { id: id }, { location: 'replace' });
                 });
               }
               _initScroll();
@@ -209,8 +236,14 @@ var _ = require('underscore'),
 
       Changes({
         key: 'reports-list',
-        callback: function() {
-          $scope.query({ silent: true, changes: true });
+        callback: function(change) {
+          if (change.deleted) {
+            $scope.$apply(function() {
+              removeDeletedReport(change.id);
+            });
+          } else {
+            $scope.query({ silent: true, changes: true });
+          }
         },
         filter: function(change) {
           if ($scope.filterModel.type !== 'reports') {
@@ -224,7 +257,7 @@ var _ = require('underscore'),
       });
 
       if (!$stateParams.id) {
-        $scope.selectMessage();
+        $scope.selectReport();
       }
 
       $scope.setFilterQuery($stateParams.query);

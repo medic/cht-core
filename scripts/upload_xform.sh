@@ -10,12 +10,6 @@ while getopts "f" opt; do
     shift $((OPTIND-1))
 done
 
-ID="$1"
-shift
-XFORM_PATH="$1"
-shift
-DB="${COUCH_URL-http://127.0.0.1:5984/medic}"
-
 _usage () {
     echo ""
     echo "Usage:"
@@ -28,22 +22,49 @@ _usage () {
     echo "  COUCH_URL=http://localhost:8000/medic $SELF registration /home/henry/forms/RegisterPregnancy.xml"
 }
 
-if [ -z "$ID" ]; then
-    echo "Missing ID parameter."
-    _usage
-    exit 1 
-fi
-
-if [ ! -f "$XFORM_PATH" ]; then
-    echo "Can't find XFORM_PATH"
+if [[ $# < 2 ]]; then
+    echo "[$SELF] Missing parameters."
     _usage
     exit 1
 fi
 
+if [[ -z "${COUCH_URL-}" ]]; then
+    echo "[$SELF] ERROR: 'COUCH_URL' not set."
+    _usage
+    exit 1
+fi
+
+if ! curl "$COUCH_URL"; then
+    echo "[$SELF] ERROR: Could not find server at $COUCH_URL.  Is CouchDB running?"
+    exit 1
+fi
+
+ID="$1"
+shift
+
+XFORM_PATH="$1"
+if ! [[ -f "$XFORM_PATH" ]]; then
+    echo "[$SELF] ERROR: could not find xform at path: $XFORM_PATH"
+    exit 1
+fi
+shift
+
+DB="${COUCH_URL}"
+
 echo "[$SELF] parsing XML to get form title and internal ID..."
 # Yeah, it's ugly.  But we control the input.
 formTitle="$(grep h:title $XFORM_PATH | sed -E -e 's_.*<h:title>(.*)</h:title>.*_\1_')"
-formInternalId="$(grep -E 'id="[^"]+"' $XFORM_PATH | head -n1 | sed -E -e 's_.*id="([^"]+)".*_\1_')"
+formInternalId="$(sed -e '1,/<instance>/d' $XFORM_PATH | grep -E 'id="[^"]+"' | head -n1 | sed -E -e 's_.*id="([^"]+)".*_\1_')"
+
+contextPatient=false
+contextPlace=false
+if grep -Fq '/inputs/patient_id' $XFORM_PATH; then
+    contextPatient=true
+fi
+if grep -Fq '/inputs/place_id' $XFORM_PATH; then
+    contextPlace=true
+fi
+formContext='{ "person":'"$contextPatient"', "place":'"$contextPlace"' }'
 
 docUrl="${DB}/form:${ID}"
 
@@ -56,6 +77,7 @@ cat <<EOF
 [$SELF]   form internal ID: $formInternalId
 [$SELF]   force override: $FORCE
 [$SELF]   uploading to: $docUrl
+[$SELF]   form context: $formContext
 [$SELF] -----
 EOF
 
@@ -77,16 +99,22 @@ check_rev() {
 revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d '{
     "type":"form",
     "title":"'"${formTitle}"'",
-    "internalId":"'"${formInternalId}"'"
+    "internalId":"'"${formInternalId}"'",
+    "context":'"${formContext}"'
 }' "$docUrl")
 rev=$(jq -r .rev <<< "$revResponse")
 check_rev
 
+# Upload a temp file with the title stripped
+sed '/<h:title>/d' "$XFORM_PATH" > "$XFORM_PATH.$$.tmp"
+
 echo "[$SELF] Uploading form: $ID..."
 revResponse=$(curl -# -f -X PUT -H "Content-Type: text/xml" \
-    --data-binary "@${XFORM_PATH}" \
+    --data-binary "@${XFORM_PATH}.$$.tmp" \
     "${docUrl}/xml?rev=${rev}")
 rev=$(jq -r .rev <<< "$revResponse")
+
+rm "$XFORM_PATH.$$.tmp"
 
 while [ $# -gt 0 ]; do
     attachment="$1"

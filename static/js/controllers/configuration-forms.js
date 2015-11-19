@@ -50,7 +50,7 @@ var moment = require('moment');
                 }
               });
             } catch(e) {
-              uploadFinished(e);
+              return uploadFinished(e);
             }
             UpdateSettings(settings, { replace: true }, function(err) {
               if (!err) {

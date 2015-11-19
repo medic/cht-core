@@ -1,0 +1,13 @@
+<div class="reporting targets ng-hide page" ng-show="filterModel.module.id === 'targets'">
+  <p>Your progress towards your targets will be displayed here.</p>
+  <div class="col-xs-12 col-sm-6 col-md-4">
+    <table class="table">
+      <tbody>
+        <tr ng-repeat="target in targets">
+          <td>{{target.name | translate}}</td>
+          <td>{{target.value}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

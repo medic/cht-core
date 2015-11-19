@@ -9,7 +9,8 @@ describe('TasksContentCtrl', function() {
 
   describe('$scope.performAction', function() {
     var $scope,
-        task;
+        task,
+        watchCallback;
 
     var Enketo = {
       render: sinon.stub()
@@ -25,6 +26,9 @@ describe('TasksContentCtrl', function() {
     beforeEach(function() {
       $scope = {
         $on: function() {},
+        $watch: function(prop, cb) {
+          watchCallback = cb;
+        },
         setSelected: function() {
           $scope.selected = task;
         }
@@ -44,6 +48,7 @@ describe('TasksContentCtrl', function() {
         }]
       };
       createController();
+      watchCallback();
       chai.expect($scope.formId).to.equal('A');
       chai.expect($scope.loadingForm).to.equal(true);
       chai.expect(Enketo.render.callCount).to.equal(1);

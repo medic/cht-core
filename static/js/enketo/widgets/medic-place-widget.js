@@ -41,6 +41,10 @@ define( function( require, exports, module ) {
         var translate = angularServices.get('$translate').instant;
 
         var textInput = $(this.element);
+        var $question = textInput.closest('.question');
+        var $parent = textInput.parent();
+        textInput.replaceWith(textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
+        textInput = $parent.find('select');
 
         var loader = $('<div class="loader"/></div>');
         textInput.after(loader);
@@ -50,6 +54,13 @@ define( function( require, exports, module ) {
                 return placeSelectFormat(row.doc);
             }
             return translate('contact.type.' + row.text);
+        };
+
+        var formatSelection = function(row) {
+            if(row.doc) {
+                return row.doc.name;
+            }
+            return row.text;
         };
 
         var placeTypes = _.map(_.without(Object.keys(ContactSchema.get()), 'person'), function(type) {
@@ -72,19 +83,61 @@ define( function( require, exports, module ) {
                         })
                         .value();
 
-                textInput.select2({
-                    data: groups,
-                    formatResult: formatResult,
-                    formatSelection: formatResult,
-                    width: '100%',
+                $.fn.select2.amd.require([
+                'select2/dropdown/attachContainer',
+                'select2/dropdown/closeOnSelect',
+                'select2/dropdown',
+                'select2/dropdown/search',
+                'select2/utils',
+                ], function (AttachContainer, CloseOnSelect, DropdownAdapter, DropdownSearch, Utils) {
+                    var CustomAdapter = Utils.Decorate(Utils.Decorate(Utils.Decorate(
+                        DropdownAdapter, DropdownSearch), AttachContainer), CloseOnSelect);
+
+                    textInput.select2({
+                        data: groups,
+                        dropdownAdapter: CustomAdapter,
+                        templateResult: formatResult,
+                        templateSelection: formatSelection,
+                        width: '100%',
+                    });
+
+                    // Tell enketo to ignore the new <input> field that select2 adds
+                    $question.find('input.select2-search__field').addClass('ignore');
                 });
 
-                // apologies - here we open and close the select2 - this works
-                // around a bug which would otherwise ignore the `required`
-                // attribute.
-                textInput.select2('open');
-                textInput.select2('close');
+                if (!$question.hasClass('or-appearance-bind-id-only')) {
+                    textInput.on('change', function(e) {
+                        if (e.added && e.added.doc) {
+                            var form = textInput.closest('form.or');
+                            var field = textInput.attr('name');
+                            var objectRoot = field.substring(0, field.lastIndexOf('/'));
+                            updateFields(form, e.added.doc, objectRoot, field);
+                        }
+                    });
+                }
             });
+    };
+
+    var updateFields = function(form, doc, objectRoot, keyPath) {
+        Object.keys(doc).forEach(function(key) {
+            var path = objectRoot + '/' + key;
+            if (path === keyPath) {
+                // don't update the field that fired the update
+                return;
+            }
+            var value = doc[key];
+            if (_.isArray(value)) {
+                // arrays aren't currently handled
+                return;
+            }
+            if (_.isObject(value)) {
+                // recursively set fields for children
+                return updateFields(form, value, path, keyPath);
+            }
+            form.find('[name="' + path + '"]')
+                .val(value)
+                .trigger('change');
+        });
     };
 
     Medicplacewidget.prototype.destroy = function( /* element */ ) {};

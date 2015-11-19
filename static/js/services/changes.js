@@ -9,9 +9,10 @@
   
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Changes', ['E2ETESTING', 'DB',
+  inboxServices.factory('Changes', [
+    '$log', 'E2ETESTING', 'DB',
 
-    function(E2ETESTING, DB) {
+    function($log, E2ETESTING, DB) {
 
       var callbacks = {};
 
@@ -33,6 +34,7 @@
       };
 
       var notifyAll = function(change) {
+        $log.debug('Change notification firing', change);
         Object.keys(callbacks).forEach(function(key) {
           var options = callbacks[key];
           if (!options.filter || options.filter(change)) {
@@ -43,11 +45,18 @@
 
       if (!E2ETESTING) {
         DB.get()
-          .changes({ live: true, since: 'now' })
+          .changes({
+            live: true,
+            since: 'now',
+            timeout: 1000 * 60 * 60
+          })
           .on('change', function(change) {
             collectData(change, function() {
               notifyAll(change);
             });
+          })
+          .on('error', function(err) {
+            $log.error('Error watching for db changes', err);
           });
       }
       return function(options) {

@@ -17,7 +17,7 @@ var modal = require('../modules/modal');
 
       $scope.import = function() {
         var pane = modal.start($('#import-translation'));
-        var file = $scope.translationFile && $scope.translationFile[0];
+        var file = $('#import-translation [name="translations"]').prop('files')[0];
         if (!file) {
           return pane.done(translateFilter('field is required', {
             field: translateFilter('Translation file')

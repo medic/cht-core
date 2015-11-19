@@ -184,25 +184,22 @@ describe('ContactSchema service', function() {
         assert.deepEqual(service.get().person, {
           type: 'person',
           badge: 'fa-user',
-          name: '{{first_name}} {{last_name}}',
+          name: '{{last_name}} {{first_name}}',
           fields: {
-            first_name: {
-              type: 'string',
-              required: true,
-            },
             last_name: {
               type: 'string',
               required: true,
             },
-            phone: {
-              type: 'tel',
-              required: true,
-            },
-            national_id_number: {
+            first_name: {
               type: 'string',
+              required: true,
             },
             date_of_birth: {
               type: 'date',
+            },
+            phone: {
+              type: 'tel',
+              required: true,
             },
             alternate_phone: {
               type: 'tel',
@@ -212,6 +209,7 @@ describe('ContactSchema service', function() {
             },
             parent: {
               type: 'custom:medic-place',
+              hide_in_form: true,
             },
           },
         });
@@ -278,8 +276,8 @@ describe('ContactSchema service', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().clinic, {
           type: 'clinic',
-          badge: 'fa-home',
-          icon: 'fa-home',
+          badge: 'fa-group',
+          icon: 'fa-group',
           fields: {
             name: {
               type: 'string',
@@ -295,6 +293,7 @@ describe('ContactSchema service', function() {
             },
             location: {
               type: 'geopoint',
+              hide_in_view: true,
             },
           },
         });
@@ -316,6 +315,29 @@ describe('ContactSchema service', function() {
         // expect
         assert.deepEqual(Object.keys(actual), expected);
       });
+    });
+  });
+
+  describe('#getVisibleFields()', function() {
+    it('should not include `name` field', function() {
+      // expect
+      assert.ok   (service.get()             .clinic.fields.hasOwnProperty('name'));
+      assert.notOk(service.getVisibleFields().clinic.fields.hasOwnProperty('name'));
+    });
+
+    it('should not include fields listed in calculated `name` field', function() {
+      // expect
+      assert.ok   (service.get()             .person.fields.hasOwnProperty('first_name'));
+      assert.notOk(service.getVisibleFields().person.fields.hasOwnProperty('first_name'));
+      assert.ok   (service.get()             .person.fields.hasOwnProperty('last_name'));
+
+      assert.notOk(service.getVisibleFields().person.fields.hasOwnProperty('last_name'));
+    });
+
+    it('should not include fields marked `hide_in_view`', function() {
+      // expect
+      assert.ok   (service.get()             .clinic.fields.hasOwnProperty('location'));
+      assert.notOk(service.getVisibleFields().clinic.fields.hasOwnProperty('location'));
     });
   });
 });

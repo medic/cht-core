@@ -91,14 +91,14 @@ var _ = require('underscore'),
         }
       };
 
-      var generateRequests = function($scope, callback) {
+      var generateRequests = function($scope, options, callback) {
         var requests;
         try {
           requests = GenerateSearchRequests($scope);
         } catch(e) {
           return callback(e);
         }
-        if (debounce(requests)) {
+        if (!options.force && debounce(requests)) {
           return;
         }
         callback(null, requests);
@@ -110,7 +110,7 @@ var _ = require('underscore'),
           skip: 0,
           type: $scope.filterModel.type
         });
-        generateRequests($scope, function(err, requests) {
+        generateRequests($scope, options, function(err, requests) {
           if (err) {
             return callback(err);
           }

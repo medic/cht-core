@@ -29,7 +29,7 @@ var _ = require('underscore'),
     function(DB, UserSettings, Session) {
       return function(callback) {
         var userCtx = Session.userCtx();
-        if (!userCtx.name) {
+        if (!userCtx || !userCtx.name) {
           return callback(new Error('Not logged in'));
         }
         if (utils.isUserAdmin(userCtx)) {
@@ -73,9 +73,7 @@ var _ = require('underscore'),
           .success(function(data) {
             callback(null, data);
           })
-          .error(function(data) {
-            callback(new Error(data));
-          });
+          .error(callback);
       };
     }
   ]);
@@ -206,6 +204,10 @@ var _ = require('underscore'),
         }
         Admins(function(err, admins) {
           if (err) {
+            if (err.error === 'unauthorized') {
+              // not an admin
+              return callback();
+            }
             return callback(err);
           }
           if (!admins[updated.name]) {
@@ -231,8 +233,7 @@ var _ = require('underscore'),
           if (err) {
             return callback(err);
           }
-          $log.debug('user being updated', user);
-          $log.debug('updates', updates);
+          $log.debug('user being updated', user._id);
           var updated = _.extend(user, updates);
           if (updated.password) {
             updated.derived_key = undefined;
@@ -246,9 +247,7 @@ var _ = require('underscore'),
                 callback(err, updated);
               });
             })
-            .error(function(data) {
-              callback(new Error(data));
-            });
+            .error(callback);
         });
       };
 

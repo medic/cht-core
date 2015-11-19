@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    utils = require('kujua-utils'),
-    async = require('async');
+    utils = require('kujua-utils');
 
 (function () {
 
@@ -18,45 +17,51 @@ var _ = require('underscore'),
   };
 
   inboxServices.factory('DBSync', [
-    'DB', 'UserDistrict', 'Session', 'Settings',
-    function(DB, UserDistrict, Session, Settings) {
+    '$log', 'DB', 'UserDistrict', 'Session', 'SettingsP',
+    function($log, DB, UserDistrict, Session, SettingsP) {
 
       var replicate = function(from, options) {
         options = options || {};
         _.defaults(options, {
           live: true,
           retry: true,
+          timeout: 1000 * 60 * 60,
           back_off_function: backOffFunction
         });
         var direction = from ? 'from' : 'to';
         var fn = DB.get().replicate[direction];
         return fn(DB.getRemoteUrl(), options)
           .on('denied', function(err) {
-            console.error('Denied replicating ' + direction + ' remote server', err);
+            $log.error('Denied replicating ' + direction + ' remote server', err);
           })
           .on('error', function(err) {
-            console.error('Error replicating ' + direction + ' remote server', err);
+            $log.error('Error replicating ' + direction + ' remote server', err);
           });
       };
 
       var getQueryParams = function(userCtx, callback) {
-        async.parallel([ Settings, UserDistrict ], function(err, results) {
-          if (err) {
-            return callback(err);
-          }
-          var params = { id: results[1] };
-          if (utils.hasPerm(userCtx, 'can_view_unallocated_data_records') &&
-              results[0].district_admins_access_unallocated_messages) {
-            params.unassigned = true;
-          }
-          callback(null, params);
-        });
+        SettingsP()
+          .then(function(settings) {
+            UserDistrict(function(err, district) {
+              if (err) {
+                return callback(err);
+              }
+              var params = { id: district };
+              if (utils.hasPerm(userCtx, 'can_view_unallocated_data_records') &&
+                  settings.district_admins_access_unallocated_messages) {
+                params.unassigned = true;
+              }
+              callback(null, params);
+            });
+          })
+          .catch(callback);
       };
 
       return function() {
         var userCtx = Session.userCtx();
         if (utils.isUserAdmin(userCtx)) {
           // admins have potentially too much data so bypass local pouch
+          $log.debug('You have administrative privileges; not replicating');
           return;
         }
         replicate(false, {
@@ -67,7 +72,7 @@ var _ = require('underscore'),
         });
         getQueryParams(userCtx, function(err, params) {
           if (err) {
-            return console.log('Error initializing DB sync', err);
+            return $log.error('Error initializing DB sync', err);
           }
           replicate(true, {
             filter: 'medic/doc_by_place',

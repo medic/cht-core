@@ -7,11 +7,6 @@ describe('summary filter', function() {
 
   beforeEach(function() {
     module('inboxApp');
-    module(function($provide) {
-      $provide.value('translateFilter', function(key) {
-        return '{' + key + '}';
-      });
-    });
     inject(function(_$compile_, _$rootScope_) {
       compile = _$compile_;
       scope = _$rootScope_.$new();
@@ -41,7 +36,7 @@ describe('summary filter', function() {
 
     var element = compile('<div ng-bind-html="message | summary:forms"></div>')(scope);
     scope.$digest();
-    chai.expect(element.html()).to.equal('{tasks.0.messages.0.message}');
+    chai.expect(element.html()).to.equal('tasks.0.messages.0.message');
   });
 
   it('should render form name when form', function() {

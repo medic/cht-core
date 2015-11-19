@@ -1,63 +1,150 @@
-describe('Settings service', function() {
+describe('SettingsP service', function() {
 
   'use strict';
 
-  var service,
-      get;
+  describe('as a Promise provider', function() {
+    var service,
+        get;
 
-  beforeEach(function() {
-    get = sinon.stub();
-    module('inboxApp');
-    module(function($provide) {
-      $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
-      $provide.value('Cache', function(options) {
-        return options.get;
+    beforeEach(function() {
+      get = sinon.stub();
+      module('inboxApp');
+      module(function($provide) {
+        $provide.value('$q', function(promiseHandler) {
+          return new Promise(promiseHandler);
+        });
+        $provide.value('Cache', function(options) {
+          return options.get;
+        });
+        $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
+      });
+      inject(function($injector) {
+        service = $injector.get('SettingsP');
       });
     });
-    inject(function($injector) {
-      service = $injector.get('Settings');
+
+    afterEach(function() {
+      KarmaUtils.restore(get);
     });
+
+    it('triggers change events when cache updates', function(done) {
+      var expected = {
+        isTrue: true,
+        isString: 'hello'
+      };
+      get.returns(KarmaUtils.mockPromise(null, { app_settings: expected }));
+      service()
+        .then(function(actual) {
+          chai.expect(actual.isTrue).to.equal(expected.isTrue);
+          chai.expect(actual.isString).to.equal(expected.isString);
+          done();
+        })
+        .catch(done);
+    });
+
+    it('merges settings with defaults', function(done) {
+      var expected = {
+        date_format: 'YYYY'
+      };
+      get.returns(KarmaUtils.mockPromise(null, { app_settings: expected }));
+      service()
+        .then(function(actual) {
+          chai.expect(actual.date_format).to.equal(expected.date_format);
+          // date format from defaults: kujua_sms/views/lib/app_settings
+          chai.expect(actual.reported_date_format).to.equal('DD-MMM-YYYY HH:mm:ss');
+          chai.expect(get.args[0][0]).to.equal('_design/medic');
+          done();
+        })
+        .catch(done);
+    });
+
+    it('returns errors', function(done) {
+      get.returns(KarmaUtils.mockPromise('Not found'));
+      service()
+        .then(function() {
+          done('Unexpected resolution of promise.');
+        })
+        .catch(function(err) {
+          chai.expect(err).to.equal('Not found');
+          done();
+        });
+    });
+
   });
 
-  afterEach(function() {
-    KarmaUtils.restore(get);
-  });
+  describe('as an event emitter', function() {
 
-  it('retrieves settings', function(done) {
-    var expected = {
-      isTrue: true,
-      isString: 'hello'
-    };
-    get.returns(KarmaUtils.mockPromise(null, { app_settings: expected }));
-    service(function(err, actual) {
-      chai.expect(err).to.equal(null);
-      chai.expect(actual.isTrue).to.equal(expected.isTrue);
-      chai.expect(actual.isString).to.equal(expected.isString);
-      done();
-    });
-  });
+    var expect = chai.expect,
+        service,
+        cacheCallback;
 
-  it('merges settings with defaults', function(done) {
-    var expected = {
-      date_format: 'YYYY'
-    };
-    get.returns(KarmaUtils.mockPromise(null, { app_settings: expected }));
-    service(function(err, actual) {
-      chai.expect(err).to.equal(null);
-      chai.expect(actual.date_format).to.equal(expected.date_format);
-      // date format from defaults: kujua_sms/views/lib/app_settings
-      chai.expect(actual.reported_date_format).to.equal('DD-MMM-YYYY HH:mm:ss');
-      chai.expect(get.args[0][0]).to.equal('_design/medic');
-      done();
-    });
-  });
 
-  it('returns errors', function(done) {
-    get.returns(KarmaUtils.mockPromise('Not found'));
-    service(function(err) {
-      chai.expect(err).to.equal('Not found');
-      done();
+    function triggerCacheChange(err, settings) {
+      cacheCallback(err, settings);
+    }
+
+    beforeEach(function() {
+      module('inboxApp');
+      module(function($provide) {
+        $provide.value('$q', function(promiseHandler) {
+          return new Promise(promiseHandler);
+        });
+        $provide.value('Cache', function() {
+          return function(callback) {
+            cacheCallback = callback;
+          };
+        });
+      });
+      inject(function($injector) {
+        service = $injector.get('SettingsP');
+      });
     });
+
+    afterEach(function() {
+      cacheCallback = null;
+    });
+
+    it('triggers a change event each time cache updates', function(done) {
+      var changeCount = 0,
+          invocationIndexes = [];
+
+      service()
+        .on('change', function(settings) {
+          ++changeCount;
+          invocationIndexes.push(settings.invocation);
+        });
+
+      triggerCacheChange(null, { invocation: 1 });
+      triggerCacheChange(null, { invocation: 2 });
+      triggerCacheChange(null, { invocation: 3 });
+
+      setTimeout(function() {
+        expect(changeCount).to.equal(3);
+        expect(invocationIndexes).to.deep.equal([1, 2, 3]);
+        done();
+      }, 200);
+    });
+
+    it('triggers error handler when an error occurs', function(done) {
+      var changeCount = 0, errorCount = 0;
+
+      service()
+        .on('change', function() {
+          ++changeCount;
+        })
+        .on('error', function() {
+          ++errorCount;
+        });
+
+      triggerCacheChange('Error!');
+
+      setTimeout(function() {
+        expect(changeCount).to.equal(0);
+        expect(errorCount).to.equal(1);
+        done();
+      }, 200);
+    });
+
   });
 
 });

@@ -20,8 +20,7 @@ module.exports = function(config) {
       // used to query html
       'bower_components/jquery/dist/jquery.js',
 
-      // shim to get pouchdb to work with phantomjs
-      'tests/karma/pouchdb-shim.js',
+      'tests/karma/q.js',
 
       // application code
       'static/dist/dependencies.js',

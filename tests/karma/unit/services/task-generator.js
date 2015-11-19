@@ -2,10 +2,11 @@ describe('TaskGenerator service', function() {
 
   'use strict';
 
-  var service,
-      Search,
-      Settings,
-      $rootScope;
+  var Search,
+      SettingsP,
+      Changes,
+      DBGet,
+      injector;
 
   /* jshint quotmark: false */
   var rules =
@@ -32,6 +33,19 @@ describe('TaskGenerator service', function() {
     "  }" +
     "  then {" +
     "    var visitCount = 0;" +
+    "    if (!c.reports.length) {" +
+    "      emit('task', new Task({" +
+    "        _id: 'no-reports'," +
+    "        doc: null," +
+    "        contact: c.contact," +
+    "        type: 'no-report'," +
+    "        date: new Date()," +
+    "        title: 'No Report'," +
+    "        fields: []," +
+    "        reports: []," +
+    "        resolved: false" +
+    "      }))" +
+    "    }" +
     "    c.reports.forEach(function(r) {" +
     "      if (r.form === 'V') {" +
     "        visitCount++;" +
@@ -81,8 +95,8 @@ describe('TaskGenerator service', function() {
     "          emit('task', visit);" +
     "          assert(visit);" +
     "        });" +
-    "    }" +
-    "      });" +
+    "      }" +
+    "    });" +
     "  }" +
     "}";
   /* jshint quotmark: true */
@@ -176,57 +190,61 @@ describe('TaskGenerator service', function() {
 
   beforeEach(function() {
     Search = sinon.stub();
-    Settings = sinon.stub();
+    SettingsP = sinon.stub();
+    Changes = sinon.stub();
+    DBGet = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.value('Search', Search);
-      $provide.value('Settings', Settings);
+      $provide.value('SettingsP', SettingsP);
+      $provide.value('Changes', Changes);
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
+      $provide.factory('DB', KarmaUtils.mockDB({ get: DBGet }));
     });
-    inject(function($injector, _$rootScope_) {
-      $rootScope = _$rootScope_;
-      service = $injector.get('TaskGenerator');
+    inject(function($injector) {
+      injector = $injector;
     });
   });
 
   afterEach(function() {
-    KarmaUtils.restore(Search, Settings);
+    KarmaUtils.restore(Search, SettingsP, Changes, DBGet);
   });
 
   it('returns search errors', function(done) {
     Search.callsArgWith(2, 'boom');
-    Settings.callsArgWith(0, null, {
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
       }
-    });
-    service().catch(function(err) {
+    }));
+    var service = injector.get('TaskGenerator');
+    service('test', function(err) {
       chai.expect(err).to.equal('boom');
       chai.expect(Search.callCount).to.equal(2);
       done();
     });
-    $rootScope.$digest();
   });
 
-  it('returns settings errors', function(done) {
-    Settings.callsArgWith(0, 'boom');
-    service().catch(function(err) {
+  it('returns settingsP errors', function(done) {
+    SettingsP.returns(KarmaUtils.mockPromise('boom'));
+    var service = injector.get('TaskGenerator');
+    service('test', function(err) {
       chai.expect(err).to.equal('boom');
-      chai.expect(Settings.callCount).to.equal(1);
+      chai.expect(SettingsP.callCount).to.equal(1);
       done();
     });
-    $rootScope.$digest();
   });
 
-  it('returns empty when settings returns no config', function(done) {
-    Settings.callsArgWith(0, null, {});
-    service().then(function(actual) {
+  it('returns empty when settingsP returns no config', function(done) {
+    SettingsP.returns(KarmaUtils.mockPromise(null, {}));
+    var service = injector.get('TaskGenerator');
+    service('test', function(err, actual) {
       chai.expect(Search.callCount).to.equal(0);
-      chai.expect(Settings.callCount).to.equal(1);
+      chai.expect(SettingsP.callCount).to.equal(1);
       chai.expect(actual).to.deep.equal([]);
       done();
-    }).catch(done);
-    $rootScope.$digest();
+    });
   });
 
   it('generates tasks when given registrations', function(done) {
@@ -240,49 +258,428 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    Settings.callsArgWith(0, null, {
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
       }
-    });
+    }));
 
-    var expectations = function(actual, registration, schedule, reports, resolved) {
-      var task = _.findWhere(actual, { _id: registration._id + '-' + schedule.id });
-      if (!task) {
-        console.log('Failed to generate task: ' + registration._id + '-' + schedule.id);
+    var expectations = {
+      '1-visit-1': {
+        registration: dataRecords[0],
+        schedule: schedules[0].events[0],
+        reports: [ dataRecords[0], dataRecords[2] ],
+        resolved: true
+      },
+      '1-visit-2': {
+        registration: dataRecords[0],
+        schedule: schedules[0].events[1],
+        reports: [ dataRecords[0], dataRecords[2] ],
+        resolved: false
+      },
+      '1-immunisation-1': {
+        registration: dataRecords[0],
+        schedule: schedules[0].events[2],
+        reports: [ dataRecords[0], dataRecords[2] ],
+        resolved: false
+      },
+      '2-visit-1': {
+        registration: dataRecords[1],
+        schedule: schedules[0].events[0],
+        reports: [ dataRecords[1] ],
+        resolved: false
+      },
+      '2-visit-2': {
+        registration: dataRecords[1],
+        schedule: schedules[0].events[1],
+        reports: [ dataRecords[1] ],
+        resolved: false
+      },
+      '2-immunisation-1': {
+        registration: dataRecords[1],
+        schedule: schedules[0].events[2],
+        reports: [ dataRecords[1] ],
+        resolved: false
+      },
+      '3-follow-up-1': {
+        registration: dataRecords[2],
+        schedule: schedules[1].events[0],
+        reports: [ dataRecords[0], dataRecords[2] ],
+        resolved: false
+      },
+      '4-visit-1': {
+        registration: dataRecords[3],
+        schedule: schedules[0].events[0],
+        reports: [ dataRecords[3] ],
+        resolved: false
+      },
+      '4-visit-2': {
+        registration: dataRecords[3],
+        schedule: schedules[0].events[1],
+        reports: [ dataRecords[3] ],
+        resolved: false
+      },
+      '4-immunisation-1': {
+        registration: dataRecords[3],
+        schedule: schedules[0].events[2],
+        reports: [ dataRecords[3] ],
+        resolved: false
       }
-      chai.expect(!!task).to.equal(true);
-      chai.expect(task.type).to.equal(schedule.type);
-      chai.expect(task.date).to.equal(calculateDate(registration, schedule.days));
-      chai.expect(task.title).to.deep.equal(schedule.title);
-      chai.expect(task.fields[0].label).to.deep.equal([{ content: 'Description', locale: 'en' }]);
-      chai.expect(task.fields[0].value).to.deep.equal(schedule.description);
-      chai.expect(task.doc._id).to.equal(registration._id);
-      chai.expect(task.resolved).to.equal(resolved);
-      chai.expect(task.reports).to.deep.equal(reports);
     };
-    service().then(function(actual) {
-      chai.expect(Search.callCount).to.equal(2);
-      chai.expect(Settings.callCount).to.equal(1);
-      chai.expect(actual.length).to.equal(10);
-      expectations(actual, dataRecords[0], schedules[0].events[0], [ dataRecords[0], dataRecords[2] ], true);
-      expectations(actual, dataRecords[0], schedules[0].events[1], [ dataRecords[0], dataRecords[2] ], false);
-      expectations(actual, dataRecords[0], schedules[0].events[2], [ dataRecords[0], dataRecords[2] ], false);
-      expectations(actual, dataRecords[1], schedules[0].events[0], [ dataRecords[1] ], false);
-      expectations(actual, dataRecords[1], schedules[0].events[1], [ dataRecords[1] ], false);
-      expectations(actual, dataRecords[1], schedules[0].events[2], [ dataRecords[1] ], false);
-      expectations(actual, dataRecords[2], schedules[1].events[0], [ dataRecords[0], dataRecords[2] ], false);
-      expectations(actual, dataRecords[3], schedules[0].events[0], [ dataRecords[3] ], false);
-      expectations(actual, dataRecords[3], schedules[0].events[1], [ dataRecords[3] ], false);
-      expectations(actual, dataRecords[3], schedules[0].events[2], [ dataRecords[3] ], false);
-      done();
-    }).catch(done);
-    setTimeout(function() {
-      $rootScope.$digest();
-      setTimeout(function() {
-        $rootScope.$digest();
+
+    var service = injector.get('TaskGenerator');
+    var callbackCount = 0;
+    service('test', function(err, actuals) {
+      actuals.forEach(function(actual) {
+        var expected = expectations[actual._id];
+        chai.expect(actual.type).to.equal(expected.schedule.type);
+        chai.expect(actual.date).to.equal(calculateDate(expected.registration, expected.schedule.days));
+        chai.expect(actual.title).to.deep.equal(expected.schedule.title);
+        chai.expect(actual.fields[0].label).to.deep.equal([{ content: 'Description', locale: 'en' }]);
+        chai.expect(actual.fields[0].value).to.deep.equal(expected.schedule.description);
+        chai.expect(actual.doc._id).to.equal(expected.registration._id);
+        chai.expect(actual.resolved).to.equal(expected.resolved);
+        chai.expect(actual.reports).to.deep.equal(expected.reports);
+        callbackCount++;
+        if (callbackCount === 10) {
+          chai.expect(Search.callCount).to.equal(2);
+          chai.expect(SettingsP.callCount).to.equal(1);
+          done();
+        }
       });
     });
   });
+
+  it('caches tasks', function(done) {
+
+    Search.onFirstCall().callsArgWith(2, null, dataRecords);
+    Search.onSecondCall().callsArgWith(2, null, contacts);
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
+      tasks: {
+        rules: rules,
+        schedules: schedules
+      }
+    }));
+
+    var service = injector.get('TaskGenerator');
+    var expected = {};
+    service('test', function(err, results) {
+      results.forEach(function(result) {
+        expected[result._id] = result;
+      });
+      if (_.values(expected).length === 10) {
+        service('another-test', function(err, actual) {
+          // Search and SettingsP shouldn't be called again, and
+          // results should be the same
+          chai.expect(Search.callCount).to.equal(2);
+          chai.expect(SettingsP.callCount).to.equal(1);
+          chai.expect(actual).to.deep.equal(_.values(expected));
+          done();
+        });
+      }
+    });
+
+  });
+
+  it('updates when a contact is deleted', function(done) {
+
+    var dataRecords = [
+      {
+        _id: 2,
+        form: 'P',
+        reported_date: 1437618272360,
+        fields: {
+          patient_id: 1,
+          patient_name: 'Jenny',
+          last_menstrual_period: 10
+        }
+      }
+    ];
+
+    var contacts = [
+      { _id: 1, name: 'Jenny' }
+    ];
+
+    Search.onFirstCall().callsArgWith(2, null, dataRecords);
+    Search.onSecondCall().callsArgWith(2, null, contacts);
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
+      tasks: {
+        rules: rules,
+        schedules: schedules
+      }
+    }));
+
+    var callbackCount = 0;
+    var service = injector.get('TaskGenerator');
+    service('test', function(err, actual) {
+      callbackCount++;
+      if (callbackCount === 4) {
+        Changes.args[0][0].callback({
+          deleted: true,
+          id: 1
+        });
+      } else if (callbackCount === 5) {
+        chai.expect(actual[0].contact).to.equal(null);
+        done();
+      }
+    });
+  });
+
+  it('updates when a report is deleted', function(done) {
+
+    var dataRecords = [
+      {
+        _id: 2,
+        form: 'P',
+        reported_date: 1437618272360,
+        fields: {
+          patient_id: 1,
+          patient_name: 'Jenny',
+          last_menstrual_period: 10
+        }
+      },
+      {
+        _id: 3,
+        form: 'P',
+        reported_date: 1437618272360,
+        fields: {
+          patient_id: 1,
+          patient_name: 'Jenny',
+          last_menstrual_period: 10
+        }
+      }
+    ];
+
+    var contacts = [
+      { _id: 1, name: 'Jenny' }
+    ];
+
+    Search.onFirstCall().callsArgWith(2, null, dataRecords);
+    Search.onSecondCall().callsArgWith(2, null, contacts);
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
+      tasks: {
+        rules: rules,
+        schedules: schedules
+      }
+    }));
+
+    var callbackCount = 0;
+    var service = injector.get('TaskGenerator');
+    service('test', function(err, actual) {
+      callbackCount++;
+      if (callbackCount === 4) {
+        Changes.args[0][0].callback({
+          deleted: true,
+          id: 2
+        });
+      } else if (callbackCount === 5) {
+        chai.expect(actual[0].reports.length).to.equal(1);
+        chai.expect(actual[0].reports[0]._id).to.equal(3);
+        done();
+      }
+    });
+  });
+
+  it('updates when a contact is added', function(done) {
+
+    var dataRecords = [
+      {
+        _id: 2,
+        form: 'P',
+        reported_date: 1437618272360,
+        fields: {
+          patient_id: 1,
+          patient_name: 'Jenny',
+          last_menstrual_period: 10
+        }
+      }
+    ];
+
+    var contacts = [
+      { _id: 1, name: 'Jenny' }
+    ];
+
+    var newContact = { _id: 4, name: 'Sarah' };
+
+    Search.onFirstCall().callsArgWith(2, null, dataRecords);
+    Search.onSecondCall().callsArgWith(2, null, contacts);
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
+      tasks: {
+        rules: rules,
+        schedules: schedules
+      }
+    }));
+
+    var callbackCount = 0;
+    var service = injector.get('TaskGenerator');
+    service('test', function(err, actual) {
+      callbackCount++;
+      if (callbackCount === 4) {
+        Changes.args[0][0].callback({
+          newDoc: newContact
+        });
+      } else if (callbackCount === 5) {
+        chai.expect(actual[0].type).to.equal('no-report');
+        chai.expect(actual[0].contact._id).to.equal(4);
+        done();
+      }
+    });
+  });
+
+  it('updates when a report is added', function(done) {
+
+    var dataRecords = [
+      {
+        _id: 2,
+        form: 'P',
+        reported_date: 1437618272360,
+        fields: {
+          patient_id: 1,
+          patient_name: 'Jenny',
+          last_menstrual_period: 10
+        }
+      }
+    ];
+
+    var newReport = {
+      _id: 3,
+      form: 'P',
+      reported_date: 1437618272360,
+      fields: {
+        patient_id: 1,
+        patient_name: 'Jenny',
+        last_menstrual_period: 10
+      }
+    };
+
+    var contacts = [
+      { _id: 1, name: 'Jenny' }
+    ];
+
+    Search.onFirstCall().callsArgWith(2, null, dataRecords);
+    Search.onSecondCall().callsArgWith(2, null, contacts);
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
+      tasks: {
+        rules: rules,
+        schedules: schedules
+      }
+    }));
+
+    var callbackCount = 0;
+    var service = injector.get('TaskGenerator');
+    service('test', function(err, actual) {
+      callbackCount++;
+      if (callbackCount === 4) {
+        Changes.args[0][0].callback({
+          newDoc: newReport
+        });
+      } else if (callbackCount === 5) {
+        chai.expect(actual[0].reports.length).to.equal(2);
+        done();
+      }
+    });
+  });
+
+  it('updates when a contact is updated', function(done) {
+
+    var dataRecords = [
+      {
+        _id: 2,
+        form: 'P',
+        reported_date: 1437618272360,
+        fields: {
+          patient_id: 1,
+          patient_name: 'Jenny',
+          last_menstrual_period: 10
+        }
+      }
+    ];
+
+    var contacts = [
+      { _id: 1, name: 'Jenny' }
+    ];
+
+    Search.onFirstCall().callsArgWith(2, null, dataRecords);
+    Search.onSecondCall().callsArgWith(2, null, contacts);
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
+      tasks: {
+        rules: rules,
+        schedules: schedules
+      }
+    }));
+    DBGet.returns(KarmaUtils.mockPromise(null, { _id: 1, name: 'Jennifer' }));
+
+    var callbackCount = 0;
+    var service = injector.get('TaskGenerator');
+    service('test', function(err, actual) {
+      callbackCount++;
+      if (callbackCount === 4) {
+        Changes.args[0][0].callback({
+          id: 1
+        });
+      } else if (callbackCount === 5) {
+        chai.expect(DBGet.callCount).to.equal(1);
+        chai.expect(DBGet.args[0][0]).to.equal(1);
+        chai.expect(actual[0].contact.name).to.equal('Jennifer');
+        done();
+      }
+    });
+  });
+
+  it('updates when a report is updated', function(done) {
+
+    var dataRecords = [
+      {
+        _id: 2,
+        form: 'P',
+        reported_date: 1437618272360,
+        fields: {
+          patient_id: 1,
+          patient_name: 'Jenny',
+          last_menstrual_period: 10
+        }
+      }
+    ];
+
+    var contacts = [
+      { _id: 1, name: 'Jenny' }
+    ];
+
+    Search.onFirstCall().callsArgWith(2, null, dataRecords);
+    Search.onSecondCall().callsArgWith(2, null, contacts);
+    SettingsP.returns(KarmaUtils.mockPromise(null, {
+      tasks: {
+        rules: rules,
+        schedules: schedules
+      }
+    }));
+    DBGet.returns(KarmaUtils.mockPromise(null, {
+      _id: 2,
+      form: 'P',
+      reported_date: 1437618272360,
+      fields: {
+        patient_id: 1,
+        patient_name: 'Jenny',
+        last_menstrual_period: 15
+      }
+    }));
+
+    var callbackCount = 0;
+    var service = injector.get('TaskGenerator');
+    service('test', function(err, actual) {
+      callbackCount++;
+      if (callbackCount === 4) {
+        Changes.args[0][0].callback({
+          id: 2
+        });
+      } else if (callbackCount === 5) {
+        chai.expect(DBGet.callCount).to.equal(1);
+        chai.expect(DBGet.args[0][0]).to.equal(2);
+        chai.expect(actual[0].doc.fields.last_menstrual_period).to.equal(15);
+        done();
+      }
+    });
+  });
+
 });

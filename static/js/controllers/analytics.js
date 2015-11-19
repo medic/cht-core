@@ -17,29 +17,23 @@ var _ = require('underscore');
   };
 
   inboxControllers.controller('AnalyticsCtrl',
-    ['$scope', '$rootScope', '$state', '$stateParams', 'Settings', 'AnalyticsModules',
-    function ($scope, $rootScope, $state, $stateParams, Settings, AnalyticsModules) {
+    ['$scope', '$rootScope', '$state', '$stateParams',
+    function ($scope, $rootScope, $state, $stateParams) {
       $scope.setSelectedModule();
       $scope.clearSelected();
       $scope.filterModel.type = 'analytics';
       $scope.loading = true;
-      Settings(function(err, res) {
-        if (err) {
-          return console.log('Error fetching settings', err);
-        }
-        $scope.setAnalyticsModules(AnalyticsModules(res));
-        $scope.setSelectedModule(findSelectedModule(
-          $stateParams.module, $scope.analyticsModules
-        ));
+      $scope.fetchAnalyticsModules().then(function(modules) {
         $scope.loading = false;
-        if ($scope.filterModel.module) {
-          $scope.filterModel.module.render($scope);
+        var module = findSelectedModule($stateParams.module, modules);
+        $scope.setSelectedModule(module);
+        if (module) {
+          module.render($scope);
+        }
+        if ($stateParams.tour) {
+          $rootScope.$broadcast('TourStart', $stateParams.tour);
         }
       });
-
-      if ($stateParams.tour) {
-        $rootScope.$broadcast('TourStart', $stateParams.tour);
-      }
 
       $scope.loadPatient = function(id) {
         $state.go('reports.detail', { query: 'patient_id:' + id });

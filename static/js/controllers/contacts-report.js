@@ -5,16 +5,17 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsReportCtrl', 
-    ['$scope', '$state', '$log', 'DB', 'Enketo',
-    function ($scope, $state, $log, DB, Enketo) {
+    ['$scope', '$state', '$log', '$translate', 'DB', 'Enketo', 'TranslateFrom', 'Snackbar',
+    function ($scope, $state, $log, $translate, DB, Enketo, TranslateFrom, Snackbar) {
 
       var render = function(doc) {
         $scope.setSelected({ doc: doc });
+        $scope.setBackTarget('contacts.detail', $state.params.id);
         var instanceData = {};
         if (doc.type === 'person') {
-          instanceData.patient_id = doc._id;
+          instanceData.patient = doc;
         } else {
-          instanceData.place_id = doc._id;
+          instanceData.place = doc;
         }
         return Enketo
           .render($('#contact-report'), $state.params.formId, instanceData)
@@ -30,6 +31,7 @@
           .then(function(doc) {
             $log.debug('saved report', doc);
             $scope.saving = false;
+            $translate('report.created').then(Snackbar);
             $state.go('contacts.detail', { id: $state.params.id });
           })
           .catch(function(err) {
@@ -41,9 +43,19 @@
       $scope.form = null;
       $scope.loadingForm = true;
       $scope.setActionBar();
+      $scope.setShowContent(true);
+      $scope.setBackTarget('contacts.detail', $state.params.id);
       DB.get()
         .get($state.params.id)
         .then(render)
+        .then(function() {
+          return DB.get().query('medic/forms', { include_docs: true, key: $state.params.formId });
+        })
+        .then(function(res) {
+          if (res.rows[0]) {
+            $scope.setTitle(TranslateFrom(res.rows[0].doc.title));
+          }
+        })
         .catch(function(err) {
           $log.error('Error loading form', err);
           $scope.contentError = true;

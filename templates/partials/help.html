@@ -1,6 +1,17 @@
 <div class="inner" ng-cloak>
   <div class="col-sm-12 page help" ui-view="content">
     <div>
+      <h3>{{'about' | translate}}</h3>
+    </div>
+    <div>
+      <ul>
+        <li>{{'version' | translate}} {{version}}</li>
+        <li>{{url}}</li>
+        <li>{{userCtx.name}}</li>
+        <li><a ng-click="reload()">{{'Reload' | translate}}</a></li>
+      </ul>
+    </div>
+    <div>
       <h3>{{'Help' | translate}}</h3>
     </div>
     <div>

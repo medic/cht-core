@@ -5,22 +5,27 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsAddCtrl', 
-    ['$scope', '$state', '$log', 'DB', 'Enketo',
-    function ($scope, $state, $log, DB, Enketo) {
+    ['$log', '$scope', '$state', '$q', '$translate', 'DB', 'Enketo', 'Snackbar',
+    function ($log, $scope, $state, $q, $translate, DB, Enketo, Snackbar) {
 
       var getSelected = function() {
         if ($state.params.formId) { // adding
-          return Promise.resolve({ form: $state.params.formId });
+          return $q.resolve({ form: $state.params.formId });
         }
         if ($state.params.reportId) { // editing
           return DB.get().get($state.params.reportId);
         }
-        return Promise.reject(new Error('Must have either formId or reportId'));
+        return $q.reject(new Error('Must have either formId or reportId'));
       };
 
       $scope.loadingContent = true;
       $scope.contentError = false;
       $scope.saving = false;
+      if ($state.params.reportId || $state.params.formId) {
+        $scope.setBackTarget('reports.detail', $state.params.reportId);
+      } else {
+        $scope.clearBackTarget();
+      }
 
       getSelected()
         .then(function(doc) {
@@ -49,10 +54,12 @@
           .then(function(doc) {
             $log.debug('saved report', doc);
             $scope.saving = false;
+            $translate($state.params.reportId ? 'report.updated' : 'report.created')
+              .then(Snackbar);
             $state.go('reports.detail', { id: doc._id });
           })
           .catch(function(err) {
-            $scope.saving = false;
+            $scope.$apply('saving = false');
             $log.error('Error submitting form data: ', err);
           });
       };

@@ -8,8 +8,8 @@ var utils = require('kujua-utils'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('DB', [
-    '$http', '$timeout', 'pouchDB', 'Session', 'DbNameService',
-    function($http, $timeout, pouchDB, Session, DbNameService) {
+    '$http', '$timeout', '$log', 'pouchDB', 'Session', 'DbNameService',
+    function($http, $timeout, $log, pouchDB, Session, DbNameService) {
 
       var cache = {};
 
@@ -50,18 +50,11 @@ var utils = require('kujua-utils'),
           .put(ddoc)
           .then(callback)
           .catch(function(err) {
-            console.error('Error updating local ddoc.', err);
+            $log.error('Error updating local ddoc.', err);
           });
       };
 
       var checkLocalDesignDoc = function(rev, callback) {
-        if (isAdmin()) {
-          // admins access ddoc from remote db directly so don't update them
-          if (callback) {
-            callback();
-          }
-          return;
-        }
         getLocal()
           .get('_design/medic')
           .then(function(localDdoc) {
@@ -74,36 +67,50 @@ var utils = require('kujua-utils'),
                 updateLocalDesignDoc(localDdoc, remoteDdoc, callback);
               })
               .catch(function(err) {
-                console.error('Error updating ddoc. Check your connection and try again.', err);
+                $log.error('Error updating ddoc. Check your connection and try again.', err);
               });
           })
           .catch(function(err) {
-            console.error('Error updating ddoc. Check your connection and try again.', err);
+            $log.error('Error updating ddoc. Check your connection and try again.', err);
           });
       };
 
       var watchDesignDoc = function(callback) {
-        // Listen for remote ddoc changes
         async.forever(function(next) {
+          if (!isAdmin()) {
+            // check current ddoc revision vs local pouch version
+            $http({
+              method: 'HEAD',
+              url: getRemoteUrl() + '/_design/medic'
+            }).success(function(data, status, headers) {
+              var rev = headers().etag.replace(/"/g, '');
+              checkLocalDesignDoc(rev, callback);
+            });
+          }
+
+          // Listen for remote ddoc changes
           getRemote()
-            .changes({ live: true, since: 'now', doc_ids: [ '_design/medic' ] })
+            .changes({
+              live: true,
+              since: 'now',
+              doc_ids: [ '_design/medic' ],
+              timeout: 1000 * 60 * 60
+            })
             .on('change', function(change) {
+              if (isAdmin()) {
+                // admins access ddoc from remote db directly so
+                // no need to check local ddoc
+                return callback();
+              }
               checkLocalDesignDoc(change.changes[0].rev, callback);
             })
-            .on('error', function() {
+            .on('error', function(err) {
+              $log.debug('Error watching for changes on the design doc', err);
               $timeout(next, 10000);
             });
         });
       };
 
-      // Check current ddoc revision
-      $http({
-        method: 'HEAD',
-        url: getRemoteUrl() + '/_design/medic'
-      }).success(function(data, status, headers) {
-        var rev = headers().etag.replace(/"/g, '');
-        checkLocalDesignDoc(rev);
-      });
 
       return {
         get: get,

@@ -6,7 +6,7 @@
         <h3>{{'version.update.title' | translate}}</h3>
       </div>
       <div class="modal-body">
-        <p>{{'version.update.description' | translate}}</p>
+        <p ng-bind-html="'version.update.description' | translate"></p>
       </div>
       <div class="modal-footer">
         <a class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>

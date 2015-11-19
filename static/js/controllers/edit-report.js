@@ -1,5 +1,11 @@
 var modal = require('../modules/modal');
 
+/**
+ * EditReportCtrl
+ *
+ * This controller is used for editing non-enketo Reports.
+ */
+
 (function () {
   'use strict';
 

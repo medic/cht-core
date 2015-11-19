@@ -1,6 +1,6 @@
+sudo: false
 language: node_js
-node_js:
-   - 0.10
+node_js: "0.12"
 
 script: "npm test"
 
@@ -13,4 +13,3 @@ notifications:
   email:
     recipients:
       - dev@medicmobile.org
-

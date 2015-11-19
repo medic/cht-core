@@ -9,6 +9,7 @@
   </div>
   <div class="col-sm-8 item-content" ng-show="!loadingContent && !contentError">
     <div id="report-form" class="enketo">
+
       <div class="container pages"></div>
       <div class="form-footer">
         <button class="btn btn-default previous-page">&lt; {{'Previous' | translate}}</button>
@@ -16,6 +17,7 @@
         <a class="btn submit btn-primary" ng-click="save()" ng-disabled="saving">{{'Submit' | translate}}</a>
         <div class="loader inline small" ng-show="saving"></div>
       </div>
+
     </div>
   </div>
 </div>

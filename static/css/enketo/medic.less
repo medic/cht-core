@@ -10,6 +10,7 @@
 .enketo {
   background-color: #FFFFFF;
   padding-bottom: 2em;
+  min-height: 500px; /* Ensure enough room for the datepicker */
   h2, h3, h4 {
     text-align: left;
   }
@@ -40,12 +41,14 @@
   .or-appearance-hidden {
     display: none !important;
   }
-  .question, .note {
+  .question,
+  .note {
     input[type="text"],
     input[type="password"],
     input[type="url"],
     input[type="email"],
-    input[type="file"] {
+    input[type="file"],
+    textarea {
       width: 100%;
     }
   }
@@ -72,5 +75,16 @@
 
   .horizontal-options a.icon {
     width: inherit;
+  }
+  em {
+    font-style: italic;
+  }
+  .or-appearance-countdown-timer canvas {
+    width: 100%;
+    max-width: 320px;
+    display: block;
+  }
+  .or-hint.active {
+    font-size: 13px;
   }
 }

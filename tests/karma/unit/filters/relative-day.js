@@ -4,14 +4,14 @@ describe('relativeDay filter', function() {
 
   var compile,
       scope,
-      datetime = sinon.stub(),
+      date = sinon.stub(),
       relative = sinon.stub();
 
   beforeEach(function() {
     module('inboxApp');
     module(function ($provide) {
       $provide.value('FormatDate', {
-        datetime: datetime,
+        date: date,
         relative: relative
       });
     });
@@ -22,7 +22,7 @@ describe('relativeDay filter', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(datetime, relative);
+    KarmaUtils.restore(date, relative);
   });
 
   it('should render nothing when no date', function() {
@@ -33,7 +33,7 @@ describe('relativeDay filter', function() {
   });
 
   it('should render date', function() {
-    datetime.returns('1st Jan 2020');
+    date.returns('1st Jan 2020');
     relative.returns('in 5 days');
     scope.date = moment().add(5, 'days').valueOf();
     var element = compile('<div ng-bind-html="date | relativeDay"></div>')(scope);
@@ -43,7 +43,8 @@ describe('relativeDay filter', function() {
   });
 
   it('should render "today"', function() {
-    datetime.returns('1st Jan 2020');
+    date.returns('1st Jan 2020');
+    relative.returns('today');
     scope.date = moment().valueOf();
     var element = compile('<div ng-bind-html="date | relativeDay"></div>')(scope);
     scope.$digest();

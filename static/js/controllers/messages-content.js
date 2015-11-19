@@ -83,12 +83,21 @@ var _ = require('underscore'),
             return message.doc.reported_date;
           });
           $scope.selected.messages = data;
+          setTitle(data[0].value);
           markAllRead();
           $timeout(scrollToUnread);
         });
       };
 
-      var updateContact = function(options) {
+      var setTitle = function(message) {
+        var title = message.contact.name ||
+          (!message.form && message.name) ||
+          message.from ||
+          message.sent_by;
+        $scope.setTitle(title);
+      };
+
+      var updateConversation = function(options) {
         var selectedId = $scope.selected && $scope.selected.id;
         if (selectedId) {
           options = options || {};
@@ -141,7 +150,7 @@ var _ = require('underscore'),
 
       var _checkScroll = function() {
         if (this.scrollTop === 0 && !$scope.allLoaded) {
-          updateContact({ skip: true });
+          updateConversation({ skip: true });
         }
       };
 
@@ -155,7 +164,7 @@ var _ = require('underscore'),
       Changes({
         key: 'messages-content',
         callback: function() {
-          updateContact({ changes: true });
+          updateConversation({ changes: true });
         },
         filter: function(change) {
           return $scope.filterModel.type === 'messages' &&

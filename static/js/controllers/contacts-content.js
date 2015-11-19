@@ -7,8 +7,10 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsContentCtrl', 
-    ['$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search',
-    function ($scope, $stateParams, $q, $log, DB, TaskGenerator, Search) {
+    ['$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search', 'Changes', 'ContactSchema', 'UserDistrict',
+    function ($scope, $stateParams, $q, $log, DB, TaskGenerator, Search, Changes, ContactSchema, UserDistrict) {
+
+      $scope.showParentLink = false;
 
       var getReports = function(id) {
         var scope = {
@@ -19,27 +21,55 @@ var _ = require('underscore');
             if (err) {
               return reject(err);
             }
-            resolve(data);
+            $q.all(_.map(data, function(report) {
+              return $q(function(resolve, reject) {
+                DB.get()
+                  .query('medic/forms', { include_docs: true, key: report.form })
+                  .then(function(res) {
+                    if (res.rows.length) {
+                      report.formTitle = res.rows[0].doc.title;
+                    } else {
+                      report.formTitle = report.form;
+                    }
+                    resolve(report);
+                  })
+                  .catch(reject);
+              });
+            }))
+            .then(resolve)
+            .catch(reject);
           });
-        });
-      };
-
-      var getTasks = function(ids) {
-        if (ids.length === 0) {
-          return $q.resolve([]);
-        }
-        return TaskGenerator().then(function(tasks) {
-          tasks = _.filter(tasks, function(task) {
-            return !task.resolved &&
-              task.contact &&
-              _.contains(ids, task.contact._id);
-          });
-          return $q.resolve(tasks);
         });
       };
 
       var getContact = function(id) {
         return DB.get().get(id);
+      };
+
+      var sortChildren = function(children) {
+        children.sort(function(lhs, rhs) {
+          if (lhs.doc.date_of_birth &&
+              rhs.doc.date_of_birth &&
+              lhs.doc.date_of_birth !== rhs.doc.date_of_birth) {
+            return lhs.doc.date_of_birth < rhs.doc.date_of_birth ? -1 : 1;
+          }
+          if (lhs.doc.date_of_birth && !rhs.doc.date_of_birth) {
+            return 1;
+          }
+          if (!lhs.doc.date_of_birth && rhs.doc.date_of_birth) {
+            return -1;
+          }
+          if (!lhs.doc.name && !rhs.doc.name) {
+            return 0;
+          }
+          if (!rhs.doc.name) {
+            return 1;
+          }
+          if (!lhs.doc.name) {
+            return -1;
+          }
+          return lhs.doc.name.localeCompare(rhs.doc.name);
+        });
       };
 
       var getChildren = function(id) {
@@ -48,7 +78,12 @@ var _ = require('underscore');
           endkey: [ id, {} ],
           include_docs: true
         };
-        return DB.get().query('medic/facility_by_parent', options);
+        return DB.get()
+          .query('medic/facility_by_parent', options)
+          .then(function(children) {
+            sortChildren(children.rows);
+            return children;
+          });
       };
 
       var getContactFor = function(id) {
@@ -57,6 +92,18 @@ var _ = require('underscore');
           include_docs: true
         };
         return DB.get().query('medic/facilities_by_contact', options);
+      };
+
+      var selectedSchemaVisibleFields = function(selected) {
+        var fields = ContactSchema.getVisibleFields()[selected.doc.type].fields;
+        // date of birth is shown already
+        delete fields.date_of_birth;
+        if (selected.doc.contact &&
+            _.findWhere(selected.children, { id: selected.doc.contact._id })) {
+          // the contact will be shown in the children pane, so remove contact field
+          delete fields.contact;
+        }
+        return fields;
       };
 
       var getInitialData = function(id) {
@@ -69,47 +116,87 @@ var _ = require('underscore');
           .then(function(results) {
             var selected = {
               doc: results[0],
-              parents: [],
               children: results[1].rows,
               contactFor: results[2].rows,
-              reports: results[3],
+              reports: results[3]
             };
-
-            var parent = selected.doc.parent;
-            while(parent && Object.keys(parent).length) {
-              selected.parents.push(parent);
-              parent = parent.parent;
-            }
-
+            selected.fields = selectedSchemaVisibleFields(selected);
             return selected;
           });
       };
 
-      var getSecondaryData = function(selected) {
-        if (selected.doc.type === 'district_hospital' ||
-            selected.doc.type === 'health_center') {
-          return $q.resolve(selected);
+      var updateParentLink = function() {
+        UserDistrict(function(err, district) {
+          if (err) {
+            return $log.error('Error getting user district', err);
+          }
+          var parentId = $scope.selected.doc &&
+                         $scope.selected.doc.parent &&
+                         $scope.selected.doc.parent._id;
+          $scope.showParentLink = parentId && district !== parentId;
+        });
+      };
+
+      var mergeTasks = function(tasks) {
+        var selectedTasks = $scope.selected.tasks;
+        $log.debug('Updating contact tasks', selectedTasks, tasks);
+        if (selectedTasks) {
+          tasks.forEach(function(task) {
+            for (var i = 0; i < selectedTasks.length; i++) {
+              if (selectedTasks[i]._id === task._id) {
+                selectedTasks[i] = task;
+                return;
+              }
+            }
+            selectedTasks.push(task);
+          });
+        }
+      };
+
+      var getTasks = function() {
+        $scope.selected.tasks = [];
+        if ($scope.selected.doc.type === 'district_hospital' ||
+            $scope.selected.doc.type === 'health_center') {
+          return;
         }
         var patientIds = [];
-        if (selected.doc.type === 'clinic') {
-          patientIds = _.pluck(selected.children, 'id');
+        if ($scope.selected.doc.type === 'clinic') {
+          patientIds = _.pluck($scope.selected.children, 'id');
         }
-        patientIds.push(selected.doc._id);
-        return getTasks(patientIds)
-          .then(function(tasks) {
-            selected.tasks = tasks;
-            return $q.resolve(selected);
-          });
+        patientIds.push($scope.selected.doc._id);
+        TaskGenerator('ContactsContentCtrl', function(err, tasks) {
+          if (err) {
+            return $log.error('Error getting tasks', err);
+          }
+          mergeTasks(_.filter(tasks, function(task) {
+            return task.contact && _.contains(patientIds, task.contact._id);
+          }));
+          if (!$scope.$$phase) {
+            $scope.$apply();
+          }
+        });
       };
 
       var selectContact = function(id) {
         $scope.setLoadingContent(id);
         getInitialData(id)
-          .then(getSecondaryData)
           .then(function(selected) {
+
             var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
             $scope.setSelected(selected);
             $scope.settingSelected(refreshing);
+            getTasks();
+            updateParentLink();
+
+            $scope.relevantForms = _.filter($scope.formDefinitions, function(form) {
+              if (!form.context) {
+                return false;
+              }
+              if ($scope.selected.doc.type === 'person') {
+                return form.context.person;
+              }
+              return form.context.place;
+            });
           })
           .catch(function(err) {
             $scope.clearSelected();
@@ -123,15 +210,16 @@ var _ = require('underscore');
         $scope.clearSelected();
       }
 
-      $scope.$on('ContactUpdated', function(e, contact) {
-        if (contact) {
-          if(contact._deleted &&
-              $scope.selected &&
-              $scope.selected.doc._id === contact._id) {
+      Changes({
+        key: 'contacts-content',
+        filter: function(change) {
+          return $scope.selected && $scope.selected.doc._id === change.id;
+        },
+        callback: function(change) {
+          if (change.deleted) {
             $scope.clearSelected();
-          } else if ($scope.selected &&
-              $scope.selected.doc._id === contact._id) {
-            selectContact(contact._id);
+          } else {
+            selectContact(change.id);
           }
         }
       });

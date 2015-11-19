@@ -1,8 +1,7 @@
 @import (inline) "reset.css";
 @import "bower_components/bootstrap/less/bootstrap";
 @import "bower_components/fontawesome/less/font-awesome";
-@import (inline) "bower_components/select2/select2.css";
-@import (inline) "bower_components/select2-bootstrap-css/select2-bootstrap.css";
+@import (inline) "bower_components/select2/dist/css/select2.css";
 @import (inline) "bower_components/bootstrap-daterangepicker/daterangepicker-bs3.css";
 @import (inline) "bower_components/nvd3/nv.d3.css";
 @import (inline) "bower_components/bootstrap-tour/build/css/bootstrap-tour.css";
@@ -103,7 +102,7 @@ body {
   a {
     .button-text-inverse;
     outline: 0;
-    padding-top: 0.25em;
+    padding-top: 3px;
   }
 
   .mm-icon {
@@ -248,6 +247,7 @@ body {
   display: inline-block;
   text-align: center;
   color: @grayDark;
+  font-size: 2em;
 }
 
 .filters {
@@ -318,7 +318,7 @@ body {
   }
 
   .slide-back, .reset-filter {
-    line-height: 40px;
+    line-height: 38px;
     > a {
       width: 2em;
     }
@@ -352,7 +352,7 @@ body {
     overflow: hidden;
     font-weight: bold;
     margin: 0;
-    text-align: center;
+    display: none;
   }
 }
 
@@ -514,12 +514,23 @@ body {
     li li {
       padding-top: 0.5em;
     }
+    .meta {
+      padding: 1em 0;
+    }
+    h2 {
+      margin-bottom: 0;
+    }
   }
 }
 
-.tasks .inbox-items .mm-badge {
-  padding-top: 0;
-  margin-top: 0;
+.tasks {
+  .inbox-items .mm-badge {
+    padding-top: 0;
+    margin-top: 0;
+  }
+  .item-content .actions a {
+    margin-right: 1em;
+  }
 }
 
 .contacts .message-wrapper .fa {
@@ -1172,13 +1183,19 @@ a.fa:hover {
   margin-bottom: 1em;
 }
 
-.mobile-only {
+.mobile-only, #mobile-detection {
   display: none;
 }
 
 @media (max-width: 767px) {
+  #mobile-detection {
+    display: inline;
+  }
   .item-content {
     border-width: 0;
+    h2 {
+      display: none;
+    }
   }
   .inbox .inbox-items {
     border-left: 0;
@@ -1205,7 +1222,7 @@ a.fa:hover {
       top: 0;
     }
     h2 {
-      text-align: left;
+      display: initial;
     }
     .dropdown, .slide-back .mm-button {
       vertical-align: top;
@@ -1227,6 +1244,14 @@ a.fa:hover {
     }
     .freetext-filter {
       display: none;
+      &.only-filter {
+        display: inline-block;
+        width: auto;
+        padding-right: 3em;
+        input, .btn {
+          height: 2.4em;
+        }
+      }
     }
     .advanced-filter {
       width: 3em;
@@ -1385,6 +1410,14 @@ a.fa:hover {
   }
   .mm-button-icon {
     padding-right: 0.1em;
+  }
+  .message-content-wrapper {
+    .name-header {
+      display: none;
+    }
+    .item-content {
+      top: 0;
+    }
   }
 }
 

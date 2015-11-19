@@ -1,6 +1,8 @@
 <div class="row header">
   <div class="inner">
 
+    <span id="mobile-detection"></span>
+
     <a href="#">
       <div class="logo">
         <img class="logo-full" src="static/img/medic-logo-light-full.svg" title="Medic Mobile | {{version}}" />
@@ -53,7 +55,7 @@
             </a>
           </li>
           <li role="presentation">
-            <a id="startTour" role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#tour-select">
+            <a id="startTour" role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#tour-select" ng-show="tours.length">
               <i class="fa fa-fw fa-graduation-cap"></i>
               {{'Guided Tour' | translate}}
             </a>
@@ -61,19 +63,13 @@
           <li role="presentation">
             <a ui-sref="help" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-question"></i>
-              {{'Help' | translate}}
+              {{'about' | translate}}
             </a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" rel="external" ng-click="editCurrentUserPrepare()" data-toggle="modal" data-target="#edit-user-settings">
+            <a role="menuitem" tabindex="-1" ui-sref="configuration.user">
               <i class="fa fa-fw fa-user"></i>
-              {{'Edit User Profile' | translate}}
-            </a>
-          </li>
-          <li role="presentation">
-            <a role="menuitem" tabindex="-1" rel="external" ng-click="editCurrentUserPrepare()" data-toggle="modal" data-target="#update-password">
-              <i class="fa fa-fw fa-key"></i>
-              {{'password.update' | translate}}
+              {{'edit.user.settings' | translate}}
             </a>
           </li>
           <li role="presentation">

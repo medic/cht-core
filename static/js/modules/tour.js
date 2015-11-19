@@ -15,7 +15,7 @@ var _ = require('underscore');
   };
 
   var isMobile = function() {
-    return $('#back').is(':visible');
+    return $('#mobile-detection').is(':visible');
   };
 
   var mmShowMessageList = function() {

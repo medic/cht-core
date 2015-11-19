@@ -37,6 +37,7 @@
   require('./mark-read');
   require('./message-contacts');
   require('./message-state');
+  require('./moment-locale-data');
   require('./outgoing-messages-configuration');
   require('./properties');
   require('./read-messages');
@@ -44,7 +45,9 @@
   require('./send-message');
   require('./session');
   require('./settings');
+  require('./snackbar');
   require('./task-generator');
+  require('./translate-from');
   require('./update-contact');
   require('./update-facility');
   require('./update-settings');
