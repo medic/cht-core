@@ -46,7 +46,7 @@
     "karma-ng-html2js-preprocessor": "~0.1.2",
     "karma-phantomjs-launcher": "~0.2.0",
     "mocha": "~2.2.5",
-    "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#fb838bee3c71c3a0df2979237d2d0e2c143b9221",
+    "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#b36c6225fb3191a863a68ad80696fe6d71719061",
     "phantomjs": "~1.9.17",
     "remapify": "~2.0.3",
     "sinon": "^1.15.4",
