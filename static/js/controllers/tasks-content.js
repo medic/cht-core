@@ -22,11 +22,8 @@
         );
       };
 
-      $scope.performAction = function(action, backToList) {
-        if (!backToList) {
-          $scope.setBackTarget('tasks.detail', $state.params.id);
-        }
-
+      $scope.performAction = function(action) {
+        $scope.setBackTarget('tasks.detail');
         $scope.contentError = false;
         if (action.type === 'report') {
           $scope.loadingForm = true;
@@ -80,7 +77,7 @@
       // form if we have no other description or instructions in the task.
       $scope.$watch('selected', function() {
         if (hasOneFormAndNoFields($scope.selected)) {
-          $scope.performAction($scope.selected.actions[0], true);
+          $scope.performAction($scope.selected.actions[0]);
         }
       });
 
