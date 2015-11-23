@@ -5,6 +5,9 @@ module.exports = function(grunt) {
 
   'use strict';
 
+  require('time-grunt')(grunt);
+  require('load-grunt-tasks')(grunt);
+
   // Project configuration
   grunt.initConfig({
     bower: {
@@ -310,28 +313,6 @@ module.exports = function(grunt) {
       },
     },
   });
-
-  // Load the plugins
-  grunt.loadNpmTasks('grunt-angular-templates');
-  grunt.loadNpmTasks('grunt-appcache');
-  grunt.loadNpmTasks('grunt-bower-concat');
-  grunt.loadNpmTasks('grunt-bower-task');
-  grunt.loadNpmTasks('grunt-browserify');
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-contrib-cssmin');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-less');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-exec');
-  grunt.loadNpmTasks('grunt-karma');
-  grunt.loadNpmTasks('grunt-notify');
-  grunt.loadNpmTasks('grunt-npm-install');
-  grunt.loadNpmTasks('grunt-postcss');
-  grunt.loadNpmTasks('grunt-protractor-runner');
-  grunt.loadNpmTasks('grunt-sass');
-  grunt.loadNpmTasks('grunt-text-replace');
 
   grunt.task.run('notify_hooks');
 
