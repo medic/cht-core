@@ -306,6 +306,7 @@ module.exports = function(grunt) {
         ext: '.less',
         flatten: true,
         extDot: 'last',
+        loadPath: [ 'node_modules', 'node_modules/enketo-core/node_modules' ]
       },
     },
   });
