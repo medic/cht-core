@@ -23,7 +23,9 @@
       };
 
       $scope.performAction = function(action) {
-        $scope.setBackTarget('tasks.detail');
+        $scope.setCancelTarget(function() {
+          $state.go('tasks.detail', { id: null });
+        });
         $scope.contentError = false;
         if (action.type === 'report') {
           $scope.loadingForm = true;
@@ -60,7 +62,7 @@
             $scope.saving = false;
             Enketo.unload($scope.form);
             $scope.clearSelected();
-            $scope.clearBackTarget();
+            $scope.clearCancelTarget();
             $state.go('tasks.detail', { id: null });
           })
           .catch(function(err) {

@@ -97,8 +97,8 @@ require('moment/locales');
 
         // If viewing RHS content, do as the filter-bar X/< button does
         } else if ($scope.showContent) {
-          if ($scope.backTarget) {
-            $scope.back();
+          if ($scope.cancelCallback) {
+            $scope.cancel();
           } else {
             $scope.closeContentPane();
           }
@@ -116,14 +116,15 @@ require('moment/locales');
         return false;
       };
 
-      $scope.back = function() {
+      $scope.cancel = function() {
         $('#navigation-confirm').modal('show');
       };
 
-      $scope.backConfirm = function() {
+      $scope.cancelConfirm = function() {
         $('#navigation-confirm').modal('hide');
-        var t = $scope.backTarget;
-        $state.go(t.to, t.params, t.options);
+        if ($scope.cancelCallback) {
+          $scope.cancelCallback();
+        }
       };
 
       $scope.closeContentPane = function() {
@@ -156,12 +157,12 @@ require('moment/locales');
         $scope.showContent = showContent;
       };
 
-      $scope.clearBackTarget = function() {
-        delete $scope.backTarget;
+      $scope.clearCancelTarget = function() {
+        delete $scope.cancelCallback;
       };
 
-      $scope.setBackTarget = function(to, id) {
-        $scope.backTarget = { to: to, params: { id: id } };
+      $scope.setCancelTarget = function(callback) {
+        $scope.cancelCallback = callback;
       };
 
       $scope.setTitle = function(title) {

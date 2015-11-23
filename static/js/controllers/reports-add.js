@@ -22,9 +22,11 @@
       $scope.contentError = false;
       $scope.saving = false;
       if ($state.params.reportId || $state.params.formId) {
-        $scope.setBackTarget('reports.detail', $state.params.reportId);
+        $scope.setCancelTarget(function() {
+          $state.go('reports.detail', { id: $state.params.reportId });
+        });
       } else {
-        $scope.clearBackTarget();
+        $scope.clearCancelTarget();
       }
 
       getSelected()
