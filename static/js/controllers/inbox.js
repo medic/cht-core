@@ -129,7 +129,7 @@ require('moment/locales');
 
       $scope.closeContentPane = function() {
         $scope.clearSelected();
-        $state.go($state.current.name.replace(/^([^\.]*)(\..*)?/, '$1'));
+        $state.go($state.current.name, { id: null });
       };
 
       $scope.clearSelected = function() {
