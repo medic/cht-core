@@ -21,6 +21,9 @@
     margin: 0;
     margin-bottom: 1em;
     padding: 0 15px;
+    .previous-page {
+      float: left;
+    }
     .next-page, .submit, .loader {
       float: right;
     }
@@ -87,9 +90,22 @@
   .or-hint.active {
     font-size: 13px;
   }
-  .question .option-wrapper label {
+  .option-wrapper > label:not(.filler) {
     padding-top: 6px;
     padding-bottom: 6px;
     border-radius: 4px;
+  }
+}
+
+@media (max-width: 767px) {
+  .enketo {
+    .option-wrapper > label:not(.filler) {
+      padding-top: 10px;
+      padding-bottom: 10px;
+      &:hover {
+        background-color: #ffa500;
+        color: white;
+      }
+    }
   }
 }

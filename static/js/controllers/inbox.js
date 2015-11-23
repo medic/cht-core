@@ -97,8 +97,8 @@ require('moment/locales');
 
         // If viewing RHS content, do as the filter-bar X/< button does
         } else if ($scope.showContent) {
-          if ($scope.backTarget) {
-            $scope.back();
+          if ($scope.cancelCallback) {
+            $scope.cancel();
           } else {
             $scope.closeContentPane();
           }
@@ -116,19 +116,20 @@ require('moment/locales');
         return false;
       };
 
-      $scope.back = function() {
+      $scope.cancel = function() {
         $('#navigation-confirm').modal('show');
       };
 
-      $scope.backConfirm = function() {
+      $scope.cancelConfirm = function() {
         $('#navigation-confirm').modal('hide');
-        var t = $scope.backTarget;
-        $state.go(t.to, t.params, t.options);
+        if ($scope.cancelCallback) {
+          $scope.cancelCallback();
+        }
       };
 
       $scope.closeContentPane = function() {
         $scope.clearSelected();
-        $state.go($state.current.name.replace(/^([^\.]*)(\..*)?/, '$1'));
+        $state.go($state.current.name, { id: null });
       };
 
       $scope.clearSelected = function() {
@@ -156,12 +157,12 @@ require('moment/locales');
         $scope.showContent = showContent;
       };
 
-      $scope.clearBackTarget = function() {
-        delete $scope.backTarget;
+      $scope.clearCancelTarget = function() {
+        delete $scope.cancelCallback;
       };
 
-      $scope.setBackTarget = function(to, id) {
-        $scope.backTarget = { to: to, params: { id: id } };
+      $scope.setCancelTarget = function(callback) {
+        $scope.cancelCallback = callback;
       };
 
       $scope.setTitle = function(title) {
@@ -873,7 +874,11 @@ require('moment/locales');
           $('#version-update').modal('show');
 
           // close select2 dropdowns in the background
-          $('select.select2-hidden-accessible').select2('close');
+          $('select.select2-hidden-accessible').each(function(i, e) {
+            // prevent errors being thrown if selecters have not been
+            // initialised before the update dialog is to be shown
+            try { $(e).select2('close'); } catch(e) {}
+          });
         };
         window.applicationCache.addEventListener('updateready', showUpdateReady);
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {

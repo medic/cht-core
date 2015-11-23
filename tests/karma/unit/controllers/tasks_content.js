@@ -29,6 +29,7 @@ describe('TasksContentCtrl', function() {
         $watch: function(prop, cb) {
           watchCallback = cb;
         },
+        setCancelTarget: function() {},
         setSelected: function() {
           $scope.selected = task;
         }

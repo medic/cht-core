@@ -7,17 +7,19 @@
     "url": "git://github.com/medic/medic-webapp.git"
   },
   "dependencies": {
+    "async": "^1.4.0",
+    "enketo-core": "git://github.com/medic/enketo-core.git#medic-0.7.2",
+    "enketo-xslt": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cb8e9cba8fa9996834be0405ecc96349f0882dd1",
     "lie": "^3.0.1",
     "nools": "^0.4.1",
-    "properties": "^1.2.1"
+    "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#b36c6225fb3191a863a68ad80696fe6d71719061",
+    "properties": "^1.2.1",
+    "underscore": "~1.8.3"
   },
   "devDependencies": {
-    "async": "^1.4.0",
     "autoprefixer-core": "^5.2.1",
     "browserify": "^11.1",
     "chai": "^2.1.0",
-    "enketo-core": "git://github.com/medic/enketo-core.git#medic-0.7.2",
-    "enketo-xslt": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cb8e9cba8fa9996834be0405ecc96349f0882dd1",
     "grunt": "^0.4.5",
     "grunt-angular-templates": "^0.5.7",
     "grunt-appcache": "^0.1.8",
@@ -45,11 +47,11 @@
     "karma-mocha": "~0.2.0",
     "karma-ng-html2js-preprocessor": "~0.1.2",
     "karma-phantomjs-launcher": "~0.2.0",
+    "load-grunt-tasks": "^3.3.0",
     "mocha": "~2.2.5",
-    "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#b36c6225fb3191a863a68ad80696fe6d71719061",
     "phantomjs": "~1.9.17",
     "remapify": "~2.0.3",
     "sinon": "^1.15.4",
-    "underscore": "~1.8.3"
+    "time-grunt": "^1.2.2"
   }
 }

@@ -22,11 +22,18 @@
         );
       };
 
-      $scope.performAction = function(action, backToList) {
-        if (!backToList) {
-          $scope.setBackTarget('tasks.detail', $state.params.id);
-        }
-
+      $scope.performAction = function(action, skipDetails) {
+        $scope.setCancelTarget(function() {
+          if (skipDetails) {
+            $state.go('tasks.detail', { id: null });
+          } else {
+            Enketo.unload($scope.form);
+            $scope.form = null;
+            $scope.loadingForm = false;
+            $scope.contentError = false;
+            $scope.clearCancelTarget();
+          }
+        });
         $scope.contentError = false;
         if (action.type === 'report') {
           $scope.loadingForm = true;
@@ -63,7 +70,7 @@
             $scope.saving = false;
             Enketo.unload($scope.form);
             $scope.clearSelected();
-            $scope.clearBackTarget();
+            $scope.clearCancelTarget();
             $state.go('tasks.detail', { id: null });
           })
           .catch(function(err) {

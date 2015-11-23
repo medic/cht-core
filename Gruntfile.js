@@ -1,9 +1,13 @@
 var remapify = require('remapify'),
-    kansoJson = require('./kanso.json');
+    kansoJson = require('./kanso.json'),
+    path = require('path');
 
 module.exports = function(grunt) {
 
   'use strict';
+
+  require('time-grunt')(grunt);
+  require('load-grunt-tasks')(grunt);
 
   // Project configuration
   grunt.initConfig({
@@ -200,6 +204,24 @@ module.exports = function(grunt) {
           }
         ]
       },
+      // npm v3 puts nested node_modules at the top level. copy the css resources
+      // so sass compilation still works.
+      'enketo-css': {
+        files: [
+          {
+            src: [
+              'node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.css',
+              'node_modules/bootstrap-timepicker/css/bootstrap-timepicker.css',
+              'node_modules/bootstrap-slider-basic/sass/_bootstrap-slider.scss'
+            ],
+            dest: 'node_modules/enketo-core/',
+            filter: function (filepath) {
+              // return false if the file exists
+              return !grunt.file.exists(path.join('node_modules/enketo-core/', filepath));
+            },
+          }
+        ]
+      }
     },
     exec: {
       deploy: {
@@ -305,32 +327,10 @@ module.exports = function(grunt) {
         src: 'enketo/enketo.scss',
         ext: '.less',
         flatten: true,
-        extDot: 'last',
+        extDot: 'last'
       },
     },
   });
-
-  // Load the plugins
-  grunt.loadNpmTasks('grunt-angular-templates');
-  grunt.loadNpmTasks('grunt-appcache');
-  grunt.loadNpmTasks('grunt-bower-concat');
-  grunt.loadNpmTasks('grunt-bower-task');
-  grunt.loadNpmTasks('grunt-browserify');
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-copy');
-  grunt.loadNpmTasks('grunt-contrib-cssmin');
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-less');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-exec');
-  grunt.loadNpmTasks('grunt-karma');
-  grunt.loadNpmTasks('grunt-notify');
-  grunt.loadNpmTasks('grunt-npm-install');
-  grunt.loadNpmTasks('grunt-postcss');
-  grunt.loadNpmTasks('grunt-protractor-runner');
-  grunt.loadNpmTasks('grunt-sass');
-  grunt.loadNpmTasks('grunt-text-replace');
 
   grunt.task.run('notify_hooks');
 
@@ -345,6 +345,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
+    'copy:enketo-css',
     'sass',
     'less',
     'replace:monkeypatchfontawesome',
