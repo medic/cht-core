@@ -411,7 +411,7 @@ _.templateSettings = {
         })
         .then(bootstrapApplication)
         .catch(function(err) {
-          $('.bootstrap-layer').html('<div>Loading error. Check your connection and try again.</div>');
+          $('.bootstrap-layer').html('<div>Loading error. Check your connection then <a href="#" onclick="window.location.reload(false);">click here to try again</a>.</div>');
           console.error('Error fetching ddoc from remote server', err);
         });
     });
