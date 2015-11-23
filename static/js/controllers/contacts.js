@@ -61,12 +61,7 @@ var _ = require('underscore'),
           }
           var data = results[0];
           $scope.moreItems = data.length >= options.limit;
-          var district = results[1];
-          if (district) {
-            data = _.reject(data, function(c) {
-              return c._id === district;
-            });
-          }
+          $scope.userDistrict = results[1];
           if (options.skip) {
             $timeout(function() {
               $scope.contacts.push.apply($scope.contacts, data);
