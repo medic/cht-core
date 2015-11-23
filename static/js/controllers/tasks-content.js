@@ -22,9 +22,17 @@
         );
       };
 
-      $scope.performAction = function(action) {
+      $scope.performAction = function(action, skipDetails) {
         $scope.setCancelTarget(function() {
-          $state.go('tasks.detail', { id: null });
+          if (skipDetails) {
+            $state.go('tasks.detail', { id: null });
+          } else {
+            Enketo.unload($scope.form);
+            $scope.form = null;
+            $scope.loadingForm = false;
+            $scope.contentError = false;
+            $scope.clearCancelTarget();
+          }
         });
         $scope.contentError = false;
         if (action.type === 'report') {
@@ -79,7 +87,7 @@
       // form if we have no other description or instructions in the task.
       $scope.$watch('selected', function() {
         if (hasOneFormAndNoFields($scope.selected)) {
-          $scope.performAction($scope.selected.actions[0]);
+          $scope.performAction($scope.selected.actions[0], true);
         }
       });
 
