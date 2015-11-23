@@ -874,7 +874,11 @@ require('moment/locales');
           $('#version-update').modal('show');
 
           // close select2 dropdowns in the background
-          $('select.select2-hidden-accessible').select2('close');
+          $('select.select2-hidden-accessible').each(function(i, e) {
+            // prevent errors being thrown if selecters have not been
+            // initialised before the update dialog is to be shown
+            try { $(e).select2('close'); } catch(e) {}
+          });
         };
         window.applicationCache.addEventListener('updateready', showUpdateReady);
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
