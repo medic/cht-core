@@ -353,6 +353,9 @@ require('moment/locales');
         Enketo.withAllForms()
           .then(function(forms) {
             $scope.formDefinitions = forms;
+            $scope.nonContactForms = _.filter(forms, function(form) {
+              return form._id.indexOf('form:contact:') !== 0;
+            });
           })
           .catch(function(err) {
             console.error('Error fetching form definitions', err);
