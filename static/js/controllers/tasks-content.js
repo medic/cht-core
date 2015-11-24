@@ -38,7 +38,7 @@
         if (action.type === 'report') {
           $scope.loadingForm = true;
           $scope.formId = action.form;
-          Enketo.render($('#task-report'), action.form, action.content)
+          Enketo.render($('#task-report'), action.form, { data: action.content })
             .then(function(form) {
               $scope.form = form;
               $scope.loadingForm = false;

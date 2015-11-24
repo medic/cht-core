@@ -97,8 +97,8 @@
         if (!$scope.contact || !$scope.contact.type) {
           return null;
         }
-        var result = {};
-        result[$scope.contact.type] = $scope.contact;
+        var result = { data: {} };
+        result.data[$scope.contact.type] = $scope.contact;
         return result;
       };
 

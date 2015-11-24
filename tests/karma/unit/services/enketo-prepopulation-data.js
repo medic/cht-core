@@ -1,0 +1,228 @@
+describe('EnketoPrepopulationData service', function() {
+  'use strict';
+
+  var service,
+      rootScope,
+      UserSettings = sinon.stub(),
+      $window;
+
+  var generatedForm =
+  '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
+    '<h:head>' +
+      '<model>' +
+        '<instance>' +
+          '<data id="person" version="1">' +
+            '<person><name/></person>' +
+            '<meta><instanceID/></meta>' +
+          '</data>' +
+        '</instance>' +
+        '<bind nodeset="/data/person/name" type="string"/>' +
+      '</model>' +
+    '</h:head>' +
+    '<h:body>' +
+      '<input ref="/data/person/name">' +
+        '<label>person.field.name</label>' +
+      '</input>' +
+    '</h:body>' +
+  '</h:html>';
+
+  var editPersonForm =
+  '<?xml version="1.0" encoding="UTF-8"?><h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
+    '<model>' +
+      '<instance>' +
+        '<data id="person" version="2015-11-11">' +
+          '<inputs>' +
+            '<user>' +
+              '<name/>' +
+            '</user>' +
+            '<location>' +
+              '<lat/>' +
+              '<long/>' +
+            '</location>' +
+          '</inputs>' +
+          '<person>' +
+            '<type>person</type>' +
+            '<parent>PARENT</parent>' +
+            '<last_name/>' +
+            '<first_name/>' +
+            '<date_of_birth/>' +
+            '<date_of_birth_method/>' +
+            '<ephemeral_dob>' +
+              '<dob_calendar/>' +
+              '<age_years/>' +
+              '<age_months>0</age_months>' +
+              '<dob_method/>' +
+              '<dob_raw/>' +
+              '<dob/>' +
+            '</ephemeral_dob>' +
+          '</person>' +
+          '<meta>' +
+            '<instanceID/>' +
+          '</meta>' +
+        '</data>' +
+      '</instance>' +
+    '</model>' +
+  '</h:head></h:html>';
+
+  var editPersonFormWithoutInputs =
+  '<?xml version="1.0" encoding="UTF-8"?><h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
+    '<model>' +
+      '<instance>' +
+        '<data id="person" version="2015-11-11">' +
+          '<person>' +
+            '<type>person</type>' +
+            '<parent>PARENT</parent>' +
+            '<last_name/>' +
+            '<first_name/>' +
+            '<date_of_birth/>' +
+            '<date_of_birth_method/>' +
+            '<ephemeral_dob>' +
+              '<dob_calendar/>' +
+              '<age_years/>' +
+              '<age_months>0</age_months>' +
+              '<dob_method/>' +
+              '<dob_raw/>' +
+              '<dob/>' +
+            '</ephemeral_dob>' +
+          '</person>' +
+          '<meta>' +
+            '<instanceID/>' +
+          '</meta>' +
+        '</data>' +
+      '</instance>' +
+    '</model>' +
+  '</h:head></h:html>';
+
+  beforeEach(function() {
+    $window = {};
+    module('inboxApp');
+    module(function($provide) {
+      $provide.value('$window', $window);
+      $provide.value('UserSettings', UserSettings);
+    });
+    inject(function(_EnketoPrepopulationData_, _$rootScope_) {
+      service = _EnketoPrepopulationData_;
+      rootScope = _$rootScope_;
+    });
+  });
+
+  afterEach(function() {
+    KarmaUtils.restore(UserSettings);
+  });
+
+  it('exists', function() {
+    chai.assert.isDefined(service);
+  });
+
+  it('returns the given string', function(done) {
+    var model = '';
+    var data = '<some_data/>';
+    service(model, data)
+      .then(function(actual) {
+        chai.expect(actual).to.equal(data);
+        done();
+      })
+      .catch(done);
+    rootScope.$digest();
+  });
+
+  it('rejects when user settings fails', function(done) {
+    var model = '';
+    var data = {};
+    UserSettings.callsArgWith(0, 'phail');
+    service(model, data)
+      .then(function() {
+        done('Expected fail');
+      })
+      .catch(function(err) {
+        chai.expect(err).to.equal('phail');
+        chai.expect(UserSettings.callCount).to.equal(1);
+        done();
+      });
+    rootScope.$digest();
+  });
+
+  it('binds user details into model', function(done) {
+    var data = {};
+    var user = { name: 'geoff' };
+    UserSettings.callsArgWith(0, null, user);
+    service(editPersonForm, data)
+      .then(function(actual) {
+        var xml = $($.parseXML(actual));
+        chai.expect(xml.find('inputs name')[0].innerHTML).to.equal(user.name);
+        chai.expect(UserSettings.callCount).to.equal(1);
+        done();
+      })
+      .catch(done);
+    rootScope.$digest();
+  });
+
+  it('binds form content into model', function(done) {
+    var data = { data: { person: { last_name: 'salmon' } } };
+    var user = { name: 'geoff' };
+    UserSettings.callsArgWith(0, null, user);
+    service(editPersonFormWithoutInputs, data)
+      .then(function(actual) {
+        var xml = $($.parseXML(actual));
+        chai.expect(xml.find('data person last_name')[0].innerHTML).to.equal(data.data.person.last_name);
+        chai.expect(UserSettings.callCount).to.equal(1);
+        done();
+      })
+      .catch(done);
+    rootScope.$digest();
+  });
+
+  it('binds form content into generated form model', function(done) {
+    var data = { data: { person: { name: 'sally' } } };
+    var user = { name: 'geoff' };
+    UserSettings.callsArgWith(0, null, user);
+    service(generatedForm, data)
+      .then(function(actual) {
+        var xml = $($.parseXML(actual));
+        chai.expect(xml.find('data person name')[0].innerHTML).to.equal(data.data.person.name);
+        chai.expect(UserSettings.callCount).to.equal(1);
+        done();
+      })
+      .catch(done);
+    rootScope.$digest();
+  });
+
+  it('binds user details and form content into model', function(done) {
+    var data = { data: { person: { last_name: 'salmon' } } };
+    var user = { name: 'geoff' };
+    UserSettings.callsArgWith(0, null, user);
+    service(editPersonForm, data)
+      .then(function(actual) {
+        var xml = $($.parseXML(actual));
+        chai.expect(xml.find('inputs name')[0].innerHTML).to.equal(user.name);
+        chai.expect(xml.find('data person last_name')[0].innerHTML).to.equal(data.data.person.last_name);
+        chai.expect(UserSettings.callCount).to.equal(1);
+        done();
+      })
+      .catch(done);
+    rootScope.$digest();
+  });
+
+  it('binds location into model on android app', function(done) {
+    var data = {};
+    var user = { name: 'geoff' };
+    var location = { lat: '123', long: '456' };
+    UserSettings.callsArgWith(0, null, user);
+    $window.medicmobile_android = {
+      getLocation: function() {
+        return JSON.stringify(location);
+      }
+    };
+    service(editPersonForm, data)
+      .then(function(actual) {
+        var xml = $($.parseXML(actual));
+        chai.expect(xml.find('inputs location lat')[0].innerHTML).to.equal(location.lat);
+        chai.expect(xml.find('inputs location long')[0].innerHTML).to.equal(location.long);
+        chai.expect(UserSettings.callCount).to.equal(1);
+        done();
+      })
+      .catch(done);
+    rootScope.$digest();
+  });
+
+});
