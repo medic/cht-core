@@ -10,6 +10,9 @@
 
       var render = function(doc) {
         $scope.setSelected({ doc: doc });
+        $scope.setCancelTarget(function() {
+          $state.go('contacts.detail', { id: $state.params.id });
+        });
         var instanceData = {};
         if (doc.type === 'person') {
           instanceData.patient = doc;
