@@ -87,6 +87,9 @@ angular.module('inboxServices').service('Enketo', [
       }
       data = data || {};
       var deferred = $q.defer();
+      if (window.medicmobile_android) {
+        data.location = JSON.parse(window.medicmobile_android.getLocation());
+      }
       UserSettings(function(err, settings) {
         if (err) {
           return deferred.reject(err);
@@ -158,24 +161,7 @@ angular.module('inboxServices').service('Enketo', [
       }
     };
 
-    /**
-     * Add metadata to a form instance data.
-     * Metadata will not be added if the instanceData is supplied as a string,
-     * as this is XML of an already-filled form.
-     */
-    var addMetadata = function(instanceData) {
-      if(typeof instanceData !== 'string') {
-        instanceData.meta = {};
-        if(window.medicmobile_android) {
-          instanceData.meta.location = JSON.parse(window.medicmobile_android.getLocation());
-        }
-      }
-      return instanceData;
-    };
-
     var renderFromXmls = function(doc, wrapper, instanceData) {
-      instanceData = addMetadata(instanceData || {});
-
       wrapper.find('.form-footer')
              .addClass('end')
              .find('.previous-page,.next-page')
