@@ -35,7 +35,7 @@ angular.module('inboxServices').config([
         return {
           get: get,
           set: set
-        }
+        };
       }
     ]);
   }
