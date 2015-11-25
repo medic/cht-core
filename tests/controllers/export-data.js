@@ -639,6 +639,95 @@ exports['get reports filters by form'] = function(test) {
   });
 };
 
+exports['get reports works for enketo reports'] = function(test) {
+  test.expect(6);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    rows: [
+      { doc: {
+        _id: 'B87FEE75-D435-A648-BDEA-0A1B61021AA3',
+        _rev: '3-e361f7bce1a97799b3265336a2e68f11',
+        content: '<assessment id=\"assessment\" version=\"2015-11-23\">\n          <context>\n            <person/>\n          </context>\n          <inputs>\n            <meta>\n              <location>\n                <lat>0.3205433</lat>\n                <long>32.618088</long>\n              </location>\n            <deprecatedID/></meta>\n            <patient>\n              <_id>406701BD-7318-B2BB-AB23-8FF2DB83BB67</_id>\n              <name>Babyale Elaijah</name>\n              <date_of_birth>Oct 24, 2015</date_of_birth>\n            </patient>\n          </inputs>\n          <g_inputs>\n            <_id/>\n            <name/>\n            <date_of_birth/>\n          </g_inputs><outputs><patient_id>406701BD-7318-B2BB-AB23-8FF2DB83BB67</patient_id>\n            <patient_name>Babyale Elaijah</patient_name>\n            <patient_dob>Oct 24, 2015</patient_dob>\n            <measured_temperature>37.5</measured_temperature>\n            <symptom_cough>Cough for less than 3 days</symptom_cough>\n            <symptom_indrawn_chest/>\n            <symptom_fast_breathing/>\n            <symptom_diarrhea/>\n            <symptom_fever>Fever for less than 3 days</symptom_fever>\n            <symptom_malaria_test>Malaria: Positive</symptom_malaria_test>\n            <symptom_danger_signs>Danger signs</symptom_danger_signs>\n            <symptom_danger_signs_codes>unable_to_feed</symptom_danger_signs_codes>\n            <symptom_muac/>\n            <treatment_follow_up>true</treatment_follow_up>\n            <referral_follow_up>true</referral_follow_up>\n            <geolocation>0.3205433 32.618088</geolocation>\n          </outputs>\n          <patient_age_in_days>61</patient_age_in_days>\n          <patient_age_in_years>0.17</patient_age_in_years>\n          <patient_age_in_months>2</patient_age_in_months>\n          <patient_age_in_days_int>61</patient_age_in_days_int>\n          <patient_age_in_years_int>0</patient_age_in_years_int>\n          <patient_age_in_months_int>2</patient_age_in_months_int>\n          <patient_age_display>0 years and 2 months old</patient_age_display>\n          <p_note/>\n          <group_block>\n            <block_note1/>\n            <block_note2/>\n            <block_note3/>\n            <block>1</block>\n          </group_block>\n          <group_cough>\n            <patient_coughs>yes</patient_coughs>\n            <coughing_duration>3</coughing_duration>\n            <chest_indrawing>no</chest_indrawing>\n          </group_cough>\n          <group_breathing>\n            <breath_timer/>\n            <breath_note/>\n            <breath_count>47</breath_count>\n            <fast_breathing>false</fast_breathing>\n            <fast_breathing_note_true/>\n            <fast_breathing_note_false/>\n          </group_breathing>\n          <group_fever>\n            <patient_fever>yes</patient_fever>\n            <fever_note/>\n            <patient_temperature>37.5</patient_temperature>\n            <fever_duration>3</fever_duration>\n            <mrdt_result>positive</mrdt_result>\n          </group_fever>\n          <group_diarrhea>\n            <patient_diarrhea>no</patient_diarrhea>\n            <diarrhea_duration/>\n            <diarrhea_blood/>\n          </group_diarrhea>\n          <group_danger_signs>\n            <danger_signs>unable_to_feed</danger_signs>\n          </group_danger_signs>\n          <group_muac>\n            <muac/>\n            <muac_danger>no</muac_danger>\n            <muac_zone/>\n            <muac_note/>\n          </group_muac>\n          <group_diagnosis>\n            <diagnosis_cough>cough1</diagnosis_cough>\n            <diagnosis_diarrhea/>\n            <diagnosis_fever>malaria1</diagnosis_fever>\n            <r_summary/>\n            <r_symptom_cough/>\n            <r_symptom_indrawn_chest/>\n            <r_symptom_fast_breathing/>\n            <r_symptom_diarrhea/>\n            <r_symptom_fever/>\n            <r_symptom_malaria_test/>\n            <r_symptom_danger_signs/>\n            <r_symptom_muac/>\n            <r_symptom_none/>\n            <r_referral/>\n            <r_referral_cough/>\n            <r_referral_pneumonia/>\n            <r_referral_diarrhea/>\n            <r_referral_fever/>\n            <r_referral_malaria/>\n            <r_referral_danger_signs/>\n            <r_diagnosis/>\n            <r_diagnosis_cough/>\n            <r_diagnosis_pneumonia/>\n            <r_cough_cough_syrup/>\n            <r_cough_cough_syrup_1/>\n            <r_cough_cough_syrup_2/>\n            <r_cough_amox/>\n            <r_cough_amox_1/>\n            <r_cough_amox_2/>\n            <r_cough_instruction/>\n            <r_cough_instruction1/>\n            <r_cough_instruction2/>\n            <r_cough_instruction3/>\n            <r_cough_instruction4/>\n            <r_cough_instruction5/>\n            <r_diagnosis_diarrhea/>\n            <r_diarrhea_ors/>\n            <r_diarrhea_ors1/>\n            <r_diarrhea_ors2/>\n            <r_diarrhea_zinc/>\n            <r_diarrhea_zinc_1/>\n            <r_diarrhea_zinc_2/>\n            <r_diarrhea_instruction/>\n            <r_diarrhea_instructions1/>\n            <r_diarrhea_instructions2/>\n            <r_diarrhea_instructions3/>\n            <r_diarrhea_instructions4/>\n            <r_diarrhea_instructions5/>\n            <r_diagnosis_fever/>\n            <r_diagnosis_malaria/>\n            <r_fever_act/>\n            <r_fever_act_1/>\n            <r_fever_act_2/>\n            <r_fever_act_3/>\n            <r_fever_paracetamol/>\n            <r_fever_paracetamol_1/>\n            <r_fever_paracetamol_2/>\n            <r_fever_paracetamol_3/>\n            <r_fever_paracetamol_4/>\n            <r_fever_instruction/>\n            <r_fever_instructions1/>\n            <r_fever_instructions2/>\n            <r_fever_instructions3/>\n            <r_feeding/>\n            <r_feeding_note1/>\n            <r_feeding_note2/>\n            <r_feeding_note3/>\n            <r_followup_instructions>Follow up in 1 day to ensure that patient goes to a health facility</r_followup_instructions>\n            <r_followup/>\n            <r_followup_note/>\n          </group_diagnosis>\n          <meta>\n            <instanceID>uuid:7aae4aba-9280-465f-997f-fcc99f906d68</instanceID>\n          </meta>\n        </assessment>',
+        fields: {
+          patient_id: '406701BD-7318-B2BB-AB23-8FF2DB83BB67',
+          patient_name: 'Babyale Elaijah',
+          patient_dob: 'Oct 24, 2015',
+          measured_temperature: '37.5',
+          symptom_cough: 'Cough for less than 3 days',
+          symptom_indrawn_chest: '',
+          symptom_fast_breathing: '',
+          symptom_diarrhea: '',
+          symptom_fever: 'Fever for less than 3 days',
+          symptom_malaria_test: 'Malaria: Positive',
+          symptom_danger_signs: 'Danger signs',
+          symptom_danger_signs_codes: 'unable_to_feed',
+          symptom_muac: '',
+          treatment_follow_up: 'true',
+          referral_follow_up: 'true',
+          geolocation: '0.3205433 32.618088'
+        },
+        form: 'assessment',
+        type: 'data_record',
+        content_type: 'xml',
+        reported_date: 1450959150540,
+        contact: {
+          name: 'Victor',
+          phone: '+256 787 123 456',
+          code: '',
+          notes: 'does this thing work?',
+          parent: {
+            type: 'health_center',
+            name: 'Busia CHP Area1',
+            parent: {
+              _id: '6AC7CDAA-A9CB-2AC0-A4C6-5B27A714D5ED',
+              _rev: '2-732e585b9a6fd606691369be73f6a501',
+              type: 'district_hospital',
+              name: 'Busia Branch',
+              contact: {
+                type: 'person',
+                name: 'Busia Person',
+                phone: '+254700123123'
+              },
+              external_id: '1234',
+              parent: null,
+              children: [
+              ],
+              contactFor: [
+              ]
+            },
+            contact: {
+              type: 'person',
+              name: 'Busia CHP Area1 Person',
+              phone: '+254702123123'
+            },
+            external_id: '1234',
+            _id: '6850E77F-5FFC-9B01-8D5B-3D6E33DFA73E',
+            _rev: '1-9ed31f1ee070eb64351c6f2a4f8dfe5c'
+          },
+          type: 'person',
+          _id: 'DFEF75F5-4D25-EA47-8706-2B12500EFD8F',
+          _rev: '1-4c6b5d0545c0aba0b5f9213cc29b4e14'
+        },
+        from: '+256 787 123 456',
+        hidden_fields: [
+        ]
+      } }
+    ]
+  });
+  // enketo forms aren't stored in app_settings
+  var configGet = sinon.stub(config, 'get').returns({});
+  var expected = '{_id:en},{contact._id:en},{fields.patient_id:en},{reported_date:en}\n' +
+                 'B87FEE75-D435-A648-BDEA-0A1B61021AA3,DFEF75F5-4D25-EA47-8706-2B12500EFD8F,406701BD-7318-B2BB-AB23-8FF2DB83BB67,"24, Dec 2015, 12:12:30 +00:00"';
+  controller.get({ type: 'forms', tz: '0', form: 'assessment', columns: '[ "_id", "contact._id", "fields.patient_id", "reported_date" ]' }, function(err, results) {
+    test.equals(results, expected);
+    test.equals(getView.callCount, 1);
+    test.equals(getView.firstCall.args[1], 'data_records');
+    test.same(getView.firstCall.args[2].startkey, [true, 'assessment', {}]);
+    test.same(getView.firstCall.args[2].endkey, [true, 'assessment', 0]);
+    test.equals(configGet.callCount, 1);
+    test.done();
+  });
+};
+
 exports['get reports with query calls fti'] = function(test) {
   test.expect(9);
   var getView = sinon.stub(db.medic, 'view');

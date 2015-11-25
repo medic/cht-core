@@ -431,12 +431,13 @@ var outputToCsv = function(options, tabs, callback) {
 
   // csv doesn't support tabs
   var tab = tabs[0];
+  var data = tab && tab.data || [];
 
-  if (!options.skipHeader) {
-    tab.data.unshift(_.pluck(tab.columns, 'label'));
+  if (tab && !options.skipHeader) {
+    data.unshift(_.pluck(tab.columns, 'label'));
   }
 
-  csv.writeToString(tab.data, opts, function(err, result) {
+  csv.writeToString(data, opts, function(err, result) {
     if (err) {
       return callback(err);
     }
