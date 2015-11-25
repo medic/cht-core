@@ -22,5 +22,16 @@
         <li><a ui-sref="help.export">{{'help.export.title' | translate}}</a></li>
       </ul>
     </div>
+    <div>
+      <h3>{{'Debug' | translate}}</h3>
+    </div>
+    <div>
+      <p>{{ 'debug.mode.description' | translate }}</p>
+      <form>
+        <label>
+          <input ng-model="enableDebugModel.val" type="checkbox" /> {{ 'debug.mode.title' | translate }}
+        </label>
+      </form>
+    </div>
   </div>
 </div>
