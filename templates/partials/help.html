@@ -22,5 +22,20 @@
         <li><a ui-sref="help.export">{{'help.export.title' | translate}}</a></li>
       </ul>
     </div>
+    <div>
+      <h3>{{'Debug' | translate}}</h3>
+    </div>
+    <div>
+      <p>
+      Debug mode will print information into the browser console to help
+      developers diagnose problems with the application.  After changing this
+      setting reload the app so it applies.
+      </p>
+      <form>
+        <label>
+          <input ng-model="enableDebugModel.val" type="checkbox" /> Enable debug mode
+        </label>
+      </form>
+    </div>
   </div>
 </div>
