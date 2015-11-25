@@ -54,6 +54,10 @@ require('moment/locales');
 
       $scope.baseUrl = BaseUrlService();
 
+      if ($window.medicmobile_android) {
+        $scope.android_app_version = $window.medicmobile_android.getAppVersion();
+      }
+
       $scope.logout = function() {
         Session.logout();
       };
