@@ -2,8 +2,7 @@
 
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers'),
-      debugCookieName = 'medic-webapp-enableDebug';
+  var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('HelpCtrl',
     ['$scope', 'Session', 'Debug',
