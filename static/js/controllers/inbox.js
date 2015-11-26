@@ -602,7 +602,7 @@ require('moment/locales');
             .tooltip({
               placement: 'bottom',
               trigger: 'manual',
-              container: 'body'
+              container: $(this).closest('.inbox-items, .item-content')
             })
             .tooltip('show');
         }
