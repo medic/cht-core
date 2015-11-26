@@ -91,12 +91,10 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
         ctx = canvas.getContext('2d'),
 
         centre = { x: canvasW/2, y: canvasH/2 },
-        bigR = Math.min(canvasW, canvasH) / 2,
-        littleR = bigR / 8,
-        littleOffsetMax = bigR - 3*littleR,
-        startColor = rgb(0, 0, 255),
-        midColor = rgb(176, 176, 176),
-        endColor = rgb(255, 165, 0),
+        radius = Math.min(canvasW, canvasH) / 2,
+        activeBgColor = '#0000ff',
+        inactiveBgColor = '#cccccc',
+        arcColor = '#cccccc',
         running;
 
 //> AUDIO
@@ -127,60 +125,33 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
     }());
 
 //> UTILS
-    function toHex() {
-        var hex;
-        if(arguments.length === 1) {
-            hex = Math.round(arguments[0]).toString(16);
-            if(hex.length === 1) { hex = '0' + hex; }
-            return hex;
-        }
-        return toHex(arguments[0]) +
-                toHex(arguments[1]) +
-                toHex(arguments[2]);
+    function drawCircle(ctx, c) {
+        drawArc(ctx, c, 360);
     }
 
-    function drawCircle(ctx, c) {
+    function drawArc(ctx, c, arc) {
+        var arcRadians = pi*arc/180;
         ctx.beginPath();
-        ctx.arc(c.x, c.y, c.r, 0, 2*pi, false);
+        ctx.arc(c.x, c.y, c.r, -pi/2,
+                arcRadians-(pi/2), false);
+        ctx.lineTo(c.x, c.y);
         ctx.fillStyle = c.color;
         ctx.fill();
     }
 
-    function rgb(r, g, b) { return { r:r, g:g, b:b }; }
-
-    function fade(offset, limit, start, end) {
-        return toHex(
-            start.r + ((end.r - start.r) * offset / limit),
-            start.g + ((end.g - start.g) * offset / limit),
-            start.b + ((end.b - start.b) * offset / limit));
-    }
-
 //> ANIMATION
     function drawAnimation(offset) {
-        drawBigCircle(offset);
-        drawLittleCircle(offset);
+        drawBackgroundCircle(activeBgColor);
+        drawTimerArc(offset);
     }
-    function drawBigCircle(offset) {
-        var bigColor = '#' + (offset < LIM ?
-            // big color between blue & grey
-                fade(offset, LIM, startColor, midColor):
-            // big color between gray & orange
-                fade(offset - LIM, LIM, midColor, endColor));
+    function drawBackgroundCircle(color) {
         drawCircle(ctx, {
-            x: centre.x, y: centre.y, r: bigR, color: bigColor });
+            x: centre.x, y: centre.y, r: radius, color: color });
     }
-    function drawLittleCircle(offset) {
-        // draw little white circle
-        var littleOffset = {
-            x: littleOffsetMax * Math.sin(pi*offset/LIM),
-            y: littleOffsetMax * Math.cos(pi*offset/LIM),
-        };
-        drawCircle(ctx, {
-            x: centre.x + littleOffset.x,
-            y: centre.y - littleOffset.y,
-            r: littleR,
-            color: 'white'
-        });
+    function drawTimerArc(offset) {
+        drawArc(ctx, {
+            x: centre.x, y: centre.y, r: radius, color: arcColor },
+            offset * 180 / LIM);
     }
 
     function startTimer() {
@@ -201,7 +172,7 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
                 animate(start);
             });
         } else {
-            drawBigCircle(LIM*2);
+            drawBackgroundCircle(inactiveBgColor);
             running = false;
 
             audio.play();
@@ -212,7 +183,7 @@ function TimerAnimation(canvas, canvasW, canvasH, duration) {
     (function() {
         function resetTimer() {
             running = false;
-            drawBigCircle(0);
+            drawBackgroundCircle(inactiveBgColor);
         }
 
         // set up initial state
