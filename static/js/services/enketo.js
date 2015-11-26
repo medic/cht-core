@@ -303,5 +303,9 @@ angular.module('inboxServices').service('Enketo', [
       });
       objUrls.length = 0;
     };
+
+    this.clearXmlCache = function() {
+      xmlCache = {};
+    };
   }
 ]);
