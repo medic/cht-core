@@ -3,7 +3,6 @@ describe('SendMessage service', function() {
   'use strict';
 
   var service,
-      $rootScope,
       settings,
       id,
       post;
@@ -15,6 +14,7 @@ describe('SendMessage service', function() {
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ post: post, id: id }));
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('UserSettings', function(callback) {
         callback(null, { phone: '+5551', name: 'jack' });
       });
@@ -22,8 +22,7 @@ describe('SendMessage service', function() {
         callback(null, settings);
       });
     });
-    inject(function(_SendMessage_, _$rootScope_) {
-      $rootScope = _$rootScope_;
+    inject(function(_SendMessage_) {
       service = _SendMessage_;
     });
   });
@@ -67,10 +66,8 @@ describe('SendMessage service', function() {
           facility: recipient
         });
         done();
-      });
-
-    // needed to resolve the promise
-    $rootScope.$digest();
+      })
+      .catch(done);
   });
 
   it('normalizes phone numbers', function(done) {
@@ -96,9 +93,6 @@ describe('SendMessage service', function() {
         });
         done();
       });
-
-    // needed to resolve the promise
-    $rootScope.$digest();
   });
 
   it('create doc for multiple recipients', function(done) {
@@ -144,9 +138,6 @@ describe('SendMessage service', function() {
         });
         done();
       });
-
-    // needed to resolve the promise
-    $rootScope.$digest();
   });
 
   it('create doc for everyoneAt recipients', function(done) {
@@ -217,9 +208,6 @@ describe('SendMessage service', function() {
         });
         done();
       });
-
-    // needed to resolve the promise
-    $rootScope.$digest();
   });
 
   it('returns newUUID errors', function(done) {
@@ -242,9 +230,6 @@ describe('SendMessage service', function() {
         done();
       }
     );
-
-    // needed to resolve the promise
-    $rootScope.$digest();
   });
 
   it('returns post errors', function(done) {
@@ -268,9 +253,6 @@ describe('SendMessage service', function() {
         done();
       }
     );
-
-    // needed to resolve the promise
-    $rootScope.$digest();
   });
 
 });

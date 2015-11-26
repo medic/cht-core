@@ -112,7 +112,7 @@ describe('EditGroup service', function() {
       chai.expect(actual.scheduled_tasks[3].messages[0].message).to.equal('d');
 
       done();
-    });
+    }).catch(done);
   });
 
   it('removes deleted messages', function(done) {
@@ -141,7 +141,7 @@ describe('EditGroup service', function() {
       chai.expect(actual.scheduled_tasks[0].messages[0].message).to.equal('f');
 
       done();
-    });
+    }).catch(done);
   });
 
   it('adds new messages', function(done) {
@@ -178,7 +178,7 @@ describe('EditGroup service', function() {
       chai.expect(task.messages[0].to).to.equal('5551234');
 
       done();
-    });
+    }).catch(done);
   });
 
   it('gets the to number from the data_record', function(done) {
@@ -205,7 +205,7 @@ describe('EditGroup service', function() {
       chai.expect(task.messages[0].to).to.equal('5554321');
 
       done();
-    });
+    }).catch(done);
   });
 
 });
