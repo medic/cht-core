@@ -48,31 +48,36 @@ angular.module('inboxServices').service('Enketo', [
         });
     };
 
+    var xmlCache = {};
+
     var withFormByFormInternalId = function(formInternalId) {
-      return DB.get()
-        .query('medic/forms', { include_docs: true, key: formInternalId })
-        .then(function(res) {
-          if (!res.rows.length) {
-            throw new Error('Requested form not found');
-          }
-          var form = res.rows[0];
-          return DB.get()
-            .getAttachment(form.id, 'xml')
-            .then(function(a) {
-              return FileReader(a); 
-            })
-            .then(function(text) {
-              return Language().then(function(language) {
-                var xml = $.parseXML(text);
-                var $xml = $(xml);
-                // set the user's language as default so it'll be used for itext translations
-                $xml.find('model itext translation[lang="' + language + '"]').attr('default', '');
-                // manually translate the title as itext doesn't seem to work
-                $xml.find('h\\:title,title').text(TranslateFrom(form.doc.title));
-                return transformXml(xml, form.id);
+      if (!xmlCache[formInternalId]) {
+        xmlCache[formInternalId] = DB.get()
+          .query('medic/forms', { include_docs: true, key: formInternalId })
+          .then(function(res) {
+            if (!res.rows.length) {
+              throw new Error('Requested form not found');
+            }
+            var form = res.rows[0];
+            return DB.get()
+              .getAttachment(form.id, 'xml')
+              .then(function(a) {
+                return FileReader(a);
+              })
+              .then(function(text) {
+                return Language().then(function(language) {
+                  var xml = $.parseXML(text);
+                  var $xml = $(xml);
+                  // set the user's language as default so it'll be used for itext translations
+                  $xml.find('model itext translation[lang="' + language + '"]').attr('default', '');
+                  // manually translate the title as itext doesn't seem to work
+                  $xml.find('h\\:title,title').text(TranslateFrom(form.doc.title));
+                  return transformXml(xml, form.id);
+                });
               });
-            });
-        });
+          });
+      }
+      return xmlCache[formInternalId];
     };
 
     var checkPermissions = function() {
@@ -297,6 +302,10 @@ angular.module('inboxServices').service('Enketo', [
         ($window.URL || $window.webkitURL).revokeObjectURL(url);
       });
       objUrls.length = 0;
+    };
+
+    this.clearXmlCache = function() {
+      xmlCache = {};
     };
   }
 ]);
