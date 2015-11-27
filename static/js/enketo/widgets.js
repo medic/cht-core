@@ -18,6 +18,7 @@ define( function( require, exports, module ) {
         require( './widgets/db-object-widget' ),
         require( './widgets/medic-place-widget' ),
         require( './widgets/phone-widget' ),
+        require( './widgets/unselectable-radios' ),
     ];
 
     module.exports = widgets;
