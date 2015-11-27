@@ -25,10 +25,10 @@ define( function( require, exports, module ) {
     var $ = require( 'jquery' );
     require( 'enketo-core/src/js/plugins' );
 
-    var pluginName = 'notewidget';
+    var pluginName = 'unselectableradios';
 
     /**
-     * Enhances notes
+     * Prevent required radio buttons from being unchecked.
      *
      * @constructor
      * @param {Element} element [description]
