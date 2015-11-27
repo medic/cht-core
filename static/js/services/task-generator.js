@@ -238,7 +238,8 @@ var nools = require('nools'),
       var init = SettingsP()
         .then(function(settings) {
           var deferred = $q.defer();
-          if (!settings.tasks ||
+          if (!settings ||
+              !settings.tasks ||
               !settings.tasks.rules ||
               !settings.tasks.schedules) {
             // no rules or schedules configured
