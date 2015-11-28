@@ -18,7 +18,7 @@
     </li>
   </ul>
   <p ng-show="error" class="alert alert-danger" role="alert">
-    {{'Error fetching tasks' | translate}}
+    {{'Error fetching tasks.' | translate}} <a ng-click="refreshTaskList()">Try again.</a>
   </p>
   <p class="loading-status" ng-show="!error && !loading && !tasks.length">
     {{'No tasks found' | translate}}

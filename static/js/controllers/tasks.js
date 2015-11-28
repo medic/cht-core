@@ -45,6 +45,20 @@ var _ = require('underscore');
         });
       };
 
+      $scope.refreshTaskList = function() {
+        TaskGenerator('TasksCtrl', function(err, tasks) {
+          $scope.loading = false;
+          if (err) {
+            $log.error('Error getting tasks', err);
+            $scope.error = true;
+            $scope.tasks = [];
+            $scope.clearSelected();
+            return;
+          }
+          mergeTasks(tasks);
+        });
+      };
+
       $scope.$on('ClearSelected', function() {
         $scope.selected = null;
       });
@@ -55,17 +69,7 @@ var _ = require('underscore');
       $scope.loading = true;
       $scope.error = false;
 
-      TaskGenerator('TasksCtrl', function(err, tasks) {
-        $scope.loading = false;
-        if (err) {
-          $log.error('Error getting tasks', err);
-          $scope.error = true;
-          $scope.tasks = [];
-          $scope.clearSelected();
-          return;
-        }
-        mergeTasks(tasks);
-      });
+      $scope.refreshTaskList();
     }
   ]);
 
