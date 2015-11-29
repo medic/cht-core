@@ -8,21 +8,21 @@ angular.module('inboxServices').service('EnketoPrepopulationData', [
         return $q.resolve(data);
       }
       data = data || {};
-      data.inputs = data.inputs || {};
+      var inputs = {};
       var deferred = $q.defer();
       if ($window.medicmobile_android) {
-        data.inputs.location = JSON.parse($window.medicmobile_android.getLocation());
+        inputs.location = JSON.parse($window.medicmobile_android.getLocation());
       }
       UserSettings(function(err, settings) {
         if (err) {
           return deferred.reject(err);
         }
-        data.inputs.user = settings;
+        inputs.user = settings;
         var xml = $($.parseXML(model));
-        var instanceRoot = xml.find('model instance');
-        EnketoTranslation.bindJsonToXml(instanceRoot, data);
-        var bindRoot = instanceRoot.children()[0];
-        var serialized = new XMLSerializer().serializeToString(bindRoot);
+        var bindRoot = xml.find('model instance').children().first();
+        EnketoTranslation.bindJsonToXml(bindRoot, data);
+        EnketoTranslation.bindJsonToXml(bindRoot.find('inputs'), inputs);
+        var serialized = new XMLSerializer().serializeToString(bindRoot[0]);
         deferred.resolve(serialized);
       });
       return deferred.promise;

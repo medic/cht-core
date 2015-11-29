@@ -93,6 +93,44 @@ describe('EnketoPrepopulationData service', function() {
     '</model>' +
   '</h:head></h:html>';
 
+  var pregnancyForm =
+  '<?xml version="1.0" encoding="UTF-8"?><h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
+    '<model>' +
+      '<instance>' +
+        '<pregnancy id="person" version="2015-11-11">' +
+          '<inputs>' +
+            '<user>' +
+              '<name/>' +
+            '</user>' +
+            '<location>' +
+              '<lat/>' +
+              '<long/>' +
+            '</location>' +
+          '</inputs>' +
+          '<person>' +
+            '<type>person</type>' +
+            '<parent>PARENT</parent>' +
+            '<last_name/>' +
+            '<first_name/>' +
+            '<date_of_birth/>' +
+            '<date_of_birth_method/>' +
+            '<ephemeral_dob>' +
+              '<dob_calendar/>' +
+              '<age_years/>' +
+              '<age_months>0</age_months>' +
+              '<dob_method/>' +
+              '<dob_raw/>' +
+              '<dob/>' +
+            '</ephemeral_dob>' +
+          '</person>' +
+          '<meta>' +
+            '<instanceID/>' +
+          '</meta>' +
+        '</pregnancy>' +
+      '</instance>' +
+    '</model>' +
+  '</h:head></h:html>';
+
   beforeEach(function() {
     $window = {};
     module('inboxApp');
@@ -158,13 +196,13 @@ describe('EnketoPrepopulationData service', function() {
   });
 
   it('binds form content into model', function(done) {
-    var data = { data: { person: { last_name: 'salmon' } } };
+    var data = { person: { last_name: 'salmon' } };
     var user = { name: 'geoff' };
     UserSettings.callsArgWith(0, null, user);
     service(editPersonFormWithoutInputs, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
-        chai.expect(xml.find('data person last_name')[0].innerHTML).to.equal(data.data.person.last_name);
+        chai.expect(xml.find('data person last_name')[0].innerHTML).to.equal(data.person.last_name);
         chai.expect(UserSettings.callCount).to.equal(1);
         done();
       })
@@ -173,13 +211,13 @@ describe('EnketoPrepopulationData service', function() {
   });
 
   it('binds form content into generated form model', function(done) {
-    var data = { data: { person: { name: 'sally' } } };
+    var data = { person: { name: 'sally' } };
     var user = { name: 'geoff' };
     UserSettings.callsArgWith(0, null, user);
     service(generatedForm, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
-        chai.expect(xml.find('data person name')[0].innerHTML).to.equal(data.data.person.name);
+        chai.expect(xml.find('data person name')[0].innerHTML).to.equal(data.person.name);
         chai.expect(UserSettings.callCount).to.equal(1);
         done();
       })
@@ -188,14 +226,14 @@ describe('EnketoPrepopulationData service', function() {
   });
 
   it('binds user details and form content into model', function(done) {
-    var data = { data: { person: { last_name: 'salmon' } } };
+    var data = { person: { last_name: 'salmon' } };
     var user = { name: 'geoff' };
     UserSettings.callsArgWith(0, null, user);
     service(editPersonForm, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
         chai.expect(xml.find('inputs name')[0].innerHTML).to.equal(user.name);
-        chai.expect(xml.find('data person last_name')[0].innerHTML).to.equal(data.data.person.last_name);
+        chai.expect(xml.find('data person last_name')[0].innerHTML).to.equal(data.person.last_name);
         chai.expect(UserSettings.callCount).to.equal(1);
         done();
       })
@@ -225,4 +263,19 @@ describe('EnketoPrepopulationData service', function() {
     rootScope.$digest();
   });
 
+  it('binds form content into model with custom root node', function(done) {
+    var data = { person: { last_name: 'salmon' } };
+    var user = { name: 'geoff' };
+    UserSettings.callsArgWith(0, null, user);
+    service(pregnancyForm, data)
+      .then(function(actual) {
+        var xml = $($.parseXML(actual));
+        chai.expect(xml.find('inputs name')[0].innerHTML).to.equal(user.name);
+        chai.expect(xml.find('pregnancy person last_name')[0].innerHTML).to.equal(data.person.last_name);
+        chai.expect(UserSettings.callCount).to.equal(1);
+        done();
+      })
+      .catch(done);
+    rootScope.$digest();
+  });
 });

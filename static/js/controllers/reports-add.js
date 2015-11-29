@@ -33,7 +33,7 @@
         .then(function(doc) {
           $log.debug('setting selected', doc);
           $scope.setSelected(doc);
-          Enketo.render($('#report-form'), doc.form, { data: doc.content })
+          Enketo.render($('#report-form'), doc.form, doc.content)
             .then(function(form) {
               $scope.form = form;
               $scope.loadingContent = false;
