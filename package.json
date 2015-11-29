@@ -12,7 +12,7 @@
     "enketo-xslt": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cb8e9cba8fa9996834be0405ecc96349f0882dd1",
     "lie": "^3.0.1",
     "nools": "^0.4.1",
-    "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#b36c6225fb3191a863a68ad80696fe6d71719061",
+    "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#9cc4111b1ee83f9ef33f631fedb160d4318049fe",
     "properties": "^1.2.1",
     "underscore": "~1.8.3"
   },
