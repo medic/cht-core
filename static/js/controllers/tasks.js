@@ -27,6 +27,10 @@ var _ = require('underscore');
         }
       };
 
+      $scope.refreshTaskList = function() {
+        window.location.reload();
+      };
+
       var mergeTasks = function(tasks) {
         $timeout(function() {
           tasks.forEach(function(task) {
