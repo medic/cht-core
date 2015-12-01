@@ -46,9 +46,6 @@ var _ = require('underscore');
       };
 
       $scope.refreshTaskList = function() {
-        $scope.loading = true;
-        $scope.error = false;
-
         TaskGenerator('TasksCtrl', function(err, tasks) {
           $scope.loading = false;
           if (err) {
@@ -69,6 +66,8 @@ var _ = require('underscore');
       $scope.filterModel.type = 'tasks';
       $scope.tasks = [];
       $scope.selected = null;
+      $scope.loading = true;
+      $scope.error = false;
 
       $scope.refreshTaskList();
     }
