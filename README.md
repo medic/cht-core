@@ -139,7 +139,7 @@ See [Medic API](https://github.com/medic/medic-api) for more information.
 
 ### Push the dashboard
 
-[Garden Dashboard](https://github.com/garden20/dashboard) is required to load Medic Mobile.
+[Garden Dashboard](https://github.com/garden20/dashboard) is optionally used to manage the couchapp.
 
 To install Dashboard, first change the CouchDB's `secure_rewrites` configuration
 parameter to false:
