@@ -23,7 +23,7 @@ angular.module('inboxServices').service('XSLT', [
 
     return {
       transform: function(name, doc) {
-        return $q(function(resolve, reject) {
+        return new Promise(function(resolve, reject) {
           getProcessor(name)
             .then(function(processor) {
               var transformedDoc = processor.transformToDocument(doc);
