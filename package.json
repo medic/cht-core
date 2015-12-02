@@ -8,7 +8,7 @@
   },
   "dependencies": {
     "async": "^1.4.0",
-    "enketo-core": "git://github.com/medic/enketo-core.git#babdc7780e0e3ca93d946973d263edbba18f630c",
+    "enketo-core": "git://github.com/medic/enketo-core.git#medic-0.7.4",
     "enketo-xslt": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cb8e9cba8fa9996834be0405ecc96349f0882dd1",
     "lie": "^3.0.1",
     "nools": "^0.4.1",
