@@ -66,6 +66,20 @@ describe('Auth service', function() {
     $rootScope.$digest();
   });
 
+  it('rejects when perm is empty string', function(done) {
+    userCtx.returns({ roles: [ 'district_admin' ] });
+    Settings.callsArgWith(0, null, { permissions: [
+      { name: 'can_backup_facilities', roles: ['national_admin'] },
+      { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
+    ] });
+    service([ '' ])
+      .catch(function(err) {
+        chai.expect(err).to.equal(undefined);
+        done();
+      });
+    $rootScope.$digest();
+  });
+
   it('rejects when unknown permission', function(done) {
     userCtx.returns({ roles: [ 'district_admin' ] });
     Settings.callsArgWith(0, null, { permissions: [
@@ -80,14 +94,18 @@ describe('Auth service', function() {
     $rootScope.$digest();
   });
 
-  it('resolves when !unknown permission', function(done) {
+  // if permission is not configured then reject
+  it('reject when !unknown permission', function(done) {
     userCtx.returns({ roles: [ 'district_admin' ] });
     Settings.callsArgWith(0, null, { permissions: [
       { name: 'can_backup_facilities', roles: ['national_admin'] },
       { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
     ] });
     service([ '!xyz' ])
-      .then(done);
+      .catch(function(err) {
+        chai.expect(err).to.equal(undefined);
+        done();
+      });
     $rootScope.$digest();
   });
 
