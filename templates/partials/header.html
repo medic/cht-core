@@ -66,7 +66,7 @@
               {{'about' | translate}}
             </a>
           </li>
-          <li role="presentation">
+          <li role="presentation" mm-auth="can_edit_profile">
             <a role="menuitem" tabindex="-1" ui-sref="configuration.user">
               <i class="fa fa-fw fa-user"></i>
               {{'edit.user.settings' | translate}}
@@ -78,7 +78,7 @@
               {{'Report Bug' | translate}}
             </a>
           </li>
-          <li role="presentation">
+          <li role="presentation" mm-auth="can_logout">
             <a role="menuitem" tabindex="-1" rel="external" ng-click="logout()">
               <i class="fa fa-fw fa-power-off"></i>
               {{'Log Out' | translate}}

@@ -54,6 +54,10 @@ require('moment/locales');
 
       $scope.baseUrl = BaseUrlService();
 
+      if ($window.medicmobile_android) {
+        $scope.android_app_version = $window.medicmobile_android.getAppVersion();
+      }
+
       $scope.logout = function() {
         Session.logout();
       };
@@ -353,6 +357,9 @@ require('moment/locales');
         Enketo.withAllForms()
           .then(function(forms) {
             $scope.formDefinitions = forms;
+            $scope.nonContactForms = _.filter(forms, function(form) {
+              return form._id.indexOf('form:contact:') !== 0;
+            });
           })
           .catch(function(err) {
             console.error('Error fetching form definitions', err);
@@ -594,7 +601,7 @@ require('moment/locales');
             .tooltip({
               placement: 'bottom',
               trigger: 'manual',
-              container: 'body'
+              container: $(this).closest('.inbox-items, .item-content')
             })
             .tooltip('show');
         }
