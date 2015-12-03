@@ -1,9 +1,7 @@
-var _ = require('underscore');
-
 /* globals EnketoForm */
 angular.module('inboxServices').service('Enketo', [
-  '$window', '$log', '$q', 'Auth', 'DB', 'EnketoTranslation', 'FileReader', 'UserSettings', 'XSLT', 'Language', 'TranslateFrom',
-  function($window, $log, $q, Auth, DB, EnketoTranslation, FileReader, UserSettings, XSLT, Language, TranslateFrom) {
+  '$window', '$log', '$q', 'Auth', 'DB', 'EnketoTranslation', 'EnketoPrepopulationData', 'FileReader', 'UserSettings', 'XSLT', 'Language', 'TranslateFrom',
+  function($window, $log, $q, Auth, DB, EnketoTranslation, EnketoPrepopulationData, FileReader, UserSettings, XSLT, Language, TranslateFrom) {
     var objUrls = [];
 
     var replaceJavarosaMediaWithLoaders = function(formDocId, form) {
@@ -81,41 +79,6 @@ angular.module('inboxServices').service('Enketo', [
       return Auth('can_create_records').then(getContactId);
     };
 
-    var getInstanceStr = function(model, data) {
-      if (data && _.isString(data)) {
-        return $q.resolve(data);
-      }
-      data = data || {};
-      var deferred = $q.defer();
-      UserSettings(function(err, settings) {
-        if (err) {
-          return deferred.reject(err);
-        }
-        data.user = settings;
-        var xml = $($.parseXML(model));
-        var instanceRoot = xml.find('model instance');
-        var bindRoot = instanceRoot.find('inputs');
-        var serializeRoot;
-        if (bindRoot.length) {
-          serializeRoot = bindRoot.parent();
-        } else {
-          // used for the default contact schema forms
-          bindRoot = instanceRoot.find('data');
-          if (!bindRoot.length) {
-            // used for forms defining a primary object with a tag name
-            // other than `data`
-            bindRoot = instanceRoot.children().eq(0);
-          }
-          serializeRoot = bindRoot;
-        }
-        EnketoTranslation.bindJsonToXml(bindRoot, data);
-
-        var serialized = new XMLSerializer().serializeToString(serializeRoot[0]);
-        deferred.resolve(serialized);
-      });
-      return deferred.promise;
-    };
-
     var handleKeypressOnInputField = function(e) {
       if(e.keyCode !== 13) {
         return;
@@ -158,24 +121,7 @@ angular.module('inboxServices').service('Enketo', [
       }
     };
 
-    /**
-     * Add metadata to a form instance data.
-     * Metadata will not be added if the instanceData is supplied as a string,
-     * as this is XML of an already-filled form.
-     */
-    var addMetadata = function(instanceData) {
-      if(typeof instanceData !== 'string') {
-        instanceData.meta = {};
-        if(window.medicmobile_android) {
-          instanceData.meta.location = JSON.parse(window.medicmobile_android.getLocation());
-        }
-      }
-      return instanceData;
-    };
-
     var renderFromXmls = function(doc, wrapper, instanceData) {
-      instanceData = addMetadata(instanceData || {});
-
       wrapper.find('.form-footer')
              .addClass('end')
              .find('.previous-page,.next-page')
@@ -184,7 +130,7 @@ angular.module('inboxServices').service('Enketo', [
       var formContainer = wrapper.find('.container').first();
       formContainer.html(doc.html);
 
-      return getInstanceStr(doc.model, instanceData)
+      return EnketoPrepopulationData(doc.model, instanceData)
         .then(function(instanceStr) {
           var form = new EnketoForm(wrapper.find('form').first(), {
             modelStr: doc.model,

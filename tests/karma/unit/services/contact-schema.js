@@ -184,13 +184,8 @@ describe('ContactSchema service', function() {
         assert.deepEqual(service.get().person, {
           type: 'person',
           badge: 'fa-user',
-          name: '{{last_name}} {{first_name}}',
           fields: {
-            last_name: {
-              type: 'string',
-              required: true,
-            },
-            first_name: {
+            name: {
               type: 'string',
               required: true,
             },
@@ -325,6 +320,8 @@ describe('ContactSchema service', function() {
       assert.notOk(service.getVisibleFields().clinic.fields.hasOwnProperty('name'));
     });
 
+    /*
+     * Test disabled while the default Schema's `Person` has a standard `name` field.
     it('should not include fields listed in calculated `name` field', function() {
       // expect
       assert.ok   (service.get()             .person.fields.hasOwnProperty('first_name'));
@@ -333,6 +330,7 @@ describe('ContactSchema service', function() {
 
       assert.notOk(service.getVisibleFields().person.fields.hasOwnProperty('last_name'));
     });
+    */
 
     it('should not include fields marked `hide_in_view`', function() {
       // expect

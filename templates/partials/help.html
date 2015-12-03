@@ -6,21 +6,28 @@
     <div>
       <ul>
         <li>{{'version' | translate}} {{version}}</li>
+        <li ng-show="android_app_version">{{'android_app.version.title' | translate}} {{android_app_version}}</li>
         <li>{{url}}</li>
         <li>{{userCtx.name}}</li>
         <li><a ng-click="reload()">{{'Reload' | translate}}</a></li>
       </ul>
     </div>
     <div>
-      <h3>{{'Help' | translate}}</h3>
+      <h3>{{'Debug' | translate}}</h3>
     </div>
     <div>
-      <ul>
-        <li><a ui-sref="help.search">{{'help.search.title' | translate}}</a></li>
-        <li><a ui-sref="help.validation">{{'help.validation.title' | translate}}</a></li>
-        <li><a ui-sref="help.messages">{{'help.messages.title' | translate}}</a></li>
-        <li><a ui-sref="help.export">{{'help.export.title' | translate}}</a></li>
-      </ul>
+      <p>{{ 'debug.mode.description' | translate }}</p>
+      <form>
+        <label>
+          <input ng-model="enableDebugModel.val" type="checkbox" /> {{ 'debug.mode.title' | translate }}
+        </label>
+      </form>
+    </div>
+    <div>
+      <h3>{{'debug.db_info.title' | translate}}</h3>
+    </div>
+    <div>
+      <pre>{{ dbInfo }}</pre>
     </div>
   </div>
 </div>

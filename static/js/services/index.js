@@ -17,10 +17,12 @@
   require('./db');
   require('./db-sync');
   require('./db-view');
+  require('./debug');
   require('./delete-doc');
   require('./download-url');
   require('./edit-group');
   require('./enketo');
+  require('./enketo-prepopulation-data');
   require('./enketo-translation');
   require('./facility');
   require('./facility-hierarchy');

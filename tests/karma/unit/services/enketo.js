@@ -335,7 +335,7 @@ describe('Enketo service', function() {
         .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
         .onSecondCall().returns(KarmaUtils.mockPromise(null, visitForm));
       service
-        .render($('<div></div>'), 'ok', { patient_id: 123, name: 'sharon' })
+        .render($('<div></div>'), 'ok', { inputs: { patient_id: 123, name: 'sharon' } })
         .then(function() {
           chai.expect(EnketoForm.callCount).to.equal(1);
           chai.expect(EnketoForm.args[0][1].modelStr).to.equal(visitForm);

@@ -283,13 +283,13 @@
     </div>
 
     <div class="right-pane navigation">
-      <span ng-click="cancel()" ng-show="cancelCallback">
-        <a>
+      <span ng-show="cancelCallback">
+        <a ng-click="cancel()">
           <span class="fa fa-times" title="{{'Back' | translate}}"></span>
         </a>
       </span>
-      <span ng-click="closeContentPane()" ng-hide="cancelCallback">
-        <a>
+      <span ng-hide="cancelCallback">
+        <a ng-click="closeContentPane()">
           <span class="fa fa-chevron-left" title="{{'Close' | translate}}"></span>
         </a>
       </span>

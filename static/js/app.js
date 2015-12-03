@@ -287,39 +287,6 @@ _.templateSettings = {
           controller: 'HelpCtrl',
           templateUrl: 'templates/partials/help.html'
         })
-        .state('help.search', {
-          url: '/search',
-          views: {
-            content: {
-              controller: 'HelpSearchCtrl',
-              templateUrl: 'templates/partials/help_search.html'
-            }
-          }
-        })
-        .state('help.validation', {
-          url: '/validation',
-          views: {
-            content: {
-              templateUrl: 'templates/partials/help_validation.html'
-            }
-          }
-        })
-        .state('help.messages', {
-          url: '/messages',
-          views: {
-            content: {
-              templateUrl: 'templates/partials/help_messages.html'
-            }
-          }
-        })
-        .state('help.export', {
-          url: '/export',
-          views: {
-            content: {
-              templateUrl: 'templates/partials/help_export.html'
-            }
-          }
-        })
 
         // theme design testing page
         .state('theme', {
@@ -409,7 +376,7 @@ _.templateSettings = {
         })
         .then(bootstrapApplication)
         .catch(function(err) {
-          $('.bootstrap-layer').html('<div>Loading error. Check your connection then <a href="#" onclick="window.location.reload(false);">click here to try again</a>.</div>');
+          $('.bootstrap-layer').html('<div><p>Loading error, please check your connection.</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">Try again</a></div>');
           console.error('Error fetching ddoc from remote server', err);
         });
     });

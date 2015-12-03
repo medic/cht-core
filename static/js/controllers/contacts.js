@@ -10,8 +10,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl', 
-    ['$rootScope', '$scope', '$state', '$timeout', '$log', 'UserDistrict', 'Search', 'Changes',
-    function ($rootScope, $scope, $state, $timeout, $log, UserDistrict, Search, Changes) {
+    ['$log', '$rootScope', '$scope', '$state', '$timeout', 'Changes', 'UserSettings', 'Search',
+    function ($log, $rootScope, $scope, $state, $timeout, Changes, UserSettings, Search) {
 
       $scope.filterModel.type = 'contacts';
       $scope.contacts = [];
@@ -52,7 +52,7 @@ var _ = require('underscore'),
         // curry the Search service so async.parallel can provide the
         // callback as the final callback argument
         var contactSearch = _.partial(Search, $scope, options);
-        async.parallel([ contactSearch, UserDistrict ], function(err, results) {
+        async.parallel([ contactSearch, UserSettings ], function(err, results) {
           $scope.loading = false;
           $scope.appending = false;
           if (err) {
@@ -61,7 +61,9 @@ var _ = require('underscore'),
           }
           var data = results[0];
           $scope.moreItems = data.length >= options.limit;
-          $scope.userDistrict = results[1];
+          var user = results[1];
+          $scope.userDistrict = user.facility_id;
+          $scope.userContact = user.contact_id;
           if (options.skip) {
             $timeout(function() {
               $scope.contacts.push.apply($scope.contacts, data);
