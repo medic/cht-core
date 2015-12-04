@@ -95,9 +95,16 @@ require('moment/locales');
         }
 
         // If there is an actionbar drop-up menu open, close it
-        var $dropup = $('.actions.dropup.open');
+        var $dropup = $('.actions.dropup.open:visible');
         if ($dropup.length) {
           $dropup.removeClass('open');
+          return true;
+        }
+
+        // If there is a dropdown menu open, close it
+        var $dropdown = $('.filter.dropdown.open:visible');
+        if ($dropdown.length) {
+          $dropdown.removeClass('open');
           return true;
         }
 
