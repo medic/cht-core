@@ -105,9 +105,18 @@ require('moment/locales');
         if ($('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
           window.history.back();
           return true;
+        }
+
+        // If there is a modal dialog open, try to click its top-right `X` or 
+        // `[ Cancel ]` button
+        var $modal = $('.modal-dialog:visible');
+        if ($modal.length) {
+          $modal.find('button.cancel.close:visible:not(:disabled) .btn.cancel:visible:not(:disabled)').click();
+          return true;
+        }
 
         // If viewing RHS content, do as the filter-bar X/< button does
-        } else if ($scope.showContent) {
+        if ($scope.showContent) {
           if ($scope.cancelCallback) {
             $scope.cancel();
           } else {
