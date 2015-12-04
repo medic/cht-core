@@ -94,8 +94,15 @@ require('moment/locales');
           return true;
         }
 
+        // If there is an actionbar drop-up menu open, close it
+        var $dropup = $('.actions.dropup.open');
+        if ($dropup.length) {
+          $dropup.removeClass('open');
+          return true;
+        }
+
         // On an Enketo form, go to the previous page (if there is one)
-        else if ($('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
+        if ($('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
           window.history.back();
           return true;
 
