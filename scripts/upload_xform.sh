@@ -86,6 +86,8 @@ if $FORCE; then
     revResponse=$(curl -s "$docUrl")
     rev=$(jq -r ._rev <<< "$revResponse")
     curl -s -X DELETE "${docUrl}?rev=${rev}" >/dev/null
+    # a moment's pause to let the delete complete
+    sleep 1
 fi
 
 check_rev() {
