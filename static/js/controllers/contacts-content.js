@@ -2,7 +2,9 @@ var _ = require('underscore');
 
 var CONTEXT_HELPERS = {
   ageInYears: function(c) {
-    if (!c.date_of_birth) return;
+    if (!c.date_of_birth) {
+      return;
+    }
     var birthday = new Date(c.date_of_birth),
         today = new Date();
     return (today.getFullYear() - birthday.getFullYear()) +
