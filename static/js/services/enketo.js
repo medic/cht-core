@@ -93,7 +93,7 @@ angular.module('inboxServices').service('Enketo', [
 
       // If there's another question on the current page, focus on that
       if($thisQuestion.attr('role') !== 'page') {
-        var $nextQuestion = $thisQuestion.find('~ .question:not(.disabled)');
+        var $nextQuestion = $thisQuestion.find('~ .question:not(.disabled), ~ .repeat-buttons button.repeat');
         if($nextQuestion.length) {
           // Hack for Android: delay focussing on the next field, so that
           // keybaord close and open events both register.  This should mean
