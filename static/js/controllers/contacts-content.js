@@ -1,5 +1,17 @@
 var _ = require('underscore');
 
+var CONTEXT_HELPERS = {
+  ageInYears: function(c) {
+    if (!c.date_of_birth) return;
+    var birthday = new Date(c.date_of_birth),
+        today = new Date();
+    return (today.getFullYear() - birthday.getFullYear()) +
+        (today.getMonth() < birthday.getMonth() ? -1 : 0) +
+        (today.getMonth() === birthday.getMonth() &&
+            today.getDate() < birthday.getDate() ? -1 : 0);
+  },
+};
+
 (function () {
 
   'use strict';
@@ -7,8 +19,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsContentCtrl', 
-    ['$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search', 'Changes', 'ContactSchema', 'UserDistrict',
-    function ($scope, $stateParams, $q, $log, DB, TaskGenerator, Search, Changes, ContactSchema, UserDistrict) {
+    ['$parse', '$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search', 'Changes', 'ContactSchema', 'UserDistrict',
+    function($parse, $scope, $stateParams, $q, $log, DB, TaskGenerator, Search, Changes, ContactSchema, UserDistrict) {
 
       $scope.showParentLink = false;
 
@@ -191,6 +203,10 @@ var _ = require('underscore');
             $scope.relevantForms = _.filter($scope.formDefinitions, function(form) {
               if (!form.context) {
                 return false;
+              }
+              if (typeof form.context === 'string') {
+                return $parse(form.context)
+                    .call(null, CONTEXT_HELPERS, { contact: $scope.selected.doc });
               }
               if ($scope.selected.doc.type === 'person') {
                 return form.context.person;
