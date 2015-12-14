@@ -58,10 +58,10 @@ formInternalId="$(sed -e '1,/<instance>/d' $XFORM_PATH | grep -E 'id="[^"]+"' | 
 
 contextPatient=false
 contextPlace=false
-if grep -Fq '/inputs/patient_id' $XFORM_PATH; then
+if grep -Fq '/context/person' $XFORM_PATH; then
     contextPatient=true
 fi
-if grep -Fq '/inputs/place_id' $XFORM_PATH; then
+if grep -Fq '/context/place' $XFORM_PATH; then
     contextPlace=true
 fi
 formContext='{ "person":'"$contextPatient"', "place":'"$contextPlace"' }'
