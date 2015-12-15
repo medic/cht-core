@@ -1,6 +1,10 @@
 var _ = require('underscore');
 
-var CONTEXT_HELPERS = {
+/**
+ * Util functions available to a form doc's `.context` function for checking if
+ * a form is relevant to a specific contact.
+ */
+var CONTEXT_UTILS = {
   ageInYears: function(c) {
     if (!c.date_of_birth) {
       return;
@@ -208,7 +212,7 @@ var CONTEXT_HELPERS = {
               }
               if (typeof form.context === 'string') {
                 return $parse(form.context)
-                    .call(null, CONTEXT_HELPERS, { contact: $scope.selected.doc });
+                    .call(null, CONTEXT_UTILS, { contact: $scope.selected.doc });
               }
               if ($scope.selected.doc.type === 'person') {
                 return form.context.person;
