@@ -54,6 +54,13 @@ exports['validate returns false for invalid characters'] = function(test) {
   test.done();
 };
 
+exports['validate returns false when letters in valid number'] = function(test) {
+  // Insert letters within valid number : they shouldn't be filtered out.
+  var actual = phonenumber.validate(settings, '0275552kkk636');
+  test.strictEqual(actual, false);
+  test.done();
+};
+
 exports['validate returns false for number without country code'] = function(test) {
   var actual = phonenumber.validate({}, '5155556442');
   test.strictEqual(actual, false);
@@ -71,3 +78,23 @@ exports['validate returns true for number with explicit country code'] = functio
   test.strictEqual(actual, true);
   test.done();
 };
+
+exports['validate returns true when spaces in number'] = function(test) {
+  var actual = phonenumber.validate(settings, '02 75 55 26 36');
+  test.strictEqual(actual, true);
+  test.done();
+};
+
+exports['validate returns true when spaces, brackets, dots, dashes in number'] = function(test) {
+  // Including space after '+' and unmatched brackets.
+  var actual = phonenumber.validate({default_country_code: '1'}, '+   1 --(80.0 ()()55..6 -8725');
+  test.strictEqual(actual, true);
+  test.done();
+};
+
+exports['validate returns false when funky punctuation in number'] = function(test) {
+  var actual = phonenumber.validate({default_country_code: '1'}, '+1 <800> 556 8725');
+  test.strictEqual(actual, false);
+  test.done();
+};
+

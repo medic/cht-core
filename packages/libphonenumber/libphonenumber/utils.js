@@ -1,17 +1,10 @@
 var i18n = require('libphonenumber/phoneformat'),
     standardFormat = i18n.phonenumbers.PhoneNumberFormat.E164;
 
-var _cleanPhone = function(phone) {
-  phone = phone.replace(/[^\d\+]/g, '');
-  var prefix = phone.substr(0, 1) === '+' ? '+' : '';
-  phone = phone.replace(/[^\d]/g, '');
-  return prefix + phone;
-};
-
 var _init = function(settings, phone) {
   return {
     util: i18n.phonenumbers.PhoneNumberUtil.getInstance(),
-    phone: _cleanPhone(phone),
+    phone: phone,
     countryCode: settings && settings.default_country_code,
     country: function() {
       return this.util.getRegionCodeForCountryCode(this.countryCode);
