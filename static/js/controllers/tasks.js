@@ -41,7 +41,7 @@ var _ = require('underscore');
             for (var i = 0; i < $scope.tasks.length; i++) {
               if ($scope.tasks[i]._id === task._id) {
                 if (task.resolved) {
-                  $scope.tasks = $scope.tasks.splice(i, 1);
+                  $scope.tasks.splice(i, 1);
                 } else {
                   $scope.tasks[i] = task;
                 }
