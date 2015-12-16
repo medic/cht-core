@@ -1,3 +1,6 @@
+/**
+* Our wrapper around google's libphonenumber.
+*/
 var i18n = require('libphonenumber/phoneformat'),
   standardFormat = i18n.phonenumbers.PhoneNumberFormat.E164;
 
@@ -28,6 +31,7 @@ var _init = function(settings, phone) {
   };
 };
 
+/** Returns international format if valid number, false if invalid number. */
 exports.format = function(settings, phone) {
   try {
     return _init(settings, phone).format();
@@ -35,6 +39,7 @@ exports.format = function(settings, phone) {
   return false;
 };
 
+/** Returns true if valid number. Allows dots, brackets, spaces, but not letters. */
 exports.validate = function(settings, phone) {
   try {
     return _init(settings, phone).validate();
