@@ -13,7 +13,11 @@ var _init = function(settings, phone) {
       return this.util.parseAndKeepRawInput(this.phone, this.country());
     },
     format: function() {
-      return this.util.format(this.parse(), standardFormat).toString();
+      var parsed = this.parse();
+      if (!this.util.isValidNumber(parsed)) {
+        return false;
+      }
+      return this.util.format(parsed, standardFormat).toString();
     },
     validate: function() {
       return this.util.isValidNumber(this.parse());
