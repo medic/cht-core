@@ -55,15 +55,40 @@ exports['format returns false for invalid number'] = function(test) {
   test.done();
 };
 
-exports['format returns false for invalid number - replaced letter <-> digit'] = function(test) {
+exports['format returns false for invalid number - replaced 1 letter <-> 1 digit'] = function(test) {
   // Invalid number for NZ
   var actual = phonenumber.format(settings, '02755K2636');
   test.strictEqual(actual, false);
   test.done();
 };
 
-exports['format returns false for invalid number - extra letters'] = function(test) {
-  var actual = phonenumber.format(settings, '0275552636fff');
+exports['format returns false for invalid number - alpha number'] = function(test) {
+  // Note : 3 letters or more can be considered an alpha number (e.g. 1-(800)-MICROSOFT). We don't allow it.
+  var actual = phonenumber.format(settings, '0275HHH636');
+  test.strictEqual(actual, false);
+  test.done();
+};
+
+exports['format returns false for invalid number - 3 extra letters'] = function(test) {
+  // Insert letters within valid number : they shouldn't be ignored.
+  var actual = phonenumber.format(settings, '0275552kkk636');
+  test.strictEqual(actual, false);
+  test.done();
+};
+
+// Correct for libphonenumber weirdness : 
+// For some reason, '<validnumber>a' or '<validnumber>aa' is valid for libphonenumber.
+// Issue : https://github.com/googlei18n/libphonenumber/issues/328
+exports['format returns false for invalid number - two extra letters - trailing'] = function(test) {
+  // Insert letters within valid number : they shouldn't be ignored.
+  var actual = phonenumber.format(settings, validNumNZDomestic + 'ff');
+  test.strictEqual(actual, false);
+  test.done();
+};
+
+exports['format returns false for invalid number - two extra letters - inside'] = function(test) {
+  // Insert letters within valid number : they shouldn't be ignored.
+  var actual = phonenumber.format(settings, '02755526ff36');
   test.strictEqual(actual, false);
   test.done();
 };
@@ -89,6 +114,7 @@ exports['format removes spaces, brackets and dots, and adds country code'] = fun
 };
 
 exports['format removes extra zeros in international format'] = function(test) {
+  // Note : that's for NZ format. Would be nice to test specific formatting issues for target countries.
   var expected = validNumNZInternational;
   var actual = phonenumber.format(settings, '+640275552636'); // Remove leading 0 from domestic format
   test.strictEqual(actual, expected);
@@ -107,15 +133,45 @@ exports['validate returns false for short number'] = function(test) {
   test.done();
 };
 
-exports['validate returns false for invalid number - replaced letter <-> digit'] = function(test) {
+exports['validate returns false for invalid number'] = function(test) {
+  var actual = phonenumber.validate(settings, invalidNumNZDomestic);
+  test.strictEqual(actual, false);
+  test.done();
+};
+
+exports['validate returns false for invalid number - replaced 1 letter <-> 1 digit'] = function(test) {
   var actual = phonenumber.validate(settings, '027555H636');
   test.strictEqual(actual, false);
   test.done();
 };
 
-exports['validate returns false for invalid number - extra letters'] = function(test) {
-  // Insert letters within valid number : they shouldn't be filtered out.
+exports['validate returns false for invalid number - alpha number'] = function(test) {
+  // Note : 3 letters or more can be considered an alpha number (e.g. 1-(800)-MICROSOFT). We don't allow it.
+  var actual = phonenumber.validate(settings, '0275HHH636');
+  test.strictEqual(actual, false);
+  test.done();
+};
+
+exports['validate returns false for invalid number - 3 extra letters'] = function(test) {
+  // Insert letters within valid number : they shouldn't be ignored.
   var actual = phonenumber.validate(settings, '0275552kkk636');
+  test.strictEqual(actual, false);
+  test.done();
+};
+
+// Correct for libphonenumber weirdness : 
+// For some reason, '<validnumber>a' or '<validnumber>aa' is valid for libphonenumber.
+// Issue : https://github.com/googlei18n/libphonenumber/issues/328
+exports['validate returns false for invalid number - two extra letters - trailing'] = function(test) {
+  // Insert letters within valid number : they shouldn't be ignored.
+  var actual = phonenumber.validate(settings, validNumNZDomestic + 'ff');
+  test.strictEqual(actual, false);
+  test.done();
+};
+
+exports['validate returns false for invalid number - two extra letters - inside'] = function(test) {
+  // Insert letters within valid number : they shouldn't be ignored.
+  var actual = phonenumber.validate(settings, '02755526ff36');
   test.strictEqual(actual, false);
   test.done();
 };
@@ -158,6 +214,7 @@ exports['validate returns false when funky punctuation in number'] = function(te
 };
 
 exports['validate returns true when extra zeros in international format'] = function(test) {
+  // Note : that's for NZ format. Would be nice to test specific formatting issues for target countries.
   var actual = phonenumber.validate(settings, '+640275552636'); // Unnecessary leading 0 from domestic format
   test.strictEqual(actual, true);
   test.done();
