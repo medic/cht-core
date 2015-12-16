@@ -71,11 +71,13 @@ describe('SendMessage service', function() {
   });
 
   it('normalizes phone numbers', function(done) {
+    // Note : only valid phone numbers can be normalized.
 
     id.returns(KarmaUtils.mockPromise(null, 53));
     post.returns(KarmaUtils.mockPromise());
 
-    var recipient = { contact: { phone: '5552' } };
+    var phoneNumber = '700123456';
+    var recipient = { contact: { phone: phoneNumber } };
 
     settings = {
       default_country_code: 254
@@ -88,7 +90,7 @@ describe('SendMessage service', function() {
         assertMessage(post.args[0][0].tasks[0], {
           from: '+5551',
           sent_by: 'jack',
-          to: '+2545552',
+          to: '+254' + phoneNumber,
           uuid: 53
         });
         done();
