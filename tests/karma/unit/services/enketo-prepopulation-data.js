@@ -187,7 +187,7 @@ describe('EnketoPrepopulationData service', function() {
     service(editPersonForm, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
-        chai.expect(xml.find('inputs name')[0].innerHTML).to.equal(user.name);
+        chai.expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
         chai.expect(UserSettings.callCount).to.equal(1);
         done();
       })
@@ -202,7 +202,7 @@ describe('EnketoPrepopulationData service', function() {
     service(editPersonFormWithoutInputs, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
-        chai.expect(xml.find('data person last_name')[0].innerHTML).to.equal(data.person.last_name);
+        chai.expect(xml.find('data > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
         chai.expect(UserSettings.callCount).to.equal(1);
         done();
       })
@@ -217,7 +217,7 @@ describe('EnketoPrepopulationData service', function() {
     service(generatedForm, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
-        chai.expect(xml.find('data person name')[0].innerHTML).to.equal(data.person.name);
+        chai.expect(xml.find('data > person > name')[0].innerHTML).to.equal(data.person.name);
         chai.expect(UserSettings.callCount).to.equal(1);
         done();
       })
@@ -232,8 +232,8 @@ describe('EnketoPrepopulationData service', function() {
     service(editPersonForm, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
-        chai.expect(xml.find('inputs name')[0].innerHTML).to.equal(user.name);
-        chai.expect(xml.find('data person last_name')[0].innerHTML).to.equal(data.person.last_name);
+        chai.expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
+        chai.expect(xml.find('data > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
         chai.expect(UserSettings.callCount).to.equal(1);
         done();
       })
@@ -254,8 +254,8 @@ describe('EnketoPrepopulationData service', function() {
     service(editPersonForm, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
-        chai.expect(xml.find('inputs location lat')[0].innerHTML).to.equal(location.lat);
-        chai.expect(xml.find('inputs location long')[0].innerHTML).to.equal(location.long);
+        chai.expect(xml.find('inputs > location > lat')[0].innerHTML).to.equal(location.lat);
+        chai.expect(xml.find('inputs > location > long')[0].innerHTML).to.equal(location.long);
         chai.expect(UserSettings.callCount).to.equal(1);
         done();
       })
@@ -270,8 +270,8 @@ describe('EnketoPrepopulationData service', function() {
     service(pregnancyForm, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
-        chai.expect(xml.find('inputs name')[0].innerHTML).to.equal(user.name);
-        chai.expect(xml.find('pregnancy person last_name')[0].innerHTML).to.equal(data.person.last_name);
+        chai.expect(xml.find('inputs > user > name')[0].innerHTML).to.equal(user.name);
+        chai.expect(xml.find('pregnancy > person > last_name')[0].innerHTML).to.equal(data.person.last_name);
         chai.expect(UserSettings.callCount).to.equal(1);
         done();
       })

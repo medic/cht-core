@@ -10,7 +10,6 @@
 .enketo {
   background-color: #FFFFFF;
   padding-bottom: 2em;
-  min-height: 500px; /* Ensure enough room for the datepicker */
   h2, h3, h4 {
     text-align: left;
   }
@@ -95,6 +94,11 @@
     padding-bottom: 6px;
     border-radius: 4px;
   }
+  button[disabled] {
+    .icon-plus, .icon-minus {
+      opacity: 0.2;
+    }
+  }
 }
 
 @media (max-width: 767px) {
@@ -107,12 +111,8 @@
         color: white;
       }
     }
-    input[type=date] {
-      display: inline-block;
-    }
-    .date-refresh {
-      position: absolute;
-      padding: 17px;
+    input[data-mm-android-dp]:hover {
+      background-color: #ffa500;
     }
   }
 }
