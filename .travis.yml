@@ -4,6 +4,9 @@ node_js:
    - "0.12"
    - "0.10"
 
+addons:
+  firefox: latest-esr
+
 services:
   - couchdb
 
