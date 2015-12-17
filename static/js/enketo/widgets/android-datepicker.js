@@ -28,7 +28,18 @@ define( function( require, exports, module ) {
     var pluginName = 'androiddatepicker';
 
     /**
-     * Enhances notes
+     * Work around a bug in some versions of Android Browser and Android WebView
+     * which cause datepickers to fail to re-display after they have been
+     * dismissed either by the hardware back-button or by touching the screen
+     * outside the datepicker dialog.
+     *
+     * N.B. this plugin will only work inside an Android application which
+     * provides a javascript function to launch an android-java datepicker and
+     * handle the selected value.
+     *
+     * @see https://github.com/enketo/enketo-core/issues/351
+     * @see https://github.com/medic/medic-android/blob/30182529f75ce6e37571cdd627cbb3d7c7000845/src/main/java/org/medicmobile/webapp/mobile/MedicAndroidJavascript.java#L91
+     * @see https://github.com/medic/medic-android/blob/30182529f75ce6e37571cdd627cbb3d7c7000845/src/main/java/org/medicmobile/webapp/mobile/EmbeddedBrowserActivity.java#L84
      *
      * @constructor
      * @param {Element} element [description]
