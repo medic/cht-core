@@ -416,6 +416,7 @@ require('moment/locales');
       var updateFormDefinitions = function() {
         Enketo.withAllForms()
           .then(function(forms) {
+            Enketo.clearXmlCache();
             $scope.formDefinitions = forms;
             $scope.nonContactForms = _.filter(forms, function(form) {
               return form._id.indexOf('form:contact:') !== 0;
