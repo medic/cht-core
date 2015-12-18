@@ -1,22 +1,22 @@
-if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function' ) {
-    var define = function( factory ) {
-        factory( require, exports, module );
+if (typeof exports === 'object' && typeof exports.nodeName !== 'string' && typeof define !== 'function') {
+    var define = function(factory) {
+        factory(require, exports, module);
     };
 }
 
-define( function( require, exports, module ) {
+define(function(require, exports, module) {
     'use strict';
-    var FormModel = require( 'enketo-core/src/js/Form-model' );
-    var Widget = require( 'enketo-core/src/js/Widget' );
-    var $ = require( 'jquery' );
-    var libphonenumber = require( 'libphonenumber/utils' );
-    require( 'enketo-core/src/js/plugins' );
+    var FormModel = require('enketo-core/src/js/Form-model');
+    var Widget = require('enketo-core/src/js/Widget');
+    var $ = require('jquery');
+    var libphonenumber = require('libphonenumber/utils');
+    require('enketo-core/src/js/plugins');
 
     var pluginName = 'phonewidget';
 
     // Set up enketo validation for `phone` input type
     FormModel.prototype.types.tel = {
-        validate: function( fieldValue ) {
+        validate: function(fieldValue) {
             var angularServices = angular.element(document.body).injector();
             var Settings = angularServices.get('SettingsP');
 
@@ -32,7 +32,11 @@ define( function( require, exports, module ) {
                     // assumption that we have an object type `person` with a
                     // field `phone`.
 
-                    var options = { params: { key: [ phoneNumber ] } };
+                    var options = {
+                        params: {
+                            key: [phoneNumber]
+                        }
+                    };
                     var DbView = angularServices.get('DbViewP');
                     return DbView('person_by_phone', options);
                 })
@@ -64,40 +68,67 @@ define( function( require, exports, module ) {
      * @param {*=} e     event
      */
 
-    function Phonewidget( element, options ) {
+    function Phonewidget(element, options) {
         this.namespace = pluginName;
-        Widget.call( this, element, options );
+        Widget.call(this, element, options);
         this._init();
     }
 
     //copy the prototype functions from the Widget super class
-    Phonewidget.prototype = Object.create( Widget.prototype );
+    Phonewidget.prototype = Object.create(Widget.prototype);
 
     //ensure the constructor is the new one
     Phonewidget.prototype.constructor = Phonewidget;
 
     Phonewidget.prototype._init = function() {
+        var $input = $(this.element);
+        $input.hide();
+
+        // Add a proxy input field, which will send its input, formatted, to the real input field.
+        var proxyName = $input.attr('name') + '_proxy';
+        $input.after('<input type="tel" name="' + proxyName + '">');
+        var $proxyInput = $('input[name="' + proxyName + '"]');
+        $proxyInput.val($input.val());
+
+        var angularServices = angular.element(document.body).injector();
+        var Settings = angularServices.get('SettingsP');
+        Settings()
+            .then(function(settings) {
+                $proxyInput.change(function() {
+                    // Also trigger the change() event, since input was not by user.
+                    $input.val(getFormattedInput(settings, $proxyInput)).change();
+                });
+            });
     };
+
+    function getFormattedInput(settings, $input) {
+        if (libphonenumber.validate(settings, $input.val())) {
+            return libphonenumber.format(settings, $input.val());
+        } else {
+            // Return the non-formatted input, so that the "invalid value" error can display.
+            return $input.val();
+        }
+    }
 
     Phonewidget.prototype.destroy = function( /* element */ ) {};
 
-    $.fn[ pluginName ] = function( options, event ) {
-        return this.each( function() {
-            var $this = $( this ),
-                data = $this.data( pluginName );
+    $.fn[pluginName] = function(options, event) {
+        return this.each(function() {
+            var $this = $(this),
+                data = $this.data(pluginName);
 
             options = options || {};
 
-            if ( !data && typeof options === 'object' ) {
-                $this.data( pluginName, ( data = new Phonewidget( this, options, event ) ) );
-            } else if ( data && typeof options === 'string' ) {
-                data[ options ]( this );
+            if (!data && typeof options === 'object') {
+                $this.data(pluginName, (data = new Phonewidget(this, options, event)));
+            } else if (data && typeof options === 'string') {
+                data[options](this);
             }
-        } );
+        });
     };
 
     module.exports = {
         'name': pluginName,
-        'selector': '',
+        'selector': 'input[type="tel"]',
     };
-} );
+});
