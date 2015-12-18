@@ -68,19 +68,23 @@ define(function(require, exports, module) {
      * @param {*=} e     event
      */
 
-    function Phonewidget(element, options) {
+    function PhoneWidget(element, options, SettingsP) {
         this.namespace = pluginName;
         Widget.call(this, element, options);
-        this._init();
+        if (!SettingsP) {
+            var angularInjector = angular.element(document.body).injector();
+            SettingsP = angularInjector.get('SettingsP');
+        }
+        this._init(SettingsP);
     }
 
     //copy the prototype functions from the Widget super class
-    Phonewidget.prototype = Object.create(Widget.prototype);
+    PhoneWidget.prototype = Object.create(Widget.prototype);
 
     //ensure the constructor is the new one
-    Phonewidget.prototype.constructor = Phonewidget;
+    PhoneWidget.prototype.constructor = PhoneWidget;
 
-    Phonewidget.prototype._init = function() {
+    PhoneWidget.prototype._init = function(SettingsP) {
         var $input = $(this.element);
         $input.hide();
 
@@ -90,9 +94,7 @@ define(function(require, exports, module) {
         var $proxyInput = $('input[name="' + proxyName + '"]');
         $proxyInput.val($input.val());
 
-        var angularServices = angular.element(document.body).injector();
-        var Settings = angularServices.get('SettingsP');
-        Settings()
+        SettingsP()
             .then(function(settings) {
                 $proxyInput.change(function() {
                     // Also trigger the change() event, since input was not by user.
@@ -110,7 +112,7 @@ define(function(require, exports, module) {
         }
     }
 
-    Phonewidget.prototype.destroy = function( /* element */ ) {};
+    PhoneWidget.prototype.destroy = function( /* element */ ) {};
 
     $.fn[pluginName] = function(options, event) {
         return this.each(function() {
@@ -120,7 +122,7 @@ define(function(require, exports, module) {
             options = options || {};
 
             if (!data && typeof options === 'object') {
-                $this.data(pluginName, (data = new Phonewidget(this, options, event)));
+                $this.data(pluginName, (data = new PhoneWidget(this, options, event)));
             } else if (data && typeof options === 'string') {
                 data[options](this);
             }
@@ -130,5 +132,6 @@ define(function(require, exports, module) {
     module.exports = {
         'name': pluginName,
         'selector': 'input[type="tel"]',
+        'widget': PhoneWidget
     };
 });
