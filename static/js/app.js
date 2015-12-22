@@ -1,5 +1,3 @@
-require('lie/polyfill');
-
 require('./services/index');
 require('./controllers/index');
 require('./filters/index');

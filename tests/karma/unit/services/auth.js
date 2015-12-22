@@ -175,20 +175,6 @@ describe('Auth service', function() {
     userCtx.returns({ roles: [ 'analytics' ] });
     Settings.callsArgWith(0, null, { permissions: [
       { name: 'can_backup_facilities', roles: ['national_admin'] },
-      { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin' ] }
-    ] });
-    service([ '!can_backup_facilities', '!can_export_messages' ])
-      .then(done)
-      .catch(function() {
-        done('Should have passed auth');
-      });
-    $rootScope.$digest();
-  });
-
-  it('resolves when user has none of the !permissions and all of the permissions', function(done) {
-    userCtx.returns({ roles: [ 'analytics' ] });
-    Settings.callsArgWith(0, null, { permissions: [
-      { name: 'can_backup_facilities', roles: ['national_admin'] },
       { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
     ] });
     service([ '!can_backup_facilities', 'can_export_messages' ])

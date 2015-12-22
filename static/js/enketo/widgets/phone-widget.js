@@ -22,11 +22,10 @@ define( function( require, exports, module ) {
 
             return Settings()
                 .then(function(settings) {
-                    var phoneNumber = libphonenumber.format(settings, fieldValue);
-                    if (!libphonenumber.validate(settings, phoneNumber)) {
-                        throw new Error('invalid phone number: "' + phoneNumber + '"');
+                    if (!libphonenumber.validate(settings, fieldValue)) {
+                        throw new Error('invalid phone number: "' + fieldValue + '"');
                     }
-                    return phoneNumber;
+                    return libphonenumber.format(settings, fieldValue);
                 })
                 .then(function(phoneNumber) {
                     // Check the phone number is unique.  N.B. this makes the

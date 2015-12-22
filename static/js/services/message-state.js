@@ -16,26 +16,21 @@ var _ = require('underscore'),
           });
         },
         set: function(recordId, group, fromState, toState) {
-          return new Promise(function(resolve, reject) {
-            DB.get().get(recordId)
-              .then(function(doc) {
-                var changed = false;
-                _.each(doc.scheduled_tasks, function(task) {
-                  if (task.group === group && task.state === fromState) {
-                    changed = true;
-                    kujua_utils.setTaskState(task, toState);
-                  }
-                });
-                if (!changed) {
-                  return resolve();
+          return DB.get()
+            .get(recordId)
+            .then(function(doc) {
+              var changed = false;
+              _.each(doc.scheduled_tasks, function(task) {
+                if (task.group === group && task.state === fromState) {
+                  changed = true;
+                  kujua_utils.setTaskState(task, toState);
                 }
-                DB.get()
-                  .put(doc)
-                  .then(resolve)
-                  .catch(reject);
-              })
-              .catch(reject);
-          });
+              });
+              if (!changed) {
+                return;
+              }
+              return DB.get().put(doc);
+            });
         }
       };
     }

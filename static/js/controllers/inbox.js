@@ -73,15 +73,14 @@ require('moment/locales');
       };
 
       /**
-       * Handle hardware back-button presses when inside the android app.
-       * @return {boolean} `true` if angular handled the back button; otherwise
-       *   the android app will handle it as it sees fit.
+       * Close the highest-priority dropdown within a particular container.
+       * @return {boolean} `true` if a dropdown was closed; `false` otherwise.
        */
-      $scope.handleAndroidBack = function() {
+      var closeDropdownsIn = function($container) {
         // If there are any select2 dropdowns open, close them.  The select
         // boxes are closed while they are checked - this saves us having to
         // iterate over them twice
-        if(_.chain($('select.select2-hidden-accessible'))
+        if(_.chain($container.find('select.select2-hidden-accessible'))
             .map(function(e) {
               e = $(e);
               if(e.select2('isOpen')) {
@@ -94,13 +93,74 @@ require('moment/locales');
           return true;
         }
 
+        // If there is a dropdown menu open, close it
+        var $dropdown = $container.find('.filter.dropdown.open:visible');
+        if ($dropdown.length) {
+          $dropdown.removeClass('open');
+          return true;
+        }
+
         // On an Enketo form, go to the previous page (if there is one)
-        else if ($('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
+        if ($container.find('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
           window.history.back();
           return true;
+        }
+
+        return false;
+      };
+
+      /**
+       * Handle hardware back-button presses when inside the android app.
+       * @return {boolean} `true` if angular handled the back button; otherwise
+       *   the android app will handle it as it sees fit.
+       */
+      $scope.handleAndroidBack = function() {
+        // If there's a modal open, close any dropdowns inside it, or try to
+        // close the modal itself.
+        var $modal = $('.modal:visible');
+        if ($modal.length) {
+          // find the modal with highest z-index, and ignore the rest
+          var $topModal;
+          $modal.each(function(i, next) {
+            if (!$topModal) {
+              $topModal = $(next);
+              return;
+            }
+            var $next = $(next);
+            if ($topModal.css('z-index') <= $next.css('z-index')) {
+              $topModal = $next;
+            }
+          });
+
+          if (!closeDropdownsIn($topModal)) {
+            // Try to close by clicking modal's top-right `X` or `[ Cancel ]`
+            // button.
+            $topModal.find('.btn.cancel:visible:not(:disabled),' +
+                'button.cancel.close:visible:not(:disabled)').click();
+          }
+          return true;
+        }
+
+        // If the hotdog hamburger options menu is open, close it
+        var $optionsMenu = $('.dropdown.options.open');
+        if($optionsMenu.length) {
+          $optionsMenu.removeClass('open');
+          return true;
+        }
+
+        // If there is an actionbar drop-up menu open, close it
+        var $dropup = $('.actions.dropup.open:visible');
+        if ($dropup.length) {
+          $dropup.removeClass('open');
+          return true;
+        }
+
+        if (closeDropdownsIn($('body'))) {
+          return true;
+        }
 
         // If viewing RHS content, do as the filter-bar X/< button does
-        } else if ($scope.showContent) {
+        if ($scope.showContent) {
           if ($scope.cancelCallback) {
             $scope.cancel();
           } else {

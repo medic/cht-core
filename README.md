@@ -7,7 +7,7 @@ For latest changes and release announcements see our [change log](Changes.md).
 
 Medic Mobile combines messaging, data collection, and analytics for health workers and health systems in hard-to-reach areas with or without internet connectivity.
 
-The `medic-webapp` repository is the core application in the Medic Mobile stack. When health workers submit data — using text messages (SMS), our mobile applications, or our SIM applications — the web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
+The `medic-webapp` repository is the core application in the Medic Mobile stack. When health workers submit data — using text messages (SMS), our mobile applications, or our SIM applications — the web app colunfirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
 
 The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally, as part of a virtual machine (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
 
@@ -139,7 +139,7 @@ See [Medic API](https://github.com/medic/medic-api) for more information.
 
 ### Push the dashboard
 
-Dashboard is required to load Medic Mobile.
+[Garden Dashboard](https://github.com/garden20/dashboard) is optionally used to manage the couchapp.
 
 To install Dashboard, first change the CouchDB's `secure_rewrites` configuration
 parameter to false:
@@ -164,7 +164,7 @@ kanso push http://admin:pass@localhost:5984/dashboard
 Navigate your browser to:
 
 ```
-http://localhost:5988/medic/_design/medic/_rewrite/
+http://localhost:5988/medic/login
 ```
 
 

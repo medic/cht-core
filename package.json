@@ -8,11 +8,10 @@
   },
   "dependencies": {
     "async": "^1.4.0",
-    "enketo-core": "git://github.com/medic/enketo-core.git#medic-0.7.4",
+    "enketo-core": "git://github.com/medic/enketo-core.git#medic-0.7.5",
     "enketo-xslt": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cb8e9cba8fa9996834be0405ecc96349f0882dd1",
-    "lie": "^3.0.1",
     "nools": "^0.4.1",
-    "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#ca3f6d4bea1051df816b4959288f1bae43545506",
+    "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#55e2de89f09a16773f445e9c9967d58c0f588cd1",
     "properties": "^1.2.1",
     "underscore": "~1.8.3"
   },

@@ -95,7 +95,7 @@ module.exports = function(grunt) {
             jquery:'./static/js/enketo/jquery-shim.js',
             'text!enketo-config': './static/js/enketo/config.json',
             'widgets': './static/js/enketo/widgets.js',
-            './XPathEvaluatorBinding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding.js',
+            './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding.js',
             'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath.js',
             'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions.js',
             'libphonenumber/phoneformat': './packages/libphonenumber/libphonenumber/phoneformat.js',

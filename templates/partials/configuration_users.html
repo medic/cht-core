@@ -5,9 +5,15 @@
   </a>
 </div>
 
-<div class="tab-content user-management">
+<div class="loader" ng-show="loading"></div>
 
-  <div class="row selection-heading">
+<div class="tab-content user-management" ng-hide="loading">
+
+  <p ng-show="error" class="alert alert-danger" role="alert">
+    {{'Error fetching users' | translate}}
+  </p>
+
+  <div class="row selection-heading" ng-hide="error">
     <div class="col-xs-2">{{'User Name' | translate}}</div>
     <div class="col-xs-2">{{'Full Name' | translate}}</div>
     <div class="col-xs-2">{{'User Type' | translate}}</div>

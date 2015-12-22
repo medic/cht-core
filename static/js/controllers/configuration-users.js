@@ -9,8 +9,11 @@
     function ($scope, $rootScope, $state, Users) {
 
       $scope.updateList = function() {
+        $scope.loading = true;
         Users(function(err, users) {
+          $scope.loading = false;
           if (err) {
+            $scope.error = true;
             return console.log('Error fetching users', err);
           }
           $scope.users = users;
