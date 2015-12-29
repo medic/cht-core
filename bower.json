@@ -21,7 +21,7 @@
     "async": "~1.4.0",
     "bootstrap": "~3.3.5",
     "bootstrap-daterangepicker": "~1.3.19",
-    "bootstrap-tour": "~0.10.2",
+    "bootstrap-tour": "https://github.com/SCdF/bootstrap-tour.git#v0.10.3",
     "d3": "~3.4.11",
     "fontawesome": "~4.4.0",
     "jquery": "~2.1.4",
