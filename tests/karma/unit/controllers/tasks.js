@@ -25,9 +25,7 @@ describe('TasksCtrl controller', function() {
       return $controller('TasksCtrl', {
         '$scope': scope,
         'TaskGenerator': TaskGenerator,
-        '$timeout': function(cb) {
-          cb();
-        }
+        '$timeout': KarmaUtils.inlineTimeout
       });
     };
   }));

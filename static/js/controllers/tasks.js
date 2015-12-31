@@ -69,6 +69,7 @@ var _ = require('underscore');
       TaskGenerator('TasksCtrl', function(err, tasks) {
         if (err) {
           $log.error('Error getting tasks', err);
+          $scope.loading = false;
           $scope.error = true;
           $scope.tasks = [];
           $scope.clearSelected();
