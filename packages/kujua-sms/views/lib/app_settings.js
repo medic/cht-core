@@ -201,6 +201,13 @@ module.exports = {
         "national_admin",
         "district_admin"
       ]
+    },
+    {
+      "name": "can_edit_profile",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
     }
   ],
   "forms": {
