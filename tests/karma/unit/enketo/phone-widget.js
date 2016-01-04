@@ -113,5 +113,4 @@ describe('phone-widget', function() {
 		// No extra field
 		chai.expect($('input').length).to.equal(1);
 	});
-
 });
