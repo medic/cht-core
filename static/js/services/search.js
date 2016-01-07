@@ -10,15 +10,17 @@ var _ = require('underscore'),
   inboxServices.factory('Search', ['DB', 'DbView', 'GenerateSearchRequests',
     function(DB, DbView, GenerateSearchRequests) {
 
-      var _currentQuery;
+      var _currentQueryString, _currentQueryScope;
 
-      var debounce = function(requests) {
+      var debounce = function(scope, requests) {
         var queryString = JSON.stringify(requests);
-        if (queryString === _currentQuery) {
+        if (scope === _currentQueryScope &&
+            queryString === _currentQueryString) {
           // debounce as same query already running
           return true;
         }
-        _currentQuery = queryString;
+        _currentQueryScope = scope;
+        _currentQueryString = queryString;
         return false;
       };
 
@@ -98,7 +100,7 @@ var _ = require('underscore'),
         } catch(e) {
           return callback(e);
         }
-        if (!options.force && debounce(requests)) {
+        if (!options.force && debounce($scope, requests)) {
           return;
         }
         callback(null, requests);
@@ -115,7 +117,7 @@ var _ = require('underscore'),
             return callback(err);
           }
           execute(requests, options, function(err, results) {
-            _currentQuery = null;
+            _currentQueryScope = _currentQueryString = null;
             callback(err, results);
           });
         });
