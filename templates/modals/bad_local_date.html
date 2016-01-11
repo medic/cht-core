@@ -1,0 +1,19 @@
+<div id="bad-local-date" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
+        <h3>{{'Bad Date Setting' | translate}}</h3>
+      </div>
+      <div class="modal-body">
+        <p>{{'Date/time appear to be set incorrectly on this device.  Having the wrong date or time means your data will be corrupt, and may mean you miss targets.' | translate}}</p>
+        <p>{{"Please correct your device's date and time settings." | translate}}</p>
+        <p>{{'Reported date' | translate}}: <span ng-bind-html="reportedLocalDate | fullDate"></span></p>
+        <p>{{'Expected date' | translate}}: <span ng-bind-html="expectedLocalDate | fullDate"></span></p>
+      </div>
+      <div class="modal-footer">
+        <a class="btn submit" data-dismiss="modal">{{'I understand' | translate}}</a>
+      </div>
+    </div>
+  </div>
+</div>
