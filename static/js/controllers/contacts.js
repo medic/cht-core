@@ -9,7 +9,7 @@ var _ = require('underscore'),
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('ContactsCtrl', 
+  inboxControllers.controller('ContactsCtrl',
     ['$log', '$rootScope', '$scope', '$state', '$timeout', 'Changes', 'UserSettings', 'Search',
     function ($log, $rootScope, $scope, $state, $timeout, Changes, UserSettings, Search) {
 
@@ -36,6 +36,11 @@ var _ = require('underscore'),
         }
       }
 
+      function completeLoad() {
+        $scope.loading = false;
+        $scope.appending = false;
+      }
+
       $scope.query = function(options) {
         options = options || {};
         options.limit = 50;
@@ -53,8 +58,6 @@ var _ = require('underscore'),
         // callback as the final callback argument
         var contactSearch = _.partial(Search, $scope, options);
         async.parallel([ contactSearch, UserSettings ], function(err, results) {
-          $scope.loading = false;
-          $scope.appending = false;
           if (err) {
             $scope.error = true;
             return $log.error('Error searching for contacts', err);
@@ -67,7 +70,8 @@ var _ = require('underscore'),
           if (options.skip) {
             $timeout(function() {
               $scope.contacts.push.apply($scope.contacts, data);
-            });
+            })
+            .then(completeLoad);
           } else if (options.silent) {
             _.each(data, function(update) {
               var existing = _.findWhere($scope.contacts, { _id: update._id });
@@ -77,6 +81,7 @@ var _ = require('underscore'),
                 $scope.contacts.push(update);
               }
             });
+            completeLoad();
           } else {
             $timeout(function() {
               $scope.contacts = data;
@@ -97,7 +102,8 @@ var _ = require('underscore'),
                   $state.go('contacts.detail', { id: id }, { location: 'replace' });
                 });
               }
-            });
+            })
+            .then(completeLoad);
           }
         });
       };

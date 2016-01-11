@@ -50,6 +50,9 @@ var _ = require('underscore');
             }
             $scope.tasks.push(task);
           });
+        })
+        .then(function() {
+          $scope.loading = false;
         });
       };
 
@@ -64,9 +67,9 @@ var _ = require('underscore');
       $scope.error = false;
 
       TaskGenerator('TasksCtrl', function(err, tasks) {
-        $scope.loading = false;
         if (err) {
           $log.error('Error getting tasks', err);
+          $scope.loading = false;
           $scope.error = true;
           $scope.tasks = [];
           $scope.clearSelected();

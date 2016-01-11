@@ -30,5 +30,11 @@ window.KarmaUtils = {
         getRemoteUrl: getRemoteUrl
       };
     };
+  },
+  inlineTimeout: function(work) {
+    work();
+    return {'then': function(then) {
+      then();
+    }};
   }
 };

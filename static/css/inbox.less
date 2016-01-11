@@ -322,7 +322,7 @@ body {
   .navigation span, .reset-filter {
     line-height: 38px;
     > a {
-      width: 2em;
+      width: 3em;
     }
   }
 
@@ -1218,6 +1218,11 @@ a.fa:hover {
     .right-pane {
       position: absolute;
       top: 0;
+      .filter-bar-back a {
+        &:hover, &:active {
+          color: #777777;
+        }
+      }
     }
     h2 {
       display: initial;
@@ -1260,6 +1265,9 @@ a.fa:hover {
       .search-pane {
         padding: 1em;
       }
+    }
+    .reset-filter {
+      float: right;
     }
   }
   .header {
