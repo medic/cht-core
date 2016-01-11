@@ -1,0 +1,18 @@
+<div id="bad-local-date" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
+        <h3>{{'date.incorrect.title' | translate}}</h3>
+      </div>
+      <div class="modal-body">
+        <span ng-bind-html="'date.incorrect.description' | translate"></span>
+        <p>{{'date.incorrect.reported' | translate}}: <span ng-bind-html="reportedLocalDate | fullDate"></span></p>
+        <p>{{'date.incorrect.expected' | translate}}: <span ng-bind-html="expectedLocalDate | fullDate"></span></p>
+      </div>
+      <div class="modal-footer">
+        <a class="btn submit" data-dismiss="modal">{{'date.incorrect.confirm' | translate}}</a>
+      </div>
+    </div>
+  </div>
+</div>
