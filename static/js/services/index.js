@@ -36,6 +36,7 @@
   require('./import-contacts');
   require('./kanso-packages');
   require('./language');
+  require('./markdown');
   require('./mark-read');
   require('./message-contacts');
   require('./message-state');

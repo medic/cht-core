@@ -502,3 +502,11 @@ exports.forms = {
         emit(doc.internalId);
     }
 };
+
+exports.help_pages = {
+    map: function(doc) {
+        if (doc.type === 'help' && doc._id.indexOf('help:') === 0) {
+            emit(doc._id.substring(5), doc.title);
+        }
+    }
+};
