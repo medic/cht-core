@@ -16,8 +16,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'ConflictResolution', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, ConflictResolution, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'ConflictResolution', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth',
+    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, ConflictResolution, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth) {
 
       Session.init();
       DBSync();
@@ -920,6 +920,9 @@ require('moment/locales');
         var pane = modal.start($('#feedback'));
         var message = $('#feedback [name=feedback]').val();
         feedback.submit(message, APP_CONFIG, function(err) {
+          if (!err) {
+            Snackbar(translateFilter('feedback.submitted'));
+          }
           pane.done(translateFilter('Error saving feedback'), err);
         });
       };
