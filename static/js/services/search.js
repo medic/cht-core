@@ -12,11 +12,13 @@ var _ = require('underscore'),
 
       var _currentQueryString, _currentQueryScope;
 
+      // Silently cancel repeated queries.  We decide if the query is repeated
+      // by checking if its search string and scope are identical to the
+      // previous query.
       var debounce = function(scope, requests) {
         var queryString = JSON.stringify(requests);
         if (scope === _currentQueryScope &&
             queryString === _currentQueryString) {
-          // debounce as same query already running
           return true;
         }
         _currentQueryScope = scope;
