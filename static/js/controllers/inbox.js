@@ -912,6 +912,10 @@ require('moment/locales');
         });
       };
 
+      $scope.prepareFeedback = function() {
+        $('#feedback [name=feedback]').val('');
+      };
+
       $scope.submitFeedback = function() {
         var pane = modal.start($('#feedback'));
         var message = $('#feedback [name=feedback]').val();
