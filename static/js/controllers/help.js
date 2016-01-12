@@ -5,23 +5,20 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('HelpCtrl',
-    ['$scope', 'Session', 'Debug', 'DB',
-    function ($scope, Session, Debug, DB) {
+    ['$scope', '$stateParams', 'DB', 'Markdown',
+    function ($scope, $stateParams, DB, Markdown) {
       $scope.filterModel.type = 'help';
-      $scope.url = window.location.hostname;
-      $scope.userCtx = Session.userCtx();
-      $scope.reload = function() {
-        window.location.reload(false);
-      };
-      $scope.enableDebugModel = {
-        val: Debug.get()
-      };
-      $scope.$watch('enableDebugModel.val', Debug.set);
-      DB.get().info().then(function (result) {
-        $scope.dbInfo = JSON.stringify(result, null, 2);
-      }).catch(function (err) {
-        console.error('Failed to fetch DB info', err);
-      });
+      $scope.loading = true;
+
+      var docId = 'help:' + $stateParams.page;
+
+      DB.get().get(docId)
+        .then(function(doc) {
+          $scope.loading = false;
+          // TODO this should not be hardcoded to english!
+          $scope.title = doc.title['en'];
+          $scope.body = Markdown.basic(doc.body['en']);
+        });
     }
   ]);
 

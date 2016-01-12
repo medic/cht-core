@@ -281,11 +281,17 @@ _.templateSettings = {
           }
         })
 
-        // help
+        // about page
+        .state('about', {
+          url: '/about',
+          controller: 'AboutCtrl',
+          templateUrl: 'templates/partials/about.html'
+        })
+
         .state('help', {
-          url: '/help',
+          url: '/help/{page}',
           controller: 'HelpCtrl',
-          templateUrl: 'templates/partials/help.html'
+          templateUrl: 'templates/partials/help.html',
         })
 
         // theme design testing page

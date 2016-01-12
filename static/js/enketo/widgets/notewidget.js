@@ -50,6 +50,7 @@ define( function( require, exports, module ) {
 
     Notewidget.prototype._init = function() {
         var $el = $( this.element );
+        var markdownToHtml = angular.element(document.body).injector().get('Markdown').element;
         markdownToHtml($el.find( '.question-label' ));
         $el.find( '[readonly]' ).addClass( 'ignore' );
 
@@ -82,43 +83,3 @@ define( function( require, exports, module ) {
         'selector': '.note'
     };
 } );
-
-/**
- * Supports a small subset of MarkDown and converts this to HTML: _, __, *, **, []()
- * Also converts newline characters
- *
- * Not supported: escaping and other MarkDown syntax
- */
-function markdownToHtml( e ) {
-    return e.each( function() {
-        var html,
-            $childStore = $( '<div/>' );
-        $( this ).children( ':not(input, select, textarea)' ).each( function( index ) {
-            var name = '$$$' + index;
-            markdownToHtml( $( this ).clone() ).appendTo( $childStore );
-            $( this ).replaceWith( name );
-        } );
-        html = $( this ).html();
-
-        // Convert markdown
-        html = html.replace( /__([^\s]([^_]*[^\s])?)__/gm, '<strong>$1</strong>' );
-        html = html.replace( /\*\*([^\s]([^*]*[^\s])?)\*\*/gm, '<strong>$1</strong>' );
-        html = html.replace( /_([^_\s]([^_]*[^_\s])?)_/gm, '<em>$1</em>' );
-        html = html.replace( /\*([^*\s]([^\*]*[^*\s])?)\*/gm, '<em>$1</em>' );
-        html = html.replace( /\[([^\]]*)\]\(([^\)]+)\)/gm, '<a href="$2" target="_blank">$1</a>' );
-        html = html.replace( /\n/gm, '<br />' );
-
-        // Convert embedded HTML
-        html = html.replace(/&amp;/g, '&');
-        html = html.replace(/&lt;/g, '<');
-        html = html.replace(/&gt;/g, '>');
-        html = html.replace(/&quot;/g, '"');
-        html = html.replace(/&#039;/g, '\'');
-
-        $childStore.children().each( function( i ) {
-            var regex = new RegExp( '\\$\\$\\$' + i );
-            html = html.replace( regex, $( this )[ 0 ].outerHTML );
-        } );
-        $( this ).text( '' ).append( html );
-    } );
-}
