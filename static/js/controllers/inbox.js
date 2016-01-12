@@ -170,6 +170,12 @@ require('moment/locales');
           return true;
         }
 
+        // If we're viewing a help page, return to the about page
+        if ($state.includes('help')) {
+          $state.go('about');
+          return true;
+        }
+
         // If we're viewing a tab, but not the primary tab, go to primary tab
         var primaryState = $('#messages-tab:visible').length ? 'messages' : 'tasks';
         if (!$state.includes(primaryState)) {
