@@ -21,8 +21,12 @@
         <i class="fa fa-arrow-circle-o-down"></i>
         {{'Export' | translate}}
       </a>
-      <a ui-sref="configuration.users" mm-auth="can_configure">
+      <a ui-sref="configuration.user" mm-auth="can_configure">
         <i class="fa fa-user"></i>
+        {{'edit.user.settings' | translate}}
+      </a>
+      <a ui-sref="configuration.users" mm-auth="can_configure">
+        <i class="fa fa-users"></i>
         {{'Users' | translate}}
       </a>
       <a ui-sref="configuration.icons" mm-auth="can_configure">
