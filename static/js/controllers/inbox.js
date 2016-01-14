@@ -1,24 +1,22 @@
 var feedback = require('feedback'),
-    _ = require('underscore'),
-    moment = require('moment'),
-    sendMessage = require('../modules/send-message'),
-    tour = require('../modules/tour'),
-    modal = require('../modules/modal'),
-    format = require('../modules/format'),
-    guidedSetup = require('../modules/guided-setup');
+  _ = require('underscore'),
+  moment = require('moment'),
+  sendMessage = require('../modules/send-message'),
+  tour = require('../modules/tour'),
+  modal = require('../modules/modal'),
+  format = require('../modules/format'),
+  guidedSetup = require('../modules/guided-setup');
 
 require('moment/locales');
 
-(function () {
+(function() {
 
   'use strict';
 
   var inboxControllers = angular.module('inboxControllers', []);
 
-  inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'ConflictResolution', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, ConflictResolution, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth) {
-
+  inboxControllers.controller('InboxCtrl', ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'ConflictResolution', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth',
+    function($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, ConflictResolution, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth) {
       Session.init();
       DBSync();
       feedback.init(
@@ -44,7 +42,9 @@ require('moment/locales');
       $scope.facilities = [];
       $scope.people = [];
       $scope.totalItems = undefined;
-      $scope.filterQuery = { value: undefined };
+      $scope.filterQuery = {
+        value: undefined
+      };
       $scope.analyticsModules = [];
       $scope.version = APP_CONFIG.version;
       $scope.actionBar = {};
@@ -80,16 +80,16 @@ require('moment/locales');
         // If there are any select2 dropdowns open, close them.  The select
         // boxes are closed while they are checked - this saves us having to
         // iterate over them twice
-        if(_.chain($container.find('select.select2-hidden-accessible'))
-            .map(function(e) {
-              e = $(e);
-              if(e.select2('isOpen')) {
-                e.select2('close');
-                return true;
-              }
-            })
-            .contains(true)
-            .value()) {
+        if (_.chain($container.find('select.select2-hidden-accessible'))
+          .map(function(e) {
+            e = $(e);
+            if (e.select2('isOpen')) {
+              e.select2('close');
+              return true;
+            }
+          })
+          .contains(true)
+          .value()) {
           return true;
         }
 
@@ -136,14 +136,14 @@ require('moment/locales');
             // Try to close by clicking modal's top-right `X` or `[ Cancel ]`
             // button.
             $topModal.find('.btn.cancel:visible:not(:disabled),' +
-                'button.cancel.close:visible:not(:disabled)').click();
+              'button.cancel.close:visible:not(:disabled)').click();
           }
           return true;
         }
 
         // If the hotdog hamburger options menu is open, close it
         var $optionsMenu = $('.dropdown.options.open');
-        if($optionsMenu.length) {
+        if ($optionsMenu.length) {
           $optionsMenu.removeClass('open');
           return true;
         }
@@ -193,7 +193,9 @@ require('moment/locales');
 
       $scope.closeContentPane = function() {
         $scope.clearSelected();
-        $state.go($state.current.name, { id: null });
+        $state.go($state.current.name, {
+          id: null
+        });
       };
 
       $scope.clearSelected = function() {
@@ -244,7 +246,10 @@ require('moment/locales');
         return _.contains(message.read, Session.userCtx().name);
       };
 
-      $scope.readStatus = { forms: 0, messages: 0 };
+      $scope.readStatus = {
+        forms: 0,
+        messages: 0
+      };
 
       $scope.filterModel = {
         type: 'messages',
@@ -253,7 +258,7 @@ require('moment/locales');
         contactTypes: [],
         valid: undefined,
         verified: undefined,
-        date: { }
+        date: {}
       };
 
       $scope.resetFilterModel = function() {
@@ -288,11 +293,14 @@ require('moment/locales');
           $scope.facilities = hierarchy;
           $scope.facilitiesCount = total;
         });
-        Facility({ types: [ 'person' ] }, function(err, people) {
+        Facility({
+          types: ['person']
+        }, function(err, people) {
           if (err) {
             return console.log('Failed to retrieve people', err);
           }
           $scope.people = people;
+
           function formatResult(doc) {
             return doc && format.contact(doc);
           }
@@ -309,52 +317,57 @@ require('moment/locales');
           }
 
           $.fn.select2.amd.require(
-          ['select2/data/array', 'select2/utils'],
-          function (ArrayData, Utils) {
-            function CustomData ($element, options) {
-              CustomData.__super__.constructor.call(this, $element, options);
-            }
+            ['select2/data/array', 'select2/utils'],
+            function(ArrayData, Utils) {
+              function CustomData($element, options) {
+                CustomData.__super__.constructor.call(this, $element, options);
+              }
 
-            Utils.Extend(CustomData, ArrayData);
+              Utils.Extend(CustomData, ArrayData);
 
-            function sortResults(results) {
-              results.sort(function(a, b) {
-                var aName = formatResult(a).toLowerCase();
-                var bName = formatResult(b).toLowerCase();
-                return aName.localeCompare(bName);
-              });
-              return results;
-            }
-
-            CustomData.prototype.query = function (params, callback) {
-              var terms = params.term ? params.term.toLowerCase().split(/\s+/) : [];
-
-              var matches = _.filter(people, function(doc) {
-                var contact = doc.contact;
-                var name = contact && contact.name;
-                var phone = contact && contact.phone;
-                var tags = [ doc.name, name, phone ].join(' ').toLowerCase();
-                return _.every(terms, function(term) {
-                  return tags.indexOf(term) > -1;
+              function sortResults(results) {
+                results.sort(function(a, b) {
+                  var aName = formatResult(a).toLowerCase();
+                  var bName = formatResult(b).toLowerCase();
+                  return aName.localeCompare(bName);
                 });
+                return results;
+              }
+
+              CustomData.prototype.query = function(params, callback) {
+                var terms = params.term ? params.term.toLowerCase().split(/\s+/) : [];
+
+                var matches = _.filter(people, function(doc) {
+                  var contact = doc.contact;
+                  var name = contact && contact.name;
+                  var phone = contact && contact.phone;
+                  var tags = [doc.name, name, phone].join(' ').toLowerCase();
+                  return _.every(terms, function(term) {
+                    return tags.indexOf(term) > -1;
+                  });
+                });
+
+                matches = sortResults(matches);
+                matches = _.map(matches, function(doc) {
+                  return {
+                    id: doc._id,
+                    doc: doc
+                  };
+                });
+
+                callback({
+                  results: matches
+                });
+              };
+
+              $('.update-facility [name=facility], #edit-user-profile [name=contact]').select2({
+                dataAdapter: CustomData,
+                templateResult: $formatResult,
+                templateSelection: formatSelection,
+                width: '100%',
               });
 
-              matches = sortResults(matches);
-              matches = _.map(matches, function(doc) {
-                return { id: doc._id, doc: doc };
-              });
-
-              callback({ results: matches });
-            };
-
-            $('.update-facility [name=facility], #edit-user-profile [name=contact]').select2({
-              dataAdapter: CustomData,
-              templateResult: $formatResult,
-              templateSelection: formatSelection,
-              width: '100%',
             });
-
-          });
 
         });
       };
@@ -372,11 +385,13 @@ require('moment/locales');
         filter: function(change) {
           if (change.newDoc) {
             // check if new document is a contact
-            return ['person','clinic','health_center','district_hospital']
+            return ['person', 'clinic', 'health_center', 'district_hospital']
               .indexOf(change.newDoc.type) !== -1;
           }
           // check known people
-          if (_.findWhere($scope.people, { _id: change.id })) {
+          if (_.findWhere($scope.people, {
+              _id: change.id
+            })) {
             return true;
           }
           // check known places
@@ -460,10 +475,12 @@ require('moment/locales');
           var btn = $(this);
           btn.addClass('disabled');
           var selected = $(this).closest('.modal-content')
-                                .find('.selected')
-                                .attr('data-value');
+            .find('.selected')
+            .attr('data-value');
           var id = 'org.couchdb.user:' + Session.userCtx().name;
-          UpdateUser(id, { language: selected }, function(err) {
+          UpdateUser(id, {
+            language: selected
+          }, function(err) {
             btn.removeClass('disabled');
             if (err) {
               return console.log('Error updating user', err);
@@ -510,7 +527,9 @@ require('moment/locales');
           render: function(callback) {
             $('#guided-setup').modal('show');
             $('#guided-setup').on('hide.bs.modal', callback);
-            UpdateSettings({ setup_complete: true }, function(err) {
+            UpdateSettings({
+              setup_complete: true
+            }, function(err) {
               if (err) {
                 console.log('Error marking setup_complete', err);
               }
@@ -525,7 +544,9 @@ require('moment/locales');
           render: function() {
             tour.start('intro', translateFilter);
             var id = 'org.couchdb.user:' + Session.userCtx().name;
-            UpdateUser(id, { known: true }, function(err) {
+            UpdateUser(id, {
+              known: true
+            }, function(err) {
               if (err) {
                 console.log('Error updating user', err);
               }
@@ -570,7 +591,9 @@ require('moment/locales');
             fullname: user.fullname,
             email: user.email,
             phone: user.phone,
-            language: { code: user.language },
+            language: {
+              code: user.language
+            },
             contact_id: user.contact_id
           };
           if (callback) {
@@ -640,11 +663,14 @@ require('moment/locales');
 
       var deleteMessageId;
 
+      // Called by clicking delete icon.
       $scope.deleteDoc = function(id) {
         $('#delete-confirm').modal('show');
         deleteMessageId = id;
       };
+      // TODO(estellecomment): forget deleteMessageId on modal close.
 
+      // Called by clicking confirm in delete dialog.
       $scope.deleteDocConfirm = function() {
         var pane = modal.start($('#delete-confirm'));
         if (deleteMessageId) {
@@ -742,7 +768,7 @@ require('moment/locales');
 
           $translate.use(language);
 
-          $translate('date.to').then(function () {
+          $translate('date.to').then(function() {
 
             $('#formTypeDropdown, #facilityDropdown, #contactTypeDropdown').each(function() {
               $(this).multiDropdown({
@@ -754,7 +780,9 @@ require('moment/locales');
                     return callback(state.selected.first().text());
                   }
                   callback($translate.instant(
-                    state.menu.data('filter-label'), { number: state.selected.length }
+                    state.menu.data('filter-label'), {
+                      number: state.selected.length
+                    }
                   ));
                 },
                 selectAllLabel: $translate.instant('select all'),
@@ -792,42 +820,42 @@ require('moment/locales');
             var start = $scope.filterModel.date.from ?
               moment($scope.filterModel.date.from) : moment().subtract(1, 'months');
             $('#date-filter').daterangepicker({
-              startDate: start,
-              endDate: moment($scope.filterModel.date.to),
-              maxDate: moment(),
-              opens: 'center',
-              applyClass: 'btn-primary',
-              cancelClass: 'btn-link',
-              locale: {
-                applyLabel: $translate.instant('Apply'),
-                cancelLabel: $translate.instant('Cancel'),
-                fromLabel: $translate.instant('date.from'),
-                toLabel: $translate.instant('date.to'),
-                daysOfWeek: moment.weekdaysMin(),
-                monthNames: moment.monthsShort(),
-                firstDay: moment.localeData()._week.dow
-              }
-            },
-            function(start, end) {
-              var scope = angular.element($('body')).scope();
-              if (scope) {
-                scope.$apply(function() {
-                  scope.filterModel.date.from = start.valueOf();
-                  scope.filterModel.date.to = end.valueOf();
-                });
-              }
-            })
-            .on('mm.dateSelected.daterangepicker', function(e, picker) {
-              if ($scope.isMobile()) {
-                // mobile version - only show one calendar at a time
-                if (picker.container.is('.show-from')) {
-                  picker.container.removeClass('show-from').addClass('show-to');
-                } else {
-                  picker.container.removeClass('show-to').addClass('show-from');
-                  picker.hide();
+                  startDate: start,
+                  endDate: moment($scope.filterModel.date.to),
+                  maxDate: moment(),
+                  opens: 'center',
+                  applyClass: 'btn-primary',
+                  cancelClass: 'btn-link',
+                  locale: {
+                    applyLabel: $translate.instant('Apply'),
+                    cancelLabel: $translate.instant('Cancel'),
+                    fromLabel: $translate.instant('date.from'),
+                    toLabel: $translate.instant('date.to'),
+                    daysOfWeek: moment.weekdaysMin(),
+                    monthNames: moment.monthsShort(),
+                    firstDay: moment.localeData()._week.dow
+                  }
+                },
+                function(start, end) {
+                  var scope = angular.element($('body')).scope();
+                  if (scope) {
+                    scope.$apply(function() {
+                      scope.filterModel.date.from = start.valueOf();
+                      scope.filterModel.date.to = end.valueOf();
+                    });
+                  }
+                })
+              .on('mm.dateSelected.daterangepicker', function(e, picker) {
+                if ($scope.isMobile()) {
+                  // mobile version - only show one calendar at a time
+                  if (picker.container.is('.show-from')) {
+                    picker.container.removeClass('show-from').addClass('show-to');
+                  } else {
+                    picker.container.removeClass('show-to').addClass('show-from');
+                    picker.hide();
+                  }
                 }
-              }
-            });
+              });
             $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
 
             $('#formTypeDropdown').on('update', function() {
@@ -899,7 +927,9 @@ require('moment/locales');
 
       $scope.fetchAnalyticsModules()
         .then(function(modules) {
-          if (_.findWhere(modules, { id: 'anc' })) {
+          if (_.findWhere(modules, {
+              id: 'anc'
+            })) {
             Auth('can_view_analytics').then(function() {
               $scope.tours.push({
                 order: 3,
@@ -957,7 +987,9 @@ require('moment/locales');
           $('select.select2-hidden-accessible').each(function(i, e) {
             // prevent errors being thrown if selecters have not been
             // initialised before the update dialog is to be shown
-            try { $(e).select2('close'); } catch(e) {}
+            try {
+              $(e).select2('close');
+            } catch (e) {}
           });
         };
         window.applicationCache.addEventListener('updateready', showUpdateReady);
