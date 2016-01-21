@@ -54,16 +54,25 @@
       width: 100%;
     }
   }
-  .question .geopicker input {
-    width: 80%;
+  .question {
+    .required {
+      float: left;
+      position: relative;
+      left: -10px;
+      margin-right: -10px;
+      top: 0;
+    }
+    .geopicker input {
+      width: 80%;
+    }
+    input[type="tel"] {
+      /* inherit all standard TEXT input styles */
+      &:extend(.enketo .question input[type="text"]);
+    }
   }
   input[type="tel"] {
     /* inherit all standard TEXT input styles */
     &:extend(.enketo input[type="text"]);
-  }
-  .question input[type="tel"] {
-    /* inherit all standard TEXT input styles */
-    &:extend(.enketo .question input[type="text"]);
   }
   .invalid-constraint, .invalid-required {
     margin: 0;

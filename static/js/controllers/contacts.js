@@ -16,6 +16,7 @@ var _ = require('underscore'),
       $scope.filterModel.type = 'contacts';
       $scope.contacts = [];
       $scope.selected = null;
+      $scope.loading = true;
 
       var _merge = function(to, from) {
         if (from._rev !== to._rev) {
