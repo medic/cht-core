@@ -650,6 +650,12 @@ require('moment/locales');
         if (deleteMessageId) {
           DeleteDoc(deleteMessageId, function(err) {
             pane.done(translateFilter('Error deleting document'), err);
+            if (err) {
+              pane.done(translateFilter('Error deleting document'), err);
+              return;
+            }
+            pane.done();
+            $state.go('contacts');
           });
         } else {
           pane.done(translateFilter('Error deleting document'), 'No deleteMessageId set');
