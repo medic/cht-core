@@ -92,7 +92,7 @@ describe('Tasks', function() {
         }, function(err) {
           console.log('Error saving contact', err);
           done();
-        })
+        });
     });
   });
 
