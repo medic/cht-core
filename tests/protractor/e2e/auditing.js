@@ -65,18 +65,20 @@ describe('Auditing', function() {
     expect(selectedTab.getText()).toEqual('Messages');
 
     // check message is displayed correctly
+    element(by.css('.inbox-items li[data-record-id="+64555555555"]')).click();
     var newMessage = element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .data p span'));
     expect(newMessage.getText()).toEqual('hello!');
 
     // delete the message
-    element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .data p span')).click();
+    browser.sleep(1000);
+    newMessage.click();
     element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .fa-trash-o')).click();
     var confirmButton = element(by.css('#delete-confirm .submit'));
     browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton), 5000);
     confirmButton.click();
 
     // TODO find a better way to wait for DB to update
-    browser.sleep(1000);
+    browser.waitForAngular();
 
     var flow = protractor.promise.controlFlow();
     
@@ -96,10 +98,9 @@ describe('Auditing', function() {
       return utils.getAuditDoc(savedUuid);
     }).then(function(viewResult) {
       var doc = viewResult.rows[0].doc;
-      expect(doc.history.length).toEqual(2);
-      expect(doc.history[1].action).toEqual('delete');
-      expect(doc.history[1].user).toEqual(auth.getAuth().user);
-      expect(doc.history[1].doc._deleted).toEqual(true);
+      expect(doc.history.length).toEqual(1);
+      expect(doc.history[0].user).toEqual(auth.getAuth().user);
+      expect(doc.history[0].doc._deleted).toEqual(true);
     }, function(err) {
       console.error('Error fetching audit doc', err);
       expect(true).toEqual(false);
