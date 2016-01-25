@@ -25,7 +25,7 @@ var _ = require('underscore'),
         _.defaults(options, {
           live: true,
           retry: true,
-          timeout: 1000 * 60 * 60,
+          timeout: false,
           back_off_function: backOffFunction
         });
         var direction = from ? 'from' : 'to';
