@@ -13,7 +13,11 @@ The web app is fully responsive with a mobile-first design, and supports localiz
 
 For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
 
-## Dependencies
+## Development Setup
+
+Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/md/dev/workflow.md).
+
+### Dependencies
 
 You will need to install the following:
 
@@ -168,7 +172,7 @@ http://localhost:5988/medic/login
 ```
 
 
-## Tests
+### Tests
 
 To run precommit tests:
 
@@ -180,7 +184,7 @@ To run precommit tests:
 
 Some kanso tests are run in-browser; you can run them manually if you browse to `/medic/_design/medic/_rewrite/test`.
 
-## Loading Data
+### Loading Data
 
 Loading your form definitions in the settings interface is supported, but you can
 also do that from command line:
@@ -207,7 +211,7 @@ curl -i -u gateway:123qwe \
 ```
 
 
-## Deploy to Market
+### Deploy to Market
 
 When deploying to the market, include the sentinel package in the couchapp so
 [gardener](https://github.com/garden20/gardener) can manage the process. This
