@@ -275,6 +275,11 @@ module.exports = function(grunt) {
         configFile: './tests/karma/karma-unit.conf.js',
         singleRun: true,
         browsers: ['Firefox']
+      },
+      unit_continuous: {
+        configFile: './tests/karma/karma-unit.conf.js',
+        singleRun: false,
+        browsers: ['Chrome']
       }
     },
     protractor: {
@@ -387,6 +392,11 @@ module.exports = function(grunt) {
     'jshint',
     'karma:unit',
     'protractor'
+  ]);
+
+  grunt.registerTask('test_continuous', 'Lint, unit test running on a loop', [
+    'jshint',
+    'karma:unit_continuous'
   ]);
 
   var browserifyMappings = [
