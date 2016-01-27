@@ -296,6 +296,7 @@ _.templateSettings = {
         });
 
       $urlRouterProvider.when('', '/home');
+      $translateProvider.statefulFilter(false);
       $translateProvider.useLoader('SettingsLoader', {});
       $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
     }
