@@ -75,6 +75,7 @@ var _ = require('underscore'),
             return $log.error('Error initializing DB sync', err);
           }
           replicate(true, {
+            batch_size: 1,
             filter: 'medic/doc_by_place',
             query_params: params
           });
