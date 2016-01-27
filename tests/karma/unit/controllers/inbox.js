@@ -143,26 +143,21 @@ describe('InboxCtrl controller', function() {
         });
       };
     });
+
+    createController();
+    spyDeleteDoc.reset();
+    spyState.go.reset();    
   });
 
   afterEach(function() {});
 
-  it('creates controller', function() {
-    createController();
-  });
-
   it('deletes contact', function() {
-    createController();
-    spyDeleteDoc.reset();
     scope.deleteDoc(dummyId);
     scope.deleteDocConfirm();
     chai.expect(spyDeleteDoc.getCall(0).args[0]).to.equal(dummyId);
   });
 
   it('navigates back to contacts state after deleting contact', function() {
-    createController();
-    spyDeleteDoc.reset();
-    spyState.go.reset();
     scope.deleteDoc(dummyId);
     scope.deleteDocConfirm();
     var callback = spyDeleteDoc.getCall(0).args[1];
@@ -172,9 +167,6 @@ describe('InboxCtrl controller', function() {
   });
 
   it('doesn\'t navigate back to contacts state after failed contact deletion', function() {
-    createController();
-    spyDeleteDoc.reset();
-    spyState.go.reset();
     scope.deleteDoc(dummyId);
     scope.deleteDocConfirm();
     var callback = spyDeleteDoc.getCall(0).args[1];
@@ -184,9 +176,6 @@ describe('InboxCtrl controller', function() {
   });
 
   it('can\'t deleteContact before user confirmed', function() {
-    createController();
-    spyDeleteDoc.reset();
-    spyState.go.reset();
     // Don't call deleteDoc first.
     scope.deleteDocConfirm();
     chai.assert.isFalse(spyDeleteDoc.called, 'Deletion should not happen');
