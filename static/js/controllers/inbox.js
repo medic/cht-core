@@ -640,16 +640,24 @@ require('moment/locales');
 
       var deleteMessageId;
 
+      // Called by clicking delete icon.
       $scope.deleteDoc = function(id) {
         $('#delete-confirm').modal('show');
         deleteMessageId = id;
       };
+      // TODO(estellecomment): forget deleteMessageId on modal close.
 
+      // Called by clicking confirm in delete dialog.
       $scope.deleteDocConfirm = function() {
         var pane = modal.start($('#delete-confirm'));
         if (deleteMessageId) {
           DeleteDoc(deleteMessageId, function(err) {
-            pane.done(translateFilter('Error deleting document'), err);
+            if (err) {
+              pane.done(translateFilter('Error deleting document'), err);
+              return;
+            }
+            pane.done();
+            $state.go('contacts');
           });
         } else {
           pane.done(translateFilter('Error deleting document'), 'No deleteMessageId set');
