@@ -36,6 +36,18 @@ var _ = require('underscore'),
           })
           .on('error', function(err) {
             $log.error('Error replicating ' + direction + ' remote server', err);
+          })
+          .on('change', function (info) {
+            $log.debug('replication change', info);
+          })
+          .on('paused', function () {
+            $log.debug('replication paused');
+          })
+          .on('active', function () {
+            $log.debug('replication active');
+          })
+          .on('complete', function (info) {
+            $log.debug('replication complete', info);
           });
       };
 
@@ -76,7 +88,15 @@ var _ = require('underscore'),
           }
           replicate(true, {
             filter: 'medic/doc_by_place',
-            query_params: params
+            query_params: params,
+            live: false
+          }).on('complete', function (info) {
+            $log.info('initial replication complete: ' + JSON.stringify(info));
+            $log.info('setting up continuous replication from server');
+            replicate(true, {
+              filter: 'medic/doc_by_place',
+              query_params: params
+            });
           });
         });
       };
