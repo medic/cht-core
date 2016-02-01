@@ -5,7 +5,7 @@
         <span ng-bind-html="task.icon | resourceIcon" class="mm-badge"></span>
         <div class="detail">
           <span class="time" ng-bind-html="task.date | relativeDay"></span>
-          <div class="description">{{task.title | translateFrom:task}}</div>
+          <div class="description title">{{task.title | translateFrom:task}}</div>
           <div class="description priority-label">
             <span class="priority">
               <i class="fa fa-exclamation-triangle high-priority-icon"></i>

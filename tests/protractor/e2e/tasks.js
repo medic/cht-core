@@ -117,7 +117,7 @@ describe('Tasks', function() {
     expect(selectedTab.getText()).toEqual('Tasks');
 
     // check list details
-    var taskSummary = element(by.css('#tasks-list ul li[data-record-id="123"] .description'));
+    var taskSummary = element(by.css('#tasks-list ul li[data-record-id="123"] .description.title'));
     expect(taskSummary.getText()).toEqual('Visit');
 
     var taskDueDate = element(by.css('#tasks-list ul li[data-record-id="123"] .relative-date-content'));

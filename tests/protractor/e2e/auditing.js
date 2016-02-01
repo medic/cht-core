@@ -30,7 +30,6 @@ describe('Auditing', function() {
         ]
       }
     ],
-    read: ['gareth'],
     kujua_message: true,
     type: 'data_record',
     sent_by: 'gareth'
@@ -81,7 +80,7 @@ describe('Auditing', function() {
     browser.waitForAngular();
 
     var flow = protractor.promise.controlFlow();
-    
+
     // check the doc is deleted
     flow.execute(function() {
       return utils.getDoc(savedUuid);
@@ -98,9 +97,10 @@ describe('Auditing', function() {
       return utils.getAuditDoc(savedUuid);
     }).then(function(viewResult) {
       var doc = viewResult.rows[0].doc;
-      expect(doc.history.length).toEqual(1);
-      expect(doc.history[0].user).toEqual(auth.getAuth().user);
-      expect(doc.history[0].doc._deleted).toEqual(true);
+      expect(doc.history.length).toEqual(2);
+      expect(doc.history[1].action).toEqual('delete');
+      expect(doc.history[1].user).toEqual(auth.getAuth().user);
+      expect(doc.history[1].doc._deleted).toEqual(true);
     }, function(err) {
       console.error('Error fetching audit doc', err);
       expect(true).toEqual(false);
