@@ -19,6 +19,32 @@ require('moment/locales');
     ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'ConflictResolution', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth',
     function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, ConflictResolution, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth) {
 
+      (function() {
+        var requestOptions = {
+          type: 'HEAD',
+          url: '/api/info/?seed=' + Math.random(),
+          async: true,
+        };
+        $.ajax(requestOptions)
+          .done(function(data, status, xhr) {
+            var header = xhr.getResponseHeader('Date');
+            console.log('Date Header', header);
+            var timestamp = Date.parse(header);
+            if(isNaN(timestamp)) {
+              return;
+            }
+
+            var delta = Math.abs(timestamp - Date.now());
+            if(delta < 10000) {
+              // Date/time differences of less than 10 minutes are not very concerning to us
+              return;
+            }
+            $scope.reportedLocalDate = new Date();
+            $scope.expectedLocalDate = new Date(timestamp);
+            $('#bad-local-date').modal('show');
+          });
+      }());
+
       Session.init();
       DBSync();
       feedback.init(
