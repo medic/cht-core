@@ -106,7 +106,6 @@ define(function(require, exports, module) {
 
 		this.builtPromise = SettingsP()
 			.then(function(settings) {
-				console.log('Got settings : ' + settings);
 				formatAndCopy($proxyInput, $input, settings);
 			});
 	};
