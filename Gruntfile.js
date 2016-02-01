@@ -50,6 +50,21 @@ module.exports = function(grunt) {
           to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'mm.dateSelected.daterangepicker\', this);\n'
         }]
       },
+      // cache the ddoc views for performance
+      monkeypatchpouchtocacheddoc: {
+        src: [ 'bower_components/concat.js' ],
+        overwrite: true,
+        replacements: [
+          {
+            from: /function queryPromised\(db, fun, opts\) \{/g,
+            to: '// MONKEY PATCH BY GRUNT: cache ddoc views.\nfunction getPersistentViews(db, designDocName) {\n  if (!db.persistentViews) {\n    db.persistentViews = {};\n  }\n  if (!db.persistentViews[designDocName]) {\n    db.persistentViews[designDocName] = db.get(\'_design/\' + designDocName).then(function (doc) {\n      return { views: doc.views };\n   });\n  }\n  return db.persistentViews[designDocName];\n}\n\nfunction queryPromised(db, fun, opts) {\n'
+          },
+          {
+            from: /return db\.get\('_design\/' \+ designDocName\)\.then\(function \(doc\) \{/g,
+            to: '// MONKEY PATCH BY GRUNT: cache ddoc views.\n    return getPersistentViews(db, designDocName).then(function (doc) {\n'
+          }
+        ]
+      },
       // replace cache busting which breaks appcache, needed until this is fixed:
       // https://github.com/FortAwesome/Font-Awesome/issues/3286
       monkeypatchfontawesome: {
@@ -351,6 +366,7 @@ module.exports = function(grunt) {
     'bower:install',
     'bower_concat',
     'replace:monkeypatchdate',
+    'replace:monkeypatchpouchtocacheddoc',
     'copy:inbox'
   ]);
 
