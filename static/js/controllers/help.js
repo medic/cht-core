@@ -1,28 +1,30 @@
-(function () {
+'use strict';
 
-  'use strict';
+var inboxControllers = angular.module('inboxControllers');
 
-  var inboxControllers = angular.module('inboxControllers');
+inboxControllers.controller('HelpCtrl',
+  ['$scope', '$stateParams', '$q', 'DB', 'Markdown', 'UserSettings',
+  function ($scope, $stateParams, $q, DB, Markdown, UserSettings) {
+    $scope.filterModel.type = 'help';
+    $scope.loading = true;
 
-  inboxControllers.controller('HelpCtrl',
-    ['$scope', 'Session', 'Debug', 'DB',
-    function ($scope, Session, Debug, DB) {
-      $scope.filterModel.type = 'help';
-      $scope.url = window.location.hostname;
-      $scope.userCtx = Session.userCtx();
-      $scope.reload = function() {
-        window.location.reload(false);
-      };
-      $scope.enableDebugModel = {
-        val: Debug.get()
-      };
-      $scope.$watch('enableDebugModel.val', Debug.set);
-      DB.get().info().then(function (result) {
-        $scope.dbInfo = JSON.stringify(result, null, 2);
-      }).catch(function (err) {
-        console.error('Failed to fetch DB info', err);
+    var docId = 'help:' + $stateParams.page;
+
+    DB.get().get(docId)
+      .then(function(doc) {
+        new $q(function(resolve) {
+          UserSettings(function(err, settings) {
+            if(err || !settings) {
+              resolve('en');
+            }
+            resolve(settings.language || 'en');
+          });
+        })
+        .then(function(lang) {
+          $scope.loading = false;
+          $scope.title = doc.title[lang] || doc.title.en;
+          $scope.body = Markdown.basic(doc.body[lang] || doc.body.en);
+        });
       });
-    }
-  ]);
-
-}());
+  }
+]);
