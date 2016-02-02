@@ -1,37 +1,44 @@
 var inboxServices = angular.module('inboxServices');
 
+var A_DATE_IN_THE_PAST = 1454424982000;
+
 inboxServices.factory('CheckDate', [
   function() {
-      return function($scope) {
-        var requestOptions = {
-          type: 'HEAD',
-          url: '/api/info/?seed=' + Math.random(),
-          async: true,
-        };
+    return function($scope) {
+      var requestOptions = {
+        type: 'HEAD',
+        url: '/api/info/?seed=' + Math.random(),
+        async: true,
+      };
 
-        $.ajax(requestOptions)
-          .done(function(data, status, xhr) {
-            // TODO 
+      $.ajax(requestOptions)
+        .done(function(data, status, xhr) {
+          var header = xhr.getResponseHeader('Date');
+          var timestamp = Date.parse(header);
 
-            var header = xhr.getResponseHeader('Date');
-            var timestamp = Date.parse(header);
+          if(isNaN(timestamp)) {
+            return;
+          }
 
-            if(isNaN(timestamp)) {
-              return;
-            }
-
-            var delta = Math.abs(timestamp - Date.now());
-            if(delta < 10000) {
-              // Date/time differences of less than 10 minutes are not very concerning to us
-              return;
-            }
+          var delta = Math.abs(timestamp - Date.now());
+          if(delta < 10000) {
+            // Date/time differences of less than 10 minutes are not very concerning to us
+            return;
+          }
+          $scope.reportedLocalDate = new Date();
+          $scope.expectedLocalDate = new Date(timestamp);
+          $('#bad-local-date').modal('show');
+        })
+        .error(function() {
+          // if server request fails, then check date against 2016/02/01, or
+          // any more recent date in the past that developers choose to update
+          // the check value to.
+          if(Date.now() < A_DATE_IN_THE_PAST) {
             $scope.reportedLocalDate = new Date();
-            $scope.expectedLocalDate = new Date(timestamp);
+            delete $scope.expectedLocalDate;
             $('#bad-local-date').modal('show');
-          });
-        // TODO if server request fails, then check date against 2016/02/01, or
-        // any more recent date in the past that developers choose to update the
-        // check value to.
-    }
+          }
+        });
+    };
   }
 ]);

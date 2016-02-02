@@ -8,7 +8,7 @@
       <div class="modal-body">
         <span ng-bind-html="'date.incorrect.description' | translate"></span>
         <p>{{'date.incorrect.reported' | translate}}: <span ng-bind-html="reportedLocalDate | fullDate"></span></p>
-        <p>{{'date.incorrect.expected' | translate}}: <span ng-bind-html="expectedLocalDate | fullDate"></span></p>
+        <p ng-show="expectedLocalDate">{{'date.incorrect.expected' | translate}}: <span ng-bind-html="expectedLocalDate | fullDate"></span></p>
       </div>
       <div class="modal-footer">
         <a class="btn submit" data-dismiss="modal">{{'date.incorrect.confirm' | translate}}</a>
