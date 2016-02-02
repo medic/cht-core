@@ -1,33 +1,7 @@
 <div class="inner" ng-cloak>
   <div class="col-sm-12 page help" ui-view="content">
-    <div>
-      <h3>{{'about' | translate}}</h3>
-    </div>
-    <div>
-      <ul>
-        <li>{{'version' | translate}} {{version}}</li>
-        <li ng-show="android_app_version">{{'android_app.version.title' | translate}} {{android_app_version}}</li>
-        <li>{{url}}</li>
-        <li>{{userCtx.name}}</li>
-        <li><a ng-click="reload()">{{'Reload' | translate}}</a></li>
-      </ul>
-    </div>
-    <div>
-      <h3>{{'Debug' | translate}}</h3>
-    </div>
-    <div>
-      <p>{{ 'debug.mode.description' | translate }}</p>
-      <form>
-        <label>
-          <input ng-model="enableDebugModel.val" type="checkbox" /> {{ 'debug.mode.title' | translate }}
-        </label>
-      </form>
-    </div>
-    <div>
-      <h3>{{'debug.db_info.title' | translate}}</h3>
-    </div>
-    <div>
-      <pre>{{ dbInfo }}</pre>
-    </div>
+    <div ng-show="loading" class="loader"></div>
+    <h3 ng-hide="loading">{{title}}</h3>
+    <div ng-hide="loading" ng-bind-html="body"></div>
   </div>
 </div>

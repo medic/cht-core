@@ -6,6 +6,7 @@
 
   require('./inbox');
 
+  require('./about');
   require('./analytics');
   require('./configuration');
   require('./configuration-export');
