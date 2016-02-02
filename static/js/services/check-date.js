@@ -3,17 +3,12 @@ var inboxServices = angular.module('inboxServices');
 var A_DATE_IN_THE_PAST = 1454424982000;
 
 inboxServices.factory('CheckDate', [
-  function() {
+  '$http',
+  function($http) {
     return function($scope) {
-      var requestOptions = {
-        type: 'HEAD',
-        url: '/api/info/?seed=' + Math.random(),
-        async: true,
-      };
-
-      $.ajax(requestOptions)
-        .done(function(data, status, xhr) {
-          var header = xhr.getResponseHeader('Date');
+      $http.head('/api/info/?seed=' + Math.random())
+        .then(function(response) {
+          var header = response.headers('Date');
           var timestamp = Date.parse(header);
 
           if(isNaN(timestamp)) {
@@ -29,7 +24,7 @@ inboxServices.factory('CheckDate', [
           $scope.expectedLocalDate = new Date(timestamp);
           $('#bad-local-date').modal('show');
         })
-        .error(function() {
+        .catch(function() {
           // if server request fails, then check date against 2016/02/01, or
           // any more recent date in the past that developers choose to update
           // the check value to.
