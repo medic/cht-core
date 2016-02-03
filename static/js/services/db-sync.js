@@ -6,7 +6,7 @@ var _ = require('underscore'),
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
-  
+
   var backOffFunction = function(prev) {
     if (prev <= 0) {
       // first run, backoff 1 second
@@ -17,8 +17,8 @@ var _ = require('underscore'),
   };
 
   inboxServices.factory('DBSync', [
-    '$log', 'DB', 'UserDistrict', 'Session', 'SettingsP',
-    function($log, DB, UserDistrict, Session, SettingsP) {
+    '$log', 'DB', 'UserDistrict', 'Session', 'SettingsP', '$q',
+    function($log, DB, UserDistrict, Session, SettingsP, $q) {
 
       var replicate = function(from, options) {
         options = options || {};
@@ -39,22 +39,27 @@ var _ = require('underscore'),
           });
       };
 
-      var getQueryParams = function(userCtx, callback) {
+      var getQueryParams = function(userCtx) {
+        var deferred = $q.defer();
         SettingsP()
           .then(function(settings) {
             UserDistrict(function(err, district) {
               if (err) {
-                return callback(err);
+                deferred.reject(err);
+                return;
               }
               var params = { id: district };
               if (utils.hasPerm(userCtx, 'can_view_unallocated_data_records') &&
                   settings.district_admins_access_unallocated_messages) {
                 params.unassigned = true;
               }
-              callback(null, params);
+              deferred.resolve(params);
             });
           })
-          .catch(callback);
+          .catch(function(err) {
+            deferred.reject(err);
+          });
+        return deferred.promise;
       };
 
       return function() {
@@ -70,16 +75,17 @@ var _ = require('underscore'),
             return doc._id !== '_design/medic';
           }
         });
-        getQueryParams(userCtx, function(err, params) {
-          if (err) {
-            return $log.error('Error initializing DB sync', err);
-          }
-          replicate(true, {
-            batch_size: 1,
-            filter: 'medic/doc_by_place',
-            query_params: params
+        getQueryParams(userCtx)
+          .then(function(params) {
+            replicate(true, {
+              batch_size: 1,
+              filter: 'medic/doc_by_place',
+              query_params: params
+            });
+          })
+          .catch(function(err) {
+            $log.error('Error initializing DB sync', err);
           });
-        });
       };
     }
   ]);
