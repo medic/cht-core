@@ -4,22 +4,21 @@ describe('SettingsP service', function() {
 
   describe('as a Promise provider', function() {
     var service,
+        $rootScope,
         get;
 
     beforeEach(function() {
       get = sinon.stub();
       module('inboxApp');
       module(function($provide) {
-        $provide.value('$q', function(promiseHandler) {
-          return new Promise(promiseHandler);
-        });
         $provide.value('Cache', function(options) {
           return options.get;
         });
         $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
       });
-      inject(function($injector) {
-        service = $injector.get('SettingsP');
+      inject(function(_SettingsP_, _$rootScope_) {
+        service = _SettingsP_;
+        $rootScope = _$rootScope_;
       });
     });
 
@@ -40,6 +39,9 @@ describe('SettingsP service', function() {
           done();
         })
         .catch(done);
+      setTimeout(function() {
+        $rootScope.$digest(); // needed to resolve the promise
+      });
     });
 
     it('merges settings with defaults', function(done) {
@@ -56,6 +58,9 @@ describe('SettingsP service', function() {
           done();
         })
         .catch(done);
+      setTimeout(function() {
+        $rootScope.$digest(); // needed to resolve the promise
+      });
     });
 
     it('returns errors', function(done) {
@@ -68,6 +73,9 @@ describe('SettingsP service', function() {
           chai.expect(err).to.equal('Not found');
           done();
         });
+      setTimeout(function() {
+        $rootScope.$digest(); // needed to resolve the promise
+      });
     });
 
   });
@@ -86,9 +94,6 @@ describe('SettingsP service', function() {
     beforeEach(function() {
       module('inboxApp');
       module(function($provide) {
-        $provide.value('$q', function(promiseHandler) {
-          return new Promise(promiseHandler);
-        });
         $provide.value('Cache', function() {
           return function(callback) {
             cacheCallback = callback;

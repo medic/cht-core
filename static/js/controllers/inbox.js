@@ -737,12 +737,11 @@ require('moment/locales');
           e.stopPropagation();
         });
 
-        // we have to wait for language to respond before initing the multidropdowns
-        Language().then(function(language) {
+        $translate.onReady().then(function() {
+          // we have to wait for language to respond before initing the multidropdowns
+          Language().then(function(language) {
 
-          $translate.use(language);
-
-          $translate('date.to').then(function () {
+            $translate.use(language);
 
             $('#formTypeDropdown, #facilityDropdown, #contactTypeDropdown').each(function() {
               $(this).multiDropdown({
@@ -867,6 +866,7 @@ require('moment/locales');
           });
         });
       };
+
 
       Auth('can_view_messages_tab').then(function() {
         $scope.tours.push({

@@ -15,7 +15,7 @@
     "angular-resource": "1.4.3",
     "angular-route": "1.4.3",
     "angular-sanitize": "1.4.3",
-    "angular-translate": "~2.5.2",
+    "angular-translate": "~2.9.0",
     "angular-ui-router": "~0.2.11",
     "angularjs-nvd3-directives": "~0.0.7",
     "async": "~1.4.0",
