@@ -107,7 +107,7 @@ module.exports = function(grunt) {
             'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils.js',
           },
         },
-      },
+      }
     },
     concat: {
       dependencies: {
@@ -143,11 +143,6 @@ module.exports = function(grunt) {
       options: {
         jshintrc: true,
         ignores: [
-          'static/js/*.min.js',
-          'static/js/bootstrap-datetimepicker.js',
-          'static/js/jquery-ext.js',
-          'static/js/json2.js',
-          'static/js/browser.js',
           'tests/karma/q.js'
         ]
       },
@@ -160,7 +155,6 @@ module.exports = function(grunt) {
     less: {
       all: {
         files: {
-          'static/dist/admin.css': 'static/css/admin.less',
           'static/dist/inbox.css': 'static/css/inbox.less'
         }
       }
@@ -171,7 +165,6 @@ module.exports = function(grunt) {
           keepSpecialComments: 0
         },
         files: {
-          'static/dist/admin.css': 'static/dist/admin.css',
           'static/dist/inbox.css': 'static/dist/inbox.css'
         }
       }
@@ -234,9 +227,6 @@ module.exports = function(grunt) {
       },
       deployci: {
         cmd: 'kanso push http://localhost:5984/medic'
-      },
-      phantom: {
-        cmd: 'phantomjs scripts/nodeunit_runner.js http://localhost:5984/medic/_design/medic/_rewrite/test'
       },
       runapi: {
         cmd: 'COUCH_URL=http://ci_test:pass@localhost:5984/medic node ./api/server.js > api.out &'
@@ -303,6 +293,9 @@ module.exports = function(grunt) {
           configFile: 'tests/protractor/conf.js'
         }
       },
+    },
+    nodeunit: {
+      all: ['tests/nodeunit/unit/**/*.js']
     },
     ngtemplates: {
       inboxApp: {
@@ -393,8 +386,8 @@ module.exports = function(grunt) {
     'default',
     'minify',
     'karma:unit_ci',
-    'exec:deployci',
-    'exec:phantom'
+    'nodeunit',
+    'exec:deployci'
   ]);
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
@@ -407,6 +400,7 @@ module.exports = function(grunt) {
   grunt.registerTask('test', 'Lint, unit, and integration test', [
     'jshint',
     'karma:unit',
+    'nodeunit',
     'protractor'
   ]);
 

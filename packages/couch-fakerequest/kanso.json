@@ -1,9 +1,0 @@
-{
-    "name": "couch-fakerequest",
-    "version": "0.0.1",
-    "description": "Run CouchDB show, list and update functions in a fake environment for testing purposes",
-    "modules": ["couch-fakerequest.js"],
-    "dependencies": {
-        "modules": null
-    }
-}

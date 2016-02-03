@@ -2,7 +2,7 @@
     "name": "kujua-sms",
     "version": "0.0.1",
     "description": "Import and export SMS into and from kujua.",
-    "modules": ["kujua-sms","views","tests", "test-helpers"],
+    "modules": ["kujua-sms","views"],
     "load": "kujua-sms/app",
     "dependencies": {
         "modules": null,

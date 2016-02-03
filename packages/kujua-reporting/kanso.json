@@ -12,9 +12,6 @@
         "db": null,
         "underscore": null,
         "moment": null,
-        "duality": ">=0.0.18",
-        "dust": null,
-        "kujua-utils": null,
-        "kujua-branding": null
+        "kujua-utils": null
     }
 }

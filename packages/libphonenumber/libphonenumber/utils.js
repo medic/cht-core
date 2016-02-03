@@ -1,7 +1,7 @@
 /**
 * Our wrapper around google's libphonenumber.
 */
-var i18n = require('libphonenumber/phoneformat'),
+var i18n = require('./phoneformat'),
   standardFormat = i18n.phonenumbers.PhoneNumberFormat.E164;
 
 var _init = function(settings, phone) {

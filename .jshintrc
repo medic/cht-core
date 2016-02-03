@@ -97,6 +97,7 @@
         "browser"   : true,
         "KarmaUtils": true,
         "Promise"   : true,
-        "Q"         : true
+        "Q"         : true,
+        "emit"      : true
     }
 }
