@@ -3,15 +3,22 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{'date.incorrect.title' | translate}}</h3>
+        <h3 translate>date.incorrect.title</h3>
       </div>
       <div class="modal-body">
-        <span ng-bind-html="'date.incorrect.description' | translate"></span>
-        <p>{{'date.incorrect.reported' | translate}}: <span ng-bind-html="reportedLocalDate | fullDate"></span></p>
-        <p ng-show="expectedLocalDate">{{'date.incorrect.expected' | translate}}: <span ng-bind-html="expectedLocalDate | fullDate"></span></p>
+        <p translate>date.incorrect.description</p>
+        <p translate>date.incorrect.advice</p>
+        <p>
+          <span translate>date.incorrect.reported</span>:
+          <span ng-bind-html="reportedLocalDate | fullDate"></span>
+        </p>
+        <p ng-show="expectedLocalDate">
+          <span translate>date.incorrect.expected</span>:
+          <span ng-bind-html="expectedLocalDate | fullDate"></span>
+        </p>
       </div>
       <div class="modal-footer">
-        <a class="btn submit" data-dismiss="modal">{{'date.incorrect.confirm' | translate}}</a>
+        <a class="btn submit" data-dismiss="modal" translate>date.incorrect.confirm</a>
       </div>
     </div>
   </div>

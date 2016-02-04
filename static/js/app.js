@@ -303,6 +303,7 @@ _.templateSettings = {
 
       $urlRouterProvider.when('', '/home');
       $translateProvider.useLoader('SettingsLoader', {});
+      $translateProvider.useSanitizeValueStrategy('escape');
       $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
     }
   ]);
