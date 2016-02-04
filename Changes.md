@@ -1,5 +1,11 @@
 # Medic Mobile Release Notes
 
+## 0.4.11
+
+### Feb 4, 2016
+
+- Security fix for leaking auth info.
+
 ## 0.4.10
 
 ### Nov 16, 2015
