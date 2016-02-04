@@ -47,8 +47,8 @@ var _ = require('underscore'),
   };
 
   inboxControllers.controller('ConfigurationSettingsAdvancedCtrl',
-    ['$scope', '$timeout', 'translateFilter', 'Settings', 'UpdateSettings',
-    function ($scope, $timeout, translateFilter, Settings, UpdateSettings) {
+    ['$scope', '$timeout', 'translateFilter', 'SettingsP', 'UpdateSettings',
+    function ($scope, $timeout, translateFilter, SettingsP, UpdateSettings) {
       
       $scope.submitAdvancedSettings = function() {
         $scope.errors = validate($scope.advancedSettingsModel, translateFilter);
@@ -86,44 +86,45 @@ var _ = require('underscore'),
           .format($scope.advancedSettingsModel.reported_date_format);
       };
 
-      Settings(function(err, res) {
-        if (err) {
-          return console.log('Error loading settings', err);
-        }
-        $scope.advancedSettingsModel = {
-          accept_messages: !res.forms_only_mode,
-          date_format: res.date_format,
-          reported_date_format: res.reported_date_format,
-          outgoing_phone_replace: res.outgoing_phone_replace,
-          schedule_morning_hours: res.schedule_morning_hours,
-          schedule_morning_minutes: res.schedule_morning_minutes,
-          schedule_evening_hours: res.schedule_evening_hours,
-          schedule_evening_minutes: res.schedule_evening_minutes
-        };
-        $scope.date_formats = standard_date_formats;
-        if (!_.contains($scope.date_formats, res.date_format)) {
-            $scope.date_formats.push(res.date_format);
-        }
-        $scope.datetime_formats = standard_datetime_formats;
-        if (!_.contains($scope.datetime_formats, res.reported_date_format)) {
-            $scope.datetime_formats.push(res.reported_date_format);
-        }
+      SettingsP()
+        .then(function(res) {
+          $scope.advancedSettingsModel = {
+            accept_messages: !res.forms_only_mode,
+            date_format: res.date_format,
+            reported_date_format: res.reported_date_format,
+            outgoing_phone_replace: res.outgoing_phone_replace,
+            schedule_morning_hours: res.schedule_morning_hours,
+            schedule_morning_minutes: res.schedule_morning_minutes,
+            schedule_evening_hours: res.schedule_evening_hours,
+            schedule_evening_minutes: res.schedule_evening_minutes
+          };
+          $scope.date_formats = standard_date_formats;
+          if (!_.contains($scope.date_formats, res.date_format)) {
+              $scope.date_formats.push(res.date_format);
+          }
+          $scope.datetime_formats = standard_datetime_formats;
+          if (!_.contains($scope.datetime_formats, res.reported_date_format)) {
+              $scope.datetime_formats.push(res.reported_date_format);
+          }
 
-        $scope.hours = generateTimeModels(24);
-        $scope.minutes = generateTimeModels(60, 5);
-        $scope.updateDateFormatExample();
-        $scope.updateDatetimeFormatExample();
-        $('#outgoing-phone-replace-match').select2({
-          width: '20em',
-          data: countries.list,
-          placeholder: ' ',
-          allowClear: true
+          $scope.hours = generateTimeModels(24);
+          $scope.minutes = generateTimeModels(60, 5);
+          $scope.updateDateFormatExample();
+          $scope.updateDatetimeFormatExample();
+          $('#outgoing-phone-replace-match').select2({
+            width: '20em',
+            data: countries.list,
+            placeholder: ' ',
+            allowClear: true
+          });
+          if (res.outgoing_phone_replace) {
+            $('#outgoing-phone-replace-match')
+              .select2('val', res.outgoing_phone_replace.match);
+          }
+        })
+        .catch(function(err) {
+          console.log('Error loading settings', err);
         });
-        if (res.outgoing_phone_replace) {
-          $('#outgoing-phone-replace-match')
-            .select2('val', res.outgoing_phone_replace.match);
-        }
-      });
 
     }
   ]);

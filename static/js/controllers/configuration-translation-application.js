@@ -31,42 +31,38 @@
   };
 
   inboxControllers.controller('ConfigurationTranslationApplicationCtrl',
-    ['$scope', '$rootScope', 'Settings', 'Language',
-    function ($scope, $rootScope, Settings, Language) {
+    ['$scope', '$rootScope', '$q', 'SettingsP', 'Language',
+    function ($scope, $rootScope, $q, SettingsP, Language) {
 
       var updateTranslationModels = function() {
-        Settings(function(err, settings) {
-          if (err) {
-            return console.log('Error loading settings', err);
-          }
-          $scope.translationModels = createTranslationModels(
-            settings.translations,
-            $scope.localeModel
-          );
-        });
-      };
-
-      Settings(function(err, res) {
-        if (err) {
-          return console.log('Error loading settings', err);
-        }
-
-        $scope.locales = res.locales;
-
-        Language()
-          .then(function(language) {
-            $scope.localeModel = createLanguageModel(language, res.locales);
-            updateTranslationModels();
-            $scope.$watch('localeModel', function(curr, prev) {
-              if (prev.lhs !== curr.lhs || prev.rhs !== curr.rhs) {
-                updateTranslationModels();
-              }
-            }, true);
+        SettingsP()
+          .then(function(settings) {
+            $scope.translationModels = createTranslationModels(
+              settings.translations,
+              $scope.localeModel
+            );
           })
           .catch(function(err) {
-            console.log('Error loading language', err);
+            console.log('Error loading settings', err);
           });
-      });
+      };
+
+      $q.all([SettingsP(), Language()])
+        .then(function(results) {
+          var settings = results[0];
+          var language = results[1];
+          $scope.locales = settings.locales;
+          $scope.localeModel = createLanguageModel(language, settings.locales);
+          updateTranslationModels();
+          $scope.$watch('localeModel', function(curr, prev) {
+            if (prev.lhs !== curr.lhs || prev.rhs !== curr.rhs) {
+              updateTranslationModels();
+            }
+          }, true);
+        })
+        .catch(function(err) {
+          console.log('Error loading settings', err);
+        });
 
       $scope.prepareEditTranslation = function(translation) {
         $rootScope.$broadcast('EditTranslationInit', translation, $scope.locales);

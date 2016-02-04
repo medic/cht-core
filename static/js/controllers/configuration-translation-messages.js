@@ -22,48 +22,44 @@ var _ = require('underscore');
   };
 
   inboxControllers.controller('ConfigurationTranslationMessagesCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'Settings', 'Language', 'OutgoingMessagesConfiguration',
-    function ($scope, $rootScope, translateFilter, Settings, Language, OutgoingMessagesConfiguration) {
+    ['$scope', '$rootScope', '$q', 'translateFilter', 'SettingsP', 'Language', 'OutgoingMessagesConfiguration',
+    function ($scope, $rootScope, $q, translateFilter, SettingsP, Language, OutgoingMessagesConfiguration) {
 
       var updateTranslationModels = function() {
-        Settings(function(err, settings) {
-          if (err) {
-            return console.log('Error loading settings', err);
-          }
-          var groupModels = OutgoingMessagesConfiguration(settings);
-          $scope.groupModels = _.each(groupModels, function(group) {
-            group.translations = _.map(group.translations, function(translation) {
-              return {
-                lhs: findTranslation($scope.localeModel.lhs, translation.translations),
-                rhs: findTranslation($scope.localeModel.rhs, translation.translations),
-                raw: translation
-              };
+        SettingsP()
+          .then(function(settings) {
+            var groupModels = OutgoingMessagesConfiguration(settings);
+            $scope.groupModels = _.each(groupModels, function(group) {
+              group.translations = _.map(group.translations, function(translation) {
+                return {
+                  lhs: findTranslation($scope.localeModel.lhs, translation.translations),
+                  rhs: findTranslation($scope.localeModel.rhs, translation.translations),
+                  raw: translation
+                };
+              });
             });
-          });
-        });
-      };
-
-      Settings(function(err, res) {
-        if (err) {
-          return console.log('Error loading settings', err);
-        }
-
-        $scope.locales = res.locales;
-
-        Language()
-          .then(function(language) {
-            $scope.localeModel = createLanguageModel(language, res.locales);
-            updateTranslationModels();
-            $scope.$watch('localeModel', function(curr, prev) {
-              if (prev.lhs !== curr.lhs || prev.rhs !== curr.rhs) {
-                updateTranslationModels();
-              }
-            }, true);
           })
           .catch(function(err) {
-            console.log('Error loading language', err);
+            console.log('Error loading settings', err);
           });
-      });
+      };
+
+      $q.all([SettingsP(), Language()])
+        .then(function(results) {
+          var settings = results[0];
+          var language = results[1];
+          $scope.locales = settings.locales;
+          $scope.localeModel = createLanguageModel(language, settings.locales);
+          updateTranslationModels();
+          $scope.$watch('localeModel', function(curr, prev) {
+            if (prev.lhs !== curr.lhs || prev.rhs !== curr.rhs) {
+              updateTranslationModels();
+            }
+          }, true);
+        })
+        .catch(function(err) {
+          console.log('Error loading settings', err);
+        });
 
       $scope.prepareEditTranslation = function(translation) {
         $rootScope.$broadcast('EditTranslationInit', translation, $scope.locales);

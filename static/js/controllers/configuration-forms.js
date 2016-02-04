@@ -16,8 +16,8 @@ var moment = require('moment');
   };
 
   inboxControllers.controller('ConfigurationFormsCtrl',
-    ['$scope', 'Settings', 'UpdateSettings', 'FileReader',
-    function ($scope, Settings, UpdateSettings, FileReader) {
+    ['$scope', 'SettingsP', 'UpdateSettings', 'FileReader',
+    function ($scope, SettingsP, UpdateSettings, FileReader) {
 
       $scope.uploading = false;
 
@@ -67,13 +67,14 @@ var moment = require('moment');
         _ev.preventDefault();
         $('#forms-upload-form .uploader').click();
       });
-      Settings(function(err, settings) {
-        if (err) {
-          return console.log('Error fetching settings', err);
-        }
-        $scope.forms = settings.forms;
-        $scope.download = generateDownload(settings.forms);
-      });
+      SettingsP()
+        .then(function(settings) {
+          $scope.forms = settings.forms;
+          $scope.download = generateDownload(settings.forms);
+        })
+        .catch(function(err) {
+          console.log('Error fetching settings', err);
+        });
     }
   ]);
 

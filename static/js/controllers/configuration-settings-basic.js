@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationSettingsBasicCtrl',
-    ['$scope', '$timeout', 'translateFilter', 'Settings', 'UpdateSettings',
-    function ($scope, $timeout, translateFilter, Settings, UpdateSettings) {
+    ['$scope', '$timeout', 'translateFilter', 'SettingsP', 'UpdateSettings',
+    function ($scope, $timeout, translateFilter, SettingsP, UpdateSettings) {
 
       var validateCountryCode = function() {
         var countryCode = $('#default-country-code').val();
@@ -82,21 +82,22 @@ var _ = require('underscore'),
         }
       };
 
-      Settings(function(err, res) {
-        if (err) {
-          return console.log('Error loading settings', err);
-        }
-        $scope.basicSettingsModel = {
-          locale: res.locale,
-          locale_outgoing: res.locale_outgoing,
-          gateway_number: res.gateway_number
-        };
-        $scope.enabledLocales = _.reject(res.locales, function(locale) {
-          return !!locale.disabled;
+      SettingsP()
+        .then(function(res) {
+          $scope.basicSettingsModel = {
+            locale: res.locale,
+            locale_outgoing: res.locale_outgoing,
+            gateway_number: res.gateway_number
+          };
+          $scope.enabledLocales = _.reject(res.locales, function(locale) {
+            return !!locale.disabled;
+          });
+          $('#default-country-code').select2({ width: '20em', data: countries.list });
+          $('#default-country-code').select2('val', res.default_country_code);
+        })
+        .catch(function(err) {
+          console.log('Error loading settings', err);
         });
-        $('#default-country-code').select2({ width: '20em', data: countries.list });
-        $('#default-country-code').select2('val', res.default_country_code);
-      });
 
     }
   ]);
