@@ -74,6 +74,20 @@ module.exports = function(grunt) {
           from: /(\/fonts\/fontawesome-webfont[^?]*)[^']*/gi,
           to: '$1'
         }]
+      },
+      monkeypatchpouchreplication: {
+        src:[ 'bower_components/concat.js' ],
+        overwrite: true,
+        replacements: [
+          {
+            from: /startChanges\(\);/g,
+            to: '// MONKEY PATCH BY GRUNT: emit checkpoints.\n console.log(\'monkey patch\'); \n    returnValue.emit(\'checkpoint\', 0);\n    startChanges();\n'
+          },
+          {
+            from: /return checkpointer\.getCheckpoint\(\)\.then\(function \(checkpoint\) \{/g,
+            to: '// MONKEY PATCH BY GRUNT: emit checkpoints.\nreturn checkpointer.getCheckpoint().then(function (checkpoint) {\n console.log(\'monkey patch 2\'); \n    returnValue.emit(\'checkpoint\', checkpoint);\n'
+          }
+        ]
       }
     },
     browserify: {
@@ -359,6 +373,7 @@ module.exports = function(grunt) {
     'bower:install',
     'bower_concat',
     'replace:monkeypatchdate',
+    'replace:monkeypatchpouchreplication',
     'replace:monkeypatchpouchtocacheddoc',
     'copy:inbox'
   ]);

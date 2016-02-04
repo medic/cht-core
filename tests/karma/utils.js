@@ -33,11 +33,37 @@ window.KarmaUtils = {
       };
     };
   },
-  mockDB: function(db, getRemoteUrl) {
+  // With a mix of $q and JS native promises, sometimes $rootscope.apply() doesn't resolve all layers of promises.
+  // Use $q promises to avoid it.
+  mockQPromise: function($q, err, doc) {
+    var result = $q(function(resolve, reject) {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(doc);
+      }
+    });
+    result.on = function() {
+      return result;
+    };
+    return result;
+  },
+  // For spying on promise.on()
+  mockQPromiseWithOnStub: function($q, err, doc) {
+    var result = KarmaUtils.mockQPromise($q, null, {});
+    var onStub = sinon.stub();
+    result.on = onStub;
+    onStub.returns(result);
+    return result;
+  },
+  mockDB: function(db, getRemoteUrl, dbRemote) {
     return function() {
       return {
         get: function() {
           return db;
+        },
+        getRemote: function() {
+          return dbRemote;
         },
         getRemoteUrl: getRemoteUrl
       };

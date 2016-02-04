@@ -22,7 +22,7 @@ require('moment/locales');
       CheckDate($scope);
 
       Session.init();
-      DBSync();
+      DBSync.sync();
       feedback.init(
         function(doc, callback) {
           DB.get()
