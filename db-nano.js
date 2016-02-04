@@ -3,6 +3,21 @@ var path = require('path'),
     nano = require('nano');
 
 var couchUrl = process.env.COUCH_URL;
+
+var sanitizeResponse = function(err, body, headers, callback) {
+  // Remove the `uri` and `statusCode` headers passed in from nano.  This
+  // could potentially leak auth information to the client.  See
+  // https://github.com/dscape/nano/blob/master/lib/nano.js#L195
+  // TODO: open issue in nano project and patch
+  var denyHeaders = ['uri', 'statuscode'];
+  for (var k in headers) {
+    if (denyHeaders.indexOf(k.toLowerCase()) >= 0) {
+        delete headers[k];
+    }
+  }
+  callback(err, body, headers);
+};
+
 if (couchUrl) {
   var parsedUrl = url.parse(couchUrl);
 
@@ -57,6 +72,7 @@ if (couchUrl) {
                         module.exports.settings.ddoc);
     module.exports.request({ path: uri }, cb);
   };
+  module.exports.sanitizeResponse = sanitizeResponse;
 } else if (process.env.TEST_ENV) {
   // Running tests only
   module.exports = {
@@ -64,8 +80,12 @@ if (couchUrl) {
     request: function() {},
     getPath: function() {},
     settings: {},
+    sanitizeResponse: sanitizeResponse,
     medic: {
       view: function() {},
+      attachment: {
+        get: function() {}
+      },
       get: function() {},
       insert: function() {},
       updateWithHandler: function() {}

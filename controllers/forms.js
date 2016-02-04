@@ -54,7 +54,7 @@ function listFormsXML(data, template, callback) {
       'Content-Type': 'text/xml; charset=utf-8',
       'X-OpenRosa-Version': '1.0'
     };
-    callback(null, xml, headers);
+    db.sanitizeResponse(null, xml, headers, callback);
   });
 }
 
@@ -80,7 +80,7 @@ function listForms(data, callback) {
   var headers = {
     'Content-Type': 'application/json; charset=utf-8'
   };
-  callback(null, JSON.stringify(ret), headers);
+  db.sanitizeResponse(null, JSON.stringify(ret), headers, callback);
 }
 
 module.exports = {
@@ -125,7 +125,7 @@ module.exports = {
         //'Content-Type': 'text/xml; charset=utf-8',
         //'Content-Disposition': 'attachment; filename="{{file}}";'
         //  .replace('{{file}}', req.params.form),
-        callback(null, body, headers);
+        db.sanitizeResponse(null, body, headers, callback);
       });
     });
   }
