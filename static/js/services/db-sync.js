@@ -39,27 +39,30 @@ var _ = require('underscore'),
           });
       };
 
-      var getQueryParams = function(userCtx) {
+      var getUserDistrict = function() {
         var deferred = $q.defer();
-        SettingsP()
-          .then(function(settings) {
-            UserDistrict(function(err, district) {
-              if (err) {
-                deferred.reject(err);
-                return;
-              }
-              var params = { id: district };
-              if (utils.hasPerm(userCtx, 'can_view_unallocated_data_records') &&
-                  settings.district_admins_access_unallocated_messages) {
-                params.unassigned = true;
-              }
-              deferred.resolve(params);
-            });
-          })
-          .catch(function(err) {
+        UserDistrict(function(err, district) {
+          if (err) {
             deferred.reject(err);
-          });
+            return;
+          }
+          deferred.resolve(district);
+        });
         return deferred.promise;
+      };
+
+      var getQueryParams = function(userCtx) {
+        $q.all([SettingsP(), getUserDistrict()])
+          .then(function(values) {
+            var settings = values[0];
+            var district = values[1];
+            var params = { id: district };
+            if (utils.hasPerm(userCtx, 'can_view_unallocated_data_records') &&
+                settings.district_admins_access_unallocated_messages) {
+              params.unassigned = true;
+            }
+            return params;
+          });
       };
 
       return function() {
