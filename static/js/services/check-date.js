@@ -16,7 +16,7 @@ inboxServices.factory('CheckDate', [
           }
 
           var delta = Math.abs(timestamp - Date.now());
-          if(delta < 10000) {
+          if(delta < 10 * 60 * 1000) {
             // Date/time differences of less than 10 minutes are not very concerning to us
             return;
           }
