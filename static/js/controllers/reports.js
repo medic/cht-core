@@ -43,18 +43,18 @@ var _ = require('underscore'),
       };
 
       $scope.update = function(updated) {
-        _.each(updated, function(newMsg) {
-          if ($scope.selected && $scope.selected._id === newMsg._id) {
-            _merge($scope.selected, newMsg);
+        _.each(updated, function(newReport) {
+          if ($scope.selected && $scope.selected._id === newReport._id) {
+            _merge($scope.selected, newReport);
           }
-          var oldMsg = _.findWhere($scope.reports, { _id: newMsg._id });
-          if (oldMsg) {
-            _merge(oldMsg, newMsg);
-            if (!$scope.selected && $stateParams.id === oldMsg._id) {
-              _setSelected(oldMsg);
+          var oldReport = _.findWhere($scope.reports, { _id: newReport._id });
+          if (oldReport) {
+            _merge(oldReport, newReport);
+            if (!$scope.selected && $stateParams.id === oldReport._id) {
+              _setSelected(oldReport);
             }
           } else {
-            $scope.reports.push(newMsg);
+            $scope.reports.push(newReport);
           }
         });
       };
