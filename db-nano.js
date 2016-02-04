@@ -83,7 +83,9 @@ if (couchUrl) {
     sanitizeResponse: sanitizeResponse,
     medic: {
       view: function() {},
-      attachment: {},
+      attachment: {
+        get: function() {}
+      },
       get: function() {},
       insert: function() {},
       updateWithHandler: function() {}
