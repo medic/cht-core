@@ -52,7 +52,7 @@ var _ = require('underscore'),
       };
 
       var getQueryParams = function(userCtx) {
-        $q.all([SettingsP(), getUserDistrict()])
+        return $q.all([SettingsP(), getUserDistrict()])
           .then(function(values) {
             var settings = values[0];
             var district = values[1];
