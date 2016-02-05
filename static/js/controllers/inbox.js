@@ -16,10 +16,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'ConflictResolution', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, ConflictResolution, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth) {
-
-      CheckDate($scope);
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth) {
 
       Session.init();
       DBSync();
@@ -36,6 +34,9 @@ require('moment/locales');
           callback(null, Session.userCtx());
         }
       );
+
+      LiveListConfig();
+      CheckDate($scope);
 
       $scope.loadingContent = false;
       $scope.error = false;

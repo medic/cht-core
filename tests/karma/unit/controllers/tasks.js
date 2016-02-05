@@ -4,6 +4,7 @@ describe('TasksCtrl controller', function() {
 
   var createController,
       scope,
+      LiveList,
       TaskGenerator,
       $rootScope;
 
@@ -21,11 +22,21 @@ describe('TasksCtrl controller', function() {
 
     TaskGenerator = sinon.stub();
 
+    LiveList = {
+      tasks: {
+        initialised: function() { return true; },
+        refresh: sinon.stub(),
+        update: sinon.stub(),
+        set: sinon.stub(),
+      }
+    };
+
     createController = function() {
       return $controller('TasksCtrl', {
         '$scope': scope,
         'TaskGenerator': TaskGenerator,
-        '$timeout': KarmaUtils.inlineTimeout
+        '$timeout': KarmaUtils.inlineTimeout,
+        'LiveList': LiveList
       });
     };
   }));
@@ -38,7 +49,6 @@ describe('TasksCtrl controller', function() {
     setTimeout(function() {
       chai.expect(TaskGenerator.callCount).to.equal(1);
       chai.expect(scope.filterModel.type).to.equal('tasks');
-      chai.expect(scope.tasks).to.deep.equal(expected);
       chai.expect(scope.error).to.equal(false);
       chai.expect(scope.loading).to.equal(false);
       done();
@@ -52,7 +62,7 @@ describe('TasksCtrl controller', function() {
     setTimeout(function() {
       chai.expect(TaskGenerator.callCount).to.equal(1);
       chai.expect(scope.filterModel.type).to.equal('tasks');
-      chai.expect(scope.tasks).to.deep.equal([]);
+      chai.assert.isFalse(LiveList.tasks.update.called);
       chai.expect(scope.error).to.equal(true);
       chai.expect(scope.loading).to.equal(false);
       done();
@@ -71,7 +81,8 @@ describe('TasksCtrl controller', function() {
       TaskGenerator.args[0][1](null, expected);
       chai.expect(TaskGenerator.callCount).to.equal(1);
       chai.expect(scope.filterModel.type).to.equal('tasks');
-      chai.expect(scope.tasks).to.deep.equal(expected);
+      chai.assert.isTrue(LiveList.tasks.update.calledWith(expected[0]));
+      chai.assert.isTrue(LiveList.tasks.update.calledWith(expected[1]));
       chai.expect(scope.error).to.equal(false);
       chai.expect(scope.loading).to.equal(false);
       done();
