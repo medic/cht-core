@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationSettingsBasicCtrl',
-    ['$scope', '$timeout', 'translateFilter', 'SettingsP', 'UpdateSettings',
-    function ($scope, $timeout, translateFilter, SettingsP, UpdateSettings) {
+    ['$scope', '$timeout', 'translateFilter', 'Settings', 'UpdateSettings',
+    function ($scope, $timeout, translateFilter, Settings, UpdateSettings) {
 
       var validateCountryCode = function() {
         var countryCode = $('#default-country-code').val();
@@ -82,7 +82,7 @@ var _ = require('underscore'),
         }
       };
 
-      SettingsP()
+      Settings()
         .then(function(res) {
           $scope.basicSettingsModel = {
             locale: res.locale,

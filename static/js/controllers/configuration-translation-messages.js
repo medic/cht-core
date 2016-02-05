@@ -22,11 +22,11 @@ var _ = require('underscore');
   };
 
   inboxControllers.controller('ConfigurationTranslationMessagesCtrl',
-    ['$scope', '$rootScope', '$q', 'translateFilter', 'SettingsP', 'Language', 'OutgoingMessagesConfiguration',
-    function ($scope, $rootScope, $q, translateFilter, SettingsP, Language, OutgoingMessagesConfiguration) {
+    ['$scope', '$rootScope', '$q', 'translateFilter', 'Settings', 'Language', 'OutgoingMessagesConfiguration',
+    function ($scope, $rootScope, $q, translateFilter, Settings, Language, OutgoingMessagesConfiguration) {
 
       var updateTranslationModels = function() {
-        SettingsP()
+        Settings()
           .then(function(settings) {
             var groupModels = OutgoingMessagesConfiguration(settings);
             $scope.groupModels = _.each(groupModels, function(group) {
@@ -44,7 +44,7 @@ var _ = require('underscore');
           });
       };
 
-      $q.all([SettingsP(), Language()])
+      $q.all([Settings(), Language()])
         .then(function(results) {
           var settings = results[0];
           var language = results[1];

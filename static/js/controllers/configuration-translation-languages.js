@@ -7,8 +7,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationTranslationLanguagesCtrl',
-    ['$scope', '$rootScope', 'SettingsP', 'UpdateSettings', 'ExportProperties', 'OutgoingMessagesConfiguration',
-    function ($scope, $rootScope, SettingsP, UpdateSettings, ExportProperties, OutgoingMessagesConfiguration) {
+    ['$scope', '$rootScope', 'Settings', 'UpdateSettings', 'ExportProperties', 'OutgoingMessagesConfiguration',
+    function ($scope, $rootScope, Settings, UpdateSettings, ExportProperties, OutgoingMessagesConfiguration) {
 
       var countMissingTranslations = function(translations, locale) {
         var result = 0;
@@ -46,7 +46,7 @@ var _ = require('underscore');
       };
 
       var setLanguageStatus = function(locale, disabled) {
-        SettingsP()
+        Settings()
           .then(function(res) {
             var update = _.findWhere(res.locales, { code: locale.code });
             if (!update) {
@@ -68,7 +68,7 @@ var _ = require('underscore');
           });
       };
 
-      SettingsP()
+      Settings()
         .then(function(res) {
           $scope.languagesModel = {
             default: {

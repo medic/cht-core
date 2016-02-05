@@ -308,9 +308,9 @@ _.templateSettings = {
     }
   ]);
 
-  app.factory('SettingsLoader', ['SettingsP', function (SettingsP) {
+  app.factory('SettingsLoader', ['Settings', function (Settings) {
     return function (options) {
-      return SettingsP().then(function(res) {
+      return Settings().then(function(res) {
         options.key = options.key || res.locale || 'en';
 
         var test = false;

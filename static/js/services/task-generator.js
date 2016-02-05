@@ -8,8 +8,8 @@ var nools = require('nools'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TaskGenerator', ['$q', 'DB', 'Search', 'SettingsP', 'Changes',
-    function($q, DB, Search, SettingsP, Changes) {
+  inboxServices.factory('TaskGenerator', ['$q', 'DB', 'Search', 'Settings', 'Changes',
+    function($q, DB, Search, Settings, Changes) {
 
       var contactTypes = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
       var callbacks = {};
@@ -235,7 +235,7 @@ var nools = require('nools'),
         session = flow.getSession();
       };
 
-      var init = SettingsP()
+      var init = Settings()
         .then(function(settings) {
           var deferred = $q.defer();
           if (!settings.tasks ||

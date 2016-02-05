@@ -82,36 +82,37 @@ var _ = require('underscore'),
           if (err) {
             return deferred.reject(err);
           }
-          Settings(function(err, settings) {
-            if (err) {
-              return deferred.reject(err);
-            }
-            var doc = createMessageDoc(user, recipients);
-            var explodedRecipients = formatRecipients(recipients);
-            async.forEachSeries(
-              explodedRecipients,
-              function(data, callback) {
-                DB.get()
-                  .id()
-                  .then(function(id) {
-                    doc.tasks.push(createTask(settings, data, message, user, id));
-                    callback();
-                  })
-                  .catch(function(err) {
-                    callback(err);
-                  });
-              },
-              function(err) {
-                if (err) {
-                  return deferred.reject(err);
+          Settings()
+            .then(function(settings) {
+              var doc = createMessageDoc(user, recipients);
+              var explodedRecipients = formatRecipients(recipients);
+              async.forEachSeries(
+                explodedRecipients,
+                function(data, callback) {
+                  DB.get()
+                    .id()
+                    .then(function(id) {
+                      doc.tasks.push(createTask(settings, data, message, user, id));
+                      callback();
+                    })
+                    .catch(function(err) {
+                      callback(err);
+                    });
+                },
+                function(err) {
+                  if (err) {
+                    return deferred.reject(err);
+                  }
+                  DB.get()
+                    .post(doc)
+                    .then(deferred.resolve)
+                    .catch(deferred.reject);
                 }
-                DB.get()
-                  .post(doc)
-                  .then(deferred.resolve)
-                  .catch(deferred.reject);
-              }
-            );
-          });
+              );
+            })
+            .catch(function(err) {
+              deferred.reject(err);
+            });
         });
         return deferred.promise;
       };

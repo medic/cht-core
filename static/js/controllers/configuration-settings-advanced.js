@@ -47,8 +47,8 @@ var _ = require('underscore'),
   };
 
   inboxControllers.controller('ConfigurationSettingsAdvancedCtrl',
-    ['$scope', '$timeout', 'translateFilter', 'SettingsP', 'UpdateSettings',
-    function ($scope, $timeout, translateFilter, SettingsP, UpdateSettings) {
+    ['$scope', '$timeout', 'translateFilter', 'Settings', 'UpdateSettings',
+    function ($scope, $timeout, translateFilter, Settings, UpdateSettings) {
       
       $scope.submitAdvancedSettings = function() {
         $scope.errors = validate($scope.advancedSettingsModel, translateFilter);
@@ -86,7 +86,7 @@ var _ = require('underscore'),
           .format($scope.advancedSettingsModel.reported_date_format);
       };
 
-      SettingsP()
+      Settings()
         .then(function(res) {
           $scope.advancedSettingsModel = {
             accept_messages: !res.forms_only_mode,

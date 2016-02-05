@@ -3,14 +3,14 @@ describe('SendMessage service', function() {
   'use strict';
 
   var service,
-      settings,
+      Settings,
       id,
       post;
 
   beforeEach(function () {
     id = sinon.stub();
     post = sinon.stub();
-    settings = {};
+    Settings = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ post: post, id: id }));
@@ -18,9 +18,7 @@ describe('SendMessage service', function() {
       $provide.value('UserSettings', function(callback) {
         callback(null, { phone: '+5551', name: 'jack' });
       });
-      $provide.value('Settings', function(callback) {
-        callback(null, settings);
-      });
+      $provide.value('Settings', Settings);
     });
     inject(function(_SendMessage_) {
       service = _SendMessage_;
@@ -46,6 +44,7 @@ describe('SendMessage service', function() {
 
     id.returns(KarmaUtils.mockPromise(null, 53));
     post.returns(KarmaUtils.mockPromise());
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
 
     var recipient = {
       _id: 'abc',
@@ -78,10 +77,9 @@ describe('SendMessage service', function() {
 
     var phoneNumber = '700123456';
     var recipient = { contact: { phone: phoneNumber } };
-
-    settings = {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       default_country_code: 254
-    };
+    }));
 
     service(recipient, 'hello')
       .then(function() {
@@ -103,6 +101,7 @@ describe('SendMessage service', function() {
       .onFirstCall().returns(KarmaUtils.mockPromise(null, 53))
       .onSecondCall().returns(KarmaUtils.mockPromise(null, 150));
     post.returns(KarmaUtils.mockPromise());
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
 
     var recipients = [
       {
@@ -149,6 +148,7 @@ describe('SendMessage service', function() {
       .onSecondCall().returns(KarmaUtils.mockPromise(null, 150))
       .onThirdCall().returns(KarmaUtils.mockPromise(null, 6));
     post.returns(KarmaUtils.mockPromise());
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
 
     var recipients = [
       {
@@ -215,6 +215,7 @@ describe('SendMessage service', function() {
   it('returns newUUID errors', function(done) {
 
     id.returns(KarmaUtils.mockPromise('errcode1'));
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
 
     var recipients = {
       _id: 'abc',
@@ -238,6 +239,7 @@ describe('SendMessage service', function() {
 
     id.returns(KarmaUtils.mockPromise(null, 3333));
     post.returns(KarmaUtils.mockPromise('errcode2'));
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
 
     var recipients = {
       _id: 'abc',

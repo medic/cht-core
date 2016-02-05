@@ -16,8 +16,8 @@ var moment = require('moment');
   };
 
   inboxControllers.controller('ConfigurationFormsCtrl',
-    ['$scope', 'SettingsP', 'UpdateSettings', 'FileReader',
-    function ($scope, SettingsP, UpdateSettings, FileReader) {
+    ['$scope', 'Settings', 'UpdateSettings', 'FileReader',
+    function ($scope, Settings, UpdateSettings, FileReader) {
 
       $scope.uploading = false;
 
@@ -67,7 +67,7 @@ var moment = require('moment');
         _ev.preventDefault();
         $('#forms-upload-form .uploader').click();
       });
-      SettingsP()
+      Settings()
         .then(function(settings) {
           $scope.forms = settings.forms;
           $scope.download = generateDownload(settings.forms);

@@ -3,14 +3,14 @@ describe('AppInfo service', function() {
   'use strict';
 
   var service,
-      SettingsP,
+      Settings,
       $rootScope;
 
   beforeEach(function() {
-    SettingsP = sinon.stub();
+    Settings = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('SettingsP', SettingsP);
+      $provide.value('Settings', Settings);
     });
     inject(function(_$rootScope_, _AppInfo_) {
       $rootScope = _$rootScope_;
@@ -19,11 +19,11 @@ describe('AppInfo service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(SettingsP);
+    KarmaUtils.restore(Settings);
   });
 
   it('returns errors', function(done) {
-    SettingsP.returns(KarmaUtils.mockPromise('boom'));
+    Settings.returns(KarmaUtils.mockPromise('boom'));
     service()
       .then(function() {
         done('SHOULD NOT GET HERE');
@@ -36,7 +36,7 @@ describe('AppInfo service', function() {
   });
 
   it('gets the form', function(done) {
-    SettingsP.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       forms: {
         a: { id: 'a' },
         b: { id: 'b' }
@@ -55,7 +55,7 @@ describe('AppInfo service', function() {
   });
 
   it('formats the date', function(done) {
-    SettingsP.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       date_format: 'YYYY'
     }));
     service()
@@ -73,7 +73,7 @@ describe('AppInfo service', function() {
   });
 
   it('translates the key', function(done) {
-    SettingsP.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       translations: [
         { 
           key: 'welcome', 
@@ -98,7 +98,7 @@ describe('AppInfo service', function() {
   });
 
   it('translates the key to the default locale if none provided', function(done) {
-    SettingsP.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       locale: 'en',
       translations: [
         { 

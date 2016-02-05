@@ -18,7 +18,7 @@ define( function( require, exports, module ) {
     FormModel.prototype.types.tel = {
         validate: function( fieldValue ) {
             var angularServices = angular.element( document.body ).injector();
-            var Settings = angularServices.get( 'SettingsP' );
+            var Settings = angularServices.get( 'Settings' );
 
             return Settings()
                 .then( function( settings ) {
@@ -68,14 +68,14 @@ define( function( require, exports, module ) {
      * @param {*=} e     event
      */
 
-    function PhoneWidget( element, options, SettingsP ) {
+    function PhoneWidget( element, options, Settings ) {
         this.namespace = pluginName;
         Widget.call( this, element, options );
-        if ( !SettingsP ) {
+        if ( !Settings ) {
             var angularInjector = angular.element( document.body ).injector();
-            SettingsP = angularInjector.get( 'SettingsP' );
+            Settings = angularInjector.get( 'Settings' );
         }
-        this._init( SettingsP );
+        this._init( Settings );
     }
 
     //copy the prototype functions from the Widget super class
@@ -84,7 +84,7 @@ define( function( require, exports, module ) {
     //ensure the constructor is the new one
     PhoneWidget.prototype.constructor = PhoneWidget;
 
-    PhoneWidget.prototype._init = function( SettingsP ) {
+    PhoneWidget.prototype._init = function( Settings ) {
         var $input = $( this.element );
         $input.hide();
 
@@ -104,7 +104,7 @@ define( function( require, exports, module ) {
         // TODO(estellecomment): move this to a catch clause, when settings aren't found.
         formatAndCopy( $proxyInput, $input, {} );
 
-        this.builtPromise = SettingsP()
+        this.builtPromise = Settings()
             .then( function( settings ) {
                 formatAndCopy( $proxyInput, $input, settings );
             } );

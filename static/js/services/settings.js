@@ -7,22 +7,7 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Settings', ['SettingsP',
-    function(SettingsP) {
-      return function(callback) {
-        var p = SettingsP();
-        p.then(function(settings) {
-          callback(null, settings);
-        });
-        p.on('change', function(settings) {
-          callback(null, settings);
-        });
-        p.on('error', callback);
-      };
-    }
-  ]);
-
-  inboxServices.factory('SettingsP',
+  inboxServices.factory('Settings',
     ['$q', 'Cache', 'DB',
     function($q, Cache, DB) {
 

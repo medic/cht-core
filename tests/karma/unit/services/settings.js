@@ -1,4 +1,4 @@
-describe('SettingsP service', function() {
+describe('Settings service', function() {
 
   'use strict';
 
@@ -16,8 +16,8 @@ describe('SettingsP service', function() {
         });
         $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
       });
-      inject(function(_SettingsP_, _$rootScope_) {
-        service = _SettingsP_;
+      inject(function(_Settings_, _$rootScope_) {
+        service = _Settings_;
         $rootScope = _$rootScope_;
       });
     });
@@ -101,7 +101,7 @@ describe('SettingsP service', function() {
         });
       });
       inject(function($injector) {
-        service = $injector.get('SettingsP');
+        service = $injector.get('Settings');
       });
     });
 

@@ -3,14 +3,13 @@ describe('FormatDate service', function() {
   'use strict';
 
   var service,
-      Settings = sinon.stub(),
       translateInstant,
       relativeTime = sinon.stub();
 
   beforeEach(function() {
     module('inboxApp');
     module(function($provide) {
-      $provide.value('Settings', Settings);
+      $provide.value('Settings', KarmaUtils.nullPromise());
       $provide.value('MomentLocaleData', function() {
         return {
           relativeTime: relativeTime
@@ -24,7 +23,7 @@ describe('FormatDate service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(Settings, translateInstant, relativeTime);
+    KarmaUtils.restore(translateInstant, relativeTime);
   });
 
   describe('age', function() {

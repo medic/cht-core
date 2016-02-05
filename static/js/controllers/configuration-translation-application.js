@@ -31,11 +31,11 @@
   };
 
   inboxControllers.controller('ConfigurationTranslationApplicationCtrl',
-    ['$scope', '$rootScope', '$q', 'SettingsP', 'Language',
-    function ($scope, $rootScope, $q, SettingsP, Language) {
+    ['$scope', '$rootScope', '$q', 'Settings', 'Language',
+    function ($scope, $rootScope, $q, Settings, Language) {
 
       var updateTranslationModels = function() {
-        SettingsP()
+        Settings()
           .then(function(settings) {
             $scope.translationModels = createTranslationModels(
               settings.translations,
@@ -47,7 +47,7 @@
           });
       };
 
-      $q.all([SettingsP(), Language()])
+      $q.all([Settings(), Language()])
         .then(function(results) {
           var settings = results[0];
           var language = results[1];

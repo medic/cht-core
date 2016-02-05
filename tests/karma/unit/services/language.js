@@ -45,7 +45,7 @@ describe('Language service', function() {
   it('uses the language configured in settings', function(done) {
     ipCookie.returns(null);
     UserSettings.callsArgWith(0, null, { });
-    Settings.callsArgWith(0, null, { locale: 'yiddish' });
+    Settings.returns(KarmaUtils.mockPromise(null, { locale: 'yiddish' }));
     service().then(function(actual) {
       chai.expect(actual).to.equal('yiddish');
       chai.expect(UserSettings.callCount).to.equal(1);
@@ -57,13 +57,15 @@ describe('Language service', function() {
       chai.expect(ipCookie.args[1][2]).to.deep.equal({ expires: 365, path: '/' });
       done();
     });
-    $rootScope.$digest();
+    setTimeout(function() {
+      $rootScope.$digest();
+    });
   });
 
   it('defaults', function(done) {
     ipCookie.returns(null);
     UserSettings.callsArgWith(0, null, { });
-    Settings.callsArgWith(0, null, { });
+    Settings.returns(KarmaUtils.mockPromise(null, { }));
     service().then(function(actual) {
       chai.expect(actual).to.equal('en');
       chai.expect(UserSettings.callCount).to.equal(1);
@@ -75,7 +77,9 @@ describe('Language service', function() {
       chai.expect(ipCookie.args[1][2]).to.deep.equal({ expires: 365, path: '/' });
       done();
     });
-    $rootScope.$digest();
+    setTimeout(function() {
+      $rootScope.$digest();
+    });
   });
 
   it('uses cookie if set', function(done) {

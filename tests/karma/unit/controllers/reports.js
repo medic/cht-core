@@ -73,7 +73,7 @@ describe('ReportsCtrl controller', function() {
         'MessageState': {},
         'EditGroup': {},
         'FormatDataRecord': FormatDataRecord,
-        'Settings': {},
+        'Settings': KarmaUtils.nullPromise(),
         'DB': {}
       });
     };

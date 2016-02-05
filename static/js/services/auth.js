@@ -48,33 +48,28 @@ var _ = require('underscore');
         if (!_.isArray(permissions)) {
           permissions = [ permissions ];
         }
-        return $q(function(resolve, reject) {
-          var userCtx = Session.userCtx();
-          if (!userCtx) {
-            return reject(new Error('Not logged in'));
+        var userCtx = Session.userCtx();
+        if (!userCtx) {
+          return $q.reject(new Error('Not logged in'));
+        }
+        var roles = userCtx.roles;
+        if (!roles || roles.length === 0) {
+          return $q.reject();
+        }
+        var requiredPermissions = getRequired(permissions);
+        var disallowedPermissions = getDisallowed(permissions);
+        if (_.contains(roles, '_admin')) {
+          if (disallowedPermissions.length > 0) {
+            return $q.reject();
           }
-          var roles = userCtx.roles;
-          if (!roles || roles.length === 0) {
-            return reject();
+          return $q.resolve();
+        }
+        return Settings().then(function(settings) {
+          if (check(requiredPermissions, roles, settings, true) &&
+              check(disallowedPermissions, roles, settings, false)) {
+            return $q.resolve();
           }
-          var requiredPermissions = getRequired(permissions);
-          var disallowedPermissions = getDisallowed(permissions);
-          if (_.contains(roles, '_admin')) {
-            if (disallowedPermissions.length > 0) {
-              return reject();
-            }
-            return resolve();
-          }
-          Settings(function(err, settings) {
-            if (err) {
-              return reject(err);
-            }
-            if (check(requiredPermissions, roles, settings, true) &&
-                check(disallowedPermissions, roles, settings, false)) {
-              return resolve();
-            }
-            return reject();
-          });
+          return $q.reject();
         });
       };
 

@@ -408,12 +408,13 @@ require('moment/locales');
         sendMessage.init(Settings, Contact, translateFilter);
       };
 
-      Form(function(err, forms) {
-        if (err) {
-          return console.log('Failed to retrieve forms', err);
-        }
-        $scope.forms = forms;
-      });
+      Form()
+        .then(function(forms) {
+          $scope.forms = forms;
+        })
+        .catch(function(err) {
+          console.log('Failed to retrieve forms', err);
+        });
 
       var updateFormDefinitions = function() {
         Enketo.withAllForms()
@@ -591,20 +592,21 @@ require('moment/locales');
         }
       });
 
-      Settings(function(err, settings) {
-        if (err) {
-          return console.log('Error fetching settings', err);
-        }
-        $scope.enabledLocales = _.reject(settings.locales, function(locale) {
-          return !!locale.disabled;
-        });
-        updateEditUserModel(function(user) {
-          filteredModals = _.filter(startupModals, function(modal) {
-            return modal.required(settings, user);
+      Settings()
+        .then(function(settings) {
+          $scope.enabledLocales = _.reject(settings.locales, function(locale) {
+            return !!locale.disabled;
           });
-          showModals();
+          updateEditUserModel(function(user) {
+            filteredModals = _.filter(startupModals, function(modal) {
+              return modal.required(settings, user);
+            });
+            showModals();
+          });
+        })
+        .catch(function(err) {
+          console.log('Error fetching settings', err);
         });
-      });
 
       moment.locale(['en']);
 

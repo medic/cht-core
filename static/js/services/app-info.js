@@ -8,10 +8,10 @@ var _ = require('underscore');
   
   var settings;
 
-  inboxServices.factory('AppInfo', ['SettingsP',
-    function(SettingsP) {
+  inboxServices.factory('AppInfo', ['Settings',
+    function(Settings) {
       return function() {
-        return SettingsP().then(function(res) {
+        return Settings().then(function(res) {
           settings = res;
           return {
             getForm: getForm,

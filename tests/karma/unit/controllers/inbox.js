@@ -59,9 +59,7 @@ describe('InboxCtrl controller', function() {
       });
       $provide.factory('Enketo', function() {
         return {
-          withAllForms: function() {
-            return Promise.resolve({});
-          }
+          withAllForms: KarmaUtils.nullPromise()
         };
       });
       $provide.factory('Facility', function() {
@@ -71,12 +69,12 @@ describe('InboxCtrl controller', function() {
         return sinon.stub();
       });
       $provide.factory('Form', function() {
-        return sinon.stub();
-      });
-      $provide.factory('Language', function() {
         return function() {
           return Promise.resolve({});
         };
+      });
+      $provide.factory('Language', function() {
+        return KarmaUtils.nullPromise();
       });
       $provide.factory('ReadMessages', function() {
         return sinon.stub();
@@ -93,7 +91,7 @@ describe('InboxCtrl controller', function() {
         return sinon.stub();
       });
       $provide.factory('Settings', function() {
-        return sinon.stub();
+        return KarmaUtils.nullPromise();
       });
       $provide.factory('$state', function() {
         spyState = {
