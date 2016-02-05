@@ -95,7 +95,8 @@ describe('InboxCtrl controller', function() {
       });
       $provide.factory('$state', function() {
         spyState = {
-          go: sinon.spy()
+          go: sinon.spy(),
+          current: { name: 'contacts.name' }
         };
         return spyState;
       });
