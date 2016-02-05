@@ -5,6 +5,8 @@ describe('ReportsCtrl controller', function() {
   var createController,
       scope,
       report,
+      DB,
+      LiveList,
       UserDistrict,
       MarkRead,
       Search,
@@ -36,6 +38,10 @@ describe('ReportsCtrl controller', function() {
         then: function() {}
       };
     };
+
+    DB = {};
+
+    LiveList = {};
 
     MarkRead = function() {};
 
@@ -74,7 +80,8 @@ describe('ReportsCtrl controller', function() {
         'EditGroup': {},
         'FormatDataRecord': FormatDataRecord,
         'Settings': KarmaUtils.nullPromise(),
-        'DB': {}
+        'DB': DB,
+        'LiveList': LiveList
       });
     };
   }));
@@ -84,48 +91,43 @@ describe('ReportsCtrl controller', function() {
     chai.expect(scope.filterModel.type).to.equal('reports');
   });
 
-  it('updated reports when changed', function() {
+  it('updates reports when changed', function(done) {
+    DB = {
+      get: function() {
+        return {
+          get: function(_id) {
+            var db = {
+              a: {
+                _id: 'a',
+                _rev: 2,
+                shared: 'z',
+                unique: 'w'
+              },
+              b: {
+                _id: 'b'
+              }
+            };
+            return Promise.resolve(db[_id]);
+          }
+        };
+      }
+    };
 
-    Search = function($scope, options, callback) {
-      chai.expect(options.silent).to.equal(true);
-      callback(null, [
-        {
-          _id: 'a',
-          _rev: 2,
-          shared: 'z',
-          unique: 'w'
-        },
-        {
-          _id: 'b'
-        }
-      ]);
+    LiveList = {
+      reports: {
+        update: sinon.stub()
+      }
     };
     
     createController();
 
     scope.selected = { _id: 'a' };
-    scope.reports = [
-      {
-        _id: 'a',
-        _rev: 1,
-        shared: 'x',
-        existing: 'y'
-      }
-    ];
     changesCallback({ id: 'a' });
 
-    chai.expect(scope.reports).to.deep.equal([
-      {
-        _id: 'a',
-        _rev: 2,
-        shared: 'z',
-        unique: 'w',
-        existing: 'y'
-      },
-      {
-        _id: 'b'
-      }
-    ]);
+    setTimeout(function() {
+      chai.assert.isTrue(LiveList.reports.update.called);
+      done();
+    });
   });
 
 });
