@@ -655,7 +655,13 @@ require('moment/locales');
           DeleteDoc(deleteMessageId, function(err) {
             pane.done(translateFilter('Error deleting document'), err);
             if (!err) {
-              $state.go('contacts');
+              // return to list view for the current state
+              var stateName = $state.current.name,
+                  dotIndex = stateName.indexOf('.');
+              if(dotIndex !== -1) {
+                stateName = stateName.substring(0, dotIndex);
+              }
+              $state.go(stateName);
             }
           });
         } else {
