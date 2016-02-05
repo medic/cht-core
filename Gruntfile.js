@@ -222,6 +222,11 @@ module.exports = function(grunt) {
       }
     },
     exec: {
+      compileddoc: {
+        cmd: function(ddocName) {
+          return 'kanso show "ddocs/'+ddocName+'"> ddocs/compiled/'+ddocName+'.json';
+        }
+      },
       deploy: {
         cmd: 'kanso push'
       },
@@ -363,6 +368,10 @@ module.exports = function(grunt) {
     'copy:inbox'
   ]);
 
+  grunt.registerTask('compileddocs', 'Compile all Ddocs', [
+    'exec:compileddoc:erlang_filters'
+  ]);
+
   grunt.registerTask('deploy', 'Deploy the webapp', [
     'exec:deploy',
     'notify:deployed'
@@ -374,6 +383,7 @@ module.exports = function(grunt) {
     'mmjs',
     'copy:enketo-xslt',
     'appcache',
+    'compileddocs'
   ]);
 
   grunt.registerTask('minify', 'Minify JS and CSS', [
