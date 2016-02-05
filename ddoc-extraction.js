@@ -12,7 +12,8 @@ var getMasterDdoc = function(callback) {
 
 var extractDdocs = function(ddoc, callback) {
   var attachmentNames = Object.keys(ddoc._attachments).filter(function(name) {
-    return name.startsWith('ddocs/compiled/');
+    // return name.startsWith('ddocs/compiled/'); // for nodejs > 0.12
+    return name.indexOf('ddocs/compiled/') === 0;
   });
 
   console.log('Found ' + attachmentNames.length + ' attached ddocs');
