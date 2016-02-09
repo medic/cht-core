@@ -11,7 +11,7 @@
     "enketo-core": "git://github.com/enketo/enketo-core.git#e7ccc736b062d6a523a77e47cd75fc344300583c",
     "enketo-xslt": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cb8e9cba8fa9996834be0405ecc96349f0882dd1",
     "nools": "^0.4.1",
-    "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#400d870f9b0e9b9a946966c22ab7429c673a0d86",
+    "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#07549a962c61cd07c0595d47addfaa644fc11871",
     "properties": "^1.2.1",
     "underscore": "~1.8.3"
   },
