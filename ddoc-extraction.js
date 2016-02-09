@@ -22,7 +22,8 @@ var extractDdocs = function(ddoc, callback) {
 };
 
 var ddocNameFromAttachmentName = function(attachmentName) {
-  return '_design/' + /ddocs\/compiled\/(.+)\.json/.exec(attachmentName)[1];
+  var designDocNameFromFilePath = /ddocs\/compiled\/(.+)\.json/;
+  return '_design/' + designDocNameFromFilePath.exec(attachmentName)[1];
 };
 
 var updateIfRequired = function(masterRevision, attachmentName, callback) {
