@@ -162,7 +162,7 @@
         </span>
         <ul role="menu" aria-labelledby="module" class="dropdown-menu mm-dropdown-menu">
           <li role="presentation" ng-repeat="module in analyticsModules">
-            <a href="#/analytics/{{module.id}}" role="menuitem" tabindex="-1">{{module.label | translate}}</a>
+            <a ui-sref="{{module.state}}" role="menuitem" tabindex="-1">{{module.label | translate}}</a>
           </li>
         </ul>
       </span>

@@ -1,4 +1,4 @@
-<div class="reporting stock-monitoring ng-hide page" ng-show="filterModel.module.id === 'stock'">
+<div class="stock-monitoring">
 
   <div class="form-select">
     <a class="btn btn-link" ng-class="{ 'disabled': filters.form === form.meta.code }" ng-click="setForm(form.meta.code)" ng-repeat="form in forms">{{form.meta.label | translateFrom}}</a>

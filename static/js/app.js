@@ -95,9 +95,36 @@ _.templateSettings = {
 
         // analytics
         .state('analytics', {
-          url: '/analytics/:module?tour',
+          url: '/analytics?tour',
           controller: 'AnalyticsCtrl',
           templateUrl: 'templates/partials/analytics.html'
+        })
+        .state('analytics.anc', {
+          url: '/anc',
+          views: {
+            content: {
+              controller: 'AnalyticsAncCtrl',
+              templateUrl: 'templates/partials/analytics/anc.html'
+            }
+          }
+        })
+        .state('analytics.stock', {
+          url: '/stock',
+          views: {
+            content: {
+              controller: 'AnalyticsStockCtrl',
+              templateUrl: 'templates/partials/analytics/stock.html'
+            }
+          }
+        })
+        .state('analytics.targets', {
+          url: '/targets',
+          views: {
+            content: {
+              controller: 'AnalyticsTargetsCtrl',
+              templateUrl: 'templates/partials/analytics/targets.html'
+            }
+          }
         })
 
         // contacts

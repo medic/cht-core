@@ -21,7 +21,8 @@ describe('AnalyticsCtrl controller', function() {
     createController = function() {
       return $controller('AnalyticsCtrl', {
         '$scope': scope,
-        '$stateParams': { module: moduleId }
+        '$stateParams': { },
+        '$state': { current: { name: 'anc' } }
       });
     };
     moduleId = undefined;
@@ -31,46 +32,43 @@ describe('AnalyticsCtrl controller', function() {
     KarmaUtils.restore(fetch);
   });
 
-  it('set up controller with no modules', function() {
+  it('set up controller with no modules', function(done) {
     fetch.returns(KarmaUtils.mockPromise(null, []));
     createController();
-    chai.expect(scope.filterModel.type).to.equal('analytics');
-    chai.expect(scope.filterModel.module).to.equal(undefined);
+    scope.$digest();
+    setTimeout(function() {
+      chai.expect(scope.filterModel.type).to.equal('analytics');
+      chai.expect(scope.filterModel.module).to.equal(undefined);
+      done();
+    });
   });
 
   it('renders first module', function(done) {
     fetch.returns(KarmaUtils.mockPromise(null, [
-      {
-        id: 'anc',
-        render: function() {
-          chai.expect(scope.filterModel.type).to.equal('analytics');
-          chai.expect(scope.filterModel.module.id).to.equal('anc');
-          done();
-        }
-      },
-      { 
-        id: 'stock'
-      }
+      { state: 'stock' }
     ]));
     createController();
+    scope.$digest();
+    setTimeout(function() {
+      chai.expect(scope.filterModel.type).to.equal('analytics');
+      chai.expect(scope.filterModel.module.state).to.equal('stock');
+      done();
+    });
   });
 
   it('renders specified module', function(done) {
     moduleId = 'anc';
     fetch.returns(KarmaUtils.mockPromise(null, [
-      { 
-        id: 'stock'
-      },
-      {
-        id: 'anc',
-        render: function() {
-          chai.expect(scope.filterModel.type).to.equal('analytics');
-          chai.expect(scope.filterModel.module.id).to.equal('anc');
-          done();
-        }
-      }
+      { state: 'stock' },
+      { state: 'anc' }
     ]));
     createController();
+    scope.$digest();
+    setTimeout(function() {
+      chai.expect(scope.filterModel.type).to.equal('analytics');
+      chai.expect(scope.filterModel.module.state).to.equal('anc');
+      done();
+    });
   });
 
 });
