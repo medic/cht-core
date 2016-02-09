@@ -9,12 +9,11 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, translateFilter, Settings, MarkRead, Search, Changes, EditGroup, FormatDataRecord, DB, Verified) {
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'LiveList', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, translateFilter, LiveList, Settings, MarkRead, Search, Changes, EditGroup, FormatDataRecord, DB, Verified) {
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = null;
-      $scope.reports = [];
       $scope.selected = null;
 
       $scope.setSelectedGroup = function(group) {
@@ -47,14 +46,14 @@ var _ = require('underscore'),
           if ($scope.selected && $scope.selected._id === newReport._id) {
             _merge($scope.selected, newReport);
           }
-          var oldReport = _.findWhere($scope.reports, { _id: newReport._id });
+          var oldReport = _.findWhere(LiveList.reports.getList(), { _id: newReport._id });
           if (oldReport) {
             _merge(oldReport, newReport);
             if (!$scope.selected && $stateParams.id === oldReport._id) {
               _setSelected(oldReport);
             }
           } else {
-            $scope.reports.push(newReport);
+            LiveList.reports.insert(newReport);
           }
         });
       };
@@ -74,15 +73,6 @@ var _ = require('underscore'),
       var setTitle = function(doc) {
         var form = _.findWhere($scope.forms, { code: doc.form });
         $scope.setTitle((form && form.name) || doc.form);
-      };
-
-      var removeDeletedReport = function(id) {
-        var idx = _.findIndex($scope.reports, function(doc) {
-          return doc._id === id;
-        });
-        if (idx !== -1) {
-          $scope.reports.splice(idx, 1);
-        }
       };
 
       var updateDisplayFields = function(report) {
@@ -118,9 +108,9 @@ var _ = require('underscore'),
           return;
         }
         $scope.clearSelected();
-        if (id && $scope.reports) {
+        if (id && LiveList.reports.initialised()) {
           $scope.setLoadingContent(id);
-          var report = _.findWhere($scope.reports, { _id: id });
+          var report = _.findWhere(LiveList.reports.getList(), { _id: id });
           if (report) {
             _setSelected(report);
           } else {
@@ -154,9 +144,9 @@ var _ = require('underscore'),
         }
         if (options.skip) {
           $scope.appending = true;
-          options.skip = $scope.reports.length;
+          options.skip = LiveList.reports.count();
         } else if (!options.silent) {
-          $scope.reports = [];
+          LiveList.reports.set([]);
         }
 
         Search($scope, options, function(err, data) {
@@ -200,7 +190,22 @@ var _ = require('underscore'),
       };
 
       $scope.$on('query', function() {
-        $scope.query();
+        if ($scope.filterModel.type !== 'reports') {
+          delete LiveList.reports.scope;
+          return;
+        }
+        $scope.loading = true;
+        LiveList.reports.scope = $scope;
+        if (LiveList.reports.initialised()) {
+          $timeout(function() {
+            $scope.loading = false;
+            LiveList.reports.refresh();
+            $scope.moreItems = LiveList.reports.moreItems;
+            _initScroll();
+          });
+        } else {
+          $scope.query();
+        }
       });
 
       $scope.$on('ClearSelected', function() {
@@ -238,21 +243,24 @@ var _ = require('underscore'),
         key: 'reports-list',
         callback: function(change) {
           if (change.deleted) {
-            $scope.$apply(function() {
-              removeDeletedReport(change.id);
-            });
-          } else {
-            $scope.query({ silent: true, changes: true });
+            LiveList.reports.remove({ _id: change.id });
+            return;
           }
+
+          DB.get().get(change.id)
+            .then(function(doc) {
+              if (change.newDoc) {
+                LiveList.reports.insert(doc);
+              } else {
+                LiveList.reports.update(doc);
+              }
+            });
         },
         filter: function(change) {
-          if ($scope.filterModel.type !== 'reports') {
-            return false;
-          }
           if (change.newDoc) {
             return change.newDoc.form;
           }
-          return _.findWhere($scope.reports, { _id: change.id });
+          return LiveList.reports.contains({ _id: change.id });
         }
       });
 
