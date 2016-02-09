@@ -1,6 +1,0 @@
-<label>{@translate value="Language to edit"/}</label>
-<select class="locale-selector" data-language="{locale}">
-{#locales}
-  <option value="{code}" {@if cond="'{locale}' === '{code}'"}selected="true"{/if}>{name}</option>
-{/locales}
-</select>
