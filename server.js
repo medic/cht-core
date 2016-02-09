@@ -463,7 +463,7 @@ ddocExtraction.run(function(err) {
   if (err) {
     console.error(err);
   } else {
-    console.log('Ddoc extraction completed successfully');
+    console.log('DDoc extraction completed successfully');
   }
 });
 
