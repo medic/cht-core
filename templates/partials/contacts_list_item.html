@@ -4,8 +4,7 @@
   This highlight is not useful on mobile, and needs a click listener or similar implemented for desktop users.
 -->
 <li class="{{contact._id === userDistrict || contact._id === userContact ? 'ng-hide' : ''}} {{!contact.parent._id ? 'orphan' : ''}}">
-  <!-- We define hrefs very weirdly here, as otherwise they end up as "#contacts/{}" -->
-  <a class="message-wrapper" {{'href="#contacts/'+contact._id+'"'}}>
+  <a class="message-wrapper" href="#contacts/{{contact._id}}">
     <span class="mm-badge">
       <span class="fa {{contact.type === 'person' ? 'fa-user' : ''}} {{contact.type === 'clinic' ? 'fa-group' : ''}} {{contact.type === 'health_center' ? 'fa-hospital-o' : ''}} {{contact.type === 'district_hospital' ? 'fa-building' : ''}}"></span>
     </span>

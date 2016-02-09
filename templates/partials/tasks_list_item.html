@@ -4,8 +4,7 @@
   This highlight is not useful on mobile, and needs a click listener or similar implemented for desktop users.
 -->
 <li class="{{task.priority === 'high' ? 'high-priority' : ''}} {{task.priority === 'medium' ? 'medium-priority' : ''}}">
-  <!-- We define hrefs weirdly here, as otherwise they end up as "#tasks/{}" -->
-  <a class="message-wrapper" {{'href="#tasks/'+task._id+'"'}}>
+  <a class="message-wrapper" href="#tasks/{{task._id}}">
     <span class="mm-badge">{{task.icon | resourceIcon}}</span>
     <div class="detail">
       <span class="time">{{task.date | relativeDay}}</span>
