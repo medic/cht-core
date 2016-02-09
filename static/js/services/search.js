@@ -68,7 +68,7 @@ var _ = require('underscore'),
           var intersection = getIntersection(responses, options);
           var page = getPage(intersection, options);
           if (!page.length) {
-            callback(null, []);
+            return callback(null, []);
           }
           DB.get()
             .allDocs({ include_docs: true, keys: page })
