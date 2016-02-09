@@ -7,8 +7,7 @@ var couchUrl = process.env.COUCH_URL;
 var sanitizeResponse = function(err, body, headers, callback) {
   // Remove the `uri` and `statusCode` headers passed in from nano.  This
   // could potentially leak auth information to the client.  See
-  // https://github.com/dscape/nano/blob/master/lib/nano.js#L195
-  // TODO: open issue in nano project and patch
+  // https://github.com/dscape/nano/issues/311
   var denyHeaders = ['uri', 'statuscode'];
   for (var k in headers) {
     if (denyHeaders.indexOf(k.toLowerCase()) >= 0) {
