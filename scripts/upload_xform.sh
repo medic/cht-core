@@ -2,24 +2,31 @@
 
 SELF=$(basename $0)
 
+USE_CONTEXT_FILE=false
 FORCE=false
-while getopts "f" opt; do
+while getopts "c:f" opt; do
     case $opt in
+        c) USE_CONTEXT_FILE=true ; CONTEXT_FILE="$OPTARG" ;;
         f) FORCE=true ;;
     esac
     shift $((OPTIND-1))
 done
 
 _usage () {
-    echo ""
-    echo "Usage:"
-    echo "  $SELF [options] <form id> <path to xform> [attachments ...]"
-    echo ""
-    echo "Options:"
-    echo "  -f  force-overwrite "
-    echo ""
-    echo "Examples: "
-    echo "  COUCH_URL=http://localhost:8000/medic $SELF registration /home/henry/forms/RegisterPregnancy.xml"
+cat <<EOF
+
+Usage:
+  $SELF [options] <form id> <path to xform> [attachments ...]
+
+Options:
+  -f
+      force-overwrite of existing doc
+  -c <javascript-file>
+      set the context(s) for which this form will be available
+
+Examples:
+  COUCH_URL=http://localhost:8000/medic $SELF registration /home/henry/forms/RegisterPregnancy.xml
+EOF
 }
 
 if [[ $# < 2 ]]; then
@@ -56,15 +63,19 @@ echo "[$SELF] parsing XML to get form title and internal ID..."
 formTitle="$(grep h:title $XFORM_PATH | sed -E -e 's_.*<h:title>(.*)</h:title>.*_\1_')"
 formInternalId="$(sed -e '1,/<instance>/d' $XFORM_PATH | grep -E 'id="[^"]+"' | head -n1 | sed -E -e 's_.*id="([^"]+)".*_\1_')"
 
-contextPatient=false
-contextPlace=false
-if grep -Fq '/context/person' $XFORM_PATH; then
-    contextPatient=true
+if $USE_CONTEXT_FILE; then
+    formContext='"'"$(tr -d '\n' < "${CONTEXT_FILE}" | tr -d '\t' | sed 's_"_\\"_g')"'"'
+else
+    contextPatient=false
+    contextPlace=false
+    if grep -Fq '/context/person' $XFORM_PATH; then
+        contextPatient=true
+    fi
+    if grep -Fq '/context/place' $XFORM_PATH; then
+        contextPlace=true
+    fi
+    formContext='{ "person":'"$contextPatient"', "place":'"$contextPlace"' }'
 fi
-if grep -Fq '/context/place' $XFORM_PATH; then
-    contextPlace=true
-fi
-formContext='{ "person":'"$contextPatient"', "place":'"$contextPlace"' }'
 
 docUrl="${DB}/form:${ID}"
 
