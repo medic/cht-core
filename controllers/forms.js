@@ -122,9 +122,6 @@ module.exports = {
         if (err) {
           return callback(err);
         }
-        //'Content-Type': 'text/xml; charset=utf-8',
-        //'Content-Disposition': 'attachment; filename="{{file}}";'
-        //  .replace('{{file}}', req.params.form),
         db.sanitizeResponse(null, body, headers, callback);
       });
     });
