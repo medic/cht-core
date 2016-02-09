@@ -81,6 +81,11 @@
               docId: type === $scope.contact.type? $scope.contactId: null,
             };
             $scope.loadingContent = false;
+          })
+          .catch(function(err) {
+            $scope.loadingContent = false;
+            $scope.contentError = true;
+            $log.error('Error loading contact form.', err);
           });
       };
 
