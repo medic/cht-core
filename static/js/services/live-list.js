@@ -184,17 +184,6 @@ angular.module('inboxServices').factory('LiveList', [
       }
     }
 
-    function checkInitialised(listName) {
-      var idx = indexes[listName];
-
-      if (!idx) {
-        throw new Error('LiveList not configured for: ' + listName);
-      }
-      if (!indexes[listName].list) {
-        throw new Error('List not initialised for: ' + listName);
-      }
-    }
-
     function _getList(listName) {
       var idx = indexes[listName];
 
@@ -206,9 +195,12 @@ angular.module('inboxServices').factory('LiveList', [
     }
 
     function _refresh(listName) {
-      checkInitialised(listName);
-
       var idx = indexes[listName];
+
+      if (!idx.list) {
+        return;
+      }
+
       var activeDom = $(idx.selecter);
       if(activeDom.length) {
         activeDom.empty();
@@ -219,9 +211,8 @@ angular.module('inboxServices').factory('LiveList', [
     }
 
     function _count(listName) {
-      checkInitialised(listName);
       var idx = indexes[listName];
-      return idx.list.length;
+      return idx.list && idx.list.length;
     }
 
     function _set(listName, items) {
@@ -244,9 +235,12 @@ angular.module('inboxServices').factory('LiveList', [
     }
 
     function _contains(listName, item) {
-      checkInitialised(listName);
-
       var i, list = indexes[listName].list;
+
+      if (!list) {
+        return false;
+      }
+
       for(i=list.length-1; i>=0; --i) {
         if(list[i]._id === item._id) {
           return true;
@@ -256,9 +250,12 @@ angular.module('inboxServices').factory('LiveList', [
     }
 
     function _insert(listName, newItem) {
-      checkInitialised(listName);
-
       var idx = indexes[listName];
+
+      if (!idx.list) {
+        return;
+      }
+
       var newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
       idx.list.splice(newItemIndex, 0, newItem);
       idx.dom.splice(newItemIndex, 0, idx.listItem(newItem));
@@ -282,9 +279,12 @@ angular.module('inboxServices').factory('LiveList', [
     }
 
     function _remove(listName, removedItem) {
-      checkInitialised(listName);
-
       var idx = indexes[listName];
+
+      if (!idx.list) {
+        return;
+      }
+
       var i = idx.list.length,
           removeIndex = null;
       while (i-- > 0 && removeIndex === null) {
