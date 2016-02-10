@@ -1,5 +1,6 @@
 var nools = require('nools'),
     _ = require('underscore'),
+    // number of weeks before reported date to assume for start of pregnancy
     noLmpDateModifier = 4,
     knownTypes = ['task', 'target'];
 
