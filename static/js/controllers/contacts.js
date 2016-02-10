@@ -10,8 +10,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl',
-    ['$log', '$scope', '$state', '$timeout', 'Changes', 'DB', 'LiveList', 'UserSettings', 'Search',
-    function ($log, $scope, $state, $timeout, Changes, DB, LiveList, UserSettings, Search) {
+    ['$log', '$scope', '$state', '$timeout', 'DB', 'LiveList', 'UserSettings', 'Search',
+    function ($log, $scope, $state, $timeout, DB, LiveList, UserSettings, Search) {
 
       $scope.filterModel.type = 'contacts';
       $scope.selected = null;
@@ -110,11 +110,9 @@ var _ = require('underscore'),
 
       $scope.$on('query', function() {
         if ($scope.filterModel.type !== 'contacts') {
-          delete LiveList.contacts.scope;
           return;
         }
         $scope.loading = true;
-        LiveList.contacts.scope = $scope;
         if (LiveList.contacts.initialised()) {
           $timeout(function() {
             $scope.loading = false;
@@ -124,31 +122,6 @@ var _ = require('underscore'),
           });
         } else {
           $scope.query();
-        }
-      });
-
-      Changes({
-        key: 'contacts-list',
-        callback: function(change) {
-          if (change.deleted) {
-            LiveList.contacts.remove({ _id: change.id });
-            return;
-          }
-
-          DB.get().get(change.id)
-            .then(function(doc) {
-              if (change.newDoc) {
-                LiveList.contacts.insert(doc);
-              } else {
-                LiveList.contacts.update(doc);
-              }
-            });
-        },
-        filter: function(change) {
-          if (change.newDoc) {
-            return types.indexOf(change.newDoc.type) !== -1;
-          }
-          return LiveList.contacts.contains({ _id: change.id });
         }
       });
 

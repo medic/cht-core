@@ -10,8 +10,8 @@ function PARSER($parse, scope) {
 // medic-webapp specific config for LiveList.
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig', [
-  '$parse', '$templateCache', 'LiveList',
-  function($parse, $templateCache, LiveList) {
+  '$parse', '$rootScope', '$templateCache', 'Changes', 'DB', 'LiveList',
+  function($parse, $rootScope, $templateCache, Changes, DB, LiveList) {
     // Configure LiveList service
     return function() {
       var contactTypes = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
@@ -28,11 +28,37 @@ angular.module('inboxServices').factory('LiveListConfig', [
         },
         listItem: function(contact) {
           var contactHtml = $templateCache.get('templates/partials/contacts_list_item.html');
-          var scope = LiveList.contacts.scope.$new();
+          var scope = $rootScope.$new();
           scope.contact = contact;
           return contactHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
       });
+
+      Changes({
+        key: 'contacts-list',
+        callback: function(change) {
+          if (change.deleted) {
+            LiveList.contacts.remove({ _id: change.id });
+            return;
+          }
+
+          DB.get().get(change.id)
+            .then(function(doc) {
+              if (change.newDoc) {
+                LiveList.contacts.insert(doc);
+              } else {
+                LiveList.contacts.update(doc);
+              }
+            });
+        },
+        filter: function(change) {
+          if (change.newDoc) {
+            return contactTypes.indexOf(change.newDoc.type) !== -1;
+          }
+          return LiveList.contacts.contains({ _id: change.id });
+        }
+      });
+
 
       LiveList.$listFor('reports', {
         selecter: '#reports-list ul',
@@ -44,11 +70,37 @@ angular.module('inboxServices').factory('LiveListConfig', [
         },
         listItem: function(report) {
           var reportHtml = $templateCache.get('templates/partials/reports_list_item.html');
-          var scope = LiveList.reports.scope.$new();
+          var scope = $rootScope.$new();
           scope.report = report;
           return reportHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
       });
+
+      Changes({
+        key: 'reports-list',
+        callback: function(change) {
+          if (change.deleted) {
+            LiveList.reports.remove({ _id: change.id });
+            return;
+          }
+
+          DB.get().get(change.id)
+            .then(function(doc) {
+              if (change.newDoc) {
+                LiveList.reports.insert(doc);
+              } else {
+                LiveList.reports.update(doc);
+              }
+            });
+        },
+        filter: function(change) {
+          if (change.newDoc) {
+            return change.newDoc.form;
+          }
+          return LiveList.reports.contains({ _id: change.id });
+        }
+      });
+
 
       LiveList.$listFor('tasks', {
         selecter: '#tasks-list ul',
