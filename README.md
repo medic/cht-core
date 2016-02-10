@@ -143,7 +143,7 @@ See [Medic API](https://github.com/medic/medic-api) for more information.
 
 ### Push the dashboard
 
-[Garden Dashboard](https://github.com/garden20/dashboard) is optionally used to manage the couchapp.
+[Garden Dashboard](https://github.com/garden20/dashboard) is used to manage the couchapp.
 
 To install Dashboard, first change the CouchDB's `secure_rewrites` configuration
 parameter to false:
@@ -153,7 +153,7 @@ curl -X PUT http://admin:pass@localhost:5984/_config/httpd/secure_rewrites \
   -d '"false"' -H "Content-Type: application/json"
 ```
 
-Finally, download, build, and push the dashboard application to CouchDB:
+Next, download, build, and push the dashboard application to CouchDB:
 
 ```
 git clone https://github.com/garden20/dashboard
@@ -163,6 +163,12 @@ kanso install
 kanso push http://admin:pass@localhost:5984/dashboard
 ```
 
+Finally install our app in the dashboard.
+- Go to [http://localhost:5984/dashboard/_design/dashboard/_rewrite/install](http://localhost:5984/dashboard/_design/dashboard/_rewrite/install)
+- Type this in the input "https://staging.dev.medicmobile.org/markets-alpha/details/medic" and click next
+- Follow the instructions to install the app
+
+Now you've just overwritten your development installation so you probably want to do another `grunt dev` to overwrite it again.
 
 ### Try it out
 
