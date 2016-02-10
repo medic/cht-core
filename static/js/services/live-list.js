@@ -1,5 +1,12 @@
 // TODO cache activeDom; set it when loading a controller!!
 
+function PARSER($parse, scope) {
+  return function(expr) {
+    expr = expr.substring(2, expr.length-2);
+    return $parse(expr)(scope) || '';
+  }
+}
+
 // medic-webapp specific config for LiveList.
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig', [
@@ -23,10 +30,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
           var contactHtml = $templateCache.get('templates/partials/contacts_list_item.html');
           var scope = LiveList.contacts.scope.$new();
           scope.contact = contact;
-          return contactHtml.replace(/\{\{[^}]+}}/g, function(expr) {
-            expr = expr.substring(2, expr.length-2);
-            return $parse(expr)(scope);
-          });
+          return contactHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
       });
 
@@ -42,10 +46,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
           var reportHtml = $templateCache.get('templates/partials/reports_list_item.html');
           var scope = LiveList.reports.scope.$new();
           scope.report = report;
-          return reportHtml.replace(/\{\{[^}]+}}/g, function(expr) {
-            expr = expr.substring(2, expr.length-2);
-            return $parse(expr)(scope);
-          });
+          return reportHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
       });
 
@@ -61,10 +62,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
           var taskHtml = $templateCache.get('templates/partials/tasks_list_item.html');
           var scope = LiveList.tasks.scope.$new();
           scope.task = task;
-          return taskHtml.replace(/\{\{[^}]+}}/g, function(expr) {
-            expr = expr.substring(2, expr.length-2);
-            return $parse(expr)(scope);
-          });
+          return taskHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
       });
 
