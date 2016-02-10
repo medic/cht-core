@@ -39,6 +39,9 @@ describe('InboxCtrl controller', function() {
       $provide.factory('Changes', function() {
         return sinon.stub();
       });
+      $provide.factory('CheckDate', function() {
+        return sinon.stub();
+      });
       $provide.factory('ConflictResolution', function() {
         return sinon.stub();
       });
@@ -76,6 +79,9 @@ describe('InboxCtrl controller', function() {
       $provide.factory('Language', function() {
         return KarmaUtils.nullPromise();
       });
+      $provide.factory('LiveListConfig', function() {
+        return sinon.stub();
+      });
       $provide.factory('ReadMessages', function() {
         return sinon.stub();
       });
@@ -99,9 +105,6 @@ describe('InboxCtrl controller', function() {
           current: { name: 'contacts.name' }
         };
         return spyState;
-      });
-      $provide.factory('$stateParams', function() {
-        return sinon.stub();
       });
       $provide.factory('$timeout', function() {
         return sinon.stub();
