@@ -6,14 +6,16 @@ var moment = require('moment');
 
   var inboxServices = angular.module('inboxServices');
 
-  // TODO test!
-
-  inboxServices.factory('TargetGenerator', ['$q', 'Settings', 'TaskGenerator',
-    function($q, Settings, TaskGenerator) {
+  inboxServices.factory('TargetGenerator', ['$q', '$log', 'Settings', 'TaskGenerator',
+    function($q, $log, Settings, TaskGenerator) {
 
       var targets = [];
 
       var isRelevant = function(instance) {
+        if (!instance.date) {
+          $log.info('Ignoring emitted target with no date - fix your configuration');
+          return false;
+        }
         var start = moment().startOf('month');
         var end = moment().endOf('month');
         var instanceDate = moment(instance.date);
@@ -41,7 +43,7 @@ var moment = require('moment');
             target.count = 0;
           } else {
             var passes = _.where(target.instances, { pass: true });
-            target.count = passes.length * 100 / total;
+            target.count = Math.round(passes.length * 100 / total);
           }
         }
       };
