@@ -112,7 +112,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
         },
         listItem: function(task) {
           var taskHtml = $templateCache.get('templates/partials/tasks_list_item.html');
-          var scope = LiveList.tasks.scope.$new();
+          var scope = $rootScope.$new();
           scope.task = task;
           return taskHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },

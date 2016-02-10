@@ -36,7 +36,6 @@ var _ = require('underscore');
       });
 
       $scope.filterModel.type = 'tasks';
-      LiveList.tasks.scope = $scope;
       $timeout(function() {
         LiveList.tasks.refresh();
       });
