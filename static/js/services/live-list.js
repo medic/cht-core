@@ -124,9 +124,9 @@ angular.module('inboxServices').factory('LiveListConfig', [
         if (err) {
           $log.error('Error getting tasks', err);
 
-          var notifyError = ListList.tasks.notifyError;
+          var notifyError = LiveList.tasks.notifyError;
           if (notifyError) {
-            notifyError(task);
+            notifyError();
           }
 
           LiveList.tasks.set([]);
@@ -135,7 +135,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
 
         $timeout(function() {
           tasks.forEach(function(task) {
-            var notifyChange = ListList.tasks.notifyChange;
+            var notifyChange = LiveList.tasks.notifyChange;
             if (notifyChange) {
               notifyChange(task);
             }
