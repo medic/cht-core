@@ -4,7 +4,7 @@ function PARSER($parse, scope) {
   return function(expr) {
     expr = expr.substring(2, expr.length-2);
     return $parse(expr)(scope) || '';
-  }
+  };
 }
 
 // medic-webapp specific config for LiveList.
