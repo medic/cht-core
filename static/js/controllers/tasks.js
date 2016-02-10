@@ -7,8 +7,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksCtrl',
-    ['$scope', '$state', '$log', '$timeout', 'TranslateFrom', 'TaskGenerator',
-    function ($scope, $state, $log, $timeout, TranslateFrom, TaskGenerator) {
+    ['$scope', '$state', '$log', '$timeout', 'LiveList', 'TranslateFrom', 'TaskGenerator',
+    function ($scope, $state, $log, $timeout, LiveList, TranslateFrom, TaskGenerator) {
 
       var setSelectedTask = function(task) {
         $scope.selected = task;
@@ -18,7 +18,7 @@ var _ = require('underscore');
 
       $scope.setSelected = function(id) {
         var refreshing = ($scope.selected && $scope.selected._id) === id,
-            task = _.findWhere($scope.tasks, { _id: id });
+            task = _.findWhere(LiveList.tasks.getList(), { _id: id });
         if (task) {
           $scope.settingSelected(refreshing);
           setSelectedTask(task);
@@ -38,18 +38,16 @@ var _ = require('underscore');
                (!$scope.selected && task._id === $state.params.id)) {
               setSelectedTask(task);
             }
-            for (var i = 0; i < $scope.tasks.length; i++) {
-              if ($scope.tasks[i]._id === task._id) {
-                if (task.resolved) {
-                  $scope.tasks.splice(i, 1);
-                } else {
-                  $scope.tasks[i] = task;
-                }
-                return;
-              }
+
+            if (task.resolved) {
+              LiveList.tasks.remove(task);
+            } else {
+              LiveList.tasks.update(task);
             }
-            $scope.tasks.push(task);
           });
+        })
+        .then(function() {
+          $scope.loading = false;
         });
       };
 
@@ -58,17 +56,24 @@ var _ = require('underscore');
       });
 
       $scope.filterModel.type = 'tasks';
-      $scope.tasks = [];
+      LiveList.tasks.scope = $scope;
+      if (!LiveList.tasks.initialised()) {
+        LiveList.tasks.set([]);
+      } else {
+        $timeout(function() {
+          LiveList.tasks.refresh();
+        });
+      }
       $scope.selected = null;
       $scope.loading = true;
       $scope.error = false;
 
       TaskGenerator('TasksCtrl', function(err, tasks) {
-        $scope.loading = false;
         if (err) {
           $log.error('Error getting tasks', err);
+          $scope.loading = false;
           $scope.error = true;
-          $scope.tasks = [];
+          LiveList.tasks.set([]);
           $scope.clearSelected();
           return;
         }

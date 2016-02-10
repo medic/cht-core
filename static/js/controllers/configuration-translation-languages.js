@@ -46,41 +46,44 @@ var _ = require('underscore');
       };
 
       var setLanguageStatus = function(locale, disabled) {
-        Settings(function(err, res) {
-          if (err) {
-            return console.log('Error loading settings', err);
-          }
-          var update = _.findWhere(res.locales, { code: locale.code });
-          if (!update) {
-            return console.log('Could not find locale to update');
-          }
-          update.disabled = disabled;
-          UpdateSettings({ locales: res.locales }, function(err) {
-            if (err) {
-              return console.log('Error updating settings', err);
+        Settings()
+          .then(function(res) {
+            var update = _.findWhere(res.locales, { code: locale.code });
+            if (!update) {
+              return console.log('Could not find locale to update');
             }
-            var model = _.findWhere($scope.languagesModel.locales, { code: locale.code });
-            if (model) {
-              model.disabled = disabled;
-            }
+            update.disabled = disabled;
+            UpdateSettings({ locales: res.locales }, function(err) {
+              if (err) {
+                return console.log('Error updating settings', err);
+              }
+              var model = _.findWhere($scope.languagesModel.locales, { code: locale.code });
+              if (model) {
+                model.disabled = disabled;
+              }
+            });
+          })
+          .catch(function(err) {
+            console.log('Error loading settings', err);
           });
-        });
       };
 
-      Settings(function(err, res) {
-        if (err) {
-          return console.log('Error loading settings', err);
-        }
-        $scope.languagesModel = {
-          default: {
-            locale: res.locale,
-            outgoing: res.locale_outgoing
-          },
-          locales: _.map(res.locales, function(locale) {
-            return createLocaleModel(res, locale);
-          })
-        };
-      });
+      Settings()
+        .then(function(res) {
+          $scope.languagesModel = {
+            default: {
+              locale: res.locale,
+              outgoing: res.locale_outgoing
+            },
+            locales: _.map(res.locales, function(locale) {
+              return createLocaleModel(res, locale);
+            })
+          };
+        })
+        .catch(function(err) {
+          console.log('Error loading settings', err);
+        });
+
       $scope.prepareEditLanguage = function(locale) {
         $rootScope.$broadcast('EditLanguageInit', locale);
       };

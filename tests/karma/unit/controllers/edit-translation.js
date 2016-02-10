@@ -76,7 +76,7 @@ describe('EditTranslationCtrl controller', function() {
     chai.expect(scope.translationModel.values[1].value).to.equal('Bonjour');
   });
 
-  it('save translation', function() {
+  it('save translation', function(done) {
     createController();
     var updated;
     rootScope.$on('TranslationUpdated', function(e, update) {
@@ -90,7 +90,7 @@ describe('EditTranslationCtrl controller', function() {
         { locale: { code: 'es' }, value: 'Hola' }
       ]
     };
-    Settings.callsArgWith(0, null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       translations: [
         {
           key: 'title.key',
@@ -99,19 +99,26 @@ describe('EditTranslationCtrl controller', function() {
             { locale: 'fr', content: 'Bonjour' }
           ]
         }
-      ]      
-    });
+      ]
+    }));
     UpdateSettings.callsArgWith(1);
-    scope.saveTranslation();
-    chai.expect(updated.translations[0].key).to.equal('title.key');
-    chai.expect(updated.translations[0].translations.length).to.equal(2);
-    chai.expect(updated.translations[0].translations[0].locale).to.equal('en');
-    chai.expect(updated.translations[0].translations[0].content).to.equal('Welcome');
-    chai.expect(updated.translations[0].translations[1].locale).to.equal('es');
-    chai.expect(updated.translations[0].translations[1].content).to.equal('Hola');
+    scope.saveTranslation()
+      .then(function() {
+        chai.expect(updated.translations[0].key).to.equal('title.key');
+        chai.expect(updated.translations[0].translations.length).to.equal(2);
+        chai.expect(updated.translations[0].translations[0].locale).to.equal('en');
+        chai.expect(updated.translations[0].translations[0].content).to.equal('Welcome');
+        chai.expect(updated.translations[0].translations[1].locale).to.equal('es');
+        chai.expect(updated.translations[0].translations[1].content).to.equal('Hola');
+        done();
+      })
+      .catch(done);
+    setTimeout(function() {
+      rootScope.$digest();
+    });
   });
 
-  it('save settings', function() {
+  it('save settings', function(done) {
     createController();
     var updated;
     rootScope.$on('TranslationUpdated', function(e, update) {
@@ -125,7 +132,7 @@ describe('EditTranslationCtrl controller', function() {
         { locale: { code: 'es' }, value: 'Hola' }
       ]
     };
-    Settings.callsArgWith(0, null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       forms: [
         {
           registration: {
@@ -135,15 +142,22 @@ describe('EditTranslationCtrl controller', function() {
             ]
           }
         }
-      ]      
-    });
+      ]
+    }));
     UpdateSettings.callsArgWith(1);
-    scope.saveTranslation();
-    chai.expect(updated.forms[0].registration.message.length).to.equal(2);
-    chai.expect(updated.forms[0].registration.message[0].locale).to.equal('en');
-    chai.expect(updated.forms[0].registration.message[0].content).to.equal('Welcome');
-    chai.expect(updated.forms[0].registration.message[1].locale).to.equal('es');
-    chai.expect(updated.forms[0].registration.message[1].content).to.equal('Hola');
+    scope.saveTranslation()
+      .then(function() {
+        chai.expect(updated.forms[0].registration.message.length).to.equal(2);
+        chai.expect(updated.forms[0].registration.message[0].locale).to.equal('en');
+        chai.expect(updated.forms[0].registration.message[0].content).to.equal('Welcome');
+        chai.expect(updated.forms[0].registration.message[1].locale).to.equal('es');
+        chai.expect(updated.forms[0].registration.message[1].content).to.equal('Hola');
+        done();
+      })
+      .catch(done);
+    setTimeout(function() {
+      rootScope.$digest();
+    });
   });
 
 });

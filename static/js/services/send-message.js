@@ -9,8 +9,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('SendMessage', ['DB', 'UserSettings', 'Settings',
-    function(DB, UserSettings, Settings) {
+  inboxServices.factory('SendMessage', ['$q', 'DB', 'UserSettings', 'Settings',
+    function($q, DB, UserSettings, Settings) {
 
       var createMessageDoc = function(user, recipients) {
         var name = user && user.name;
@@ -74,26 +74,18 @@ var _ = require('underscore'),
       };
 
       return function(recipients, message) {
-
-        return new Promise(function(resolve, reject) {
-
-          if (!_.isArray(recipients)) {
-            recipients = [recipients];
+        var deferred = $q.defer();
+        if (!_.isArray(recipients)) {
+          recipients = [recipients];
+        }
+        UserSettings(function(err, user) {
+          if (err) {
+            return deferred.reject(err);
           }
-
-          UserSettings(function(err, user) {
-            if (err) {
-              return console.log('Error fetching user', err);
-            }
-
-            Settings(function(err, settings) {
-              if (err) {
-                return console.log('Error fetching settings', err);
-              }
-
+          Settings()
+            .then(function(settings) {
               var doc = createMessageDoc(user, recipients);
               var explodedRecipients = formatRecipients(recipients);
-
               async.forEachSeries(
                 explodedRecipients,
                 function(data, callback) {
@@ -109,18 +101,20 @@ var _ = require('underscore'),
                 },
                 function(err) {
                   if (err) {
-                    return reject(err);
+                    return deferred.reject(err);
                   }
                   DB.get()
                     .post(doc)
-                    .then(resolve)
-                    .catch(reject);
+                    .then(deferred.resolve)
+                    .catch(deferred.reject);
                 }
               );
+            })
+            .catch(function(err) {
+              deferred.reject(err);
             });
-          });
         });
-
+        return deferred.promise;
       };
     }
   ]);

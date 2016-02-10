@@ -3,7 +3,7 @@ describe('TaskGenerator service', function() {
   'use strict';
 
   var Search,
-      SettingsP,
+      Settings,
       Changes,
       DBGet,
       injector;
@@ -190,13 +190,13 @@ describe('TaskGenerator service', function() {
 
   beforeEach(function() {
     Search = sinon.stub();
-    SettingsP = sinon.stub();
+    Settings = sinon.stub();
     Changes = sinon.stub();
     DBGet = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.value('Search', Search);
-      $provide.value('SettingsP', SettingsP);
+      $provide.value('Settings', Settings);
       $provide.value('Changes', Changes);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.factory('DB', KarmaUtils.mockDB({ get: DBGet }));
@@ -207,12 +207,12 @@ describe('TaskGenerator service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(Search, SettingsP, Changes, DBGet);
+    KarmaUtils.restore(Search, Settings, Changes, DBGet);
   });
 
   it('returns search errors', function(done) {
     Search.callsArgWith(2, 'boom');
-    SettingsP.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
@@ -227,21 +227,21 @@ describe('TaskGenerator service', function() {
   });
 
   it('returns settingsP errors', function(done) {
-    SettingsP.returns(KarmaUtils.mockPromise('boom'));
+    Settings.returns(KarmaUtils.mockPromise('boom'));
     var service = injector.get('TaskGenerator');
     service('test', function(err) {
       chai.expect(err).to.equal('boom');
-      chai.expect(SettingsP.callCount).to.equal(1);
+      chai.expect(Settings.callCount).to.equal(1);
       done();
     });
   });
 
   it('returns empty when settingsP returns no config', function(done) {
-    SettingsP.returns(KarmaUtils.mockPromise(null, {}));
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
     var service = injector.get('TaskGenerator');
     service('test', function(err, actual) {
       chai.expect(Search.callCount).to.equal(0);
-      chai.expect(SettingsP.callCount).to.equal(1);
+      chai.expect(Settings.callCount).to.equal(1);
       chai.expect(actual).to.deep.equal([]);
       done();
     });
@@ -258,7 +258,7 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    SettingsP.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
@@ -344,7 +344,7 @@ describe('TaskGenerator service', function() {
         callbackCount++;
         if (callbackCount === 10) {
           chai.expect(Search.callCount).to.equal(2);
-          chai.expect(SettingsP.callCount).to.equal(1);
+          chai.expect(Settings.callCount).to.equal(1);
           done();
         }
       });
@@ -355,7 +355,7 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    SettingsP.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
@@ -370,10 +370,10 @@ describe('TaskGenerator service', function() {
       });
       if (_.values(expected).length === 10) {
         service('another-test', function(err, actual) {
-          // Search and SettingsP shouldn't be called again, and
+          // Search and Settings shouldn't be called again, and
           // results should be the same
           chai.expect(Search.callCount).to.equal(2);
-          chai.expect(SettingsP.callCount).to.equal(1);
+          chai.expect(Settings.callCount).to.equal(1);
           chai.expect(actual).to.deep.equal(_.values(expected));
           done();
         });
@@ -403,7 +403,7 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    SettingsP.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
@@ -457,7 +457,7 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    SettingsP.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
@@ -504,7 +504,7 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    SettingsP.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
@@ -559,7 +559,7 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    SettingsP.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
@@ -602,7 +602,7 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    SettingsP.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules
@@ -648,7 +648,7 @@ describe('TaskGenerator service', function() {
 
     Search.onFirstCall().callsArgWith(2, null, dataRecords);
     Search.onSecondCall().callsArgWith(2, null, contacts);
-    SettingsP.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
         schedules: schedules

@@ -61,7 +61,7 @@
             </a>
           </li>
           <li role="presentation">
-            <a ui-sref="help" role="menuitem" tabindex="-1">
+            <a ui-sref="about" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-question"></i>
               {{'about' | translate}}
             </a>
@@ -73,12 +73,17 @@
             </a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#feedback">
+            <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#feedback" ng-click="prepareFeedback()">
               <i class="fa fa-fw fa-bug"></i>
               {{'Report Bug' | translate}}
             </a>
           </li>
-          <li role="presentation" mm-auth="can_logout">
+          <!--
+            ng-show="!android_app_version" is a hack for hiding logout from LG
+            deployment.  Should be replaced with a new issue for adding a
+            `hide_logout_on_mobile_devices` setting or similar.
+          //-->
+          <li role="presentation" ng-show="!android_app_version">
             <a role="menuitem" tabindex="-1" rel="external" ng-click="logout()">
               <i class="fa fa-fw fa-power-off"></i>
               {{'Log Out' | translate}}

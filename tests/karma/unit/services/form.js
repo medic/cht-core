@@ -24,73 +24,89 @@ describe('Form service', function() {
   });
 
   it('returns zero when no forms', function(done) {
-    Settings.callsArgWith(0, null, { forms: {} });
+    Settings.returns(KarmaUtils.mockPromise(null, { forms: {} }));
     Language.returns(KarmaUtils.mockPromise(null, 'en'));
-    service(function(err, actual) {
-      chai.expect(actual).to.deep.equal([]);
-      done();
+    service()
+      .then(function(actual) {
+        chai.expect(actual).to.deep.equal([]);
+        done();
+      })
+      .catch(done);
+    setTimeout(function() {
+      $rootScope.$digest(); // needed to resolve the promise
     });
-    $rootScope.$digest(); // needed to resolve the promise
   });
 
   it('returns forms with old style labels', function(done) {
-    Settings.callsArgWith(0, null, { forms: {
+    Settings.returns(KarmaUtils.mockPromise(null, { forms: {
       A: { meta: { code: 'A', label: 'First'  } },
       B: { meta: { code: 'B', label: 'Second' } },
       C: { meta: { code: 'C', label: 'Third'  } },
       D: { meta: { code: 'D', label: 'Fourth' } }
-    } });
+    } }));
     Language.returns(KarmaUtils.mockPromise(null, 'en'));
-    service(function(err, actual) {
-      chai.expect(actual).to.deep.equal([
-        { code: 'A', name: 'First'  },
-        { code: 'B', name: 'Second' },
-        { code: 'C', name: 'Third'  },
-        { code: 'D', name: 'Fourth' }
-      ]);
-      done();
+    service()
+      .then(function(actual) {
+        chai.expect(actual).to.deep.equal([
+          { code: 'A', name: 'First'  },
+          { code: 'B', name: 'Second' },
+          { code: 'C', name: 'Third'  },
+          { code: 'D', name: 'Fourth' }
+        ]);
+        done();
+      })
+      .catch(done);
+    setTimeout(function() {
+      $rootScope.$digest(); // needed to resolve the promise
     });
-    $rootScope.$digest();
   });
 
   it('handles forms with no label', function(done) {
-    Settings.callsArgWith(0, null, { forms: {
+    Settings.returns(KarmaUtils.mockPromise(null, { forms: {
       A: { meta: { code: 'A' } },
       B: { meta: { code: 'B' } },
       C: { meta: { code: 'C', label: 'Third' } },
       D: { meta: { code: 'D' } }
-    } });
+    } }));
     Language.returns(KarmaUtils.mockPromise(null, 'en'));
-    service(function(err, actual) {
-      chai.expect(actual).to.deep.equal([
-        { code: 'A' },
-        { code: 'B' },
-        { name: 'Third', code: 'C' },
-        { code: 'D' }
-      ]);
-      done();
+    service()
+      .then(function(actual) {
+        chai.expect(actual).to.deep.equal([
+          { code: 'A' },
+          { code: 'B' },
+          { name: 'Third', code: 'C' },
+          { code: 'D' }
+        ]);
+        done();
+      })
+      .catch(done);
+    setTimeout(function() {
+      $rootScope.$digest(); // needed to resolve the promise
     });
-    $rootScope.$digest();
   });
 
   it('returns forms with translated label', function(done) {
-    Settings.callsArgWith(0, null, { forms: {
+    Settings.returns(KarmaUtils.mockPromise(null, { forms: {
       A: { meta: { code: 'A', label: { en: 'First',  sw: 'tsriF'  } } },
       B: { meta: { code: 'B', label: { en: 'Second', sw: 'dnoceS' } } },
       C: { meta: { code: 'C', label: { en: 'Third',  sw: 'drihT'  } } },
       D: { meta: { code: 'D', label: { en: 'Fourth', sw: 'htruoF' } } }
-    } });
+    } }));
     Language.returns(KarmaUtils.mockPromise(null, 'sw'));
-    service(function(err, actual) {
-      chai.expect(actual).to.deep.equal([
-        { code: 'A', name: 'tsriF'  },
-        { code: 'B', name: 'dnoceS' },
-        { code: 'C', name: 'drihT'  },
-        { code: 'D', name: 'htruoF' }
-      ]);
-      done();
+    service()
+      .then(function(actual) {
+        chai.expect(actual).to.deep.equal([
+          { code: 'A', name: 'tsriF'  },
+          { code: 'B', name: 'dnoceS' },
+          { code: 'C', name: 'drihT'  },
+          { code: 'D', name: 'htruoF' }
+        ]);
+        done();
+      })
+      .catch(done);
+    setTimeout(function() {
+      $rootScope.$digest(); // needed to resolve the promise
     });
-    $rootScope.$digest();
   });
 
 });

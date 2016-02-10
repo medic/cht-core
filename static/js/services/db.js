@@ -8,8 +8,8 @@ var utils = require('kujua-utils'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('DB', [
-    '$http', '$timeout', '$log', 'pouchDB', 'Session', 'DbNameService',
-    function($http, $timeout, $log, pouchDB, Session, DbNameService) {
+    '$http', '$timeout', '$log', 'pouchDB', 'Session', 'DbNameService', 'E2ETESTING',
+    function($http, $timeout, $log, pouchDB, Session, DbNameService, E2ETESTING) {
 
       var cache = {};
 
@@ -76,39 +76,41 @@ var utils = require('kujua-utils'),
       };
 
       var watchDesignDoc = function(callback) {
-        async.forever(function(next) {
-          if (!isAdmin()) {
-            // check current ddoc revision vs local pouch version
-            $http({
-              method: 'HEAD',
-              url: getRemoteUrl() + '/_design/medic'
-            }).success(function(data, status, headers) {
-              var rev = headers().etag.replace(/"/g, '');
-              checkLocalDesignDoc(rev, callback);
-            });
-          }
+        if (!E2ETESTING) {
+          async.forever(function(next) {
+            if (!isAdmin()) {
+              // check current ddoc revision vs local pouch version
+              $http({
+                method: 'HEAD',
+                url: getRemoteUrl() + '/_design/medic'
+              }).success(function(data, status, headers) {
+                var rev = headers().etag.replace(/"/g, '');
+                checkLocalDesignDoc(rev, callback);
+              });
+            }
 
-          // Listen for remote ddoc changes
-          getRemote()
-            .changes({
-              live: true,
-              since: 'now',
-              doc_ids: [ '_design/medic' ],
-              timeout: 1000 * 60 * 60
-            })
-            .on('change', function(change) {
-              if (isAdmin()) {
-                // admins access ddoc from remote db directly so
-                // no need to check local ddoc
-                return callback();
-              }
-              checkLocalDesignDoc(change.changes[0].rev, callback);
-            })
-            .on('error', function(err) {
-              $log.debug('Error watching for changes on the design doc', err);
-              $timeout(next, 10000);
-            });
-        });
+            // Listen for remote ddoc changes
+            getRemote()
+              .changes({
+                live: true,
+                since: 'now',
+                doc_ids: [ '_design/medic' ],
+                timeout: 1000 * 60 * 60
+              })
+              .on('change', function(change) {
+                if (isAdmin()) {
+                  // admins access ddoc from remote db directly so
+                  // no need to check local ddoc
+                  return callback();
+                }
+                checkLocalDesignDoc(change.changes[0].rev, callback);
+              })
+              .on('error', function(err) {
+                $log.debug('Error watching for changes on the design doc', err);
+                $timeout(next, 10000);
+              });
+          });
+        }
       };
 
 

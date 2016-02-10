@@ -7,15 +7,16 @@ describe('DBSync service', function() {
       from,
       getRemoteUrl,
       UserDistrict,
-      SettingsP,
-      userCtx;
+      Settings,
+      userCtx,
+      $rootScope;
 
   beforeEach(function() {
     to = sinon.stub();
     from = sinon.stub();
     UserDistrict = sinon.stub();
     getRemoteUrl = sinon.stub();
-    SettingsP = sinon.stub();
+    Settings = sinon.stub();
     userCtx = {};
     module('inboxApp');
     module(function ($provide) {
@@ -26,8 +27,8 @@ describe('DBSync service', function() {
       $provide.factory('UserDistrict', function() {
         return UserDistrict;
       });
-      $provide.factory('SettingsP', function() {
-        return SettingsP;
+      $provide.factory('Settings', function() {
+        return Settings;
       });
       $provide.factory('Session', function() {
         return {
@@ -37,13 +38,14 @@ describe('DBSync service', function() {
         };
       });
     });
-    inject(function(_DBSync_) {
+    inject(function(_DBSync_, _$rootScope_) {
       service = _DBSync_;
+      $rootScope = _$rootScope_;
     });
   });
 
   afterEach(function() {
-    KarmaUtils.restore(to, from, getRemoteUrl, UserDistrict, SettingsP);
+    KarmaUtils.restore(to, from, getRemoteUrl, UserDistrict, Settings);
   });
 
   it('does nothing for admin', function(done) {
@@ -61,9 +63,10 @@ describe('DBSync service', function() {
     to.returns(KarmaUtils.mockPromise());
     from.returns(KarmaUtils.mockPromise());
     UserDistrict.callsArgWith(0, null, 'a');
-    SettingsP.returns(KarmaUtils.mockPromise(null, {}));
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
     service();
     setTimeout(function() {
+      $rootScope.$apply(); // needed to resolve the promises
       chai.expect(to.callCount).to.equal(1);
       chai.expect(from.callCount).to.equal(1);
       chai.expect(UserDistrict.callCount).to.equal(1);
@@ -90,9 +93,10 @@ describe('DBSync service', function() {
     to.returns(KarmaUtils.mockPromise());
     from.returns(KarmaUtils.mockPromise());
     UserDistrict.callsArgWith(0, null, 'a');
-    SettingsP.returns(KarmaUtils.mockPromise(null, { district_admins_access_unallocated_messages: true }));
+    Settings.returns(KarmaUtils.mockPromise(null, { district_admins_access_unallocated_messages: true }));
     service();
     setTimeout(function() {
+      $rootScope.$apply(); // needed to resolve the promises
       chai.expect(from.args[0][1].query_params.unassigned).to.equal(true);
       done();
     });
@@ -104,9 +108,10 @@ describe('DBSync service', function() {
     to.returns(KarmaUtils.mockPromise());
     from.returns(KarmaUtils.mockPromise());
     UserDistrict.callsArgWith(0, null, 'a');
-    SettingsP.returns(KarmaUtils.mockPromise(null, { district_admins_access_unallocated_messages: true }));
+    Settings.returns(KarmaUtils.mockPromise(null, { district_admins_access_unallocated_messages: true }));
     service();
     setTimeout(function() {
+      $rootScope.$apply(); // needed to resolve the promises
       chai.expect(from.args[0][1].query_params.unassigned).to.equal(undefined);
       done();
     });

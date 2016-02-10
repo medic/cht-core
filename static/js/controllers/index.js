@@ -6,7 +6,11 @@
 
   require('./inbox');
 
+  require('./about');
   require('./analytics');
+  require('./analytics-anc');
+  require('./analytics-stock');
+  require('./analytics-targets');
   require('./configuration');
   require('./configuration-export');
   require('./configuration-forms');

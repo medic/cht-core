@@ -13,3 +13,6 @@ static/fonts
 logs
 config.js
 /build/
+
+*.sublime-project
+*.sublime-workspace

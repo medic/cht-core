@@ -30,20 +30,15 @@ var _ = require('underscore');
     function(DB, Session) {
       return function(messageId, read) {
         var user = Session.userCtx().name;
-        return new Promise(function(resolve, reject) {
-          DB.get().get(messageId)
-            .then(_.partial(updateMessage, user, read))
-            .then(function(doc) {
-              if (!doc) {
-                return resolve();
-              }
-              return DB.get()
-                .put(doc)
-                .then(resolve)
-                .catch(reject);
-            })
-            .catch(reject);
-        });
+        return DB.get()
+          .get(messageId)
+          .then(_.partial(updateMessage, user, read))
+          .then(function(doc) {
+            if (!doc) {
+              return;
+            }
+            return DB.get().put(doc);
+          });
       };
     }
   ]);

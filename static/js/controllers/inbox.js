@@ -16,8 +16,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'ConflictResolution', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth',
-    function ($window, $scope, $translate, $rootScope, $state, $stateParams, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, ReadMessages, UpdateUser, SendMessage, UserDistrict, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, ConflictResolution, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth) {
 
       Session.init();
       DBSync();
@@ -34,6 +34,9 @@ require('moment/locales');
           callback(null, Session.userCtx());
         }
       );
+
+      LiveListConfig();
+      CheckDate($scope);
 
       $scope.loadingContent = false;
       $scope.error = false;
@@ -167,6 +170,12 @@ require('moment/locales');
             $scope.closeContentPane();
           }
           $scope.$apply();
+          return true;
+        }
+
+        // If we're viewing a help page, return to the about page
+        if ($state.includes('help')) {
+          $state.go('about');
           return true;
         }
 
@@ -406,12 +415,13 @@ require('moment/locales');
         sendMessage.init(Settings, Contact, translateFilter);
       };
 
-      Form(function(err, forms) {
-        if (err) {
-          return console.log('Failed to retrieve forms', err);
-        }
-        $scope.forms = forms;
-      });
+      Form()
+        .then(function(forms) {
+          $scope.forms = forms;
+        })
+        .catch(function(err) {
+          console.log('Failed to retrieve forms', err);
+        });
 
       var updateFormDefinitions = function() {
         Enketo.withAllForms()
@@ -589,20 +599,21 @@ require('moment/locales');
         }
       });
 
-      Settings(function(err, settings) {
-        if (err) {
-          return console.log('Error fetching settings', err);
-        }
-        $scope.enabledLocales = _.reject(settings.locales, function(locale) {
-          return !!locale.disabled;
-        });
-        updateEditUserModel(function(user) {
-          filteredModals = _.filter(startupModals, function(modal) {
-            return modal.required(settings, user);
+      Settings()
+        .then(function(settings) {
+          $scope.enabledLocales = _.reject(settings.locales, function(locale) {
+            return !!locale.disabled;
           });
-          showModals();
+          updateEditUserModel(function(user) {
+            filteredModals = _.filter(startupModals, function(modal) {
+              return modal.required(settings, user);
+            });
+            showModals();
+          });
+        })
+        .catch(function(err) {
+          console.log('Error fetching settings', err);
         });
-      });
 
       moment.locale(['en']);
 
@@ -650,6 +661,15 @@ require('moment/locales');
         if (deleteMessageId) {
           DeleteDoc(deleteMessageId, function(err) {
             pane.done(translateFilter('Error deleting document'), err);
+            if (!err) {
+              // return to list view for the current state
+              var stateName = $state.current.name,
+                  dotIndex = stateName.indexOf('.');
+              if(dotIndex !== -1) {
+                stateName = stateName.substring(0, dotIndex);
+              }
+              $state.go(stateName);
+            }
           });
         } else {
           pane.done(translateFilter('Error deleting document'), 'No deleteMessageId set');
@@ -732,12 +752,11 @@ require('moment/locales');
           e.stopPropagation();
         });
 
-        // we have to wait for language to respond before initing the multidropdowns
-        Language().then(function(language) {
+        $translate.onReady().then(function() {
+          // we have to wait for language to respond before initing the multidropdowns
+          Language().then(function(language) {
 
-          $translate.use(language);
-
-          $translate('date.to').then(function () {
+            $translate.use(language);
 
             $('#formTypeDropdown, #facilityDropdown, #contactTypeDropdown').each(function() {
               $(this).multiDropdown({
@@ -863,6 +882,7 @@ require('moment/locales');
         });
       };
 
+
       Auth('can_view_messages_tab').then(function() {
         $scope.tours.push({
           order: 1,
@@ -912,10 +932,17 @@ require('moment/locales');
         });
       };
 
+      $scope.prepareFeedback = function() {
+        $('#feedback [name=feedback]').val('');
+      };
+
       $scope.submitFeedback = function() {
         var pane = modal.start($('#feedback'));
         var message = $('#feedback [name=feedback]').val();
         feedback.submit(message, APP_CONFIG, function(err) {
+          if (!err) {
+            Snackbar(translateFilter('feedback.submitted'));
+          }
           pane.done(translateFilter('Error saving feedback'), err);
         });
       };

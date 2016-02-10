@@ -715,6 +715,12 @@ describe('EnketoTranslation service', function() {
       // then
       assert.deepEqual(hidden_fields, [ 'secret_code_name_one', 'secret_code_name_two' ]);
     });
+
+    it('returns undefined if no outputs fields are defined', function() {
+      var xml = '<doc></doc>';
+      var hidden_fields = service.getHiddenFieldList(xml);
+      assert.deepEqual(hidden_fields, undefined);
+    });
   });
 
   describe('#bindJsonToXml()', function() {

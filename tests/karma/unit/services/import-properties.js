@@ -3,18 +3,17 @@ describe('ImportProperties service', function() {
   'use strict';
 
   var service,
-      settings,
+      Settings,
       actual;
 
   beforeEach(function() {
+    Settings = sinon.stub();
     module('inboxApp');
     module(function($provide) {
       $provide.value('translateFilter', function(key) {
         return '{' + key + '}';
       });
-      $provide.value('Settings', function(callback) {
-        callback(null, settings);
-      });
+      $provide.value('Settings', Settings);
       $provide.value('UpdateSettings', function(updated, callback) {
         actual = updated;
         callback();
@@ -23,13 +22,15 @@ describe('ImportProperties service', function() {
     inject(function($injector) {
       service = $injector.get('ImportProperties');
     });
-    settings = {};
     actual = null;
   });
 
-  it('updates settings', function(done) {
+  afterEach(function() {
+    KarmaUtils.restore(Settings);
+  });
 
-    settings = {
+  it('updates settings', function(done) {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       translations: [
         {
           key: 'Hello',
@@ -56,7 +57,7 @@ describe('ImportProperties service', function() {
           ]
         }
       ]
-    };
+    }));
 
     var expected = {
       translations: [
@@ -97,7 +98,7 @@ describe('ImportProperties service', function() {
 
   it('adds new translations', function(done) {
 
-    settings = {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       translations: [
         {
           key: 'Hello',
@@ -115,7 +116,7 @@ describe('ImportProperties service', function() {
           ]
         }
       ]
-    };
+    }));
 
     var expected = {
       translations: [
@@ -148,7 +149,7 @@ describe('ImportProperties service', function() {
 
   it('ignores unknown keys', function(done) {
 
-    settings = {
+    Settings.returns(KarmaUtils.mockPromise(null, {
       translations: [
         {
           key: 'Hello',
@@ -159,7 +160,7 @@ describe('ImportProperties service', function() {
           ]
         }
       ]
-    };
+    }));
 
     var expected = {
       translations: [
@@ -184,7 +185,7 @@ describe('ImportProperties service', function() {
 
   it('imports outgoing messages translations', function(done) {
 
-    settings = exampleSettings;
+    Settings.returns(KarmaUtils.mockPromise(null, exampleSettings));
 
     var properties = '[Outgoing Messages]\n' +
                      'registrations[0].messages[0] = MESSAGE 1\n' +
@@ -198,6 +199,7 @@ describe('ImportProperties service', function() {
     });
 
   });
+
   var exampleSettings = {
     registrations: [
       {

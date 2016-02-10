@@ -21,6 +21,18 @@ window.KarmaUtils = {
     };
     return result;
   },
+  // a promise than never resolves or rejects
+  nullPromise: function() {
+    return function() {
+      return {
+        then: function() {
+          return {
+            catch: function() {}
+          };
+        }
+      };
+    };
+  },
   mockDB: function(db, getRemoteUrl) {
     return function() {
       return {
@@ -30,5 +42,11 @@ window.KarmaUtils = {
         getRemoteUrl: getRemoteUrl
       };
     };
+  },
+  inlineTimeout: function(work) {
+    work();
+    return {'then': function(then) {
+      then();
+    }};
   }
 };

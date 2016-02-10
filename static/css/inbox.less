@@ -58,6 +58,12 @@ body {
     .header .tabs .selected, .filters {
       background-color: @help-color;
     }
+    .filters {
+      height: 0;
+    }
+    .page {
+      top: 5.5em;
+    }
   }
   &.error {
     .header .tabs .selected, .filters {
@@ -1317,6 +1323,9 @@ a.fa:hover {
   .content {
     .page {
       top: 5.75em;
+      &.help {
+        top: 3.8em;
+      }
     }
     .meta {
       padding-bottom: 0;
@@ -1480,6 +1489,15 @@ a.fa:hover {
     display: initial;
   }
   .desktop-only {
+    display: none;
+  }
+}
+
+#bad-local-date {
+  .full-date {
+    display: inline;
+  }
+  .relative-date-content {
     display: none;
   }
 }

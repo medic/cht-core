@@ -8,21 +8,15 @@ var modal = require('../modules/modal'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TourSelectCtrl',
-    ['$scope', '$rootScope', '$state', '$timeout', 'translateFilter', 'Settings',
-    function ($scope, $rootScope, $state, $timeout, translateFilter, Settings) {
+    ['$scope', '$state', '$translate',
+    function ($scope, $state, $translate) {
 
       var start = function(name) {
         var route = tour.getRoute(name);
         if ($state.is(route)) {
           // already on required page - show tour
-          // load settings to ensure translations are available
-          Settings(function(err) {
-            if (err) {
-              return console.log('Error loading settings', err);
-            }
-            $timeout(function() {
-              tour.start(name, translateFilter);
-            });
+          $translate.onReady().then(function() {
+            tour.start(name, $translate.instant);
           });
         } else {
           // navigate to the correct page

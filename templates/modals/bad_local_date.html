@@ -1,0 +1,25 @@
+<div id="bad-local-date" class="modal fade" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
+        <h3 translate>date.incorrect.title</h3>
+      </div>
+      <div class="modal-body">
+        <p translate>date.incorrect.description</p>
+        <p translate>date.incorrect.advice</p>
+        <p>
+          <span translate>date.incorrect.reported</span>:
+          <span ng-bind-html="reportedLocalDate | fullDate"></span>
+        </p>
+        <p ng-show="expectedLocalDate">
+          <span translate>date.incorrect.expected</span>:
+          <span ng-bind-html="expectedLocalDate | fullDate"></span>
+        </p>
+      </div>
+      <div class="modal-footer">
+        <a class="btn submit" data-dismiss="modal" translate>date.incorrect.confirm</a>
+      </div>
+    </div>
+  </div>
+</div>

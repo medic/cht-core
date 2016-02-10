@@ -7,13 +7,17 @@ For latest changes and release announcements see our [change log](Changes.md).
 
 Medic Mobile combines messaging, data collection, and analytics for health workers and health systems in hard-to-reach areas with or without internet connectivity.
 
-The `medic-webapp` repository is the core application in the Medic Mobile stack. When health workers submit data — using text messages (SMS), our mobile applications, or our SIM applications — the web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
+The `medic-webapp` repository is the core application in the Medic Mobile stack. When health workers submit data — using text messages (SMS), our mobile applications, or our SIM applications — the web app colunfirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
 
 The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally, as part of a virtual machine (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
 
 For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
 
-## Dependencies
+## Development Setup
+
+Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/md/dev/workflow.md).
+
+### Dependencies
 
 You will need to install the following:
 
@@ -139,7 +143,7 @@ See [Medic API](https://github.com/medic/medic-api) for more information.
 
 ### Push the dashboard
 
-Dashboard is required to load Medic Mobile.
+[Garden Dashboard](https://github.com/garden20/dashboard) is optionally used to manage the couchapp.
 
 To install Dashboard, first change the CouchDB's `secure_rewrites` configuration
 parameter to false:
@@ -164,11 +168,11 @@ kanso push http://admin:pass@localhost:5984/dashboard
 Navigate your browser to:
 
 ```
-http://localhost:5988/medic/_design/medic/_rewrite/
+http://localhost:5988/medic/login
 ```
 
 
-## Tests
+### Tests
 
 To run precommit tests:
 
@@ -180,7 +184,7 @@ To run precommit tests:
 
 Some kanso tests are run in-browser; you can run them manually if you browse to `/medic/_design/medic/_rewrite/test`.
 
-## Loading Data
+### Loading Data
 
 Loading your form definitions in the settings interface is supported, but you can
 also do that from command line:
@@ -207,7 +211,7 @@ curl -i -u gateway:123qwe \
 ```
 
 
-## Deploy to Market
+### Deploy to Market
 
 When deploying to the market, include the sentinel package in the couchapp so
 [gardener](https://github.com/garden20/gardener) can manage the process. This

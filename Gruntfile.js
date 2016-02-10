@@ -50,6 +50,21 @@ module.exports = function(grunt) {
           to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'mm.dateSelected.daterangepicker\', this);\n'
         }]
       },
+      // cache the ddoc views for performance
+      monkeypatchpouchtocacheddoc: {
+        src: [ 'bower_components/concat.js' ],
+        overwrite: true,
+        replacements: [
+          {
+            from: /function queryPromised\(db, fun, opts\) \{/g,
+            to: '// MONKEY PATCH BY GRUNT: cache ddoc views.\nfunction getPersistentViews(db, designDocName) {\n  if (!db.persistentViews) {\n    db.persistentViews = {};\n  }\n  if (!db.persistentViews[designDocName]) {\n    db.persistentViews[designDocName] = db.get(\'_design/\' + designDocName).then(function (doc) {\n      return { views: doc.views };\n   });\n  }\n  return db.persistentViews[designDocName];\n}\n\nfunction queryPromised(db, fun, opts) {\n'
+          },
+          {
+            from: /return db\.get\('_design\/' \+ designDocName\)\.then\(function \(doc\) \{/g,
+            to: '// MONKEY PATCH BY GRUNT: cache ddoc views.\n    return getPersistentViews(db, designDocName).then(function (doc) {\n'
+          }
+        ]
+      },
       // replace cache busting which breaks appcache, needed until this is fixed:
       // https://github.com/FortAwesome/Font-Awesome/issues/3286
       monkeypatchfontawesome: {
@@ -58,16 +73,6 @@ module.exports = function(grunt) {
         replacements: [{
           from: /(\/fonts\/fontawesome-webfont[^?]*)[^']*/gi,
           to: '$1'
-        }]
-      },
-      // add pass through for timeout parameter, needed until this is fixed:
-      // https://github.com/pouchdb/pouchdb/issues/4540
-      monkeypatchpouch: {
-        src: [ 'bower_components/concat.js' ],
-        overwrite: true,
-        replacements: [{
-          from: /return_docs: true \/\/ required so we know when we\'re done\n        };/g,
-          to: 'return_docs: true \/\/ required so we know when we\'re done\n        };\n\n// MONKEY PATCH BY GRUNT: Needed for continuous replication\n        if (opts.timeout) { changesOpts.timeout = opts.timeout; }\n'
         }]
       }
     },
@@ -95,14 +100,14 @@ module.exports = function(grunt) {
             jquery:'./static/js/enketo/jquery-shim.js',
             'text!enketo-config': './static/js/enketo/config.json',
             'widgets': './static/js/enketo/widgets.js',
-            './XPathEvaluatorBinding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding.js',
+            './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding.js',
             'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath.js',
             'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions.js',
             'libphonenumber/phoneformat': './packages/libphonenumber/libphonenumber/phoneformat.js',
             'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils.js',
           },
         },
-      },
+      }
     },
     concat: {
       dependencies: {
@@ -138,11 +143,6 @@ module.exports = function(grunt) {
       options: {
         jshintrc: true,
         ignores: [
-          'static/js/*.min.js',
-          'static/js/bootstrap-datetimepicker.js',
-          'static/js/jquery-ext.js',
-          'static/js/json2.js',
-          'static/js/browser.js',
           'tests/karma/q.js'
         ]
       },
@@ -155,7 +155,6 @@ module.exports = function(grunt) {
     less: {
       all: {
         files: {
-          'static/dist/admin.css': 'static/css/admin.less',
           'static/dist/inbox.css': 'static/css/inbox.less'
         }
       }
@@ -166,7 +165,6 @@ module.exports = function(grunt) {
           keepSpecialComments: 0
         },
         files: {
-          'static/dist/admin.css': 'static/dist/admin.css',
           'static/dist/inbox.css': 'static/dist/inbox.css'
         }
       }
@@ -230,9 +228,6 @@ module.exports = function(grunt) {
       deployci: {
         cmd: 'kanso push http://localhost:5984/medic'
       },
-      phantom: {
-        cmd: 'phantomjs scripts/nodeunit_runner.js http://localhost:5984/medic/_design/medic/_rewrite/test'
-      },
       runapi: {
         cmd: 'COUCH_URL=http://ci_test:pass@localhost:5984/medic node ./api/server.js > api.out &'
       },
@@ -285,6 +280,11 @@ module.exports = function(grunt) {
         configFile: './tests/karma/karma-unit.conf.js',
         singleRun: true,
         browsers: ['Firefox']
+      },
+      unit_continuous: {
+        configFile: './tests/karma/karma-unit.conf.js',
+        singleRun: false,
+        browsers: ['Chrome']
       }
     },
     protractor: {
@@ -293,6 +293,9 @@ module.exports = function(grunt) {
           configFile: 'tests/protractor/conf.js'
         }
       },
+    },
+    nodeunit: {
+      all: ['tests/nodeunit/unit/**/*.js']
     },
     ngtemplates: {
       inboxApp: {
@@ -356,7 +359,7 @@ module.exports = function(grunt) {
     'bower:install',
     'bower_concat',
     'replace:monkeypatchdate',
-    'replace:monkeypatchpouch',
+    'replace:monkeypatchpouchtocacheddoc',
     'copy:inbox'
   ]);
 
@@ -383,8 +386,8 @@ module.exports = function(grunt) {
     'default',
     'minify',
     'karma:unit_ci',
-    'exec:deployci',
-    'exec:phantom'
+    'nodeunit',
+    'exec:deployci'
   ]);
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
@@ -397,7 +400,13 @@ module.exports = function(grunt) {
   grunt.registerTask('test', 'Lint, unit, and integration test', [
     'jshint',
     'karma:unit',
+    'nodeunit',
     'protractor'
+  ]);
+
+  grunt.registerTask('test_continuous', 'Lint, unit test running on a loop', [
+    'jshint',
+    'karma:unit_continuous'
   ]);
 
   var browserifyMappings = [

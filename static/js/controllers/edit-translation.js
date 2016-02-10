@@ -47,24 +47,26 @@ var _ = require('underscore'),
   };
 
   inboxControllers.controller('EditTranslationCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'Settings', 'UpdateSettings',
-    function ($scope, $rootScope, translateFilter, Settings, UpdateSettings) {
+    ['$scope', '$rootScope', '$q', 'translateFilter', 'Settings', 'UpdateSettings',
+    function ($scope, $rootScope, $q, translateFilter, Settings, UpdateSettings) {
 
-      var updateTranslation = function(settings, callback) {
+      var updateTranslation = function(settings) {
         var model = $scope.translationModel;
         var populatedValues = _.filter(model.values, function(value) {
           return !!value.value;
         });
         var updateFn = getUpdateFn(model);
         if (!updateFn) {
-          return callback('Invalid model');
+          return $q.reject(new Error('Invalid translation model'));
         }
-        var update = updateFn(settings, model, populatedValues);
-        UpdateSettings(update, function(err) {
-          if (!err) {
-            $rootScope.$broadcast('TranslationUpdated', update);
-          }
-          callback(err);
+        return $q(function(resolve, reject) {
+          var update = updateFn(settings, model, populatedValues);
+          UpdateSettings(update, function(err) {
+            if (err) {
+              return reject(err);
+            }
+            resolve(update);
+          });
         });
       };
 
@@ -84,17 +86,15 @@ var _ = require('underscore'),
 
       $scope.saveTranslation = function() {
         var pane = modal.start($('#edit-translation'));
-        Settings(function(err, res) {
-          if (err) {
-            return pane.done(translateFilter('Error retrieving settings'), err);
-          }
-          updateTranslation(res, function(err) {
-            if (err) {
-              return pane.done(translateFilter('Error saving settings'), err);
-            }
+        return Settings()
+          .then(updateTranslation)
+          .then(function(update) {
+            $rootScope.$broadcast('TranslationUpdated', update);
             pane.done();
+          })
+          .catch(function(err) {
+            pane.done(translateFilter('Error updating settings'), err);
           });
-        });
       };
 
     }

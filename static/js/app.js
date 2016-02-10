@@ -1,5 +1,3 @@
-require('lie/polyfill');
-
 require('./services/index');
 require('./controllers/index');
 require('./filters/index');
@@ -97,9 +95,36 @@ _.templateSettings = {
 
         // analytics
         .state('analytics', {
-          url: '/analytics/:module?tour',
+          url: '/analytics?tour',
           controller: 'AnalyticsCtrl',
           templateUrl: 'templates/partials/analytics.html'
+        })
+        .state('analytics.anc', {
+          url: '/anc',
+          views: {
+            content: {
+              controller: 'AnalyticsAncCtrl',
+              templateUrl: 'templates/partials/analytics/anc.html'
+            }
+          }
+        })
+        .state('analytics.stock', {
+          url: '/stock',
+          views: {
+            content: {
+              controller: 'AnalyticsStockCtrl',
+              templateUrl: 'templates/partials/analytics/stock.html'
+            }
+          }
+        })
+        .state('analytics.targets', {
+          url: '/targets',
+          views: {
+            content: {
+              controller: 'AnalyticsTargetsCtrl',
+              templateUrl: 'templates/partials/analytics/targets.html'
+            }
+          }
         })
 
         // contacts
@@ -283,9 +308,15 @@ _.templateSettings = {
           }
         })
 
-        // help
+        // about page
+        .state('about', {
+          url: '/about',
+          controller: 'AboutCtrl',
+          templateUrl: 'templates/partials/about.html'
+        })
+
         .state('help', {
-          url: '/help',
+          url: '/help/{page}',
           controller: 'HelpCtrl',
           templateUrl: 'templates/partials/help.html'
         })
@@ -299,13 +330,14 @@ _.templateSettings = {
 
       $urlRouterProvider.when('', '/home');
       $translateProvider.useLoader('SettingsLoader', {});
+      $translateProvider.useSanitizeValueStrategy('escape');
       $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
     }
   ]);
 
-  app.factory('SettingsLoader', ['SettingsP', function (SettingsP) {
+  app.factory('SettingsLoader', ['Settings', function (Settings) {
     return function (options) {
-      return SettingsP().then(function(res) {
+      return Settings().then(function(res) {
         options.key = options.key || res.locale || 'en';
 
         var test = false;

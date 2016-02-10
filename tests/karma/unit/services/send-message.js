@@ -3,27 +3,24 @@ describe('SendMessage service', function() {
   'use strict';
 
   var service,
-      $rootScope,
-      settings,
+      Settings,
       id,
       post;
 
   beforeEach(function () {
     id = sinon.stub();
     post = sinon.stub();
-    settings = {};
+    Settings = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ post: post, id: id }));
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('UserSettings', function(callback) {
         callback(null, { phone: '+5551', name: 'jack' });
       });
-      $provide.value('Settings', function(callback) {
-        callback(null, settings);
-      });
+      $provide.value('Settings', Settings);
     });
-    inject(function(_SendMessage_, _$rootScope_) {
-      $rootScope = _$rootScope_;
+    inject(function(_SendMessage_) {
       service = _SendMessage_;
     });
   });
@@ -47,6 +44,7 @@ describe('SendMessage service', function() {
 
     id.returns(KarmaUtils.mockPromise(null, 53));
     post.returns(KarmaUtils.mockPromise());
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
 
     var recipient = {
       _id: 'abc',
@@ -67,22 +65,21 @@ describe('SendMessage service', function() {
           facility: recipient
         });
         done();
-      });
-
-    // needed to resolve the promise
-    $rootScope.$digest();
+      })
+      .catch(done);
   });
 
   it('normalizes phone numbers', function(done) {
+    // Note : only valid phone numbers can be normalized.
 
     id.returns(KarmaUtils.mockPromise(null, 53));
     post.returns(KarmaUtils.mockPromise());
 
-    var recipient = { contact: { phone: '5552' } };
-
-    settings = {
+    var phoneNumber = '700123456';
+    var recipient = { contact: { phone: phoneNumber } };
+    Settings.returns(KarmaUtils.mockPromise(null, {
       default_country_code: 254
-    };
+    }));
 
     service(recipient, 'hello')
       .then(function() {
@@ -91,14 +88,11 @@ describe('SendMessage service', function() {
         assertMessage(post.args[0][0].tasks[0], {
           from: '+5551',
           sent_by: 'jack',
-          to: '+2545552',
+          to: '+254' + phoneNumber,
           uuid: 53
         });
         done();
       });
-
-    // needed to resolve the promise
-    $rootScope.$digest();
   });
 
   it('create doc for multiple recipients', function(done) {
@@ -107,6 +101,7 @@ describe('SendMessage service', function() {
       .onFirstCall().returns(KarmaUtils.mockPromise(null, 53))
       .onSecondCall().returns(KarmaUtils.mockPromise(null, 150));
     post.returns(KarmaUtils.mockPromise());
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
 
     var recipients = [
       {
@@ -144,9 +139,6 @@ describe('SendMessage service', function() {
         });
         done();
       });
-
-    // needed to resolve the promise
-    $rootScope.$digest();
   });
 
   it('create doc for everyoneAt recipients', function(done) {
@@ -156,6 +148,7 @@ describe('SendMessage service', function() {
       .onSecondCall().returns(KarmaUtils.mockPromise(null, 150))
       .onThirdCall().returns(KarmaUtils.mockPromise(null, 6));
     post.returns(KarmaUtils.mockPromise());
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
 
     var recipients = [
       {
@@ -217,14 +210,12 @@ describe('SendMessage service', function() {
         });
         done();
       });
-
-    // needed to resolve the promise
-    $rootScope.$digest();
   });
 
   it('returns newUUID errors', function(done) {
 
     id.returns(KarmaUtils.mockPromise('errcode1'));
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
 
     var recipients = {
       _id: 'abc',
@@ -242,15 +233,13 @@ describe('SendMessage service', function() {
         done();
       }
     );
-
-    // needed to resolve the promise
-    $rootScope.$digest();
   });
 
   it('returns post errors', function(done) {
 
     id.returns(KarmaUtils.mockPromise(null, 3333));
     post.returns(KarmaUtils.mockPromise('errcode2'));
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
 
     var recipients = {
       _id: 'abc',
@@ -268,9 +257,6 @@ describe('SendMessage service', function() {
         done();
       }
     );
-
-    // needed to resolve the promise
-    $rootScope.$digest();
   });
 
 });

@@ -6,7 +6,7 @@ var _ = require('underscore'),
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
-  
+
   var backOffFunction = function(prev) {
     if (prev <= 0) {
       // first run, backoff 1 second
@@ -17,15 +17,15 @@ var _ = require('underscore'),
   };
 
   inboxServices.factory('DBSync', [
-    '$log', 'DB', 'UserDistrict', 'Session', 'SettingsP',
-    function($log, DB, UserDistrict, Session, SettingsP) {
+    '$log', 'DB', 'UserDistrict', 'Session', 'Settings', '$q',
+    function($log, DB, UserDistrict, Session, Settings, $q) {
 
       var replicate = function(from, options) {
         options = options || {};
         _.defaults(options, {
           live: true,
           retry: true,
-          timeout: 1000 * 60 * 60,
+          timeout: false,
           back_off_function: backOffFunction
         });
         var direction = from ? 'from' : 'to';
@@ -39,22 +39,30 @@ var _ = require('underscore'),
           });
       };
 
-      var getQueryParams = function(userCtx, callback) {
-        SettingsP()
-          .then(function(settings) {
-            UserDistrict(function(err, district) {
-              if (err) {
-                return callback(err);
-              }
-              var params = { id: district };
-              if (utils.hasPerm(userCtx, 'can_view_unallocated_data_records') &&
-                  settings.district_admins_access_unallocated_messages) {
-                params.unassigned = true;
-              }
-              callback(null, params);
-            });
-          })
-          .catch(callback);
+      var getUserDistrict = function() {
+        var deferred = $q.defer();
+        UserDistrict(function(err, district) {
+          if (err) {
+            deferred.reject(err);
+            return;
+          }
+          deferred.resolve(district);
+        });
+        return deferred.promise;
+      };
+
+      var getQueryParams = function(userCtx) {
+        return $q.all([Settings(), getUserDistrict()])
+          .then(function(values) {
+            var settings = values[0];
+            var district = values[1];
+            var params = { id: district };
+            if (utils.hasPerm(userCtx, 'can_view_unallocated_data_records') &&
+                settings.district_admins_access_unallocated_messages) {
+              params.unassigned = true;
+            }
+            return params;
+          });
       };
 
       return function() {
@@ -70,15 +78,17 @@ var _ = require('underscore'),
             return doc._id !== '_design/medic';
           }
         });
-        getQueryParams(userCtx, function(err, params) {
-          if (err) {
-            return $log.error('Error initializing DB sync', err);
-          }
-          replicate(true, {
-            filter: 'medic/doc_by_place',
-            query_params: params
+        getQueryParams(userCtx)
+          .then(function(params) {
+            replicate(true, {
+              batch_size: 1,
+              filter: 'medic/doc_by_place',
+              query_params: params
+            });
+          })
+          .catch(function(err) {
+            $log.error('Error initializing DB sync', err);
           });
-        });
       };
     }
   ]);

@@ -8,11 +8,10 @@
   },
   "dependencies": {
     "async": "^1.4.0",
-    "enketo-core": "git://github.com/medic/enketo-core.git#medic-0.7.6",
+    "enketo-core": "git://github.com/enketo/enketo-core.git#e7ccc736b062d6a523a77e47cd75fc344300583c",
     "enketo-xslt": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cb8e9cba8fa9996834be0405ecc96349f0882dd1",
-    "lie": "^3.0.1",
     "nools": "^0.4.1",
-    "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#ca3f6d4bea1051df816b4959288f1bae43545506",
+    "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#400d870f9b0e9b9a946966c22ab7429c673a0d86",
     "properties": "^1.2.1",
     "underscore": "~1.8.3"
   },
@@ -31,6 +30,7 @@
     "grunt-contrib-cssmin": "^0.13.0",
     "grunt-contrib-jshint": "^0.11.0",
     "grunt-contrib-less": "^1.0.1",
+    "grunt-contrib-nodeunit": "^0.4.1",
     "grunt-contrib-uglify": "^0.9.1",
     "grunt-contrib-watch": "^0.6.1",
     "grunt-exec": "^0.4.6",
@@ -38,7 +38,7 @@
     "grunt-notify": "^0.4.1",
     "grunt-npm-install": "^0.2.0",
     "grunt-postcss": "^0.5.5",
-    "grunt-protractor-runner": "^2.0.0",
+    "grunt-protractor-runner": "^3.0.0",
     "grunt-sass": "^1.0.0",
     "grunt-text-replace": "^0.4.0",
     "karma": "~0.13.5",
@@ -50,6 +50,7 @@
     "load-grunt-tasks": "^3.3.0",
     "mocha": "~2.2.5",
     "phantomjs": "~1.9.17",
+    "proxyquire": "^1.7.4",
     "remapify": "~2.0.3",
     "sinon": "^1.15.4",
     "time-grunt": "^1.2.2"

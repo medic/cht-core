@@ -1,5 +1,4 @@
 var _ = require('underscore'),
-    users = require('users'),
     cookies = require('cookies');
 
 var logger = exports.logger = {

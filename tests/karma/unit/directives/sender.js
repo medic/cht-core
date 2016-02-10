@@ -64,6 +64,6 @@ describe('sender directive', function() {
     scope.$digest();
     chai.expect(element.find('div .name').text()).to.equal('Clark');
     chai.expect(element.find('div .phone').text()).to.equal('+123');
-    chai.expect(element.find('div .position').text()).to.equal('Clarks House › Smallville › Metropolis');
+    chai.expect(element.find('div .position').text()).to.equal('Clarks House • Smallville • Metropolis');
   });
 });

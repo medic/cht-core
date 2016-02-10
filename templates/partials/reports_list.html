@@ -1,18 +1,5 @@
 <div id="reports-list" class="col-sm-4 inbox-items left-pane">
-  <ul ng-show="!loading || appending">
-    <li ng-repeat="report in reports | orderBy:'-reported_date'" ng-class="{'selected': report._id === loadingContent || !loadingContent && report._id === selected._id, 'read': isRead(report)}" data-record-id="{{report._id}}">
-      <a class="message-wrapper" ui-sref="reports.detail({ id: report._id })">
-        <span class="mm-badge mm-badge-round mm-badge-border" ng-class="report.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
-          <span class="fa" ng-class="{'fa-check': report.verified}"></span>
-        </span>
-        <div class="detail">
-          <span class="time" ng-bind-html="report.reported_date | relativeDate"></span>
-          <mm-sender message="report"></mm-sender>
-          <div class="description" ng-bind-html="report | summary:forms"></div>
-        </div>
-      </a>
-    </li>
-  </ul>
+  <ul ng-show="!loading || appending"></ul>
   <p ng-show="error" class="alert alert-danger" role="alert">
     <span ng-show="errorSyntax">
       {{'invalid.query' | translate}}

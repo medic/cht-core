@@ -30,7 +30,6 @@ describe('Auditing', function() {
         ]
       }
     ],
-    read: ['gareth'],
     kujua_message: true,
     type: 'data_record',
     sent_by: 'gareth'
@@ -65,21 +64,23 @@ describe('Auditing', function() {
     expect(selectedTab.getText()).toEqual('Messages');
 
     // check message is displayed correctly
+    element(by.css('.inbox-items li[data-record-id="+64555555555"]')).click();
     var newMessage = element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .data p span'));
     expect(newMessage.getText()).toEqual('hello!');
 
     // delete the message
-    element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .data p span')).click();
+    browser.sleep(1000);
+    newMessage.click();
     element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .fa-trash-o')).click();
     var confirmButton = element(by.css('#delete-confirm .submit'));
     browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton), 5000);
     confirmButton.click();
 
     // TODO find a better way to wait for DB to update
-    browser.sleep(1000);
+    browser.waitForAngular();
 
     var flow = protractor.promise.controlFlow();
-    
+
     // check the doc is deleted
     flow.execute(function() {
       return utils.getDoc(savedUuid);

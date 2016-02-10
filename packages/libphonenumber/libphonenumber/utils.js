@@ -1,17 +1,13 @@
-var i18n = require('libphonenumber/phoneformat'),
-    standardFormat = i18n.phonenumbers.PhoneNumberFormat.E164;
-
-var _cleanPhone = function(phone) {
-  phone = phone.replace(/[^\d\+]/g, '');
-  var prefix = phone.substr(0, 1) === '+' ? '+' : '';
-  phone = phone.replace(/[^\d]/g, '');
-  return prefix + phone;
-};
+/**
+* Our wrapper around google's libphonenumber.
+*/
+var i18n = require('./phoneformat'),
+  standardFormat = i18n.phonenumbers.PhoneNumberFormat.E164;
 
 var _init = function(settings, phone) {
   return {
     util: i18n.phonenumbers.PhoneNumberUtil.getInstance(),
-    phone: _cleanPhone(phone),
+    phone: phone,
     countryCode: settings && settings.default_country_code,
     country: function() {
       return this.util.getRegionCodeForCountryCode(this.countryCode);
@@ -20,14 +16,22 @@ var _init = function(settings, phone) {
       return this.util.parseAndKeepRawInput(this.phone, this.country());
     },
     format: function() {
+      if (!this.validate()) {
+        return false;
+      }
       return this.util.format(this.parse(), standardFormat).toString();
     },
     validate: function() {
-      return this.util.isValidNumber(this.parse());
+      return this.util.isValidNumber(this.parse()) &&
+        // Disallow alpha numbers, e.g. 1-800-MICROSOFT. We only take digits.
+        // Disallow weirdness in liphonenumber : 1 or 2 letters are ignored 
+        // ('<validnumber>aa' is valid).
+        !this.phone.match(/[a-z]/i);
     }
   };
 };
 
+/** Returns international format if valid number, false if invalid number. */
 exports.format = function(settings, phone) {
   try {
     return _init(settings, phone).format();
@@ -35,6 +39,7 @@ exports.format = function(settings, phone) {
   return false;
 };
 
+/** Returns true if valid number. Allows dots, brackets, spaces, but not letters. */
 exports.validate = function(settings, phone) {
   try {
     return _init(settings, phone).validate();

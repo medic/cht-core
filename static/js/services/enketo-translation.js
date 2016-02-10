@@ -240,7 +240,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
     self.getHiddenFieldList = function(model) {
       model = $.parseXML(model).firstChild;
       var outputs = findChildNode(model, 'outputs');
-      return withElements(outputs.childNodes)
+      return outputs && withElements(outputs.childNodes)
         .filter(function(n) {
           var attr = n.attributes.getNamedItem('tag');
           return attr && attr.value === 'hidden';

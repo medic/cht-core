@@ -2,7 +2,7 @@
     "name": "libphonenumber",
     "version": "1.0.736",
     "url": "https://code.google.com/p/libphonenumber/",
-    "modules": ["libphonenumber", "tests"],
+    "modules": ["libphonenumber"],
     "modules_attachment": false,
     "dependencies": {
         "modules": ">=0.0.8"

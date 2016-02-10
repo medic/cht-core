@@ -10,6 +10,7 @@
   require('./base');
   require('./cache');
   require('./changes');
+  require('./check-date');
   require('./conflict-resolution');
   require('./contact-form');
   require('./contact-schema');
@@ -36,6 +37,8 @@
   require('./import-contacts');
   require('./kanso-packages');
   require('./language');
+  require('./markdown');
+  require('./live-list');
   require('./mark-read');
   require('./message-contacts');
   require('./message-state');
@@ -43,6 +46,7 @@
   require('./outgoing-messages-configuration');
   require('./properties');
   require('./read-messages');
+  require('./scheduled-forms');
   require('./search');
   require('./send-message');
   require('./session');

@@ -27,12 +27,11 @@
             if (res && res.language) {
               return resolve(res.language);
             }
-            Settings(function(err, res) {
-              if (err) {
-                return reject(err);
-              }
-              resolve(res.locale || 'en');
-            });
+            Settings()
+              .then(function(settings) {
+                resolve(settings.locale || 'en');
+              })
+              .catch(reject);
           });
         });
       };

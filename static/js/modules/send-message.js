@@ -218,35 +218,35 @@ var _ = require('underscore'),
   exports.init = function(Settings, Contact, _translateFn) {
     contact = Contact;
     translateFn = _translateFn;
-    Settings(function(err, _settings) {
-      if (err) {
-        return console.log('Failed to retrieve settings', err);
-      }
-
-      $('body').on('click', '.send-message', function(e) {
-        var target = $(e.target).closest('.send-message');
-        if (target.hasClass('mm-icon-disabled')) {
-          return;
-        }
-        e.preventDefault();
-        var to = target.attr('data-send-to');
-        if (to) {
-          try {
-            to = JSON.parse(to);
-          } catch(e) {}
-        }
-        if (to && to.type === 'data_record') {
-          to = to.contact || to.from;
-        }
-        exports.showModal({
-          to: to,
-          everyoneAt: target.attr('data-everyone-at') === 'true'
+    Settings()
+      .then(function(_settings) {
+        $('body').on('click', '.send-message', function(e) {
+          var target = $(e.target).closest('.send-message');
+          if (target.hasClass('mm-icon-disabled')) {
+            return;
+          }
+          e.preventDefault();
+          var to = target.attr('data-send-to');
+          if (to) {
+            try {
+              to = JSON.parse(to);
+            } catch(e) {}
+          }
+          if (to && to.type === 'data_record') {
+            to = to.contact || to.from;
+          }
+          exports.showModal({
+            to: to,
+            everyoneAt: target.attr('data-everyone-at') === 'true'
+          });
         });
-      });
-      initPhoneField($('#send-message [name=phone]'));
+        initPhoneField($('#send-message [name=phone]'));
 
-      settings = _settings;
-    });
+        settings = _settings;
+      })
+      .catch(function(err) {
+        console.log('Failed to retrieve settings', err);
+      });
   };
 
   exports.setRecipients = function(_recipients) {

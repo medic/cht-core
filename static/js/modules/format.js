@@ -19,7 +19,7 @@ var _ = require('underscore');
         entity = entity.parent;
       }
     }
-    return _.map(parts, _.escape).join(' › ');
+    return _.map(parts, _.escape).join(' • ');
   };
 
   exports.sender = function(options) {
