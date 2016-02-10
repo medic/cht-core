@@ -91,43 +91,4 @@ describe('ReportsCtrl controller', function() {
     chai.expect(scope.filterModel.type).to.equal('reports');
   });
 
-  it('updates reports when changed', function(done) {
-    DB = {
-      get: function() {
-        return {
-          get: function(_id) {
-            var db = {
-              a: {
-                _id: 'a',
-                _rev: 2,
-                shared: 'z',
-                unique: 'w'
-              },
-              b: {
-                _id: 'b'
-              }
-            };
-            return Promise.resolve(db[_id]);
-          }
-        };
-      }
-    };
-
-    LiveList = {
-      reports: {
-        update: sinon.stub()
-      }
-    };
-    
-    createController();
-
-    scope.selected = { _id: 'a' };
-    changesCallback({ id: 'a' });
-
-    setTimeout(function() {
-      chai.assert.isTrue(LiveList.reports.update.called);
-      done();
-    });
-  });
-
 });
