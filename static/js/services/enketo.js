@@ -85,7 +85,8 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     var handleKeypressOnInputField = function(e) {
-      if(e.keyCode !== 13) {
+      // Here we capture both CR and TAB characters, and handle field-skipping
+      if(e.keyCode !== 7 && e.keyCode !== 13) {
         return;
       }
 
