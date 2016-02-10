@@ -158,6 +158,7 @@ Finally, download, build, and push the dashboard application to CouchDB:
 ```
 git clone https://github.com/garden20/dashboard
 cd dashboard
+git checkout develop
 kanso install
 kanso push http://admin:pass@localhost:5984/dashboard
 ```
