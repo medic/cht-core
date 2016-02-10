@@ -1,6 +1,7 @@
 var nools = require('nools'),
     _ = require('underscore'),
-    noLmpDateModifier = 4;
+    noLmpDateModifier = 4,
+    knownTypes = ['task', 'target'];
 
 (function () {
 
@@ -8,12 +9,12 @@ var nools = require('nools'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TaskGenerator', ['$q', 'DB', 'Search', 'Settings', 'Changes',
-    function($q, DB, Search, Settings, Changes) {
+  inboxServices.factory('TaskGenerator', ['$q', '$log', 'DB', 'Search', 'Settings', 'Changes',
+    function($q, $log, DB, Search, Settings, Changes) {
 
       var contactTypes = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
       var callbacks = {};
-      var tasks = {};
+      var emissions = {};
       var facts = [];
       var session;
       var err;
@@ -107,27 +108,30 @@ var nools = require('nools'),
         return facts;
       };
 
-      var getData = function() {
-        return $q.all([ getDataRecords(), getContacts() ]);
+      var notifyError = function(_err) {
+        err = _err;
+        _.values(callbacks).forEach(function(cbs) {
+          _.values(cbs).forEach(function(callback) {
+            callback(err);
+          });
+        });
       };
 
-      var notifyCallbacks = function(_err, _task) {
-        if (_err) {
-          err = _err;
+      var notifyCallbacks = function(fact, type) {
+        if (!emissions[type]) {
+          emissions[type] = {};
         }
-        var task;
-        if (_task) {
-          tasks[ _task._id ] = _task;
-          task = [ _task ];
-        }
-        _.values(callbacks).forEach(function(callback) {
-          callback(err, task);
+        emissions[type][fact._id] = fact;
+        _.values(callbacks[type]).forEach(function(callback) {
+          callback(null, [ fact ]);
         });
       };
 
       var getTasks = function() {
-        session.on('task', function(task) {
-          notifyCallbacks(null, task);
+        knownTypes.forEach(function(type) {
+          session.on(type, function(task) {
+            notifyCallbacks(task, type);
+          });
         });
         facts.forEach(function(fact) {
           session.assert(fact);
@@ -135,10 +139,10 @@ var nools = require('nools'),
         session.matchUntilHalt().then(
           // halt
           function() {
-            notifyCallbacks(new Error('Unexpected halt in task generation rules.'));
+            notifyError(new Error('Unexpected halt in task generation rules.'));
           },
           // error
-          notifyCallbacks
+          notifyError
         );
       };
 
@@ -205,7 +209,7 @@ var nools = require('nools'),
                 session.modify(fact);
               }
             })
-            .catch(notifyCallbacks);
+            .catch(notifyError);
         }
       };
 
@@ -237,34 +241,30 @@ var nools = require('nools'),
 
       var init = Settings()
         .then(function(settings) {
-          var deferred = $q.defer();
-          if (!settings.tasks ||
-              !settings.tasks.rules ||
-              !settings.tasks.schedules) {
-            // no rules or schedules configured
-            deferred.resolve();
-            return deferred.promise;
+          if (!settings.tasks || !settings.tasks.rules) {
+            // no rules configured
+            return $q.resolve;
           }
           if (!flow) {
             initNools(settings);
           }
           registerListener();
-          getData()
+          return $q.all([ getDataRecords(), getContacts() ])
             .then(function(results) {
               facts = deriveFacts(results[0], results[1]);
               getTasks();
-              deferred.resolve();
-            })
-            .catch(deferred.reject);
-          return deferred.promise;
+            });
         });
 
-      return function(name, callback) {
-        callbacks[name] = callback;
+      return function(name, type, callback) {
+        if (!callbacks[type]) {
+          callbacks[type] = {};
+        }
+        callbacks[type][name] = callback;
         init
           .then(function() {
             // wait for init to complete
-            callback(err, _.values(tasks));
+            callback(err, _.values(emissions[type]));
           })
           .catch(callback);
       };

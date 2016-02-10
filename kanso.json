@@ -1022,6 +1022,63 @@
                             "rows": 20
                         }
                     },
+                    "targets": {
+                        "title": "Targets",
+                        "type": "object",
+                        "properties": {
+                            "enabled": {
+                                "title": "Enabled",
+                                "type": "boolean"
+                            },
+                            "items": {
+                                "title": "Items",
+                                "type": "array",
+                                "default": [],
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "title": "Unique identifier",
+                                            "type": "string"
+                                        },
+                                        "type": {
+                                            "title": "Type of statistic",
+                                            "type": "string",
+                                            "default": "count",
+                                            "description": "Either 'count' or 'percent'"
+                                        },
+                                        "name": {
+                                            "title": "Title",
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "content": {
+                                                        "title": "Title Content",
+                                                        "type": "string"
+                                                    },
+                                                    "locale": {
+                                                        "title": "Locale",
+                                                        "type": "string",
+                                                        "default": "en"
+                                                    }
+                                                }
+                                            }
+                                        },
+                                        "icon": {
+                                            "title": "Icon",
+                                            "type": "string",
+                                            "description": "The id of the configured icon to use"
+                                        },
+                                        "goal": {
+                                            "title": "Goal value",
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "schedules": {
                         "title": "Schedules",
                         "type": "array",

@@ -52,6 +52,7 @@
   require('./session');
   require('./settings');
   require('./snackbar');
+  require('./target-generator');
   require('./task-generator');
   require('./translate-from');
   require('./update-contact');

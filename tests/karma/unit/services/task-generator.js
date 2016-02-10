@@ -219,27 +219,27 @@ describe('TaskGenerator service', function() {
       }
     }));
     var service = injector.get('TaskGenerator');
-    service('test', function(err) {
+    service('test', 'task', function(err) {
       chai.expect(err).to.equal('boom');
       chai.expect(Search.callCount).to.equal(2);
       done();
     });
   });
 
-  it('returns settingsP errors', function(done) {
+  it('returns settings errors', function(done) {
     Settings.returns(KarmaUtils.mockPromise('boom'));
     var service = injector.get('TaskGenerator');
-    service('test', function(err) {
+    service('test', 'task', function(err) {
       chai.expect(err).to.equal('boom');
       chai.expect(Settings.callCount).to.equal(1);
       done();
     });
   });
 
-  it('returns empty when settingsP returns no config', function(done) {
+  it('returns empty when settings returns no config', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, {}));
     var service = injector.get('TaskGenerator');
-    service('test', function(err, actual) {
+    service('test', 'task', function(err, actual) {
       chai.expect(Search.callCount).to.equal(0);
       chai.expect(Settings.callCount).to.equal(1);
       chai.expect(actual).to.deep.equal([]);
@@ -330,7 +330,7 @@ describe('TaskGenerator service', function() {
 
     var service = injector.get('TaskGenerator');
     var callbackCount = 0;
-    service('test', function(err, actuals) {
+    service('test', 'task', function(err, actuals) {
       actuals.forEach(function(actual) {
         var expected = expectations[actual._id];
         chai.expect(actual.type).to.equal(expected.schedule.type);
@@ -364,12 +364,12 @@ describe('TaskGenerator service', function() {
 
     var service = injector.get('TaskGenerator');
     var expected = {};
-    service('test', function(err, results) {
+    service('test', 'task', function(err, results) {
       results.forEach(function(result) {
         expected[result._id] = result;
       });
       if (_.values(expected).length === 10) {
-        service('another-test', function(err, actual) {
+        service('another-test', 'task', function(err, actual) {
           // Search and Settings shouldn't be called again, and
           // results should be the same
           chai.expect(Search.callCount).to.equal(2);
@@ -412,7 +412,7 @@ describe('TaskGenerator service', function() {
 
     var callbackCount = 0;
     var service = injector.get('TaskGenerator');
-    service('test', function(err, actual) {
+    service('test', 'task', function(err, actual) {
       callbackCount++;
       if (callbackCount === 4) {
         Changes.args[0][0].callback({
@@ -466,7 +466,7 @@ describe('TaskGenerator service', function() {
 
     var callbackCount = 0;
     var service = injector.get('TaskGenerator');
-    service('test', function(err, actual) {
+    service('test', 'task', function(err, actual) {
       callbackCount++;
       if (callbackCount === 4) {
         Changes.args[0][0].callback({
@@ -513,7 +513,7 @@ describe('TaskGenerator service', function() {
 
     var callbackCount = 0;
     var service = injector.get('TaskGenerator');
-    service('test', function(err, actual) {
+    service('test', 'task', function(err, actual) {
       callbackCount++;
       if (callbackCount === 4) {
         Changes.args[0][0].callback({
@@ -568,7 +568,7 @@ describe('TaskGenerator service', function() {
 
     var callbackCount = 0;
     var service = injector.get('TaskGenerator');
-    service('test', function(err, actual) {
+    service('test', 'task', function(err, actual) {
       callbackCount++;
       if (callbackCount === 4) {
         Changes.args[0][0].callback({
@@ -612,7 +612,7 @@ describe('TaskGenerator service', function() {
 
     var callbackCount = 0;
     var service = injector.get('TaskGenerator');
-    service('test', function(err, actual) {
+    service('test', 'task', function(err, actual) {
       callbackCount++;
       if (callbackCount === 4) {
         Changes.args[0][0].callback({
@@ -667,7 +667,7 @@ describe('TaskGenerator service', function() {
 
     var callbackCount = 0;
     var service = injector.get('TaskGenerator');
-    service('test', function(err, actual) {
+    service('test', 'task', function(err, actual) {
       callbackCount++;
       if (callbackCount === 4) {
         Changes.args[0][0].callback({
