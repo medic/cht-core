@@ -1,0 +1,9 @@
+{
+    "name": "traditional-couchapp",
+    "version": "0.1.1",
+    "categories": ["build-tools"],
+    "description": "Maps files in the project directory to design doc properties in the style of the traditional python couchapp tool",
+    "preprocessors": {
+        "load": "build/load"
+    }
+}
