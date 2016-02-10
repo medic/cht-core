@@ -10,8 +10,8 @@ function PARSER($parse, scope) {
 // medic-webapp specific config for LiveList.
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig', [
-  '$parse', '$rootScope', '$templateCache', 'Changes', 'DB', 'LiveList',
-  function($parse, $rootScope, $templateCache, Changes, DB, LiveList) {
+  '$log', '$parse', '$rootScope', '$templateCache', '$timeout', 'Changes', 'DB', 'LiveList', 'TaskGenerator',
+  function($log, $parse, $rootScope, $templateCache, $timeout, Changes, DB, LiveList, TaskGenerator) {
     // Configure LiveList service
     return function() {
       var contactTypes = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
@@ -118,6 +118,37 @@ angular.module('inboxServices').factory('LiveListConfig', [
         },
       });
 
+      LiveList.tasks.set([]);
+
+      TaskGenerator('tasks-list', function(err, tasks) {
+        if (err) {
+          $log.error('Error getting tasks', err);
+
+          var notifyError = ListList.tasks.notifyError;
+          if (notifyError) {
+            notifyError(task);
+          }
+
+          LiveList.tasks.set([]);
+          return;
+        }
+
+        $timeout(function() {
+          tasks.forEach(function(task) {
+            var notifyChange = ListList.tasks.notifyChange;
+            if (notifyChange) {
+              notifyChange(task);
+            }
+
+            if (task.resolved) {
+              LiveList.tasks.remove(task);
+            } else {
+              LiveList.tasks.update(task);
+            }
+          });
+        });
+      });
+
     };
   }
 ]);
@@ -159,7 +190,7 @@ angular.module('inboxServices').factory('LiveList', [
       if (!idx) {
         throw new Error('LiveList not configured for: ' + listName);
       }
-      if (!_initialised(listName)) {
+      if (!indexes[listName].list) {
         throw new Error('List not initialised for: ' + listName);
       }
     }
