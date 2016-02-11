@@ -29,7 +29,7 @@
         })
         .catch(function(err) {
           $log.error('Error fetching target', err);
-        })
+        });
 
       $scope.submit = function() {
 
@@ -59,7 +59,7 @@
         $scope.locales.forEach(function(locale) {
           var translation = _.findWhere($scope.target.name, { locale: locale.code });
           if (translation) {
-            translation.content = locale.content
+            translation.content = locale.content;
           } else if (locale.content) {
             $scope.target.name.push({
               locale: locale.code,
