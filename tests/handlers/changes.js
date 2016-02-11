@@ -266,5 +266,3 @@ exports['doesn\'t allow you to replicate any doc_ids except the ddoc'] = functio
 
   changes(proxy, testReq, testRes);
 };
-
-// TODO add test to make sure we can use the Erlang filter (once we merge this and merge it into the erlang branch)
