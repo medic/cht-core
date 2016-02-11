@@ -1,11 +1,10 @@
 <div id="tasks-list" class="col-sm-4 inbox-items left-pane">
-  <ul ng-show="!loading && !error"></ul>
+  <ul ng-show="!error && hasTasks"></ul>
   <p ng-show="error" class="alert alert-danger" role="alert">
     {{'Error fetching tasks.' | translate}}
     <a ng-click="refreshTaskList()">{{'Try again.' | translate}}</a>
   </p>
-  <p class="loading-status" ng-show="!error && !loading && !tasks.length">
+  <p class="loading-status" ng-show="!error && !hasTasks">
     {{'No tasks found' | translate}}
   </p>
-  <div class="loader" ng-show="loading"></div>
 </div>

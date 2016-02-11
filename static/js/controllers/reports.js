@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'LiveList', 'Settings', 'MarkRead', 'Search', 'Changes', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, translateFilter, LiveList, Settings, MarkRead, Search, Changes, EditGroup, FormatDataRecord, DB, Verified) {
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'LiveList', 'Settings', 'MarkRead', 'Search', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, translateFilter, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified) {
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = null;
@@ -90,6 +90,8 @@ var _ = require('underscore'),
         if (doc.fields) {
           updateDisplayFields(doc);
         }
+
+        LiveList.reports.setSelected(doc._id);
 
         var refreshing = doc && $scope.selected && $scope.selected.id === doc._id;
         $scope.selected = doc;
@@ -191,11 +193,10 @@ var _ = require('underscore'),
 
       $scope.$on('query', function() {
         if ($scope.filterModel.type !== 'reports') {
-          delete LiveList.reports.scope;
+          LiveList.reports.clearSelected();
           return;
         }
         $scope.loading = true;
-        LiveList.reports.scope = $scope;
         if (LiveList.reports.initialised()) {
           $timeout(function() {
             $scope.loading = false;
@@ -238,31 +239,6 @@ var _ = require('underscore'),
           }
         });
       };
-
-      Changes({
-        key: 'reports-list',
-        callback: function(change) {
-          if (change.deleted) {
-            LiveList.reports.remove({ _id: change.id });
-            return;
-          }
-
-          DB.get().get(change.id)
-            .then(function(doc) {
-              if (change.newDoc) {
-                LiveList.reports.insert(doc);
-              } else {
-                LiveList.reports.update(doc);
-              }
-            });
-        },
-        filter: function(change) {
-          if (change.newDoc) {
-            return change.newDoc.form;
-          }
-          return LiveList.reports.contains({ _id: change.id });
-        }
-      });
 
       if (!$stateParams.id) {
         $scope.selectReport();
