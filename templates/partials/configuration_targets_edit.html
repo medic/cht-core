@@ -1,4 +1,4 @@
-<form action="" method="POST" class="col-xs-8"> 
+<form action="" method="POST" class="col-xs-8 configuration-form">
 
   <div class="form-group" ng-class="{'has-error': errors.id}">
     <label for="id"><span translate>analytics.target.id</span> *</label>
@@ -18,13 +18,14 @@
 
   <div class="form-group clear-both">
     <label for="icon"><span translate>analytics.target.icon</span></label>
-    <input id="icon" type="text" class="form-control" ng-model="target.icon" />
-    <span class="help-block" translate>analytics.target.icon.help</span>
+    <select id="icon" class="form-control small" ng-model="target.icon" ng-options="icon as icon for icon in icons">
+    <option></option>
+    </select>
   </div>
 
   <div class="form-group">
     <label for="type"><span translate>analytics.target.type</span> *</label>
-    <select id="type" class="form-control" ng-model="target.type">
+    <select id="type" class="form-control small" ng-model="target.type">
       <option value="count" translate>analytics.target.type.count</option>
       <option value="percent" translate>analytics.target.type.percent</option>
     </select>
@@ -32,11 +33,12 @@
 
   <div class="form-group" ng-class="{'has-error': errors.goal}">
     <label for="goal"><span translate>analytics.target.goal</span> *</label>
-    <input id="goal" type="text" class="form-control" ng-model="target.goal" />
+    <input id="goal" type="text" class="form-control small" ng-model="target.goal" />
     <span class="help-block" ng-if="errors.goal" translate>{{errors.goal}}</span>
   </div>
 
   <a class="btn btn-primary" ng-click="submit()" ng-disabled="saving" translate>Submit</a>
   <span ng-if="status" translate>{{status}}</span>
+  <a class="btn btn-danger delete" ng-click="delete()" ng-disabled="saving" ng-if="editing" translate>Delete</a>
 
 </form>
