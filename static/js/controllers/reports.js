@@ -91,6 +91,8 @@ var _ = require('underscore'),
           updateDisplayFields(doc);
         }
 
+        LiveList.reports.setSelected(doc._id);
+
         var refreshing = doc && $scope.selected && $scope.selected.id === doc._id;
         $scope.selected = doc;
         setTitle(doc);
@@ -191,6 +193,7 @@ var _ = require('underscore'),
 
       $scope.$on('query', function() {
         if ($scope.filterModel.type !== 'reports') {
+          LiveList.reports.clearSelected();
           return;
         }
         $scope.loading = true;
