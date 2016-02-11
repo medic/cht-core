@@ -216,7 +216,8 @@ angular.module('inboxServices').factory('LiveList', [
     }
 
     function _set(listName, items) {
-      var idx = indexes[listName];
+      var i, len,
+          idx = indexes[listName];
 
       if (!idx) {
         throw new Error('LiveList not configured for: ' + listName);
@@ -225,13 +226,15 @@ angular.module('inboxServices').factory('LiveList', [
       // TODO we should sort the list in place with a suitable, efficient algorithm
       idx.list = [];
       idx.dom = [];
-      for (var i=0, len=items.length; i<len; ++i) {
-        _insert(listName, items[i]);
+      for (i=0, len=items.length; i<len; ++i) {
+        _insert(listName, items[i], true);
       }
+
+      $(idx.selecter).append(idx.dom);
     }
 
     function _initialised(listName) {
-      return  !!indexes[listName].list;
+      return !!indexes[listName].list;
     }
 
     function _contains(listName, item) {
@@ -249,21 +252,29 @@ angular.module('inboxServices').factory('LiveList', [
       return false;
     }
 
-    function _insert(listName, newItem) {
+    function _insert(listName, newItem, skipDomAppend) {
       var idx = indexes[listName];
 
       if (!idx.list) {
         return;
       }
 
+      var li = $(idx.listItem(newItem));
+      if (newItem._id === idx.selected) {
+        li.addClass('selected');
+      }
+
       var newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
       idx.list.splice(newItemIndex, 0, newItem);
-      idx.dom.splice(newItemIndex, 0, idx.listItem(newItem));
+      idx.dom.splice(newItemIndex, 0, li);
+
+      if (skipDomAppend) {
+        return;
+      }
 
       var activeDom = $(idx.selecter);
       if(activeDom.length) {
         var children = activeDom.children();
-        var li = idx.listItem(newItem);
         if (!children.length || newItemIndex === children.length) {
           activeDom.append(li);
         } else {
@@ -301,6 +312,47 @@ angular.module('inboxServices').factory('LiveList', [
       }
     }
 
+    function _setSelected(listName, _id) {
+      var i, len, doc,
+          idx = indexes[listName],
+          list = idx.list,
+          previous = idx.selected;
+
+      idx.selected = _id;
+
+      if (!list) {
+        return;
+      }
+
+      for (i=0, len=list.length; i<len; ++i) {
+        doc = list[i];
+        if (doc._id === previous) {
+          idx.dom[i]
+              .removeClass('selected');
+        }
+        if (doc._id === _id) {
+          idx.dom[i]
+              .addClass('selected');
+        }
+      }
+    }
+
+    function _clearSelected(listName) {
+      var i, len,
+          idx = indexes[listName],
+          list = idx.list,
+          previous = idx.selected;
+
+      if (!list || !previous) {
+        return;
+      }
+
+      for (i=0, len=list.length; i<len; ++i) {
+        if (list[i]._id === previous) {
+          idx.dom[i].removeClass('selected');
+        }
+      }
+    }
 
     api.$listFor = function(name, config) {
       checkConfig(config);
@@ -317,6 +369,8 @@ angular.module('inboxServices').factory('LiveList', [
         count: _.partial(_count, name),
         contains: _.partial(_contains, name),
         initialised: _.partial(_initialised, name),
+        setSelected: _.partial(_setSelected, name),
+        clearSelected: _.partial(_clearSelected, name),
       };
 
       return api[name];

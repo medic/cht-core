@@ -89,6 +89,7 @@ var _ = require('underscore'),
       };
 
       $scope.setSelected = function(selected) {
+        LiveList.contacts.setSelected(selected.doc._id);
         $scope.selected = selected;
         $scope.setTitle(selected.doc.name);
         $scope.clearCancelTarget();
@@ -110,6 +111,7 @@ var _ = require('underscore'),
 
       $scope.$on('query', function() {
         if ($scope.filterModel.type !== 'contacts') {
+          LiveList.contacts.clearSelected();
           return;
         }
         $scope.loading = true;
