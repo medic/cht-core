@@ -1,3 +1,6 @@
+var db = require('./db'),
+    pathPrefix = '/' + db.settings.db + '/';
+
 module.exports = {
   notLoggedIn: function(req, res, showPrompt) {
     if (showPrompt) {
