@@ -1,0 +1,42 @@
+<form action="" method="POST" class="col-xs-8"> 
+
+  <div class="form-group" ng-class="{'has-error': errors.id}">
+    <label for="id"><span translate>analytics.target.id</span> *</label>
+    <input id="id" type="text" class="form-control" ng-model="target.id" />
+    <span class="help-block" ng-if="errors.id" translate>{{errors.id}}</span>
+  </div>
+
+  <div class="form-horizontal">
+    <label translate>analytics.target.name</label>
+    <div class="form-group col-xs-12" ng-repeat="locale in locales track by locale.code">
+      <label class="col-xs-4">{{locale.name}}</label>
+      <div class="col-xs-8">
+        <input type="text" class="form-control" ng-model="locale.content" />
+      </div>
+    </div>
+  </div>
+
+  <div class="form-group clear-both">
+    <label for="icon"><span translate>analytics.target.icon</span></label>
+    <input id="icon" type="text" class="form-control" ng-model="target.icon" />
+    <span class="help-block" translate>analytics.target.icon.help</span>
+  </div>
+
+  <div class="form-group">
+    <label for="type"><span translate>analytics.target.type</span> *</label>
+    <select id="type" class="form-control" ng-model="target.type">
+      <option value="count" translate>analytics.target.type.count</option>
+      <option value="percent" translate>analytics.target.type.percent</option>
+    </select>
+  </div>
+
+  <div class="form-group" ng-class="{'has-error': errors.goal}">
+    <label for="goal"><span translate>analytics.target.goal</span> *</label>
+    <input id="goal" type="text" class="form-control" ng-model="target.goal" />
+    <span class="help-block" ng-if="errors.goal" translate>{{errors.goal}}</span>
+  </div>
+
+  <a class="btn btn-primary" ng-click="submit()" ng-disabled="saving" translate>Submit</a>
+  <span ng-if="status" translate>{{status}}</span>
+
+</form>

@@ -227,6 +227,24 @@ _.templateSettings = {
             }
           }
         })
+        .state('configuration.targets', {
+          url: '/targets',
+          views: {
+            content: {
+              controller: 'ConfigurationTargetsCtrl',
+              templateUrl: 'templates/partials/configuration_targets.html'
+            }
+          }
+        })
+        .state('configuration.targets-edit', {
+          url: '/targets/edit/:id',
+          views: {
+            content: {
+              controller: 'ConfigurationTargetsEditCtrl',
+              templateUrl: 'templates/partials/configuration_targets_edit.html'
+            }
+          }
+        })
         .state('configuration.translation', {
           url: '/translation',
           views: {
