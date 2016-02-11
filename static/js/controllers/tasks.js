@@ -11,6 +11,7 @@ var _ = require('underscore');
     function ($scope, $state, $log, $timeout, LiveList, TranslateFrom) {
 
       var setSelectedTask = function(task) {
+        LiveList.tasks.setSelected(task._id);
         $scope.selected = task;
         $scope.setTitle(TranslateFrom(task.title, task));
         $scope.setShowContent(true);
@@ -57,6 +58,7 @@ var _ = require('underscore');
 
       $scope.$on('query', function() {
         if ($scope.filterModel.type !== 'tasks') {
+          LiveList.tasks.clearSelected();
           delete LiveList.tasks.notifyChange;
           delete LiveList.tasks.notifyError;
           return;
