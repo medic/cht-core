@@ -15,7 +15,7 @@ module.exports = function(proxy, req, res) {
           return serverUtils.serverError(err.message, req, res);
         }
         // for security reasons ensure the params haven't been tampered with
-        if (req.query.filter === 'medic/doc_by_place') {
+        if (req.query.filter.indexOf('/doc_by_place') > 0) {
           var unassigned = config.get('district_admins_access_unallocated_messages') &&
                            auth.hasAllPermissions(userCtx, 'can_view_unallocated_data_records');
 

@@ -58,6 +58,27 @@ exports['allows access with the correct facilityId'] = function(test) {
   changes(proxy, testReq, testRes);
 };
 
+exports['allows filtering with the erlang filter'] = function(test) {
+  test.expect(2);
+
+  var testReq = {query: {filter: 'erlang_filters/doc_by_place', id: 'facilityId'}};
+  var testRes = 'fake response';
+  var userCtx = 'fake userCtx';
+
+  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
+  sinon.stub(auth, 'hasAllPermissions').returns(false);
+  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
+  sinon.stub(config, 'get').returns(false);
+
+  var proxy = {web: function(req, res) {
+    test.equals(req, testReq);
+    test.equals(res, testRes);
+    test.done();
+  }};
+
+  changes(proxy, testReq, testRes);
+};
+
 exports['allows access to replicate medic settings'] = function(test) {
   test.expect(2);
 
