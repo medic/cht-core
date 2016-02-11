@@ -135,15 +135,15 @@ angular.module('inboxServices').factory('LiveListConfig', [
 
         $timeout(function() {
           tasks.forEach(function(task) {
-            var notifyChange = LiveList.tasks.notifyChange;
-            if (notifyChange) {
-              notifyChange(task);
-            }
-
             if (task.resolved) {
               LiveList.tasks.remove(task);
             } else {
               LiveList.tasks.update(task);
+            }
+
+            var notifyChange = LiveList.tasks.notifyChange;
+            if (notifyChange) {
+              notifyChange(task);
             }
           });
         });
