@@ -27,7 +27,7 @@ module.exports = function(proxy, req, res) {
           }
         } else if (req.query.filter === '_doc_ids') {
           // replicating medic-settings only
-          if (req.query.doc_ids !== JSON.stringify([ '_design/medic' ])) {
+          if (req.query.doc_ids !== '["_design/medic"]') {
             console.error('Unauthorized replication attempt - restricted filter id: ' + req.query.doc_ids);
             return serverUtils.error({ code: 403, message: 'Forbidden' }, req, res);
           }

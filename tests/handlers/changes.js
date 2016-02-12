@@ -85,7 +85,7 @@ exports['allows access to replicate medic settings'] = function(test) {
   var testReq = {
     query: {
       filter: '_doc_ids',
-      doc_ids: JSON.stringify(['_design/medic'])
+      doc_ids: '["_design/medic"]'
   }};
   var testRes = 'fake response';
   var userCtx = 'fake userCtx';
@@ -244,7 +244,7 @@ exports['doesn\'t allow you to replicate any doc_ids except the ddoc'] = functio
   var testReq = {
     query: {
       filter: '_doc_ids',
-      doc_ids: JSON.stringify(['badDocument'])
+      doc_ids: '["badDocument"]'
   }};
   var testRes = 'fake response';
   var userCtx = 'fake userCtx';
