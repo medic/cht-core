@@ -250,6 +250,7 @@ module.exports = {
             if (err) {
                 callback(err);
             } else if (registrations.length) { // id collision, retry
+                logger.warn('Registration ID ' + id + ' is not unique, retrying...');
                 self.setId({db:db, doc:doc}, callback);
             } else {
                 doc.patient_id = id;
