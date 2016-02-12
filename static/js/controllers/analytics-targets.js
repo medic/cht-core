@@ -14,6 +14,15 @@
         if (err) {
           return $log.error('Error fetching targets', err);
         }
+
+        _.each(targets, function(target) {
+          if (!target.count) {
+            target.count = 0;
+          }
+          // Width of the progress bar to display.
+          target.displayProgress = Math.round(target.count * 100 / target.goal);
+        });
+
         $scope.targets = targets;
       });
 

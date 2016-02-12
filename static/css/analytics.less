@@ -229,3 +229,34 @@
     overflow: inherit;
   }
 }
+
+.targets {
+  .target {
+    .large {
+      font-size: 2em;
+    }
+    .color {
+      color: @analytics-color;
+    }
+    background-color: @background-color;
+    border-bottom: 1px solid @seperator-color;
+    cursor: pointer;
+    margin-right: 15px;
+    .contents {
+      padding: 15px;
+      .no-pad {
+        padding-left: 0px;
+        padding-right: 0px;
+      }
+      .progress {
+        background-color: white;
+        border: 1px solid @analytics-color;
+        margin-bottom: 0px;
+        margin-top: 15px;
+        .progress-bar {
+          background-color: @analytics-color;
+        }
+      }
+    }
+  }
+}
