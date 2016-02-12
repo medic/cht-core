@@ -1,5 +1,4 @@
 var utils = require('../utils'),
-    // auth = require('../auth'),
     async = require('async');
 
 describe('Filter doc_by_place', function() {
@@ -116,6 +115,10 @@ describe('Filter doc_by_place', function() {
           messages: []
         }
       ]
+    },
+    {
+      _id: 'test_kujua_message_incoming_no_contact',
+      type: 'data_record'
     }
   ];
 
@@ -123,6 +126,23 @@ describe('Filter doc_by_place', function() {
   var docByPlaceIds, docByPlaceIds_unassigned;
   beforeAll(function(done) {
     var alldocs = documentsToReturn.concat(documentsToIgnore).concat(documentsToIgnoreSometimes);
+
+    //var filterParam = 'medic%2Fdoc_by_place'; // js filter
+    var filterParam = 'erlang_filters%2Fdoc_by_place';
+
+    var runFilter = function(isUnassigned) {
+      console.log('Starting doc_by_place filter, please be patient…');
+      var unassignedParam = isUnassigned ? '&unassigned=true' : '';
+      return utils.request({
+        path: '/medic/_changes?style=all_docs&heartbeat=10000&filter=' + filterParam + '&id=testuser' + unassignedParam,
+        method: 'GET'
+      }).then(function(response) {
+        console.log('…done');
+        return response.results.map(function(doc) {
+          return doc.id;
+        });
+      });
+    };
 
     console.log('Pushing ' + alldocs.length + ' documents for testing…');
     async.each(alldocs,
@@ -142,32 +162,15 @@ describe('Filter doc_by_place', function() {
           console.log('…done');
         }
 
-        console.log('Starting doc_by_place filter, please be patient…');
-        utils.request({
-                path: '/medic/_changes?style=all_docs&heartbeat=10000&filter=erlang_filters%2Fdoc_by_place&id=testuser',
-         // path: '/medic/_changes?style=all_docs&heartbeat=10000&filter=medic%2Fdoc_by_place&id=testuser',
-          method: 'GET'
-        }).then(function(response) {
-          console.log('Got results', JSON.stringify(response.results, null, 2));
-          console.log('…done');
-          docByPlaceIds = response.results.map(function(doc) {
-            return doc.id;
+        runFilter(false)
+          .then(function(docs) {
+            docByPlaceIds = docs;
+            runFilter(true)
+              .then(function(moreDocs) {
+                docByPlaceIds_unassigned = moreDocs;
+                done();
+              });
           });
-
-          console.log('Starting doc_by_place filter, please be patient…');
-          utils.request({
-                    path: '/medic/_changes?style=all_docs&heartbeat=10000&filter=erlang_filters%2Fdoc_by_place&id=testuser&unassigned=true',
-            //path: '/medic/_changes?style=all_docs&heartbeat=10000&filter=medic%2Fdoc_by_place&id=testuser&unassigned=true',
-            method: 'GET'
-          }).then(function(response) {
-            console.log('Got results', JSON.stringify(response.results, null, 2));
-            console.log('…done');
-            docByPlaceIds_unassigned = response.results.map(function(doc) {
-              return doc.id;
-            });
-            done();
-          });
-        });
       });
   }, 5 * 60 * 1000);
 
@@ -230,20 +233,27 @@ describe('Filter doc_by_place', function() {
 
   describe('Documents that only pass when unassigned == true', function() {
     it('Should pass when no tasks', function() {
-      expect(docByPlaceIds_unassigned).toContain('test_kujua_message_no_tasks'); // erlang refuses it, js allows it
+      expect(docByPlaceIds_unassigned).toContain('test_kujua_message_no_tasks');
+      expect(docByPlaceIds).not.toContain('test_kujua_message_no_tasks');
     });
 
     it('Should pass when empty tasks', function() {
-      expect(docByPlaceIds_unassigned).toContain('test_kujua_message_empty_tasks'); // erlang refuses it, js allows it
+      expect(docByPlaceIds_unassigned).toContain('test_kujua_message_empty_tasks');
+      expect(docByPlaceIds).not.toContain('test_kujua_message_empty_tasks');
     });
 
     it('Should pass when no contact', function() {
-      expect(docByPlaceIds_unassigned).toContain('test_kujua_message_no_contact'); // erlang refuses it, js allows it
+      expect(docByPlaceIds_unassigned).toContain('test_kujua_message_no_contact');
+      expect(docByPlaceIds).not.toContain('test_kujua_message_no_contact');
+    });
+
+    it('Should pass when no contact (incoming)', function() {
+      expect(docByPlaceIds_unassigned).toContain('test_kujua_message_incoming_no_contact');
+      expect(docByPlaceIds).not.toContain('test_kujua_message_incoming_no_contact');
     });
   });
 
   // TODO: test these branches:
   //  - OK() no query id
-  //  - OK() null place req.query.unassigned
 });
 

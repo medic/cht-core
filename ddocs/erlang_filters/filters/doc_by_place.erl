@@ -4,8 +4,20 @@
 %  TC(DeepGet, [DeepGet, [<<"userCtx">>, <<"name">>], Req], 100000).
 % TC = fun(TC_F, TC_A, TC_N) when TC_N > 0 -> TC_L = tl([begin {TC_T, _Result} = timer:tc(TC_F, TC_A), TC_T end || _ <- lists:seq(1, TC_N)]), TC_Min = lists:min(TC_L), TC_Max = lists:max(TC_L), TC_Med = lists:nth(round((TC_N - 1) / 2), lists:sort(TC_L)), TC_Avg = round(lists:foldl(fun(TC_X, TC_Sum) -> TC_X + TC_Sum end, 0, TC_L) / (TC_N - 1)), io:format("Range: ~b - ~b mics~nMedian: ~b mics ~nAverage: ~b mics~n", [TC_Min, TC_Max, TC_Med, TC_Avg]), TC_Med end.
 
-% Made "cmd+v futon-ready" with the following disgusting display of black magic
+% Dev workflow, to push your local changes, 2 options :
+% 1 - Futon option :
+% The following disgusting display of black magic will copy the minified filter function in your paste buffer.
+% Paste it into futon.
 % cat scratch.erl | sed 's/%.*//' | sed 's/"/\\"/'g | sed -e ':a' -e 'N' -e '$!ba' -e 's/\n/ /g' | pbcopy
+% 2 - Curl option: (totally scriptable, feel free to write a script)
+%   a - Compile locally into ddoc format :
+% kanso show ddocs/erlang_filters > myerlang.json
+%   b - Get current version number of the ddoc and copy it :
+% curl -X GET $COUCH/medic/_design/erlang_filters
+%   c - Update the new ddoc :
+% curl -X PUT $COUCH/medic/_design/erlang_filters -H 'Content-Type: application/json'  -d @myerlang.json -H 'If-Match: <paste rev here>'
+%
+% Logging : something like `io:format("~p", TheDataStructure)` should work. (~p is pretty format)
 fun ({Doc}, {Req}) ->
 
   % Some values are wrapped in a tuple for some arbitrary reason
@@ -74,14 +86,15 @@ fun ({Doc}, {Req}) ->
               true ->
                 Tasks = proplists:get_value(<<"tasks">>, Doc, []),
                 if
-                  length(Tasks) > 0 ->
-                    % Outgoing message
-                    Ok(
-                      proplists:get_value(<<"contact">>,
-                        element(1, hd(proplists:get_value(<<"messages">>,
-                          element(1, hd(Tasks)))))));
+                  length(Tasks) =:= 0 -> Ok(undefined);
                   true ->
-                    false
+                    % Outgoing message
+                    Messages = proplists:get_value(<<"messages">>, element(1, hd(Tasks)), []),
+                    if
+                      length(Messages) =:= 0 -> Ok(undefined);
+                      true ->
+                        Ok(proplists:get_value(<<"contact">>, element(1, hd(Messages)), undefined))
+                    end
                 end;
               _ ->
                 % Incoming message
