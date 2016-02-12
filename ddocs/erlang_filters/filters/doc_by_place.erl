@@ -17,7 +17,11 @@
 %   c - Update the new ddoc :
 % curl -X PUT $COUCH/medic/_design/erlang_filters -H 'Content-Type: application/json'  -d @myerlang.json -H 'If-Match: <paste rev here>'
 %
+
 % Logging : something like `io:format("~p", TheDataStructure)` should work. (~p is pretty format)
+
+% A note about performance: function calls seem to be very expensive when code is eval'd this way,
+%                           so avoid them where you can. Ideally we'd get rid of SafeGetValue completely
 fun ({Doc}, {Req}) ->
 
   % Some values are wrapped in a tuple for some arbitrary reason
@@ -82,8 +86,9 @@ fun ({Doc}, {Req}) ->
     CouchUser -> true;
     _ -> case proplists:get_value(<<"type">>, Doc) of
           <<"data_record">> ->
-            case proplists:get_value(<<"kujua_message">>, Doc) of
-              true ->
+            KujuaMessage = proplists:get_value(<<"kujua_message">>, Doc),
+            if
+              KujuaMessage ->
                 Tasks = proplists:get_value(<<"tasks">>, Doc, []),
                 if
                   length(Tasks) =:= 0 -> Ok(undefined);
@@ -96,7 +101,7 @@ fun ({Doc}, {Req}) ->
                         Ok(proplists:get_value(<<"contact">>, element(1, hd(Messages)), undefined))
                     end
                 end;
-              _ ->
+              true ->
                 % Incoming message
                 Ok(proplists:get_value(<<"contact">>, Doc))
             end;
