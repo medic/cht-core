@@ -3,6 +3,12 @@ var auth = require('../auth'),
     serverUtils = require('../server-utils');
 
 module.exports = function(proxy, req, res) {
+  var filterIsDocByPlace = function() {
+    var split = req.query.filter.split('/');
+
+    return split && split.length === 2 && split[1] === 'doc_by_place';
+  };
+
   auth.getUserCtx(req, function(err, userCtx) {
     if (err) {
       return serverUtils.error(err, req, res);
@@ -15,7 +21,7 @@ module.exports = function(proxy, req, res) {
           return serverUtils.serverError(err.message, req, res);
         }
         // for security reasons ensure the params haven't been tampered with
-        if (req.query.filter.indexOf('/doc_by_place') > 0) {
+        if (filterIsDocByPlace()) {
           var unassigned = config.get('district_admins_access_unallocated_messages') &&
                            auth.hasAllPermissions(userCtx, 'can_view_unallocated_data_records');
 
