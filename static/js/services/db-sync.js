@@ -82,7 +82,7 @@ var _ = require('underscore'),
           .then(function(params) {
             replicate(true, {
               batch_size: 1,
-              filter: 'medic/doc_by_place',
+              filter: 'erlang_filters/doc_by_place',
               query_params: params
             });
           })
