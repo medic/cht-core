@@ -31,7 +31,7 @@ fun ({Doc}, {Req}) ->
   %      away for better performance
   SafeGetValue = fun(Key, PropListMaybe, Default) ->
     if
-      is_tuple(PropListMaybe) andalso size(PropListMaybe) == 1 ->
+      is_tuple(PropListMaybe) andalso size(PropListMaybe) =:= 1 ->
         proplists:get_value(Key, element(1, PropListMaybe), Default);
       is_list(PropListMaybe) ->
         proplists:get_value(Key, PropListMaybe, Default);
@@ -42,9 +42,9 @@ fun ({Doc}, {Req}) ->
 
   DeepGet = fun(DeepGet, KeyList, PropList) ->
     if
-      length(KeyList) > 1 andalso PropList == [] ->
+      length(KeyList) > 1 andalso PropList =:= [] ->
         undefined;
-      length(KeyList) == 1 ->
+      length(KeyList) =:= 1 ->
         SafeGetValue(hd(KeyList), PropList, undefined);
       true ->
         DeepGet(DeepGet, tl(KeyList), SafeGetValue(hd(KeyList), PropList, []))
@@ -53,7 +53,7 @@ fun ({Doc}, {Req}) ->
 
   FindPlace = fun(FindPlace, Place, QueryId) ->
     if
-      Place == undefined ->
+      Place =:= undefined ->
         false;
       true ->
         case SafeGetValue(<<"_id">>, Place, undefined) =:= QueryId of
@@ -69,6 +69,8 @@ fun ({Doc}, {Req}) ->
       true -> true; % Admin
       false ->
         case Place =:= undefined of
+          % nb: query.unassigned is a string and not a boolean because it comes from
+          %     the request not from stored documents
           true -> DeepGet(DeepGet, [<<"query">>, <<"unassigned">>], Req) =:= <<"true">>;
           false -> FindPlace(FindPlace, Place, QueryId)
         end

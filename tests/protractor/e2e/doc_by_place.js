@@ -125,7 +125,7 @@ describe('Filter doc_by_place', function() {
   // TODO: consider removing this and just pulling ids from the two arrays above
   var docByPlaceIds, docByPlaceIds_unassigned;
   beforeAll(function(done) {
-    var alldocs = documentsToReturn.concat(documentsToIgnore).concat(documentsToIgnoreSometimes);
+    var alldocs = documentsToReturn.concat(documentsToIgnore, documentsToIgnoreSometimes);
 
     //var filterParam = 'medic%2Fdoc_by_place'; // js filter
     var filterParam = 'erlang_filters%2Fdoc_by_place';
