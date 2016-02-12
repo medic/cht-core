@@ -9,7 +9,7 @@ var utils = require('./utils'),
     async = require('async'),
     path = require('path'),
     fs = require('fs'),
-    evals = process.binding('evals'),
+    evals = require('vm'),
     Script = evals.Script || evals.NodeScript;
 
 
