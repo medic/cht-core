@@ -13,6 +13,8 @@ var _ = require('underscore'),
     ['$log', '$scope', '$state', '$timeout', 'DB', 'LiveList', 'UserSettings', 'Search',
     function ($log, $scope, $state, $timeout, DB, LiveList, UserSettings, Search) {
 
+      var liveList = LiveList.contacts;
+
       $scope.filterModel.type = 'contacts';
       $scope.selected = null;
 
@@ -41,7 +43,7 @@ var _ = require('underscore'),
         }
 
         if (options.skip) {
-          options.skip = LiveList.contacts.count();
+          options.skip = liveList.count();
         }
         // curry the Search service so async.parallel can provide the
         // callback as the final callback argument
@@ -53,22 +55,23 @@ var _ = require('underscore'),
           }
 
           var data = results[0];
-          $scope.moreItems = LiveList.contacts.moreItems = data.length >= options.limit;
+          $scope.moreItems = liveList.moreItems = data.length >= options.limit;
           var user = results[1];
           $scope.userDistrict = user.facility_id;
           $scope.userContact = user.contact_id;
+
           if (options.skip) {
             $timeout(function() {
               $scope.contacts = data.length > 0;
-              _.each(data, LiveList.contacts.insert);
+              _.each(data, liveList.insert);
             })
             .then(completeLoad);
           } else if (options.silent) {
-            _.each(data, LiveList.contacts.update);
+            _.each(data, liveList.update);
             completeLoad();
           } else {
             $timeout(function() {
-              LiveList.contacts.set(data);
+              liveList.set(data);
               _initScroll();
               if (!data.length) {
                 $scope.clearSelected();
@@ -89,7 +92,7 @@ var _ = require('underscore'),
       };
 
       $scope.setSelected = function(selected) {
-        LiveList.contacts.setSelected(selected.doc._id);
+        liveList.setSelected(selected.doc._id);
         $scope.selected = selected;
         $scope.setTitle(selected.doc.name);
         $scope.clearCancelTarget();
@@ -111,15 +114,15 @@ var _ = require('underscore'),
 
       $scope.$on('query', function() {
         if ($scope.filterModel.type !== 'contacts') {
-          LiveList.contacts.clearSelected();
+          liveList.clearSelected();
           return;
         }
         $scope.loading = true;
-        if (LiveList.contacts.initialised()) {
+        if (liveList.initialised()) {
           $timeout(function() {
             $scope.loading = false;
-            LiveList.contacts.refresh();
-            $scope.moreItems = LiveList.contacts.moreItems;
+            liveList.refresh();
+            $scope.moreItems = liveList.moreItems;
             _initScroll();
           });
         } else {
