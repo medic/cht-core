@@ -119,18 +119,33 @@ var _ = require('underscore'),
       $scope.$on('query', function() {
         if ($scope.filterModel.type !== 'contacts') {
           liveList.clearSelected();
+          LiveList['contact-search'].set([]);
           return;
         }
+
         $scope.loading = true;
-        if (liveList.initialised()) {
-          $timeout(function() {
-            $scope.loading = false;
-            liveList.refresh();
-            $scope.moreItems = liveList.moreItems;
-            _initScroll();
-          });
-        } else {
+
+        if ($scope.filterQuery && $scope.filterQuery.value) {
+          $scope.filtered = true;
+
+          liveList = LiveList['contact-search'];
+          liveList.set([]);
+
           $scope.query();
+        } else {
+          $scope.filtered = false;
+          liveList = LiveList.contacts;
+
+          if (liveList.initialised()) {
+            $timeout(function() {
+              $scope.loading = false;
+              liveList.refresh();
+              $scope.moreItems = liveList.moreItems;
+              _initScroll();
+            });
+          } else {
+            $scope.query();
+          }
         }
       });
 
