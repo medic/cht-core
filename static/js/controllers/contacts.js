@@ -56,9 +56,13 @@ var _ = require('underscore'),
 
           var data = results[0];
           $scope.moreItems = liveList.moreItems = data.length >= options.limit;
+
+          // filter special contacts which should not be displayed
           var user = results[1];
-          $scope.userDistrict = user.facility_id;
-          $scope.userContact = user.contact_id;
+          data = _.reject(data, function(contact) {
+            return contact._id === user.facility_id ||
+                contact._id === user.contact_id;
+          });
 
           if (options.skip) {
             $timeout(function() {
