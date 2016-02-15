@@ -71,7 +71,6 @@ define( function( require, exports, module ) {
         $el = $( this.element );
 
         $el.attr( 'type', 'text' );
-        $el.prop( 'disabled', true );
 
         $el.attr( 'data-mm-android-dp', randomId );
         selecter = 'input[data-mm-android-dp=' + randomId + ']';
