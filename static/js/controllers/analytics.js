@@ -19,7 +19,25 @@ var _ = require('underscore');
         if ($stateParams.tour) {
           $rootScope.$broadcast('TourStart', $stateParams.tour);
         }
+        if (modules.length === 1) {
+          if (!$rootScope.isAnalyticsStateForceReload) {
+            setAnalyticsStateToForceReload();
+            $rootScope.isAnalyticsStateForceReload = true;
+          }
+          $state.go(modules[0].state);
+        }
       });
+
+      // Force-reloading will run the controller, to allow jumping to child-state.
+      // (when transitioning from child state to parent state, the parent controller is not reloaded.)
+      var setAnalyticsStateToForceReload = function() {
+        $rootScope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams) {
+          if (toState.name === 'analytics' && fromState.name.startsWith('analytics.')) {
+            event.preventDefault();
+            $state.reload('analytics');
+          }
+        });
+      };
 
       var findSelectedModule = function( modules) {
         if (!modules.length) {
