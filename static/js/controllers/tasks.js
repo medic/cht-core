@@ -7,8 +7,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksCtrl',
-    ['$scope', '$state', '$log', '$timeout', 'LiveList', 'TranslateFrom',
-    function ($scope, $state, $log, $timeout, LiveList, TranslateFrom) {
+    ['$scope', '$state', '$log', '$timeout', 'LiveList', 'ResourceIcons', 'TranslateFrom',
+    function ($scope, $state, $log, $timeout, LiveList, ResourceIcons, TranslateFrom) {
 
       var setSelectedTask = function(task) {
         LiveList.tasks.setSelected(task._id);
@@ -64,6 +64,8 @@ var _ = require('underscore');
           return;
         }
       });
+
+      ResourceIcons.refresh();
 
     }
   ]);

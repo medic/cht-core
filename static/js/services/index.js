@@ -46,6 +46,7 @@
   require('./outgoing-messages-configuration');
   require('./properties');
   require('./read-messages');
+  require('./resource-icons');
   require('./scheduled-forms');
   require('./search');
   require('./send-message');

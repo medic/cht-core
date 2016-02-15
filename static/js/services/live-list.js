@@ -8,8 +8,10 @@ function PARSER($parse, scope) {
 // medic-webapp specific config for LiveList.
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig', [
-  '$log', '$parse', '$rootScope', '$templateCache', '$timeout', 'Changes', 'DB', 'LiveList', 'TaskGenerator',
-  function($log, $parse, $rootScope, $templateCache, $timeout, Changes, DB, LiveList, TaskGenerator) {
+  '$log', '$parse', '$rootScope', '$templateCache', '$timeout',
+      'Changes', 'DB', 'LiveList', 'TaskGenerator',
+  function($log, $parse, $rootScope, $templateCache, $timeout,
+      Changes, DB, LiveList, TaskGenerator) {
     // Configure LiveList service
     return function() {
 
