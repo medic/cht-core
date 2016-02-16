@@ -72,6 +72,8 @@ define( function( require, exports, module ) {
         $el.on( 'click', function() {
             // Assign a random ID every time we trigger the click listener.
             // This avoids any potential collisions from e.g. cloned elements.
+            // Magic number: 9007199254740991 is Number.MAX_SAFE_INTEGER, but
+            // the named constant is not supported everywhere.
             var $el = $(this),
                 randomId = Math.floor( Math.random() * 9007199254740991 ),
                 selecter = 'input[data-mm-android-dp=' + randomId + ']',
