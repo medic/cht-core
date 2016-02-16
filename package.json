@@ -9,7 +9,7 @@
   "dependencies": {
     "async": "^1.4.0",
     "enketo-core": "git://github.com/enketo/enketo-core.git#4.5.5",
-    "enketo-xslt": "git://github.com/alxndrsn/enketo-client-side-transformer.git#eefaee55f3fe68d3bdd0fd4e308bfce9d08daf1d",
+    "enketo-xslt": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cd1788f38fa5d9ea846d9de1168322ec25002040",
     "nools": "^0.4.1",
     "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#07549a962c61cd07c0595d47addfaa644fc11871",
     "properties": "^1.2.1",
