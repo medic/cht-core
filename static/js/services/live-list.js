@@ -78,10 +78,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
           if (!r1 || !r2) {
             return;
           }
-          // Currently some task dates are Strings while others are proper JS
-          // Date objects.  Simplest way to compare them is to parse all into
-          // instances of Date.
-          return Date.parse(r2.reported_date) - Date.parse(r1.reported_date);
+          return r2.reported_date - r1.reported_date;
         },
         listItem: function(report) {
           var reportHtml = $templateCache.get('templates/partials/reports_list_item.html');
@@ -135,7 +132,10 @@ angular.module('inboxServices').factory('LiveListConfig', [
           if (!t1 || !t2) {
             return;
           }
-          return t2.date - t1.date;
+          // Currently some task dates are Strings while others are proper JS
+          // Date objects.  Simplest way to compare them is to parse all into
+          // instances of Date.
+          return Date.parse(t2.date) - Date.parse(t1.date);
         },
         listItem: function(task) {
           var taskHtml = $templateCache.get('templates/partials/tasks_list_item.html');
