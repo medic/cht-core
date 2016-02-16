@@ -14,9 +14,10 @@ angular.module('inboxServices').factory('LiveListConfig', [
   function($log, $parse, $rootScope, $templateCache, $timeout, Changes, DB, LiveList, TaskGenerator) {
     // Configure LiveList service
     return function() {
+
       var contactTypes = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
-      LiveList.$listFor('contacts', {
-        selecter: '#contacts-list ul.unfiltered',
+
+      var contacts_config = {
         orderBy: function(c1, c2) {
           if (!c1 || !c2) {
             return;
@@ -32,6 +33,18 @@ angular.module('inboxServices').factory('LiveListConfig', [
           scope.contact = contact;
           return contactHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
+      };
+
+      LiveList.$listFor('contacts', {
+        selecter: '#contacts-list ul.unfiltered',
+        orderBy: contacts_config.orderBy,
+        listItem: contacts_config.listItem,
+      });
+
+      LiveList.$listFor('contact-search', {
+        selecter: '#contacts-list ul.filtered',
+        orderBy: contacts_config.orderBy,
+        listItem: contacts_config.listItem,
       });
 
       Changes({
@@ -57,25 +70,6 @@ angular.module('inboxServices').factory('LiveListConfig', [
           }
           return LiveList.contacts.contains({ _id: change.id });
         }
-      });
-
-      LiveList.$listFor('contact-search', {
-        selecter: '#contacts-list ul.filtered',
-        orderBy: function(c1, c2) {
-          if (!c1 || !c2) {
-            return;
-          }
-          if (c1.type !== c2.type) {
-            return contactTypes.indexOf(c1.type) - contactTypes.indexOf(c2.type);
-          }
-          return c1.name < c2.name ? -1 : 1;
-        },
-        listItem: function(contact) {
-          var contactHtml = $templateCache.get('templates/partials/contacts_list_item.html');
-          var scope = $rootScope.$new();
-          scope.contact = contact;
-          return contactHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
-        },
       });
 
 
