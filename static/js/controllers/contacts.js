@@ -129,7 +129,14 @@ var _ = require('underscore'),
 
         $scope.loading = true;
 
-        if ($scope.filterQuery && $scope.filterQuery.value) {
+        if (($scope.filterQuery && $scope.filterQuery.value) ||
+            ($scope.filterModel && (
+              ($scope.filterModel.contactTypes && $scope.filterModel.contactTypes.length) ||
+              $scope.filterModel.facilities.length ||
+              $scope.filterModel.forms.length ||
+              ($scope.filterModel.date && ($scope.filterModel.date.from || $scope.filterModel.date.to)) ||
+              (typeof $scope.filterModel.valid !== 'undefined') ||
+              (typeof $scope.filterModel.valid !== 'undefined')))) {
           $scope.filtered = true;
 
           liveList = LiveList['contact-search'];
