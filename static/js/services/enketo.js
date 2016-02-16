@@ -90,6 +90,8 @@ angular.module('inboxServices').service('Enketo', [
         return;
       }
 
+      var backward = e.keyCode === 9 && e.shiftKey;
+
       var $this = $(this);
 
       // stop the keypress from being handled elsewhere
@@ -99,7 +101,9 @@ angular.module('inboxServices').service('Enketo', [
 
       // If there's another question on the current page, focus on that
       if($thisQuestion.attr('role') !== 'page') {
-        var $nextQuestion = $thisQuestion.find('~ .question:not(.disabled), ~ .repeat-buttons button.repeat');
+        var $nextQuestion = backward ?
+            $thisQuestion.prev('.question:not(.disabled), .repeat-buttons button.repeat') :
+            $thisQuestion.find('~ .question:not(.disabled), ~ .repeat-buttons button.repeat');
         if($nextQuestion.length) {
           // Hack for Android: delay focussing on the next field, so that
           // keybaord close and open events both register.  This should mean
@@ -111,14 +115,21 @@ angular.module('inboxServices').service('Enketo', [
         }
       }
 
-      // If there's no question on the current page, try to go to next
-      // page, or submit the form.
-
       // Trigger the change listener on the current field to update the enketo
       // model
       $this.trigger('change');
 
       var enketoContainer = $thisQuestion.closest('.enketo');
+
+      // If there's no question on the current page, try to go to change page,
+      // or submit the form.
+
+      if(backward) {
+        enketoContainer.find('.btn.prev-page:enabled:not(.disabled)')
+            .trigger('click');
+        return;
+      }
+
       var next = enketoContainer.find('.btn.next-page:enabled:not(.disabled)');
       if(next.length) {
         next.trigger('click');
