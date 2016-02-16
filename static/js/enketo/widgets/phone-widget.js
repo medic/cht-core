@@ -91,6 +91,7 @@ define( function( require, exports, module ) {
         // TODO(estellecomment): format the visible field onBlur to user-friendly format.
         var $proxyInput = $input.clone();
         $proxyInput.addClass('ignore');
+        $proxyInput.removeAttr('name');
         $input.before( $proxyInput );
         $proxyInput.val( $input.val() );
 
@@ -107,6 +108,7 @@ define( function( require, exports, module ) {
 
     function formatAndCopy( $from, $to, settings ) {
         $from.change( function() {
+            console.log('change listener fired!!!!!');
             // Also trigger the change() event, since input was not by user.
             $to.val( getFormattedValue( settings, $from.val() ) ).change();
         } );

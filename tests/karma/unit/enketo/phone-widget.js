@@ -37,7 +37,7 @@ describe('phone-widget', function() {
     var html = '<div id="phone-widget-test"><label class="question non-select"> \
        <span lang="" class="question-label active">person.field.phone</span> \
        <span class="required">*</span> \
-       <input type="' + type + '" name="' + inputName + '" required="required" data-type-xml="' + type + '" > \
+       <input type="' + type + '" name="' + inputName + '" data-type-xml="' + type + '" > \
        <span class="or-constraint-msg active" lang="" data-i18n="constraint.invalid">Value not allowed</span> \
        <span class="or-required-msg active" lang="" data-i18n="constraint.required">This field is required</span> \
     </label></div>';
@@ -51,7 +51,11 @@ describe('phone-widget', function() {
   });
 
   function inputSelector(name) {
-    return 'input[name=\"' + name + '\"]';
+    return $('input[name=\"' + name + '\"]');
+  }
+
+  function proxySelector(name) {
+    return inputSelector(name).prev();
   }
 
   it('is placed in dom', function() {
@@ -61,10 +65,10 @@ describe('phone-widget', function() {
     // Check a proxy input field is added, and the real one is hidden.
     chai.expect($('input').length).to.equal(2);
 
-    var input = $(inputSelector(inputName));
+    var input = inputSelector(inputName);
     chai.expect(input.is(':visible')).to.equal(false);
 
-    var proxyInput = $(inputSelector(inputName + '_proxy'));
+    var proxyInput = proxySelector(inputName);
     chai.expect(proxyInput.length).to.equal(1);
     chai.expect(proxyInput.is(':visible')).to.equal(true);
   });
@@ -72,8 +76,8 @@ describe('phone-widget', function() {
   it('formats input', function() {
     buildHtml();
     new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsP);
-    var input = $(inputSelector(inputName));
-    var proxyInput = $(inputSelector(inputName + '_proxy'));
+    var input = inputSelector(inputName);
+    var proxyInput = proxySelector(inputName);
 
     proxyInput.val('+1 (650) 222-3333');
     proxyInput.change();
@@ -90,8 +94,8 @@ describe('phone-widget', function() {
     buildHtml();
     new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsP);
 
-    var input = $(inputSelector(inputName));
-    var proxyInput = $(inputSelector(inputName + '_proxy'));
+    var input = inputSelector(inputName);
+    var proxyInput = proxySelector(inputName);
 
     proxyInput.val('+1 (650) 222-3333');
     proxyInput.change();
@@ -102,8 +106,8 @@ describe('phone-widget', function() {
     buildHtml();
     new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsP);
 
-    var input = $(inputSelector(inputName));
-    var proxyInput = $(inputSelector(inputName + '_proxy'));
+    var input = inputSelector(inputName);
+    var proxyInput = proxySelector(inputName);
 
     var invalid = '+1 (650) 222-33333333';
     proxyInput.val(invalid);
@@ -115,8 +119,8 @@ describe('phone-widget', function() {
     buildHtml();
     new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsP);
 
-    var input = $(inputSelector(inputName));
-    var proxyInput = $(inputSelector(inputName + '_proxy'));
+    var input = inputSelector(inputName);
+    var proxyInput = proxySelector(inputName);
 
     var valid = '+16502223333';
     proxyInput.val(valid);
