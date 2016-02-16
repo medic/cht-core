@@ -102,8 +102,8 @@ angular.module('inboxServices').service('Enketo', [
       // If there's another question on the current page, focus on that
       if($thisQuestion.attr('role') !== 'page') {
         var $nextQuestion = backward ?
-            $thisQuestion.prev('.question:not(.disabled), .repeat-buttons button.repeat') :
-            $thisQuestion.find('~ .question:not(.disabled), ~ .repeat-buttons button.repeat');
+            $thisQuestion.prev('.question:not(.disabled), .repeat-buttons button.repeat:not(:disabled)') :
+            $thisQuestion.find('~ .question:not(.disabled), ~ .repeat-buttons button.repeat:not(:disabled)');
         if($nextQuestion.length) {
           // Hack for Android: delay focussing on the next field, so that
           // keybaord close and open events both register.  This should mean
@@ -125,7 +125,7 @@ angular.module('inboxServices').service('Enketo', [
       // or submit the form.
 
       if(backward) {
-        enketoContainer.find('.btn.prev-page:enabled:not(.disabled)')
+        enketoContainer.find('.btn.previous-page:enabled:not(.disabled)')
             .trigger('click');
         return;
       }
