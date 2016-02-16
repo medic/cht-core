@@ -1,3 +1,21 @@
+/**
+ * TranslateFrom service takes the translation map as an argument when
+ * translating. It's useful for the configurable parts of the app, where we
+ * can't hard-code translations.
+ *
+ * Examples of use :
+ * translateFrom([
+ *  { locale: 'en', content: 'thanks' },
+ *  { locale: 'en_nz', content: 'chur' }
+ * ]);
+ *
+ * // Legacy format
+ * translateFrom({en: 'hello', fr: 'bonjour'});
+ *
+ * // With scope arg
+ * var patient = { _id: 'abc', patient: { name: 'Estelle' } };
+ * translateFrom([ { locale: 'en', content: 'Go visit {{patient.name}}' }], patient);  // 'Go visit Estelle'
+ */
 var _ = require('underscore');
 
 (function () {
@@ -45,4 +63,4 @@ var _ = require('underscore');
     }
   ]);
 
-}()); 
+}());
