@@ -1,8 +1,3 @@
-<!--
-  TODO li should hve optional class selected, calculated as follows:
-    {{task._id === loadingContent || !loadingContent && task._id === selected._id ? 'selected' : ''}}
-  This highlight is not useful on mobile, and needs a click listener or similar implemented for desktop users.
--->
 <li class="{{task.priority === 'high' ? 'high-priority' : ''}} {{task.priority === 'medium' ? 'medium-priority' : ''}}">
   <a class="message-wrapper" href="#tasks/{{task._id}}">
     <span class="mm-badge">{{task.icon | resourceIcon}}</span>

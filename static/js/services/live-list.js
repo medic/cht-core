@@ -14,9 +14,10 @@ angular.module('inboxServices').factory('LiveListConfig', [
   function($log, $parse, $rootScope, $templateCache, $timeout, Changes, DB, LiveList, TaskGenerator) {
     // Configure LiveList service
     return function() {
+
       var contactTypes = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
-      LiveList.$listFor('contacts', {
-        selecter: '#contacts-list ul',
+
+      var contacts_config = {
         orderBy: function(c1, c2) {
           if (!c1 || !c2) {
             return;
@@ -24,7 +25,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
           if (c1.type !== c2.type) {
             return contactTypes.indexOf(c1.type) - contactTypes.indexOf(c2.type);
           }
-          return c1.name < c2.name ? -1 : 1;
+          return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
         listItem: function(contact) {
           var contactHtml = $templateCache.get('templates/partials/contacts_list_item.html');
@@ -32,6 +33,18 @@ angular.module('inboxServices').factory('LiveListConfig', [
           scope.contact = contact;
           return contactHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
+      };
+
+      LiveList.$listFor('contacts', {
+        selecter: '#contacts-list ul.unfiltered',
+        orderBy: contacts_config.orderBy,
+        listItem: contacts_config.listItem,
+      });
+
+      LiveList.$listFor('contact-search', {
+        selecter: '#contacts-list ul.filtered',
+        orderBy: contacts_config.orderBy,
+        listItem: contacts_config.listItem,
       });
 
       Changes({
@@ -60,13 +73,15 @@ angular.module('inboxServices').factory('LiveListConfig', [
       });
 
 
-      LiveList.$listFor('reports', {
-        selecter: '#reports-list ul',
+      var reports_config = {
         orderBy: function(r1, r2) {
           if (!r1 || !r2) {
             return;
           }
-          return r2.reported_date - r1.reported_date;
+          // Currently some task dates are Strings while others are proper JS
+          // Date objects.  Simplest way to compare them is to parse all into
+          // instances of Date.
+          return Date.parse(r2.reported_date) - Date.parse(r1.reported_date);
         },
         listItem: function(report) {
           var reportHtml = $templateCache.get('templates/partials/reports_list_item.html');
@@ -74,6 +89,18 @@ angular.module('inboxServices').factory('LiveListConfig', [
           scope.report = report;
           return reportHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
+      };
+
+      LiveList.$listFor('reports', {
+        selecter: '#reports-list ul.unfiltered',
+        orderBy: reports_config.orderBy,
+        listItem: reports_config.listItem,
+      });
+
+      LiveList.$listFor('report-search', {
+        selecter: '#reports-list ul.filtered',
+        orderBy: reports_config.orderBy,
+        listItem: reports_config.listItem,
       });
 
       Changes({
@@ -230,7 +257,9 @@ angular.module('inboxServices').factory('LiveList', [
         _insert(listName, items[i], true);
       }
 
-      $(idx.selecter).append(idx.dom);
+      $(idx.selecter)
+          .empty()
+          .append(idx.dom);
     }
 
     function _initialised(listName) {

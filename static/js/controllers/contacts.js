@@ -13,6 +13,8 @@ var _ = require('underscore'),
     ['$log', '$scope', '$state', '$timeout', 'DB', 'LiveList', 'UserSettings', 'Search',
     function ($log, $scope, $state, $timeout, DB, LiveList, UserSettings, Search) {
 
+      var liveList = LiveList.contacts;
+
       $scope.filterModel.type = 'contacts';
       $scope.selected = null;
 
@@ -23,7 +25,6 @@ var _ = require('underscore'),
 
       function _initScroll() {
         scrollLoader.init(function() {
-          // FIXME this does not show loader after revisiting the tab
           if (!$scope.loading && $scope.moreItems) {
             $scope.query({ skip: true });
           }
@@ -41,8 +42,9 @@ var _ = require('underscore'),
         }
 
         if (options.skip) {
-          options.skip = LiveList.contacts.count();
+          options.skip = liveList.count();
         }
+
         // curry the Search service so async.parallel can provide the
         // callback as the final callback argument
         var contactSearch = _.partial(Search, $scope, options);
@@ -53,23 +55,32 @@ var _ = require('underscore'),
           }
 
           var data = results[0];
-          $scope.moreItems = LiveList.contacts.moreItems = data.length >= options.limit;
+          $scope.moreItems = liveList.moreItems = data.length >= options.limit;
+
+          // filter special contacts which should not be displayed
           var user = results[1];
-          $scope.userDistrict = user.facility_id;
-          $scope.userContact = user.contact_id;
+          data = _.reject(data, function(contact) {
+            return contact._id === user.facility_id ||
+                contact._id === user.contact_id;
+          });
+
           if (options.skip) {
             $timeout(function() {
-              $scope.contacts = data.length > 0;
-              _.each(data, LiveList.contacts.insert);
+              _.each(data, function(contact) {
+                liveList.insert(contact, false);
+              });
+              liveList.refresh();
+              completeLoad();
             })
             .then(completeLoad);
           } else if (options.silent) {
-            _.each(data, LiveList.contacts.update);
+            _.each(data, liveList.update);
             completeLoad();
           } else {
             $timeout(function() {
-              LiveList.contacts.set(data);
+              liveList.set(data);
               _initScroll();
+
               if (!data.length) {
                 $scope.clearSelected();
               } else if (!options.stay &&
@@ -89,7 +100,7 @@ var _ = require('underscore'),
       };
 
       $scope.setSelected = function(selected) {
-        LiveList.contacts.setSelected(selected.doc._id);
+        liveList.setSelected(selected.doc._id);
         $scope.selected = selected;
         $scope.setTitle(selected.doc.name);
         $scope.clearCancelTarget();
@@ -111,19 +122,37 @@ var _ = require('underscore'),
 
       $scope.$on('query', function() {
         if ($scope.filterModel.type !== 'contacts') {
-          LiveList.contacts.clearSelected();
+          liveList.clearSelected();
+          LiveList['contact-search'].set([]);
           return;
         }
+
         $scope.loading = true;
-        if (LiveList.contacts.initialised()) {
-          $timeout(function() {
-            $scope.loading = false;
-            LiveList.contacts.refresh();
-            $scope.moreItems = LiveList.contacts.moreItems;
-            _initScroll();
-          });
-        } else {
+
+        if (($scope.filterQuery && $scope.filterQuery.value) ||
+            ($scope.filterModel && (
+              ($scope.filterModel.contactTypes && $scope.filterModel.contactTypes.length) ||
+              $scope.filterModel.facilities.length))) {
+          $scope.filtered = true;
+
+          liveList = LiveList['contact-search'];
+          liveList.set([]);
+
           $scope.query();
+        } else {
+          $scope.filtered = false;
+          liveList = LiveList.contacts;
+
+          if (liveList.initialised()) {
+            $timeout(function() {
+              $scope.loading = false;
+              liveList.refresh();
+              $scope.moreItems = liveList.moreItems;
+              _initScroll();
+            });
+          } else {
+            $scope.query();
+          }
         }
       });
 

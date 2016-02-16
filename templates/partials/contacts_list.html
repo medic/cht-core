@@ -1,5 +1,6 @@
 <div id="contacts-list" class="col-sm-4 inbox-items left-pane">
-  <ul ng-show="!loading || appending"></ul>
+  <ul class="unfiltered" ng-show="(!loading || appending) && !filtered"></ul>
+  <ul class="filtered" ng-show="(!loading || appending) && filtered"></ul>
   <p ng-show="error" class="alert alert-danger" role="alert">{{'Error fetching contacts' | translate}}</p>
   <p class="loading-status" ng-show="!error && !loading && !contacts">{{'No contacts found' | translate}}</p>
   <p class="loading-status" ng-show="!error && !loading && contacts && !moreItems">{{'No more contacts' | translate}}</p>

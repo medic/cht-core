@@ -1,5 +1,6 @@
 <div id="reports-list" class="col-sm-4 inbox-items left-pane">
-  <ul ng-show="!loading || appending"></ul>
+  <ul class="unfiltered" ng-show="(!loading || appending) && !filtered"></ul>
+  <ul class="filtered" ng-show="(!loading || appending) && filtered"></ul>
   <p ng-show="error" class="alert alert-danger" role="alert">
     <span ng-show="errorSyntax">
       {{'invalid.query' | translate}}

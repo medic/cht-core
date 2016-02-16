@@ -60,24 +60,27 @@ define( function( require, exports, module ) {
     Androiddatepicker.prototype.constructor = Androiddatepicker;
 
     Androiddatepicker.prototype._init = function() {
-        var $el, randomId, selecter;
+        var $el;
 
         if ( !window.medicmobile_android || !window.medicmobile_android.datePicker ) {
             return;
         }
 
-        randomId = Math.floor( Math.random() * 9007199254740991 );
-
         $el = $( this.element );
-
         $el.attr( 'type', 'text' );
-        $el.prop( 'disabled', true );
-
-        $el.attr( 'data-mm-android-dp', randomId );
-        selecter = 'input[data-mm-android-dp=' + randomId + ']';
 
         $el.on( 'click', function() {
-            var val = $el.val();
+            // Assign a random ID every time we trigger the click listener.
+            // This avoids any potential collisions from e.g. cloned elements.
+            // Magic number: 9007199254740991 is Number.MAX_SAFE_INTEGER, but
+            // the named constant is not supported everywhere.
+            var $el = $(this),
+                randomId = Math.floor( Math.random() * 9007199254740991 ),
+                selecter = 'input[data-mm-android-dp=' + randomId + ']',
+                val = $el.val();
+
+            $el.attr( 'data-mm-android-dp', randomId );
+
             if ( val ) {
                 medicmobile_android.datePicker( selecter, val );
             } else {

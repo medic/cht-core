@@ -76,7 +76,7 @@ describe('DBSync service', function() {
       chai.expect(from.args[0][0]).to.equal('REMOTEDBURL');
       chai.expect(from.args[0][1].live).to.equal(true);
       chai.expect(from.args[0][1].retry).to.equal(true);
-      chai.expect(from.args[0][1].filter).to.equal('medic/doc_by_place');
+      chai.expect(from.args[0][1].filter).to.equal('erlang_filters/doc_by_place');
       chai.expect(from.args[0][1].query_params.id).to.equal('a');
       chai.expect(from.args[0][1].query_params.unassigned).to.equal(undefined);
       var backoff = to.args[0][1].back_off_function;
