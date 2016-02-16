@@ -79,8 +79,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
       });
 
 
-      LiveList.$listFor('reports', {
-        selecter: '#reports-list ul',
+      var reports_config = {
         orderBy: function(r1, r2) {
           if (!r1 || !r2) {
             return;
@@ -93,6 +92,18 @@ angular.module('inboxServices').factory('LiveListConfig', [
           scope.report = report;
           return reportHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
+      };
+
+      LiveList.$listFor('reports', {
+        selecter: '#reports-list ul.unfiltered',
+        orderBy: reports_config.orderBy,
+        listItem: reports_config.listItem,
+      });
+
+      LiveList.$listFor('report-search', {
+        selecter: '#reports-list ul.filtered',
+        orderBy: reports_config.orderBy,
+        listItem: reports_config.listItem,
       });
 
       Changes({
