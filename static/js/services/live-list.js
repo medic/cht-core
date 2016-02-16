@@ -24,7 +24,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
           if (c1.type !== c2.type) {
             return contactTypes.indexOf(c1.type) - contactTypes.indexOf(c2.type);
           }
-          return c1.name < c2.name ? -1 : 1;
+          return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
         listItem: function(contact) {
           var contactHtml = $templateCache.get('templates/partials/contacts_list_item.html');
