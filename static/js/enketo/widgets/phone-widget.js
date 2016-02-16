@@ -108,7 +108,6 @@ define( function( require, exports, module ) {
 
     function formatAndCopy( $from, $to, settings ) {
         $from.change( function() {
-            console.log('change listener fired!!!!!');
             // Also trigger the change() event, since input was not by user.
             $to.val( getFormattedValue( settings, $from.val() ) ).change();
         } );
