@@ -25,7 +25,6 @@ var _ = require('underscore'),
 
       function _initScroll() {
         scrollLoader.init(function() {
-          // FIXME this does not show loader after revisiting the tab
           if (!$scope.loading && $scope.moreItems) {
             $scope.query({ skip: true });
           }
@@ -45,6 +44,7 @@ var _ = require('underscore'),
         if (options.skip) {
           options.skip = liveList.count();
         }
+
         // curry the Search service so async.parallel can provide the
         // callback as the final callback argument
         var contactSearch = _.partial(Search, $scope, options);
@@ -66,8 +66,11 @@ var _ = require('underscore'),
 
           if (options.skip) {
             $timeout(function() {
-              $scope.contacts = data.length > 0;
-              _.each(data, liveList.insert);
+              _.each(data, function(contact) {
+                liveList.insert(contact, false);
+              });
+              liveList.refresh();
+              completeLoad();
             })
             .then(completeLoad);
           } else if (options.silent) {
@@ -77,6 +80,7 @@ var _ = require('underscore'),
             $timeout(function() {
               liveList.set(data);
               _initScroll();
+
               if (!data.length) {
                 $scope.clearSelected();
               } else if (!options.stay &&
