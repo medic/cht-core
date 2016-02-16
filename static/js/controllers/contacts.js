@@ -136,7 +136,7 @@ var _ = require('underscore'),
               $scope.filterModel.forms.length ||
               ($scope.filterModel.date && ($scope.filterModel.date.from || $scope.filterModel.date.to)) ||
               (typeof $scope.filterModel.valid !== 'undefined') ||
-              (typeof $scope.filterModel.valid !== 'undefined')))) {
+              (typeof $scope.filterModel.verified !== 'undefined')))) {
           $scope.filtered = true;
 
           liveList = LiveList['contact-search'];
