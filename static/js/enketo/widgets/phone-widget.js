@@ -86,20 +86,15 @@ define( function( require, exports, module ) {
 
     PhoneWidget.prototype._init = function( Settings ) {
         var $input = $( this.element );
-        $input.hide();
 
         // Add a proxy input field, which will send its input, formatted, to the real input field.
         // TODO(estellecomment): format the visible field onBlur to user-friendly format.
-        var proxyName = $input.attr( 'name' ) + '_proxy';
         var $proxyInput = $input.clone();
-        $proxyInput.attr( 'name', proxyName );
-        // Remove some enketo-specific attributes which confuse Enketo.
-        // Not needed for a display-only field.
-        $proxyInput.removeAttr( 'data-type-xml' );
-        $proxyInput.removeAttr( 'required' );
-        $input.after( $proxyInput );
+        $proxyInput.addClass('ignore');
+        $input.before( $proxyInput );
         $proxyInput.val( $input.val() );
-        $proxyInput.show();
+
+        $input.hide();
 
         // TODO(estellecomment): move this to a catch clause, when settings aren't found.
         formatAndCopy( $proxyInput, $input, {} );
