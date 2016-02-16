@@ -78,7 +78,10 @@ angular.module('inboxServices').factory('LiveListConfig', [
           if (!r1 || !r2) {
             return;
           }
-          return r2.reported_date - r1.reported_date;
+          // Currently some task dates are Strings while others are proper JS
+          // Date objects.  Simplest way to compare them is to parse all into
+          // instances of Date.
+          return Date.parse(r2.reported_date) - Date.parse(r1.reported_date);
         },
         listItem: function(report) {
           var reportHtml = $templateCache.get('templates/partials/reports_list_item.html');
