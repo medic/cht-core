@@ -1,5 +1,5 @@
 <div class="targets">
-  <div class="col-xs-12 col-md-6 col-lg-4 target" ng-repeat="target in targets">
+  <div class="col-xs-12 col-md-6 col-lg-4 target" ng-repeat="target in targets" ng-class="{'success': target.count >= target.goal}">
     <div class="contents">
       <div class="row">
         <div class="pull-left">
@@ -8,7 +8,7 @@
         <div class=right-wrapper>
           <div class="left-column text-center">
             <div>{{'Monthly Goal' | translate}}</div>
-            <div class="color"><span class="large">{{target.goal}}</span><span ng-if="target.type === 'percent'">%</span></div>
+            <div class="goal"><span class="large">{{target.goal}}</span><span ng-if="target.type === 'percent'">%</span></div>
           </div>
           <div class="text-justify">
             <h4>{{target.name | translateFrom}} </h4>
@@ -22,7 +22,7 @@
         </div>
         <div
           style="padding-left: {{target.displayProgress - 5}}%; padding-right: {{100 - target.displayProgress - 5}}%;"
-          ng-class="{'pull-right': target.displayProgress > 50, 'color': target.count >= target.goal}">
+          ng-class="{'pull-right': target.displayProgress > 50, 'goal': target.count >= target.goal}">
           <span class="large">{{target.count}}</span><span ng-if="target.type === 'percent'">%</span>
         </div>
       </div>
