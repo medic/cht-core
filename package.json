@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "async": "^1.4.0",
-    "enketo-core": "git://github.com/enketo/enketo-core.git#e7ccc736b062d6a523a77e47cd75fc344300583c",
-    "enketo-xslt": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cb8e9cba8fa9996834be0405ecc96349f0882dd1",
+    "enketo-core": "git://github.com/enketo/enketo-core.git#4.5.5",
+    "enketo-xslt": "git://github.com/alxndrsn/enketo-client-side-transformer.git#eefaee55f3fe68d3bdd0fd4e308bfce9d08daf1d",
     "nools": "^0.4.1",
     "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#07549a962c61cd07c0595d47addfaa644fc11871",
     "properties": "^1.2.1",
