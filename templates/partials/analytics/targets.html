@@ -1,12 +1,12 @@
 <div class="targets">
-  <div class="col-xs-12 col-md-6 col-lg-4 target" ng-repeat="target in targets" ng-class="{'success': target.count >= target.goal}">
+  <div class="col-xs-12 col-md-6 col-lg-4 target" ng-repeat="target in targets">
     <div class="contents">
       <div class="row">
         <div class="pull-left">
           <span ng-bind-html="target.icon | resourceIcon"></span>
         </div>
         <div class=right-wrapper>
-          <div class="left-column text-center">
+          <div class="right-column text-center">
             <div translate>analytics.target.monthly_goal</div>
             <div class="goal"><span class="large">{{target.goal}}</span><span ng-if="target.type === 'percent'">%</span></div>
           </div>
