@@ -86,11 +86,9 @@ angular.module('inboxServices').service('Enketo', [
 
     var handleKeypressOnInputField = function(e) {
       // Here we capture both CR and TAB characters, and handle field-skipping
-      if(e.keyCode !== 9 && e.keyCode !== 13) {
+      if(!window.medicmobile_android || (e.keyCode !== 9 && e.keyCode !== 13)) {
         return;
       }
-
-      var backward = e.keyCode === 9 && e.shiftKey;
 
       var $this = $(this);
 
@@ -101,9 +99,7 @@ angular.module('inboxServices').service('Enketo', [
 
       // If there's another question on the current page, focus on that
       if($thisQuestion.attr('role') !== 'page') {
-        var $nextQuestion = backward ?
-            $thisQuestion.prev('.question:not(.disabled), .repeat-buttons button.repeat:not(:disabled)') :
-            $thisQuestion.find('~ .question:not(.disabled), ~ .repeat-buttons button.repeat:not(:disabled)');
+        var $nextQuestion = $thisQuestion.find('~ .question:not(.disabled), ~ .repeat-buttons button.repeat:not(:disabled)');
         if($nextQuestion.length) {
           // Hack for Android: delay focussing on the next field, so that
           // keybaord close and open events both register.  This should mean
@@ -123,13 +119,6 @@ angular.module('inboxServices').service('Enketo', [
 
       // If there's no question on the current page, try to go to change page,
       // or submit the form.
-
-      if(backward) {
-        enketoContainer.find('.btn.previous-page:enabled:not(.disabled)')
-            .trigger('click');
-        return;
-      }
-
       var next = enketoContainer.find('.btn.next-page:enabled:not(.disabled)');
       if(next.length) {
         next.trigger('click');
