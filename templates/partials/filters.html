@@ -156,8 +156,8 @@
           <span class="mm-button-dropdown">
             <span class="fa fa-chevron-down"></span>
           </span>
-          <span class="mm-button-text">
-            {{filterModel.module.label | translate}}
+          <span class="mm-button-text" ng-repeat="module in analyticsModules" ng-if="module.state | isState">
+            {{module.label | translate}}
           </span>
         </span>
         <ul role="menu" aria-labelledby="module" class="dropdown-menu mm-dropdown-menu">
