@@ -99,14 +99,21 @@ angular.module('inboxServices').service('Enketo', [
 
       // If there's another question on the current page, focus on that
       if($thisQuestion.attr('role') !== 'page') {
-        var $nextQuestion = $thisQuestion.find('~ .question:not(.disabled), ~ .repeat-buttons button.repeat:not(:disabled)');
+        var $nextQuestion = $thisQuestion.find('~ .question:not(.disabled):not(.or-appearance-hidden), ~ .repeat-buttons button.repeat:not(:disabled)');
         if($nextQuestion.length) {
-          // Hack for Android: delay focussing on the next field, so that
-          // keybaord close and open events both register.  This should mean
-          // that the on-screen keyboard is maintained between fields.
-          setTimeout(function() {
-            $nextQuestion.first().trigger('focus');
-          }, 10);
+          if($nextQuestion[0].tagName !== 'LABEL') {
+            // The next question is something complicated, so we can't just
+            // focus on it.  Next best thing is to blur the current selection
+            // so the on-screen keyboard closes.
+            $this.trigger('blur');
+          } else {
+            // Delay focussing on the next field, so that keybaord close and
+            // open events both register.  This should mean that the on-screen
+            // keyboard is maintained between fields.
+            setTimeout(function() {
+              $nextQuestion.first().trigger('focus');
+            }, 10);
+          }
           return;
         }
       }
