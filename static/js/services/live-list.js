@@ -147,7 +147,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
 
       LiveList.tasks.set([]);
 
-      TaskGenerator('tasks-list', function(err, tasks) {
+      TaskGenerator('tasks-list', 'task', function(err, tasks) {
         if (err) {
           $log.error('Error getting tasks', err);
 
