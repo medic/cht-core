@@ -16,8 +16,9 @@
         var settings = { tasks: { targets: { enabled: value } } };
         UpdateSettings(settings, function(err) {
           if (err) {
-            $log.error('Error updating settings', err);
+            return $log.error('Error updating settings', err);
           }
+          $scope.configuration.enabled = value;
         });
       };
 
