@@ -89,31 +89,26 @@ var _ = require('underscore'),
       };
 
       $scope.selectReport = function(id) {
-        if ($scope.selected && $scope.selected._id && $scope.selected._id === id) {
+        $scope.clearSelected();
+
+        if (!id || !liveList.initialised()) {
           return;
         }
-        $scope.clearSelected();
-        if (id && liveList.initialised()) {
-          $scope.setLoadingContent(id);
-          var report = _.findWhere(liveList.getList(), { _id: id });
-          if (report) {
-            _setSelected(report);
-          } else {
-            DB.get()
-              .get(id)
-              .then(FormatDataRecord)
-              .then(function(doc) {
-                if (doc) {
-                  _setSelected(doc[0]);
-                  _initScroll();
-                }
-              })
-              .catch(function(err) {
-                $scope.clearSelected();
-                console.error(err);
-              });
-          }
-        }
+
+        $scope.setLoadingContent(id);
+        DB.get()
+          .get(id)
+          .then(FormatDataRecord)
+          .then(function(doc) {
+            if (doc) {
+              _setSelected(doc[0]);
+              _initScroll();
+            }
+          })
+          .catch(function(err) {
+            $scope.clearSelected();
+            console.error(err);
+          });
       };
 
       $scope.query = function(options) {
