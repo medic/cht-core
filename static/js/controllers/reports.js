@@ -35,7 +35,7 @@ var _ = require('underscore'),
 
       $scope.update = function(updated) {
         _.each(updated, function(report) {
-          liveList.insert(report, false);
+          liveList.update(report, false);
         });
         $scope.hasReports = liveList.count() > 0;
         liveList.refresh();
