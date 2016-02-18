@@ -37,7 +37,7 @@ var _ = require('underscore'),
         _.each(updated, function(report) {
           liveList.insert(report, false);
         });
-        $scope.reports = liveList.count() > 0;
+        $scope.hasReports = liveList.count() > 0;
         liveList.refresh();
       };
 
@@ -206,7 +206,7 @@ var _ = require('underscore'),
             $timeout(function() {
               $scope.loading = false;
               liveList.refresh();
-              $scope.reports = liveList.count() > 0;
+              $scope.hasReports = liveList.count() > 0;
               $scope.moreItems = liveList.moreItems;
               _initScroll();
             });
