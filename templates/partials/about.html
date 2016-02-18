@@ -9,6 +9,8 @@
         <li ng-show="android_app_version">{{'android_app.version.title' | translate}} {{android_app_version}}</li>
         <li>{{url}}</li>
         <li>{{userCtx.name}}</li>
+        <li ng-if="android_data_usage">{{'android_app.data_usage.rx' | translate}}: {{android_data_usage.rx | number}} B</li>
+        <li ng-if="android_data_usage">{{'android_app.data_usage.tx' | translate}}: {{android_data_usage.tx | number}} B</li>
         <li><a ng-click="reload()">{{'Reload' | translate}}</a></li>
       </ul>
     </div>
