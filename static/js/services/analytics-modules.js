@@ -30,7 +30,9 @@ var _ = require('underscore');
           label: 'analytics.targets',
           state: 'analytics.targets',
           available: function() {
-            return settings.tasks.targets.enabled;
+            return settings.tasks &&
+                   settings.tasks.targets &&
+                   settings.tasks.targets.enabled;
           }
         };
       };
