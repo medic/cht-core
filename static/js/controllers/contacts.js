@@ -21,6 +21,7 @@ var _ = require('underscore'),
       function completeLoad() {
         $scope.loading = false;
         $scope.appending = false;
+        $scope.hasContacts = liveList.count() > 0;
       }
 
       function _initScroll() {
@@ -69,9 +70,6 @@ var _ = require('underscore'),
               _.each(data, function(contact) {
                 liveList.insert(contact, false);
               });
-              if (data.length) {
-                $scope.contacts = true;
-              }
               liveList.refresh();
               completeLoad();
             })
@@ -83,8 +81,6 @@ var _ = require('underscore'),
             $timeout(function() {
               liveList.set(data);
               _initScroll();
-
-              $scope.contacts = data.length > 0;
 
               if (!data.length) {
                 $scope.clearSelected();
@@ -142,7 +138,6 @@ var _ = require('underscore'),
 
           liveList = LiveList['contact-search'];
           liveList.set([]);
-          $scope.contacts = false;
 
           $scope.query();
         } else {
@@ -152,7 +147,7 @@ var _ = require('underscore'),
           if (liveList.initialised()) {
             $timeout(function() {
               $scope.loading = false;
-              $scope.contacts = liveList.count() > 0;
+              $scope.hasContacts = liveList.count() > 0;
               liveList.refresh();
               $scope.moreItems = liveList.moreItems;
               _initScroll();
