@@ -84,7 +84,7 @@ var _ = require('underscore'),
               liveList.set(data);
               _initScroll();
 
-              $scope.contacts = !!data.length;
+              $scope.contacts = data.length > 0;
 
               if (!data.length) {
                 $scope.clearSelected();
@@ -152,6 +152,7 @@ var _ = require('underscore'),
           if (liveList.initialised()) {
             $timeout(function() {
               $scope.loading = false;
+              $scope.contacts = liveList.count() > 0;
               liveList.refresh();
               $scope.moreItems = liveList.moreItems;
               _initScroll();
