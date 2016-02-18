@@ -2,8 +2,6 @@
   <div class="col-sm-12 page help" ui-view="content">
     <div>
       <h3>{{'about' | translate}}</h3>
-    </div>
-    <div>
       <ul>
         <li>{{'version' | translate}} {{version}}</li>
         <li ng-show="android_app_version">{{'android_app.version.title' | translate}} {{android_app_version}}</li>
@@ -22,8 +20,6 @@
     </div>
     <div ng-hide="help_pages.length === 0">
       <h3>{{'Help' | translate}}</h3>
-    </div>
-    <div>
       <ul>
         <li ng-repeat="page in help_pages">
           <a ui-sref="help({ page: page.id })">{{page.title}}</a>
@@ -33,8 +29,6 @@
     </div>
     <div>
       <h3>{{'Debug' | translate}}</h3>
-    </div>
-    <div>
       <p>{{ 'debug.mode.description' | translate }}</p>
       <form>
         <label>
@@ -44,8 +38,6 @@
     </div>
     <div>
       <h3>{{'debug.db_info.title' | translate}}</h3>
-    </div>
-    <div>
       <pre>{{ dbInfo }}</pre>
     </div>
   </div>
