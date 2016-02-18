@@ -983,7 +983,12 @@ require('moment/locales');
           // if the manifest hasn't changed, prompt user to reload settings
           window.applicationCache.addEventListener('noupdate', showUpdateReady);
           // check if the manifest has changed. if it has, download and prompt
-          window.applicationCache.update();
+          try {
+            window.applicationCache.update();
+          } catch(e) {
+            // chrome incognito mode active
+            showUpdateReady();
+          }
         });
       }
 
