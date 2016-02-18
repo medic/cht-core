@@ -85,7 +85,8 @@ var _ = require('underscore');
       };
 
       var updateItem = function(settings) {
-        var items = settings.tasks.targets.items;
+        var items = (settings.tasks && settings.tasks.targets &&
+                     settings.tasks.targets.items) || [];
         if ($stateParams.id) {
           // updating
           for (var i = 0; i < items.length; i++) {
