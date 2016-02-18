@@ -1,5 +1,3 @@
-// TODO cache activeDom; set it when loading a controller!!
-
 function PARSER($parse, scope) {
   return function(expr) {
     expr = expr.substring(2, expr.length-2);
