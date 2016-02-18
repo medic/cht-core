@@ -27,11 +27,14 @@ if (couchUrl) {
   module.exports.medic = nano(couchUrl);
   module.exports._users = module.exports.use('_users');
 
+  var dbName = parsedUrl.path.replace('/','');
+
   module.exports.settings = {
     protocol: parsedUrl.protocol,
     port: parsedUrl.port,
     host: parsedUrl.hostname,
-    db: parsedUrl.path.replace('/',''),
+    db: dbName,
+    auditDb: dbName + '-audit',
     ddoc: 'medic'
   };
 
