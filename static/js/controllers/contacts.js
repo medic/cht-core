@@ -69,6 +69,9 @@ var _ = require('underscore'),
               _.each(data, function(contact) {
                 liveList.insert(contact, false);
               });
+              if (data.length) {
+                $scope.contacts = true;
+              }
               liveList.refresh();
               completeLoad();
             })
@@ -80,6 +83,8 @@ var _ = require('underscore'),
             $timeout(function() {
               liveList.set(data);
               _initScroll();
+
+              $scope.contacts = !!data.length;
 
               if (!data.length) {
                 $scope.clearSelected();
@@ -137,6 +142,7 @@ var _ = require('underscore'),
 
           liveList = LiveList['contact-search'];
           liveList.set([]);
+          $scope.contacts = false;
 
           $scope.query();
         } else {
