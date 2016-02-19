@@ -13,11 +13,16 @@
     <span>
     <div ng-if="android_data_usage">
       <h3>{{'android_app.data_usage.title' | translate}}</h3>
+      <p>{{'android_app.data_usage.description' | translate}}</p>
+      <h4>{{'android_app.data_usage.system.title' | translate}}</h4>
       <ul>
-        <li>{{'android_app.data_usage.rx' | translate}}: {{android_data_usage.rx | number}} B</li>
-        <li>{{'android_app.data_usage.tx' | translate}}: {{android_data_usage.tx | number}} B</li>
-        <li>{{'android_app.data_usage.rxByUid' | translate}}: {{android_data_usage.rxByUid | number}} B</li>
-        <li>{{'android_app.data_usage.txByUid' | translate}}: {{android_data_usage.txByUid | number}} B</li>
+        <li>{{'android_app.data_usage.rx' | translate}}: {{android_data_usage.system.rx | number}} B</li>
+        <li>{{'android_app.data_usage.tx' | translate}}: {{android_data_usage.system.tx | number}} B</li>
+      </ul>
+      <h4>{{'android_app.data_usage.app.title' | translate}}</h4>
+      <ul>
+        <li>{{'android_app.data_usage.rx' | translate}}: {{android_data_usage.app.rx | number}} B</li>
+        <li>{{'android_app.data_usage.tx' | translate}}: {{android_data_usage.app.tx | number}} B</li>
       </ul>
     </div>
     <div ng-hide="help_pages.length === 0">
