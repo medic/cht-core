@@ -39,6 +39,7 @@ var _ = require('underscore');
       $scope.filterModel.type = 'tasks';
       $timeout(function() {
         LiveList.tasks.refresh();
+        ResourceIcons.refresh();
       });
       $scope.selected = null;
       $scope.error = false;
@@ -64,8 +65,6 @@ var _ = require('underscore');
           return;
         }
       });
-
-      ResourceIcons.refresh();
 
     }
   ]);
