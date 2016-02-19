@@ -408,4 +408,52 @@ describe('LiveListSrv', function() {
       });
     });
   });
+
+  describe('ORDERING', function() {
+    it('should sort items by ascending ID', function() {
+      // given
+      service.$listFor('testing', {
+        listItem: SIMPLE_LIST_ITEM,
+        orderBy: function(a, b) {
+          return b._id - a._id;
+        },
+        selecter: '#list',
+      });
+
+      // when
+      service.testing.insert( doc(1) );
+      service.testing.insert( doc(3) );
+      service.testing.insert( doc(2) );
+
+      // then
+      assert.deepEqual(service.testing.getList(), [
+        { _id: 1 },
+        { _id: 2 },
+        { _id: 3 },
+      ]);
+    });
+
+    it('should sort items by descending ID', function() {
+      // given
+      service.$listFor('testing', {
+        listItem: SIMPLE_LIST_ITEM,
+        orderBy: function(a, b) {
+          return a._id - b._id;
+        },
+        selecter: '#list',
+      });
+
+      // when
+      service.testing.insert( doc(1) );
+      service.testing.insert( doc(3) );
+      service.testing.insert( doc(2) );
+
+      // then
+      assert.deepEqual(service.testing.getList(), [
+        { _id: 3 },
+        { _id: 2 },
+        { _id: 1 },
+      ]);
+    });
+  });
 });
