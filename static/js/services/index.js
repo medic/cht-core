@@ -55,6 +55,7 @@
   require('./snackbar');
   require('./target-generator');
   require('./task-generator');
+  require('./traffic-stats');
   require('./translate-from');
   require('./update-contact');
   require('./update-facility');
