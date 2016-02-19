@@ -17,7 +17,7 @@ inboxControllers.controller('AboutCtrl',
     $scope.$watch('enableDebugModel.val', Debug.set);
 
     if (window.medicmobile_android) {
-      $scope.android_data_usage = window.medicmobile_android.getDataUsage();
+      $scope.android_data_usage = JSON.parse(window.medicmobile_android.getDataUsage());
     }
 
     DB.get().info().then(function (result) {
