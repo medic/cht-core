@@ -410,7 +410,28 @@ describe('LiveListSrv', function() {
   });
 
   describe('ORDERING', function() {
-    it('should sort items by ascending ID', function() {
+    it('should sort items added by #set() by ascending ID', function() {
+      // given
+      service.$listFor('testing', {
+        listItem: SIMPLE_LIST_ITEM,
+        orderBy: function(a, b) {
+          return a._id - b._id;
+        },
+        selecter: '#list',
+      });
+
+      // when
+      service.testing.set([ doc(1), doc(3), doc(2) ]);
+
+      // then
+      assert.deepEqual(service.testing.getList(), [
+        { _id: 1 },
+        { _id: 2 },
+        { _id: 3 },
+      ]);
+    });
+
+    it('should sort items added by #set() by descending ID', function() {
       // given
       service.$listFor('testing', {
         listItem: SIMPLE_LIST_ITEM,
@@ -419,6 +440,28 @@ describe('LiveListSrv', function() {
         },
         selecter: '#list',
       });
+
+      // when
+      service.testing.set([ doc(1), doc(3), doc(2) ]);
+
+      // then
+      assert.deepEqual(service.testing.getList(), [
+        { _id: 3 },
+        { _id: 2 },
+        { _id: 1 },
+      ]);
+    });
+
+    it('should sort items by ascending ID', function() {
+      // given
+      service.$listFor('testing', {
+        listItem: SIMPLE_LIST_ITEM,
+        orderBy: function(a, b) {
+          return a._id - b._id;
+        },
+        selecter: '#list',
+      });
+      service.testing.set([]);
 
       // when
       service.testing.insert( doc(1) );
@@ -438,10 +481,11 @@ describe('LiveListSrv', function() {
       service.$listFor('testing', {
         listItem: SIMPLE_LIST_ITEM,
         orderBy: function(a, b) {
-          return a._id - b._id;
+          return b._id - a._id;
         },
         selecter: '#list',
       });
+      service.testing.set([]);
 
       // when
       service.testing.insert( doc(1) );
