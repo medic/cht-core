@@ -95,6 +95,7 @@ if (couchUrl) {
       }
     },
     _users: {
+      get: function() {},
       list: function() {},
       insert: function() {}
     }
