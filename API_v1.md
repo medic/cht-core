@@ -10,6 +10,7 @@ Respond with HTTP 200 status on successful requests.
   * [Records](#records)
   * [Messages](#messages)
   * [Contacts](#contacts)
+  * [Users](#users)
 
 # Forms
 
@@ -167,6 +168,7 @@ Content-Type: application/json; charset=utf-8
   "id": "364c796a843fbe0a73476f9153012733"
 }
 ```
+
 Creating new record with JSON.
 
 ```
@@ -487,12 +489,12 @@ Export a file containing the user feedback.
 
 Returns a JSON array of contacts. 
 
-### Query Parameters
+### Query Parameters (required)
 
 | Variable           | Description
 | ------------------ | ------------- 
-| format (required)  | The desired format of the file. Only 'json' is supported. 
-| query (required)   | The query parameters in lucene query generator format.
+| format             | The desired format of the file. Only 'json' is supported. 
+| query              | The query parameters in lucene query generator format.
 
 ### Examples
 
@@ -521,3 +523,105 @@ Content-Type: application/json; charset=utf-8
   }
 ]
 ```
+
+# Users
+
+## GET /api/v1/users
+
+Returns a list of users and their profile data in JSON format.
+
+## POST /api/v1/users/{{username}}
+
+Create a new user or update an existing one based on a username.
+
+#### URL Parameters
+
+| Variable | Description      
+| -------- | ----------------- 
+| username | String identifier used for authentication.
+
+#### Request Parameters
+
+| Variable | Description       
+| -------- | -----------------
+| password | Password string used for authentication.
+| type     | Default: 'district-manager'
+| fullname | Full name 
+| email    | Email address 
+| phone    | Phone number
+| language | Language preference during application rendering. Default: 'en'
+| place    | Place/facility UUID or object
+| contact  | Contact UUID or object
+
+### Examples
+
+Get list of users in JSON format.
+
+```
+GET /api/v1/users
+```
+
+```
+HTTP/1.1 200 
+Content-Type: application/json; charset=utf-8
+
+[
+  {
+    "id": "org.couchdb.user:admin",
+    "rev": "10-6486428924d11781c107ea74de6b63b6",
+    "type": "national-manager",
+    "language": {
+      "code": "en"
+    }
+  },
+  {
+    "id": "org.couchdb.user:demo",
+    "rev": "14-8758c8493edcc6dac50366173fc3e24a",
+    "fullname": "Example User",
+    "facility": "eeb17d6d-5dde-c2c0-62c4a1a0ca17e342",
+    "type": "district-manager",
+    "language": {
+      "code": "en"
+    },
+    "contact_id": "1d83f2b4a27eceb40df9e9f9ad06d137"
+  }
+]
+```
+
+Create a new user that can authenticate with a username of "mary" and password
+of "secret" and can view or modify records in their place:
+
+```
+POST /api/v1/users/mary
+Content-Type: application/json
+
+{
+  "password": "secret",
+  "fullname": "Mary Anyango",
+  "place": "eeb17d6d-5dde-c2c0-62c4a1a0ca17e342"
+}
+```
+
+```
+HTTP/1.1 200 
+Content-Type: application/json; charset=utf-8
+
+{
+  "id": "org.couchdb.user:mary",
+  "rev": "1-58c13d9e7c486ab6e9273a67103b4007",
+  "fullname": "Mary Anyango",
+  "type": "district-manager",
+  "language": {}
+}
+```
+
+## DELETE /api/v1/users/{{username}}
+
+Delete a user.
+
+#### URL Parameters
+
+| Variable | Description      
+| -------- | ----------------- 
+| username | String identifier used for authentication.
+
