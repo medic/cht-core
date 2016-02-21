@@ -68,8 +68,9 @@ describe('TargetGenerator service', function() {
       { id: 'report', type: 'count' }
     ] } } }));
     TaskGenerator.callsArgWith(2, null, [
-      { _id: '1', type: 'report', date: now },
-      { _id: '2', type: 'report', date: now }
+      { _id: '1', type: 'report', date: now, pass: true },
+      { _id: '2', type: 'report', date: now, pass: false },
+      { _id: '3', type: 'report', date: now, pass: true }
     ]);
     injector.get('TargetGenerator')(function(err, actual) {
       chai.expect(actual.length).to.equal(1);
@@ -85,9 +86,9 @@ describe('TargetGenerator service', function() {
       { id: 'report', type: 'count' }
     ] } } }));
     TaskGenerator.callsArgWith(2, null, [
-      { _id: '1', type: 'report', date: now },
-      { _id: '2', type: 'report', date: 0 },
-      { _id: '2', type: 'report' } // null date is ignored
+      { _id: '1', type: 'report', pass: true, date: now },
+      { _id: '2', type: 'report', pass: true, date: 0 },
+      { _id: '2', type: 'report', pass: true } // null date is ignored
     ]);
     injector.get('TargetGenerator')(function(err, actual) {
       chai.expect(actual.length).to.equal(1);
@@ -139,8 +140,8 @@ describe('TargetGenerator service', function() {
       { id: 'registration', type: 'percent' }
     ] } } }));
     TaskGenerator.callsArgWith(2, null, [
-      { _id: '1', type: 'report', date: now },
-      { _id: '2', type: 'report', date: now },
+      { _id: '1', type: 'report', pass: true, date: now },
+      { _id: '2', type: 'report', pass: true, date: now },
       { _id: '1', type: 'registration', date: now, pass: true },
       { _id: '2', type: 'registration', date: now, pass: false }
     ]);
@@ -182,17 +183,17 @@ describe('TargetGenerator service', function() {
 
     // first result from the TaskGenerator
     TaskGenerator.callsArgWith(2, null, [
-      { _id: '1', type: 'report', date: now }
+      { _id: '1', type: 'report', pass: true, date: now }
     ]);
     setTimeout(function() {
       // some time later... second result from the TaskGenerator
       TaskGenerator.args[0][2](null, [
-        { _id: '2', type: 'report', date: now }
+        { _id: '2', type: 'report', pass: true, date: now }
       ]);
     });
   });
 
-  it('duplicate instances are ignored', function(done) {
+  it('duplicate instances are updated', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'count' }
     ] } } }));
@@ -203,12 +204,12 @@ describe('TargetGenerator service', function() {
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0].id).to.equal('report');
         chai.expect(actual[0].type).to.equal('count');
-        chai.expect(actual[0].count).to.equal(1);
+        chai.expect(actual[0].count).to.equal(2);
       } else if (callbackCount === 1) {
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0].id).to.equal('report');
         chai.expect(actual[0].type).to.equal('count');
-        chai.expect(actual[0].count).to.equal(2);
+        chai.expect(actual[0].count).to.equal(3);
         done();
       } else {
         done(new Error('callback called too many times'));
@@ -218,14 +219,17 @@ describe('TargetGenerator service', function() {
 
     // first result from the TaskGenerator
     TaskGenerator.callsArgWith(2, null, [
-      { _id: '1', type: 'report', date: now },
-      { _id: '1', type: 'report', date: now }
+      { _id: '1', type: 'report', pass: true, date: now },
+      { _id: '1', type: 'report', pass: true, date: now },
+      { _id: '2', type: 'report', pass: true, date: now }
     ]);
     setTimeout(function() {
       // some time later... second result from the TaskGenerator
       TaskGenerator.args[0][2](null, [
-        { _id: '1', type: 'report', date: now },
-        { _id: '2', type: 'report', date: now }
+        { _id: '1', type: 'report', pass: true, date: now },
+        { _id: '2', type: 'report', pass: false, date: now },
+        { _id: '3', type: 'report', pass: true, date: now },
+        { _id: '4', type: 'report', pass: true, date: now }
       ]);
     });
   });

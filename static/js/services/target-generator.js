@@ -22,6 +22,22 @@ var moment = require('moment');
         return instanceDate.isAfter(start) && instanceDate.isBefore(end);
       };
 
+      var calculateCount = function(target) {
+        var counts = _.countBy(target.instances, function(instance) {
+          return instance.pass ? 'pass' : 'fail';
+        });
+        if (target.type === 'count') {
+          return counts.pass;
+        }
+        if (target.type === 'percent') {
+          var total = (counts.pass || 0) + (counts.fail || 0);
+          if (total === 0) {
+            return 0;
+          }
+          return Math.round(counts.pass * 100 / total);
+        }
+      };
+
       var mergeTarget = function(instance) {
         var target = _.findWhere(targets, { id: instance.type });
         if (!target) {
@@ -31,21 +47,10 @@ var moment = require('moment');
         if (!target.instances) {
           target.instances = {};
         }
-
         if (isRelevant(instance)) {
           target.instances[instance._id] = instance;
         }
-        var total = Object.keys(target.instances).length;
-        if (target.type === 'count') {
-          target.count = total;
-        } else if (target.type === 'percent') {
-          if (total === 0) {
-            target.count = 0;
-          } else {
-            var passes = _.where(target.instances, { pass: true });
-            target.count = Math.round(passes.length * 100 / total);
-          }
-        }
+        target.count = calculateCount(target);
       };
 
       var init = Settings()
