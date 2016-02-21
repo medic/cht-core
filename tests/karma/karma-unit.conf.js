@@ -5,7 +5,7 @@ module.exports = function(config) {
   config.set({
     basePath: '../../',
     frameworks: ['mocha'],
-    reporters: ['progress'],
+    reporters: ['spec'],
     autoWatch: true,
     singleRun: false,
     colors: true,
