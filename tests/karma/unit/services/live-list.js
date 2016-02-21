@@ -1,52 +1,52 @@
-function SIMPLE_ORDER_FUNCTION() {
-  return 0;
-}
-
-function SIMPLE_LIST_ITEM(data) {
-  return $('<li>* ' + data._id + '</li>');
-}
-
-function doc(id) {
-  return {
-    _id: id,
-  };
-}
-
-function active_dom() {
-  $('body').append('<ul id="list">');
-}
-
-function no_active_dom() {
-  // No need to do anything - the list should not exist in the DOM already
-}
-
-function active_dom_child_count() {
-  return $('#list').children().length;
-}
-
-function active_dom_child_text() {
-  return _.map($('#list').children(), function(e) {
-    return $(e).text();
-  });
-}
-
-function selected_items_text() {
-  return _.map($('#list li.selected'), function(e) {
-    return $(e).text();
-  });
-}
-
 describe('LiveListSrv', function() {
   'use strict';
 
-  var assert = chai.assert,
-      service;
+  function SIMPLE_ORDER_FUNCTION() {
+    return 0;
+  }
+
+  function SIMPLE_LIST_ITEM(data) {
+    return $('<li>* ' + data._id + '</li>');
+  }
+
+  function doc(id) {
+    return {
+      _id: id,
+    };
+  }
+
+  function active_dom() {
+    $('body').append('<ul id="list">');
+  }
+
+  function no_active_dom() {
+    // No need to do anything - the list should not exist in the DOM already
+  }
+
+  function active_dom_child_count() {
+    return $('#list').children().length;
+  }
+
+  function active_dom_child_text() {
+    return _.map($('#list').children(), function(e) {
+      return $(e).text();
+    });
+  }
+
+  function selected_items_text() {
+    return _.map($('#list li.selected'), function(e) {
+      return $(e).text();
+    });
+  }
 
   function list_of() {
     var args = Array.prototype.slice.call(arguments);
     var items = _.map(args, doc);
     service.testing.set(items);
   }
+
+  var assert = chai.assert,
+      service;
 
   beforeEach(function() {
     module('inboxApp');
