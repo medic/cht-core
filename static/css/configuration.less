@@ -4,33 +4,6 @@
   padding: 1em 0;
 }
 
-.configuration-menu {
-  text-align: center;
-  max-width: 60em;
-  margin: 2em auto;
-  a {
-    color: inherit;
-    cursor: pointer;
-    font-size: 1.5em;
-    background-color: @seperator-color;
-    border: 1px solid @admin-color;
-    display: inline-block;
-    width: 9em;
-    box-sizing: border-box;
-    text-align: center;
-    border-radius: @radius-size;
-    margin: 1em;
-    padding: 1em;
-    &:hover {
-      text-decoration: none;
-    }
-    .fa {
-      font-size: 1.5em;
-      display: block;
-    }
-  }
-}
-
 .row.selection-heading {
   padding-bottom: 1em;
   border-bottom: 3px solid @seperator-color;
@@ -77,17 +50,4 @@
 .edit-translation .default {
   max-height: 100px;
   overflow-y: auto;
-}
-
-@media (max-width: 767px) {
-  .configuration-menu a {
-    font-size: 1em;
-  }
-}
-
-@media (max-width: 400px) {
-  .configuration-menu a {
-    margin: 0.5em;
-    padding: 0.5em;
-  }
 }
