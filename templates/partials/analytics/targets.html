@@ -2,17 +2,13 @@
   <div class="col-xs-12 col-md-6 col-lg-4 target" ng-repeat="target in targets">
     <div class="contents">
       <div class="row">
-        <div class="pull-left">
-          <span ng-bind-html="target.icon | resourceIcon"></span>
-        </div>
-        <div class=right-wrapper>
+        <div class="pull-left icon" ng-bind-html="target.icon | resourceIcon"></div>
+        <div class="right-wrapper">
           <div class="right-column text-center">
             <div translate>analytics.target.monthly_goal</div>
             <div class="goal"><span class="large">{{target.goal}}</span><span ng-if="target.type === 'percent'">%</span></div>
           </div>
-          <div class="text-justify">
-            <h4>{{target.name | translateFrom}} </h4>
-          </div>
+          <h4>{{target.name | translateFrom}}</h4>
         </div>
       </div>
       <div class="row">
