@@ -100,7 +100,7 @@ var audit = function(req, res) {
     serverUtils.serverError(e, req, res);
   });
   ap.on('not-authorized', function() {
-    notLoggedIn(req, res);
+    serverUtils.notLoggedIn(req, res);
   });
   ap.audit(proxyForAuditing, req, res);
 };
