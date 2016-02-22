@@ -391,9 +391,17 @@ _.templateSettings = {
     var protocolLocation = url.indexOf('//') + 2;
     var hostLocation = url.indexOf('/', protocolLocation) + 1;
     var dbNameLocation = url.indexOf('/', hostLocation);
+
+    var cookie = {};
+    _.forEach(document.cookie.split(';'), function(c) {
+      c = c.trim().split('=', 2);
+      cookie[c[0]] = c[1];
+    });
+    var userName = JSON.parse(decodeURI(cookie.userCtx).replace(/%3A/g, ':').replace(/%2C/g, ',')).name;
+
     return {
       remote: url.slice(0, dbNameLocation),
-      local: url.slice(hostLocation, dbNameLocation)
+      local: url.slice(hostLocation, dbNameLocation) + '-' + 'userName'
     };
   };
 
