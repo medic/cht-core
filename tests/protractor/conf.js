@@ -12,8 +12,8 @@ exports.config = {
     var credentials = auth.getAuth();
 
     browser.driver.get(
-      'http://localhost:5988/medic/login?redirect=' +
-      encodeURIComponent('/medic/_design/medic/_rewrite/#/messages?e2eTesting=true')
+      'http://localhost:5988/medic-test/login?redirect=' +
+      encodeURIComponent('/medic-test/_design/medic/_rewrite/#/messages?e2eTesting=true')
     );
     browser.driver.findElement(by.name('user')).sendKeys(credentials.user);
     browser.driver.findElement(by.name('password')).sendKeys(credentials.pass);

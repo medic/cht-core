@@ -230,11 +230,11 @@ module.exports = function(grunt) {
       deploy: {
         cmd: 'kanso push'
       },
-      deployci: {
-        cmd: 'kanso push http://localhost:5984/medic'
+      deploytest: {
+        cmd: 'kanso push http://ci_test:pass@localhost:5984/medic-test'
       },
       runapi: {
-        cmd: 'COUCH_URL=http://ci_test:pass@localhost:5984/medic node ./api/server.js > api.out &'
+        cmd: 'API_PORT=5998 COUCH_URL=http://ci_test:pass@localhost:5984/medic-test node ../medic-api/api/server.js > api.out &'
       },
       sleep: {
         cmd: 'sleep 20'
@@ -242,6 +242,7 @@ module.exports = function(grunt) {
       addadmin: {
         cmd: function() {
           return 'curl -X PUT http://localhost:5984/_config/admins/ci_test -d \'"pass"\' &&' +
+                 'curl -X DELETE http://ci_test:pass@localhost:5984/_users/org.couchdb.user:ci_test &&' +
                  'curl -HContent-Type:application/json -vXPUT http://ci_test:pass@localhost:5984/_users/org.couchdb.user:ci_test  --data-binary \'{"_id": "org.couchdb.user:ci_test", "name": "ci_test", "roles": [], "type": "user", "password": "pass", "language": "en", "known": true}\'';
         }
       }
@@ -409,7 +410,7 @@ module.exports = function(grunt) {
     'minify',
     'karma:unit_ci',
     'nodeunit',
-    'exec:deployci'
+    'exec:deploytest'
   ]);
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
@@ -417,6 +418,13 @@ module.exports = function(grunt) {
     'default',
     'deploy',
     'watch'
+  ]);
+
+  grunt.registerTask('e2e', 'Deploy app and run e2e tests', [
+    'exec:addadmin',
+    'exec:deploytest',
+    'exec:runapi',
+    'protractor'
   ]);
 
   grunt.registerTask('test', 'Lint, unit, and integration test', [
