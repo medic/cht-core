@@ -3,7 +3,7 @@ var _ = require('underscore'),
     async = require('async');
 
 var DDOC_NAME = '_design/medic';
-var DDOC = {"views": {"audit_records_by_doc": {"map": "function (doc) {if (doc.type === 'audit_record') {emit([doc.record_id], 1);}}"}}};
+var DDOC = {'views': {'audit_records_by_doc': {'map': 'function (doc) {if (doc.type === \'audit_record\') {emit([doc.record_id], 1);}}'}}};
 var BATCH_SIZE = 100;
 var MEDIC_DB = 'medic';
 var MEDIC_AUDIT_DB = 'medic-audit';
