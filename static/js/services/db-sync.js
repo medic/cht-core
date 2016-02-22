@@ -81,7 +81,6 @@ var _ = require('underscore'),
         getQueryParams(userCtx)
           .then(function(params) {
             replicate(true, {
-              batch_size: 1,
               filter: 'erlang_filters/doc_by_place',
               query_params: params
             });
