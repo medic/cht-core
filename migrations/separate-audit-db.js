@@ -9,7 +9,7 @@ var MEDIC_DB = 'medic';
 var MEDIC_AUDIT_DB = 'medic-audit';
 
 var ensureDbExists = function(dbName, callback) {
-  db.db.get(dbName, function(err, doc) {
+  db.db.get(dbName, function(err) {
     if (err && err.statusCode === 404) {
       console.log('DB ' + dbName + ' does not exist, creating');
       return db.db.create(dbName, callback);
@@ -22,7 +22,7 @@ var ensureDbExists = function(dbName, callback) {
 var ensureViewDdocExists = function(dbName, callback) {
   var auditDb = db.use(dbName);
 
-  auditDb.head(DDOC_NAME, function(err, _, headers) {
+  auditDb.head(DDOC_NAME, function(err) {
     if (err && err.statusCode === 404) {
       console.log(DDOC_NAME + ' audit ddoc does not exist, creating');
       return auditDb.insert(DDOC, DDOC_NAME, callback);
@@ -38,7 +38,7 @@ var batchMoveAuditDocs = function(callback) {
       return callback(err);
     }
 
-    if (doclist.rows.length == 0) {
+    if (doclist.rows.length === 0) {
       return callback(null, 0);
     }
 
@@ -46,7 +46,7 @@ var batchMoveAuditDocs = function(callback) {
     //     (ie we can't use it to show progress)
     console.log('Migrating ' + doclist.rows.length + ' audit docs');
 
-    var auditDocIds = doclist.rows.map(function(row) { return row.id;})
+    var auditDocIds = doclist.rows.map(function(row) { return row.id;});
 
     async.parallel([
       _.partial(db.db.replicate, MEDIC_DB, MEDIC_AUDIT_DB, {doc_ids: auditDocIds}),
@@ -67,7 +67,7 @@ var batchMoveAuditDocs = function(callback) {
       };
 
       db.medic.bulk(bulkDeleteBody, function(err, response) {
-        return callback(err, response && response.length)
+        return callback(err, response && response.length);
       });
     });
   });
