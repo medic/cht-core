@@ -37,9 +37,13 @@ var modal = require('../modules/modal');
           if (err) {
             return pane.done(translateFilter('Error parsing file'), err);
           }
-          ImportContacts(contacts, $scope.overwrite, function(err) {
-            pane.done(translateFilter('Error parsing file'), err);
-          });
+          ImportContacts(contacts, $scope.overwrite)
+            .then(function() {
+              pane.done();
+            })
+            .catch(function(err) {
+              pane.done(translateFilter('Error parsing file'), err);
+            });
         });
       };
 

@@ -3,8 +3,8 @@
 var inboxControllers = angular.module('inboxControllers');
 
 inboxControllers.controller('HelpCtrl',
-  ['$scope', '$stateParams', '$q', 'DB', 'Language', 'Markdown',
-  function ($scope, $stateParams, $q, DB, Language, Markdown) {
+  ['$scope', '$stateParams', '$q', '$log', 'DB', 'Language', 'Markdown',
+  function ($scope, $stateParams, $q, $log, DB, Language, Markdown) {
     $scope.filterModel.type = 'help';
     $scope.loading = true;
 
@@ -18,6 +18,10 @@ inboxControllers.controller('HelpCtrl',
         $scope.loading = false;
         $scope.title = doc.title[lang] || doc.title.en;
         $scope.body = Markdown.basic(doc.body[lang] || doc.body.en);
+      })
+      .catch(function(err) {
+        $log.error('Error fetching help doc', err);
+        $scope.loading = false;
       });
   }
 ]);

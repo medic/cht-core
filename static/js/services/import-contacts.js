@@ -1,4 +1,4 @@
-var async = require('async'),
+var _ = require('underscore'),
     etagRegex = /['"]/g;
 
 (function () {
@@ -8,8 +8,8 @@ var async = require('async'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('ImportContacts',
-    ['HttpWrapper', 'DB', 'BaseUrlService',
-    function(HttpWrapper, DB, BaseUrlService) {
+    ['$http', '$q', 'DB', 'BaseUrlService',
+    function($http, $q, DB, BaseUrlService) {
 
       var savePerson = function(doc) {
         var person = {
@@ -27,60 +27,55 @@ var async = require('async'),
           });
       };
 
-      var saveRecord = function(contact, create, callback) {
+      var saveRecord = function(contact, create) {
         if (create && contact._rev) {
           // delete _rev since this is a new doc in this database
           delete contact._rev;
         }
-        DB.get()
+        return DB.get()
           .put(contact)
           .then(function(response) {
             contact._id = response._id;
             contact._rev = response._rev;
             if (!contact.contact || contact.contact._id) {
-              return callback();
+              return $q.resolve();
             }
             return savePerson(contact)
               .then(function() {
-                return DB.get()
-                  .put(contact)
-                  .then(function(response) {
-                    contact._rev = response._rev;
-                    callback(null, contact);
-                  })
-                  .catch(callback);
+                return DB.get().put(contact);
               })
-              .catch(callback);
-          })
-          .catch(callback);
+              .then(function(response) {
+                contact._rev = response._rev;
+                return $q.resolve();
+              });
+          });
       };
 
-      return function(contacts, overwrite, callback) {
+      var importContact = function(baseUrl, overwrite, contact) {
+        return $http.head(baseUrl + contact._id)
+          .then(function(response) {
+            var rev = response.headers('ETag').replace(etagRegex, '');
+            if (!rev || !overwrite) {
+              // do nothing
+              return $q.resolve();
+            }
+            contact._rev = rev;
+            return saveRecord(contact, false);
+          })
+          .catch(function(response) {
+            if (response.status === 404) {
+              // for some reason, angular thinks 404 is an error...
+              return saveRecord(contact, true);
+            }
+            return $q.reject(response);
+          });
+      };
+
+      return function(contacts, overwrite) {
         var baseUrl = BaseUrlService() + '/_db/';
-        async.each(
-          contacts,
-          function(contact, callback) {
-            HttpWrapper
-              .head(baseUrl + contact._id)
-              .success(function(data, status, headers) {
-                var rev = headers('ETag').replace(etagRegex, '');
-                if (!rev || !overwrite) {
-                  // do nothing
-                  return callback();
-                }
-                contact._rev = rev;
-                saveRecord(contact, false, callback);
-              })
-              .error(function(data, status) {
-                if (status === 404) {
-                  // for some reason, angular thinks 404 is an error...
-                  return saveRecord(contact, true, callback);
-                }
-                callback(new Error(data));
-              });
-          },
-          callback
-        );
+        return $q.all(_.map(contacts, function(contact) {
+          return importContact(baseUrl, overwrite, contact);
+        }));
       };
     }
   ]);

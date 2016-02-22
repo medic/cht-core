@@ -36,7 +36,6 @@
   require('./edit-user');
   require('./error');
   require('./help');
-  require('./help-search');
   require('./home');
   require('./import-contacts');
   require('./import-translation');
