@@ -87,27 +87,34 @@ div.mm-button-text {
   text-align: center;
   max-width: 60em;
   margin: 2em auto;
-  a {
-    color: inherit;
-    cursor: pointer;
-    font-size: 1.5em;
-    background-color: @seperator-color;
-    border: 1px solid @admin-color;
-    display: inline-block;
-    width: 9em;
-    box-sizing: border-box;
-    text-align: center;
-    border-radius: @radius-size;
-    margin: 1em;
-    padding: 1em;
+  li {
     min-height: 5em;
+    width: 9em;
     vertical-align: top;
-    &:hover {
-      text-decoration: none;
-    }
-    .fa {
-      font-size: 1.5em;
-      display: block;
+    font-size: 1.5em;
+    margin: 1em;
+    display: inline-block;
+    a {
+      color: inherit;
+      cursor: pointer;
+      background-color: @seperator-color;
+      border: 1px solid @admin-color;
+      border-radius: @radius-size;
+      box-sizing: border-box;
+      text-align: center;
+      padding: 1em;
+      width: 100%;
+      min-height: 5em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      &:hover {
+        text-decoration: none;
+      }
+      .fa {
+        font-size: 1.5em;
+      }
     }
   }
 }
