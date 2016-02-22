@@ -4,10 +4,10 @@
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TrafficStats', [ 'DB', '$log', 'Session',
-    function(DB, $log, Session) {
+  inboxServices.factory('TrafficStats', [ 'DB', '$log', 'Session', '$window',
+    function(DB, $log, Session, $window) {
       var log = function() {
-        var stats = JSON.parse(window.medicmobile_android.getDataUsage());
+        var stats = JSON.parse($window.medicmobile_android.getDataUsage());
         stats.timestamp = Date.now();
 
         DB.get().query('medic/traffic_stats').then(function(res) {
@@ -36,7 +36,7 @@
 
 
       return function() {
-        if (!window.medicmobile_android || !window.medicmobile_android.getDataUsage) {
+        if (!$window.medicmobile_android || !$window.medicmobile_android.getDataUsage) {
           $log.info('Not on android, or no traffic monitoring available. No traffic stats will be logged.');
           return;
         }
