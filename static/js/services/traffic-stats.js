@@ -36,8 +36,8 @@
 
 
       return function() {
-        if (!window.medicmobile_android) {
-          $log.info('Not on android. No traffic stats will be logged.');
+        if (!window.medicmobile_android || !window.medicmobile_android.getDataUsage) {
+          $log.info('Not on android, or no traffic monitoring available. No traffic stats will be logged.');
           return;
         }
         log();
