@@ -61,6 +61,7 @@
   require('./update-settings');
   require('./user');
   require('./verified');
+  require('./xml-forms');
   require('./xslt');
 
 }());
