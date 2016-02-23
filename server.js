@@ -12,6 +12,7 @@ var _ = require('underscore'),
     scheduler = require('./scheduler'),
     AuditProxy = require('./audit-proxy'),
     migrations = require('./migrations'),
+    ddocExtraction = require('./ddoc-extraction'),
     translations = require('./translations'),
     target = 'http://' + db.settings.host + ':' + db.settings.port,
     proxy = require('http-proxy').createProxyServer({ target: target }),
@@ -38,7 +39,8 @@ var _ = require('underscore'),
     staticResources = /\/(templates|static)\//,
     appcacheManifest = /manifest\.appcache/,
     pathPrefix = '/' + db.settings.db + '/',
-    appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/';
+    appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
+    serverUtils = require('./server-utils');
 
 http.globalAgent.maxSockets = 100;
 
@@ -57,7 +59,7 @@ app.use(function(req, res, next) {
   domain.on('error', function(err) {
     console.error('UNCAUGHT EXCEPTION!');
     console.error(err);
-    serverError(err, req, res);
+    serverUtils.serverError(err, req, res);
     domain.dispose();
     process.exit(1);
   });
@@ -95,10 +97,10 @@ app.all(pathPrefix + '_local/*', function(req, res) {
 var audit = function(req, res) {
   var ap = new AuditProxy();
   ap.on('error', function(e) {
-    serverError(e, req, res);
+    serverUtils.serverError(e, req, res);
   });
   ap.on('not-authorized', function() {
-    notLoggedIn(req, res);
+    serverUtils.notLoggedIn(req, res);
   });
   ap.audit(proxyForAuditing, req, res);
 };
@@ -137,7 +139,7 @@ app.get('/api/info', function(req, res) {
 app.get('/api/auth/:path', function(req, res) {
   auth.checkUrl(req, function(err, output) {
     if (err) {
-      return serverError(err, req, res);
+      return serverUtils.serverError(err, req, res);
     }
     if (output.status >= 400 && output.status < 500) {
       res.status(403).send('Forbidden');
@@ -150,11 +152,11 @@ app.get('/api/auth/:path', function(req, res) {
 var handleAnalyticsCall = function(req, res, controller) {
   auth.check(req, 'can_view_analytics', req.query.district, function(err, ctx) {
     if (err) {
-      return error(err, req, res);
+      return serverUtils.error(err, req, res);
     }
     controller.get({ district: ctx.district }, function(err, obj) {
       if (err) {
-        return serverError(err, req, res);
+        return serverUtils.serverError(err, req, res);
       }
       res.json(obj);
     });
@@ -250,14 +252,14 @@ app.get([
 ], function(req, res) {
   auth.check(req, getExportPermission(req.params.type), req.query.district, function(err, ctx) {
     if (err) {
-      return error(err, req, res, true);
+      return serverUtils.error(err, req, res, true);
     }
     req.query.type = req.params.type;
     req.query.form = req.params.form || req.query.form;
     req.query.district = ctx.district;
     exportData.get(req.query, function(err, obj) {
       if (err) {
-        return serverError(err, req, res);
+        return serverUtils.serverError(err, req, res);
       }
       var format = formats[req.query.format] || formats.csv;
       var filename = req.params.type + '-' +
@@ -274,14 +276,14 @@ app.get([
 app.get('/api/v1/fti/:view', function(req, res) {
   auth.check(req, 'can_view_data_records', null, function(err) {
     if (err) {
-      return error(err, req, res);
+      return serverUtils.error(err, req, res);
     }
     auth.check(req, 'can_view_unallocated_data_records', null, function(err, ctx) {
       var queryOptions = _.pick(req.query, 'q', 'schema', 'sort', 'skip', 'limit', 'include_docs');
       queryOptions.allocatedOnly = !!err;
       fti.get(req.params.view, queryOptions, ctx && ctx.district, function(err, result) {
         if (err) {
-          return serverError(err.message, req, res);
+          return serverUtils.serverError(err.message, req, res);
         }
         res.json(result);
       });
@@ -292,12 +294,12 @@ app.get('/api/v1/fti/:view', function(req, res) {
 app.get('/api/v1/messages', function(req, res) {
   auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err, ctx) {
     if (err) {
-      return error(err, req, res, true);
+      return serverUtils.error(err, req, res, true);
     }
     var opts = _.pick(req.query, 'limit', 'start', 'descending', 'state');
     messages.getMessages(opts, ctx && ctx.district, function(err, result) {
       if (err) {
-        return serverError(err.message, req, res);
+        return serverUtils.serverError(err.message, req, res);
       }
       res.json(result);
     });
@@ -307,11 +309,11 @@ app.get('/api/v1/messages', function(req, res) {
 app.get('/api/v1/messages/:id', function(req, res) {
   auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err, ctx) {
     if (err) {
-      return error(err, req, res, true);
+      return serverUtils.error(err, req, res, true);
     }
     messages.getMessage(req.params.id, ctx && ctx.district, function(err, result) {
       if (err) {
-        return serverError(err.message, req, res);
+        return serverUtils.serverError(err.message, req, res);
       }
       res.json(result);
     });
@@ -321,11 +323,11 @@ app.get('/api/v1/messages/:id', function(req, res) {
 app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
   auth.check(req, 'can_update_messages', null, function(err, ctx) {
     if (err) {
-      return error(err, req, res, true);
+      return serverUtils.error(err, req, res, true);
     }
     messages.updateMessage(req.params.id, req.body, ctx && ctx.district, function(err, result) {
       if (err) {
-        return serverError(err.message, req, res);
+        return serverUtils.serverError(err.message, req, res);
       }
       res.json(result);
     });
@@ -335,11 +337,11 @@ app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
 app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
   auth.check(req, 'can_create_records', null, function(err) {
     if (err) {
-      return error(err, req, res, true);
+      return serverUtils.error(err, req, res, true);
     }
     records.create(req.body, req.is(['json','urlencoded']), function(err, result) {
       if (err) {
-        return serverError(err.message, req, res);
+        return serverUtils.serverError(err.message, req, res);
       }
       res.json(result);
     });
@@ -349,11 +351,11 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
 app.get('/api/v1/scheduler/:name', function(req, res) {
   auth.check(req, 'can_execute_schedules', null, function(err) {
     if (err) {
-      return error(err, req, res, true);
+      return serverUtils.error(err, req, res, true);
     }
     scheduler.exec(req.params.name, function(err) {
       if (err) {
-        return serverError(err.message, req, res);
+        return serverUtils.serverError(err.message, req, res);
       }
       res.json({ schedule: req.params.name, result: 'success' });
     });
@@ -363,7 +365,7 @@ app.get('/api/v1/scheduler/:name', function(req, res) {
 app.get('/api/v1/forms', function(req, res) {
   forms.listForms(req.headers, function(err, body, headers) {
     if (err) {
-      return serverError(err, req, res);
+      return serverUtils.serverError(err, req, res);
     }
     if (headers) {
       res.writeHead(headers.statusCode || 200, headers);
@@ -377,11 +379,11 @@ app.get('/api/v1/forms/:form', function(req, res) {
       form = parts.slice(0, -1).join('.'),
       format = parts.slice(-1)[0];
   if (!form || !format) {
-    return serverError(new Error('Invalid form parameter.'), req, res);
+    return serverUtils.serverError(new Error('Invalid form parameter.'), req, res);
   }
   forms.getForm(form, format, function(err, body, headers) {
     if (err) {
-      return serverError(err, req, res);
+      return serverUtils.serverError(err, req, res);
     }
     if (headers) {
       res.writeHead(headers.statusCode || 200, headers);
@@ -391,44 +393,7 @@ app.get('/api/v1/forms/:form', function(req, res) {
 });
 
 // DB replication endpoint
-app.get('/medic/_changes', function(req, res) {
-  auth.getUserCtx(req, function(err, userCtx) {
-    if (err) {
-      return error(err, req, res);
-    }
-    if (auth.hasAllPermissions(userCtx, 'can_access_directly')) {
-      proxy.web(req, res);
-    } else {
-      auth.getFacilityId(req, userCtx, function(err, facilityId) {
-        if (err) {
-          return serverError(err.message, req, res);
-        }
-        var unassigned = config.get('district_admins_access_unallocated_messages') &&
-                         auth.hasPermission(userCtx, 'can_view_unallocated_data_records');
-        // for security reasons ensure the params haven't been tampered with
-        if (req.query.filter === 'medic/doc_by_place') {
-          // replicating docs - check facility and unassigned settings
-          if (req.query.id !== facilityId ||
-              (req.query.unassigned === 'true' && !unassigned)) {
-            console.error('Unauthorized replication attempt - restricted filter params');
-            return error({ code: 403, message: 'Forbidden' }, req, res);
-          }
-        } else if (req.query.filter === '_doc_ids') {
-          // replicating medic-settings only
-          if (req.query.doc_ids !== JSON.stringify([ '_design/medic' ])) {
-            console.error('Unauthorized replication attempt - restricted filter id: ' + req.query.doc_ids[0]);
-            return error({ code: 403, message: 'Forbidden' }, req, res);
-          }
-        } else {
-          // unknown replication filter
-          console.error('Unauthorized replication attempt - restricted filter: ' + req.query.filter);
-          return error({ code: 403, message: 'Forbidden' }, req, res);
-        }
-        proxy.web(req, res);
-      });
-    }
-  });
-});
+app.get('/medic/_changes', _.partial(require('./handlers/changes'), proxy));
 
 var writeHeaders = function(req, res, headers, redirect) {
   res.oldWriteHead = res.writeHead;
@@ -479,61 +444,26 @@ app.all('*', function(req, res) {
 });
 
 proxy.on('error', function(err, req, res) {
-  serverError(JSON.stringify(err), req, res);
+  serverUtils.serverError(JSON.stringify(err), req, res);
 });
 
 proxyForAuditing.on('error', function(err, req, res) {
-  serverError(JSON.stringify(err), req, res);
+  serverUtils.serverError(JSON.stringify(err), req, res);
 });
-
-var error = function(err, req, res, showPrompt) {
-  if (typeof err === 'string') {
-    return serverError(err, req, res);
-  } else if (err.code === 500) {
-    return serverError(err.message, req, res);
-  } else if (err.code === 401) {
-    return notLoggedIn(req, res, showPrompt);
-  }
-  res.writeHead(err.code || 500, {
-    'Content-Type': 'text/plain'
-  });
-  res.end(err.message);
-};
-
-var serverError = function(err, req, res) {
-  console.error('Server error: ');
-  console.log('  detail: ' + (err.stack || JSON.stringify(err)));
-  res.writeHead(500, {
-    'Content-Type': 'text/plain'
-  });
-  if (err.message) {
-    res.end('Server error: ' + err.message);
-  } else if (typeof err === 'string') {
-    res.end('Server error: ' + err);
-  } else {
-    res.end('Server error');
-  }
-};
-
-var notLoggedIn = function(req, res, showPrompt) {
-  if (showPrompt) {
-    // api access - basic auth allowed
-    res.writeHead(401, {
-      'Content-Type': 'text/plain',
-      'WWW-Authenticate': 'Basic realm="Medic Mobile Web Services"'
-    });
-    res.end('not logged in');
-  } else {
-    // web access - redirect to login page
-    res.redirect(301, pathPrefix + 'login?redirect=' + encodeURIComponent(req.url));
-  }
-};
 
 migrations.run(function(err) {
   if (err) {
     console.error(err);
   } else {
     console.log('Database migrations completed successfully');
+  }
+});
+
+ddocExtraction.run(function(err) {
+  if (err) {
+    console.error(err);
+  } else {
+    console.log('DDoc extraction completed successfully');
   }
 });
 
@@ -559,6 +489,6 @@ config.load(function(err) {
 // http://expressjs.com/guide/error-handling.html
 // jshint ignore:start
 app.use(function(err, req, res, next) {
-  serverError(err, req, res);
+  serverUtils.serverError(err, req, res);
 });
 // jshint ignore:end
