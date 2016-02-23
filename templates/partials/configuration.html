@@ -1,34 +1,54 @@
 <div class="inner" ng-cloak>
   <div class="col-sm-12 page configuration" ui-view="content">
-    <div class="configuration-menu">
-      <a ui-sref="configuration.settings.basic" mm-auth="can_configure">
-        <i class="fa fa-cog"></i>
-        {{'Settings' | translate}}
-      </a>
-      <a ui-sref="configuration.translation.languages" mm-auth="can_configure">
-        <i class="fa fa-language"></i>
-        {{'Languages' | translate}}
-      </a>
-      <a ui-sref="configuration.forms" mm-auth="can_configure">
-        <i class="fa fa-list-alt"></i>
-        {{'Forms' | translate}}
-      </a>
-      <a ui-sref="configuration.export" mm-auth="can_configure">
-        <i class="fa fa-arrow-circle-o-down"></i>
-        {{'Export' | translate}}
-      </a>
-      <a ui-sref="configuration.user" mm-auth="can_configure">
-        <i class="fa fa-user"></i>
-        {{'edit.user.settings' | translate}}
-      </a>
-      <a ui-sref="configuration.users" mm-auth="can_configure">
-        <i class="fa fa-users"></i>
-        {{'Users' | translate}}
-      </a>
-      <a ui-sref="configuration.icons" mm-auth="can_configure">
-        <i class="fa fa-file-image-o"></i>
-        {{'icons' | translate}}
-      </a>
-    </div>
+    <ul class="mm-navigation-menu">
+      <li>
+        <a ui-sref="configuration.settings.basic" mm-auth="can_configure">
+          <i class="fa fa-cog"></i>
+          <span translate>Settings</span>
+        </a>
+      </li>
+      <li>
+        <a ui-sref="configuration.translation.languages" mm-auth="can_configure">
+          <i class="fa fa-language"></i>
+          <span translate>Languages</span>
+        </a>
+      </li>
+      <li>
+        <a ui-sref="configuration.forms" mm-auth="can_configure">
+          <i class="fa fa-list-alt"></i>
+          <span translate>Forms</span>
+        </a>
+      </li>
+      <li>
+        <a ui-sref="configuration.export" mm-auth="can_configure">
+          <i class="fa fa-arrow-circle-o-down"></i>
+          <span translate>Export</span>
+        </a>
+      </li>
+      <li>
+        <a ui-sref="configuration.user" mm-auth="can_configure">
+          <i class="fa fa-user"></i>
+          <span translate>edit.user.settings</span>
+        </a>
+      </li>
+      <li>
+        <a ui-sref="configuration.users" mm-auth="can_configure">
+          <i class="fa fa-users"></i>
+          <span translate>Users</span>
+        </a>
+      </li>
+      <li>
+        <a ui-sref="configuration.icons" mm-auth="can_configure">
+          <i class="fa fa-file-image-o"></i>
+          <span translate>icons</span>
+        </a>
+      </li>
+      <li>
+        <a ui-sref="configuration.targets" mm-auth="can_configure">
+          <i class="fa fa-dot-circle-o"></i>
+          <span translate>analytics.targets</span>
+        </a>
+      </li>
+    </ul>
   </div>
 </div>

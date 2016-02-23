@@ -86,7 +86,7 @@ angular.module('inboxServices').service('Enketo', [
 
     var handleKeypressOnInputField = function(e) {
       // Here we capture both CR and TAB characters, and handle field-skipping
-      if(e.keyCode !== 9 && e.keyCode !== 13) {
+      if(!window.medicmobile_android || (e.keyCode !== 9 && e.keyCode !== 13)) {
         return;
       }
 
@@ -99,26 +99,33 @@ angular.module('inboxServices').service('Enketo', [
 
       // If there's another question on the current page, focus on that
       if($thisQuestion.attr('role') !== 'page') {
-        var $nextQuestion = $thisQuestion.find('~ .question:not(.disabled), ~ .repeat-buttons button.repeat');
+        var $nextQuestion = $thisQuestion.find('~ .question:not(.disabled):not(.or-appearance-hidden), ~ .repeat-buttons button.repeat:not(:disabled)');
         if($nextQuestion.length) {
-          // Hack for Android: delay focussing on the next field, so that
-          // keybaord close and open events both register.  This should mean
-          // that the on-screen keyboard is maintained between fields.
-          setTimeout(function() {
-            $nextQuestion.first().trigger('focus');
-          }, 10);
+          if($nextQuestion[0].tagName !== 'LABEL') {
+            // The next question is something complicated, so we can't just
+            // focus on it.  Next best thing is to blur the current selection
+            // so the on-screen keyboard closes.
+            $this.trigger('blur');
+          } else {
+            // Delay focussing on the next field, so that keybaord close and
+            // open events both register.  This should mean that the on-screen
+            // keyboard is maintained between fields.
+            setTimeout(function() {
+              $nextQuestion.first().trigger('focus');
+            }, 10);
+          }
           return;
         }
       }
-
-      // If there's no question on the current page, try to go to next
-      // page, or submit the form.
 
       // Trigger the change listener on the current field to update the enketo
       // model
       $this.trigger('change');
 
       var enketoContainer = $thisQuestion.closest('.enketo');
+
+      // If there's no question on the current page, try to go to change page,
+      // or submit the form.
       var next = enketoContainer.find('.btn.next-page:enabled:not(.disabled)');
       if(next.length) {
         next.trigger('click');

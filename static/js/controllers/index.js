@@ -17,6 +17,8 @@
   require('./configuration-icons');
   require('./configuration-settings-advanced');
   require('./configuration-settings-basic');
+  require('./configuration-targets');
+  require('./configuration-targets-edit.js');
   require('./configuration-translation-application');
   require('./configuration-translation-languages');
   require('./configuration-translation-messages');
@@ -34,7 +36,6 @@
   require('./edit-user');
   require('./error');
   require('./help');
-  require('./help-search');
   require('./home');
   require('./import-contacts');
   require('./import-translation');

@@ -25,13 +25,14 @@ var _ = require('underscore');
         };
       };
 
-      var getTargetsModule = function() {
+      var getTargetsModule = function(settings) {
         return {
           label: 'analytics.targets',
           state: 'analytics.targets',
           available: function() {
-            // TODO replace this with logic when we have configuration to check
-            return true;
+            return settings.tasks &&
+                   settings.tasks.targets &&
+                   settings.tasks.targets.enabled;
           }
         };
       };

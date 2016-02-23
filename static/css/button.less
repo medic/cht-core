@@ -1,3 +1,4 @@
+@import "variables";
 
 .mm-button {
   display: inline-block;
@@ -82,3 +83,51 @@ div.mm-button-text {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+.mm-navigation-menu {
+  text-align: center;
+  max-width: 60em;
+  margin: 2em auto;
+  li {
+    min-height: 5em;
+    width: 9em;
+    vertical-align: top;
+    font-size: 1.5em;
+    margin: 1em;
+    display: inline-block;
+    a {
+      color: inherit;
+      cursor: pointer;
+      background-color: @seperator-color;
+      border: 1px solid @admin-color;
+      border-radius: @radius-size;
+      box-sizing: border-box;
+      text-align: center;
+      padding: 1em;
+      width: 100%;
+      min-height: 5em;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      &:hover {
+        text-decoration: none;
+      }
+      .fa {
+        font-size: 1.5em;
+      }
+    }
+  }
+}
+
+@media (max-width: 767px) {
+  .mm-navigation-menu a {
+    font-size: 1em;
+  }
+}
+
+@media (max-width: 400px) {
+  .mm-navigation-menu a {
+    margin: 0.5em;
+    padding: 0.5em;
+  }
+}

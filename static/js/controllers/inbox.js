@@ -16,11 +16,12 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'ActiveRequests', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, ActiveRequests, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats) {
 
       Session.init();
       DBSync();
+      TrafficStats();
       feedback.init(
         function(doc, callback) {
           DB.get()
@@ -283,7 +284,7 @@ require('moment/locales');
       $scope.download = function() {
         DownloadUrl($scope, $scope.filterModel.type, function(err, url) {
           if (err) {
-            return console.log(err);
+            return $log.error(err);
           }
           $window.location.href = url;
         });
@@ -292,14 +293,14 @@ require('moment/locales');
       var updateAvailableFacilities = function() {
         FacilityHierarchy(function(err, hierarchy, total) {
           if (err) {
-            return console.log('Error loading facilities', err);
+            return $log.error('Error loading facilities', err);
           }
           $scope.facilities = hierarchy;
           $scope.facilitiesCount = total;
         });
         Facility({ types: [ 'person' ] }, function(err, people) {
           if (err) {
-            return console.log('Failed to retrieve people', err);
+            return $log.error('Failed to retrieve people', err);
           }
           $scope.people = people;
           function formatResult(doc) {
@@ -397,7 +398,7 @@ require('moment/locales');
       $scope.updateReadStatus = function() {
         ReadMessages(function(err, data) {
           if (err) {
-            return console.log('Error fetching read status', err);
+            return $log.error('Error fetching read status', err);
           }
           $scope.readStatus = data;
         });
@@ -420,7 +421,7 @@ require('moment/locales');
           $scope.forms = forms;
         })
         .catch(function(err) {
-          console.log('Failed to retrieve forms', err);
+          $log.error('Failed to retrieve forms', err);
         });
 
       var updateFormDefinitions = function() {
@@ -433,7 +434,7 @@ require('moment/locales');
             });
           })
           .catch(function(err) {
-            console.error('Error fetching form definitions', err);
+            $log.error('Error fetching form definitions', err);
           });
       };
       updateFormDefinitions();
@@ -476,7 +477,7 @@ require('moment/locales');
           UpdateUser(id, { language: selected }, function(err) {
             btn.removeClass('disabled');
             if (err) {
-              return console.log('Error updating user', err);
+              return $log.error('Error updating user', err);
             }
             $('#user-language').modal('hide');
           });
@@ -522,7 +523,7 @@ require('moment/locales');
             $('#guided-setup').on('hide.bs.modal', callback);
             UpdateSettings({ setup_complete: true }, function(err) {
               if (err) {
-                console.log('Error marking setup_complete', err);
+                $log.error('Error marking setup_complete', err);
               }
             });
           }
@@ -537,7 +538,7 @@ require('moment/locales');
             var id = 'org.couchdb.user:' + Session.userCtx().name;
             UpdateUser(id, { known: true }, function(err) {
               if (err) {
-                console.log('Error updating user', err);
+                $log.error('Error updating user', err);
               }
             });
           }
@@ -571,7 +572,7 @@ require('moment/locales');
       var updateEditUserModel = function(callback) {
         UserSettings(function(err, user) {
           if (err) {
-            return console.log('Error getting user', err);
+            return $log.error('Error getting user', err);
           }
           editUserModel = {
             id: user._id,
@@ -612,7 +613,7 @@ require('moment/locales');
           });
         })
         .catch(function(err) {
-          console.log('Error fetching settings', err);
+          $log.error('Error fetching settings', err);
         });
 
       moment.locale(['en']);
@@ -623,7 +624,7 @@ require('moment/locales');
           $translate.use(language);
         })
         .catch(function(err) {
-          console.log('Error loading language', err);
+          $log.error('Error loading language', err);
         });
 
       $scope.sendMessage = function(event) {
@@ -958,8 +959,6 @@ require('moment/locales');
 
       CountMessages.init();
 
-      $scope.$on('$stateChangeStart', ActiveRequests.cancel);
-
       $scope.reloadWindow = function() {
         $window.location.reload();
       };
@@ -983,7 +982,13 @@ require('moment/locales');
           // if the manifest hasn't changed, prompt user to reload settings
           window.applicationCache.addEventListener('noupdate', showUpdateReady);
           // check if the manifest has changed. if it has, download and prompt
-          window.applicationCache.update();
+          try {
+            window.applicationCache.update();
+          } catch(e) {
+            // chrome incognito mode active
+            $log.error('Error updating the appcache.', e);
+            showUpdateReady();
+          }
         });
       }
 

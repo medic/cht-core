@@ -21,6 +21,7 @@ var _ = require('underscore'),
       function completeLoad() {
         $scope.loading = false;
         $scope.appending = false;
+        $scope.hasContacts = liveList.count() > 0;
       }
 
       function _initScroll() {
@@ -146,6 +147,7 @@ var _ = require('underscore'),
           if (liveList.initialised()) {
             $timeout(function() {
               $scope.loading = false;
+              $scope.hasContacts = liveList.count() > 0;
               liveList.refresh();
               $scope.moreItems = liveList.moreItems;
               _initScroll();

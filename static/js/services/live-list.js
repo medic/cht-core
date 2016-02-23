@@ -1,5 +1,3 @@
-// TODO cache activeDom; set it when loading a controller!!
-
 function PARSER($parse, scope) {
   return function(expr) {
     expr = expr.substring(2, expr.length-2);
@@ -10,8 +8,10 @@ function PARSER($parse, scope) {
 // medic-webapp specific config for LiveList.
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig', [
-  '$log', '$parse', '$rootScope', '$templateCache', '$timeout', 'Changes', 'DB', 'LiveList', 'TaskGenerator',
-  function($log, $parse, $rootScope, $templateCache, $timeout, Changes, DB, LiveList, TaskGenerator) {
+  '$log', '$parse', '$rootScope', '$templateCache', '$timeout',
+      'Changes', 'DB', 'LiveList', 'TaskGenerator',
+  function($log, $parse, $rootScope, $templateCache, $timeout,
+      Changes, DB, LiveList, TaskGenerator) {
     // Configure LiveList service
     return function() {
 
@@ -147,7 +147,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
 
       LiveList.tasks.set([]);
 
-      TaskGenerator('tasks-list', function(err, tasks) {
+      TaskGenerator('tasks-list', 'task', function(err, tasks) {
         if (err) {
           $log.error('Error getting tasks', err);
 

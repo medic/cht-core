@@ -28,7 +28,8 @@ var utils = require('kujua-utils'),
       };
 
       var getLocal = function(name) {
-        return getFromCache(name || DbNameService());
+        var userCtx = Session.userCtx();
+        return getFromCache((name || DbNameService()) + '-user-' + userCtx.name);
       };
 
       var getFromCache = function(name) {

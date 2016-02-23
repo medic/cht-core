@@ -3,8 +3,10 @@
 var inboxControllers = angular.module('inboxControllers');
 
 inboxControllers.controller('AboutCtrl',
-  ['$scope', '$q', 'Debug', 'DB', 'Language', 'Session',
-  function ($scope, $q, Debug, DB, Language, Session) {
+  ['$interval', '$q', '$scope',
+      'DB', 'Debug', 'Language', 'Session',
+  function ($interval, $q, $scope,
+      DB, Debug, Language, Session) {
     $scope.filterModel.type = 'help';
     $scope.url = window.location.hostname;
     $scope.userCtx = Session.userCtx();
@@ -15,6 +17,18 @@ inboxControllers.controller('AboutCtrl',
       val: Debug.get()
     };
     $scope.$watch('enableDebugModel.val', Debug.set);
+
+    if (window.medicmobile_android && window.medicmobile_android.getDataUsage) {
+      $scope.android_data_usage = JSON.parse(window.medicmobile_android.getDataUsage());
+
+      var dataUsageUpdate = $interval(function() {
+        $scope.android_data_usage = JSON.parse(window.medicmobile_android.getDataUsage());
+      }, 2000);
+
+      $scope.$on('$destroy', function() {
+        $interval.cancel(dataUsageUpdate);
+      });
+    }
 
     DB.get().info().then(function (result) {
       $scope.dbInfo = JSON.stringify(result, null, 2);

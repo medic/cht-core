@@ -1,13 +1,27 @@
 <div class="targets">
-  <p>Your progress towards your targets will be displayed here.</p>
-  <div class="col-xs-12 col-sm-6 col-md-4">
-    <table class="table">
-      <tbody>
-        <tr ng-repeat="target in targets">
-          <td>{{target.name | translate}}</td>
-          <td>{{target.value}}</td>
-        </tr>
-      </tbody>
-    </table>
+  <div class="col-xs-12 col-md-6 col-lg-4 target" ng-repeat="target in targets">
+    <div class="contents">
+      <div class="row">
+        <div class="pull-left icon" ng-bind-html="target.icon | resourceIcon"></div>
+        <div class="right-wrapper">
+          <div class="right-column text-center">
+            <div translate>analytics.target.monthly_goal</div>
+            <div class="goal"><span class="large">{{target.goal}}</span><span ng-if="target.type === 'percent'">%</span></div>
+          </div>
+          <h4>{{target.name | translateFrom}}</h4>
+        </div>
+      </div>
+      <div class="row">
+        <div class="progress">
+          <div class="progress-bar" role="progressbar" aria-valuenow="{{target.count}}" aria-valuemin="0" aria-valuemax="{{target.goal}}"
+          style="width:{{target.displayProgress}}%"></div>
+        </div>
+        <div
+          style="padding-left: {{target.displayProgress - 5}}%; padding-right: {{100 - target.displayProgress - 5}}%;"
+          ng-class="{'pull-right': target.displayProgress > 50, 'goal': target.count >= target.goal}">
+          <span class="large">{{target.count}}</span><span ng-if="target.type === 'percent'">%</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>

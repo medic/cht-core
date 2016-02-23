@@ -10,10 +10,10 @@
       {{'Error fetching reports' | translate}}
     </span>
   </p>
-  <p class="loading-status" ng-show="!error && !loading && !reports.length">
+  <p class="loading-status" ng-show="!error && !loading && !hasReports">
     {{'No reports found' | translate}}
   </p>
-  <p class="loading-status" ng-show="!loading && reports.length && !moreItems">
+  <p class="loading-status" ng-show="!loading && hasReports && !moreItems">
     {{'No more reports' | translate}}
   </p>
   <div class="loader" ng-show="loading"></div>

@@ -1,4 +1,11 @@
 <div class="inner" data-page="reporting_rates" ng-cloak>
   <div class="col-sm-12 page reporting" ui-view="content">
+    <ul class="mm-navigation-menu">
+      <li ng-repeat="module in analyticsModules">
+        <a ui-sref="{{module.state}}">
+          <span>{{module.label | translate}}</span>
+        </a>
+      </li>
+    </div>
   </div>
 </div>

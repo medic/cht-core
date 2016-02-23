@@ -19,6 +19,9 @@ var _ = require('underscore');
         if ($stateParams.tour) {
           $rootScope.$broadcast('TourStart', $stateParams.tour);
         }
+        if (modules.length === 1) {
+          $state.go(modules[0].state);
+        }
       });
 
       var findSelectedModule = function( modules) {

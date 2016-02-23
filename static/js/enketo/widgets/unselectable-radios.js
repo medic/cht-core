@@ -73,6 +73,12 @@ define( function( require, exports, module ) {
 
     module.exports = {
         'name': pluginName,
-        'selector': 'input[type=radio][required]'
+        // Enketo currently uses `data-required` instead of `required` to denote
+        // a required field.
+        //
+        // This code assumes that we never have dynamicly calculated required
+        // flags.  See https://github.com/enketo/enketo-core/issues/362 for more
+        // discussion.
+        'selector': 'input[type=radio][data-required="true()"]'
     };
 } );

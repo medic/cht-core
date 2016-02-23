@@ -107,6 +107,10 @@
   }
 }
 
+.anc {
+  padding: 0.5em;
+}
+
 .active-pregnancies .title {
   color: #5A339E;
 }
@@ -145,6 +149,7 @@
 }
 
 .stock-monitoring {
+  padding: 0.5em;
 
   .row {
     margin: 0;
@@ -227,5 +232,38 @@
     border: 0;
     margin-bottom: 0;
     overflow: inherit;
+  }
+}
+
+.targets {
+  .target {
+    padding: 15px;
+    .icon {
+      margin-right: 0.5em;
+    }
+    .large {
+      font-size: 2em;
+    }
+    .goal {
+      color: @analytics-color;
+    }
+    background-color: @background-color;
+    border: 1px solid @seperator-color;
+    .right-wrapper {
+      overflow:hidden;
+    }
+    .right-column {
+      margin-left: 15px;
+      float: right;
+    }
+    .progress {
+      background-color: white;
+      border: 1px solid @analytics-color;
+      margin-bottom: 0px;
+      margin-top: 15px;
+      .progress-bar {
+        background-color: @analytics-color;
+      }
+    }
   }
 }

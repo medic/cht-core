@@ -33,7 +33,6 @@
   require('./format-date');
   require('./generate-search-query');
   require('./generate-search-requests');
-  require('./http-wrapper');
   require('./import-contacts');
   require('./kanso-packages');
   require('./language');
@@ -46,13 +45,16 @@
   require('./outgoing-messages-configuration');
   require('./properties');
   require('./read-messages');
+  require('./resource-icons');
   require('./scheduled-forms');
   require('./search');
   require('./send-message');
   require('./session');
   require('./settings');
   require('./snackbar');
+  require('./target-generator');
   require('./task-generator');
+  require('./traffic-stats');
   require('./translate-from');
   require('./update-contact');
   require('./update-facility');

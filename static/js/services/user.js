@@ -66,10 +66,10 @@ var _ = require('underscore'),
     }
   ]);
 
-  inboxServices.factory('Admins', ['HttpWrapper',
-    function(HttpWrapper) {
+  inboxServices.factory('Admins', ['$http',
+    function($http) {
       return function(callback) {
-        HttpWrapper.get('/_config/admins', { cache: true })
+        $http.get('/_config/admins', { cache: true })
           .success(function(data) {
             callback(null, data);
           })
@@ -78,8 +78,8 @@ var _ = require('underscore'),
     }
   ]);
 
-  inboxServices.factory('Users', ['HttpWrapper', 'Facility', 'Admins', 'DbView',
-    function(HttpWrapper, Facility, Admins, DbView) {
+  inboxServices.factory('Users', ['$http', 'Facility', 'Admins', 'DbView',
+    function($http, Facility, Admins, DbView) {
 
       var getType = function(user, admins) {
         if (user.doc.roles && user.doc.roles.length) {
@@ -118,7 +118,7 @@ var _ = require('underscore'),
       };
 
       var getAllUsers = function(callback) {
-        HttpWrapper
+        $http
           .get('/_users/_all_docs', { cache: true, params: { include_docs: true } })
           .success(function(data) {
             callback(null, data);
@@ -159,8 +159,8 @@ var _ = require('underscore'),
     cache.remove('/_config/admins');
   };
 
-  inboxServices.factory('UpdateUser', ['$log', '$cacheFactory', 'HttpWrapper', 'DB', 'Admins',
-    function($log, $cacheFactory, HttpWrapper, DB, Admins) {
+  inboxServices.factory('UpdateUser', ['$log', '$cacheFactory', '$http', 'DB', 'Admins',
+    function($log, $cacheFactory, $http, DB, Admins) {
 
       var createId = function(name) {
         return 'org.couchdb.user:' + name;
@@ -168,7 +168,7 @@ var _ = require('underscore'),
 
       var getOrCreateUser = function(id, name, callback) {
         if (id) {
-          HttpWrapper.get(getUserUrl(id), { cache: true, targetScope: 'root' })
+          $http.get(getUserUrl(id), { cache: true, targetScope: 'root' })
             .success(function(data) {
               callback(null, data);
             })
@@ -214,7 +214,7 @@ var _ = require('underscore'),
             // not an admin so admin password change not required
             return callback();
           }
-          HttpWrapper.put('/_config/admins/' + updated.name, '"' + updated.password + '"')
+          $http.put('/_config/admins/' + updated.name, '"' + updated.password + '"')
             .success(function() {
               callback();
             })
@@ -239,7 +239,7 @@ var _ = require('underscore'),
             updated.derived_key = undefined;
             updated.salt = undefined;
           }
-          HttpWrapper
+          $http
             .put(getUserUrl(user._id), updated)
             .success(function() {
               updatePassword(updated, function(err) {
@@ -288,15 +288,15 @@ var _ = require('underscore'),
     }
   ]);
 
-  inboxServices.factory('DeleteUser', ['$cacheFactory', 'HttpWrapper', 'DeleteDoc',
-    function($cacheFactory, HttpWrapper, DeleteDoc) {
+  inboxServices.factory('DeleteUser', ['$cacheFactory', '$http', 'DeleteDoc',
+    function($cacheFactory, $http, DeleteDoc) {
 
       var deleteUser = function(id, callback) {
         var url = getUserUrl(id);
-        HttpWrapper.get(url)
+        $http.get(url)
           .success(function(user) {
             user._deleted = true;
-            HttpWrapper.put(url, user)
+            $http.put(url, user)
               .success(function() {
                 callback();
               })

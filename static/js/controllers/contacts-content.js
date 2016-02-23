@@ -182,7 +182,7 @@ var CONTEXT_UTILS = {
           patientIds = _.pluck($scope.selected.children, 'id');
         }
         patientIds.push($scope.selected.doc._id);
-        TaskGenerator('ContactsContentCtrl', function(err, tasks) {
+        TaskGenerator('ContactsContentCtrl', 'task', function(err, tasks) {
           if (err) {
             return $log.error('Error getting tasks', err);
           }

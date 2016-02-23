@@ -156,8 +156,8 @@
           <span class="mm-button-dropdown">
             <span class="fa fa-chevron-down"></span>
           </span>
-          <span class="mm-button-text">
-            {{filterModel.module.label | translate}}
+          <span class="mm-button-text" ng-repeat="module in analyticsModules" ng-if="module.state | isState">
+            {{module.label | translate}}
           </span>
         </span>
         <ul role="menu" aria-labelledby="module" class="dropdown-menu mm-dropdown-menu">
@@ -199,6 +199,9 @@
           <span class="mm-button-icon" ng-show="'configuration.icons' | isState">
             <i class="fa fa-file-image-o"></i>
           </span>
+          <span class="mm-button-icon" ng-show="('configuration.targets' | isState) || ('configuration.targets-edit' | isState)">
+            <i class="fa fa-dot-circle-o"></i>
+          </span>
           <span class="mm-button-dropdown">
             <i class="fa fa-chevron-down"></i>
           </span>
@@ -226,6 +229,9 @@
             </span>
             <span ng-show="'configuration.icons' | isState">
               {{'icons' | translate}}
+            </span>
+            <span ng-show="('configuration.targets' | isState) || ('configuration.targets-edit' | isState)">
+              {{'analytics.targets' | translate}}
             </span>
           </span>
         </span>
@@ -270,6 +276,12 @@
             <a ui-sref="configuration.icons" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-file-image-o"></i>
               <span>{{'icons' | translate}}</span>
+            </a>
+          </li>
+          <li class="ng-scope" role="presentation" mm-auth="can_configure">
+            <a ui-sref="configuration.targets" role="menuitem" tabindex="-1">
+              <i class="fa fa-fw fa-dot-circle-o"></i>
+              <span>{{'analytics.targets' | translate}}</span>
             </a>
           </li>
         </ul>
