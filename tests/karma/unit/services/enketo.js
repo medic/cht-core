@@ -309,29 +309,6 @@ describe('Enketo service', function() {
     });
   });
 
-  describe('withAllForms', function() {
-    it('should get all forms from DB, but only pass on ones with XML attachment', function(done) {
-      // given
-      var expected = [
-        mockEnketoDoc(),
-        mockJsonDoc(),
-        mockJsonDoc(),
-        mockEnketoDoc(),
-        mockEnketoDoc(),
-      ];
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: expected }));
-      service.withAllForms()
-        .then(function(actual) {
-          chai.expect(actual.length).to.equal(3);
-          chai.expect(actual[0]).to.deep.equal(expected[0].doc);
-          chai.expect(actual[1]).to.deep.equal(expected[3].doc);
-          chai.expect(actual[2]).to.deep.equal(expected[4].doc);
-          done();
-        })
-        .catch(done);
-    });
-  });
-
   describe('save', function() {
 
     it('rejects on invalid form', function(done) {

@@ -62,10 +62,8 @@ describe('InboxCtrl controller', function() {
       $provide.factory('DownloadUrl', function() {
         return sinon.stub();
       });
-      $provide.factory('Enketo', function() {
-        return {
-          withAllForms: KarmaUtils.nullPromise()
-        };
+      $provide.factory('XmlForms', function() {
+        return KarmaUtils.nullPromise();
       });
       $provide.factory('Facility', function() {
         return sinon.stub();
