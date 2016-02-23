@@ -1,5 +1,5 @@
 var async = require('async'),
-    etagRegex = /['"]/g;
+    etagRegex = /(?:^W\/)|['"]/g;
 
 (function () {
 
