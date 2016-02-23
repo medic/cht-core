@@ -4,28 +4,6 @@ describe('ContactSchema service', function() {
   var service,
       assert = chai.assert;
 
-  var sortedJson = function(o) {
-    var keys = Object.keys(o).sort();
-    var s = '{';
-    for(var i=0; i<keys.length; ++i) {
-      var k = keys[i];
-      s += '"' + k + '":' + JSON.stringify(o[k]) + ',';
-    }
-    // N.B. not valid JSON, as an extra comma will appear
-    return s + '}';
-  };
-
-  var deepEqual = assert.deepEqual;
-  assert.deepEqual = function() {
-    try {
-      deepEqual.apply(this, arguments);
-    } catch(e) {
-      throw new Error(e +
-          '\nA: ' + sortedJson(arguments[0]) +
-          '\nB: ' + sortedJson(arguments[1]));
-    }
-  };
-
   beforeEach(function() {
     module('inboxApp');
     inject(function(_ContactSchema_) {
