@@ -20,8 +20,8 @@ require('moment/locales');
     function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats) {
 
       Session.init();
+      TrafficStats($scope);
       DBSync();
-      TrafficStats();
       feedback.init(
         function(doc, callback) {
           DB.get()
