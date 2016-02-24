@@ -61,7 +61,7 @@ describe('InboxCtrl controller', function() {
         return sinon.stub();
       });
       $provide.factory('XmlForms', function() {
-        return KarmaUtils.nullPromise();
+        return sinon.stub();
       });
       $provide.factory('Facility', function() {
         return sinon.stub();

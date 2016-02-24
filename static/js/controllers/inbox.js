@@ -424,26 +424,15 @@ require('moment/locales');
           $log.error('Failed to retrieve forms', err);
         });
 
-      var updateFormDefinitions = function() {
-        XmlForms()
-          .then(function(forms) {
-            Enketo.clearXmlCache();
-            $scope.formDefinitions = forms;
-            $scope.nonContactForms = _.filter(forms, function(form) {
-              return form._id.indexOf('form:contact:') !== 0;
-            });
-          })
-          .catch(function(err) {
-            $log.error('Error fetching form definitions', err);
-          });
-      };
-      updateFormDefinitions();
-      Changes({
-        key: 'inbox-form-definitions',
-        filter: function(change) {
-          return change.id.indexOf('form:') === 0;
-        },
-        callback: updateFormDefinitions
+      XmlForms('InboxCtrl', function(err, forms) {
+        if (err) {
+          return $log.error('Error fetching form definitions', err);
+        }
+        Enketo.clearXmlCache();
+        $scope.formDefinitions = forms;
+        $scope.nonContactForms = _.filter(forms, function(form) {
+          return form._id.indexOf('form:contact:') !== 0;
+        });
       });
 
       $scope.setupGuidedSetup = function() {
