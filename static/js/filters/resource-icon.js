@@ -29,6 +29,8 @@
           }
         }
 
+        ResourceIcons.refresh();
+
         return '<img data-resource-icon="' + name + '"/>';
       };
 
