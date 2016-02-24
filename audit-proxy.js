@@ -60,7 +60,7 @@ AuditProxy.prototype.audit = function(proxy, req, res) {
       }
 
       couchdbAudit
-        .withNano(db, db.settings.db, db.settings.ddoc, ctx.user)
+        .withNano(db, db.settings.db, db.settings.auditDb, db.settings.ddoc, ctx.user)
         .log(doc.docs || [doc], function(err) {
           if (err) {
             return cb(err);
