@@ -1,5 +1,7 @@
 var utils = require('kujua-utils'),
-    async = require('async');
+    async = require('async'),
+    etagRegex = /(?:^W\/)|['"]/g;
+
 
 (function () {
 
@@ -85,7 +87,7 @@ var utils = require('kujua-utils'),
                 method: 'HEAD',
                 url: getRemoteUrl() + '/_design/medic'
               }).success(function(data, status, headers) {
-                var rev = headers().etag.replace(/"/g, '');
+                var rev = headers().etag.replace(etagRegex, '');
                 checkLocalDesignDoc(rev, callback);
               });
             }
