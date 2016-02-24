@@ -5,10 +5,12 @@ describe('InboxCtrl controller', function() {
   var createController,
     spyDeleteDoc,
     scope,
+    snackbar,
     spyState;
   var dummyId = 'dummydummy';
 
   beforeEach(function() {
+    snackbar = sinon.stub();
     module('inboxApp');
 
     module(function($provide) {
@@ -99,6 +101,9 @@ describe('InboxCtrl controller', function() {
       $provide.factory('Settings', function() {
         return KarmaUtils.nullPromise();
       });
+      $provide.factory('Snackbar', function() {
+        return snackbar;
+      });
       $provide.factory('$state', function() {
         spyState = {
           go: sinon.spy(),
@@ -169,6 +174,7 @@ describe('InboxCtrl controller', function() {
     // Call callback without err.
     callback();
     chai.assert(spyState.go.calledWith('contacts'), 'should go to contacts state');
+    chai.assert(snackbar.called, 'Shoud display toast');
   });
 
   it('doesn\'t navigate back to contacts state after failed contact deletion', function() {
@@ -178,6 +184,7 @@ describe('InboxCtrl controller', function() {
     var err = {};
     callback(err);
     chai.assert.isFalse(spyState.go.called, 'state change should not happen');
+    chai.assert.isFalse(snackbar.called, 'Shoud not display toast');
   });
 
   it('can\'t deleteContact before user confirmed', function() {

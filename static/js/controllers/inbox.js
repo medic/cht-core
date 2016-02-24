@@ -649,17 +649,17 @@ require('moment/locales');
         $rootScope.$broadcast.apply($rootScope, arguments);
       };
 
-      var deleteMessageId;
+      var docToDeleteId;
 
       $scope.deleteDoc = function(id) {
         $('#delete-confirm').modal('show');
-        deleteMessageId = id;
+        docToDeleteId = id;
       };
 
       $scope.deleteDocConfirm = function() {
         var pane = modal.start($('#delete-confirm'));
-        if (deleteMessageId) {
-          DeleteDoc(deleteMessageId, function(err) {
+        if (docToDeleteId) {
+          DeleteDoc(docToDeleteId, function(err) {
             pane.done(translateFilter('Error deleting document'), err);
             if (!err) {
               // return to list view for the current state
@@ -669,10 +669,11 @@ require('moment/locales');
                 stateName = stateName.substring(0, dotIndex);
               }
               $state.go(stateName);
+              Snackbar(translateFilter('document.deleted'));
             }
           });
         } else {
-          pane.done(translateFilter('Error deleting document'), 'No deleteMessageId set');
+          pane.done(translateFilter('Error deleting document'), 'No docToDeleteId set');
         }
       };
 
