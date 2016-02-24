@@ -4,8 +4,9 @@
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TrafficStats', [ 'DB', '$log', 'Session', '$window',
-    function(DB, $log, Session, $window) {
+  inboxServices.factory('TrafficStats', ['DB', 'Debug', '$interval', '$log', 'Session', '$window',
+    function(DB, Debug, $interval, $log, Session, $window) {
+      var parentScope;
       var log = function() {
         var stats = JSON.parse($window.medicmobile_android.getDataUsage());
         stats.timestamp = Date.now();
@@ -35,12 +36,24 @@
       };
 
 
-      return function() {
+      return function(scope) {
         if (!$window.medicmobile_android || !$window.medicmobile_android.getDataUsage) {
           $log.info('Not on android, or no traffic monitoring available. No traffic stats will be logged.');
           return;
         }
         log();
+
+        if (Debug.get()) {
+          parentScope = scope;
+          var dataUsageUpdate = $interval(function() {
+            $log.debug('Trafficstats', Date.now(), window.medicmobile_android.getDataUsage());
+          }, 10000);
+
+          parentScope.$on('$destroy', function() {
+            $interval.cancel(dataUsageUpdate);
+          });
+
+        }
       };
     }
   ]);
