@@ -30,11 +30,19 @@ exports.tearDown = function (callback) {
     db.db.replicate,
     db.medic.fetchRevs,
     db.medic.bulk);
+
+  db.settings = {};
+
   callback();
 };
 
 exports['creates db, creates view and migrates audit documents'] = function(test) {
   test.expect(9);
+
+  db.settings = {
+    db: 'medic',
+    auditDb: 'medic-audit'
+  };
 
   var wrappedDbDbGet = sinon.stub(db.db, 'get').withArgs('medic-audit').callsArgWith(1, ERR_404);
   var wrappedDbDbCreate = sinon.stub(db.db, 'create').withArgs('medic-audit').callsArg(1);
@@ -43,6 +51,7 @@ exports['creates db, creates view and migrates audit documents'] = function(test
     head: function() {},
     insert: function() {}
   };
+
   var wrappedAuditDbHead = sinon.stub(auditDb, 'head').withArgs('_design/medic').callsArgWith(1, ERR_404);
   var wrappedAuditDbInsert = sinon.stub(auditDb, 'insert').callsArg(2);
   sinon.stub(db, 'use').withArgs('medic-audit').returns(auditDb);

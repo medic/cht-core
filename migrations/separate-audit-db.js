@@ -5,8 +5,6 @@ var _ = require('underscore'),
 var DDOC_NAME = '_design/medic';
 var DDOC = {'views': {'audit_records_by_doc': {'map': 'function (doc) {if (doc.type === \'audit_record\') {emit([doc.record_id], 1);}}'}}};
 var BATCH_SIZE = 100;
-var MEDIC_DB = 'medic';
-var MEDIC_AUDIT_DB = 'medic-audit';
 
 var ensureDbExists = function(dbName, callback) {
   db.db.get(dbName, function(err) {
@@ -49,7 +47,7 @@ var batchMoveAuditDocs = function(callback) {
     var auditDocIds = doclist.rows.map(function(row) { return row.id;});
 
     async.parallel([
-      _.partial(db.db.replicate, MEDIC_DB, MEDIC_AUDIT_DB, {doc_ids: auditDocIds}),
+      _.partial(db.db.replicate, db.settings.db, db.settings.auditDb, {doc_ids: auditDocIds}),
       _.partial(db.medic.fetchRevs, {keys: auditDocIds})
     ], function(err, results) {
       if (err) {
@@ -78,8 +76,8 @@ module.exports = {
   created: new Date(2016, 2, 18),
   run: function(callback) {
     async.series([
-      _.partial(ensureDbExists, MEDIC_AUDIT_DB),
-      _.partial(ensureViewDdocExists, MEDIC_AUDIT_DB)
+      _.partial(ensureDbExists, db.settings.auditDb),
+      _.partial(ensureViewDdocExists, db.settings.auditDb)
       ], function(err) {
         if (err) {
           return console.log('An error occurred creating audit db', err);
