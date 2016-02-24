@@ -9,13 +9,11 @@ function PARSER($parse, scope) {
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig', [
   '$log', '$parse', '$templateCache', '$timeout',
-      'Changes', 'DB', 'LiveList', 'TaskGenerator',
+      'Changes', 'DB', 'LiveList', 'TaskGenerator', 'CONTACT_TYPES',
   function($log, $parse, $templateCache, $timeout,
-      Changes, DB, LiveList, TaskGenerator) {
+      Changes, DB, LiveList, TaskGenerator, CONTACT_TYPES) {
     // Configure LiveList service
     return function($scope) {
-
-      var contactTypes = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
 
       var contacts_config = {
         orderBy: function(c1, c2) {
@@ -23,7 +21,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
             return;
           }
           if (c1.type !== c2.type) {
-            return contactTypes.indexOf(c1.type) - contactTypes.indexOf(c2.type);
+            return CONTACT_TYPES.indexOf(c1.type) - CONTACT_TYPES.indexOf(c2.type);
           }
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
@@ -66,7 +64,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
         },
         filter: function(change) {
           if (change.newDoc) {
-            return contactTypes.indexOf(change.newDoc.type) !== -1;
+            return CONTACT_TYPES.indexOf(change.newDoc.type) !== -1;
           }
           return LiveList.contacts.contains({ _id: change.id });
         }

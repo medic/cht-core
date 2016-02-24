@@ -418,6 +418,8 @@ _.templateSettings = {
   // Protractor waits for requests to complete so we have to disable
   // long polling requests.
   app.constant('E2ETESTING', window.location.href.indexOf('e2eTesting=true') !== -1);
+  app.constant('CONTACT_TYPES', [ 'district_hospital', 'health_center', 'clinic', 'person' ]);
+  app.constant('PLACE_TYPES', [ 'district_hospital', 'health_center', 'clinic' ]);
 
   var bootstrapApplication = function() {
     app.constant('APP_CONFIG', {
