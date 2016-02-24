@@ -105,7 +105,7 @@ require('moment/locales');
         }
 
         // On an Enketo form, go to the previous page (if there is one)
-        if ($container.find('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
+        if ($container.find('.enketo .btn.previous-page:visible:enabled:not(".disabled")').length) {
           window.history.back();
           return true;
         }
