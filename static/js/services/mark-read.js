@@ -26,8 +26,9 @@ var _ = require('underscore');
     return _.compact(_.map(messages, _.partial(updateMessage, user, read)));
   };
   
-  inboxServices.factory('MarkRead', ['DB', 'Session',
-    function(DB, Session) {
+  inboxServices.factory('MarkRead',
+    ['$log', 'DB', 'Session',
+    function($log, DB, Session) {
       return function(messageId, read) {
         var user = Session.userCtx().name;
         return DB.get()
@@ -37,7 +38,9 @@ var _ = require('underscore');
             if (!doc) {
               return;
             }
-            return DB.get().put(doc);
+            return DB.get()
+                .put(doc)
+                .catch($log.error);
           });
       };
     }
