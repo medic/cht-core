@@ -17,8 +17,8 @@ var _ = require('underscore'),
   };
 
   var authenticationIssue = function(errors) {
-    return _.find(errors, function(error) { return error.status === 401})
-  }
+    return _.find(errors, function(error) { return error.status === 401;});
+  };
 
   inboxServices.factory('DBSync', [
     '$log', 'DB', 'UserDistrict', 'Session', 'Settings', '$q',
