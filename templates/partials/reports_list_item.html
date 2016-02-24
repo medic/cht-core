@@ -1,8 +1,3 @@
-<!--
-  TODO li should hve optional class selected, calculated as follows:
-    {{report._id === loadingContent || !loadingContent && report._id === selected._id ? 'selected' : ''}}
-  This highlight is not useful on mobile, and needs a click listener or similar implemented for desktop users.
--->
 <li class="{{isRead(report) ? 'read' : ''}}">
   <a class="message-wrapper" href="#reports/{{report._id}}">
     <span class="mm-badge mm-badge-round mm-badge-border {{report.errors.length ? 'mm-badge-red' : 'mm-badge-green'}}">
