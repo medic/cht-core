@@ -10,10 +10,9 @@ var nools = require('nools'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TaskGenerator', ['$q', '$log', 'DB', 'Search', 'Settings', 'Changes',
-    function($q, $log, DB, Search, Settings, Changes) {
+  inboxServices.factory('TaskGenerator', ['$q', '$log', 'DB', 'Search', 'Settings', 'Changes', 'CONTACT_TYPES',
+    function($q, $log, DB, Search, Settings, Changes, CONTACT_TYPES) {
 
-      var contactTypes = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
       var callbacks = {};
       var emissions = {};
       var facts = [];
@@ -221,7 +220,7 @@ var nools = require('nools'),
           filter: function(change) {
             if (change.newDoc) {
               return change.newDoc.form ||
-                     contactTypes.indexOf(change.newDoc.type) !== -1;
+                     CONTACT_TYPES.indexOf(change.newDoc.type) !== -1;
             }
             return !!findFact(change.id);
           }

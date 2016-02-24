@@ -1,43 +1,6 @@
 describe('Enketo service', function() {
   'use strict';
 
-  var assert = chai.assert;
-
-  var sortedJson = function(o) {
-    var s;
-    if(typeof o !== 'object') {
-      return JSON.stringify(o);
-    }
-    if(_.isArray(o)) {
-      s = '[ ';
-      o.forEach(function(e) {
-        s += sortedJson(e) + ', ';
-      });
-      return s + ']';
-    }
-    var keys = Object.keys(o).sort();
-    s = '{ ';
-    for(var i=0; i<keys.length; ++i) {
-      var k = keys[i];
-      s += '"' + k + '":' + sortedJson(o[k]) + ', ';
-    }
-    // N.B. not valid JSON, as an extra comma will appear
-    return s + '}';
-  };
-
-  // TODO this definition is leaked to other tests.  It's quite useful, so it
-  // should be moved to a common place
-  var deepEqual = assert.deepEqual;
-  assert.deepEqual = function() {
-    try {
-      deepEqual.apply(this, arguments);
-    } catch(e) {
-      throw new Error(e +
-          '\nA: ' + sortedJson(arguments[0]) +
-          '\nB: ' + sortedJson(arguments[1]));
-    }
-  };
-
   /** @return a mock form ready for putting in #dbContent */
   var mockEnketoDoc = function(formInternalId, docId) {
     return {

@@ -16,11 +16,15 @@ var _ = require('underscore'),
     return Math.min(prev * 2, 60000);
   };
 
+  var authenticationIssue = function(errors) {
+    return _.find(errors, function(error) { return error.status === 401;});
+  };
+
   inboxServices.factory('DBSync', [
     '$log', 'DB', 'UserDistrict', 'Session', 'Settings', '$q',
     function($log, DB, UserDistrict, Session, Settings, $q) {
 
-      var replicate = function(from, options) {
+      var replicate = function(direction, options) {
         options = options || {};
         _.defaults(options, {
           live: true,
@@ -28,7 +32,6 @@ var _ = require('underscore'),
           timeout: false,
           back_off_function: backOffFunction
         });
-        var direction = from ? 'from' : 'to';
         var fn = DB.get().replicate[direction];
         return fn(DB.getRemoteUrl(), options)
           .on('denied', function(err) {
@@ -36,6 +39,14 @@ var _ = require('underscore'),
           })
           .on('error', function(err) {
             $log.error('Error replicating ' + direction + ' remote server', err);
+          })
+          .on('complete', function (info) {
+            if (!info.ok && authenticationIssue(info.errors)) {
+              $log.warn('User must reauthenticate');
+              Session.navigateToLogin();
+            } else {
+              $log.error('Replication completed which should never happen', info);
+            }
           });
       };
 
@@ -72,7 +83,7 @@ var _ = require('underscore'),
           $log.debug('You have administrative privileges; not replicating');
           return;
         }
-        replicate(false, {
+        replicate('to', {
           filter: function(doc) {
             // don't try to replicate ddoc back to the server
             return doc._id !== '_design/medic';
@@ -80,7 +91,7 @@ var _ = require('underscore'),
         });
         getQueryParams(userCtx)
           .then(function(params) {
-            replicate(true, {
+            replicate('from', {
               filter: 'erlang_filters/doc_by_place',
               query_params: params
             });

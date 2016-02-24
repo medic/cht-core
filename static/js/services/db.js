@@ -1,5 +1,7 @@
 var utils = require('kujua-utils'),
-    async = require('async');
+    async = require('async'),
+    etagRegex = /(?:^W\/)|['"]/g;
+
 
 (function () {
 
@@ -28,7 +30,8 @@ var utils = require('kujua-utils'),
       };
 
       var getLocal = function(name) {
-        return getFromCache(name || DbNameService());
+        var userCtx = Session.userCtx();
+        return getFromCache((name || DbNameService()) + '-user-' + userCtx.name);
       };
 
       var getFromCache = function(name) {
@@ -67,11 +70,21 @@ var utils = require('kujua-utils'),
                 updateLocalDesignDoc(localDdoc, remoteDdoc, callback);
               })
               .catch(function(err) {
-                $log.error('Error updating ddoc. Check your connection and try again.', err);
+                if (err.status === 401) {
+                  $log.warn('User must reauthenticate');
+                  Session.navigateToLogin();
+                } else {
+                  $log.error('Error updating ddoc. Check your connection and try again.', err);
+                }
               });
           })
           .catch(function(err) {
-            $log.error('Error updating ddoc. Check your connection and try again.', err);
+            if (err.status === 401) {
+              $log.warn('User must reauthenticate');
+              Session.navigateToLogin();
+            } else {
+              $log.error('Error updating ddoc. Check your connection and try again.', err);
+            }
           });
       };
 
@@ -84,7 +97,7 @@ var utils = require('kujua-utils'),
                 method: 'HEAD',
                 url: getRemoteUrl() + '/_design/medic'
               }).success(function(data, status, headers) {
-                var rev = headers().etag.replace(/"/g, '');
+                var rev = headers().etag.replace(etagRegex, '');
                 checkLocalDesignDoc(rev, callback);
               });
             }

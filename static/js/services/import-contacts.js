@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    etagRegex = /['"]/g;
+    etagRegex = /(?:^W\/)|['"]/g;
 
 (function () {
 

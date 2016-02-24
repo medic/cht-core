@@ -385,6 +385,24 @@ _.templateSettings = {
     };
   }]);
 
+  var getUsername = function() {
+    var userCtx;
+    _.forEach(document.cookie.split(';'), function(c) {
+      c = c.trim().split('=', 2);
+      if (c[0] === 'userCtx') {
+        userCtx = c[1];
+      }
+    });
+    if (!userCtx) {
+      return;
+    }
+    try {
+      return JSON.parse(unescape(decodeURI(userCtx))).name;
+    } catch(e) {
+      return;
+    }
+  };
+
   var getDbNames = function() {
     // parse the URL to determine the remote and local database names
     var url = window.location.href;
@@ -393,13 +411,15 @@ _.templateSettings = {
     var dbNameLocation = url.indexOf('/', hostLocation);
     return {
       remote: url.slice(0, dbNameLocation),
-      local: url.slice(hostLocation, dbNameLocation)
+      local: url.slice(hostLocation, dbNameLocation) + '-user-' + getUsername()
     };
   };
 
   // Protractor waits for requests to complete so we have to disable
   // long polling requests.
   app.constant('E2ETESTING', window.location.href.indexOf('e2eTesting=true') !== -1);
+  app.constant('CONTACT_TYPES', [ 'district_hospital', 'health_center', 'clinic', 'person' ]);
+  app.constant('PLACE_TYPES', [ 'district_hospital', 'health_center', 'clinic' ]);
 
   var bootstrapApplication = function() {
     app.constant('APP_CONFIG', {

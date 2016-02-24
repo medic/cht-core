@@ -8,14 +8,12 @@ function PARSER($parse, scope) {
 // medic-webapp specific config for LiveList.
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig', [
-  '$log', '$parse', '$rootScope', '$templateCache', '$timeout',
-      'Changes', 'DB', 'LiveList', 'TaskGenerator',
-  function($log, $parse, $rootScope, $templateCache, $timeout,
-      Changes, DB, LiveList, TaskGenerator) {
+  '$log', '$parse', '$templateCache', '$timeout',
+      'Changes', 'DB', 'LiveList', 'TaskGenerator', 'CONTACT_TYPES',
+  function($log, $parse, $templateCache, $timeout,
+      Changes, DB, LiveList, TaskGenerator, CONTACT_TYPES) {
     // Configure LiveList service
-    return function() {
-
-      var contactTypes = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
+    return function($scope) {
 
       var contacts_config = {
         orderBy: function(c1, c2) {
@@ -23,13 +21,13 @@ angular.module('inboxServices').factory('LiveListConfig', [
             return;
           }
           if (c1.type !== c2.type) {
-            return contactTypes.indexOf(c1.type) - contactTypes.indexOf(c2.type);
+            return CONTACT_TYPES.indexOf(c1.type) - CONTACT_TYPES.indexOf(c2.type);
           }
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
         listItem: function(contact) {
           var contactHtml = $templateCache.get('templates/partials/contacts_list_item.html');
-          var scope = $rootScope.$new();
+          var scope = $scope.$new();
           scope.contact = contact;
           return contactHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
@@ -66,7 +64,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
         },
         filter: function(change) {
           if (change.newDoc) {
-            return contactTypes.indexOf(change.newDoc.type) !== -1;
+            return CONTACT_TYPES.indexOf(change.newDoc.type) !== -1;
           }
           return LiveList.contacts.contains({ _id: change.id });
         }
@@ -82,7 +80,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
         },
         listItem: function(report) {
           var reportHtml = $templateCache.get('templates/partials/reports_list_item.html');
-          var scope = $rootScope.$new();
+          var scope = $scope.$new();
           scope.report = report;
           return reportHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
@@ -139,7 +137,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
         },
         listItem: function(task) {
           var taskHtml = $templateCache.get('templates/partials/tasks_list_item.html');
-          var scope = $rootScope.$new();
+          var scope = $scope.$new();
           scope.task = task;
           return taskHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },

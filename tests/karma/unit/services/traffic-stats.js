@@ -30,6 +30,9 @@ describe('TrafficStats service', function() {
         })
       );
       $provide.value('Session', {userCtx: function() { return {name: 'bob'}; }});
+      $provide.factory('Debug', function() {
+        return {get: sinon.stub()};
+      });
       $provide.value('$window', $window);
     });
     inject(function(_TrafficStats_, _$q_, _$rootScope_) {

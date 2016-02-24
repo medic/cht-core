@@ -107,6 +107,9 @@ describe('InboxCtrl controller', function() {
       $provide.factory('$timeout', function() {
         return sinon.stub();
       });
+      $provide.factory('TrafficStats', function() {
+        return sinon.stub();
+      });
       $provide.factory('translateFilter', function() {
         return sinon.stub();
       });
@@ -146,7 +149,7 @@ describe('InboxCtrl controller', function() {
 
     createController();
     spyDeleteDoc.reset();
-    spyState.go.reset();    
+    spyState.go.reset();
   });
 
   afterEach(function() {});
