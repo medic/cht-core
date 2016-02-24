@@ -42,6 +42,7 @@ exports.setUp = function(callback) {
 
 exports['getList collects user infos'] = function(test) {
   test.expect(16);
+  sinon.stub(controller, '_getAdmins').callsArg(0);
   sinon.stub(controller, '_getAllUsers').callsArgWith(0, null, [
     {
       id: 'org.couchdb.user:x',
@@ -101,6 +102,7 @@ exports['getList collects user infos'] = function(test) {
 
 exports['getList filters out non-users'] = function(test) {
   test.expect(9);
+  sinon.stub(controller, '_getAdmins').callsArg(0);
   sinon.stub(controller, '_getAllUsers').callsArgWith(0, null, [
     {
       id: 'x',
@@ -159,6 +161,9 @@ exports['getList filters out non-users'] = function(test) {
 
 exports['getList handles minimal users'] = function(test) {
   test.expect(9);
+  sinon.stub(controller, '_getAdmins').callsArgWith(0, null, {
+    gareth: 'abc'
+  });
   sinon.stub(controller, '_getAllUsers').callsArgWith(0, null, [
     {
       id: 'org.couchdb.user:x',
@@ -320,12 +325,6 @@ exports['createOrUpdate creates a user\'s settings'] = function(test) {
   sinon.stub(db.medic, 'get').callsArgWith(1, {error: 'not_found'});
   var usersInsert = sinon.stub(db._users, 'insert').callsArg(1);
   var medicInsert = sinon.stub(db.medic, 'insert').callsArg(1);
-  //expectedUser);
-  //$httpBackend
-  //  .expect('PUT', '/_users/org.couchdb.user%3Asally', JSON.stringify(expectedUser))
-  //  .respond(201, '');
-
-  //put.returns(KarmaUtils.mockPromise());
 
   controller._createOrUpdate('org.couchdb.user:sally', settings, user, function(err) {
     test.equal(err, undefined);
@@ -412,6 +411,9 @@ exports['createOrUpdate updates the password'] = function(test) {
     password: 'xyz'
   };
 
+  sinon.stub(controller, '_getAdmins').callsArgWith(0, null, {
+    gareth: 'abc'
+  });
   sinon.stub(db._users, 'get').callsArgWith(1, null, {
     _id: 'org.couchdb.user:jerome',
     name: 'jerome',
