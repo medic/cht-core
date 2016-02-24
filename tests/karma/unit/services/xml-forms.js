@@ -48,7 +48,8 @@ describe('XmlForms service', function() {
       mockEnketoDoc('registration'),
     ];
     dbQuery.returns(KarmaUtils.mockPromise(null, { rows: expected }));
-    $injector.get('XmlForms')('test', function(err, actual) {
+    var service = $injector.get('XmlForms');
+    service('test', function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual.length).to.equal(3);
       chai.expect(actual[0]).to.deep.equal(expected[0].doc);
@@ -60,7 +61,8 @@ describe('XmlForms service', function() {
 
   it('returns errors from db.query', function(done) {
     dbQuery.returns(KarmaUtils.mockPromise('boom'));
-    $injector.get('XmlForms')('test', function(err) {
+    var service = $injector.get('XmlForms');
+    service('test', function(err) {
       chai.expect(err).to.equal('boom');
       done();
     });
@@ -73,7 +75,8 @@ describe('XmlForms service', function() {
       .onFirstCall().returns(KarmaUtils.mockPromise(null, { rows: [ original ] }))
       .onSecondCall().returns(KarmaUtils.mockPromise(null, { rows: [ original, update ] }));
     var count = 0;
-    $injector.get('XmlForms')('test', function(err, actual) {
+    var service = $injector.get('XmlForms');
+    service('test', function(err, actual) {
       chai.expect(err).to.equal(null);
       if (count === 0) {
         chai.expect(actual.length).to.equal(1);
@@ -95,4 +98,42 @@ describe('XmlForms service', function() {
     });
   });
 
+  it('filter to get person forms', function(done) {
+    var expected = [
+      {
+        id: 'form-0',
+        doc: {
+          internalId: 'visit',
+          context: { person: true },
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form-1',
+        doc: {
+          internalId: 'stock-report',
+          context: { place: true },
+          _attachments: { xml: { something: true } },
+        },
+      }
+    ];
+    dbQuery.onFirstCall().returns(KarmaUtils.mockPromise(null, { rows: expected }));
+    var service = $injector.get('XmlForms');
+    service('test', { contact: { type: 'person' } }, function(err, actual) {
+      try {
+        chai.expect(err).to.equal(null);
+        chai.expect(actual.length).to.equal(1);
+        chai.expect(actual[0]).to.deep.equal(expected[0].doc);
+        done();
+      } catch(e) {
+        // don't let assertion errors bubble up to the service again
+        done(e);
+      }
+    });
+  });
+
 });
+// filter place forms
+// filter with a context function access context_utils
+// filter for non-person and non-place forms
+// filter using user permissions
