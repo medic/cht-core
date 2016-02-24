@@ -48,7 +48,8 @@
         "url": null,
         "querystring": null,
         "duality": null,
-        "couchdb-audit": null
+        "couchdb-audit": null,
+	"kanso-gardener": null
     },
     "postprocessors": {
         "bundle_templates": "scripts/bundle_templates"
