@@ -57,6 +57,7 @@ var COOKIE_NAME = 'userCtx';
       return {
         logout: logout,
         userCtx: getUserCtx,
+        navigateToLogin: navigateToLogin,
         init: function() {
           checkCurrentSession();
           listenForSessionChanges();

@@ -16,6 +16,10 @@ var _ = require('underscore'),
     return Math.min(prev * 2, 60000);
   };
 
+  var authenticationIssue = function(errors) {
+    return _.find(errors, function(error) { return error.status === 401})
+  }
+
   inboxServices.factory('DBSync', [
     '$log', 'DB', 'UserDistrict', 'Session', 'Settings', '$q',
     function($log, DB, UserDistrict, Session, Settings, $q) {
@@ -35,6 +39,14 @@ var _ = require('underscore'),
           })
           .on('error', function(err) {
             $log.error('Error replicating ' + direction + ' remote server', err);
+          })
+          .on('complete', function (info) {
+            if (!info.ok && authenticationIssue(info.errors)) {
+              $log.warn('User must reauthenticate');
+              Session.navigateToLogin();
+            } else {
+              $log.error('Replication completed which should never happen', info);
+            }
           });
       };
 

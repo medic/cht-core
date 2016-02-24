@@ -70,11 +70,21 @@ var utils = require('kujua-utils'),
                 updateLocalDesignDoc(localDdoc, remoteDdoc, callback);
               })
               .catch(function(err) {
-                $log.error('Error updating ddoc. Check your connection and try again.', err);
+                if (err.status === 401) {
+                  $log.warn('User must reauthenticate');
+                  Session.navigateToLogin();
+                } else {
+                  $log.error('Error updating ddoc. Check your connection and try again.', err);
+                }
               });
           })
           .catch(function(err) {
-            $log.error('Error updating ddoc. Check your connection and try again.', err);
+            if (err.status === 401) {
+              $log.warn('User must reauthenticate');
+              Session.navigateToLogin();
+            } else {
+              $log.error('Error updating ddoc. Check your connection and try again.', err);
+            }
           });
       };
 
