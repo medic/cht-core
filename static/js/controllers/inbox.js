@@ -36,7 +36,7 @@ require('moment/locales');
         }
       );
 
-      LiveListConfig();
+      LiveListConfig($scope);
       CheckDate($scope);
 
       $scope.loadingContent = false;
