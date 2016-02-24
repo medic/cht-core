@@ -17,7 +17,38 @@ var sanitizeResponse = function(err, body, headers, callback) {
   callback(err, body, headers);
 };
 
-if (couchUrl) {
+if (process.env.TEST_ENV) {
+  // Running tests only
+  module.exports = {
+    fti: function() {},
+    request: function() {},
+    getPath: function() {},
+    settings: {},
+    getSettings: function() {},
+    sanitizeResponse: sanitizeResponse,
+    use: function() {},
+    medic: {
+      view: function() {},
+      get: function() {},
+      insert: function() {},
+      updateWithHandler: function() {},
+      fetchRevs: function() {},
+      bulk: function() {},
+      attachment: {
+        get: function() {}
+      }
+    },
+    db: {
+      get: function() {},
+      create: function() {},
+      replicate:  function() {}
+    },
+    _users: {
+      list: function() {},
+      insert: function() {}
+    }
+  };
+} else if (couchUrl) {
   // strip trailing slash from to prevent bugs in path matching
   couchUrl = couchUrl.replace(/\/$/, '');
   var baseUrl = couchUrl.substring(0, couchUrl.indexOf('/', 10));
@@ -79,37 +110,6 @@ if (couchUrl) {
     module.exports.request({ path: uri }, cb);
   };
   module.exports.sanitizeResponse = sanitizeResponse;
-} else if (process.env.TEST_ENV) {
-  // Running tests only
-  module.exports = {
-    fti: function() {},
-    request: function() {},
-    getPath: function() {},
-    settings: {},
-    getSettings: function() {},
-    sanitizeResponse: sanitizeResponse,
-    use: function() {},
-    medic: {
-      view: function() {},
-      get: function() {},
-      insert: function() {},
-      updateWithHandler: function() {},
-      fetchRevs: function() {},
-      bulk: function() {},
-      attachment: {
-        get: function() {}
-      }
-    },
-    db: {
-      get: function() {},
-      create: function() {},
-      replicate:  function() {}
-    },
-    _users: {
-      list: function() {},
-      insert: function() {}
-    }
-  };
 } else {
   console.log(
     'Please define a COUCH_URL in your environment e.g. \n' +
