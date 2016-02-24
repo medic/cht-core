@@ -1,7 +1,7 @@
 var AuditProxy = require('../audit-proxy');
 
 exports['audit audits the request'] = function(test) {
-  test.expect(6);
+  test.expect(7);
   var target = 'http://localhost:4444';
   var generatedId = 'abc';
   var username = 'steve';
@@ -15,9 +15,10 @@ exports['audit audits the request'] = function(test) {
     _id: generatedId
   };
   var audit = {
-    withNano: function(db, _db, _ddoc, _username) {
+    withNano: function(db, _db, _auditDb, _ddoc, _username) {
       test.same(username, _username);
       test.same('medic', _db);
+      test.same('medic-audit', _auditDb);
       test.same('medic', _ddoc);
       return {
         log: function(docs, _cb) {
@@ -58,6 +59,7 @@ exports['audit audits the request'] = function(test) {
     },
     settings: {
       db: 'medic',
+      auditDb: 'medic-audit',
       ddoc: 'medic'
     }
   };
@@ -136,7 +138,7 @@ exports['audit emits errors when stream emits errors'] = function(test) {
     _id: generatedId
   };
   var audit = {
-    withNano: function(db, _db, _ddoc, _username) {
+    withNano: function(db, _db, _auditDb, _ddoc, _username) {
       test.same(username, _username);
       return {
         log: function(docs, _cb) {
