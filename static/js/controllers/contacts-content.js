@@ -1,23 +1,5 @@
 var _ = require('underscore');
 
-/**
- * Util functions available to a form doc's `.context` function for checking if
- * a form is relevant to a specific contact.
- */
-var CONTEXT_UTILS = {
-  ageInYears: function(c) {
-    if (!c.date_of_birth) {
-      return;
-    }
-    var birthday = new Date(c.date_of_birth),
-        today = new Date();
-    return (today.getFullYear() - birthday.getFullYear()) +
-        (today.getMonth() < birthday.getMonth() ? -1 : 0) +
-        (today.getMonth() === birthday.getMonth() &&
-            today.getDate() < birthday.getDate() ? -1 : 0);
-  },
-};
-
 (function () {
 
   'use strict';
@@ -25,8 +7,8 @@ var CONTEXT_UTILS = {
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsContentCtrl', 
-    ['$parse', '$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search', 'Changes', 'ContactSchema', 'UserDistrict',
-    function($parse, $scope, $stateParams, $q, $log, DB, TaskGenerator, Search, Changes, ContactSchema, UserDistrict) {
+    ['$parse', '$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search', 'Changes', 'ContactSchema', 'UserDistrict', 'XmlForms',
+    function($parse, $scope, $stateParams, $q, $log, DB, TaskGenerator, Search, Changes, ContactSchema, UserDistrict, XmlForms) {
 
       $scope.showParentLink = false;
 
@@ -206,19 +188,13 @@ var CONTEXT_UTILS = {
             getTasks();
             updateParentLink();
 
-            $scope.relevantForms = _.filter($scope.formDefinitions, function(form) {
-              if (!form.context) {
-                return false;
+            XmlForms('ContactsContentCtrl', { contact: $scope.selected.doc }, function(err, forms) {
+              if (err) {
+                return $log.error('Error fetching relevant forms', err);
               }
-              if (typeof form.context === 'string') {
-                return $parse(form.context)
-                    .call(null, CONTEXT_UTILS, { contact: $scope.selected.doc });
-              }
-              if ($scope.selected.doc.type === 'person') {
-                return form.context.person;
-              }
-              return form.context.place;
+              $scope.relevantForms = forms;
             });
+
           })
           .catch(function(err) {
             $scope.clearSelected();
