@@ -88,14 +88,22 @@ if (couchUrl) {
     settings: {},
     getSettings: function() {},
     sanitizeResponse: sanitizeResponse,
+    use: function() {},
     medic: {
       view: function() {},
       get: function() {},
       insert: function() {},
       updateWithHandler: function() {},
+      fetchRevs: function() {},
+      bulk: function() {},
       attachment: {
         get: function() {}
       }
+    },
+    db: {
+      get: function() {},
+      create: function() {},
+      replicate:  function() {}
     },
     _users: {
       list: function() {},
