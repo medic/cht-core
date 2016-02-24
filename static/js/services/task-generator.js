@@ -87,7 +87,8 @@ var nools = require('nools'),
       var getContactId = function(doc) {
         // get the associated patient or place id to group reports by
         return doc.patient_id || doc.place_id ||
-          (doc.fields && (doc.fields.patient_id || doc.fields.place_id));
+          (doc.fields && doc.fields.inputs &&
+              doc.fields.inputs.contact && doc.fields.inputs.contact._id);
       };
 
       var deriveFacts = function(dataRecords, contacts) {

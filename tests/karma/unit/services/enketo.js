@@ -318,7 +318,7 @@ describe('Enketo service', function() {
 
     it('creates report', function(done) {
       form.validate.returns(KarmaUtils.mockPromise(null, true));
-      var content = '<doc><outputs><name>Sally</name><lmp>10</lmp></outputs></doc>';
+      var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
       form.getDataStr.returns(content);
       dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
       UserSettings.callsArgWith(0, null, { contact_id: '123' });
@@ -346,14 +346,14 @@ describe('Enketo service', function() {
         .catch(done);
     });
 
-    it('creates report with hidden outputs', function(done) {
+    it('creates report with hidden fields', function(done) {
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content =
-        '<doc><outputs>' +
+        '<doc>' +
           '<name>Sally</name>' +
           '<lmp>10</lmp>' +
           '<secret_code_name tag="hidden">S4L</secret_code_name>' +
-        '</outputs></doc>';
+        '</doc>';
       form.getDataStr.returns(content);
       dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
       UserSettings.callsArgWith(0, null, { contact_id: '123' });
@@ -385,7 +385,7 @@ describe('Enketo service', function() {
 
     it('updates report', function(done) {
       form.validate.returns(KarmaUtils.mockPromise(null, true));
-      var content = '<doc><outputs><name>Sally</name><lmp>10</lmp></outputs></doc>';
+      var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
       form.getDataStr.returns(content);
       dbGet.returns(KarmaUtils.mockPromise(null, {
         _id: '6',
