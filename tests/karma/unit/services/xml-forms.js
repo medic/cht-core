@@ -2,8 +2,10 @@ describe('XmlForms service', function() {
   'use strict';
 
   var $injector,
-      dbQuery = sinon.stub(),
-      Changes = sinon.stub();
+      dbQuery,
+      Changes,
+      Auth,
+      UserContact;
 
   var mockEnketoDoc = function(formInternalId, docId) {
     return {
@@ -21,12 +23,22 @@ describe('XmlForms service', function() {
 
   beforeEach(function() {
     module('inboxApp');
+    dbQuery = sinon.stub();
+    Changes = sinon.stub();
+    Auth = sinon.stub();
+    UserContact = sinon.stub();
     module(function($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({
         query: dbQuery
       }));
       $provide.factory('Changes', function() {
         return Changes;
+      });
+      $provide.factory('Auth', function() {
+        return Auth;
+      });
+      $provide.factory('UserContact', function() {
+        return UserContact;
       });
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
@@ -36,25 +48,26 @@ describe('XmlForms service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(dbQuery, Changes);
+    KarmaUtils.restore(dbQuery, Changes, Auth, UserContact);
   });
 
   it('should get all forms from DB, but only pass on ones with XML attachment', function(done) {
-    var expected = [
+    var given = [
       mockEnketoDoc('assessment'),
       mockJsonDoc(),
       mockJsonDoc(),
       mockEnketoDoc('referral'),
       mockEnketoDoc('registration'),
     ];
-    dbQuery.returns(KarmaUtils.mockPromise(null, { rows: expected }));
+    dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
+    UserContact.callsArg(0);
     var service = $injector.get('XmlForms');
     service('test', function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual.length).to.equal(3);
-      chai.expect(actual[0]).to.deep.equal(expected[0].doc);
-      chai.expect(actual[1]).to.deep.equal(expected[3].doc);
-      chai.expect(actual[2]).to.deep.equal(expected[4].doc);
+      chai.expect(actual[0]).to.deep.equal(given[0].doc);
+      chai.expect(actual[1]).to.deep.equal(given[3].doc);
+      chai.expect(actual[2]).to.deep.equal(given[4].doc);
       done();
     });
   });
@@ -74,6 +87,7 @@ describe('XmlForms service', function() {
     dbQuery
       .onFirstCall().returns(KarmaUtils.mockPromise(null, { rows: [ original ] }))
       .onSecondCall().returns(KarmaUtils.mockPromise(null, { rows: [ original, update ] }));
+    UserContact.callsArg(0);
     var count = 0;
     var service = $injector.get('XmlForms');
     service('test', function(err, actual) {
@@ -98,8 +112,8 @@ describe('XmlForms service', function() {
     });
   });
 
-  it('filter to get person forms', function(done) {
-    var expected = [
+  it('filter to person forms', function(done) {
+    var given = [
       {
         id: 'form-0',
         doc: {
@@ -117,13 +131,14 @@ describe('XmlForms service', function() {
         },
       }
     ];
-    dbQuery.onFirstCall().returns(KarmaUtils.mockPromise(null, { rows: expected }));
+    dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
+    UserContact.callsArg(0);
     var service = $injector.get('XmlForms');
-    service('test', { contact: { type: 'person' } }, function(err, actual) {
+    service('test', { doc: {  type: 'person' } }, function(err, actual) {
       try {
         chai.expect(err).to.equal(null);
         chai.expect(actual.length).to.equal(1);
-        chai.expect(actual[0]).to.deep.equal(expected[0].doc);
+        chai.expect(actual[0]).to.deep.equal(given[0].doc);
         done();
       } catch(e) {
         // don't let assertion errors bubble up to the service again
@@ -132,8 +147,265 @@ describe('XmlForms service', function() {
     });
   });
 
+  it('filter to place forms', function(done) {
+    var given = [
+      {
+        id: 'form-0',
+        doc: {
+          internalId: 'visit',
+          context: { person: true },
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form-1',
+        doc: {
+          internalId: 'stock-report',
+          context: { place: true },
+          _attachments: { xml: { something: true } },
+        },
+      }
+    ];
+    dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
+    UserContact.callsArg(0);
+    var service = $injector.get('XmlForms');
+    service('test', { doc: { type: 'district_hospital' } }, function(err, actual) {
+      try {
+        chai.expect(err).to.equal(null);
+        chai.expect(actual.length).to.equal(1);
+        chai.expect(actual[0]).to.deep.equal(given[1].doc);
+        done();
+      } catch(e) {
+        // don't let assertion errors bubble up to the service again
+        done(e);
+      }
+    });
+  });
+
+  it('filter with custom function', function(done) {
+    var given = [
+      {
+        id: 'form-0',
+        doc: {
+          internalId: 'visit',
+          context: {
+            expression: 'ageInYears(contact) >= 16 && user.name === "Frank"'
+          },
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form-1',
+        doc: {
+          internalId: 'stock-report',
+          context: {
+            expression: 'ageInYears(contact) >= 18 && user.name === "Frank"'
+          },
+          _attachments: { xml: { something: true } },
+        },
+      }
+    ];
+    dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
+    UserContact.callsArgWith(0, null, { name: 'Frank' });
+    var service = $injector.get('XmlForms');
+    var seventeenYearOldDob = new Date();
+    seventeenYearOldDob.setFullYear(seventeenYearOldDob.getFullYear() - 17);
+    service('test', { doc: { date_of_birth: seventeenYearOldDob.valueOf() } }, function(err, actual) {
+      try {
+        chai.expect(err).to.equal(null);
+        chai.expect(actual.length).to.equal(1);
+        chai.expect(actual[0]).to.deep.equal(given[0].doc);
+        chai.expect(UserContact.callCount).to.equal(1);
+        done();
+      } catch(e) {
+        // don't let assertion errors bubble up to the service again
+        done(e);
+      }
+    });
+  });
+
+
+  it('filter with custom function and type', function(done) {
+    var given = [
+      {
+        id: 'form-0',
+        doc: {
+          internalId: 'visit',
+          context: {
+            person: true,
+            expression: 'contact.sex === "female"'
+          },
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form-1',
+        doc: {
+          internalId: 'stock-report',
+          context: {
+            place: true,
+            expression: 'contact.sex === "female"'
+          },
+          _attachments: { xml: { something: true } },
+        },
+      }
+    ];
+    dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
+    UserContact.callsArg(0);
+    var service = $injector.get('XmlForms');
+    var seventeenYearOldDob = new Date();
+    seventeenYearOldDob.setFullYear(seventeenYearOldDob.getFullYear() - 17);
+    service('test', { doc: { sex: 'female', type: 'person' } }, function(err, actual) {
+      try {
+        chai.expect(err).to.equal(null);
+        chai.expect(actual.length).to.equal(1);
+        chai.expect(actual[0]).to.deep.equal(given[0].doc);
+        done();
+      } catch(e) {
+        // don't let assertion errors bubble up to the service again
+        done(e);
+      }
+    });
+  });
+
+  it('filter for contact forms', function(done) {
+    var given = [
+      {
+        id: 'visit',
+        doc: {
+          _id: 'visit',
+          internalId: 'visit',
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form:contact:person',
+        doc: {
+          _id: 'form:contact:person',
+          internalId: 'stock-report',
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form:contact:clinic',
+        doc: {
+          _id: 'form:contact:clinic',
+          internalId: 'registration',
+          _attachments: { xml: { something: true } },
+        },
+      }
+    ];
+    dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
+    UserContact.callsArg(0);
+    var service = $injector.get('XmlForms');
+    service('test', { contactForms: true }, function(err, actual) {
+      try {
+        chai.expect(err).to.equal(null);
+        chai.expect(actual.length).to.equal(2);
+        chai.expect(actual[0]).to.deep.equal(given[1].doc);
+        chai.expect(actual[1]).to.deep.equal(given[2].doc);
+        done();
+      } catch(e) {
+        // don't let assertion errors bubble up to the service again
+        done(e);
+      }
+    });
+  });
+
+  it('filter for non-contact forms', function(done) {
+    var given = [
+      {
+        id: 'visit',
+        doc: {
+          _id: 'visit',
+          internalId: 'visit',
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form:contact:person',
+        doc: {
+          _id: 'form:contact:person',
+          internalId: 'stock-report',
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form:contact:clinic',
+        doc: {
+          _id: 'form:contact:clinic',
+          internalId: 'registration',
+          _attachments: { xml: { something: true } },
+        },
+      }
+    ];
+    dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
+    UserContact.callsArg(0);
+    var service = $injector.get('XmlForms');
+    service('test', { contactForms: false }, function(err, actual) {
+      try {
+        chai.expect(err).to.equal(null);
+        chai.expect(actual.length).to.equal(1);
+        chai.expect(actual[0]).to.deep.equal(given[0].doc);
+        done();
+      } catch(e) {
+        // don't let assertion errors bubble up to the service again
+        done(e);
+      }
+    });
+  });
+
+  it('filter for user', function(done) {
+    var given = [
+      {
+        id: 'visit',
+        doc: {
+          _id: 'visit',
+          internalId: 'visit',
+          _attachments: { xml: { something: true } },
+          context: {
+            permission: [ 'national_admin', 'district_admin' ]
+          },
+        },
+      },
+      {
+        id: 'form:contact:person',
+        doc: {
+          _id: 'form:contact:person',
+          internalId: 'stock-report',
+          _attachments: { xml: { something: true } },
+          context: {
+            permission: [ 'national_admin' ]
+          },
+        },
+      },
+      {
+        id: 'form:contact:clinic',
+        doc: {
+          _id: 'form:contact:clinic',
+          internalId: 'registration',
+          _attachments: { xml: { something: true } },
+        },
+      }
+    ];
+
+    dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
+    UserContact.callsArg(0);
+    Auth.withArgs([ 'national_admin', 'district_admin' ]).returns(KarmaUtils.mockPromise('no auth'));
+    Auth.withArgs([ 'national_admin' ]).returns(KarmaUtils.mockPromise());
+    var service = $injector.get('XmlForms');
+    service('test', function(err, actual) {
+      try {
+        chai.expect(err).to.equal(null);
+        chai.expect(actual.length).to.equal(2);
+        chai.expect(actual[0]).to.deep.equal(given[1].doc);
+        chai.expect(actual[1]).to.deep.equal(given[2].doc);
+        chai.expect(Auth.callCount).to.equal(2);
+        done();
+      } catch(e) {
+        // don't let assertion errors bubble up to the service again
+        done(e);
+      }
+    });
+  });
 });
-// filter place forms
-// filter with a context function access context_utils
-// filter for non-person and non-place forms
-// filter using user permissions

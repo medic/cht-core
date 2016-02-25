@@ -188,7 +188,7 @@ var _ = require('underscore');
             getTasks();
             updateParentLink();
 
-            XmlForms('ContactsContentCtrl', { contact: $scope.selected.doc }, function(err, forms) {
+            XmlForms('ContactsContentCtrl', { doc: $scope.selected.doc }, function(err, forms) {
               if (err) {
                 return $log.error('Error fetching relevant forms', err);
               }

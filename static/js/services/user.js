@@ -66,6 +66,27 @@ var _ = require('underscore'),
     }
   ]);
 
+  inboxServices.factory('UserContact', ['DB', 'UserSettings',
+    function(DB, UserSettings) {
+      return function(callback) {
+        UserSettings(function(err, user) {
+          if (err) {
+            return callback(err);
+          }
+          if (!user.contact_id) {
+            return callback();
+          }
+          DB.get()
+            .get(user.contact_id)
+            .then(function(contact) {
+              callback(null, contact);
+            })
+            .catch(callback);
+        });
+      };
+    }
+  ]);
+
   inboxServices.factory('Admins', ['$http',
     function($http) {
       return function(callback) {

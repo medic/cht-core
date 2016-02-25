@@ -52,7 +52,6 @@ require('moment/locales');
       $scope.analyticsModules = [];
       $scope.version = APP_CONFIG.version;
       $scope.actionBar = {};
-      $scope.formDefinitions = [];
       $scope.title = undefined;
       $scope.tours = [];
 
@@ -423,15 +422,12 @@ require('moment/locales');
           $log.error('Failed to retrieve forms', err);
         });
 
-      XmlForms('InboxCtrl', function(err, forms) {
+      XmlForms('InboxCtrl', { contactForms: false }, function(err, forms) {
         if (err) {
           return $log.error('Error fetching form definitions', err);
         }
         Enketo.clearXmlCache();
-        $scope.formDefinitions = forms;
-        $scope.nonContactForms = _.filter(forms, function(form) {
-          return form._id.indexOf('form:contact:') !== 0;
-        });
+        $scope.nonContactForms = forms;
       });
 
       $scope.setupGuidedSetup = function() {
