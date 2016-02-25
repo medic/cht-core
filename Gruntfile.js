@@ -36,6 +36,11 @@ module.exports = function(grunt) {
           }
         }
       }
+    },
+    exec: {
+      deploy: {
+        cmd: 'node server.js'
+      }
     }
   });
 
@@ -43,6 +48,8 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
   grunt.loadNpmTasks('grunt-env');
+  grunt.loadNpmTasks('grunt-npm-install');
+  grunt.loadNpmTasks('grunt-exec');
 
   // Default tasks
   grunt.registerTask('test', [
@@ -52,4 +59,8 @@ module.exports = function(grunt) {
     'env:dev'
   ]);
 
+  grunt.registerTask('deploy', [
+    'npm-install',
+    'exec:deploy'
+  ]);
 };

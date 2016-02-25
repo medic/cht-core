@@ -17,7 +17,7 @@ Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 
 ## Run
 
-`node ./server.js`
+`grunt deploy`
 
 ## Test
 
