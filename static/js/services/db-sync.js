@@ -42,7 +42,6 @@ var _ = require('underscore'),
           })
           .on('complete', function (info) {
             if (!info.ok && authenticationIssue(info.errors)) {
-              $log.warn('User must reauthenticate');
               Session.navigateToLogin();
             } else {
               $log.error('Replication completed which should never happen', info);

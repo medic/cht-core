@@ -80,7 +80,6 @@ var utils = require('kujua-utils'),
           })
           .catch(function(err) {
             if (err.status === 401) {
-              $log.warn('User must reauthenticate');
               Session.navigateToLogin();
             } else {
               $log.error('Error updating ddoc. Check your connection and try again.', err);

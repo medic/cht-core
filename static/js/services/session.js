@@ -22,6 +22,7 @@ var COOKIE_NAME = 'userCtx';
       };
 
       var navigateToLogin = function() {
+        $log.warn('User must reauthenticate');
         ipCookie.remove(COOKIE_NAME);
         waitForAppCache(function() {
           $window.location.href = '/' + DbNameService() + '/login' +
