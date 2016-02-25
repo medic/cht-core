@@ -410,7 +410,8 @@ _.templateSettings = {
     var hostLocation = url.indexOf('/', protocolLocation) + 1;
     var dbNameLocation = url.indexOf('/', hostLocation);
     return {
-      remote: url.slice(0, dbNameLocation),
+      remoteUrl: url.slice(0, dbNameLocation),
+      remoteDbName: url.slice(hostLocation, dbNameLocation),
       local: url.slice(hostLocation, dbNameLocation) + '-user-' + getUsername()
     };
   };
@@ -438,7 +439,7 @@ _.templateSettings = {
       // ddoc found - bootstrap immediately
       bootstrapApplication();
     }).catch(function() {
-      window.PouchDB(names.remote)
+      window.PouchDB(names.remoteUrl)
         .get('_design/medic')
         .then(function(ddoc) {
           var minimal = _.pick(ddoc, '_id', 'app_settings', 'views');
@@ -448,8 +449,14 @@ _.templateSettings = {
         })
         .then(bootstrapApplication)
         .catch(function(err) {
-          $('.bootstrap-layer').html('<div><p>Loading error, please check your connection.</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">Try again</a></div>');
-          console.error('Error fetching ddoc from remote server', err);
+          if (err.status === 401) {
+            console.warn('User must reauthenticate');
+            window.location.href = '/' + getDbNames().remoteDbName + '/login' +
+            '?redirect=' + encodeURIComponent(window.location.href);
+          } else {
+            $('.bootstrap-layer').html('<div><p>Loading error, please check your connection.</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">Try again</a></div>');
+            console.error('Error fetching ddoc from remote server', err);
+          }
         });
     });
 
