@@ -346,6 +346,8 @@ _.templateSettings = {
           templateUrl: 'templates/partials/theme.html'
         });
 
+      // contacts state is transient, jump to contacts.details.
+      $urlRouterProvider.when("/contacts", "/contacts/");
       $urlRouterProvider.when('', '/home');
       $translateProvider.useLoader('SettingsLoader', {});
       $translateProvider.useSanitizeValueStrategy('escape');
