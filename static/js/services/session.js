@@ -6,8 +6,8 @@ var COOKIE_NAME = 'userCtx';
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Session', ['$window', 'ipCookie', 'KansoPackages', 'DbNameService',
-    function($window, ipCookie, KansoPackages, DbNameService) {
+  inboxServices.factory('Session', ['$window', 'ipCookie', 'KansoPackages', 'DbNameService', '$log',
+    function($window, ipCookie, KansoPackages, DbNameService, $log) {
 
       var getUserCtx = function() {
         return ipCookie(COOKIE_NAME);
