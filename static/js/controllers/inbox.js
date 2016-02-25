@@ -975,6 +975,11 @@ require('moment/locales');
           });
         };
         window.applicationCache.addEventListener('updateready', showUpdateReady);
+        window.applicationCache.addEventListener('error', function(err) {
+          // TODO: once we trigger this work out what a 401 looks like and redirect
+          //       to the login page
+          $log.error('Application cache update error', err);
+        });
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
           showUpdateReady();
         }
