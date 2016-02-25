@@ -6,9 +6,27 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
 
+  /**
+   * Util functions available to a form doc's `.context` function for checking if
+   * a form is relevant to a specific contact.
+   */
+  var CONTEXT_UTILS = {
+    ageInYears: function(c) {
+      if (!c.date_of_birth) {
+        return;
+      }
+      var birthday = new Date(c.date_of_birth),
+          today = new Date();
+      return (today.getFullYear() - birthday.getFullYear()) +
+          (today.getMonth() < birthday.getMonth() ? -1 : 0) +
+          (today.getMonth() === birthday.getMonth() &&
+              today.getDate() < birthday.getDate() ? -1 : 0);
+    },
+  };
+
   inboxServices.factory('XmlForms', [
-    '$q', 'DB', 'Changes',
-    function($q, DB, Changes) {
+    '$q', '$parse', '$log', 'DB', 'Changes', 'Auth', 'UserContact', 'PLACE_TYPES',
+    function($q, $parse, $log, DB, Changes, Auth, UserContact, PLACE_TYPES) {
 
       var listeners = {};
 
@@ -29,17 +47,74 @@ var _ = require('underscore');
 
       var init = getForms();
 
-      var filter = function(forms, context) {
-        return _.filter(forms, function(form) {
-          if (context && context.contact && context.contact.type === 'person') {
-            return form.context.person;
+      var evaluateExpression = function(expression, context, user) {
+        return $parse(expression)(CONTEXT_UTILS, { contact: context.doc, user: user });
+      };
+
+      var filterAll = function(forms, context, user) {
+        var promises = _.map(forms, _.partial(filter, _, context, user));
+        return $q.all(promises)
+          .then(function(resolutions) {
+            // always splice in reverse...
+            for (var i = resolutions.length - 1; i >= 0; i--) {
+              if (!resolutions[i]) {
+                forms.splice(i, 1);
+              }
+            }
+            return $q.resolve(forms);
+          });
+      };
+
+      var filter = function(form, context, user) {
+        if (!context && !form.context) {
+          // no provided context therefore don't filter anything out
+          return $q.resolve(true);
+        }
+        if (context.contactForms !== undefined) {
+          var isContactForm = form._id.indexOf('form:contact:') === 0;
+          if (context.contactForms !== isContactForm) {
+            return $q.resolve(false);
           }
-          return true;
-        });
+        }
+        if (!form.context) {
+          // no defined filters
+          return $q.resolve(true);
+        }
+        var contactType = context.doc && context.doc.type;
+        if (form.context.person === true && (!contactType || contactType !== 'person')) {
+          return $q.resolve(false);
+        }
+        if (form.context.place === true && (!contactType || PLACE_TYPES.indexOf(contactType) === -1)) {
+          return $q.resolve(false);
+        }
+        if (form.context.expression && !evaluateExpression(form.context.expression, context, user)) {
+          return $q.resolve(false);
+        }
+        if (!form.context.permission) {
+          return $q.resolve(true);
+        }
+        return Auth(form.context.permission)
+          .then(function() {
+            return $q.resolve(true);
+          })
+          .catch(function() {
+            return $q.resolve(false);
+          });
       };
 
       var notify = function(forms, listener) {
-        listener.callback(null, filter(forms, listener.context));
+        UserContact(function(err, user) {
+          if (err) {
+            return $log.error('Error fetching user contact', err);
+          }
+          filterAll(forms, listener.context, user)
+            .then(function(results) {
+              listener.callback(null, results);
+            })
+            .catch(function(err) {
+              $log.error('Error notifying forms listeners', err);
+            });
+        });
       };
 
       Changes({
@@ -65,7 +140,7 @@ var _ = require('underscore');
       return function(name, context, callback) {
         if (!callback) {
           callback = context;
-          context = null;
+          context = {};
         }
         listeners[name] = {
           context: context,
@@ -81,36 +156,3 @@ var _ = require('underscore');
   ]);
 
 }());
-
-            // $scope.relevantForms = _.filter($scope.formDefinitions, function(form) {
-            //   if (!form.context) {
-            //     return false;
-            //   }
-            //   if (typeof form.context === 'string') {
-            //     return $parse(form.context)
-            //         .call(null, CONTEXT_UTILS, { contact: $scope.selected.doc });
-            //   }
-            //   if ($scope.selected.doc.type === 'person') {
-            //     return form.context.person;
-            //   }
-            //   return form.context.place;
-            // });
-
-            
-/**
- * Util functions available to a form doc's `.context` function for checking if
- * a form is relevant to a specific contact.
- */
-// var CONTEXT_UTILS = {
-//   ageInYears: function(c) {
-//     if (!c.date_of_birth) {
-//       return;
-//     }
-//     var birthday = new Date(c.date_of_birth),
-//         today = new Date();
-//     return (today.getFullYear() - birthday.getFullYear()) +
-//         (today.getMonth() < birthday.getMonth() ? -1 : 0) +
-//         (today.getMonth() === birthday.getMonth() &&
-//             today.getDate() < birthday.getDate() ? -1 : 0);
-//   },
-// };
