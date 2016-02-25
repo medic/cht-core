@@ -347,7 +347,7 @@ _.templateSettings = {
         });
 
       // contacts state is transient, jump to contacts.details.
-      $urlRouterProvider.when("/contacts", "/contacts/");
+      $urlRouterProvider.when('/contacts', '/contacts/');
       $urlRouterProvider.when('', '/home');
       $translateProvider.useLoader('SettingsLoader', {});
       $translateProvider.useSanitizeValueStrategy('escape');
