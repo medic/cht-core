@@ -22,11 +22,9 @@ angular.module('inboxServices').config([
           $logProvider.debugEnabled(bool);
           var db = pouchDB.debug ? pouchDB : window.PouchDB;
           if (bool) {
-            console.log('set cookie, enabled debug');
             db.debug.enable('*');
             ipCookie(cookieName, bool, {expires: 360});
           } else {
-            console.log('remove cookie');
             db.debug.disable();
             ipCookie.remove(cookieName);
           }
