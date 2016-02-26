@@ -90,6 +90,12 @@ var utils = require('kujua-utils'),
               }).success(function(data, status, headers) {
                 var rev = headers().etag.replace(etagRegex, '');
                 checkLocalDesignDoc(rev, callback);
+              }).catch(function(err) {
+                if (err.status === 401) {
+                  Session.navigateToLogin();
+                } else {
+                  $log.error('Error watching HEAD of ddoc', err);
+                }
               });
             }
 
