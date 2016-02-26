@@ -133,7 +133,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
           // Currently some task dates are Strings while others are proper JS
           // Date objects.  Simplest way to compare them is to parse all into
           // instances of Date.
-          return Date.parse(t2.date) - Date.parse(t1.date);
+          return Date.parse(t1.date) - Date.parse(t2.date);
         },
         listItem: function(task) {
           var taskHtml = $templateCache.get('templates/partials/tasks_list_item.html');
