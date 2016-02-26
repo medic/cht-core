@@ -21,7 +21,7 @@ Usage:
 Options:
   -f
       force-overwrite of existing doc
-  -c <javascript-file>
+  -c <json-file>
       set the context(s) for which this form will be available
 
 Examples:
