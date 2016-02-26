@@ -155,7 +155,8 @@ angular.module('inboxServices').factory('LiveListConfig', [
 ]);
 
 angular.module('inboxServices').factory('LiveList', [
-  function() {
+  '$timeout',
+  function($timeout) {
     var api = {};
     var indexes = {};
 
@@ -183,6 +184,14 @@ angular.module('inboxServices').factory('LiveList', [
       if (!config.selecter) {
         throw new Error('No `selecter` set for list.');
       }
+    }
+
+    function listItemFor(idx, doc) {
+      var li = $(idx.listItem(doc));
+      if (doc._id === idx.selected) {
+        li.addClass('selected');
+      }
+      return li;
     }
 
     function _getList(listName) {
@@ -224,6 +233,8 @@ angular.module('inboxServices').factory('LiveList', [
         throw new Error('LiveList not configured for: ' + listName);
       }
 
+      idx.lastUpdate = new Date();
+
       // TODO we should sort the list in place with a suitable, efficient algorithm
       idx.list = [];
       idx.dom = [];
@@ -262,10 +273,7 @@ angular.module('inboxServices').factory('LiveList', [
         return;
       }
 
-      var li = $(idx.listItem(newItem));
-      if (newItem._id === idx.selected) {
-        li.addClass('selected');
-      }
+      var li = listItemFor(idx, newItem);
 
       var newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
       idx.list.splice(newItemIndex, 0, newItem);
@@ -356,6 +364,44 @@ angular.module('inboxServices').factory('LiveList', [
         }
       }
     }
+
+    function refreshAll() {
+      var i, now = new Date();
+
+      _.forEach(indexes, function(idx, name) {
+        // N.B. no need to update a list that's never been generated
+        if (idx.lastUpdate && !sameDay(idx.lastUpdate, now)) {
+          // regenerate all list contents so relative dates relate to today
+          // instead of yesterday
+          for (i=idx.list.length-1; i>=0; --i) {
+            idx.dom[i] = listItemFor(idx, idx.list[i]);
+          }
+
+          api[name].refresh();
+
+          idx.lastUpdate = now;
+        }
+      });
+
+      // Schedule this task again for tomorrow
+      $timeout(refreshAll, millisTilMidnight(now));
+    }
+
+    function sameDay(d1, d2) {
+      return d1.getDay() === d2.getDay();
+    }
+
+    function millisTilMidnight(now) {
+      var midnight = new Date(now);
+
+      midnight.setDate(now.getDate() + 1);
+      midnight.setHours(0);
+      midnight.setMinutes(0);
+
+      return midnight.getTime() - now.getTime();
+    }
+
+    $timeout(refreshAll, millisTilMidnight(new Date()));
 
     api.$listFor = function(name, config) {
       checkConfig(config);
