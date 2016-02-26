@@ -64,7 +64,7 @@ formTitle="$(grep h:title $XFORM_PATH | sed -E -e 's_.*<h:title>(.*)</h:title>.*
 formInternalId="$(sed -e '1,/<instance>/d' $XFORM_PATH | grep -E 'id="[^"]+"' | head -n1 | sed -E -e 's_.*id="([^"]+)".*_\1_')"
 
 if $USE_CONTEXT_FILE; then
-    formContext='"'"$(tr -d '\n' < "${CONTEXT_FILE}" | tr -d '\t' | sed 's_"_\\"_g')"'"'
+    formContext="$(cat "${CONTEXT_FILE}")"
 else
     contextPatient=false
     contextPlace=false
@@ -79,6 +79,13 @@ fi
 
 docUrl="${DB}/form:${ID}"
 
+fullJson='{
+    "type": "form",
+    "title": "'"${formTitle}"'",
+    "internalId": "'"${formInternalId}"'",
+    "context": '"${formContext}"'
+}'
+
 cat <<EOF
 [$SELF] -----
 [$SELF] Summary
@@ -89,6 +96,7 @@ cat <<EOF
 [$SELF]   force override: $FORCE
 [$SELF]   uploading to: $docUrl
 [$SELF]   form context: $formContext
+[$SELF]   full JSON: $fullJson
 [$SELF] -----
 EOF
 
@@ -109,12 +117,7 @@ check_rev() {
     fi
 }
 
-revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d '{
-    "type":"form",
-    "title":"'"${formTitle}"'",
-    "internalId":"'"${formInternalId}"'",
-    "context":'"${formContext}"'
-}' "$docUrl")
+revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d "${fullJson}" "$docUrl")
 rev=$(jq -r .rev <<< "$revResponse")
 check_rev
 
