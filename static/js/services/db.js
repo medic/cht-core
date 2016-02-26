@@ -64,18 +64,10 @@ var utils = require('kujua-utils'),
             if (localDdoc.remote_rev >= rev) {
               return;
             }
-            getRemote()
+            return getRemote()
               .get('_design/medic')
               .then(function(remoteDdoc) {
                 updateLocalDesignDoc(localDdoc, remoteDdoc, callback);
-              })
-              .catch(function(err) {
-                if (err.status === 401) {
-                  $log.warn('User must reauthenticate');
-                  Session.navigateToLogin();
-                } else {
-                  $log.error('Error updating ddoc. Check your connection and try again.', err);
-                }
               });
           })
           .catch(function(err) {
