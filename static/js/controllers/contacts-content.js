@@ -156,7 +156,7 @@ var CONTEXT_UTILS = {
       };
 
       var mergeTasks = function(tasks) {
-        var selectedTasks = $scope.selected.tasks;
+        var selectedTasks = $scope.selected && $scope.selected.tasks;
         $log.debug('Updating contact tasks', selectedTasks, tasks);
         if (selectedTasks) {
           tasks.forEach(function(task) {
