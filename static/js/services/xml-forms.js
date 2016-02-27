@@ -83,11 +83,19 @@ var _ = require('underscore');
           return $q.resolve(true);
         }
         var contactType = context.doc && context.doc.type;
-        if (form.context.person === true && (!contactType || contactType !== 'person')) {
+        if (typeof form.context.person !== 'undefined' && (
+            (form.context.person && contactType !== 'person') ||
+            (!form.context.person && contactType === 'person'))) {
+          console.log(form.internalId, 'Rejecting form because of person', form.context.person, contactType);
           return $q.resolve(false);
         }
-        if (form.context.place === true && (!contactType || PLACE_TYPES.indexOf(contactType) === -1)) {
-          return $q.resolve(false);
+        if (typeof form.context.place !== 'undefined') {
+          var isPlace = PLACE_TYPES.indexOf(contactType) !== -1;
+          if ((form.context.place && !isPlace) ||
+              (!form.context.place && isPlace)) {
+            console.log(form.internalId, 'Rejecting form because of place', form.context.place, contactType);
+            return $q.resolve(false);
+          }
         }
         if (form.context.expression && !evaluateExpression(form.context.expression, context, user)) {
           return $q.resolve(false);
