@@ -52,6 +52,8 @@ var _ = require('underscore');
       };
 
       var filterAll = function(forms, context, user) {
+        // clone the forms list so we don't affect future filtering
+        forms = forms.slice();
         var promises = _.map(forms, _.partial(filter, _, context, user));
         return $q.all(promises)
           .then(function(resolutions) {
