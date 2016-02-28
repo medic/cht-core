@@ -66,22 +66,19 @@ var _ = require('underscore'),
     }
   ]);
 
-  inboxServices.factory('UserContact', ['DB', 'UserSettings',
-    function(DB, UserSettings) {
-      return function(callback) {
-        UserSettings(function(err, user) {
-          if (err) {
-            return callback(err);
-          }
-          if (!user.contact_id) {
-            return callback();
-          }
-          DB.get()
-            .get(user.contact_id)
-            .then(function(contact) {
-              callback(null, contact);
-            })
-            .catch(callback);
+  inboxServices.factory('UserContact', ['$q', 'DB', 'UserSettings',
+    function($q, DB, UserSettings) {
+      return function() {
+        return $q(function(resolve, reject) {
+          UserSettings(function(err, user) {
+            if (err) {
+              return reject(err);
+            }
+            if (!user.contact_id) {
+              return resolve();
+            }
+            DB.get().get(user.contact_id).then(resolve).catch(reject);
+          });
         });
       };
     }

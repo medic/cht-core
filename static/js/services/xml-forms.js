@@ -109,19 +109,15 @@ var _ = require('underscore');
           });
       };
 
-      var notify = function(forms, listener) {
-        UserContact(function(err, user) {
-          if (err) {
-            return $log.error('Error fetching user contact', err);
-          }
-          filterAll(forms, listener.context, user)
-            .then(function(results) {
-              listener.callback(null, results);
-            })
-            .catch(function(err) {
-              $log.error('Error notifying forms listeners', err);
+      var notifyAll = function(forms) {
+        return UserContact()
+          .then(function(user) {
+            _.values(listeners).forEach(function(listener) {
+              filterAll(forms, listener.context, user).then(function(results) {
+                listener.callback(null, results);
+              });
             });
-        });
+          });
       };
 
       Changes({
@@ -131,11 +127,7 @@ var _ = require('underscore');
         },
         callback: function() {
           getForms()
-            .then(function(forms) {
-              _.values(listeners).forEach(function(listener) {
-                notify(forms, listener);
-              });
-            })
+            .then(notifyAll)
             .catch(function(err) {
               _.values(listeners).forEach(function(listener) {
                 listener.callback(err);
@@ -153,9 +145,16 @@ var _ = require('underscore');
           context: context,
           callback: callback
         };
+        var listener = listeners[name];
         init
           .then(function(forms) {
-            notify(forms, listeners[name]);
+            UserContact()
+              .then(function(user) {
+                return filterAll(forms, listener.context, user);
+              })
+              .then(function(results) {
+                listener.callback(null, results);
+              });
           })
           .catch(callback);
       };

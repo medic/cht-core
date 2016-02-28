@@ -60,7 +60,7 @@ describe('XmlForms service', function() {
       mockEnketoDoc('registration'),
     ];
     dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
-    UserContact.callsArg(0);
+    UserContact.returns(KarmaUtils.mockPromise());
     var service = $injector.get('XmlForms');
     service('test', function(err, actual) {
       chai.expect(err).to.equal(null);
@@ -87,7 +87,7 @@ describe('XmlForms service', function() {
     dbQuery
       .onFirstCall().returns(KarmaUtils.mockPromise(null, { rows: [ original ] }))
       .onSecondCall().returns(KarmaUtils.mockPromise(null, { rows: [ original, update ] }));
-    UserContact.callsArg(0);
+    UserContact.returns(KarmaUtils.mockPromise());
     var count = 0;
     var service = $injector.get('XmlForms');
     service('test', function(err, actual) {
@@ -132,7 +132,7 @@ describe('XmlForms service', function() {
       }
     ];
     dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
-    UserContact.callsArg(0);
+    UserContact.returns(KarmaUtils.mockPromise());
     var service = $injector.get('XmlForms');
     service('test', { doc: {  type: 'person' } }, function(err, actual) {
       try {
@@ -167,7 +167,7 @@ describe('XmlForms service', function() {
       }
     ];
     dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
-    UserContact.callsArg(0);
+    UserContact.returns(KarmaUtils.mockPromise());
     var service = $injector.get('XmlForms');
     service('test', { doc: { type: 'district_hospital' } }, function(err, actual) {
       try {
@@ -206,7 +206,7 @@ describe('XmlForms service', function() {
       }
     ];
     dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
-    UserContact.callsArgWith(0, null, { name: 'Frank' });
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Frank' }));
     var service = $injector.get('XmlForms');
     var seventeenYearOldDob = new Date();
     seventeenYearOldDob.setFullYear(seventeenYearOldDob.getFullYear() - 17);
@@ -251,7 +251,7 @@ describe('XmlForms service', function() {
       }
     ];
     dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
-    UserContact.callsArg(0);
+    UserContact.returns(KarmaUtils.mockPromise());
     var service = $injector.get('XmlForms');
     var seventeenYearOldDob = new Date();
     seventeenYearOldDob.setFullYear(seventeenYearOldDob.getFullYear() - 17);
@@ -296,7 +296,7 @@ describe('XmlForms service', function() {
       }
     ];
     dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
-    UserContact.callsArg(0);
+    UserContact.returns(KarmaUtils.mockPromise());
     var service = $injector.get('XmlForms');
     service('test', { contactForms: true }, function(err, actual) {
       try {
@@ -340,7 +340,7 @@ describe('XmlForms service', function() {
       }
     ];
     dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
-    UserContact.callsArg(0);
+    UserContact.returns(KarmaUtils.mockPromise());
     var service = $injector.get('XmlForms');
     service('test', { contactForms: false }, function(err, actual) {
       try {
@@ -390,7 +390,7 @@ describe('XmlForms service', function() {
     ];
 
     dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
-    UserContact.callsArg(0);
+    UserContact.returns(KarmaUtils.mockPromise());
     Auth.withArgs([ 'national_admin', 'district_admin' ]).returns(KarmaUtils.mockPromise('no auth'));
     Auth.withArgs([ 'national_admin' ]).returns(KarmaUtils.mockPromise());
     var service = $injector.get('XmlForms');

@@ -3,6 +3,7 @@ describe('UserContact service', function() {
   'use strict';
 
   var service,
+      $rootScope,
       UserSettings,
       get;
 
@@ -14,36 +15,53 @@ describe('UserContact service', function() {
       $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
       $provide.value('UserSettings', UserSettings);
     });
-    inject(function($injector) {
+    inject(function($injector, _$rootScope_) {
       service = $injector.get('UserContact');
+      $rootScope = _$rootScope_;
     });
   });
 
   it('returns error from user settings', function(done) {
     UserSettings.callsArgWith(0, 'boom');
-    service(function(err) {
-      chai.expect(err).to.equal('boom');
-      done();
-    });
+    service()
+      .then(function() {
+        done(new Error('Expected error to be thrown'));
+      })
+      .catch(function(err) {
+        chai.expect(err).to.equal('boom');
+        done();
+      });
+    $rootScope.$digest();
   });
 
   it('returns null when no configured contact', function(done) {
     UserSettings.callsArgWith(0, null, {});
-    service(function(err, contact) {
-      chai.expect(err).to.equal(undefined);
-      chai.expect(contact).to.equal(undefined);
-      done();
+    service()
+      .then(function(contact) {
+        chai.expect(contact).to.equal(undefined);
+        done();
+      })
+      .catch(done);
+    setTimeout(function() {
+      $rootScope.$digest();
     });
   });
 
   it('returns error from getting contact', function(done) {
     UserSettings.callsArgWith(0, null, { contact_id: 'nobody' });
     get.returns(KarmaUtils.mockPromise('boom'));
-    service(function(err) {
-      chai.expect(err).to.equal('boom');
-      chai.expect(get.callCount).to.equal(1);
-      chai.expect(get.args[0][0]).to.equal('nobody');
-      done();
+    service()
+      .then(function() {
+        done(new Error('Expected error to be thrown'));
+      })
+      .catch(function(err) {
+        chai.expect(err).to.equal('boom');
+        chai.expect(get.callCount).to.equal(1);
+        chai.expect(get.args[0][0]).to.equal('nobody');
+        done();
+      });
+    setTimeout(function() {
+      $rootScope.$digest();
     });
   });
 
@@ -51,12 +69,16 @@ describe('UserContact service', function() {
     var expected = { _id: 'somebody', name: 'Some Body' };
     UserSettings.callsArgWith(0, null, { contact_id: 'somebody' });
     get.returns(KarmaUtils.mockPromise(null, expected));
-    service(function(err, contact) {
-      chai.expect(err).to.equal(null);
-      chai.expect(contact).to.deep.equal(expected);
-      chai.expect(get.callCount).to.equal(1);
-      chai.expect(get.args[0][0]).to.equal('somebody');
-      done();
+    service()
+      .then(function(contact) {
+        chai.expect(contact).to.deep.equal(expected);
+        chai.expect(get.callCount).to.equal(1);
+        chai.expect(get.args[0][0]).to.equal('somebody');
+        done();
+      })
+      .catch(done);
+    setTimeout(function() {
+      $rootScope.$digest();
     });
   });
 
