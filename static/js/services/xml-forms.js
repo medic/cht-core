@@ -34,14 +34,13 @@ var _ = require('underscore');
         return DB.get()
           .query('medic/forms', { include_docs: true })
           .then(function(res) {
-            var forms = res.rows
+            return res.rows
               .filter(function(row) {
                 return row.doc._attachments.xml;
               })
               .map(function(row) {
                 return row.doc;
               });
-            return $q.resolve(forms);
           });
       };
 
@@ -70,43 +69,43 @@ var _ = require('underscore');
       var filter = function(form, context, user) {
         if (!context && !form.context) {
           // no provided context therefore don't filter anything out
-          return $q.resolve(true);
+          return true;
         }
         if (context.contactForms !== undefined) {
           var isContactForm = form._id.indexOf('form:contact:') === 0;
           if (context.contactForms !== isContactForm) {
-            return $q.resolve(false);
+            return false;
           }
         }
         if (!form.context) {
           // no defined filters
-          return $q.resolve(true);
+          return true;
         }
         var contactType = context.doc && context.doc.type;
         if (typeof form.context.person !== 'undefined' && (
             (form.context.person && contactType !== 'person') ||
             (!form.context.person && contactType === 'person'))) {
-          return $q.resolve(false);
+          return false;
         }
         if (typeof form.context.place !== 'undefined') {
           var isPlace = PLACE_TYPES.indexOf(contactType) !== -1;
           if ((form.context.place && !isPlace) ||
               (!form.context.place && isPlace)) {
-            return $q.resolve(false);
+            return false;
           }
         }
         if (form.context.expression && !evaluateExpression(form.context.expression, context, user)) {
-          return $q.resolve(false);
+          return false;
         }
         if (!form.context.permission) {
-          return $q.resolve(true);
+          return true;
         }
         return Auth(form.context.permission)
           .then(function() {
-            return $q.resolve(true);
+            return true;
           })
           .catch(function() {
-            return $q.resolve(false);
+            return false;
           });
       };
 
