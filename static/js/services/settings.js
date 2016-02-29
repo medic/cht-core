@@ -8,8 +8,8 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('Settings',
-    ['$q', 'Cache', 'DB',
-    function($q, Cache, DB) {
+    ['$q', 'Cache', 'DB', 'Session',
+    function($q, Cache, DB, Session) {
 
       var cache = Cache({
         get: function(callback) {
@@ -18,9 +18,7 @@ var _ = require('underscore'),
             .then(function(ddoc) {
               callback(null, _.defaults(ddoc.app_settings, defaults));
             }).catch(function(err) {
-              console.error('Cache DDOC get failed', err);
-              // TODO: should we redirect to login if the error is 401 here?
-              //       (or is this dealt with upstream?)
+              Session.navigateToLogin();
               callback(err);
             });
         },
