@@ -107,11 +107,13 @@ define( function( require, exports, module ) {
 
                 if (!$question.hasClass('or-appearance-bind-id-only')) {
                     textInput.on('change', function(e) {
-                        if (e.added && e.added.doc) {
+                        var selected = textInput.select2('data');
+                        var doc = selected && selected[0] && selected[0].doc;
+                        if (doc) {
                             var form = textInput.closest('form.or');
                             var field = textInput.attr('name');
                             var objectRoot = field.substring(0, field.lastIndexOf('/'));
-                            updateFields(form, e.added.doc, objectRoot, field);
+                            updateFields(form, doc, objectRoot, field);
                         }
                     });
                 }
