@@ -41,7 +41,8 @@ var _ = require('underscore'),
     appcacheManifest = /manifest\.appcache/,
     pathPrefix = '/' + db.settings.db + '/',
     appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
-    serverUtils = require('./server-utils');
+    serverUtils = require('./server-utils'),
+    apiPort = process.env.API_PORT || 5988;
 
 http.globalAgent.maxSockets = 100;
 
@@ -247,7 +248,7 @@ var getExportPermission = function(type) {
   return 'can_export_messages';
 };
 
-app.get([
+app.all([
   '/api/v1/export/:type/:form?',
   '/' + db.getPath() + '/export/:type/:form?'
 ], function(req, res) {
@@ -524,8 +525,8 @@ config.load(function(err) {
   });
   config.listen();
   scheduler.init();
-  app.listen(5988, function() {
-    console.log('Medic API listening on port 5988');
+  app.listen(apiPort, function() {
+    console.log('Medic API listening on port ' + apiPort);
   });
 });
 

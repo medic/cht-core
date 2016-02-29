@@ -10,7 +10,7 @@
   "dependencies": {
     "async": "^1.4.0",
     "body-parser": "^1.13.3",
-    "couchdb-audit": "^0.2.2",
+    "couchdb-audit": "0.3.0",
     "cron": "^1.0.9",
     "express": "^4.13.3",
     "fast-csv": "^0.6.0",
@@ -35,6 +35,8 @@
     "grunt-contrib-jshint": "^0.11.2",
     "grunt-contrib-nodeunit": "^0.4.1",
     "grunt-env": "^0.4.4",
+    "grunt-exec": "^0.4.6",
+    "grunt-npm-install": "^0.3.0",
     "nodeunit": "latest",
     "sinon": "latest"
   },
