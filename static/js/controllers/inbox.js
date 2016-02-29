@@ -379,16 +379,8 @@ require('moment/locales');
       Changes({
         key: 'inbox-facilities',
         filter: function(change) {
-          if (change.newDoc) {
-            // check if new document is a contact
-            return CONTACT_TYPES.indexOf(change.newDoc.type) !== -1;
-          }
-          // check known people
-          if (_.findWhere($scope.people, { _id: change.id })) {
-            return true;
-          }
-          // check known places
-          return findIdInContactHierarchy(change.id, $scope.facilities);
+          // check if new document is a contact
+          return CONTACT_TYPES.indexOf(change.doc.type) !== -1;
         },
         callback: updateAvailableFacilities
       });
@@ -405,7 +397,7 @@ require('moment/locales');
       Changes({
         key: 'inbox-read-status',
         filter: function(change) {
-          return change.newDoc && change.newDoc.type === 'data_record';
+          return change.doc.type === 'data_record';
         },
         callback: $scope.updateReadStatus
       });

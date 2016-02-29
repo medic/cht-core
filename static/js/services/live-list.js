@@ -52,24 +52,12 @@ angular.module('inboxServices').factory('LiveListConfig', [
             LiveList.contacts.remove({ _id: change.id });
             return;
           }
-
-          DB.get().get(change.id)
-            .then(function(doc) {
-              if (change.newDoc) {
-                LiveList.contacts.insert(doc);
-              } else {
-                LiveList.contacts.update(doc);
-              }
-            });
+          LiveList.contacts.update(change.doc);
         },
         filter: function(change) {
-          if (change.newDoc) {
-            return CONTACT_TYPES.indexOf(change.newDoc.type) !== -1;
-          }
-          return LiveList.contacts.contains({ _id: change.id });
+          return CONTACT_TYPES.indexOf(change.doc.type) !== -1;
         }
       });
-
 
       var reports_config = {
         orderBy: function(r1, r2) {
@@ -105,24 +93,12 @@ angular.module('inboxServices').factory('LiveListConfig', [
             LiveList.reports.remove({ _id: change.id });
             return;
           }
-
-          DB.get().get(change.id)
-            .then(function(doc) {
-              if (change.newDoc) {
-                LiveList.reports.insert(doc);
-              } else {
-                LiveList.reports.update(doc);
-              }
-            });
+          LiveList.reports.update(change.doc);
         },
         filter: function(change) {
-          if (change.newDoc) {
-            return change.newDoc.form;
-          }
-          return LiveList.reports.contains({ _id: change.id });
+          return change.doc.form;
         }
       });
-
 
       LiveList.$listFor('tasks', {
         selecter: '#tasks-list ul',

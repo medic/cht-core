@@ -3,26 +3,17 @@ describe('Changes service', function() {
   'use strict';
 
   var service,
-      getDoc,
       changesCallback,
       changesCount;
 
   beforeEach(function () {
     changesCallback = undefined;
-    getDoc = undefined;
     changesCount = 0;
     module('inboxApp');
     module(function ($provide) {
       $provide.value('DB', {
         get: function() {
           return {
-            get: function() {
-              return {
-                then: function(callback) {
-                  callback(getDoc);
-                }
-              };
-            },
             changes: function() {
               changesCount++;
               return {
@@ -49,6 +40,9 @@ describe('Changes service', function() {
 
     service({
       key: 'test',
+      filter: function() {
+        return true;
+      },
       callback: function(actual) {
         chai.expect(actual).to.equal(expected);
         chai.expect(changesCount).to.equal(1);
@@ -65,6 +59,9 @@ describe('Changes service', function() {
 
     service({
       key: 'test',
+      filter: function() {
+        return true;
+      },
       callback: function() {
         chai.expect(false).to.equal(true);
       }
@@ -72,6 +69,9 @@ describe('Changes service', function() {
 
     service({
       key: 'test',
+      filter: function() {
+        return true;
+      },
       callback: function(actual) {
         chai.expect(actual).to.equal(expected);
         chai.expect(changesCount).to.equal(1);
@@ -89,6 +89,9 @@ describe('Changes service', function() {
 
     service({
       key: 'key1',
+      filter: function() {
+        return true;
+      },
       callback: function(actual) {
         results.key1.push(actual);
       }
@@ -96,6 +99,9 @@ describe('Changes service', function() {
 
     service({
       key: 'key2',
+      filter: function() {
+        return true;
+      },
       callback: function(actual) {
         results.key2.push(actual);
       }
@@ -144,26 +150,6 @@ describe('Changes service', function() {
     chai.expect(changesCount).to.equal(1);
 
     done();
-  });
-
-  it('gets the doc if new', function(done) {
-    var expected = { id: 'x', changes: [ { rev: '1-abc' } ] };
-    getDoc = { id: 'x', rev: '1-abc', name: 'gareth' };
-
-    service({
-      key: 'test',
-      filter: function(change) {
-        return change.newDoc.name === 'gareth';
-      },
-      callback: function(actual) {
-        chai.expect(actual).to.equal(expected);
-        chai.expect(changesCount).to.equal(1);
-        done();
-      }
-    });
-
-    changesCallback(expected);
-
   });
 
 });
