@@ -247,7 +247,7 @@ var getExportPermission = function(type) {
   return 'can_export_messages';
 };
 
-app.get([
+app.all([
   '/api/v1/export/:type/:form?',
   '/' + db.getPath() + '/export/:type/:form?'
 ], function(req, res) {
