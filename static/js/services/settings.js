@@ -18,7 +18,7 @@ var _ = require('underscore'),
             .then(function(ddoc) {
               callback(null, _.defaults(ddoc.app_settings, defaults));
             }).catch(function(err) {
-              if (err && err.status === 403) {
+              if (err && err.status === 401) {
                 Session.navigateToLogin();
               }
               callback(err);
