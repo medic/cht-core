@@ -82,18 +82,17 @@ var _ = require('underscore');
           return true;
         }
         var contactType = context.doc && context.doc.type;
-        if (typeof form.context.person !== 'undefined' && (
-            (form.context.person && contactType !== 'person') ||
-            (!form.context.person && contactType === 'person'))) {
+        if (contactType === 'person' && (
+            (typeof form.context.person !== 'undefined' && !form.context.person) ||
+            (typeof form.context.person === 'undefined' && form.context.place))) {
           return false;
         }
-        if (typeof form.context.place !== 'undefined') {
-          var isPlace = PLACE_TYPES.indexOf(contactType) !== -1;
-          if ((form.context.place && !isPlace) ||
-              (!form.context.place && isPlace)) {
-            return false;
-          }
+        if (PLACE_TYPES.indexOf(contactType) !== -1 && (
+            (typeof form.context.place !== 'undefined' && !form.context.place) ||
+            (typeof form.context.place === 'undefined' && form.context.person))) {
+          return false;
         }
+
         if (form.context.expression && !evaluateExpression(form.context.expression, context, user)) {
           return false;
         }

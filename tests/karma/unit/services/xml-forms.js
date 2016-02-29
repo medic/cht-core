@@ -117,19 +117,58 @@ describe('XmlForms service', function() {
       {
         id: 'form-0',
         doc: {
-          internalId: 'visit',
-          context: { person: true },
+          internalId: 'zero',
           _attachments: { xml: { something: true } },
         },
       },
       {
         id: 'form-1',
         doc: {
-          internalId: 'stock-report',
+          internalId: 'one',
+          context: {},
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form-2',
+        doc: {
+          internalId: 'two',
+          context: { person: true },
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form-3',
+        doc: {
+          internalId: 'three',
           context: { place: true },
           _attachments: { xml: { something: true } },
         },
-      }
+      },
+      {
+        id: 'form-4',
+        doc: {
+          internalId: 'four',
+          context: { person: true, place: false },
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form-5',
+        doc: {
+          internalId: 'five',
+          context: { person: false, place: true },
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form-6',
+        doc: {
+          internalId: 'six',
+          context: { person: true, place: true },
+          _attachments: { xml: { something: true } },
+        },
+      },
     ];
     dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
     UserContact.returns(KarmaUtils.mockPromise());
@@ -137,8 +176,14 @@ describe('XmlForms service', function() {
     service('test', { doc: {  type: 'person' } }, function(err, actual) {
       try {
         chai.expect(err).to.equal(null);
-        chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0]).to.deep.equal(given[0].doc);
+        chai.assert.deepEqual(_.pluck(actual, 'internalId'), [
+          'zero',
+          'one',
+          'two',
+          'four',
+          'six',
+        ]);
         done();
       } catch(e) {
         // don't let assertion errors bubble up to the service again
@@ -152,19 +197,58 @@ describe('XmlForms service', function() {
       {
         id: 'form-0',
         doc: {
-          internalId: 'visit',
-          context: { person: true },
+          internalId: 'zero',
           _attachments: { xml: { something: true } },
         },
       },
       {
         id: 'form-1',
         doc: {
-          internalId: 'stock-report',
+          internalId: 'one',
+          context: {},
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form-2',
+        doc: {
+          internalId: 'two',
+          context: { person: true },
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form-3',
+        doc: {
+          internalId: 'three',
           context: { place: true },
           _attachments: { xml: { something: true } },
         },
-      }
+      },
+      {
+        id: 'form-4',
+        doc: {
+          internalId: 'four',
+          context: { person: true, place: false },
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form-5',
+        doc: {
+          internalId: 'five',
+          context: { person: false, place: true },
+          _attachments: { xml: { something: true } },
+        },
+      },
+      {
+        id: 'form-6',
+        doc: {
+          internalId: 'six',
+          context: { person: true, place: true },
+          _attachments: { xml: { something: true } },
+        },
+      },
     ];
     dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
     UserContact.returns(KarmaUtils.mockPromise());
@@ -172,8 +256,13 @@ describe('XmlForms service', function() {
     service('test', { doc: { type: 'district_hospital' } }, function(err, actual) {
       try {
         chai.expect(err).to.equal(null);
-        chai.expect(actual.length).to.equal(1);
-        chai.expect(actual[0]).to.deep.equal(given[1].doc);
+        chai.assert.deepEqual(_.pluck(actual, 'internalId'), [
+          'zero',
+          'one',
+          'three',
+          'five',
+          'six',
+        ]);
         done();
       } catch(e) {
         // don't let assertion errors bubble up to the service again
