@@ -235,9 +235,30 @@ var createId = function(name) {
 };
 
 var deleteUser = function(id, callback) {
-  db._users.get(id, function(err, user) {
-    user._deleted = true;
-    db._users.insert(user, callback);
+  // Possibility exists here _users database update happens but medic update
+  // fails and user is in inconsistent state. There is no way to do atomic
+  // update on more than one database with CouchDB API.
+  async.series([
+    function(cb){
+      db._users.get(id, function(err, user) {
+        if (err) {
+          return cb(err);
+        }
+        user._deleted = true;
+        db._users.insert(user, cb);
+      });
+    },
+    function(cb){
+      db.medic.get(id, function(err, user) {
+        if (err) {
+          return cb(err);
+        }
+        user._deleted = true;
+        db.medic.insert(user, cb);
+      });
+    }
+  ], function(err) {
+    callback(err);
   });
 };
 
@@ -249,7 +270,9 @@ module.exports = {
   _getFacilities: getFacilities,
   _getOrCreateUser: getOrCreateUser,
   _createOrUpdate: createOrUpdate,
-  deleteUser: deleteUser,
+  deleteUser: function(username, callback) {
+    deleteUser(createId(username), callback);
+  },
   getList: function(callback) {
     var self = this;
     async.parallel([

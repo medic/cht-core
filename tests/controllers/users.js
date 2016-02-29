@@ -522,39 +522,57 @@ exports['createOrUpdate can update settings only'] = function(test) {
   });
 };
 
-exports['deleteUser returns insert errors'] = function(test) {
+exports['deleteUser returns _users insert errors'] = function(test) {
   test.expect(2);
-  sinon.stub(db._users, 'get').callsArgWith(1, null, {
-    _id: 'org.couchdb.user:gareth',
-    name: 'gareth',
-    starsign: 'aries'
-  });
+  sinon.stub(db._users, 'get').callsArgWith(1, null, {});
   var insert = sinon.stub(db._users, 'insert').callsArgWith(1, 'Not Found');
-  controller.deleteUser('org.couchdb.user:gareth', function(err) {
+  controller.deleteUser('foo', function(err) {
     test.equal(err, 'Not Found');
     test.equal(insert.callCount, 1);
     test.done();
   });
 };
 
-exports['deleteUser sets _deleted on the user'] = function(test) {
+exports['deleteUser sets _deleted on the user doc'] = function(test) {
   test.expect(3);
   var expect = {
-    _id: 'org.couchdb.user:gareth',
-    name: 'gareth',
+    _id: 'foo',
     starsign: 'aries',
     _deleted: true
   };
   sinon.stub(db._users, 'get').callsArgWith(1, null, {
-    _id: 'org.couchdb.user:gareth',
-    name: 'gareth',
-    starsign: 'aries'
+    _id: 'foo',
+    starsign: 'aries',
   });
-  var insert = sinon.stub(db._users, 'insert').callsArg(1);
+  sinon.stub(db.medic, 'get').callsArgWith(1, null, {});
+  var usersInsert = sinon.stub(db._users, 'insert').callsArg(1);
+  sinon.stub(db.medic, 'insert').callsArg(1);
+  controller.deleteUser('foo', function(err) {
+    test.equal(err, undefined);
+    test.equal(usersInsert.callCount, 1);
+    test.deepEqual(usersInsert.firstCall.args[0], expect);
+    test.done();
+  });
+};
+
+exports['deleteUser sets _deleted on the user-settings doc'] = function(test) {
+  test.expect(3);
+  var expect = {
+    _id: 'foo',
+    starsign: 'aries',
+    _deleted: true
+  };
+  sinon.stub(db._users, 'get').callsArgWith(1, null, {
+    _id: 'foo',
+    starsign: 'aries',
+  });
+  sinon.stub(db.medic, 'get').callsArgWith(1, null, {});
+  var usersInsert = sinon.stub(db._users, 'insert').callsArg(1);
+  sinon.stub(db.medic, 'insert').callsArg(1);
   controller.deleteUser('org.couchdb.user:gareth', function(err) {
     test.equal(err, undefined);
-    test.equal(insert.callCount, 1);
-    test.deepEqual(insert.firstCall.args[0], expect);
+    test.equal(usersInsert.callCount, 1);
+    test.deepEqual(usersInsert.firstCall.args[0], expect);
     test.done();
   });
 };
