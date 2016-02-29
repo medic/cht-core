@@ -16,8 +16,8 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'CONTACT_TYPES',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, CONTACT_TYPES) {
 
       Session.init();
       TrafficStats($scope);
@@ -52,7 +52,6 @@ require('moment/locales');
       $scope.analyticsModules = [];
       $scope.version = APP_CONFIG.version;
       $scope.actionBar = {};
-      $scope.formDefinitions = [];
       $scope.title = undefined;
       $scope.tours = [];
 
@@ -105,7 +104,7 @@ require('moment/locales');
         }
 
         // On an Enketo form, go to the previous page (if there is one)
-        if ($container.find('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
+        if ($container.find('.enketo .btn.previous-page:visible:enabled:not(".disabled")').length) {
           window.history.back();
           return true;
         }
@@ -380,17 +379,8 @@ require('moment/locales');
       Changes({
         key: 'inbox-facilities',
         filter: function(change) {
-          if (change.newDoc) {
-            // check if new document is a contact
-            return ['person','clinic','health_center','district_hospital']
-              .indexOf(change.newDoc.type) !== -1;
-          }
-          // check known people
-          if (_.findWhere($scope.people, { _id: change.id })) {
-            return true;
-          }
-          // check known places
-          return findIdInContactHierarchy(change.id, $scope.facilities);
+          // check if new document is a contact
+          return CONTACT_TYPES.indexOf(change.doc.type) !== -1;
         },
         callback: updateAvailableFacilities
       });
@@ -407,7 +397,7 @@ require('moment/locales');
       Changes({
         key: 'inbox-read-status',
         filter: function(change) {
-          return change.newDoc && change.newDoc.type === 'data_record';
+          return change.doc.type === 'data_record';
         },
         callback: $scope.updateReadStatus
       });
@@ -424,26 +414,12 @@ require('moment/locales');
           $log.error('Failed to retrieve forms', err);
         });
 
-      var updateFormDefinitions = function() {
-        Enketo.withAllForms()
-          .then(function(forms) {
-            Enketo.clearXmlCache();
-            $scope.formDefinitions = forms;
-            $scope.nonContactForms = _.filter(forms, function(form) {
-              return form._id.indexOf('form:contact:') !== 0;
-            });
-          })
-          .catch(function(err) {
-            $log.error('Error fetching form definitions', err);
-          });
-      };
-      updateFormDefinitions();
-      Changes({
-        key: 'inbox-form-definitions',
-        filter: function(change) {
-          return change.id.indexOf('form:') === 0;
-        },
-        callback: updateFormDefinitions
+      XmlForms('InboxCtrl', { contactForms: false }, function(err, forms) {
+        if (err) {
+          return $log.error('Error fetching form definitions', err);
+        }
+        Enketo.clearXmlCache();
+        $scope.nonContactForms = forms;
       });
 
       $scope.setupGuidedSetup = function() {
@@ -650,17 +626,17 @@ require('moment/locales');
         $rootScope.$broadcast.apply($rootScope, arguments);
       };
 
-      var deleteMessageId;
+      var docToDeleteId;
 
       $scope.deleteDoc = function(id) {
         $('#delete-confirm').modal('show');
-        deleteMessageId = id;
+        docToDeleteId = id;
       };
 
       $scope.deleteDocConfirm = function() {
         var pane = modal.start($('#delete-confirm'));
-        if (deleteMessageId) {
-          DeleteDoc(deleteMessageId, function(err) {
+        if (docToDeleteId) {
+          DeleteDoc(docToDeleteId, function(err) {
             pane.done(translateFilter('Error deleting document'), err);
             if (!err) {
               // return to list view for the current state
@@ -670,10 +646,11 @@ require('moment/locales');
                 stateName = stateName.substring(0, dotIndex);
               }
               $state.go(stateName);
+              Snackbar(translateFilter('document.deleted'));
             }
           });
         } else {
-          pane.done(translateFilter('Error deleting document'), 'No deleteMessageId set');
+          pane.done(translateFilter('Error deleting document'), 'No docToDeleteId set');
         }
       };
 
@@ -975,6 +952,11 @@ require('moment/locales');
           });
         };
         window.applicationCache.addEventListener('updateready', showUpdateReady);
+        window.applicationCache.addEventListener('error', function(err) {
+          // TODO: once we trigger this work out what a 401 looks like and redirect
+          //       to the login page
+          $log.error('Application cache update error', err);
+        });
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
           showUpdateReady();
         }

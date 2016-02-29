@@ -687,10 +687,10 @@ describe('EnketoTranslation service', function() {
     it('returns of one an empty array if no fields are hidden', function() {
       // given
       var xml =
-        '<doc><outputs>' +
+        '<doc>' +
           '<name>Sally</name>' +
           '<lmp>10</lmp>' +
-        '</outputs></doc>';
+        '</doc>';
 
       // when
       var hidden_fields = service.getHiddenFieldList(xml);
@@ -702,24 +702,18 @@ describe('EnketoTranslation service', function() {
     it('returns an array containing fields tagged `hidden`', function() {
       // given
       var xml =
-        '<doc><outputs>' +
+        '<doc>' +
           '<name>Sally</name>' +
           '<secret_code_name_one tag="hidden">S4L</secret_code_name_one>' +
           '<secret_code_name_two tag="hidden">S5L</secret_code_name_two>' +
           '<lmp>10</lmp>' +
-        '</outputs></doc>';
+        '</doc>';
 
       // when
       var hidden_fields = service.getHiddenFieldList(xml);
 
       // then
       assert.deepEqual(hidden_fields, [ 'secret_code_name_one', 'secret_code_name_two' ]);
-    });
-
-    it('returns undefined if no outputs fields are defined', function() {
-      var xml = '<doc></doc>';
-      var hidden_fields = service.getHiddenFieldList(xml);
-      assert.deepEqual(hidden_fields, undefined);
     });
   });
 

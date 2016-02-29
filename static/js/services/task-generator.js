@@ -10,10 +10,9 @@ var nools = require('nools'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TaskGenerator', ['$q', '$log', 'DB', 'Search', 'Settings', 'Changes',
-    function($q, $log, DB, Search, Settings, Changes) {
+  inboxServices.factory('TaskGenerator', ['$q', '$log', 'Search', 'Settings', 'Changes', 'CONTACT_TYPES',
+    function($q, $log, Search, Settings, Changes, CONTACT_TYPES) {
 
-      var contactTypes = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
       var callbacks = {};
       var emissions = {};
       var facts = [];
@@ -88,7 +87,8 @@ var nools = require('nools'),
       var getContactId = function(doc) {
         // get the associated patient or place id to group reports by
         return doc.patient_id || doc.place_id ||
-          (doc.fields && (doc.fields.patient_id || doc.fields.place_id));
+          (doc.fields && doc.fields.inputs &&
+              doc.fields.inputs.contact && doc.fields.inputs.contact._id);
       };
 
       var deriveFacts = function(dataRecords, contacts) {
@@ -180,37 +180,32 @@ var nools = require('nools'),
             }
             session.modify(fact);
           }
-        } else if (change.newDoc) {
-          if (change.newDoc.form) {
-            // new report
-            fact = findFact(getContactId(change.newDoc));
+        } else {
+          if (change.doc.form) {
+            // report
+            fact = updateReport(change.doc);
+            if (!fact) {
+              // new
+              fact = findFact(getContactId(change.doc));
+              if (fact) {
+                fact.reports.push(change.doc);
+              }
+            }
             if (fact) {
-              fact.reports.push(change.newDoc);
               session.modify(fact);
-            } else {
-              // new report for unknown contact
-              session.assert(new Contact({ reports: [ change.newDoc ] }));
             }
           } else {
-            // new contact
-            session.assert(new Contact({ contact: change.newDoc, reports: [] }));
+            fact = findFact(change.id);
+            // contact
+            if (fact) {
+              // update
+              fact.contact = change.doc;
+              session.modify(fact);
+            } else {
+              // new
+              session.assert(new Contact({ contact: change.doc, reports: [] }));
+            }
           }
-        } else {
-          DB.get().get(change.id)
-            .then(function(doc) {
-              if (doc.form) {
-                // updated report
-                fact = updateReport(doc);
-              } else {
-                // updated contact
-                fact = findFact(change.id);
-                fact.contact = doc;
-              }
-              if (fact) {
-                session.modify(fact);
-              }
-            })
-            .catch(notifyError);
         }
       };
 
@@ -219,11 +214,8 @@ var nools = require('nools'),
           key: 'task-generator',
           callback: updateTasks,
           filter: function(change) {
-            if (change.newDoc) {
-              return change.newDoc.form ||
-                     contactTypes.indexOf(change.newDoc.type) !== -1;
-            }
-            return !!findFact(change.id);
+            return change.doc.form ||
+                   CONTACT_TYPES.indexOf(change.doc.type) !== -1;
           }
         });
       };

@@ -16,6 +16,10 @@ var _ = require('underscore'),
     return Math.min(prev * 2, 60000);
   };
 
+  var authenticationIssue = function(errors) {
+    return _.find(errors, function(error) { return error.status === 401;});
+  };
+
   inboxServices.factory('DBSync', [
     '$log', 'DB', 'UserDistrict', 'Session', 'Settings', '$q',
     function($log, DB, UserDistrict, Session, Settings, $q) {
@@ -31,10 +35,20 @@ var _ = require('underscore'),
         var fn = DB.get().replicate[direction];
         return fn(DB.getRemoteUrl(), options)
           .on('denied', function(err) {
+            // In theory this could be caused by 401s
+            // TODO: work out what `err` looks like and navigate to login
+            // when we detect it's a 401
             $log.error('Denied replicating ' + direction + ' remote server', err);
           })
           .on('error', function(err) {
             $log.error('Error replicating ' + direction + ' remote server', err);
+          })
+          .on('complete', function (info) {
+            if (!info.ok && authenticationIssue(info.errors)) {
+              Session.navigateToLogin();
+            } else {
+              $log.error('Replication completed which should never happen', info);
+            }
           });
       };
 

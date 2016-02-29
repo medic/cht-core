@@ -12,11 +12,6 @@ describe('Enketo service', function() {
     };
   };
 
-  /** @return a mock form ready for putting in #dbContent */
-  var mockJsonDoc = function() {
-    return { doc: { _attachments: {} } };
-  };
-
   var visitForm = '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">' +
     '  <h:head>' +
     '    <h:title>Visit</h:title>' +
@@ -309,29 +304,6 @@ describe('Enketo service', function() {
     });
   });
 
-  describe('withAllForms', function() {
-    it('should get all forms from DB, but only pass on ones with XML attachment', function(done) {
-      // given
-      var expected = [
-        mockEnketoDoc(),
-        mockJsonDoc(),
-        mockJsonDoc(),
-        mockEnketoDoc(),
-        mockEnketoDoc(),
-      ];
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: expected }));
-      service.withAllForms()
-        .then(function(actual) {
-          chai.expect(actual.length).to.equal(3);
-          chai.expect(actual[0]).to.deep.equal(expected[0].doc);
-          chai.expect(actual[1]).to.deep.equal(expected[3].doc);
-          chai.expect(actual[2]).to.deep.equal(expected[4].doc);
-          done();
-        })
-        .catch(done);
-    });
-  });
-
   describe('save', function() {
 
     it('rejects on invalid form', function(done) {
@@ -346,7 +318,7 @@ describe('Enketo service', function() {
 
     it('creates report', function(done) {
       form.validate.returns(KarmaUtils.mockPromise(null, true));
-      var content = '<doc><outputs><name>Sally</name><lmp>10</lmp></outputs></doc>';
+      var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
       form.getDataStr.returns(content);
       dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
       UserSettings.callsArgWith(0, null, { contact_id: '123' });
@@ -374,14 +346,14 @@ describe('Enketo service', function() {
         .catch(done);
     });
 
-    it('creates report with hidden outputs', function(done) {
+    it('creates report with hidden fields', function(done) {
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content =
-        '<doc><outputs>' +
+        '<doc>' +
           '<name>Sally</name>' +
           '<lmp>10</lmp>' +
           '<secret_code_name tag="hidden">S4L</secret_code_name>' +
-        '</outputs></doc>';
+        '</doc>';
       form.getDataStr.returns(content);
       dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
       UserSettings.callsArgWith(0, null, { contact_id: '123' });
@@ -413,7 +385,7 @@ describe('Enketo service', function() {
 
     it('updates report', function(done) {
       form.validate.returns(KarmaUtils.mockPromise(null, true));
-      var content = '<doc><outputs><name>Sally</name><lmp>10</lmp></outputs></doc>';
+      var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
       form.getDataStr.returns(content);
       dbGet.returns(KarmaUtils.mockPromise(null, {
         _id: '6',

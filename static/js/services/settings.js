@@ -17,7 +17,12 @@ var _ = require('underscore'),
             .get('_design/medic')
             .then(function(ddoc) {
               callback(null, _.defaults(ddoc.app_settings, defaults));
-            }).catch(callback);
+            }).catch(function(err) {
+              console.error('Cache DDOC get failed', err);
+              // TODO: should we redirect to login if the error is 401 here?
+              //       (or is this dealt with upstream?)
+              callback(err);
+            });
         },
         filter: function(doc) {
           return doc._id === '_design/medic';

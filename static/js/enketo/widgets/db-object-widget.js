@@ -122,12 +122,14 @@ define( function( require, exports, module ) {
                 });
 
                 if (!$question.hasClass('or-appearance-bind-id-only')) {
-                    $textInput.on('change', function(e) {
-                        if (e.added && e.added.doc) {
+                    $textInput.on('change', function() {
+                        var selected = $textInput.select2('data');
+                        var doc = selected && selected[0] && selected[0].doc;
+                        if (doc) {
                             var form = $question.closest('form.or');
                             var field = $question.find('select[name]').attr('name');
                             var objectRoot = field.substring(0, field.lastIndexOf('/'));
-                            updateFields(form, e.added.doc, objectRoot, field);
+                            updateFields(form, doc, objectRoot, field);
                         }
                     });
                 }

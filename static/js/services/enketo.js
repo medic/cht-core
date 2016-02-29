@@ -230,7 +230,7 @@ angular.module('inboxServices').service('Enketo', [
       // edits, but is not ideal.
       return DB.get().get(docId).then(function(doc) {
         doc.content = record;
-        doc.fields = EnketoTranslation.reportRecordToJs(record).outputs;
+        doc.fields = EnketoTranslation.reportRecordToJs(record);
         return DB.get().put(doc).then(function(res) {
           doc._rev = res.rev;
           return $q.resolve(doc);
@@ -260,7 +260,7 @@ angular.module('inboxServices').service('Enketo', [
         .then(function(contact) {
           var doc = {
             content: record,
-            fields: EnketoTranslation.reportRecordToJs(record).outputs,
+            fields: EnketoTranslation.reportRecordToJs(record),
             form: formInternalId,
             type: 'data_record',
             content_type: 'xml',
@@ -289,19 +289,6 @@ angular.module('inboxServices').service('Enketo', [
           } else {
             return create(formInternalId, record);
           }
-        });
-    };
-
-    this.withAllForms = function() {
-      return DB.get()
-        .query('medic/forms', { include_docs: true })
-        .then(function(res) {
-          var forms = res.rows.filter(function(row) {
-            return row.doc._attachments.xml;
-          }).map(function(row) {
-            return row.doc;
-          });
-          return $q.resolve(forms);
         });
     };
 

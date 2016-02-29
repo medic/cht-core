@@ -352,7 +352,7 @@ describe('GenerateSearchQuery service', function() {
     service(scope, options, function(err, result) {
       chai.expect(result.query).to.deep.equal(
         {$operands:[
-          {type:['person','clinic','health_center','district_hospital']}
+          { type:[ 'district_hospital', 'health_center','clinic', 'person' ] }
         ]}
       );
     });
