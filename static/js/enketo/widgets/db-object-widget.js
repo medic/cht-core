@@ -56,6 +56,24 @@ define( function( require, exports, module ) {
             return row.text;
         };
 
+        var matcher = function(params, data) {
+            var doc = data && data.doc;
+            if (!doc) {
+                return null;
+            }
+            var term = params.term && params.term.toLowerCase();
+            if (!term) {
+                return data;
+            }
+            var match = false;
+            Object.keys(doc).forEach(function(key) {
+                if (typeof doc[key] === 'string' && doc[key].toLowerCase().indexOf(term) !== -1) {
+                    match = true;
+                }
+            });
+            return match ? data : null;
+        };
+
         var $question = $(this.element);
 
         var $textInput = $question.find('input');
@@ -114,6 +132,7 @@ define( function( require, exports, module ) {
                         dropdownAdapter: CustomAdapter,
                         templateResult: formatResult,
                         templateSelection: formatSelection,
+                        matcher: matcher,
                         width: '100%',
                     });
 
