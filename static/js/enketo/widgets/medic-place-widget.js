@@ -117,6 +117,7 @@ define( function( require, exports, module ) {
                         templateResult: formatResult,
                         templateSelection: formatSelection,
                         matcher: matcher,
+                        selectOnClose: true,
                         width: '100%',
                     });
 
