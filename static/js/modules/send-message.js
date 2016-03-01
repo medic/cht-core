@@ -23,11 +23,12 @@ var _ = require('underscore'),
   var validatePhoneNumber = function(data) {
     if (data.everyoneAt) {
       return true;
-    } else if(data.freetext) {
-      return libphonenumber.validate(settings, data.id);
     }
-    var contact = data.doc.contact || data.doc;
-    return contact && libphonenumber.validate(settings, contact.phone);
+    if (data.doc) {
+      var contact = data.doc.contact || data.doc;
+      return contact && libphonenumber.validate(settings, contact.phone);
+    }
+    return libphonenumber.validate(settings, data.id);
   };
 
   var validatePhoneNumbers = function(recipients) {
@@ -107,7 +108,10 @@ var _ = require('underscore'),
     if (row.everyoneAt) {
       return formatEveryoneAt(row);
     }
-    return row.doc.name || row.doc.phone;
+    if (row.doc) {
+      return row.doc.name || row.doc.phone;
+    }
+    return row.id;
   };
 
   var createChoiceFromNumber = function(phone) {
@@ -168,6 +172,8 @@ var _ = require('underscore'),
       $phone.select2({
         data: data,
         allowClear: true,
+        tags: true,
+        createSearchChoice: createChoiceFromNumber,
         dropdownParent: $('#send-message'),
         templateResult: formatResult,
         templateSelection: formatSelection,
@@ -301,7 +307,7 @@ var _ = require('underscore'),
 
     validateRecipients($modal, function(err, phone) {
       if (err) {
-        return console.error('Error validating recipients', err);
+        return;
       }
       if (phone.valid && message.valid) {
         callback(phone.value, message.value);
