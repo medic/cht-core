@@ -252,7 +252,7 @@ module.exports = function(grunt) {
         tasks: ['mmcss', 'appcache', 'deploy']
       },
       js: {
-        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'packages/feedback/**/*'],
+        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*'],
         tasks: ['mmjs', 'appcache', 'deploy']
       },
       other: {
@@ -498,10 +498,6 @@ module.exports = function(grunt) {
       cwd: 'packages/libphonenumber/libphonenumber',
       src: './*.js',
       expose: 'libphonenumber'
-    },
-    {
-      cwd: 'packages/feedback',
-      src: './feedback.js'
     }
   ];
 

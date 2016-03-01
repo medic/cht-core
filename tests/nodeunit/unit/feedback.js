@@ -1,24 +1,27 @@
 var sinon = require('sinon'),
-    feedback = require('../feedback'),
+    feedback = require('../../../static/js/modules/feedback'),
     clock,
     getUserCtx,
-    saveDoc;
+    saveDoc,
+    mockConsole,
+    mockWindow;
 
 exports.setUp = function (callback) {
   getUserCtx = sinon.stub();
   saveDoc = sinon.stub();
+  mockConsole = {
+    error: sinon.stub(),
+    warn: sinon.stub(),
+    info: sinon.stub(),
+    log: sinon.stub()
+  };
+  mockWindow = sinon.stub();
   clock = sinon.useFakeTimers();
   callback();
 };
 
 exports.tearDown = function (callback) {
   clock.restore();
-  if (getUserCtx.restore) {
-    getUserCtx.restore();
-  }
-  if (saveDoc.restore) {
-    saveDoc.restore();
-  }
   callback();
 };
 
@@ -28,12 +31,18 @@ exports['unhandled error submits feedback'] = function(test) {
   getUserCtx.callsArgWith(0, null, { name: 'fred' });
   saveDoc.callsArgWith(1);
 
-  console.log('Trying to save');
-  console.info('Saving in process');
-  console.warn('Saving taking a while');
-  console.error('Failed to save', '404');
+  feedback.init({
+    saveDoc: saveDoc,
+    getUserCtx: getUserCtx,
+    console: mockConsole,
+    window: mockWindow
+  });
 
-  feedback.init(saveDoc, getUserCtx);
+  mockConsole.log('Trying to save');
+  mockConsole.info('Saving in process');
+  mockConsole.warn('Saving taking a while');
+  mockConsole.error('Failed to save', '404');
+
   feedback.submit({ message: 'hello world' }, { name: 'medic', version: '0.5.0' }, function() {
 
     test.equals(getUserCtx.callCount, 1);
@@ -72,10 +81,15 @@ exports['log history restricted to 20 lines'] = function(test) {
 
   getUserCtx.callsArgWith(0, null, { name: 'fred' });
   saveDoc.callsArgWith(1);
-  feedback.init(saveDoc, getUserCtx);
+  feedback.init({
+    saveDoc: saveDoc,
+    getUserCtx: getUserCtx,
+    console: mockConsole,
+    window: mockWindow
+  });
 
   for (var i = 0; i < 25; i++) {
-    console.log('item ' + i);
+    mockConsole.log('item ' + i);
   }
 
   feedback.submit({ message: 'hello world' }, { }, function() {

@@ -1,4 +1,4 @@
-var feedback = require('feedback'),
+var feedback = require('../modules/feedback'),
     _ = require('underscore'),
     moment = require('moment'),
     sendMessage = require('../modules/send-message'),
@@ -23,19 +23,20 @@ require('moment/locales');
       Session.init();
       TrafficStats($scope);
       DBSync();
-      feedback.init(
-        function(doc, callback) {
-          DB.get()
-            .post(doc)
+      feedback.init({
+        saveDoc: function(doc, callback) {
+          DB.get().post(doc)
             .then(function() {
               callback();
             })
             .catch(callback);
         },
-        function(callback) {
+        getUserCtx: function(callback) {
           callback(null, Session.userCtx());
-        }
-      );
+        },
+        console: console,
+        window: window
+      });
 
       LiveListConfig($scope);
       CheckDate($scope);

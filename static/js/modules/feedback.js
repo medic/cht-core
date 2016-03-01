@@ -1,14 +1,9 @@
 var levels = ['error', 'warn', 'log', 'info'],
     log = [],
-    saveDoc = function(doc, callback) {
-      callback(new Error('saveDoc not configured'));
-    },
-    getUserCtx = function(callback) {
-      callback(new Error('getUserCtx not configured'));
-    };
+    options = {};
 
 var getUrl = function() {
-  var url = document && document.URL;
+  var url = typeof variable !== 'undefined' && document.URL;
   if (url) {
     // blank out passwords
     return url.replace(/:[^@:]*@/, ':********@');
@@ -19,39 +14,39 @@ var getUrl = function() {
 var registerConsoleInterceptor = function() {
   // intercept console logging
   levels.forEach(function(level) {
-    var original = console[level];
-    console[level] = function() {
+    var original = options.console[level];
+    options.console[level] = function() {
       // push the error onto the stack
       log.splice(0, 0, { level: level, arguments: arguments });
       // remove any old log entries
       log.splice(20, Number.MAX_VALUE);
       // output to the console as per usual
-      original.apply(console, arguments);
+      original.apply(options.console, arguments);
     };
   });
 };
 
 var registerUnhandledErrorHandler = function() {
   // listen for unhandled errors
-  window.onerror = function(message, file, line) {
+  options.window.onerror = function(message, file, line) {
     try {
       module.exports.submit(
         { message: message, file: file, line: line },
         {},
         function(err) {
         if (err) {
-          console.error('Error saving feedback', err);
+          options.console.error('Error saving feedback', err);
         }
       });
     } catch(e) {
       // stop infinite loop of exceptions
-      console.error('Error while trying to record error', e);
+      options.console.error('Error while trying to record error', e);
     }
   };
 };
 
 var create = function(info, appInfo, callback) {
-  getUserCtx(function(err, userCtx) {
+  options.getUserCtx(function(err, userCtx) {
     if (err) {
       return callback(err);
     }
@@ -71,21 +66,17 @@ var create = function(info, appInfo, callback) {
 };
 
 module.exports = {
-  init: function(_saveDoc, _getUserCtx) {
-    saveDoc = _saveDoc;
-    getUserCtx = _getUserCtx;
+  init: function(_options) {
+    options = _options;
+    registerConsoleInterceptor();
+    registerUnhandledErrorHandler();
   },
   submit: function(info, appInfo, callback) {
     create(info, appInfo, function(err, doc) {
       if (err) {
         return callback(err);
       }
-      saveDoc(doc, callback);
+      options.saveDoc(doc, callback);
     });
   }
 };
-
-if (typeof window !== 'undefined') {
-  registerConsoleInterceptor();
-  registerUnhandledErrorHandler();
-}
