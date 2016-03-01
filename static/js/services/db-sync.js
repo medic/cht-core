@@ -24,6 +24,8 @@ var _ = require('underscore'),
     '$log', 'DB', 'UserDistrict', 'Session', 'Settings', '$q',
     function($log, DB, UserDistrict, Session, Settings, $q) {
 
+      var replicateTiming = {};
+
       var replicate = function(direction, options) {
         options = options || {};
         _.defaults(options, {
@@ -33,6 +35,11 @@ var _ = require('underscore'),
           back_off_function: backOffFunction
         });
         var fn = DB.get().replicate[direction];
+
+        replicateTiming[direction] = {};
+        replicateTiming[direction].start =
+          replicateTiming[direction].last = Date.now();
+
         return fn(DB.getRemoteUrl(), options)
           .on('denied', function(err) {
             // In theory this could be caused by 401s
@@ -42,6 +49,18 @@ var _ = require('underscore'),
           })
           .on('error', function(err) {
             $log.error('Error replicating ' + direction + ' remote server', err);
+          })
+          .on('paused', function() {
+            var now = Date.now();
+            var start = replicateTiming[direction].start;
+            var last = replicateTiming[direction].last;
+            replicateTiming[direction].last = now;
+
+            $log.info('Replicate ' + direction + ' hitting pause after ' +
+              ((now - start) / 1000) +
+              ' total seconds, with ' +
+              ((now - last) / 1000) +
+              ' seconds between pauses.', start, last, now);
           })
           .on('complete', function (info) {
             if (!info.ok && authenticationIssue(info.errors)) {

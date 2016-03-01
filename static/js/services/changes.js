@@ -20,7 +20,7 @@
         $log.debug('Change notification firing', change);
         Object.keys(callbacks).forEach(function(key) {
           var options = callbacks[key];
-          if (options.filter(change)) {
+          if (!options.filter || options.filter(change)) {
             options.callback(change);
           }
         });
