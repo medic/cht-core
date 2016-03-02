@@ -31,7 +31,7 @@
           .changes({
             live: true,
             since: 'now',
-            timeout: 1000 * 60 * 60,
+            timeout: false,
             include_docs: true
           })
           .on('change', notifyAll)

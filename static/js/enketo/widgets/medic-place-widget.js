@@ -6,10 +6,10 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 
 define( function( require, exports, module ) {
     'use strict';
-    var Widget = require( 'enketo-core/src/js/Widget' );
-    var $ = require( 'jquery' );
-    var placeSelectFormat = require('../../modules/format').clinic;
-    require( 'enketo-core/src/js/plugins' );
+    var Widget = require('enketo-core/src/js/Widget');
+    var $ = require('jquery');
+    var format = require('../../modules/format');
+    require('enketo-core/src/js/plugins');
 
     var pluginName = 'medicplacewidget';
 
@@ -51,7 +51,9 @@ define( function( require, exports, module ) {
 
         var formatResult = function(row) {
             if(row.doc) {
-                return placeSelectFormat(row.doc);
+                // format escapes the content for us, and if we just return
+                // a string select2 escapes it again, so return an element instead.
+                return $('<span>' + format.clinic(row.doc) + '</span>');
             }
             return translate('contact.type.' + row.text);
         };
