@@ -7,8 +7,17 @@
   module.filter('resourceIcon', [
     'ResourceIcons',
     function(ResourceIcons) {
-      return ResourceIcons.getImg;
+      return function(name) {
+        var src = ResourceIcons.getImg(name);
+        if (src) {
+          src = 'src="' + src + '"';
+        } else {
+          src = '';
+        }
+        return '<img class="resource-icon-' + name + '" ' + src + ' />';
+      };
     }
   ]);
+
 
 }());
