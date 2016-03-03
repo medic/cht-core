@@ -100,13 +100,16 @@ cat <<EOF
 [$SELF] -----
 EOF
 
-if $FORCE; then
-    echo "[$SELF] Trying to delete existing doc..."
-    revResponse=$(curl -s "$docUrl")
-    rev=$(jq -r ._rev <<< "$revResponse")
-    curl -s -X DELETE "${docUrl}?rev=${rev}" >/dev/null
-    # a moment's pause to let the delete complete
-    sleep 1
+if $FORCE && [[ "missing" != "$(curl -s ${docUrl} | jq -r .reason)" ]] ; then
+    until [[ "deleted" = "$(curl -s ${docUrl} | jq -r .reason)" ]]; do
+        echo "[$SELF] Trying to delete existing doc..."
+        rev=$(curl -s "$docUrl" | jq -r ._rev)
+        curl -s -X DELETE "${docUrl}?rev=${rev}" >/dev/null
+
+        # wait until it's really deleted
+        echo "[$SELF] waiting for doc deletion..."
+        sleep 1
+    done
 fi
 
 check_rev() {
