@@ -153,6 +153,31 @@ exports['throws a server error if getUserCtx fails'] = function(test) {
   changes(proxy, testReq, testRes);
 };
 
+exports['doesn\'t accept no filter param - #2004'] = function(test) {
+  test.expect(5);
+
+  var testReq = { query: {} };
+  var testRes = 'fake response';
+  var userCtx = 'fake userCtx';
+  var proxy = { web: sinon.spy() };
+
+  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
+  sinon.stub(auth, 'hasAllPermissions').returns(false);
+  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'some random facility');
+  var errorSpy = sinon.spy(console, 'error');
+
+  sinon.stub(serverUtils, 'error', function(err, req, res) {
+    test.ok(errorSpy.firstCall.args[0].indexOf('restricted filter:') > 0);
+    test.equals(err.code, 403);
+    test.equals(req, testReq);
+    test.equals(res, testRes);
+    test.equals(proxy.web.callCount, 0);
+    test.done();
+  });
+
+  changes(proxy, testReq, testRes);
+};
+
 exports['doesn\'t accept unknown filters'] = function(test) {
   test.expect(5);
 
