@@ -33,9 +33,7 @@ require('moment/locales');
         },
         getUserCtx: function(callback) {
           callback(null, Session.userCtx());
-        },
-        console: console,
-        window: window
+        }
       });
 
       LiveListConfig($scope);

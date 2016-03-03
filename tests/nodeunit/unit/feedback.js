@@ -4,11 +4,13 @@ var sinon = require('sinon'),
     getUserCtx,
     saveDoc,
     mockConsole,
-    mockWindow;
+    mockWindow,
+    mockDocument;
 
 exports.setUp = function (callback) {
   getUserCtx = sinon.stub();
   saveDoc = sinon.stub();
+  mockDocument = {};
   mockConsole = {
     error: sinon.stub(),
     warn: sinon.stub(),
@@ -72,7 +74,7 @@ exports['unhandled error submits feedback'] = function(test) {
     test.equals(submittedDoc.log[3].arguments[0], 'Trying to save');
 
     test.done();
-    
+
   });
 };
 
@@ -102,7 +104,39 @@ exports['log history restricted to 20 lines'] = function(test) {
     test.equals(submittedDoc.log[19].arguments[0], 'item 5');
 
     test.done();
-    
+
   });
 
+};
+
+exports['password in URL is blanked out'] = function(test) {
+  test.expect(6);
+
+  getUserCtx.callsArgWith(0, null, { name: 'fred' });
+  saveDoc.callsArgWith(1);
+
+  feedback.init({
+    saveDoc: saveDoc,
+    getUserCtx: getUserCtx,
+    console: mockConsole,
+    window: mockWindow,
+    document: mockDocument
+  });
+
+  mockDocument.URL = 'http://gareth:SUPERSECRET!@somewhere.com';
+
+  feedback.submit({ message: 'hello world' }, { name: 'medic', version: '0.5.0' }, function() {
+
+    test.equals(getUserCtx.callCount, 1);
+    test.equals(saveDoc.callCount, 1);
+    var submittedDoc = saveDoc.args[0][0];
+
+    test.equals(submittedDoc.meta.url, 'http://gareth:********@somewhere.com');
+    test.equals(submittedDoc.meta.app, 'medic');
+    test.equals(submittedDoc.meta.version, '0.5.0');
+    test.equals(submittedDoc.meta.time, '1970-01-01T00:00:00.000Z');
+
+    test.done();
+
+  });
 };
