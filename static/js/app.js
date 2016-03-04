@@ -47,7 +47,6 @@ _.templateSettings = {
         // messages
         .state('messages', {
           url: '/messages?tour',
-          abstract: true,
           controller: 'MessagesCtrl',
           templateUrl: 'templates/partials/messages.html'
         })
@@ -132,7 +131,6 @@ _.templateSettings = {
         // contacts
         .state('contacts', {
           url: '/contacts',
-          abstract: true,
           controller: 'ContactsCtrl',
           templateUrl: 'templates/partials/contacts.html'
         })
@@ -185,7 +183,6 @@ _.templateSettings = {
         // tasks
         .state('tasks', {
           url: '/tasks',
-          abstract: true,
           controller: 'TasksCtrl',
           templateUrl: 'templates/partials/tasks.html'
         })
@@ -350,10 +347,6 @@ _.templateSettings = {
           templateUrl: 'templates/partials/theme.html'
         });
 
-      // Parent states are transient, jump to <parent>.details.
-      $urlRouterProvider.when('/contacts', '/contacts/');
-      $urlRouterProvider.when('/messages', '/messages/');
-      $urlRouterProvider.when('/tasks', '/tasks/');
       $urlRouterProvider.when('', '/home');
       $translateProvider.useLoader('SettingsLoader', {});
       $translateProvider.useSanitizeValueStrategy('escape');
