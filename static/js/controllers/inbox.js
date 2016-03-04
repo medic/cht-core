@@ -22,7 +22,10 @@ require('moment/locales');
 
       Session.init();
       TrafficStats($scope);
-      DBSync();
+      $scope.initialReplication = "pending";
+      DBSync(function() {
+        $scope.initialReplication = "complete";
+      });
       feedback.init({
         saveDoc: function(doc, callback) {
           DB.get().post(doc)

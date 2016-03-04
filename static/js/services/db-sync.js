@@ -95,7 +95,7 @@ var _ = require('underscore'),
           });
       };
 
-      return function() {
+      return function(replicateDoneListener) {
         var userCtx = Session.userCtx();
         if (utils.isUserAdmin(userCtx)) {
           // admins have potentially too much data so bypass local pouch
@@ -120,6 +120,9 @@ var _ = require('underscore'),
               console.log('Initial sync complete in ' +
                 ((Date.now() - beforeInitialReplication) / 1000) +
                 ' seconds, starting replication listener');
+
+              replicateDoneListener();
+
               replicate('from', {
                 filter: 'erlang_filters/doc_by_place',
                 query_params: params
