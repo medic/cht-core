@@ -112,6 +112,44 @@ describe('XmlForms service', function() {
     });
   });
 
+  it('caches xml forms', function(done) {
+    var original = mockEnketoDoc('registration');
+    var update = mockEnketoDoc('visit');
+    dbQuery
+      .onFirstCall().returns(KarmaUtils.mockPromise(null, { rows: [ original ] }))
+      .onSecondCall().returns(KarmaUtils.mockPromise(null, { rows: [ original, update ] }));
+    UserContact.returns(KarmaUtils.mockPromise());
+    var count = 0;
+    var service = $injector.get('XmlForms');
+    service('test', function(err, actual) {
+      chai.expect(err).to.equal(null);
+      if (count === 0) {
+        chai.expect(actual.length).to.equal(1);
+        chai.expect(actual[0]).to.deep.equal(original.doc);
+        setTimeout(function() {
+          Changes.args[0][0].callback();
+        });
+      } else if (count === 1) {
+        chai.expect(actual.length).to.equal(2);
+        chai.expect(actual[0]).to.deep.equal(original.doc);
+        chai.expect(actual[1]).to.deep.equal(update.doc);
+        chai.expect(Changes.callCount).to.equal(1);
+        chai.expect(dbQuery.callCount).to.equal(2);
+        service('test-2', function(err, actual) {
+          chai.expect(actual.length).to.equal(2);
+          chai.expect(actual[0]).to.deep.equal(original.doc);
+          chai.expect(actual[1]).to.deep.equal(update.doc);
+          chai.expect(Changes.callCount).to.equal(1);
+          chai.expect(dbQuery.callCount).to.equal(2); // db doesn't get hit again
+          done();
+        });
+      } else {
+        done('Update fired too many times!');
+      }
+      count++;
+    });
+  });
+
   it('filter to person forms', function(done) {
     var given = [
       {

@@ -125,7 +125,8 @@ var _ = require('underscore');
           return change.id.indexOf('form:') === 0;
         },
         callback: function() {
-          getForms()
+          init = getForms();
+          init
             .then(notifyAll)
             .catch(function(err) {
               _.values(listeners).forEach(function(listener) {
