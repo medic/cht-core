@@ -7,6 +7,10 @@
         <li ng-show="android_app_version">{{'android_app.version.title' | translate}} {{android_app_version}}</li>
         <li>{{url}}</li>
         <li>{{userCtx.name}}</li>
+        <li>
+          Initial replication: {{initialReplication}}
+          <span ng-show="initialReplicationDuration">({{initialReplicationDuration / 1000 | number:1}} s)</span>
+        </li>
         <li><a ng-click="reload()">{{'Reload' | translate}}</a></li>
       </ul>
     </div>

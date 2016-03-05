@@ -65,8 +65,6 @@ var _ = require('underscore'),
           .on('complete', function (info) {
             if (!info.ok && authenticationIssue(info.errors)) {
               Session.navigateToLogin();
-            } else {
-              $log.error('Replication completed which should never happen', info);
             }
           });
       };
@@ -97,7 +95,7 @@ var _ = require('underscore'),
           });
       };
 
-      return function() {
+      return function(replicateDoneListener) {
         var userCtx = Session.userCtx();
         if (utils.isUserAdmin(userCtx)) {
           // admins have potentially too much data so bypass local pouch
@@ -110,11 +108,26 @@ var _ = require('underscore'),
             return doc._id !== '_design/medic';
           }
         });
+        var beforeInitialReplication = Date.now();
         getQueryParams(userCtx)
           .then(function(params) {
             replicate('from', {
               filter: 'erlang_filters/doc_by_place',
+              live: false,
+              batch_size: 10,
               query_params: params
+            })
+            .on('complete', function() {
+              console.log('Initial sync complete in ' +
+                ((Date.now() - beforeInitialReplication) / 1000) +
+                ' seconds, starting replication listener');
+
+              replicateDoneListener();
+
+              replicate('from', {
+                filter: 'erlang_filters/doc_by_place',
+                query_params: params
+              });
             });
           })
           .catch(function(err) {
