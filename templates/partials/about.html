@@ -13,8 +13,8 @@
     <div>
       <h3>{{'initial.replication.title' | translate}}</h3>
       <ul>
-        <li>Status: {{initialReplication}}</li>
-        <li ng-show="initialReplicationDuration">Duration: {{initialReplicationDuration / 1000 | number:1}} s</li>
+        <li>{{'initial.replication.status' | translate}}: {{initialReplication}}</li>
+        <li ng-show="initialReplicationDuration">{{'initial.replication.duration' | translate}}: {{initialReplicationDuration / 1000 | number:1}} s</li>
         <span ng-show="initialReplicationDataUsage">
           <li>{{'android_app.data_usage.rx' | translate}}: {{initialReplicationDataUsage.rx | number}} B</li>
           <li>{{'android_app.data_usage.tx' | translate}}: {{initialReplicationDataUsage.tx | number}} B</li>
