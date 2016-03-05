@@ -21,14 +21,14 @@ var feedback = require('../modules/feedback'),
       Session.init();
       TrafficStats($scope);
 
-      $scope.initialReplication = "pending";
+      $scope.initialReplicationStatus = "pending";
       var dbSyncStartTime = Date.now(),
           dbSyncStartData;
       if(window.medicmobile_android && window.medicmobile_android.getDataUsage) {
         dbSyncStartData = JSON.parse(window.medicmobile_android.getDataUsage());
       }
       DBSync(function() {
-        $scope.initialReplication = "complete";
+        $scope.initialReplicationStatus = "complete";
         $scope.initialReplicationDuration = Date.now() - dbSyncStartTime;
         dbSyncStartTime = null;
 
