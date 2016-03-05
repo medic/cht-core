@@ -102,12 +102,6 @@ var _ = require('underscore'),
           $log.debug('You have administrative privileges; not replicating');
           return;
         }
-        replicate('to', {
-          filter: function(doc) {
-            // don't try to replicate ddoc back to the server
-            return doc._id !== '_design/medic';
-          }
-        });
         var beforeInitialReplication = Date.now();
         getQueryParams(userCtx)
           .then(function(params) {
@@ -127,6 +121,14 @@ var _ = require('underscore'),
                 filter: 'erlang_filters/doc_by_place',
                 query_params: params
               });
+
+              replicate('to', {
+                filter: function(doc) {
+                  // don't try to replicate ddoc back to the server
+                  return doc._id !== '_design/medic';
+                }
+              });
+
             });
           })
           .catch(function(err) {
