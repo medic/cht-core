@@ -114,7 +114,7 @@ var _ = require('underscore'),
             replicate('from', {
               filter: 'erlang_filters/doc_by_place',
               live: false,
-              batch_size: 1000,
+              batch_size: 10,
               query_params: params
             })
             .on('complete', function() {
