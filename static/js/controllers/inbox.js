@@ -21,8 +21,10 @@ var feedback = require('../modules/feedback'),
       Session.init();
       TrafficStats($scope);
       $scope.initialReplication = "pending";
+      var dbSyncStartTime = Date.now();
       DBSync(function() {
         $scope.initialReplication = "complete";
+        $scope.initialReplicationDuration = Date.now() - dbSyncStartTime;
       });
       feedback.init({
         saveDoc: function(doc, callback) {
