@@ -20,12 +20,28 @@ var feedback = require('../modules/feedback'),
 
       Session.init();
       TrafficStats($scope);
+
       $scope.initialReplication = "pending";
-      var dbSyncStartTime = Date.now();
+      var dbSyncStartTime = Date.now(),
+          dbSyncStartData;
+      if(window.medicmobile_android && window.medicmobile_android.getDataUsage) {
+        dbSyncStartData = JSON.parse(window.medicmobile_android.getDataUsage());
+      }
       DBSync(function() {
         $scope.initialReplication = "complete";
         $scope.initialReplicationDuration = Date.now() - dbSyncStartTime;
+        dbSyncStartTime = null;
+
+        if(window.medicmobile_android && window.medicmobile_android.getDataUsage) {
+          var dbSyncEndData = JSON.parse(window.medicmobile_android.getDataUsage());
+          $scope.initialReplicationDataUsage = {
+            rx: dbSyncEndData.app.rx - dbSyncStartData.app.rx,
+            tx: dbSyncEndData.app.tx - dbSyncStartData.app.tx,
+          };
+          dbSyncStartData = null;
+        }
       });
+
       feedback.init({
         saveDoc: function(doc, callback) {
           DB.get().post(doc)
