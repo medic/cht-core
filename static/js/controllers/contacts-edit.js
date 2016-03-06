@@ -310,6 +310,10 @@
               } else if(original && original[f] && doc[f] === original[f]._id) {
                 doc[f] = original[f];
               } else {
+                var docId = doc[f];
+                if (typeof docId === 'object') {
+                  docId = doc[f]._id;
+                }
                 return DB.get(doc[f])
                   .then(function(dbFieldValue) {
                     doc[f] = dbFieldValue;
