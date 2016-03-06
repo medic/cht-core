@@ -1,7 +1,6 @@
 var _ = require('underscore'),
     scrollLoader = require('../modules/scroll-loader'),
-    async = require('async'),
-    types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
+    async = require('async');
 
 (function () {
 
@@ -10,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl',
-    ['$log', '$scope', '$state', '$timeout', 'DB', 'LiveList', 'UserSettings', 'Search',
-    function ($log, $scope, $state, $timeout, DB, LiveList, UserSettings, Search) {
+    ['$log', '$scope', '$state', '$timeout', 'DB', 'LiveList', 'UserSettings', 'Search', 'CONTACT_TYPES',
+    function ($log, $scope, $state, $timeout, DB, LiveList, UserSettings, Search, CONTACT_TYPES) {
 
       var liveList = LiveList.contacts;
 
@@ -114,7 +113,7 @@ var _ = require('underscore'),
       };
 
       $scope.orderByType = function(contact) {
-        return types.indexOf(contact.type);
+        return CONTACT_TYPES.indexOf(contact.type);
       };
 
       $scope.$on('ClearSelected', function() {

@@ -6,10 +6,10 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 
 define( function( require, exports, module ) {
     'use strict';
-    var Widget = require( 'enketo-core/src/js/Widget' );
-    var $ = require( 'jquery' );
-    var placeSelectFormat = require('../../modules/format').clinic;
-    require( 'enketo-core/src/js/plugins' );
+    var Widget = require('enketo-core/src/js/Widget');
+    var $ = require('jquery');
+    var format = require('../../modules/format');
+    require('enketo-core/src/js/plugins');
 
     var pluginName = 'medicplacewidget';
 
@@ -51,7 +51,9 @@ define( function( require, exports, module ) {
 
         var formatResult = function(row) {
             if(row.doc) {
-                return placeSelectFormat(row.doc);
+                // format escapes the content for us, and if we just return
+                // a string select2 escapes it again, so return an element instead.
+                return $('<span>' + format.clinic(row.doc) + '</span>');
             }
             return translate('contact.type.' + row.text);
         };
@@ -61,6 +63,24 @@ define( function( require, exports, module ) {
                 return row.doc.name;
             }
             return row.text;
+        };
+
+        var matcher = function(params, data) {
+            var doc = data && data.doc;
+            if (!doc) {
+                return null;
+            }
+            var term = params.term && params.term.toLowerCase();
+            if (!term) {
+                return data;
+            }
+            var match = false;
+            Object.keys(doc).forEach(function(key) {
+                if (typeof doc[key] === 'string' && doc[key].toLowerCase().indexOf(term) !== -1) {
+                    match = true;
+                }
+            });
+            return match ? data : null;
         };
 
         var placeTypes = _.map(_.without(Object.keys(ContactSchema.get()), 'person'), function(type) {
@@ -98,6 +118,8 @@ define( function( require, exports, module ) {
                         dropdownAdapter: CustomAdapter,
                         templateResult: formatResult,
                         templateSelection: formatSelection,
+                        matcher: matcher,
+                        selectOnClose: true,
                         width: '100%',
                     });
 
@@ -106,12 +128,14 @@ define( function( require, exports, module ) {
                 });
 
                 if (!$question.hasClass('or-appearance-bind-id-only')) {
-                    textInput.on('change', function(e) {
-                        if (e.added && e.added.doc) {
+                    textInput.on('change', function() {
+                        var selected = textInput.select2('data');
+                        var doc = selected && selected[0] && selected[0].doc;
+                        if (doc) {
                             var form = textInput.closest('form.or');
                             var field = textInput.attr('name');
                             var objectRoot = field.substring(0, field.lastIndexOf('/'));
-                            updateFields(form, e.added.doc, objectRoot, field);
+                            updateFields(form, doc, objectRoot, field);
                         }
                     });
                 }

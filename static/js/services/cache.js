@@ -1,5 +1,3 @@
-var _ = require('underscore');
-
 (function () {
 
   'use strict';
@@ -11,16 +9,11 @@ var _ = require('underscore');
 
       var caches = [];
 
-      var contains = function(cache, change) {
-        return _.findWhere(cache.docs, { _id: change.id });
-      };
-
       Changes({
         key: 'cache',
         callback: function(change) {
           caches.forEach(function(cache) {
-            if ((change.newDoc && (!cache.filter || cache.filter(change.newDoc))) ||
-                (!change.newDoc && contains(cache, change))) {
+            if (cache.filter(change.doc)) {
               cache.docs = null;
               cache.pending = false;
             }

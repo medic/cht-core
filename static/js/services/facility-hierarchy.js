@@ -50,13 +50,10 @@ var _ = require('underscore');
     callback(null, results, total);
   };
 
-  inboxServices.factory('FacilityHierarchy', ['Facility',
-    function(Facility) {
+  inboxServices.factory('FacilityHierarchy', ['Facility', 'PLACE_TYPES',
+    function(Facility, PLACE_TYPES) {
       return function(callback) {
-        var options = {
-          types: [ 'clinic', 'health_center', 'district_hospital' ]
-        };
-        Facility(options, function(err, facilities) {
+        Facility({ types: PLACE_TYPES }, function(err, facilities) {
           if (err) {
             return callback(err);
           }

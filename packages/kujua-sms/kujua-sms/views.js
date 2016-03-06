@@ -301,11 +301,13 @@ exports.data_records_by_contact = {
         // needed to reduce object size
         max.facility = undefined;
 
-        var code = max.message.charCodeAt(99);
-        if (0xD800 <= code && code <= 0xDBFF) {
-          max.message = max.message.substr(0, 99);
-        } else {
-          max.message = max.message.substr(0, 100);
+        if (max.message) {
+            var code = max.message.charCodeAt(99);
+            if (0xD800 <= code && code <= 0xDBFF) {
+              max.message = max.message.substr(0, 99);
+            } else {
+              max.message = max.message.substr(0, 100);
+            }
         }
 
         return max;
@@ -492,11 +494,11 @@ exports.duplicate_form_submissions = {
 };
 
 /*
- * Allow for quering of forms based on the doc id minus the prefix.
+ * Allow for quering of xml forms based on the doc id minus the prefix.
  */
 exports.forms = {
     map: function(doc) {
-        if (doc.type !== 'form' || !doc._attachments.xml) {
+        if (doc.type !== 'form' || !doc._attachments || !doc._attachments.xml) {
             return;
         }
         emit(doc.internalId);

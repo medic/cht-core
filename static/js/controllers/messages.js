@@ -33,7 +33,7 @@
           } else {
             $scope.messages.push(updated);
           }
-          if ($scope.selected.id === updated.key[0]) {
+          if ($scope.selected && $scope.selected.id === updated.key[0]) {
             $scope.$broadcast('UpdateContactConversation', { silent: true});
           }
         });
@@ -102,10 +102,9 @@
           if ($scope.filterModel.type !== 'messages') {
             return false;
           }
-          if (change.newDoc) {
-            return change.newDoc.kujua_message || change.newDoc.sms_message;
-          }
-          return change.deleted;
+          return change.doc.kujua_message ||
+                 change.doc.sms_message ||
+                 change.deleted;
         }
       });
 

@@ -16,11 +16,17 @@ var _ = require('underscore'),
     return Math.min(prev * 2, 60000);
   };
 
+  var authenticationIssue = function(errors) {
+    return _.find(errors, function(error) { return error.status === 401;});
+  };
+
   inboxServices.factory('DBSync', [
     '$log', 'DB', 'UserDistrict', 'Session', 'Settings', '$q',
     function($log, DB, UserDistrict, Session, Settings, $q) {
 
-      var replicate = function(from, options) {
+      var replicateTiming = {};
+
+      var replicate = function(direction, options) {
         options = options || {};
         _.defaults(options, {
           live: true,
@@ -28,14 +34,40 @@ var _ = require('underscore'),
           timeout: false,
           back_off_function: backOffFunction
         });
-        var direction = from ? 'from' : 'to';
         var fn = DB.get().replicate[direction];
+
+        replicateTiming[direction] = {};
+        replicateTiming[direction].start =
+          replicateTiming[direction].last = Date.now();
+
         return fn(DB.getRemoteUrl(), options)
           .on('denied', function(err) {
+            // In theory this could be caused by 401s
+            // TODO: work out what `err` looks like and navigate to login
+            // when we detect it's a 401
             $log.error('Denied replicating ' + direction + ' remote server', err);
           })
           .on('error', function(err) {
             $log.error('Error replicating ' + direction + ' remote server', err);
+          })
+          .on('paused', function() {
+            var now = Date.now();
+            var start = replicateTiming[direction].start;
+            var last = replicateTiming[direction].last;
+            replicateTiming[direction].last = now;
+
+            $log.info('Replicate ' + direction + ' hitting pause after ' +
+              ((now - start) / 1000) +
+              ' total seconds, with ' +
+              ((now - last) / 1000) +
+              ' seconds between pauses.', start, last, now);
+          })
+          .on('complete', function (info) {
+            if (!info.ok && authenticationIssue(info.errors)) {
+              Session.navigateToLogin();
+            } else {
+              $log.error('Replication completed which should never happen', info);
+            }
           });
       };
 
@@ -72,7 +104,7 @@ var _ = require('underscore'),
           $log.debug('You have administrative privileges; not replicating');
           return;
         }
-        replicate(false, {
+        replicate('to', {
           filter: function(doc) {
             // don't try to replicate ddoc back to the server
             return doc._id !== '_design/medic';
@@ -80,7 +112,7 @@ var _ = require('underscore'),
         });
         getQueryParams(userCtx)
           .then(function(params) {
-            replicate(true, {
+            replicate('from', {
               filter: 'erlang_filters/doc_by_place',
               query_params: params
             });

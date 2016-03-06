@@ -64,17 +64,18 @@ var utils = require('kujua-utils'),
             if (localDdoc.remote_rev >= rev) {
               return;
             }
-            getRemote()
+            return getRemote()
               .get('_design/medic')
               .then(function(remoteDdoc) {
                 updateLocalDesignDoc(localDdoc, remoteDdoc, callback);
-              })
-              .catch(function(err) {
-                $log.error('Error updating ddoc. Check your connection and try again.', err);
               });
           })
           .catch(function(err) {
-            $log.error('Error updating ddoc. Check your connection and try again.', err);
+            if (err.status === 401) {
+              Session.navigateToLogin();
+            } else {
+              $log.error('Error updating ddoc. Check your connection and try again.', err);
+            }
           });
       };
 
@@ -89,6 +90,12 @@ var utils = require('kujua-utils'),
               }).success(function(data, status, headers) {
                 var rev = headers().etag.replace(etagRegex, '');
                 checkLocalDesignDoc(rev, callback);
+              }).catch(function(err) {
+                if (err.status === 401) {
+                  Session.navigateToLogin();
+                } else {
+                  $log.error('Error watching HEAD of ddoc', err);
+                }
               });
             }
 

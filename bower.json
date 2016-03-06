@@ -29,7 +29,7 @@
     "nvd3": "~1.1.15-beta",
     "pouchdb": "~5.2.1",
     "underscore": "~1.8.3",
-    "select2": "~4.0.0"
+    "select2": "~4.0.1"
   },
   "resolutions": {
     "d3": "~3.4.11",

@@ -5,7 +5,6 @@ describe('TaskGenerator service', function() {
   var Search,
       Settings,
       Changes,
-      DBGet,
       injector;
 
   /* jshint quotmark: false */
@@ -107,8 +106,12 @@ describe('TaskGenerator service', function() {
       form: 'P',
       reported_date: 1437618272360,
       fields: {
-        patient_id: 1,
-        patient_name: 'Jenny',
+        inputs: {
+          contact: {
+            _id: 1,
+            name: 'Jenny'
+          }
+        },
         last_menstrual_period: 10
       }
     },
@@ -117,8 +120,12 @@ describe('TaskGenerator service', function() {
       form: 'P',
       reported_date: 1437820272360,
       fields: {
-        patient_id: 2,
-        patient_name: 'Sally',
+        inputs: {
+          contact: {
+            _id: 2,
+            name: 'Sally'
+          },
+        },
         last_menstrual_period: 20
       }
     },
@@ -127,7 +134,11 @@ describe('TaskGenerator service', function() {
       form: 'V',
       reported_date: 1438820272360,
       fields: {
-        patient_id: 1
+        inputs: {
+          contact: {
+            _id: 1
+          }
+        }
       }
     },
     {
@@ -135,8 +146,12 @@ describe('TaskGenerator service', function() {
       form: 'R',
       reported_date: 1437920272360,
       fields: {
-        patient_id: 3,
-        patient_name: 'Rachel'
+        inputs: {
+          contact: {
+            _id: 3,
+            name: 'Rachel'
+          }
+        }
       }
     }
   ];
@@ -192,14 +207,12 @@ describe('TaskGenerator service', function() {
     Search = sinon.stub();
     Settings = sinon.stub();
     Changes = sinon.stub();
-    DBGet = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.value('Search', Search);
       $provide.value('Settings', Settings);
       $provide.value('Changes', Changes);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.factory('DB', KarmaUtils.mockDB({ get: DBGet }));
     });
     inject(function($injector) {
       injector = $injector;
@@ -207,7 +220,7 @@ describe('TaskGenerator service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(Search, Settings, Changes, DBGet);
+    KarmaUtils.restore(Search, Settings, Changes);
   });
 
   it('returns search errors', function(done) {
@@ -390,10 +403,14 @@ describe('TaskGenerator service', function() {
         form: 'P',
         reported_date: 1437618272360,
         fields: {
-          patient_id: 1,
-          patient_name: 'Jenny',
-          last_menstrual_period: 10
-        }
+          inputs: {
+            contact: {
+              _id: 1,
+              name: 'Jenny'
+            },
+          }
+        },
+        last_menstrual_period: 10
       }
     ];
 
@@ -434,20 +451,28 @@ describe('TaskGenerator service', function() {
         form: 'P',
         reported_date: 1437618272360,
         fields: {
-          patient_id: 1,
-          patient_name: 'Jenny',
-          last_menstrual_period: 10
-        }
+          inputs: {
+            contact: {
+              _id: 1,
+              name: 'Jenny'
+            }
+          }
+        },
+        last_menstrual_period: 10
       },
       {
         _id: 3,
         form: 'P',
         reported_date: 1437618272360,
         fields: {
-          patient_id: 1,
-          patient_name: 'Jenny',
-          last_menstrual_period: 10
-        }
+          inputs: {
+            contact: {
+              _id: 1,
+              name: 'Jenny'
+            }
+          }
+        },
+        last_menstrual_period: 10
       }
     ];
 
@@ -489,10 +514,14 @@ describe('TaskGenerator service', function() {
         form: 'P',
         reported_date: 1437618272360,
         fields: {
-          patient_id: 1,
-          patient_name: 'Jenny',
-          last_menstrual_period: 10
-        }
+          inputs: {
+            contact: {
+              _id: 1,
+              name: 'Jenny'
+            }
+          }
+        },
+        last_menstrual_period: 10
       }
     ];
 
@@ -514,10 +543,14 @@ describe('TaskGenerator service', function() {
     var callbackCount = 0;
     var service = injector.get('TaskGenerator');
     service('test', 'task', function(err, actual) {
+      if (err) {
+        return done(err);
+      }
       callbackCount++;
       if (callbackCount === 4) {
         Changes.args[0][0].callback({
-          newDoc: newContact
+          id: newContact._id,
+          doc: newContact
         });
       } else if (callbackCount === 5) {
         chai.expect(actual[0].type).to.equal('no-report');
@@ -535,10 +568,14 @@ describe('TaskGenerator service', function() {
         form: 'P',
         reported_date: 1437618272360,
         fields: {
-          patient_id: 1,
-          patient_name: 'Jenny',
-          last_menstrual_period: 10
-        }
+          inputs: {
+            contact: {
+              _id: 1,
+              name: 'Jenny'
+            }
+          }
+        },
+        last_menstrual_period: 10
       }
     ];
 
@@ -547,8 +584,12 @@ describe('TaskGenerator service', function() {
       form: 'P',
       reported_date: 1437618272360,
       fields: {
-        patient_id: 1,
-        patient_name: 'Jenny',
+        inputs: {
+          contact: {
+            _id: 1,
+            name: 'Jenny'
+          }
+        },
         last_menstrual_period: 10
       }
     };
@@ -569,10 +610,14 @@ describe('TaskGenerator service', function() {
     var callbackCount = 0;
     var service = injector.get('TaskGenerator');
     service('test', 'task', function(err, actual) {
+      if (err) {
+        return done(err);
+      }
       callbackCount++;
       if (callbackCount === 4) {
         Changes.args[0][0].callback({
-          newDoc: newReport
+          id: newReport._id,
+          doc: newReport
         });
       } else if (callbackCount === 5) {
         chai.expect(actual[0].reports.length).to.equal(2);
@@ -589,10 +634,12 @@ describe('TaskGenerator service', function() {
         form: 'P',
         reported_date: 1437618272360,
         fields: {
-          patient_id: 1,
-          patient_name: 'Jenny',
-          last_menstrual_period: 10
-        }
+          contact: {
+            _id: 1,
+            name: 'Jenny'
+          }
+        },
+        last_menstrual_period: 10
       }
     ];
 
@@ -608,19 +655,20 @@ describe('TaskGenerator service', function() {
         schedules: schedules
       }
     }));
-    DBGet.returns(KarmaUtils.mockPromise(null, { _id: 1, name: 'Jennifer' }));
 
     var callbackCount = 0;
     var service = injector.get('TaskGenerator');
     service('test', 'task', function(err, actual) {
+      if (err) {
+        return done(err);
+      }
       callbackCount++;
       if (callbackCount === 4) {
         Changes.args[0][0].callback({
-          id: 1
+          id: 1,
+          doc: { _id: 1, name: 'Jennifer' }
         });
       } else if (callbackCount === 5) {
-        chai.expect(DBGet.callCount).to.equal(1);
-        chai.expect(DBGet.args[0][0]).to.equal(1);
         chai.expect(actual[0].contact.name).to.equal('Jennifer');
         done();
       }
@@ -635,10 +683,12 @@ describe('TaskGenerator service', function() {
         form: 'P',
         reported_date: 1437618272360,
         fields: {
-          patient_id: 1,
-          patient_name: 'Jenny',
-          last_menstrual_period: 10
-        }
+          contact: {
+            _id: 1,
+            name: 'Jenny'
+          }
+        },
+        last_menstrual_period: 10
       }
     ];
 
@@ -654,28 +704,33 @@ describe('TaskGenerator service', function() {
         schedules: schedules
       }
     }));
-    DBGet.returns(KarmaUtils.mockPromise(null, {
-      _id: 2,
-      form: 'P',
-      reported_date: 1437618272360,
-      fields: {
-        patient_id: 1,
-        patient_name: 'Jenny',
-        last_menstrual_period: 15
-      }
-    }));
 
     var callbackCount = 0;
     var service = injector.get('TaskGenerator');
     service('test', 'task', function(err, actual) {
+      if (err) {
+        return done(err);
+      }
       callbackCount++;
       if (callbackCount === 4) {
         Changes.args[0][0].callback({
-          id: 2
+          id: 2,
+          doc: {
+            _id: 2,
+            form: 'P',
+            reported_date: 1437618272360,
+            fields: {
+              inputs: {
+                contact: {
+                  _id: 1,
+                  name: 'Jenny'
+                }
+              },
+              last_menstrual_period: 15
+            }
+          }
         });
       } else if (callbackCount === 5) {
-        chai.expect(DBGet.callCount).to.equal(1);
-        chai.expect(DBGet.args[0][0]).to.equal(2);
         chai.expect(actual[0].doc.fields.last_menstrual_period).to.equal(15);
         done();
       }

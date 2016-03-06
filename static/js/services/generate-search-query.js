@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    moment = require('moment'),
-    contactTypes = ['person','clinic','health_center','district_hospital'];
+    moment = require('moment');
 
 (function () {
 
@@ -8,8 +7,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('GenerateSearchQuery', [
-    function() {
+  inboxServices.factory('GenerateSearchQuery', [ 'CONTACT_TYPES',
+    function(CONTACT_TYPES) {
 
       var formatDate = function(date) {
         return date.utcOffset(0).format('YYYY-MM-DD');
@@ -35,10 +34,10 @@ var _ = require('underscore'),
       var formatContactsType = function($scope) {
         var selectedTypes = $scope.filterModel.contactTypes;
         if (selectedTypes.length > 0 &&
-            selectedTypes.length < contactTypes.length) {
+            selectedTypes.length < CONTACT_TYPES.length) {
           return { type: selectedTypes };
         }
-        return { type: contactTypes };
+        return { type: CONTACT_TYPES };
       };
 
       var formatForm = function($scope) {

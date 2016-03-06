@@ -9,13 +9,11 @@ function PARSER($parse, scope) {
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig', [
   '$log', '$parse', '$templateCache', '$timeout',
-      'Changes', 'DB', 'LiveList', 'TaskGenerator',
+      'Changes', 'DB', 'LiveList', 'TaskGenerator', 'CONTACT_TYPES',
   function($log, $parse, $templateCache, $timeout,
-      Changes, DB, LiveList, TaskGenerator) {
+      Changes, DB, LiveList, TaskGenerator, CONTACT_TYPES) {
     // Configure LiveList service
     return function($scope) {
-
-      var contactTypes = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
 
       var contacts_config = {
         orderBy: function(c1, c2) {
@@ -23,7 +21,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
             return;
           }
           if (c1.type !== c2.type) {
-            return contactTypes.indexOf(c1.type) - contactTypes.indexOf(c2.type);
+            return CONTACT_TYPES.indexOf(c1.type) - CONTACT_TYPES.indexOf(c2.type);
           }
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
@@ -54,24 +52,12 @@ angular.module('inboxServices').factory('LiveListConfig', [
             LiveList.contacts.remove({ _id: change.id });
             return;
           }
-
-          DB.get().get(change.id)
-            .then(function(doc) {
-              if (change.newDoc) {
-                LiveList.contacts.insert(doc);
-              } else {
-                LiveList.contacts.update(doc);
-              }
-            });
+          LiveList.contacts.update(change.doc);
         },
         filter: function(change) {
-          if (change.newDoc) {
-            return contactTypes.indexOf(change.newDoc.type) !== -1;
-          }
-          return LiveList.contacts.contains({ _id: change.id });
+          return CONTACT_TYPES.indexOf(change.doc.type) !== -1;
         }
       });
-
 
       var reports_config = {
         orderBy: function(r1, r2) {
@@ -107,24 +93,12 @@ angular.module('inboxServices').factory('LiveListConfig', [
             LiveList.reports.remove({ _id: change.id });
             return;
           }
-
-          DB.get().get(change.id)
-            .then(function(doc) {
-              if (change.newDoc) {
-                LiveList.reports.insert(doc);
-              } else {
-                LiveList.reports.update(doc);
-              }
-            });
+          LiveList.reports.update(change.doc);
         },
         filter: function(change) {
-          if (change.newDoc) {
-            return change.newDoc.form;
-          }
-          return LiveList.reports.contains({ _id: change.id });
+          return change.doc.form;
         }
       });
-
 
       LiveList.$listFor('tasks', {
         selecter: '#tasks-list ul',
@@ -135,7 +109,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
           // Currently some task dates are Strings while others are proper JS
           // Date objects.  Simplest way to compare them is to parse all into
           // instances of Date.
-          return Date.parse(t2.date) - Date.parse(t1.date);
+          return Date.parse(t1.date) - Date.parse(t2.date);
         },
         listItem: function(task) {
           var taskHtml = $templateCache.get('templates/partials/tasks_list_item.html');
@@ -181,7 +155,8 @@ angular.module('inboxServices').factory('LiveListConfig', [
 ]);
 
 angular.module('inboxServices').factory('LiveList', [
-  function() {
+  '$timeout',
+  function($timeout) {
     var api = {};
     var indexes = {};
 
@@ -209,6 +184,14 @@ angular.module('inboxServices').factory('LiveList', [
       if (!config.selecter) {
         throw new Error('No `selecter` set for list.');
       }
+    }
+
+    function listItemFor(idx, doc) {
+      var li = $(idx.listItem(doc));
+      if (doc._id === idx.selected) {
+        li.addClass('selected');
+      }
+      return li;
     }
 
     function _getList(listName) {
@@ -250,6 +233,8 @@ angular.module('inboxServices').factory('LiveList', [
         throw new Error('LiveList not configured for: ' + listName);
       }
 
+      idx.lastUpdate = new Date();
+
       // TODO we should sort the list in place with a suitable, efficient algorithm
       idx.list = [];
       idx.dom = [];
@@ -288,10 +273,7 @@ angular.module('inboxServices').factory('LiveList', [
         return;
       }
 
-      var li = $(idx.listItem(newItem));
-      if (newItem._id === idx.selected) {
-        li.addClass('selected');
-      }
+      var li = listItemFor(idx, newItem);
 
       var newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
       idx.list.splice(newItemIndex, 0, newItem);
@@ -382,6 +364,44 @@ angular.module('inboxServices').factory('LiveList', [
         }
       }
     }
+
+    function refreshAll() {
+      var i, now = new Date();
+
+      _.forEach(indexes, function(idx, name) {
+        // N.B. no need to update a list that's never been generated
+        if (idx.lastUpdate && !sameDay(idx.lastUpdate, now)) {
+          // regenerate all list contents so relative dates relate to today
+          // instead of yesterday
+          for (i=idx.list.length-1; i>=0; --i) {
+            idx.dom[i] = listItemFor(idx, idx.list[i]);
+          }
+
+          api[name].refresh();
+
+          idx.lastUpdate = now;
+        }
+      });
+
+      // Schedule this task again for tomorrow
+      $timeout(refreshAll, millisTilMidnight(now));
+    }
+
+    function sameDay(d1, d2) {
+      return d1.getDay() === d2.getDay();
+    }
+
+    function millisTilMidnight(now) {
+      var midnight = new Date(now);
+
+      midnight.setDate(now.getDate() + 1);
+      midnight.setHours(0);
+      midnight.setMinutes(0);
+
+      return midnight.getTime() - now.getTime();
+    }
+
+    $timeout(refreshAll, millisTilMidnight(new Date()));
 
     api.$listFor = function(name, config) {
       checkConfig(config);

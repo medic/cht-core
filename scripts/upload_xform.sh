@@ -21,7 +21,7 @@ Usage:
 Options:
   -f
       force-overwrite of existing doc
-  -c <javascript-file>
+  -c <json-file>
       set the context(s) for which this form will be available
 
 Examples:
@@ -64,7 +64,7 @@ formTitle="$(grep h:title $XFORM_PATH | sed -E -e 's_.*<h:title>(.*)</h:title>.*
 formInternalId="$(sed -e '1,/<instance>/d' $XFORM_PATH | grep -E 'id="[^"]+"' | head -n1 | sed -E -e 's_.*id="([^"]+)".*_\1_')"
 
 if $USE_CONTEXT_FILE; then
-    formContext='"'"$(tr -d '\n' < "${CONTEXT_FILE}" | tr -d '\t' | sed 's_"_\\"_g')"'"'
+    formContext="$(cat "${CONTEXT_FILE}")"
 else
     contextPatient=false
     contextPlace=false
@@ -79,6 +79,13 @@ fi
 
 docUrl="${DB}/form:${ID}"
 
+fullJson='{
+    "type": "form",
+    "title": "'"${formTitle}"'",
+    "internalId": "'"${formInternalId}"'",
+    "context": '"${formContext}"'
+}'
+
 cat <<EOF
 [$SELF] -----
 [$SELF] Summary
@@ -89,16 +96,20 @@ cat <<EOF
 [$SELF]   force override: $FORCE
 [$SELF]   uploading to: $docUrl
 [$SELF]   form context: $formContext
+[$SELF]   full JSON: $fullJson
 [$SELF] -----
 EOF
 
-if $FORCE; then
-    echo "[$SELF] Trying to delete existing doc..."
-    revResponse=$(curl -s "$docUrl")
-    rev=$(jq -r ._rev <<< "$revResponse")
-    curl -s -X DELETE "${docUrl}?rev=${rev}" >/dev/null
-    # a moment's pause to let the delete complete
-    sleep 1
+if $FORCE && [[ "missing" != "$(curl -s ${docUrl} | jq -r .reason)" ]] ; then
+    until [[ "deleted" = "$(curl -s ${docUrl} | jq -r .reason)" ]]; do
+        echo "[$SELF] Trying to delete existing doc..."
+        rev=$(curl -s "$docUrl" | jq -r ._rev)
+        curl -s -X DELETE "${docUrl}?rev=${rev}" >/dev/null
+
+        # wait until it's really deleted
+        echo "[$SELF] waiting for doc deletion..."
+        sleep 1
+    done
 fi
 
 check_rev() {
@@ -109,12 +120,7 @@ check_rev() {
     fi
 }
 
-revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d '{
-    "type":"form",
-    "title":"'"${formTitle}"'",
-    "internalId":"'"${formInternalId}"'",
-    "context":'"${formContext}"'
-}' "$docUrl")
+revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d "${fullJson}" "$docUrl")
 rev=$(jq -r .rev <<< "$revResponse")
 check_rev
 
