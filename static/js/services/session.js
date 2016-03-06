@@ -57,8 +57,15 @@ var COOKIE_NAME = 'userCtx';
 
       return {
         logout: logout,
+
+        /**
+         * Get the user context of the logged in user. This will return
+         * null if the user is not logged in.
+         */
         userCtx: getUserCtx,
+
         navigateToLogin: navigateToLogin,
+
         init: function() {
           checkCurrentSession();
           listenForSessionChanges();

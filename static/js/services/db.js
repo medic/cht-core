@@ -31,6 +31,9 @@ var utils = require('kujua-utils'),
 
       var getLocal = function(name) {
         var userCtx = Session.userCtx();
+        if (!userCtx) {
+          return Session.navigateToLogin();
+        }
         return getFromCache((name || DbNameService()) + '-user-' + userCtx.name);
       };
 
