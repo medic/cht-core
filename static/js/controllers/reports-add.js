@@ -23,6 +23,9 @@
       $scope.saving = false;
       if ($state.params.reportId || $state.params.formId) {
         $scope.setCancelTarget(function() {
+          if (!$state.params.reportId) {
+            $scope.query();
+          }
           $state.go('reports.detail', { id: $state.params.reportId });
         });
       } else {
