@@ -6,7 +6,7 @@ inboxServices.factory('CheckDate', [
   '$http',
   function($http) {
     return function($scope) {
-      $http.head('/api/info/?seed=' + Math.random())
+      $http.head('/api/info?seed=' + Math.random())
         .then(function(response) {
           var header = response.headers('Date');
           var timestamp = Date.parse(header);
