@@ -208,6 +208,27 @@ module.exports = {
         "national_admin",
         "district_admin"
       ]
+    },
+    {
+      "name": "can_delete_reports",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_delete_contacts",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_delete_messages",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
     }
   ],
   "forms": {
