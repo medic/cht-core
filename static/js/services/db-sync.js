@@ -95,7 +95,7 @@ var _ = require('underscore'),
           });
       };
 
-      return function(replicateDoneListener) {
+      return function(replicateDoneCallback) {
         var userCtx = Session.userCtx();
         if (utils.isUserAdmin(userCtx)) {
           // admins have potentially too much data so bypass local pouch
@@ -111,11 +111,11 @@ var _ = require('underscore'),
               query_params: params
             })
             .on('complete', function() {
-              console.log('Initial sync complete in ' +
+              $log.info('Initial sync complete in ' +
                 ((Date.now() - beforeInitialReplication) / 1000) +
                 ' seconds, starting replication listener');
 
-              replicateDoneListener();
+              replicateDoneCallback();
 
               replicate('from', {
                 filter: 'erlang_filters/doc_by_place',
