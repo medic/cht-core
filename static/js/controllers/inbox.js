@@ -23,14 +23,14 @@ require('moment/locales');
       Session.init();
       TrafficStats($scope);
 
-      $scope.initialReplicationStatus = "pending";
+      $scope.initialReplicationStatus = 'Pending';
       var dbSyncStartTime = Date.now(),
           dbSyncStartData;
       if(window.medicmobile_android && window.medicmobile_android.getDataUsage) {
         dbSyncStartData = JSON.parse(window.medicmobile_android.getDataUsage());
       }
       DBSync(function() {
-        $scope.initialReplicationStatus = "complete";
+        $scope.initialReplicationStatus = 'Complete';
         $scope.initialReplicationDuration = Date.now() - dbSyncStartTime;
         dbSyncStartTime = null;
 
