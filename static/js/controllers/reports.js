@@ -183,13 +183,13 @@ var _ = require('underscore'),
       };
 
       $scope.$on('query', function() {
-        if ($scope.isMobile() && $scope.showContent) {
-          // leave content shown
-          return;
-        }
         if ($scope.filterModel.type !== 'reports') {
           // not viewing reports tab
           liveList.clearSelected();
+          return;
+        }
+        if ($scope.isMobile() && $scope.showContent) {
+          // leave content shown
           return;
         }
         $scope.loading = true;
