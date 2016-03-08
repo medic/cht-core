@@ -3,14 +3,14 @@ var async = require('async'),
     db = require('../db');
 
 var getType = function(user, admins) {
-  if (user.doc.roles && user.doc.roles.length) {
-    return user.doc.roles[0];
+  if (user.roles && user.roles.length) {
+    return user.roles[0];
   }
-  return admins[user.doc.name] ? 'admin' : 'unknown';
+  return admins[user.name] ? 'admin' : 'unknown';
 };
 
 var getFacility = function(user, facilities) {
-  return _.findWhere(facilities, { _id: user.doc.facility_id });
+  return _.findWhere(facilities, { _id: user.facility_id });
 };
 
 var getAllUserSettings = function(callback) {
@@ -48,32 +48,37 @@ var getFacilities = function(callback) {
   });
 };
 
-var getSettings = function(user, settings) {
-  return _.findWhere(settings, { _id: user.id });
+var getSettings = function(id, settings) {
+  return _.findWhere(settings, { _id: id });
 };
 
 var getAdmins = function(callback) {
   var opts = {
     path: '_config/admins'
   };
-  db.request(opts, callback);
+  db.request(opts, function(err, body) {
+    if (err) {
+      return callback(err);
+    }
+    callback(null, body);
+  });
 };
 
 var mapUsers = function(users, settings, facilities, admins) {
   var filtered = _.filter(users, function(user) {
-    return user.id.indexOf('org.couchdb.user:') === 0;
+    return user.id.indexOf(getPrefix() + ':') === 0;
   });
   return _.map(filtered, function(user) {
-    var setting = getSettings(user, settings) || {};
+    var setting = getSettings(user.id, settings) || {};
     return {
       id: user.id,
       rev: user.doc._rev,
-      name: user.doc.name,
+      username: user.doc.name,
       fullname: setting.fullname,
       email: setting.email,
       phone: setting.phone,
-      facility: getFacility(user, facilities),
-      type: getType(user, admins),
+      facility: getFacility(user.doc, facilities),
+      type: getType(user.doc, admins),
       language: { code: setting.language },
       contact_id: setting.contact_id
     };
@@ -208,36 +213,50 @@ var getRoles = function(type) {
   return type ? [type].concat(rolesMap[type]) : [];
 };
 
+var getDocID = function(doc) {
+  if (typeof doc === 'string') {
+    return doc;
+  }
+  if (typeof doc === 'object') {
+    return doc._id;
+  }
+};
+
 var getSettingsUpdates = function(data) {
   return {
-    name: data.name,
+  // Redundant, already saved in users db.
+  // name: data.name,
     fullname: data.fullname,
     email: data.email,
     phone: data.phone,
     language: data.language && data.language.code,
-    facility_id: data.facility && data.facility._id
-    //contact_id: $('#edit-user-profile [name=contact]').val()
+    facility_id: getDocID(data.place),
+    contact_id: getDocID(data.contact)
   };
 };
 
 var getUserUpdates = function(id, data) {
   return {
-    name: id,
+    name: id.split(':')[1],
     password: data.password,
     // defaults role to district-manager
     roles: data.type ? getRoles(data.type) : getRoles('district-manager'),
-    facility_id: data.facility && data.facility._id
+    facility_id: getDocID(data.place)
   };
 };
 
+var getPrefix = function() {
+  return 'org.couchdb.user';
+};
+
 var createId = function(name) {
-  return 'org.couchdb.user:' + name;
+  return [getPrefix(), name].join(':');
 };
 
 var deleteUser = function(id, callback) {
-  // Possibility exists here _users database update happens but medic update
-  // fails and user is in inconsistent state. There is no way to do atomic
-  // update on more than one database with CouchDB API.
+  // Potential problem here where _users database update happens but medic
+  // update fails and user is in inconsistent state. There is no way to do
+  // atomic update on more than one database with CouchDB API.
   async.series([
     function(cb){
       db._users.get(id, function(err, user) {
@@ -262,13 +281,20 @@ var deleteUser = function(id, callback) {
   });
 };
 
+/*
+ * Everything not exported directly is private.  Underscore prefix is only used
+ * to export functions needed for testing.
+ */
 module.exports = {
   _mapUsers: mapUsers,
+  _getType : getType,
   _getAdmins: getAdmins,
   _getAllUsers: getAllUsers,
   _getAllUserSettings: getAllUserSettings,
   _getFacilities: getFacilities,
   _getOrCreateUser: getOrCreateUser,
+  _getSettingsUpdates: getSettingsUpdates,
+  _getUserUpdates: getUserUpdates,
   _createOrUpdate: createOrUpdate,
   deleteUser: function(username, callback) {
     deleteUser(createId(username), callback);
@@ -288,14 +314,15 @@ module.exports = {
     });
   },
   createOrUpdate: function(username, data, contentType, callback) {
-    var self = this;
+    var self = this,
+        id = createId(username);
     if (['json'].indexOf(contentType) === -1) {
       return callback(new Error('Content type not supported.'));
     }
     self._createOrUpdate(
-      createId(username),
+      id,
       getSettingsUpdates(data),
-      getUserUpdates(username, data),
+      getUserUpdates(id, data),
       callback
     );
   }

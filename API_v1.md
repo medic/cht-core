@@ -526,36 +526,19 @@ Content-Type: application/json; charset=utf-8
 
 # Users
 
+All user related requests are limited to users with admin privileges by default.
+
 ## GET /api/v1/users
 
-Returns a list of users and their profile data in JSON format.
+Returns a list of users and their profile data in JSON format.  
 
-## POST /api/v1/users/{{username}}
+#### Permissions 
 
-Create a new user or update an existing one based on a username.
-
-#### URL Parameters
-
-| Variable | Description      
-| -------- | ----------------- 
-| username | String identifier used for authentication.
-
-#### Request Parameters
-
-| Variable | Description       
-| -------- | -----------------
-| password | Password string used for authentication.
-| type     | Default: 'district-manager'
-| fullname | Full name 
-| email    | Email address 
-| phone    | Phone number
-| language | Language preference during application rendering. Default: 'en'
-| place    | Place/facility UUID or object
-| contact  | Contact UUID or object
+`can_view_users`
 
 ### Examples
 
-Get list of users in JSON format.
+Get list of users:
 
 ```
 GET /api/v1/users
@@ -569,17 +552,30 @@ Content-Type: application/json; charset=utf-8
   {
     "id": "org.couchdb.user:admin",
     "rev": "10-6486428924d11781c107ea74de6b63b6",
-    "type": "national-manager",
+    "type": "admin",
+    "name": "admin",
     "language": {
       "code": "en"
     }
-  },
+  },  
   {
     "id": "org.couchdb.user:demo",
     "rev": "14-8758c8493edcc6dac50366173fc3e24a",
     "fullname": "Example User",
-    "facility": "eeb17d6d-5dde-c2c0-62c4a1a0ca17e342",
+    "facility": {
+      "_id": "eeb17d6d-5dde-c2c0-62c4a1a0ca17d38b",
+      "type": "district_hospital",
+      "name": "Sample District",
+      "parent": {},
+      "contact": {
+        "_id": "eeb17d6d-5dde-c2c0-62c4a1a0ca17fd17",
+        "type": "person",
+        "name": "Paul",
+        "phone": "+2868917046"
+      }
+    },
     "type": "district-manager",
+    "name": "demo",
     "language": {
       "code": "en"
     },
@@ -588,8 +584,40 @@ Content-Type: application/json; charset=utf-8
 ]
 ```
 
+## POST /api/v1/users/{{username}}
+
+Create a new user or update an existing one based on a username. 
+
+### Permissions
+
+`can_create_or_update_users`  
+
+### URL Parameters
+
+| Variable | Description      
+| -------- | ----------------- 
+| username | String identifier used for authentication.
+
+
+### JSON Properties
+
+Use JSON in the request body to specify user details.  Any properties submitted that are not on the list below will be ignored.  Any properties not included will be undefined. There is no support for updating a single property.
+
+| Key | Description       
+| -------- | -----------------
+| password | Password string used for authentication.  Only allowed to be set, not retrieved.
+| type     | Default: 'district-manager'
+| fullname | Full name 
+| email    | Email address 
+| phone    | Phone number
+| language | Language preference. Default: 'en'
+| place    | Place/facility identifier string (UUID) or object
+| contact  | Contact identifier string (UUID) or object
+
+### Examples
+
 Create a new user that can authenticate with a username of "mary" and password
-of "secret" and can view or modify records in their place:
+of "secret" that can view or modify records in their place:
 
 ```
 POST /api/v1/users/mary
@@ -604,22 +632,26 @@ Content-Type: application/json
 
 ```
 HTTP/1.1 200 
-Content-Type: application/json; charset=utf-8
+Content-Type: application/json
 
 {
-  "id": "org.couchdb.user:mary",
-  "rev": "1-58c13d9e7c486ab6e9273a67103b4007",
-  "fullname": "Mary Anyango",
-  "type": "district-manager",
-  "language": {}
+  "ok":true,
+  "id":"org.couchdb.user:mary",
+  "rev":"1-46bb56c05e37274c3f92a1fee2ef9427"
 }
+
 ```
 
 ## DELETE /api/v1/users/{{username}}
 
-Delete a user.
+Delete a user.  
 
-#### URL Parameters
+### Permissions
+
+`can_delete_users` 
+
+
+### URL Parameters
 
 | Variable | Description      
 | -------- | ----------------- 

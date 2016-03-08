@@ -40,6 +40,63 @@ exports.setUp = function(callback) {
   callback();
 };
 
+exports['getSettingsUpdates removes user doc specific fields'] = function(test) {
+  var data = {
+    name: 'john',
+    email: 'john@gmail.com',
+    password: 'foo',
+    roles: ['foo'],
+    starsign: 'libra'
+  };
+  var settings = controller._getSettingsUpdates(data);
+  test.equal(settings.password, undefined);
+  test.equal(settings.roles, undefined);
+  test.done();
+};
+
+exports['getUserUpdates enforces name field based on id'] = function(test) {
+  var data = {
+    name: 'sam',
+    email: 'john@gmail.com'
+  };
+  var user = controller._getUserUpdates('org.couchdb.user:john', data);
+  test.equal(user.name , 'john');
+  test.done();
+};
+
+exports['getType returns unknown when roles is empty'] = function(test) {
+  var user = {
+    name: 'sam',
+    roles: []
+  };
+  var admins = {};
+  test.equal(controller._getType(user, admins), 'unknown');
+  test.done();
+};
+
+exports['getType returns admin when user is in admins list and roles is empty'] = function(test) {
+  var user = {
+    name: 'sam',
+    roles: []
+  };
+  var admins = {
+    'sam': 'x'
+  };
+  test.equal(controller._getType(user, admins), 'admin');
+  test.done();
+};
+
+exports['getType returns role when user is in admins list and has role'] = function(test) {
+  var user = {
+    name: 'sam',
+    roles: ['driver']
+  };
+  var admins = {
+    'sam': 'x'
+  };
+  test.equal(controller._getType(user, admins), 'driver');
+  test.done();
+};
 exports['getList collects user infos'] = function(test) {
   test.expect(16);
   sinon.stub(controller, '_getAdmins').callsArg(0);
@@ -82,7 +139,7 @@ exports['getList collects user infos'] = function(test) {
     test.equals(data.length, 2);
     var lucas = data[0];
     test.equals(lucas.id, 'org.couchdb.user:x');
-    test.equals(lucas.name, 'lucas');
+    test.equals(lucas.username, 'lucas');
     test.equals(lucas.fullname, 'Lucas M');
     test.equals(lucas.email, 'l@m.com');
     test.equals(lucas.phone, '123456789');
@@ -90,7 +147,7 @@ exports['getList collects user infos'] = function(test) {
     test.equals(lucas.type, 'national-admin');
     var milan = data[1];
     test.equals(milan.id, 'org.couchdb.user:y');
-    test.equals(milan.name, 'milan');
+    test.equals(milan.username, 'milan');
     test.equals(milan.fullname, 'Milan A');
     test.equals(milan.email, 'm@a.com');
     test.equals(milan.phone, '987654321');
@@ -148,7 +205,7 @@ exports['getList filters out non-users'] = function(test) {
     test.equal(data.length, 1);
     var milan = data[0];
     test.equal(milan.id, 'org.couchdb.user:y');
-    test.equal(milan.name, 'milan');
+    test.equal(milan.username, 'milan');
     test.equal(milan.fullname, 'Milan A');
     test.equal(milan.email, 'm@a.com');
     test.equal(milan.phone, '987654321');
@@ -178,7 +235,7 @@ exports['getList handles minimal users'] = function(test) {
     test.equal(data.length, 1);
     var lucas = data[0];
     test.equal(lucas.id, 'org.couchdb.user:x');
-    test.equal(lucas.name, 'lucas');
+    test.equal(lucas.username, 'lucas');
     test.equal(lucas.fullname, undefined);
     test.equal(lucas.email, undefined);
     test.equal(lucas.phone, undefined);
@@ -207,8 +264,34 @@ exports['getList replaces admins type'] = function(test) {
     test.equal(data.length, 1);
     var gareth = data[0];
     test.equal(gareth.id, 'org.couchdb.user:gareth');
-    test.equal(gareth.name, 'gareth');
+    test.equal(gareth.username, 'gareth');
     test.equal(gareth.type, 'admin');
+    test.done();
+  });
+};
+
+exports['getList does not replace admins type if roles exists'] = function(test) {
+  test.expect(5);
+  sinon.stub(controller, '_getAdmins').callsArgWith(0, null, {
+    gareth: 'abc'
+  });
+  sinon.stub(controller, '_getAllUsers').callsArgWith(0, null, [
+    {
+      id: 'org.couchdb.user:gareth',
+      doc: {
+        name: 'gareth',
+        roles: ['national-admin']
+      }
+    }
+  ]);
+  sinon.stub(controller, '_getAllUserSettings').callsArgWith(0, null, []);
+  controller.getList(function(err, data) {
+    test.equal(err, null);
+    test.equal(data.length, 1);
+    var gareth = data[0];
+    test.equal(gareth.id, 'org.couchdb.user:gareth');
+    test.equal(gareth.username, 'gareth');
+    test.equal(gareth.type, 'national-admin');
     test.done();
   });
 };
@@ -576,3 +659,4 @@ exports['deleteUser sets _deleted on the user-settings doc'] = function(test) {
     test.done();
   });
 };
+
