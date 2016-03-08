@@ -29,6 +29,10 @@ Examples:
 EOF
 }
 
+error() {
+  echo "[$0] Error: $1"; exit 1
+}
+
 if [[ $# < 2 ]]; then
     echo "[$SELF] Missing parameters."
     _usage
@@ -103,7 +107,9 @@ EOF
 if $FORCE && [[ "missing" != "$(curl -s ${docUrl} | jq -r .reason)" ]] ; then
     until [[ "deleted" = "$(curl -s ${docUrl} | jq -r .reason)" ]]; do
         echo "[$SELF] Trying to delete existing doc..."
-        rev=$(curl -s "$docUrl" | jq -r ._rev)
+        res=$(curl -s "$docUrl")
+        [[ "null" = "$(jq -r .error <<< "$res")" ]] || error "Failed to delete doc: $res"
+        rev=$(jq -r ._rev <<< "$res")
         curl -s -X DELETE "${docUrl}?rev=${rev}" >/dev/null
 
         # wait until it's really deleted
@@ -131,6 +137,7 @@ echo "[$SELF] Uploading form: $ID..."
 revResponse=$(curl -# -f -X PUT -H "Content-Type: text/xml" \
     --data-binary "@${XFORM_PATH}.$$.tmp" \
     "${docUrl}/xml?rev=${rev}")
+echo "revResponse: $revResponse"
 rev=$(jq -r .rev <<< "$revResponse")
 
 rm "$XFORM_PATH.$$.tmp"
