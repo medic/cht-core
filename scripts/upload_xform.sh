@@ -133,7 +133,7 @@ check_rev
 # Upload a temp file with the title stripped
 sed '/<h:title>/d' "$XFORM_PATH" > "$XFORM_PATH.$$.tmp"
 
-echo "[$SELF] Uploading form: $ID..."
+echo "[$SELF] Uploading form xml: id: $ID, rev: $rev..."
 revResponse=$(curl -# -f -X PUT -H "Content-Type: text/xml" \
     --data-binary "@${XFORM_PATH}.$$.tmp" \
     "${docUrl}/xml?rev=${rev}")
