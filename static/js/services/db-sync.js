@@ -115,7 +115,9 @@ var _ = require('underscore'),
                 ((Date.now() - beforeInitialReplication) / 1000) +
                 ' seconds, starting replication listener');
 
-              replicateDoneCallback();
+              if (replicateDoneCallback) {
+                replicateDoneCallback();
+              }
 
               replicate('from', {
                 filter: 'erlang_filters/doc_by_place',
