@@ -9,7 +9,9 @@ describe('TargetGenerator service', function() {
 
   beforeEach(function() {
     Settings = sinon.stub();
-    TaskGenerator = sinon.stub();
+    TaskGenerator = {
+      listen: sinon.stub(),
+    };
     module('inboxApp');
     module(function ($provide) {
       $provide.value('Settings', Settings);
@@ -34,7 +36,7 @@ describe('TargetGenerator service', function() {
 
   it('returns task generator errors', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [] } } }));
-    TaskGenerator.callsArgWith(2, 'boom');
+    TaskGenerator.listen.callsArgWith(2, 'boom');
     injector.get('TargetGenerator')(function(err) {
       chai.expect(err).to.equal('boom');
       done();
@@ -43,7 +45,7 @@ describe('TargetGenerator service', function() {
 
   it('returns empty when no targets are emitted', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [] } } }));
-    TaskGenerator.callsArgWith(2, null, []);
+    TaskGenerator.listen.callsArgWith(2, null, []);
     injector.get('TargetGenerator')(function(err, actual) {
       chai.expect(actual).to.deep.equal([]);
       done();
@@ -54,7 +56,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'known' }
     ] } } }));
-    TaskGenerator.callsArgWith(2, null, [
+    TaskGenerator.listen.callsArgWith(2, null, [
       { _id: '1', type: 'unknown' }
     ]);
     injector.get('TargetGenerator')(function(err, actual) {
@@ -67,7 +69,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'count' }
     ] } } }));
-    TaskGenerator.callsArgWith(2, null, [
+    TaskGenerator.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', date: now, pass: true },
       { _id: '2', type: 'report', date: now, pass: false },
       { _id: '3', type: 'report', date: now, pass: true }
@@ -85,7 +87,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'count' }
     ] } } }));
-    TaskGenerator.callsArgWith(2, null, [
+    TaskGenerator.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: now },
       { _id: '2', type: 'report', pass: true, date: 0 },
       { _id: '2', type: 'report', pass: true } // null date is ignored
@@ -103,7 +105,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'percent' }
     ] } } }));
-    TaskGenerator.callsArgWith(2, null, [
+    TaskGenerator.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', date: now, pass: true },
       { _id: '2', type: 'report', date: 0, pass: false },
       { _id: '3', type: 'report', date: now, pass: false },
@@ -122,7 +124,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'percent' }
     ] } } }));
-    TaskGenerator.callsArgWith(2, null, [
+    TaskGenerator.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: 0 } // too old to be relevant, so not included in count
     ]);
     injector.get('TargetGenerator')(function(err, actual) {
@@ -139,7 +141,7 @@ describe('TargetGenerator service', function() {
       { id: 'report', type: 'count' },
       { id: 'registration', type: 'percent' }
     ] } } }));
-    TaskGenerator.callsArgWith(2, null, [
+    TaskGenerator.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: now },
       { _id: '2', type: 'report', pass: true, date: now },
       { _id: '1', type: 'registration', date: now, pass: true },
@@ -182,12 +184,12 @@ describe('TargetGenerator service', function() {
     });
 
     // first result from the TaskGenerator
-    TaskGenerator.callsArgWith(2, null, [
+    TaskGenerator.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: now }
     ]);
     setTimeout(function() {
       // some time later... second result from the TaskGenerator
-      TaskGenerator.args[0][2](null, [
+      TaskGenerator.listen.args[0][2](null, [
         { _id: '2', type: 'report', pass: true, date: now }
       ]);
     });
@@ -218,14 +220,14 @@ describe('TargetGenerator service', function() {
     });
 
     // first result from the TaskGenerator
-    TaskGenerator.callsArgWith(2, null, [
+    TaskGenerator.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: now },
       { _id: '1', type: 'report', pass: true, date: now },
       { _id: '2', type: 'report', pass: true, date: now }
     ]);
     setTimeout(function() {
       // some time later... second result from the TaskGenerator
-      TaskGenerator.args[0][2](null, [
+      TaskGenerator.listen.args[0][2](null, [
         { _id: '1', type: 'report', pass: true, date: now },
         { _id: '2', type: 'report', pass: false, date: now },
         { _id: '3', type: 'report', pass: true, date: now },
