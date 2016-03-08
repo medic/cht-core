@@ -15,6 +15,7 @@
   require('./configuration-export');
   require('./configuration-forms');
   require('./configuration-icons');
+  require('./configuration-permissions');
   require('./configuration-settings-advanced');
   require('./configuration-settings-basic');
   require('./configuration-targets');

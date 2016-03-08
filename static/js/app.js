@@ -326,6 +326,15 @@ _.templateSettings = {
             }
           }
         })
+        .state('configuration.permissions', {
+          url: '/permissions',
+          views: {
+            content: {
+              controller: 'ConfigurationPermissionsCtrl',
+              templateUrl: 'templates/partials/configuration_permissions.html'
+            }
+          }
+        })
 
         // about page
         .state('about', {

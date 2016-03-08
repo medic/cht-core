@@ -994,6 +994,14 @@ require('moment/locales');
             return $state.is('configuration.targets') || $state.is('configuration.targets-edit');
           }
         },
+        {
+          state: 'configuration.permissions',
+          icon: 'fa-key',
+          name: 'permissions',
+          active: function() {
+            return $state.is('configuration.permissions');
+          }
+        },
       ];
 
       UserDistrict(function() {
