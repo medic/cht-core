@@ -929,6 +929,73 @@ require('moment/locales');
         });
       };
 
+      $scope.configurationPages = [
+        {
+          state: 'configuration.settings.basic',
+          icon: 'fa-cog',
+          name: 'Settings',
+          active: function() {
+            return $state.includes('configuration.settings');
+          }
+        },
+        {
+          state: 'configuration.translation.languages',
+          icon: 'fa-language',
+          name: 'Languages',
+          active: function() {
+            return $state.includes('configuration.translation');
+          }
+        },
+        {
+          state: 'configuration.forms',
+          icon: 'fa-list-alt',
+          name: 'Forms',
+          active: function() {
+            return $state.is('configuration.forms');
+          }
+        },
+        {
+          state: 'configuration.export',
+          icon: 'fa-arrow-circle-o-down',
+          name: 'Export',
+          active: function() {
+            return $state.is('configuration.export');
+          }
+        },
+        {
+          state: 'configuration.user',
+          icon: 'fa-user',
+          name: 'edit.user.settings',
+          active: function() {
+            return $state.is('configuration.user');
+          }
+        },
+        {
+          state: 'configuration.users',
+          icon: 'fa-users',
+          name: 'Users',
+          active: function() {
+            return $state.is('configuration.users');
+          }
+        },
+        {
+          state: 'configuration.icons',
+          icon: 'fa-file-image-o',
+          name: 'icons',
+          active: function() {
+            return $state.is('configuration.icons');
+          }
+        },
+        {
+          state: 'configuration.targets',
+          icon: 'fa-dot-circle-o',
+          name: 'analytics.targets',
+          active: function() {
+            return $state.is('configuration.targets') || $state.is('configuration.targets-edit');
+          }
+        },
+      ];
+
       UserDistrict(function() {
         $scope.$watch('filterModel', function(curr, prev) {
           if (prev !== curr) {
