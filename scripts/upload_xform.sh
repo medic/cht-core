@@ -104,20 +104,6 @@ cat <<EOF
 [$SELF] -----
 EOF
 
-if $FORCE && [[ "missing" != "$(curl -s ${docUrl} | jq -r .reason)" ]] ; then
-    until [[ "deleted" = "$(curl -s ${docUrl} | jq -r .reason)" ]]; do
-        echo "[$SELF] Trying to delete existing doc..."
-        res=$(curl -s "$docUrl")
-        [[ "null" = "$(jq -r .error <<< "$res")" ]] || error "Failed to delete doc: $res"
-        rev=$(jq -r ._rev <<< "$res")
-        curl -s -X DELETE "${docUrl}?rev=${rev}" >/dev/null
-
-        # wait until it's really deleted
-        echo "[$SELF] waiting for doc deletion..."
-        sleep 1
-    done
-fi
-
 check_rev() {
     # exit if we don't see a rev property
     if [ -z "$rev" ] || [ "$rev" = "null" ]; then
@@ -126,7 +112,21 @@ check_rev() {
     fi
 }
 
-revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d "${fullJson}" "$docUrl")
+rev=""
+if $FORCE; then
+    revResponse="$(curl -s ${docUrl})"
+    if [[ "not_found" != "$(jq -r .error <<< "$revResponse")" ]]; then
+      rev=$(jq -r ._rev <<< "$revResponse")
+      check_rev
+    fi
+fi
+
+if [ -z "${rev-}" ]; then
+  revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d "${fullJson}" "$docUrl")
+else
+  revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d "${fullJson}" "$docUrl?rev=${rev-}")
+fi
+echo "[$0] Upload response: $revResponse"
 rev=$(jq -r .rev <<< "$revResponse")
 check_rev
 
