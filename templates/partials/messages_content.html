@@ -6,10 +6,6 @@
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!selected.messages[0] && !loadingContent">
-    <div>{{'No message selected' | translate}}</div>
-  </div>
-
   <div class="message-content-wrapper" ng-show="selected.messages[0] && !loadingContent">
     <div id="message-header" class="col-sm-8 name-header">
       <mm-sender message="selected.messages[0].value"></mm-sender>
