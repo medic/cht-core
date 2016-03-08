@@ -61,7 +61,7 @@ var moment = require('moment');
       return function(callback) {
         init
           .then(function() {
-            TaskGenerator('TargetGenerator', 'target', function(err, _targets) {
+            TaskGenerator.listen('TargetGenerator', 'target', function(err, _targets) {
               if (!err) {
                 _targets.forEach(mergeTarget);
               }

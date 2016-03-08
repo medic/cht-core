@@ -164,7 +164,7 @@ var _ = require('underscore');
           patientIds = _.pluck($scope.selected.children, 'id');
         }
         patientIds.push($scope.selected.doc._id);
-        TaskGenerator('ContactsContentCtrl', 'task', function(err, tasks) {
+        TaskGenerator.listen('ContactsContentCtrl', 'task', function(err, tasks) {
           if (err) {
             return $log.error('Error getting tasks', err);
           }
