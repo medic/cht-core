@@ -607,7 +607,12 @@ Content-Type: application/json; charset=utf-8
     "language": {
       "code": "en"
     },
-    "contact_id": "1d83f2b4a27eceb40df9e9f9ad06d137"
+    "contact": {
+      "_id": "eeb17d6d-5dde-c2c0-62c4a1a0ca17fd17",
+      "type": "person",
+      "name": "Paul",
+      "phone": "+2868917046"
+    }
   }
 ]
 ```
