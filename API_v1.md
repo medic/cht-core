@@ -581,7 +581,7 @@ Content-Type: application/json; charset=utf-8
     "id": "org.couchdb.user:admin",
     "rev": "10-6486428924d11781c107ea74de6b63b6",
     "type": "admin",
-    "name": "admin",
+    "username": "admin",
     "language": {
       "code": "en"
     }
@@ -603,7 +603,7 @@ Content-Type: application/json; charset=utf-8
       }
     },
     "type": "district-manager",
-    "name": "demo",
+    "username": "demo",
     "language": {
       "code": "en"
     },
@@ -629,7 +629,9 @@ Create a new user or update an existing one based on a username.
 
 ### JSON Properties
 
-Use JSON in the request body to specify user details.  Any properties submitted that are not on the list below will be ignored.  Any properties not included will be undefined. There is no support for updating a single property.
+Use JSON in the request body to specify user details.  Any properties submitted
+that are not on the list below will be ignored.  Any properties not included
+will be undefined. There is no support for updating a single property.
 
 | Key | Description       
 | -------- | -----------------
