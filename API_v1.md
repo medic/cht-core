@@ -220,6 +220,17 @@ Download reports.
 | skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
 | columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
 
+### Output
+
+| Column             | Description
+| ------------------ | -------------
+| Record UUID        | The unique ID for the report in the database.
+| Patient ID         | The generated short patient ID for use in SMS.
+| Reported Date      | The date the report was received.
+| From               | The phone number the report was sent from.
+| Contact Name       | The name of the user this report is assigned to.
+| Form               | The form code for this report.
+
 # Messages
 
 ## GET /api/v1/export/messages
@@ -238,6 +249,23 @@ Download messages.
 | filter_state       | Used in conjunction with the parameters below to only return messages that were in a given state. Possible values are 'received', 'scheduled', 'pending', 'sent', 'cleared', or 'muted'.
 | filter_state_from  | The number of days from now to use as a lower bound on the date that the message is in the given state. Defaults to no lower bound. Ignored if filter_state is not provided.
 | filter_state_to    | The number of days from now to use as an upper bound on the date that the message is in the given state. Defaults to no upper bound. Ignored if filter_state is not provided.
+
+### Output
+
+| Column             | Description
+| ------------------ | -------------
+| Record UUID        | The unique ID for the message in the database.
+| Patient ID         | The generated short patient ID for use in SMS.
+| Reported Date      | The date the message was received or generated.
+| From               | This phone number the message is or will be sent from.
+| Contact Name       | The name of the user this message is assigned to.
+| Message Type       | The type of the message
+| Message State      | The state of the message at the time this export was generated
+| Received Timestamp | The datetime the message was received. Only applies to incoming messages.
+| Other Timestamps   | The datetime the message transitioned to each state.
+| Sent By            | The phone number the message was sent from. Only applies to incoming messages.
+| To Phone           | The phone number the message is or will be sent to. Only applies to outgoing messages.
+| Message Body       | The content of the message.
 
 ### Examples
 

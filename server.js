@@ -52,6 +52,8 @@ var jsonParser = bodyParser.json({limit: '32mb'});
 // requires content-type application/x-www-form-urlencoded header
 var formParser = bodyParser.urlencoded({limit: '32mb', extended: false});
 
+app.set('strict routing', true);
+
 app.use(morgan('combined', {
   immediate: true
 }));
@@ -482,6 +484,13 @@ proxy.on('proxyReq', function(proxyReq, req, res) {
     // everything else
     writeHeaders(req, res);
   }
+});
+
+/**
+ * Redirect to add the trailing slash without which mysterious bugs occur...
+ */
+app.get(pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite', function(req, res) {
+  res.redirect(appPrefix);
 });
 
 app.all('*', function(req, res) {

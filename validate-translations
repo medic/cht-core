@@ -14,7 +14,7 @@ for tran in *.properties; do
 		*)
 			echo "# $tran"
 			this="$(strs $tran)"
-			extras=$(comm -13 <(echo "$english_strings") <(echo "$this"))
+			extras="$(comm -13 <(echo "$english_strings") <(echo "$this"))"
 			if [[ -z "$extras" ]]; then
 				echo "# OK"
 			else
