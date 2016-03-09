@@ -105,12 +105,14 @@ var _ = require('underscore'),
         var beforeInitialReplication = Date.now();
         getQueryParams(userCtx)
           .then(function(params) {
-            replicate('from', {
+            return replicate('from', {
               filter: 'erlang_filters/doc_by_place',
               live: false,
-              query_params: params
+              retry: false,
+              query_params: params,
+              timeout: 30000, // ms
             })
-            .on('complete', function() {
+            .then(function() {
               $log.info('Initial sync complete in ' +
                 ((Date.now() - beforeInitialReplication) / 1000) +
                 ' seconds, starting replication listener');
@@ -130,11 +132,13 @@ var _ = require('underscore'),
                   return doc._id !== '_design/medic';
                 }
               });
-
             });
           })
           .catch(function(err) {
             $log.error('Error initializing DB sync', err);
+            if (replicateDoneCallback) {
+              replicateDoneCallback(err);
+            }
           });
       };
     }
