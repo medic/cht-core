@@ -1,11 +1,12 @@
 window.PouchDB = require('pouchdb');
 window.$ = window.jQuery = require('jquery');
+window.d3 = require('d3');
+
 require('select2');
 require('bootstrap');
 require('./bootstrap-multidropdown');
 require('bootstrap-daterangepicker');
 require('bootstrap-tour');
-require('d3');
 require('nvd3');
 
 require('angular');
