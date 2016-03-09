@@ -95,12 +95,12 @@ var _ = require('underscore'),
           });
       };
 
-      return function(replicateDoneCallback) {
+      return function(callback) {
         var userCtx = Session.userCtx();
         if (utils.isUserAdmin(userCtx)) {
           // admins have potentially too much data so bypass local pouch
           $log.debug('You have administrative privileges; not replicating');
-          return;
+          return callback();
         }
         var beforeInitialReplication = Date.now();
         getQueryParams(userCtx)
@@ -110,9 +110,7 @@ var _ = require('underscore'),
                 ((Date.now() - beforeInitialReplication) / 1000) +
                 ' seconds, starting replication listener');
 
-              if (replicateDoneCallback) {
-                replicateDoneCallback();
-              }
+              callback();
 
               replicate('from', {
                 filter: 'erlang_filters/doc_by_place',
@@ -139,9 +137,7 @@ var _ = require('underscore'),
           })
           .catch(function(err) {
             $log.error('Error initializing DB sync', err);
-            if (replicateDoneCallback) {
-              replicateDoneCallback(err);
-            }
+            callback(err);
           });
       };
     }

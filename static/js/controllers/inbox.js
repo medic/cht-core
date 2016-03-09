@@ -30,8 +30,8 @@ var feedback = require('../modules/feedback'),
 
       // sync DB and make sure tasks have warmed up the DB before allowing
       // access to the UI.
-      (function() {
-        var dbSync = $q(function(resolve) {
+      var dbSync = function() {
+        return $q(function(resolve) {
           DBSync(function(err) {
             if (err) {
               $log.warn(err);
@@ -53,12 +53,12 @@ var feedback = require('../modules/feedback'),
             resolve();
           });
         });
+      };
 
-        $q.all([ dbSync, TaskGenerator.init ])
-            .then(function() {
-              $scope.dbWarmedUp = true;
-            });
-      }());
+      $q.all([ dbSync(), TaskGenerator.init ])
+        .then(function() {
+          $scope.dbWarmedUp = true;
+        });
 
       feedback.init({
         saveDoc: function(doc, callback) {
