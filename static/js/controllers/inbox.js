@@ -1034,7 +1034,7 @@ var feedback = require('../modules/feedback'),
         {
           state: 'configuration.permissions',
           icon: 'fa-key',
-          name: 'permissions',
+          name: 'configuration.permissions',
           active: function() {
             return $state.is('configuration.permissions');
           }

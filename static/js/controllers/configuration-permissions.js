@@ -1,3 +1,5 @@
+var defaults = require('views/lib/app_settings');
+
 (function () {
 
   'use strict';
@@ -7,6 +9,7 @@
   inboxControllers.controller('ConfigurationPermissionsCtrl',
     ['$scope', '$log', 'Settings', 'UpdateSettings',
     function ($scope, $log, Settings, UpdateSettings) {
+
       $scope.loading = true;
       $scope.roles = [
         {
@@ -30,20 +33,39 @@
           value: 'gateway'
         }
       ];
+
+      var makeRoleModel = function(permission) {
+        return $scope.roles.map(function(role) {
+          return {
+            name: role.value,
+            value: permission.roles.indexOf(role.value) !== -1
+          };
+        });
+      };
+
       Settings()
         .then(function(settings) {
           $scope.loading = false;
+
+          // add the configured permissions
           $scope.permissions = settings.permissions.map(function(permission) {
-            var roles = $scope.roles.map(function(role) {
-              return {
-                name: role.value,
-                value: permission.roles.indexOf(role.value) !== -1
-              };
-            });
             return {
               name: permission.name,
-              roles: roles
+              roles: makeRoleModel(permission)
             };
+          });
+
+          // add any missing permissions we know about
+          defaults.permissions.forEach(function(def) {
+            var configured = $scope.permissions.find(function(p) {
+              return p.name === def.name;
+            });
+            if (!configured) {
+              $scope.permissions.push({
+                name: def.name,
+                roles: makeRoleModel({ roles: [] })
+              });
+            }
           });
         })
         .catch(function(err) {
