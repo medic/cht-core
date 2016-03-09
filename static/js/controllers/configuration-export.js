@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    async = require('async');
+    async = require('async'),
+    moment = require('moment');
 
 (function () {
 

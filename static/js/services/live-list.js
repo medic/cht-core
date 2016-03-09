@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 function PARSER($parse, scope) {
   return function(expr) {
     expr = expr.substring(2, expr.length-2);
