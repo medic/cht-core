@@ -1015,21 +1015,30 @@ require('moment/locales');
 
       CountMessages.init();
 
+      var showUpdateReady = function() {
+        $('#version-update').modal('show');
+
+        // close select2 dropdowns in the background
+        $('select.select2-hidden-accessible').each(function(i, e) {
+          // prevent errors being thrown if selecters have not been
+          // initialised before the update dialog is to be shown
+          try { $(e).select2('close'); } catch(e) {}
+        });
+      };
+
       $scope.reloadWindow = function() {
         $window.location.reload();
       };
 
-      if (window.applicationCache) {
-        var showUpdateReady = function() {
-          $('#version-update').modal('show');
+      $scope.postponeUpdate = function() {
+        $log.debug('Delaying update');
+        $timeout(function() {
+          $log.debug('Displaying delayed update ready dialog');
+          showUpdateReady();
+        }, 2 * 60 * 60 * 1000);
+      };
 
-          // close select2 dropdowns in the background
-          $('select.select2-hidden-accessible').each(function(i, e) {
-            // prevent errors being thrown if selecters have not been
-            // initialised before the update dialog is to be shown
-            try { $(e).select2('close'); } catch(e) {}
-          });
-        };
+      if (window.applicationCache) {
         window.applicationCache.addEventListener('updateready', showUpdateReady);
         window.applicationCache.addEventListener('error', function(err) {
           // TODO: once we trigger this work out what a 401 looks like and redirect
