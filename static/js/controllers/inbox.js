@@ -31,7 +31,7 @@ var feedback = require('../modules/feedback'),
       // sync DB and make sure tasks have warmed up the DB before allowing
       // access to the UI.
       (function() {
-        var dbSync = $q(function(resolve, reject) {
+        var dbSync = $q(function(resolve) {
           DBSync(function(err) {
             if (err) {
               $log.warn(err);
