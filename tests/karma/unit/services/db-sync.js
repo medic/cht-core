@@ -62,7 +62,6 @@ describe('DBSync service', function() {
     fromPromise.on = function(event, handler) {
       if (event === 'complete') {
         fromPromise.then(function() {
-          console.log('Firing `complete` listener...');
           handler();
         });
       } else if(event === 'error') {
