@@ -1,7 +1,32 @@
+window.PouchDB = require('pouchdb');
+window.$ = window.jQuery = require('jquery');
+require('select2');
+require('bootstrap');
+require('./bootstrap-multidropdown');
+require('bootstrap-daterangepicker');
+require('bootstrap-tour');
+require('d3');
+require('nvd3');
+
+require('angular');
+require('angular-cookie');
+require('angular-route');
+require('angular-ui-router');
+require('angular-translate');
+require('angularjs-nvd3-directives');
+require('angular-pouchdb');
+require('angular-sanitize');
+require('angular-resource');
+
+require('moment');
+require('moment/locale/es');
+require('moment/locale/fr');
+require('moment/locale/ne');
 
 require('./services/index');
 require('./controllers/index');
 require('./filters/index');
+require('./enketo/main.js');
 
 var _ = require('underscore');
 _.templateSettings = {

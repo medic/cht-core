@@ -15,7 +15,7 @@
           return $log.error('Error fetching targets', err);
         }
 
-        _.each(targets, function(target) {
+        targets.forEach(function(target) {
           if (!target.count) {
             target.count = 0;
           }

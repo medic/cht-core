@@ -1,5 +1,4 @@
-var remapify = require('remapify'),
-    kansoJson = require('./kanso.json'),
+var kansoJson = require('./kanso.json'),
     path = require('path');
 
 module.exports = function(grunt) {
@@ -11,25 +10,6 @@ module.exports = function(grunt) {
 
   // Project configuration
   grunt.initConfig({
-    bower: {
-      install: {
-        options: {
-          copy: false
-        }
-      }
-    },
-    bower_concat: {
-      all: {
-        dest: 'bower_components/concat.js',
-        exclude: [
-          'fontawesome',
-          'async',
-          'bootstrap-tour', // Including this includes two copies. Manually included in concat.
-          'angular-mocks',
-          'select2', // need to manually include the extended version of the lib
-        ]
-      }
-    },
     replace: {
       hardcodeappsettings: {
         src: [ 'static/dist/inbox.js' ],
@@ -43,7 +23,7 @@ module.exports = function(grunt) {
         }]
       },
       monkeypatchdate: {
-        src: [ 'bower_components/concat.js' ],
+        src: [ 'static/dist/inbox.js' ],
         overwrite: true,
         replacements: [{
           from: /clickDate: function \(e\) \{/g,
@@ -66,51 +46,27 @@ module.exports = function(grunt) {
         src: ['static/js/app.js'],
         dest: 'static/dist/inbox.js',
         browserifyOptions: {
-          detectGlobals: false,
-          external: ['moment', 'underscore']
+          detectGlobals: false
         },
-        options: {
-          preBundleCB: function(b) {
-            b.ignore('./flashmessages')
-             .plugin(remapify, browserifyMappings);
-          }
-        },
-      },
-      enketo: {
-        src: './static/js/enketo/main.js',
-        dest: 'build/enketo.js',
-        require: [ 'jquery' ],
         options: {
           alias: {
-            jquery:'./static/js/enketo/jquery-shim.js',
+            'db': './packages/db/db',
+            'kujua-utils': './packages/kujua-utils/kujua-utils',
+            'cookies': './packages/cookies/cookies',
+            'session': './packages/session/session',
+            'kujua-sms/utils': './packages/kujua-sms/kujua-sms/utils',
+            'views/lib/objectpath': './packages/kujua-sms/views/lib/objectpath',
+            'views/lib/app_settings': './packages/kujua-sms/views/lib/app_settings',
             'text!enketo-config': './static/js/enketo/config.json',
-            'widgets': './static/js/enketo/widgets.js',
-            './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding.js',
-            'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath.js',
-            'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions.js',
-            'libphonenumber/phoneformat': './packages/libphonenumber/libphonenumber/phoneformat.js',
-            'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils.js',
+            'widgets': './static/js/enketo/widgets',
+            './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding',
+            'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath',
+            'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
+            'libphonenumber/phoneformat': './packages/libphonenumber/libphonenumber/phoneformat',
+            'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils',
           },
         },
       }
-    },
-    concat: {
-      dependencies: {
-        src: [
-          'bower_components/concat.js',
-          'bower_components/bootstrap-tour/build/js/bootstrap-tour.js',
-          'bower_components/select2/dist/js/select2.full.js',
-          'static/js/bootstrap-multidropdown.js'
-        ],
-        dest: 'static/dist/dependencies.js',
-      },
-      inbox: {
-        src: [
-          'static/dist/inbox.js',
-          'build/enketo.js',
-        ],
-        dest: 'static/dist/inbox.js',
-      },
     },
     uglify: {
       options: {
@@ -119,7 +75,6 @@ module.exports = function(grunt) {
       build: {
         files: {
           'static/dist/templates.js': ['static/dist/templates.js'],
-          'static/dist/dependencies.js': ['static/dist/dependencies.js'],
           'static/dist/inbox.js': ['static/dist/inbox.js'],
         }
       }
@@ -171,7 +126,7 @@ module.exports = function(grunt) {
             expand: true,
             flatten: true,
             src: [
-              'bower_components/fontawesome/fonts/*'
+              'node_modules/font-awesome/fonts/*'
             ],
             dest: 'static/fonts'
           },
@@ -342,11 +297,9 @@ module.exports = function(grunt) {
   // Default tasks
   grunt.registerTask('mmjs', 'Build the JS resources', [
     'browserify:dist',
-    'browserify:enketo',
     'replace:hardcodeappsettings',
-    'ngtemplates',
-    'concat:dependencies',
-    'concat:inbox',
+    'replace:monkeypatchdate',
+    'ngtemplates'
   ]);
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
@@ -355,13 +308,6 @@ module.exports = function(grunt) {
     'less',
     'replace:monkeypatchfontawesome',
     'postcss'
-  ]);
-
-  grunt.registerTask('mmbower', 'Install, concat, and patch bower components', [
-    'bower:install',
-    'bower_concat',
-    'replace:monkeypatchdate',
-    'copy:inbox'
   ]);
 
   grunt.registerTask('compileddocs', 'Compile all Ddocs', [
@@ -374,7 +320,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('default', 'Build the static resources', [
-    'mmbower',
     'mmcss',
     'mmjs',
     'copy:enketo-xslt',
@@ -414,75 +359,5 @@ module.exports = function(grunt) {
     'jshint',
     'karma:unit_continuous'
   ]);
-
-  var browserifyMappings = [
-    // modules in bower and kanso
-    {
-      cwd: 'bower_components/underscore',
-      src: './underscore.js'
-    },
-    {
-      cwd: 'bower_components/moment',
-      src: './moment.js'
-    },
-    {
-      cwd: 'bower_components/moment/min/',
-      src: './locales.js',
-      expose: 'moment'
-    },
-    {
-      cwd: 'bower_components/async/lib',
-      src: './async.js'
-    },
-    // kanso packages required for inbox
-    {
-      cwd: 'packages/db',
-      src: './db.js'
-    },
-    {
-      cwd: 'packages/kujua-sms/views/lib',
-      src: './*.js',
-      expose: 'views/lib'
-    },
-    {
-      cwd: 'packages/kujua-sms/kujua-sms',
-      src: './utils.js',
-      expose: 'kujua-sms'
-    },
-    {
-      cwd: 'packages/kujua-utils',
-      src: './kujua-utils.js'
-    },
-    {
-      cwd: 'packages/session',
-      src: './session.js'
-    },
-    {
-      cwd: 'packages/duality/duality',
-      src: './utils.js',
-      expose: 'duality'
-    },
-    {
-      cwd: 'packages/users',
-      src: './users.js'
-    },
-    {
-      cwd: 'packages/cookies',
-      src: './cookies.js'
-    },
-    {
-      cwd: 'packages/sha1',
-      src: './sha1.js'
-    },
-    {
-      cwd: 'packages/dust',
-      src: './dust.js'
-    },
-    {
-      cwd: 'packages/libphonenumber/libphonenumber',
-      src: './*.js',
-      expose: 'libphonenumber'
-    }
-  ];
 
 };

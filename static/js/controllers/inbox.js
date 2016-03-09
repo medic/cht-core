@@ -8,8 +8,6 @@ var feedback = require('../modules/feedback'),
     guidedSetup = require('../modules/guided-setup'),
     ajaxDownload = require('../modules/ajax-download');
 
-require('moment/locales');
-
 (function () {
 
   'use strict';
