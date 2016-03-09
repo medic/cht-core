@@ -143,7 +143,7 @@ exports['getList collects user infos'] = function(test) {
     test.equals(lucas.fullname, 'Lucas M');
     test.equals(lucas.email, 'l@m.com');
     test.equals(lucas.phone, '123456789');
-    test.deepEqual(lucas.facility, facilityc);
+    test.deepEqual(lucas.place, facilityc);
     test.equals(lucas.type, 'national-admin');
     var milan = data[1];
     test.equals(milan.id, 'org.couchdb.user:y');
@@ -151,7 +151,7 @@ exports['getList collects user infos'] = function(test) {
     test.equals(milan.fullname, 'Milan A');
     test.equals(milan.email, 'm@a.com');
     test.equals(milan.phone, '987654321');
-    test.deepEqual(milan.facility, facilityb);
+    test.deepEqual(milan.place, facilityb);
     test.equals(milan.type, 'district-admin');
     test.done();
   });
@@ -209,7 +209,7 @@ exports['getList filters out non-users'] = function(test) {
     test.equal(milan.fullname, 'Milan A');
     test.equal(milan.email, 'm@a.com');
     test.equal(milan.phone, '987654321');
-    test.deepEqual(milan.facility, facilityb);
+    test.deepEqual(milan.place, facilityb);
     test.equal(milan.type, 'district-admin');
     test.done();
   });

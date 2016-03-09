@@ -9,8 +9,17 @@ var getType = function(user, admins) {
   return admins[user.name] ? 'admin' : 'unknown';
 };
 
-var getFacility = function(user, facilities) {
-  return _.findWhere(facilities, { _id: user.facility_id });
+var getDoc = function(id, docs) {
+  return _.findWhere(docs, { _id: id });
+};
+
+var getDocID = function(doc) {
+  if (typeof doc === 'string') {
+    return doc;
+  }
+  if (typeof doc === 'object') {
+    return doc._id;
+  }
 };
 
 var getAllUserSettings = function(callback) {
@@ -48,10 +57,6 @@ var getFacilities = function(callback) {
   });
 };
 
-var getSettings = function(id, settings) {
-  return _.findWhere(settings, { _id: id });
-};
-
 var getAdmins = function(callback) {
   var opts = {
     path: '_config/admins'
@@ -69,7 +74,7 @@ var mapUsers = function(users, settings, facilities, admins) {
     return user.id.indexOf(getPrefix() + ':') === 0;
   });
   return _.map(filtered, function(user) {
-    var setting = getSettings(user.id, settings) || {};
+    var setting = getDoc(user.id, settings) || {};
     return {
       id: user.id,
       rev: user.doc._rev,
@@ -77,10 +82,10 @@ var mapUsers = function(users, settings, facilities, admins) {
       fullname: setting.fullname,
       email: setting.email,
       phone: setting.phone,
-      facility: getFacility(user.doc, facilities),
+      place: getDoc(user.doc.facility_id, facilities),
       type: getType(user.doc, admins),
       language: { code: setting.language },
-      contact_id: setting.contact_id
+      contact: getDoc(setting.contact_id, facilities)
     };
   });
 };
@@ -211,15 +216,6 @@ var rolesMap = {
 var getRoles = function(type) {
   // create a new array with the type first, by convention
   return type ? [type].concat(rolesMap[type]) : [];
-};
-
-var getDocID = function(doc) {
-  if (typeof doc === 'string') {
-    return doc;
-  }
-  if (typeof doc === 'object') {
-    return doc._id;
-  }
 };
 
 var getSettingsUpdates = function(data) {
