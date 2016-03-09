@@ -58,22 +58,10 @@ describe('DBSync service', function() {
   });
 
   it('initiates sync for non-admin', function(done) {
-    var fromPromise = KarmaUtils.mockPromise();
-    fromPromise.on = function(event, handler) {
-      if (event === 'complete') {
-        fromPromise.then(function() {
-          handler();
-        });
-      } else if(event === 'error') {
-        fromPromise.catch(handler);
-      }
-      return fromPromise;
-    };
-
     userCtx = { };
     getRemoteUrl.returns('REMOTEDBURL');
     to.returns(KarmaUtils.mockPromise());
-    from.returns(fromPromise);
+    from.returns(KarmaUtils.mockPromise());
     UserDistrict.callsArgWith(0, null, 'a');
     Settings.returns(KarmaUtils.mockPromise(null, {}));
     service();
@@ -85,7 +73,7 @@ describe('DBSync service', function() {
       chai.expect(from.callCount).to.equal(1);
       chai.expect(from.args[0][0]).to.equal('REMOTEDBURL');
       chai.expect(from.args[0][1].live).to.equal(false);
-      chai.expect(from.args[0][1].retry).to.equal(true);
+      chai.expect(from.args[0][1].retry).to.equal(false);
       chai.expect(from.args[0][1].filter).to.equal('erlang_filters/doc_by_place');
       chai.expect(from.args[0][1].query_params.id).to.equal('a');
       chai.expect(from.args[0][1].query_params.unassigned).to.equal(undefined);
