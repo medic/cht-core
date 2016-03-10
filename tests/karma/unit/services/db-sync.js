@@ -50,7 +50,9 @@ describe('DBSync service', function() {
 
   it('does nothing for admin', function(done) {
     userCtx = { roles: [ '_admin' ] };
-    service(function() {
+    service(function() { });
+    setTimeout(function() {
+      $rootScope.$apply(); // needed to resolve the promises
       chai.expect(to.callCount).to.equal(0);
       chai.expect(from.callCount).to.equal(0);
       chai.expect(UserDistrict.callCount).to.equal(0);
@@ -65,9 +67,7 @@ describe('DBSync service', function() {
     from.returns(KarmaUtils.mockPromise());
     UserDistrict.callsArgWith(0, null, 'a');
     Settings.returns(KarmaUtils.mockPromise(null, {}));
-    service(function() {
-      // do nothing
-    });
+    service(function() { });
     setTimeout(function() {
       $rootScope.$apply(); // needed to resolve the promises
 
@@ -110,9 +110,7 @@ describe('DBSync service', function() {
     from.returns(KarmaUtils.mockPromise());
     UserDistrict.callsArgWith(0, null, 'a');
     Settings.returns(KarmaUtils.mockPromise(null, { district_admins_access_unallocated_messages: true }));
-    service(function() {
-      // do nothing
-    });
+    service(function() { });
     setTimeout(function() {
       $rootScope.$apply(); // needed to resolve the promises
       chai.expect(from.args[0][1].query_params.unassigned).to.equal(true);
@@ -127,9 +125,7 @@ describe('DBSync service', function() {
     from.returns(KarmaUtils.mockPromise());
     UserDistrict.callsArgWith(0, null, 'a');
     Settings.returns(KarmaUtils.mockPromise(null, { district_admins_access_unallocated_messages: true }));
-    service(function() {
-      // do nothing
-    });
+    service(function() { });
     setTimeout(function() {
       $rootScope.$apply(); // needed to resolve the promises
       chai.expect(from.args[0][1].query_params.unassigned).to.equal(undefined);
