@@ -2,7 +2,7 @@ window.PouchDB = require('pouchdb');
 window.$ = window.jQuery = require('jquery');
 window.d3 = require('d3');
 
-require('select2');
+require('../../node_modules/select2/dist/js/select2.full');
 require('bootstrap');
 require('./bootstrap-multidropdown');
 require('bootstrap-daterangepicker');
