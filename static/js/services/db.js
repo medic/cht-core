@@ -2,7 +2,6 @@ var utils = require('kujua-utils'),
     async = require('async'),
     etagRegex = /(?:^W\/)|['"]/g;
 
-
 (function () {
 
   'use strict';
@@ -10,10 +9,12 @@ var utils = require('kujua-utils'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('DB', [
-    '$http', '$timeout', '$log', 'pouchDB', 'Session', 'DbNameService', 'E2ETESTING',
-    function($http, $timeout, $log, pouchDB, Session, DbNameService, E2ETESTING) {
+    '$http', '$timeout', '$log', '$window', 'pouchDB', 'Session', 'DbNameService', 'E2ETESTING',
+    function($http, $timeout, $log, $window, pouchDB, Session, DbNameService, E2ETESTING) {
 
       var cache = {};
+
+      $window.PouchDB.adapter('worker', require('worker-pouch'));
 
       var getRemoteUrl = function(name) {
         name = name || DbNameService();
@@ -39,7 +40,10 @@ var utils = require('kujua-utils'),
 
       var getFromCache = function(name) {
         if (!cache[name]) {
-          cache[name] = pouchDB(name, { auto_compaction: true });
+          cache[name] = pouchDB(name, {
+            auto_compaction: true,
+            adapter: 'worker'
+          });
         }
         return cache[name];
       };

@@ -22,18 +22,19 @@
     "bootstrap-daterangepicker": "~2.1.18",
     "bootstrap-tour": "~0.10.3",
     "d3": "~3.5.16",
+    "enketo-client-side-transformer": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cd1788f38fa5d9ea846d9de1168322ec25002040",
+    "enketo-core": "git://github.com/enketo/enketo-core.git#4.5.5",
     "font-awesome": "~4.5.0",
     "jquery": "~2.1.4",
-    "enketo-core": "git://github.com/enketo/enketo-core.git#4.5.5",
-    "enketo-client-side-transformer": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cd1788f38fa5d9ea846d9de1168322ec25002040",
     "moment": "~2.10.6",
     "nools": "^0.4.1",
     "nvd3": "~1.1.15-beta",
     "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#3e9a0aa8232d54788ba6a94bf2c3c7b14ccb64fc",
-    "properties": "^1.2.1",
     "pouchdb": "~5.3.0",
+    "properties": "^1.2.1",
     "select2": "~4.0.1",
-    "underscore": "~1.8.3"
+    "underscore": "~1.8.3",
+    "worker-pouch": "^1.0.1"
   },
   "devDependencies": {
     "angular-mocks": "1.4.3",
