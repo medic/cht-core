@@ -68,7 +68,7 @@ var utils = require('kujua-utils'),
         getLocal()
           .get('_design/medic')
           .then(function(localDdoc) {
-            if (localDdoc.remote_rev >= rev) {
+            if (localDdoc.remote_rev === rev) {
               return;
             }
             return getRemote()
@@ -129,7 +129,6 @@ var utils = require('kujua-utils'),
           });
         }
       };
-
 
       return {
         get: get,
