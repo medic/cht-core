@@ -14,10 +14,10 @@ var getDoc = function(id, docs) {
 };
 
 var getDocID = function(doc) {
-  if (typeof doc === 'string') {
+  if (_.isString(doc)) {
     return doc;
   }
-  if (typeof doc === 'object') {
+  if (_.isObject(doc)) {
     return doc._id;
   }
 };
@@ -57,6 +57,94 @@ var getFacilities = function(callback) {
   });
 };
 
+var isAPlace = function(place) {
+  return [
+    'district_hospital',
+    'health_center',
+    'clinic'
+  ].indexOf(place.type) !== -1;
+};
+
+var getPlace = function(id, callback) {
+  db.medic.get(id, function(err, place) {
+    if (err) {
+      return callback(err);
+    }
+    if (!isAPlace(place)) {
+      return callback('Wrong type, this is not a place.');
+    }
+    callback(null, place);
+  });
+};
+
+var createUser = function(data, response, callback) {
+  response = response || {};
+  var id = createID(data.username),
+      user = getUserUpdates(id, data);
+  db._users.insert(user, id, function(err, body) {
+    if (err) {
+      return callback('Failed to create user. ' + err);
+    }
+    response.user = {
+      id: body.id,
+      rev: body.rev
+    };
+    callback(null, data, response);
+  });
+};
+
+/*
+ * Warning: not doing validation of the contact data against a form yet.  The
+ * form is user defined in settings so being liberal with what gets saved to
+ * the database. Ideally CouchDB could validate a given object against a form
+ * in validate_doc_update.
+ */
+var createContact = function(data, response, callback) {
+  response = response || {};
+  db.medic.insert(data.contact, function(err, body) {
+    if (err) {
+      return callback('Failed to create contact. ' + err);
+    }
+    // save contact id for user settings
+    data.contact = body.id;
+    response.contact = {
+      id: body.id,
+      rev: body.rev
+    };
+    callback(null, data, response);
+  });
+};
+
+var createUserSettings = function(data, response, callback) {
+  response = response || {};
+  var settings = getSettingsUpdates(data);
+  db.medic.insert(settings, createID(data.username), function(err, body) {
+    if (err) {
+      return callback('Failed to create user settings. ' + err);
+    }
+    response['user-settings'] = {
+      id: body.id,
+      rev: body.rev
+    };
+    callback(null, data, response);
+  });
+};
+
+var hasParent = function(facility, id) {
+  if (facility._id === id) {
+    return true;
+  }
+  // clone facility before modifying it
+  var f = JSON.parse(JSON.stringify(facility));
+  while (f.parent) {
+    if (f.parent._id === id) {
+      return true;
+    }
+    f.parent = f.parent.parent;
+  }
+  return false;
+};
+
 var getAdmins = function(callback) {
   var opts = {
     path: '_config/admins'
@@ -90,40 +178,6 @@ var mapUsers = function(users, settings, facilities, admins) {
   });
 };
 
-var getOrCreateUser = function(id, callback) {
-  db._users.get(id, function(err, data) {
-    if (err) {
-      if (err.error === 'not_found') {
-        callback(null, {
-          _id: id,
-          type: 'user'
-        });
-      } else {
-        callback(err);
-      }
-    } else {
-      callback(null, data);
-    }
-  });
-};
-
-var getOrCreateUserSettings = function(id, name, callback) {
-  db.medic.get(id, function(err, data) {
-    if (err) {
-      if (err.error === 'not_found') {
-        callback(null, {
-          _id: id,
-          type: 'user-settings'
-        });
-      } else {
-        callback(err);
-      }
-    } else {
-      callback(null, data);
-    }
-  });
-};
-
 var updatePassword = function(updated, callback) {
   if (!updated.password) {
     // password not changed, do nothing
@@ -149,61 +203,6 @@ var updatePassword = function(updated, callback) {
   });
 };
 
-var updateUser = function(id, updates, callback) {
-  if (!updates) {
-    // only updating settings
-    return callback();
-  }
-  getOrCreateUser(id, function(err, user) {
-    if (err) {
-      return callback(err);
-    }
-    var updated = _.extend(user, updates);
-    if (updated.password) {
-      delete updated.derived_key;
-      delete updated.salt;
-    }
-    db._users.insert(updated, function(err) {
-      if (err) {
-        return callback(err);
-      }
-      updatePassword(updated, function(err) {
-        callback(err, updated);
-      });
-    });
-  });
-};
-
-var updateSettings = function(id, updates, callback) {
-  if (!updates) {
-    // only updating user
-    return callback();
-  }
-  getOrCreateUserSettings(id, updates.name, function(err, settings) {
-    if (err) {
-      return callback(err);
-    }
-    var updated = _.extend(settings, updates);
-    db.medic.insert(updated, callback);
-  });
-};
-
-var createOrUpdate = function(id, settingUpdates, userUpdates, callback) {
-  if (!callback) {
-    callback = userUpdates;
-    userUpdates = null;
-  }
-  if (!id && !userUpdates) {
-    return callback(new Error('Cannot update user settings without user'));
-  }
-  updateUser(id, userUpdates, function(err) {
-    if (err) {
-      return callback(err);
-    }
-    updateSettings(id, settingUpdates, callback);
-  });
-};
-
 var rolesMap = {
   'national-manager': ['kujua_user', 'data_entry', 'national_admin'],
   'district-manager': ['kujua_user', 'data_entry', 'district_admin'],
@@ -226,18 +225,23 @@ var getSettingsUpdates = function(data) {
     email: data.email,
     phone: data.phone,
     language: data.language && data.language.code,
+    known: data.known,
     facility_id: getDocID(data.place),
-    contact_id: getDocID(data.contact)
+    contact_id: getDocID(data.contact),
+    type: 'user-settings',
   };
 };
 
 var getUserUpdates = function(id, data) {
   return {
+    // CouchDB uses name field for authentication, it should be based on the id.
     name: id.split(':')[1],
     password: data.password,
     // defaults role to district-manager
     roles: data.type ? getRoles(data.type) : getRoles('district-manager'),
-    facility_id: getDocID(data.place)
+    facility_id: getDocID(data.place),
+    known: data.known,
+    type: 'user'
   };
 };
 
@@ -245,7 +249,7 @@ var getPrefix = function() {
   return 'org.couchdb.user';
 };
 
-var createId = function(name) {
+var createID = function(name) {
   return [getPrefix(), name].join(':');
 };
 
@@ -253,7 +257,7 @@ var deleteUser = function(id, callback) {
   // Potential problem here where _users database update happens but medic
   // update fails and user is in inconsistent state. There is no way to do
   // atomic update on more than one database with CouchDB API.
-  async.series([
+  async.parallel([
     function(cb){
       db._users.get(id, function(err, user) {
         if (err) {
@@ -283,17 +287,21 @@ var deleteUser = function(id, callback) {
  */
 module.exports = {
   _mapUsers: mapUsers,
+  _createUser: createUser,
+  _createContact: createContact,
+  _createUserSettings: createUserSettings,
   _getType : getType,
   _getAdmins: getAdmins,
   _getAllUsers: getAllUsers,
   _getAllUserSettings: getAllUserSettings,
+  _getContactParent: db.medic.get,
   _getFacilities: getFacilities,
-  _getOrCreateUser: getOrCreateUser,
   _getSettingsUpdates: getSettingsUpdates,
+  _getPlace: getPlace,
   _getUserUpdates: getUserUpdates,
-  _createOrUpdate: createOrUpdate,
+  _hasParent: hasParent,
   deleteUser: function(username, callback) {
-    deleteUser(createId(username), callback);
+    deleteUser(createID(username), callback);
   },
   getList: function(callback) {
     var self = this;
@@ -309,17 +317,94 @@ module.exports = {
       callback(null, self._mapUsers(results[0], results[1], results[2], results[3]));
     });
   },
-  createOrUpdate: function(username, data, contentType, callback) {
+  /*
+   * Take the request data and create valid user, user-settings and contact
+   * objects. Returns the response body in the callback.
+   *
+   * @param {Object} data - request body
+   * @param {Function} callback
+   * @api public
+   */
+  createUser: function(data, callback) {
     var self = this,
-        id = createId(username);
-    if (['json'].indexOf(contentType) === -1) {
-      return callback(new Error('Content type not supported.'));
+        required = ['username', 'password', 'place', 'contact'],
+        missing = [],
+        response = {};
+    for (var i in required) {
+      if (_.isUndefined(data[required[i]])) {
+        missing.push(required[i]);
+      }
     }
-    self._createOrUpdate(
-      id,
-      getSettingsUpdates(data),
-      getUserUpdates(id, data),
-      callback
-    );
+    if (missing.length > 0) {
+      return callback(
+        new Error('Missing required fields: ' + missing.join(', '))
+      );
+    }
+    if (_.isUndefined(data.contact.parent)) {
+      return callback(new Error('Contact parent is required.'));
+    }
+    // validate place exists
+    self._getPlace(getDocID(data.place), function(err) {
+      if (err) {
+        return callback(new Error('Failed to find place. ' + err));
+      }
+      // validate contact parent exists
+      self._getContactParent(data.contact.parent, function(err, facility) {
+        if (err) {
+          return callback(new Error('Failed to find contact parent. ' + err));
+        }
+        if (!self._hasParent(facility, data.place)) {
+          return callback(new Error('Contact is not within place.'));
+        }
+        // save result to contact object
+        data.contact.parent = facility;
+        async.waterfall([
+          function(cb) {
+            // start the waterfall
+            cb(null, data, response);
+          },
+          self._createUser,
+          self._createContact,
+          self._createUserSettings,
+        ], function(err, result, responseBody) {
+          if (err) {
+            return callback(err);
+          }
+          callback(null, responseBody);
+        });
+      });
+    });
+  },
+  updateUser: function(username, data, callback) {
+    var self = this,
+        userID = createID(username),
+        placeID = getDocID(data.place);
+    if (_.isUndefined(placeID) && _.isUndefined(data.type) && _.isUndefined(data.password)) {
+      return callback(new Error(
+        'One of the following fields are required: type, password or place.'
+      ));
+    }
+    // validate user exists
+    db._users.get(userID, function(err, user) {
+      if (err) {
+        return callback(new Error('Failed to find user. ' + err));
+      }
+      var updated = _.extend(self._getUserUpdates(userID, data), user);
+      // validate place exists if it changed
+      if (!_.isUndefined(placeID) && (placeID !== user.facility_id)) {
+        self._getPlace(placeID, function(err) {
+          if (err) {
+            return callback(new Error('Failed to find place. ' + err));
+          }
+          // fix
+          updatePassword({}, function(){});
+          db._users.insert(updated, callback);
+        });
+      } else {
+          // fix
+          updatePassword({}, function(){});
+          db._users.insert(updated, callback);
+      }
+    });
   }
 };

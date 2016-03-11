@@ -401,25 +401,39 @@ app.get('/api/v1/users', function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res);
     }
-    users.getList(function(err, data) {
+    users.getList(function(err, body) {
       if (err) {
         return serverUtils.serverError(err, req, res);
       }
-      res.json(data);
+      res.json(body);
+    });
+  });
+});
+
+app.post('/api/v1/users', jsonParser, function(req, res) {
+  auth.check(req, 'can_create_users', null, function(err) {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+    users.createUser(req.body, function(err, body) {
+      if (err) {
+        return serverUtils.serverError(err, req, res);
+      }
+      res.json(body);
     });
   });
 });
 
 app.post('/api/v1/users/:username', jsonParser, function(req, res) {
-  auth.check(req, 'can_create_or_update_users', null, function(err) {
+  auth.check(req, 'can_update_users', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res);
     }
-    users.createOrUpdate(req.params.username, req.body, req.is(['json']), function(err, result) {
+    users.updateUser(req.params.username, req.body, function(err) {
       if (err) {
         return serverUtils.serverError(err, req, res);
       }
-      res.json(result);
+      res.json();
     });
   });
 });

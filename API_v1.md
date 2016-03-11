@@ -589,8 +589,13 @@ Content-Type: application/json; charset=utf-8
   {
     "id": "org.couchdb.user:demo",
     "rev": "14-8758c8493edcc6dac50366173fc3e24a",
+    "type": "district-manager",
     "fullname": "Example User",
-    "facility": {
+    "username": "demo",
+    "language": {
+      "code": "en"
+    },
+    "place": {
       "_id": "eeb17d6d-5dde-c2c0-62c4a1a0ca17d38b",
       "type": "district_hospital",
       "name": "Sample District",
@@ -602,11 +607,6 @@ Content-Type: application/json; charset=utf-8
         "phone": "+2868917046"
       }
     },
-    "type": "district-manager",
-    "username": "demo",
-    "language": {
-      "code": "en"
-    },
     "contact": {
       "_id": "eeb17d6d-5dde-c2c0-62c4a1a0ca17fd17",
       "type": "person",
@@ -617,13 +617,92 @@ Content-Type: application/json; charset=utf-8
 ]
 ```
 
-## POST /api/v1/users/{{username}}
+## POST /api/v1/users
 
-Create a new user or update an existing one based on a username. 
+Create a new user.
 
 ### Permissions
 
-`can_create_or_update_users`  
+`can_create_users`  
+
+### JSON Properties
+
+Use JSON in the request body to specify user details.  Any properties submitted
+that are not on the list below will be ignored.  Any properties not included
+will be undefined.
+
+#### Required
+
+| Key | Description       
+| -------- | -----------------
+| username | String identifier used for authentication.
+| password | Password string used for authentication.  Only allowed to be set, not retrieved.
+| place    | Place identifier string (UUID) or object this user resides in.
+| contact  | A contact object based on the form configured in the app.
+| contact.parent | The parent place of the contact.  The contact resides within a place.
+
+
+#### Optional
+
+| Key | Description       
+| -------- | -----------------
+| type     | Default: 'district-manager'
+| email    | Email address 
+| phone    | Phone number
+| language | Language preference. e.g. "sw" for Swahili
+| known    | Boolean to define if the user has logged in before.  Used mainly to determine whether or not to start a tour on first login.
+
+### Examples
+
+Create a new user that can authenticate with a username of "mary" and password
+of "secret" that can submit reports and view or modify records associated to
+their place:
+
+```
+POST /api/v1/users
+Content-Type: application/json
+
+{
+  "password": "secret",
+  "username": "mary",
+  "type": "district-manager",
+  "place": "eeb17d6d-5dde-c2c0-62c4a1a0ca17e342",
+  "contact": {
+    "name": "Mary Anyango",
+    "phone": "+2868917046",
+    "parent": "B4BDEE4B-5459-5A3C-805A-BC39087ED57D"
+  }
+}
+```
+
+```
+HTTP/1.1 200 
+Content-Type: application/json
+
+{
+  "contact": {
+    "id": "65416b8ceb53ff88ac1847654501aeb3",
+    "rev": "1-0b74d219ae13137c1a06f03a0a52e187"
+  },
+  "user-settings": {
+    "id": "org.couchdb.user:mary",
+    "rev": "1-6ac1d36b775143835f4af53f9895d7ae"
+  },
+  "user": {
+    "id": "org.couchdb.user:mary",
+    "rev": "1-c3b82a0b47cfe68edd9284c89bebbae4"
+  }
+}
+
+```
+
+## POST /api/v1/users/{{username}}
+
+Update a user's data.  Typically used to reset a password or re-assign to a different place.
+
+### Permissions
+
+`can_update_users`  
 
 ### URL Parameters
 
@@ -634,25 +713,16 @@ Create a new user or update an existing one based on a username.
 
 ### JSON Properties
 
-Use JSON in the request body to specify user details.  Any properties submitted
-that are not on the list below will be ignored.  Any properties not included
-will be undefined. There is no support for updating a single property.
+Use JSON in the request body to specify user details. One of the following properties is required.
 
 | Key | Description       
 | -------- | -----------------
-| password | Password string used for authentication.  Only allowed to be set, not retrieved.
+| password | Password string used for authentication.
 | type     | Default: 'district-manager'
-| fullname | Full name 
-| email    | Email address 
-| phone    | Phone number
-| language | Language preference. Default: 'en'
-| place    | Place/facility identifier string (UUID) or object
-| contact  | Contact identifier string (UUID) or object
+| place    | Place identifier string (UUID) or object
 
 ### Examples
 
-Create a new user that can authenticate with a username of "mary" and password
-of "secret" that can view or modify records in their place:
 
 ```
 POST /api/v1/users/mary
@@ -660,26 +730,18 @@ Content-Type: application/json
 
 {
   "password": "secret",
-  "fullname": "Mary Anyango",
   "place": "eeb17d6d-5dde-c2c0-62c4a1a0ca17e342"
 }
 ```
 
 ```
 HTTP/1.1 200 
-Content-Type: application/json
-
-{
-  "ok":true,
-  "id":"org.couchdb.user:mary",
-  "rev":"1-46bb56c05e37274c3f92a1fee2ef9427"
-}
 
 ```
 
 ## DELETE /api/v1/users/{{username}}
 
-Delete a user.  
+Delete a user.  Does not affect a contact or place associated to a user.
 
 ### Permissions
 
@@ -692,3 +754,14 @@ Delete a user.
 | -------- | ----------------- 
 | username | String identifier used for authentication.
 
+### Examples
+
+```
+DELETE /api/v1/users/mary
+
+```
+
+```
+HTTP/1.1 200 
+
+```

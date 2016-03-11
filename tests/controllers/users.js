@@ -7,6 +7,8 @@ var facilitya = { _id: 'a', name: 'aaron' },
     facilityb = { _id: 'b', name: 'brian' },
     facilityc = { _id: 'c', name: 'cathy' };
 
+var userData;
+
 exports.tearDown = function (callback) {
   utils.restore(
     db.request,
@@ -18,11 +20,16 @@ exports.tearDown = function (callback) {
     db._users.get,
     db._users.insert,
     controller._mapUsers,
+    controller._createUser,
+    controller._createContact,
+    controller._createUserSettings,
     controller._getAdmins,
     controller._getAllUsers,
     controller._getAllUserSettings,
+    controller._getContactParent,
     controller._getFacilities,
-    controller._getOrCreateUser,
+    controller._getPlace,
+    controller._hasParent,
     controller.getList
   );
   callback();
@@ -34,10 +41,23 @@ exports.setUp = function(callback) {
     facilityb,
     facilityc,
   ]);
+  userData = {
+    'username': 'x',
+    'password': 'x',
+    'place': 'x',
+    'contact': { 'parent': 'x' }
+  };
+
   //sinon.stub(controller, '_getAdmins').callsArgWith(0, null, {
   //  gareth: 'abc'
   //});
   callback();
+};
+
+exports['getSettingsUpdates sets type property'] = function(test) {
+  var settings = controller._getSettingsUpdates({});
+  test.equal(settings.type, 'user-settings');
+  test.done();
 };
 
 exports['getSettingsUpdates removes user doc specific fields'] = function(test) {
@@ -374,6 +394,7 @@ exports['getList returns errors from admins service'] = function(test) {
   });
 };
 
+/*
 exports['createOrUpdate creates a user\'s settings'] = function(test) {
 
   test.expect(5);
@@ -604,6 +625,7 @@ exports['createOrUpdate can update settings only'] = function(test) {
     test.done();
   });
 };
+*/
 
 exports['deleteUser returns _users insert errors'] = function(test) {
   test.expect(2);
@@ -660,3 +682,229 @@ exports['deleteUser sets _deleted on the user-settings doc'] = function(test) {
   });
 };
 
+exports['_createUser returns error from db insert'] = function(test) {
+  sinon.stub(db._users, 'insert').callsArgWith(2, 'yucky');
+  controller._createUser(userData, {}, function(err) {
+    test.ok(err);
+    test.done();
+  });
+};
+
+exports['_createUser sets up response'] = function(test) {
+  sinon.stub(db._users, 'insert').callsArgWith(2, 'yucky');
+  controller._createUser(userData, {}, function(err) {
+    test.ok(err);
+    test.done();
+  });
+};
+
+exports['createUserSettings returns error from db insert'] = function(test) {
+  sinon.stub(db.medic, 'insert').callsArgWith(2, 'yucky');
+  controller._createUserSettings(userData, {}, function(err) {
+    test.ok(err);
+    test.done();
+  });
+};
+
+exports['createUserSettings sets up response'] = function(test) {
+  sinon.stub(db.medic, 'insert').callsArgWith(2, null, {
+    id: 'abc',
+    rev: '1-xyz'
+  });
+  controller._createUserSettings(userData, {}, function(err, data, response) {
+    test.ok(!err);
+    test.deepEqual(response, {
+      'user-settings': {
+        id: 'abc',
+        rev: '1-xyz'
+      }
+    });
+    test.done();
+  });
+};
+
+exports['createContact returns error from db insert'] = function(test) {
+  sinon.stub(db.medic, 'insert').callsArgWith(1, 'yucky');
+  controller._createContact(userData, {}, function(err) {
+    test.ok(err);
+    test.done();
+  });
+};
+
+exports['createContact updates contact property'] = function(test) {
+  sinon.stub(db.medic, 'insert').callsArgWith(1, null, {
+    id: 'abc'
+  });
+  controller._createContact(userData, {}, function(err, data) {
+    test.ok(!err);
+    test.equal(data.contact, 'abc');
+    test.done();
+  });
+};
+
+exports['createContact sets up response'] = function(test) {
+  sinon.stub(db.medic, 'insert').callsArgWith(1, null, {
+    id: 'abc',
+    rev: '1-xyz'
+  });
+  controller._createContact(userData, {}, function(err, data, response) {
+    test.ok(!err);
+    test.deepEqual(response, {
+      contact: {
+        id: 'abc',
+        rev: '1-xyz'
+      }
+    });
+    test.done();
+  });
+};
+
+exports['createUser returns error if missing fields.'] = function(test) {
+  test.expect(6);
+  // empty
+  controller.createUser({}, function(err) {
+    test.ok(err);
+  });
+  // missing username
+  controller.createUser({
+    'password': 'x',
+    'place': 'x',
+    'contact': { 'parent': 'x'}
+  }, function(err) {
+    test.ok(err);
+  });
+  // missing password
+  controller.createUser({
+    'username': 'x',
+    'place': 'x',
+    'contact': { 'parent': 'x'}
+  }, function(err) {
+    test.ok(err);
+  });
+  // missing place
+  controller.createUser({
+    'username': 'x',
+    'password': 'x',
+    'contact': { 'parent': 'x'}
+  }, function(err) {
+    test.ok(err);
+  });
+  // missing contact
+  controller.createUser({
+    'username': 'x',
+    'place': 'x',
+    'contact': { 'parent': 'x'}
+  }, function(err) {
+    test.ok(err);
+  });
+  // missing contact.parent
+  controller.createUser({
+    'username': 'x',
+    'place': 'x',
+    'contact': {}
+  }, function(err) {
+    test.ok(err);
+  });
+  test.done();
+};
+
+exports['createUser returns error if contact.parent lookup fails.'] = function(test) {
+  sinon.stub(controller, '_getPlace').callsArgWith(1, 'kablooey');
+  controller.createUser(userData, function(err) {
+    test.ok(err);
+    test.done();
+  });
+};
+
+exports['createUser returns error if place lookup fails.'] = function(test) {
+  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(controller, '_getContactParent').callsArgWith(1, 'biiiing!');
+  controller.createUser(userData, function(err) {
+    test.ok(err);
+    test.done();
+  });
+};
+
+exports['createUser returns error if place is not within contact.'] = function(test) {
+  sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
+  sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
+  sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {});
+  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(controller, '_getContactParent').callsArgWith(1, null, {
+    '_id': 'miami',
+    parent: {
+      '_id': 'florida'
+    }
+  });
+  userData.place = 'georgia';
+  controller.createUser(userData, function(err) {
+    test.ok(err);
+    test.done();
+  });
+};
+
+exports['createUser succeeds if contact and place are the same.'] = function(test) {
+  sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
+  sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
+  sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {});
+  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(controller, '_getContactParent').callsArgWith(1, null, {
+    '_id': 'foo'
+  });
+  userData.place = 'foo';
+  controller.createUser(userData, function(err) {
+    test.ok(!err);
+    test.done();
+  });
+};
+
+exports['createUser succeeds if contact is within place.'] = function(test) {
+  sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
+  sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
+  sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {});
+  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(controller, '_getContactParent').callsArgWith(1, null, {
+    '_id': 'miami',
+    parent: {
+      '_id': 'florida'
+    }
+  });
+  userData.place = 'florida';
+  controller.createUser(userData, function(err, response) {
+    test.ok(!err);
+    test.deepEqual(response, {});
+    test.done();
+  });
+};
+
+exports['createUser returns response object'] = function(test) {
+  sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
+  sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
+  sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {
+    biz: 'baz'
+  });
+  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(controller, '_getContactParent').callsArg(1);
+  sinon.stub(controller, '_hasParent').returns(true);
+  controller.createUser(userData, function(err, response) {
+    test.ok(!err);
+    test.deepEqual(response, {
+      biz: 'baz'
+    });
+    test.done();
+  });
+};
+
+exports['createUser resolves contact parent for waterfall'] = function(test) {
+  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(controller, '_getContactParent').callsArgWith(1, null, {
+    biz: 'marquee'
+  });
+  sinon.stub(controller, '_hasParent').returns(true);
+  // checking first function in waterfall
+  sinon.stub(controller, '_createUser', function(data) {
+    test.deepEqual(data.contact.parent, { biz: 'marquee' });
+    test.done();
+  });
+  controller.createUser(userData);
+};
