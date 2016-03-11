@@ -44,9 +44,6 @@ describe('InboxCtrl controller', function() {
       $provide.factory('CheckDate', function() {
         return sinon.stub();
       });
-      $provide.factory('ConflictResolution', function() {
-        return sinon.stub();
-      });
       $provide.factory('Contact', function() {
         return sinon.stub();
       });
