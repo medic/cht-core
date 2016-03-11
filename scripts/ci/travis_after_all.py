@@ -64,8 +64,11 @@ def wait_others_to_finish():
         :return: tuple(True or False, List of not finished jobs)
         """
         snapshot = matrix_snapshot()
-        finished = [el.is_finished for el in snapshot if not el.is_leader]
-        return reduce(lambda a, b: a and b, finished), [el.number for el in snapshot if
+        if not snapshot:
+            return true, [];
+        else:
+            finished = [el.is_finished for el in snapshot if not el.is_leader]
+            return reduce(lambda a, b: a and b, finished), [el.number for el in snapshot if
                                                         not el.is_leader and not el.is_finished]
 
     while True:
