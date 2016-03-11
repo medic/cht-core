@@ -35,15 +35,17 @@ var utils = require('kujua-utils'),
         if (!userCtx) {
           return Session.navigateToLogin();
         }
-        return getFromCache((name || DbNameService()) + '-user-' + userCtx.name);
+        return getFromCache(
+          (name || DbNameService()) + '-user-' + userCtx.name,
+          { adapter: 'worker' }
+        );
       };
 
-      var getFromCache = function(name) {
+      var getFromCache = function(name, options) {
         if (!cache[name]) {
-          cache[name] = pouchDB(name, {
-            auto_compaction: true,
-            adapter: 'worker'
-          });
+          options = options || {};
+          options.auto_compaction = true;
+          cache[name] = pouchDB(name, options);
         }
         return cache[name];
       };
