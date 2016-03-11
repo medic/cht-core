@@ -323,6 +323,7 @@ module.exports = function(grunt) {
     'mmcss',
     'mmjs',
     'copy:enketo-xslt',
+    'copy:inbox',
     'appcache',
     'compileddocs'
   ]);
