@@ -83,7 +83,10 @@ try:
 
     BUILD_AGGREGATE_STATUS = 'BUILD_AGGREGATE_STATUS'
     others_snapshot = [el for el in final_snapshot if not el.is_leader]
-    if reduce(lambda a, b: a and b, [e.is_succeeded for e in others_snapshot]):
+    if not others_snapshot:
+    # no other builds
+        os.environ[BUILD_AGGREGATE_STATUS] = "others_succeeded"
+    elif reduce(lambda a, b: a and b, [e.is_succeeded for e in others_snapshot]):
         os.environ[BUILD_AGGREGATE_STATUS] = "others_succeeded"
     elif reduce(lambda a, b: a and b, [not e.is_succeeded for e in others_snapshot]):
         log.error("Others Failed")
