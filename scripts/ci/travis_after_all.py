@@ -64,8 +64,11 @@ def wait_others_to_finish():
         :return: tuple(True or False, List of not finished jobs)
         """
         snapshot = matrix_snapshot()
-        finished = [el.is_finished for el in snapshot if not el.is_leader]
-        return reduce(lambda a, b: a and b, finished), [el.number for el in snapshot if
+        if not snapshot:
+            return true, [];
+        else:
+            finished = [el.is_finished for el in snapshot if not el.is_leader]
+            return reduce(lambda a, b: a and b, finished), [el.number for el in snapshot if
                                                         not el.is_leader and not el.is_finished]
 
     while True:
@@ -83,7 +86,10 @@ try:
 
     BUILD_AGGREGATE_STATUS = 'BUILD_AGGREGATE_STATUS'
     others_snapshot = [el for el in final_snapshot if not el.is_leader]
-    if reduce(lambda a, b: a and b, [e.is_succeeded for e in others_snapshot]):
+    if not others_snapshot:
+    # no other builds
+        os.environ[BUILD_AGGREGATE_STATUS] = "others_succeeded"
+    elif reduce(lambda a, b: a and b, [e.is_succeeded for e in others_snapshot]):
         os.environ[BUILD_AGGREGATE_STATUS] = "others_succeeded"
     elif reduce(lambda a, b: a and b, [not e.is_succeeded for e in others_snapshot]):
         log.error("Others Failed")
