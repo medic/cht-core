@@ -37,32 +37,33 @@ var modal = require('../modules/modal');
       };
 
       $scope.$on('EditUserInit', function(e, user) {
-        if (user) {
-          $scope.editUserModel = {
-            id: user.id,
-            name: user.name,
-            fullname: user.fullname,
-            email: user.email,
-            phone: user.phone,
-            facility: user.facility,
-            type: getType(user.type),
-            language: user.language
-          };
+        if (!user) {
+          $scope.editUserModel = {};
+          return;
         }
-
+        $scope.editUserModel = {
+          id: user.id,
+          name: user.name,
+          fullname: user.fullname,
+          email: user.email,
+          phone: user.phone,
+          facility: user.facility,
+          type: getType(user.type),
+          language: user.language
+        };
         var $contact = $('#edit-user-profile [name=contact]');
-        if(user && user.contact_id) {
+        if (user.contact_id) {
           $contact.empty();
           DB.get().get(user.contact_id)
             .then(function(contact) {
               $contact
-                  .append($('<option>', {
-                    selected: 'selected',
-                    value: contact._id,
-                    text: contact.name,
-                  }))
-                  .val(contact._id)
-                  .trigger('change');
+                .append($('<option>', {
+                  selected: 'selected',
+                  value: contact._id,
+                  text: contact.name,
+                }))
+                .val(contact._id)
+                .trigger('change');
             });
         } else {
           $contact

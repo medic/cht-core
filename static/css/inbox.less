@@ -1,10 +1,10 @@
 @import (inline) "reset.css";
-@import "bower_components/bootstrap/less/bootstrap";
-@import "bower_components/fontawesome/less/font-awesome";
-@import (inline) "bower_components/select2/dist/css/select2.css";
-@import (inline) "bower_components/bootstrap-daterangepicker/daterangepicker-bs3.css";
-@import (inline) "bower_components/nvd3/nv.d3.css";
-@import (inline) "bower_components/bootstrap-tour/build/css/bootstrap-tour.css";
+@import "node_modules/bootstrap/less/bootstrap";
+@import "node_modules/font-awesome/less/font-awesome";
+@import (inline) "node_modules/select2/dist/css/select2.css";
+@import (inline) "node_modules/bootstrap-daterangepicker/daterangepicker.css";
+@import (inline) "node_modules/nvd3/nv.d3.css";
+@import (inline) "node_modules/bootstrap-tour/build/css/bootstrap-tour.css";
 
 @import "variables";
 @import "mixins";
@@ -73,7 +73,8 @@ body {
 }
 
 .bootstrap-layer {
-  z-index: 1;
+  z-index: 11;
+  background-color: #f2f2f3;
   position: absolute;
   top: 0;
   bottom: 0;

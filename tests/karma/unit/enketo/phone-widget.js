@@ -3,22 +3,13 @@ describe('phone-widget', function() {
   /* jshint multistr: true */
 
   var phoneWidget;
-  var settingsP;
+  var settings;
   var inputName = '/some/input/name';
 
   beforeEach(function() {
     module('inboxApp');
 
-    // Mock out settings service.
-    var settings = {};
-    // TODO(estellecomment): use a Promise.
-    settingsP = function() {
-      return {
-        then: function(func) {
-          func(settings);
-        }
-      };
-    };
+    settings = sinon.stub();
 
     // Fetch phone widget.
     var widgets = require('widgets');
@@ -59,8 +50,9 @@ describe('phone-widget', function() {
   }
 
   it('is placed in dom', function() {
+    settings.returns(KarmaUtils.mockPromise(null, {}));
     buildHtml();
-    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsP);
+    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settings);
 
     // Check a proxy input field is added, and the real one is hidden.
     chai.expect($('input').length).to.equal(2);
@@ -74,8 +66,9 @@ describe('phone-widget', function() {
   });
 
   it('formats input', function() {
+    settings.returns(KarmaUtils.mockPromise(null, {}));
     buildHtml();
-    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsP);
+    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settings);
     var input = inputSelector(inputName);
     var proxyInput = proxySelector(inputName);
 
@@ -85,14 +78,9 @@ describe('phone-widget', function() {
   });
 
   it('still formats if no settings are found', function() {
-    settingsP = function() {
-      return {
-        then: function() {}
-      };
-    };
-
+    settings.returns(KarmaUtils.mockPromise(null, {}));
     buildHtml();
-    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsP);
+    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settings);
 
     var input = inputSelector(inputName);
     var proxyInput = proxySelector(inputName);
@@ -103,8 +91,9 @@ describe('phone-widget', function() {
   });
 
   it('doesn\'t format invalid input', function() {
+    settings.returns(KarmaUtils.mockPromise(null, {}));
     buildHtml();
-    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsP);
+    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settings);
 
     var input = inputSelector(inputName);
     var proxyInput = proxySelector(inputName);
@@ -116,8 +105,9 @@ describe('phone-widget', function() {
   });
 
   it('keeps formatted input', function() {
+    settings.returns(KarmaUtils.mockPromise(null, {}));
     buildHtml();
-    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsP);
+    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settings);
 
     var input = inputSelector(inputName);
     var proxyInput = proxySelector(inputName);
@@ -129,8 +119,9 @@ describe('phone-widget', function() {
   });
 
   it('doesn\'t modify non-phone fields', function() {
+    settings.returns(KarmaUtils.mockPromise(null, {}));
     buildHtml('other');
-    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settingsP);
+    new phoneWidget.widget($(phoneWidget.selector)[0], {}, settings);
 
     // No extra field
     chai.expect($('input').length).to.equal(1);

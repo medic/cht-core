@@ -8,8 +8,6 @@ var feedback = require('../modules/feedback'),
     guidedSetup = require('../modules/guided-setup'),
     ajaxDownload = require('../modules/ajax-download');
 
-require('moment/locales');
-
 (function () {
 
   'use strict';
@@ -17,12 +15,51 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'CONTACT_TYPES',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, CONTACT_TYPES) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', '$q', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'TaskGenerator', 'CONTACT_TYPES',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, $q, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, TaskGenerator, CONTACT_TYPES) {
 
       Session.init();
       TrafficStats($scope);
-      DBSync();
+
+      $scope.initialReplicationStatus = 'in_progress';
+      var dbSyncStartTime = Date.now(),
+          dbSyncStartData;
+      if(window.medicmobile_android && window.medicmobile_android.getDataUsage) {
+        dbSyncStartData = JSON.parse(window.medicmobile_android.getDataUsage());
+      }
+
+      // sync DB and make sure tasks have warmed up the DB before allowing
+      // access to the UI.
+      var dbSync = function() {
+        return $q(function(resolve) {
+          DBSync(function(err) {
+            if (err) {
+              $log.warn(err);
+            }
+
+            $scope.initialReplicationStatus = err? 'failed': 'complete';
+            $scope.initialReplicationDuration = Date.now() - dbSyncStartTime;
+            dbSyncStartTime = null;
+
+            if(window.medicmobile_android && window.medicmobile_android.getDataUsage) {
+              var dbSyncEndData = JSON.parse(window.medicmobile_android.getDataUsage());
+              $scope.initialReplicationDataUsage = {
+                rx: dbSyncEndData.app.rx - dbSyncStartData.app.rx,
+                tx: dbSyncEndData.app.tx - dbSyncStartData.app.tx,
+              };
+              dbSyncStartData = null;
+            }
+
+            resolve();
+          });
+        });
+      };
+
+      $q.all([ dbSync(), TaskGenerator.init ])
+        .then(function() {
+          $scope.dbWarmedUp = true;
+        });
+
       feedback.init({
         saveDoc: function(doc, callback) {
           DB.get().post(doc)
@@ -33,9 +70,7 @@ require('moment/locales');
         },
         getUserCtx: function(callback) {
           callback(null, Session.userCtx());
-        },
-        console: console,
-        window: window
+        }
       });
 
       LiveListConfig($scope);
@@ -931,6 +966,81 @@ require('moment/locales');
         });
       };
 
+      $scope.configurationPages = [
+        {
+          state: 'configuration.settings.basic',
+          icon: 'fa-cog',
+          name: 'Settings',
+          active: function() {
+            return $state.includes('configuration.settings');
+          }
+        },
+        {
+          state: 'configuration.translation.languages',
+          icon: 'fa-language',
+          name: 'Languages',
+          active: function() {
+            return $state.includes('configuration.translation');
+          }
+        },
+        {
+          state: 'configuration.forms',
+          icon: 'fa-list-alt',
+          name: 'Forms',
+          active: function() {
+            return $state.is('configuration.forms');
+          }
+        },
+        {
+          state: 'configuration.export',
+          icon: 'fa-arrow-circle-o-down',
+          name: 'Export',
+          active: function() {
+            return $state.is('configuration.export');
+          }
+        },
+        {
+          state: 'configuration.user',
+          icon: 'fa-user',
+          name: 'edit.user.settings',
+          active: function() {
+            return $state.is('configuration.user');
+          }
+        },
+        {
+          state: 'configuration.users',
+          icon: 'fa-users',
+          name: 'Users',
+          active: function() {
+            return $state.is('configuration.users');
+          }
+        },
+        {
+          state: 'configuration.icons',
+          icon: 'fa-file-image-o',
+          name: 'icons',
+          active: function() {
+            return $state.is('configuration.icons');
+          }
+        },
+        {
+          state: 'configuration.targets',
+          icon: 'fa-dot-circle-o',
+          name: 'analytics.targets',
+          active: function() {
+            return $state.is('configuration.targets') || $state.is('configuration.targets-edit');
+          }
+        },
+        {
+          state: 'configuration.permissions',
+          icon: 'fa-key',
+          name: 'configuration.permissions',
+          active: function() {
+            return $state.is('configuration.permissions');
+          }
+        },
+      ];
+
       UserDistrict(function() {
         $scope.$watch('filterModel', function(curr, prev) {
           if (prev !== curr) {
@@ -942,21 +1052,30 @@ require('moment/locales');
 
       CountMessages.init();
 
+      var showUpdateReady = function() {
+        $('#version-update').modal('show');
+
+        // close select2 dropdowns in the background
+        $('select.select2-hidden-accessible').each(function(i, e) {
+          // prevent errors being thrown if selecters have not been
+          // initialised before the update dialog is to be shown
+          try { $(e).select2('close'); } catch(e) {}
+        });
+      };
+
       $scope.reloadWindow = function() {
         $window.location.reload();
       };
 
-      if (window.applicationCache) {
-        var showUpdateReady = function() {
-          $('#version-update').modal('show');
+      $scope.postponeUpdate = function() {
+        $log.debug('Delaying update');
+        $timeout(function() {
+          $log.debug('Displaying delayed update ready dialog');
+          showUpdateReady();
+        }, 2 * 60 * 60 * 1000);
+      };
 
-          // close select2 dropdowns in the background
-          $('select.select2-hidden-accessible').each(function(i, e) {
-            // prevent errors being thrown if selecters have not been
-            // initialised before the update dialog is to be shown
-            try { $(e).select2('close'); } catch(e) {}
-          });
-        };
+      if (window.applicationCache) {
         window.applicationCache.addEventListener('updateready', showUpdateReady);
         window.applicationCache.addEventListener('error', function(err) {
           // TODO: once we trigger this work out what a 401 looks like and redirect

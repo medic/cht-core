@@ -1,10 +1,13 @@
 window.KarmaUtils = {
   restore: function() {
     for (var i = 0; i < arguments.length; i++) {
-      if (arguments[i].restore) {
-        arguments[i].restore();
-      } else if (arguments[i].reset) {
-        arguments[i].reset();
+      var arg = arguments[i];
+      if (typeof arg !== 'undefined' && arg) {
+        if (arg.restore) {
+          arg.restore();
+        } else if (arg.reset) {
+          arg.reset();
+        }
       }
     }
   },
@@ -42,12 +45,6 @@ window.KarmaUtils = {
         getRemoteUrl: getRemoteUrl
       };
     };
-  },
-  inlineTimeout: function(work) {
-    work();
-    return {'then': function(then) {
-      then();
-    }};
   }
 };
 

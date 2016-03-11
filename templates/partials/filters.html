@@ -178,110 +178,22 @@
           <span class="mm-button-icon" ng-show="'configuration' | isState">
             <i class="fa fa-cog"></i>
           </span>
-          <span class="mm-button-icon" ng-show="'configuration.settings' | includedByState">
-            <i class="fa fa-cog"></i>
-          </span>
-          <span class="mm-button-icon" ng-show="'configuration.translation' | includedByState">
-            <i class="fa fa-language"></i>
-          </span>
-          <span class="mm-button-icon" ng-show="'configuration.forms' | isState">
-            <i class="fa fa-list-alt"></i>
-          </span>
-          <span class="mm-button-icon" ng-show="'configuration.export' | isState">
-            <i class="fa fa-arrow-circle-o-down"></i>
-          </span>
-          <span class="mm-button-icon" ng-show="'configuration.user' | isState">
-            <i class="fa fa-user"></i>
-          </span>
-          <span class="mm-button-icon" ng-show="'configuration.users' | isState">
-            <i class="fa fa-users"></i>
-          </span>
-          <span class="mm-button-icon" ng-show="'configuration.icons' | isState">
-            <i class="fa fa-file-image-o"></i>
-          </span>
-          <span class="mm-button-icon" ng-show="('configuration.targets' | isState) || ('configuration.targets-edit' | isState)">
-            <i class="fa fa-dot-circle-o"></i>
+          <span class="mm-button-icon" ng-show="page.active()" ng-repeat="page in configurationPages">
+            <i class="fa {{page.icon}}"></i>
           </span>
           <span class="mm-button-dropdown">
             <i class="fa fa-chevron-down"></i>
           </span>
           <span class="mm-button-text">
-            <span ng-show="'configuration' | isState">
-              {{'Configuration' | translate}}
-            </span>
-            <span ng-show="'configuration.settings' | includedByState">
-              {{'Settings' | translate}}
-            </span>
-            <span ng-show="'configuration.translation' | includedByState">
-              {{'Languages' | translate}}
-            </span>
-            <span ng-show="'configuration.forms' | isState">
-              {{'Forms' | translate}}
-            </span>
-            <span ng-show="'configuration.export' | isState">
-              {{'Export' | translate}}
-            </span>
-            <span ng-show="'configuration.user' | isState">
-              {{'edit.user.settings' | translate}}
-            </span>
-            <span ng-show="'configuration.users' | isState">
-              {{'Users' | translate}}
-            </span>
-            <span ng-show="'configuration.icons' | isState">
-              {{'icons' | translate}}
-            </span>
-            <span ng-show="('configuration.targets' | isState) || ('configuration.targets-edit' | isState)">
-              {{'analytics.targets' | translate}}
-            </span>
+            <span ng-show="'configuration' | isState" translate>Configuration</span>
+            <span ng-show="page.active()" ng-repeat="page in configurationPages" translate>{{page.name}}</span>
           </span>
         </span>
         <ul role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
-          <li class="ng-scope" role="presentation" mm-auth="can_configure">
-            <a ui-sref="configuration.settings.basic" role="menuitem" tabindex="-1">
-              <i class="fa fa-fw fa-cog"></i>
-              <span>{{'Settings' | translate}}</span>
-            </a>
-          </li>
-          <li class="ng-scope" role="presentation" mm-auth="can_configure">
-            <a ui-sref="configuration.translation.languages" role="menuitem" tabindex="-1">
-              <i class="fa fa-fw fa-language"></i>
-              <span>{{'Languages' | translate}}</span>
-            </a>
-          </li>
-          <li class="ng-scope" role="presentation" mm-auth="can_configure">
-            <a ui-sref="configuration.forms" role="menuitem" tabindex="-1">
-              <i class="fa fa-fw fa-list-alt"></i>
-              <span>{{'Forms' | translate}}</span>
-            </a>
-          </li>
-          <li class="ng-scope" role="presentation" mm-auth="can_configure">
-            <a ui-sref="configuration.export" role="menuitem" tabindex="-1">
-              <i class="fa fa-fw fa-arrow-circle-o-down"></i>
-              <span>{{'Export' | translate}}</span>
-            </a>
-          </li>
-          <li class="ng-scope" role="presentation">
-            <a ui-sref="configuration.user" role="menuitem" tabindex="-1">
-              <i class="fa fa-fw fa-user"></i>
-              <span>{{'edit.user.settings' | translate}}</span>
-            </a>
-          </li>
-          <li class="ng-scope" role="presentation" mm-auth="can_configure">
-            <a ui-sref="configuration.users" role="menuitem" tabindex="-1">
-              <i class="fa fa-fw fa-users"></i>
-              <span>{{'Users' | translate}}</span>
-            </a>
-          </li>
-          <li class="ng-scope" role="presentation" mm-auth="can_configure">
-            <a ui-sref="configuration.icons" role="menuitem" tabindex="-1">
-              <i class="fa fa-fw fa-file-image-o"></i>
-              <span>{{'icons' | translate}}</span>
-            </a>
-          </li>
-          <li class="ng-scope" role="presentation" mm-auth="can_configure">
-            <a ui-sref="configuration.targets" role="menuitem" tabindex="-1">
-              <i class="fa fa-fw fa-dot-circle-o"></i>
-              <span>{{'analytics.targets' | translate}}</span>
+          <li class="ng-scope" role="presentation" mm-auth="can_configure" ng-repeat="page in configurationPages">
+            <a ui-sref="{{page.state}}" role="menuitem" tabindex="-1">
+              <i class="fa fa-fw {{page.icon}}"></i>
+              <span translate>{{page.name}}</span>
             </a>
           </li>
         </ul>

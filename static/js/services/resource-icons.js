@@ -6,12 +6,12 @@ angular.module('inboxServices').factory('ResourceIcons', [
 
     var getSrc = function(name) {
       if (!doc) {
-        return '';
+        return;
       }
       var filename = doc.resources[name];
       var icon = filename && doc._attachments[filename];
       if (!icon) {
-        return '';
+        return;
       }
       return 'data:' + icon.content_type + ';base64,' + icon.data;
     };
@@ -22,8 +22,13 @@ angular.module('inboxServices').factory('ResourceIcons', [
         .then(function(res) {
           doc = res;
           Object.keys(doc.resources).forEach(function(name) {
-            $('img.resource-icon[data-resource-icon="' + name + '"]')
-              .attr('src', getSrc(name));
+            var src = getSrc(name);
+            var elems = $('img.resource-icon-' + name);
+            if (src) {
+              elems.attr('src', src);
+            } else {
+              elems.removeAttr('src');
+            }
           });
         })
         .catch(function(err) {
@@ -44,11 +49,9 @@ angular.module('inboxServices').factory('ResourceIcons', [
     return {
       getImg: function(name) {
         if (!name) {
-          return '';
+          return;
         }
-        return '<img class="resource-icon" ' +
-               'data-resource-icon="' + name + '" ' +
-               'src="' + getSrc(name) + '">';
+        return getSrc(name);
       }
     };
 

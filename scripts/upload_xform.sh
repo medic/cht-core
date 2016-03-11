@@ -29,6 +29,10 @@ Examples:
 EOF
 }
 
+error() {
+  echo "[$0] Error: $1"; exit 1
+}
+
 if [[ $# < 2 ]]; then
     echo "[$SELF] Missing parameters."
     _usage
@@ -100,15 +104,6 @@ cat <<EOF
 [$SELF] -----
 EOF
 
-if $FORCE; then
-    echo "[$SELF] Trying to delete existing doc..."
-    revResponse=$(curl -s "$docUrl")
-    rev=$(jq -r ._rev <<< "$revResponse")
-    curl -s -X DELETE "${docUrl}?rev=${rev}" >/dev/null
-    # a moment's pause to let the delete complete
-    sleep 1
-fi
-
 check_rev() {
     # exit if we don't see a rev property
     if [ -z "$rev" ] || [ "$rev" = "null" ]; then
@@ -117,17 +112,32 @@ check_rev() {
     fi
 }
 
-revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d "${fullJson}" "$docUrl")
+rev=""
+if $FORCE; then
+    revResponse="$(curl -s ${docUrl})"
+    if [[ "not_found" != "$(jq -r .error <<< "$revResponse")" ]]; then
+      rev=$(jq -r ._rev <<< "$revResponse")
+      check_rev
+    fi
+fi
+
+if [ -z "${rev-}" ]; then
+  revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d "${fullJson}" "$docUrl")
+else
+  revResponse=$(curl -# -s -H "Content-Type: application/json" -X PUT -d "${fullJson}" "$docUrl?rev=${rev-}")
+fi
+echo "[$0] Upload response: $revResponse"
 rev=$(jq -r .rev <<< "$revResponse")
 check_rev
 
 # Upload a temp file with the title stripped
 sed '/<h:title>/d' "$XFORM_PATH" > "$XFORM_PATH.$$.tmp"
 
-echo "[$SELF] Uploading form: $ID..."
+echo "[$SELF] Uploading form xml: id: $ID, rev: $rev..."
 revResponse=$(curl -# -f -X PUT -H "Content-Type: text/xml" \
     --data-binary "@${XFORM_PATH}.$$.tmp" \
     "${docUrl}/xml?rev=${rev}")
+echo "revResponse: $revResponse"
 rev=$(jq -r .rev <<< "$revResponse")
 
 rm "$XFORM_PATH.$$.tmp"

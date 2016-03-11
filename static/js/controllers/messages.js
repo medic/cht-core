@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 (function () {
 
   'use strict';
@@ -33,7 +35,7 @@
           } else {
             $scope.messages.push(updated);
           }
-          if ($scope.selected.id === updated.key[0]) {
+          if ($scope.selected && $scope.selected.id === updated.key[0]) {
             $scope.$broadcast('UpdateContactConversation', { silent: true});
           }
         });

@@ -3,7 +3,7 @@ var levels = ['error', 'warn', 'log', 'info'],
     options = {};
 
 var getUrl = function() {
-  var url = typeof variable !== 'undefined' && document.URL;
+  var url = options.document && options.document.URL;
   if (url) {
     // blank out passwords
     return url.replace(/:[^@:]*@/, ':********@');
@@ -68,6 +68,15 @@ var create = function(info, appInfo, callback) {
 module.exports = {
   init: function(_options) {
     options = _options;
+    if (!options.window && typeof window !== 'undefined') {
+      options.window = window;
+    }
+    if (!options.console && typeof console !== 'undefined') {
+      options.console = console;
+    }
+    if (!options.document && typeof document !== 'undefined') {
+      options.document = document;
+    }
     registerConsoleInterceptor();
     registerUnhandledErrorHandler();
   },

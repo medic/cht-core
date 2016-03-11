@@ -24,7 +24,7 @@ module.exports = function() {
                             // manually.
                             // TODO what is `result` for?  Should it be
                             // replaced in this call?
-                            XPathResult.STRING_TYPE, result);
+                            XPathResult.ANY_TYPE, result);
                             //resultType, result);
                 },
                 openrosa_xpath_extensions);

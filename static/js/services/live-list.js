@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 function PARSER($parse, scope) {
   return function(expr) {
     expr = expr.substring(2, expr.length-2);
@@ -121,7 +123,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
 
       LiveList.tasks.set([]);
 
-      TaskGenerator('tasks-list', 'task', function(err, tasks) {
+      TaskGenerator.listen('tasks-list', 'task', function(err, tasks) {
         if (err) {
           $log.error('Error getting tasks', err);
 

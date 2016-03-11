@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 angular.module('inboxServices').service('ContactForm', [
   '$q', 'ContactSchema', 'DB', 'EnketoTranslation', 'FileReader',
   function($q, ContactSchema, DB, EnketoTranslation, FileReader) {

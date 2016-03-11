@@ -1,7 +1,33 @@
+window.PouchDB = require('pouchdb');
+window.$ = window.jQuery = require('jquery');
+window.d3 = require('d3');
+
+require('../../node_modules/select2/dist/js/select2.full');
+require('bootstrap');
+require('./bootstrap-multidropdown');
+require('bootstrap-daterangepicker');
+require('bootstrap-tour');
+require('nvd3');
+
+require('angular');
+require('angular-cookie');
+require('angular-route');
+require('angular-ui-router');
+require('angular-translate');
+require('angularjs-nvd3-directives');
+require('angular-pouchdb');
+require('angular-sanitize');
+require('angular-resource');
+
+require('moment');
+require('moment/locale/es');
+require('moment/locale/fr');
+require('moment/locale/ne');
 
 require('./services/index');
 require('./controllers/index');
 require('./filters/index');
+require('./enketo/main.js');
 
 var _ = require('underscore');
 _.templateSettings = {
@@ -47,7 +73,6 @@ _.templateSettings = {
         // messages
         .state('messages', {
           url: '/messages?tour',
-          abstract: true,
           controller: 'MessagesCtrl',
           templateUrl: 'templates/partials/messages.html'
         })
@@ -132,7 +157,6 @@ _.templateSettings = {
         // contacts
         .state('contacts', {
           url: '/contacts',
-          abstract: true,
           controller: 'ContactsCtrl',
           templateUrl: 'templates/partials/contacts.html'
         })
@@ -185,7 +209,6 @@ _.templateSettings = {
         // tasks
         .state('tasks', {
           url: '/tasks',
-          abstract: true,
           controller: 'TasksCtrl',
           templateUrl: 'templates/partials/tasks.html'
         })
@@ -329,6 +352,15 @@ _.templateSettings = {
             }
           }
         })
+        .state('configuration.permissions', {
+          url: '/permissions',
+          views: {
+            content: {
+              controller: 'ConfigurationPermissionsCtrl',
+              templateUrl: 'templates/partials/configuration_permissions.html'
+            }
+          }
+        })
 
         // about page
         .state('about', {
@@ -350,10 +382,6 @@ _.templateSettings = {
           templateUrl: 'templates/partials/theme.html'
         });
 
-      // Parent states are transient, jump to <parent>.details.
-      $urlRouterProvider.when('/contacts', '/contacts/');
-      $urlRouterProvider.when('/messages', '/messages/');
-      $urlRouterProvider.when('/tasks', '/tasks/');
       $urlRouterProvider.when('', '/home');
       $translateProvider.useLoader('SettingsLoader', {});
       $translateProvider.useSanitizeValueStrategy('escape');

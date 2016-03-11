@@ -6,10 +6,6 @@
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!selected.messages[0] && !loadingContent">
-    <div>{{'No message selected' | translate}}</div>
-  </div>
-
   <div class="message-content-wrapper" ng-show="selected.messages[0] && !loadingContent">
     <div id="message-header" class="col-sm-8 name-header">
       <mm-sender message="selected.messages[0].value"></mm-sender>
@@ -28,7 +24,7 @@
               </div>
               <span class="message-body">
                 <div class="actions">
-                  <a class="btn btn-link fa fa-trash-o" ng-attr-title="{{'Delete' | translate}}" ng-click="deleteDoc(message.doc._id)"></a>
+                  <a class="btn btn-link fa fa-trash-o" ng-attr-title="{{'Delete' | translate}}" ng-click="deleteDoc(message.doc._id)" mm-auth="can_delete_messages"></a>
                 </div>
                 <div class="data">
                   <p>

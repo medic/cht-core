@@ -1,5 +1,7 @@
 'use strict';
 
+var _ = require('underscore');
+
 var inboxControllers = angular.module('inboxControllers');
 
 inboxControllers.controller('AboutCtrl',

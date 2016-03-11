@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'translateFilter', 'LiveList', 'Settings', 'MarkRead', 'Search', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, translateFilter, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified) {
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$translate', 'TranslateFrom', 'LiveList', 'Settings', 'MarkRead', 'Search', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, $translate, TranslateFrom, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified) {
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = null;
@@ -29,7 +29,9 @@ var _ = require('underscore'),
             pane.done();
           })
           .catch(function(err) {
-            pane.done(translateFilter('Error updating group'), err);
+            $translate('Error updating group').then(function(text) {
+              pane.done(text, err);
+            });
           });
       };
 
@@ -54,8 +56,17 @@ var _ = require('underscore'),
       };
 
       var setTitle = function(doc) {
+        var name = doc.form;
         var form = _.findWhere($scope.forms, { code: doc.form });
-        $scope.setTitle((form && form.name) || doc.form);
+        if (form) {
+          name = form.name;
+        } else {
+          form = _.findWhere($scope.nonContactForms, { internalId: doc.form });
+          if (form) {
+            name = TranslateFrom(form.title);
+          }
+        }
+        $scope.setTitle(name);
       };
 
       var updateDisplayFields = function(report) {
@@ -173,7 +184,12 @@ var _ = require('underscore'),
 
       $scope.$on('query', function() {
         if ($scope.filterModel.type !== 'reports') {
+          // not viewing reports tab
           liveList.clearSelected();
+          return;
+        }
+        if ($scope.isMobile() && $scope.showContent) {
+          // leave content shown
           return;
         }
         $scope.loading = true;

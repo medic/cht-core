@@ -86,7 +86,11 @@
             <span class="fa fa-pencil"></span>
             <p>{{'Edit' | translate}}</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="actionBar.disableDelete || deleteDoc(actionBar._id)" ng-class="{'mm-icon-disabled': actionBar.disableDelete}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="filterModel.type === 'reports'" ng-click="actionBar.disableDelete || deleteDoc(actionBar._id)" ng-class="{'mm-icon-disabled': actionBar.disableDelete}" mm-auth="can_delete_reports">
+            <span class="fa fa-trash-o"></span>
+            <p>{{'Delete' | translate}}</p>
+          </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="filterModel.type === 'contacts'" ng-click="actionBar.disableDelete || deleteDoc(actionBar._id)" ng-class="{'mm-icon-disabled': actionBar.disableDelete}" mm-auth="can_delete_contacts">
             <span class="fa fa-trash-o"></span>
             <p>{{'Delete' | translate}}</p>
           </a>

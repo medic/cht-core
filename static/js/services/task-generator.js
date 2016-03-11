@@ -249,17 +249,20 @@ var nools = require('nools'),
             });
         });
 
-      return function(name, type, callback) {
-        if (!callbacks[type]) {
-          callbacks[type] = {};
-        }
-        callbacks[type][name] = callback;
-        init
-          .then(function() {
-            // wait for init to complete
-            callback(err, _.values(emissions[type]));
-          })
-          .catch(callback);
+      return {
+        init: init,
+        listen: function(name, type, callback) {
+          if (!callbacks[type]) {
+            callbacks[type] = {};
+          }
+          callbacks[type][name] = callback;
+          init
+            .then(function() {
+              // wait for init to complete
+              callback(err, _.values(emissions[type]));
+            })
+            .catch(callback);
+        },
       };
     }
   ]);

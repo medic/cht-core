@@ -29,20 +29,19 @@ describe('ResourceIcons service', function() {
     KarmaUtils.restore(get, Changes, jqFind, attr);
   });
 
-  it('returns empty string when given no name', function(done) {
+  it('returns undefined when given no name', function(done) {
     get.returns(KarmaUtils.mockPromise());
     var service = injector.get('ResourceIcons');
     var actual = service.getImg();
-    chai.expect(actual).to.equal('');
+    chai.expect(actual).to.equal(undefined);
     done();
   });
 
-  it('returns a placeholder when no doc yet', function(done) {
+  it('returns undefined when no doc yet', function(done) {
     get.returns(KarmaUtils.mockPromise());
     var service = injector.get('ResourceIcons');
     var actual = service.getImg('delivery');
-    var expected = '<img class="resource-icon" data-resource-icon="delivery" src="">';
-    chai.expect(actual).to.equal(expected);
+    chai.expect(actual).to.equal(undefined);
     done();
   });
 
@@ -67,7 +66,7 @@ describe('ResourceIcons service', function() {
     var service = injector.get('ResourceIcons');
     setTimeout(function() {
       var actual = service.getImg('child');
-      var expected = '<img class="resource-icon" data-resource-icon="child" src="data:image/png;base64,kiddlywinks">';
+      var expected = 'data:image/png;base64,kiddlywinks';
       chai.expect(actual).to.equal(expected);
       done();
     });
@@ -93,22 +92,25 @@ describe('ResourceIcons service', function() {
     var service = injector.get('ResourceIcons');
     setTimeout(function() {
       var actual1 = service.getImg('child');
-      var expected1 = '<img class="resource-icon" data-resource-icon="child" src="">';
-      chai.expect(actual1).to.equal(expected1);
+      chai.expect(actual1).to.equal(undefined);
 
       Changes.args[0][0].callback(); // invoke the changes listener
       setTimeout(function() {
-        var actual2 = service.getImg('child');
-        var expected2 = '<img class="resource-icon" data-resource-icon="child" src="data:image/png;base64,kiddlywinks">';
-        chai.expect(actual2).to.equal(expected2);
-        chai.expect(get.callCount).to.equal(2);
+        try {
+          var actual2 = service.getImg('child');
+          var expected = 'data:image/png;base64,kiddlywinks';
+          chai.expect(actual2).to.equal(expected);
+          chai.expect(get.callCount).to.equal(2);
 
-        // expect existing elements to be updated
-        chai.expect(jqFind.callCount).to.equal(1);
-        chai.expect(jqFind.args[0][0]).to.equal('img.resource-icon[data-resource-icon="child"]');
-        chai.expect(attr.args[0][0]).to.equal('src');
-        chai.expect(attr.args[0][1]).to.equal('data:image/png;base64,kiddlywinks');
-        done();
+          // expect existing elements to be updated
+          chai.expect(jqFind.callCount).to.equal(1);
+          chai.expect(jqFind.args[0][0]).to.equal('img.resource-icon-child');
+          chai.expect(attr.args[0][0]).to.equal('src');
+          chai.expect(attr.args[0][1]).to.equal('data:image/png;base64,kiddlywinks');
+          done();
+        } catch(e) {
+          done(e);
+        }
       });
     });
   });
