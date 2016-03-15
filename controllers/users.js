@@ -174,31 +174,6 @@ var mapUsers = function(users, settings, facilities, admins) {
   });
 };
 
-var updatePassword = function(updated, callback) {
-  if (!updated.password) {
-    // password not changed, do nothing
-    return callback();
-  }
-  module.exports._getAdmins(function(err, admins) {
-    if (err) {
-      if (err.error === 'unauthorized') {
-        // not an admin
-        return callback();
-      }
-      return callback(err);
-    }
-    if (!admins[updated.name]) {
-      // not an admin so admin password change not required
-      return callback();
-    }
-    db.request({
-      path: '_config/admins/' + updated.name,
-      method: 'PUT',
-      body: JSON.stringify(updated.password)
-    }, callback);
-  });
-};
-
 var rolesMap = {
   'national-manager': ['kujua_user', 'data_entry', 'national_admin'],
   'district-manager': ['kujua_user', 'data_entry', 'district_admin'],
@@ -368,40 +343,6 @@ module.exports = {
           callback(err, responseBody);
         });
       });
-    });
-  },
-  updateUser: function(username, data, callback) {
-    var self = this,
-        userID = createID(username),
-        placeID = getDocID(data.place);
-    if (_.isUndefined(placeID) && _.isUndefined(data.type) && _.isUndefined(data.password)) {
-      return callback(new Error(
-        'One of the following fields are required: type, password or place.'
-      ));
-    }
-    // validate user exists
-    db._users.get(userID, function(err, user) {
-      if (err) {
-        console.error('Failed to find user.');
-        return callback(err);
-      }
-      var updated = _.extend(self._getUserUpdates(userID, data), user);
-      // validate place exists if it changed
-      if (!_.isUndefined(placeID) && (placeID !== user.facility_id)) {
-        self._getPlace(placeID, function(err) {
-          if (err) {
-            console.error('Failed to find place.');
-            return callback(err);
-          }
-          // fix
-          updatePassword({}, function(){});
-          db._users.insert(updated, callback);
-        });
-      } else {
-          // fix
-          updatePassword({}, function(){});
-          db._users.insert(updated, callback);
-      }
     });
   }
 };

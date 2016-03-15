@@ -619,7 +619,7 @@ Content-Type: application/json; charset=utf-8
 
 ## POST /api/v1/users
 
-Create a new user.
+Create a new user with a place and a contact.
 
 ### Permissions
 
@@ -694,48 +694,6 @@ Content-Type: application/json
   }
 }
 
-```
-
-## POST /api/v1/users/{{username}}
-
-Update a user's data.  Typically used to reset a password or re-assign to a different place.
-
-### Permissions
-
-`can_update_users`  
-
-### URL Parameters
-
-| Variable | Description      
-| -------- | ----------------- 
-| username | String identifier used for authentication.
-
-
-### JSON Properties
-
-Use JSON in the request body to specify user details. One of the following properties is required.
-
-| Key | Description       
-| -------- | -----------------
-| password | Password string used for authentication.
-| type     | Default: 'district-manager'
-| place    | Place identifier string (UUID) or object
-
-### Examples
-
-
-```
-POST /api/v1/users/mary
-Content-Type: application/json
-
-{
-  "password": "secret",
-  "place": "eeb17d6d-5dde-c2c0-62c4a1a0ca17e342"
-}
-```
-
-```
-HTTP/1.1 200 OK
 ```
 
 ## DELETE /api/v1/users/{{username}}
