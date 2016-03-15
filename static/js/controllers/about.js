@@ -12,6 +12,10 @@ inboxControllers.controller('AboutCtrl',
     $scope.filterModel.type = 'help';
     $scope.url = window.location.hostname;
     $scope.userCtx = Session.userCtx();
+    DB.get().get('_design/medic')
+      .then(function(ddoc) {
+        $scope.ddoc_version = ddoc._rev.split('-')[0];
+      });
     $scope.reload = function() {
       window.location.reload(false);
     };
