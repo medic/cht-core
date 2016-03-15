@@ -24,9 +24,9 @@ var _ = require('underscore');
               callback(null, results, meta);
             }
           })
-          .catch(function(data) {
+          .catch(function(err) {
             if (callback) {
-              callback(new Error(data));
+              callback(err);
             }
           });
       };
