@@ -6,6 +6,10 @@
     </div>
   </div>
 
+  <div class="col-sm-8 item-content empty-selection" ng-show="!selected && !loadingContent">
+    <div>{{'No task selected' | translate}}</div>
+  </div>
+
   <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && !loadingForm && contentError">
     <div>{{'error.loading.form' | translate}}</div>
   </div>

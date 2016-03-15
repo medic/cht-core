@@ -1,9 +1,6 @@
 <div class="inner">
   <div class="inbox page">
     <ng-include src="'templates/partials/messages_list.html'"></ng-include>
-    <div class="col-sm-8 item-content empty-selection right-pane" ng-show="!selected.messages[0] && !loadingContent">
-      <div>{{'No message selected' | translate}}</div>
-    </div>
     <ui-view name="content"/>
   </div>
 </div>
