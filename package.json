@@ -72,6 +72,7 @@
     "phantomjs": "~1.9.17",
     "proxyquire": "^1.7.4",
     "sinon": "^1.15.4",
-    "time-grunt": "^1.2.2"
+    "time-grunt": "^1.2.2",
+    "uglify-js": "^2.6.2"
   }
 }
