@@ -33,7 +33,7 @@ var moment = require('moment');
       };
 
       var getDateDiff = function(date) {
-        var now = moment();
+        var now = moment().startOf('day'); // remove the time component
         for (var i = 0; i < config.ageBreaks.length; i++) {
           var ageBreak = config.ageBreaks[i];
           var diff = date.diff(now, ageBreak.unit);
