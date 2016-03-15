@@ -314,11 +314,11 @@ module.exports = {
         required = ['username', 'password', 'place', 'contact'],
         missing = [],
         response = {};
-    for (var i in required) {
-      if (_.isUndefined(data[required[i]])) {
-        missing.push(required[i]);
+    required.forEach(function(prop) {
+      if (_.isUndefined(data[prop])) {
+        missing.push(prop);
       }
-    }
+    });
     if (missing.length > 0) {
       return callback(
         new Error('Missing required fields: ' + missing.join(', '))
