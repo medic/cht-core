@@ -132,11 +132,11 @@ var createUserSettings = function(data, response, callback) {
 };
 
 var hasParent = function(facility, id) {
+  // do not modify facility
+  var p = facility.parent;
   if (facility._id === id) {
     return true;
   }
-  // do not modify facility
-  var p = facility.parent;
   while (p) {
     if (p._id === id) {
       return true;
