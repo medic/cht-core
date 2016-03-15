@@ -135,13 +135,13 @@ var hasParent = function(facility, id) {
   if (facility._id === id) {
     return true;
   }
-  // clone facility before modifying it
-  var f = JSON.parse(JSON.stringify(facility));
-  while (f.parent) {
-    if (f.parent._id === id) {
+  // do not modify facility
+  var p = facility.parent;
+  while (p) {
+    if (p._id === id) {
       return true;
     }
-    f.parent = f.parent.parent;
+      p = p.parent;
   }
   return false;
 };

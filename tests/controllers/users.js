@@ -106,6 +106,40 @@ exports['getType returns admin when user is in admins list and roles is empty'] 
   test.done();
 };
 
+exports['describe hasParent'] = function(test) {
+  var facility = {
+    _id: 'foo',
+    color: 'red',
+    parent: {
+      _id: 'bar',
+      color: 'green',
+      parent: {
+        _id: 'baz',
+        color: 'blue'
+      }
+    }
+  };
+  test.ok(controller._hasParent(facility, 'baz'));
+  test.ok(!controller._hasParent(facility, 'slime'));
+  test.ok(controller._hasParent(facility, 'bar'));
+  test.ok(controller._hasParent(facility, 'foo'));
+  test.ok(!controller._hasParent(facility, 'goo'));
+  // does not modify facility object
+  test.deepEqual(facility, {
+    _id: 'foo',
+    color: 'red',
+    parent: {
+      _id: 'bar',
+      color: 'green',
+      parent: {
+        _id: 'baz',
+        color: 'blue'
+      }
+    }
+  });
+  test.done();
+};
+
 exports['getType returns role when user is in admins list and has role'] = function(test) {
   var user = {
     name: 'sam',
