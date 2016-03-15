@@ -61,12 +61,25 @@ angular.module('inboxServices').factory('LiveListConfig', [
         }
       });
 
+      var orderByDate = function(lhs, rhs) {
+        if (!lhs && !rhs) {
+          return 0;
+        }
+        if (!lhs) {
+          return 1;
+        }
+        if (!rhs) {
+          return -1;
+        }
+        // Currently some task dates are Strings while others are proper JS
+        // Date objects.  Simplest way to compare them is to parse all into
+        // instances of Date.
+        return Date.parse(lhs) - Date.parse(rhs);
+      };
+
       var reports_config = {
-        orderBy: function(r1, r2) {
-          if (!r1 || !r2) {
-            return;
-          }
-          return r2.reported_date - r1.reported_date;
+        orderBy: function(lhs, rhs) {
+          return orderByDate(lhs && lhs.reported_date, rhs && rhs.reported_date);
         },
         listItem: function(report) {
           var reportHtml = $templateCache.get('templates/partials/reports_list_item.html');
@@ -104,14 +117,8 @@ angular.module('inboxServices').factory('LiveListConfig', [
 
       LiveList.$listFor('tasks', {
         selecter: '#tasks-list ul',
-        orderBy: function(t1, t2) {
-          if (!t1 || !t2) {
-            return;
-          }
-          // Currently some task dates are Strings while others are proper JS
-          // Date objects.  Simplest way to compare them is to parse all into
-          // instances of Date.
-          return Date.parse(t1.date) - Date.parse(t2.date);
+        orderBy: function(lhs, rhs) {
+          return orderByDate(lhs && lhs.date, rhs && rhs.date);
         },
         listItem: function(task) {
           var taskHtml = $templateCache.get('templates/partials/tasks_list_item.html');
