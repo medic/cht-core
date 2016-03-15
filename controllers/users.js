@@ -39,10 +39,7 @@ var getAllUserSettings = function(callback) {
 
 var getAllUsers = function(callback) {
   db._users.list({include_docs: true}, function(err, results) {
-    if (err) {
-      return callback(err);
-    }
-    callback(null, results.rows);
+    callback(err, results.rows);
   });
 };
 
@@ -68,10 +65,11 @@ var isAPlace = function(place) {
 var getPlace = function(id, callback) {
   db.medic.get(id, function(err, place) {
     if (err) {
+      console.error('Failed to find place.');
       return callback(err);
     }
     if (!isAPlace(place)) {
-      return callback('Wrong type, this is not a place.');
+      return callback(new Error('Wrong type, this is not a place.'));
     }
     callback(null, place);
   });
@@ -83,7 +81,8 @@ var createUser = function(data, response, callback) {
       user = getUserUpdates(id, data);
   db._users.insert(user, id, function(err, body) {
     if (err) {
-      return callback('Failed to create user. ' + err);
+      console.error('Failed to create user.');
+      return callback(err);
     }
     response.user = {
       id: body.id,
@@ -103,7 +102,8 @@ var createContact = function(data, response, callback) {
   response = response || {};
   db.medic.insert(data.contact, function(err, body) {
     if (err) {
-      return callback('Failed to create contact. ' + err);
+      console.error('Failed to create contact.');
+      return callback(err);
     }
     // save contact id for user settings
     data.contact = body.id;
@@ -120,7 +120,8 @@ var createUserSettings = function(data, response, callback) {
   var settings = getSettingsUpdates(data);
   db.medic.insert(settings, createID(data.username), function(err, body) {
     if (err) {
-      return callback('Failed to create user settings. ' + err);
+      console.error('Failed to create user settings.');
+      return callback(err);
     }
     response['user-settings'] = {
       id: body.id,
@@ -149,12 +150,7 @@ var getAdmins = function(callback) {
   var opts = {
     path: '_config/admins'
   };
-  db.request(opts, function(err, body) {
-    if (err) {
-      return callback(err);
-    }
-    callback(null, body);
-  });
+  db.request(opts, callback);
 };
 
 var mapUsers = function(users, settings, facilities, admins) {
@@ -346,12 +342,14 @@ module.exports = {
     // validate place exists
     self._getPlace(getDocID(data.place), function(err) {
       if (err) {
-        return callback(new Error('Failed to find place. ' + err));
+        console.error('Failed to find place.');
+        return callback(err);
       }
       // validate contact parent exists
       self._getContactParent(data.contact.parent, function(err, facility) {
         if (err) {
-          return callback(new Error('Failed to find contact parent. ' + err));
+          console.error('Failed to find contact parent.');
+          return callback(err);
         }
         if (!self._hasParent(facility, data.place)) {
           return callback(new Error('Contact is not within place.'));
@@ -367,10 +365,7 @@ module.exports = {
           self._createContact,
           self._createUserSettings,
         ], function(err, result, responseBody) {
-          if (err) {
-            return callback(err);
-          }
-          callback(null, responseBody);
+          callback(err, responseBody);
         });
       });
     });
@@ -387,14 +382,16 @@ module.exports = {
     // validate user exists
     db._users.get(userID, function(err, user) {
       if (err) {
-        return callback(new Error('Failed to find user. ' + err));
+        console.error('Failed to find user.');
+        return callback(err);
       }
       var updated = _.extend(self._getUserUpdates(userID, data), user);
       // validate place exists if it changed
       if (!_.isUndefined(placeID) && (placeID !== user.facility_id)) {
         self._getPlace(placeID, function(err) {
           if (err) {
-            return callback(new Error('Failed to find place. ' + err));
+            console.error('Failed to find place.');
+            return callback(err);
           }
           // fix
           updatePassword({}, function(){});
