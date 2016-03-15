@@ -6,6 +6,10 @@
     </div>
   </div>
 
+  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && (!selected || selected.form === undefined)">
+    <div>{{'No report selected' | translate}}</div>
+  </div>
+
   <div id="reports-content" class="col-sm-8 item-content item-body" ng-show="!loadingContent && selected && selected.form !== undefined">
     <div>
 

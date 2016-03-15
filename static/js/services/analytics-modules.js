@@ -19,7 +19,7 @@ var _ = require('underscore');
               'registration', 'registrationLmp', 'visit', 'delivery', 'flag'
             ], function(prop) {
               var formCode = settings.anc_forms[prop];
-              return !!settings.forms[formCode];
+              return settings.forms && formCode && settings.forms[formCode];
             });
           }
         };
