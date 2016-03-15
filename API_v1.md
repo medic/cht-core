@@ -49,7 +49,7 @@ X-OpenRosa-Version: 1.0
 ```
 
 ```
-HTTP/1.1 200
+HTTP/1.1 200 OK
 Content-Type: text/xml; charset=utf-8
 X-OpenRosa-Version: 1.0
 
@@ -160,7 +160,7 @@ message=1!YYYZ!Sam#23#2015#ANC&from=+5511943348031&reported_date=1352399720000
 ```
 
 ```
-HTTP/1.1 200 
+HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 
 {
@@ -188,7 +188,7 @@ Content-Type: application/json
 ```
 
 ```
-HTTP/1.1 200 
+HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 
 {
@@ -297,7 +297,7 @@ GET /api/v1/messages?state=pending
 ```
 
 ```
-HTTP/1.1 200 
+HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 
 [
@@ -335,7 +335,7 @@ GET /api/v1/messages?state=sent&descending
 ```
 
 ```
-HTTP/1.1 200 
+HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 
 [
@@ -391,7 +391,7 @@ GET /api/v1/messages/364c796a843fbe0a73476f9153012733
 ```
 
 ```
-HTTP/1.1 200 
+HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 
 {
@@ -445,7 +445,7 @@ Content-Type: application/json
 ```
 
 ```
-HTTP/1.1 200 
+HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 
 {
@@ -464,7 +464,7 @@ Content-Type: application/json; charset=utf-8
 ```
 
 ```
-HTTP/1.1 500 
+HTTP/1.1 500 Internal Server Error
 Content-Type: application/json; charset=utf-8
 
 {
@@ -573,7 +573,7 @@ GET /api/v1/users
 ```
 
 ```
-HTTP/1.1 200 
+HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 
 [
@@ -735,8 +735,7 @@ Content-Type: application/json
 ```
 
 ```
-HTTP/1.1 200 
-
+HTTP/1.1 200 OK
 ```
 
 ## DELETE /api/v1/users/{{username}}
@@ -758,10 +757,8 @@ Delete a user.  Does not affect a contact or place associated to a user.
 
 ```
 DELETE /api/v1/users/mary
-
 ```
 
 ```
-HTTP/1.1 200 
-
+HTTP/1.1 200 OK
 ```
