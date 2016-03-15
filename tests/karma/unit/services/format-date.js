@@ -9,7 +9,7 @@ describe('FormatDate service', function() {
 
   beforeEach(function() {
     module('inboxApp');
-    relativeTime = sinon.stub(),
+    relativeTime = sinon.stub();
     pastFuture = sinon.stub();
     module(function($provide) {
       $provide.value('Settings', KarmaUtils.nullPromise());
