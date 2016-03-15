@@ -153,6 +153,18 @@ var getAdmins = function(callback) {
   db.request(opts, callback);
 };
 
+/*
+ * Warning: the following properties are redundant in the user and
+ * user-settings docs:
+ *
+ *   `name`
+ *   `known`
+ *   `facility_id`
+ *
+ * This is because when using the mobile app only the user-settings doc is
+ * available, but in this function the user doc takes precedence.  If the two
+ * docs somehow get out of sync this might cause confusion.
+ */
 var mapUsers = function(users, settings, facilities, admins) {
   var filtered = _.filter(users, function(user) {
     return user.id.indexOf(getPrefix() + ':') === 0;
@@ -169,7 +181,8 @@ var mapUsers = function(users, settings, facilities, admins) {
       place: getDoc(user.doc.facility_id, facilities),
       type: getType(user.doc, admins),
       language: { code: setting.language },
-      contact: getDoc(setting.contact_id, facilities)
+      contact: getDoc(setting.contact_id, facilities),
+      known: user.doc.known
     };
   });
 };
