@@ -442,7 +442,7 @@ module.exports = {
               // update settings
               self._updateUserSettings(userID, settings, cb);
             });
-          })
+          });
         // update request only included place but it is the same
         } else if (_.isUndefined(data.type) && _.isUndefined(data.password)) {
           return callback(new Error(

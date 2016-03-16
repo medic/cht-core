@@ -731,7 +731,7 @@ exports['updateUser errors on unknown property'] = function(test) {
 
 exports['updateUser succeeds if type is defined'] = function(test) {
   var data = {
-    type: "x"
+    type: 'x'
   };
   sinon.stub(controller, '_getUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_getUserSettings').callsArg(1);
@@ -745,7 +745,7 @@ exports['updateUser succeeds if type is defined'] = function(test) {
 
 exports['updateUser succeeds if password is defined'] = function(test) {
   var data = {
-    password: "x"
+    password: 'x'
   };
   sinon.stub(controller, '_getUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_getUserSettings').callsArg(1);
@@ -777,7 +777,7 @@ exports['updateUser succeeds if place is defined and found'] = function(test) {
 
 exports['updateUser fails if place fetch fails'] = function(test) {
   var data = {
-    place: "x"
+    place: 'x'
   };
   sinon.stub(controller, '_getUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_getUserSettings').callsArg(1);
