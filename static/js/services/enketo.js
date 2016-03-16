@@ -293,7 +293,7 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     this.save = function(formInternalId, form, docId) {
-      return form.validate()
+      return $q.when(form.validate())
         .then(function(valid) {
           if (!valid) {
             throw new Error('Form is invalid');
