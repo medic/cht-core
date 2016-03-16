@@ -14,7 +14,8 @@ inboxControllers.controller('AboutCtrl',
     $scope.userCtx = Session.userCtx();
     DB.get().get('_design/medic')
       .then(function(ddoc) {
-        $scope.ddocVersion = ddoc._rev.split('-')[0];
+        var rev = ddoc.remote_rev || ddoc._rev;
+        $scope.ddocVersion = rev.split('-')[0];
       });
     $scope.reload = function() {
       window.location.reload(false);
