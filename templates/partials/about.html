@@ -1,5 +1,6 @@
 <div class="inner" ng-cloak>
   <div class="col-sm-12 page help" ui-view="content">
+
     <div>
       <h3 translate>about</h3>
       <ul>
@@ -13,28 +14,29 @@
         <li><a ng-click="reload()" translate>Reload</a></li>
       </ul>
     </div>
-    <div>
+
+    <div ng-if="initialReplication">
       <h3 translate>initial.replication.title</h3>
       <ul>
         <li>
           <span translate>initial.replication.status</span>:
-          <span translate>{{'initial.replication.status.' + initialReplicationStatus}}
+          <span translate>{{initialReplication.status}}</span>
         </li>
-        <li ng-show="initialReplicationDuration">
+        <li ng-show="initialReplication.duration">
           <span translate>initial.replication.duration</span>:
-          <span translate="number.seconds" translate-values="{ number: '{{initialReplicationDuration / 1000 | number:1}}' }"></span>
+          <span translate="number.seconds" translate-values="{ number: '{{initialReplication.duration / 1000 | number:1}}' }"></span>
         </li>
-        <li ng-show="initialReplicationDataUsage">
+        <li ng-show="initialReplication.dataUsage">
           <span translate>android_app.data_usage.rx</span>:
-          <span translate="number.bytes" translate-values="{ number: '{{initialReplicationDataUsage.rx | number}}' }"></span>
+          <span translate="number.bytes" translate-values="{ number: '{{initialReplication.dataUsage.rx | number}}' }"></span>
         </li>
-        <li ng-show="initialReplicationDataUsage">
+        <li ng-show="initialReplication.dataUsage">
           <span translate>android_app.data_usage.tx</span>:
-          <span translate="number.bytes" translate-values="{ number: '{{initialReplicationDataUsage.tx | number}}' }"></span>
+          <span translate="number.bytes" translate-values="{ number: '{{initialReplication.dataUsage.tx | number}}' }"></span>
         </li>
       </ul>
     </div>
-    <span>
+
     <div ng-if="androidDataUsage">
       <h3 translate>android_app.data_usage.title</h3>
       <p translate>android_app.data_usage.description</p>
@@ -61,6 +63,7 @@
         </li>
       </ul>
     </div>
+
     <div ng-hide="help_pages.length === 0">
       <h3 translate>Help</h3>
       <ul>
@@ -70,6 +73,7 @@
       </ul>
       <div class="loader" ng-show="help_loading"></div>
     </div>
+
     <div>
       <h3 translate>Debug</h3>
       <p translate>debug.mode.description</p>
@@ -80,9 +84,11 @@
         </label>
       </form>
     </div>
+
     <div>
       <h3 translate>debug.db_info.title</h3>
       <pre>{{ dbInfo }}</pre>
     </div>
+
   </div>
 </div>

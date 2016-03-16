@@ -24,6 +24,14 @@ var _ = require('underscore'),
     '$log', 'DB', 'UserDistrict', 'Session', 'Settings', '$q',
     function($log, DB, UserDistrict, Session, Settings, $q) {
 
+      var getDataUsage = function() {
+        if (window.medicmobile_android && window.medicmobile_android.getDataUsage) {
+          return JSON.parse(window.medicmobile_android.getDataUsage());
+        }
+      };
+
+      var dbSyncStartTime = Date.now();
+      var dbSyncStartData = getDataUsage();
       var replicateTiming = {};
 
       var replicate = function(direction, options) {
@@ -95,6 +103,37 @@ var _ = require('underscore'),
           });
       };
 
+      var initialReplicationDone = function(err, replicateDoneCallback) {
+        var result = {};
+        result.status = err ? 'initial.replication.status.failed' : 'initial.replication.status.complete';
+        result.duration = Date.now() - dbSyncStartTime;
+        var dbSyncEndData = getDataUsage();
+        if (dbSyncStartData && dbSyncEndData) {
+          result.dataUsage = {
+            rx: dbSyncEndData.app.rx - dbSyncStartData.app.rx,
+            tx: dbSyncEndData.app.tx - dbSyncStartData.app.tx,
+          };
+        }
+        dbSyncStartTime = null;
+        dbSyncStartData = null;
+        $log.info('Initial sync complete in ' + (result.duration / 1000) + ' seconds');
+        replicateDoneCallback(null, result);
+      };
+
+      var startContinuousReplication = function(params) {
+        replicate('from', {
+          filter: 'erlang_filters/doc_by_place',
+          query_params: params
+        });
+
+        replicate('to', {
+          filter: function(doc) {
+            // don't try to replicate ddoc back to the server
+            return doc._id !== '_design/medic';
+          }
+        });
+      };
+
       return function(replicateDoneCallback) {
         var userCtx = Session.userCtx();
         if (utils.isUserAdmin(userCtx)) {
@@ -102,29 +141,8 @@ var _ = require('underscore'),
           $log.debug('You have administrative privileges; not replicating');
           return replicateDoneCallback();
         }
-        var beforeInitialReplication = Date.now();
         getQueryParams(userCtx)
           .then(function(params) {
-            var startContinuousReplication = function() {
-              $log.info('Initial sync complete in ' +
-                ((Date.now() - beforeInitialReplication) / 1000) +
-                ' seconds, starting replication listener');
-
-              replicateDoneCallback();
-
-              replicate('from', {
-                filter: 'erlang_filters/doc_by_place',
-                query_params: params
-              });
-
-              replicate('to', {
-                filter: function(doc) {
-                  // don't try to replicate ddoc back to the server
-                  return doc._id !== '_design/medic';
-                }
-              });
-            };
-
             replicate('from', {
               filter: 'erlang_filters/doc_by_place',
               live: false,
@@ -132,12 +150,17 @@ var _ = require('underscore'),
               query_params: params,
               timeout: 30000, // ms
             })
-            .then(startContinuousReplication)
-            .catch(startContinuousReplication);
+            .then(function() {
+              initialReplicationDone(null, replicateDoneCallback);
+              startContinuousReplication(params);
+            })
+            .catch(function(err) {
+              initialReplicationDone(err, replicateDoneCallback);
+              startContinuousReplication(params);
+            });
           })
           .catch(function(err) {
-            $log.error('Error initializing DB sync', err);
-            replicateDoneCallback(err);
+            initialReplicationDone(err, replicateDoneCallback);
           });
       };
     }

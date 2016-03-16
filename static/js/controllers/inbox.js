@@ -15,48 +15,29 @@ var feedback = require('../modules/feedback'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', '$q', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'TaskGenerator', 'CONTACT_TYPES',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, $q, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, TaskGenerator, CONTACT_TYPES) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'TaskGenerator', 'CONTACT_TYPES',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, TaskGenerator, CONTACT_TYPES) {
 
       Session.init();
+
       TrafficStats($scope);
 
-      $scope.initialReplicationStatus = 'in_progress';
-      var dbSyncStartTime = Date.now(),
-          dbSyncStartData;
-      if(window.medicmobile_android && window.medicmobile_android.getDataUsage) {
-        dbSyncStartData = JSON.parse(window.medicmobile_android.getDataUsage());
-      }
-
-      // sync DB and make sure tasks have warmed up the DB before allowing
-      // access to the UI.
-      var dbSync = function() {
-        return $q(function(resolve) {
-          DBSync(function(err) {
-            if (err) {
-              $log.warn(err);
-            }
-
-            $scope.initialReplicationStatus = err? 'failed': 'complete';
-            $scope.initialReplicationDuration = Date.now() - dbSyncStartTime;
-            dbSyncStartTime = null;
-
-            if(window.medicmobile_android && window.medicmobile_android.getDataUsage) {
-              var dbSyncEndData = JSON.parse(window.medicmobile_android.getDataUsage());
-              $scope.initialReplicationDataUsage = {
-                rx: dbSyncEndData.app.rx - dbSyncStartData.app.rx,
-                tx: dbSyncEndData.app.tx - dbSyncStartData.app.tx,
-              };
-              dbSyncStartData = null;
-            }
-
-            resolve();
-          });
-        });
+      $scope.initialReplication = {
+        status: 'initial.replication.status.in_progress'
       };
 
-      $q.all([ dbSync(), TaskGenerator.init ])
+      DBSync(function(err, result) {
+        if (err) {
+          $log.debug('Error initializing DB sync. Continuing anyway.', err);
+        }
+        $scope.initialReplication = result;
+      });
+
+      TaskGenerator.init
         .then(function() {
+          $scope.dbWarmedUp = true;
+        })
+        .catch(function() {
           $scope.dbWarmedUp = true;
         });
 
