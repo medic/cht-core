@@ -114,7 +114,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
         selecter: '#tasks-list ul',
         orderBy: function(t1, t2) {
           var lhs = t1 && t1.date,
-              rhs = r2 && r2.date;
+              rhs = t2 && t2.date;
           if (!lhs && !rhs) {
             return 0;
           }
