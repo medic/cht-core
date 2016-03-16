@@ -87,8 +87,7 @@ var nools = require('nools'),
       var getContactId = function(doc) {
         // get the associated patient or place id to group reports by
         return doc.patient_id || doc.place_id ||
-          (doc.fields && doc.fields.inputs &&
-              doc.fields.inputs.contact && doc.fields.inputs.contact._id);
+          (doc.fields && (doc.fields.patient_id || doc.fields.place_id));
       };
 
       var deriveFacts = function(dataRecords, contacts) {
@@ -172,39 +171,45 @@ var nools = require('nools'),
           fact = findFact(change.id);
           if (fact) {
             if (fact.contact._id === change.id) {
+              // deleted contact
               fact.contact = null;
             } else {
+              // deleted report
               fact.reports = _.reject(fact.reports, function(report) {
                 return report._id === change.id;
               });
             }
             session.modify(fact);
           }
-        } else {
-          if (change.doc.form) {
-            // report
-            fact = updateReport(change.doc);
-            if (!fact) {
-              // new
-              fact = findFact(getContactId(change.doc));
-              if (fact) {
-                fact.reports.push(change.doc);
-              }
-            }
-            if (fact) {
-              session.modify(fact);
-            }
+        } else if (change.doc.form) {
+          fact = updateReport(change.doc);
+          if (fact) {
+            // updated report
+            session.modify(fact);
           } else {
-            fact = findFact(change.id);
-            // contact
+            fact = findFact(getContactId(change.doc));
             if (fact) {
-              // update
-              fact.contact = change.doc;
+              // new report for known contact
+              fact.reports.push(change.doc);
               session.modify(fact);
             } else {
-              // new
-              session.assert(new Contact({ contact: change.doc, reports: [] }));
+              // new report for unknown contact
+              fact = new Contact({ reports: [ change.doc ] });
+              facts.push(fact);
+              session.assert(fact);
             }
+          }
+        } else {
+          fact = findFact(change.id);
+          if (fact) {
+            // updated contact
+            fact.contact = change.doc;
+            session.modify(fact);
+          } else {
+            // new contact
+            fact = new Contact({ contact: change.doc, reports: [] });
+            facts.push(fact);
+            session.assert(fact);
           }
         }
       };
