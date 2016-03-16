@@ -43,7 +43,7 @@ angular.module('inboxServices').service('Enketo', [
           });
         })
         .catch(function(err) {
-          $log.error('replaceJavarosaMediaWithLoaders', 'Error finding form by internal ID', formInternalId);
+          $log.error('replaceJavarosaMediaWithLoaders', 'Error finding form by internal ID', formInternalId, err);
         });
     };
 
