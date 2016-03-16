@@ -951,7 +951,7 @@ exports['updateUser updates facility_id on user and user settings'] = function(t
 };
 
 exports['updateUser updates user and user settings doc and couchdb admins'] = function(test) {
-  test.expect(9);
+  test.expect(11);
   var data = {
     place: 'el paso',
     type: 'rambler',
@@ -967,7 +967,11 @@ exports['updateUser updates user and user settings doc and couchdb admins'] = fu
     known: false
   });
   sinon.stub(controller, '_getPlace').callsArgWith(1, null, {});
-  sinon.stub(controller, '_updateAdminPassword').callsArg(2);
+  sinon.stub(controller, '_updateAdminPassword', function(user, pw, cb) {
+    test.equal(user, 'paul');
+    test.equal(pw, '*.*');
+    cb();
+  });
   var update = sinon.stub(controller, '_updateUser', function(id, user, cb) {
     test.equal(user.facility_id, 'el paso');
     test.deepEqual(user.roles, ['rambler', undefined]);
