@@ -641,16 +641,26 @@ will be undefined.
 | contact  | A contact object based on the form configured in the app.
 | contact.parent | The parent place of the contact.  The contact resides within a place.
 
-
 #### Optional
 
 | Key | Description       
 | -------- | -----------------
-| type     | Default: 'district-manager'
+| type     | User Type, default: district-manager
 | email    | Email address 
 | phone    | Phone number
 | language | Language preference. e.g. "sw" for Swahili
 | known    | Boolean to define if the user has logged in before.  Used mainly to determine whether or not to start a tour on first login.
+
+#### User Types
+
+| Key | Description   
+| -------- | -----------------    
+| national-manager | Full permissions on all doc types.
+| district-manager | Full permissions on all doc types in a set of places.
+| facility-manager | Full permissions on all doc types in a given place.
+| data-entry | Only allowed to create new records from a given place.
+| analytics | Read only 
+| gateway   | Only allowed to create new records.
 
 ### Examples
 
@@ -694,6 +704,49 @@ Content-Type: application/json
   }
 }
 
+```
+
+## POST /api/v1/users/{{username}}
+
+Update a user's security related data.  Allows you to change roles, reset a
+password or reassign to a different place.
+
+### Permissions
+
+`can_update_users`  
+
+### URL Parameters
+
+| Variable | Description      
+| -------- | ----------------- 
+| username | String identifier used for authentication.
+
+
+### JSON Properties
+
+Use JSON in the request body to specify user details. One of the following properties is required.
+
+| Key | Description       
+| -------- | -----------------
+| type     | User Type 
+| place    | Place identifier string (UUID) or object
+| password | Password string used for authentication.
+
+### Examples
+
+
+```
+POST /api/v1/users/mary
+Content-Type: application/json
+
+{
+  "password": "secret",
+  "place": "eeb17d6d-5dde-c2c0-62c4a1a0ca17e342"
+}
+```
+
+```
+HTTP/1.1 200 OK
 ```
 
 ## DELETE /api/v1/users/{{username}}

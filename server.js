@@ -424,6 +424,20 @@ app.post('/api/v1/users', jsonParser, function(req, res) {
   });
 });
 
+app.post('/api/v1/users/:username', jsonParser, function(req, res) {
+  auth.check(req, 'can_update_users', null, function(err) {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+    users.updateUser(req.params.username, req.body, function(err) {
+      if (err) {
+        return serverUtils.serverError(err, req, res);
+      }
+      res.json();
+    });
+  });
+});
+
 app.delete('/api/v1/users/:username', jsonParser, function(req, res) {
   auth.check(req, 'can_delete_users', null, function(err) {
     if (err) {

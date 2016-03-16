@@ -75,6 +75,22 @@ var getPlace = function(id, callback) {
   });
 };
 
+var getUser = function(id, callback) {
+  db._users.get(id, callback);
+};
+
+var getUserSettings = function(id, callback) {
+  db.medic.get(id, callback);
+};
+
+var updateUser = function(id, user, callback) {
+  db._users.insert(user, id, callback);
+};
+
+var updateUserSettings = function(id, settings, callback) {
+  db.medic.insert(settings, id, callback);
+};
+
 var createUser = function(data, response, callback) {
   response = response || {};
   var id = createID(data.username),
@@ -128,6 +144,27 @@ var createUserSettings = function(data, response, callback) {
       rev: body.rev
     };
     callback(null, data, response);
+  });
+};
+
+var updateAdminPassword = function(username, password, callback) {
+  if (_.isUndefined(username) || _.isUndefined(password)) {
+    // do nothing
+    return callback();
+  }
+  module.exports._getAdmins(function(err, admins) {
+    if (err) {
+      return callback(err);
+    }
+    if (!admins[username]) {
+      // not an admin so admin password change not required
+      return callback();
+    }
+    db.request({
+      path: '_config/admins/' + username,
+      method: 'PUT',
+      body: JSON.stringify(password)
+    }, callback);
   });
 };
 
@@ -279,8 +316,13 @@ module.exports = {
   _getFacilities: getFacilities,
   _getSettingsUpdates: getSettingsUpdates,
   _getPlace: getPlace,
+  _getUser: getUser,
+  _getUserSettings: getUserSettings,
   _getUserUpdates: getUserUpdates,
   _hasParent: hasParent,
+  _updateAdminPassword: updateAdminPassword,
+  _updateUser: updateUser,
+  _updateUserSettings: updateUserSettings,
   deleteUser: function(username, callback) {
     deleteUser(createID(username), callback);
   },
@@ -352,6 +394,66 @@ module.exports = {
         ], function(err, result, responseBody) {
           callback(err, responseBody);
         });
+      });
+    });
+  },
+  updateUser: function(username, data, callback) {
+    var self = this,
+        userID = createID(username),
+        placeID = getDocID(data.place),
+        series = [];
+    if (_.isUndefined(placeID) && _.isUndefined(data.type) && _.isUndefined(data.password)) {
+      return callback(new Error(
+        'One of the following fields are required: type, password or place.'
+      ));
+    }
+    // validate user exists
+    self._getUser(userID, function(err, user) {
+      if (err) {
+        console.error('Failed to find user.');
+        return callback(err);
+      }
+      // validate user settings exist
+      self._getUserSettings(userID, function(err, settings) {
+        if (err) {
+          console.error('Failed to find user settings.');
+          return callback(err);
+        }
+        // update roles
+        if (data.type) {
+          user.roles = data.type ? getRoles(data.type) : user.roles;
+        }
+        // update password
+        if (data.password) {
+          user.password = data.password;
+          series.push(function(cb) {
+            self._updateAdminPassword(username, data.password, cb);
+          });
+        }
+        // validate place exists if it changed
+        if (!_.isUndefined(placeID) && (placeID !== user.facility_id)) {
+          series.push(function(cb) {
+            self._getPlace(placeID, function(err) {
+              if (err) {
+                return cb(err);
+              }
+              user.facility_id = placeID;
+              settings.facility_id = placeID;
+              // update settings
+              self._updateUserSettings(userID, settings, cb);
+            });
+          })
+        // update request only included place but it is the same
+        } else if (_.isUndefined(data.type) && _.isUndefined(data.password)) {
+          return callback(new Error(
+            'Request to update place ignored because it is current.'
+          ));
+        }
+        // update user
+        series.push(function(cb) {
+          self._updateUser(userID, user, cb);
+        });
+        async.series(series, callback);
       });
     });
   }
