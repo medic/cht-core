@@ -99,41 +99,45 @@ var _ = require('underscore'),
               if (err) {
                 return $log.error(err);
               }
-              getViewReports(DbView, district, dates, function(err, reports) {
-                $scope.totals = stockUtils.getTotals(facilities, reports, dates);
-                if (district.type === 'health_center') {
-                  $scope.clinics = stockUtils.getRowsHC(facilities, reports, dates);
-                  _.each($scope.clinics, function(f) {
-                    f.chart = [
-                      { key: 'valid', y: f.valid_percent },
-                      { key: 'missing', y: 100 - f.valid_percent }
-                    ];
-                  });
-                } else {
-                  $scope.facilities = stockUtils.getRows(facilities, reports, dates);
-                  _.each($scope.facilities, function(f) {
-                    f.chart = [
-                      { key: 'valid', y: f.valid_percent },
-                      { key: 'missing', y: 100 - f.valid_percent }
-                    ];
-                  });
-                }
-                $scope.chart = [
-                  { key: 'valid', y: $scope.totals.complete },
-                  { key: 'missing', y: $scope.totals.not_submitted },
-                  { key: 'invalid', y: $scope.totals.incomplete }
-                ];
-                $scope.xFunction = function() {
-                  return function(d) {
-                    return d.key;
+              getViewReports(DbView, district, dates)
+                .then(function(reports) {
+                  $scope.totals = stockUtils.getTotals(facilities, reports, dates);
+                  if (district.type === 'health_center') {
+                    $scope.clinics = stockUtils.getRowsHC(facilities, reports, dates);
+                    _.each($scope.clinics, function(f) {
+                      f.chart = [
+                        { key: 'valid', y: f.valid_percent },
+                        { key: 'missing', y: 100 - f.valid_percent }
+                      ];
+                    });
+                  } else {
+                    $scope.facilities = stockUtils.getRows(facilities, reports, dates);
+                    _.each($scope.facilities, function(f) {
+                      f.chart = [
+                        { key: 'valid', y: f.valid_percent },
+                        { key: 'missing', y: 100 - f.valid_percent }
+                      ];
+                    });
+                  }
+                  $scope.chart = [
+                    { key: 'valid', y: $scope.totals.complete },
+                    { key: 'missing', y: $scope.totals.not_submitted },
+                    { key: 'invalid', y: $scope.totals.incomplete }
+                  ];
+                  $scope.xFunction = function() {
+                    return function(d) {
+                      return d.key;
+                    };
                   };
-                };
-                $scope.yFunction = function() {
-                  return function(d) {
-                    return d.y;
+                  $scope.yFunction = function() {
+                    return function(d) {
+                      return d.y;
+                    };
                   };
-                };
-              });
+                })
+                .catch(function(err) {
+                  console.error('Error fetching reports', err);
+                });
             });
           })
           .catch(function(err) {
@@ -141,7 +145,7 @@ var _ = require('underscore'),
           });
       };
 
-      var getViewReports = function(DbView, doc, dates, callback) {
+      var getViewReports = function(DbView, doc, dates) {
         var params = stockUtils.getReportingViewArgs(dates),
             view = 'data_records_by_form_year_month_facility';
 
@@ -149,21 +153,19 @@ var _ = require('underscore'),
           view = 'data_records_by_form_year_week_facility';
         }
 
-        DbView(view, { params: params }, function(err, data) {
-          if (err) {
-            return callback('Error fetching reports: '+ err);
-          }
-          // additional filtering for this facility
-          var saved_data = [];
-          var idx = doc.type === 'health_center' ? 4 : 3;
-          for (var i in data.rows) {
-            if (doc._id === data.rows[i].key[idx]) {
-              // keep orig ordering
-              saved_data.unshift(data.rows[i]);
+        return DbView(view, { params: params })
+          .then(function(data) {
+            // additional filtering for this facility
+            var saved_data = [];
+            var idx = doc.type === 'health_center' ? 4 : 3;
+            for (var i in data.results.rows) {
+              if (doc._id === data.results.rows[i].key[idx]) {
+                // keep orig ordering
+                saved_data.unshift(data.results.rows[i]);
+              }
             }
-          }
-          callback(null, saved_data);
-        });
+            return saved_data;
+          });
       };
 
       UserDistrict(function(err, district) {
