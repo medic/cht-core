@@ -94,9 +94,13 @@ module.exports = {
       if (err) {
         return callback(err);
       }
-      callback(null, files.map(function(file) {
-        return require(path.join(migrationsDir, file));
-      }));
+      callback(null, files.filter(function(file) {
+          return file.substr(-3) === '.js';
+        })
+        .map(function(file) {
+          return require(path.join(migrationsDir, file));
+        })
+      );
     });
   }
 };

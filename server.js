@@ -34,6 +34,7 @@ var _ = require('underscore'),
     messages = require('./controllers/messages'),
     records = require('./controllers/records'),
     forms = require('./controllers/forms'),
+    users = require('./controllers/users'),
     fti = require('./controllers/fti'),
     createDomain = require('domain').create,
     staticResources = /\/(templates|static)\//,
@@ -394,6 +395,49 @@ app.get('/api/v1/forms/:form', function(req, res) {
     res.end(body);
   });
 });
+
+app.get('/api/v1/users', function(req, res) {
+  auth.check(req, 'can_view_users', null, function(err) {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+    users.getList(function(err, body) {
+      if (err) {
+        return serverUtils.serverError(err, req, res);
+      }
+      res.json(body);
+    });
+  });
+});
+
+app.post('/api/v1/users', jsonParser, function(req, res) {
+  auth.check(req, 'can_create_users', null, function(err) {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+    users.createUser(req.body, function(err, body) {
+      if (err) {
+        return serverUtils.serverError(err, req, res);
+      }
+      res.json(body);
+    });
+  });
+});
+
+app.delete('/api/v1/users/:username', jsonParser, function(req, res) {
+  auth.check(req, 'can_delete_users', null, function(err) {
+    if (err) {
+      return error(err, req, res);
+    }
+    users.deleteUser(req.params.username, function(err, result) {
+      if (err) {
+        return serverUtils.serverError(err, req, res);
+      }
+      res.json(result);
+    });
+  });
+});
+
 
 // DB replication endpoint
 app.get('/medic/_changes', _.partial(require('./handlers/changes'), proxy));

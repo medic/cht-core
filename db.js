@@ -106,6 +106,7 @@ if (couchUrl) {
       replicate:  function() {}
     },
     _users: {
+      get: function() {},
       list: function() {},
       insert: function() {}
     }
