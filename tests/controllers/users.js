@@ -28,9 +28,9 @@ exports.tearDown = function (callback) {
     controller._getAllUserSettings,
     controller._getContactParent,
     controller._getFacilities,
-    controller._getPlace,
-    controller._getUser,
-    controller._getUserSettings,
+    controller._validatePlace,
+    controller._validateUser,
+    controller._validateUserSettings,
     controller._hasParent,
     controller._updateAdminPassword,
     controller._updateUser,
@@ -143,6 +143,42 @@ exports['describe hasParent'] = function(test) {
     }
   });
   test.done();
+};
+
+exports['validateUser returns 400 error when doc not found.'] = function(test) {
+  sinon.stub(db._users, 'get').callsArgWith(1, {error: 'not_found'});
+  controller._validateUser('x', function(err) {
+    test.equal(err.code, 400);
+    test.equal(err.message, 'Failed to find user.');
+    test.done();
+  });
+};
+
+exports['validateUserSettings returns 400 error when doc not found.'] = function(test) {
+  sinon.stub(db.medic, 'get').callsArgWith(1, {error: 'not_found'});
+  controller._validateUserSettings('x', function(err) {
+    test.equal(err.code, 400);
+    test.equal(err.message, 'Failed to find user settings.');
+    test.done();
+  });
+};
+
+exports['validatePlace returns 400 error when doc not found.'] = function(test) {
+  sinon.stub(db.medic, 'get').callsArgWith(1, {error: 'not_found'});
+  controller._validatePlace('x', function(err) {
+    test.equal(err.code, 400);
+    test.equal(err.message, 'Failed to find place.');
+    test.done();
+  });
+};
+
+exports['validatePlace returns 400 error when doc is not a place.'] = function(test) {
+  sinon.stub(db.medic, 'get').callsArgWith(1, null, {type: 'food'});
+  controller._validatePlace('x', function(err) {
+    test.equal(err.code, 400);
+    test.equal(err.message, 'Wrong type, this is not a place.');
+    test.done();
+  });
 };
 
 exports['getType returns role when user is in admins list and has role'] = function(test) {
@@ -615,7 +651,7 @@ exports['createUser returns error if missing fields.'] = function(test) {
 };
 
 exports['createUser returns error if contact.parent lookup fails.'] = function(test) {
-  sinon.stub(controller, '_getPlace').callsArgWith(1, 'kablooey');
+  sinon.stub(controller, '_validatePlace').callsArgWith(1, 'kablooey');
   controller.createUser(userData, function(err) {
     test.ok(err);
     test.done();
@@ -623,7 +659,7 @@ exports['createUser returns error if contact.parent lookup fails.'] = function(t
 };
 
 exports['createUser returns error if place lookup fails.'] = function(test) {
-  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(controller, '_validatePlace').callsArg(1);
   sinon.stub(controller, '_getContactParent').callsArgWith(1, 'biiiing!');
   controller.createUser(userData, function(err) {
     test.ok(err);
@@ -635,7 +671,7 @@ exports['createUser returns error if place is not within contact.'] = function(t
   sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {});
-  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(controller, '_validatePlace').callsArg(1);
   sinon.stub(controller, '_getContactParent').callsArgWith(1, null, {
     '_id': 'miami',
     parent: {
@@ -653,7 +689,7 @@ exports['createUser succeeds if contact and place are the same.'] = function(tes
   sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {});
-  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(controller, '_validatePlace').callsArg(1);
   sinon.stub(controller, '_getContactParent').callsArgWith(1, null, {
     '_id': 'foo'
   });
@@ -668,7 +704,7 @@ exports['createUser succeeds if contact is within place.'] = function(test) {
   sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {});
-  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(controller, '_validatePlace').callsArg(1);
   sinon.stub(controller, '_getContactParent').callsArgWith(1, null, {
     '_id': 'miami',
     parent: {
@@ -689,7 +725,7 @@ exports['createUser returns response object'] = function(test) {
   sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {
     biz: 'baz'
   });
-  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(controller, '_validatePlace').callsArg(1);
   sinon.stub(controller, '_getContactParent').callsArg(1);
   sinon.stub(controller, '_hasParent').returns(true);
   controller.createUser(userData, function(err, response) {
@@ -702,7 +738,7 @@ exports['createUser returns response object'] = function(test) {
 };
 
 exports['createUser resolves contact parent for waterfall'] = function(test) {
-  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(controller, '_validatePlace').callsArg(1);
   sinon.stub(controller, '_getContactParent').callsArgWith(1, null, {
     biz: 'marquee'
   });
@@ -733,8 +769,8 @@ exports['updateUser succeeds if type is defined'] = function(test) {
   var data = {
     type: 'x'
   };
-  sinon.stub(controller, '_getUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_getUserSettings').callsArg(1);
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUserSettings').callsArg(1);
   var update = sinon.stub(controller, '_updateUser').callsArg(2);
   controller.updateUser('paul', data, function(err) {
     test.ok(!err);
@@ -747,8 +783,8 @@ exports['updateUser succeeds if password is defined'] = function(test) {
   var data = {
     password: 'x'
   };
-  sinon.stub(controller, '_getUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_getUserSettings').callsArg(1);
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUserSettings').callsArg(1);
   sinon.stub(controller, '_updateAdminPassword').callsArg(2);
   var update = sinon.stub(controller, '_updateUser').callsArg(2);
   controller.updateUser('paul', data, function(err) {
@@ -762,9 +798,9 @@ exports['updateUser succeeds if place is defined and found'] = function(test) {
   var data = {
     place: 'x'
   };
-  sinon.stub(controller, '_getUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_getUserSettings').callsArgWith(1, null, {});
-  sinon.stub(controller, '_getPlace').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validatePlace').callsArgWith(1, null, {});
   var update = sinon.stub(controller, '_updateUser').callsArg(2);
   var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
   controller.updateUser('paul', data, function(err) {
@@ -779,9 +815,9 @@ exports['updateUser fails if place fetch fails'] = function(test) {
   var data = {
     place: 'x'
   };
-  sinon.stub(controller, '_getUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_getUserSettings').callsArg(1);
-  sinon.stub(controller, '_getPlace').callsArgWith(1, 'Not today pal.');
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUserSettings').callsArg(1);
+  sinon.stub(controller, '_validatePlace').callsArgWith(1, 'Not today pal.');
   var update = sinon.stub(controller, '_updateUser');
   controller.updateUser('paul', data, function(err) {
     test.ok(err);
@@ -794,7 +830,7 @@ exports['updateUser fails if user not found'] = function(test) {
   var data = {
     type: 'x'
   };
-  sinon.stub(controller, '_getUser').callsArgWith(1, 'not found');
+  sinon.stub(controller, '_validateUser').callsArgWith(1, 'not found');
   var update = sinon.stub(controller, '_updateUser');
   var updateSettings = sinon.stub(controller, '_updateUserSettings');
   controller.updateUser('paul', data, function(err) {
@@ -809,8 +845,8 @@ exports['updateUser fails if user settings not found'] = function(test) {
   var data = {
     type: 'x'
   };
-  sinon.stub(controller, '_getUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_getUserSettings').callsArgWith(1, 'too rainy today');
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, 'too rainy today');
   var update = sinon.stub(controller, '_updateUser');
   var updateSettings = sinon.stub(controller, '_updateUserSettings');
   controller.updateUser('paul', data, function(err) {
@@ -826,8 +862,8 @@ exports['updateUser type updates roles on user doc'] = function(test) {
   var data = {
     type: 'rebel'
   };
-  sinon.stub(controller, '_getUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_getUserSettings').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   var update = sinon.stub(controller, '_updateUser', function(id, data, callback) {
     test.deepEqual(data.roles, ['rebel', undefined]);
     callback();
@@ -846,9 +882,9 @@ exports['updateUser updates password on user doc'] = function(test) {
   var data = {
     password: 'whachamacallit'
   };
-  sinon.stub(controller, '_getUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_getUserSettings').callsArgWith(1, null, {});
-  //sinon.stub(controller, '_getPlace').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
+  //sinon.stub(controller, '_validatePlace').callsArgWith(1, null, {});
   sinon.stub(controller, '_updateAdminPassword').callsArg(2);
   var update = sinon.stub(controller, '_updateUser', function(id, data, callback) {
     test.equal(data.password, 'whachamacallit');
@@ -868,8 +904,8 @@ exports['updateUser updates couchdb admin passwords also'] = function(test) {
   var data = {
     password: 'whachamacallit'
   };
-  sinon.stub(controller, '_getUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_getUserSettings').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   sinon.stub(controller, '_updateAdminPassword', function(username, pw, cb) {
     test.equal(pw, 'whachamacallit');
     cb();
@@ -884,34 +920,13 @@ exports['updateUser updates couchdb admin passwords also'] = function(test) {
   });
 };
 
-exports['updateUser errors when only requesting change to place but has not changed'] = function(test) {
-  var data = {
-    place: 'paris'
-  };
-  sinon.stub(controller, '_getUser').callsArgWith(1, null, {
-    facility_id: 'paris'
-  });
-  sinon.stub(controller, '_getUserSettings').callsArgWith(1, null, {});
-  //sinon.stub(controller, '_updateAdminPassword', function(username, pw, cb) {
-  var getPlace = sinon.stub(controller, '_getPlace');
-  var update = sinon.stub(controller, '_updateUser').callsArg(2);
-  var updateSettings = sinon.stub(controller, '_updateUserSettings');
-  controller.updateUser('paul', data, function(err) {
-    test.ok(err);
-    test.same(update.callCount, 0);
-    test.same(getPlace.callCount, 0);
-    test.same(updateSettings.callCount, 0);
-    test.done();
-  });
-};
-
 exports['updateUser errors if place is not found'] = function(test) {
   var data = {
     place: 'paris'
   };
-  sinon.stub(controller, '_getUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_getUserSettings').callsArgWith(1, null, {});
-  sinon.stub(controller, '_getPlace').callsArgWith(1, 'not found');
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validatePlace').callsArgWith(1, 'not found');
   var update = sinon.stub(controller, '_updateUser').callsArg(2);
   var updateSettings = sinon.stub(controller, '_updateUserSettings');
   controller.updateUser('paul', data, function(err) {
@@ -927,13 +942,13 @@ exports['updateUser updates facility_id on user and user settings'] = function(t
   var data = {
     place: 'paris'
   };
-  sinon.stub(controller, '_getUser').callsArgWith(1, null, {
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {
     facility_id: 'maine'
   });
-  sinon.stub(controller, '_getUserSettings').callsArgWith(1, null, {
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {
     facility_id: 'maine'
   });
-  sinon.stub(controller, '_getPlace').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validatePlace').callsArgWith(1, null, {});
   var update = sinon.stub(controller, '_updateUser', function(id, user, cb) {
     test.equal(user.facility_id, 'paris');
     cb();
@@ -957,16 +972,16 @@ exports['updateUser updates user and user settings doc and couchdb admins'] = fu
     type: 'rambler',
     password: '*.*'
   };
-  sinon.stub(controller, '_getUser').callsArgWith(1, null, {
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {
     facility_id: 'maine',
     roles: ['bartender'],
     shoes: 'dusty boots'
   });
-  sinon.stub(controller, '_getUserSettings').callsArgWith(1, null, {
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {
     facility_id: 'maine',
     known: false
   });
-  sinon.stub(controller, '_getPlace').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validatePlace').callsArgWith(1, null, {});
   sinon.stub(controller, '_updateAdminPassword', function(user, pw, cb) {
     test.equal(user, 'paul');
     test.equal(pw, '*.*');

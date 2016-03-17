@@ -62,25 +62,55 @@ var isAPlace = function(place) {
   ].indexOf(place.type) !== -1;
 };
 
-var getPlace = function(id, callback) {
+/*
+ * Make string errors 400 responses to minimize stacktraces in the logs for
+ * non-critical errors.
+ */
+var handleBadRequest = function(err, callback) {
+  if (_.isString(err)) {
+    return callback({code: 400, message: err});
+  }
+  return callback(err);
+};
+
+var validatePlace = function(id, callback) {
   db.medic.get(id, function(err, place) {
     if (err) {
-      console.error('Failed to find place.');
+      if (err.error === 'not_found') {
+        return handleBadRequest('Failed to find place.', callback);
+      }
       return callback(err);
     }
     if (!isAPlace(place)) {
-      return callback(new Error('Wrong type, this is not a place.'));
+      return handleBadRequest('Wrong type, this is not a place.', callback);
     }
     callback(null, place);
   });
 };
 
-var getUser = function(id, callback) {
-  db._users.get(id, callback);
+
+var validateUser = function(id, callback) {
+  db._users.get(id, function(err, doc) {
+    if (err) {
+      if (err.error === 'not_found') {
+        return handleBadRequest('Failed to find user.', callback);
+      }
+      return callback(err);
+    }
+    callback(null, doc);
+  });
 };
 
-var getUserSettings = function(id, callback) {
-  db.medic.get(id, callback);
+var validateUserSettings = function(id, callback) {
+  db.medic.get(id, function(err, doc) {
+    if (err) {
+      if (err.error === 'not_found') {
+        return handleBadRequest('Failed to find user settings.', callback);
+      }
+      return callback(err);
+    }
+    callback(null, doc);
+  });
 };
 
 var updateUser = function(id, user, callback) {
@@ -97,7 +127,6 @@ var createUser = function(data, response, callback) {
       user = getUserUpdates(id, data);
   db._users.insert(user, id, function(err, body) {
     if (err) {
-      console.error('Failed to create user.');
       return callback(err);
     }
     response.user = {
@@ -118,7 +147,6 @@ var createContact = function(data, response, callback) {
   response = response || {};
   db.medic.insert(data.contact, function(err, body) {
     if (err) {
-      console.error('Failed to create contact.');
       return callback(err);
     }
     // save contact id for user settings
@@ -315,14 +343,14 @@ module.exports = {
   _getContactParent: db.medic.get,
   _getFacilities: getFacilities,
   _getSettingsUpdates: getSettingsUpdates,
-  _getPlace: getPlace,
-  _getUser: getUser,
-  _getUserSettings: getUserSettings,
   _getUserUpdates: getUserUpdates,
   _hasParent: hasParent,
   _updateAdminPassword: updateAdminPassword,
   _updateUser: updateUser,
   _updateUserSettings: updateUserSettings,
+  _validatePlace: validatePlace,
+  _validateUser: validateUser,
+  _validateUserSettings: validateUserSettings,
   deleteUser: function(username, callback) {
     deleteUser(createID(username), callback);
   },
@@ -359,27 +387,26 @@ module.exports = {
       }
     });
     if (missing.length > 0) {
-      return callback(
-        new Error('Missing required fields: ' + missing.join(', '))
-      );
+      return callback('Missing required fields: ' + missing.join(', '));
     }
     if (_.isUndefined(data.contact.parent)) {
-      return callback(new Error('Contact parent is required.'));
+      return callback('Contact parent is required.');
     }
     // validate place exists
-    self._getPlace(getDocID(data.place), function(err) {
+    self._validatePlace(getDocID(data.place), function(err) {
       if (err) {
-        console.error('Failed to find place.');
         return callback(err);
       }
       // validate contact parent exists
       self._getContactParent(data.contact.parent, function(err, facility) {
         if (err) {
-          console.error('Failed to find contact parent.');
+          if (err.error === 'not_found') {
+            return callback('Failed to find contact parent.');
+          }
           return callback(err);
         }
         if (!self._hasParent(facility, data.place)) {
-          return callback(new Error('Contact is not within place.'));
+          return callback('Contact is not within place.');
         }
         // save result to contact object
         data.contact.parent = facility;
@@ -403,20 +430,18 @@ module.exports = {
         placeID = getDocID(data.place),
         series = [];
     if (_.isUndefined(placeID) && _.isUndefined(data.type) && _.isUndefined(data.password)) {
-      return callback(new Error(
+      return callback(
         'One of the following fields are required: type, password or place.'
-      ));
+      );
     }
     // validate user exists
-    self._getUser(userID, function(err, user) {
+    self._validateUser(userID, function(err, user) {
       if (err) {
-        console.error('Failed to find user.');
         return callback(err);
       }
       // validate user settings exist
-      self._getUserSettings(userID, function(err, settings) {
+      self._validateUserSettings(userID, function(err, settings) {
         if (err) {
-          console.error('Failed to find user settings.');
           return callback(err);
         }
         // update roles
@@ -430,10 +455,10 @@ module.exports = {
             self._updateAdminPassword(username, data.password, cb);
           });
         }
-        // validate place exists if it changed
-        if (!_.isUndefined(placeID) && (placeID !== user.facility_id)) {
+        // validate place if change requested
+        if (placeID) {
           series.push(function(cb) {
-            self._getPlace(placeID, function(err) {
+            self._validatePlace(placeID, function(err) {
               if (err) {
                 return cb(err);
               }
@@ -443,11 +468,6 @@ module.exports = {
               self._updateUserSettings(userID, settings, cb);
             });
           });
-        // update request only included place but it is the same
-        } else if (_.isUndefined(data.type) && _.isUndefined(data.password)) {
-          return callback(new Error(
-            'Request to update place ignored because it is current.'
-          ));
         }
         // update user
         series.push(function(cb) {
