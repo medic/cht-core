@@ -108,6 +108,127 @@
       opacity: 0.2;
     }
   }
+
+  .or-appearance-summary {
+    @red: #e00900;
+    @green: #75b2b2;
+    @blue: #6b9acd;
+    @yellow: #e2b100;
+
+    .or-appearance-center {
+      text-align: center;
+    }
+
+    label {
+      margin: 0 1em;
+      .question-label {
+        display: block;
+      }
+    }
+
+    .or-appearance-h1:not(.disabled) {
+      padding: 0.5em;
+      margin-top: 0;
+      text-align: center;
+      font-size: 1.25em;
+      font-family: 'OpenSans', Arial, sans-serif;
+      font-weight: bold;
+      &:nth-child(1) {
+        margin-top: 10px;
+      }
+      &.or-appearance-red {
+        background-color: @red;
+        color: #fff;
+      }
+      &.or-appearance-green {
+        background-color: @green;
+        color: #fff;
+      }
+      &.or-appearance-blue {
+        background-color: @blue;
+        color: #fff;
+      }
+      &.or-appearance-yellow {
+        background-color: @yellow;
+        color: #fff;
+      }
+      i.fa {
+        font-size: 1.25em;
+        position: absolute;
+        left: 1.5em;
+      }
+    }
+    .or-appearance-h2 {
+      padding: 0.5em 0 0.45em;
+      margin: 0 1em;
+      text-align: center;
+      font-size: 1.5em;
+      font-weigth: bold;
+      display: block;
+
+      &.or-appearance-red {
+        border-bottom: 0.15em solid @red;
+        color: @red;
+      }
+      &.or-appearance-green {
+        border-bottom: 0.15em solid @green;
+        color: @green;
+      }
+      &.or-appearance-blue {
+        border-bottom: 0.15em solid @blue;
+        color: @blue;
+      }
+      &.or-appearance-yellow {
+        border-bottom: 0.15em solid @yellow;
+        color: @yellow;
+      }
+    }
+    .or-appearance-h3 {
+      padding: 0.5em 0 0.45em;
+      margin: 0 1em;
+      text-align: center;
+      font-size: 1.5em;
+      font-weigth: bold;
+      display: block;
+
+      &.or-appearance-red {
+        color: @red;
+      }
+      &.or-appearance-green {
+        color: @green;
+      }
+      &.or-appearance-blue {
+        color: @blue;
+      }
+      &.or-appearance-yellow {
+        color: @yellow;
+      }
+    }
+    .or-appearance-h4 {
+      border-bottom:0.1em solid #ccc;
+      margin: 0 1em;
+      font-weight:bold; 
+
+      &.or-appearance-red {
+        color: @red;
+      }
+      &.or-appearance-green {
+        color: @green;
+      }
+      &.or-appearance-blue {
+        color: @blue;
+      }
+      &.or-appearance-yellow {
+        color: @yellow;
+      }
+    }
+    .or-appearance-li:not(.disabled) {
+      margin: -0.5em 1.5em;
+      br {
+        display: none;
+      }
+    }
+  }
 }
 
 @media (max-width: 767px) {
