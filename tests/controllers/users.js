@@ -602,7 +602,7 @@ exports['createContact sets up response'] = function(test) {
 };
 
 exports['createUser returns error if missing fields.'] = function(test) {
-  test.expect(6);
+  test.expect(11);
   // empty
   controller.createUser({}, function(err) {
     test.ok(err);
@@ -614,6 +614,7 @@ exports['createUser returns error if missing fields.'] = function(test) {
     'contact': { 'parent': 'x'}
   }, function(err) {
     test.ok(err);
+    test.equal(err.code, 400);
   });
   // missing password
   controller.createUser({
@@ -622,6 +623,7 @@ exports['createUser returns error if missing fields.'] = function(test) {
     'contact': { 'parent': 'x'}
   }, function(err) {
     test.ok(err);
+    test.equal(err.code, 400);
   });
   // missing place
   controller.createUser({
@@ -630,6 +632,7 @@ exports['createUser returns error if missing fields.'] = function(test) {
     'contact': { 'parent': 'x'}
   }, function(err) {
     test.ok(err);
+    test.equal(err.code, 400);
   });
   // missing contact
   controller.createUser({
@@ -638,6 +641,7 @@ exports['createUser returns error if missing fields.'] = function(test) {
     'contact': { 'parent': 'x'}
   }, function(err) {
     test.ok(err);
+    test.equal(err.code, 400);
   });
   // missing contact.parent
   controller.createUser({
@@ -646,6 +650,7 @@ exports['createUser returns error if missing fields.'] = function(test) {
     'contact': {}
   }, function(err) {
     test.ok(err);
+    test.equal(err.code, 400);
   });
   test.done();
 };

@@ -387,10 +387,10 @@ module.exports = {
       }
     });
     if (missing.length > 0) {
-      return callback('Missing required fields: ' + missing.join(', '));
+      return handleBadRequest('Missing required fields: ' + missing.join(', '), callback);
     }
     if (_.isUndefined(data.contact.parent)) {
-      return callback('Contact parent is required.');
+      return handleBadRequest('Contact parent is required.', callback);
     }
     // validate place exists
     self._validatePlace(getDocID(data.place), function(err) {
@@ -401,12 +401,12 @@ module.exports = {
       self._getContactParent(data.contact.parent, function(err, facility) {
         if (err) {
           if (err.error === 'not_found') {
-            return callback('Failed to find contact parent.');
+            return handleBadRequest('Failed to find contact parent.', callback);
           }
           return callback(err);
         }
         if (!self._hasParent(facility, data.place)) {
-          return callback('Contact is not within place.');
+          return handleBadRequest('Contact is not within place.', callback);
         }
         // save result to contact object
         data.contact.parent = facility;
@@ -430,8 +430,8 @@ module.exports = {
         placeID = getDocID(data.place),
         series = [];
     if (_.isUndefined(placeID) && _.isUndefined(data.type) && _.isUndefined(data.password)) {
-      return callback(
-        'One of the following fields are required: type, password or place.'
+      return handleBadRequest(
+        'One of the following fields are required: type, password or place.', callback
       );
     }
     // validate user exists
