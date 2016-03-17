@@ -1,0 +1,16 @@
+<span id="dateRangeDropdown" class="filter dropdown mm-dropdown">
+  <span id="date-filter" class="mm-button">
+    <span class="mm-button-icon">
+      <span class="fa fa-calendar"></span>
+    </span>
+    <span class="mm-button-dropdown">
+      <span class="fa fa-chevron-down"></span>
+    </span>
+    <span class="mm-button-text" ng-show="filterModel.date.from && filterModel.date.to">
+      {{filterModel.date.from | date : 'd MMM'}} - {{filterModel.date.to | date : 'd MMM'}}
+    </span>
+    <span class="mm-button-text" ng-show="!filterModel.date.from || !filterModel.date.to">
+      {{'Any date' | translate}}
+    </span>
+  </span>
+</span>

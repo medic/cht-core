@@ -10,19 +10,21 @@ var _ = require('underscore'),
   inboxServices.factory('Search', ['DB', 'DbView', 'GenerateSearchRequests',
     function(DB, DbView, GenerateSearchRequests) {
 
-      var _currentQueryString, _currentQueryScope;
+      var _currentQuery = {};
 
       // Silently cancel repeated queries.  We decide if the query is repeated
       // by checking if its search string and scope are identical to the
       // previous query.
-      var debounce = function(scope, requests) {
+      var debounce = function(type, filters, requests) {
         var queryString = JSON.stringify(requests);
-        if (scope === _currentQueryScope &&
-            queryString === _currentQueryString) {
+        if (type === _currentQuery.type &&
+            filters === _currentQuery.filters &&
+            queryString === _currentQuery.queryString) {
           return true;
         }
-        _currentQueryScope = scope;
-        _currentQueryString = queryString;
+        _currentQuery.type = type;
+        _currentQuery.filters = filters;
+        _currentQuery.queryString = queryString;
         return false;
       };
 
@@ -95,31 +97,31 @@ var _ = require('underscore'),
         }
       };
 
-      var generateRequests = function($scope, options, callback) {
+      var generateRequests = function(type, filters, options, callback) {
         var requests;
         try {
-          requests = GenerateSearchRequests($scope);
+          requests = GenerateSearchRequests(type, filters);
         } catch(e) {
           return callback(e);
         }
-        if (!options.force && debounce($scope, requests)) {
+        if (!options.force && debounce(type, filters, requests)) {
           return;
         }
         callback(null, requests);
       };
 
-      return function($scope, options, callback) {
+      return function(type, filters, options, callback) {
         _.defaults(options, {
           limit: 50,
           skip: 0,
-          type: $scope.filterModel.type
+          type: type
         });
-        generateRequests($scope, options, function(err, requests) {
+        generateRequests(type, filters, options, function(err, requests) {
           if (err) {
             return callback(err);
           }
           execute(requests, options, function(err, results) {
-            _currentQueryScope = _currentQueryString = null;
+            _currentQuery = {};
             callback(err, results);
           });
         });

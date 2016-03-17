@@ -719,38 +719,8 @@ var feedback = require('../modules/feedback'),
         }
       };
 
-      $scope.setupFilters = function() {
+      $scope.setupFiltersBak = function() {
 
-        $('#search').on('click', function(e) {
-          e.preventDefault();
-          $scope.$broadcast('query');
-        });
-        $('#freetext').on('keypress', function(e) {
-          if (e.which === 13) {
-            e.preventDefault();
-            $scope.$broadcast('query');
-          }
-        });
-
-        var performMobileSearch = function(e) {
-          e.preventDefault();
-          $scope.$broadcast('query');
-          $(e.target).closest('.filter').removeClass('open');
-        };
-        $('#mobile-search-go').on('click', performMobileSearch);
-        $('#mobile-freetext').on('keypress', function(e) {
-          if (e.which === 13) {
-            performMobileSearch(e);
-          }
-        });
-        $('.mobile-freetext-filter').on('shown.bs.dropdown', function() {
-          $('#mobile-freetext').focus();
-        });
-
-        // stop bootstrap closing the search pane on click
-        $('.filters .mobile-freetext-filter .search-pane').on('click', function(e) {
-          e.stopPropagation();
-        });
 
         $translate.onReady().then(function() {
           // we have to wait for language to respond before initing the multidropdowns
@@ -1022,6 +992,7 @@ var feedback = require('../modules/feedback'),
         },
       ];
 
+      // TODO remove
       UserDistrict(function() {
         $scope.$watch('filterModel', function(curr, prev) {
           if (prev !== curr) {

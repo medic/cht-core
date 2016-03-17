@@ -112,24 +112,23 @@ var _ = require('underscore'),
         }
       };
 
-      var freetext = function($scope, type) {
+      var freetext = function(filters, type) {
         var view = type.views.freetext;
         if (!view) {
           return;
         }
-        var freetext = $scope.filterQuery && $scope.filterQuery.value;
-        if (freetext) {
-          freetext = freetext.toLowerCase();
+        if (filters.search) {
+          var query = filters.search.toLowerCase();
           var params = {};
-          if (freetext.indexOf(':') !== -1) {
+          if (query.indexOf(':') !== -1) {
             // use exact match
-            params.keys = _.map(freetext.split(/\s+/), function(word) {
+            params.keys = _.map(query.split(/\s+/), function(word) {
               return [ word ];
             });
           } else {
             // use starts with
-            params.startkey = [ freetext ];
-            params.endkey = [ freetext + endOfAlphabet ];
+            params.startkey = [ query ];
+            params.endkey = [ query + endOfAlphabet ];
           }
           return {
             view: view,
@@ -211,26 +210,26 @@ var _ = require('underscore'),
         }
       };
 
-      var getRequests = function($scope, type) {
+      var getRequests = function(filters, type) {
         var requests = [];
-        requests.push(reportedDate($scope, type));
-        requests.push(form($scope, type));
-        requests.push(validity($scope, type));
-        requests.push(verification($scope, type));
-        requests.push(place($scope, type));
-        requests.push(freetext($scope, type));
-        requests.push(documentType($scope, type));
-        requests.push(subject($scope, type));
+        // requests.push(reportedDate($scope, type));
+        // requests.push(form($scope, type));
+        // requests.push(validity($scope, type));
+        // requests.push(verification($scope, type));
+        // requests.push(place($scope, type));
+        requests.push(freetext(filters, type));
+        // requests.push(documentType($scope, type));
+        // requests.push(subject($scope, type));
         requests = _.compact(requests);
         return requests.length ? requests : [ type.getUnfiltered() ];
       };
 
-      return function($scope) {
-        var type = types[$scope.filterModel.type];
-        if (!type) {
-          throw new Error('Unknown type: ' + $scope.filterModel.type);
+      return function(type, filters) {
+        var typeModel = types[type];
+        if (!typeModel) {
+          throw new Error('Unknown type: ' + type);
         }
-        return getRequests($scope, type);
+        return getRequests(filters, typeModel);
       };
     }
   ]);

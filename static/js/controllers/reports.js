@@ -15,8 +15,47 @@ var _ = require('underscore'),
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = null;
       $scope.selected = null;
+      $scope.filters = {
+        search: $stateParams.query
+      };
 
       var liveList = LiveList.reports;
+
+      $scope.setupSearch = function() {
+        console.log('setting up filters', $('#search'));
+
+        $('#search').on('click', function(e) {
+          console.log('clicked!');
+          e.preventDefault();
+          $scope.search();
+        });
+        $('#freetext').on('keypress', function(e) {
+          if (e.which === 13) {
+            e.preventDefault();
+            $scope.search();
+          }
+        });
+
+        var performMobileSearch = function(e) {
+          e.preventDefault();
+          $(e.target).closest('.filter').removeClass('open');
+          $scope.search();
+        };
+        $('#mobile-search-go').on('click', performMobileSearch);
+        $('#mobile-freetext').on('keypress', function(e) {
+          if (e.which === 13) {
+            performMobileSearch(e);
+          }
+        });
+        $('.mobile-freetext-filter').on('shown.bs.dropdown', function() {
+          $('#mobile-freetext').focus();
+        });
+
+        // stop bootstrap closing the search pane on click
+        $('.filters .mobile-freetext-filter .search-pane').on('click', function(e) {
+          e.stopPropagation();
+        });
+      };
 
       $scope.setSelectedGroup = function(group) {
         $scope.selectedGroup = angular.copy(group);
@@ -140,11 +179,11 @@ var _ = require('underscore'),
           liveList.set([]);
         }
 
-        Search($scope, options, function(err, data) {
+        Search($scope.filterModel.type, $scope.filters, options, function(err, data) {
           if (err) {
             $scope.error = true;
             $scope.loading = false;
-            if ($scope.filterQuery.value &&
+            if ($scope.filters.search &&
                 err.reason &&
                 err.reason.toLowerCase().indexOf('bad query syntax') !== -1) {
               // invalid freetext filter query
@@ -182,19 +221,15 @@ var _ = require('underscore'),
         });
       };
 
-      $scope.$on('query', function() {
-        if ($scope.filterModel.type !== 'reports') {
-          // not viewing reports tab
-          liveList.clearSelected();
-          return;
-        }
+      $scope.search = function() {
         if ($scope.isMobile() && $scope.showContent) {
           // leave content shown
           return;
         }
         $scope.loading = true;
 
-        if (($scope.filterQuery && $scope.filterQuery.value) ||
+        // TODO clean this up
+        if ($scope.filters.search ||
             ($scope.filterModel && (
               ($scope.filterModel.contactTypes && $scope.filterModel.contactTypes.length) ||
               $scope.filterModel.facilities.length ||
@@ -226,7 +261,7 @@ var _ = require('underscore'),
           }
         }
 
-      });
+      };
 
       $scope.$on('ClearSelected', function() {
         $scope.selected = null;
@@ -260,8 +295,6 @@ var _ = require('underscore'),
       if (!$stateParams.id) {
         $scope.selectReport();
       }
-
-      $scope.setFilterQuery($stateParams.query);
 
       if ($stateParams.tour) {
         $rootScope.$broadcast('TourStart', $stateParams.tour);
@@ -316,6 +349,14 @@ var _ = require('underscore'),
         initEditMessageModal();
       };
 
+      // TODO watch specific bits...
+      // $scope.$watch('filters', function(curr, prev) {
+      //   if (prev !== curr) {
+      //     $scope.search();
+      //   }
+      // }, true);
+
+      $scope.search();
     }
   ]);
 

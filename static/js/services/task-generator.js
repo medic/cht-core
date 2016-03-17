@@ -49,10 +49,10 @@ var nools = require('nools'),
         };
       };
 
-      var search = function(scope) {
+      var search = function(type, filters) {
         var deferred = $q.defer();
         var options = { limit: 99999999, force: true };
-        Search(scope, options, function(err, docs) {
+        Search(type, filters, options, function(err, docs) {
           if (err) {
             return deferred.reject(err);
           }
@@ -62,26 +62,11 @@ var nools = require('nools'),
       };
 
       var getContacts = function() {
-        return search({
-          filterModel: {
-            type: 'contacts'
-          },
-          filterQuery: ''
-        });
+        return search('contacts', {});
       };
 
       var getDataRecords = function() {
-        return search({
-          filterModel: {
-            type: 'reports',
-            valid: true,
-            forms: [],
-            date: {},
-            facilities: []
-          },
-          filterQuery: '',
-          forms: [ ]
-        });
+        return search('reports', { valid: true });
       };
 
       var getContactId = function(doc) {
