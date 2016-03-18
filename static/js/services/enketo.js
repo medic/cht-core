@@ -4,33 +4,50 @@ angular.module('inboxServices').service('Enketo', [
   function($window, $log, $q, Auth, DB, EnketoTranslation, EnketoPrepopulationData, FileReader, UserSettings, XSLT, Language, TranslateFrom) {
     var objUrls = [];
 
-    var replaceJavarosaMediaWithLoaders = function(formDocId, form) {
-      form.find('img,video,audio').each(function(i, elem) {
-        elem = $(elem);
-        var src = elem.attr('src');
-        if (!(/^jr:\/\//.test(src))) {
-          return;
-        }
-        // Change URL to fragment to prevent browser trying to load it
-        elem.attr('src', '#' + src);
-        elem.css('visibility', 'hidden');
-        elem.wrap('<div class="loader">');
-        DB.get()
-          .getAttachment(formDocId, src.substring(5))
-          .then(function(blob) {
-            var objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
-            objUrls.push(objUrl);
-            elem.attr('src', objUrl);
-            elem.css('visibility', '');
-            elem.unwrap();
-          })
-          .catch(function(err) {
-            $log.error('Error fetching media file', formDocId, src, err);
+    var replaceJavarosaMediaWithLoaders = function(formInternalId, form) {
+      var mediaElements = form.find('img,video,audio');
+
+      if (!mediaElements.length) {
+        return;
+      }
+
+      DB.get().query('medic/forms', { key: formInternalId })
+        .then(function(res) {
+          if (!res.rows.length) {
+            throw new Error('Requested form not found');
+          }
+          var formDoc = res.rows[0];
+
+          mediaElements.each(function(i, elem) {
+            elem = $(elem);
+            var src = elem.attr('src');
+            if (!(/^jr:\/\//.test(src))) {
+              return;
+            }
+            // Change URL to fragment to prevent browser trying to load it
+            elem.attr('src', '#' + src);
+            elem.css('visibility', 'hidden');
+            elem.wrap('<div class="loader">');
+            DB.get()
+              .getAttachment(formDoc.id, src.substring(5))
+              .then(function(blob) {
+                var objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
+                objUrls.push(objUrl);
+                elem.attr('src', objUrl);
+                elem.css('visibility', '');
+                elem.unwrap();
+              })
+              .catch(function(err) {
+                $log.error('Error fetching media file', formDoc.id, src, err);
+              });
           });
-      });
+        })
+        .catch(function(err) {
+          $log.error('replaceJavarosaMediaWithLoaders', 'Error finding form by internal ID', formInternalId, err);
+        });
     };
 
-    var transformXml = function(doc, formDocId) {
+    var transformXml = function(doc) {
       return $q
         .all([
           XSLT.transform('openrosa2html5form.xsl', doc),
@@ -41,9 +58,6 @@ angular.module('inboxServices').service('Enketo', [
             html: $(results[0]),
             model: results[1]
           };
-          if(formDocId) {
-            replaceJavarosaMediaWithLoaders(formDocId, result.html);
-          }
           return result;
         });
     };
@@ -72,7 +86,7 @@ angular.module('inboxServices').service('Enketo', [
                   $xml.find('model itext translation[lang="' + language + '"]').attr('default', '');
                   // manually translate the title as itext doesn't seem to work
                   $xml.find('h\\:title,title').text(TranslateFrom(form.doc.title));
-                  return transformXml(xml, form.id);
+                  return transformXml(xml);
                 });
               });
           });
@@ -213,6 +227,7 @@ angular.module('inboxServices').service('Enketo', [
             html: doc.html.clone(),
             model: doc.model,
           };
+          replaceJavarosaMediaWithLoaders(formInternalId, doc.html);
           return renderFromXmls(doc, wrapper, instanceData);
         });
     };
@@ -278,7 +293,7 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     this.save = function(formInternalId, form, docId) {
-      return form.validate()
+      return $q.when(form.validate())
         .then(function(valid) {
           if (!valid) {
             throw new Error('Form is invalid');

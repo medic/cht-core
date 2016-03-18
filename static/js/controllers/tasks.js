@@ -7,8 +7,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksCtrl',
-    ['$scope', '$state', '$timeout', 'LiveList', 'TranslateFrom',
-    function ($scope, $state, $timeout, LiveList, TranslateFrom) {
+    ['$scope', '$state', '$timeout', 'LiveList', 'ResourceIcons', 'TranslateFrom',
+    function ($scope, $state, $timeout, LiveList, ResourceIcons, TranslateFrom) {
 
       var setSelectedTask = function(task) {
         LiveList.tasks.setSelected(task._id);
@@ -39,6 +39,10 @@ var _ = require('underscore');
       $scope.filterModel.type = 'tasks';
       $timeout(function() {
         LiveList.tasks.refresh();
+        if (!LiveList.tasks.iconsInitialised) {
+          ResourceIcons.updateResources();
+          LiveList.tasks.iconsInitialised = true;
+        }
       });
       $scope.selected = null;
       $scope.error = false;

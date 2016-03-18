@@ -53,11 +53,11 @@ var _ = require('underscore'),
       };
 
       var view = function(request, options, callback) {
-        DbView(
-          request.view,
-          { params: request.params },
-          callback
-        );
+        DbView(request.view, { params: request.params })
+          .then(function(data) {
+            callback(null, data.results);
+          })
+          .catch(callback);
       };
 
       var filter = function(requests, options, callback) {

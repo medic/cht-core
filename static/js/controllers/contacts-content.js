@@ -118,7 +118,7 @@ var _ = require('underscore');
               doc: results[0],
               children: results[1].rows,
               contactFor: results[2].rows,
-              reports: results[3]
+              reports: results[3].reverse()
             };
             selected.fields = selectedSchemaVisibleFields(selected);
             return selected;

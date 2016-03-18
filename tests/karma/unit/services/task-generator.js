@@ -106,12 +106,7 @@ describe('TaskGenerator service', function() {
       form: 'P',
       reported_date: 1437618272360,
       fields: {
-        inputs: {
-          contact: {
-            _id: 1,
-            name: 'Jenny'
-          }
-        },
+        patient_id: 1,
         last_menstrual_period: 10
       }
     },
@@ -120,12 +115,7 @@ describe('TaskGenerator service', function() {
       form: 'P',
       reported_date: 1437820272360,
       fields: {
-        inputs: {
-          contact: {
-            _id: 2,
-            name: 'Sally'
-          },
-        },
+        patient_id: 2,
         last_menstrual_period: 20
       }
     },
@@ -134,11 +124,7 @@ describe('TaskGenerator service', function() {
       form: 'V',
       reported_date: 1438820272360,
       fields: {
-        inputs: {
-          contact: {
-            _id: 1
-          }
-        }
+        patient_id: 1
       }
     },
     {
@@ -146,12 +132,7 @@ describe('TaskGenerator service', function() {
       form: 'R',
       reported_date: 1437920272360,
       fields: {
-        inputs: {
-          contact: {
-            _id: 3,
-            name: 'Rachel'
-          }
-        }
+        patient_id: 3
       }
     }
   ];
@@ -403,12 +384,7 @@ describe('TaskGenerator service', function() {
         form: 'P',
         reported_date: 1437618272360,
         fields: {
-          inputs: {
-            contact: {
-              _id: 1,
-              name: 'Jenny'
-            },
-          }
+          patient_id: 1
         },
         last_menstrual_period: 10
       }
@@ -451,12 +427,7 @@ describe('TaskGenerator service', function() {
         form: 'P',
         reported_date: 1437618272360,
         fields: {
-          inputs: {
-            contact: {
-              _id: 1,
-              name: 'Jenny'
-            }
-          }
+          patient_id: 1
         },
         last_menstrual_period: 10
       },
@@ -465,12 +436,7 @@ describe('TaskGenerator service', function() {
         form: 'P',
         reported_date: 1437618272360,
         fields: {
-          inputs: {
-            contact: {
-              _id: 1,
-              name: 'Jenny'
-            }
-          }
+          patient_id: 1
         },
         last_menstrual_period: 10
       }
@@ -514,12 +480,7 @@ describe('TaskGenerator service', function() {
         form: 'P',
         reported_date: 1437618272360,
         fields: {
-          inputs: {
-            contact: {
-              _id: 1,
-              name: 'Jenny'
-            }
-          }
+          patient_id: 1
         },
         last_menstrual_period: 10
       }
@@ -568,12 +529,7 @@ describe('TaskGenerator service', function() {
         form: 'P',
         reported_date: 1437618272360,
         fields: {
-          inputs: {
-            contact: {
-              _id: 1,
-              name: 'Jenny'
-            }
-          }
+          patient_id: 1
         },
         last_menstrual_period: 10
       }
@@ -584,12 +540,7 @@ describe('TaskGenerator service', function() {
       form: 'P',
       reported_date: 1437618272360,
       fields: {
-        inputs: {
-          contact: {
-            _id: 1,
-            name: 'Jenny'
-          }
-        },
+        patient_id: 1,
         last_menstrual_period: 10
       }
     };
@@ -720,12 +671,7 @@ describe('TaskGenerator service', function() {
             form: 'P',
             reported_date: 1437618272360,
             fields: {
-              inputs: {
-                contact: {
-                  _id: 1,
-                  name: 'Jenny'
-                }
-              },
+              patient_id: 1,
               last_menstrual_period: 15
             }
           }

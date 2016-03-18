@@ -6,13 +6,14 @@ describe('Users service', function() {
       $httpBackend,
       facilitiesError,
       adminsError,
-      userSettings,
+      DbView,
       facilitya = { _id: 'a', name: 'aaron' },
       facilityb = { _id: 'b', name: 'brian' },
       facilityc = { _id: 'c', name: 'cathy' };
 
   beforeEach(function() {
     module('inboxApp');
+    DbView = sinon.stub();
     module(function ($provide) {
       $provide.value('Facility', function(callback) {
         if (facilitiesError) {
@@ -26,9 +27,7 @@ describe('Users service', function() {
         }
         callback(null, { gareth: 'abc' });
       });
-      $provide.value('DbView', function(name, options, callback) {
-        callback(null, userSettings);
-      });
+      $provide.value('DbView', DbView);
     });
     inject(function($injector) {
       $httpBackend = $injector.get('$httpBackend');
@@ -36,7 +35,6 @@ describe('Users service', function() {
     });
     facilitiesError = null;
     adminsError = null;
-    userSettings = [];
   });
 
   afterEach(function() {
@@ -45,6 +43,7 @@ describe('Users service', function() {
   });
 
   it('retrieves users', function(done) {
+
 
     var users = [
       {
@@ -65,7 +64,7 @@ describe('Users service', function() {
       }
     ];
 
-    userSettings = [[
+    DbView.returns(KarmaUtils.mockPromise(null, { results: [[
       {
         _id: 'org.couchdb.user:x',
         name: 'lucas',
@@ -80,7 +79,7 @@ describe('Users service', function() {
         email: 'm@a.com',
         phone: '987654321'
       }
-    ]];
+    ]]}));
 
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
@@ -142,7 +141,7 @@ describe('Users service', function() {
       }
     ];
 
-    userSettings = [[
+    DbView.returns(KarmaUtils.mockPromise(null, { results: [[
       {
         _id: 'org.couchdb.user:x',
         name: 'lucas',
@@ -157,7 +156,7 @@ describe('Users service', function() {
         email: 'm@a.com',
         phone: '987654321'
       }
-    ]];
+    ]]}));
 
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
@@ -194,6 +193,8 @@ describe('Users service', function() {
       }
     ];
 
+    DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
+
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
       .respond({ rows: users });
@@ -229,6 +230,8 @@ describe('Users service', function() {
       }
     ];
 
+    DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
+
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
       .respond({ rows: users });
@@ -254,6 +257,8 @@ describe('Users service', function() {
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
       .respond(404, 'Not found');
+
+    DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
 
     service(function(err) {
       chai.expect(err).to.equal('Not found');
@@ -289,6 +294,8 @@ describe('Users service', function() {
         } 
       }
     ];
+
+    DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
 
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
@@ -333,6 +340,8 @@ describe('Users service', function() {
       }
     ];
 
+    DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
+
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
       .respond({ rows: users });
@@ -349,4 +358,3 @@ describe('Users service', function() {
   });
 
 });
-

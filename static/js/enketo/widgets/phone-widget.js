@@ -37,7 +37,7 @@ define( function( require, exports, module ) {
                             key: [ phoneNumber ]
                         }
                     };
-                    var DbView = angularServices.get( 'DbViewP' );
+                    var DbView = angularServices.get( 'DbView' );
                     return DbView( 'person_by_phone', options );
                 } )
                 .then( function( res ) {

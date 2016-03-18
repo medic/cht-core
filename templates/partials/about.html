@@ -1,43 +1,71 @@
 <div class="inner" ng-cloak>
   <div class="col-sm-12 page help" ui-view="content">
+
     <div>
-      <h3>{{'about' | translate}}</h3>
+      <h3 translate>about</h3>
       <ul>
-        <li>{{'version' | translate}} {{version}}</li>
-        <li ng-show="android_app_version">{{'android_app.version.title' | translate}} {{android_app_version}}</li>
+        <li><span translate>version</span> {{version}}</li>
+        <li ng-show="android_app_version">
+          <span translate>android_app.version.title</span>: {{android_app_version}}
+        </li>
+        <li><span translate>ddoc.version</span>: {{ddocVersion}}</li>
         <li>{{url}}</li>
         <li>{{userCtx.name}}</li>
-        <li><a ng-click="reload()">{{'Reload' | translate}}</a></li>
+        <li><a ng-click="reload()" translate>Reload</a></li>
       </ul>
     </div>
-    <div>
-      <h3>{{'initial.replication.title' | translate}}</h3>
+
+    <div ng-if="initialReplication">
+      <h3 translate>initial.replication.title</h3>
       <ul>
-        <li>{{'initial.replication.status' | translate}}: {{'initial.replication.status.' + initialReplicationStatus | translate}}</li>
-        <li ng-show="initialReplicationDuration">{{'initial.replication.duration' | translate}}: {{initialReplicationDuration / 1000 | number:1}} s</li>
-        <span ng-show="initialReplicationDataUsage">
-          <li>{{'android_app.data_usage.rx' | translate}}: {{initialReplicationDataUsage.rx | number}} B</li>
-          <li>{{'android_app.data_usage.tx' | translate}}: {{initialReplicationDataUsage.tx | number}} B</li>
-        </span>
+        <li>
+          <span translate>initial.replication.status</span>:
+          <span translate>{{initialReplication.status}}</span>
+        </li>
+        <li ng-show="initialReplication.duration">
+          <span translate>initial.replication.duration</span>:
+          <span translate="number.seconds" translate-values="{ number: '{{initialReplication.duration / 1000 | number:1}}' }"></span>
+        </li>
+        <li ng-show="initialReplication.dataUsage">
+          <span translate>android_app.data_usage.rx</span>:
+          <span translate="number.bytes" translate-values="{ number: '{{initialReplication.dataUsage.rx | number}}' }"></span>
+        </li>
+        <li ng-show="initialReplication.dataUsage">
+          <span translate>android_app.data_usage.tx</span>:
+          <span translate="number.bytes" translate-values="{ number: '{{initialReplication.dataUsage.tx | number}}' }"></span>
+        </li>
       </ul>
     </div>
-    <span>
-    <div ng-if="android_data_usage">
-      <h3>{{'android_app.data_usage.title' | translate}}</h3>
-      <p>{{'android_app.data_usage.description' | translate}}</p>
-      <h4>{{'android_app.data_usage.system.title' | translate}}</h4>
+
+    <div ng-if="androidDataUsage">
+      <h3 translate>android_app.data_usage.title</h3>
+      <p translate>android_app.data_usage.description</p>
+      <h4 translate>android_app.data_usage.system.title</h4>
       <ul>
-        <li>{{'android_app.data_usage.rx' | translate}}: {{android_data_usage.system.rx | number}} B</li>
-        <li>{{'android_app.data_usage.tx' | translate}}: {{android_data_usage.system.tx | number}} B</li>
+        <li>
+          <span translate>android_app.data_usage.rx</span>:
+          <span translate="number.bytes" translate-values="{ number: '{{androidDataUsage.system.rx | number}}' }"></span>
+        </li>
+        <li>
+          <span translate>android_app.data_usage.tx</span>:
+          <span translate="number.bytes" translate-values="{ number: '{{androidDataUsage.system.tx | number}}' }"></span>
+        </li>
       </ul>
-      <h4>{{'android_app.data_usage.app.title' | translate}}</h4>
+      <h4 translate>android_app.data_usage.app.title</h4>
       <ul>
-        <li>{{'android_app.data_usage.rx' | translate}}: {{android_data_usage.app.rx | number}} B</li>
-        <li>{{'android_app.data_usage.tx' | translate}}: {{android_data_usage.app.tx | number}} B</li>
+        <li>
+          <span translate>android_app.data_usage.rx</span>:
+          <span translate="number.bytes" translate-values="{ number: '{{androidDataUsage.app.rx | number}}' }"></span>
+        </li>
+        <li>
+          <span translate>android_app.data_usage.tx</span>:
+          <span translate="number.bytes" translate-values="{ number: '{{androidDataUsage.app.tx | number}}' }"></span>
+        </li>
       </ul>
     </div>
+
     <div ng-hide="help_pages.length === 0">
-      <h3>{{'Help' | translate}}</h3>
+      <h3 translate>Help</h3>
       <ul>
         <li ng-repeat="page in help_pages">
           <a ui-sref="help({ page: page.id })">{{page.title}}</a>
@@ -45,18 +73,22 @@
       </ul>
       <div class="loader" ng-show="help_loading"></div>
     </div>
+
     <div>
-      <h3>{{'Debug' | translate}}</h3>
-      <p>{{ 'debug.mode.description' | translate }}</p>
+      <h3 translate>Debug</h3>
+      <p translate>debug.mode.description</p>
       <form>
         <label>
-          <input ng-model="enableDebugModel.val" type="checkbox" /> {{ 'debug.mode.title' | translate }}
+          <input ng-model="enableDebugModel.val" type="checkbox" />
+          <span translate>debug.mode.title</span>
         </label>
       </form>
     </div>
+
     <div>
-      <h3>{{'debug.db_info.title' | translate}}</h3>
+      <h3 translate>debug.db_info.title</h3>
       <pre>{{ dbInfo }}</pre>
     </div>
+
   </div>
 </div>

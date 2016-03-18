@@ -14,10 +14,10 @@
         </span>
         <span role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
           <ul>
-            <li role="presentation" ng-repeat="form in forms">
+            <li role="presentation" ng-repeat="form in forms | orderBy:'name | translateFrom' track by form.code">
               <a role="menuitem" tabindex="-1" data-value="{{form}}">
-                <span ng-show="form.name">{{form.code}}: {{form.name}}</span>
-                <span ng-show="!form.name">{{form.code}}</span>
+                <span ng-if="form.name">{{form.name | translateFrom}}</span>
+                <span ng-if="!form.name">{{form.code}}</span>
               </a>
             </li>
           </ul>

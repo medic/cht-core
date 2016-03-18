@@ -145,11 +145,12 @@ var _ = require('underscore'),
       };
 
       var getAllUserSettings = function(callback) {
-        DbView(
-          'doc_by_type',
-          { params: { include_docs: true, key: ['user-settings'] } },
-          callback
-        );
+        var options = { params: { include_docs: true, key: ['user-settings'] } };
+        DbView('doc_by_type', options)
+          .then(function(data) {
+            callback(null, data.results);
+          })
+          .catch(callback);
       };
 
       return function(callback) {

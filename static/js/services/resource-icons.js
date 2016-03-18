@@ -52,7 +52,8 @@ angular.module('inboxServices').factory('ResourceIcons', [
           return;
         }
         return getSrc(name);
-      }
+      },
+      updateResources: updateResources,
     };
 
   }
