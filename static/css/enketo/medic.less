@@ -125,18 +125,19 @@
       .question-label {
         display: block;
       }
+      &.note:not(.disabled) + .note {
+        margin-top: 0;
+      }
     }
 
     .or-appearance-h1:not(.disabled) {
       padding: 0.5em;
-      margin-top: 0;
       text-align: center;
       font-size: 1.25em;
       font-family: 'OpenSans', Arial, sans-serif;
       font-weight: bold;
-      &:nth-child(1) {
-        margin-top: 10px;
-      }
+      margin-top: 0;
+
       &.or-appearance-red {
         background-color: @red;
         color: #fff;
@@ -169,7 +170,6 @@
       text-align: center;
       font-size: 1.5em;
       font-weight: bold;
-      display: block;
 
       &.or-appearance-red {
         border-bottom: 0.15em solid @red;
@@ -193,48 +193,48 @@
       }
     }
     .or-appearance-h3 {
-      padding: 0.5em 0 0.45em;
-      margin: 0 1em;
-      text-align: center;
-      font-size: 1.5em;
-      font-weight: bold;
-      display: block;
-
-      &.or-appearance-red {
-        color: @red;
-      }
-      &.or-appearance-green {
-        color: @green;
-      }
-      &.or-appearance-blue {
-        color: @blue;
-      }
-      &.or-appearance-yellow {
-        color: @yellow;
-      }
-    }
-    .or-appearance-h4 {
-      border-bottom:0.1em solid #ccc;
-      margin: 0 1em;
       font-weight:bold; 
 
       &.or-appearance-red {
+        margin: 0 2em;
+        border-bottom:0.1em solid #ccc;
         color: @red;
       }
       &.or-appearance-green {
+        margin: 0 2em;
+        border-bottom:0.1em solid #ccc;
         color: @green;
       }
       &.or-appearance-blue {
+        margin: 0 2em;
+        border-bottom:0.1em solid #ccc;
         color: @blue;
       }
       &.or-appearance-yellow {
+        margin: 0 2em;
+        border-bottom:0.1em solid #ccc;
         color: @yellow;
+      }
+      &.or-appearance-lime {
+        margin: 0 2em;
+        border-bottom:0.1em solid #ccc;
+        color: @lime;
       }
     }
     .or-appearance-li:not(.disabled) {
-      margin: 0 1.5em;
+      margin: 0 2em;
+      padding-top: 3px;
+      padding-bottom: 3px;
+      &:nth-child(1) {
+        padding-top: 7px;
+      }
       br {
         display: none;
+      }
+      &:before {
+        content: '»';
+        position: absolute;
+        left: 2em;
       }
     }
   }
