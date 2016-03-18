@@ -3,38 +3,30 @@ describe('Form service', function() {
   'use strict';
 
   var service,
-      $rootScope,
-      Settings = sinon.stub(),
-      Language = sinon.stub();
+      Settings = sinon.stub();
 
-  beforeEach(function (){
+  beforeEach(function() {
     module('inboxApp');
-    module(function ($provide) {
+    module(function($provide) {
       $provide.value('Settings', Settings);
-      $provide.value('Language', Language);
     });
-    inject(function(_Form_, _$rootScope_) {
-      $rootScope = _$rootScope_;
+    inject(function(_Form_) {
       service = _Form_;
     });
   });
 
   afterEach(function() {
-    KarmaUtils.restore(Language, Settings);
+    KarmaUtils.restore(Settings);
   });
 
   it('returns zero when no forms', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, { forms: {} }));
-    Language.returns(KarmaUtils.mockPromise(null, 'en'));
     service()
       .then(function(actual) {
         chai.expect(actual).to.deep.equal([]);
         done();
       })
       .catch(done);
-    setTimeout(function() {
-      $rootScope.$digest(); // needed to resolve the promise
-    });
   });
 
   it('returns forms with old style labels', function(done) {
@@ -44,7 +36,6 @@ describe('Form service', function() {
       C: { meta: { code: 'C', label: 'Third'  } },
       D: { meta: { code: 'D', label: 'Fourth' } }
     } }));
-    Language.returns(KarmaUtils.mockPromise(null, 'en'));
     service()
       .then(function(actual) {
         chai.expect(actual).to.deep.equal([
@@ -56,9 +47,6 @@ describe('Form service', function() {
         done();
       })
       .catch(done);
-    setTimeout(function() {
-      $rootScope.$digest(); // needed to resolve the promise
-    });
   });
 
   it('handles forms with no label', function(done) {
@@ -68,45 +56,17 @@ describe('Form service', function() {
       C: { meta: { code: 'C', label: 'Third' } },
       D: { meta: { code: 'D' } }
     } }));
-    Language.returns(KarmaUtils.mockPromise(null, 'en'));
     service()
       .then(function(actual) {
         chai.expect(actual).to.deep.equal([
-          { code: 'A' },
-          { code: 'B' },
-          { name: 'Third', code: 'C' },
-          { code: 'D' }
+          { code: 'A', name: undefined },
+          { code: 'B', name: undefined },
+          { code: 'C', name: 'Third' },
+          { code: 'D', name: undefined }
         ]);
         done();
       })
       .catch(done);
-    setTimeout(function() {
-      $rootScope.$digest(); // needed to resolve the promise
-    });
-  });
-
-  it('returns forms with translated label', function(done) {
-    Settings.returns(KarmaUtils.mockPromise(null, { forms: {
-      A: { meta: { code: 'A', label: { en: 'First',  sw: 'tsriF'  } } },
-      B: { meta: { code: 'B', label: { en: 'Second', sw: 'dnoceS' } } },
-      C: { meta: { code: 'C', label: { en: 'Third',  sw: 'drihT'  } } },
-      D: { meta: { code: 'D', label: { en: 'Fourth', sw: 'htruoF' } } }
-    } }));
-    Language.returns(KarmaUtils.mockPromise(null, 'sw'));
-    service()
-      .then(function(actual) {
-        chai.expect(actual).to.deep.equal([
-          { code: 'A', name: 'tsriF'  },
-          { code: 'B', name: 'dnoceS' },
-          { code: 'C', name: 'drihT'  },
-          { code: 'D', name: 'htruoF' }
-        ]);
-        done();
-      })
-      .catch(done);
-    setTimeout(function() {
-      $rootScope.$digest(); // needed to resolve the promise
-    });
   });
 
 });

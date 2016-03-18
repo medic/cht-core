@@ -429,20 +429,25 @@ var feedback = require('../modules/feedback'),
       };
 
       Form()
-        .then(function(forms) {
-          $scope.forms = forms;
+        .then(function(jsonForms) {
+          XmlForms('InboxCtrl', { contactForms: false }, function(err, xForms) {
+            if (err) {
+              return $log.error('Error fetching form definitions', err);
+            }
+            Enketo.clearXmlCache();
+            $scope.nonContactForms = xForms;
+            var xFormSummaries = xForms.map(function(xForm) {
+              return {
+                code: xForm.internalId,
+                name: xForm.title
+              };
+            });
+            $scope.forms = xFormSummaries.concat(jsonForms);
+          });
         })
         .catch(function(err) {
           $log.error('Failed to retrieve forms', err);
         });
-
-      XmlForms('InboxCtrl', { contactForms: false }, function(err, forms) {
-        if (err) {
-          return $log.error('Error fetching form definitions', err);
-        }
-        Enketo.clearXmlCache();
-        $scope.nonContactForms = forms;
-      });
 
       $scope.setupGuidedSetup = function() {
         guidedSetup.init(Settings, UpdateSettings, translateFilter);

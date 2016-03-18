@@ -59,14 +59,9 @@ var _ = require('underscore'),
         var name = doc.form;
         var form = _.findWhere($scope.forms, { code: doc.form });
         if (form) {
-          name = form.name;
-        } else {
-          form = _.findWhere($scope.nonContactForms, { internalId: doc.form });
-          if (form) {
-            name = TranslateFrom(form.title);
-          }
+          name = form.name || form.title;
         }
-        $scope.setTitle(name);
+        $scope.setTitle(TranslateFrom(name));
       };
 
       var updateDisplayFields = function(report) {
