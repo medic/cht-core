@@ -26,7 +26,7 @@ var nools = require('nools'),
           isTimely: function(date, event) {
             var due = new Date(date);
             var start = this.addDate(null, event.start);
-            var end = this.addDate(null, event.end * -1);
+            var end = this.addDate(null, (event.end + 1) * -1);
             return due.getTime() < start.getTime() && due.getTime() > end.getTime();
           },
           addDate: function(date, days) {
