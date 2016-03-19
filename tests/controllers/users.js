@@ -716,7 +716,7 @@ exports['createUser sets contact type'] = function(test) {
   sinon.stub(controller, '_hasParent').returns(true);
   // checking first function in waterfall
   sinon.stub(controller, '_createUser', function(data) {
-    test.deepEqual(data.contact.type, 'person');
+    test.equal(data.contact.type, 'person');
     test.done();
   });
   controller.createUser(userData);
