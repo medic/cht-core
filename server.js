@@ -429,11 +429,11 @@ app.post('/api/v1/users/:username', jsonParser, function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res);
     }
-    users.updateUser(req.params.username, req.body, function(err, body) {
+    users.updateUser(req.params.username, req.body, function(err) {
       if (err) {
         return serverUtils.error(err, req, res);
       }
-      res.json(body);
+      res.json();
     });
   });
 });
