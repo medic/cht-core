@@ -410,6 +410,8 @@ module.exports = {
         }
         // save result to contact object
         data.contact.parent = facility;
+        // set contact type
+        data.contact.type = 'person';
         async.waterfall([
           function(cb) {
             // start the waterfall

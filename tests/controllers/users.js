@@ -756,6 +756,18 @@ exports['createUser resolves contact parent for waterfall'] = function(test) {
   controller.createUser(userData);
 };
 
+exports['createUser sets contact type'] = function(test) {
+  sinon.stub(controller, '_validatePlace').callsArg(1);
+  sinon.stub(controller, '_getContactParent').callsArgWith(1, null, {});
+  sinon.stub(controller, '_hasParent').returns(true);
+  // checking first function in waterfall
+  sinon.stub(controller, '_createUser', function(data) {
+    test.equal(data.contact.type, 'person');
+    test.done();
+  });
+  controller.createUser(userData);
+};
+
 exports['updateUser errors if place, type and password is undefined'] = function(test) {
   controller.updateUser('paul', {}, function(err) {
     test.ok(err);
@@ -1011,4 +1023,3 @@ exports['updateUser updates user and user settings doc and couchdb admins'] = fu
     test.done();
   });
 };
-
