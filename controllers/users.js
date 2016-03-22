@@ -314,10 +314,10 @@ var getSettingsUpdates = function(data) {
   });
   if (data.place) {
     settings.facility_id = getDocID(data.place);
-  };
+  }
   if (data.contact) {
     settings.contact_id = getDocID(data.contact);
-  };
+  }
   if (data.language && data.language.code) {
     settings.language = data.language.code;
   }
@@ -336,7 +336,7 @@ var getUserUpdates = function(id, data) {
   });
   if (data.place) {
     user.facility_id = getDocID(data.place);
-  };
+  }
   if (data.type) {
     user.roles = getRoles(data.type);
   }
