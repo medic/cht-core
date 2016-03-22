@@ -7,8 +7,8 @@ var moment = require('moment'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TargetGenerator', ['$q', '$log', 'Settings', 'TaskGenerator',
-    function($q, $log, Settings, TaskGenerator) {
+  inboxServices.factory('TargetGenerator', ['$q', '$log', 'Settings', 'RulesEngine',
+    function($q, $log, Settings, RulesEngine) {
 
       var targets = [];
 
@@ -62,7 +62,7 @@ var moment = require('moment'),
       return function(callback) {
         init
           .then(function() {
-            TaskGenerator.listen('TargetGenerator', 'target', function(err, _targets) {
+            RulesEngine.listen('TargetGenerator', 'target', function(err, _targets) {
               if (!err) {
                 _targets.forEach(mergeTarget);
               }
@@ -74,4 +74,4 @@ var moment = require('moment'),
     }
   ]);
 
-}()); 
+}());

@@ -127,7 +127,7 @@ describe('InboxCtrl controller', function() {
       $provide.factory('UserSettings', function() {
         return sinon.stub();
       });
-      $provide.value('TaskGenerator', { init: KarmaUtils.nullPromise()() });
+      $provide.value('RulesEngine', { init: KarmaUtils.nullPromise()() });
       $provide.factory('$window', function() {
         return sinon.stub();
       });

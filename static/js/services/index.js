@@ -52,7 +52,7 @@
   require('./settings');
   require('./snackbar');
   require('./target-generator');
-  require('./task-generator');
+  require('./rules-engine');
   require('./traffic-stats');
   require('./translate-from');
   require('./update-contact');
