@@ -556,6 +556,45 @@ Content-Type: application/json; charset=utf-8
 
 All user related requests are limited to users with admin privileges by default.
 
+## Supported Properties
+
+Use JSON in the request body to specify user details.  Any properties submitted
+that are not on the list below will be ignored.  Any properties not included
+will be undefined.
+
+#### Required
+
+| Key | Description       
+| -------- | -----------------
+| username | String identifier used for authentication.
+| password | Password string used for authentication.  Only allowed to be set, not retrieved.
+| place    | Place identifier string (UUID) or object this user resides in.
+| contact  | A contact object based on the form configured in the app.
+| contact.parent | The parent place of the contact.  The contact must reside in or be equal to the place the user resides in.
+
+#### Optional
+
+| Key | Description       
+| -------- | -----------------
+| type     | User permission type, default: district-manager
+| fullname | Full name
+| email    | Email address 
+| phone    | Phone number
+| language | Language preference. e.g. "sw" for Swahili
+| known    | Boolean to define if the user has logged in before.  Used mainly to determine whether or not to start a tour on first login.
+
+#### Permission Types
+
+| Key | Description   
+| -------- | -----------------    
+| national-manager | Full permissions on all doc types.
+| district-manager | Full permissions on all doc types in a set of places.
+| facility-manager | Full permissions on all doc types in a given place.
+| data-entry | Only allowed to create new records from a given place.
+| analytics | Read only 
+| gateway   | Only allowed to create new records.
+
+
 ## GET /api/v1/users
 
 Returns a list of users and their profile data in JSON format.  
@@ -625,42 +664,6 @@ Create a new user with a place and a contact.
 
 `can_create_users`  
 
-### JSON Properties
-
-Use JSON in the request body to specify user details.  Any properties submitted
-that are not on the list below will be ignored.  Any properties not included
-will be undefined.
-
-#### Required
-
-| Key | Description       
-| -------- | -----------------
-| username | String identifier used for authentication.
-| password | Password string used for authentication.  Only allowed to be set, not retrieved.
-| place    | Place identifier string (UUID) or object this user resides in.
-| contact  | A contact object based on the form configured in the app.
-| contact.parent | The parent place of the contact.  The contact resides within a place.
-
-#### Optional
-
-| Key | Description       
-| -------- | -----------------
-| type     | User Type, default: district-manager
-| email    | Email address 
-| phone    | Phone number
-| language | Language preference. e.g. "sw" for Swahili
-| known    | Boolean to define if the user has logged in before.  Used mainly to determine whether or not to start a tour on first login.
-
-#### User Types
-
-| Key | Description   
-| -------- | -----------------    
-| national-manager | Full permissions on all doc types.
-| district-manager | Full permissions on all doc types in a set of places.
-| facility-manager | Full permissions on all doc types in a given place.
-| data-entry | Only allowed to create new records from a given place.
-| analytics | Read only 
-| gateway   | Only allowed to create new records.
 
 ### Examples
 
@@ -708,8 +711,8 @@ Content-Type: application/json
 
 ## POST /api/v1/users/{{username}}
 
-Update a user's security related data.  Allows you to change roles, reset a
-password or reassign to a different place.
+Update a user.  Allows you to change property values on a user account including roles, 
+reset a password or reassign a user to a different place.
 
 ### Permissions
 
@@ -721,16 +724,6 @@ password or reassign to a different place.
 | -------- | ----------------- 
 | username | String identifier used for authentication.
 
-
-### JSON Properties
-
-Use JSON in the request body to specify user details. One of the following properties is required.
-
-| Key | Description       
-| -------- | -----------------
-| type     | User Type 
-| place    | Place identifier string (UUID) or object
-| password | Password string used for authentication.
 
 ### Examples
 

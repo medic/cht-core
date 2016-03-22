@@ -2,6 +2,29 @@ var async = require('async'),
     _ = require('underscore'),
     db = require('../db');
 
+var USER_SUPPORTED_PROPS = [
+  'password',
+  'roles',
+  'known',
+  'facility_id'
+];
+
+var SETTINGS_SUPPORTED_PROPS = [
+  'fullname',
+  'email',
+  'phone',
+  'language',
+  'known',
+  'facility_id',
+  'contact_id'
+];
+
+var EXTRA_SUPPORTED_PROPS = [
+  'place',
+  'contact',
+  'type'
+];
+
 var getType = function(user, admins) {
   if (user.roles && user.roles.length) {
     return user.roles[0];
@@ -73,21 +96,38 @@ var handleBadRequest = function(err, callback) {
   return callback(err);
 };
 
+var validateContact = function(id, placeID, callback) {
+  db.medic.get(id, function(err, contact) {
+    if (err) {
+      if (err.error === 'not_found') {
+        return handleBadRequest('Failed to find contact.', callback);
+      }
+      return callback(err);
+    }
+    if (doc.type !== 'person') {
+      return handleBadRequest('Wrong type, this is not a contact.', callback);
+    }
+    if (!module.exports._hasParent(contact, placeID)) {
+      return handleBadRequest('Contact is not within place.', callback);
+    }
+    callback(null, contact);
+  });
+};
+
 var validatePlace = function(id, callback) {
-  db.medic.get(id, function(err, place) {
+  db.medic.get(id, function(err, doc) {
     if (err) {
       if (err.error === 'not_found') {
         return handleBadRequest('Failed to find place.', callback);
       }
       return callback(err);
     }
-    if (!isAPlace(place)) {
+    if (!isAPlace(doc)) {
       return handleBadRequest('Wrong type, this is not a place.', callback);
     }
-    callback(null, place);
+    callback(null, doc);
   });
 };
-
 
 var validateUser = function(id, callback) {
   db._users.get(id, function(err, doc) {
@@ -175,9 +215,11 @@ var createUserSettings = function(data, response, callback) {
   });
 };
 
+/*
+ * Update admin password if user is an admin.
+ */
 var updateAdminPassword = function(username, password, callback) {
   if (_.isUndefined(username) || _.isUndefined(password)) {
-    // do nothing
     return callback();
   }
   module.exports._getAdmins(function(err, admins) {
@@ -185,7 +227,7 @@ var updateAdminPassword = function(username, password, callback) {
       return callback(err);
     }
     if (!admins[username]) {
-      // not an admin so admin password change not required
+      // not an admin
       return callback();
     }
     db.request({
@@ -264,31 +306,41 @@ var getRoles = function(type) {
 };
 
 var getSettingsUpdates = function(data) {
-  return {
-  // Redundant, already saved in users db.
-  // name: data.name,
-    fullname: data.fullname,
-    email: data.email,
-    phone: data.phone,
-    language: data.language && data.language.code,
-    known: data.known,
-    facility_id: getDocID(data.place),
-    contact_id: getDocID(data.contact),
-    type: 'user-settings',
+  var settings = {type: 'user-settings'};
+  _.forEach(SETTINGS_SUPPORTED_PROPS, function(key) {
+    if (!_.isUndefined(data[key])) {
+      settings[key] = data[key];
+    }
+  });
+  if (data.place) {
+    settings.facility_id = getDocID(data.place);
   };
+  if (data.contact) {
+    settings.contact_id = getDocID(data.contact);
+  };
+  if (data.language && data.language.code) {
+    settings.language = data.language.code;
+  }
+  return settings;
 };
 
 var getUserUpdates = function(id, data) {
-  return {
-    // CouchDB uses name field for authentication, it should be based on the id.
+  var user = {
     name: id.split(':')[1],
-    password: data.password,
-    // defaults role to district-manager
-    roles: data.type ? getRoles(data.type) : getRoles('district-manager'),
-    facility_id: getDocID(data.place),
-    known: data.known,
     type: 'user'
   };
+  _.forEach(USER_SUPPORTED_PROPS, function(key) {
+    if (!_.isUndefined(data[key])) {
+      user[key] = data[key];
+    }
+  });
+  if (data.place) {
+    user.facility_id = getDocID(data.place);
+  };
+  if (data.type) {
+    user.roles = getRoles(data.type);
+  }
+  return user;
 };
 
 var getPrefix = function() {
@@ -348,6 +400,7 @@ module.exports = {
   _updateAdminPassword: updateAdminPassword,
   _updateUser: updateUser,
   _updateUserSettings: updateUserSettings,
+  _validateContact: validateContact,
   _validatePlace: validatePlace,
   _validateUser: validateUser,
   _validateUserSettings: validateUserSettings,
@@ -429,51 +482,56 @@ module.exports = {
   updateUser: function(username, data, callback) {
     var self = this,
         userID = createID(username),
-        placeID = getDocID(data.place),
-        series = [];
-    if (_.isUndefined(placeID) && _.isUndefined(data.type) && _.isUndefined(data.password)) {
+        series = [],
+        settings,
+        user;
+    var props = _.uniq(
+                  USER_SUPPORTED_PROPS.concat(
+                    SETTINGS_SUPPORTED_PROPS
+                  ).concat(
+                    EXTRA_SUPPORTED_PROPS
+                  )
+                );
+    if (!_.some(props, function(k) { return !_.isUndefined(data[k]); })) {
       return handleBadRequest(
-        'One of the following fields are required: type, password or place.', callback
+        'One of the following fields are required: ' + props.join(', '),
+        callback
       );
     }
-    // validate user exists
-    self._validateUser(userID, function(err, user) {
+    self._validateUser(userID, function(err, doc) {
       if (err) {
         return callback(err);
       }
-      // validate user settings exist
-      self._validateUserSettings(userID, function(err, settings) {
+      user = _.extend(doc, self._getUserUpdates(userID, data));
+      if (!data.type && !data.roles) {
+        user.roles = doc.roles;
+      }
+      self._validateUserSettings(userID, function(err, doc) {
         if (err) {
           return callback(err);
         }
-        // update roles
-        if (data.type) {
-          user.roles = data.type ? getRoles(data.type) : user.roles;
+        settings = _.extend(doc, self._getSettingsUpdates(data));
+        if (data.place) {
+          settings.facility_id = user.facility_id;
+          series.push(function(cb) {
+            self._validatePlace(user.facility_id, cb);
+          });
         }
-        // update password
+        if (data.contact) {
+          series.push(function(cb) {
+            self._validateContact(settings.contact_id, user.facility_id, cb);
+          });
+        }
         if (data.password) {
-          user.password = data.password;
           series.push(function(cb) {
             self._updateAdminPassword(username, data.password, cb);
           });
         }
-        // validate place if change requested
-        if (placeID) {
-          series.push(function(cb) {
-            self._validatePlace(placeID, function(err) {
-              if (err) {
-                return cb(err);
-              }
-              user.facility_id = placeID;
-              settings.facility_id = placeID;
-              // update settings
-              self._updateUserSettings(userID, settings, cb);
-            });
-          });
-        }
-        // update user
         series.push(function(cb) {
           self._updateUser(userID, user, cb);
+        });
+        series.push(function(cb) {
+          self._updateUserSettings(userID, settings, cb);
         });
         async.series(series, callback);
       });

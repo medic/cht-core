@@ -74,8 +74,8 @@ exports['getSettingsUpdates removes user doc specific fields'] = function(test) 
     starsign: 'libra'
   };
   var settings = controller._getSettingsUpdates(data);
-  test.equal(settings.password, undefined);
-  test.equal(settings.roles, undefined);
+  test.ok(!settings.password);
+  test.ok(!settings.roles);
   test.done();
 };
 
@@ -192,6 +192,7 @@ exports['getType returns role when user is in admins list and has role'] = funct
   test.equal(controller._getType(user, admins), 'driver');
   test.done();
 };
+
 exports['getList collects user infos'] = function(test) {
   test.expect(16);
   sinon.stub(controller, '_getAdmins').callsArg(0);
@@ -787,11 +788,13 @@ exports['updateUser succeeds if type is defined'] = function(test) {
     type: 'x'
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_validateUserSettings').callsArg(1);
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   var update = sinon.stub(controller, '_updateUser').callsArg(2);
+  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
   controller.updateUser('paul', data, function(err) {
     test.ok(!err);
     test.same(update.callCount, 1);
+    test.same(updateSettings.callCount, 1);
     test.done();
   });
 };
@@ -804,9 +807,11 @@ exports['updateUser succeeds if password is defined'] = function(test) {
   sinon.stub(controller, '_validateUserSettings').callsArg(1);
   sinon.stub(controller, '_updateAdminPassword').callsArg(2);
   var update = sinon.stub(controller, '_updateUser').callsArg(2);
+  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
   controller.updateUser('paul', data, function(err) {
     test.ok(!err);
     test.same(update.callCount, 1);
+    test.same(updateSettings.callCount, 1);
     test.done();
   });
 };
@@ -833,7 +838,7 @@ exports['updateUser fails if place fetch fails'] = function(test) {
     place: 'x'
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_validateUserSettings').callsArg(1);
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   sinon.stub(controller, '_validatePlace').callsArgWith(1, 'Not today pal.');
   var update = sinon.stub(controller, '_updateUser');
   controller.updateUser('paul', data, function(err) {
@@ -874,7 +879,7 @@ exports['updateUser fails if user settings not found'] = function(test) {
   });
 };
 
-exports['updateUser type updates roles on user doc'] = function(test) {
+exports['updateUser type param updates roles on user doc'] = function(test) {
   test.expect(4);
   var data = {
     type: 'rebel'
@@ -889,7 +894,7 @@ exports['updateUser type updates roles on user doc'] = function(test) {
   controller.updateUser('paul', data, function(err) {
     test.ok(!err);
     test.same(update.callCount, 1);
-    test.same(updateSettings.callCount, 0);
+    test.same(updateSettings.callCount, 1);
     test.done();
   });
 };
@@ -907,11 +912,11 @@ exports['updateUser updates password on user doc'] = function(test) {
     test.equal(data.password, 'whachamacallit');
     callback();
   });
-  var updateSettings = sinon.stub(controller, '_updateUserSettings');
+  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
   controller.updateUser('paul', data, function(err) {
     test.ok(!err);
     test.same(update.callCount, 1);
-    test.same(updateSettings.callCount, 0);
+    test.same(updateSettings.callCount, 1);
     test.done();
   });
 };
@@ -928,11 +933,11 @@ exports['updateUser updates couchdb admin passwords also'] = function(test) {
     cb();
   });
   var update = sinon.stub(controller, '_updateUser').callsArg(2);
-  var updateSettings = sinon.stub(controller, '_updateUserSettings');
+  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
   controller.updateUser('paul', data, function(err) {
     test.ok(!err);
     test.same(update.callCount, 1);
-    test.same(updateSettings.callCount, 0);
+    test.same(updateSettings.callCount, 1);
     test.done();
   });
 };
@@ -982,8 +987,8 @@ exports['updateUser updates facility_id on user and user settings'] = function(t
   });
 };
 
-exports['updateUser updates user and user settings doc and couchdb admins'] = function(test) {
-  test.expect(11);
+exports['updateUser updates user, user settings doc and couchdb admins'] = function(test) {
+  test.expect(14);
   var data = {
     place: 'el paso',
     type: 'rambler',
@@ -996,6 +1001,7 @@ exports['updateUser updates user and user settings doc and couchdb admins'] = fu
   });
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {
     facility_id: 'maine',
+    phone: '123',
     known: false
   });
   sinon.stub(controller, '_validatePlace').callsArgWith(1, null, {});
@@ -1009,11 +1015,14 @@ exports['updateUser updates user and user settings doc and couchdb admins'] = fu
     test.deepEqual(user.roles, ['rambler', undefined]);
     test.equal(user.shoes, 'dusty boots');
     test.equal(user.password, '*.*');
+    test.equal(user.type, 'user');
     cb();
   });
   var updateSettings = sinon.stub(controller, '_updateUserSettings', function(id, settings, cb) {
     test.equal(settings.facility_id, 'el paso');
+    test.equal(settings.phone, '123');
     test.equal(settings.known, false);
+    test.equal(settings.type, 'user-settings');
     cb();
   });
   controller.updateUser('paul', data, function(err) {
