@@ -160,6 +160,9 @@ var createUser = function(data, response, callback) {
   response = response || {};
   var id = createID(data.username),
       user = getUserUpdates(data.username, data);
+  if (!user.roles) {
+    user.roles = getRoles('district-manager');
+  }
   db._users.insert(user, id, function(err, body) {
     if (err) {
       return callback(err);
@@ -197,6 +200,9 @@ var createContact = function(data, response, callback) {
 var createUserSettings = function(data, response, callback) {
   response = response || {};
   var settings = getSettingsUpdates(data.username, data);
+  if (!settings.roles) {
+    settings.roles = getRoles('district-manager');
+  }
   db.medic.insert(settings, createID(data.username), function(err, body) {
     if (err) {
       console.error('Failed to create user settings.');

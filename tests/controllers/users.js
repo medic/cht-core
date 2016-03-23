@@ -769,6 +769,32 @@ exports['createUser sets contact type'] = function(test) {
   controller.createUser(userData);
 };
 
+exports['_createUser sets default roles on user'] = function(test) {
+  sinon.stub(db._users, 'insert', function(user) {
+    test.deepEqual(user.roles, [
+      'district-manager',
+      'kujua_user',
+      'data_entry',
+      'district_admin'
+    ]);
+    test.done();
+  });
+  controller._createUser({});
+};
+
+exports['_createUserSettings sets default roles on user-settings'] = function(test) {
+  sinon.stub(db.medic, 'insert', function(settings) {
+    test.deepEqual(settings.roles, [
+      'district-manager',
+      'kujua_user',
+      'data_entry',
+      'district_admin'
+    ]);
+    test.done();
+  });
+  controller._createUserSettings({});
+};
+
 exports['updateUser errors if place, type and password is undefined'] = function(test) {
   controller.updateUser('paul', {}, function(err) {
     test.ok(err);
