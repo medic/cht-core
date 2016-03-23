@@ -525,22 +525,6 @@ exports['deleteUser sets _deleted on the user-settings doc'] = function(test) {
   });
 };
 
-exports['_createUser returns error from db insert'] = function(test) {
-  sinon.stub(db._users, 'insert').callsArgWith(2, 'yucky');
-  controller._createUser(userData, {}, function(err) {
-    test.ok(err);
-    test.done();
-  });
-};
-
-exports['_createUser sets up response'] = function(test) {
-  sinon.stub(db._users, 'insert').callsArgWith(2, 'yucky');
-  controller._createUser(userData, {}, function(err) {
-    test.ok(err);
-    test.done();
-  });
-};
-
 exports['createUserSettings returns error from db insert'] = function(test) {
   sinon.stub(db.medic, 'insert').callsArgWith(2, 'yucky');
   controller._createUserSettings(userData, {}, function(err) {
@@ -565,6 +549,50 @@ exports['createUserSettings sets up response'] = function(test) {
     test.done();
   });
 };
+
+exports['_updateUser returns response'] = function(test) {
+  sinon.stub(db._users, 'insert').callsArgWith(2, null, {
+    id: 'abc',
+    rev: '1-xyz'
+  });
+  controller._updateUser('john', userData, function(err, body) {
+    test.ok(!err);
+    test.deepEqual(body, {
+      id: 'abc',
+      rev: '1-xyz'
+    });
+    test.done();
+  });
+};
+
+exports['_updateUserSettings returns response'] = function(test) {
+  sinon.stub(db.medic, 'insert').callsArgWith(2, null, {
+    id: 'abc',
+    rev: '1-xyz'
+  });
+  controller._updateUserSettings('john', userData, function(err, body) {
+    test.ok(!err);
+    test.deepEqual(body, {
+      id: 'abc',
+      rev: '1-xyz'
+    });
+    test.done();
+  });
+};
+
+exports['createUserSettings sets default roles on user-settings'] = function(test) {
+  sinon.stub(db.medic, 'insert', function(settings) {
+    test.deepEqual(settings.roles, [
+      'district-manager',
+      'kujua_user',
+      'data_entry',
+      'district_admin'
+    ]);
+    test.done();
+  });
+  controller._createUserSettings({});
+};
+
 
 exports['createContact returns error from db insert'] = function(test) {
   sinon.stub(db.medic, 'insert').callsArgWith(1, 'yucky');
@@ -594,6 +622,44 @@ exports['createContact sets up response'] = function(test) {
     test.ok(!err);
     test.deepEqual(response, {
       contact: {
+        id: 'abc',
+        rev: '1-xyz'
+      }
+    });
+    test.done();
+  });
+};
+
+exports['_createUser sets default roles on user'] = function(test) {
+  sinon.stub(db._users, 'insert', function(user) {
+    test.deepEqual(user.roles, [
+      'district-manager',
+      'kujua_user',
+      'data_entry',
+      'district_admin'
+    ]);
+    test.done();
+  });
+  controller._createUser({});
+};
+
+exports['_createUser returns error from db insert'] = function(test) {
+  sinon.stub(db._users, 'insert').callsArgWith(2, 'yucky');
+  controller._createUser(userData, {}, function(err) {
+    test.ok(err);
+    test.done();
+  });
+};
+
+exports['_createUser sets up response'] = function(test) {
+  sinon.stub(db._users, 'insert').callsArgWith(2, null, {
+    id: 'abc',
+    rev: '1-xyz'
+  });
+  controller._createUser(userData, {}, function(err, data, response) {
+    test.ok(!err);
+    test.deepEqual(response, {
+      'user': {
         id: 'abc',
         rev: '1-xyz'
       }
@@ -769,32 +835,6 @@ exports['createUser sets contact type'] = function(test) {
   controller.createUser(userData);
 };
 
-exports['_createUser sets default roles on user'] = function(test) {
-  sinon.stub(db._users, 'insert', function(user) {
-    test.deepEqual(user.roles, [
-      'district-manager',
-      'kujua_user',
-      'data_entry',
-      'district_admin'
-    ]);
-    test.done();
-  });
-  controller._createUser({});
-};
-
-exports['_createUserSettings sets default roles on user-settings'] = function(test) {
-  sinon.stub(db.medic, 'insert', function(settings) {
-    test.deepEqual(settings.roles, [
-      'district-manager',
-      'kujua_user',
-      'data_entry',
-      'district_admin'
-    ]);
-    test.done();
-  });
-  controller._createUserSettings({});
-};
-
 exports['updateUser errors if place, type and password is undefined'] = function(test) {
   controller.updateUser('paul', {}, function(err) {
     test.ok(err);
@@ -804,6 +844,76 @@ exports['updateUser errors if place, type and password is undefined'] = function
 
 exports['updateUser errors on unknown property'] = function(test) {
   controller.updateUser('paul', {foo: 'bar'}, function(err) {
+    test.ok(err);
+    test.done();
+  });
+};
+
+exports['updateUser fails if place fetch fails'] = function(test) {
+  var data = {
+    place: 'x'
+  };
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validatePlace').callsArgWith(1, 'Not today pal.');
+  var update = sinon.stub(controller, '_updateUser');
+  var updateSettings = sinon.stub(controller, '_updateUserSettings');
+  controller.updateUser('paul', data, function(err) {
+    test.ok(err);
+    test.same(update.callCount, 0);
+    test.same(updateSettings.callCount, 0);
+    test.done();
+  });
+};
+
+exports['updateUser fails if user not found'] = function(test) {
+  var data = {
+    type: 'x'
+  };
+  sinon.stub(controller, '_validateUser').callsArgWith(1, 'not found');
+  var update = sinon.stub(controller, '_updateUser');
+  var updateSettings = sinon.stub(controller, '_updateUserSettings');
+  controller.updateUser('paul', data, function(err) {
+    test.ok(err);
+    test.same(update.callCount, 0);
+    test.same(updateSettings.callCount, 0);
+    test.done();
+  });
+};
+
+exports['updateUser fails if user settings not found'] = function(test) {
+  var data = {
+    type: 'x'
+  };
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, 'too rainy today');
+  var update = sinon.stub(controller, '_updateUser');
+  var updateSettings = sinon.stub(controller, '_updateUserSettings');
+  controller.updateUser('paul', data, function(err) {
+    test.ok(err);
+    test.same(update.callCount, 0);
+    test.same(updateSettings.callCount, 0);
+    test.done();
+  });
+};
+
+exports['updateUser fails if _users db insert fails'] = function(test) {
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
+  sinon.stub(db.medic, 'insert').callsArgWith(2, null, {});
+  sinon.stub(db._users, 'insert').callsArgWith(2, 'shiva was here');
+  controller.updateUser('georgi', {type: 'x'}, function(err, resp) {
+    test.ok(err);
+    test.done();
+  });
+};
+
+exports['updateUser fails if medic db insert fails'] = function(test) {
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
+  sinon.stub(db.medic, 'insert').callsArgWith(2, 'shiva strikes again');
+  sinon.stub(db._users, 'insert').callsArgWith(2, null, {});
+  controller.updateUser('georgi', {type: 'x'}, function(err, resp) {
     test.ok(err);
     test.done();
   });
@@ -855,52 +965,6 @@ exports['updateUser succeeds if place is defined and found'] = function(test) {
     test.ok(!err);
     test.same(update.callCount, 1);
     test.same(updateSettings.callCount, 1);
-    test.done();
-  });
-};
-
-exports['updateUser fails if place fetch fails'] = function(test) {
-  var data = {
-    place: 'x'
-  };
-  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
-  sinon.stub(controller, '_validatePlace').callsArgWith(1, 'Not today pal.');
-  var update = sinon.stub(controller, '_updateUser');
-  controller.updateUser('paul', data, function(err) {
-    test.ok(err);
-    test.same(update.callCount, 0);
-    test.done();
-  });
-};
-
-exports['updateUser fails if user not found'] = function(test) {
-  var data = {
-    type: 'x'
-  };
-  sinon.stub(controller, '_validateUser').callsArgWith(1, 'not found');
-  var update = sinon.stub(controller, '_updateUser');
-  var updateSettings = sinon.stub(controller, '_updateUserSettings');
-  controller.updateUser('paul', data, function(err) {
-    test.ok(err);
-    test.same(update.callCount, 0);
-    test.same(updateSettings.callCount, 0);
-    test.done();
-  });
-};
-
-exports['updateUser fails if user settings not found'] = function(test) {
-  var data = {
-    type: 'x'
-  };
-  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, 'too rainy today');
-  var update = sinon.stub(controller, '_updateUser');
-  var updateSettings = sinon.stub(controller, '_updateUserSettings');
-  controller.updateUser('paul', data, function(err) {
-    test.ok(err);
-    test.same(update.callCount, 0);
-    test.same(updateSettings.callCount, 0);
     test.done();
   });
 };
@@ -967,23 +1031,6 @@ exports['updateUser updates couchdb admin passwords also'] = function(test) {
     test.ok(!err);
     test.same(update.callCount, 1);
     test.same(updateSettings.callCount, 1);
-    test.done();
-  });
-};
-
-exports['updateUser errors if place is not found'] = function(test) {
-  var data = {
-    place: 'paris'
-  };
-  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
-  sinon.stub(controller, '_validatePlace').callsArgWith(1, 'not found');
-  var update = sinon.stub(controller, '_updateUser').callsArg(2);
-  var updateSettings = sinon.stub(controller, '_updateUserSettings');
-  controller.updateUser('paul', data, function(err) {
-    test.ok(err);
-    test.same(update.callCount, 0);
-    test.same(updateSettings.callCount, 0);
     test.done();
   });
 };
@@ -1058,6 +1105,34 @@ exports['updateUser updates user, user settings doc and couchdb admins'] = funct
     test.ok(!err);
     test.same(update.callCount, 1);
     test.same(updateSettings.callCount, 1);
+    test.done();
+  });
+};
+
+exports['updateUser sets up response'] = function(test) {
+  var data = {
+    fullname: 'George'
+  };
+  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
+  sinon.stub(db.medic, 'insert').callsArgWith(2, null, {
+    id: 'abc',
+    rev: '1-xyz'
+  });
+  sinon.stub(db._users, 'insert').callsArgWith(2, null, {
+    id: 'def',
+    rev: '1-uvw'
+  });
+  controller.updateUser('georgi', data, function(err, resp) {
+    test.ok(!err);
+    test.deepEqual(resp.user, {
+      id: 'def',
+      rev: '1-uvw'
+    });
+    test.deepEqual(resp['user-settings'], {
+      id: 'abc',
+      rev: '1-xyz'
+    });
     test.done();
   });
 };

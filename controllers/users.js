@@ -488,6 +488,7 @@ module.exports = {
     var self = this,
         userID = createID(username),
         series = [],
+        response = {},
         settings,
         user;
     var props = _.uniq(USER_EDITABLE_FIELDS .concat(SETTINGS_EDITABLE_FIELDS));
@@ -524,12 +525,35 @@ module.exports = {
           });
         }
         series.push(function(cb) {
-          self._updateUser(userID, user, cb);
+          self._updateUser(userID, user, function(err, resp) {
+            if (err) {
+              return callback(err);
+            }
+            response.user = {
+              id: resp.id,
+              rev: resp.rev
+            };
+            cb();
+          });
         });
         series.push(function(cb) {
-          self._updateUserSettings(userID, settings, cb);
+          self._updateUserSettings(userID, settings, function(err, resp) {
+            if (err) {
+              return callback(err);
+            }
+            response['user-settings'] = {
+              id: resp.id,
+              rev: resp.rev
+            };
+            cb();
+          });
         });
-        async.series(series, callback);
+        async.series(series, function(err) {
+          if (err) {
+            return callback(err);
+          }
+          callback(null, response);
+        });
       });
     });
   }
