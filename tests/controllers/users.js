@@ -60,7 +60,7 @@ exports.setUp = function(callback) {
 };
 
 exports['getSettingsUpdates sets type property'] = function(test) {
-  var settings = controller._getSettingsUpdates({});
+  var settings = controller._getSettingsUpdates('john', {});
   test.equal(settings.type, 'user-settings');
   test.done();
 };
@@ -73,7 +73,7 @@ exports['getSettingsUpdates removes user doc specific fields'] = function(test) 
     roles: ['foo'],
     starsign: 'libra'
   };
-  var settings = controller._getSettingsUpdates(data);
+  var settings = controller._getSettingsUpdates('john', data);
   test.ok(!settings.password);
   test.ok(!settings.roles);
   test.done();
@@ -84,7 +84,7 @@ exports['getUserUpdates enforces name field based on id'] = function(test) {
     name: 'sam',
     email: 'john@gmail.com'
   };
-  var user = controller._getUserUpdates('org.couchdb.user:john', data);
+  var user = controller._getUserUpdates('john', data);
   test.equal(user.name , 'john');
   test.done();
 };

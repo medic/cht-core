@@ -2,27 +2,21 @@ var async = require('async'),
     _ = require('underscore'),
     db = require('../db');
 
-var USER_SUPPORTED_PROPS = [
+var USER_EDITABLE_FIELDS  = [
   'password',
-  'roles',
   'known',
-  'facility_id'
+  'place',
+  'type'
 ];
 
-var SETTINGS_SUPPORTED_PROPS = [
+var SETTINGS_EDITABLE_FIELDS  = [
   'fullname',
   'email',
   'phone',
   'language',
   'known',
-  'facility_id',
-  'contact_id'
-];
-
-var EXTRA_SUPPORTED_PROPS = [
   'place',
-  'contact',
-  'type'
+  'contact'
 ];
 
 var getType = function(user, admins) {
@@ -97,7 +91,7 @@ var handleBadRequest = function(err, callback) {
 };
 
 var validateContact = function(id, placeID, callback) {
-  db.medic.get(id, function(err, contact) {
+  db.medic.get(id, function(err, doc) {
     if (err) {
       if (err.error === 'not_found') {
         return handleBadRequest('Failed to find contact.', callback);
@@ -107,10 +101,10 @@ var validateContact = function(id, placeID, callback) {
     if (doc.type !== 'person') {
       return handleBadRequest('Wrong type, this is not a contact.', callback);
     }
-    if (!module.exports._hasParent(contact, placeID)) {
+    if (!module.exports._hasParent(doc, placeID)) {
       return handleBadRequest('Contact is not within place.', callback);
     }
-    callback(null, contact);
+    callback(null, doc);
   });
 };
 
@@ -164,7 +158,7 @@ var updateUserSettings = function(id, settings, callback) {
 var createUser = function(data, response, callback) {
   response = response || {};
   var id = createID(data.username),
-      user = getUserUpdates(id, data);
+      user = getUserUpdates(data.username, data);
   db._users.insert(user, id, function(err, body) {
     if (err) {
       return callback(err);
@@ -201,7 +195,7 @@ var createContact = function(data, response, callback) {
 
 var createUserSettings = function(data, response, callback) {
   response = response || {};
-  var settings = getSettingsUpdates(data);
+  var settings = getSettingsUpdates(data.username, data);
   db.medic.insert(settings, createID(data.username), function(err, body) {
     if (err) {
       console.error('Failed to create user settings.');
@@ -305,9 +299,9 @@ var getRoles = function(type) {
   return type ? [type].concat(rolesMap[type]) : [];
 };
 
-var getSettingsUpdates = function(data) {
-  var settings = {type: 'user-settings'};
-  _.forEach(SETTINGS_SUPPORTED_PROPS, function(key) {
+var getSettingsUpdates = function(username, data) {
+  var settings = {};
+  _.forEach(SETTINGS_EDITABLE_FIELDS , function(key) {
     if (!_.isUndefined(data[key])) {
       settings[key] = data[key];
     }
@@ -321,15 +315,17 @@ var getSettingsUpdates = function(data) {
   if (data.language && data.language.code) {
     settings.language = data.language.code;
   }
+  settings.name = username;
+  settings.type = 'user-settings';
   return settings;
 };
 
-var getUserUpdates = function(id, data) {
-  var user = {
-    name: id.split(':')[1],
-    type: 'user'
-  };
-  _.forEach(USER_SUPPORTED_PROPS, function(key) {
+var getUserUpdates = function(username, data) {
+  var user = {};
+  if (data.type) {
+    user.roles = getRoles(data.type);
+  }
+  _.forEach(USER_EDITABLE_FIELDS , function(key) {
     if (!_.isUndefined(data[key])) {
       user[key] = data[key];
     }
@@ -337,9 +333,8 @@ var getUserUpdates = function(id, data) {
   if (data.place) {
     user.facility_id = getDocID(data.place);
   }
-  if (data.type) {
-    user.roles = getRoles(data.type);
-  }
+  user.name = username;
+  user.type = 'user';
   return user;
 };
 
@@ -485,13 +480,7 @@ module.exports = {
         series = [],
         settings,
         user;
-    var props = _.uniq(
-                  USER_SUPPORTED_PROPS.concat(
-                    SETTINGS_SUPPORTED_PROPS
-                  ).concat(
-                    EXTRA_SUPPORTED_PROPS
-                  )
-                );
+    var props = _.uniq(USER_EDITABLE_FIELDS .concat(SETTINGS_EDITABLE_FIELDS));
     if (!_.some(props, function(k) { return !_.isUndefined(data[k]); })) {
       return handleBadRequest(
         'One of the following fields are required: ' + props.join(', '),
@@ -502,15 +491,12 @@ module.exports = {
       if (err) {
         return callback(err);
       }
-      user = _.extend(doc, self._getUserUpdates(userID, data));
-      if (!data.type && !data.roles) {
-        user.roles = doc.roles;
-      }
+      user = _.extend(doc, self._getUserUpdates(username, data));
       self._validateUserSettings(userID, function(err, doc) {
         if (err) {
           return callback(err);
         }
-        settings = _.extend(doc, self._getSettingsUpdates(data));
+        settings = _.extend(doc, self._getSettingsUpdates(username, data));
         if (data.place) {
           settings.facility_id = user.facility_id;
           series.push(function(cb) {
