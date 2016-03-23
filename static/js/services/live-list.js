@@ -11,9 +11,9 @@ function PARSER($parse, scope) {
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig', [
   '$log', '$parse', '$templateCache', '$timeout',
-      'Changes', 'DB', 'LiveList', 'TaskGenerator', 'CONTACT_TYPES',
+      'Changes', 'DB', 'LiveList', 'RulesEngine', 'CONTACT_TYPES',
   function($log, $parse, $templateCache, $timeout,
-      Changes, DB, LiveList, TaskGenerator, CONTACT_TYPES) {
+      Changes, DB, LiveList, RulesEngine, CONTACT_TYPES) {
     // Configure LiveList service
     return function($scope) {
 
@@ -139,7 +139,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
 
       LiveList.tasks.set([]);
 
-      TaskGenerator.listen('tasks-list', 'task', function(err, tasks) {
+      RulesEngine.listen('tasks-list', 'task', function(err, tasks) {
         if (err) {
           $log.error('Error getting tasks', err);
 

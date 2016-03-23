@@ -1,4 +1,4 @@
-describe('TaskGenerator service', function() {
+describe('RulesEngine service', function() {
 
   'use strict';
 
@@ -212,7 +212,7 @@ describe('TaskGenerator service', function() {
         schedules: schedules
       }
     }));
-    var service = injector.get('TaskGenerator');
+    var service = injector.get('RulesEngine');
     service.listen('test', 'task', function(err) {
       chai.expect(err).to.equal('boom');
       chai.expect(Search.callCount).to.equal(2);
@@ -222,7 +222,7 @@ describe('TaskGenerator service', function() {
 
   it('returns settings errors', function(done) {
     Settings.returns(KarmaUtils.mockPromise('boom'));
-    var service = injector.get('TaskGenerator');
+    var service = injector.get('RulesEngine');
     service.listen('test', 'task', function(err) {
       chai.expect(err).to.equal('boom');
       chai.expect(Settings.callCount).to.equal(1);
@@ -232,7 +232,7 @@ describe('TaskGenerator service', function() {
 
   it('returns empty when settings returns no config', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, {}));
-    var service = injector.get('TaskGenerator');
+    var service = injector.get('RulesEngine');
     service.listen('test', 'task', function(err, actual) {
       chai.expect(Search.callCount).to.equal(0);
       chai.expect(Settings.callCount).to.equal(1);
@@ -322,7 +322,7 @@ describe('TaskGenerator service', function() {
       }
     };
 
-    var service = injector.get('TaskGenerator');
+    var service = injector.get('RulesEngine');
     var callbackCount = 0;
     service.listen('test', 'task', function(err, actuals) {
       actuals.forEach(function(actual) {
@@ -356,7 +356,7 @@ describe('TaskGenerator service', function() {
       }
     }));
 
-    var service = injector.get('TaskGenerator');
+    var service = injector.get('RulesEngine');
     var expected = {};
     service.listen('test', 'task', function(err, results) {
       results.forEach(function(result) {
@@ -404,7 +404,7 @@ describe('TaskGenerator service', function() {
     }));
 
     var callbackCount = 0;
-    var service = injector.get('TaskGenerator');
+    var service = injector.get('RulesEngine');
     service.listen('test', 'task', function(err, actual) {
       callbackCount++;
       if (callbackCount === 4) {
@@ -456,7 +456,7 @@ describe('TaskGenerator service', function() {
     }));
 
     var callbackCount = 0;
-    var service = injector.get('TaskGenerator');
+    var service = injector.get('RulesEngine');
     service.listen('test', 'task', function(err, actual) {
       callbackCount++;
       if (callbackCount === 4) {
@@ -502,7 +502,7 @@ describe('TaskGenerator service', function() {
     }));
 
     var callbackCount = 0;
-    var service = injector.get('TaskGenerator');
+    var service = injector.get('RulesEngine');
     service.listen('test', 'task', function(err, actual) {
       if (err) {
         return done(err);
@@ -559,7 +559,7 @@ describe('TaskGenerator service', function() {
     }));
 
     var callbackCount = 0;
-    var service = injector.get('TaskGenerator');
+    var service = injector.get('RulesEngine');
     service.listen('test', 'task', function(err, actual) {
       if (err) {
         return done(err);
@@ -608,7 +608,7 @@ describe('TaskGenerator service', function() {
     }));
 
     var callbackCount = 0;
-    var service = injector.get('TaskGenerator');
+    var service = injector.get('RulesEngine');
     service.listen('test', 'task', function(err, actual) {
       if (err) {
         return done(err);
@@ -657,7 +657,7 @@ describe('TaskGenerator service', function() {
     }));
 
     var callbackCount = 0;
-    var service = injector.get('TaskGenerator');
+    var service = injector.get('RulesEngine');
     service.listen('test', 'task', function(err, actual) {
       if (err) {
         return done(err);

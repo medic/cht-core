@@ -10,7 +10,7 @@ var nools = require('nools'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TaskGenerator', ['$q', '$log', 'Search', 'Settings', 'Changes', 'CONTACT_TYPES',
+  inboxServices.factory('RulesEngine', ['$q', '$log', 'Search', 'Settings', 'Changes', 'CONTACT_TYPES',
     function($q, $log, Search, Settings, Changes, CONTACT_TYPES) {
 
       var callbacks = {};
@@ -127,10 +127,10 @@ var nools = require('nools'),
         });
       };
 
-      var getTasks = function() {
+      var assertFacts = function() {
         knownTypes.forEach(function(type) {
-          session.on(type, function(task) {
-            notifyCallbacks(task, type);
+          session.on(type, function(fact) {
+            notifyCallbacks(fact, type);
           });
         });
         facts.forEach(function(fact) {
@@ -139,7 +139,7 @@ var nools = require('nools'),
         session.matchUntilHalt().then(
           // halt
           function() {
-            notifyError(new Error('Unexpected halt in task generation rules.'));
+            notifyError(new Error('Unexpected halt in fact assertion.'));
           },
           // error
           notifyError
@@ -165,7 +165,7 @@ var nools = require('nools'),
         }
       };
 
-      var updateTasks = function(change) {
+      var updateFacts = function(change) {
         var fact;
         if (change.deleted) {
           fact = findFact(change.id);
@@ -216,8 +216,8 @@ var nools = require('nools'),
 
       var registerListener = function() {
         Changes({
-          key: 'task-generator',
-          callback: updateTasks,
+          key: 'rules-engine',
+          callback: updateFacts,
           filter: function(change) {
             return change.doc.form ||
                    CONTACT_TYPES.indexOf(change.doc.type) !== -1;
@@ -250,7 +250,7 @@ var nools = require('nools'),
           return $q.all([ getDataRecords(), getContacts() ])
             .then(function(results) {
               facts = deriveFacts(results[0], results[1]);
-              getTasks();
+              assertFacts();
             });
         });
 
@@ -272,4 +272,4 @@ var nools = require('nools'),
     }
   ]);
 
-}()); 
+}());
