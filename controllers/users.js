@@ -529,10 +529,12 @@ module.exports = {
             if (err) {
               return callback(err);
             }
-            response.user = {
-              id: resp.id,
-              rev: resp.rev
-            };
+            if (resp) {
+              response.user = {
+                id: resp.id,
+                rev: resp.rev
+              };
+            }
             cb();
           });
         });
@@ -541,10 +543,12 @@ module.exports = {
             if (err) {
               return callback(err);
             }
-            response['user-settings'] = {
-              id: resp.id,
-              rev: resp.rev
-            };
+            if (resp) {
+              response['user-settings'] = {
+                id: resp.id,
+                rev: resp.rev
+              };
+            }
             cb();
           });
         });

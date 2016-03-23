@@ -902,7 +902,7 @@ exports['updateUser fails if _users db insert fails'] = function(test) {
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   sinon.stub(db.medic, 'insert').callsArgWith(2, null, {});
   sinon.stub(db._users, 'insert').callsArgWith(2, 'shiva was here');
-  controller.updateUser('georgi', {type: 'x'}, function(err, resp) {
+  controller.updateUser('georgi', {type: 'x'}, function(err) {
     test.ok(err);
     test.done();
   });
@@ -913,7 +913,7 @@ exports['updateUser fails if medic db insert fails'] = function(test) {
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   sinon.stub(db.medic, 'insert').callsArgWith(2, 'shiva strikes again');
   sinon.stub(db._users, 'insert').callsArgWith(2, null, {});
-  controller.updateUser('georgi', {type: 'x'}, function(err, resp) {
+  controller.updateUser('georgi', {type: 'x'}, function(err) {
     test.ok(err);
     test.done();
   });
