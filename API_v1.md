@@ -711,8 +711,9 @@ Content-Type: application/json
 
 ## POST /api/v1/users/{{username}}
 
-Update a user.  Allows you to change property values on a user account including roles, 
-reset a password or reassign a user to a different place.
+Allows you to change property values on a user account. Properties listed above
+are supported except for `contact.parent`.  Creating or modifing contact
+records is not supported.
 
 ### Permissions
 
@@ -740,6 +741,17 @@ Content-Type: application/json
 
 ```
 HTTP/1.1 200 OK
+
+{
+  "user": {
+    "id": "org.couchdb.user:mary",
+    "rev": "23-858e01fafdfa0d367d798fe5b44751ff"
+  },
+  "user-settings": {
+    "id": "org.couchdb.user:mary",
+    "rev": "17-c6d03b86d2d5d70f7270c85e67fea96d"
+  }
+}
 ```
 
 ## DELETE /api/v1/users/{{username}}
