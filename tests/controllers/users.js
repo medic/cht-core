@@ -879,8 +879,8 @@ exports['updateUser fails if user settings not found'] = function(test) {
   });
 };
 
-exports['updateUser type param updates roles on user doc'] = function(test) {
-  test.expect(4);
+exports['updateUser type param updates roles on user and user-settings doc'] = function(test) {
+  test.expect(5);
   var data = {
     type: 'rebel'
   };
@@ -890,7 +890,10 @@ exports['updateUser type param updates roles on user doc'] = function(test) {
     test.deepEqual(data.roles, ['rebel', undefined]);
     callback();
   });
-  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
+  var updateSettings = sinon.stub(controller, '_updateUserSettings', function(id, data, callback) {
+    test.deepEqual(data.roles, ['rebel', undefined]);
+    callback();
+  });
   controller.updateUser('paul', data, function(err) {
     test.ok(!err);
     test.same(update.callCount, 1);

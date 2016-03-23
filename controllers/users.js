@@ -16,7 +16,8 @@ var SETTINGS_EDITABLE_FIELDS  = [
   'language',
   'known',
   'place',
-  'contact'
+  'contact',
+  'type'
 ];
 
 var getType = function(user, admins) {
@@ -306,6 +307,9 @@ var getSettingsUpdates = function(username, data) {
       settings[key] = data[key];
     }
   });
+  if (data.type) {
+    settings.roles = getRoles(data.type);
+  }
   if (data.place) {
     settings.facility_id = getDocID(data.place);
   }
@@ -322,14 +326,14 @@ var getSettingsUpdates = function(username, data) {
 
 var getUserUpdates = function(username, data) {
   var user = {};
-  if (data.type) {
-    user.roles = getRoles(data.type);
-  }
   _.forEach(USER_EDITABLE_FIELDS , function(key) {
     if (!_.isUndefined(data[key])) {
       user[key] = data[key];
     }
   });
+  if (data.type) {
+    user.roles = getRoles(data.type);
+  }
   if (data.place) {
     user.facility_id = getDocID(data.place);
   }
