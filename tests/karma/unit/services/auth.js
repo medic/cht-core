@@ -82,37 +82,39 @@ describe('Auth service', function() {
     });
   });
 
-  it('rejects when unknown permission', function(done) {
-    userCtx.returns({ roles: [ 'district_admin' ] });
-    Settings.returns(KarmaUtils.mockPromise(null, { permissions: [
-      { name: 'can_backup_facilities', roles: ['national_admin'] },
-      { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
-    ] }));
-    service([ 'xyz' ])
-      .catch(function(err) {
-        chai.expect(err).to.equal(undefined);
-        done();
-      });
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
-  });
+  describe('unconfigured permissions', function() {
 
-  // if permission is not configured then reject
-  it('reject when !unknown permission', function(done) {
-    userCtx.returns({ roles: [ 'district_admin' ] });
-    Settings.returns(KarmaUtils.mockPromise(null, { permissions: [
-      { name: 'can_backup_facilities', roles: ['national_admin'] },
-      { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
-    ] }));
-    service([ '!xyz' ])
-      .catch(function(err) {
-        chai.expect(err).to.equal(undefined);
-        done();
+    // Unconfigured permissions should be have the same as having the permission
+    // configured to false
+
+    it('rejects when unknown permission', function(done) {
+      userCtx.returns({ roles: [ 'district_admin' ] });
+      Settings.returns(KarmaUtils.mockPromise(null, { permissions: [
+        { name: 'can_backup_facilities', roles: ['national_admin'] },
+        { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
+      ] }));
+      service([ 'xyz' ])
+        .catch(function(err) {
+          chai.expect(err).to.equal(undefined);
+          done();
+        });
+      setTimeout(function() {
+        $rootScope.$digest();
       });
-    setTimeout(function() {
-      $rootScope.$digest();
     });
+
+    it('resolves when !unknown permission', function(done) {
+      userCtx.returns({ roles: [ 'district_admin' ] });
+      Settings.returns(KarmaUtils.mockPromise(null, { permissions: [
+        { name: 'can_backup_facilities', roles: ['national_admin'] },
+        { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
+      ] }));
+      service([ '!xyz' ]).then(done);
+      setTimeout(function() {
+        $rootScope.$digest();
+      });
+    });
+
   });
 
   it('rejects when user does not have permission', function(done) {

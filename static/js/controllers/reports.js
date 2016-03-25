@@ -64,15 +64,43 @@ var _ = require('underscore'),
         $scope.setTitle(TranslateFrom(name));
       };
 
-      var updateDisplayFields = function(report) {
-        // calculate fields to display
-        var keys = Object.keys(report.fields);
-        report.display_fields = {};
-        _.each(keys, function(k) {
-          if(!(report.hidden_fields && _.contains(report.hidden_fields, k))) {
-            report.display_fields[k] = report.fields[k];
+      var getFields = function(results, values, labelPrefix, depth) {
+        console.log('depth', depth);
+        if (depth > 3) {
+          depth = 3;
+        }
+        Object.keys(values).forEach(function(key) {
+          var value = values[key];
+          var label = labelPrefix + '.' + key;
+          if (_.isObject(value)) {
+            results.push({
+              label: label,
+              depth: depth
+            });
+            getFields(results, value, label, depth + 1);
+          } else {
+            results.push({
+              label: label,
+              value: value,
+              depth: depth
+            });
           }
         });
+        return results;
+      };
+
+      var updateDisplayFields = function(report) {
+        // calculate fields to display
+        var label = 'report.' + report.form;
+        var fields = getFields([], report.fields, label, 0);
+        var hide = report.hidden_fields || [];
+        hide.push('inputs');
+        fields = _.reject(fields, function(field) {
+          return _.some(hide, function(h) {
+            return field.label.indexOf(label + '.' + h) === 0;
+          });
+        });
+        $scope.displayFields = fields;
       };
 
       $scope.setSelected = function(doc) {

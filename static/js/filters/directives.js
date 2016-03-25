@@ -15,7 +15,7 @@
   module.directive('mmAuth', ['Auth', function(Auth) {
     var link = function(scope, element, attributes) {
       element.addClass('hidden');
-      Auth(attributes.mmAuth)
+      Auth(attributes.mmAuth.split(','))
         .then(function() {
           element.removeClass('hidden');
         })

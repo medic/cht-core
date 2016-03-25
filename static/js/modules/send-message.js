@@ -212,17 +212,17 @@ var _ = require('underscore'),
     Settings()
       .then(function(_settings) {
         settings = _settings;
-        $('body').on('click', '.send-message', function(e) {
+        $('body').on('click', '.send-message', function(event) {
           initPhoneField($('#send-message [name=phone]'), function(err) {
             if (err) {
               return console.error('Error initialising phone search');
             }
 
-            var target = $(e.target).closest('.send-message');
+            var target = $(event.target).closest('.send-message');
             if (target.hasClass('mm-icon-disabled')) {
               return;
             }
-            e.preventDefault();
+            event.preventDefault();
             var to = target.attr('data-send-to');
             if (to) {
               try {

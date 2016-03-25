@@ -7,7 +7,7 @@
   </div>
 
   <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && (!selected || selected.form === undefined)">
-    <div>{{'No report selected' | translate}}</div>
+    <div translate>No report selected</div>
   </div>
 
   <div id="reports-content" class="col-sm-8 item-content item-body" ng-show="!loadingContent && selected && selected.form !== undefined">
@@ -30,18 +30,16 @@
           <li ng-if="selected.form && selected.content_type !== 'xml'" ng-repeat="field in selected.fields.data">
             <label>
               {{field.label}}
-              <span class="fa fa-cogs" ng-show="field.generated" ng-attr-title="{{'Generated report field' | translate}}"></span>
+              <span class="fa fa-cogs" ng-show="field.generated" translate translate-attr-title="Generated report field"></span>
             </label>
             <p>{{field.value}}</p>
           </li>
-          <li ng-if="selected.form && selected.content_type === 'xml'" ng-repeat="(k, v) in selected.display_fields">
-            <label>
-              {{'report.' + selected.form + '.' + k | translate}}
-            </label>
-            <p>{{v}}</p>
+          <li ng-if="selected.form && selected.content_type === 'xml'" ng-repeat="field in displayFields" class="indent-{{field.depth}}">
+            <label translate>{{field.label}}</label>
+            <p>{{field.value}}</p>
           </li>
           <li ng-if="selected.errors.length">
-            <label>{{'Errors' | translate}}</label>
+            <label translate>Errors</label>
             <ul>
               <li ng-repeat="error in selected.errors">
                 {{error.message}}
@@ -49,12 +47,12 @@
             </ul>
           </li>
           <li ng-if="selected.sms_message.message">
-            <label>{{'report.content.raw' | translate}}</label>
+            <label translate>report.content.raw</label>
             <p>{{selected.sms_message.message}}</p>
           </li>
           <li ng-if="selected.tasks.length">
-            <label ng-if="selected.kujua_message">{{'tasks.0.messages.0.to' | translate}}</label>
-            <label ng-if="!selected.kujua_message">{{'Automated Reply' | translate}}</label>
+            <label ng-if="selected.kujua_message" translate>tasks.0.messages.0.to</label>
+            <label ng-if="!selected.kujua_message" translate>Automated Reply</label>
             <ul class="task-list">
               <li ng-repeat="task in selected.tasks">
                 <ul>
@@ -71,15 +69,15 @@
       </div>
 
       <div class="body scheduled-tasks" ng-if="selected.scheduled_tasks_by_group.length">
-        <h2>{{'tasks' | translate}}</h2>
+        <h2 translate>tasks</h2>
         <ul>
           <li ng-repeat="group in selected.scheduled_tasks_by_group">
             <p>
               {{group.group}}
               <span ng-hide="group.loading">
-                <a class="btn btn-link" ng-click="edit(group)">{{'Edit' | translate}}</a>
-                <a class="btn btn-link" ng-click="mute(group)" ng-show="canMute(group)">{{'Mute' | translate}}</a>
-                <a class="btn btn-link" ng-click="schedule(group)" ng-show="canSchedule(group)">{{'Schedule' | translate}}</a>
+                <a class="btn btn-link" ng-click="edit(group)" translate>Edit</a>
+                <a class="btn btn-link" ng-click="mute(group)" ng-show="canMute(group)" translate>Mute</a>
+                <a class="btn btn-link" ng-click="schedule(group)" ng-show="canSchedule(group)" translate>Schedule</a>
               </span>
               <span class="inline loader" ng-show="group.loading"></span>
             </p>
