@@ -6,11 +6,38 @@ Respond with HTTP 200 status on successful requests.
 
 # Table of contents
 
-  * [Forms](#forms)
-  * [Records](#records)
-  * [Messages](#messages)
-  * [Contacts](#contacts)
-  * [Users](#users)
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [Forms](#forms)
+  - [GET /api/v1/forms](#get-apiv1forms)
+  - [GET /api/v1/forms/{{id}}.{{format}}](#get-apiv1formsidformat)
+- [Records](#records)
+  - [POST /api/v1/records](#post-apiv1records)
+  - [GET /api/v1/export/forms/{formcode}](#get-apiv1exportformsformcode)
+- [Messages](#messages)
+  - [GET /api/v1/export/messages](#get-apiv1exportmessages)
+  - [GET /api/v1/messages](#get-apiv1messages)
+  - [GET /api/v1/messages/{{id}}](#get-apiv1messagesid)
+  - [PUT /api/v1/messages/state/{{id}}](#put-apiv1messagesstateid)
+  - [Todo](#todo)
+  - [Backwards Compatibility](#backwards-compatibility)
+- [Audit Log](#audit-log)
+  - [GET /api/v1/export/audit](#get-apiv1exportaudit)
+- [User Feedback](#user-feedback)
+  - [GET /api/v1/export/feedback](#get-apiv1exportfeedback)
+- [Contacts](#contacts)
+  - [GET /api/v1/export/contacts](#get-apiv1exportcontacts)
+- [Users](#users)
+  - [Supported Properties](#supported-properties)
+  - [GET /api/v1/users](#get-apiv1users)
+  - [POST /api/v1/users](#post-apiv1users)
+  - [POST /api/v1/users/{{username}}](#post-apiv1usersusername)
+  - [DELETE /api/v1/users/{{username}}](#delete-apiv1usersusername)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 
 # Forms
 
