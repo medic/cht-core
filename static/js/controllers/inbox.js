@@ -672,6 +672,7 @@ var feedback = require('../modules/feedback'),
               if(dotIndex !== -1) {
                 stateName = stateName.substring(0, dotIndex);
               }
+              $scope.clearSelected();
               $state.go(stateName);
               Snackbar(translateFilter('document.deleted'));
             }
