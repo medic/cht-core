@@ -49,7 +49,7 @@
               $scope.selectReport();
             });
           } else {
-            $scope.selectReport(change.id);
+            $scope.selectReport(change.doc);
           }
         }
       });

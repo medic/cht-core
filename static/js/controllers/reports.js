@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$translate', 'TranslateFrom', 'LiveList', 'Settings', 'MarkRead', 'Search', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, $translate, TranslateFrom, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified) {
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$translate', '$log', 'TranslateFrom', 'LiveList', 'Settings', 'MarkRead', 'Search', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, $translate, $log, TranslateFrom, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified) {
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = null;
@@ -51,7 +51,7 @@ var _ = require('underscore'),
         MarkRead(report._id, true)
           .then($scope.updateReadStatus)
           .catch(function(err) {
-            console.log(err);
+            $log.error('Error marking read', err);
           });
       };
 
@@ -122,26 +122,34 @@ var _ = require('underscore'),
       };
 
       $scope.selectReport = function(id) {
-        $scope.clearSelected();
-
         if (!id || !liveList.initialised()) {
           return;
         }
 
-        $scope.setLoadingContent(id);
-        DB.get()
-          .get(id)
-          .then(FormatDataRecord)
-          .then(function(doc) {
-            if (doc) {
+        if (_.isString(id)) {
+          $scope.clearSelected();
+
+          $scope.setLoadingContent(id);
+          DB.get()
+            .get(id)
+            .then(FormatDataRecord)
+            .then(function(doc) {
+              if (doc) {
+                _setSelected(doc[0]);
+                _initScroll();
+              }
+            })
+            .catch(function(err) {
+              $scope.clearSelected();
+              $log.error('Error selecting report', err);
+            });
+        } else {
+          FormatDataRecord(id)
+            .then(function(doc) {
               _setSelected(doc[0]);
-              _initScroll();
-            }
-          })
-          .catch(function(err) {
-            $scope.clearSelected();
-            console.error(err);
-          });
+            });
+        }
+
       };
 
       $scope.query = function(options) {
@@ -172,7 +180,7 @@ var _ = require('underscore'),
               // invalid freetext filter query
               $scope.errorSyntax = true;
             }
-            return console.log('Error loading messages', err);
+            return $log.error('Error loading messages', err);
           }
 
           $scope.moreItems = liveList.moreItems = data.length >= options.limit;
@@ -199,7 +207,7 @@ var _ = require('underscore'),
             })
             .catch(function(err) {
               $scope.error = true;
-              console.log('Error formatting record', err);
+              $log.error('Error formatting record', err);
             });
         });
       };
@@ -258,7 +266,7 @@ var _ = require('underscore'),
         if ($scope.selected.form) {
           Verified($scope.selected._id, verify, function(err) {
             if (err) {
-              console.log('Error verifying message', err);
+              $log.error('Error verifying message', err);
             }
           });
         }
