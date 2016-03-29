@@ -11,28 +11,32 @@
         var stats = JSON.parse($window.medicmobile_android.getDataUsage());
         stats.timestamp = Date.now();
 
-        DB.get().query('medic/traffic_stats').then(function(res) {
-          var doc;
-          if (res.rows.length > 1) {
-            throw new Error('Should have single traffic_stats doc per user');
-          }
-          if (res.rows.length === 0) {
-            // No traffic_stats doc yet. Make one.
-            doc = {
-              type: 'traffic_stats',
-              user: Session.userCtx().name,
-              traffic: [stats]
-            };
-            return DB.get().post(doc);
-          }
-          doc = res.rows[0].value;
-          doc.traffic.push(stats);
-          return DB.get().put(doc);
-        }).then(function(response) {
-          $log.debug('Saved trafficstats', stats, response);
-        }).catch(function(err) {
-          $log.error('Could not save traffic stats.', err);
-        });
+        DB.get()
+          .query('medic/doc_by_type', { key: [ 'traffic_stats' ], include_docs: true })
+          .then(function(res) {
+            var doc;
+            if (res.rows.length > 1) {
+              throw new Error('Should have single traffic_stats doc per user');
+            }
+            if (res.rows.length === 0) {
+              // No traffic_stats doc yet. Make one.
+              doc = {
+                type: 'traffic_stats',
+                user: Session.userCtx().name,
+                traffic: [stats]
+              };
+              return DB.get().post(doc);
+            }
+            doc = res.rows[0].doc;
+            doc.traffic.push(stats);
+            return DB.get().put(doc);
+          })
+          .then(function(response) {
+            $log.debug('Saved traffic_stats', stats, response);
+          })
+          .catch(function(err) {
+            $log.error('Error saving traffic_stats.', err);
+          });
       };
 
 
@@ -46,7 +50,7 @@
         if (Debug.get()) {
           parentScope = scope;
           var dataUsageUpdate = $interval(function() {
-            $log.debug('Trafficstats', Date.now(), window.medicmobile_android.getDataUsage());
+            $log.debug('TrafficStats', Date.now(), window.medicmobile_android.getDataUsage());
           }, 10000);
 
           parentScope.$on('$destroy', function() {
