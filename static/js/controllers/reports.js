@@ -65,7 +65,6 @@ var _ = require('underscore'),
       };
 
       var getFields = function(results, values, labelPrefix, depth) {
-        console.log('depth', depth);
         if (depth > 3) {
           depth = 3;
         }
