@@ -956,7 +956,7 @@ var feedback = require('../modules/feedback'),
       $scope.configurationPages = [
         {
           state: 'configuration.settings.basic',
-          icon: 'fa-cog',
+          icon: 'fa-wrench',
           name: 'Settings',
           active: function() {
             return $state.includes('configuration.settings');
