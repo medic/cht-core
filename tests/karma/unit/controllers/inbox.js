@@ -102,7 +102,7 @@ describe('InboxCtrl controller', function() {
       $provide.factory('$state', function() {
         spyState = {
           go: sinon.spy(),
-          current: { name: 'contacts.name' }
+          current: { name: 'contacts.detail' }
         };
         return spyState;
       });
@@ -169,8 +169,9 @@ describe('InboxCtrl controller', function() {
     var callback = spyDeleteDoc.getCall(0).args[1];
     // Call callback without err.
     callback();
-    chai.assert(spyState.go.calledWith('contacts'), 'should go to contacts state');
-    chai.assert(snackbar.called, 'Shoud display toast');
+    chai.expect(spyState.go.args[0][0]).to.equal('contacts.detail');
+    chai.expect(spyState.go.args[0][1]).to.deep.equal({ id: null });
+    chai.assert(snackbar.called, 'Should display toast');
   });
 
   it('doesn\'t navigate back to contacts state after failed contact deletion', function() {
