@@ -666,14 +666,7 @@ var feedback = require('../modules/feedback'),
           DeleteDoc(docToDeleteId, function(err) {
             pane.done(translateFilter('Error deleting document'), err);
             if (!err) {
-              // return to list view for the current state
-              var stateName = $state.current.name,
-                  dotIndex = stateName.indexOf('.');
-              if(dotIndex !== -1) {
-                stateName = stateName.substring(0, dotIndex);
-              }
-              $scope.clearSelected();
-              $state.go(stateName);
+              $state.go($state.current.name, { id: null });
               Snackbar(translateFilter('document.deleted'));
             }
           });
