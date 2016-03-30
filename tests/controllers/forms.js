@@ -117,3 +117,85 @@ exports['listForms sanitizes openrosa response'] = function(test) {
     test.done();
   });
 };
+
+exports['listForms returns all forms'] = function(test) {
+  test.expect(4);
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    rows: [
+      {
+        doc: {
+          _id: 'form:stock',
+          _attachments: {
+            xml: {
+              content_type: 'application/octet-stream',
+              revpos: 2,
+              digest: 'md5-++6M50YX9KqBr0tD9ayNXg==',
+              length: 23663,
+              stub: true
+            }
+          }
+        }
+      },
+      {
+        doc: {
+          _id: 'form:visit',
+          _attachments: {
+            xml: {
+              content_type: 'application/octet-stream',
+              revpos: 5,
+              digest: 'md5-oaCI+4Gupwh75qmFBikRCg==',
+              length: 23800,
+              stub: true
+            }
+          }
+        }
+      }
+    ]
+  });
+  var spy = sinon.spy(db, 'sanitizeResponse');
+  controller.listForms({}, function(err, body, headers) {
+    test.equals(err, null);
+    var forms = JSON.parse(body);
+    test.equals(forms.length, 2);
+    test.equals(forms[0], 'stock.xml');
+    test.equals(forms[1], 'visit.xml');
+    test.done();
+  });
+};
+
+exports['listForms ignores non xml attachments'] = function(test) {
+  test.expect(3);
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    rows: [
+      {
+        doc: {
+          _id: 'form:stock',
+          _attachments: {
+            xml: {
+              content_type: 'application/octet-stream',
+              revpos: 2,
+              digest: 'md5-++6M50YX9KqBr0tD9ayNXg==',
+              length: 23663,
+              stub: true
+            },
+            'someimg.png': {
+              content_type: 'application/octet-stream',
+              revpos: 2,
+              digest: 'md5-++6M50YX9KqBr0tD9ayNXg==',
+              length: 23663,
+              stub: true
+            }
+          }
+        }
+      }
+    ]
+  });
+  var spy = sinon.spy(db, 'sanitizeResponse');
+  controller.listForms({}, function(err, body, headers) {
+    test.equals(err, null);
+    var forms = JSON.parse(body);
+    test.equals(forms.length, 1);
+    test.equals(forms[0], 'stock.xml');
+    test.done();
+  });
+};

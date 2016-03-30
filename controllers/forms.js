@@ -61,10 +61,8 @@ function listFormsXML(data, template, callback) {
 function listForms(data, callback) {
   var ret = [];
   data.rows.forEach(function(row) {
-    if (row.doc && row.doc._attachments) {
-      for (var fmt in row.doc._attachments) {
-        ret.push(removePrefix(row.doc._id) + '.' + fmt);
-      }
+    if (row.doc && row.doc._attachments && row.doc._attachments.xml) {
+      ret.push(removePrefix(row.doc._id) + '.xml');
     }
   });
   var headers = {
