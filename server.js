@@ -38,6 +38,7 @@ var _ = require('underscore'),
     fti = require('./controllers/fti'),
     createDomain = require('domain').create,
     staticResources = /\/(templates|static)\//,
+    favicon = /\/icon_\d\d.ico$/,
     appcacheManifest = /manifest\.appcache/,
     pathPrefix = '/' + db.settings.db + '/',
     appPrefix = pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite/',
@@ -469,7 +470,16 @@ var writeHeaders = function(req, res, headers, redirect) {
  * ensure we set the value first.
  */
 proxy.on('proxyReq', function(proxyReq, req, res) {
-  if (appcacheManifest.test(req.url)) {
+  if (favicon.test(req.url)) {
+    // Cache for a week.  Normally we don't interferse with couch headers, but
+    // due to Chrome (including Android WebView) aggressively requesting
+    // favicons on every page change and window.history update
+    // (https://github.com/medic/medic-webapp/issues/1913 ), we have to stage an
+    // intervention: 
+    writeHeaders(req, res, [
+      [ 'Cache-Control', 'public, max-age=604800' ],
+    ]);
+  } else if (appcacheManifest.test(req.url)) {
     // requesting the appcache manifest
     writeHeaders(req, res, [
       [ 'Cache-Control', 'must-revalidate' ],
