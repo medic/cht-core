@@ -24,7 +24,6 @@ exports.setUp = function(cb) {
   userSettings = {
     _id: 'org.couchdb.user:sally',
     name: 'sally',
-    known: false,
     roles: []
   };
   cb();
@@ -91,6 +90,10 @@ exports['validateUserSettings name and usernaem must match'] = function(test) {
 exports['validateUserSettings known must be boolean'] = function(test) {
   userSettings.known = 3;
   test.throws(function() {
+    lib._validateUserSettings(userSettings);
+  });
+  userSettings.known = false;
+  test.doesNotThrow(function() {
     lib._validateUserSettings(userSettings);
   });
   test.done();
