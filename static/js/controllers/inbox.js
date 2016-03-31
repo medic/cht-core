@@ -666,7 +666,9 @@ var feedback = require('../modules/feedback'),
           DeleteDoc(docToDeleteId, function(err) {
             pane.done(translateFilter('Error deleting document'), err);
             if (!err) {
-              $state.go($state.current.name, { id: null });
+              if ($state.includes('contacts') || $state.includes('reports')) {
+                $state.go($state.current.name, { id: null });
+              }
               Snackbar(translateFilter('document.deleted'));
             }
           });
