@@ -86,7 +86,6 @@ var isAPlace = function(place) {
  * we use the provided message.
  */
 var handleBadRequest = function(error, messages, callback) {
-  console.log('handleBadRequest', arguments);
   if (_.isUndefined(callback)) {
     callback = messages;
     messages = void 0;
