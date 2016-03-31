@@ -82,6 +82,7 @@ module.exports = function(grunt) {
     jshint: {
       options: {
         jshintrc: true,
+        reporter: require('jshint-stylish'),
         ignores: [
           'tests/karma/q.js'
         ]

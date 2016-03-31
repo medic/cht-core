@@ -8,7 +8,7 @@ var _ = require('underscore'),
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('ReportsCtrl', 
+  inboxControllers.controller('ReportsCtrl',
     ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$translate', '$log', 'TranslateFrom', 'LiveList', 'Settings', 'MarkRead', 'Search', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
     function ($scope, $rootScope, $state, $stateParams, $timeout, $translate, $log, TranslateFrom, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified) {
 
@@ -35,7 +35,7 @@ var _ = require('underscore'),
           });
       };
 
-      $scope.update = function(updated) {
+      var _updateLiveList = function(updated) {
         _.each(updated, function(report) {
           liveList.update(report, false);
         });
@@ -121,17 +121,18 @@ var _ = require('underscore'),
         $scope.settingSelected(refreshing);
       };
 
-      $scope.selectReport = function(id) {
-        if (!id || !liveList.initialised()) {
+      $scope.selectReport = function(report) {
+        if (!report || !liveList.initialised()) {
+          $scope.clearSelected();
           return;
         }
 
-        if (_.isString(id)) {
+        if (_.isString(report)) {
+          // id only - fetch the full doc
           $scope.clearSelected();
-
-          $scope.setLoadingContent(id);
+          $scope.setLoadingContent(report);
           DB.get()
-            .get(id)
+            .get(report)
             .then(FormatDataRecord)
             .then(function(doc) {
               if (doc) {
@@ -144,7 +145,7 @@ var _ = require('underscore'),
               $log.error('Error selecting report', err);
             });
         } else {
-          FormatDataRecord(id)
+          FormatDataRecord(report)
             .then(function(doc) {
               _setSelected(doc[0]);
             });
@@ -191,7 +192,7 @@ var _ = require('underscore'),
               $scope.appending = false;
               $scope.error = false;
               $scope.errorSyntax = false;
-              $scope.update(data);
+              _updateLiveList(data);
               var curr = _.findWhere(data, { _id: $state.params.id });
               if (curr) {
                 $scope.setSelected(curr);
@@ -260,6 +261,7 @@ var _ = require('underscore'),
 
       $scope.$on('ClearSelected', function() {
         $scope.selected = null;
+        liveList.clearSelected();
       });
 
       $scope.$on('VerifyReport', function(e, verify) {
