@@ -145,28 +145,28 @@ exports['describe hasParent'] = function(test) {
   test.done();
 };
 
-exports['validateUser returns 400 error when doc not found.'] = function(test) {
-  sinon.stub(db._users, 'get').callsArgWith(1, {error: 'not_found'});
+exports['validateUser defines custom error when not found.'] = function(test) {
+  sinon.stub(db._users, 'get').callsArgWith(1, {statusCode: 404});
   controller._validateUser('x', function(err) {
-    test.equal(err.code, 400);
+    test.equal(err.code, 404);
     test.equal(err.message, 'Failed to find user.');
     test.done();
   });
 };
 
-exports['validateUserSettings returns 400 error when doc not found.'] = function(test) {
-  sinon.stub(db.medic, 'get').callsArgWith(1, {error: 'not_found'});
+exports['validateUserSettings defines custom error when not found.'] = function(test) {
+  sinon.stub(db.medic, 'get').callsArgWith(1, {statusCode: 404});
   controller._validateUserSettings('x', function(err) {
-    test.equal(err.code, 400);
+    test.equal(err.code, 404);
     test.equal(err.message, 'Failed to find user settings.');
     test.done();
   });
 };
 
 exports['validatePlace returns 400 error when doc not found.'] = function(test) {
-  sinon.stub(db.medic, 'get').callsArgWith(1, {error: 'not_found'});
+  sinon.stub(db.medic, 'get').callsArgWith(1, {statusCode: 404});
   controller._validatePlace('x', function(err) {
-    test.equal(err.code, 400);
+    test.equal(err.code, 404);
     test.equal(err.message, 'Failed to find place.');
     test.done();
   });

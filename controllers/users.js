@@ -142,7 +142,7 @@ var validatePlace = function(id, callback) {
 
 var validateUser = function(id, callback) {
   var errors = {
-    404: 'Failed to find place.'
+    404: 'Failed to find user.'
   };
   db._users.get(id, function(err, doc) {
     if (err) {
