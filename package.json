@@ -31,6 +31,7 @@
     "xmlbuilder": "^2.6.4"
   },
   "devDependencies": {
+    "doctoc": "^1.0.0",
     "grunt": "^0.4.5",
     "grunt-contrib-jshint": "^0.11.2",
     "grunt-contrib-nodeunit": "^0.4.1",
@@ -42,6 +43,7 @@
   },
   "scripts": {
     "start": "node server.js",
-    "test": "grunt test"
+    "test": "grunt test",
+    "updatetoc": "./node_modules/.bin/doctoc --maxlevel 2 API_v1.md"
   }
 }

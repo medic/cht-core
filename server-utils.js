@@ -24,10 +24,10 @@ module.exports = {
     } else if (err.code === 401) {
       return module.exports.notLoggedIn(req, res, showPrompt);
     }
-    res.writeHead(err.code || 500, {
+    res.writeHead((err.code || err.statusCode) || 500, {
       'Content-Type': 'text/plain'
     });
-    res.end(err.message);
+    res.end(err.message || err.reason);
   },
 
   serverError: function(err, req, res) {

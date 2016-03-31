@@ -418,7 +418,21 @@ app.post('/api/v1/users', jsonParser, function(req, res) {
     }
     users.createUser(req.body, function(err, body) {
       if (err) {
-        return serverUtils.serverError(err, req, res);
+        return serverUtils.error(err, req, res);
+      }
+      res.json(body);
+    });
+  });
+});
+
+app.post('/api/v1/users/:username', jsonParser, function(req, res) {
+  auth.check(req, 'can_update_users', null, function(err) {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+    users.updateUser(req.params.username, req.body, function(err, body) {
+      if (err) {
+        return serverUtils.error(err, req, res);
       }
       res.json(body);
     });
@@ -428,11 +442,11 @@ app.post('/api/v1/users', jsonParser, function(req, res) {
 app.delete('/api/v1/users/:username', jsonParser, function(req, res) {
   auth.check(req, 'can_delete_users', null, function(err) {
     if (err) {
-      return error(err, req, res);
+      return serverUtils.error(err, req, res);
     }
     users.deleteUser(req.params.username, function(err, result) {
       if (err) {
-        return serverUtils.serverError(err, req, res);
+        return serverUtils.error(err, req, res);
       }
       res.json(result);
     });

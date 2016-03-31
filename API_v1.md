@@ -6,11 +6,38 @@ Respond with HTTP 200 status on successful requests.
 
 # Table of contents
 
-  * [Forms](#forms)
-  * [Records](#records)
-  * [Messages](#messages)
-  * [Contacts](#contacts)
-  * [Users](#users)
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
+
+- [Forms](#forms)
+  - [GET /api/v1/forms](#get-apiv1forms)
+  - [GET /api/v1/forms/{{id}}.{{format}}](#get-apiv1formsidformat)
+- [Records](#records)
+  - [POST /api/v1/records](#post-apiv1records)
+  - [GET /api/v1/export/forms/{formcode}](#get-apiv1exportformsformcode)
+- [Messages](#messages)
+  - [GET /api/v1/export/messages](#get-apiv1exportmessages)
+  - [GET /api/v1/messages](#get-apiv1messages)
+  - [GET /api/v1/messages/{{id}}](#get-apiv1messagesid)
+  - [PUT /api/v1/messages/state/{{id}}](#put-apiv1messagesstateid)
+  - [Todo](#todo)
+  - [Backwards Compatibility](#backwards-compatibility)
+- [Audit Log](#audit-log)
+  - [GET /api/v1/export/audit](#get-apiv1exportaudit)
+- [User Feedback](#user-feedback)
+  - [GET /api/v1/export/feedback](#get-apiv1exportfeedback)
+- [Contacts](#contacts)
+  - [GET /api/v1/export/contacts](#get-apiv1exportcontacts)
+- [Users](#users)
+  - [Supported Properties](#supported-properties)
+  - [GET /api/v1/users](#get-apiv1users)
+  - [POST /api/v1/users](#post-apiv1users)
+  - [POST /api/v1/users/{{username}}](#post-apiv1usersusername)
+  - [DELETE /api/v1/users/{{username}}](#delete-apiv1usersusername)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 
 # Forms
 
@@ -556,6 +583,45 @@ Content-Type: application/json; charset=utf-8
 
 All user related requests are limited to users with admin privileges by default.
 
+## Supported Properties
+
+Use JSON in the request body to specify user details.  Any properties submitted
+that are not on the list below will be ignored.  Any properties not included
+will be undefined.
+
+#### Required
+
+| Key | Description       
+| -------- | -----------------
+| username | String identifier used for authentication.
+| password | Password string used for authentication.  Only allowed to be set, not retrieved.
+| place    | Place identifier string (UUID) or object this user resides in.
+| contact  | A contact object based on the form configured in the app.
+| contact.parent | The parent place of the contact.  The contact must reside in or be equal to the place the user resides in.
+
+#### Optional
+
+| Key | Description       
+| -------- | -----------------
+| type     | User permission type, default: district-manager
+| fullname | Full name
+| email    | Email address 
+| phone    | Phone number
+| language | Language preference. e.g. "sw" for Swahili
+| known    | Boolean to define if the user has logged in before.  Used mainly to determine whether or not to start a tour on first login.
+
+#### Permission Types
+
+| Key | Description   
+| -------- | -----------------    
+| national-manager | Full permissions on all doc types.
+| district-manager | Full permissions on all doc types in a set of places.
+| facility-manager | Full permissions on all doc types in a given place.
+| data-entry | Only allowed to create new records from a given place.
+| analytics | Read only 
+| gateway   | Only allowed to create new records.
+
+
 ## GET /api/v1/users
 
 Returns a list of users and their profile data in JSON format.  
@@ -625,32 +691,6 @@ Create a new user with a place and a contact.
 
 `can_create_users`  
 
-### JSON Properties
-
-Use JSON in the request body to specify user details.  Any properties submitted
-that are not on the list below will be ignored.  Any properties not included
-will be undefined.
-
-#### Required
-
-| Key | Description       
-| -------- | -----------------
-| username | String identifier used for authentication.
-| password | Password string used for authentication.  Only allowed to be set, not retrieved.
-| place    | Place identifier string (UUID) or object this user resides in.
-| contact  | A contact object based on the form configured in the app.
-| contact.parent | The parent place of the contact.  The contact resides within a place.
-
-
-#### Optional
-
-| Key | Description       
-| -------- | -----------------
-| type     | Default: 'district-manager'
-| email    | Email address 
-| phone    | Phone number
-| language | Language preference. e.g. "sw" for Swahili
-| known    | Boolean to define if the user has logged in before.  Used mainly to determine whether or not to start a tour on first login.
 
 ### Examples
 
@@ -694,6 +734,51 @@ Content-Type: application/json
   }
 }
 
+```
+
+## POST /api/v1/users/{{username}}
+
+Allows you to change property values on a user account. Properties listed above
+are supported except for `contact.parent`.  Creating or modifing contact
+records is not supported.
+
+### Permissions
+
+`can_update_users`  
+
+### URL Parameters
+
+| Variable | Description      
+| -------- | ----------------- 
+| username | String identifier used for authentication.
+
+
+### Examples
+
+
+```
+POST /api/v1/users/mary
+Content-Type: application/json
+
+{
+  "password": "secret",
+  "place": "eeb17d6d-5dde-c2c0-62c4a1a0ca17e342"
+}
+```
+
+```
+HTTP/1.1 200 OK
+
+{
+  "user": {
+    "id": "org.couchdb.user:mary",
+    "rev": "23-858e01fafdfa0d367d798fe5b44751ff"
+  },
+  "user-settings": {
+    "id": "org.couchdb.user:mary",
+    "rev": "17-c6d03b86d2d5d70f7270c85e67fea96d"
+  }
+}
 ```
 
 ## DELETE /api/v1/users/{{username}}
