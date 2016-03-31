@@ -121,17 +121,18 @@ var _ = require('underscore'),
         $scope.settingSelected(refreshing);
       };
 
-      $scope.selectReport = function(id) {
-        if (!id || !liveList.initialised()) {
+      $scope.selectReport = function(report) {
+        if (!report || !liveList.initialised()) {
+          $scope.clearSelected();
           return;
         }
 
-        if (_.isString(id)) {
+        if (_.isString(report)) {
+          // id only - fetch the full doc
           $scope.clearSelected();
-
-          $scope.setLoadingContent(id);
+          $scope.setLoadingContent(report);
           DB.get()
-            .get(id)
+            .get(report)
             .then(FormatDataRecord)
             .then(function(doc) {
               if (doc) {
@@ -144,7 +145,7 @@ var _ = require('underscore'),
               $log.error('Error selecting report', err);
             });
         } else {
-          FormatDataRecord(id)
+          FormatDataRecord(report)
             .then(function(doc) {
               _setSelected(doc[0]);
             });
