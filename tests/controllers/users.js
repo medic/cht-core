@@ -163,7 +163,7 @@ exports['validateUserSettings defines custom error when not found.'] = function(
   });
 };
 
-exports['validatePlace returns 400 error when doc not found.'] = function(test) {
+exports['validatePlace defines custom error when doc not found.'] = function(test) {
   sinon.stub(db.medic, 'get').callsArgWith(1, {statusCode: 404});
   controller._validatePlace('x', function(err) {
     test.equal(err.code, 404);
