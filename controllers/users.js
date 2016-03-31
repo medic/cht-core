@@ -82,22 +82,39 @@ var isAPlace = function(place) {
 
 /*
  * Make string errors 400 responses to minimize stacktraces in the logs for
- * non-critical errors.
+ * non-critical errors. If messages object is passed in and status codes match
+ * we use the provided message.
  */
-var handleBadRequest = function(err, callback) {
-  if (_.isString(err)) {
-    return callback({code: 400, message: err});
+var handleBadRequest = function(error, messages, callback) {
+  console.log('handleBadRequest', arguments);
+  if (_.isUndefined(callback)) {
+    callback = messages;
+    messages = void 0;
   }
-  return callback(err);
+  if (_.isString(error)) {
+    return callback({
+      code: 400,
+      message: error
+    });
+  } else if (_.isObject(error) && _.isObject(messages)) {
+    // try custom messages
+    if (messages && messages[error.statusCode]) {
+      return callback({
+        code: error.statusCode,
+        message: messages[error.statusCode]
+      });
+    }
+  }
+  return callback(error);
 };
 
 var validateContact = function(id, placeID, callback) {
+  var errors = {
+    404: 'Failed to find contact.'
+  };
   db.medic.get(id, function(err, doc) {
     if (err) {
-      if (err.error === 'not_found') {
-        return handleBadRequest('Failed to find contact.', callback);
-      }
-      return callback(err);
+      return handleBadRequest(err, errors, callback);
     }
     if (doc.type !== 'person') {
       return handleBadRequest('Wrong type, this is not a contact.', callback);
@@ -110,12 +127,12 @@ var validateContact = function(id, placeID, callback) {
 };
 
 var validatePlace = function(id, callback) {
+  var errors = {
+    404: 'Failed to find place.'
+  };
   db.medic.get(id, function(err, doc) {
     if (err) {
-      if (err.error === 'not_found') {
-        return handleBadRequest('Failed to find place.', callback);
-      }
-      return callback(err);
+      return handleBadRequest(err, errors, callback);
     }
     if (!isAPlace(doc)) {
       return handleBadRequest('Wrong type, this is not a place.', callback);
@@ -125,24 +142,24 @@ var validatePlace = function(id, callback) {
 };
 
 var validateUser = function(id, callback) {
+  var errors = {
+    404: 'Failed to find place.'
+  };
   db._users.get(id, function(err, doc) {
     if (err) {
-      if (err.error === 'not_found') {
-        return handleBadRequest('Failed to find user.', callback);
-      }
-      return callback(err);
+      return handleBadRequest(err, errors, callback);
     }
     callback(null, doc);
   });
 };
 
 var validateUserSettings = function(id, callback) {
+  var errors = {
+    404: 'Failed to find user settings.'
+  };
   db.medic.get(id, function(err, doc) {
     if (err) {
-      if (err.error === 'not_found') {
-        return handleBadRequest('Failed to find user settings.', callback);
-      }
-      return callback(err);
+      return handleBadRequest(err, errors, callback);
     }
     callback(null, doc);
   });
@@ -458,10 +475,7 @@ module.exports = {
       // validate contact parent exists
       self._getContactParent(data.contact.parent, function(err, facility) {
         if (err) {
-          if (err.error === 'not_found') {
-            return handleBadRequest('Failed to find contact parent.', callback);
-          }
-          return callback(err);
+          return handleBadRequest('Failed to find contact parent.', callback);
         }
         if (!self._hasParent(facility, data.place)) {
           return handleBadRequest('Contact is not within place.', callback);
@@ -527,7 +541,7 @@ module.exports = {
         series.push(function(cb) {
           self._updateUser(userID, user, function(err, resp) {
             if (err) {
-              return callback(err);
+              return cb(err);
             }
             if (resp) {
               response.user = {
@@ -541,7 +555,7 @@ module.exports = {
         series.push(function(cb) {
           self._updateUserSettings(userID, settings, function(err, resp) {
             if (err) {
-              return callback(err);
+              return cb(err);
             }
             if (resp) {
               response['user-settings'] = {
@@ -554,7 +568,7 @@ module.exports = {
         });
         async.series(series, function(err) {
           if (err) {
-            return callback(err);
+            return handleBadRequest(err, callback);
           }
           callback(null, response);
         });
