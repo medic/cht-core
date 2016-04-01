@@ -4,7 +4,7 @@
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('ReportsAddCtrl', 
+  inboxControllers.controller('ReportsAddCtrl',
     ['$log', '$scope', '$state', '$q', '$translate', 'DB', 'Enketo', 'Snackbar',
     function ($log, $scope, $state, $q, $translate, DB, Enketo, Snackbar) {
 
@@ -24,7 +24,7 @@
       if ($state.params.reportId || $state.params.formId) {
         $scope.setCancelTarget(function() {
           if (!$state.params.reportId) {
-            $scope.query();
+            $state.go('reports');
           }
           $state.go('reports.detail', { id: $state.params.reportId });
         });

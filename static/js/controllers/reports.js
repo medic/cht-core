@@ -164,7 +164,7 @@ var _ = require('underscore'),
           });
       };
 
-      $scope.query = function(options) {
+      var _query = function(options) {
         options = options || {};
         options.limit = 50;
         if (!options.silent) {
@@ -250,7 +250,7 @@ var _ = require('underscore'),
           liveList = LiveList['report-search'];
           liveList.set([]);
 
-          $scope.query();
+          _query();
         } else {
           $scope.filtered = false;
           liveList = LiveList.reports;
@@ -264,7 +264,7 @@ var _ = require('underscore'),
               _initScroll();
             });
           } else {
-            $scope.query();
+            _query();
           }
         }
 
@@ -295,7 +295,7 @@ var _ = require('underscore'),
       var _initScroll = function() {
         scrollLoader.init(function() {
           if (!$scope.loading && $scope.moreItems) {
-            $scope.query({ skip: true });
+            _query({ skip: true });
           }
         });
       };
