@@ -45,9 +45,6 @@ var moment = require('moment'),
           // unconfigured target type
           return;
         }
-        if (!target.instances) {
-          target.instances = {};
-        }
         if (isRelevant(instance)) {
           target.instances[instance._id] = instance;
         }
@@ -56,7 +53,11 @@ var moment = require('moment'),
 
       var init = Settings()
         .then(function(settings) {
-          targets = settings.tasks.targets.items;
+          targets = settings.tasks.targets.items.map(function(item) {
+            var result = _.clone(item);
+            result.instances = {};
+            return result;
+          });
         });
 
       return function(callback) {
