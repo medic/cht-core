@@ -46,7 +46,7 @@
         callback: function(change) {
           if (change.deleted) {
             $scope.$apply(function() {
-              $scope.clearSelectedReport();
+              $scope.selectReport();
             });
           } else {
             $scope.refreshReportSilently(change.doc);

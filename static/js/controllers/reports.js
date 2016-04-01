@@ -121,10 +121,6 @@ var _ = require('underscore'),
         $scope.settingSelected(refreshing);
       };
 
-      $scope.clearSelectedReport = function() {
-          $scope.clearSelected();
-      };
-
       var _fetchFormattedReport = function(report) {
         if (_.isString(report)) {
           // id only - fetch the full doc
@@ -148,7 +144,7 @@ var _ = require('underscore'),
 
       $scope.selectReport = function(report) {
         if (!report || !liveList.initialised()) {
-          $scope.clearSelectedReport();
+          $scope.clearSelected();
           return;
         }
 
