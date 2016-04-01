@@ -18,7 +18,7 @@ var _ = require('underscore'),
 
       var liveList = LiveList.reports;
 
-      $scope.setSelectedGroup = function(group) {
+      var _setSelectedGroup = function(group) {
         $scope.selectedGroup = angular.copy(group);
       };
 
@@ -343,7 +343,7 @@ var _ = require('underscore'),
       };
 
       $scope.edit = function(group) {
-        $scope.setSelectedGroup(group);
+        _setSelectedGroup(group);
         $('#edit-message-group').modal('show');
         initEditMessageModal();
       };
