@@ -68,7 +68,7 @@ describe('InboxCtrl controller', function() {
       $provide.factory('FacilityHierarchy', function() {
         return sinon.stub();
       });
-      $provide.factory('Form', function() {
+      $provide.factory('JsonForms', function() {
         return function() {
           return Promise.resolve({});
         };

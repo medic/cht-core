@@ -18,7 +18,7 @@ var _ = require('underscore');
     });
   };
 
-  inboxServices.factory('Form', [
+  inboxServices.factory('JsonForms', [
     'Settings',
     function(Settings) {
       return function() {
