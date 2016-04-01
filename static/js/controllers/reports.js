@@ -121,36 +121,51 @@ var _ = require('underscore'),
         $scope.settingSelected(refreshing);
       };
 
+      $scope.clearSelectedReport = function() {
+          $scope.clearSelected();
+      };
+
+      var _fetchFormattedReport = function(report) {
+        if (_.isString(report)) {
+          // id only - fetch the full doc
+          return DB.get()
+            .get(report)
+            .then(FormatDataRecord);
+        } else {
+          return FormatDataRecord(report);
+        }
+      };
+
+      $scope.refreshReportSilently = function(report) {
+        _fetchFormattedReport(report)
+          .then(function(doc) {
+              _setSelected(doc[0]);
+            })
+          .catch(function(err) {
+            $log.error('Error fetching formatted report', err);
+          });
+      };
+
       $scope.selectReport = function(report) {
         if (!report || !liveList.initialised()) {
-          $scope.clearSelected();
+          $scope.clearSelectedReport();
           return;
         }
 
-        if (_.isString(report)) {
-          // id only - fetch the full doc
-          $scope.clearSelected();
-          $scope.setLoadingContent(report);
-          DB.get()
-            .get(report)
-            .then(FormatDataRecord)
-            .then(function(doc) {
-              if (doc) {
-                _setSelected(doc[0]);
-                _initScroll();
-              }
-            })
-            .catch(function(err) {
-              $scope.clearSelected();
-              $log.error('Error selecting report', err);
-            });
-        } else {
-          FormatDataRecord(report)
-            .then(function(doc) {
-              _setSelected(doc[0]);
-            });
-        }
+        $scope.clearSelected();
+        $scope.setLoadingContent(report);
 
+        _fetchFormattedReport(report)
+          .then(function(doc) {
+            if (doc) {
+              _setSelected(doc[0]);
+              _initScroll();
+            }
+          })
+          .catch(function(err) {
+            $scope.clearSelected();
+            $log.error('Error selecting report', err);
+          });
       };
 
       $scope.query = function(options) {

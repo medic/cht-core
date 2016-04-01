@@ -4,7 +4,7 @@
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('ReportsContentCtrl', 
+  inboxControllers.controller('ReportsContentCtrl',
     ['$scope', '$stateParams', 'Changes', 'MessageState',
     function ($scope, $stateParams, Changes, MessageState) {
 
@@ -46,10 +46,10 @@
         callback: function(change) {
           if (change.deleted) {
             $scope.$apply(function() {
-              $scope.selectReport();
+              $scope.clearSelectedReport();
             });
           } else {
-            $scope.selectReport(change.doc);
+            $scope.refreshReportSilently(change.doc);
           }
         }
       });
