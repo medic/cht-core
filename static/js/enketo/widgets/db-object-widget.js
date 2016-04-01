@@ -86,7 +86,7 @@ define( function( require, exports, module ) {
 
         var dbObjectType = $textInput.attr('data-type-xml');
 
-        $textInput.one('click', function() {
+        var loadAndPopulate = function() {
             var loader = $('<div class="loader"/></div>');
             $textInput.after(loader);
 
@@ -144,6 +144,7 @@ define( function( require, exports, module ) {
                         // Tell enketo to ignore the new <input> field that select2 adds
                         $question.find('input.select2-search__field').addClass('ignore');
 
+                        $textInput.off('click', loadAndPopulate);
                         select.select2('open');
                     });
 
@@ -159,10 +160,14 @@ define( function( require, exports, module ) {
                             }
                         });
                     }
-
+                })
+                .catch(function(err) {
+                    loader.remove();
+                    console.log(dbObjectType + ' failed to load', err);
                 });
-        });
+        };
 
+        $textInput.on('click', loadAndPopulate);
     };
 
     var updateFields = function(form, doc, objectRoot, keyPath) {
