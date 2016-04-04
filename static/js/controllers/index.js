@@ -42,6 +42,7 @@
   require('./import-translation');
   require('./messages');
   require('./messages-content');
+  require('./modal');
   require('./reports');
   require('./reports-add');
   require('./reports-content');

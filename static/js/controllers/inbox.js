@@ -15,8 +15,8 @@ var feedback = require('../modules/feedback'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES', '$uibModal',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES, $uibModal) {
 
       Session.init();
 
@@ -183,7 +183,7 @@ var feedback = require('../modules/feedback'),
         // If viewing RHS content, do as the filter-bar X/< button does
         if ($scope.showContent) {
           if ($scope.cancelCallback) {
-            $scope.cancel();
+            $scope.navigationCancel();
           } else {
             $scope.closeContentPane();
           }
@@ -207,15 +207,30 @@ var feedback = require('../modules/feedback'),
         return false;
       };
 
-      $scope.cancel = function() {
-        $('#navigation-confirm').modal('show');
+      // TODO : make this a service for easy use from anywhere.
+      var _showModal = function(templateUrl, input) {
+        var modalInstance = $uibModal.open({
+          templateUrl: templateUrl,
+          controller: 'ModalCtrl',
+          resolve: {
+            input: function () {
+              return input;
+            }
+          }
+        });
+        return modalInstance.result;
       };
 
-      $scope.cancelConfirm = function() {
-        $('#navigation-confirm').modal('hide');
-        if ($scope.cancelCallback) {
-          $scope.cancelCallback();
-        }
+      // User wants to cancel current flow, or pressed back button, etc.
+      $scope.navigationCancel = function() {
+        _showModal('templates/modals/navigation_confirm.html')
+          .then(function () {
+            if ($scope.cancelCallback) {
+              $scope.cancelCallback();
+            }
+          }, function () {
+            $log.debug('User cancelled navigationCancel.');
+          });
       };
 
       $scope.closeContentPane = function() {

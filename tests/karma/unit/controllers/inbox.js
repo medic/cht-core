@@ -128,6 +128,9 @@ describe('InboxCtrl controller', function() {
       $provide.factory('UserSettings', function() {
         return sinon.stub();
       });
+      $provide.factory('$uibModal', function() {
+        return sinon.stub();
+      });
       $provide.value('RulesEngine', { init: KarmaUtils.nullPromise()() });
       $provide.factory('$window', function() {
         return sinon.stub();
