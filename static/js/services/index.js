@@ -37,6 +37,7 @@
   require('./kanso-packages');
   require('./language');
   require('./markdown');
+  require('./modal');
   require('./live-list');
   require('./mark-read');
   require('./message-contacts');
