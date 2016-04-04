@@ -23,9 +23,7 @@
       $scope.saving = false;
       if ($state.params.reportId || $state.params.formId) {
         $scope.setCancelTarget(function() {
-          if (!$state.params.reportId) {
-            $state.go('reports');
-          }
+          // Note : if no $state.params.reportId, goes to "No report selected".
           $state.go('reports.detail', { id: $state.params.reportId });
         });
       } else {
