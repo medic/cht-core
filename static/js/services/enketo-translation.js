@@ -328,7 +328,13 @@ angular.module('inboxServices').service('EnketoTranslation', [
     };
 
     self.bindJsonToXml = function(elem, data) {
-      _.pairs(data).forEach(function(pair) {
+      // Pairs get sorted so that values are bound before objects:
+      // - data is bound to any decendents of the given elem
+      // - least specific (in terms of path) get bound first
+      // - more specific get to bind *over* potentially too unspecific values
+      _.sortBy(_.pairs(data), function(pair) {
+        return _.isObject(pair[1]);
+      }).forEach(function(pair) {
         var current = elem.find(pair[0]);
         var value = pair[1];
         if (_.isObject(value)) {
