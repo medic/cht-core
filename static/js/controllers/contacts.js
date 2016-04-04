@@ -112,10 +112,6 @@ var _ = require('underscore'),
         });
       };
 
-      $scope.orderByType = function(contact) {
-        return CONTACT_TYPES.indexOf(contact.type);
-      };
-
       $scope.$on('ClearSelected', function() {
         $scope.selected = null;
       });
