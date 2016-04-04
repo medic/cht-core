@@ -4,7 +4,7 @@
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('ReportsContentCtrl', 
+  inboxControllers.controller('ReportsContentCtrl',
     ['$scope', '$stateParams', 'Changes', 'MessageState',
     function ($scope, $stateParams, Changes, MessageState) {
 
@@ -49,7 +49,7 @@
               $scope.selectReport();
             });
           } else {
-            $scope.selectReport(change.id);
+            $scope.refreshReportSilently(change.doc);
           }
         }
       });

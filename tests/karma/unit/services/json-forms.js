@@ -1,4 +1,4 @@
-describe('Form service', function() {
+describe('JsonForms service', function() {
 
   'use strict';
 
@@ -10,8 +10,8 @@ describe('Form service', function() {
     module(function($provide) {
       $provide.value('Settings', Settings);
     });
-    inject(function(_Form_) {
-      service = _Form_;
+    inject(function(_JsonForms_) {
+      service = _JsonForms_;
     });
   });
 

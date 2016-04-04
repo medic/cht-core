@@ -350,11 +350,11 @@ exports.facility_by_phone = {
     map: function (doc) {
         if (doc.contact && doc.type) {
             if (doc.type === 'clinic') {
-                emit([doc.contact.phone, 'clinic'], doc);
+                emit([doc.contact.phone, 'clinic']);
             } else if (doc.type === 'health_center') {
-                emit([doc.contact.phone, 'health_center'], doc);
+                emit([doc.contact.phone, 'health_center']);
             } else if (doc.type === 'district_hospital') {
-                emit([doc.contact.phone, 'district_hospital'], doc);
+                emit([doc.contact.phone, 'district_hospital']);
             }
         }
     }
@@ -366,18 +366,19 @@ exports.facility_by_phone = {
 exports.clinic_by_phone = {
     map: function(doc) {
         if (doc.type === 'clinic' && doc.contact && doc.contact.phone) {
-            emit([doc.contact.phone], null);
+            emit([doc.contact.phone]);
         }
     }
 };
 
 /*
  * Get person based on phone number
+ * Used in the medic-data generate script
  */
 exports.person_by_phone = {
     map: function (doc) {
         if (doc.type === 'person') {
-            emit([doc.phone], doc);
+            emit([doc.phone]);
         }
     }
 };
@@ -390,7 +391,7 @@ exports.clinic_by_refid = {
         if (doc.type === 'clinic' && doc.contact && doc.contact.rc_code) {
             // need String because rewriter wraps everything in quotes
             // keep refid case-insenstive since data is usually coming from SMS
-            emit([String(doc.contact.rc_code).toUpperCase()], doc);
+            emit([String(doc.contact.rc_code).toUpperCase()]);
         }
     }
 };

@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl',
-    ['$log', '$scope', '$state', '$timeout', 'DB', 'LiveList', 'UserSettings', 'Search', 'CONTACT_TYPES',
-    function ($log, $scope, $state, $timeout, DB, LiveList, UserSettings, Search, CONTACT_TYPES) {
+    ['$log', '$scope', '$state', '$timeout', 'DB', 'LiveList', 'UserSettings', 'Search',
+    function ($log, $scope, $state, $timeout, DB, LiveList, UserSettings, Search) {
 
       var liveList = LiveList.contacts;
 
@@ -110,10 +110,6 @@ var _ = require('underscore'),
           disableDelete: (selected.children && selected.children.length) ||
                          (selected.contactFor && selected.contactFor.length)
         });
-      };
-
-      $scope.orderByType = function(contact) {
-        return CONTACT_TYPES.indexOf(contact.type);
       };
 
       $scope.$on('ClearSelected', function() {

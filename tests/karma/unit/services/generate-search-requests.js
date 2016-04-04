@@ -38,68 +38,80 @@ describe('GenerateSearchRequests service', function() {
     });
   });
 
-  it('creates no request when all forms selected', function() {
-    scope.filterModel.forms = scope.forms = [ { code: 'P' }, { code: 'R' } ];
-    var result = service(scope);
-    chai.expect(result.length).to.equal(1);
-    chai.expect(result[0]).to.deep.equal({
-      view: 'reports_by_date',
-      params: {
-        include_docs: true,
-        descending: true
-      }
+  describe('form filter', function() {
+
+    it('all selected', function() {
+      scope.filterModel.forms = scope.forms = [ { code: 'P' }, { code: 'R' } ];
+      var result = service(scope);
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0]).to.deep.equal({
+        view: 'reports_by_date',
+        params: {
+          include_docs: true,
+          descending: true
+        }
+      });
     });
+
+    it('some selected', function() {
+      scope.filterModel.forms = [ { code: 'P' }, { code: 'R' } ];
+      scope.forms = [ { code: 'P' }, { code: 'R' }, { code: 'D' } ];
+      var result = service(scope);
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('reports_by_form');
+      chai.expect(result[0].params).to.deep.equal({
+        keys: [ [ 'P' ], [ 'R' ] ]
+      });
+    });
+
   });
 
-  it('creates requests for reports with forms filter', function() {
-    scope.filterModel.forms = [ { code: 'P' }, { code: 'R' } ];
-    scope.forms = [ { code: 'P' }, { code: 'R' }, { code: 'D' } ];
-    var result = service(scope);
-    chai.expect(result.length).to.equal(1);
-    chai.expect(result[0].view).to.equal('reports_by_form');
-    chai.expect(result[0].params).to.deep.equal({
-      keys: [ [ 'P' ], [ 'R' ] ]
+  describe('validity filter', function() {
+
+    it('true', function() {
+      scope.filterModel.valid = true;
+      var result = service(scope);
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('reports_by_validity');
+      chai.expect(result[0].params).to.deep.equal({
+        key: [ true ]
+      });
     });
+
+    it('false', function() {
+      scope.filterModel.valid = false;
+      var result = service(scope);
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('reports_by_validity');
+      chai.expect(result[0].params).to.deep.equal({
+        key: [ false ]
+      });
+    });
+
   });
 
-  it('creates requests for reports with validity filter true', function() {
-    scope.filterModel.valid = true;
-    var result = service(scope);
-    chai.expect(result.length).to.equal(1);
-    chai.expect(result[0].view).to.equal('reports_by_validity');
-    chai.expect(result[0].params).to.deep.equal({
-      key: [ true ]
-    });
-  });
+  describe('verification filter', function() {
 
-  it('creates requests for reports with validity filter false', function() {
-    scope.filterModel.valid = false;
-    var result = service(scope);
-    chai.expect(result.length).to.equal(1);
-    chai.expect(result[0].view).to.equal('reports_by_validity');
-    chai.expect(result[0].params).to.deep.equal({
-      key: [ false ]
+    it('true', function() {
+      scope.filterModel.verified = true;
+      var result = service(scope);
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('reports_by_verification');
+      chai.expect(result[0].params).to.deep.equal({
+        key: [ true ]
+      });
     });
-  });
 
-  it('creates requests for reports with verification filter true', function() {
-    scope.filterModel.verified = true;
-    var result = service(scope);
-    chai.expect(result.length).to.equal(1);
-    chai.expect(result[0].view).to.equal('reports_by_verification');
-    chai.expect(result[0].params).to.deep.equal({
-      key: [ true ]
+    it('false', function() {
+      scope.filterModel.verified = false;
+      var result = service(scope);
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('reports_by_verification');
+      chai.expect(result[0].params).to.deep.equal({
+        key: [ false ]
+      });
     });
-  });
 
-  it('creates requests for reports with verification filter false', function() {
-    scope.filterModel.verified = false;
-    var result = service(scope);
-    chai.expect(result.length).to.equal(1);
-    chai.expect(result[0].view).to.equal('reports_by_verification');
-    chai.expect(result[0].params).to.deep.equal({
-      key: [ false ]
-    });
   });
 
   it('creates requests for reports with places filter', function() {
@@ -132,27 +144,6 @@ describe('GenerateSearchRequests service', function() {
     chai.expect(result[0].params).to.deep.equal({
       startkey: [ 1360321199999 ],
       endkey: [ 1371124799999 ]
-    });
-  });
-
-  it('creates requests for reports with exact freetext filters', function() {
-    scope.filterQuery.value = 'patient_id:123 form:D';
-    var result = service(scope);
-    chai.expect(result.length).to.equal(1);
-    chai.expect(result[0].view).to.equal('reports_by_freetext');
-    chai.expect(result[0].params).to.deep.equal({
-      keys: [ [ 'patient_id:123' ], [ 'form:d' ] ]
-    });
-  });
-
-  it('creates requests for reports with starts with freetext filters', function() {
-    scope.filterQuery.value = 'someth';
-    var result = service(scope);
-    chai.expect(result.length).to.equal(1);
-    chai.expect(result[0].view).to.equal('reports_by_freetext');
-    chai.expect(result[0].params).to.deep.equal({
-      startkey: [ 'someth' ],
-      endkey: [ 'someth\ufff0' ],
     });
   });
 
@@ -193,16 +184,76 @@ describe('GenerateSearchRequests service', function() {
     });
   });
 
-  it('creates requests for contacts with starts with freetext filters', function() {
-    scope.filterModel.type = 'contacts';
-    scope.filterQuery.value = 'someth';
-    var result = service(scope);
-    chai.expect(result.length).to.equal(1);
-    chai.expect(result[0].view).to.equal('contacts_by_freetext');
-    chai.expect(result[0].params).to.deep.equal({
-      startkey: [ 'someth' ],
-      endkey: [ 'someth\ufff0' ],
+  describe('freetext filter', function() {
+
+    it('reports with exact matching', function() {
+      scope.filterQuery.value = 'patient_id:123 form:D';
+      var result = service(scope);
+      chai.expect(result.length).to.equal(2);
+      chai.expect(result[0].view).to.equal('reports_by_freetext');
+      chai.expect(result[0].params).to.deep.equal({
+        key: [ 'patient_id:123' ]
+      });
+      chai.expect(result[1].view).to.equal('reports_by_freetext');
+      chai.expect(result[1].params).to.deep.equal({
+        key: [ 'form:d' ]
+      });
+    });
+
+    it('reports starts with', function() {
+      scope.filterQuery.value = 'someth';
+      var result = service(scope);
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('reports_by_freetext');
+      chai.expect(result[0].params).to.deep.equal({
+        startkey: [ 'someth' ],
+        endkey: [ 'someth\ufff0' ],
+      });
+    });
+
+    it('contacts starts with', function() {
+      scope.filterModel.type = 'contacts';
+      scope.filterQuery.value = 'someth';
+      var result = service(scope);
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('contacts_by_freetext');
+      chai.expect(result[0].params).to.deep.equal({
+        startkey: [ 'someth' ],
+        endkey: [ 'someth\ufff0' ],
+      });
+    });
+
+    it('contacts multiple words', function() {
+      scope.filterModel.type = 'contacts';
+      scope.filterQuery.value = 'some thing';
+      var result = service(scope);
+      chai.expect(result.length).to.equal(2);
+      chai.expect(result[0].view).to.equal('contacts_by_freetext');
+      chai.expect(result[0].params).to.deep.equal({
+        startkey: [ 'some' ],
+        endkey: [ 'some\ufff0' ],
+      });
+      chai.expect(result[1].view).to.equal('contacts_by_freetext');
+      chai.expect(result[1].params).to.deep.equal({
+        startkey: [ 'thing' ],
+        endkey: [ 'thing\ufff0' ],
+      });
+    });
+
+    it('mixing starts with and exact matching', function() {
+      scope.filterModel.type = 'contacts';
+      scope.filterQuery.value = 'patient_id:123 visit';
+      var result = service(scope);
+      chai.expect(result.length).to.equal(2);
+      chai.expect(result[0].view).to.equal('contacts_by_freetext');
+      chai.expect(result[0].params).to.deep.equal({
+        key: [ 'patient_id:123' ]
+      });
+      chai.expect(result[1].view).to.equal('contacts_by_freetext');
+      chai.expect(result[1].params).to.deep.equal({
+        startkey: [ 'visit' ],
+        endkey: [ 'visit\ufff0' ],
+      });
     });
   });
-
 });

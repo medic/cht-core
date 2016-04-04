@@ -60,7 +60,8 @@ describe('TargetGenerator service', function() {
       { _id: '1', type: 'unknown' }
     ]);
     injector.get('TargetGenerator')(function(err, actual) {
-      chai.expect(actual).to.deep.equal([ { id: 'known' } ]);
+      chai.expect(actual.length).to.equal(1);
+      chai.expect(actual[0].id).to.equal('known');
       done();
     });
   });

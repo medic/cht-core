@@ -15,8 +15,8 @@ var feedback = require('../modules/feedback'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES) {
 
       Session.init();
 
@@ -428,7 +428,7 @@ var feedback = require('../modules/feedback'),
         sendMessage.init(Settings, Contact, translateFilter);
       };
 
-      Form()
+      JsonForms()
         .then(function(jsonForms) {
           XmlForms('InboxCtrl', { contactForms: false }, function(err, xForms) {
             if (err) {
@@ -666,13 +666,9 @@ var feedback = require('../modules/feedback'),
           DeleteDoc(docToDeleteId, function(err) {
             pane.done(translateFilter('Error deleting document'), err);
             if (!err) {
-              // return to list view for the current state
-              var stateName = $state.current.name,
-                  dotIndex = stateName.indexOf('.');
-              if(dotIndex !== -1) {
-                stateName = stateName.substring(0, dotIndex);
+              if ($state.includes('contacts') || $state.includes('reports')) {
+                $state.go($state.current.name, { id: null });
               }
-              $state.go(stateName);
               Snackbar(translateFilter('document.deleted'));
             }
           });
@@ -955,7 +951,7 @@ var feedback = require('../modules/feedback'),
       $scope.configurationPages = [
         {
           state: 'configuration.settings.basic',
-          icon: 'fa-cog',
+          icon: 'fa-wrench',
           name: 'Settings',
           active: function() {
             return $state.includes('configuration.settings');

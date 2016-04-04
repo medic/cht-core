@@ -68,7 +68,7 @@ describe('InboxCtrl controller', function() {
       $provide.factory('FacilityHierarchy', function() {
         return sinon.stub();
       });
-      $provide.factory('Form', function() {
+      $provide.factory('JsonForms', function() {
         return function() {
           return Promise.resolve({});
         };
@@ -102,7 +102,8 @@ describe('InboxCtrl controller', function() {
       $provide.factory('$state', function() {
         spyState = {
           go: sinon.spy(),
-          current: { name: 'contacts.name' }
+          current: { name: 'my.state.is.great' },
+          includes: function() { return true; }
         };
         return spyState;
       });
@@ -169,9 +170,25 @@ describe('InboxCtrl controller', function() {
     var callback = spyDeleteDoc.getCall(0).args[1];
     // Call callback without err.
     callback();
-    chai.assert(spyState.go.calledWith('contacts'), 'should go to contacts state');
-    chai.assert(snackbar.called, 'Shoud display toast');
+    chai.expect(spyState.go.args[0][0]).to.equal(spyState.current.name);
+    chai.expect(spyState.go.args[0][1]).to.deep.equal({ id: null });
+    chai.assert(snackbar.called, 'Should display toast');
   });
+
+  it('doesn\'t change state after deleting message', function() {
+    spyState.includes = function(state) {
+      return state === 'messages';
+    };
+
+    scope.deleteDoc(dummyId);
+    scope.deleteDocConfirm();
+    var callback = spyDeleteDoc.getCall(0).args[1];
+    // Call callback without err.
+    callback();
+    chai.assert.isFalse(spyState.go.called, 'state change should not happen');
+    chai.assert(snackbar.called, 'Should display toast');
+  });
+
 
   it('doesn\'t navigate back to contacts state after failed contact deletion', function() {
     scope.deleteDoc(dummyId);

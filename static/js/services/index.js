@@ -27,7 +27,7 @@
   require('./facility');
   require('./facility-hierarchy');
   require('./file-reader');
-  require('./form');
+  require('./json-forms');
   require('./format-data-record');
   require('./format-date');
   require('./generate-search-query');

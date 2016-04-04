@@ -72,7 +72,7 @@ describe('TrafficStats service', function() {
 
   it('appends to traffic_stats doc when there is one', function(done) {
     queryStub.returns(KarmaUtils.mockPromise(null, {
-      rows: [{value: {traffic: []}}]
+      rows: [{ doc: {traffic: []} }]
     }));
     service();
     setTimeout(function() {
@@ -82,6 +82,8 @@ describe('TrafficStats service', function() {
       chai.expect(doc.traffic[0].rx).to.equal(stats.rx);
       chai.expect(doc.traffic[0].tx).to.equal(stats.tx);
       chai.expect(doc.traffic[0]).to.have.property('timestamp');
+      chai.expect(queryStub.args[0][0]).to.equal('medic/doc_by_type');
+      chai.expect(queryStub.args[0][1]).to.deep.equal({ key: [ 'traffic_stats' ], include_docs: true });
       done();
     });
   });

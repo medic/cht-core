@@ -8,9 +8,9 @@ var _ = require('underscore'),
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$translate', 'TranslateFrom', 'LiveList', 'Settings', 'MarkRead', 'Search', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, $translate, TranslateFrom, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified) {
+  inboxControllers.controller('ReportsCtrl',
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$translate', '$log', 'TranslateFrom', 'LiveList', 'Settings', 'MarkRead', 'Search', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, $translate, $log, TranslateFrom, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified) {
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = null;
@@ -35,7 +35,7 @@ var _ = require('underscore'),
           });
       };
 
-      $scope.update = function(updated) {
+      var _updateLiveList = function(updated) {
         _.each(updated, function(report) {
           liveList.update(report, false);
         });
@@ -51,7 +51,7 @@ var _ = require('underscore'),
         MarkRead(report._id, true)
           .then($scope.updateReadStatus)
           .catch(function(err) {
-            console.log(err);
+            $log.error('Error marking read', err);
           });
       };
 
@@ -65,7 +65,6 @@ var _ = require('underscore'),
       };
 
       var getFields = function(results, values, labelPrefix, depth) {
-        console.log('depth', depth);
         if (depth > 3) {
           depth = 3;
         }
@@ -122,17 +121,37 @@ var _ = require('underscore'),
         $scope.settingSelected(refreshing);
       };
 
-      $scope.selectReport = function(id) {
-        $scope.clearSelected();
+      var _fetchFormattedReport = function(report) {
+        if (_.isString(report)) {
+          // id only - fetch the full doc
+          return DB.get()
+            .get(report)
+            .then(FormatDataRecord);
+        } else {
+          return FormatDataRecord(report);
+        }
+      };
 
-        if (!id || !liveList.initialised()) {
+      $scope.refreshReportSilently = function(report) {
+        _fetchFormattedReport(report)
+          .then(function(doc) {
+              _setSelected(doc[0]);
+            })
+          .catch(function(err) {
+            $log.error('Error fetching formatted report', err);
+          });
+      };
+
+      $scope.selectReport = function(report) {
+        if (!report || !liveList.initialised()) {
+          $scope.clearSelected();
           return;
         }
 
-        $scope.setLoadingContent(id);
-        DB.get()
-          .get(id)
-          .then(FormatDataRecord)
+        $scope.clearSelected();
+        $scope.setLoadingContent(report);
+
+        _fetchFormattedReport(report)
           .then(function(doc) {
             if (doc) {
               _setSelected(doc[0]);
@@ -141,7 +160,7 @@ var _ = require('underscore'),
           })
           .catch(function(err) {
             $scope.clearSelected();
-            console.error(err);
+            $log.error('Error selecting report', err);
           });
       };
 
@@ -173,7 +192,7 @@ var _ = require('underscore'),
               // invalid freetext filter query
               $scope.errorSyntax = true;
             }
-            return console.log('Error loading messages', err);
+            return $log.error('Error loading messages', err);
           }
 
           $scope.moreItems = liveList.moreItems = data.length >= options.limit;
@@ -184,7 +203,7 @@ var _ = require('underscore'),
               $scope.appending = false;
               $scope.error = false;
               $scope.errorSyntax = false;
-              $scope.update(data);
+              _updateLiveList(data);
               var curr = _.findWhere(data, { _id: $state.params.id });
               if (curr) {
                 $scope.setSelected(curr);
@@ -200,7 +219,7 @@ var _ = require('underscore'),
             })
             .catch(function(err) {
               $scope.error = true;
-              console.log('Error formatting record', err);
+              $log.error('Error formatting record', err);
             });
         });
       };
@@ -253,13 +272,14 @@ var _ = require('underscore'),
 
       $scope.$on('ClearSelected', function() {
         $scope.selected = null;
+        liveList.clearSelected();
       });
 
       $scope.$on('VerifyReport', function(e, verify) {
         if ($scope.selected.form) {
           Verified($scope.selected._id, verify, function(err) {
             if (err) {
-              console.log('Error verifying message', err);
+              $log.error('Error verifying message', err);
             }
           });
         }
