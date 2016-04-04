@@ -22,7 +22,7 @@ var _init = function(settings, phone) {
       return this.util.format(this.parse(), standardFormat).toString();
     },
     validate: function() {
-      return this.util.isPossibleNumber(this.parse()) &&
+      return this.util.isValidNumber(this.parse()) &&
         // Disallow alpha numbers, e.g. 1-800-MICROSOFT. We only take digits.
         // Disallow weirdness in liphonenumber : 1 or 2 letters are ignored 
         // ('<validnumber>aa' is valid).
