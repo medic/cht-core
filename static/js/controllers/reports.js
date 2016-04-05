@@ -18,7 +18,7 @@ var _ = require('underscore'),
 
       var liveList = LiveList.reports;
 
-      $scope.setSelectedGroup = function(group) {
+      var _setSelectedGroup = function(group) {
         $scope.selectedGroup = angular.copy(group);
       };
 
@@ -164,7 +164,7 @@ var _ = require('underscore'),
           });
       };
 
-      $scope.query = function(options) {
+      var _query = function(options) {
         options = options || {};
         options.limit = 50;
         if (!options.silent) {
@@ -250,7 +250,7 @@ var _ = require('underscore'),
           liveList = LiveList['report-search'];
           liveList.set([]);
 
-          $scope.query();
+          _query();
         } else {
           $scope.filtered = false;
           liveList = LiveList.reports;
@@ -264,7 +264,7 @@ var _ = require('underscore'),
               _initScroll();
             });
           } else {
-            $scope.query();
+            _query();
           }
         }
 
@@ -295,7 +295,7 @@ var _ = require('underscore'),
       var _initScroll = function() {
         scrollLoader.init(function() {
           if (!$scope.loading && $scope.moreItems) {
-            $scope.query({ skip: true });
+            _query({ skip: true });
           }
         });
       };
@@ -343,7 +343,7 @@ var _ = require('underscore'),
       };
 
       $scope.edit = function(group) {
-        $scope.setSelectedGroup(group);
+        _setSelectedGroup(group);
         $('#edit-message-group').modal('show');
         initEditMessageModal();
       };

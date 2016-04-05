@@ -26,12 +26,12 @@ var _ = require('underscore'),
       function _initScroll() {
         scrollLoader.init(function() {
           if (!$scope.loading && $scope.moreItems) {
-            $scope.query({ skip: true });
+            _query({ skip: true });
           }
         });
       }
 
-      $scope.query = function(options) {
+      var _query = function(options) {
         options = options || {};
         options.limit = 50;
 
@@ -134,7 +134,7 @@ var _ = require('underscore'),
           liveList = LiveList['contact-search'];
           liveList.set([]);
 
-          $scope.query();
+          _query();
         } else {
           $scope.filtered = false;
           liveList = LiveList.contacts;
@@ -148,7 +148,7 @@ var _ = require('underscore'),
               _initScroll();
             });
           } else {
-            $scope.query();
+            _query();
           }
         }
       });
