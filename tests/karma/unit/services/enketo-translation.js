@@ -830,6 +830,46 @@ describe('EnketoTranslation service', function() {
       assert.equal(element.find('contact > _id').text(), 'abc-123');
       assert.equal(element.find('contact > name').text(), 'Dr. D');
     });
+
+    it('binds single data values to all matching elems of the model', function() {
+      var TEST_VALUE = 'testValue';
+
+      var element = $($.parseXML('<foo><bar></bar><bar></bar><baz><bar></bar></baz></foo>'));
+      var data = {
+        bar: TEST_VALUE
+      };
+
+      service.bindJsonToXml(element, data);
+
+      element.find('bar').each(function(idx, bar) {
+        assert.equal($(bar).text(), TEST_VALUE);
+      });
+    });
+
+    it('preferentially binds to more specific data structures', function() {
+      var DEEP_TEST_VALUE = 'deep';
+
+      var element = $($.parseXML('<foo><bar><baz><smang /></baz></bar></foo>'));
+      var data = {
+        foo: {
+          smang: 'shallow5',
+          baz: {
+            smang: 'shallow6'
+          }
+        },
+        smang: 'shallow1',
+        bar: {
+          baz: {
+            smang: DEEP_TEST_VALUE
+          },
+          smang: 'shallow2'
+        },
+      };
+
+      service.bindJsonToXml(element, data);
+
+      assert.equal(element.find('smang').text(), DEEP_TEST_VALUE);
+    });
   });
 
 });
