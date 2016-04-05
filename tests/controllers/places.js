@@ -49,7 +49,7 @@ exports['createPlaces rejects objects with wrong type.'] = function(test) {
    type: 'food'
   };
   var insert = sinon.stub(db.medic, 'insert');
-  controller.createPlaces(place, function(err, val) {
+  controller.createPlaces(place, function(err) {
     test.ok(err);
     test.equal(insert.callCount, 0);
     test.done();
@@ -66,7 +66,7 @@ exports['createPlaces rejects parent objects with wrong type.'] = function(test)
    }
   };
   var insert = sinon.stub(db.medic, 'insert');
-  controller.createPlaces(place, function(err, val) {
+  controller.createPlaces(place, function(err) {
     test.ok(err);
     test.equal(insert.callCount, 0);
     test.done();
@@ -81,7 +81,7 @@ exports['createPlaces rejects when parent lookup fails.'] = function(test) {
   };
   var insert = sinon.stub(db.medic, 'insert');
   sinon.stub(controller, '_getPlace').callsArgWith(1, 'boom');
-  controller.createPlaces(place, function(err, val) {
+  controller.createPlaces(place, function(err) {
     test.ok(err);
     test.equal(insert.callCount, 0);
     test.done();
@@ -167,9 +167,9 @@ exports['createPlaces supports objects with name and right type.'] = function(te
 exports['createPlaces supports parents defined as uuids.'] = function(test) {
   test.expect(6);
   var place = {
-    "name": "CHP Area One",
-    "type": "health_center",
-    "parent": "ad06d137"
+    name: 'CHP Area One',
+    type: 'health_center',
+    parent: 'ad06d137'
   };
   sinon.stub(db.medic, 'get', function(id, cb) {
     return cb(null, {

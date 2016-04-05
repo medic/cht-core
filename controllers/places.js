@@ -1,5 +1,4 @@
-var async = require('async'),
-    _ = require('underscore'),
+var _ = require('underscore'),
     db = require('../db');
 
 var getPlace = function(id, callback) {
@@ -54,83 +53,6 @@ var createPlace = function(place, callback) {
       return callback(err);
     }
     db.medic.insert(place, callback);
-  });
-};
-
-
-/*
-var oldCreatePlaces = function(place, callback) {
-  var series = [];
-  if (_.isString(place.parent)) {
-    series.push(function(cb) {
-      getPlace(place.parent, function(err, doc) {
-        if (err) {
-          return cb(err);
-        }
-        console.log('getPlace doc', doc);
-        place.parent = doc;
-        cb();
-      });
-    });
-  } else if (_.isObject(place.parent) && !place.parent._id) {
-    // create parents
-    series.push(function(cb) {
-      createPlaces(place.parent, function(err, body) {
-        if (err) {
-          return cb(err);
-        }
-        console.log('createPlaces body', body);
-        place.parent = body.id;
-        cb();
-      });
-    });
-  } else {
-    series.push(function(cb) {
-      createPlace(place, cb);
-    });
-  }
-  async.series(series, function(err) {
-    if (err) {
-      return callback(err);
-    }
-    console.log('async.series place', place);
-    callback(null, place);
-  });
-};
-*/
-
-var validateOrCreatePlace = function(place, response, callback) {
-  if (_.isString(place)) {
-    db.medic.get(place, function(err, doc) {
-      if (err) {
-        if (err.statusCode === 404) {
-          err.message = 'Failed to find place.';
-        }
-        return callback(err);
-      }
-      if (!isAPlace(doc)) {
-        return error400('Wrong type, this is not a place.', callback);
-      }
-      callback(null, doc);
-    });
-    return valdiatePlace(place, callback);
-  } else if (!_.isObject(place)) {
-    return error400('Place must be object or string.', callback);
-  }
-  if (!isAPlace(place)) {
-    return error400('Wrong type, this is not a place.', callback);
-  }
-  response = response || {};
-  db.medic.insert(place, function(err, body) {
-    if (err) {
-      return callback(err);
-    }
-    data.place = body.id;
-    response.place = {
-      id: body.id,
-      rev: body.rev
-    };
-    callback(null, data, response);
   });
 };
 
