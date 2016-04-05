@@ -15,8 +15,8 @@ var feedback = require('../modules/feedback'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES', 'Modal',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES, Modal) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES', 'Modal', '$q',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES, Modal, $q) {
 
       Session.init();
 
@@ -662,28 +662,32 @@ var feedback = require('../modules/feedback'),
         $rootScope.$broadcast.apply($rootScope, arguments);
       };
 
-      var docToDeleteId;
-
-      $scope.deleteDoc = function(id) {
-        $('#delete-confirm').modal('show');
-        docToDeleteId = id;
+      // TODO promisify DeleteDoc
+      var _deleteDoc = function(id) {
+        var deferred = $q.defer();
+        if (!id) {
+          return deferred.reject('Error deleting document : no docToDeleteId set');
+        }
+        DeleteDoc(id, function(err) {
+          if (err) {
+            return deferred.reject(err);
+          }
+          return deferred.resolve();
+        });
+        return deferred.promise;
       };
 
-      $scope.deleteDocConfirm = function() {
-        var pane = modal.start($('#delete-confirm'));
-        if (docToDeleteId) {
-          DeleteDoc(docToDeleteId, function(err) {
-            pane.done(translateFilter('Error deleting document'), err);
-            if (!err) {
-              if ($state.includes('contacts') || $state.includes('reports')) {
-                $state.go($state.current.name, { id: null });
-              }
-              Snackbar(translateFilter('document.deleted'));
+      $scope.deleteDoc = function(id) {
+        Modal('templates/modals/alert.html', function() { return _deleteDoc(id); })
+          .then(function () {
+            // Success!
+            if ($state.includes('contacts') || $state.includes('reports')) {
+              $state.go($state.current.name, { id: null });
             }
+            Snackbar(translateFilter('document.deleted'));
+          }, function () {
+            $log.debug('User cancelled deleteDoc.');
           });
-        } else {
-          pane.done(translateFilter('Error deleting document'), 'No docToDeleteId set');
-        }
       };
 
       $('body').on('mouseenter', '.relative-date, .autoreply', function() {
