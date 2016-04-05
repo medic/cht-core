@@ -404,7 +404,7 @@ app.get('/api/v1/users', function(req, res) {
     }
     users.getList(function(err, body) {
       if (err) {
-        return serverUtils.serverError(err, req, res);
+        return serverUtils.error(err, req, res);
       }
       res.json(body);
     });
