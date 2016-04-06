@@ -195,26 +195,10 @@ var createUserSettings = function(data, response, callback) {
 };
 
 var createPlace = function(data, response, callback) {
-  if (_.isString(data.place)) {
-    // check place exists
-    module.exports._getPlace(data.place, function(err) {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, data, response);
-    });
-  } else if (_.isObject(data.place)) {
-    // create and validate place
-    places.createPlaces(data.place, function(err, resp) {
-      if (err) {
-        return callback(err);
-      }
-      data.place = resp.id;
-      return callback(null, data, response);
-    });
-  } else {
-    callback('Place must be an object or string.');
-  }
+  module.exports._getOrCreatePlace(data.place, function(err, doc) {
+    data.place = doc;
+    callback(err, data, response);
+  });
 };
 
 var setContactParent = function(data, response, callback) {
@@ -425,8 +409,9 @@ module.exports = {
   _getAllUserSettings: getAllUserSettings,
   _getContactParent: db.medic.get,
   _getFacilities: getFacilities,
-  _getSettingsUpdates: getSettingsUpdates,
+  _getOrCreatePlace: places.getOrCreatePlace,
   _getPlace: places._getPlace,
+  _getSettingsUpdates: getSettingsUpdates,
   _getUserUpdates: getUserUpdates,
   _hasParent: hasParent,
   _setContactParent: setContactParent,

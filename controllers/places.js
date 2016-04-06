@@ -62,56 +62,84 @@ var createPlace = function(place, callback) {
   });
 };
 
+/*
+ * Create a place and related/parent places.  Only creates the place once all
+ * parents have been created and embedded.  Replaces references to places
+ * (UUIDs) with objects by fetching from the database.  Replace objects with
+ * real places after validating and creating them.
+ *
+ * Return the id and rev of newly created place.
+ *
+ * Examples:
+ *
+ * {
+ *   "name": "CHP Area One",
+ *   "type": "health_center",
+ *   "parent": "1d83f2b4a27eceb40df9e9f9ad06d137"
+ * }
+ *
+ * {
+ *   "name": "CHP Area One",
+ *   "type": "health_center",
+ *   "parent": {
+ *     "name": "CHP Branch One",
+ *     "type": "district_hospital"
+ *   }
+ * }
+ */
+var createPlaces = function(place, callback) {
+  var self = module.exports;
+  if (_.isString(place.parent)) {
+    self._getPlace(place.parent, function(err, doc) {
+      if (err) {
+        return callback(err);
+      }
+      place.parent = doc;
+      self._createPlace(place, callback);
+    });
+  } else if (_.isObject(place.parent) && !place.parent._id) {
+    self._createPlaces(place.parent, function(err, body) {
+      if (err) {
+        return callback(err);
+      }
+      place.parent = body.id;
+      self._createPlaces(place, callback);
+    });
+  } else {
+    // create place when all parents are resolved
+    self._createPlace(place, callback);
+  }
+};
+
 module.exports = {
   _getPlace: getPlace,
   _createPlace: createPlace,
+  _createPlaces: createPlaces,
   _validatePlace: validatePlace,
   /*
-   * Create a place and related/parent places.  Only creates the place once all
-   * parents have been created and embedded.  Replaces references to places
-   * (UUIDs) with objects by fetching from the database.  Replace objects with
-   * real places after validating and creating them.
-   *
-   * Return the id and rev of newly created place.
-   *
-   * Examples:
-   *
-   * {
-   *   "name": "CHP Area One",
-   *   "type": "health_center",
-   *   "parent": "1d83f2b4a27eceb40df9e9f9ad06d137"
-   * }
-   *
-   * {
-   *   "name": "CHP Area One",
-   *   "type": "health_center",
-   *   "parent": {
-   *     "name": "CHP Branch One",
-   *     "type": "district_hospital"
-   *   }
-   * }
+   * Return existing or newly created place or error. Assumes stored places
+   * are valid.
    */
-  createPlaces: function(place, callback) {
-    var self = this;
-    if (_.isString(place.parent)) {
-      self._getPlace(place.parent, function(err, doc) {
+  getOrCreatePlace: function(place, callback) {
+    var self = module.exports;
+    if (_.isString(place)) {
+      // fetch place
+      self._getPlace(place, function(err, doc) {
         if (err) {
           return callback(err);
         }
-        place.parent = doc;
-        self._createPlace(place, callback);
+        callback(null, doc);
       });
-    } else if (_.isObject(place.parent) && !place.parent._id) {
-      self.createPlaces(place.parent, function(err, body) {
+    } else if (_.isObject(place) && _.isUndefined(place._id)) {
+      // create and return place
+      self._createPlaces(place, function(err, resp) {
         if (err) {
           return callback(err);
         }
-        place.parent = body.id;
-        self.createPlaces(place, callback);
+        self._getPlace(resp.id, callback);
       });
     } else {
-      // create place when all parents are resolved
-      self._createPlace(place, callback);
+      callback('Place must be a new object or string identifier (UUID).');
     }
   }
 };

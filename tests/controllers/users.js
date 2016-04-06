@@ -29,6 +29,7 @@ exports.tearDown = function (callback) {
     controller._getAllUserSettings,
     controller._getContactParent,
     controller._getFacilities,
+    controller._getOrCreatePlace,
     controller._getPlace,
     controller._setContactParent,
     controller._validateUser,
@@ -38,7 +39,6 @@ exports.tearDown = function (callback) {
     controller._updateUser,
     controller._updateUserSettings,
     controller.getList
-    //places._getPlace
   );
   callback();
 };
@@ -518,6 +518,17 @@ exports['deleteUser sets _deleted on the user-settings doc'] = function(test) {
     test.equal(err, undefined);
     test.equal(usersInsert.callCount, 1);
     test.deepEqual(usersInsert.firstCall.args[0], expect);
+    test.done();
+  });
+};
+
+exports['createPlace assigns new place'] = function(test) {
+  sinon.stub(controller, '_getOrCreatePlace').callsArgWith(1, null, {
+    _id: 'santos'
+  });
+  controller._createPlace(userData, {}, function(err, data) {
+    test.ok(!err);
+    test.equal(data.place._id, 'santos');
     test.done();
   });
 };
