@@ -840,8 +840,10 @@ describe('EnketoTranslation service', function() {
       };
 
       service.bindJsonToXml(element, data);
+      var results = element.find('bar');
 
-      element.find('bar').each(function(idx, bar) {
+      assert.equal(results.length, 3);
+      results.each(function(idx, bar) {
         assert.equal($(bar).text(), TEST_VALUE);
       });
     });
