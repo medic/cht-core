@@ -7,15 +7,15 @@
     "url": "git://github.com/medic/medic-webapp.git"
   },
   "dependencies": {
-    "angular": "1.4.3",
-    "angular-animate": "1.4.3",
-    "angular-cookie": "~4.0.9",
-    "angular-pouchdb": "~4.1.0",
-    "angular-resource": "1.4.3",
-    "angular-route": "1.4.3",
-    "angular-sanitize": "1.4.3",
-    "angular-translate": "~2.9.0",
-    "angular-ui-router": "~0.2.11",
+    "angular": "^1.5.3",
+    "angular-animate": "^1.5.3",
+    "angular-cookie": "^4.1.0",
+    "angular-pouchdb": "^4.1.0",
+    "angular-resource": "^1.5.3",
+    "angular-route": "^1.5.3",
+    "angular-sanitize": "^1.5.3",
+    "angular-translate": "^2.11.0",
+    "angular-ui-router": "^0.2.16",
     "angularjs-nvd3-directives": "~0.0.8",
     "async": "^1.4.0",
     "bootstrap": "~3.3.5",
@@ -38,7 +38,7 @@
     "worker-pouch": "^1.0.1"
   },
   "devDependencies": {
-    "angular-mocks": "1.4.3",
+    "angular-mocks": "^1.5.3",
     "autoprefixer-core": "^5.2.1",
     "browserify": "^13.0",
     "chai": "^2.1.0",
