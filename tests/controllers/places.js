@@ -3,6 +3,8 @@ var controller = require('../../controllers/places'),
     utils = require('../utils'),
     sinon = require('sinon');
 
+var examplePlace;
+
 exports.tearDown = function (callback) {
   utils.restore(
     db.medic.get,
@@ -11,6 +13,15 @@ exports.tearDown = function (callback) {
     controller._createPlace,
     controller._validatePlace
   );
+  callback();
+};
+
+exports.setUp = function(callback) {
+  examplePlace = {
+    type: 'clinic',
+    name: 'St. Paul',
+    parent: 'x'
+  };
   callback();
 };
 
@@ -29,8 +40,44 @@ exports['validatePlace returns error on number argument.'] = function(test) {
 };
 
 exports['validatePlace returns error when doc is wrong type.'] = function(test) {
-  controller._validatePlace({type: 'food'}, function(err) {
+  examplePlace.type = 'food';
+  controller._validatePlace(examplePlace, function(err) {
     test.equal(err, 'Wrong type, this is not a place.');
+    test.done();
+  });
+};
+
+exports['validatePlace returns error if clinic is missing parent'] = function(test) {
+  delete examplePlace.parent;
+  controller._validatePlace(examplePlace, function(err) {
+    test.equal(err, 'Place is missing a "parent" property.');
+    test.done();
+  });
+};
+
+exports['validatePlace returns error if health center is missing parent'] = function(test) {
+  delete examplePlace.parent;
+  examplePlace.type = 'health_center';
+  controller._validatePlace(examplePlace, function(err) {
+    test.equal(err, 'Place is missing a "parent" property.');
+    test.done();
+  });
+};
+
+exports['validatePlace does not return error if district is missing parent'] = function(test) {
+  delete examplePlace.parent;
+  examplePlace.type = 'district_hospital';
+  controller._validatePlace(examplePlace, function(err) {
+    test.ok(!err);
+    test.done();
+  });
+};
+
+exports['validatePlace does not return error if national office is missing parent'] = function(test) {
+  delete examplePlace.parent;
+  examplePlace.type = 'national_office';
+  controller._validatePlace(examplePlace, function(err) {
+    test.ok(!err);
     test.done();
   });
 };

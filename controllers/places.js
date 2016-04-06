@@ -15,6 +15,7 @@ var getPlace = function(id, callback) {
 
 var isAPlace = function(place) {
   return [
+    'national_office',
     'district_hospital',
     'health_center',
     'clinic'
@@ -35,10 +36,15 @@ var validatePlace = function(place, callback) {
     return callback('Wrong type, this is not a place.');
   }
   if (_.isUndefined(place.name)) {
-    return callback('Name property missing on place.');
+    return callback('Place is missing a "name" property.');
   }
   if (!_.isString(place.name)) {
     return callback('Property "name" must be a string.');
+  }
+  if (['clinic', 'health_center'].indexOf(place.type) !== -1) {
+    if (_.isUndefined(place.parent)) {
+      return callback('Place is missing a "parent" property.');
+    }
   }
   if (place.parent) {
     // validate parents also
@@ -93,7 +99,7 @@ module.exports = {
           return callback(err);
         }
         place.parent = doc;
-        self.createPlaces(place, callback);
+        self._createPlace(place, callback);
       });
     } else if (_.isObject(place.parent) && !place.parent._id) {
       self.createPlaces(place.parent, function(err, body) {
