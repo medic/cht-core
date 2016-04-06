@@ -1,12 +1,12 @@
 /**
 * Our wrapper around google's libphonenumber.
 */
-var i18n = require('./phoneformat'),
-  standardFormat = i18n.phonenumbers.PhoneNumberFormat.E164;
+var phonenumber = require('libphonenumber/libphonenumber'),
+    standardFormat = phonenumber.PhoneNumberFormat.E164;
 
 var _init = function(settings, phone) {
   return {
-    util: i18n.phonenumbers.PhoneNumberUtil.getInstance(),
+    util: phonenumber.PhoneNumberUtil.getInstance(),
     phone: phone,
     countryCode: settings && settings.default_country_code,
     country: function() {

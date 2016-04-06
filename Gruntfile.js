@@ -91,8 +91,8 @@ module.exports = function(grunt) {
             './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding',
             'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath',
             'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
-            'libphonenumber/phoneformat': './packages/libphonenumber/libphonenumber/phoneformat',
             'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils',
+            'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber'
           },
         },
       }
@@ -159,6 +159,18 @@ module.exports = function(grunt) {
               'node_modules/font-awesome/fonts/*'
             ],
             dest: 'static/fonts'
+          },
+        ]
+      },
+      libphonenumber: {
+        files: [
+          {
+            expand: true,
+            flatten: true,
+            src: [
+              'node_modules/google-libphonenumber/dist/browser/libphonenumber.js'
+            ],
+            dest: 'packages/libphonenumber/libphonenumber/'
           },
         ]
       },
@@ -347,6 +359,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('deploy', 'Deploy the webapp', [
+    'copy:libphonenumber',
     'exec:deploy',
     'notify:deployed'
   ]);

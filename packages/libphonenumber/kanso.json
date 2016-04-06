@@ -1,6 +1,6 @@
 {
     "name": "libphonenumber",
-    "version": "1.0.736",
+    "version": "2.0.0",
     "url": "https://code.google.com/p/libphonenumber/",
     "modules": ["libphonenumber"],
     "modules_attachment": false,
