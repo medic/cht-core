@@ -1,6 +1,6 @@
-var proxyquire = require('proxyquire');
+var proxyquire = require('proxyquire').noCallThru();
 var phonenumber = proxyquire('../../../packages/libphonenumber/libphonenumber/utils', {
-  'kujua-utils':  {}
+  'libphonenumber/libphonenumber': require('../../../packages/libphonenumber/libphonenumber/libphonenumber')
 });
 
 var validNumNZDomestic = '0275552636'; 
