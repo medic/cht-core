@@ -309,6 +309,7 @@ module.exports = function(grunt) {
 
   // Default tasks
   grunt.registerTask('mmjs', 'Build the JS resources', [
+    'copy:libphonenumber',
     'browserify:dist',
     'replace:hardcodeappsettings',
     'replace:monkeypatchdate',
@@ -328,7 +329,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('deploy', 'Deploy the webapp', [
-    'copy:libphonenumber',
     'exec:deploy',
     'notify:deployed'
   ]);
