@@ -82,6 +82,20 @@ exports['getSettingsUpdates removes user doc specific fields'] = function(test) 
   test.done();
 };
 
+exports['getSettingsUpdates does not use place and contact fields'] = function(test) {
+  var data = {
+    place: 'abc',
+    contact: '123',
+    fullname: 'John'
+  };
+  var settings = controller._getSettingsUpdates('john', data);
+  test.ok(!settings.place);
+  test.ok(!settings.contact);
+  test.equal(settings.fullname, 'John');
+  test.done();
+};
+
+
 exports['getUserUpdates enforces name field based on id'] = function(test) {
   var data = {
     name: 'sam',
@@ -732,7 +746,8 @@ exports['createUser returns error if place is not within contact.'] = function(t
   });
   userData.place = 'georgia';
   controller.createUser(userData, function(err) {
-    test.ok(err);
+    test.equal(err.code, 400);
+    test.equal(err.message, 'Contact is not within place.');
     test.done();
   });
 };

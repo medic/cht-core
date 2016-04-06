@@ -331,9 +331,10 @@ var getRoles = function(type) {
 };
 
 var getSettingsUpdates = function(username, data) {
-  var settings = {};
+  var settings = {},
+      ignore = ['place', 'contact'];
   _.forEach(SETTINGS_EDITABLE_FIELDS , function(key) {
-    if (!_.isUndefined(data[key])) {
+    if (!_.isUndefined(data[key]) && ignore.indexOf(key) === -1) {
       settings[key] = data[key];
     }
   });
