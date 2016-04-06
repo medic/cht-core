@@ -696,7 +696,8 @@ Create a new user with a place and a contact.
 
 Create a new user that can authenticate with a username of "mary" and password
 of "secret" that can submit reports and view or modify records associated to
-their place:
+their place.  The place is created behind the scenes and assigned to the
+contact.
 
 ```
 POST /api/v1/users
@@ -706,11 +707,14 @@ Content-Type: application/json
   "password": "secret",
   "username": "mary",
   "type": "district-manager",
-  "place": "eeb17d6d-5dde-c2c0-62c4a1a0ca17e342",
+  "place": {
+    "name": "Mary's Area",
+    "type": "health_center",
+    "parent": "d14e1c3d557761320b13a77e7806e8f8"
+  },
   "contact": {
     "name": "Mary Anyango",
     "phone": "+2868917046",
-    "parent": "B4BDEE4B-5459-5A3C-805A-BC39087ED57D"
   }
 }
 ```

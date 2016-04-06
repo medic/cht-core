@@ -1,6 +1,7 @@
 var async = require('async'),
     _ = require('underscore'),
-    db = require('../db');
+    db = require('../db'),
+    places = require('./places');
 
 var USER_EDITABLE_FIELDS  = [
   'password',
@@ -19,6 +20,16 @@ var SETTINGS_EDITABLE_FIELDS  = [
   'contact',
   'type'
 ];
+
+/*
+ * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
+ */
+var error400 = function(msg, callback) {
+  callback({
+    code: 400,
+    message: msg
+  });
+};
 
 var getType = function(user, admins) {
   if (user.roles && user.roles.length) {
@@ -72,93 +83,43 @@ var getFacilities = function(callback) {
   });
 };
 
-var isAPlace = function(place) {
-  return [
-    'district_hospital',
-    'health_center',
-    'clinic'
-  ].indexOf(place.type) !== -1;
-};
-
-/*
- * Make string errors 400 responses to minimize stacktraces in the logs for
- * non-critical errors. If messages object is passed in and status codes match
- * we use the provided message.
- */
-var handleBadRequest = function(error, messages, callback) {
-  if (_.isUndefined(callback)) {
-    callback = messages;
-    messages = void 0;
-  }
-  if (_.isString(error)) {
-    return callback({
-      code: 400,
-      message: error
-    });
-  } else if (_.isObject(error) && _.isObject(messages)) {
-    // try custom messages
-    if (messages && messages[error.statusCode]) {
-      return callback({
-        code: error.statusCode,
-        message: messages[error.statusCode]
-      });
-    }
-  }
-  return callback(error);
-};
-
 var validateContact = function(id, placeID, callback) {
-  var errors = {
-    404: 'Failed to find contact.'
-  };
   db.medic.get(id, function(err, doc) {
     if (err) {
-      return handleBadRequest(err, errors, callback);
+      if (err.statusCode === 404) {
+        err.message = 'Failed to find contact.';
+      }
+      return callback(err, callback);
     }
     if (doc.type !== 'person') {
-      return handleBadRequest('Wrong type, this is not a contact.', callback);
+      return error400('Wrong type, this is not a contact.', callback);
     }
     if (!module.exports._hasParent(doc, placeID)) {
-      return handleBadRequest('Contact is not within place.', callback);
-    }
-    callback(null, doc);
-  });
-};
-
-var validatePlace = function(id, callback) {
-  var errors = {
-    404: 'Failed to find place.'
-  };
-  db.medic.get(id, function(err, doc) {
-    if (err) {
-      return handleBadRequest(err, errors, callback);
-    }
-    if (!isAPlace(doc)) {
-      return handleBadRequest('Wrong type, this is not a place.', callback);
+      return error400('Contact is not within place.', callback);
     }
     callback(null, doc);
   });
 };
 
 var validateUser = function(id, callback) {
-  var errors = {
-    404: 'Failed to find user.'
-  };
   db._users.get(id, function(err, doc) {
     if (err) {
-      return handleBadRequest(err, errors, callback);
+      if (err.statusCode === 404) {
+        err.message = 'Failed to find user.';
+      }
+      return callback(err);
     }
     callback(null, doc);
   });
 };
 
 var validateUserSettings = function(id, callback) {
-  var errors = {
-    404: 'Failed to find user settings.'
-  };
   db.medic.get(id, function(err, doc) {
     if (err) {
-      return handleBadRequest(err, errors, callback);
+      if (err.statusCode === 404) {
+        err.message = 'Failed to find user settings.';
+      }
+      return callback(err);
     }
     callback(null, doc);
   });
@@ -199,6 +160,8 @@ var createUser = function(data, response, callback) {
  */
 var createContact = function(data, response, callback) {
   response = response || {};
+  // set contact type
+  data.contact.type = 'person';
   db.medic.insert(data.contact, function(err, body) {
     if (err) {
       return callback(err);
@@ -221,7 +184,6 @@ var createUserSettings = function(data, response, callback) {
   }
   db.medic.insert(settings, createID(data.username), function(err, body) {
     if (err) {
-      console.error('Failed to create user settings.');
       return callback(err);
     }
     response['user-settings'] = {
@@ -230,6 +192,36 @@ var createUserSettings = function(data, response, callback) {
     };
     callback(null, data, response);
   });
+};
+
+var createPlace = function(data, response, callback) {
+  module.exports._getOrCreatePlace(data.place, function(err, doc) {
+    data.place = doc;
+    callback(err, data, response);
+  });
+};
+
+var setContactParent = function(data, response, callback) {
+  if (data.contact.parent) {
+    // contact parent must exist
+    module.exports._getContactParent(data.contact.parent, function(err, facility) {
+      if (err) {
+        if (err.statusCode === 404) {
+          err.message = 'Failed to find contact parent.';
+        }
+        return callback(err);
+      }
+      if (!module.exports._hasParent(facility, data.place)) {
+        return error400('Contact is not within place.', callback);
+      }
+      // save result to contact object
+      data.contact.parent = facility;
+      callback(null, data, response);
+    });
+  } else {
+    data.contact.parent = data.place;
+    callback(null, data, response);
+  }
 };
 
 /*
@@ -323,9 +315,10 @@ var getRoles = function(type) {
 };
 
 var getSettingsUpdates = function(username, data) {
-  var settings = {};
+  var settings = {},
+      ignore = ['place', 'contact'];
   _.forEach(SETTINGS_EDITABLE_FIELDS , function(key) {
-    if (!_.isUndefined(data[key])) {
+    if (!_.isUndefined(data[key]) && ignore.indexOf(key) === -1) {
       settings[key] = data[key];
     }
   });
@@ -408,6 +401,7 @@ module.exports = {
   _mapUsers: mapUsers,
   _createUser: createUser,
   _createContact: createContact,
+  _createPlace: createPlace,
   _createUserSettings: createUserSettings,
   _getType : getType,
   _getAdmins: getAdmins,
@@ -415,14 +409,16 @@ module.exports = {
   _getAllUserSettings: getAllUserSettings,
   _getContactParent: db.medic.get,
   _getFacilities: getFacilities,
+  _getOrCreatePlace: places.getOrCreatePlace,
+  _getPlace: places._getPlace,
   _getSettingsUpdates: getSettingsUpdates,
   _getUserUpdates: getUserUpdates,
   _hasParent: hasParent,
+  _setContactParent: setContactParent,
   _updateAdminPassword: updateAdminPassword,
   _updateUser: updateUser,
   _updateUserSettings: updateUserSettings,
   _validateContact: validateContact,
-  _validatePlace: validatePlace,
   _validateUser: validateUser,
   _validateUserSettings: validateUserSettings,
   deleteUser: function(username, callback) {
@@ -461,40 +457,23 @@ module.exports = {
       }
     });
     if (missing.length > 0) {
-      return handleBadRequest('Missing required fields: ' + missing.join(', '), callback);
+      return error400('Missing required fields: ' + missing.join(', '), callback);
     }
-    if (_.isUndefined(data.contact.parent)) {
-      return handleBadRequest('Contact parent is required.', callback);
+    if (_.isUndefined(data.contact.parent) && _.isUndefined(data.place)) {
+      return error400('Contact parent or place is required.', callback);
     }
-    // validate place exists
-    self._validatePlace(getDocID(data.place), function(err) {
-      if (err) {
-        return callback(err);
-      }
-      // validate contact parent exists
-      self._getContactParent(data.contact.parent, function(err, facility) {
-        if (err) {
-          return handleBadRequest('Failed to find contact parent.', callback);
-        }
-        if (!self._hasParent(facility, data.place)) {
-          return handleBadRequest('Contact is not within place.', callback);
-        }
-        // save result to contact object
-        data.contact.parent = facility;
-        // set contact type
-        data.contact.type = 'person';
-        async.waterfall([
-          function(cb) {
-            // start the waterfall
-            cb(null, data, response);
-          },
-          self._createUser,
-          self._createContact,
-          self._createUserSettings,
-        ], function(err, result, responseBody) {
-          callback(err, responseBody);
-        });
-      });
+    async.waterfall([
+      function(cb) {
+        // start the waterfall
+        cb(null, data, response);
+      },
+      self._createPlace,
+      self._setContactParent,
+      self._createUser,
+      self._createContact,
+      self._createUserSettings,
+    ], function(err, result, responseBody) {
+      callback(err, responseBody);
     });
   },
   updateUser: function(username, data, callback) {
@@ -506,7 +485,7 @@ module.exports = {
         user;
     var props = _.uniq(USER_EDITABLE_FIELDS .concat(SETTINGS_EDITABLE_FIELDS));
     if (!_.some(props, function(k) { return !_.isUndefined(data[k]); })) {
-      return handleBadRequest(
+      return error400(
         'One of the following fields are required: ' + props.join(', '),
         callback
       );
@@ -524,7 +503,7 @@ module.exports = {
         if (data.place) {
           settings.facility_id = user.facility_id;
           series.push(function(cb) {
-            self._validatePlace(user.facility_id, cb);
+            self._getPlace(user.facility_id, cb);
           });
         }
         if (data.contact) {
@@ -567,7 +546,7 @@ module.exports = {
         });
         async.series(series, function(err) {
           if (err) {
-            return handleBadRequest(err, callback);
+            return callback(err);
           }
           callback(null, response);
         });
