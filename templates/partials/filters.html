@@ -36,7 +36,7 @@
         </span>
         <span role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
           <ul>
-            <li role="presentation" ng-repeat="facility in facilities | orderBy:'doc.name'" ng-include="'templates/partials/filters_facility_items.html'" ng-init="facilityDepth = 0"></li>
+            <li role="presentation" ng-repeat="facility in facilities | orderBy:'doc.name'" ng-include="::'templates/partials/filters_facility_items.html'" ng-init="facilityDepth = 0"></li>
           </ul>
         </span>
       </span>
@@ -117,7 +117,7 @@
           </ul>
         </span>
       </span>
-      
+
       <span class="filter input-group freetext-filter" ng-show="filterModel.type === 'reports' || filterModel.type === 'contacts'" ng-class="{'only-filter': filterModel.type === 'contacts' && !facilities.length}">
         <input id="freetext" class="form-control" type="text" ng-model="filterQuery.value" ng-attr-placeholder="{{'freetext.search' | translate}}">
         <span class="input-group-btn">
@@ -186,14 +186,14 @@
           </span>
           <span class="mm-button-text">
             <span ng-show="'configuration' | isState" translate>Configuration</span>
-            <span ng-show="page.active()" ng-repeat="page in configurationPages" translate>{{page.name}}</span>
+            <span ng-show="page.active()" ng-repeat="page in configurationPages" translate>{{::page.name}}</span>
           </span>
         </span>
         <ul role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
           <li class="ng-scope" role="presentation" mm-auth="can_configure" ng-repeat="page in configurationPages">
             <a ui-sref="{{page.state}}" role="menuitem" tabindex="-1">
               <i class="fa fa-fw {{page.icon}}"></i>
-              <span translate>{{page.name}}</span>
+              <span translate>{{::page.name}}</span>
             </a>
           </li>
         </ul>
