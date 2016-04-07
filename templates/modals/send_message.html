@@ -21,8 +21,8 @@
         </form>
       </div>
       <div class="modal-footer">
-        <span class="count left">{{note}}</span>
         <a href="#" class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
+        <span class="count">{{note}}</span>
         <a class="btn submit btn-primary" ng-click="sendMessage($event)" ng-attr-data-working-label="{{'Sending' | translate}}">{{'Send' | translate}}</a>
       </div>
     </div>

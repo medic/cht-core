@@ -184,22 +184,27 @@ var _ = require('underscore'),
   };
 
   exports.showModal = function(options) {
-    var $modal = $('#send-message');
-    $modal.find('.has-error').removeClass('has-error');
-    $modal.find('.help-block').text('');
-    var val = [],
-        to = options.to;
-    if (to) {
-      if (typeof to === 'string') {
-        val.push(to);
-      } else if (to) {
-        val.push(to._id);
+    initPhoneField($('#send-message [name=phone]'), function(err) {
+      if (err) {
+        return console.error('Error initialising phone search');
       }
-    }
-    $modal.find('[name=phone]').val(val).trigger('change');
-    $modal.find('[name=message]').val(options.message || '');
-    $modal.find('.count').text('');
-    $modal.modal('show');
+      var $modal = $('#send-message');
+      $modal.find('.has-error').removeClass('has-error');
+      $modal.find('.help-block').text('');
+      var val = [],
+          to = options.to;
+      if (to) {
+        if (typeof to === 'string') {
+          val.push(to);
+        } else if (to) {
+          val.push(to._id);
+        }
+      }
+      $modal.find('[name=phone]').val(val).trigger('change');
+      $modal.find('[name=message]').val(options.message || '');
+      $modal.find('.count').text('');
+      $modal.modal('show');
+    });
   };
 
   var contact;
@@ -213,29 +218,23 @@ var _ = require('underscore'),
       .then(function(_settings) {
         settings = _settings;
         $('body').on('click', '.send-message', function(event) {
-          initPhoneField($('#send-message [name=phone]'), function(err) {
-            if (err) {
-              return console.error('Error initialising phone search');
-            }
-
-            var target = $(event.target).closest('.send-message');
-            if (target.hasClass('mm-icon-disabled')) {
-              return;
-            }
-            event.preventDefault();
-            var to = target.attr('data-send-to');
-            if (to) {
-              try {
-                to = JSON.parse(to);
-              } catch(e) {}
-            }
-            if (to && to.type === 'data_record') {
-              to = to.contact || to.from;
-            }
-            exports.showModal({
-              to: to,
-              everyoneAt: target.attr('data-everyone-at') === 'true'
-            });
+          var target = $(event.target).closest('.send-message');
+          if (target.hasClass('mm-icon-disabled')) {
+            return;
+          }
+          event.preventDefault();
+          var to = target.attr('data-send-to');
+          if (to) {
+            try {
+              to = JSON.parse(to);
+            } catch(e) {}
+          }
+          if (to && to.type === 'data_record') {
+            to = to.contact || to.from;
+          }
+          exports.showModal({
+            to: to,
+            everyoneAt: target.attr('data-everyone-at') === 'true'
           });
         });
       })
