@@ -12,7 +12,8 @@ define( function( require, exports, module ) {
     var format = require('../../modules/format');
     require('enketo-core/src/js/plugins');
 
-    var endOfAlphabet = '\ufff0';
+    var END_OF_ALPHABET = '\ufff0';
+    var DOCS_TO_PAGINATE = 20;
 
     var pluginName = 'dbobjectwidget';
 
@@ -87,33 +88,36 @@ define( function( require, exports, module ) {
 
         var dbObjectType = $textInput.attr('data-type-xml');
 
-        var prepareRows = function(res) {
+        var prepareRows = function(res, first) {
             var rows  = _.sortBy(res.rows, function(row) {
                 return row.doc.name;
             });
 
-            // add 'new' option if requested
-            if ($question.hasClass('or-appearance-allow-new')) {
-                rows.unshift({
-                    id: 'NEW',
-                    text: translate('contact.type.' + dbObjectType + '.new'),
-                });
+            if (first) {
+                // add 'new' option if requested
+                if ($question.hasClass('or-appearance-allow-new')) {
+                    rows.unshift({
+                        id: 'NEW',
+                        text: translate('contact.type.' + dbObjectType + '.new'),
+                    });
+                }
+
+                // add blank option
+                rows.unshift({ id: '' });
             }
-            // add blank option
-            rows.unshift({ id: '' });
 
             return rows;
         };
 
         var query = function(params, sucesssCb, failureCb) {
             var query = params.data.q;
-            var loader = $('<div class="loader"/></div>');
+            var skip = ((params.data.page || 1) - 1) * DOCS_TO_PAGINATE;
 
-            $textInput.after(loader);
             DB.query('medic/contacts_by_type_and_freetext', {
                 startkey: [ dbObjectType, query ],
-                endkey: [ dbObjectType, query + endOfAlphabet ],
-                limit: 20
+                endkey: [ dbObjectType, query + END_OF_ALPHABET ],
+                limit: DOCS_TO_PAGINATE,
+                skip: skip
             })
             .then(function(res) {
                 var docIds = _.uniq(res.rows.map(function(row) {
@@ -122,12 +126,10 @@ define( function( require, exports, module ) {
 
                 DB.allDocs({ include_docs: true, keys: docIds })
                 .then(function(res) {
-                    sucesssCb(prepareRows(res));
-                    loader.remove();
+                    sucesssCb(prepareRows(res, skip === 0));
                 });
             })
             .catch(function(err) {
-                loader.remove();
                 failureCb(err);
                 console.log(dbObjectType + ' failed to load', err);
             });
@@ -149,9 +151,11 @@ define( function( require, exports, module ) {
                     delay: 500,
                     transport: query,
                     processResults: function(data) {
-                        console.log(data);
                         return {
-                            results: data
+                            results: data,
+                            pagination: {
+                                more: data.length === DOCS_TO_PAGINATE
+                            }
                         };
                     }
                 },
