@@ -109,7 +109,7 @@ define( function( require, exports, module ) {
             return rows;
         };
 
-        var query = function(params, sucesssCb, failureCb) {
+        var query = function(params, successCb, failureCb) {
             var query = params.data.q;
             var skip = ((params.data.page || 1) - 1) * DOCS_TO_PAGINATE;
 
@@ -119,14 +119,21 @@ define( function( require, exports, module ) {
                 limit: DOCS_TO_PAGINATE,
                 skip: skip
             })
-            .then(function(res) {
-                var docIds = _.uniq(res.rows.map(function(row) {
+            .then(function(searchResult) {
+                var docIds = _.uniq(searchResult.rows.map(function(row) {
                     return row.id;
                 }));
 
                 DB.allDocs({ include_docs: true, keys: docIds })
-                .then(function(res) {
-                    sucesssCb(prepareRows(res, skip === 0));
+                .then(function(docs) {
+                    successCb({
+                        results: prepareRows(docs, skip === 0),
+                        pagination: {
+                            // original result length compared because we _.uniq
+                            // and so docs.length can be less
+                            more: searchResult.rows.length === DOCS_TO_PAGINATE
+                        }
+                    });
                 });
             })
             .catch(function(err) {
@@ -142,22 +149,17 @@ define( function( require, exports, module ) {
         'select2/dropdown/search',
         'select2/utils',
         ], function (AttachContainer, CloseOnSelect, DropdownAdapter, DropdownSearch, Utils) {
-            var CustomAdapter = Utils.Decorate(Utils.Decorate(Utils.Decorate(
-                DropdownAdapter, DropdownSearch), AttachContainer), CloseOnSelect);
+            var CustomAdapter =
+                Utils.Decorate(
+                    Utils.Decorate(
+                        Utils.Decorate(DropdownAdapter, DropdownSearch),
+                    AttachContainer),
+                CloseOnSelect);
 
-            // var select =
             $textInput.select2({
                 ajax: {
                     delay: 500,
-                    transport: query,
-                    processResults: function(data) {
-                        return {
-                            results: data,
-                            pagination: {
-                                more: data.length === DOCS_TO_PAGINATE
-                            }
-                        };
-                    }
+                    transport: query
                 },
                 dropdownAdapter: CustomAdapter,
                 templateResult: formatResult,
