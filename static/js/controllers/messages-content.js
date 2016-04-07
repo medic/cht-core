@@ -186,6 +186,11 @@ var _ = require('underscore'),
         .on('blur', '#message-footer textarea', function() {
           $('#message-footer').removeClass('sending');
         });
+
+      $scope.$on('$destroy', function() {
+        $scope.setTitle();
+        $scope.clearSelected();
+      });
     }
   ]);
 

@@ -18,12 +18,6 @@ var _ = require('underscore');
         $state.go('contacts.detail', { id: $state.params.id || $state.params.parent_id });
       });
 
-      $scope.$on('$destroy', function() {
-        if ($scope.enketo_contact && $scope.enketo_contact.formInstance) {
-          Enketo.unload($scope.enketo_contact.formInstance);
-        }
-      });
-
       var getVisibleLevel = function() {
         return $q(function(resolve, reject) {
           UserDistrict(function(err, facility_id) {
@@ -367,6 +361,13 @@ var _ = require('underscore');
           });
         }
       }
+
+      $scope.$on('$destroy', function() {
+        $scope.setTitle();
+        if ($scope.enketo_contact && $scope.enketo_contact.formInstance) {
+          Enketo.unload($scope.enketo_contact.formInstance);
+        }
+      });
 
     }
   ]);

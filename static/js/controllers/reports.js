@@ -359,6 +359,11 @@ var _ = require('underscore'),
         initEditMessageModal();
       };
 
+      $scope.$on('$destroy', function() {
+        $scope.setTitle();
+        $scope.clearSelected();
+      });
+
     }
   ]);
 

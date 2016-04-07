@@ -32,6 +32,7 @@ describe('ReportsCtrl controller', function() {
     scope.isMobile = function() {
       return false;
     };
+    scope.setTitle = function() {};
 
     UserDistrict = function() {
       return { 

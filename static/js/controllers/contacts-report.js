@@ -65,6 +65,7 @@
         });
 
       $scope.$on('$destroy', function() {
+        $scope.setTitle();
         Enketo.unload($scope.form);
       });
     }

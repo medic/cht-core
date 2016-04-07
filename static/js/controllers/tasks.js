@@ -65,6 +65,11 @@ var _ = require('underscore');
         }
       });
 
+      $scope.$on('$destroy', function() {
+        $scope.setTitle();
+        $scope.clearSelected();
+      });
+
     }
   ]);
 
