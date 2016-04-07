@@ -15,7 +15,7 @@ define( function( require, exports, module ) {
     var pluginName = 'medicplacewidget';
 
     /**
-     * Allows drop-down selecters for places.
+     * Allows drop-down selectors for places.
      *
      * @constructor
      * @param {Element} element [description]

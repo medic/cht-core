@@ -18,7 +18,7 @@ define( function( require, exports, module ) {
     var pluginName = 'dbobjectwidget';
 
     /**
-     * Allows drop-down selecters for db objects.
+     * Allows drop-down selectors for db objects.
      *
      * @constructor
      * @param {Element} element [description]

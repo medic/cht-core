@@ -76,15 +76,15 @@ define( function( require, exports, module ) {
             // the named constant is not supported everywhere.
             var $el = $(this),
                 randomId = Math.floor( Math.random() * 9007199254740991 ),
-                selecter = 'input[data-mm-android-dp=' + randomId + ']',
+                selector = 'input[data-mm-android-dp=' + randomId + ']',
                 val = $el.val();
 
             $el.attr( 'data-mm-android-dp', randomId );
 
             if ( val ) {
-                medicmobile_android.datePicker( selecter, val );
+                medicmobile_android.datePicker( selector, val );
             } else {
-                medicmobile_android.datePicker( selecter );
+                medicmobile_android.datePicker( selector );
             }
         });
     };

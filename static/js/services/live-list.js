@@ -36,13 +36,13 @@ angular.module('inboxServices').factory('LiveListConfig', [
       };
 
       LiveList.$listFor('contacts', {
-        selecter: '#contacts-list ul.unfiltered',
+        selector: '#contacts-list ul.unfiltered',
         orderBy: contacts_config.orderBy,
         listItem: contacts_config.listItem,
       });
 
       LiveList.$listFor('contact-search', {
-        selecter: '#contacts-list ul.filtered',
+        selector: '#contacts-list ul.filtered',
         orderBy: contacts_config.orderBy,
         listItem: contacts_config.listItem,
       });
@@ -85,13 +85,13 @@ angular.module('inboxServices').factory('LiveListConfig', [
       };
 
       LiveList.$listFor('reports', {
-        selecter: '#reports-list ul.unfiltered',
+        selector: '#reports-list ul.unfiltered',
         orderBy: reports_config.orderBy,
         listItem: reports_config.listItem,
       });
 
       LiveList.$listFor('report-search', {
-        selecter: '#reports-list ul.filtered',
+        selector: '#reports-list ul.filtered',
         orderBy: reports_config.orderBy,
         listItem: reports_config.listItem,
       });
@@ -111,7 +111,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
       });
 
       LiveList.$listFor('tasks', {
-        selecter: '#tasks-list ul',
+        selector: '#tasks-list ul',
         orderBy: function(t1, t2) {
           var lhs = t1 && t1.date,
               rhs = t2 && t2.date;
@@ -199,8 +199,8 @@ angular.module('inboxServices').factory('LiveList', [
       if (!config.orderBy) {
         throw new Error('No `orderBy` set for list.');
       }
-      if (!config.selecter) {
-        throw new Error('No `selecter` set for list.');
+      if (!config.selector) {
+        throw new Error('No `selector` set for list.');
       }
     }
 
@@ -229,7 +229,7 @@ angular.module('inboxServices').factory('LiveList', [
         return;
       }
 
-      var activeDom = $(idx.selecter);
+      var activeDom = $(idx.selector);
       if(activeDom.length) {
         activeDom.empty();
         _.each(idx.dom, function(li) {
@@ -261,7 +261,7 @@ angular.module('inboxServices').factory('LiveList', [
         _insert(listName, items[i], true);
       }
 
-      $(idx.selecter)
+      $(idx.selector)
           .empty()
           .append(idx.dom);
     }
@@ -302,7 +302,7 @@ angular.module('inboxServices').factory('LiveList', [
         return;
       }
 
-      var activeDom = $(idx.selecter);
+      var activeDom = $(idx.selector);
       if(activeDom.length) {
         var children = activeDom.children();
         if (!children.length || newItemIndex === children.length) {
@@ -337,7 +337,7 @@ angular.module('inboxServices').factory('LiveList', [
         idx.list.splice(removeIndex, 1);
         idx.dom.splice(removeIndex, 1);
 
-        $(idx.selecter).children().eq(removeIndex)
+        $(idx.selector).children().eq(removeIndex)
             .remove();
       }
     }
@@ -425,7 +425,7 @@ angular.module('inboxServices').factory('LiveList', [
     api.$listFor = function(name, config) {
       checkConfig(config);
 
-      indexes[name] = _.pick(config, 'selecter', 'orderBy', 'listItem');
+      indexes[name] = _.pick(config, 'selector', 'orderBy', 'listItem');
 
       api[name] = {
         insert: _.partial(_insert, name),
