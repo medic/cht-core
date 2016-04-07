@@ -44,6 +44,21 @@ module.exports = function(grunt) {
           }
         ]
       },
+      monkeypatchpouchtorespectbulkgettimeouts: {
+        // Issues:
+        // * https://github.com/medic/medic-webapp/issues/2167
+        // * https://github.com/pouchdb/pouchdb/issues/5042
+        src: [ 'static/dist/inbox.js' ],
+        overwrite: true,
+        replacements: [
+          {
+            from: /db\.get\(docId, docOpts, function \(err, res\) {/,
+            to: 'if(!docOpts.ajax) docOpts.ajax = {};\n' +
+                '    if(docOpts.ajax.timeout === undefined) docOpts.ajax.timeout = 30000;\n' +
+                '    db.get(docId, docOpts, function (err, res) {'
+          }
+        ]
+      },
       // replace cache busting which breaks appcache, needed until this is fixed:
       // https://github.com/FortAwesome/Font-Awesome/issues/3286
       monkeypatchfontawesome: {
@@ -326,6 +341,7 @@ module.exports = function(grunt) {
     'replace:hardcodeappsettings',
     'replace:monkeypatchdate',
     'replace:monkeypatchpouchtoretryfaileddocreplication',
+    'replace:monkeypatchpouchtorespectbulkgettimeouts',
     'ngtemplates'
   ]);
 
