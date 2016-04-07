@@ -428,14 +428,13 @@ var feedback = require('../modules/feedback'),
         sendMessage.init(Settings, Contact, translateFilter);
       };
 
+      // get the forms for the forms filter
       JsonForms()
         .then(function(jsonForms) {
-          XmlForms('InboxCtrl', { contactForms: false }, function(err, xForms) {
+          XmlForms('FormsFilter', { contactForms: false, ignoreContext: true }, function(err, xForms) {
             if (err) {
               return $log.error('Error fetching form definitions', err);
             }
-            Enketo.clearXmlCache();
-            $scope.nonContactForms = xForms;
             var xFormSummaries = xForms.map(function(xForm) {
               return {
                 code: xForm.internalId,
@@ -448,6 +447,15 @@ var feedback = require('../modules/feedback'),
         .catch(function(err) {
           $log.error('Failed to retrieve forms', err);
         });
+
+      // get the forms for the Add Report menu
+      XmlForms('AddReportMenu', { contactForms: false }, function(err, xForms) {
+        if (err) {
+          return $log.error('Error fetching form definitions', err);
+        }
+        Enketo.clearXmlCache();
+        $scope.nonContactForms = xForms;
+      });
 
       $scope.setupGuidedSetup = function() {
         guidedSetup.init(Settings, UpdateSettings, translateFilter);
