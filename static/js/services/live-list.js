@@ -173,8 +173,8 @@ angular.module('inboxServices').factory('LiveListConfig', [
 ]);
 
 angular.module('inboxServices').factory('LiveList', [
-  '$timeout',
-  function($timeout) {
+  '$timeout', 'ResourceIcons',
+  function($timeout, ResourceIcons) {
     var api = {};
     var indexes = {};
 
@@ -235,6 +235,7 @@ angular.module('inboxServices').factory('LiveList', [
         _.each(idx.dom, function(li) {
           activeDom.append(li);
         });
+        ResourceIcons.replacePlaceholders(activeDom);
       }
     }
 

@@ -50,6 +50,11 @@ describe('LiveListSrv', function() {
 
   beforeEach(function() {
     module('inboxApp');
+    module(function ($provide) {
+      $provide.value('ResourceIcons', {
+        replacePlaceholders: function() {}
+      });
+    });
     inject(function(_LiveList_) {
       service = _LiveList_;
     });

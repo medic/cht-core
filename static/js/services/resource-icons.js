@@ -16,20 +16,25 @@ angular.module('inboxServices').factory('ResourceIcons', [
       return 'data:' + icon.content_type + ';base64,' + icon.data;
     };
 
+    var updateDom = function(elem) {
+      elem = elem || $(document.body);
+      Object.keys(doc.resources).forEach(function(name) {
+        var src = getSrc(name);
+        var elems = elem.find('img.resource-icon-' + name);
+        if (src) {
+          elems.attr('src', src);
+        } else {
+          elems.removeAttr('src');
+        }
+      });
+    };
+
     var updateResources = function() {
-      DB.get()
+      return DB.get()
         .get('resources', { attachments: true })
         .then(function(res) {
           doc = res;
-          Object.keys(doc.resources).forEach(function(name) {
-            var src = getSrc(name);
-            var elems = $('img.resource-icon-' + name);
-            if (src) {
-              elems.attr('src', src);
-            } else {
-              elems.removeAttr('src');
-            }
-          });
+          updateDom();
         })
         .catch(function(err) {
           $log.error('Error updating icons', err);
@@ -44,7 +49,7 @@ angular.module('inboxServices').factory('ResourceIcons', [
       callback: updateResources
     });
 
-    updateResources();
+    var init = updateResources();
 
     return {
       getImg: function(name) {
@@ -53,7 +58,11 @@ angular.module('inboxServices').factory('ResourceIcons', [
         }
         return getSrc(name);
       },
-      updateResources: updateResources,
+      replacePlaceholders: function(elem) {
+        init.then(function() {
+          updateDom(elem);
+        });
+      }
     };
 
   }
