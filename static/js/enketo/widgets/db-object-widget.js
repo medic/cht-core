@@ -149,19 +149,11 @@ define( function( require, exports, module ) {
         'select2/dropdown/search',
         'select2/utils',
         ], function (AttachContainer, CloseOnSelect, DropdownAdapter, DropdownSearch, Utils) {
-            var CustomAdapter =
-                Utils.Decorate(
-                    Utils.Decorate(
-                        Utils.Decorate(DropdownAdapter, DropdownSearch),
-                    AttachContainer),
-                CloseOnSelect);
-
             $textInput.select2({
                 ajax: {
                     delay: 500,
                     transport: query
                 },
-                dropdownAdapter: CustomAdapter,
                 templateResult: formatResult,
                 templateSelection: formatSelection,
                 matcher: matcher,
@@ -169,9 +161,6 @@ define( function( require, exports, module ) {
                 minimumInputLength: 3,
                 width: '100%',
             });
-
-            // Tell enketo to ignore the new <input> field that select2 adds
-            $question.find('input.select2-search__field').addClass('ignore');
         });
 
         if (!$question.hasClass('or-appearance-bind-id-only')) {
