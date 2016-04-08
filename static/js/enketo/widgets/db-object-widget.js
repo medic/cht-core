@@ -142,25 +142,17 @@ define( function( require, exports, module ) {
             });
         };
 
-        $.fn.select2.amd.require([
-        'select2/dropdown/attachContainer',
-        'select2/dropdown/closeOnSelect',
-        'select2/dropdown',
-        'select2/dropdown/search',
-        'select2/utils',
-        ], function (AttachContainer, CloseOnSelect, DropdownAdapter, DropdownSearch, Utils) {
-            $textInput.select2({
-                ajax: {
-                    delay: 500,
-                    transport: query
-                },
-                templateResult: formatResult,
-                templateSelection: formatSelection,
-                matcher: matcher,
-                selectOnClose: true,
-                minimumInputLength: 3,
-                width: '100%',
-            });
+        $textInput.select2({
+            ajax: {
+                delay: 500,
+                transport: query
+            },
+            templateResult: formatResult,
+            templateSelection: formatSelection,
+            matcher: matcher,
+            selectOnClose: true,
+            minimumInputLength: 3,
+            width: '100%',
         });
 
         if (!$question.hasClass('or-appearance-bind-id-only')) {
