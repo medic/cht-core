@@ -14,6 +14,7 @@
 
 var PouchDB = require('pouchdb');
 var _ = require('underscore');
+var fs = require('fs');
 
 var getDocsFromRows = function(rows) {
   return _.map(rows, function(row) {
@@ -88,40 +89,58 @@ var isContactFor = function(personId) {
     });
 };
 
-var removeContact = function(personId, facilitiesList) {
+var removeContact = function(person, facilitiesList) {
   _.each(facilitiesList, function(facility) {
     delete facility.contact;
   });
 
   return db.bulkDocs(facilitiesList)
     .then(function (result) {
-      console.log('Removed contact ' + personId + ' from ' + facilitiesList.length + ' facilities');
+      console.log('Removed contact ' + person._id + ' from ' + facilitiesList.length + ' facilities');
       console.log(result);
-      return;
+      return person;
     });
 };
 
-var cleanDeletePersons = function(personsList) {
+// If the persons are contacts for facilities, edit the facilities to remove the contact.
+var cleanContactPersons = function(personsList) {
   var promiseList = [];
   _.each(personsList, function(person) {
     var promise = isContactFor(person._id)
-      .then(_.partial(removeContact, person._id))
-      .then(_.partial(deleteDocs, [person]))
+      .then(_.partial(removeContact, person))
       .catch(function (err) {
         console.log('shit happened when removing contact ' + person._id);
         console.log(err);
-        return err;
+        throw err;
       });
     promiseList.push(promise);
   });
   return Promise.all(promiseList);
 };
 
+var writeDocsToFile = function(filepath, docsList) {
+  return new Promise(function(resolve,reject){
+    fs.writeFile(filepath, JSON.stringify(docsList), function(err) {
+      if(err) {
+          return reject(err);
+      }
+      console.log('Wrote ' + docsList.length + ' docs to file ' + filepath);
+      resolve(docsList);
+    });
+  });
+};
 
-if (process.argv.length < 6) {
+
+if (process.argv.length < 7) {
   console.log('Not enough arguments.');
-  console.log('Usage:\nnode delete_training_data.js <dbUrl> <branchId> <startTimeMillis> <endTimeMillis>');
-  console.log('Example:\nnode delete_training_data.js http://admin:pass@localhost:5984/medic 52857bf2cef066525b2feb82805fb373 1458735592585 1458736086553');
+  console.log('Usage:\nnode delete_training_data.js <dbUrl> <branchId> ' +
+    '<startTimeMillis> <endTimeMillis> <logdir>');
+  console.log('Deletes all \'data_record\', \'person\' and \'clinic\' data ' +
+    'from a given branch (\'district_hospital\' type) that was created ' +
+    'between the two timestamps.');
+  console.log('The deleted docs will be written out to json files in the ' +
+    'logdir.');
+  console.log('Example:\nnode delete_training_data.js http://admin:pass@localhost:5984/medic 52857bf2cef066525b2feb82805fb373 1458735592585 1458736086553 .');
   process.exit();
 }
 
@@ -129,14 +148,16 @@ var dbUrl = process.argv[2];
 var branchId = process.argv[3];
 var start = process.argv[4];
 var end = process.argv[5];
+var logdir = process.argv[6];
 console.log('\nStarting deletion process with\ndbUrl = ' + dbUrl + '\nbranchId = ' + branchId +
-  '\nstartTimeMillis = ' + start + '\nendTimeMillis = ' + end + '\n\n');
+  '\nstartTimeMillis = ' + start + '\nendTimeMillis = ' + end + '\nlogdir = ' + logdir + '\n\n');
 
 var db = new PouchDB(dbUrl);
 
 console.log('Deleting reports');
 getDataReportsForBranch(branchId)
   .then(_.partial(filterByDate, _, start, end))
+  .then(_.partial(writeDocsToFile, logdir + '/reports_deleted.json'))
   .then(deleteDocs)
   .then(function(result) {
     console.log('Reports deleted!\n\nDeleting persons');
@@ -145,7 +166,9 @@ getDataReportsForBranch(branchId)
   .then(_.partial(getContactsForBranch, branchId))
   .then(_.partial(filterByDate, _, start, end))
   .then(_.partial(filterByType, _, 'person'))
-  .then(cleanDeletePersons)
+  .then(cleanContactPersons)
+  .then(_.partial(writeDocsToFile, logdir + '/persons_deleted.json'))
+  .then(deleteDocs)
   .then(function(result) {
     console.log('Persons deleted!\n\nDeleting clinics');
     return result;
@@ -155,6 +178,7 @@ getDataReportsForBranch(branchId)
   .then(_.partial(getContactsForBranch, branchId))
   .then(_.partial(filterByDate, _, start, end))
   .then(_.partial(filterByType, _, 'clinic'))
+  .then(_.partial(writeDocsToFile, logdir + '/clinics_deleted.json'))
   .then(deleteDocs)
   .then(function(result) {
     console.log('Clinics deleted!');
@@ -164,3 +188,5 @@ getDataReportsForBranch(branchId)
     console.log('shit happened');
     console.log(err);
   });
+
+
