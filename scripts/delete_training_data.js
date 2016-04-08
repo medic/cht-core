@@ -16,9 +16,15 @@ var PouchDB = require('pouchdb');
 var _ = require('underscore');
 
 var getDocsFromRows = function(rows) {
-    return _.map(rows, function(row) {
-      return row.doc;
-    });
+  return _.map(rows, function(row) {
+    return row.doc;
+  });
+};
+
+var getIdsFromRows = function(rows) {
+  return _.map(rows, function(row) {
+    return row.id;
+  });
 };
 
 // Note : instead of deleting docs, we set {_deleted: true}, so that the
@@ -31,7 +37,7 @@ var deleteDocs = function(docs) {
 
   return db.bulkDocs(docsWithDeleteField)
     .then(function (result) {
-      console.log('Got MASSSSSS DELETIONNNNNN');
+      console.log('Deleted : ' + result.length + ':');
       console.log(result);
     });
 };
@@ -41,7 +47,7 @@ var getContactsForBranch = function(branchId) {
     'medic/contacts_by_place',
     {key: [branchId], include_docs: true}
   ).then(function (result) {
-    console.log('Got contacts for branch! ' + result.rows.length);
+    console.log('Contacts for branch : ' + result.rows.length);
     var docs = getDocsFromRows(result.rows);
     return docs;
   });
@@ -52,7 +58,7 @@ var getDataReportsForBranch = function(branchId) {
     'medic/data_records_by_district',
     {startkey: [branchId], endkey: [branchId + '\ufff0'], include_docs: true}
   ).then(function (result) {
-    console.log('Got reports for branch! ' + result.rows.length);
+    console.log('Reports for branch : ' + result.rows.length);
     return getDocsFromRows(result.rows);
   });
 };
@@ -61,15 +67,55 @@ var filterByDate = function(docsList, startTimestamp, endTimestamp) {
   var filteredList = _.filter(docsList, function(doc) {
     return doc.reported_date && doc.reported_date >= startTimestamp && doc.reported_date < endTimestamp;
   });
-  console.log('Got filtered by date! ' + filteredList.length);
+  console.log('Filtered by date : ' + filteredList.length);
   return filteredList;
 };
 
-var groupByType = function(docsList) {
-  return _.groupBy(docsList, 'type');
+var filterByType = function(docsList, type) {
+  var filteredList = _.filter(docsList, function(doc) { return doc.type === type; });
+  console.log('Filtered by type ' + type + ' : ' + filteredList.length);
+  return filteredList;
 };
 
+// Find which facilities (if any) this person is a contact for.
+var isContactFor = function(personId) {
+  return db.query('medic/facilities_by_contact', {key: [personId], include_docs: true})
+    .then(function(result) {
+      console.log('Person ' + personId + ' is contact for ' + result.rows.length + ' facilities');
+      var ids = getIdsFromRows(result.rows);
+      console.log(ids);
+      return getDocsFromRows(result.rows);
+    });
+};
 
+var removeContact = function(personId, facilitiesList) {
+  _.each(facilitiesList, function(facility) {
+    delete facility.contact;
+  });
+
+  return db.bulkDocs(facilitiesList)
+    .then(function (result) {
+      console.log('Removed contact ' + personId + ' from ' + facilitiesList.length + ' facilities');
+      console.log(result);
+      return;
+    });
+};
+
+var cleanDeletePersons = function(personsList) {
+  var promiseList = [];
+  _.each(personsList, function(person) {
+    var promise = isContactFor(person._id)
+      .then(_.partial(removeContact, person._id))
+      .then(_.partial(deleteDocs, [person]))
+      .catch(function (err) {
+        console.log('shit happened when removing contact ' + person._id);
+        console.log(err);
+        return err;
+      });
+    promiseList.push(promise);
+  });
+  return Promise.all(promiseList);
+};
 
 
 if (process.argv.length < 6) {
@@ -88,18 +134,31 @@ console.log('\nStarting deletion process with\ndbUrl = ' + dbUrl + '\nbranchId =
 
 var db = new PouchDB(dbUrl);
 
+console.log('Deleting reports');
 getDataReportsForBranch(branchId)
   .then(_.partial(filterByDate, _, start, end))
   .then(deleteDocs)
-  // reports deleted!
+  .then(function(result) {
+    console.log('Reports deleted!\n\nDeleting persons');
+    return result;
+  })
   .then(_.partial(getContactsForBranch, branchId))
   .then(_.partial(filterByDate, _, start, end))
-  .then(groupByType)
-  .then(function(groupedDocs) {
-    console.log('persons ' + (groupedDocs.person ? groupedDocs.person.length : 0));
-    console.log('clinics ' + (groupedDocs.clinic ? groupedDocs.clinic.length : 0));
-    return deleteDocs(groupedDocs.person)
-      .then(deleteDocs(groupedDocs.clinic));
+  .then(_.partial(filterByType, _, 'person'))
+  .then(cleanDeletePersons)
+  .then(function(result) {
+    console.log('Persons deleted!\n\nDeleting clinics');
+    return result;
+  })
+  // Need to fetch them all over again, because they could have been edited if
+  // their contact was just deleted.
+  .then(_.partial(getContactsForBranch, branchId))
+  .then(_.partial(filterByDate, _, start, end))
+  .then(_.partial(filterByType, _, 'clinic'))
+  .then(deleteDocs)
+  .then(function(result) {
+    console.log('Clinics deleted!');
+    return result;
   })
   .catch(function (err) {
     console.log('shit happened');
