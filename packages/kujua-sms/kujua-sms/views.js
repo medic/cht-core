@@ -138,7 +138,7 @@ exports.data_records_valid_by_district_and_form = {
             }
         }
     },
-    reduce: '_counts'
+    reduce: '_count'
 };
 
 exports.usage_stats_by_year_month = {
@@ -158,7 +158,7 @@ exports.data_records_valid_by_year_month_and_form = {
             }
         }
     },
-    reduce: '_counts'
+    reduce: '_count'
 };
 
 exports.data_records_read_by_type = {
@@ -199,7 +199,7 @@ exports.data_records_read_by_type = {
             }
         }
     },
-    reduce: '_counts'
+    reduce: '_count'
 };
 
 
