@@ -132,13 +132,13 @@ exports.data_records_valid_by_district_and_form = {
             (!doc.errors || doc.errors.length === 0)) {
             dh = getParent(doc.contact, 'district_hospital');
             if (dh) {
-                emit([dh._id, doc.form, dh.name], 1);
+                emit([dh._id, doc.form, dh.name]);
             } else {
-                emit([null, doc.form, null], 1);
+                emit([null, doc.form, null]);
             }
         }
     },
-    reduce: '_sum'
+    reduce: '_counts'
 };
 
 exports.usage_stats_by_year_month = {
@@ -154,11 +154,11 @@ exports.data_records_valid_by_year_month_and_form = {
         if (doc.type === 'data_record' && doc.form) {
             if (!doc.errors || doc.errors.length === 0) {
                 var date = new Date(doc.reported_date);
-                emit([date.getFullYear(), date.getMonth(), doc.form], 1);
+                emit([date.getFullYear(), date.getMonth(), doc.form]);
             }
         }
     },
-    reduce: '_sum'
+    reduce: '_counts'
 };
 
 exports.data_records_read_by_type = {
@@ -167,11 +167,11 @@ exports.data_records_read_by_type = {
             dh;
 
         var emitRead = function(doc, type, dh) {
-            emit(['_total', type, dh], 1);
+            emit(['_total', type, dh]);
             if (doc.read) {
                 doc.read.forEach(function(user) {
                     if (user) {
-                        emit([user, type, dh], 1);
+                        emit([user, type, dh]);
                     }
                 });
             }
@@ -199,7 +199,7 @@ exports.data_records_read_by_type = {
             }
         }
     },
-    reduce: '_sum'
+    reduce: '_counts'
 };
 
 
