@@ -116,7 +116,7 @@ exports.data_records = {
 
 // only emit valid records with a form
 exports.data_records_valid_by_district_and_form = {
-     map: function(doc) {
+    map: function(doc) {
 
         var getParent = function(facility, type) {
             while (facility && facility.type !== type) {
@@ -138,13 +138,11 @@ exports.data_records_valid_by_district_and_form = {
             }
         }
     },
-    reduce: function(key, counts) {
-        return sum(counts);
-    }
+    reduce: '_sum'
 };
 
 exports.usage_stats_by_year_month = {
-     map: function(doc) {
+    map: function(doc) {
         if (doc.type === 'usage_stats') {
             emit([doc.year, doc.month], 1);
         }
@@ -152,7 +150,7 @@ exports.usage_stats_by_year_month = {
 };
 
 exports.data_records_valid_by_year_month_and_form = {
-     map: function(doc) {
+    map: function(doc) {
         if (doc.type === 'data_record' && doc.form) {
             if (!doc.errors || doc.errors.length === 0) {
                 var date = new Date(doc.reported_date);
@@ -160,9 +158,7 @@ exports.data_records_valid_by_year_month_and_form = {
             }
         }
     },
-    reduce: function(key, counts) {
-        return sum(counts);
-    }
+    reduce: '_sum'
 };
 
 exports.data_records_read_by_type = {
@@ -203,9 +199,7 @@ exports.data_records_read_by_type = {
             }
         }
     },
-    reduce: function(key, counts) {
-        return sum(counts);
-    }
+    reduce: '_sum'
 };
 
 
@@ -485,12 +479,10 @@ exports.duplicate_form_submissions = {
     },
 
     reduce: function(keys, values, rereduce){
-        if (rereduce){
+        if (rereduce) {
             return sum(values);
         }
-        else{
-            return values.length;
-        }
+        return values.length;
     }
 };
 
