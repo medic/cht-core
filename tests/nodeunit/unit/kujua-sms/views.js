@@ -47,7 +47,6 @@ exports['data_records_read_by_type map emits empty dh id when no facility'] = fu
   test.same(results[0].key[0], '_total');
   test.same(results[0].key[1], 'messages');
   test.same(results[0].key[2], undefined);
-  test.same(results[0].val, 1);
   test.done();
 };
 
@@ -71,11 +70,9 @@ exports['data_records_read_by_type map emits one record per task'] = function (t
   test.same(results[0].key[0], '_total');
   test.same(results[0].key[1], 'messages');
   test.same(results[0].key[2], 'a');
-  test.same(results[0].val, 1);
   test.same(results[1].key[0], '_total');
   test.same(results[1].key[1], 'messages');
   test.same(results[1].key[2], 'b');
-  test.same(results[1].val, 1);
   test.done();
 };
 
@@ -90,7 +87,6 @@ exports['data_records_read_by_type map emits dh id'] = function (test) {
   test.same(results[0].key[0], '_total');
   test.same(results[0].key[1], 'forms');
   test.same(results[0].key[2], 'abc');
-  test.same(results[0].val, 1);
   test.done();
 };
 
@@ -104,7 +100,6 @@ exports['data_records_read_by_type map emits no read when empty array'] = functi
   test.same(results[0].key[0], '_total');
   test.same(results[0].key[1], 'messages');
   test.same(results[0].key[2], undefined);
-  test.same(results[0].val, 1);
   test.done();
 };
 
@@ -120,18 +115,14 @@ exports['data_records_read_by_type map emits read when populated array'] = funct
   test.same(results[0].key[0], '_total');
   test.same(results[0].key[1], 'forms');
   test.same(results[0].key[2], 'abc');
-  test.same(results[0].val, 1);
   test.same(results[1].key[0], 'gareth');
   test.same(results[1].key[1], 'forms');
   test.same(results[1].key[2], 'abc');
-  test.same(results[1].val, 1);
   test.same(results[2].key[0], 'milan');
   test.same(results[2].key[1], 'forms');
   test.same(results[2].key[2], 'abc');
-  test.same(results[2].val, 1);
   test.same(results[3].key[0], 'dave');
   test.same(results[3].key[1], 'forms');
   test.same(results[3].key[2], 'abc');
-  test.same(results[3].val, 1);
   test.done();
 };
