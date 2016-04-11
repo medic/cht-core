@@ -17,8 +17,6 @@ console.log('\nStarting restore process with\ndbUrl = ' + dbUrl + '\nlogdir = ' 
 
 var db = new PouchDB(dbUrl);
 
-fs.readFile('~/test', 'utf8', function() {console.log(arguments);});
-
 var readDocsFromFile = function(filepath) {
   return new Promise(function(resolve,reject){
     fs.readFile(filepath, 'utf8', function(err, data) {

@@ -31,6 +31,10 @@ var getIdsFromRows = function(rows) {
 // Note : instead of deleting docs, we set {_deleted: true}, so that the
 // deletions are replicated to clients.
 var deleteDocs = function(docs) {
+  if (dryrun) {
+    console.log('Dryrun : not deleting.');
+    return docs;
+  }
   var docsWithDeleteField = _.map(docs, function(doc) {
     doc._deleted = true;
     return doc;
@@ -94,6 +98,11 @@ var removeContact = function(person, facilitiesList) {
     delete facility.contact;
   });
 
+  if (dryrun) {
+    console.log('Dryrun : not removing contact links.');
+    return person;
+  }
+
   return db.bulkDocs(facilitiesList)
     .then(function (result) {
       console.log('Removed contact ' + person._id + ' from ' + facilitiesList.length + ' facilities');
@@ -139,13 +148,14 @@ var writeDocsToFile = function(filepath, docsList) {
 if (process.argv.length < 7) {
   console.log('Not enough arguments.');
   console.log('Usage:\nnode delete_training_data.js <dbUrl> <branchId> ' +
-    '<startTimeMillis> <endTimeMillis> <logdir>');
+    '<startTimeMillis> <endTimeMillis> <logdir> [dryrun]');
   console.log('Deletes all \'data_record\', \'person\' and \'clinic\' data ' +
     'from a given branch (\'district_hospital\' type) that was created ' +
     'between the two timestamps.');
   console.log('The deleted docs will be written out to json files in the ' +
     'logdir.');
-  console.log('Example:\nnode delete_training_data.js http://admin:pass@localhost:5984/medic 52857bf2cef066525b2feb82805fb373 1458735592585 1458736086553 .');
+  console.log('The dryrun arg will run the whole process, including writing the files, without actually doing the deletions.');
+  console.log('Example:\nnode delete_training_data.js http://admin:pass@localhost:5984/medic 52857bf2cef066525b2feb82805fb373 1458735592585 1458736086553 . dryrun');
   process.exit();
 }
 
@@ -154,8 +164,11 @@ var branchId = process.argv[3];
 var start = process.argv[4];
 var end = process.argv[5];
 var logdir = process.argv[6];
+var dryrun = process.argv[7];
+dryrun = (dryrun === 'dryrun');
+
 console.log('\nStarting deletion process with\ndbUrl = ' + dbUrl + '\nbranchId = ' + branchId +
-  '\nstartTimeMillis = ' + start + '\nendTimeMillis = ' + end + '\nlogdir = ' + logdir + '\n\n');
+  '\nstartTimeMillis = ' + start + '\nendTimeMillis = ' + end + '\nlogdir = ' + logdir + '\ndryrun = ' + dryrun + '\n');
 
 var db = new PouchDB(dbUrl);
 
