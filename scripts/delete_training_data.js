@@ -107,6 +107,7 @@ var cleanContactPersons = function(personsList) {
   var promiseList = [];
   _.each(personsList, function(person) {
     var promise = isContactFor(person._id)
+      .then(_.partial(writeDocsToFile, logdir + '/cleaned_facilities_' + person._id + '.json'))
       .then(_.partial(removeContact, person))
       .catch(function (err) {
         console.log('shit happened when removing contact ' + person._id);
@@ -119,10 +120,14 @@ var cleanContactPersons = function(personsList) {
 };
 
 var writeDocsToFile = function(filepath, docsList) {
+  if (docsList.length === 0) {
+    // don't write empty files.
+    return docsList;
+  }
   return new Promise(function(resolve,reject){
     fs.writeFile(filepath, JSON.stringify(docsList), function(err) {
       if(err) {
-          return reject(err);
+        return reject(err);
       }
       console.log('Wrote ' + docsList.length + ' docs to file ' + filepath);
       resolve(docsList);
