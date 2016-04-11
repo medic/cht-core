@@ -12,7 +12,6 @@ define( function( require, exports, module ) {
     var format = require('../../modules/format');
     require('enketo-core/src/js/plugins');
 
-    var END_OF_ALPHABET = '\ufff0';
     var DOCS_TO_PAGINATE = 20;
 
     var pluginName = 'dbobjectwidget';
@@ -41,7 +40,7 @@ define( function( require, exports, module ) {
     Dbobjectwidget.prototype._init = function() {
         var angularServices = angular.element(document.body).injector();
         var translate = angularServices.get('$translate').instant;
-        var DB = angularServices.get('DB').get();
+        var Search = angularServices.get('Search');
 
         var formatResult = function(row) {
             if(!row.doc) {
@@ -88,9 +87,14 @@ define( function( require, exports, module ) {
 
         var dbObjectType = $textInput.attr('data-type-xml');
 
-        var prepareRows = function(res, first) {
-            var rows  = _.sortBy(res.rows, function(row) {
-                return row.doc.name;
+        var prepareRows = function(documents, first) {
+            var rows = _.sortBy(documents, function(doc) {
+                return doc.name;
+            }).map(function(doc) {
+                return {
+                    id: doc._id,
+                    doc: doc
+                };
             });
 
             if (first) {
@@ -113,32 +117,29 @@ define( function( require, exports, module ) {
             var query = params.data.q;
             var skip = ((params.data.page || 1) - 1) * DOCS_TO_PAGINATE;
 
-            DB.query('medic/contacts_by_type_and_freetext', {
-                startkey: [ dbObjectType, query ],
-                endkey: [ dbObjectType, query + END_OF_ALPHABET ],
+            Search({ // $scope
+                filterModel: {
+                    type: 'contacts',
+                    contactTypes: [dbObjectType],
+                },
+                filterQuery: {
+                    value: query
+                }
+            }, { // options
                 limit: DOCS_TO_PAGINATE,
                 skip: skip
-            })
-            .then(function(searchResult) {
-                var docIds = _.uniq(searchResult.rows.map(function(row) {
-                    return row.id;
-                }));
+            }, function(err, documents) {
+                if (err) {
+                    failureCb(err);
+                    console.log(dbObjectType + ' failed to load', err);
+                }
 
-                DB.allDocs({ include_docs: true, keys: docIds })
-                .then(function(docs) {
-                    successCb({
-                        results: prepareRows(docs, skip === 0),
-                        pagination: {
-                            // original result length compared because we _.uniq
-                            // and so docs.length can be less
-                            more: searchResult.rows.length === DOCS_TO_PAGINATE
-                        }
-                    });
+                successCb({
+                    results: prepareRows(documents, skip === 0),
+                    pagination: {
+                        more: documents.length === DOCS_TO_PAGINATE
+                    }
                 });
-            })
-            .catch(function(err) {
-                failureCb(err);
-                console.log(dbObjectType + ' failed to load', err);
             });
         };
 
