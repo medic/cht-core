@@ -127,7 +127,7 @@ module.exports = function(grunt) {
     postcss: {
       options: {
         processors: [
-          require('autoprefixer-core')({ browsers: 'last 2 versions' })
+          require('autoprefixer')({ browsers: 'last 2 versions' })
         ]
       },
       dist: {
@@ -288,11 +288,10 @@ module.exports = function(grunt) {
       }
     },
     appcache: {
-      options: {
-        baseUrl: '../../'
-      },
       inbox: {
         dest: 'static/dist/manifest.appcache',
+        baseUrl: '../../',
+        network: '*',
         cache: {
           patterns: [
             'static/audio/**/*',
@@ -301,8 +300,7 @@ module.exports = function(grunt) {
             'static/img/**/*',
             '!static/img/promo/**/*',
           ]
-        },
-        network: '*'
+        }
       }
     },
     sass: {
