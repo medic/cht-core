@@ -46,14 +46,14 @@ var _ = require('underscore');
 
       var init = getForms();
 
-      var evaluateExpression = function(expression, context, user) {
-        return $parse(expression)(CONTEXT_UTILS, { contact: context.doc, user: user });
+      var evaluateExpression = function(expression, doc, user) {
+        return $parse(expression)(CONTEXT_UTILS, { contact: doc, user: user });
       };
 
-      var filterAll = function(forms, context, user) {
+      var filterAll = function(forms, options, user) {
         // clone the forms list so we don't affect future filtering
         forms = forms.slice();
-        var promises = _.map(forms, _.partial(filter, _, context, user));
+        var promises = _.map(forms, _.partial(filter, _, options, user));
         return $q.all(promises)
           .then(function(resolutions) {
             // always splice in reverse...
@@ -66,22 +66,22 @@ var _ = require('underscore');
           });
       };
 
-      var filter = function(form, context, user) {
-        if (!context && !form.context) {
-          // no provided context therefore don't filter anything out
-          return true;
-        }
-        if (context.contactForms !== undefined) {
+      var filter = function(form, options, user) {
+        if (options.contactForms !== undefined) {
           var isContactForm = form._id.indexOf('form:contact:') === 0;
-          if (context.contactForms !== isContactForm) {
+          if (options.contactForms !== isContactForm) {
             return false;
           }
+        }
+        if (options.ignoreContext) {
+          return true;
         }
         if (!form.context) {
           // no defined filters
           return true;
         }
-        var contactType = context.doc && context.doc.type;
+
+        var contactType = options.doc && options.doc.type;
         if (contactType === 'person' && (
             (typeof form.context.person !== 'undefined' && !form.context.person) ||
             (typeof form.context.person === 'undefined' && form.context.place))) {
@@ -93,7 +93,8 @@ var _ = require('underscore');
           return false;
         }
 
-        if (form.context.expression && !evaluateExpression(form.context.expression, context, user)) {
+        if (form.context.expression &&
+            !evaluateExpression(form.context.expression, options.doc, user)) {
           return false;
         }
         if (!form.context.permission) {
@@ -112,7 +113,7 @@ var _ = require('underscore');
         return UserContact()
           .then(function(user) {
             _.values(listeners).forEach(function(listener) {
-              filterAll(forms, listener.context, user).then(function(results) {
+              filterAll(forms, listener.options, user).then(function(results) {
                 listener.callback(null, results);
               });
             });
@@ -136,21 +137,30 @@ var _ = require('underscore');
         }
       });
 
-      return function(name, context, callback) {
+      /**
+       * @name String to uniquely identify the callback to stop duplicate registration
+       * @options (optional) Object for filtering. Possible values:
+       *   - ignoreContext (boolean) to return all forms
+       *   - contactForms (boolean) to return all contact forms, no contact forms,
+       *     or both
+       *   - doc (Object) the doc to pass to the forms context expression to
+       *     determine if the form is applicable
+       * @callback Invoked when complete and again when results have changed.
+       */
+      return function(name, options, callback) {
         if (!callback) {
-          callback = context;
-          context = {};
+          callback = options;
+          options = {};
         }
-        listeners[name] = {
-          context: context,
+        var listener = listeners[name] = {
+          options: options,
           callback: callback
         };
-        var listener = listeners[name];
         init
           .then(function(forms) {
             UserContact()
               .then(function(user) {
-                return filterAll(forms, listener.context, user);
+                return filterAll(forms, listener.options, user);
               })
               .then(function(results) {
                 listener.callback(null, results);

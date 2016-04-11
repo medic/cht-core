@@ -30,6 +30,20 @@ module.exports = function(grunt) {
           to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'mm.dateSelected.daterangepicker\', this);\n'
         }]
       },
+      // cache the ddoc views for performance
+      monkeypatchpouchtoretryfaileddocreplication: {
+        src: [ 'static/dist/inbox.js' ],
+        overwrite: true,
+        replacements: [
+          {
+            from: /resultDocs\.push\(doc\.ok\);/,
+            to: 'resultDocs.push(doc.ok);\n' +
+                '          // MONKEY PATCH BY GRUNT: retry failed batches.\n' +
+                '          } else if(typeof doc.error !== "undefined") {\n' +
+                '            throw new Error("Bad doc in batch: " + JSON.stringify(doc));'
+          }
+        ]
+      },
       // replace cache busting which breaks appcache, needed until this is fixed:
       // https://github.com/FortAwesome/Font-Awesome/issues/3286
       monkeypatchfontawesome: {
@@ -62,8 +76,8 @@ module.exports = function(grunt) {
             './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding',
             'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath',
             'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
-            'libphonenumber/phoneformat': './packages/libphonenumber/libphonenumber/phoneformat',
             'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils',
+            'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber'
           },
         },
       }
@@ -82,6 +96,7 @@ module.exports = function(grunt) {
     jshint: {
       options: {
         jshintrc: true,
+        reporter: require('jshint-stylish'),
         ignores: [
           'tests/karma/q.js'
         ]
@@ -112,7 +127,7 @@ module.exports = function(grunt) {
     postcss: {
       options: {
         processors: [
-          require('autoprefixer-core')({ browsers: 'last 2 versions' })
+          require('autoprefixer')({ browsers: 'last 2 versions' })
         ]
       },
       dist: {
@@ -129,6 +144,18 @@ module.exports = function(grunt) {
               'node_modules/font-awesome/fonts/*'
             ],
             dest: 'static/fonts'
+          },
+        ]
+      },
+      libphonenumber: {
+        files: [
+          {
+            expand: true,
+            flatten: true,
+            src: [
+              'node_modules/google-libphonenumber/dist/browser/libphonenumber.js'
+            ],
+            dest: 'packages/libphonenumber/libphonenumber/'
           },
         ]
       },
@@ -261,11 +288,10 @@ module.exports = function(grunt) {
       }
     },
     appcache: {
-      options: {
-        baseUrl: '../../'
-      },
       inbox: {
         dest: 'static/dist/manifest.appcache',
+        baseUrl: '../../',
+        network: '*',
         cache: {
           patterns: [
             'static/audio/**/*',
@@ -274,8 +300,7 @@ module.exports = function(grunt) {
             'static/img/**/*',
             '!static/img/promo/**/*',
           ]
-        },
-        network: '*'
+        }
       }
     },
     sass: {
@@ -296,9 +321,11 @@ module.exports = function(grunt) {
 
   // Default tasks
   grunt.registerTask('mmjs', 'Build the JS resources', [
+    'copy:libphonenumber',
     'browserify:dist',
     'replace:hardcodeappsettings',
     'replace:monkeypatchdate',
+    'replace:monkeypatchpouchtoretryfaileddocreplication',
     'ngtemplates'
   ]);
 

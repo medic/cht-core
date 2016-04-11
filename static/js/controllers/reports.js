@@ -8,9 +8,9 @@ var _ = require('underscore'),
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('ReportsCtrl', 
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$translate', 'TranslateFrom', 'LiveList', 'Settings', 'MarkRead', 'Search', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, $translate, TranslateFrom, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified) {
+  inboxControllers.controller('ReportsCtrl',
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$translate', '$log', 'TranslateFrom', 'LiveList', 'Settings', 'MarkRead', 'Search', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, $translate, $log, TranslateFrom, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified) {
 
       $scope.filterModel.type = 'reports';
       $scope.selectedGroup = null;
@@ -57,7 +57,7 @@ var _ = require('underscore'),
         });
       };
 
-      $scope.setSelectedGroup = function(group) {
+      var _setSelectedGroup = function(group) {
         $scope.selectedGroup = angular.copy(group);
       };
 
@@ -74,7 +74,7 @@ var _ = require('underscore'),
           });
       };
 
-      $scope.update = function(updated) {
+      var _updateLiveList = function(updated) {
         _.each(updated, function(report) {
           liveList.update(report, false);
         });
@@ -90,7 +90,7 @@ var _ = require('underscore'),
         MarkRead(report._id, true)
           .then($scope.updateReadStatus)
           .catch(function(err) {
-            console.log(err);
+            $log.error('Error marking read', err);
           });
       };
 
@@ -98,25 +98,47 @@ var _ = require('underscore'),
         var name = doc.form;
         var form = _.findWhere($scope.forms, { code: doc.form });
         if (form) {
-          name = form.name;
-        } else {
-          form = _.findWhere($scope.nonContactForms, { internalId: doc.form });
-          if (form) {
-            name = TranslateFrom(form.title);
-          }
+          name = form.name || form.title;
         }
-        $scope.setTitle(name);
+        $scope.setTitle(TranslateFrom(name));
+      };
+
+      var getFields = function(results, values, labelPrefix, depth) {
+        if (depth > 3) {
+          depth = 3;
+        }
+        Object.keys(values).forEach(function(key) {
+          var value = values[key];
+          var label = labelPrefix + '.' + key;
+          if (_.isObject(value)) {
+            results.push({
+              label: label,
+              depth: depth
+            });
+            getFields(results, value, label, depth + 1);
+          } else {
+            results.push({
+              label: label,
+              value: value,
+              depth: depth
+            });
+          }
+        });
+        return results;
       };
 
       var updateDisplayFields = function(report) {
         // calculate fields to display
-        var keys = Object.keys(report.fields);
-        report.display_fields = {};
-        _.each(keys, function(k) {
-          if(!(report.hidden_fields && _.contains(report.hidden_fields, k))) {
-            report.display_fields[k] = report.fields[k];
-          }
+        var label = 'report.' + report.form;
+        var fields = getFields([], report.fields, label, 0);
+        var hide = report.hidden_fields || [];
+        hide.push('inputs');
+        fields = _.reject(fields, function(field) {
+          return _.some(hide, function(h) {
+            return field.label.indexOf(label + '.' + h) === 0;
+          });
         });
+        $scope.displayFields = fields;
       };
 
       $scope.setSelected = function(doc) {
@@ -138,17 +160,37 @@ var _ = require('underscore'),
         $scope.settingSelected(refreshing);
       };
 
-      $scope.selectReport = function(id) {
-        $scope.clearSelected();
+      var _fetchFormattedReport = function(report) {
+        if (_.isString(report)) {
+          // id only - fetch the full doc
+          return DB.get()
+            .get(report)
+            .then(FormatDataRecord);
+        } else {
+          return FormatDataRecord(report);
+        }
+      };
 
-        if (!id || !liveList.initialised()) {
+      $scope.refreshReportSilently = function(report) {
+        _fetchFormattedReport(report)
+          .then(function(doc) {
+              _setSelected(doc[0]);
+            })
+          .catch(function(err) {
+            $log.error('Error fetching formatted report', err);
+          });
+      };
+
+      $scope.selectReport = function(report) {
+        if (!report || !liveList.initialised()) {
+          $scope.clearSelected();
           return;
         }
 
-        $scope.setLoadingContent(id);
-        DB.get()
-          .get(id)
-          .then(FormatDataRecord)
+        $scope.clearSelected();
+        $scope.setLoadingContent(report);
+
+        _fetchFormattedReport(report)
           .then(function(doc) {
             if (doc) {
               _setSelected(doc[0]);
@@ -157,11 +199,11 @@ var _ = require('underscore'),
           })
           .catch(function(err) {
             $scope.clearSelected();
-            console.error(err);
+            $log.error('Error selecting report', err);
           });
       };
 
-      $scope.query = function(options) {
+      var _query = function(options) {
         options = options || {};
         options.limit = 50;
         if (!options.silent) {
@@ -189,7 +231,7 @@ var _ = require('underscore'),
               // invalid freetext filter query
               $scope.errorSyntax = true;
             }
-            return console.log('Error loading messages', err);
+            return $log.error('Error loading messages', err);
           }
 
           $scope.moreItems = liveList.moreItems = data.length >= options.limit;
@@ -200,7 +242,7 @@ var _ = require('underscore'),
               $scope.appending = false;
               $scope.error = false;
               $scope.errorSyntax = false;
-              $scope.update(data);
+              _updateLiveList(data);
               var curr = _.findWhere(data, { _id: $state.params.id });
               if (curr) {
                 $scope.setSelected(curr);
@@ -216,7 +258,7 @@ var _ = require('underscore'),
             })
             .catch(function(err) {
               $scope.error = true;
-              console.log('Error formatting record', err);
+              $log.error('Error formatting record', err);
             });
         });
       };
@@ -243,7 +285,7 @@ var _ = require('underscore'),
           liveList = LiveList['report-search'];
           liveList.set([]);
 
-          $scope.query();
+          _query();
         } else {
           $scope.filtered = false;
           liveList = LiveList.reports;
@@ -257,7 +299,7 @@ var _ = require('underscore'),
               _initScroll();
             });
           } else {
-            $scope.query();
+            _query();
           }
         }
 
@@ -265,13 +307,14 @@ var _ = require('underscore'),
 
       $scope.$on('ClearSelected', function() {
         $scope.selected = null;
+        liveList.clearSelected();
       });
 
       $scope.$on('VerifyReport', function(e, verify) {
         if ($scope.selected.form) {
           Verified($scope.selected._id, verify, function(err) {
             if (err) {
-              console.log('Error verifying message', err);
+              $log.error('Error verifying message', err);
             }
           });
         }
@@ -287,7 +330,7 @@ var _ = require('underscore'),
       var _initScroll = function() {
         scrollLoader.init(function() {
           if (!$scope.loading && $scope.moreItems) {
-            $scope.query({ skip: true });
+            _query({ skip: true });
           }
         });
       };
@@ -333,7 +376,7 @@ var _ = require('underscore'),
       };
 
       $scope.edit = function(group) {
-        $scope.setSelectedGroup(group);
+        _setSelectedGroup(group);
         $('#edit-message-group').modal('show');
         initEditMessageModal();
       };
@@ -356,7 +399,10 @@ var _ = require('underscore'),
       //   }
       // }, true);
 
-      $scope.search();
+      $scope.$on('$destroy', function() {
+        $scope.setTitle();
+        $scope.clearSelected();
+      });
     }
   ]);
 

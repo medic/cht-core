@@ -9,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl',
-    ['$log', '$scope', '$state', '$timeout', 'DB', 'LiveList', 'UserSettings', 'Search', 'CONTACT_TYPES',
-    function ($log, $scope, $state, $timeout, DB, LiveList, UserSettings, Search, CONTACT_TYPES) {
+    ['$log', '$scope', '$state', '$timeout', 'DB', 'LiveList', 'UserSettings', 'Search',
+    function ($log, $scope, $state, $timeout, DB, LiveList, UserSettings, Search) {
 
       var liveList = LiveList.contacts;
 
@@ -26,12 +26,12 @@ var _ = require('underscore'),
       function _initScroll() {
         scrollLoader.init(function() {
           if (!$scope.loading && $scope.moreItems) {
-            $scope.query({ skip: true });
+            _query({ skip: true });
           }
         });
       }
 
-      $scope.query = function(options) {
+      var _query = function(options) {
         options = options || {};
         options.limit = 50;
 
@@ -112,10 +112,6 @@ var _ = require('underscore'),
         });
       };
 
-      $scope.orderByType = function(contact) {
-        return CONTACT_TYPES.indexOf(contact.type);
-      };
-
       $scope.$on('ClearSelected', function() {
         $scope.selected = null;
       });
@@ -138,7 +134,7 @@ var _ = require('underscore'),
           liveList = LiveList['contact-search'];
           liveList.set([]);
 
-          $scope.query();
+          _query();
         } else {
           $scope.filtered = false;
           liveList = LiveList.contacts;
@@ -152,9 +148,14 @@ var _ = require('underscore'),
               _initScroll();
             });
           } else {
-            $scope.query();
+            _query();
           }
         }
+      });
+
+      $scope.$on('$destroy', function() {
+        $scope.setTitle();
+        $scope.clearSelected();
       });
 
     }

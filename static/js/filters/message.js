@@ -1,4 +1,5 @@
-var format = require('../modules/format');
+var format = require('../modules/format'),
+    _ = require('underscore');
 
 (function () {
 
@@ -6,23 +7,22 @@ var format = require('../modules/format');
 
   var module = angular.module('inboxFilters');
 
-  var getFormName = function(message, forms) {
-    for (var i = 0; i < forms.length; i++) {
-      if (message.form === forms[i].code) {
-        return forms[i].name;
-      }
+  var getFormName = function(TranslateFrom, message, forms) {
+    var form = _.findWhere(forms, { code: message.form });
+    if (form) {
+      return TranslateFrom(form.name);
     }
     return message.form;
   };
 
-  module.filter('summary', ['$translate',
-    function($translate) {
+  module.filter('summary', ['$translate', 'TranslateFrom',
+    function($translate, TranslateFrom) {
       return function(record, forms) {
         if (!record || !forms) {
           return '';
         }
         if (record.form) {
-          return getFormName(record, forms);
+          return getFormName(TranslateFrom, record, forms);
         }
         if (record.message && record.message.message) {
           return record.message.message;
@@ -38,16 +38,16 @@ var format = require('../modules/format');
     }
   ]);
 
-  module.filter('title', ['$translate',
-    function($translate) {
-      return function(message, forms) {
-        if (!message || !forms) {
+  module.filter('title', ['$translate', 'TranslateFrom',
+    function($translate, TranslateFrom) {
+      return function(record, forms) {
+        if (!record || !forms) {
           return '';
         }
-        if (message.form) {
-          return getFormName(message, forms);
+        if (record.form) {
+          return getFormName(TranslateFrom, record, forms);
         }
-        if (message.kujua_message) {
+        if (record.kujua_message) {
           return $translate.instant('Outgoing Message');
         }
         return $translate.instant('sms_message.message');

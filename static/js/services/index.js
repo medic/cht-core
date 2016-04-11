@@ -27,7 +27,7 @@
   require('./facility');
   require('./facility-hierarchy');
   require('./file-reader');
-  require('./form');
+  require('./json-forms');
   require('./format-data-record');
   require('./format-date');
   require('./generate-search-query');
@@ -52,7 +52,7 @@
   require('./settings');
   require('./snackbar');
   require('./target-generator');
-  require('./task-generator');
+  require('./rules-engine');
   require('./traffic-stats');
   require('./translate-from');
   require('./update-contact');

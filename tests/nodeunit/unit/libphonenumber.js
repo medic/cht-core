@@ -1,12 +1,12 @@
-var proxyquire = require('proxyquire');
+var proxyquire = require('proxyquire').noCallThru();
 var phonenumber = proxyquire('../../../packages/libphonenumber/libphonenumber/utils', {
-  'kujua-utils':  {}
+  'libphonenumber/libphonenumber': require('../../../packages/libphonenumber/libphonenumber/libphonenumber')
 });
 
 var validNumNZDomestic = '0275552636'; 
 var validNumNZInternational = '+64275552636';
 // Watch out : right number of digits may still be invalid number!
-var invalidNumNZDomestic = '5155556442'; 
+var invalidNumNZDomestic = '5155556442123'; 
 var validNumUSInternational = '+15155556442';
 var settings = {
   default_country_code: 64

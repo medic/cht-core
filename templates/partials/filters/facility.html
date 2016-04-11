@@ -10,7 +10,7 @@
   </span>
   <span role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
     <ul>
-      <li role="presentation" ng-repeat="facility in facilities | orderBy:'doc.name'" ng-include="'templates/partials/filters/facility_items.html'" ng-init="facilityDepth = 0"></li>
+      <li role="presentation" ng-repeat="facility in facilities | orderBy:'doc.name'" ng-include="::'templates/partials/filters/facility_items.html'" ng-init="facilityDepth = 0"></li>
     </ul>
   </span>
 </span>

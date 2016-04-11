@@ -12,14 +12,14 @@
       </span>
       <span class="mm-button-text">
         <span ng-show="'configuration' | isState" translate>Configuration</span>
-        <span ng-show="page.active()" ng-repeat="page in configurationPages" translate>{{page.name}}</span>
+        <span ng-show="page.active()" ng-repeat="page in configurationPages" translate>{{::page.name}}</span>
       </span>
     </span>
     <ul role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
       <li class="ng-scope" role="presentation" mm-auth="can_configure" ng-repeat="page in configurationPages">
         <a ui-sref="{{page.state}}" role="menuitem" tabindex="-1">
           <i class="fa fa-fw {{page.icon}}"></i>
-          <span translate>{{page.name}}</span>
+          <span translate>{{::page.name}}</span>
         </a>
       </li>
     </ul>

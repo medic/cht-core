@@ -6,9 +6,9 @@ var _ = require('underscore');
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('ContactsContentCtrl', 
-    ['$parse', '$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search', 'Changes', 'ContactSchema', 'UserDistrict', 'XmlForms',
-    function($parse, $scope, $stateParams, $q, $log, DB, TaskGenerator, Search, Changes, ContactSchema, UserDistrict, XmlForms) {
+  inboxControllers.controller('ContactsContentCtrl',
+    ['$parse', '$scope', '$stateParams', '$q', '$log', 'DB', 'RulesEngine', 'Search', 'Changes', 'ContactSchema', 'UserDistrict', 'XmlForms',
+    function($parse, $scope, $stateParams, $q, $log, DB, RulesEngine, Search, Changes, ContactSchema, UserDistrict, XmlForms) {
 
       $scope.showParentLink = false;
 
@@ -164,7 +164,7 @@ var _ = require('underscore');
           patientIds = _.pluck($scope.selected.children, 'id');
         }
         patientIds.push($scope.selected.doc._id);
-        TaskGenerator.listen('ContactsContentCtrl', 'task', function(err, tasks) {
+        RulesEngine.listen('ContactsContentCtrl', 'task', function(err, tasks) {
           if (err) {
             return $log.error('Error getting tasks', err);
           }

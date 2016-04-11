@@ -9,6 +9,7 @@ node_modules
 bower_components
 static/dist
 static/fonts
+packages/libphonenumber/libphonenumber/libphonenumber.js
 
 logs
 config.js

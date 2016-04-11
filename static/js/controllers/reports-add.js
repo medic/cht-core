@@ -4,7 +4,7 @@
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('ReportsAddCtrl', 
+  inboxControllers.controller('ReportsAddCtrl',
     ['$log', '$scope', '$state', '$q', '$translate', 'DB', 'Enketo', 'Snackbar',
     function ($log, $scope, $state, $q, $translate, DB, Enketo, Snackbar) {
 
@@ -23,9 +23,7 @@
       $scope.saving = false;
       if ($state.params.reportId || $state.params.formId) {
         $scope.setCancelTarget(function() {
-          if (!$state.params.reportId) {
-            $scope.query();
-          }
+          // Note : if no $state.params.reportId, goes to "No report selected".
           $state.go('reports.detail', { id: $state.params.reportId });
         });
       } else {

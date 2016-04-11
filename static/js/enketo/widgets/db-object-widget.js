@@ -12,10 +12,13 @@ define( function( require, exports, module ) {
     var format = require('../../modules/format');
     require('enketo-core/src/js/plugins');
 
+    var END_OF_ALPHABET = '\ufff0';
+    var DOCS_TO_PAGINATE = 20;
+
     var pluginName = 'dbobjectwidget';
 
     /**
-     * Allows drop-down selecters for db objects.
+     * Allows drop-down selectors for db objects.
      *
      * @constructor
      * @param {Element} element [description]
@@ -80,23 +83,17 @@ define( function( require, exports, module ) {
         var $question = $(this.element);
 
         var $textInput = $question.find('input');
-        var initialValue = $textInput.val();
         $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
         $textInput = $question.find('select');
 
         var dbObjectType = $textInput.attr('data-type-xml');
 
-        var loader = $('<div class="loader"/></div>');
-        $textInput.after(loader);
+        var prepareRows = function(res, first) {
+            var rows  = _.sortBy(res.rows, function(row) {
+                return row.doc.name;
+            });
 
-        DB.query('medic/doc_by_type', {include_docs:true, key:[dbObjectType]})
-            .then(function(res) {
-                loader.remove();
-
-                var rows = _.sortBy(res.rows, function(row) {
-                    return row.doc.name;
-                });
-
+            if (first) {
                 // add 'new' option if requested
                 if ($question.hasClass('or-appearance-allow-new')) {
                     rows.unshift({
@@ -104,59 +101,72 @@ define( function( require, exports, module ) {
                         text: translate('contact.type.' + dbObjectType + '.new'),
                     });
                 }
+
                 // add blank option
                 rows.unshift({ id: '' });
+            }
 
-                if(initialValue) {
-                    var selected = _.find(rows, function(row) {
-                        return row.doc && row.doc._id === initialValue;
-                    });
-                    if(selected) {
-                        $textInput.append($('<option>', {
-                            selected: 'selected',
-                            value: selected.doc._id,
-                            text: selected.doc.name,
-                        }));
-                    }
-                }
+            return rows;
+        };
 
-                $.fn.select2.amd.require([
-                'select2/dropdown/attachContainer',
-                'select2/dropdown/closeOnSelect',
-                'select2/dropdown',
-                'select2/dropdown/search',
-                'select2/utils',
-                ], function (AttachContainer, CloseOnSelect, DropdownAdapter, DropdownSearch, Utils) {
-                    var CustomAdapter = Utils.Decorate(Utils.Decorate(Utils.Decorate(
-                        DropdownAdapter, DropdownSearch), AttachContainer), CloseOnSelect);
+        var query = function(params, successCb, failureCb) {
+            var query = params.data.q;
+            var skip = ((params.data.page || 1) - 1) * DOCS_TO_PAGINATE;
 
-                    $textInput.select2({
-                        data: rows,
-                        dropdownAdapter: CustomAdapter,
-                        templateResult: formatResult,
-                        templateSelection: formatSelection,
-                        matcher: matcher,
-                        selectOnClose: true,
-                        width: '100%',
-                    });
+            DB.query('medic/contacts_by_type_and_freetext', {
+                startkey: [ dbObjectType, query ],
+                endkey: [ dbObjectType, query + END_OF_ALPHABET ],
+                limit: DOCS_TO_PAGINATE,
+                skip: skip
+            })
+            .then(function(searchResult) {
+                var docIds = _.uniq(searchResult.rows.map(function(row) {
+                    return row.id;
+                }));
 
-                    // Tell enketo to ignore the new <input> field that select2 adds
-                    $question.find('input.select2-search__field').addClass('ignore');
-                });
-
-                if (!$question.hasClass('or-appearance-bind-id-only')) {
-                    $textInput.on('change', function() {
-                        var selected = $textInput.select2('data');
-                        var doc = selected && selected[0] && selected[0].doc;
-                        if (doc) {
-                            var form = $question.closest('form.or');
-                            var field = $question.find('select[name]').attr('name');
-                            var objectRoot = field.substring(0, field.lastIndexOf('/'));
-                            updateFields(form, doc, objectRoot, field);
+                DB.allDocs({ include_docs: true, keys: docIds })
+                .then(function(docs) {
+                    successCb({
+                        results: prepareRows(docs, skip === 0),
+                        pagination: {
+                            // original result length compared because we _.uniq
+                            // and so docs.length can be less
+                            more: searchResult.rows.length === DOCS_TO_PAGINATE
                         }
                     });
+                });
+            })
+            .catch(function(err) {
+                failureCb(err);
+                console.log(dbObjectType + ' failed to load', err);
+            });
+        };
+
+        $textInput.select2({
+            ajax: {
+                delay: 500,
+                transport: query
+            },
+            templateResult: formatResult,
+            templateSelection: formatSelection,
+            matcher: matcher,
+            selectOnClose: true,
+            minimumInputLength: 3,
+            width: '100%',
+        });
+
+        if (!$question.hasClass('or-appearance-bind-id-only')) {
+            $textInput.on('change', function() {
+                var selected = $textInput.select2('data');
+                var doc = selected && selected[0] && selected[0].doc;
+                if (doc) {
+                    var form = $question.closest('form.or');
+                    var field = $question.find('select[name]').attr('name');
+                    var objectRoot = field.substring(0, field.lastIndexOf('/'));
+                    updateFields(form, doc, objectRoot, field);
                 }
             });
+        }
     };
 
     var updateFields = function(form, doc, objectRoot, keyPath) {

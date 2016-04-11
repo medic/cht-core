@@ -10,7 +10,7 @@ var nools = require('nools'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TaskGenerator', ['$q', '$log', 'Search', 'Settings', 'Changes', 'CONTACT_TYPES',
+  inboxServices.factory('RulesEngine', ['$q', '$log', 'Search', 'Settings', 'Changes', 'CONTACT_TYPES',
     function($q, $log, Search, Settings, Changes, CONTACT_TYPES) {
 
       var callbacks = {};
@@ -26,7 +26,7 @@ var nools = require('nools'),
           isTimely: function(date, event) {
             var due = new Date(date);
             var start = this.addDate(null, event.start);
-            var end = this.addDate(null, event.end * -1);
+            var end = this.addDate(null, (event.end + 1) * -1);
             return due.getTime() < start.getTime() && due.getTime() > end.getTime();
           },
           addDate: function(date, days) {
@@ -45,7 +45,48 @@ var nools = require('nools'),
           },
           getSchedule: function(name) {
             return _.findWhere(settings.tasks.schedules, { name: name });
-          }
+          },
+          getMostRecentTimestamp: function(reports, form) {
+            var report = this.getMostRecentReport(reports, form);
+            return report && report.reported_date;
+          },
+          getMostRecentReport: function(reports, form) {
+            var result = null;
+            reports.forEach(function(report) {
+              if (report.form === form &&
+                 (!result || report.reported_date > result.reported_date)) {
+                result = report;
+              }
+            });
+            return result;
+          },
+          isFormSubmittedInWindow: function(reports, form, start, end, count) {
+            var result = false;
+            reports.forEach(function(report) {
+              if (!result && report.form === form) {
+                if (report.reported_date >= start && report.reported_date <= end) {
+                  if (!count ||
+                     (count && report.fields && report.fields.follow_up_count > count)) {
+                    result = true;
+                  }
+                }
+              }
+            });
+            return result;
+          },
+          isFirstReportNewer: function(firstReport, secondReport) {
+            if (firstReport && firstReport.reported_date) {
+              if (secondReport && secondReport.reported_date) {
+                return firstReport.reported_date > secondReport.reported_date;
+              }
+              return true;
+            }
+            return null;
+          },
+          isDateValid: function(date) {
+            return !isNaN(date.getTime());
+          },
+          MS_IN_DAY: 24*60*60*1000 // 1 day in ms
         };
       };
 
@@ -112,10 +153,10 @@ var nools = require('nools'),
         });
       };
 
-      var getTasks = function() {
+      var assertFacts = function() {
         knownTypes.forEach(function(type) {
-          session.on(type, function(task) {
-            notifyCallbacks(task, type);
+          session.on(type, function(fact) {
+            notifyCallbacks(fact, type);
           });
         });
         facts.forEach(function(fact) {
@@ -124,7 +165,7 @@ var nools = require('nools'),
         session.matchUntilHalt().then(
           // halt
           function() {
-            notifyError(new Error('Unexpected halt in task generation rules.'));
+            notifyError(new Error('Unexpected halt in fact assertion.'));
           },
           // error
           notifyError
@@ -150,7 +191,7 @@ var nools = require('nools'),
         }
       };
 
-      var updateTasks = function(change) {
+      var updateFacts = function(change) {
         var fact;
         if (change.deleted) {
           fact = findFact(change.id);
@@ -201,8 +242,8 @@ var nools = require('nools'),
 
       var registerListener = function() {
         Changes({
-          key: 'task-generator',
-          callback: updateTasks,
+          key: 'rules-engine',
+          callback: updateFacts,
           filter: function(change) {
             return change.doc.form ||
                    CONTACT_TYPES.indexOf(change.doc.type) !== -1;
@@ -235,7 +276,7 @@ var nools = require('nools'),
           return $q.all([ getDataRecords(), getContacts() ])
             .then(function(results) {
               facts = deriveFacts(results[0], results[1]);
-              getTasks();
+              assertFacts();
             });
         });
 
@@ -257,4 +298,4 @@ var nools = require('nools'),
     }
   ]);
 
-}()); 
+}());

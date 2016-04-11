@@ -15,8 +15,8 @@ var feedback = require('../modules/feedback'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'TaskGenerator', 'CONTACT_TYPES',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, TaskGenerator, CONTACT_TYPES) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES) {
 
       Session.init();
 
@@ -33,7 +33,7 @@ var feedback = require('../modules/feedback'),
         $scope.initialReplication = result;
       });
 
-      TaskGenerator.init
+      RulesEngine.init
         .then(function() {
           $scope.dbWarmedUp = true;
         })
@@ -428,20 +428,33 @@ var feedback = require('../modules/feedback'),
         sendMessage.init(Settings, Contact, translateFilter);
       };
 
-      Form()
-        .then(function(forms) {
-          $scope.forms = forms;
+      // get the forms for the forms filter
+      JsonForms()
+        .then(function(jsonForms) {
+          XmlForms('FormsFilter', { contactForms: false, ignoreContext: true }, function(err, xForms) {
+            if (err) {
+              return $log.error('Error fetching form definitions', err);
+            }
+            var xFormSummaries = xForms.map(function(xForm) {
+              return {
+                code: xForm.internalId,
+                name: xForm.title
+              };
+            });
+            $scope.forms = xFormSummaries.concat(jsonForms);
+          });
         })
         .catch(function(err) {
           $log.error('Failed to retrieve forms', err);
         });
 
-      XmlForms('InboxCtrl', { contactForms: false }, function(err, forms) {
+      // get the forms for the Add Report menu
+      XmlForms('AddReportMenu', { contactForms: false }, function(err, xForms) {
         if (err) {
           return $log.error('Error fetching form definitions', err);
         }
         Enketo.clearXmlCache();
-        $scope.nonContactForms = forms;
+        $scope.nonContactForms = xForms;
       });
 
       $scope.setupGuidedSetup = function() {
@@ -661,13 +674,9 @@ var feedback = require('../modules/feedback'),
           DeleteDoc(docToDeleteId, function(err) {
             pane.done(translateFilter('Error deleting document'), err);
             if (!err) {
-              // return to list view for the current state
-              var stateName = $state.current.name,
-                  dotIndex = stateName.indexOf('.');
-              if(dotIndex !== -1) {
-                stateName = stateName.substring(0, dotIndex);
+              if ($state.includes('contacts') || $state.includes('reports')) {
+                $state.go($state.current.name, { id: null });
               }
-              $state.go(stateName);
               Snackbar(translateFilter('document.deleted'));
             }
           });
@@ -920,7 +929,7 @@ var feedback = require('../modules/feedback'),
       $scope.configurationPages = [
         {
           state: 'configuration.settings.basic',
-          icon: 'fa-cog',
+          icon: 'fa-wrench',
           name: 'Settings',
           active: function() {
             return $state.includes('configuration.settings');
@@ -1009,7 +1018,7 @@ var feedback = require('../modules/feedback'),
 
         // close select2 dropdowns in the background
         $('select.select2-hidden-accessible').each(function(i, e) {
-          // prevent errors being thrown if selecters have not been
+          // prevent errors being thrown if selectors have not been
           // initialised before the update dialog is to be shown
           try { $(e).select2('close'); } catch(e) {}
         });

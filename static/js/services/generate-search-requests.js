@@ -118,22 +118,22 @@ var _ = require('underscore'),
           return;
         }
         if (filters.search) {
-          var query = filters.search.toLowerCase();
-          var params = {};
-          if (query.indexOf(':') !== -1) {
-            // use exact match
-            params.keys = _.map(query.split(/\s+/), function(word) {
-              return [ word ];
-            });
-          } else {
-            // use starts with
-            params.startkey = [ query ];
-            params.endkey = [ query + endOfAlphabet ];
-          }
-          return {
-            view: view,
-            params: params
-          };
+          var words = filters.search.toLowerCase().split(/\s+/);
+          return words.map(function(word) {
+            var params = {};
+            if (word.indexOf(':') !== -1) {
+              // use exact match
+              params.key = [ word ];
+            } else {
+              // use starts with
+              params.startkey = [ word ];
+              params.endkey = [ word + endOfAlphabet ];
+            }
+            return {
+              view: view,
+              params: params
+            };
+          });
         }
       };
 
@@ -220,7 +220,7 @@ var _ = require('underscore'),
         requests.push(freetext(filters, type));
         // requests.push(documentType($scope, type));
         // requests.push(subject($scope, type));
-        requests = _.compact(requests);
+        requests = _.compact(_.flatten(requests));
         return requests.length ? requests : [ type.getUnfiltered() ];
       };
 
