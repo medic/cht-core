@@ -54,7 +54,7 @@ var _ = require('underscore'),
         return intersection;
       };
 
-      var view = function(request, options, callback) {
+      var view = function(request, callback) {
         DbView(request.view, { params: request.params })
           .then(function(data) {
             callback(null, data.results);
@@ -63,11 +63,11 @@ var _ = require('underscore'),
       };
 
       var filter = function(requests, options, callback) {
-        async.map(requests, _.partial(view, _, options), function(err, responses) {
+        async.map(requests, view, function(err, responses) {
           if (err) {
             return callback(err);
           }
-          var intersection = getIntersection(responses, options);
+          var intersection = getIntersection(responses);
           var page = getPage(intersection, options);
           if (!page.length) {
             return callback(null, []);
@@ -90,7 +90,7 @@ var _ = require('underscore'),
             limit: options.limit,
             skip: options.skip
           });
-          view(requests[0], options, callback);
+          view(requests[0], callback);
         } else {
           // filtering
           filter(requests, options, callback);
@@ -111,10 +111,11 @@ var _ = require('underscore'),
       };
 
       return function(type, filters, options, callback) {
+        console.log('searching for', type);
+        console.trace();
         _.defaults(options, {
           limit: 50,
-          skip: 0,
-          type: type
+          skip: 0
         });
         generateRequests(type, filters, options, function(err, requests) {
           if (err) {

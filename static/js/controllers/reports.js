@@ -22,10 +22,7 @@ var _ = require('underscore'),
       var liveList = LiveList.reports;
 
       $scope.setupSearch = function() {
-        console.log('setting up filters', $('#search'));
-
         $('#search').on('click', function(e) {
-          console.log('clicked!');
           e.preventDefault();
           $scope.search();
         });
@@ -398,6 +395,8 @@ var _ = require('underscore'),
       //     $scope.search();
       //   }
       // }, true);
+
+      $scope.search();
 
       $scope.$on('$destroy', function() {
         $scope.setTitle();

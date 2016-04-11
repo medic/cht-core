@@ -47,7 +47,8 @@ var _ = require('underscore'),
 
         // curry the Search service so async.parallel can provide the
         // callback as the final callback argument
-        var contactSearch = _.partial(Search, $scope, options);
+        // TODO provide filters!
+        var contactSearch = _.partial(Search, 'contacts', {}, options);
         async.parallel([ contactSearch, UserSettings ], function(err, results) {
           if (err) {
             $scope.error = true;
