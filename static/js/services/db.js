@@ -18,8 +18,9 @@ var utils = require('kujua-utils'),
 
       var getRemoteUrl = function(name) {
         name = name || DbNameService();
-        var port = location.port ? ':' + location.port : '';
-        return location.protocol + '//' + location.hostname + port + '/' + name;
+        var loc = $window.location;
+        var port = loc.port ? ':' + loc.port : '';
+        return loc.protocol + '//' + loc.hostname + port + '/' + name;
       };
 
       var isAdmin = function() {
@@ -27,11 +28,8 @@ var utils = require('kujua-utils'),
       };
 
       var getRemote = function(name) {
-        return getFromCache(getRemoteUrl(name, {
-          ajax: {
-            timeout: 30000
-          }
-        }));
+        var options = { ajax: { timeout: 30000 } };
+        return getFromCache(getRemoteUrl(name), options);
       };
 
       var getLocal = function(name) {
@@ -39,16 +37,16 @@ var utils = require('kujua-utils'),
         if (!userCtx) {
           return Session.navigateToLogin();
         }
-        return getFromCache(
-          (name || DbNameService()) + '-user-' + userCtx.name,
-          { adapter: 'worker' }
-        );
+        name = (name || DbNameService()) + '-user-' + userCtx.name;
+        var options = {
+          adapter: 'worker',
+          auto_compaction: true
+        };
+        return getFromCache(name, options);
       };
 
       var getFromCache = function(name, options) {
         if (!cache[name]) {
-          options = options || {};
-          options.auto_compaction = true;
           cache[name] = pouchDB(name, options);
         }
         return cache[name];
@@ -139,7 +137,6 @@ var utils = require('kujua-utils'),
       return {
         get: get,
         getRemote: getRemote,
-        getRemoteUrl: getRemoteUrl,
         watchDesignDoc: watchDesignDoc
       };
     }

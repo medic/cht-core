@@ -5,7 +5,7 @@ describe('DBSync service', function() {
   var service,
       to,
       from,
-      getRemoteUrl,
+      getRemote,
       UserDistrict,
       Settings,
       userCtx,
@@ -15,14 +15,14 @@ describe('DBSync service', function() {
     to = sinon.stub();
     from = sinon.stub();
     UserDistrict = sinon.stub();
-    getRemoteUrl = sinon.stub();
+    getRemote = sinon.stub();
     Settings = sinon.stub();
     userCtx = {};
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB(
         { replicate: { to: to, from: from } },
-        getRemoteUrl
+        getRemote
       ));
       $provide.factory('UserDistrict', function() {
         return UserDistrict;
@@ -45,7 +45,7 @@ describe('DBSync service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(to, from, getRemoteUrl, UserDistrict, Settings);
+    KarmaUtils.restore(to, from, getRemote, UserDistrict, Settings);
   });
 
   it('does nothing for admin', function(done) {
@@ -62,7 +62,7 @@ describe('DBSync service', function() {
 
   it('initiates sync for non-admin', function(done) {
     userCtx = { };
-    getRemoteUrl.returns('REMOTEDBURL');
+    getRemote.returns('REMOTEDB');
     to.returns(KarmaUtils.mockPromise());
     from.returns(KarmaUtils.mockPromise());
     UserDistrict.callsArgWith(0, null, 'a');
@@ -74,7 +74,7 @@ describe('DBSync service', function() {
       chai.expect(UserDistrict.callCount).to.equal(1);
 
       chai.expect(from.callCount).to.equal(1);
-      chai.expect(from.args[0][0]).to.equal('REMOTEDBURL');
+      chai.expect(from.args[0][0]).to.equal('REMOTEDB');
       chai.expect(from.args[0][1].live).to.equal(false);
       chai.expect(from.args[0][1].retry).to.equal(false);
       chai.expect(from.args[0][1].filter).to.equal('erlang_filters/doc_by_place');
@@ -83,7 +83,7 @@ describe('DBSync service', function() {
 
       setTimeout(function() {
         chai.expect(from.callCount).to.equal(2);
-        chai.expect(from.args[1][0]).to.equal('REMOTEDBURL');
+        chai.expect(from.args[1][0]).to.equal('REMOTEDB');
         chai.expect(from.args[1][1].live).to.equal(true);
         chai.expect(from.args[1][1].retry).to.equal(true);
         chai.expect(from.args[1][1].filter).to.equal('erlang_filters/doc_by_place');
@@ -91,7 +91,7 @@ describe('DBSync service', function() {
         chai.expect(from.args[1][1].query_params.unassigned).to.equal(undefined);
 
         chai.expect(to.callCount).to.equal(1);
-        chai.expect(to.args[0][0]).to.equal('REMOTEDBURL');
+        chai.expect(to.args[0][0]).to.equal('REMOTEDB');
         chai.expect(to.args[0][1].live).to.equal(true);
         chai.expect(to.args[0][1].retry).to.equal(true);
         var backoff = to.args[0][1].back_off_function;
@@ -105,7 +105,7 @@ describe('DBSync service', function() {
 
   it('requests unassigned docs if setting set and district admin', function(done) {
     userCtx = { roles: [ 'district_admin' ] };
-    getRemoteUrl.returns('REMOTEDBURL');
+    getRemote.returns('REMOTEDB');
     to.returns(KarmaUtils.mockPromise());
     from.returns(KarmaUtils.mockPromise());
     UserDistrict.callsArgWith(0, null, 'a');
@@ -120,7 +120,7 @@ describe('DBSync service', function() {
 
   it('does not request unassigned docs if setting set and not district admin', function(done) {
     userCtx = { };
-    getRemoteUrl.returns('REMOTEDBURL');
+    getRemote.returns('REMOTEDB');
     to.returns(KarmaUtils.mockPromise());
     from.returns(KarmaUtils.mockPromise());
     UserDistrict.callsArgWith(0, null, 'a');
