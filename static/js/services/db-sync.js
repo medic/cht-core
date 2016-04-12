@@ -48,7 +48,7 @@ var _ = require('underscore'),
         replicateTiming[direction].start =
           replicateTiming[direction].last = Date.now();
 
-        return fn(DB.getRemoteUrl(), options)
+        return fn(DB.getRemote(), options)
           .on('denied', function(err) {
             // In theory this could be caused by 401s
             // TODO: work out what `err` looks like and navigate to login
