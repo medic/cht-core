@@ -280,7 +280,7 @@ var feedback = require('../modules/feedback'),
       };
 
       var updateAvailableFacilities = function() {
-        FacilityHierarchy(function(err, hierarchy, total) {
+        FacilityHierarchy(function(err, hierarchy) {
           if (err) {
             return $log.error('Error loading facilities', err);
           }
