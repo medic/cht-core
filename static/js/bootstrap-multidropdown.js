@@ -36,6 +36,11 @@
           return $(this).data('value');
         }).get();
       },
+      options: function() {
+        return $element.find('[role=menuitem]').map(function() {
+          return $(this).data('value');
+        }).get();
+      },
       reset: function() {
         $element.find('[role=menuitem].selected').removeClass('selected');
         updateMultipleSelect();

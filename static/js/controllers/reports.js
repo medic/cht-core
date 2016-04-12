@@ -1,6 +1,8 @@
 var _ = require('underscore'),
+    moment = require('moment'),
     modal = require('../modules/modal'),
-    scrollLoader = require('../modules/scroll-loader');
+    scrollLoader = require('../modules/scroll-loader'),
+    ajaxDownload = require('../modules/ajax-download');
 
 (function () {
 
@@ -9,10 +11,9 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl',
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$translate', '$log', 'TranslateFrom', 'LiveList', 'Settings', 'MarkRead', 'Search', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, $translate, $log, TranslateFrom, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified) {
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$translate', '$http', '$log', 'TranslateFrom', 'LiveList', 'Settings', 'MarkRead', 'Search', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified', 'SearchFilters', 'DownloadUrl',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, $translate, $http, $log, TranslateFrom, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified, SearchFilters, DownloadUrl) {
 
-      $scope.filterModel.type = 'reports';
       $scope.selectedGroup = null;
       $scope.selected = null;
       $scope.filters = {
@@ -20,39 +21,6 @@ var _ = require('underscore'),
       };
 
       var liveList = LiveList.reports;
-
-      $scope.setupSearch = function() {
-        $('#search').on('click', function(e) {
-          e.preventDefault();
-          $scope.search();
-        });
-        $('#freetext').on('keypress', function(e) {
-          if (e.which === 13) {
-            e.preventDefault();
-            $scope.search();
-          }
-        });
-
-        var performMobileSearch = function(e) {
-          e.preventDefault();
-          $(e.target).closest('.filter').removeClass('open');
-          $scope.search();
-        };
-        $('#mobile-search-go').on('click', performMobileSearch);
-        $('#mobile-freetext').on('keypress', function(e) {
-          if (e.which === 13) {
-            performMobileSearch(e);
-          }
-        });
-        $('.mobile-freetext-filter').on('shown.bs.dropdown', function() {
-          $('#mobile-freetext').focus();
-        });
-
-        // stop bootstrap closing the search pane on click
-        $('.filters .mobile-freetext-filter .search-pane').on('click', function(e) {
-          e.stopPropagation();
-        });
-      };
 
       var _setSelectedGroup = function(group) {
         $scope.selectedGroup = angular.copy(group);
@@ -218,7 +186,7 @@ var _ = require('underscore'),
           liveList.set([]);
         }
 
-        Search($scope.filterModel.type, $scope.filters, options, function(err, data) {
+        Search('reports', $scope.filters, options, function(err, data) {
           if (err) {
             $scope.error = true;
             $scope.loading = false;
@@ -267,26 +235,20 @@ var _ = require('underscore'),
         }
         $scope.loading = true;
 
-        // TODO clean this up
         if ($scope.filters.search ||
-            ($scope.filterModel && (
-              ($scope.filterModel.contactTypes && $scope.filterModel.contactTypes.length) ||
-              $scope.filterModel.facilities.length ||
-              $scope.filterModel.forms.length ||
-              ($scope.filterModel.date && ($scope.filterModel.date.from || $scope.filterModel.date.to)) ||
-              (typeof $scope.filterModel.valid !== 'undefined') ||
-              (typeof $scope.filterModel.verified !== 'undefined')))) {
-
+            ($scope.filters.forms && $scope.filters.forms.selected && $scope.filters.forms.selected.length) ||
+            ($scope.filters.facilities && $scope.filters.facilities.selected && $scope.filters.facilities.selected.length) ||
+            ($scope.filters.date && ($scope.filters.date.to || $scope.filters.date.from)) ||
+            ($scope.filters.valid === true || $scope.filters.valid === false) ||
+            ($scope.filters.verified === true || $scope.filters.verified === false)
+           ) {
           $scope.filtered = true;
-
           liveList = LiveList['report-search'];
           liveList.set([]);
-
           _query();
         } else {
           $scope.filtered = false;
           liveList = LiveList.reports;
-
           if (liveList.initialised()) {
             $timeout(function() {
               $scope.loading = false;
@@ -389,14 +351,56 @@ var _ = require('underscore'),
         initEditMessageModal();
       };
 
-      // TODO watch specific bits...
-      // $scope.$watch('filters', function(curr, prev) {
-      //   if (prev !== curr) {
-      //     $scope.search();
-      //   }
-      // }, true);
+      $scope.setupSearchFreetext = function() {
+        SearchFilters.freetext($scope.search);
+      };
+      $scope.setupSearchFormType = function() {
+        SearchFilters.formType(function(forms) {
+          $scope.filters.forms = forms;
+          $scope.search();
+        });
+      };
+      $scope.setupSearchStatus = function() {
+        SearchFilters.status(function(status) {
+          $scope.filters.valid = status.valid;
+          $scope.filters.verified = status.verified;
+          $scope.search();
+        });
+      };
+      $scope.setupSearchFacility = function() {
+        SearchFilters.facility(function(facilities) {
+          $scope.filters.facilities = facilities;
+          $scope.search();
+        });
+      };
+      $scope.setupSearchDate = function() {
+        SearchFilters.date(function(date) {
+          $scope.filters.date = date;
+          $scope.search();
+        });
+      };
+      $scope.resetFilterModel = function() {
+        $scope.filters = {};
+        SearchFilters.reset();
+        $scope.search();
+      };
 
       $scope.search();
+
+      $scope.$on('export', function() {
+        if ($scope.currentTab === 'reports') {
+          DownloadUrl($scope.filters, 'reports', function(err, url) {
+            if (err) {
+              return $log.error(err);
+            }
+            $http.post(url)
+              .then(ajaxDownload.download)
+              .catch(function(err) {
+                $log.error('Error downloading', err);
+              });
+          });
+        }
+      });
 
       $scope.$on('$destroy', function() {
         $scope.setTitle();

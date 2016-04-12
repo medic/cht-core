@@ -6,10 +6,10 @@
     <span class="mm-button-dropdown">
       <span class="fa fa-chevron-down"></span>
     </span>
-    <span class="mm-button-text" ng-show="filterModel.date.from && filterModel.date.to">
-      {{filterModel.date.from | date : 'd MMM'}} - {{filterModel.date.to | date : 'd MMM'}}
+    <span class="mm-button-text" ng-show="filters.date.from && filters.date.to">
+      {{filters.date.from | date : 'd MMM'}} - {{filters.date.to | date : 'd MMM'}}
     </span>
-    <span class="mm-button-text" ng-show="!filterModel.date.from || !filterModel.date.to">
+    <span class="mm-button-text" ng-show="!filters.date.from || !filters.date.to">
       {{'Any date' | translate}}
     </span>
   </span>

@@ -7,7 +7,7 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  var endOfAlphabet = '\ufff0';
+  var END_OF_ALPHABET = '\ufff0';
 
   inboxServices.factory('GenerateSearchRequests', [
     function() {
@@ -18,98 +18,71 @@ var _ = require('underscore'),
         });
       };
 
-      var reportedDate = function($scope, type) {
-        var view = type.views.reportedDate;
-        if (!view) {
+      var getViewForMultidropdown = function(view, filter, mapKeys) {
+        if (!view || !filter || !filter.selected) {
           return;
         }
-        if (!$scope.filterModel.date) {
-          return;
-        }
-        if ($scope.filterModel.date.to || $scope.filterModel.date.from) {
-          // increment end date so it's inclusive
-          var to = moment($scope.filterModel.date.to).add(1, 'days');
-          var from = moment($scope.filterModel.date.from || 0);
+        if (filter.selected.length > 0 &&
+            filter.selected.length < filter.options.length) {
           return {
             view: view,
             params: {
-              startkey: [ from.valueOf() ],
-              endkey: [ to.valueOf() ]
+              keys: mapKeys(filter.selected)
             }
           };
         }
       };
 
-      var form = function($scope, type) {
-        var view = type.views.form;
+      var getViewForTernarySelect = function(view, value) {
         if (!view) {
           return;
         }
-        var selected = $scope.filterModel.forms;
-        if (!selected) {
+        if (value === true || value === false) {
+          return {
+            view: view,
+            params: {
+              key: [ value ]
+            }
+          };
+        }
+      };
+
+      var reportedDate = function(filters, type) {
+        var view = type.views.reportedDate;
+        var dateRange = filters.date;
+        if (!view || !dateRange || (!dateRange.to && !dateRange.from)) {
           return;
         }
-        if (selected.length > 0 && selected.length < $scope.forms.length) {
-          var keys = _.map(selected, function(form) {
+        // increment end date so it's inclusive
+        var to = moment(dateRange.to).add(1, 'days');
+        var from = moment(dateRange.from || 0);
+        return {
+          view: view,
+          params: {
+            startkey: [ from.valueOf() ],
+            endkey: [ to.valueOf() ]
+          }
+        };
+      };
+
+      var form = function(filters, type) {
+        return getViewForMultidropdown(type.views.form, filters.forms, function(forms) {
+          return _.map(forms, function(form) {
             return [ form.code ];
           });
-          return {
-            view: view,
-            params: {
-              keys: keys
-            }
-          };
-        }
+        });
       };
 
-      var validity = function($scope, type) {
-        var view = type.views.validity;
-        if (!view) {
-          return;
-        }
-        var validity = $scope.filterModel.valid;
-        if (validity === true || validity === false) {
-          return {
-            view: view,
-            params: {
-              key: [ validity ]
-            }
-          };
-        }
+      var validity = function(filters, type) {
+        return getViewForTernarySelect(type.views.validity, filters.valid);
       };
 
-      var verification = function($scope, type) {
-        var view = type.views.verification;
-        if (!view) {
-          return;
-        }
-        var verification = $scope.filterModel.verified;
-        if (verification === true || verification === false) {
-          return {
-            view: view,
-            params: {
-              key: [ verification ]
-            }
-          };
-        }
+      var verification = function(filters, type) {
+        return getViewForTernarySelect(type.views.verification, filters.verified);
       };
 
-      var place = function($scope, type) {
-        var view = type.views.place;
-        if (!view) {
-          return;
-        }
-        var selected = $scope.filterModel.facilities;
-        if (selected &&
-            selected.length > 0 &&
-            selected.length < $scope.facilitiesCount) {
-          return {
-            view: view,
-            params: {
-              keys: getKeysArray(selected)
-            }
-          };
-        }
+      var place = function(filters, type) {
+        return getViewForMultidropdown(type.views.place, filters.facilities, getKeysArray);
       };
 
       var freetext = function(filters, type) {
@@ -127,7 +100,7 @@ var _ = require('underscore'),
             } else {
               // use starts with
               params.startkey = [ word ];
-              params.endkey = [ word + endOfAlphabet ];
+              params.endkey = [ word + END_OF_ALPHABET ];
             }
             return {
               view: view,
@@ -137,39 +110,22 @@ var _ = require('underscore'),
         }
       };
 
-      var subject = function($scope, type) {
+      var subject = function(filters, type) {
         var view = type.views.subject;
-        if (!view) {
+        var subjectIds = filters.subjectIds;
+        if (!view || !subjectIds || !subjectIds.length) {
           return;
         }
-        var subjectIds = $scope.filterModel.subjectIds;
-        if (subjectIds && subjectIds.length) {
-          return {
-            view: view,
-            params: {
-              keys: getKeysArray(subjectIds)
-            }
-          };
-        }
+        return {
+          view: view,
+          params: {
+            keys: getKeysArray(subjectIds)
+          }
+        };
       };
 
-      var documentType = function($scope, type) {
-        var view = type.views.documentType;
-        if (!view) {
-          return;
-        }
-        var selected = $scope.filterModel.contactTypes;
-        var numberOfTypes = 4;
-        if (selected &&
-            selected.length > 0 &&
-            selected.length < numberOfTypes) {
-          return {
-            view: type.views.documentType,
-            params: {
-              keys: getKeysArray(selected)
-            }
-          };
-        }
+      var documentType = function(filters, type) {
+        return getViewForMultidropdown(type.views.documentType, filters.types, getKeysArray);
       };
 
       var types = {
@@ -212,14 +168,14 @@ var _ = require('underscore'),
 
       var getRequests = function(filters, type) {
         var requests = [];
-        // requests.push(reportedDate($scope, type));
-        // requests.push(form($scope, type));
-        // requests.push(validity($scope, type));
-        // requests.push(verification($scope, type));
-        // requests.push(place($scope, type));
+        requests.push(reportedDate(filters, type));
+        requests.push(form(filters, type));
+        requests.push(validity(filters, type));
+        requests.push(verification(filters, type));
+        requests.push(place(filters, type));
         requests.push(freetext(filters, type));
-        // requests.push(documentType($scope, type));
-        // requests.push(subject($scope, type));
+        requests.push(documentType(filters, type));
+        requests.push(subject(filters, type));
         requests = _.compact(_.flatten(requests));
         return requests.length ? requests : [ type.getUnfiltered() ];
       };

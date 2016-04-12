@@ -3,7 +3,7 @@ describe('AnalyticsCtrl controller', function() {
   'use strict';
 
   var createController,
-      fetch,
+      AnalyticsModules,
       $rootScope,
       scope,
       stateGo,
@@ -13,70 +13,65 @@ describe('AnalyticsCtrl controller', function() {
 
   beforeEach(inject(function(_$rootScope_, $controller) {
     $rootScope = _$rootScope_;
-    fetch = sinon.stub();
+    AnalyticsModules = sinon.stub();
     stateGo = sinon.stub();
     stateReload = sinon.stub();
     scope = $rootScope.$new();
     scope.filterModel = { };
-    scope.setSelectedModule = function (module) {
-      scope.filterModel.module = module;
-    };
     scope.clearSelected = function() {};
-    scope.fetchAnalyticsModules = fetch;
     createController = function(startState) {
       return $controller('AnalyticsCtrl', {
-          '$scope': scope,
-          '$rootScope': $rootScope,
-          '$stateParams': { },
-          '$state': { current: { name: startState }, go: stateGo, reload: stateReload }
-        });
+        '$scope': scope,
+        '$rootScope': $rootScope,
+        '$stateParams': { },
+        '$state': { current: { name: startState }, go: stateGo, reload: stateReload },
+        'AnalyticsModules': AnalyticsModules,
+        'Auth': function() {}
+      });
     };
   }));
 
   afterEach(function() {
-    KarmaUtils.restore(fetch, stateGo, stateReload);
+    KarmaUtils.restore(AnalyticsModules, stateGo, stateReload);
   });
 
   it('set up controller with no modules', function(done) {
-    fetch.returns(KarmaUtils.mockPromise(null, []));
+    AnalyticsModules.returns(KarmaUtils.mockPromise(null, []));
     createController('anc');
     scope.$digest();
     setTimeout(function() {
-      chai.expect(scope.filterModel.type).to.equal('analytics');
-      chai.expect(scope.filterModel.module).to.equal(undefined);
+      chai.expect(scope.selected).to.equal(undefined);
       done();
     });
   });
 
   it('renders first module', function(done) {
-    fetch.returns(KarmaUtils.mockPromise(null, [
+    AnalyticsModules.returns(KarmaUtils.mockPromise(null, [
       { state: 'stock' }
     ]));
     createController('anc');
     scope.$digest();
     setTimeout(function() {
-      chai.expect(scope.filterModel.type).to.equal('analytics');
-      chai.expect(scope.filterModel.module.state).to.equal('stock');
+      chai.expect(scope.selected.state).to.equal('stock');
       done();
     });
   });
 
   it('renders specified module', function(done) {
-    fetch.returns(KarmaUtils.mockPromise(null, [
+    AnalyticsModules.returns(KarmaUtils.mockPromise(null, [
       { state: 'stock' },
       { state: 'anc' }
     ]));
     createController('anc');
     scope.$digest();
     setTimeout(function() {
-      chai.expect(scope.filterModel.type).to.equal('analytics');
-      chai.expect(scope.filterModel.module.state).to.equal('anc');
+      chai.expect(scope.selected.state).to.equal('anc');
       done();
     });
   });
 
   it('jumps to child state if single module present', function(done) {
-    fetch.returns(KarmaUtils.mockPromise(null, [
+    AnalyticsModules.returns(KarmaUtils.mockPromise(null, [
       { state: 'anc' }
     ]));
     createController('analytics');
@@ -89,7 +84,7 @@ describe('AnalyticsCtrl controller', function() {
   });
 
   it('does not jump to child state if multiple modules present', function(done) {
-    fetch.returns(KarmaUtils.mockPromise(null, [
+    AnalyticsModules.returns(KarmaUtils.mockPromise(null, [
       { state: 'stock' },
       { state: 'anc' }
     ]));

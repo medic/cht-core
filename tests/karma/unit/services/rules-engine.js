@@ -205,7 +205,7 @@ describe('RulesEngine service', function() {
   });
 
   it('returns search errors', function(done) {
-    Search.callsArgWith(2, 'boom');
+    Search.callsArgWith(3, 'boom');
     Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
@@ -250,8 +250,8 @@ describe('RulesEngine service', function() {
         .toISOString();
     };
 
-    Search.onFirstCall().callsArgWith(2, null, dataRecords);
-    Search.onSecondCall().callsArgWith(2, null, contacts);
+    Search.onFirstCall().callsArgWith(3, null, dataRecords);
+    Search.onSecondCall().callsArgWith(3, null, contacts);
     Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
@@ -347,8 +347,8 @@ describe('RulesEngine service', function() {
 
   it('caches tasks', function(done) {
 
-    Search.onFirstCall().callsArgWith(2, null, dataRecords);
-    Search.onSecondCall().callsArgWith(2, null, contacts);
+    Search.onFirstCall().callsArgWith(3, null, dataRecords);
+    Search.onSecondCall().callsArgWith(3, null, contacts);
     Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
@@ -394,8 +394,8 @@ describe('RulesEngine service', function() {
       { _id: 1, name: 'Jenny' }
     ];
 
-    Search.onFirstCall().callsArgWith(2, null, dataRecords);
-    Search.onSecondCall().callsArgWith(2, null, contacts);
+    Search.onFirstCall().callsArgWith(3, null, dataRecords);
+    Search.onSecondCall().callsArgWith(3, null, contacts);
     Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
@@ -446,8 +446,8 @@ describe('RulesEngine service', function() {
       { _id: 1, name: 'Jenny' }
     ];
 
-    Search.onFirstCall().callsArgWith(2, null, dataRecords);
-    Search.onSecondCall().callsArgWith(2, null, contacts);
+    Search.onFirstCall().callsArgWith(3, null, dataRecords);
+    Search.onSecondCall().callsArgWith(3, null, contacts);
     Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
@@ -492,8 +492,8 @@ describe('RulesEngine service', function() {
 
     var newContact = { _id: 4, name: 'Sarah' };
 
-    Search.onFirstCall().callsArgWith(2, null, dataRecords);
-    Search.onSecondCall().callsArgWith(2, null, contacts);
+    Search.onFirstCall().callsArgWith(3, null, dataRecords);
+    Search.onSecondCall().callsArgWith(3, null, contacts);
     Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
@@ -549,8 +549,8 @@ describe('RulesEngine service', function() {
       { _id: 1, name: 'Jenny' }
     ];
 
-    Search.onFirstCall().callsArgWith(2, null, dataRecords);
-    Search.onSecondCall().callsArgWith(2, null, contacts);
+    Search.onFirstCall().callsArgWith(3, null, dataRecords);
+    Search.onSecondCall().callsArgWith(3, null, contacts);
     Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
@@ -598,8 +598,8 @@ describe('RulesEngine service', function() {
       { _id: 1, name: 'Jenny' }
     ];
 
-    Search.onFirstCall().callsArgWith(2, null, dataRecords);
-    Search.onSecondCall().callsArgWith(2, null, contacts);
+    Search.onFirstCall().callsArgWith(3, null, dataRecords);
+    Search.onSecondCall().callsArgWith(3, null, contacts);
     Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,
@@ -647,8 +647,8 @@ describe('RulesEngine service', function() {
       { _id: 1, name: 'Jenny' }
     ];
 
-    Search.onFirstCall().callsArgWith(2, null, dataRecords);
-    Search.onSecondCall().callsArgWith(2, null, contacts);
+    Search.onFirstCall().callsArgWith(3, null, dataRecords);
+    Search.onSecondCall().callsArgWith(3, null, contacts);
     Settings.returns(KarmaUtils.mockPromise(null, {
       tasks: {
         rules: rules,

@@ -47,6 +47,7 @@
   require('./resource-icons');
   require('./scheduled-forms');
   require('./search');
+  require('./search-filters');
   require('./send-message');
   require('./session');
   require('./settings');

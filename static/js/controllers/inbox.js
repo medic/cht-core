@@ -5,8 +5,7 @@ var feedback = require('../modules/feedback'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
     format = require('../modules/format'),
-    guidedSetup = require('../modules/guided-setup'),
-    ajaxDownload = require('../modules/ajax-download');
+    guidedSetup = require('../modules/guided-setup');
 
 (function () {
 
@@ -15,8 +14,8 @@ var feedback = require('../modules/feedback'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'CheckDate', 'DeleteDoc', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, CheckDate, DeleteDoc, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES) {
 
       Session.init();
 
@@ -67,7 +66,6 @@ var feedback = require('../modules/feedback'),
       $scope.people = [];
       $scope.totalItems = undefined;
       $scope.filterQuery = { value: undefined };
-      $scope.analyticsModules = [];
       $scope.version = APP_CONFIG.version;
       $scope.actionBar = {};
       $scope.title = undefined;
@@ -273,42 +271,12 @@ var feedback = require('../modules/feedback'),
 
       $scope.readStatus = { forms: 0, messages: 0 };
 
-      $scope.filterModel = {
-        type: 'messages',
-        forms: [],
-        facilities: [],
-        contactTypes: [],
-        valid: undefined,
-        verified: undefined,
-        date: { }
-      };
-
-      $scope.resetFilterModel = function() {
-        $scope.filterQuery.value = '';
-        $scope.filterModel.forms = [];
-        $scope.filterModel.facilities = [];
-        $scope.filterModel.contactTypes = [];
-        $scope.filterModel.valid = undefined;
-        $scope.filterModel.date = {};
-
-        $('.filter.multidropdown').each(function() {
-          $(this).multiDropdown().reset();
-        });
-
-        $scope.$broadcast('query');
-      };
+      $scope.$on('$stateChangeSuccess', function(event, toState) {
+        $scope.currentTab = toState.name.split('.')[0];
+      });
 
       $scope.download = function() {
-        DownloadUrl($scope, $scope.filterModel.type, function(err, url) {
-          if (err) {
-            return $log.error(err);
-          }
-          $http.post(url)
-            .then(ajaxDownload.download)
-            .catch(function(err) {
-              $log.error('Error downloading', err);
-            });
-        });
+        $rootScope.$broadcast('export');
       };
 
       var updateAvailableFacilities = function() {
@@ -317,7 +285,6 @@ var feedback = require('../modules/feedback'),
             return $log.error('Error loading facilities', err);
           }
           $scope.facilities = hierarchy;
-          $scope.facilitiesCount = total;
         });
         Facility({ types: [ 'person' ] }, function(err, people) {
           if (err) {
@@ -711,157 +678,6 @@ var feedback = require('../modules/feedback'),
         }
       });
 
-      // TODO we should eliminate the need for this function as much as possible
-      var angularApply = function(callback) {
-        var scope = angular.element($('body')).scope();
-        if (scope) {
-          scope.$apply(callback);
-        }
-      };
-
-      var getTernaryValue = function(positive, negative) {
-        if (positive && !negative) {
-          return true;
-        }
-        if (!positive && negative) {
-          return false;
-        }
-      };
-
-      $scope.setupFiltersBak = function() {
-
-
-        $translate.onReady().then(function() {
-          // we have to wait for language to respond before initing the multidropdowns
-          Language().then(function(language) {
-
-            $translate.use(language);
-
-            $('#formTypeDropdown, #facilityDropdown, #contactTypeDropdown').each(function() {
-              $(this).multiDropdown({
-                label: function(state, callback) {
-                  if (state.selected.length === 0 || state.selected.length === state.total.length) {
-                    return callback($translate.instant(state.menu.data('label-no-filter')));
-                  }
-                  if (state.selected.length === 1) {
-                    return callback(state.selected.first().text());
-                  }
-                  callback($translate.instant(
-                    state.menu.data('filter-label'), { number: state.selected.length }
-                  ));
-                },
-                selectAllLabel: $translate.instant('select all'),
-                clearLabel: $translate.instant('clear')
-              });
-            });
-
-            $('#statusDropdown').multiDropdown({
-              label: function(state, callback) {
-                var values = {};
-                state.selected.each(function() {
-                  var elem = $(this);
-                  values[elem.data('value')] = elem.text();
-                });
-                var parts = [];
-                if (values.valid && !values.invalid) {
-                  parts.push(values.valid);
-                } else if (!values.valid && values.invalid) {
-                  parts.push(values.invalid);
-                }
-                if (values.verified && !values.unverified) {
-                  parts.push(values.verified);
-                } else if (!values.verified && values.unverified) {
-                  parts.push(values.unverified);
-                }
-                if (parts.length === 0 || parts.length === state.total.length) {
-                  return callback($translate.instant(state.menu.data('label-no-filter')));
-                }
-                return callback(parts.join(', '));
-              },
-              selectAllLabel: $translate.instant('select all'),
-              clearLabel: $translate.instant('clear')
-            });
-
-            var start = $scope.filterModel.date.from ?
-              moment($scope.filterModel.date.from) : moment().subtract(1, 'months');
-            $('#date-filter').daterangepicker({
-              startDate: start,
-              endDate: moment($scope.filterModel.date.to),
-              maxDate: moment(),
-              opens: 'center',
-              applyClass: 'btn-primary',
-              cancelClass: 'btn-link',
-              locale: {
-                applyLabel: $translate.instant('Apply'),
-                cancelLabel: $translate.instant('Cancel'),
-                fromLabel: $translate.instant('date.from'),
-                toLabel: $translate.instant('date.to'),
-                daysOfWeek: moment.weekdaysMin(),
-                monthNames: moment.monthsShort(),
-                firstDay: moment.localeData()._week.dow
-              }
-            },
-            function(start, end) {
-              var scope = angular.element($('body')).scope();
-              if (scope) {
-                scope.$apply(function() {
-                  scope.filterModel.date.from = start.valueOf();
-                  scope.filterModel.date.to = end.valueOf();
-                });
-              }
-            })
-            .on('mm.dateSelected.daterangepicker', function(e, picker) {
-              if ($scope.isMobile()) {
-                // mobile version - only show one calendar at a time
-                if (picker.container.is('.show-from')) {
-                  picker.container.removeClass('show-from').addClass('show-to');
-                } else {
-                  picker.container.removeClass('show-to').addClass('show-from');
-                  picker.hide();
-                }
-              }
-            });
-            $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
-
-            $('#formTypeDropdown').on('update', function() {
-              var forms = $(this).multiDropdown().val();
-              angularApply(function(scope) {
-                scope.filterModel.forms = forms;
-              });
-            });
-
-            $('#facilityDropdown').on('update', function() {
-              var ids = $(this).multiDropdown().val();
-              angularApply(function(scope) {
-                scope.filterModel.facilities = ids;
-              });
-            });
-
-            $('#contactTypeDropdown').on('update', function() {
-              var ids = $(this).multiDropdown().val();
-              angularApply(function(scope) {
-                scope.filterModel.contactTypes = ids;
-              });
-            });
-
-            $('#statusDropdown').on('update', function() {
-              var values = $(this).multiDropdown().val();
-              angularApply(function(scope) {
-                scope.filterModel.valid = getTernaryValue(
-                  _.contains(values, 'valid'),
-                  _.contains(values, 'invalid')
-                );
-                scope.filterModel.verified = getTernaryValue(
-                  _.contains(values, 'verified'),
-                  _.contains(values, 'unverified')
-                );
-              });
-            });
-          });
-        });
-      };
-
-
       Auth('can_view_messages_tab').then(function() {
         $scope.tours.push({
           order: 1,
@@ -879,31 +695,6 @@ var feedback = require('../modules/feedback'),
           name: 'Reports'
         });
       });
-
-      $scope.setSelectedModule = function(module) {
-        $scope.filterModel.module = module;
-      };
-
-      $scope.fetchAnalyticsModules = function() {
-        return AnalyticsModules().then(function(modules) {
-          $scope.analyticsModules = modules;
-          return modules;
-        });
-      };
-
-      $scope.fetchAnalyticsModules()
-        .then(function(modules) {
-          if (_.findWhere(modules, { id: 'anc' })) {
-            Auth('can_view_analytics').then(function() {
-              $scope.tours.push({
-                order: 3,
-                id: 'analytics',
-                icon: 'fa-bar-chart-o',
-                name: 'Analytics'
-              });
-            });
-          }
-        });
 
       $scope.setupTour = function() {
         $('#tour-select').on('click', 'a.tour-option', function() {
@@ -1000,16 +791,6 @@ var feedback = require('../modules/feedback'),
           }
         },
       ];
-
-      // TODO remove
-      UserDistrict(function() {
-        $scope.$watch('filterModel', function(curr, prev) {
-          if (prev !== curr) {
-            $scope.$broadcast('query');
-          }
-        }, true);
-        $scope.$broadcast('query');
-      });
 
       CountMessages.init();
 

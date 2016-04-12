@@ -38,14 +38,14 @@ describe('MessagesCtrl controller', function() {
         'Changes': Changes,
         'MarkAllRead': {},
         'ContactConversation': ContactConversation,
-        'MessageContact': MessageContact
+        'MessageContact': MessageContact,
+        'DownloadUrl': function() {}
       });
     };
   }));
 
   it('set up controller', function() {
     createController();
-    chai.expect(scope.filterModel.type).to.equal('messages');
   });
 
 });

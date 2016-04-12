@@ -28,10 +28,10 @@ var _ = require('underscore'),
         return false;
       };
 
-      var getPage = function(rows, options) {
+      var getPage = function(type, rows, options) {
         var start;
         var end;
-        if (options.type === 'reports') {
+        if (type === 'reports') {
           // descending
           end = rows.length - options.skip;
           start = end - options.limit;
@@ -62,13 +62,13 @@ var _ = require('underscore'),
           .catch(callback);
       };
 
-      var filter = function(requests, options, callback) {
+      var filter = function(type, requests, options, callback) {
         async.map(requests, view, function(err, responses) {
           if (err) {
             return callback(err);
           }
           var intersection = getIntersection(responses);
-          var page = getPage(intersection, options);
+          var page = getPage(type, intersection, options);
           if (!page.length) {
             return callback(null, []);
           }
@@ -83,7 +83,7 @@ var _ = require('underscore'),
         });
       };
 
-      var execute = function(requests, options, callback) {
+      var execute = function(type, requests, options, callback) {
         if (requests.length === 1 && requests[0].params.include_docs) {
           // filter not required - just get the view directly
           _.defaults(requests[0].params, {
@@ -93,7 +93,7 @@ var _ = require('underscore'),
           view(requests[0], callback);
         } else {
           // filtering
-          filter(requests, options, callback);
+          filter(type, requests, options, callback);
         }
       };
 
@@ -111,8 +111,6 @@ var _ = require('underscore'),
       };
 
       return function(type, filters, options, callback) {
-        console.log('searching for', type);
-        console.trace();
         _.defaults(options, {
           limit: 50,
           skip: 0
@@ -121,7 +119,7 @@ var _ = require('underscore'),
           if (err) {
             return callback(err);
           }
-          execute(requests, options, function(err, results) {
+          execute(type, requests, options, function(err, results) {
             _currentQuery = {};
             callback(err, results);
           });

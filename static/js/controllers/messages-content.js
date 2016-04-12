@@ -167,7 +167,7 @@ var _ = require('underscore'),
           updateConversation({ changes: true });
         },
         filter: function(change) {
-          return $scope.filterModel.type === 'messages' &&
+          return $scope.currentTab === 'messages' &&
             $scope.selected &&
             $scope.selected.id === change.id;
         }

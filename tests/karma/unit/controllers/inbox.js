@@ -17,11 +17,6 @@ describe('InboxCtrl controller', function() {
       $provide.factory('ActiveRequests', function() {
         return sinon.stub();
       });
-      $provide.factory('AnalyticsModules', function() {
-        return function() {
-          return Promise.resolve({});
-        };
-      });
       $provide.factory('Auth', function() {
         return function() {
           return Promise.resolve({});
@@ -55,9 +50,6 @@ describe('InboxCtrl controller', function() {
       $provide.factory('DeleteDoc', function() {
         spyDeleteDoc = sinon.spy();
         return spyDeleteDoc;
-      });
-      $provide.factory('DownloadUrl', function() {
-        return sinon.stub();
       });
       $provide.factory('XmlForms', function() {
         return sinon.stub();
@@ -122,9 +114,6 @@ describe('InboxCtrl controller', function() {
       $provide.factory('UpdateSettings', function() {
         return sinon.stub();
       });
-      $provide.factory('UserDistrict', function() {
-        return sinon.stub();
-      });
       $provide.factory('UserSettings', function() {
         return sinon.stub();
       });
@@ -140,9 +129,6 @@ describe('InboxCtrl controller', function() {
 
     inject(function($rootScope, $controller) {
       scope = $rootScope.$new();
-      scope.fetchAnalyticsModules = function() {
-        return Promise.resolve({});
-      };
       createController = function() {
         return $controller('InboxCtrl', {
           '$scope': scope,

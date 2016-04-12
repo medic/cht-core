@@ -9,7 +9,6 @@ inboxControllers.controller('AboutCtrl',
       'DB', 'Debug', 'Language', 'Session',
   function ($interval, $q, $scope,
       DB, Debug, Language, Session) {
-    $scope.filterModel.type = 'help';
     $scope.url = window.location.hostname;
     $scope.userCtx = Session.userCtx();
     DB.get().get('_design/medic')
