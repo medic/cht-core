@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 (function () {
 
   'use strict';
@@ -15,8 +17,12 @@
   };
 
   var getHref = function(res) {
+    var data = res.data;
+    if (!_.isString(data)) {
+      data = JSON.stringify(data);
+    }
     var mimetype = res.headers('Content-Type');
-    return 'data:' + mimetype + ',' + encodeURIComponent(res.data);
+    return 'data:' + mimetype + ',' + encodeURIComponent(data);
   };
 
   /**
