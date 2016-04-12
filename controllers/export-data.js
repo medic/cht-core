@@ -73,7 +73,8 @@ var exportTypes = {
       rows.forEach(function(row) {
         var formCode = row.doc.form;
         if (!byForm[formCode]) {
-          var def = config.get('forms') && config.get('forms')[formCode];
+          var forms = config.get('forms');
+          var def = forms && forms[formCode];
           columns = options.columns.concat([]);
           if (def) {
             for (var k in def.fields) {
