@@ -14,46 +14,55 @@ var _ = require('underscore'),
         return date.utcOffset(0).format('YYYY-MM-DD');
       };
 
-      var formatReportedDate = function($scope) {
-        if ($scope.filterModel.date.to || $scope.filterModel.date.from) {
+      var formatReportedDate = function(filters) {
+        if (filters.date && (filters.date.to || filters.date.from)) {
           // increment end date so it's inclusive
-          var to = moment($scope.filterModel.date.to).add(1, 'days');
-          var from = moment($scope.filterModel.date.from || 0);
+          var to = moment(filters.date.to).add(1, 'days');
+          var from = moment(filters.date.from || 0);
           return {
             reported_date: { $from: formatDate(from), $to: formatDate(to) }
           };
         }
       };
 
-      var formatReportType = function($scope) {
+      var formatReportType = function() {
         return {
-          type: $scope.filterModel.type === 'reports' ? 'report' : 'message*'
+          type: 'report'
         };
       };
 
-      var formatContactsType = function($scope) {
-        var selectedTypes = $scope.filterModel.contactTypes;
-        if (selectedTypes.length > 0 &&
-            selectedTypes.length < CONTACT_TYPES.length) {
-          return { type: selectedTypes };
+      var getSelected = function(filter) {
+        var selected = filter && filter.selected;
+        var options = filter && filter.options;
+        if (selected &&
+            options &&
+            selected.length > 0 &&
+            selected.length < options.length) {
+          return selected;
         }
-        return { type: CONTACT_TYPES };
       };
 
-      var formatForm = function($scope) {
-        var selectedForms = $scope.filterModel.forms.length;
-        if (selectedForms > 0 && selectedForms < $scope.forms.length) {
+      var formatContactsType = function(filters) {
+        var selected = getSelected(filters.types);
+        return {
+          type: selected || CONTACT_TYPES
+        };
+      };
+
+      var formatForm = function(filters) {
+        var selected = getSelected(filters.forms);
+        if (selected) {
           return {
-            form: _.pluck($scope.filterModel.forms, 'code')
+            form: _.pluck(selected, 'code')
           };
         }
       };
 
-      var formatErrors = function($scope) {
-        if ($scope.filterModel.valid === true) {
+      var formatErrors = function(filters) {
+        if (filters.valid === true) {
           return { errors: 0 };
         }
-        if ($scope.filterModel.valid === false) {
+        if (filters.valid === false) {
           return {
             $operator: 'not',
             $operands: { errors: 0 }
@@ -61,19 +70,19 @@ var _ = require('underscore'),
         }
       };
 
-      var formatVerified = function($scope) {
-        if ($scope.filterModel.verified === true) {
+      var formatVerified = function(filters) {
+        if (filters.verified === true) {
           return { verified: true };
         }
-        if ($scope.filterModel.verified === false) {
+        if (filters.verified === false) {
           return { verified: false };
         }
       };
 
-      var formatClinics = function($scope) {
-        var selectedFacilities = $scope.filterModel.facilities.length;
-        if (selectedFacilities > 0 && selectedFacilities < $scope.facilitiesCount) {
-          return { clinic: $scope.filterModel.facilities };
+      var formatClinics = function(filters) {
+        var selected = getSelected(filters.facilities);
+        if (selected) {
+          return { clinic: selected };
         }
       };
 
@@ -83,8 +92,8 @@ var _ = require('underscore'),
         }
       };
 
-      var formatFreetext = function($scope) {
-        var freetext = $scope.filterQuery.value;
+      var formatFreetext = function(filters) {
+        var freetext = filters.search;
         if (freetext && freetext.indexOf(':') === -1) {
           freetext += '*';
         }
@@ -93,15 +102,15 @@ var _ = require('underscore'),
 
       var types = {
         reports: {
-          buildQuery: function($scope, options, operands) {
+          buildQuery: function(filters, options, operands) {
             if (!options.ignoreFilter) {
-              operands.push(formatFreetext($scope));
-              operands.push(formatReportedDate($scope));
-              operands.push(formatReportType($scope));
-              operands.push(formatClinics($scope));
-              operands.push(formatForm($scope));
-              operands.push(formatErrors($scope));
-              operands.push(formatVerified($scope));
+              operands.push(formatFreetext(filters));
+              operands.push(formatReportedDate(filters));
+              operands.push(formatReportType());
+              operands.push(formatClinics(filters));
+              operands.push(formatForm(filters));
+              operands.push(formatErrors(filters));
+              operands.push(formatVerified(filters));
             }
             operands.push(formatIds(options));
           },
@@ -112,28 +121,28 @@ var _ = require('underscore'),
           }
         },
         contacts: {
-          buildQuery: function($scope, options, operands) {
-            operands.push(formatFreetext($scope));
-            operands.push(formatContactsType($scope));
-            operands.push(formatClinics($scope));
+          buildQuery: function(filters, options, operands) {
+            operands.push(formatFreetext(filters));
+            operands.push(formatContactsType(filters));
+            operands.push(formatClinics(filters));
           }
         }
       };
 
-      return function($scope, options, callback) {
+      return function(typeName, filters, options, callback) {
 
         if (!callback) {
           callback = options;
           options = {};
         }
 
-        var type = types[$scope.filterModel.type];
+        var type = types[typeName];
         if (!type) {
-          return callback('Unknown type');
+          return callback(new Error('Unknown type'));
         }
 
         var operands = [];
-        type.buildQuery($scope, options, operands);
+        type.buildQuery(filters, options, operands);
 
         callback(null, {
           schema: type.schema,

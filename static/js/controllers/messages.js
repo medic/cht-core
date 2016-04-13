@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    ajaxDownload = require('../modules/ajax-download');
 
 (function () {
 
@@ -7,8 +8,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'MessageContact', 'Changes',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, MessageContact, Changes) {
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$http', '$log', 'MessageContact', 'Changes', 'DownloadUrl',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, $http, $log, MessageContact, Changes, DownloadUrl) {
 
       var removeDeletedMessages = function(messages) {
         var existingKey;
@@ -75,7 +76,6 @@ var _ = require('underscore');
       };
 
       $scope.allLoaded = false;
-      $scope.filterModel.type = 'messages';
       $scope.messages = [];
       $scope.selected = null;
       setMessages();
@@ -91,6 +91,21 @@ var _ = require('underscore');
         }
       });
 
+      $scope.$on('export', function() {
+        if ($scope.currentTab === 'messages') {
+          DownloadUrl(null, 'messages', function(err, url) {
+            if (err) {
+              return $log.error(err);
+            }
+            $http.post(url)
+              .then(ajaxDownload.download)
+              .catch(function(err) {
+                $log.error('Error downloading', err);
+              });
+          });
+        }
+      });
+
       $scope.$on('ClearSelected', function() {
         $scope.selected = null;
       });
@@ -101,7 +116,7 @@ var _ = require('underscore');
           updateConversations({ changes: true });
         },
         filter: function(change) {
-          if ($scope.filterModel.type !== 'messages') {
+          if ($scope.currentTab !== 'messages') {
             return false;
           }
           return change.doc.kujua_message ||

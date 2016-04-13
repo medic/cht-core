@@ -13,11 +13,8 @@ var _ = require('underscore');
       $scope.showParentLink = false;
 
       var getReports = function(id) {
-        var scope = {
-          filterModel: { subjectIds: [ id ], type: 'reports' }
-        };
         return $q(function(resolve, reject) {
-          Search(scope, { }, function(err, data) {
+          Search('reports', { subjectIds: [ id ] }, {}, function(err, data) {
             if (err) {
               return reject(err);
             }

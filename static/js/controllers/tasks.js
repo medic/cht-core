@@ -36,7 +36,6 @@ var _ = require('underscore');
         $scope.selected = null;
       });
 
-      $scope.filterModel.type = 'tasks';
       $timeout(function() {
         LiveList.tasks.refresh();
       });
@@ -57,7 +56,7 @@ var _ = require('underscore');
       };
 
       $scope.$on('query', function() {
-        if ($scope.filterModel.type !== 'tasks') {
+        if ($scope.currentTab !== 'tasks') {
           LiveList.tasks.clearSelected();
           delete LiveList.tasks.notifyChange;
           delete LiveList.tasks.notifyError;

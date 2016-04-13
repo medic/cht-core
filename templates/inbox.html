@@ -7,7 +7,7 @@
     <link rel="shortcut icon" href="<%= baseURL %>/static/img/ico/icon_48.ico">
     <title>Medic Mobile</title>
   </head>
-  <body class="inbox {{filterModel.type}}" ng-controller="InboxCtrl" ng-class="{'show-content': showContent, 'bootstrapped': version && dbWarmedUp}">
+  <body class="inbox {{currentTab}}" ng-controller="InboxCtrl" ng-class="{'show-content': showContent, 'bootstrapped': version && dbWarmedUp}">
 
     <div class="bootstrap-layer">
       <div class="loader"></div>
@@ -17,7 +17,6 @@
 
     <div class="container-fluid">
       <ng-include src="'templates/partials/header.html'"></ng-include>
-      <ng-include src="'templates/partials/filters.html'" onload="setupFilters()"></ng-include>
       <div class="row content" ui-view></div>
     </div>
 
