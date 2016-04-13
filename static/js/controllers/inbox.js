@@ -678,7 +678,7 @@ var feedback = require('../modules/feedback'),
       };
 
       $scope.deleteDoc = function(id) {
-        Modal('templates/modals/alert.html', function() { return _deleteDoc(id); })
+        Modal('templates/modals/delete_doc_confirm.html', function() { return _deleteDoc(id); })
           .then(function () {
             // Success!
             if ($state.includes('contacts') || $state.includes('reports')) {
