@@ -7,9 +7,14 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
+  var ENTER_KEY_CODE = 13;
 
   inboxServices.factory('SearchFilters', ['$translate',
     function($translate) {
+
+      var isEnter = function(e) {
+        return e.which === ENTER_KEY_CODE;
+      };
       
       var initFreetext = function(callback) {
         $('#search').on('click', function(e) {
@@ -17,7 +22,7 @@ var _ = require('underscore'),
           callback();
         });
         $('#freetext').on('keypress', function(e) {
-          if (e.which === 13) {
+          if (isEnter(e)) {
             e.preventDefault();
             callback();
           }
@@ -30,7 +35,7 @@ var _ = require('underscore'),
         };
         $('#mobile-search-go').on('click', performMobileSearch);
         $('#mobile-freetext').on('keypress', function(e) {
-          if (e.which === 13) {
+          if (isEnter(e)) {
             performMobileSearch(e);
           }
         });
