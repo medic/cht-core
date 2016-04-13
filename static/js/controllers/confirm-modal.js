@@ -1,7 +1,7 @@
 /**
  * Controller for all modals. To create modals, do not use this directly, use the Modal service.
  */
-angular.module('inboxControllers').controller('ModalCtrl',
+angular.module('inboxControllers').controller('ConfirmModalCtrl',
   ['$log', 'processingFunction', '$scope', '$uibModalInstance',
   function($log, processingFunction, $scope, $uibModalInstance) {
     $scope.processing = false;

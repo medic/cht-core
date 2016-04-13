@@ -25,6 +25,7 @@
   require('./configuration-translation-messages');
   require('./configuration-user');
   require('./configuration-users');
+  require('./confirm-modal');
   require('./contacts');
   require('./contacts-content');
   require('./contacts-edit');
@@ -42,7 +43,6 @@
   require('./import-translation');
   require('./messages');
   require('./messages-content');
-  require('./modal');
   require('./reports');
   require('./reports-add');
   require('./reports-content');

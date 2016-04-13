@@ -78,7 +78,7 @@ describe('InboxCtrl controller', function() {
       $provide.factory('LiveListConfig', function() {
         return sinon.stub();
       });
-      $provide.factory('Modal', function() {
+      $provide.factory('ConfirmModal', function() {
         stubModal = sinon.stub();
         // Always return as if user clicked delete. This ignores the DeleteDoc
         // altogether. The calling of the processingFunction is tested in

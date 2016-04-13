@@ -6,7 +6,7 @@
    * Creates a yes/no modal and gives back the user's decision in promise.
    * The modal's appearance is speficied in a template. See templates/modals for examples.
    * Example :
-   *   Modal('templates/modals/alert.html')
+   *   ConfirmModal('templates/modals/alert.html')
    *       .then(function () {
    *         // Success!
    *         doHappyThings();
@@ -27,7 +27,7 @@
    *   return false;
    * };
    *
-   * Modal('templates/modals/alert.html', processingFunction)
+   * ConfirmModal('templates/modals/delete_doc_confirm.html', processingFunction)
    *   .then(function () {
    *     // Success!
    *     doHappyThings();
@@ -55,12 +55,12 @@
    */
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Modal', ['$uibModal',
+  inboxServices.factory('ConfirmModal', ['$uibModal',
     function($uibModal) {
       return function(templateUrl, processingFunction) {
         var modalInstance = $uibModal.open({
           templateUrl: templateUrl,
-          controller: 'ModalCtrl',
+          controller: 'ConfirmModalCtrl',
           resolve: {
             processingFunction: function () {
               return processingFunction;

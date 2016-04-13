@@ -1,4 +1,4 @@
-describe('ModalCtrl controller', function() {
+describe('ConfirmModalCtrl controller', function() {
   'use strict';
 
   var createController, processingFunction, scope, spyUibModalInstance;
@@ -21,7 +21,7 @@ describe('ModalCtrl controller', function() {
     inject(function($rootScope, $controller) {
       scope = $rootScope.$new();
       createController = function() {
-        return $controller('ModalCtrl', {
+        return $controller('ConfirmModalCtrl', {
           '$scope': scope,
         });
       };

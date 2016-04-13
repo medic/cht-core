@@ -12,6 +12,7 @@
   require('./changes');
   require('./check-date');
   require('./clean-etag');
+  require('./confirm-modal');
   require('./contact-form');
   require('./contact-schema');
   require('./count-messages');
@@ -37,7 +38,6 @@
   require('./kanso-packages');
   require('./language');
   require('./markdown');
-  require('./modal');
   require('./live-list');
   require('./mark-read');
   require('./message-contacts');
