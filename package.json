@@ -15,6 +15,7 @@
     "angular-route": "^1.5.3",
     "angular-sanitize": "^1.5.3",
     "angular-translate": "^2.11.0",
+    "angular-ui-bootstrap": "^1.2.5",
     "angular-ui-router": "^0.2.16",
     "angularjs-nvd3-directives": "~0.0.8",
     "async": "^1.5.2",
