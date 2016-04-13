@@ -14,8 +14,8 @@ var feedback = require('../modules/feedback'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'CheckDate', 'DeleteDoc', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, CheckDate, DeleteDoc, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'CheckDate', 'DeleteDoc', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES', 'ConfirmModal', '$q',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, CheckDate, DeleteDoc, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES, ConfirmModal, $q) {
 
       Session.init();
 
@@ -181,7 +181,7 @@ var feedback = require('../modules/feedback'),
         // If viewing RHS content, do as the filter-bar X/< button does
         if ($scope.showContent) {
           if ($scope.cancelCallback) {
-            $scope.cancel();
+            $scope.navigationCancel();
           } else {
             $scope.closeContentPane();
           }
@@ -205,15 +205,16 @@ var feedback = require('../modules/feedback'),
         return false;
       };
 
-      $scope.cancel = function() {
-        $('#navigation-confirm').modal('show');
-      };
-
-      $scope.cancelConfirm = function() {
-        $('#navigation-confirm').modal('hide');
-        if ($scope.cancelCallback) {
-          $scope.cancelCallback();
-        }
+      // User wants to cancel current flow, or pressed back button, etc.
+      $scope.navigationCancel = function() {
+        ConfirmModal('templates/modals/navigation_confirm.html')
+          .then(function () {
+            if ($scope.cancelCallback) {
+              $scope.cancelCallback();
+            }
+          }, function () {
+            $log.debug('User cancelled navigationCancel.');
+          });
       };
 
       $scope.closeContentPane = function() {
@@ -628,28 +629,32 @@ var feedback = require('../modules/feedback'),
         $rootScope.$broadcast.apply($rootScope, arguments);
       };
 
-      var docToDeleteId;
-
-      $scope.deleteDoc = function(id) {
-        $('#delete-confirm').modal('show');
-        docToDeleteId = id;
+      // TODO promisify DeleteDoc
+      var _deleteDoc = function(id) {
+        var deferred = $q.defer();
+        if (!id) {
+          return deferred.reject('Error deleting document : no docToDeleteId set');
+        }
+        DeleteDoc(id, function(err) {
+          if (err) {
+            return deferred.reject(err);
+          }
+          return deferred.resolve();
+        });
+        return deferred.promise;
       };
 
-      $scope.deleteDocConfirm = function() {
-        var pane = modal.start($('#delete-confirm'));
-        if (docToDeleteId) {
-          DeleteDoc(docToDeleteId, function(err) {
-            pane.done(translateFilter('Error deleting document'), err);
-            if (!err) {
-              if ($state.includes('contacts') || $state.includes('reports')) {
-                $state.go($state.current.name, { id: null });
-              }
-              Snackbar(translateFilter('document.deleted'));
+      $scope.deleteDoc = function(id) {
+        ConfirmModal('templates/modals/delete_doc_confirm.html', function() { return _deleteDoc(id); })
+          .then(function () {
+            // Success!
+            if ($state.includes('contacts') || $state.includes('reports')) {
+              $state.go($state.current.name, { id: null });
             }
+            Snackbar(translateFilter('document.deleted'));
+          }, function () {
+            $log.debug('User cancelled deleteDoc.');
           });
-        } else {
-          pane.done(translateFilter('Error deleting document'), 'No docToDeleteId set');
-        }
       };
 
       $('body').on('mouseenter', '.relative-date, .autoreply', function() {

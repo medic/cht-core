@@ -11,6 +11,8 @@
   require('./cache');
   require('./changes');
   require('./check-date');
+  require('./clean-etag');
+  require('./confirm-modal');
   require('./contact-form');
   require('./contact-schema');
   require('./count-messages');
