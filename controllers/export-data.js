@@ -149,6 +149,7 @@ var exportTypes = {
   },
   audit: {
     view: 'audit_records_by_doc',
+    db: db.audit,
     generate: function(rows, options) {
       if (!options.columns) {
         options.columns = createColumnModels([
@@ -518,7 +519,8 @@ var getRecordsView = function(type, params, callback) {
     options.startkey = [9999999999999, {}];
     options.endkey = [0];
   }
-  db.medic.view('medic', type.view, options, callback);
+  var actual = type.db || db.medic;
+  actual.view('medic', type.view, options, callback);
 };
 
 var getRecords = function(type, params, callback) {

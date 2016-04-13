@@ -19,6 +19,7 @@ exports.tearDown = function(callback) {
   utils.restore(
     fti.get,
     db.medic.view,
+    db.audit.view,
     config.translate,
     config.get,
     childProcess.spawn
@@ -776,7 +777,7 @@ exports['get reports with query calls fti'] = function(test) {
 
 exports['get audit log'] = function(test) {
   test.expect(3);
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+  var getView = sinon.stub(db.audit, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -824,7 +825,7 @@ exports['get audit log'] = function(test) {
 
 exports['get audit log handles special characters'] = function(test) {
   test.expect(3);
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+  var getView = sinon.stub(db.audit, 'view').callsArgWith(3, null, {
     rows: [
       { doc: {
         _id: 'def',

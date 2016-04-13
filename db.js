@@ -22,19 +22,21 @@ if (couchUrl) {
   couchUrl = couchUrl.replace(/\/$/, '');
   var baseUrl = couchUrl.substring(0, couchUrl.indexOf('/', 10));
   var parsedUrl = url.parse(couchUrl);
-
-  module.exports = nano(baseUrl);
-  module.exports.medic = nano(couchUrl);
-  module.exports._users = module.exports.use('_users');
-
   var dbName = parsedUrl.path.replace('/','');
+  var auditDbName = dbName + '-audit';
+  var db = nano(baseUrl);
+
+  module.exports = db;
+  module.exports.medic = db.use(dbName);
+  module.exports.audit = db.use(auditDbName);
+  module.exports._users = db.use('_users');
 
   module.exports.settings = {
     protocol: parsedUrl.protocol,
     port: parsedUrl.port,
     host: parsedUrl.hostname,
     db: dbName,
-    auditDb: dbName + '-audit',
+    auditDb: auditDbName,
     ddoc: 'medic'
   };
 
@@ -99,6 +101,9 @@ if (couchUrl) {
       attachment: {
         get: function() {}
       }
+    },
+    audit: {
+      view: function() {}
     },
     db: {
       get: function() {},
