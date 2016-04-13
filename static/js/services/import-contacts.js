@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    etagRegex = /(?:^W\/)|['"]/g;
+var _ = require('underscore');
 
 (function () {
 
@@ -8,8 +7,8 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('ImportContacts',
-    ['$http', '$q', 'DB', 'BaseUrlService',
-    function($http, $q, DB, BaseUrlService) {
+    ['$http', '$q', 'DB', 'BaseUrlService', 'CleanETag',
+    function($http, $q, DB, BaseUrlService, CleanETag) {
 
       var savePerson = function(doc) {
         var person = {
@@ -54,7 +53,7 @@ var _ = require('underscore'),
       var importContact = function(baseUrl, overwrite, contact) {
         return $http.head(baseUrl + contact._id)
           .then(function(response) {
-            var rev = response.headers('ETag').replace(etagRegex, '');
+            var rev = CleanETag(response.headers('ETag'));
             if (!rev || !overwrite) {
               // do nothing
               return $q.resolve();

@@ -1,6 +1,5 @@
 var utils = require('kujua-utils'),
-    async = require('async'),
-    etagRegex = /(?:^W\/)|['"]/g;
+    async = require('async');
 
 (function () {
 
@@ -9,8 +8,8 @@ var utils = require('kujua-utils'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('DB', [
-    '$http', '$timeout', '$log', '$window', 'pouchDB', 'Session', 'DbNameService', 'E2ETESTING',
-    function($http, $timeout, $log, $window, pouchDB, Session, DbNameService, E2ETESTING) {
+    '$http', '$timeout', '$log', '$window', 'pouchDB', 'Session', 'DbNameService', 'CleanETag', 'E2ETESTING',
+    function($http, $timeout, $log, $window, pouchDB, Session, DbNameService, CleanETag, E2ETESTING) {
 
       var cache = {};
 
@@ -99,7 +98,7 @@ var utils = require('kujua-utils'),
                 method: 'HEAD',
                 url: getRemoteUrl() + '/_design/medic'
               }).success(function(data, status, headers) {
-                var rev = headers().etag.replace(etagRegex, '');
+                var rev = CleanETag(headers().etag);
                 checkLocalDesignDoc(rev, callback);
               }).catch(function(err) {
                 if (err.status === 401) {
