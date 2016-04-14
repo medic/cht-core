@@ -7,21 +7,34 @@ angular.module('inboxServices').service('EnketoPrepopulationData', [
       if (data && _.isString(data)) {
         return $q.resolve(data);
       }
-      data = data || {};
-      var inputs = {};
+
       var deferred = $q.defer();
-      if ($window.medicmobile_android) {
-        inputs.location = JSON.parse($window.medicmobile_android.getLocation());
-      }
-      UserSettings(function(err, settings) {
+      UserSettings(function(err, user) {
         if (err) {
           return deferred.reject(err);
         }
-        inputs.user = settings;
+
         var xml = $($.parseXML(model));
         var bindRoot = xml.find('model instance').children().first();
-        EnketoTranslation.bindJsonToXml(bindRoot, data);
-        EnketoTranslation.bindJsonToXml(bindRoot.find('inputs'), inputs);
+
+        var userRoot = bindRoot.find('>inputs>user');
+        var locationRoot = bindRoot.find('>inputs>meta>location');
+
+        if (data) {
+          EnketoTranslation.bindJsonToXml(bindRoot, data, function(name) {
+            return ['>', name, ', ', '>inputs>', name].join('');
+          });
+        }
+
+        if (userRoot.length) {
+          EnketoTranslation.bindJsonToXml(userRoot, user);
+        }
+
+        if (locationRoot.length && $window.medicmobile_android) {
+          var location = JSON.parse($window.medicmobile_android.getLocation());
+          EnketoTranslation.bindJsonToXml(bindRoot.find('inputs>meta>location'), location);
+        }
+
         var serialized = new XMLSerializer().serializeToString(bindRoot[0]);
         deferred.resolve(serialized);
       });
