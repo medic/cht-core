@@ -183,8 +183,10 @@ var _ = require('underscore'),
       });
 
       $scope.$on('$destroy', function() {
-        $scope.setTitle();
-        $scope.clearSelected();
+        if (!$state.includes('contacts')) {
+          $scope.setTitle();
+          $scope.clearSelected();
+        }
       });
 
     }

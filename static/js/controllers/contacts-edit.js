@@ -363,9 +363,11 @@ var _ = require('underscore');
       }
 
       $scope.$on('$destroy', function() {
-        $scope.setTitle();
-        if ($scope.enketo_contact && $scope.enketo_contact.formInstance) {
-          Enketo.unload($scope.enketo_contact.formInstance);
+        if (!$state.includes('contacts.add')) {
+          $scope.setTitle();
+          if ($scope.enketo_contact && $scope.enketo_contact.formInstance) {
+            Enketo.unload($scope.enketo_contact.formInstance);
+          }
         }
       });
 

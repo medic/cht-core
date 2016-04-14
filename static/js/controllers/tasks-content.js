@@ -80,9 +80,11 @@
       };
 
       $scope.$on('$destroy', function() {
-        Enketo.unload($scope.form);
-        $scope.setTitle();
-        $scope.clearSelected();
+        if (!$state.includes('tasks.detail')) {
+          Enketo.unload($scope.form);
+          $scope.setTitle();
+          $scope.clearSelected();
+        }
       });
 
       // Wait for `selected` to be set during tasks generation and load the

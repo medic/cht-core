@@ -403,8 +403,10 @@ var _ = require('underscore'),
       });
 
       $scope.$on('$destroy', function() {
-        $scope.setTitle();
-        $scope.clearSelected();
+        if (!$state.includes('reports')) {
+          $scope.setTitle();
+          $scope.clearSelected();
+        }
       });
     }
   ]);
