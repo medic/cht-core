@@ -12,7 +12,7 @@ define( function( require, exports, module ) {
     var format = require('../../modules/format');
     require('enketo-core/src/js/plugins');
 
-    var DOCS_TO_PAGINATE = 20;
+    var PAGE_SIZE = 20;
 
     var pluginName = 'dbobjectwidget';
 
@@ -115,7 +115,7 @@ define( function( require, exports, module ) {
 
         var query = function(params, successCb, failureCb) {
             var query = params.data.q;
-            var skip = ((params.data.page || 1) - 1) * DOCS_TO_PAGINATE;
+            var skip = ((params.data.page || 1) - 1) * PAGE_SIZE;
 
             Search({ // $scope
                 filterModel: {
@@ -126,7 +126,7 @@ define( function( require, exports, module ) {
                     value: query
                 }
             }, { // options
-                limit: DOCS_TO_PAGINATE,
+                limit: PAGE_SIZE,
                 skip: skip
             }, function(err, documents) {
                 if (err) {
@@ -137,7 +137,7 @@ define( function( require, exports, module ) {
                 successCb({
                     results: prepareRows(documents, skip === 0),
                     pagination: {
-                        more: documents.length === DOCS_TO_PAGINATE
+                        more: documents.length === PAGE_SIZE
                     }
                 });
             });
