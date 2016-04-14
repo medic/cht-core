@@ -82,15 +82,17 @@ exports['getSettingsUpdates removes user doc specific fields'] = function(test) 
   test.done();
 };
 
-exports['getSettingsUpdates does not use place and contact fields'] = function(test) {
+exports['getSettingsUpdates reassigns place and contact fields'] = function(test) {
   var data = {
     place: 'abc',
     contact: '123',
     fullname: 'John'
   };
   var settings = controller._getSettingsUpdates('john', data);
-  test.ok(!settings.place);
-  test.ok(!settings.contact);
+  test.equals(settings.place, void 0);
+  test.equals(settings.contact, void 0);
+  test.equals(settings.contact_id, '123');
+  test.equals(settings.facility_id, 'abc');
   test.equal(settings.fullname, 'John');
   test.done();
 };
@@ -103,6 +105,17 @@ exports['getUserUpdates enforces name field based on id'] = function(test) {
   };
   var user = controller._getUserUpdates('john', data);
   test.equal(user.name , 'john');
+  test.done();
+};
+
+exports['getUserUpdates reassigns place field'] = function(test) {
+  var data = {
+    place: 'abc'
+  };
+  var user = controller._getUserUpdates('john', data);
+  console.log('user',user);
+  test.equals(user.place, void 0);
+  test.equals(user.facility_id, 'abc');
   test.done();
 };
 

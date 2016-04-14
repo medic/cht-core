@@ -340,9 +340,10 @@ var getSettingsUpdates = function(username, data) {
 };
 
 var getUserUpdates = function(username, data) {
-  var user = {};
+  var user = {},
+      ignore = ['place'];
   _.forEach(USER_EDITABLE_FIELDS , function(key) {
-    if (!_.isUndefined(data[key])) {
+    if (!_.isUndefined(data[key]) && ignore.indexOf(key) === -1) {
       user[key] = data[key];
     }
   });
