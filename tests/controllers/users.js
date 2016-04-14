@@ -113,7 +113,6 @@ exports['getUserUpdates reassigns place field'] = function(test) {
     place: 'abc'
   };
   var user = controller._getUserUpdates('john', data);
-  console.log('user',user);
   test.equals(user.place, void 0);
   test.equals(user.facility_id, 'abc');
   test.done();
