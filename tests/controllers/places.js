@@ -27,14 +27,14 @@ exports.setUp = function(callback) {
 
 exports['validatePlace returns error on string argument.'] = function(test) {
   controller._validatePlace('x', function(err) {
-    test.equal(err, 'Place must be an object.');
+    test.equal(err.message, 'Place must be an object.');
     test.done();
   });
 };
 
 exports['validatePlace returns error on number argument.'] = function(test) {
   controller._validatePlace(42, function(err) {
-    test.equal(err, 'Place must be an object.');
+    test.equal(err.message, 'Place must be an object.');
     test.done();
   });
 };
@@ -42,7 +42,7 @@ exports['validatePlace returns error on number argument.'] = function(test) {
 exports['validatePlace returns error when doc is wrong type.'] = function(test) {
   examplePlace.type = 'food';
   controller._validatePlace(examplePlace, function(err) {
-    test.equal(err, 'Wrong type, this is not a place.');
+    test.equal(err.message, 'Wrong type, this is not a place.');
     test.done();
   });
 };
@@ -50,7 +50,7 @@ exports['validatePlace returns error when doc is wrong type.'] = function(test) 
 exports['validatePlace returns error if clinic is missing parent'] = function(test) {
   delete examplePlace.parent;
   controller._validatePlace(examplePlace, function(err) {
-    test.equal(err, 'Place is missing a "parent" property.');
+    test.equal(err.message, 'Place is missing a "parent" property.');
     test.done();
   });
 };
@@ -59,7 +59,35 @@ exports['validatePlace returns error if health center is missing parent'] = func
   delete examplePlace.parent;
   examplePlace.type = 'health_center';
   controller._validatePlace(examplePlace, function(err) {
-    test.equal(err, 'Place is missing a "parent" property.');
+    test.equal(err.message, 'Place is missing a "parent" property.');
+    test.done();
+  });
+};
+
+exports['validatePlace returns error if health center has wrong parent type'] = function(test) {
+  var data = {
+    type: 'health_center',
+    name: 'St. Paul',
+    parent: {
+      name: 'MoH',
+      type: 'national_office'
+    }
+  };
+  controller._validatePlace(data, function(err) {
+    test.ok(err);
+    test.equal(err.message, 'Health Centers should have "district_hospital" parent type.');
+    test.done();
+  });
+};
+
+exports['validatePlace returns error if clinic has wrong parent type'] = function(test) {
+  examplePlace.parent = {
+    name: 'St Paul Hospital',
+    type: 'district_hospital'
+  };
+  controller._validatePlace(examplePlace, function(err) {
+    test.ok(err);
+    test.equal(err.message, 'Clinics should have "health_center" parent type.');
     test.done();
   });
 };

@@ -35,6 +35,8 @@ var _ = require('underscore'),
     records = require('./controllers/records'),
     forms = require('./controllers/forms'),
     users = require('./controllers/users'),
+    places = require('./controllers/places'),
+    contacts = require('./controllers/contacts'),
     fti = require('./controllers/fti'),
     createDomain = require('domain').create,
     staticResources = /\/(templates|static)\//,
@@ -453,6 +455,45 @@ app.delete('/api/v1/users/:username', jsonParser, function(req, res) {
   });
 });
 
+app.post('/api/v1/places', jsonParser, function(req, res) {
+  auth.check(req, 'can_create_places', null, function(err) {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+    if (_.isEmpty(req.body)) {
+      return serverUtils.error({
+        code: 400,
+        message: 'Request body is empty, check your content-type header.'
+      }, req, res);
+    }
+    places.createPlace(req.body, function(err, body) {
+      if (err) {
+        return serverUtils.error(err, req, res);
+      }
+      res.json(body);
+    });
+  });
+});
+
+app.post('/api/v1/contacts', jsonParser, function(req, res) {
+  auth.check(req, 'can_create_contacts', null, function(err) {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+    if (_.isEmpty(req.body)) {
+      return serverUtils.error({
+        code: 400,
+        message: 'Request body is empty, check your content-type header.'
+      }, req, res);
+    }
+    contacts.createContact(req.body, function(err, body) {
+      if (err) {
+        return serverUtils.error(err, req, res);
+      }
+      res.json(body);
+    });
+  });
+});
 
 // DB replication endpoint
 app.get('/medic/_changes', _.partial(require('./handlers/changes'), proxy));

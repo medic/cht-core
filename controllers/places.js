@@ -1,4 +1,7 @@
 var _ = require('underscore'),
+    async = require('async');
+
+var contacts = require('./contacts'),
     db = require('../db');
 
 var getPlace = function(id, callback) {
@@ -8,6 +11,12 @@ var getPlace = function(id, callback) {
         err.message  = 'Failed to find place.';
       }
       return callback(err);
+    }
+    if (!isAPlace(doc)) {
+      return callback({
+        code: 404,
+        message: 'Failed to find place.'
+      });
     }
     callback(null, doc);
   });
@@ -24,30 +33,48 @@ var isAPlace = function(place) {
 
 /*
  * Validate the basic data structure for a place.  Not checking against the
- * database if parent exists because the entire child-parent structure might be
- * created in one request. Just checking `type` field values and some required
- * fields.
+ * database if parent exists because the entire child-parent structure create
+ * might be requested in one API call. Just checking `type` field values and
+ * some required fields.
  */
+
 var validatePlace = function(place, callback) {
+  var err = function(msg, code) {
+    return callback({
+      code: code || 400,
+      message: msg
+    });
+  };
   if (!_.isObject(place)) {
-    return callback('Place must be an object.');
+    return err('Place must be an object.');
   }
   if (!isAPlace(place)) {
-    return callback('Wrong type, this is not a place.');
+    return err('Wrong type, this is not a place.');
   }
   if (_.isUndefined(place.name)) {
-    return callback('Place is missing a "name" property.');
+    return err('Place is missing a "name" property.');
   }
   if (!_.isString(place.name)) {
-    return callback('Property "name" must be a string.');
+    return err('Property "name" must be a string.');
   }
   if (['clinic', 'health_center'].indexOf(place.type) !== -1) {
     if (_.isUndefined(place.parent)) {
-      return callback('Place is missing a "parent" property.');
+      return err('Place is missing a "parent" property.');
+    }
+    if (place.type === 'clinic' && place.parent.type !== 'health_center') {
+      return err('Clinics should have "health_center" parent type.');
+    }
+    if (place.type === 'health_center' && place.parent.type !== 'district_hospital') {
+      return err('Health Centers should have "district_hospital" parent type.');
+    }
+  }
+  if (place.contact) {
+    if (!_.isString(place.contact) && !_.isObject(place.contact)) {
+      return err('Property "contact" must be an object or string.');
     }
   }
   if (place.parent) {
-    // validate parents also
+    // validate parents
     return validatePlace(place.parent, callback);
   }
   return callback();
@@ -58,7 +85,18 @@ var createPlace = function(place, callback) {
     if (err) {
       return callback(err);
     }
-    db.medic.insert(place, callback);
+    if (place.contact) {
+      // also validates contact if creating
+      contacts.getOrCreateContact(place.contact, function(err, doc) {
+        if (err) {
+          return callback(err);
+        }
+        place.contact = doc;
+        db.medic.insert(place, callback);
+      });
+    } else {
+      db.medic.insert(place, callback);
+    }
   });
 };
 
@@ -69,23 +107,6 @@ var createPlace = function(place, callback) {
  * real places after validating and creating them.
  *
  * Return the id and rev of newly created place.
- *
- * Examples:
- *
- * {
- *   "name": "CHP Area One",
- *   "type": "health_center",
- *   "parent": "1d83f2b4a27eceb40df9e9f9ad06d137"
- * }
- *
- * {
- *   "name": "CHP Area One",
- *   "type": "health_center",
- *   "parent": {
- *     "name": "CHP Branch One",
- *     "type": "district_hospital"
- *   }
- * }
  */
 var createPlaces = function(place, callback) {
   var self = module.exports;
@@ -141,5 +162,6 @@ module.exports = {
     } else {
       callback('Place must be a new object or string identifier (UUID).');
     }
-  }
+  },
+  createPlace: createPlaces
 };

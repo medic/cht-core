@@ -1,4 +1,6 @@
 var controller = require('../../controllers/users'),
+    contacts = require('../../controllers/contacts'),
+    places = require('../../controllers/places'),
     db = require('../../db'),
     utils = require('../utils'),
     sinon = require('sinon');
@@ -19,6 +21,7 @@ exports.tearDown = function (callback) {
     db.medic.view,
     db._users.get,
     db._users.insert,
+    contacts.createContact,
     controller._mapUsers,
     controller._createContact,
     controller._createPlace,
@@ -29,7 +32,6 @@ exports.tearDown = function (callback) {
     controller._getAllUserSettings,
     controller._getContactParent,
     controller._getFacilities,
-    controller._getOrCreatePlace,
     controller._getPlace,
     controller._setContactParent,
     controller._validateUser,
@@ -38,7 +40,8 @@ exports.tearDown = function (callback) {
     controller._updateAdminPassword,
     controller._updateUser,
     controller._updateUserSettings,
-    controller.getList
+    controller.getList,
+    places.getOrCreatePlace
   );
   callback();
 };
@@ -536,7 +539,7 @@ exports['deleteUser sets _deleted on the user-settings doc'] = function(test) {
 };
 
 exports['createPlace assigns new place'] = function(test) {
-  sinon.stub(controller, '_getOrCreatePlace').callsArgWith(1, null, {
+  sinon.stub(places, 'getOrCreatePlace').callsArgWith(1, null, {
     _id: 'santos'
   });
   controller._createPlace(userData, {}, function(err, data) {
@@ -616,7 +619,7 @@ exports['createUserSettings sets default roles on user-settings'] = function(tes
 
 
 exports['createContact returns error from db insert'] = function(test) {
-  sinon.stub(db.medic, 'insert').callsArgWith(1, 'yucky');
+  sinon.stub(contacts, 'createContact').callsArgWith(1, 'yucky');
   controller._createContact(userData, {}, function(err) {
     test.ok(err);
     test.done();
@@ -624,7 +627,7 @@ exports['createContact returns error from db insert'] = function(test) {
 };
 
 exports['createContact updates contact property'] = function(test) {
-  sinon.stub(db.medic, 'insert').callsArgWith(1, null, {
+  sinon.stub(contacts, 'createContact').callsArgWith(1, null, {
     id: 'abc'
   });
   controller._createContact(userData, {}, function(err, data) {
@@ -635,7 +638,7 @@ exports['createContact updates contact property'] = function(test) {
 };
 
 exports['createContact sets up response'] = function(test) {
-  sinon.stub(db.medic, 'insert').callsArgWith(1, null, {
+  sinon.stub(contacts, 'createContact').callsArgWith(1, null, {
     id: 'abc',
     rev: '1-xyz'
   });
@@ -840,14 +843,6 @@ exports['createUser resolves contact parent for waterfall'] = function(test) {
     test.done();
   });
   controller.createUser(userData);
-};
-
-exports['createContact sets contact type'] = function(test) {
-  sinon.stub(db.medic, 'insert', function(data) {
-    test.equal(data.type, 'person');
-    test.done();
-  });
-  controller._createContact(userData);
 };
 
 exports['updateUser errors if place, type and password is undefined'] = function(test) {

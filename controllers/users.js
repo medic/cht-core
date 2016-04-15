@@ -195,6 +195,7 @@ var createUserSettings = function(data, response, callback) {
 };
 
 var createPlace = function(data, response, callback) {
+  console.log('createPlace', JSON.stringify(data,null,2));
   module.exports._getOrCreatePlace(data.place, function(err, doc) {
     data.place = doc;
     callback(err, data, response);

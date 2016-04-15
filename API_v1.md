@@ -579,6 +579,204 @@ Content-Type: application/json; charset=utf-8
 ]
 ```
 
+## POST /api/v1/contacts
+
+Create new contacts. 
+
+## Supported Properties
+
+Use JSON in the request body to specify contact details.  
+
+Note: this does not accomodate having a `place` field on your contact form.
+
+#### Required 
+
+| Key | Description       
+| -------- | -----------------
+| name | String used to describe the contact.
+
+#### Optional 
+
+| Key | Description       
+| -------- | -----------------
+| place | String that references a place or object that defines a new place. 
+
+
+### Permissions
+
+
+`can_create_contacts`, `cat_create_places`
+
+### Examples
+
+
+Create new contact and place hierarchy. 
+
+```
+POST /api/v1/contacts
+Content-Type: application/json
+
+{
+  "name": "Hannah",
+  "phone": "+2548277210095",
+  "place": {
+    "name": "CHP Area One",
+    "type": "health_center",
+    "parent": {
+      "name": "CHP Branch One",
+      "type": "district_hospital"
+    }
+  }
+}
+```
+
+Create new contact and assign existing place.
+
+```
+POST /api/v1/contacts
+Content-Type: application/json
+
+{
+ "name": "Samuel",
+ "place": "1d83f2b4a27eceb40df9e9f9ad06d137"
+}
+```
+
+Example response:
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": "71df9d25ed6732ea3b4435862510d115",
+  "rev": "1-a4060843d78f46a60a6f41051e40e3b5"
+}
+```
+
+# Places
+
+All place related requests are limited to users with admin privileges by default.
+
+## Supported Properties
+
+Use JSON in the request body to specify place details.
+
+#### Required Properties
+
+| Key | Description       
+| -------- | -----------------
+| name | String used to describe the place.
+| type | Place type
+| parent | String that references a place or object that defines a new place. Optional for District Hospital and National Office types.
+
+#### Optional Properties
+
+| Key | Description       
+| -------- | -----------------
+| contact | String identifier for a contact or object that defines a new one.
+
+
+#### Place Types
+
+| Key | Description
+| -------- | -----------------
+| clinic | Clinic
+| health_center | Health Center
+| district_hospital | District Hospital
+| national_office | National Office
+
+
+## POST /api/v1/places
+
+Create a new places and optionally a contact.
+
+### Permissions
+
+`can_create_places`
+
+### Examples
+
+Create new place referencing existing parent.
+
+```
+POST /api/v1/places
+Content-Type: application/json
+
+{
+ "name": "Busia Clinic",
+ "type": "clinic",
+ "parent": "1d83f2b4a27eceb40df9e9f9ad06d137"
+}
+```
+
+
+Create child and parent places.
+
+```
+POST /api/v1/places
+Content-Type: application/json
+
+{
+  "name": "CHP Area One",
+  "type": "health_center",
+  "parent": {
+    "name": "CHP Branch One",
+    "type": "district_hospital"
+  }
+}
+```
+
+
+Also creates contacts.
+
+```
+POST /api/v1/places
+Content-Type: application/json
+
+{
+  "name": "CHP Area One",
+  "type": "health_center",
+  "parent": {
+    "name": "CHP Branch One",
+    "type": "district_hospital"
+  },
+  "contact": {
+    "name": "Paul",
+    "phone": "+254883720611"
+  }
+}
+```
+
+Or assigns them.
+
+```
+POST /api/v1/places
+Content-Type: application/json
+
+{
+  "name": "CHP Area One",
+  "type": "health_center",
+  "parent": {
+    "name": "CHP Branch One",
+    "type": "district_hospital"
+  },
+  "contact": "71df9d25ed6732ea3b4435862510ef8e"
+}
+```
+
+Example response:
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": "71df9d25ed6732ea3b4435862510d115",
+  "rev": "1-a4060843d78f46a60a6f41051e40e3b5"
+}
+```
+
 # Users
 
 All user related requests are limited to users with admin privileges by default.
@@ -597,7 +795,6 @@ will be undefined.
 | password | Password string used for authentication.  Only allowed to be set, not retrieved.
 | place    | Place identifier string (UUID) or object this user resides in.
 | contact  | A contact object based on the form configured in the app.
-| contact.parent | The parent place of the contact.  The contact must reside in or be equal to the place the user resides in.
 
 #### Optional
 
@@ -665,7 +862,6 @@ Content-Type: application/json; charset=utf-8
       "_id": "eeb17d6d-5dde-c2c0-62c4a1a0ca17d38b",
       "type": "district_hospital",
       "name": "Sample District",
-      "parent": {},
       "contact": {
         "_id": "eeb17d6d-5dde-c2c0-62c4a1a0ca17fd17",
         "type": "person",
@@ -696,8 +892,8 @@ Create a new user with a place and a contact.
 
 Create a new user that can authenticate with a username of "mary" and password
 of "secret" that can submit reports and view or modify records associated to
-their place.  The place is created behind the scenes and assigned to the
-contact.
+their place.  The place is created in the background and automatically linked
+to the contact.
 
 ```
 POST /api/v1/users
@@ -772,6 +968,7 @@ Content-Type: application/json
 
 ```
 HTTP/1.1 200 OK
+Content-Type: application/json
 
 {
   "user": {
