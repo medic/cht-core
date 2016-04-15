@@ -130,12 +130,14 @@ exports['saves doc for settings'] = function(test) {
       language: 'en',
       known: 'true',
       type: 'user-settings',
-      facility_id: 'd012fe8f511c536273ab13e4d3025d2d'
+      facility_id: 'd012fe8f511c536273ab13e4d3025d2d',
+      roles: []
     });
     test.same(medicInsert.args[1][0], {
       _id: 'org.couchdb.user:b',
       name: 'b',
-      type: 'user-settings'
+      type: 'user-settings',
+      roles: [ 'district_admin' ]
     });
 
     test.equals(userUpdate.callCount, 2);
