@@ -1,4 +1,6 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    utils = require('kujua-utils');
+
 
 function PARSER($parse, scope) {
   return function(expr) {
@@ -11,9 +13,9 @@ function PARSER($parse, scope) {
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig', [
   '$log', '$parse', '$templateCache', '$timeout',
-      'Changes', 'DB', 'LiveList', 'RulesEngine', 'CONTACT_TYPES',
+      'Changes', 'DB', 'LiveList', 'RulesEngine', 'CONTACT_TYPES', 'Session', 'FormatDate',
   function($log, $parse, $templateCache, $timeout,
-      Changes, DB, LiveList, RulesEngine, CONTACT_TYPES) {
+      Changes, DB, LiveList, RulesEngine, CONTACT_TYPES, Session, FormatDate) {
     // Configure LiveList service
     return function($scope) {
 
@@ -152,13 +154,23 @@ angular.module('inboxServices').factory('LiveListConfig', [
           return;
         }
 
+        function withinOneDay(date) { // ish
+          return Math.abs(Date.now() - date.getTime()) < 1000 * 60 * 60 * 24;
+        }
+
         $timeout(function() {
           tasks.forEach(function(task) {
-            if (task.resolved) {
+            // Stop-gap to reduce the amount of tasks Admins see, showing only ~today
+            if (utils.isUserAdmin(Session.userCtx()) && !withinOneDay(task.date)) {
               LiveList.tasks.remove(task);
             } else {
-              LiveList.tasks.update(task);
+              if (task.resolved) {
+                LiveList.tasks.remove(task);
+              } else {
+                LiveList.tasks.update(task);
+              }
             }
+
 
             var notifyChange = LiveList.tasks.notifyChange;
             if (notifyChange) {
