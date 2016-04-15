@@ -453,13 +453,16 @@ var feedback = require('../modules/feedback'),
                                 .find('.selected')
                                 .attr('data-value');
           var id = 'org.couchdb.user:' + Session.userCtx().name;
-          UpdateUser(id, { language: selected }, function(err) {
-            btn.removeClass('disabled');
-            if (err) {
-              return $log.error('Error updating user', err);
-            }
-            $('#user-language').modal('hide');
-          });
+
+          UpdateUser(id, { language: selected })
+            .then(function() {
+              btn.removeClass('disabled');
+              $('#user-language').modal('hide');
+            })
+            .catch(function(err) {
+              btn.removeClass('disabled');
+              $log.error('Error updating user', err);
+            });
         });
         modalsInited.userLanguage = true;
         showModals();
@@ -515,11 +518,11 @@ var feedback = require('../modules/feedback'),
           render: function() {
             tour.start('intro', translateFilter);
             var id = 'org.couchdb.user:' + Session.userCtx().name;
-            UpdateUser(id, { known: true }, function(err) {
-              if (err) {
+
+            UpdateUser(id, { known: true })
+              .catch(function(err) {
                 $log.error('Error updating user', err);
-              }
-            });
+              });
           }
         },
       ];

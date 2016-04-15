@@ -144,9 +144,13 @@ var modal = require('../modules/modal');
         if (validatePassword()) {
           var pane = modal.start($('#update-password'));
           var updates = { password: $scope.editUserModel.password };
-          UpdateUser($scope.editUserModel.id, null, updates, function(err) {
-            updateComplete(pane, err);
-          });
+          UpdateUser($scope.editUserModel.id, null, updates)
+            .then(function() {
+              updateComplete(pane);
+            })
+            .catch(function(err) {
+              updateComplete(pane, err);
+            });
         }
       };
 
@@ -160,9 +164,13 @@ var modal = require('../modules/modal');
             // editing current user's language, so update UI
             $scope.changeLanguage(settings.language);
           }
-          UpdateUser($scope.editUserModel.id, settings, user, function(err) {
-            updateComplete(pane, err);
-          });
+          UpdateUser($scope.editUserModel.id, settings, user)
+            .then(function() {
+              updateComplete(pane);
+            })
+            .catch(function(err) {
+              updateComplete(pane, err);
+            });
         }
       };
 

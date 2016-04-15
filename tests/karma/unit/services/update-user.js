@@ -2,7 +2,8 @@ describe('UpdateUser service', function() {
 
   'use strict';
 
-  var service,
+  var scope,
+      service,
       cacheRemove,
       $httpBackend,
       get,
@@ -28,6 +29,7 @@ describe('UpdateUser service', function() {
         }
         return { remove: cacheRemove };
       };
+      scope = $injector.get('$rootScope');
       service = $injector.get('UpdateUser');
     });
   });
@@ -72,8 +74,11 @@ describe('UpdateUser service', function() {
 
     put.returns(KarmaUtils.mockPromise());
 
-    service(null, settings, user, function(err) {
-      chai.expect(err).to.equal(undefined);
+    service(null, settings, user);
+
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
+
       chai.expect(cacheRemove.callCount).to.equal(3);
       chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Asally');
       chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
@@ -129,8 +134,10 @@ describe('UpdateUser service', function() {
     }));
     put.returns(KarmaUtils.mockPromise());
 
-    service('org.couchdb.user:jerome', settings, user, function(err) {
-      chai.expect(err).to.equal(undefined);
+    service('org.couchdb.user:jerome', settings, user);
+
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
       chai.expect(cacheRemove.callCount).to.equal(3);
       chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Ajerome');
       chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
@@ -169,8 +176,9 @@ describe('UpdateUser service', function() {
       .expect('PUT', '/_users/org.couchdb.user%3Ajerome', JSON.stringify(expected))
       .respond(201, '');
 
-    service('org.couchdb.user:jerome', null, updates, function(err) {
-      chai.expect(err).to.equal(undefined);
+    service('org.couchdb.user:jerome', null, updates);
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
       chai.expect(cacheRemove.callCount).to.equal(3);
       chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Ajerome');
       chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
@@ -210,8 +218,10 @@ describe('UpdateUser service', function() {
       .expect('PUT', '/_config/admins/gareth', '"xyz"')
       .respond(201, '');
 
-    service('org.couchdb.user:gareth', null, updates, function(err) {
-      chai.expect(err).to.equal(undefined);
+    service('org.couchdb.user:gareth', null, updates);
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
+
       chai.expect(cacheRemove.callCount).to.equal(3);
       chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Agareth');
       chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
@@ -233,10 +243,14 @@ describe('UpdateUser service', function() {
       starsign: 'libra'
     };
 
-    service('org.couchdb.user:jerome', null, updates, function(err) {
-      chai.expect(err).to.equal('Server error');
-      chai.expect(cacheRemove.callCount).to.equal(0);
-      done();
+    service('org.couchdb.user:jerome', null, updates)
+      .catch(function(err) {
+        chai.expect(err.data).to.equal('Server error');
+        chai.expect(cacheRemove.callCount).to.equal(0);
+        done();
+      });
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
     });
 
     $httpBackend.flush();
@@ -265,8 +279,9 @@ describe('UpdateUser service', function() {
     }));
     put.returns(KarmaUtils.mockPromise());
 
-    service('org.couchdb.user:jerome', updates, function(err) {
-      chai.expect(err).to.equal(undefined);
+    service('org.couchdb.user:jerome', updates);
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.firstCall.args[0]).to.deep.equal('org.couchdb.user:jerome');
       chai.expect(put.callCount).to.equal(1);

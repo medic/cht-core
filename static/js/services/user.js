@@ -24,7 +24,7 @@ var _ = require('underscore'),
           .catch(callback);
       });
   };
-  
+
   inboxServices.factory('UserDistrict', ['DB', 'UserSettings', 'Session',
     function(DB, UserSettings, Session) {
       return function(callback) {
@@ -178,131 +178,112 @@ var _ = require('underscore'),
     cache.remove('/_config/admins');
   };
 
-  inboxServices.factory('UpdateUser', ['$log', '$cacheFactory', '$http', 'DB', 'Admins',
-    function($log, $cacheFactory, $http, DB, Admins) {
+  inboxServices.factory('UpdateUser', ['$log', '$cacheFactory', '$http', 'DB', 'Admins', '$q',
+    function($log, $cacheFactory, $http, DB, Admins, $q) {
 
       var createId = function(name) {
         return 'org.couchdb.user:' + name;
       };
 
-      var getOrCreateUser = function(id, name, callback) {
+      var getOrCreateUser = function(id, name) {
         if (id) {
-          $http.get(getUserUrl(id), { cache: true, targetScope: 'root' })
-            .success(function(data) {
-              callback(null, data);
-            })
-            .error(callback);
+          return $http.get(getUserUrl(id), { cache: true, targetScope: 'root' })
+            .then(function(result) { return result.data; });
         } else {
-          callback(null, {
+          return $q.when({
             _id: createId(name),
             type: 'user'
           });
         }
       };
 
-      var getOrCreateUserSettings = function(id, name, callback) {
+      var getOrCreateUserSettings = function(id, name) {
         if (id) {
-          DB.get()
-            .get(id)
-            .then(function(response) {
-              callback(null, response);
-            })
-            .catch(callback);
+          return DB.get()
+            .get(id);
         } else {
-          callback(null, {
+          return $q.when({
             _id: createId(name),
             type: 'user-settings'
           });
         }
       };
 
-      var updatePassword = function(updated, callback) {
+
+      var updatePassword = function(updated) {
         if (!updated.password) {
           // password not changed, do nothing
-          return callback();
+          return $q.when();
         }
+        var deferred = $q.defer();
         Admins(function(err, admins) {
           if (err) {
             if (err.error === 'unauthorized') {
               // not an admin
-              return callback();
+              return deferred.resolve();
             }
-            return callback(err);
+            return deferred.reject(err);
           }
           if (!admins[updated.name]) {
             // not an admin so admin password change not required
-            return callback();
+            return deferred.resolve();
           }
-          $http.put('/_config/admins/' + updated.name, '"' + updated.password + '"')
-            .success(function() {
-              callback();
-            })
-            .error(function(data) {
-              callback(new Error(data));
-            });
+
+          deferred.resolve($http.put('/_config/admins/' + updated.name, '"' + updated.password + '"'));
         });
+        return deferred.promise;
       };
 
-      var updateUser = function(id, updates, callback) {
+      var updateUser = function(id, updates) {
         if (!updates) {
           // only updating settings
-          return callback();
+          return $q.when();
         }
-        getOrCreateUser(id, updates.name, function(err, user) {
-          if (err) {
-            return callback(err);
-          }
-          $log.debug('user being updated', user._id);
-          var updated = _.extend(user, updates);
-          if (updated.password) {
-            updated.derived_key = undefined;
-            updated.salt = undefined;
-          }
-          $http
-            .put(getUserUrl(user._id), updated)
-            .success(function() {
-              updatePassword(updated, function(err) {
-                removeCacheEntry($cacheFactory, user._id);
-                callback(err, updated);
+        return getOrCreateUser(id, updates.name)
+          .then(function(user) {
+            $log.debug('user being updated', user._id);
+            var updated = _.extend(user, updates);
+            if (updated.password) {
+              updated.derived_key = undefined;
+              updated.salt = undefined;
+            }
+            return $http
+              .put(getUserUrl(user._id), updated)
+              .then(function() {
+                updatePassword(updated)
+                  .then(function() {
+                    removeCacheEntry($cacheFactory, user._id);
+                    return updated;
+                  })
+                  .catch(function(err) {
+                    removeCacheEntry($cacheFactory, user._id);
+                    throw err;
+                  });
+                });
               });
-            })
-            .error(callback);
-        });
       };
 
-      var updateSettings = function(id, updates, callback) {
+      var updateSettings = function(id, updates) {
         if (!updates) {
           // only updating user
-          return callback();
+          return $q.when();
         }
-        getOrCreateUserSettings(id, updates.name, function(err, settings) {
-          if (err) {
-            return callback(err);
-          }
-          var updated = _.extend(settings, updates);
-          DB.get()
-            .put(updated)
-            .then(function() {
-              callback();
-            })
-            .catch(callback);
-        });
+        return getOrCreateUserSettings(id, updates.name)
+          .then(function(settings) {
+            var updated = _.extend(settings, updates);
+            return DB.get()
+              .put(updated);
+          });
       };
 
-      return function(id, settingUpdates, userUpdates, callback) {
-        if (!callback) {
-          callback = userUpdates;
-          userUpdates = null;
-        }
+      return function(id, settingUpdates, userUpdates) {
         if (!id && !userUpdates) {
-          return callback(new Error('Cannot update user settings without user'));
+          $q.reject(new Error('Cannot update user settings without user'));
         }
-        updateUser(id, userUpdates, function(err) {
-          if (err) {
-            return callback(err);
-          }
-          updateSettings(id, settingUpdates, callback);
-        });
+        return updateUser(id, userUpdates)
+          .then(function() {
+            return updateSettings(id, settingUpdates);
+          });
       };
     }
   ]);
