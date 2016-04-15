@@ -1,4 +1,5 @@
 var nools = require('nools'),
+    utils = require('kujua-utils'),
     _ = require('underscore'),
     // number of weeks before reported date to assume for start of pregnancy
     noLmpDateModifier = 4,
@@ -10,8 +11,16 @@ var nools = require('nools'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('RulesEngine', ['$q', '$log', 'Search', 'Settings', 'Changes', 'CONTACT_TYPES',
-    function($q, $log, Search, Settings, Changes, CONTACT_TYPES) {
+  inboxServices.factory('RulesEngine', ['$q', '$log', 'Search', 'Settings', 'Changes', 'CONTACT_TYPES', 'Session',
+    function($q, $log, Search, Settings, Changes, CONTACT_TYPES, Session) {
+
+      if (utils.isUserAdmin(Session.userCtx())) {
+        // No-op all rules engine work for admins for now
+        return {
+          init: $q.resolve(),
+          listen: function() {}
+        };
+      }
 
       var callbacks = {};
       var emissions = {};
