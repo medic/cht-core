@@ -1,0 +1,4 @@
+3169a3170,3172
+>           // MONKEY PATCH BY GRUNT: retry failed batches
+>           } else if(typeof doc.error !== 'undefined') {
+>             throw new Error('Bad doc in batch: ' + JSON.stringify(doc));

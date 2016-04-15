@@ -1,0 +1,4 @@
+1255a1256,1258
+>             // MONKEY PATCH BY GRUNT: Needed for the mobile version.
+>             this.element.trigger('mm.dateSelected.daterangepicker', this);
+> 

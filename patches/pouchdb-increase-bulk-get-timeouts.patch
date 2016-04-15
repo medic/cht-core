@@ -1,0 +1,7 @@
+981a982,987
+>     if (!docOpts.ajax) {
+>       docOpts.ajax = {};
+>     }
+>     if (docOpts.ajax.timeout === undefined) {
+>       docOpts.ajax.timeout = 30000;
+>     }

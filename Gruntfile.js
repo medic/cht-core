@@ -21,56 +21,14 @@ module.exports = function(grunt) {
           from: /@@APP_CONFIG.name/g,
           to: kansoJson.name
         }]
-      },
-      monkeypatchdate: {
-        src: [ 'static/dist/inbox.js' ],
-        overwrite: true,
-        replacements: [{
-          from: /clickDate: function \(e\) \{/g,
-          to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'mm.dateSelected.daterangepicker\', this);\n'
-        }]
-      },
-      // cache the ddoc views for performance
-      monkeypatchpouchtoretryfaileddocreplication: {
-        src: [ 'static/dist/inbox.js' ],
-        overwrite: true,
-        replacements: [
-          {
-            from: /resultDocs\.push\(doc\.ok\);/,
-            to: 'resultDocs.push(doc.ok);\n' +
-                '          // MONKEY PATCH BY GRUNT: retry failed batches.\n' +
-                '          } else if(typeof doc.error !== "undefined") {\n' +
-                '            throw new Error("Bad doc in batch: " + JSON.stringify(doc));'
-          }
-        ]
-      },
-      monkeypatchpouchtorespectbulkgettimeouts: {
-        // Issues:
-        // * https://github.com/medic/medic-webapp/issues/2167
-        // * https://github.com/pouchdb/pouchdb/issues/5042
-        src: [ 'static/dist/inbox.js' ],
-        overwrite: true,
-        replacements: [
-          {
-            from: /db\.get\(docId, docOpts, function \(err, res\) {/,
-            to: 'if(!docOpts.ajax) docOpts.ajax = {};\n' +
-                '    if(docOpts.ajax.timeout === undefined) docOpts.ajax.timeout = 30000;\n' +
-                '    db.get(docId, docOpts, function (err, res) {'
-          }
-        ]
-      },
-      // replace cache busting which breaks appcache, needed until this is fixed:
-      // https://github.com/FortAwesome/Font-Awesome/issues/3286
-      monkeypatchfontawesome: {
-        src: [ 'static/dist/inbox.css' ],
-        overwrite: true,
-        replacements: [{
-          from: /(\/fonts\/fontawesome-webfont[^?]*)[^']*/gi,
-          to: '$1'
-        }]
       }
     },
     browserify: {
+      options: {
+        browserifyOptions: {
+          debug: true
+        }
+      },
       dist: {
         src: ['static/js/app.js'],
         dest: 'static/dist/inbox.js',
@@ -155,11 +113,31 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: [
-              'node_modules/font-awesome/fonts/*'
-            ],
+            src: [ 'node_modules/font-awesome/fonts/*' ],
             dest: 'static/fonts'
+          }
+        ]
+      },
+      librariestopatch: {
+        files: [
+          {
+            expand: true,
+            cwd: 'node_modules/bootstrap-daterangepicker',
+            src: [ '**' ],
+            dest: 'node_modules/bootstrap-daterangepicker-original/'
           },
+          {
+            expand: true,
+            cwd: 'node_modules/pouchdb',
+            src: [ '**' ],
+            dest: 'node_modules/pouchdb-original/'
+          },
+          {
+            expand: true,
+            cwd: 'node_modules/font-awesome',
+            src: [ '**' ],
+            dest: 'node_modules/font-awesome-original/'
+          }
         ]
       },
       libphonenumber: {
@@ -167,14 +145,12 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: [
-              'node_modules/google-libphonenumber/dist/browser/libphonenumber.js'
-            ],
+            src: [ 'node_modules/google-libphonenumber/dist/browser/libphonenumber.js' ],
             dest: 'packages/libphonenumber/libphonenumber/'
-          },
+          }
         ]
       },
-      'enketo-xslt': {
+      enketoxslt: {
         files: [
           {
             expand: true,
@@ -186,7 +162,7 @@ module.exports = function(grunt) {
       },
       // npm v3 puts nested node_modules at the top level. copy the css resources
       // so sass compilation still works.
-      'enketo-css': {
+      enketocss: {
         files: [
           {
             src: [
@@ -198,7 +174,7 @@ module.exports = function(grunt) {
             filter: function (filepath) {
               // return false if the file exists
               return !grunt.file.exists(path.join('node_modules/enketo-core/', filepath));
-            },
+            }
           }
         ]
       }
@@ -225,6 +201,41 @@ module.exports = function(grunt) {
         cmd: function() {
           return 'curl -X PUT http://localhost:5984/_config/admins/ci_test -d \'"pass"\' &&' +
                  'curl -HContent-Type:application/json -vXPUT http://ci_test:pass@localhost:5984/_users/org.couchdb.user:ci_test  --data-binary \'{"_id": "org.couchdb.user:ci_test", "name": "ci_test", "roles": [], "type": "user", "password": "pass", "language": "en", "known": true}\'';
+        }
+      },
+      undopatches: {
+        cmd: function() {
+          var modulesToPatch = [
+            'bootstrap-daterangepicker',
+            'pouchdb',
+            'font-awesome'
+          ];
+          return modulesToPatch.map(function(module) {
+            return '[ -d node_modules/' + module + '-original ] && rm -rf node_modules/' + module + ' && mv node_modules/' + module + '-original node_modules/' + module + ' || echo "No restore required for: ' + module + '"' ;
+          }).join(' & ');
+        }
+      },
+      applypatches: {
+        cmd: function() {
+          var patches = [
+            // patch the daterangepicker for responsiveness
+            // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
+            'patch node_modules/bootstrap-daterangepicker/daterangepicker.js < patches/bootstrap-daterangepicker.patch',
+
+            // patch pouch to retry failed replication docs
+            // https://github.com/pouchdb/pouchdb/issues/4963
+            'patch node_modules/pouchdb/lib/index.js < patches/pouchdb-fail-replicate-on-error.patch',
+
+            // patch pouch with a bigger timeout for bulk gets
+            // https://github.com/medic/medic-webapp/issues/2167
+            // https://github.com/pouchdb/pouchdb/issues/5042
+            'patch node_modules/pouchdb/lib/index.js < patches/pouchdb-increase-bulk-get-timeouts.patch',
+
+            // patch font-awesome to remove version attributes so appcache works
+            // https://github.com/FortAwesome/Font-Awesome/issues/3286
+            'patch node_modules/font-awesome/less/path.less < patches/font-awesome-remove-version-attribute.patch'
+          ];
+          return patches.join(' && ');
         }
       }
     },
@@ -335,21 +346,25 @@ module.exports = function(grunt) {
   grunt.task.run('notify_hooks');
 
   // Default tasks
+
+  grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [
+    'exec:undopatches',
+    'npm-install',
+    'copy:librariestopatch',
+    'exec:applypatches'
+  ]);
+
   grunt.registerTask('mmjs', 'Build the JS resources', [
     'copy:libphonenumber',
     'browserify:dist',
     'replace:hardcodeappsettings',
-    'replace:monkeypatchdate',
-    'replace:monkeypatchpouchtoretryfaileddocreplication',
-    'replace:monkeypatchpouchtorespectbulkgettimeouts',
     'ngtemplates'
   ]);
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
-    'copy:enketo-css',
+    'copy:enketocss',
     'sass',
     'less',
-    'replace:monkeypatchfontawesome',
     'postcss'
   ]);
 
@@ -363,9 +378,10 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('default', 'Build the static resources', [
+    'mmnpm',
     'mmcss',
     'mmjs',
-    'copy:enketo-xslt',
+    'copy:enketoxslt',
     'copy:inbox',
     'appcache',
     'compileddocs'
@@ -386,7 +402,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
-    'npm-install',
     'default',
     'deploy',
     'watch'
