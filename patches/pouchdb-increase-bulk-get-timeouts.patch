@@ -1,7 +1,17 @@
-981a982,987
->     if (!docOpts.ajax) {
->       docOpts.ajax = {};
->     }
->     if (docOpts.ajax.timeout === undefined) {
->       docOpts.ajax.timeout = 30000;
->     }
+*** node_modules/pouchdb-original/lib/index.js	2016-03-18 09:58:47.000000000 +1300
+--- node_modules/pouchdb/lib/index.js	2016-04-18 09:36:28.339098861 +1200
+***************
+*** 979,984 ****
+--- 979,990 ----
+          docOpts[param] = opts[param];
+        }
+      });
++     if (!docOpts.ajax) {
++       docOpts.ajax = {};
++     }
++     if (docOpts.ajax.timeout === undefined) {
++       docOpts.ajax.timeout = 30000;
++     }
+      db.get(docId, docOpts, function (err, res) {
+        gotResult(i, docId, err ? [{error: err}] : formatResult(res));
+      });

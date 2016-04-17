@@ -1,4 +1,14 @@
-1255a1256,1258
->             // MONKEY PATCH BY GRUNT: Needed for the mobile version.
->             this.element.trigger('mm.dateSelected.daterangepicker', this);
-> 
+*** node_modules/bootstrap-daterangepicker-original/daterangepicker.js	2016-03-09 08:41:42.000000000 +1300
+--- node_modules/bootstrap-daterangepicker/daterangepicker.js	2016-04-18 09:02:41.749324005 +1200
+***************
+*** 1253,1258 ****
+--- 1253,1261 ----
+  
+          clickDate: function(e) {
+  
++             // MONKEY PATCH BY GRUNT: Needed for the mobile version.
++             this.element.trigger('mm.dateSelected.daterangepicker', this);
++ 
+              if (!$(e.target).hasClass('available')) return;
+  
+              var title = $(e.target).attr('data-title');

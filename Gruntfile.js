@@ -215,6 +215,11 @@ module.exports = function(grunt) {
           }).join(' & ');
         }
       },
+      // To monkey patch a library...
+      // 1. copy the file you want to change
+      // 2. make the changes
+      // 3. run `diff -c original modified > patches/my-patch.patch`
+      // 4. update grunt targets: "applypatches", "undopatches", and "librariestopatch"
       applypatches: {
         cmd: function() {
           var patches = [
