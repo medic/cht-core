@@ -2,7 +2,8 @@
 * Our wrapper around google's libphonenumber.
 */
 var phonenumber = require('libphonenumber/libphonenumber'),
-    standardFormat = phonenumber.PhoneNumberFormat.E164;
+    standardFormat = phonenumber.PhoneNumberFormat.E164,
+    CHARACTER_REGEX = /[a-z]/i;
 
 var _init = function(settings, phone) {
   return {
@@ -22,11 +23,10 @@ var _init = function(settings, phone) {
       return this.util.format(this.parse(), standardFormat).toString();
     },
     validate: function() {
-      return this.util.isPossibleNumber(this.parse()) &&
-        // Disallow alpha numbers, e.g. 1-800-MICROSOFT. We only take digits.
-        // Disallow weirdness in liphonenumber : 1 or 2 letters are ignored 
-        // ('<validnumber>aa' is valid).
-        !this.phone.match(/[a-z]/i);
+      return this.util.isValidNumber(this.parse()) &&
+        // Disallow alpha numbers which libphonenumber considers valid,
+        // e.g. 1-800-MICROSOFT.
+        !this.phone.match(CHARACTER_REGEX);
     }
   };
 };
