@@ -62,6 +62,7 @@
   require('./update-facility');
   require('./update-settings');
   require('./user');
+  require('./users');
   require('./verified');
   require('./xml-forms');
   require('./xslt');
