@@ -331,7 +331,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
     //     It exists to allow the initial layer of binding to be flexible.
     self.bindJsonToXml = function(elem, data, childMatcher) {
       _.pairs(data).forEach(function(pair) {
-        var current = childMatcher ? childMatcher[pair[0]] : elem.children(pair[0]);
+        var current = childMatcher ? elem.find(childMatcher([pair[0]])) : elem.children(pair[0]);
         var value = pair[1];
 
         if (_.isObject(value)) {
