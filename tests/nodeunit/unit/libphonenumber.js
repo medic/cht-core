@@ -3,17 +3,21 @@ var phonenumber = proxyquire('../../../packages/libphonenumber/libphonenumber/ut
   'libphonenumber/libphonenumber': require('../../../packages/libphonenumber/libphonenumber/libphonenumber')
 });
 
-var validNumNZDomestic = '0275552636'; 
-var validNumNZInternational = '+64275552636';
-// Watch out : right number of digits may still be invalid number!
-var invalidNumNZDomestic = '5155556442123'; 
-var validNumUSInternational = '+15155556442';
+var NZ_DOMESTIC_VALID = '0275552636';
+var NZ_DOMESTIC_INVALID = '5155556442123'; // right number of digits but invalid number!
+var NZ_INTERNATIONAL_VALID = '+64275552636';
+var US_INTERNATIONAL_VALID = '+15155556442';
+var COUNTRY_CODES = {
+  nz: 64,
+  uganda: 256
+};
+
 var settings = {
-  default_country_code: 64
+  default_country_code: COUNTRY_CODES.nz
 };
 
 exports['format does nothing when already formatted'] = function(test) {
-  var number = validNumNZInternational;
+  var number = NZ_INTERNATIONAL_VALID;
   var actual = phonenumber.format(settings, number);
   test.equal(actual, number);
   test.done();
@@ -21,27 +25,27 @@ exports['format does nothing when already formatted'] = function(test) {
 
 exports['format does nothing when already formatted, conflicting contry code in settings'] = function(test) {
   // Settings has NZ country code, number is US/Canada number.
-  var number = validNumUSInternational;
+  var number = US_INTERNATIONAL_VALID;
   var actual = phonenumber.format(settings, number);
   test.equal(actual, number);
   test.done();
 };
 
 exports['format does not require country code in settings when number has international format'] = function(test) {
-  var number = validNumNZInternational;
+  var number = NZ_INTERNATIONAL_VALID;
   var actual = phonenumber.format({}, number);
   test.equal(actual, number);
   test.done();
 };
 
 exports['format adds country code when missing'] = function(test) {
-  var actual = phonenumber.format(settings, validNumNZDomestic);
-  test.equal(actual, validNumNZInternational);
+  var actual = phonenumber.format(settings, NZ_DOMESTIC_VALID);
+  test.equal(actual, NZ_INTERNATIONAL_VALID);
   test.done();
 };
 
 exports['format returns false when domestic number and no country code in settings'] = function(test) {
-  var actual = phonenumber.format({}, validNumNZDomestic);
+  var actual = phonenumber.format({}, NZ_DOMESTIC_VALID);
   test.strictEqual(actual, false);
   test.done();
 };
@@ -53,7 +57,7 @@ exports['format returns false for empty number'] = function(test) {
 };
 
 exports['format returns false for invalid number'] = function(test) {
-  var actual = phonenumber.format(settings, invalidNumNZDomestic);
+  var actual = phonenumber.format(settings, NZ_DOMESTIC_INVALID);
   test.strictEqual(actual, false);
   test.done();
 };
@@ -84,7 +88,7 @@ exports['format returns false for invalid number - 3 extra letters'] = function(
 // Issue : https://github.com/googlei18n/libphonenumber/issues/328
 exports['format returns false for invalid number - two extra letters - trailing'] = function(test) {
   // Insert letters within valid number : they shouldn't be ignored.
-  var actual = phonenumber.format(settings, validNumNZDomestic + 'ff');
+  var actual = phonenumber.format(settings, NZ_DOMESTIC_VALID + 'ff');
   test.strictEqual(actual, false);
   test.done();
 };
@@ -103,14 +107,14 @@ exports['format returns false for invalid number - invalid punctuation'] = funct
 };
 
 exports['format removes spaces, brackets and dots'] = function(test) {
-  var expected = validNumNZInternational;
+  var expected = NZ_INTERNATIONAL_VALID;
   var actual = phonenumber.format(settings, '+ 6 4 - 02 7.-.5.(55((2636.');
   test.strictEqual(actual, expected);
   test.done();
 };
 
 exports['format removes spaces, brackets and dots, and adds country code'] = function(test) {
-  var expected = validNumNZInternational;
+  var expected = NZ_INTERNATIONAL_VALID;
   var actual = phonenumber.format(settings, ' 0  2 7-..5.(55((26 36.');
   test.strictEqual(actual, expected);
   test.done();
@@ -118,7 +122,7 @@ exports['format removes spaces, brackets and dots, and adds country code'] = fun
 
 exports['format removes extra zeros in international format'] = function(test) {
   // Note : that's for NZ format. Would be nice to test specific formatting issues for target countries.
-  var expected = validNumNZInternational;
+  var expected = NZ_INTERNATIONAL_VALID;
   var actual = phonenumber.format(settings, '+640275552636'); // Remove leading 0 from domestic format
   test.strictEqual(actual, expected);
   test.done();
@@ -137,7 +141,7 @@ exports['validate returns false for short number'] = function(test) {
 };
 
 exports['validate returns false for invalid number'] = function(test) {
-  var actual = phonenumber.validate(settings, invalidNumNZDomestic);
+  var actual = phonenumber.validate(settings, NZ_DOMESTIC_INVALID);
   test.strictEqual(actual, false);
   test.done();
 };
@@ -167,7 +171,7 @@ exports['validate returns false for invalid number - 3 extra letters'] = functio
 // Issue : https://github.com/googlei18n/libphonenumber/issues/328
 exports['validate returns false for invalid number - two extra letters - trailing'] = function(test) {
   // Insert letters within valid number : they shouldn't be ignored.
-  var actual = phonenumber.validate(settings, validNumNZDomestic + 'ff');
+  var actual = phonenumber.validate(settings, NZ_DOMESTIC_VALID + 'ff');
   test.strictEqual(actual, false);
   test.done();
 };
@@ -180,19 +184,19 @@ exports['validate returns false for invalid number - two extra letters - inside'
 };
 
 exports['validate returns false for number without country code'] = function(test) {
-  var actual = phonenumber.validate({}, validNumNZDomestic);
+  var actual = phonenumber.validate({}, NZ_DOMESTIC_VALID);
   test.strictEqual(actual, false);
   test.done();
 };
 
 exports['validate returns true for number with default country code'] = function(test) {
-  var actual = phonenumber.validate(settings, validNumNZDomestic);
+  var actual = phonenumber.validate(settings, NZ_DOMESTIC_VALID);
   test.strictEqual(actual, true);
   test.done();
 };
 
 exports['validate returns true for number with explicit country code'] = function(test) {
-  var actual = phonenumber.validate({}, validNumNZInternational);
+  var actual = phonenumber.validate({}, NZ_INTERNATIONAL_VALID);
   test.strictEqual(actual, true);
   test.done();
 };
@@ -223,3 +227,10 @@ exports['validate returns true when extra zeros in international format'] = func
   test.done();
 };
 
+// Test for overly permissive validation
+// https://github.com/medic/medic-webapp/issues/2196
+exports['validate returns false when given LGs bad phone number example'] = function(test) {
+  var actual = phonenumber.validate({default_country_code: COUNTRY_CODES.uganda}, '+25601234');
+  test.strictEqual(actual, false);
+  test.done();
+};
