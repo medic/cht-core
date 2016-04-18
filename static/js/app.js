@@ -10,7 +10,6 @@ require('bootstrap-tour');
 require('nvd3');
 
 require('angular');
-require('angular-animate');
 require('angular-cookie');
 require('angular-route');
 require('angular-ui-bootstrap');
@@ -42,7 +41,6 @@ _.templateSettings = {
 
   var app = angular.module('inboxApp', [
     'ipCookie',
-    'ngAnimate',
     'ngRoute',
     'ui.bootstrap',
     'ui.router',

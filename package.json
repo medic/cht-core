@@ -8,7 +8,6 @@
   },
   "dependencies": {
     "angular": "^1.5.3",
-    "angular-animate": "^1.5.3",
     "angular-cookie": "^4.1.0",
     "angular-pouchdb": "^4.1.0",
     "angular-resource": "^1.5.3",
