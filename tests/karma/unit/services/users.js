@@ -64,7 +64,7 @@ describe('Users service', function() {
       }
     ];
 
-    DbView.returns(KarmaUtils.mockPromise(null, { results: [[
+    DbView.returns(KarmaUtils.mockPromise(null, { results: [
       {
         _id: 'org.couchdb.user:x',
         name: 'lucas',
@@ -79,7 +79,7 @@ describe('Users service', function() {
         email: 'm@a.com',
         phone: '987654321'
       }
-    ]]}));
+    ]}));
 
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
@@ -141,7 +141,7 @@ describe('Users service', function() {
       }
     ];
 
-    DbView.returns(KarmaUtils.mockPromise(null, { results: [[
+    DbView.returns(KarmaUtils.mockPromise(null, { results: [
       {
         _id: 'org.couchdb.user:x',
         name: 'lucas',
@@ -156,7 +156,7 @@ describe('Users service', function() {
         email: 'm@a.com',
         phone: '987654321'
       }
-    ]]}));
+    ]}));
 
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
