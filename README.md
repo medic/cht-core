@@ -185,8 +185,8 @@ To run precommit tests:
 
 0. Start CouchDB
 1. Start API: `TEST_ENV=1 COUCH_URL=http://admin:pass@localhost:5984/medic node api/server.js`
-2. Update Webdriver: `node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update`
-3. Start Webdriver: `node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager start`
+2. Update Webdriver: `node_modules/protractor/bin/webdriver-manager update`
+3. Start Webdriver: `node_modules/protractor/bin/webdriver-manager start`
 4. Run tests: `grunt test`
 
 Some kanso tests are run in-browser; you can run them manually if you browse to `/medic/_design/medic/_rewrite/test`.
