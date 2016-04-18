@@ -160,7 +160,7 @@ var _ = require('underscore'),
             if (err) {
               return callback(err);
             }
-            callback(null, mapUsers(results[0].rows, results[1][0], results[2], results[3]));
+            callback(null, mapUsers(results[0].rows, results[1], results[2], results[3]));
           }
         );
       };
