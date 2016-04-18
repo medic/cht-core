@@ -47,6 +47,7 @@
   require('./properties');
   require('./read-messages');
   require('./resource-icons');
+  require('./rules-engine');
   require('./scheduled-forms');
   require('./search');
   require('./search-filters');
@@ -55,7 +56,6 @@
   require('./settings');
   require('./snackbar');
   require('./target-generator');
-  require('./rules-engine');
   require('./traffic-stats');
   require('./translate-from');
   require('./update-contact');
