@@ -221,8 +221,8 @@ var attach = function() {
         audit = require('couchdb-audit')
             .withNano(db, db.settings.db, db.settings.ddoc, db.settings.username);
 
-    var backlog_delay = 500 /* ms */;
-    var progress_interval = 500 /* items */;
+    var backlog_delay = 500; // ms
+    var progress_interval = 500; // items
 
     var match_types = [
         'data_record',
@@ -323,11 +323,10 @@ var attach = function() {
                             id, change.seq
                         );
                     }
+                    /* Next */
+                    processed++;
+                    return _.delay(next_fn, backlog_delay);
                 });
-
-                /* Next */
-                processed++;
-                return _.delay(next_fn, backlog_delay);
             },
 
             /* Completion handler */
