@@ -8,12 +8,12 @@ var NZ_DOMESTIC_INVALID = '5155556442123'; // right number of digits but invalid
 var NZ_INTERNATIONAL_VALID = '+64275552636';
 var US_INTERNATIONAL_VALID = '+15155556442';
 var COUNTRY_CODES = {
-  nz: 64,
+  new_zealand: 64,
   uganda: 256
 };
 
 var settings = {
-  default_country_code: COUNTRY_CODES.nz
+  default_country_code: COUNTRY_CODES.new_zealand
 };
 
 exports['format does nothing when already formatted'] = function(test) {
