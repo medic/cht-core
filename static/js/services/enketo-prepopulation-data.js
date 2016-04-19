@@ -22,7 +22,8 @@ angular.module('inboxServices').service('EnketoPrepopulationData', [
 
         if (data) {
           EnketoTranslation.bindJsonToXml(bindRoot, data, function(name) {
-            return ['>', name, ', ', '>inputs>', name].join('');
+            // Either a direct child or a direct child of inputs
+            return '>%, >inputs>%'.replace(/%/g, name);
           });
         }
 

@@ -97,8 +97,8 @@ function N(tagName, text, attrs, children) {
 
 
 angular.module('inboxServices').service('EnketoTranslation', [
-  '$translate',
-  function($translate) {
+  '$translate', '$log',
+  function($translate, $log) {
     var self = this;
 
     function extraAttributesFor(conf) {
@@ -327,11 +327,24 @@ angular.module('inboxServices').service('EnketoTranslation', [
       return res;
     };
 
+    var findCurrentElement = function(elem, name, childMatcher) {
+      if (childMatcher) {
+        var found = elem.find(childMatcher(name));
+        if (found.length > 1) {
+          $log.warn('Using the matcher "' + childMatcher() + '" we found ' + found.length + ' elements, ' +
+            'we should only ever bind one.', elem);
+        }
+        return found;
+      } else {
+        return elem.children(name);
+      }
+    };
+
     // NB: childMatcher intentionally does not recurse.
     //     It exists to allow the initial layer of binding to be flexible.
     self.bindJsonToXml = function(elem, data, childMatcher) {
       _.pairs(data).forEach(function(pair) {
-        var current = childMatcher ? elem.find(childMatcher([pair[0]])) : elem.children(pair[0]);
+        var current = findCurrentElement(elem, pair[0], childMatcher);
         var value = pair[1];
 
         if (_.isObject(value)) {
