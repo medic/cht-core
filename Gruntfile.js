@@ -205,10 +205,11 @@ module.exports = function(grunt) {
           return modulesToPatch.map(function(module) {
             var backupPath = 'node_modules_backup/' + module;
             var modulePath = 'node_modules/' + module;
-            return '[ -d ' + backupPath + ' ]'
-                  + ' && rm -rf ' + modulePath
-                  + ' && mv ' + backupPath + ' ' + modulePath
-                  + ' || echo "No restore required for: ' + module + '"';
+            return '[ -d ' + backupPath + ' ]' +
+                   ' && rm -rf ' + modulePath +
+                   ' && mv ' + backupPath + ' ' + modulePath +
+                   ' && echo "Module restored: ' + module + '"' +
+                   ' || echo "No restore required for: ' + module + '"';
           }).join(' & ');
         }
       },
