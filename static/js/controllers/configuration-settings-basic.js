@@ -93,7 +93,7 @@ var _ = require('underscore'),
             return !!locale.disabled;
           });
           $('#default-country-code').select2({ width: '20em', data: countries.list });
-          $('#default-country-code').select2('val', res.default_country_code);
+          $('#default-country-code').val(res.default_country_code).trigger('change');
         })
         .catch(function(err) {
           console.log('Error loading settings', err);
