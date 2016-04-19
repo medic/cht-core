@@ -97,8 +97,8 @@ function N(tagName, text, attrs, children) {
 
 
 angular.module('inboxServices').service('EnketoTranslation', [
-  '$translate',
-  function($translate) {
+  '$translate', '$log',
+  function($translate, $log) {
     var self = this;
 
     function extraAttributesFor(conf) {
@@ -327,16 +327,26 @@ angular.module('inboxServices').service('EnketoTranslation', [
       return res;
     };
 
-    self.bindJsonToXml = function(elem, data) {
-      // Pairs get sorted so that values are bound before objects:
-      // - data is bound to any decendents of the given elem
-      // - least specific (in terms of path) get bound first
-      // - more specific get to bind *over* potentially too unspecific values
-      _.sortBy(_.pairs(data), function(pair) {
-        return _.isObject(pair[1]);
-      }).forEach(function(pair) {
-        var current = elem.find(pair[0]);
+    var findCurrentElement = function(elem, name, childMatcher) {
+      if (childMatcher) {
+        var found = elem.find(childMatcher(name));
+        if (found.length > 1) {
+          $log.warn('Using the matcher "' + childMatcher() + '" we found ' + found.length + ' elements, ' +
+            'we should only ever bind one.', elem);
+        }
+        return found;
+      } else {
+        return elem.children(name);
+      }
+    };
+
+    // NB: childMatcher intentionally does not recurse.
+    //     It exists to allow the initial layer of binding to be flexible.
+    self.bindJsonToXml = function(elem, data, childMatcher) {
+      _.pairs(data).forEach(function(pair) {
+        var current = findCurrentElement(elem, pair[0], childMatcher);
         var value = pair[1];
+
         if (_.isObject(value)) {
           if(current.children().length) {
             self.bindJsonToXml(current, value);
