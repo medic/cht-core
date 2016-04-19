@@ -122,21 +122,13 @@ module.exports = function(grunt) {
         files: [
           {
             expand: true,
-            cwd: 'node_modules/bootstrap-daterangepicker',
-            src: [ '**' ],
-            dest: 'node_modules/bootstrap-daterangepicker-original/'
-          },
-          {
-            expand: true,
-            cwd: 'node_modules/pouchdb',
-            src: [ '**' ],
-            dest: 'node_modules/pouchdb-original/'
-          },
-          {
-            expand: true,
-            cwd: 'node_modules/font-awesome',
-            src: [ '**' ],
-            dest: 'node_modules/font-awesome-original/'
+            cwd: 'node_modules',
+            src: [
+              'bootstrap-daterangepicker/**',
+              'pouchdb/**',
+              'font-awesome/**'
+            ],
+            dest: 'node_modules_backup'
           }
         ]
       },
@@ -211,7 +203,12 @@ module.exports = function(grunt) {
             'font-awesome'
           ];
           return modulesToPatch.map(function(module) {
-            return '[ -d node_modules/' + module + '-original ] && rm -rf node_modules/' + module + ' && mv node_modules/' + module + '-original node_modules/' + module + ' || echo "No restore required for: ' + module + '"' ;
+            var backupPath = 'node_modules_backup/' + module;
+            var modulePath = 'node_modules/' + module;
+            return '[ -d ' + backupPath + ' ]'
+                  + ' && rm -rf ' + modulePath
+                  + ' && mv ' + backupPath + ' ' + modulePath
+                  + ' || echo "No restore required for: ' + module + '"';
           }).join(' & ');
         }
       },
