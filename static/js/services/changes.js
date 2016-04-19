@@ -16,23 +16,6 @@
 
       var callbacks = {};
 
-      var isNew = function(change) {
-        return change.changes[0].rev.indexOf('1-') === 0;
-      };
-
-      var collectData = function(change, callback) {
-        if (isNew(change)) {
-          DB.get()
-            .get(change.id)
-            .then(function(doc) {
-              change.newDoc = doc;
-              callback();
-            });
-        } else {
-          callback();
-        }
-      };
-
       var notifyAll = function(change) {
         $log.debug('Change notification firing', change);
         Object.keys(callbacks).forEach(function(key) {
@@ -48,13 +31,10 @@
           .changes({
             live: true,
             since: 'now',
-            timeout: 1000 * 60 * 60
+            timeout: false,
+            include_docs: true
           })
-          .on('change', function(change) {
-            collectData(change, function() {
-              notifyAll(change);
-            });
-          })
+          .on('change', notifyAll)
           .on('error', function(err) {
             $log.error('Error watching for db changes', err);
           });

@@ -138,6 +138,13 @@ module.exports = {
       ]
     },
     {
+      "name": "can_view_users",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
       "name": "can_edit",
       "roles": [
         "national_admin",
@@ -154,6 +161,13 @@ module.exports = {
       ]
     },
     {
+      "name": "can_update_users",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
       "name": "can_create_records",
       "roles": [
         "national_admin",
@@ -163,9 +177,24 @@ module.exports = {
       ]
     },
     {
+      "name": "can_create_users",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_tasks",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
       "name": "can_view_tasks_tab",
       "roles": [
-        "national_admin"
+        "national_admin",
+        "district_admin"
       ]
     },
     {
@@ -175,7 +204,21 @@ module.exports = {
       ]
     },
     {
+      "name": "can_view_messages",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
       "name": "can_view_messages_tab",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_reports",
       "roles": [
         "national_admin",
         "district_admin"
@@ -189,7 +232,21 @@ module.exports = {
       ]
     },
     {
+      "name": "can_view_analytics",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
       "name": "can_view_analytics_tab",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_contacts",
       "roles": [
         "national_admin",
         "district_admin"
@@ -204,6 +261,34 @@ module.exports = {
     },
     {
       "name": "can_edit_profile",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_delete_reports",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_delete_contacts",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_delete_messages",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_delete_users",
       "roles": [
         "national_admin",
         "district_admin"

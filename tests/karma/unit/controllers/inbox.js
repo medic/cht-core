@@ -3,22 +3,19 @@ describe('InboxCtrl controller', function() {
   'use strict';
 
   var createController,
-    spyDeleteDoc,
     scope,
-    spyState;
+    snackbar,
+    spyState,
+    stubModal;
   var dummyId = 'dummydummy';
 
   beforeEach(function() {
+    snackbar = sinon.stub();
     module('inboxApp');
 
     module(function($provide) {
       $provide.factory('ActiveRequests', function() {
         return sinon.stub();
-      });
-      $provide.factory('AnalyticsModules', function() {
-        return function() {
-          return Promise.resolve({});
-        };
       });
       $provide.factory('Auth', function() {
         return function() {
@@ -42,9 +39,6 @@ describe('InboxCtrl controller', function() {
       $provide.factory('CheckDate', function() {
         return sinon.stub();
       });
-      $provide.factory('ConflictResolution', function() {
-        return sinon.stub();
-      });
       $provide.factory('Contact', function() {
         return sinon.stub();
       });
@@ -54,16 +48,10 @@ describe('InboxCtrl controller', function() {
         };
       });
       $provide.factory('DeleteDoc', function() {
-        spyDeleteDoc = sinon.spy();
-        return spyDeleteDoc;
+        return sinon.spy();
       });
-      $provide.factory('DownloadUrl', function() {
+      $provide.factory('XmlForms', function() {
         return sinon.stub();
-      });
-      $provide.factory('Enketo', function() {
-        return {
-          withAllForms: KarmaUtils.nullPromise()
-        };
       });
       $provide.factory('Facility', function() {
         return sinon.stub();
@@ -71,7 +59,7 @@ describe('InboxCtrl controller', function() {
       $provide.factory('FacilityHierarchy', function() {
         return sinon.stub();
       });
-      $provide.factory('Form', function() {
+      $provide.factory('JsonForms', function() {
         return function() {
           return Promise.resolve({});
         };
@@ -81,6 +69,14 @@ describe('InboxCtrl controller', function() {
       });
       $provide.factory('LiveListConfig', function() {
         return sinon.stub();
+      });
+      $provide.factory('ConfirmModal', function() {
+        stubModal = sinon.stub();
+        // Always return as if user clicked delete. This ignores the DeleteDoc
+        // altogether. The calling of the processingFunction is tested in
+        // modal.js, not here.
+        stubModal.returns(KarmaUtils.mockPromise());
+        return stubModal;
       });
       $provide.factory('ReadMessages', function() {
         return sinon.stub();
@@ -99,14 +95,21 @@ describe('InboxCtrl controller', function() {
       $provide.factory('Settings', function() {
         return KarmaUtils.nullPromise();
       });
+      $provide.factory('Snackbar', function() {
+        return snackbar;
+      });
       $provide.factory('$state', function() {
         spyState = {
           go: sinon.spy(),
-          current: { name: 'contacts.name' }
+          current: { name: 'my.state.is.great' },
+          includes: function() { return true; }
         };
         return spyState;
       });
       $provide.factory('$timeout', function() {
+        return sinon.stub();
+      });
+      $provide.factory('TrafficStats', function() {
         return sinon.stub();
       });
       $provide.factory('translateFilter', function() {
@@ -118,12 +121,10 @@ describe('InboxCtrl controller', function() {
       $provide.factory('UpdateSettings', function() {
         return sinon.stub();
       });
-      $provide.factory('UserDistrict', function() {
-        return sinon.stub();
-      });
       $provide.factory('UserSettings', function() {
         return sinon.stub();
       });
+      $provide.value('RulesEngine', { init: KarmaUtils.nullPromise()() });
       $provide.factory('$window', function() {
         return sinon.stub();
       });
@@ -135,9 +136,6 @@ describe('InboxCtrl controller', function() {
 
     inject(function($rootScope, $controller) {
       scope = $rootScope.$new();
-      scope.fetchAnalyticsModules = function() {
-        return Promise.resolve({});
-      };
       createController = function() {
         return $controller('InboxCtrl', {
           '$scope': scope,
@@ -147,40 +145,54 @@ describe('InboxCtrl controller', function() {
     });
 
     createController();
-    spyDeleteDoc.reset();
-    spyState.go.reset();    
+    spyState.go.reset();
+    stubModal.reset();
   });
 
   afterEach(function() {});
 
-  it('deletes contact', function() {
+  it('navigates back to contacts state after deleting contact', function(done) {
     scope.deleteDoc(dummyId);
-    scope.deleteDocConfirm();
-    chai.expect(spyDeleteDoc.getCall(0).args[0]).to.equal(dummyId);
+
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
+
+      chai.assert(spyState.go.called, 'Should change state');
+      chai.expect(spyState.go.args[0][0]).to.equal(spyState.current.name);
+      chai.expect(spyState.go.args[0][1]).to.deep.equal({ id: null });
+      chai.assert(snackbar.called, 'Should display toast');
+      done();
+    });
   });
 
-  it('navigates back to contacts state after deleting contact', function() {
+  it('doesn\'t change state after deleting message', function(done) {
+    spyState.includes = function(state) {
+      return state === 'messages';
+    };
+
     scope.deleteDoc(dummyId);
-    scope.deleteDocConfirm();
-    var callback = spyDeleteDoc.getCall(0).args[1];
-    // Call callback without err.
-    callback();
-    chai.assert(spyState.go.calledWith('contacts'), 'should go to contacts state');
+
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
+
+      chai.assert.isFalse(spyState.go.called, 'state change should not happen');
+      chai.assert(snackbar.called, 'Should display toast');
+      done();
+    });
   });
 
-  it('doesn\'t navigate back to contacts state after failed contact deletion', function() {
+  it('doesn\'t deleteContact if user cancels modal', function() {
+    stubModal.reset();
+    stubModal.returns(KarmaUtils.mockPromise({err: 'user cancelled'}));
+
     scope.deleteDoc(dummyId);
-    scope.deleteDocConfirm();
-    var callback = spyDeleteDoc.getCall(0).args[1];
-    var err = {};
-    callback(err);
-    chai.assert.isFalse(spyState.go.called, 'state change should not happen');
+
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
+
+      chai.assert.isFalse(spyState.go.called, 'state change should not happen');
+      chai.assert.isFalse(snackbar.called, 'toast should be shown');
+    });
   });
 
-  it('can\'t deleteContact before user confirmed', function() {
-    // Don't call deleteDoc first.
-    scope.deleteDocConfirm();
-    chai.assert.isFalse(spyDeleteDoc.called, 'Deletion should not happen');
-    chai.assert.isFalse(spyState.go.called, 'state change should not happen');
-  });
 });

@@ -1,5 +1,17 @@
 # Medic Mobile Release Notes
 
+## 2.6.0
+
+### Apr 5, 2016
+
+This release contains breaking changes from 0.x versions. Updating from 0.x versions may result in the application no longer operating as expected.
+
+- The app can now be used offline and synced back to the server later.
+- Added an android app for accessing the webapp from mobile.
+- Added Tasks feature for rich event scheduling.
+- Forms can now be provided in XForm format for rich form UIs.
+- Added a configurable Target analytics module.
+
 ## 0.4.8
 
 ### Jul 14, 2015

@@ -6,9 +6,10 @@ sentinel/Procfile
 sentinel_working
 npm-debug.log
 node_modules
-bower_components
+node_modules_backup
 static/dist
 static/fonts
+packages/libphonenumber/libphonenumber/libphonenumber.js
 
 logs
 config.js

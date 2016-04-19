@@ -39,6 +39,7 @@
 
   <a class="btn btn-primary" ng-click="submit()" ng-disabled="saving" translate>Submit</a>
   <span ng-if="status" translate>{{status}}</span>
+  <a ng-if="!status" ui-sref="configuration.targets" translate>Cancel</span>
   <a class="btn btn-danger delete" ng-click="delete()" ng-disabled="saving" ng-if="editing" translate>Delete</a>
 
 </form>

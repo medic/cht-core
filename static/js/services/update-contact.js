@@ -1,4 +1,5 @@
-var async = require('async');
+var async = require('async'),
+    _ = require('underscore');
 
 (function () {
 

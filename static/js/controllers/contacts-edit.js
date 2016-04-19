@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 (function () {
 
   'use strict';
@@ -14,12 +16,6 @@
       $scope.setShowContent(true);
       $scope.setCancelTarget(function() {
         $state.go('contacts.detail', { id: $state.params.id || $state.params.parent_id });
-      });
-
-      $scope.$on('$destroy', function() {
-        if ($scope.enketo_contact && $scope.enketo_contact.formInstance) {
-          Enketo.unload($scope.enketo_contact.formInstance);
-        }
       });
 
       var getVisibleLevel = function() {
@@ -310,6 +306,10 @@
               } else if(original && original[f] && doc[f] === original[f]._id) {
                 doc[f] = original[f];
               } else {
+                var docId = doc[f];
+                if (typeof docId === 'object') {
+                  docId = doc[f]._id;
+                }
                 return DB.get(doc[f])
                   .then(function(dbFieldValue) {
                     doc[f] = dbFieldValue;
@@ -361,6 +361,15 @@
           });
         }
       }
+
+      $scope.$on('$destroy', function() {
+        if (!$state.includes('contacts.add')) {
+          $scope.setTitle();
+          if ($scope.enketo_contact && $scope.enketo_contact.formInstance) {
+            Enketo.unload($scope.enketo_contact.formInstance);
+          }
+        }
+      });
 
     }
   ]);

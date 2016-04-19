@@ -15,6 +15,7 @@
   require('./configuration-export');
   require('./configuration-forms');
   require('./configuration-icons');
+  require('./configuration-permissions');
   require('./configuration-settings-advanced');
   require('./configuration-settings-basic');
   require('./configuration-targets');
@@ -24,6 +25,7 @@
   require('./configuration-translation-messages');
   require('./configuration-user');
   require('./configuration-users');
+  require('./confirm-modal');
   require('./contacts');
   require('./contacts-content');
   require('./contacts-edit');

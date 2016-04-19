@@ -50,6 +50,11 @@ describe('LiveListSrv', function() {
 
   beforeEach(function() {
     module('inboxApp');
+    module(function ($provide) {
+      $provide.value('ResourceIcons', {
+        replacePlaceholders: function() {}
+      });
+    });
     inject(function(_LiveList_) {
       service = _LiveList_;
     });
@@ -67,11 +72,11 @@ describe('LiveListSrv', function() {
     _.forEach([
       null,
       {},
-      { selecter: '#list' },
+      { selector: '#list' },
       { orderBy: SIMPLE_ORDER_FUNCTION },
       { listItem: SIMPLE_LIST_ITEM },
-      { selecter: '#list', orderBy: SIMPLE_ORDER_FUNCTION },
-      { selecter: '#list', listItem: SIMPLE_LIST_ITEM },
+      { selector: '#list', orderBy: SIMPLE_ORDER_FUNCTION },
+      { selector: '#list', listItem: SIMPLE_LIST_ITEM },
       { orderBy: SIMPLE_ORDER_FUNCTION, listItem: SIMPLE_LIST_ITEM },
     ], function(config, i) {
 
@@ -94,7 +99,7 @@ describe('LiveListSrv', function() {
     var config = {
       listItem: SIMPLE_LIST_ITEM,
       orderBy: SIMPLE_ORDER_FUNCTION,
-      selecter: '#list',
+      selector: '#list',
     };
 
     // when
@@ -109,7 +114,7 @@ describe('LiveListSrv', function() {
     var config = {
       listItem: SIMPLE_LIST_ITEM,
       orderBy: SIMPLE_ORDER_FUNCTION,
-      selecter: '#list',
+      selector: '#list',
     };
 
     // when
@@ -136,7 +141,7 @@ describe('LiveListSrv', function() {
       var config = {
         listItem: SIMPLE_LIST_ITEM,
         orderBy: SIMPLE_ORDER_FUNCTION,
-        selecter: '#list',
+        selector: '#list',
       };
       service.$listFor('testing', config);
     });
@@ -417,7 +422,7 @@ describe('LiveListSrv', function() {
         orderBy: function(a, b) {
           return a._id - b._id;
         },
-        selecter: '#list',
+        selector: '#list',
       });
 
       // when
@@ -438,7 +443,7 @@ describe('LiveListSrv', function() {
         orderBy: function(a, b) {
           return b._id - a._id;
         },
-        selecter: '#list',
+        selector: '#list',
       });
 
       // when
@@ -459,7 +464,7 @@ describe('LiveListSrv', function() {
         orderBy: function(a, b) {
           return a._id - b._id;
         },
-        selecter: '#list',
+        selector: '#list',
       });
       service.testing.set([]);
 
@@ -483,7 +488,7 @@ describe('LiveListSrv', function() {
         orderBy: function(a, b) {
           return b._id - a._id;
         },
-        selecter: '#list',
+        selector: '#list',
       });
       service.testing.set([]);
 

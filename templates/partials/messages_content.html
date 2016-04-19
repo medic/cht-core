@@ -28,7 +28,7 @@
               </div>
               <span class="message-body">
                 <div class="actions">
-                  <a class="btn btn-link fa fa-trash-o" ng-attr-title="{{'Delete' | translate}}" ng-click="deleteDoc(message.doc._id)"></a>
+                  <a class="btn btn-link fa fa-trash-o" ng-attr-title="{{'Delete' | translate}}" ng-click="deleteDoc(message.doc._id)" mm-auth="can_delete_messages"></a>
                 </div>
                 <div class="data">
                   <p>

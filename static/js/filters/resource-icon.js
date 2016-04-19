@@ -5,35 +5,19 @@
   var module = angular.module('inboxFilters');
 
   module.filter('resourceIcon', [
-    '$log', 'ResourceIcons',
-    function($log, ResourceIcons) {
-
-      var doc;
-
-      ResourceIcons.withIcons
-        .then(function(_doc) {
-          doc = _doc;
-        })
-        .catch($log.error);
-
-      var filterFn = function(name) {
-        if (!name) {
-          return '';
+    'ResourceIcons',
+    function(ResourceIcons) {
+      return function(name) {
+        var src = ResourceIcons.getImg(name);
+        if (src) {
+          src = 'src="' + src + '"';
+        } else {
+          src = '';
         }
-
-        if (doc) {
-          var filename = doc.resources[name];
-          var icon = filename && doc._attachments[filename];
-          if (icon) {
-            return '<img src="data:' + icon.content_type + ';base64,' + icon.data + '"/>';
-          }
-        }
-
-        return '<img data-resource-icon="' + name + '"/>';
+        return '<img class="resource-icon-' + name + '" ' + src + ' />';
       };
-
-      return filterFn;
     }
   ]);
+
 
 }());

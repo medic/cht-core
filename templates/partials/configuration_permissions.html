@@ -1,0 +1,27 @@
+<div class="loader" ng-show="loading"></div>
+
+<form class="tab-content permissions" ng-hide="loading">
+
+  <div class="form-group">
+
+    <div class="row selection-heading" ng-hide="error">
+      <div class="col-xs-3" translate>configuration.permission</div>
+      <div class="col-xs-1" ng-repeat="role in roles" translate>{{role.name}}</div>
+    </div>
+
+    <div class="row" ng-repeat="permission in permissions | orderBy:'name' track by permission.name">
+      <div class="col-xs-3">{{permission.name}}</div>
+      <div class="col-xs-1" ng-repeat="role in permission.roles">
+        <input type="checkbox" ng-model="role.value"/>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
+    <div class="loader inline small" ng-show="submitting"></div>
+    <p class="error" ng-show="error" translate>{{error}}</p>
+  </div>
+
+</form>

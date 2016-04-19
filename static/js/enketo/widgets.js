@@ -16,7 +16,6 @@ define( function( require, exports, module ) {
         require( './widgets/notewidget' ),
         require( './widgets/countdown-widget' ),
         require( './widgets/db-object-widget' ),
-        require( './widgets/medic-place-widget' ),
         require( './widgets/phone-widget' ),
         require( './widgets/unselectable-radios' ),
         require( './widgets/android-datepicker' ),

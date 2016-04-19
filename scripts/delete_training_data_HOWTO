@@ -1,0 +1,25 @@
+1. Get branch id
+Go to the branch’s contact page, and copy the UUID from the URL.
+E.g. “Test Branch” on lg.dev : `https://lg.dev.medicmobile.org/medic/_design/medic/_rewrite/#/contacts/**52857bf2cef066525b2feb82805fb373**`
+
+2. Get start and end time of the training. The script will delete data between these two times.
+You can use : http://www.epochconverter.com/ to get the timestamp in milliseconds. Watch out, you want millis, not seconds, something like 1460618262000. Get your timezones right!
+
+3. Create output directory, where files will be created containing the deleted data. You can use them for backups later.
+
+4. Make a db copy with 1-time replication. Can take a little while.
+`curl -X POST https://<username>:<pass>@<server>.medicmobile.org/_replicate -H "Content-Type: application/json" -d '{"source":"medic", "target":"medic-backup-<today’s date>", "create_target":true}'`
+
+5. Kill medic-api to stop incoming requests.
+?
+
+6. Redo a 1-time replication, to get the data you missed between 1. and 2.
+Should be really short. Same command as 1.
+
+7. Run deletion script. (you can practice on your db copy from step 1, with `dryrun` option)
+`node scripts/delete_training_data.js https://<username>:<pass>@<server>.medicmobile.org/medic <branch id> <startdate> <enddate> <outputdir>`
+
+8. Restart medic-api.
+?
+
+9. If later you realize some training data has reappeared (which could happen if users edited it offline, and so didn't get the deletion), rerun the procedure. Watch out not to overwrite the output files.

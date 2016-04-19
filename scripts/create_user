@@ -1,0 +1,116 @@
+#!/bin/bash -eu
+
+COUCH_URL="${COUCH_URL-http://admin:pass@localhost:5984}"
+
+usage() {
+cat <<EOF
+Usage:
+	$0 [username] [password] [parent_facility_id]
+
+	username		the username for the new user
+	password		the password for the new user
+	parent_facility_id	usually a district_hospital
+EOF
+exit 1
+}
+[[ $# < 3 ]] && usage
+
+error() {
+	echo "[$0] $1"
+	exit 1
+}
+
+check_not_exists() {
+	local res="$(curl -s $1 | jq -r .error)"
+	echo "[$0] $1 -> $res"
+	if ! [[ "$res" = "not_found" ]]; then
+		echo "[$0] User doc already exists at $1."
+		echo "[$0] Cannot continue."
+		exit 1
+	fi
+}
+
+post_doc() {
+	local type="$1"
+	local url="$2"
+	local json="$3"
+	res="$(curl -s -X POST "$url" \
+		--header 'Content-Type: application/json' \
+		--data "$json")"
+	[[ "$(jq -r .ok <<< "$res")" = "true" ]] || error "Failed to create $type: $res"
+	jq -r .id <<< "$res"
+}
+
+##### PROCESS ARGS #####
+uname="$1"
+pword="$2"
+parent_facility_id="$3"
+
+_id="org.couchdb.user:${uname}"
+users_userDoc="${COUCH_URL}/_users/${_id}"
+medic_userDoc="${COUCH_URL}/medic/${_id}"
+
+echo "[$0] Checking if user '$uname' exists..."
+check_not_exists "$users_userDoc"
+check_not_exists "$medic_userDoc"
+
+# fetch parent JSON
+parentFacilityJson="$(curl -s "$COUCH_URL/medic/$parent_facility_id")"
+parentCheck=$(jq -r .error <<< "$parentFacilityJson")
+echo "[$0] parentCheck=${parentCheck}"
+[[ "${parentCheck}" = "null" ]] || error "Parent not found with id ${parent_facility_id}"
+
+
+echo "[$0] Creating docs for $uname..."
+
+# create facility, storing ID and JSON
+facilityJson='{
+		"name": "'"${uname}"' Area",
+		"parent": '"${parentFacilityJson}"',
+		"external_id": "",
+		"notes": ""
+	}'
+facility_id="$(post_doc "facility" "$COUCH_URL/medic" "$facilityJson")"
+echo "[$0] Created facility: ${facility_id}"
+facilityJson="$(curl -s "$COUCH_URL/medic/$facility_id")"
+
+# create contact, storing ID
+contactJson='{
+		"name": "'"${uname}"'",
+		"type": "person",
+		"notes": "",
+		"date_of_birth": "",
+		"phone": "",
+		"alternate_phone": "",
+		"parent": '"$facilityJson"'
+	}'
+contact_id="$(post_doc "contact" "$COUCH_URL/medic" "$contactJson")"
+echo "[$0] Created contact: ${contact_id}"
+
+# create user_settings
+userSettingsJson='{
+		"_id": "'$_id'",
+		"type": "user-settings",
+		"name": "'"${uname}"'",
+		"fullname": "'"${uname}"'",
+		"language": "en",
+		"known": true,
+		"facility_id": "'$facility_id'",
+		"contact_id": "'$contact_id'"
+	}'
+user_settings_id="$(post_doc "user_settings" "$COUCH_URL/medic" "$userSettingsJson")"
+echo "[$0] Created user_settings: ${user_settings_id}"
+
+# create user
+userJson='{
+		"_id": "'$_id'",
+		"type": "user",
+		"name": "'"${uname}"'",
+		"facility_id": "'$facility_id'",
+		"roles": [ "district-manager", "kujua_user", "data_entry", "district_admin" ],
+		"password": "'"${pword}"'"
+	}'
+user_id="$(post_doc "user" "$COUCH_URL/_users" "$userJson")"
+echo "[$0] Created user: ${user_id}"
+
+echo "[$0] User '$uname' successfully created."

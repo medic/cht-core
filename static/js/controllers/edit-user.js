@@ -7,10 +7,10 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditUserCtrl',
-    ['$rootScope', '$scope', 'DB', 'Facility', 'Session', 'UpdateUser', 'translateFilter',
-    function ($rootScope, $scope, DB, Facility, Session, UpdateUser, translateFilter) {
+    ['$rootScope', '$scope', 'DB', 'Facility', 'Session', 'UpdateUser', 'translateFilter', 'PLACE_TYPES',
+    function ($rootScope, $scope, DB, Facility, Session, UpdateUser, translateFilter, PLACE_TYPES) {
 
-      Facility({ types: [ 'clinic', 'health_center', 'district_hospital' ] }, function(err, facilities) {
+      Facility({ types: PLACE_TYPES }, function(err, facilities) {
         if (err) {
           return console.log('Error fetching facilities', err);
         }
@@ -37,32 +37,33 @@ var modal = require('../modules/modal');
       };
 
       $scope.$on('EditUserInit', function(e, user) {
-        if (user) {
-          $scope.editUserModel = {
-            id: user.id,
-            name: user.name,
-            fullname: user.fullname,
-            email: user.email,
-            phone: user.phone,
-            facility: user.facility,
-            type: getType(user.type),
-            language: user.language
-          };
+        if (!user) {
+          $scope.editUserModel = {};
+          return;
         }
-
+        $scope.editUserModel = {
+          id: user.id,
+          name: user.name,
+          fullname: user.fullname,
+          email: user.email,
+          phone: user.phone,
+          facility: user.facility,
+          type: getType(user.type),
+          language: user.language
+        };
         var $contact = $('#edit-user-profile [name=contact]');
-        if(user && user.contact_id) {
+        if (user.contact_id) {
           $contact.empty();
           DB.get().get(user.contact_id)
             .then(function(contact) {
               $contact
-                  .append($('<option>', {
-                    selected: 'selected',
-                    value: contact._id,
-                    text: contact.name,
-                  }))
-                  .val(contact._id)
-                  .trigger('change');
+                .append($('<option>', {
+                  selected: 'selected',
+                  value: contact._id,
+                  text: contact.name,
+                }))
+                .val(contact._id)
+                .trigger('change');
             });
         } else {
           $contact
@@ -143,9 +144,13 @@ var modal = require('../modules/modal');
         if (validatePassword()) {
           var pane = modal.start($('#update-password'));
           var updates = { password: $scope.editUserModel.password };
-          UpdateUser($scope.editUserModel.id, null, updates, function(err) {
-            updateComplete(pane, err);
-          });
+          UpdateUser($scope.editUserModel.id, null, updates)
+            .then(function() {
+              updateComplete(pane);
+            })
+            .catch(function(err) {
+              updateComplete(pane, err);
+            });
         }
       };
 
@@ -159,9 +164,13 @@ var modal = require('../modules/modal');
             // editing current user's language, so update UI
             $scope.changeLanguage(settings.language);
           }
-          UpdateUser($scope.editUserModel.id, settings, user, function(err) {
-            updateComplete(pane, err);
-          });
+          UpdateUser($scope.editUserModel.id, settings, user)
+            .then(function() {
+              updateComplete(pane);
+            })
+            .catch(function(err) {
+              updateComplete(pane, err);
+            });
         }
       };
 

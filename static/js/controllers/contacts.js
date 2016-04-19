@@ -1,7 +1,7 @@
 var _ = require('underscore'),
-    scrollLoader = require('../modules/scroll-loader'),
     async = require('async'),
-    types = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
+    scrollLoader = require('../modules/scroll-loader'),
+    ajaxDownload = require('../modules/ajax-download');
 
 (function () {
 
@@ -10,13 +10,13 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl',
-    ['$log', '$scope', '$state', '$timeout', 'DB', 'LiveList', 'UserSettings', 'Search',
-    function ($log, $scope, $state, $timeout, DB, LiveList, UserSettings, Search) {
+    ['$log', '$scope', '$state', '$timeout', '$http', 'DB', 'LiveList', 'UserSettings', 'Search', 'SearchFilters', 'DownloadUrl',
+    function ($log, $scope, $state, $timeout, $http, DB, LiveList, UserSettings, Search, SearchFilters, DownloadUrl) {
 
       var liveList = LiveList.contacts;
 
-      $scope.filterModel.type = 'contacts';
       $scope.selected = null;
+      $scope.filters = {};
 
       function completeLoad() {
         $scope.loading = false;
@@ -27,12 +27,12 @@ var _ = require('underscore'),
       function _initScroll() {
         scrollLoader.init(function() {
           if (!$scope.loading && $scope.moreItems) {
-            $scope.query({ skip: true });
+            _query({ skip: true });
           }
         });
       }
 
-      $scope.query = function(options) {
+      var _query = function(options) {
         options = options || {};
         options.limit = 50;
 
@@ -48,7 +48,7 @@ var _ = require('underscore'),
 
         // curry the Search service so async.parallel can provide the
         // callback as the final callback argument
-        var contactSearch = _.partial(Search, $scope, options);
+        var contactSearch = _.partial(Search, 'contacts', $scope.filters, options);
         async.parallel([ contactSearch, UserSettings ], function(err, results) {
           if (err) {
             $scope.error = true;
@@ -113,37 +113,23 @@ var _ = require('underscore'),
         });
       };
 
-      $scope.orderByType = function(contact) {
-        return types.indexOf(contact.type);
-      };
-
       $scope.$on('ClearSelected', function() {
         $scope.selected = null;
       });
 
-      $scope.$on('query', function() {
-        if ($scope.filterModel.type !== 'contacts') {
-          liveList.clearSelected();
-          LiveList['contact-search'].set([]);
-          return;
-        }
-
+      $scope.search = function() {
         $scope.loading = true;
-
-        if (($scope.filterQuery && $scope.filterQuery.value) ||
-            ($scope.filterModel && (
-              ($scope.filterModel.contactTypes && $scope.filterModel.contactTypes.length) ||
-              $scope.filterModel.facilities.length))) {
+        if ($scope.filters.search ||
+            ($scope.filters.facilities && $scope.filters.facilities.selected && $scope.filters.facilities.selected.length) ||
+            ($scope.filters.types && $scope.filters.types.selected && $scope.filters.types.selected.length)
+           ) {
           $scope.filtered = true;
-
           liveList = LiveList['contact-search'];
           liveList.set([]);
-
-          $scope.query();
+          _query();
         } else {
           $scope.filtered = false;
           liveList = LiveList.contacts;
-
           if (liveList.initialised()) {
             $timeout(function() {
               $scope.loading = false;
@@ -153,8 +139,53 @@ var _ = require('underscore'),
               _initScroll();
             });
           } else {
-            $scope.query();
+            _query();
           }
+        }
+      };
+
+      $scope.setupSearchFreetext = function() {
+        SearchFilters.freetext($scope.search);
+      };
+      $scope.setupSearchFacility = function() {
+        SearchFilters.facility(function(facilities) {
+          $scope.filters.facilities = facilities;
+          $scope.search();
+        });
+      };
+      $scope.setupSearchContactType = function() {
+        SearchFilters.contactType(function(types) {
+          $scope.filters.types = types;
+          $scope.search();
+        });
+      };
+      $scope.resetFilterModel = function() {
+        $scope.filters = {};
+        SearchFilters.reset();
+        $scope.search();
+      };
+
+      $scope.search();
+
+      $scope.$on('export', function() {
+        if ($scope.currentTab === 'contacts') {
+          DownloadUrl($scope.filters, 'contacts', function(err, url) {
+            if (err) {
+              return $log.error(err);
+            }
+            $http.post(url)
+              .then(ajaxDownload.download)
+              .catch(function(err) {
+                $log.error('Error downloading', err);
+              });
+          });
+        }
+      });
+
+      $scope.$on('$destroy', function() {
+        if (!$state.includes('contacts')) {
+          $scope.setTitle();
+          $scope.clearSelected();
         }
       });
 

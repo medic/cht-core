@@ -1,5 +1,4 @@
-var remapify = require('remapify'),
-    kansoJson = require('./kanso.json'),
+var kansoJson = require('./kanso.json'),
     path = require('path');
 
 module.exports = function(grunt) {
@@ -11,25 +10,6 @@ module.exports = function(grunt) {
 
   // Project configuration
   grunt.initConfig({
-    bower: {
-      install: {
-        options: {
-          copy: false
-        }
-      }
-    },
-    bower_concat: {
-      all: {
-        dest: 'bower_components/concat.js',
-        exclude: [
-          'fontawesome',
-          'async',
-          'bootstrap-tour', // Including this includes two copies. Manually included in concat.
-          'angular-mocks',
-          'select2', // need to manually include the extended version of the lib
-        ]
-      }
-    },
     replace: {
       hardcodeappsettings: {
         src: [ 'static/dist/inbox.js' ],
@@ -41,91 +21,39 @@ module.exports = function(grunt) {
           from: /@@APP_CONFIG.name/g,
           to: kansoJson.name
         }]
-      },
-      monkeypatchdate: {
-        src: [ 'bower_components/concat.js' ],
-        overwrite: true,
-        replacements: [{
-          from: /clickDate: function \(e\) \{/g,
-          to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'mm.dateSelected.daterangepicker\', this);\n'
-        }]
-      },
-      // cache the ddoc views for performance
-      monkeypatchpouchtocacheddoc: {
-        src: [ 'bower_components/concat.js' ],
-        overwrite: true,
-        replacements: [
-          {
-            from: /function queryPromised\(db, fun, opts\) \{/g,
-            to: '// MONKEY PATCH BY GRUNT: cache ddoc views.\nfunction getPersistentViews(db, designDocName) {\n  if (!db.persistentViews) {\n    db.persistentViews = {};\n  }\n  if (!db.persistentViews[designDocName]) {\n    db.persistentViews[designDocName] = db.get(\'_design/\' + designDocName).then(function (doc) {\n      return { views: doc.views };\n   });\n  }\n  return db.persistentViews[designDocName];\n}\n\nfunction queryPromised(db, fun, opts) {\n'
-          },
-          {
-            from: /return db\.get\('_design\/' \+ designDocName\)\.then\(function \(doc\) \{/g,
-            to: '// MONKEY PATCH BY GRUNT: cache ddoc views.\n    return getPersistentViews(db, designDocName).then(function (doc) {\n'
-          }
-        ]
-      },
-      // replace cache busting which breaks appcache, needed until this is fixed:
-      // https://github.com/FortAwesome/Font-Awesome/issues/3286
-      monkeypatchfontawesome: {
-        src: [ 'static/dist/inbox.css' ],
-        overwrite: true,
-        replacements: [{
-          from: /(\/fonts\/fontawesome-webfont[^?]*)[^']*/gi,
-          to: '$1'
-        }]
       }
     },
     browserify: {
+      options: {
+        browserifyOptions: {
+          debug: true
+        }
+      },
       dist: {
         src: ['static/js/app.js'],
         dest: 'static/dist/inbox.js',
         browserifyOptions: {
-          detectGlobals: false,
-          external: ['moment', 'underscore']
+          detectGlobals: false
         },
-        options: {
-          preBundleCB: function(b) {
-            b.ignore('./flashmessages')
-             .plugin(remapify, browserifyMappings);
-          }
-        },
-      },
-      enketo: {
-        src: './static/js/enketo/main.js',
-        dest: 'build/enketo.js',
-        require: [ 'jquery' ],
         options: {
           alias: {
-            jquery:'./static/js/enketo/jquery-shim.js',
+            'db': './packages/db/db',
+            'kujua-utils': './packages/kujua-utils/kujua-utils',
+            'cookies': './packages/cookies/cookies',
+            'session': './packages/session/session',
+            'kujua-sms/utils': './packages/kujua-sms/kujua-sms/utils',
+            'views/lib/objectpath': './packages/kujua-sms/views/lib/objectpath',
+            'views/lib/app_settings': './packages/kujua-sms/views/lib/app_settings',
             'text!enketo-config': './static/js/enketo/config.json',
-            'widgets': './static/js/enketo/widgets.js',
-            './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding.js',
-            'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath.js',
-            'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions.js',
-            'libphonenumber/phoneformat': './packages/libphonenumber/libphonenumber/phoneformat.js',
-            'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils.js',
+            'widgets': './static/js/enketo/widgets',
+            './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding',
+            'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath',
+            'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
+            'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils',
+            'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber'
           },
         },
       }
-    },
-    concat: {
-      dependencies: {
-        src: [
-          'bower_components/concat.js',
-          'bower_components/bootstrap-tour/build/js/bootstrap-tour.js',
-          'bower_components/select2/dist/js/select2.full.js',
-          'static/js/bootstrap-multidropdown.js'
-        ],
-        dest: 'static/dist/dependencies.js',
-      },
-      inbox: {
-        src: [
-          'static/dist/inbox.js',
-          'build/enketo.js',
-        ],
-        dest: 'static/dist/inbox.js',
-      },
     },
     uglify: {
       options: {
@@ -134,7 +62,6 @@ module.exports = function(grunt) {
       build: {
         files: {
           'static/dist/templates.js': ['static/dist/templates.js'],
-          'static/dist/dependencies.js': ['static/dist/dependencies.js'],
           'static/dist/inbox.js': ['static/dist/inbox.js'],
         }
       }
@@ -142,6 +69,7 @@ module.exports = function(grunt) {
     jshint: {
       options: {
         jshintrc: true,
+        reporter: require('jshint-stylish'),
         ignores: [
           'tests/karma/q.js'
         ]
@@ -172,7 +100,7 @@ module.exports = function(grunt) {
     postcss: {
       options: {
         processors: [
-          require('autoprefixer-core')({ browsers: 'last 2 versions' })
+          require('autoprefixer')({ browsers: 'last 2 versions' })
         ]
       },
       dist: {
@@ -185,14 +113,36 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: [
-              'bower_components/fontawesome/fonts/*'
-            ],
+            src: [ 'node_modules/font-awesome/fonts/*' ],
             dest: 'static/fonts'
-          },
+          }
         ]
       },
-      'enketo-xslt': {
+      librariestopatch: {
+        files: [
+          {
+            expand: true,
+            cwd: 'node_modules',
+            src: [
+              'bootstrap-daterangepicker/**',
+              'pouchdb/**',
+              'font-awesome/**'
+            ],
+            dest: 'node_modules_backup'
+          }
+        ]
+      },
+      libphonenumber: {
+        files: [
+          {
+            expand: true,
+            flatten: true,
+            src: [ 'node_modules/google-libphonenumber/dist/browser/libphonenumber.js' ],
+            dest: 'packages/libphonenumber/libphonenumber/'
+          }
+        ]
+      },
+      enketoxslt: {
         files: [
           {
             expand: true,
@@ -204,7 +154,7 @@ module.exports = function(grunt) {
       },
       // npm v3 puts nested node_modules at the top level. copy the css resources
       // so sass compilation still works.
-      'enketo-css': {
+      enketocss: {
         files: [
           {
             src: [
@@ -216,7 +166,7 @@ module.exports = function(grunt) {
             filter: function (filepath) {
               // return false if the file exists
               return !grunt.file.exists(path.join('node_modules/enketo-core/', filepath));
-            },
+            }
           }
         ]
       }
@@ -245,6 +195,52 @@ module.exports = function(grunt) {
                  'curl -X DELETE http://ci_test:pass@localhost:5984/_users/org.couchdb.user:ci_test &&' +
                  'curl -HContent-Type:application/json -vXPUT http://ci_test:pass@localhost:5984/_users/org.couchdb.user:ci_test  --data-binary \'{"_id": "org.couchdb.user:ci_test", "name": "ci_test", "roles": [], "type": "user", "password": "pass", "language": "en", "known": true}\'';
         }
+      },
+      undopatches: {
+        cmd: function() {
+          var modulesToPatch = [
+            'bootstrap-daterangepicker',
+            'pouchdb',
+            'font-awesome'
+          ];
+          return modulesToPatch.map(function(module) {
+            var backupPath = 'node_modules_backup/' + module;
+            var modulePath = 'node_modules/' + module;
+            return '[ -d ' + backupPath + ' ]' +
+                   ' && rm -rf ' + modulePath +
+                   ' && mv ' + backupPath + ' ' + modulePath +
+                   ' && echo "Module restored: ' + module + '"' +
+                   ' || echo "No restore required for: ' + module + '"';
+          }).join(' & ');
+        }
+      },
+      // To monkey patch a library...
+      // 1. copy the file you want to change
+      // 2. make the changes
+      // 3. run `diff -c original modified > patches/my-patch.patch`
+      // 4. update grunt targets: "applypatches", "undopatches", and "librariestopatch"
+      applypatches: {
+        cmd: function() {
+          var patches = [
+            // patch the daterangepicker for responsiveness
+            // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
+            'patch node_modules/bootstrap-daterangepicker/daterangepicker.js < patches/bootstrap-daterangepicker.patch',
+
+            // patch pouch to retry failed replication docs
+            // https://github.com/pouchdb/pouchdb/issues/4963
+            'patch node_modules/pouchdb/lib/index.js < patches/pouchdb-fail-replicate-on-error.patch',
+
+            // patch pouch with a bigger timeout for bulk gets
+            // https://github.com/medic/medic-webapp/issues/2167
+            // https://github.com/pouchdb/pouchdb/issues/5042
+            'patch node_modules/pouchdb/lib/index.js < patches/pouchdb-increase-bulk-get-timeouts.patch',
+
+            // patch font-awesome to remove version attributes so appcache works
+            // https://github.com/FortAwesome/Font-Awesome/issues/3286
+            'patch node_modules/font-awesome/less/path.less < patches/font-awesome-remove-version-attribute.patch'
+          ];
+          return patches.join(' && ');
+        }
       }
     },
     watch: {
@@ -253,7 +249,7 @@ module.exports = function(grunt) {
         tasks: ['mmcss', 'appcache', 'deploy']
       },
       js: {
-        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'packages/feedback/**/*'],
+        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'packages/libphonenumber/**/*'],
         tasks: ['mmjs', 'appcache', 'deploy']
       },
       other: {
@@ -322,11 +318,10 @@ module.exports = function(grunt) {
       }
     },
     appcache: {
-      options: {
-        baseUrl: '../../'
-      },
       inbox: {
         dest: 'static/dist/manifest.appcache',
+        baseUrl: '../../',
+        network: '*',
         cache: {
           patterns: [
             'static/audio/**/*',
@@ -335,8 +330,7 @@ module.exports = function(grunt) {
             'static/img/**/*',
             '!static/img/promo/**/*',
           ]
-        },
-        network: '*'
+        }
       }
     },
     sass: {
@@ -356,29 +350,26 @@ module.exports = function(grunt) {
   grunt.task.run('notify_hooks');
 
   // Default tasks
+
+  grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [
+    'exec:undopatches',
+    'npm-install',
+    'copy:librariestopatch',
+    'exec:applypatches'
+  ]);
+
   grunt.registerTask('mmjs', 'Build the JS resources', [
+    'copy:libphonenumber',
     'browserify:dist',
-    'browserify:enketo',
     'replace:hardcodeappsettings',
-    'ngtemplates',
-    'concat:dependencies',
-    'concat:inbox',
+    'ngtemplates'
   ]);
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
-    'copy:enketo-css',
+    'copy:enketocss',
     'sass',
     'less',
-    'replace:monkeypatchfontawesome',
     'postcss'
-  ]);
-
-  grunt.registerTask('mmbower', 'Install, concat, and patch bower components', [
-    'bower:install',
-    'bower_concat',
-    'replace:monkeypatchdate',
-    'replace:monkeypatchpouchtocacheddoc',
-    'copy:inbox'
   ]);
 
   grunt.registerTask('compileddocs', 'Compile all Ddocs', [
@@ -391,10 +382,11 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('default', 'Build the static resources', [
-    'mmbower',
+    'mmnpm',
     'mmcss',
     'mmjs',
-    'copy:enketo-xslt',
+    'copy:enketoxslt',
+    'copy:inbox',
     'appcache',
     'compileddocs'
   ]);
@@ -414,7 +406,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
-    'npm-install',
     'default',
     'deploy',
     'watch'
@@ -438,79 +429,5 @@ module.exports = function(grunt) {
     'jshint',
     'karma:unit_continuous'
   ]);
-
-  var browserifyMappings = [
-    // modules in bower and kanso
-    {
-      cwd: 'bower_components/underscore',
-      src: './underscore.js'
-    },
-    {
-      cwd: 'bower_components/moment',
-      src: './moment.js'
-    },
-    {
-      cwd: 'bower_components/moment/min/',
-      src: './locales.js',
-      expose: 'moment'
-    },
-    {
-      cwd: 'bower_components/async/lib',
-      src: './async.js'
-    },
-    // kanso packages required for inbox
-    {
-      cwd: 'packages/db',
-      src: './db.js'
-    },
-    {
-      cwd: 'packages/kujua-sms/views/lib',
-      src: './*.js',
-      expose: 'views/lib'
-    },
-    {
-      cwd: 'packages/kujua-sms/kujua-sms',
-      src: './utils.js',
-      expose: 'kujua-sms'
-    },
-    {
-      cwd: 'packages/kujua-utils',
-      src: './kujua-utils.js'
-    },
-    {
-      cwd: 'packages/session',
-      src: './session.js'
-    },
-    {
-      cwd: 'packages/duality/duality',
-      src: './utils.js',
-      expose: 'duality'
-    },
-    {
-      cwd: 'packages/users',
-      src: './users.js'
-    },
-    {
-      cwd: 'packages/cookies',
-      src: './cookies.js'
-    },
-    {
-      cwd: 'packages/sha1',
-      src: './sha1.js'
-    },
-    {
-      cwd: 'packages/dust',
-      src: './dust.js'
-    },
-    {
-      cwd: 'packages/libphonenumber/libphonenumber',
-      src: './*.js',
-      expose: 'libphonenumber'
-    },
-    {
-      cwd: 'packages/feedback',
-      src: './feedback.js'
-    }
-  ];
 
 };

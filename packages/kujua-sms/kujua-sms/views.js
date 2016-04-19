@@ -116,7 +116,7 @@ exports.data_records = {
 
 // only emit valid records with a form
 exports.data_records_valid_by_district_and_form = {
-     map: function(doc) {
+    map: function(doc) {
 
         var getParent = function(facility, type) {
             while (facility && facility.type !== type) {
@@ -132,19 +132,17 @@ exports.data_records_valid_by_district_and_form = {
             (!doc.errors || doc.errors.length === 0)) {
             dh = getParent(doc.contact, 'district_hospital');
             if (dh) {
-                emit([dh._id, doc.form, dh.name], 1);
+                emit([dh._id, doc.form, dh.name]);
             } else {
-                emit([null, doc.form, null], 1);
+                emit([null, doc.form, null]);
             }
         }
     },
-    reduce: function(key, counts) {
-        return sum(counts);
-    }
+    reduce: '_count'
 };
 
 exports.usage_stats_by_year_month = {
-     map: function(doc) {
+    map: function(doc) {
         if (doc.type === 'usage_stats') {
             emit([doc.year, doc.month], 1);
         }
@@ -152,17 +150,15 @@ exports.usage_stats_by_year_month = {
 };
 
 exports.data_records_valid_by_year_month_and_form = {
-     map: function(doc) {
+    map: function(doc) {
         if (doc.type === 'data_record' && doc.form) {
             if (!doc.errors || doc.errors.length === 0) {
                 var date = new Date(doc.reported_date);
-                emit([date.getFullYear(), date.getMonth(), doc.form], 1);
+                emit([date.getFullYear(), date.getMonth(), doc.form]);
             }
         }
     },
-    reduce: function(key, counts) {
-        return sum(counts);
-    }
+    reduce: '_count'
 };
 
 exports.data_records_read_by_type = {
@@ -171,11 +167,11 @@ exports.data_records_read_by_type = {
             dh;
 
         var emitRead = function(doc, type, dh) {
-            emit(['_total', type, dh], 1);
+            emit(['_total', type, dh]);
             if (doc.read) {
                 doc.read.forEach(function(user) {
                     if (user) {
-                        emit([user, type, dh], 1);
+                        emit([user, type, dh]);
                     }
                 });
             }
@@ -203,9 +199,7 @@ exports.data_records_read_by_type = {
             }
         }
     },
-    reduce: function(key, counts) {
-        return sum(counts);
-    }
+    reduce: '_count'
 };
 
 
@@ -301,11 +295,13 @@ exports.data_records_by_contact = {
         // needed to reduce object size
         max.facility = undefined;
 
-        var code = max.message.charCodeAt(99);
-        if (0xD800 <= code && code <= 0xDBFF) {
-          max.message = max.message.substr(0, 99);
-        } else {
-          max.message = max.message.substr(0, 100);
+        if (max.message) {
+            var code = max.message.charCodeAt(99);
+            if (0xD800 <= code && code <= 0xDBFF) {
+              max.message = max.message.substr(0, 99);
+            } else {
+              max.message = max.message.substr(0, 100);
+            }
         }
 
         return max;
@@ -348,11 +344,11 @@ exports.facility_by_phone = {
     map: function (doc) {
         if (doc.contact && doc.type) {
             if (doc.type === 'clinic') {
-                emit([doc.contact.phone, 'clinic'], doc);
+                emit([doc.contact.phone, 'clinic']);
             } else if (doc.type === 'health_center') {
-                emit([doc.contact.phone, 'health_center'], doc);
+                emit([doc.contact.phone, 'health_center']);
             } else if (doc.type === 'district_hospital') {
-                emit([doc.contact.phone, 'district_hospital'], doc);
+                emit([doc.contact.phone, 'district_hospital']);
             }
         }
     }
@@ -364,18 +360,19 @@ exports.facility_by_phone = {
 exports.clinic_by_phone = {
     map: function(doc) {
         if (doc.type === 'clinic' && doc.contact && doc.contact.phone) {
-            emit([doc.contact.phone], null);
+            emit([doc.contact.phone]);
         }
     }
 };
 
 /*
  * Get person based on phone number
+ * Used in the medic-data generate script
  */
 exports.person_by_phone = {
     map: function (doc) {
         if (doc.type === 'person') {
-            emit([doc.phone], doc);
+            emit([doc.phone]);
         }
     }
 };
@@ -388,7 +385,7 @@ exports.clinic_by_refid = {
         if (doc.type === 'clinic' && doc.contact && doc.contact.rc_code) {
             // need String because rewriter wraps everything in quotes
             // keep refid case-insenstive since data is usually coming from SMS
-            emit([String(doc.contact.rc_code).toUpperCase()], doc);
+            emit([String(doc.contact.rc_code).toUpperCase()]);
         }
     }
 };
@@ -482,21 +479,19 @@ exports.duplicate_form_submissions = {
     },
 
     reduce: function(keys, values, rereduce){
-        if (rereduce){
+        if (rereduce) {
             return sum(values);
         }
-        else{
-            return values.length;
-        }
+        return values.length;
     }
 };
 
 /*
- * Allow for quering of forms based on the doc id minus the prefix.
+ * Allow for quering of xml forms based on the doc id minus the prefix.
  */
 exports.forms = {
     map: function(doc) {
-        if (doc.type !== 'form' || !doc._attachments.xml) {
+        if (doc.type !== 'form' || !doc._attachments || !doc._attachments.xml) {
             return;
         }
         emit(doc.internalId);

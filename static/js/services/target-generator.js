@@ -1,4 +1,5 @@
-var moment = require('moment');
+var moment = require('moment'),
+    _ = require('underscore');
 
 (function () {
 
@@ -6,8 +7,8 @@ var moment = require('moment');
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TargetGenerator', ['$q', '$log', 'Settings', 'TaskGenerator',
-    function($q, $log, Settings, TaskGenerator) {
+  inboxServices.factory('TargetGenerator', ['$q', '$log', 'Settings', 'RulesEngine',
+    function($q, $log, Settings, RulesEngine) {
 
       var targets = [];
 
@@ -44,9 +45,6 @@ var moment = require('moment');
           // unconfigured target type
           return;
         }
-        if (!target.instances) {
-          target.instances = {};
-        }
         if (isRelevant(instance)) {
           target.instances[instance._id] = instance;
         }
@@ -55,13 +53,17 @@ var moment = require('moment');
 
       var init = Settings()
         .then(function(settings) {
-          targets = settings.tasks.targets.items;
+          targets = settings.tasks.targets.items.map(function(item) {
+            var result = _.clone(item);
+            result.instances = {};
+            return result;
+          });
         });
 
       return function(callback) {
         init
           .then(function() {
-            TaskGenerator('TargetGenerator', 'target', function(err, _targets) {
+            RulesEngine.listen('TargetGenerator', 'target', function(err, _targets) {
               if (!err) {
                 _targets.forEach(mergeTarget);
               }
@@ -73,4 +75,4 @@ var moment = require('moment');
     }
   ]);
 
-}()); 
+}());

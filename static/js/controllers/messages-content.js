@@ -8,8 +8,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesContentCtrl', 
-    ['$scope', '$stateParams', '$timeout', 'ContactConversation', 'MarkAllRead', 'Changes', 'Session',
-    function ($scope, $stateParams, $timeout, ContactConversation, MarkAllRead, Changes, Session) {
+    ['$scope', '$state', '$stateParams', '$timeout', 'ContactConversation', 'MarkAllRead', 'Changes', 'Session',
+    function ($scope, $state, $stateParams, $timeout, ContactConversation, MarkAllRead, Changes, Session) {
 
       var scrollToUnread = function() {
         var content = $('#message-content');
@@ -167,7 +167,7 @@ var _ = require('underscore'),
           updateConversation({ changes: true });
         },
         filter: function(change) {
-          return $scope.filterModel.type === 'messages' &&
+          return $scope.currentTab === 'messages' &&
             $scope.selected &&
             $scope.selected.id === change.id;
         }
@@ -186,6 +186,13 @@ var _ = require('underscore'),
         .on('blur', '#message-footer textarea', function() {
           $('#message-footer').removeClass('sending');
         });
+
+      $scope.$on('$destroy', function() {
+        if (!$state.includes('messages.detail')) {
+          $scope.setTitle();
+          $scope.clearSelected();
+        }
+      });
     }
   ]);
 

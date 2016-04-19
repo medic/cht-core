@@ -3,17 +3,19 @@ describe('TargetGenerator service', function() {
   'use strict';
 
   var Settings,
-      TaskGenerator,
+      RulesEngine,
       injector,
       now = new Date().valueOf();
 
   beforeEach(function() {
     Settings = sinon.stub();
-    TaskGenerator = sinon.stub();
+    RulesEngine = {
+      listen: sinon.stub(),
+    };
     module('inboxApp');
     module(function ($provide) {
       $provide.value('Settings', Settings);
-      $provide.value('TaskGenerator', TaskGenerator);
+      $provide.value('RulesEngine', RulesEngine);
     });
     inject(function($injector) {
       injector = $injector;
@@ -21,7 +23,7 @@ describe('TargetGenerator service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(Settings, TaskGenerator);
+    KarmaUtils.restore(Settings, RulesEngine);
   });
 
   it('returns settings errors', function(done) {
@@ -34,7 +36,7 @@ describe('TargetGenerator service', function() {
 
   it('returns task generator errors', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [] } } }));
-    TaskGenerator.callsArgWith(2, 'boom');
+    RulesEngine.listen.callsArgWith(2, 'boom');
     injector.get('TargetGenerator')(function(err) {
       chai.expect(err).to.equal('boom');
       done();
@@ -43,7 +45,7 @@ describe('TargetGenerator service', function() {
 
   it('returns empty when no targets are emitted', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [] } } }));
-    TaskGenerator.callsArgWith(2, null, []);
+    RulesEngine.listen.callsArgWith(2, null, []);
     injector.get('TargetGenerator')(function(err, actual) {
       chai.expect(actual).to.deep.equal([]);
       done();
@@ -54,11 +56,12 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'known' }
     ] } } }));
-    TaskGenerator.callsArgWith(2, null, [
+    RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'unknown' }
     ]);
     injector.get('TargetGenerator')(function(err, actual) {
-      chai.expect(actual).to.deep.equal([ { id: 'known' } ]);
+      chai.expect(actual.length).to.equal(1);
+      chai.expect(actual[0].id).to.equal('known');
       done();
     });
   });
@@ -67,7 +70,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'count' }
     ] } } }));
-    TaskGenerator.callsArgWith(2, null, [
+    RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', date: now, pass: true },
       { _id: '2', type: 'report', date: now, pass: false },
       { _id: '3', type: 'report', date: now, pass: true }
@@ -85,7 +88,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'count' }
     ] } } }));
-    TaskGenerator.callsArgWith(2, null, [
+    RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: now },
       { _id: '2', type: 'report', pass: true, date: 0 },
       { _id: '2', type: 'report', pass: true } // null date is ignored
@@ -103,7 +106,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'percent' }
     ] } } }));
-    TaskGenerator.callsArgWith(2, null, [
+    RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', date: now, pass: true },
       { _id: '2', type: 'report', date: 0, pass: false },
       { _id: '3', type: 'report', date: now, pass: false },
@@ -122,7 +125,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'percent' }
     ] } } }));
-    TaskGenerator.callsArgWith(2, null, [
+    RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: 0 } // too old to be relevant, so not included in count
     ]);
     injector.get('TargetGenerator')(function(err, actual) {
@@ -139,7 +142,7 @@ describe('TargetGenerator service', function() {
       { id: 'report', type: 'count' },
       { id: 'registration', type: 'percent' }
     ] } } }));
-    TaskGenerator.callsArgWith(2, null, [
+    RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: now },
       { _id: '2', type: 'report', pass: true, date: now },
       { _id: '1', type: 'registration', date: now, pass: true },
@@ -181,13 +184,13 @@ describe('TargetGenerator service', function() {
       callbackCount++;
     });
 
-    // first result from the TaskGenerator
-    TaskGenerator.callsArgWith(2, null, [
+    // first result from the RulesEngine
+    RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: now }
     ]);
     setTimeout(function() {
-      // some time later... second result from the TaskGenerator
-      TaskGenerator.args[0][2](null, [
+      // some time later... second result from the RulesEngine
+      RulesEngine.listen.args[0][2](null, [
         { _id: '2', type: 'report', pass: true, date: now }
       ]);
     });
@@ -217,15 +220,15 @@ describe('TargetGenerator service', function() {
       callbackCount++;
     });
 
-    // first result from the TaskGenerator
-    TaskGenerator.callsArgWith(2, null, [
+    // first result from the RulesEngine
+    RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: now },
       { _id: '1', type: 'report', pass: true, date: now },
       { _id: '2', type: 'report', pass: true, date: now }
     ]);
     setTimeout(function() {
-      // some time later... second result from the TaskGenerator
-      TaskGenerator.args[0][2](null, [
+      // some time later... second result from the RulesEngine
+      RulesEngine.listen.args[0][2](null, [
         { _id: '1', type: 'report', pass: true, date: now },
         { _id: '2', type: 'report', pass: false, date: now },
         { _id: '3', type: 'report', pass: true, date: now },

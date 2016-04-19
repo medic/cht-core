@@ -1,12 +1,13 @@
 /**
 * Our wrapper around google's libphonenumber.
 */
-var i18n = require('./phoneformat'),
-  standardFormat = i18n.phonenumbers.PhoneNumberFormat.E164;
+var phonenumber = require('libphonenumber/libphonenumber'),
+    standardFormat = phonenumber.PhoneNumberFormat.E164,
+    CHARACTER_REGEX = /[a-z]/i;
 
 var _init = function(settings, phone) {
   return {
-    util: i18n.phonenumbers.PhoneNumberUtil.getInstance(),
+    util: phonenumber.PhoneNumberUtil.getInstance(),
     phone: phone,
     countryCode: settings && settings.default_country_code,
     country: function() {
@@ -23,10 +24,9 @@ var _init = function(settings, phone) {
     },
     validate: function() {
       return this.util.isValidNumber(this.parse()) &&
-        // Disallow alpha numbers, e.g. 1-800-MICROSOFT. We only take digits.
-        // Disallow weirdness in liphonenumber : 1 or 2 letters are ignored 
-        // ('<validnumber>aa' is valid).
-        !this.phone.match(/[a-z]/i);
+        // Disallow alpha numbers which libphonenumber considers valid,
+        // e.g. 1-800-MICROSOFT.
+        !this.phone.match(CHARACTER_REGEX);
     }
   };
 };

@@ -1,41 +1,20 @@
 var _ = require('underscore');
 
-/**
- * Util functions available to a form doc's `.context` function for checking if
- * a form is relevant to a specific contact.
- */
-var CONTEXT_UTILS = {
-  ageInYears: function(c) {
-    if (!c.date_of_birth) {
-      return;
-    }
-    var birthday = new Date(c.date_of_birth),
-        today = new Date();
-    return (today.getFullYear() - birthday.getFullYear()) +
-        (today.getMonth() < birthday.getMonth() ? -1 : 0) +
-        (today.getMonth() === birthday.getMonth() &&
-            today.getDate() < birthday.getDate() ? -1 : 0);
-  },
-};
-
 (function () {
 
   'use strict';
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('ContactsContentCtrl', 
-    ['$parse', '$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search', 'Changes', 'ContactSchema', 'UserDistrict',
-    function($parse, $scope, $stateParams, $q, $log, DB, TaskGenerator, Search, Changes, ContactSchema, UserDistrict) {
+  inboxControllers.controller('ContactsContentCtrl',
+    ['$parse', '$scope', '$stateParams', '$q', '$log', 'DB', 'RulesEngine', 'Search', 'Changes', 'ContactSchema', 'UserDistrict', 'XmlForms',
+    function($parse, $scope, $stateParams, $q, $log, DB, RulesEngine, Search, Changes, ContactSchema, UserDistrict, XmlForms) {
 
       $scope.showParentLink = false;
 
       var getReports = function(id) {
-        var scope = {
-          filterModel: { subjectIds: [ id ], type: 'reports' }
-        };
         return $q(function(resolve, reject) {
-          Search(scope, { }, function(err, data) {
+          Search('reports', { subjectIds: [ id ] }, {}, function(err, data) {
             if (err) {
               return reject(err);
             }
@@ -136,7 +115,7 @@ var CONTEXT_UTILS = {
               doc: results[0],
               children: results[1].rows,
               contactFor: results[2].rows,
-              reports: results[3]
+              reports: results[3].reverse()
             };
             selected.fields = selectedSchemaVisibleFields(selected);
             return selected;
@@ -156,7 +135,7 @@ var CONTEXT_UTILS = {
       };
 
       var mergeTasks = function(tasks) {
-        var selectedTasks = $scope.selected.tasks;
+        var selectedTasks = $scope.selected && $scope.selected.tasks;
         $log.debug('Updating contact tasks', selectedTasks, tasks);
         if (selectedTasks) {
           tasks.forEach(function(task) {
@@ -182,7 +161,7 @@ var CONTEXT_UTILS = {
           patientIds = _.pluck($scope.selected.children, 'id');
         }
         patientIds.push($scope.selected.doc._id);
-        TaskGenerator('ContactsContentCtrl', 'task', function(err, tasks) {
+        RulesEngine.listen('ContactsContentCtrl', 'task', function(err, tasks) {
           if (err) {
             return $log.error('Error getting tasks', err);
           }
@@ -206,19 +185,13 @@ var CONTEXT_UTILS = {
             getTasks();
             updateParentLink();
 
-            $scope.relevantForms = _.filter($scope.formDefinitions, function(form) {
-              if (!form.context) {
-                return false;
+            XmlForms('ContactsContentCtrl', { doc: $scope.selected.doc }, function(err, forms) {
+              if (err) {
+                return $log.error('Error fetching relevant forms', err);
               }
-              if (typeof form.context === 'string') {
-                return $parse(form.context)
-                    .call(null, CONTEXT_UTILS, { contact: $scope.selected.doc });
-              }
-              if ($scope.selected.doc.type === 'person') {
-                return form.context.person;
-              }
-              return form.context.place;
+              $scope.relevantForms = forms;
             });
+
           })
           .catch(function(err) {
             $scope.clearSelected();

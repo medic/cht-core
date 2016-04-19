@@ -82,16 +82,21 @@ describe('Cache service', function() {
     var initial = [ { _id: 1, name: 'gareth' } ];
     var updated = [ { _id: 1, name: 'alex' } ];
     var count = 0;
-    var cache = service({ get: function(callback) {
-      if (count === 0) {
-        callback(null, initial);
-      } else if (count === 1) {
-        callback(null, updated);
-      } else {
-        chai.expect(true).to.equal(false);
+    var cache = service({
+      get: function(callback) {
+        if (count === 0) {
+          callback(null, initial);
+        } else if (count === 1) {
+          callback(null, updated);
+        } else {
+          chai.expect(true).to.equal(false);
+        }
+        count++;
+      },
+      filter: function() {
+        return true;
       }
-      count++;
-    }});
+    });
     cache(function(err, results) {
       chai.expect(err).to.equal(null);
       chai.expect(results).to.deep.equal(initial);
@@ -128,7 +133,7 @@ describe('Cache service', function() {
       chai.expect(err).to.equal(null);
       chai.expect(results).to.deep.equal(initial);
     });
-    changesCallback({ id: newDoc._id, newDoc: newDoc });
+    changesCallback({ id: newDoc._id, doc: newDoc });
     setTimeout(function() {
       cache(function(err, results) {
         chai.expect(err).to.equal(null);
@@ -138,7 +143,7 @@ describe('Cache service', function() {
     });
   });
 
-  it('invalidates the when filter fails', function(done) {
+  it('does not invalidate the cache when filter fails', function(done) {
     var newDoc = { _id: 2, name: 'alex' };
     var initial = [ { _id: 1, name: 'gareth' } ];
     var count = 0;
@@ -159,7 +164,11 @@ describe('Cache service', function() {
       chai.expect(err).to.equal(null);
       chai.expect(results).to.deep.equal(initial);
     });
-    changesCallback({ id: newDoc._id, changes: [ { rev: '1-xyz' } ] });
+    changesCallback({
+      id: newDoc._id,
+      changes: [ { rev: '1-xyz' } ],
+      doc: newDoc
+    });
     setTimeout(function() {
       cache(function(err, results) {
         chai.expect(err).to.equal(null);

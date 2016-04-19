@@ -3,15 +3,13 @@ describe('Facility service', function() {
   'use strict';
 
   var service,
-      viewErr,
-      viewResults;
+      DbView;
 
   beforeEach(function() {
     module('inboxApp');
+    DbView = sinon.stub();
     module(function($provide) {
-      $provide.value('DbView', function(name, options, callback) {
-        return callback(viewErr, viewResults);
-      });
+      $provide.value('DbView', DbView);
       $provide.value('Cache', function(options) {
         return options.get;
       });
@@ -19,11 +17,10 @@ describe('Facility service', function() {
     inject(function($injector) {
       service = $injector.get('Facility');
     });
-    viewErr = viewResults = null;
   });
 
   it('returns errors from request', function(done) {
-    viewErr = 'boom';
+    DbView.returns(KarmaUtils.mockPromise('boom'));
     service({}, function(err) {
       chai.expect(err).to.equal('boom');
       done();
@@ -31,7 +28,7 @@ describe('Facility service', function() {
   });
 
   it('returns zero when no facilities', function(done) {
-    viewResults = [];
+    DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
     service({}, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([]);
@@ -124,7 +121,7 @@ describe('Facility service', function() {
       }
     };
 
-    viewResults = [ clinicA, healthCenter, clinicB ];
+    DbView.returns(KarmaUtils.mockPromise(null, { results: [ clinicA, healthCenter, clinicB ] }));
     service({ types: ['clinic'] }, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([ clinicA, clinicB ]);

@@ -1,3 +1,6 @@
+var _ = require('underscore'),
+    ajaxDownload = require('../modules/ajax-download');
+
 (function () {
 
   'use strict';
@@ -5,8 +8,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'MessageContact', 'Changes',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, MessageContact, Changes) {
+    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$http', '$log', 'MessageContact', 'Changes', 'DownloadUrl',
+    function ($scope, $rootScope, $state, $stateParams, $timeout, $http, $log, MessageContact, Changes, DownloadUrl) {
 
       var removeDeletedMessages = function(messages) {
         var existingKey;
@@ -33,7 +36,7 @@
           } else {
             $scope.messages.push(updated);
           }
-          if ($scope.selected.id === updated.key[0]) {
+          if ($scope.selected && $scope.selected.id === updated.key[0]) {
             $scope.$broadcast('UpdateContactConversation', { silent: true});
           }
         });
@@ -73,7 +76,6 @@
       };
 
       $scope.allLoaded = false;
-      $scope.filterModel.type = 'messages';
       $scope.messages = [];
       $scope.selected = null;
       setMessages();
@@ -89,6 +91,21 @@
         }
       });
 
+      $scope.$on('export', function() {
+        if ($scope.currentTab === 'messages') {
+          DownloadUrl(null, 'messages', function(err, url) {
+            if (err) {
+              return $log.error(err);
+            }
+            $http.post(url)
+              .then(ajaxDownload.download)
+              .catch(function(err) {
+                $log.error('Error downloading', err);
+              });
+          });
+        }
+      });
+
       $scope.$on('ClearSelected', function() {
         $scope.selected = null;
       });
@@ -99,13 +116,12 @@
           updateConversations({ changes: true });
         },
         filter: function(change) {
-          if ($scope.filterModel.type !== 'messages') {
+          if ($scope.currentTab !== 'messages') {
             return false;
           }
-          if (change.newDoc) {
-            return change.newDoc.kujua_message || change.newDoc.sms_message;
-          }
-          return change.deleted;
+          return change.doc.kujua_message ||
+                 change.doc.sms_message ||
+                 change.deleted;
         }
       });
 

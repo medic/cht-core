@@ -1,5 +1,7 @@
 'use strict';
 
+var _ = require('underscore');
+
 var inboxControllers = angular.module('inboxControllers');
 
 inboxControllers.controller('AboutCtrl',
@@ -7,9 +9,13 @@ inboxControllers.controller('AboutCtrl',
       'DB', 'Debug', 'Language', 'Session',
   function ($interval, $q, $scope,
       DB, Debug, Language, Session) {
-    $scope.filterModel.type = 'help';
     $scope.url = window.location.hostname;
     $scope.userCtx = Session.userCtx();
+    DB.get().get('_design/medic')
+      .then(function(ddoc) {
+        var rev = ddoc.remote_rev || ddoc._rev;
+        $scope.ddocVersion = rev.split('-')[0];
+      });
     $scope.reload = function() {
       window.location.reload(false);
     };
@@ -19,10 +25,10 @@ inboxControllers.controller('AboutCtrl',
     $scope.$watch('enableDebugModel.val', Debug.set);
 
     if (window.medicmobile_android && window.medicmobile_android.getDataUsage) {
-      $scope.android_data_usage = JSON.parse(window.medicmobile_android.getDataUsage());
+      $scope.androidDataUsage = JSON.parse(window.medicmobile_android.getDataUsage());
 
       var dataUsageUpdate = $interval(function() {
-        $scope.android_data_usage = JSON.parse(window.medicmobile_android.getDataUsage());
+        $scope.androidDataUsage = JSON.parse(window.medicmobile_android.getDataUsage());
       }, 2000);
 
       $scope.$on('$destroy', function() {

@@ -7,8 +7,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksCtrl',
-    ['$scope', '$state', '$log', '$timeout', 'LiveList', 'ResourceIcons', 'TranslateFrom',
-    function ($scope, $state, $log, $timeout, LiveList, ResourceIcons, TranslateFrom) {
+    ['$scope', '$state', '$timeout', 'LiveList', 'TranslateFrom',
+    function ($scope, $state, $timeout, LiveList, TranslateFrom) {
 
       var setSelectedTask = function(task) {
         LiveList.tasks.setSelected(task._id);
@@ -36,10 +36,8 @@ var _ = require('underscore');
         $scope.selected = null;
       });
 
-      $scope.filterModel.type = 'tasks';
       $timeout(function() {
         LiveList.tasks.refresh();
-        ResourceIcons.refresh();
       });
       $scope.selected = null;
       $scope.error = false;
@@ -58,11 +56,18 @@ var _ = require('underscore');
       };
 
       $scope.$on('query', function() {
-        if ($scope.filterModel.type !== 'tasks') {
+        if ($scope.currentTab !== 'tasks') {
           LiveList.tasks.clearSelected();
           delete LiveList.tasks.notifyChange;
           delete LiveList.tasks.notifyError;
           return;
+        }
+      });
+
+      $scope.$on('$destroy', function() {
+        if (!$state.includes('tasks')) {
+          $scope.setTitle();
+          $scope.clearSelected();
         }
       });
 

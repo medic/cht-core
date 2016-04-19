@@ -33,7 +33,7 @@ var moment = require('moment');
       };
 
       var getDateDiff = function(date) {
-        var now = moment();
+        var now = moment().startOf('day'); // remove the time component
         for (var i = 0; i < config.ageBreaks.length; i++) {
           var ageBreak = config.ageBreaks[i];
           var diff = date.diff(now, ageBreak.unit);
@@ -44,15 +44,24 @@ var moment = require('moment');
         return { quantity: 0, key: { singular: 'd', plural: 'dd' } };
       };
 
-      var relativeDate = function(date, withSuffix) {
-        var diff = getDateDiff(date);
-        if (diff.quantity === 0) {
-          return $translate.instant('today');
+      var relativeDate = function(date, options) {
+        options = options || {};
+        var diff = getDateDiff(moment(date).startOf('day'));
+        if (options.humanize) {
+          if (diff.quantity === 0) {
+            return $translate.instant('today');
+          }
+          if (diff.quantity === 1) {
+            return $translate.instant('tomorrow');
+          }
+          if (diff.quantity === -1) {
+            return $translate.instant('yesterday');
+          }
         }
         var quantity = Math.abs(diff.quantity);
         var key = quantity === 1 ? diff.key.singular : diff.key.plural;
         var output = MomentLocaleData().relativeTime(quantity, true, key);
-        if (withSuffix) {
+        if (options.suffix) {
           return MomentLocaleData().pastFuture(diff.quantity, output);
         }
         return output;
@@ -68,7 +77,7 @@ var moment = require('moment');
         relative: function(date, options) {
           options = options || {};
           if (options.withoutTime) {
-            return relativeDate(date, true);
+            return relativeDate(date, { suffix: true, humanize: true });
           }
           return moment(date).fromNow();
         },

@@ -6,7 +6,6 @@ describe('Search service', function() {
       allDocs,
       DbView,
       GenerateSearchRequests,
-      scope,
       options;
 
   beforeEach(function() {
@@ -16,9 +15,7 @@ describe('Search service', function() {
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ allDocs: allDocs }));
-      $provide.factory('DbView', function() {
-        return DbView;
-      });
+      $provide.value('DbView', DbView);
       $provide.factory('GenerateSearchRequests', function() {
         return GenerateSearchRequests;
       });
@@ -26,13 +23,6 @@ describe('Search service', function() {
     inject(function($injector) {
       service = $injector.get('Search');
     });
-    scope = {
-      filterModel: {
-        type: 'reports',
-        date: {},
-        forms: []
-      }
-    };
     options = {};
   });
 
@@ -42,7 +32,7 @@ describe('Search service', function() {
 
   it('returns error when GenerateSearchRequests errors', function(done) {
     GenerateSearchRequests.throws(new Error('boom'));
-    service(scope, options, function(err) {
+    service('reports', {}, options, function(err) {
       chai.expect(err.message).to.equal('boom');
       chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
       done();
@@ -57,8 +47,8 @@ describe('Search service', function() {
         descending: true
       }
     }]);
-    DbView.callsArgWith(2, 'boom');
-    service(scope, options, function(err) {
+    DbView.returns(KarmaUtils.mockPromise('boom'));
+    service('reports', {}, options, function(err) {
       chai.expect(err).to.equal('boom');
       chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
       chai.expect(DbView.calledOnce).to.equal(true);
@@ -74,8 +64,8 @@ describe('Search service', function() {
         descending: true
       }
     }]);
-    DbView.callsArgWith(2, null, []);
-    service(scope, options, function(err, actual) {
+    DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
+    service('reports', {}, options, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual.length).to.equal(0);
       chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
@@ -93,8 +83,8 @@ describe('Search service', function() {
         descending: true
       }
     }]);
-    DbView.callsArgWith(2, null, expected);
-    service(scope, options, function(err, actual) {
+    DbView.returns(KarmaUtils.mockPromise(null, { results: expected }));
+    service('reports', {}, options, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
@@ -117,8 +107,8 @@ describe('Search service', function() {
         descending: true
       }
     }]);
-    DbView.callsArgWith(2, null, expected);
-    service(scope, options, function(err, actual) {
+    DbView.returns(KarmaUtils.mockPromise(null, { results: expected }));
+    service('reports', {}, options, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
@@ -133,9 +123,9 @@ describe('Search service', function() {
 
   it('returns results when one filter', function(done) {
     GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
-    DbView.callsArgWith(2, null, { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 } ] });
+    DbView.returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 } ] } }));
     allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } }, { doc: { id: 'b' } } ] }));
-    service(scope, options, function(err, actual) {
+    service('reports', {}, options, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([ { id: 'a' }, { id: 'b' } ]);
       chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
@@ -152,9 +142,9 @@ describe('Search service', function() {
 
   it('removes duplicates before pagination', function(done) {
     GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
-    DbView.callsArgWith(2, null, { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'a', value: 1 } ] });
+    DbView.returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'a', value: 1 } ] }}));
     allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } }, { doc: { id: 'b' } } ] }));
-    service(scope, options, function(err, actual) {
+    service('reports', {}, options, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([ { id: 'a' }, { id: 'b' } ]);
       chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
@@ -180,9 +170,9 @@ describe('Search service', function() {
       expected.push(j);
     }
     GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
-    DbView.callsArgWith(2, null, viewResult);
+    DbView.returns(KarmaUtils.mockPromise(null, { results: viewResult }));
     allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ ] }));
-    service(scope, options, function() {
+    service('reports', {}, options, function() {
       chai.expect(allDocs.calledOnce).to.equal(true);
       chai.expect(allDocs.args[0][0].keys.length).to.equal(10);
       chai.expect(allDocs.args[0][0].keys).to.deep.equal(expected);
@@ -201,9 +191,9 @@ describe('Search service', function() {
       expected.push(j);
     }
     GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
-    DbView.callsArgWith(2, null, viewResult);
+    DbView.returns(KarmaUtils.mockPromise(null, { results: viewResult }));
     allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ ] }));
-    service(scope, options, function() {
+    service('reports', {}, options, function() {
       chai.expect(allDocs.calledOnce).to.equal(true);
       chai.expect(allDocs.args[0][0].keys.length).to.equal(5);
       chai.expect(allDocs.args[0][0].keys).to.deep.equal(expected);
@@ -216,10 +206,10 @@ describe('Search service', function() {
       { view: 'get_stuff', params: { key: [ 'a' ] } },
       { view: 'get_moar_stuff', params: { startkey: [ {} ] } }
     ]);
-    DbView.onCall(0).callsArgWith(2, null, { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'c', value: 3 } ] });
-    DbView.onCall(1).callsArgWith(2, null, { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'd', value: 4 } ] });
+    DbView.onCall(0).returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'c', value: 3 } ] }}));
+    DbView.onCall(1).returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'd', value: 4 } ] }}));
     allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } }, { doc: { id: 'b' } } ] }));
-    service(scope, options, function(err, actual) {
+    service('reports', {}, options, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([ { id: 'a' }, { id: 'b' } ]);
       chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
@@ -243,9 +233,9 @@ describe('Search service', function() {
       { view: 'get_stuff', params: { key: [ 'a' ] } },
       { view: 'get_moar_stuff', params: { startkey: [ {} ] } }
     ]);
-    DbView.onCall(0).callsArgWith(2, null, { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'c', value: 3 } ] });
-    DbView.onCall(1).callsArgWith(2, 'boom');
-    service(scope, options, function(err) {
+    DbView.onCall(0).returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'c', value: 3 } ] }}));
+    DbView.onCall(1).returns(KarmaUtils.mockPromise('boom'));
+    service('reports', {}, options, function(err) {
       chai.expect(err).to.equal('boom');
       chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
       chai.expect(DbView.calledTwice).to.equal(true);
@@ -255,8 +245,8 @@ describe('Search service', function() {
 
   it('does not get when no ids', function(done) {
     GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
-    DbView.callsArgWith(2, null, { rows: [] });
-    service(scope, options, function(err, actual) {
+    DbView.returns(KarmaUtils.mockPromise(null, { results: { rows: [] }}));
+    service('reports', {}, options, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([]);
       chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
@@ -268,13 +258,13 @@ describe('Search service', function() {
 
   it('debounces if the same query is executed twice', function() {
     GenerateSearchRequests.returns([ { view: 'get_stuff', params: { } } ]);
-    DbView.callsArgWithAsync(2, null, { rows: [ { id: 'a', value: 1 } ] });
+    DbView.returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 } ] }}));
     allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } } ] }));
-    service(scope, {}, function(err, actual) {
+    service('reports', {}, {}, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
     });
-    service(scope, {}, function() {
+    service('reports', {}, {}, function() {
       // this callback should never be called
       chai.expect(true).to.equal(false);
     });
@@ -282,13 +272,13 @@ describe('Search service', function() {
 
   it('does not debounce if the same query is executed twice with the force option', function() {
     GenerateSearchRequests.returns([ { view: 'get_stuff', params: { } } ]);
-    DbView.callsArgWithAsync(2, null, { rows: [ { id: 'a', value: 1 } ] });
+    DbView.returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 } ] }}));
     allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } } ] }));
-    service(scope, function(err, actual) {
+    service('reports', {}, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
     });
-    service(scope, { force: true }, function() {
+    service('reports', {}, { force: true }, function() {
       // this callback should never be called
       chai.expect(true).to.equal(false);
     });
@@ -298,19 +288,18 @@ describe('Search service', function() {
     GenerateSearchRequests
       .onFirstCall().returns([ { view: 'get_stuff', params: { id: 'a' } } ])
       .onSecondCall().returns([ { view: 'get_stuff', params: { id: 'b' } } ]);
-    DbView
-      .onFirstCall().callsArgWith(2, null, { rows: [ { id: 'a', value: 1 } ] })
-      .onSecondCall().callsArgWith(2, null, { rows: [ { id: 'b', value: 2 } ] });
+    DbView.onCall(0).returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 } ] }}));
+    DbView.onCall(1).returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'b', value: 2 } ] }}));
     allDocs
       .onFirstCall().returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } } ] }))
       .onSecondCall().returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'b' } } ] }));
     var finished = 0;
-    service(scope, {}, function(err, actual) {
+    service('reports', {}, {}, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
       chai.expect(finished++).to.equal(0);
     });
-    service(scope, {}, function(err, actual) {
+    service('reports', {}, {}, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([ { id: 'b' } ]);
       chai.expect(finished++).to.equal(1);
@@ -319,12 +308,12 @@ describe('Search service', function() {
 
   it('does not debounce subsequent queries', function(done) {
     GenerateSearchRequests.returns([ { view: 'get_stuff', params: { } } ]);
-    DbView.callsArgWith(2, null, { rows: [ { id: 'a', value: 1 } ] });
+    DbView.returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 } ] }}));
     allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } } ] }));
-    service(scope, {}, function(err, actual) {
+    service('reports', {}, {}, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
-      service(scope, {}, function(err, actual) {
+      service('reports', {}, {}, function(err, actual) {
         chai.expect(err).to.equal(null);
         chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
         done();
@@ -333,7 +322,6 @@ describe('Search service', function() {
   });
 
   it('sorts and limits contacts results', function(done) {
-    scope.filterModel.type = 'contacts';
     options.limit = 10;
     var viewResult = { rows: [] };
     for (var i = 0; i < 15; i++) {
@@ -344,9 +332,9 @@ describe('Search service', function() {
       expected.push(j);
     }
     GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
-    DbView.callsArgWith(2, null, viewResult);
+    DbView.returns(KarmaUtils.mockPromise(null, { results: viewResult }));
     allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ ] }));
-    service(scope, options, function() {
+    service('contacts', {}, options, function() {
       chai.expect(allDocs.calledOnce).to.equal(true);
       chai.expect(allDocs.args[0][0].keys.length).to.equal(10);
       chai.expect(allDocs.args[0][0].keys).to.deep.equal(expected);
@@ -355,7 +343,6 @@ describe('Search service', function() {
   });
 
   it('sorts and skips contacts results', function(done) {
-    scope.filterModel.type = 'contacts';
     options.skip = 10;
     var viewResult = { rows: [] };
     for (var i = 0; i < 15; i++) {
@@ -366,9 +353,9 @@ describe('Search service', function() {
       expected.push(j);
     }
     GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
-    DbView.callsArgWith(2, null, viewResult);
+    DbView.returns(KarmaUtils.mockPromise(null, { results: viewResult }));
     allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ ] }));
-    service(scope, options, function() {
+    service('contacts', {}, options, function() {
       chai.expect(allDocs.calledOnce).to.equal(true);
       chai.expect(allDocs.args[0][0].keys.length).to.equal(5);
       chai.expect(allDocs.args[0][0].keys).to.deep.equal(expected);

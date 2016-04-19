@@ -7,7 +7,7 @@
     <link rel="shortcut icon" href="<%= baseURL %>/static/img/ico/icon_48.ico">
     <title>Medic Mobile</title>
   </head>
-  <body class="inbox {{filterModel.type}}" ng-controller="InboxCtrl" ng-class="{'show-content': showContent, 'bootstrapped': version}">
+  <body class="inbox {{currentTab}}" ng-controller="InboxCtrl" ng-class="{'show-content': showContent, 'bootstrapped': version && dbWarmedUp}">
 
     <div class="bootstrap-layer">
       <div class="loader"></div>
@@ -17,7 +17,6 @@
 
     <div class="container-fluid">
       <ng-include src="'templates/partials/header.html'"></ng-include>
-      <ng-include src="'templates/partials/filters.html'" onload="setupFilters()"></ng-include>
       <div class="row content" ui-view></div>
     </div>
 
@@ -25,7 +24,6 @@
       <span class="snackbar-content"></span>
     </div>
 
-    <ng-include src="'templates/modals/alert.html'"></ng-include>
     <ng-include src="'templates/modals/bad_local_date.html'"></ng-include>
     <ng-include src="'templates/modals/delete_language.html'"></ng-include>
     <ng-include src="'templates/modals/delete_user_confirm.html'"></ng-include>
@@ -38,7 +36,6 @@
     <ng-include src="'templates/modals/guided_setup.html'" onload="setupGuidedSetup()"></ng-include>
     <ng-include src="'templates/modals/import_contacts.html'"></ng-include>
     <ng-include src="'templates/modals/import_translation.html'"></ng-include>
-    <ng-include src="'templates/modals/navigation_confirm.html'"></ng-include>
     <ng-include src="'templates/modals/send_message.html'" onload="setupSendMessage()"></ng-include>
     <ng-include src="'templates/modals/tour_select.html'" onload="setupTour()"></ng-include>
     <ng-include src="'templates/modals/update_facility.html'"></ng-include>
@@ -47,7 +44,6 @@
     <ng-include src="'templates/modals/version_update.html'"></ng-include>
     <ng-include src="'templates/modals/welcome.html'" onload="setupWelcome()"></ng-include>
 
-    <script src="<%= baseURL %>/static/dist/dependencies.js" type="text/javascript"></script>
     <script src="<%= baseURL %>/static/dist/inbox.js" type="text/javascript"></script>
     <script src="<%= baseURL %>/static/dist/templates.js" type="text/javascript"></script>
 

@@ -23,11 +23,12 @@ var _ = require('underscore'),
   var validatePhoneNumber = function(data) {
     if (data.everyoneAt) {
       return true;
-    } else if(data.freetext) {
-      return libphonenumber.validate(settings, data.id);
     }
-    var contact = data.doc.contact || data.doc;
-    return contact && libphonenumber.validate(settings, contact.phone);
+    if (data.doc) {
+      var contact = data.doc.contact || data.doc;
+      return contact && libphonenumber.validate(settings, contact.phone);
+    }
+    return libphonenumber.validate(settings, data.id);
   };
 
   var validatePhoneNumbers = function(recipients) {
@@ -107,7 +108,10 @@ var _ = require('underscore'),
     if (row.everyoneAt) {
       return formatEveryoneAt(row);
     }
-    return row.doc.name || row.doc.phone;
+    if (row.doc) {
+      return row.doc.name || row.doc.phone;
+    }
+    return row.id;
   };
 
   var createChoiceFromNumber = function(phone) {
@@ -155,60 +159,52 @@ var _ = require('underscore'),
     return data;
   };
 
-  var initPhoneField = function($phone) {
+  var initPhoneField = function($phone, callback) {
     if (!$phone) {
       return;
     }
     $phone.parent().show();
-
-    $.fn.select2.amd.require(
-    ['select2/data/array', 'select2/utils'],
-    function (ArrayData, Utils) {
-      function CustomData ($element, options) {
-        CustomData.__super__.constructor.call(this, $element, options);
+    contact(function(err, data) {
+      if (err) {
+        return callback(err);
       }
-
-      Utils.Extend(CustomData, ArrayData);
-
-      CustomData.prototype.query = function (params, callback) {
-        contact(function(err, vals) {
-          if (err) {
-            return console.log('Failed to retrieve contacts', err);
-          }
-          callback({
-            results: filter(params, vals)
-          });
-        });
-      };
-
+      data = filter({}, data);
       $phone.select2({
+        data: data,
         allowClear: true,
-        dataAdapter: CustomData,
+        tags: true,
+        createSearchChoice: createChoiceFromNumber,
         dropdownParent: $('#send-message'),
         templateResult: formatResult,
-        templateSelection: formatResult,
+        templateSelection: formatSelection,
         width: '100%',
       });
+      callback();
     });
   };
 
   exports.showModal = function(options) {
-    var $modal = $('#send-message');
-    $modal.find('.has-error').removeClass('has-error');
-    $modal.find('.help-block').text('');
-    var val = [],
-        to = options.to;
-    if (to) {
-      if (typeof to === 'string') {
-        val.push(createChoiceFromNumber(to));
-      } else if (to) {
-        val.push({ id: to._id, doc: to, everyoneAt: options.everyoneAt });
+    initPhoneField($('#send-message [name=phone]'), function(err) {
+      if (err) {
+        return console.error('Error initialising phone search');
       }
-    }
-    $modal.find('[name=phone]').val(val).trigger('change');
-    $modal.find('[name=message]').val(options.message || '');
-    $modal.find('.count').text('');
-    $modal.modal('show');
+      var $modal = $('#send-message');
+      $modal.find('.has-error').removeClass('has-error');
+      $modal.find('.help-block').text('');
+      var val = [],
+          to = options.to;
+      if (to) {
+        if (typeof to === 'string') {
+          val.push(to);
+        } else if (to) {
+          val.push(to._id);
+        }
+      }
+      $modal.find('[name=phone]').val(val).trigger('change');
+      $modal.find('[name=message]').val(options.message || '');
+      $modal.find('.count').text('');
+      $modal.modal('show');
+    });
   };
 
   var contact;
@@ -220,12 +216,13 @@ var _ = require('underscore'),
     translateFn = _translateFn;
     Settings()
       .then(function(_settings) {
-        $('body').on('click', '.send-message', function(e) {
-          var target = $(e.target).closest('.send-message');
+        settings = _settings;
+        $('body').on('click', '.send-message', function(event) {
+          var target = $(event.target).closest('.send-message');
           if (target.hasClass('mm-icon-disabled')) {
             return;
           }
-          e.preventDefault();
+          event.preventDefault();
           var to = target.attr('data-send-to');
           if (to) {
             try {
@@ -240,12 +237,9 @@ var _ = require('underscore'),
             everyoneAt: target.attr('data-everyone-at') === 'true'
           });
         });
-        initPhoneField($('#send-message [name=phone]'));
-
-        settings = _settings;
       })
       .catch(function(err) {
-        console.log('Failed to retrieve settings', err);
+        console.error('Failed to retrieve settings', err);
       });
   };
 
@@ -312,7 +306,7 @@ var _ = require('underscore'),
 
     validateRecipients($modal, function(err, phone) {
       if (err) {
-        return console.log('Error validating recipients', err);
+        return;
       }
       if (phone.valid && message.valid) {
         callback(phone.value, message.value);

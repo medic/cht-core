@@ -6,15 +6,18 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 
 define( function( require, exports, module ) {
     'use strict';
-    var Widget = require( 'enketo-core/src/js/Widget' );
-    var $ = require( 'jquery' );
-    require( 'enketo-core/src/js/plugins' );
+    var _ = require('underscore');
+    var Widget = require('enketo-core/src/js/Widget');
+    var $ = require('jquery');
     var format = require('../../modules/format');
+    require('enketo-core/src/js/plugins');
+
+    var PAGE_SIZE = 20;
 
     var pluginName = 'dbobjectwidget';
 
     /**
-     * Allows drop-down selecters for db objects.
+     * Allows drop-down selectors for db objects.
      *
      * @constructor
      * @param {Element} element [description]
@@ -37,7 +40,7 @@ define( function( require, exports, module ) {
     Dbobjectwidget.prototype._init = function() {
         var angularServices = angular.element(document.body).injector();
         var translate = angularServices.get('$translate').instant;
-        var DB = angularServices.get('DB').get();
+        var Search = angularServices.get('Search');
 
         var formatResult = function(row) {
             if(!row.doc) {
@@ -46,7 +49,9 @@ define( function( require, exports, module ) {
             if(row.doc.type === 'person') {
                 return $(format.contact(row.doc));
             }
-            return format.clinic(row.doc);
+            // format escapes the content for us, and if we just return
+            // a string select2 escapes it again, so return an element instead.
+            return $('<span>' + format.clinic(row.doc) + '</span>');
         };
 
         var formatSelection = function(row) {
@@ -56,26 +61,43 @@ define( function( require, exports, module ) {
             return row.text;
         };
 
+        var matcher = function(params, data) {
+            var doc = data && data.doc;
+            if (!doc) {
+                return null;
+            }
+            var term = params.term && params.term.toLowerCase();
+            if (!term) {
+                return data;
+            }
+            var match = false;
+            Object.keys(doc).forEach(function(key) {
+                if (typeof doc[key] === 'string' && doc[key].toLowerCase().indexOf(term) !== -1) {
+                    match = true;
+                }
+            });
+            return match ? data : null;
+        };
+
         var $question = $(this.element);
 
         var $textInput = $question.find('input');
-        var initialValue = $textInput.val();
         $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
         $textInput = $question.find('select');
 
         var dbObjectType = $textInput.attr('data-type-xml');
 
-        var loader = $('<div class="loader"/></div>');
-        $textInput.after(loader);
+        var prepareRows = function(documents, first) {
+            var rows = _.sortBy(documents, function(doc) {
+                return doc.name;
+            }).map(function(doc) {
+                return {
+                    id: doc._id,
+                    doc: doc
+                };
+            });
 
-        DB.query('medic/doc_by_type', {include_docs:true, key:[dbObjectType]})
-            .then(function(res) {
-                loader.remove();
-
-                var rows = _.sortBy(res.rows, function(row) {
-                    return row.doc.name;
-                });
-
+            if (first) {
                 // add 'new' option if requested
                 if ($question.hasClass('or-appearance-allow-new')) {
                     rows.unshift({
@@ -83,55 +105,69 @@ define( function( require, exports, module ) {
                         text: translate('contact.type.' + dbObjectType + '.new'),
                     });
                 }
+
                 // add blank option
                 rows.unshift({ id: '' });
+            }
 
-                if(initialValue) {
-                    var selected = _.find(rows, function(row) {
-                        return row.doc && row.doc._id === initialValue;
-                    });
-                    if(selected) {
-                        $textInput.append($('<option>', {
-                            selected: 'selected',
-                            value: selected.doc._id,
-                            text: selected.doc.name,
-                        }));
-                    }
+            return rows;
+        };
+
+        var query = function(params, successCb, failureCb) {
+            var query = params.data.q;
+            var skip = ((params.data.page || 1) - 1) * PAGE_SIZE;
+
+            Search({ // $scope
+                filterModel: {
+                    type: 'contacts',
+                    contactTypes: [dbObjectType],
+                },
+                filterQuery: {
+                    value: query
+                }
+            }, { // options
+                limit: PAGE_SIZE,
+                skip: skip
+            }, function(err, documents) {
+                if (err) {
+                    failureCb(err);
+                    console.log(dbObjectType + ' failed to load', err);
                 }
 
-                $.fn.select2.amd.require([
-                'select2/dropdown/attachContainer',
-                'select2/dropdown/closeOnSelect',
-                'select2/dropdown',
-                'select2/dropdown/search',
-                'select2/utils',
-                ], function (AttachContainer, CloseOnSelect, DropdownAdapter, DropdownSearch, Utils) {
-                    var CustomAdapter = Utils.Decorate(Utils.Decorate(Utils.Decorate(
-                        DropdownAdapter, DropdownSearch), AttachContainer), CloseOnSelect);
-
-                    $textInput.select2({
-                        data: rows,
-                        dropdownAdapter: CustomAdapter,
-                        templateResult: formatResult,
-                        templateSelection: formatSelection,
-                        width: '100%',
-                    });
-
-                    // Tell enketo to ignore the new <input> field that select2 adds
-                    $question.find('input.select2-search__field').addClass('ignore');
+                successCb({
+                    results: prepareRows(documents, skip === 0),
+                    pagination: {
+                        more: documents.length === PAGE_SIZE
+                    }
                 });
+            });
+        };
 
-                if (!$question.hasClass('or-appearance-bind-id-only')) {
-                    $textInput.on('change', function(e) {
-                        if (e.added && e.added.doc) {
-                            var form = $question.closest('form.or');
-                            var field = $question.find('select[name]').attr('name');
-                            var objectRoot = field.substring(0, field.lastIndexOf('/'));
-                            updateFields(form, e.added.doc, objectRoot, field);
-                        }
-                    });
+        $textInput.select2({
+            ajax: {
+                delay: 500,
+                transport: query
+            },
+            templateResult: formatResult,
+            templateSelection: formatSelection,
+            matcher: matcher,
+            selectOnClose: true,
+            minimumInputLength: 3,
+            width: '100%',
+        });
+
+        if (!$question.hasClass('or-appearance-bind-id-only')) {
+            $textInput.on('change', function() {
+                var selected = $textInput.select2('data');
+                var doc = selected && selected[0] && selected[0].doc;
+                if (doc) {
+                    var form = $question.closest('form.or');
+                    var field = $question.find('select[name]').attr('name');
+                    var objectRoot = field.substring(0, field.lastIndexOf('/'));
+                    updateFields(form, doc, objectRoot, field);
                 }
             });
+        }
     };
 
     var updateFields = function(form, doc, objectRoot, keyPath) {

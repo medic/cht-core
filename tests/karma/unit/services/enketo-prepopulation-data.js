@@ -35,10 +35,12 @@ describe('EnketoPrepopulationData service', function() {
             '<user>' +
               '<name/>' +
             '</user>' +
-            '<location>' +
-              '<lat/>' +
-              '<long/>' +
-            '</location>' +
+            '<meta>' +
+              '<location>' +
+                '<lat/>' +
+                '<long/>' +
+              '</location>' +
+            '</meta>' +
           '</inputs>' +
           '<person>' +
             '<type>person</type>' +
@@ -102,10 +104,12 @@ describe('EnketoPrepopulationData service', function() {
             '<user>' +
               '<name/>' +
             '</user>' +
-            '<location>' +
-              '<lat/>' +
-              '<long/>' +
-            '</location>' +
+            '<meta>' +
+              '<location>' +
+                '<lat/>' +
+                '<long/>' +
+              '</location>' +
+            '</meta>' +
           '</inputs>' +
           '<person>' +
             '<type>person</type>' +
@@ -254,8 +258,8 @@ describe('EnketoPrepopulationData service', function() {
     service(editPersonForm, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
-        chai.expect(xml.find('inputs > location > lat')[0].innerHTML).to.equal(location.lat);
-        chai.expect(xml.find('inputs > location > long')[0].innerHTML).to.equal(location.long);
+        chai.expect(xml.find('inputs > meta > location > lat')[0].innerHTML).to.equal(location.lat);
+        chai.expect(xml.find('inputs > meta > location > long')[0].innerHTML).to.equal(location.long);
         chai.expect(UserSettings.callCount).to.equal(1);
         done();
       })

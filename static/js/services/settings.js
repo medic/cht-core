@@ -8,8 +8,8 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('Settings',
-    ['$q', 'Cache', 'DB',
-    function($q, Cache, DB) {
+    ['$q', 'Cache', 'DB', 'Session',
+    function($q, Cache, DB, Session) {
 
       var cache = Cache({
         get: function(callback) {
@@ -17,7 +17,12 @@ var _ = require('underscore'),
             .get('_design/medic')
             .then(function(ddoc) {
               callback(null, _.defaults(ddoc.app_settings, defaults));
-            }).catch(callback);
+            }).catch(function(err) {
+              if (err && err.status === 401) {
+                Session.navigateToLogin();
+              }
+              callback(err);
+            });
         },
         filter: function(doc) {
           return doc._id === '_design/medic';

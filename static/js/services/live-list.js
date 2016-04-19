@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 function PARSER($parse, scope) {
   return function(expr) {
     expr = expr.substring(2, expr.length-2);
@@ -8,14 +10,12 @@ function PARSER($parse, scope) {
 // medic-webapp specific config for LiveList.
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig', [
-  '$log', '$parse', '$rootScope', '$templateCache', '$timeout',
-      'Changes', 'DB', 'LiveList', 'TaskGenerator',
-  function($log, $parse, $rootScope, $templateCache, $timeout,
-      Changes, DB, LiveList, TaskGenerator) {
+  '$log', '$parse', '$templateCache', '$timeout',
+      'Changes', 'DB', 'LiveList', 'RulesEngine', 'CONTACT_TYPES',
+  function($log, $parse, $templateCache, $timeout,
+      Changes, DB, LiveList, RulesEngine, CONTACT_TYPES) {
     // Configure LiveList service
-    return function() {
-
-      var contactTypes = [ 'district_hospital', 'health_center', 'clinic', 'person' ];
+    return function($scope) {
 
       var contacts_config = {
         orderBy: function(c1, c2) {
@@ -23,26 +23,26 @@ angular.module('inboxServices').factory('LiveListConfig', [
             return;
           }
           if (c1.type !== c2.type) {
-            return contactTypes.indexOf(c1.type) - contactTypes.indexOf(c2.type);
+            return CONTACT_TYPES.indexOf(c1.type) - CONTACT_TYPES.indexOf(c2.type);
           }
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
         listItem: function(contact) {
           var contactHtml = $templateCache.get('templates/partials/contacts_list_item.html');
-          var scope = $rootScope.$new();
+          var scope = $scope.$new();
           scope.contact = contact;
           return contactHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
       };
 
       LiveList.$listFor('contacts', {
-        selecter: '#contacts-list ul.unfiltered',
+        selector: '#contacts-list ul.unfiltered',
         orderBy: contacts_config.orderBy,
         listItem: contacts_config.listItem,
       });
 
       LiveList.$listFor('contact-search', {
-        selecter: '#contacts-list ul.filtered',
+        selector: '#contacts-list ul.filtered',
         orderBy: contacts_config.orderBy,
         listItem: contacts_config.listItem,
       });
@@ -54,48 +54,44 @@ angular.module('inboxServices').factory('LiveListConfig', [
             LiveList.contacts.remove({ _id: change.id });
             return;
           }
-
-          DB.get().get(change.id)
-            .then(function(doc) {
-              if (change.newDoc) {
-                LiveList.contacts.insert(doc);
-              } else {
-                LiveList.contacts.update(doc);
-              }
-            });
+          LiveList.contacts.update(change.doc);
         },
         filter: function(change) {
-          if (change.newDoc) {
-            return contactTypes.indexOf(change.newDoc.type) !== -1;
-          }
-          return LiveList.contacts.contains({ _id: change.id });
+          return CONTACT_TYPES.indexOf(change.doc.type) !== -1;
         }
       });
 
-
       var reports_config = {
         orderBy: function(r1, r2) {
-          if (!r1 || !r2) {
-            return;
+          var lhs = r1 && r1.reported_date,
+              rhs = r2 && r2.reported_date;
+          if (!lhs && !rhs) {
+            return 0;
+          }
+          if (!lhs) {
+            return 1;
+          }
+          if (!rhs) {
+            return -1;
           }
           return r2.reported_date - r1.reported_date;
         },
         listItem: function(report) {
           var reportHtml = $templateCache.get('templates/partials/reports_list_item.html');
-          var scope = $rootScope.$new();
+          var scope = $scope.$new();
           scope.report = report;
           return reportHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
       };
 
       LiveList.$listFor('reports', {
-        selecter: '#reports-list ul.unfiltered',
+        selector: '#reports-list ul.unfiltered',
         orderBy: reports_config.orderBy,
         listItem: reports_config.listItem,
       });
 
       LiveList.$listFor('report-search', {
-        selecter: '#reports-list ul.filtered',
+        selector: '#reports-list ul.filtered',
         orderBy: reports_config.orderBy,
         listItem: reports_config.listItem,
       });
@@ -107,39 +103,35 @@ angular.module('inboxServices').factory('LiveListConfig', [
             LiveList.reports.remove({ _id: change.id });
             return;
           }
-
-          DB.get().get(change.id)
-            .then(function(doc) {
-              if (change.newDoc) {
-                LiveList.reports.insert(doc);
-              } else {
-                LiveList.reports.update(doc);
-              }
-            });
+          LiveList.reports.update(change.doc);
         },
         filter: function(change) {
-          if (change.newDoc) {
-            return change.newDoc.form;
-          }
-          return LiveList.reports.contains({ _id: change.id });
+          return change.doc.form;
         }
       });
 
-
       LiveList.$listFor('tasks', {
-        selecter: '#tasks-list ul',
+        selector: '#tasks-list ul',
         orderBy: function(t1, t2) {
-          if (!t1 || !t2) {
-            return;
+          var lhs = t1 && t1.date,
+              rhs = t2 && t2.date;
+          if (!lhs && !rhs) {
+            return 0;
+          }
+          if (!lhs) {
+            return 1;
+          }
+          if (!rhs) {
+            return -1;
           }
           // Currently some task dates are Strings while others are proper JS
           // Date objects.  Simplest way to compare them is to parse all into
           // instances of Date.
-          return Date.parse(t2.date) - Date.parse(t1.date);
+          return Date.parse(lhs) - Date.parse(rhs);
         },
         listItem: function(task) {
           var taskHtml = $templateCache.get('templates/partials/tasks_list_item.html');
-          var scope = $rootScope.$new();
+          var scope = $scope.$new();
           scope.task = task;
           return taskHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
@@ -147,7 +139,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
 
       LiveList.tasks.set([]);
 
-      TaskGenerator('tasks-list', 'task', function(err, tasks) {
+      RulesEngine.listen('tasks-list', 'task', function(err, tasks) {
         if (err) {
           $log.error('Error getting tasks', err);
 
@@ -181,7 +173,8 @@ angular.module('inboxServices').factory('LiveListConfig', [
 ]);
 
 angular.module('inboxServices').factory('LiveList', [
-  function() {
+  '$timeout', 'ResourceIcons',
+  function($timeout, ResourceIcons) {
     var api = {};
     var indexes = {};
 
@@ -206,9 +199,17 @@ angular.module('inboxServices').factory('LiveList', [
       if (!config.orderBy) {
         throw new Error('No `orderBy` set for list.');
       }
-      if (!config.selecter) {
-        throw new Error('No `selecter` set for list.');
+      if (!config.selector) {
+        throw new Error('No `selector` set for list.');
       }
+    }
+
+    function listItemFor(idx, doc) {
+      var li = $(idx.listItem(doc));
+      if (doc._id === idx.selected) {
+        li.addClass('selected');
+      }
+      return li;
     }
 
     function _getList(listName) {
@@ -228,12 +229,13 @@ angular.module('inboxServices').factory('LiveList', [
         return;
       }
 
-      var activeDom = $(idx.selecter);
+      var activeDom = $(idx.selector);
       if(activeDom.length) {
         activeDom.empty();
         _.each(idx.dom, function(li) {
           activeDom.append(li);
         });
+        ResourceIcons.replacePlaceholders(activeDom);
       }
     }
 
@@ -250,6 +252,8 @@ angular.module('inboxServices').factory('LiveList', [
         throw new Error('LiveList not configured for: ' + listName);
       }
 
+      idx.lastUpdate = new Date();
+
       // TODO we should sort the list in place with a suitable, efficient algorithm
       idx.list = [];
       idx.dom = [];
@@ -257,7 +261,7 @@ angular.module('inboxServices').factory('LiveList', [
         _insert(listName, items[i], true);
       }
 
-      $(idx.selecter)
+      $(idx.selector)
           .empty()
           .append(idx.dom);
     }
@@ -288,10 +292,7 @@ angular.module('inboxServices').factory('LiveList', [
         return;
       }
 
-      var li = $(idx.listItem(newItem));
-      if (newItem._id === idx.selected) {
-        li.addClass('selected');
-      }
+      var li = listItemFor(idx, newItem);
 
       var newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
       idx.list.splice(newItemIndex, 0, newItem);
@@ -301,7 +302,7 @@ angular.module('inboxServices').factory('LiveList', [
         return;
       }
 
-      var activeDom = $(idx.selecter);
+      var activeDom = $(idx.selector);
       if(activeDom.length) {
         var children = activeDom.children();
         if (!children.length || newItemIndex === children.length) {
@@ -336,7 +337,7 @@ angular.module('inboxServices').factory('LiveList', [
         idx.list.splice(removeIndex, 1);
         idx.dom.splice(removeIndex, 1);
 
-        $(idx.selecter).children().eq(removeIndex)
+        $(idx.selector).children().eq(removeIndex)
             .remove();
       }
     }
@@ -383,10 +384,48 @@ angular.module('inboxServices').factory('LiveList', [
       }
     }
 
+    function refreshAll() {
+      var i, now = new Date();
+
+      _.forEach(indexes, function(idx, name) {
+        // N.B. no need to update a list that's never been generated
+        if (idx.lastUpdate && !sameDay(idx.lastUpdate, now)) {
+          // regenerate all list contents so relative dates relate to today
+          // instead of yesterday
+          for (i=idx.list.length-1; i>=0; --i) {
+            idx.dom[i] = listItemFor(idx, idx.list[i]);
+          }
+
+          api[name].refresh();
+
+          idx.lastUpdate = now;
+        }
+      });
+
+      // Schedule this task again for tomorrow
+      $timeout(refreshAll, millisTilMidnight(now));
+    }
+
+    function sameDay(d1, d2) {
+      return d1.getDay() === d2.getDay();
+    }
+
+    function millisTilMidnight(now) {
+      var midnight = new Date(now);
+
+      midnight.setDate(now.getDate() + 1);
+      midnight.setHours(0);
+      midnight.setMinutes(0);
+
+      return midnight.getTime() - now.getTime();
+    }
+
+    $timeout(refreshAll, millisTilMidnight(new Date()));
+
     api.$listFor = function(name, config) {
       checkConfig(config);
 
-      indexes[name] = _.pick(config, 'selecter', 'orderBy', 'listItem');
+      indexes[name] = _.pick(config, 'selector', 'orderBy', 'listItem');
 
       api[name] = {
         insert: _.partial(_insert, name),

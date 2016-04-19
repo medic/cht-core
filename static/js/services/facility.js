@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    types = [ 'district_hospital', 'catchment_area', 'health_center', 'person' ];
+var _ = require('underscore');
 
 (function () {
 
@@ -7,15 +6,19 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Facility', ['DbView', 'Cache',
-    function(DbView, Cache) {
+  inboxServices.factory('Facility', ['DbView', 'Cache', 'CONTACT_TYPES',
+    function(DbView, Cache, CONTACT_TYPES) {
 
       var cache = Cache({
         get: function(callback) {
-          DbView('facilities', { params: { include_docs: true } }, callback);
+          DbView('facilities', { params: { include_docs: true } })
+            .then(function(data) {
+              callback(null, data.results);
+            })
+            .catch(callback);
         },
         filter: function(doc) {
-          return _.contains(types, doc.type);
+          return _.contains(CONTACT_TYPES, doc.type);
         }
       });
 
@@ -88,11 +91,12 @@ var _ = require('underscore'),
   inboxServices.factory('District', ['DbView',
     function(DbView) {
       return function(callback) {
-        DbView(
-          'facilities',
-          { params: { key: ['district_hospital'], include_docs: true } },
-          callback
-        );
+        var options = { params: { key: ['district_hospital'], include_docs: true } };
+        DbView('facilities', options)
+          .then(function(data) {
+            callback(null, data.results);
+          })
+          .catch(callback);
       };
     }
   ]);
@@ -115,7 +119,11 @@ var _ = require('underscore'),
         } else {
           return callback('Doc not currently supported.');
         }
-        DbView('total_clinics_by_facility', { params: params }, callback);
+        DbView('total_clinics_by_facility', { params: params })
+          .then(function(data) {
+            callback(null, data.results);
+          })
+          .catch(callback);
       };
 
     }

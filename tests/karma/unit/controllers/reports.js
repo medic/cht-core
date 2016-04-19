@@ -32,6 +32,7 @@ describe('ReportsCtrl controller', function() {
     scope.isMobile = function() {
       return false;
     };
+    scope.setTitle = function() {};
 
     UserDistrict = function() {
       return { 
@@ -41,7 +42,7 @@ describe('ReportsCtrl controller', function() {
 
     DB = {};
 
-    LiveList = {};
+    LiveList = { reports: { initialised: function() { return true; } }};
 
     MarkRead = function() {};
 
@@ -56,7 +57,7 @@ describe('ReportsCtrl controller', function() {
       };
     };
 
-    Search = function($scope, options, callback) {
+    Search = function(type, filters, options, callback) {
       callback(null, { });
     };
 
@@ -81,14 +82,15 @@ describe('ReportsCtrl controller', function() {
         'FormatDataRecord': FormatDataRecord,
         'Settings': KarmaUtils.nullPromise(),
         'DB': DB,
-        'LiveList': LiveList
+        'LiveList': LiveList,
+        'SearchFilters': function() {},
+        'DownloadUrl': function() {}
       });
     };
   }));
 
   it('set up controller', function() {
     createController();
-    chai.expect(scope.filterModel.type).to.equal('reports');
   });
 
 });

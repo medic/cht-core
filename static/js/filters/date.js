@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    moment = require('moment');
 
 (function () {
 
@@ -26,9 +27,9 @@ var _ = require('underscore');
     if (!date) {
       return '<span>' + options.prefix + options.suffix + '</span>';
     }
-    date = moment(date);
-    var absolute = getAbsoluteDateString(date, options);
-    var relative = getRelativeDateString(date, options);
+    var momentDate = moment(date);
+    var absolute = getAbsoluteDateString(momentDate, options);
+    var relative = getRelativeDateString(momentDate, options);
     return options.prefix +
            '<span class="relative-date" title="' + absolute + '">' +
              '<span class="relative-date-content">' + relative + '</span>' +

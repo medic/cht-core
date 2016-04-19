@@ -13,12 +13,10 @@
         $scope.setCancelTarget(function() {
           $state.go('contacts.detail', { id: $state.params.id });
         });
-        var instanceData = {};
-        if (doc.type === 'person') {
-          instanceData.patient = doc;
-        } else {
-          instanceData.place = doc;
-        }
+        var instanceData = {
+          source: 'contact',
+          contact: doc,
+        };
         return Enketo
           .render($('#contact-report'), $state.params.formId, instanceData)
           .then(function(form) {
@@ -67,7 +65,10 @@
         });
 
       $scope.$on('$destroy', function() {
-        Enketo.unload($scope.form);
+        if (!$state.includes('contacts.report')) {
+          $scope.setTitle();
+          Enketo.unload($scope.form);
+        }
       });
     }
   ]);

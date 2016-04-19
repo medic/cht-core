@@ -8,15 +8,18 @@ var utils = require('kujua-utils'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('DB', [
-    '$http', '$timeout', '$log', 'pouchDB', 'Session', 'DbNameService', 'E2ETESTING',
-    function($http, $timeout, $log, pouchDB, Session, DbNameService, E2ETESTING) {
+    '$http', '$timeout', '$log', '$window', 'pouchDB', 'Session', 'DbNameService', 'CleanETag', 'E2ETESTING',
+    function($http, $timeout, $log, $window, pouchDB, Session, DbNameService, CleanETag, E2ETESTING) {
 
       var cache = {};
 
+      $window.PouchDB.adapter('worker', require('worker-pouch'));
+
       var getRemoteUrl = function(name) {
         name = name || DbNameService();
-        var port = location.port ? ':' + location.port : '';
-        return location.protocol + '//' + location.hostname + port + '/' + name;
+        var loc = $window.location;
+        var port = loc.port ? ':' + loc.port : '';
+        return loc.protocol + '//' + loc.hostname + port + '/' + name;
       };
 
       var isAdmin = function() {
@@ -24,16 +27,26 @@ var utils = require('kujua-utils'),
       };
 
       var getRemote = function(name) {
-        return getFromCache(getRemoteUrl(name));
+        var options = { ajax: { timeout: 30000 } };
+        return getFromCache(getRemoteUrl(name), options);
       };
 
       var getLocal = function(name) {
-        return getFromCache(name || DbNameService());
+        var userCtx = Session.userCtx();
+        if (!userCtx) {
+          return Session.navigateToLogin();
+        }
+        name = (name || DbNameService()) + '-user-' + userCtx.name;
+        var options = {
+          adapter: 'worker',
+          auto_compaction: true
+        };
+        return getFromCache(name, options);
       };
 
-      var getFromCache = function(name) {
+      var getFromCache = function(name, options) {
         if (!cache[name]) {
-          cache[name] = pouchDB(name, { auto_compaction: true });
+          cache[name] = pouchDB(name, options);
         }
         return cache[name];
       };
@@ -58,20 +71,21 @@ var utils = require('kujua-utils'),
         getLocal()
           .get('_design/medic')
           .then(function(localDdoc) {
-            if (localDdoc.remote_rev >= rev) {
+            if (localDdoc.remote_rev === rev) {
               return;
             }
-            getRemote()
+            return getRemote()
               .get('_design/medic')
               .then(function(remoteDdoc) {
                 updateLocalDesignDoc(localDdoc, remoteDdoc, callback);
-              })
-              .catch(function(err) {
-                $log.error('Error updating ddoc. Check your connection and try again.', err);
               });
           })
           .catch(function(err) {
-            $log.error('Error updating ddoc. Check your connection and try again.', err);
+            if (err.status === 401) {
+              Session.navigateToLogin();
+            } else {
+              $log.error('Error updating ddoc. Check your connection and try again.', err);
+            }
           });
       };
 
@@ -84,8 +98,14 @@ var utils = require('kujua-utils'),
                 method: 'HEAD',
                 url: getRemoteUrl() + '/_design/medic'
               }).success(function(data, status, headers) {
-                var rev = headers().etag.replace(/"/g, '');
+                var rev = CleanETag(headers().etag);
                 checkLocalDesignDoc(rev, callback);
+              }).catch(function(err) {
+                if (err.status === 401) {
+                  Session.navigateToLogin();
+                } else {
+                  $log.error('Error watching HEAD of ddoc', err);
+                }
               });
             }
 
@@ -113,11 +133,9 @@ var utils = require('kujua-utils'),
         }
       };
 
-
       return {
         get: get,
         getRemote: getRemote,
-        getRemoteUrl: getRemoteUrl,
         watchDesignDoc: watchDesignDoc
       };
     }

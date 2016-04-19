@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    utils = require('kujua-utils'),
-    async = require('async');
+    utils = require('kujua-utils');
 
 (function () {
 
@@ -24,7 +23,7 @@ var _ = require('underscore'),
           .catch(callback);
       });
   };
-  
+
   inboxServices.factory('UserDistrict', ['DB', 'UserSettings', 'Session',
     function(DB, UserSettings, Session) {
       return function(callback) {
@@ -66,6 +65,24 @@ var _ = require('underscore'),
     }
   ]);
 
+  inboxServices.factory('UserContact', ['$q', 'DB', 'UserSettings',
+    function($q, DB, UserSettings) {
+      return function() {
+        return $q(function(resolve, reject) {
+          UserSettings(function(err, user) {
+            if (err) {
+              return reject(err);
+            }
+            if (!user.contact_id) {
+              return resolve();
+            }
+            DB.get().get(user.contact_id).then(resolve).catch(reject);
+          });
+        });
+      };
+    }
+  ]);
+
   inboxServices.factory('Admins', ['$http',
     function($http) {
       return function(callback) {
@@ -74,76 +91,6 @@ var _ = require('underscore'),
             callback(null, data);
           })
           .error(callback);
-      };
-    }
-  ]);
-
-  inboxServices.factory('Users', ['$http', 'Facility', 'Admins', 'DbView',
-    function($http, Facility, Admins, DbView) {
-
-      var getType = function(user, admins) {
-        if (user.doc.roles && user.doc.roles.length) {
-          return user.doc.roles[0];
-        }
-        return admins[user.doc.name] ? 'admin' : 'unknown';
-      };
-
-      var getFacility = function(user, facilities) {
-        return _.findWhere(facilities, { _id: user.doc.facility_id });
-      };
-
-      var getSettings = function(user, settings) {
-        return _.findWhere(settings, { _id: user.id });
-      };
-
-      var mapUsers = function(users, settings, facilities, admins) {
-        var filtered = _.filter(users, function(user) {
-          return user.id.indexOf('org.couchdb.user:') === 0;
-        });
-        return _.map(filtered, function(user) {
-          var setting = getSettings(user, settings) || {};
-          return {
-            id: user.id,
-            rev: user.doc._rev,
-            name: user.doc.name,
-            fullname: setting.fullname,
-            email: setting.email,
-            phone: setting.phone,
-            facility: getFacility(user, facilities),
-            type: getType(user, admins),
-            language: { code: setting.language },
-            contact_id: setting.contact_id
-          };
-        });
-      };
-
-      var getAllUsers = function(callback) {
-        $http
-          .get('/_users/_all_docs', { cache: true, params: { include_docs: true } })
-          .success(function(data) {
-            callback(null, data);
-          })
-          .error(callback);
-      };
-
-      var getAllUserSettings = function(callback) {
-        DbView(
-          'doc_by_type',
-          { params: { include_docs: true, key: ['user-settings'] } },
-          callback
-        );
-      };
-
-      return function(callback) {
-        async.parallel(
-          [ getAllUsers, getAllUserSettings, Facility, Admins ],
-          function(err, results) {
-            if (err) {
-              return callback(err);
-            }
-            callback(null, mapUsers(results[0].rows, results[1][0], results[2], results[3]));
-          }
-        );
       };
     }
   ]);
@@ -159,131 +106,112 @@ var _ = require('underscore'),
     cache.remove('/_config/admins');
   };
 
-  inboxServices.factory('UpdateUser', ['$log', '$cacheFactory', '$http', 'DB', 'Admins',
-    function($log, $cacheFactory, $http, DB, Admins) {
+  inboxServices.factory('UpdateUser', ['$log', '$cacheFactory', '$http', 'DB', 'Admins', '$q',
+    function($log, $cacheFactory, $http, DB, Admins, $q) {
 
       var createId = function(name) {
         return 'org.couchdb.user:' + name;
       };
 
-      var getOrCreateUser = function(id, name, callback) {
+      var getOrCreateUser = function(id, name) {
         if (id) {
-          $http.get(getUserUrl(id), { cache: true, targetScope: 'root' })
-            .success(function(data) {
-              callback(null, data);
-            })
-            .error(callback);
+          return $http.get(getUserUrl(id), { cache: true, targetScope: 'root' })
+            .then(function(result) { return result.data; });
         } else {
-          callback(null, {
+          return $q.when({
             _id: createId(name),
             type: 'user'
           });
         }
       };
 
-      var getOrCreateUserSettings = function(id, name, callback) {
+      var getOrCreateUserSettings = function(id, name) {
         if (id) {
-          DB.get()
-            .get(id)
-            .then(function(response) {
-              callback(null, response);
-            })
-            .catch(callback);
+          return DB.get()
+            .get(id);
         } else {
-          callback(null, {
+          return $q.when({
             _id: createId(name),
             type: 'user-settings'
           });
         }
       };
 
-      var updatePassword = function(updated, callback) {
+
+      var updatePassword = function(updated) {
         if (!updated.password) {
           // password not changed, do nothing
-          return callback();
+          return $q.when();
         }
+        var deferred = $q.defer();
         Admins(function(err, admins) {
           if (err) {
             if (err.error === 'unauthorized') {
               // not an admin
-              return callback();
+              return deferred.resolve();
             }
-            return callback(err);
+            return deferred.reject(err);
           }
           if (!admins[updated.name]) {
             // not an admin so admin password change not required
-            return callback();
+            return deferred.resolve();
           }
-          $http.put('/_config/admins/' + updated.name, '"' + updated.password + '"')
-            .success(function() {
-              callback();
-            })
-            .error(function(data) {
-              callback(new Error(data));
-            });
+
+          deferred.resolve($http.put('/_config/admins/' + updated.name, '"' + updated.password + '"'));
         });
+        return deferred.promise;
       };
 
-      var updateUser = function(id, updates, callback) {
+      var updateUser = function(id, updates) {
         if (!updates) {
           // only updating settings
-          return callback();
+          return $q.when();
         }
-        getOrCreateUser(id, updates.name, function(err, user) {
-          if (err) {
-            return callback(err);
-          }
-          $log.debug('user being updated', user._id);
-          var updated = _.extend(user, updates);
-          if (updated.password) {
-            updated.derived_key = undefined;
-            updated.salt = undefined;
-          }
-          $http
-            .put(getUserUrl(user._id), updated)
-            .success(function() {
-              updatePassword(updated, function(err) {
-                removeCacheEntry($cacheFactory, user._id);
-                callback(err, updated);
+        return getOrCreateUser(id, updates.name)
+          .then(function(user) {
+            $log.debug('user being updated', user._id);
+            var updated = _.extend(user, updates);
+            if (updated.password) {
+              updated.derived_key = undefined;
+              updated.salt = undefined;
+            }
+            return $http
+              .put(getUserUrl(user._id), updated)
+              .then(function() {
+                updatePassword(updated)
+                  .then(function() {
+                    removeCacheEntry($cacheFactory, user._id);
+                    return updated;
+                  })
+                  .catch(function(err) {
+                    removeCacheEntry($cacheFactory, user._id);
+                    throw err;
+                  });
+                });
               });
-            })
-            .error(callback);
-        });
       };
 
-      var updateSettings = function(id, updates, callback) {
+      var updateSettings = function(id, updates) {
         if (!updates) {
           // only updating user
-          return callback();
+          return $q.when();
         }
-        getOrCreateUserSettings(id, updates.name, function(err, settings) {
-          if (err) {
-            return callback(err);
-          }
-          var updated = _.extend(settings, updates);
-          DB.get()
-            .put(updated)
-            .then(function() {
-              callback();
-            })
-            .catch(callback);
-        });
+        return getOrCreateUserSettings(id, updates.name)
+          .then(function(settings) {
+            var updated = _.extend(settings, updates);
+            return DB.get()
+              .put(updated);
+          });
       };
 
-      return function(id, settingUpdates, userUpdates, callback) {
-        if (!callback) {
-          callback = userUpdates;
-          userUpdates = null;
-        }
+      return function(id, settingUpdates, userUpdates) {
         if (!id && !userUpdates) {
-          return callback(new Error('Cannot update user settings without user'));
+          $q.reject(new Error('Cannot update user settings without user'));
         }
-        updateUser(id, userUpdates, function(err) {
-          if (err) {
-            return callback(err);
-          }
-          updateSettings(id, settingUpdates, callback);
-        });
+        return updateUser(id, userUpdates)
+          .then(function() {
+            return updateSettings(id, settingUpdates);
+          });
       };
     }
   ]);

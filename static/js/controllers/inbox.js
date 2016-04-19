@@ -1,4 +1,4 @@
-var feedback = require('feedback'),
+var feedback = require('../modules/feedback'),
     _ = require('underscore'),
     moment = require('moment'),
     sendMessage = require('../modules/send-message'),
@@ -7,8 +7,6 @@ var feedback = require('feedback'),
     format = require('../modules/format'),
     guidedSetup = require('../modules/guided-setup');
 
-require('moment/locales');
-
 (function () {
 
   'use strict';
@@ -16,27 +14,46 @@ require('moment/locales');
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'CheckDate', 'DeleteDoc', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES', 'ConfirmModal', '$q',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, CheckDate, DeleteDoc, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES, ConfirmModal, $q) {
 
       Session.init();
-      DBSync();
-      TrafficStats();
-      feedback.init(
-        function(doc, callback) {
-          DB.get()
-            .post(doc)
+
+      TrafficStats($scope);
+
+      $scope.initialReplication = {
+        status: 'initial.replication.status.in_progress'
+      };
+
+      DBSync(function(err, result) {
+        if (err) {
+          $log.debug('Error initializing DB sync. Continuing anyway.', err);
+        }
+        $scope.initialReplication = result;
+      });
+
+      RulesEngine.init
+        .then(function() {
+          $scope.dbWarmedUp = true;
+        })
+        .catch(function() {
+          $scope.dbWarmedUp = true;
+        });
+
+      feedback.init({
+        saveDoc: function(doc, callback) {
+          DB.get().post(doc)
             .then(function() {
               callback();
             })
             .catch(callback);
         },
-        function(callback) {
+        getUserCtx: function(callback) {
           callback(null, Session.userCtx());
         }
-      );
+      });
 
-      LiveListConfig();
+      LiveListConfig($scope);
       CheckDate($scope);
 
       $scope.loadingContent = false;
@@ -49,10 +66,8 @@ require('moment/locales');
       $scope.people = [];
       $scope.totalItems = undefined;
       $scope.filterQuery = { value: undefined };
-      $scope.analyticsModules = [];
       $scope.version = APP_CONFIG.version;
       $scope.actionBar = {};
-      $scope.formDefinitions = [];
       $scope.title = undefined;
       $scope.tours = [];
 
@@ -105,7 +120,7 @@ require('moment/locales');
         }
 
         // On an Enketo form, go to the previous page (if there is one)
-        if ($container.find('.enketo .btn.previous-page:enabled:not(".disabled")').length) {
+        if ($container.find('.enketo .btn.previous-page:visible:enabled:not(".disabled")').length) {
           window.history.back();
           return true;
         }
@@ -166,7 +181,7 @@ require('moment/locales');
         // If viewing RHS content, do as the filter-bar X/< button does
         if ($scope.showContent) {
           if ($scope.cancelCallback) {
-            $scope.cancel();
+            $scope.navigationCancel();
           } else {
             $scope.closeContentPane();
           }
@@ -190,15 +205,16 @@ require('moment/locales');
         return false;
       };
 
-      $scope.cancel = function() {
-        $('#navigation-confirm').modal('show');
-      };
-
-      $scope.cancelConfirm = function() {
-        $('#navigation-confirm').modal('hide');
-        if ($scope.cancelCallback) {
-          $scope.cancelCallback();
-        }
+      // User wants to cancel current flow, or pressed back button, etc.
+      $scope.navigationCancel = function() {
+        ConfirmModal('templates/modals/navigation_confirm.html')
+          .then(function () {
+            if ($scope.cancelCallback) {
+              $scope.cancelCallback();
+            }
+          }, function () {
+            $log.debug('User cancelled navigationCancel.');
+          });
       };
 
       $scope.closeContentPane = function() {
@@ -256,47 +272,20 @@ require('moment/locales');
 
       $scope.readStatus = { forms: 0, messages: 0 };
 
-      $scope.filterModel = {
-        type: 'messages',
-        forms: [],
-        facilities: [],
-        contactTypes: [],
-        valid: undefined,
-        verified: undefined,
-        date: { }
-      };
-
-      $scope.resetFilterModel = function() {
-        $scope.filterQuery.value = '';
-        $scope.filterModel.forms = [];
-        $scope.filterModel.facilities = [];
-        $scope.filterModel.contactTypes = [];
-        $scope.filterModel.valid = undefined;
-        $scope.filterModel.date = {};
-
-        $('.filter.multidropdown').each(function() {
-          $(this).multiDropdown().reset();
-        });
-
-        $scope.$broadcast('query');
-      };
+      $scope.$on('$stateChangeSuccess', function(event, toState) {
+        $scope.currentTab = toState.name.split('.')[0];
+      });
 
       $scope.download = function() {
-        DownloadUrl($scope, $scope.filterModel.type, function(err, url) {
-          if (err) {
-            return $log.error(err);
-          }
-          $window.location.href = url;
-        });
+        $rootScope.$broadcast('export');
       };
 
       var updateAvailableFacilities = function() {
-        FacilityHierarchy(function(err, hierarchy, total) {
+        FacilityHierarchy(function(err, hierarchy) {
           if (err) {
             return $log.error('Error loading facilities', err);
           }
           $scope.facilities = hierarchy;
-          $scope.facilitiesCount = total;
         });
         Facility({ types: [ 'person' ] }, function(err, people) {
           if (err) {
@@ -380,17 +369,8 @@ require('moment/locales');
       Changes({
         key: 'inbox-facilities',
         filter: function(change) {
-          if (change.newDoc) {
-            // check if new document is a contact
-            return ['person','clinic','health_center','district_hospital']
-              .indexOf(change.newDoc.type) !== -1;
-          }
-          // check known people
-          if (_.findWhere($scope.people, { _id: change.id })) {
-            return true;
-          }
-          // check known places
-          return findIdInContactHierarchy(change.id, $scope.facilities);
+          // check if new document is a contact
+          return CONTACT_TYPES.indexOf(change.doc.type) !== -1;
         },
         callback: updateAvailableFacilities
       });
@@ -407,7 +387,7 @@ require('moment/locales');
       Changes({
         key: 'inbox-read-status',
         filter: function(change) {
-          return change.newDoc && change.newDoc.type === 'data_record';
+          return change.doc.type === 'data_record';
         },
         callback: $scope.updateReadStatus
       });
@@ -416,34 +396,33 @@ require('moment/locales');
         sendMessage.init(Settings, Contact, translateFilter);
       };
 
-      Form()
-        .then(function(forms) {
-          $scope.forms = forms;
+      // get the forms for the forms filter
+      JsonForms()
+        .then(function(jsonForms) {
+          XmlForms('FormsFilter', { contactForms: false, ignoreContext: true }, function(err, xForms) {
+            if (err) {
+              return $log.error('Error fetching form definitions', err);
+            }
+            var xFormSummaries = xForms.map(function(xForm) {
+              return {
+                code: xForm.internalId,
+                name: xForm.title
+              };
+            });
+            $scope.forms = xFormSummaries.concat(jsonForms);
+          });
         })
         .catch(function(err) {
           $log.error('Failed to retrieve forms', err);
         });
 
-      var updateFormDefinitions = function() {
-        Enketo.withAllForms()
-          .then(function(forms) {
-            Enketo.clearXmlCache();
-            $scope.formDefinitions = forms;
-            $scope.nonContactForms = _.filter(forms, function(form) {
-              return form._id.indexOf('form:contact:') !== 0;
-            });
-          })
-          .catch(function(err) {
-            $log.error('Error fetching form definitions', err);
-          });
-      };
-      updateFormDefinitions();
-      Changes({
-        key: 'inbox-form-definitions',
-        filter: function(change) {
-          return change.id.indexOf('form:') === 0;
-        },
-        callback: updateFormDefinitions
+      // get the forms for the Add Report menu
+      XmlForms('AddReportMenu', { contactForms: false }, function(err, xForms) {
+        if (err) {
+          return $log.error('Error fetching form definitions', err);
+        }
+        Enketo.clearXmlCache();
+        $scope.nonContactForms = xForms;
       });
 
       $scope.setupGuidedSetup = function() {
@@ -474,13 +453,16 @@ require('moment/locales');
                                 .find('.selected')
                                 .attr('data-value');
           var id = 'org.couchdb.user:' + Session.userCtx().name;
-          UpdateUser(id, { language: selected }, function(err) {
-            btn.removeClass('disabled');
-            if (err) {
-              return $log.error('Error updating user', err);
-            }
-            $('#user-language').modal('hide');
-          });
+
+          UpdateUser(id, { language: selected })
+            .then(function() {
+              btn.removeClass('disabled');
+              $('#user-language').modal('hide');
+            })
+            .catch(function(err) {
+              btn.removeClass('disabled');
+              $log.error('Error updating user', err);
+            });
         });
         modalsInited.userLanguage = true;
         showModals();
@@ -536,11 +518,11 @@ require('moment/locales');
           render: function() {
             tour.start('intro', translateFilter);
             var id = 'org.couchdb.user:' + Session.userCtx().name;
-            UpdateUser(id, { known: true }, function(err) {
-              if (err) {
+
+            UpdateUser(id, { known: true })
+              .catch(function(err) {
                 $log.error('Error updating user', err);
-              }
-            });
+              });
           }
         },
       ];
@@ -650,31 +632,32 @@ require('moment/locales');
         $rootScope.$broadcast.apply($rootScope, arguments);
       };
 
-      var deleteMessageId;
-
-      $scope.deleteDoc = function(id) {
-        $('#delete-confirm').modal('show');
-        deleteMessageId = id;
+      // TODO promisify DeleteDoc
+      var _deleteDoc = function(id) {
+        var deferred = $q.defer();
+        if (!id) {
+          return deferred.reject('Error deleting document : no docToDeleteId set');
+        }
+        DeleteDoc(id, function(err) {
+          if (err) {
+            return deferred.reject(err);
+          }
+          return deferred.resolve();
+        });
+        return deferred.promise;
       };
 
-      $scope.deleteDocConfirm = function() {
-        var pane = modal.start($('#delete-confirm'));
-        if (deleteMessageId) {
-          DeleteDoc(deleteMessageId, function(err) {
-            pane.done(translateFilter('Error deleting document'), err);
-            if (!err) {
-              // return to list view for the current state
-              var stateName = $state.current.name,
-                  dotIndex = stateName.indexOf('.');
-              if(dotIndex !== -1) {
-                stateName = stateName.substring(0, dotIndex);
-              }
-              $state.go(stateName);
+      $scope.deleteDoc = function(id) {
+        ConfirmModal('templates/modals/delete_doc_confirm.html', function() { return _deleteDoc(id); })
+          .then(function () {
+            // Success!
+            if ($state.includes('contacts') || $state.includes('reports')) {
+              $state.go($state.current.name, { id: null });
             }
+            Snackbar(translateFilter('document.deleted'));
+          }, function () {
+            $log.debug('User cancelled deleteDoc.');
           });
-        } else {
-          pane.done(translateFilter('Error deleting document'), 'No deleteMessageId set');
-        }
       };
 
       $('body').on('mouseenter', '.relative-date, .autoreply', function() {
@@ -703,187 +686,6 @@ require('moment/locales');
         }
       });
 
-      // TODO we should eliminate the need for this function as much as possible
-      var angularApply = function(callback) {
-        var scope = angular.element($('body')).scope();
-        if (scope) {
-          scope.$apply(callback);
-        }
-      };
-
-      var getTernaryValue = function(positive, negative) {
-        if (positive && !negative) {
-          return true;
-        }
-        if (!positive && negative) {
-          return false;
-        }
-      };
-
-      $scope.setupFilters = function() {
-
-        $('#search').on('click', function(e) {
-          e.preventDefault();
-          $scope.$broadcast('query');
-        });
-        $('#freetext').on('keypress', function(e) {
-          if (e.which === 13) {
-            e.preventDefault();
-            $scope.$broadcast('query');
-          }
-        });
-
-        var performMobileSearch = function(e) {
-          e.preventDefault();
-          $scope.$broadcast('query');
-          $(e.target).closest('.filter').removeClass('open');
-        };
-        $('#mobile-search-go').on('click', performMobileSearch);
-        $('#mobile-freetext').on('keypress', function(e) {
-          if (e.which === 13) {
-            performMobileSearch(e);
-          }
-        });
-        $('.mobile-freetext-filter').on('shown.bs.dropdown', function() {
-          $('#mobile-freetext').focus();
-        });
-
-        // stop bootstrap closing the search pane on click
-        $('.filters .mobile-freetext-filter .search-pane').on('click', function(e) {
-          e.stopPropagation();
-        });
-
-        $translate.onReady().then(function() {
-          // we have to wait for language to respond before initing the multidropdowns
-          Language().then(function(language) {
-
-            $translate.use(language);
-
-            $('#formTypeDropdown, #facilityDropdown, #contactTypeDropdown').each(function() {
-              $(this).multiDropdown({
-                label: function(state, callback) {
-                  if (state.selected.length === 0 || state.selected.length === state.total.length) {
-                    return callback($translate.instant(state.menu.data('label-no-filter')));
-                  }
-                  if (state.selected.length === 1) {
-                    return callback(state.selected.first().text());
-                  }
-                  callback($translate.instant(
-                    state.menu.data('filter-label'), { number: state.selected.length }
-                  ));
-                },
-                selectAllLabel: $translate.instant('select all'),
-                clearLabel: $translate.instant('clear')
-              });
-            });
-
-            $('#statusDropdown').multiDropdown({
-              label: function(state, callback) {
-                var values = {};
-                state.selected.each(function() {
-                  var elem = $(this);
-                  values[elem.data('value')] = elem.text();
-                });
-                var parts = [];
-                if (values.valid && !values.invalid) {
-                  parts.push(values.valid);
-                } else if (!values.valid && values.invalid) {
-                  parts.push(values.invalid);
-                }
-                if (values.verified && !values.unverified) {
-                  parts.push(values.verified);
-                } else if (!values.verified && values.unverified) {
-                  parts.push(values.unverified);
-                }
-                if (parts.length === 0 || parts.length === state.total.length) {
-                  return callback($translate.instant(state.menu.data('label-no-filter')));
-                }
-                return callback(parts.join(', '));
-              },
-              selectAllLabel: $translate.instant('select all'),
-              clearLabel: $translate.instant('clear')
-            });
-
-            var start = $scope.filterModel.date.from ?
-              moment($scope.filterModel.date.from) : moment().subtract(1, 'months');
-            $('#date-filter').daterangepicker({
-              startDate: start,
-              endDate: moment($scope.filterModel.date.to),
-              maxDate: moment(),
-              opens: 'center',
-              applyClass: 'btn-primary',
-              cancelClass: 'btn-link',
-              locale: {
-                applyLabel: $translate.instant('Apply'),
-                cancelLabel: $translate.instant('Cancel'),
-                fromLabel: $translate.instant('date.from'),
-                toLabel: $translate.instant('date.to'),
-                daysOfWeek: moment.weekdaysMin(),
-                monthNames: moment.monthsShort(),
-                firstDay: moment.localeData()._week.dow
-              }
-            },
-            function(start, end) {
-              var scope = angular.element($('body')).scope();
-              if (scope) {
-                scope.$apply(function() {
-                  scope.filterModel.date.from = start.valueOf();
-                  scope.filterModel.date.to = end.valueOf();
-                });
-              }
-            })
-            .on('mm.dateSelected.daterangepicker', function(e, picker) {
-              if ($scope.isMobile()) {
-                // mobile version - only show one calendar at a time
-                if (picker.container.is('.show-from')) {
-                  picker.container.removeClass('show-from').addClass('show-to');
-                } else {
-                  picker.container.removeClass('show-to').addClass('show-from');
-                  picker.hide();
-                }
-              }
-            });
-            $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
-
-            $('#formTypeDropdown').on('update', function() {
-              var forms = $(this).multiDropdown().val();
-              angularApply(function(scope) {
-                scope.filterModel.forms = forms;
-              });
-            });
-
-            $('#facilityDropdown').on('update', function() {
-              var ids = $(this).multiDropdown().val();
-              angularApply(function(scope) {
-                scope.filterModel.facilities = ids;
-              });
-            });
-
-            $('#contactTypeDropdown').on('update', function() {
-              var ids = $(this).multiDropdown().val();
-              angularApply(function(scope) {
-                scope.filterModel.contactTypes = ids;
-              });
-            });
-
-            $('#statusDropdown').on('update', function() {
-              var values = $(this).multiDropdown().val();
-              angularApply(function(scope) {
-                scope.filterModel.valid = getTernaryValue(
-                  _.contains(values, 'valid'),
-                  _.contains(values, 'invalid')
-                );
-                scope.filterModel.verified = getTernaryValue(
-                  _.contains(values, 'verified'),
-                  _.contains(values, 'unverified')
-                );
-              });
-            });
-          });
-        });
-      };
-
-
       Auth('can_view_messages_tab').then(function() {
         $scope.tours.push({
           order: 1,
@@ -901,31 +703,6 @@ require('moment/locales');
           name: 'Reports'
         });
       });
-
-      $scope.setSelectedModule = function(module) {
-        $scope.filterModel.module = module;
-      };
-
-      $scope.fetchAnalyticsModules = function() {
-        return AnalyticsModules().then(function(modules) {
-          $scope.analyticsModules = modules;
-          return modules;
-        });
-      };
-
-      $scope.fetchAnalyticsModules()
-        .then(function(modules) {
-          if (_.findWhere(modules, { id: 'anc' })) {
-            Auth('can_view_analytics').then(function() {
-              $scope.tours.push({
-                order: 3,
-                id: 'analytics',
-                icon: 'fa-bar-chart-o',
-                name: 'Analytics'
-              });
-            });
-          }
-        });
 
       $scope.setupTour = function() {
         $('#tour-select').on('click', 'a.tour-option', function() {
@@ -948,33 +725,113 @@ require('moment/locales');
         });
       };
 
-      UserDistrict(function() {
-        $scope.$watch('filterModel', function(curr, prev) {
-          if (prev !== curr) {
-            $scope.$broadcast('query');
+      $scope.configurationPages = [
+        {
+          state: 'configuration.settings.basic',
+          icon: 'fa-wrench',
+          name: 'Settings',
+          active: function() {
+            return $state.includes('configuration.settings');
           }
-        }, true);
-        $scope.$broadcast('query');
-      });
+        },
+        {
+          state: 'configuration.translation.languages',
+          icon: 'fa-language',
+          name: 'Languages',
+          active: function() {
+            return $state.includes('configuration.translation');
+          }
+        },
+        {
+          state: 'configuration.forms',
+          icon: 'fa-list-alt',
+          name: 'Forms',
+          active: function() {
+            return $state.is('configuration.forms');
+          }
+        },
+        {
+          state: 'configuration.export',
+          icon: 'fa-arrow-circle-o-down',
+          name: 'Export',
+          active: function() {
+            return $state.is('configuration.export');
+          }
+        },
+        {
+          state: 'configuration.user',
+          icon: 'fa-user',
+          name: 'edit.user.settings',
+          active: function() {
+            return $state.is('configuration.user');
+          }
+        },
+        {
+          state: 'configuration.users',
+          icon: 'fa-users',
+          name: 'Users',
+          active: function() {
+            return $state.is('configuration.users');
+          }
+        },
+        {
+          state: 'configuration.icons',
+          icon: 'fa-file-image-o',
+          name: 'icons',
+          active: function() {
+            return $state.is('configuration.icons');
+          }
+        },
+        {
+          state: 'configuration.targets',
+          icon: 'fa-dot-circle-o',
+          name: 'analytics.targets',
+          active: function() {
+            return $state.is('configuration.targets') || $state.is('configuration.targets-edit');
+          }
+        },
+        {
+          state: 'configuration.permissions',
+          icon: 'fa-key',
+          name: 'configuration.permissions',
+          active: function() {
+            return $state.is('configuration.permissions');
+          }
+        },
+      ];
 
       CountMessages.init();
+
+      var showUpdateReady = function() {
+        $('#version-update').modal('show');
+
+        // close select2 dropdowns in the background
+        $('select.select2-hidden-accessible').each(function(i, e) {
+          // prevent errors being thrown if selectors have not been
+          // initialised before the update dialog is to be shown
+          try { $(e).select2('close'); } catch(e) {}
+        });
+      };
 
       $scope.reloadWindow = function() {
         $window.location.reload();
       };
 
-      if (window.applicationCache) {
-        var showUpdateReady = function() {
-          $('#version-update').modal('show');
+      $scope.postponeUpdate = function() {
+        $log.debug('Delaying update');
+        $timeout(function() {
+          $log.debug('Displaying delayed update ready dialog');
+          showUpdateReady();
+        }, 2 * 60 * 60 * 1000);
+      };
 
-          // close select2 dropdowns in the background
-          $('select.select2-hidden-accessible').each(function(i, e) {
-            // prevent errors being thrown if selecters have not been
-            // initialised before the update dialog is to be shown
-            try { $(e).select2('close'); } catch(e) {}
-          });
-        };
+      if (window.applicationCache) {
         window.applicationCache.addEventListener('updateready', showUpdateReady);
+        window.applicationCache.addEventListener('error', function(err) {
+          // TODO: once we trigger this work out what a 401 looks like and redirect
+          //       to the login page
+          $log.error('Application cache update error', err);
+        });
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
           showUpdateReady();
         }

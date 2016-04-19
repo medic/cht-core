@@ -10,26 +10,28 @@ var _ = require('underscore'),
   inboxServices.factory('Search', ['DB', 'DbView', 'GenerateSearchRequests',
     function(DB, DbView, GenerateSearchRequests) {
 
-      var _currentQueryString, _currentQueryScope;
+      var _currentQuery = {};
 
       // Silently cancel repeated queries.  We decide if the query is repeated
       // by checking if its search string and scope are identical to the
       // previous query.
-      var debounce = function(scope, requests) {
+      var debounce = function(type, filters, requests) {
         var queryString = JSON.stringify(requests);
-        if (scope === _currentQueryScope &&
-            queryString === _currentQueryString) {
+        if (type === _currentQuery.type &&
+            filters === _currentQuery.filters &&
+            queryString === _currentQuery.queryString) {
           return true;
         }
-        _currentQueryScope = scope;
-        _currentQueryString = queryString;
+        _currentQuery.type = type;
+        _currentQuery.filters = filters;
+        _currentQuery.queryString = queryString;
         return false;
       };
 
-      var getPage = function(rows, options) {
+      var getPage = function(type, rows, options) {
         var start;
         var end;
-        if (options.type === 'reports') {
+        if (type === 'reports') {
           // descending
           end = rows.length - options.skip;
           start = end - options.limit;
@@ -52,21 +54,21 @@ var _ = require('underscore'),
         return intersection;
       };
 
-      var view = function(request, options, callback) {
-        DbView(
-          request.view,
-          { params: request.params },
-          callback
-        );
+      var view = function(request, callback) {
+        DbView(request.view, { params: request.params })
+          .then(function(data) {
+            callback(null, data.results);
+          })
+          .catch(callback);
       };
 
-      var filter = function(requests, options, callback) {
-        async.map(requests, _.partial(view, _, options), function(err, responses) {
+      var filter = function(type, requests, options, callback) {
+        async.map(requests, view, function(err, responses) {
           if (err) {
             return callback(err);
           }
-          var intersection = getIntersection(responses, options);
-          var page = getPage(intersection, options);
+          var intersection = getIntersection(responses);
+          var page = getPage(type, intersection, options);
           if (!page.length) {
             return callback(null, []);
           }
@@ -81,45 +83,44 @@ var _ = require('underscore'),
         });
       };
 
-      var execute = function(requests, options, callback) {
+      var execute = function(type, requests, options, callback) {
         if (requests.length === 1 && requests[0].params.include_docs) {
           // filter not required - just get the view directly
           _.defaults(requests[0].params, {
             limit: options.limit,
             skip: options.skip
           });
-          view(requests[0], options, callback);
+          view(requests[0], callback);
         } else {
           // filtering
-          filter(requests, options, callback);
+          filter(type, requests, options, callback);
         }
       };
 
-      var generateRequests = function($scope, options, callback) {
+      var generateRequests = function(type, filters, options, callback) {
         var requests;
         try {
-          requests = GenerateSearchRequests($scope);
+          requests = GenerateSearchRequests(type, filters);
         } catch(e) {
           return callback(e);
         }
-        if (!options.force && debounce($scope, requests)) {
+        if (!options.force && debounce(type, filters, requests)) {
           return;
         }
         callback(null, requests);
       };
 
-      return function($scope, options, callback) {
+      return function(type, filters, options, callback) {
         _.defaults(options, {
           limit: 50,
-          skip: 0,
-          type: $scope.filterModel.type
+          skip: 0
         });
-        generateRequests($scope, options, function(err, requests) {
+        generateRequests(type, filters, options, function(err, requests) {
           if (err) {
             return callback(err);
           }
-          execute(requests, options, function(err, results) {
-            _currentQueryScope = _currentQueryString = null;
+          execute(type, requests, options, function(err, results) {
+            _currentQuery = {};
             callback(err, results);
           });
         });

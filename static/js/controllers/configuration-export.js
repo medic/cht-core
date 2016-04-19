@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    async = require('async');
+    async = require('async'),
+    moment = require('moment');
 
 (function () {
 
@@ -18,14 +19,14 @@ var _ = require('underscore'),
     }
   };
 
-  var mapFeedback = function(data, meta) {
+  var mapFeedback = function(data) {
     var result = {
       page: {
-        number: data.length,
-        total: meta.total_rows
+        number: data.results.length,
+        total: data.meta.total_rows
       }
     };
-    result.items = _.map(data, function(doc) {
+    result.items = _.map(data.results, function(doc) {
       return {
         id: doc._id,
         time: moment(doc.meta.time),
@@ -40,12 +41,13 @@ var _ = require('underscore'),
     function ($scope, DownloadUrl, DbView) {
 
       var options =  { params: { include_docs: true, descending: true, limit: 20 } };
-      DbView('feedback', options, function(err, data, meta) {
-        if (err) {
-          return console.log('Error fetching feedback', err);
-        }
-        $scope.feedback = mapFeedback(data, meta);
-      });
+      DbView('feedback', options)
+        .then(function(data) {
+          $scope.feedback = mapFeedback(data);
+        })
+        .catch(function(err) {
+          return console.error('Error fetching feedback', err);
+        });
 
       $scope.url = {};
       async.each(
@@ -61,7 +63,7 @@ var _ = require('underscore'),
         },
         function(err) {
           if (err) {
-            console.log('Error fetching url', err);
+            console.error('Error fetching url', err);
           }
         }
       );
