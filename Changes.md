@@ -1,5 +1,14 @@
 # Medic Mobile Release Notes
 
+## 2.6.1
+
+### Apr 21, 2016
+
+- User's fullname is not showing up in /configuration/users. Issue #2200
+- Deleted documents cause sentinel log spam. Issue #1999
+- Diable nools for DB admins.
+- Update libphonenumber and use strict validation. Issue: #2159 #2196
+
 ## 2.6.0
 
 ### Apr 5, 2016
