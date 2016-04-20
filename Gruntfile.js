@@ -181,19 +181,18 @@ module.exports = function(grunt) {
         cmd: 'kanso push'
       },
       deploytest: {
-        cmd: 'kanso push http://ci_test:pass@localhost:5984/medic-test'
+        cmd: 'kanso push http://admin:pass@localhost:5984/medic-test'
       },
       runapi: {
-        cmd: 'API_PORT=5998 COUCH_URL=http://ci_test:pass@localhost:5984/medic-test node ../medic-api/api/server.js > api.out &'
+        cmd: 'API_PORT=5998 COUCH_URL=http://admin:pass@localhost:5984/medic-test node ../medic-api/api/server.js > api.out &'
       },
       sleep: {
         cmd: 'sleep 20'
       },
       addadmin: {
         cmd: function() {
-          return 'curl -X PUT http://localhost:5984/_config/admins/ci_test -d \'"pass"\' &&' +
-                 'curl -X DELETE http://ci_test:pass@localhost:5984/_users/org.couchdb.user:ci_test &&' +
-                 'curl -HContent-Type:application/json -vXPUT http://ci_test:pass@localhost:5984/_users/org.couchdb.user:ci_test  --data-binary \'{"_id": "org.couchdb.user:ci_test", "name": "ci_test", "roles": [], "type": "user", "password": "pass", "language": "en", "known": true}\'';
+          return 'curl -X DELETE http://test:pass@localhost:5984/_users/org.couchdb.user:test2 &&' +
+                 'curl -f -HContent-Type:application/json -vXPUT http://test:pass@localhost:5984/_users/org.couchdb.user:test2 --data-binary \'{"_id": "org.couchdb.user:ci_test", "name": "ci_test", "roles": [], "type": "user", "password": "pass", "language": "en", "known": true}\'';
         }
       },
       undopatches: {
