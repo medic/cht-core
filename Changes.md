@@ -8,6 +8,7 @@
 - Deleted documents cause sentinel log spam. Issue #1999
 - Diable nools for DB admins.
 - Update libphonenumber and use strict validation. Issue: #2159 #2196
+- Contacts export response garbled. Issue: #2187
 
 ## 2.6.0
 
