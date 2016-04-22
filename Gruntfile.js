@@ -125,7 +125,6 @@ module.exports = function(grunt) {
             cwd: 'node_modules',
             src: [
               'bootstrap-daterangepicker/**',
-              'pouchdb/**',
               'font-awesome/**'
             ],
             dest: 'node_modules_backup'
@@ -199,7 +198,6 @@ module.exports = function(grunt) {
         cmd: function() {
           var modulesToPatch = [
             'bootstrap-daterangepicker',
-            'pouchdb',
             'font-awesome'
           ];
           return modulesToPatch.map(function(module) {
@@ -224,15 +222,6 @@ module.exports = function(grunt) {
             // patch the daterangepicker for responsiveness
             // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
             'patch node_modules/bootstrap-daterangepicker/daterangepicker.js < patches/bootstrap-daterangepicker.patch',
-
-            // patch pouch to retry failed replication docs
-            // https://github.com/pouchdb/pouchdb/issues/4963
-            'patch node_modules/pouchdb/lib/index.js < patches/pouchdb-fail-replicate-on-error.patch',
-
-            // patch pouch with a bigger timeout for bulk gets
-            // https://github.com/medic/medic-webapp/issues/2167
-            // https://github.com/pouchdb/pouchdb/issues/5042
-            'patch node_modules/pouchdb/lib/index.js < patches/pouchdb-increase-bulk-get-timeouts.patch',
 
             // patch font-awesome to remove version attributes so appcache works
             // https://github.com/FortAwesome/Font-Awesome/issues/3286
