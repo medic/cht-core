@@ -1,5 +1,15 @@
 # Medic Mobile Release Notes
 
+## 2.6.1
+
+### Apr 21, 2016
+
+- User's fullname is not showing up in /configuration/users. Issue #2200
+- Deleted documents cause sentinel log spam. Issue #1999
+- Disable nools for unrestricted users. Issue: medic-projects#149
+- Update libphonenumber and use strict validation. Issue: #2159 #2196
+- Contacts export response garbled. Issue: #2187
+
 ## 2.6.0
 
 ### Apr 5, 2016
@@ -11,6 +21,40 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 - Added Tasks feature for rich event scheduling.
 - Forms can now be provided in XForm format for rich form UIs.
 - Added a configurable Target analytics module.
+
+## 0.4.11
+
+### Feb 4, 2016
+
+- Security fix for leaking auth info.
+
+## 0.4.10
+
+### Nov 16, 2015
+
+- Added support for Outgoing Deny List, a comma separated list of phone numbers
+  or strings to deny outgoing service to. #750
+
+- Fixed bug in records export. #1273
+
+- Fixed bugs in uniqueWithin validation. medic-sentinel#74
+
+- Added link to Help page in main menu.
+
+## 0.4.9
+
+### Aug 26, 2015
+
+- Fixed bug on node 0.12 in felix-couchdb. #1145
+
+- Improved error handling when notifications (start/stop) configs are
+  misconfigured. #1144
+
+- Fixed bug in `exists` validation where it fails on some unicode characters. #1147
+
+- Fixed Reporting Rates interface that was neglected and broken. #1030
+
+- Fixed bug in exporting data by date, it's now inclusive. #1104
 
 ## 0.4.8
 
