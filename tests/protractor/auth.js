@@ -29,7 +29,7 @@ module.exports = {
       } else {
         // might be running on travis - create a user
         auth = {
-          user: 'ci_test',
+          user: 'admin',
           pass: 'pass'
         };
       }

@@ -1,4 +1,5 @@
 var utils = require('../utils'),
+    auth = require('../auth'),
     async = require('async');
 
 describe('Filter doc_by_place', function() {
@@ -195,7 +196,7 @@ describe('Filter doc_by_place', function() {
   });
 
   it('Contains the user document', function() {
-    expect(docByPlaceIds).toContain('org.couchdb.user:admin');
+    expect(docByPlaceIds).toContain('org.couchdb.user:' + auth.getAuth().user);
   });
 
   it('Should always return forms', function() {

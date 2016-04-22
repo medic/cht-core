@@ -1,5 +1,6 @@
 var http = require('http'),
-    auth = require('./auth');
+    auth = require('./auth'),
+    DBNAME = 'medic-test';
 
 var originalSettings;
 
@@ -7,7 +8,7 @@ var request = function(options) {
   var deferred = protractor.promise.defer();
 
   options.hostname = 'localhost';
-  options.port = 5988;
+  options.port = 5998;
   options.auth = auth.getAuthString();
 
   var req = http.request(options, function(res) {
@@ -45,7 +46,7 @@ module.exports = {
   saveDoc: function(doc) {
     var postData = JSON.stringify(doc);
     return request({
-      path: '/medic',
+      path: '/' + DBNAME,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -57,14 +58,14 @@ module.exports = {
 
   getDoc: function(id) {
     return request({
-      path: '/medic/' + id,
+      path: '/' + DBNAME + '/' + id,
       method: 'GET'
     });
   },
 
   getAuditDoc: function(id) {
     return request({
-      path: '/medic/_design/medic/_view/audit_records_by_doc?include_docs=true&key=["' + id + '"]',
+      path: '/' + DBNAME + '-audit/_design/medic/_view/audit_records_by_doc?include_docs=true&key=["' + id + '"]',
       method: 'GET'
     });
   },
@@ -82,12 +83,12 @@ module.exports = {
       throw new Error('A previous test did not call revertSettings');
     }
     return request({
-      path: '/medic/_design/medic/_rewrite/app_settings/medic',
+      path: '/' + DBNAME + '/_design/medic/_rewrite/app_settings/medic',
       method: 'GET'
     }).then(function(settings) {
       originalSettings = settings;
       return request({
-        path: '/medic/_design/medic/_rewrite/update_settings/medic',
+        path: '/' + DBNAME + '/_design/medic/_rewrite/update_settings/medic',
         method: 'PUT',
         body: JSON.stringify(updates)
       });
@@ -99,7 +100,7 @@ module.exports = {
       throw new Error('No original settings to revert to');
     }
     return request({
-      path: '/medic/_design/medic/_rewrite/update_settings/medic',
+      path: '/' + DBNAME + '/_design/medic/_rewrite/update_settings/medic',
       method: 'PUT',
       body: JSON.stringify(originalSettings)
     }).then(function() {
