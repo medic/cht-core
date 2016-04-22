@@ -6,37 +6,181 @@ Respond with HTTP 200 status on successful requests.
 
 # Table of contents
 
+<!-- To update table of contents run: `npm run-script updatetoc` -->
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [Export](#export)
+  - [GET /api/v1/export/forms/{formcode}](#get-apiv1exportformsformcode)
+  - [GET /api/v1/export/messages](#get-apiv1exportmessages)
+  - [GET /api/v1/export/audit](#get-apiv1exportaudit)
+  - [GET /api/v1/export/feedback](#get-apiv1exportfeedback)
+  - [GET /api/v1/export/contacts](#get-apiv1exportcontacts)
 - [Forms](#forms)
   - [GET /api/v1/forms](#get-apiv1forms)
   - [GET /api/v1/forms/{{id}}.{{format}}](#get-apiv1formsidformat)
 - [Records](#records)
   - [POST /api/v1/records](#post-apiv1records)
-  - [GET /api/v1/export/forms/{formcode}](#get-apiv1exportformsformcode)
 - [Messages](#messages)
-  - [GET /api/v1/export/messages](#get-apiv1exportmessages)
   - [GET /api/v1/messages](#get-apiv1messages)
   - [GET /api/v1/messages/{{id}}](#get-apiv1messagesid)
   - [PUT /api/v1/messages/state/{{id}}](#put-apiv1messagesstateid)
-  - [Todo](#todo)
-  - [Backwards Compatibility](#backwards-compatibility)
-- [Audit Log](#audit-log)
-  - [GET /api/v1/export/audit](#get-apiv1exportaudit)
-- [User Feedback](#user-feedback)
-  - [GET /api/v1/export/feedback](#get-apiv1exportfeedback)
 - [Contacts](#contacts)
-  - [GET /api/v1/export/contacts](#get-apiv1exportcontacts)
-- [Users](#users)
   - [Supported Properties](#supported-properties)
+  - [POST /api/v1/contacts](#post-apiv1contacts)
+- [Places](#places)
+  - [Supported Properties](#supported-properties-1)
+  - [POST /api/v1/places](#post-apiv1places)
+- [Users](#users)
+  - [Supported Properties](#supported-properties-2)
   - [GET /api/v1/users](#get-apiv1users)
   - [POST /api/v1/users](#post-apiv1users)
   - [POST /api/v1/users/{{username}}](#post-apiv1usersusername)
   - [DELETE /api/v1/users/{{username}}](#delete-apiv1usersusername)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# Export
+
+Request different types of data in various formats.
+
+## GET /api/v1/export/forms/{formcode}
+
+Download reports.
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | -------------
+| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
+| locale             | Locale for translatable data. Defaults to 'en'.
+| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
+| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
+| columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
+
+### Output
+
+| Column             | Description
+| ------------------ | -------------
+| Record UUID        | The unique ID for the report in the database.
+| Patient ID         | The generated short patient ID for use in SMS.
+| Reported Date      | The date the report was received.
+| From               | The phone number the report was sent from.
+| Contact Name       | The name of the user this report is assigned to.
+| Form               | The form code for this report.
+
+
+## GET /api/v1/export/messages
+
+Download messages.
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | -------------
+| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
+| locale             | Locale for translatable data. Defaults to 'en'.
+| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
+| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
+| columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
+| filter_state       | Used in conjunction with the parameters below to only return messages that were in a given state. Possible values are 'received', 'scheduled', 'pending', 'sent', 'cleared', or 'muted'.
+| filter_state_from  | The number of days from now to use as a lower bound on the date that the message is in the given state. Defaults to no lower bound. Ignored if filter_state is not provided.
+| filter_state_to    | The number of days from now to use as an upper bound on the date that the message is in the given state. Defaults to no upper bound. Ignored if filter_state is not provided.
+
+### Output
+
+| Column             | Description
+| ------------------ | -------------
+| Record UUID        | The unique ID for the message in the database.
+| Patient ID         | The generated short patient ID for use in SMS.
+| Reported Date      | The date the message was received or generated.
+| From               | This phone number the message is or will be sent from.
+| Contact Name       | The name of the user this message is assigned to.
+| Message Type       | The type of the message
+| Message State      | The state of the message at the time this export was generated
+| Received Timestamp | The datetime the message was received. Only applies to incoming messages.
+| Other Timestamps   | The datetime the message transitioned to each state.
+| Sent By            | The phone number the message was sent from. Only applies to incoming messages.
+| To Phone           | The phone number the message is or will be sent to. Only applies to outgoing messages.
+| Message Body       | The content of the message.
+
+### Examples
+
+Return only rows that are scheduled to be sent in the next ten days.
+
+```
+/export/messages?filter_state=scheduled&filter_state_to=10
+```
+
+
+## GET /api/v1/export/audit
+
+Export a file containing the audit log.
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | -------------
+| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
+| locale             | Locale for translatable data. Defaults to 'en'.
+| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
+| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
+
+
+## GET /api/v1/export/feedback
+
+Export a file containing the user feedback.
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | -------------
+| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
+| locale             | Locale for translatable data. Defaults to 'en'.
+| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
+| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
+
+
+## GET /api/v1/export/contacts
+
+Returns a JSON array of contacts. 
+
+### Query Parameters (required)
+
+| Variable           | Description
+| ------------------ | ------------- 
+| format             | The desired format of the file. Only 'json' is supported. 
+| query              | The query parameters in lucene query generator format.
+
+### Examples
+
+Get all contacts
+
+```
+GET /api/v1/export/contacts?query={"$operands":[{"type":["person","clinic","health_center","district_hospital"]}]}&format=json
+```
+
+```
+HTTP/1.1 200 
+Content-Type: application/json; charset=utf-8
+
+[
+  {
+    "_rev":"1-e39081e9217eb0d99b8bcc4c64f33905",
+    "_id":"a483e2e88487da478c7ad9e2a51bf785",
+    "name":"Gareth",
+    "type":"person"
+  },
+  {
+    "_rev":"1-e39081e9217eb0d99b8bcc4c64f33905",
+    "_id":"a483e2e88487da478c7ad9e2a51bf786",
+    "name":"Dunedin",
+    "type":"district_hospital"
+  }
+]
+```
 
 
 # Forms
@@ -233,74 +377,7 @@ If invalid JSON return error response 500.
 If submitting JSON and correspending form is not found on the server you will receive an error.
 
 
-## GET /api/v1/export/forms/{formcode}
-
-Download reports.
-
-### Query Parameters
-
-| Variable           | Description
-| ------------------ | -------------
-| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
-| locale             | Locale for translatable data. Defaults to 'en'.
-| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
-| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
-| columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
-
-### Output
-
-| Column             | Description
-| ------------------ | -------------
-| Record UUID        | The unique ID for the report in the database.
-| Patient ID         | The generated short patient ID for use in SMS.
-| Reported Date      | The date the report was received.
-| From               | The phone number the report was sent from.
-| Contact Name       | The name of the user this report is assigned to.
-| Form               | The form code for this report.
-
 # Messages
-
-## GET /api/v1/export/messages
-
-Download messages.
-
-### Query Parameters
-
-| Variable           | Description
-| ------------------ | -------------
-| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
-| locale             | Locale for translatable data. Defaults to 'en'.
-| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
-| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
-| columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
-| filter_state       | Used in conjunction with the parameters below to only return messages that were in a given state. Possible values are 'received', 'scheduled', 'pending', 'sent', 'cleared', or 'muted'.
-| filter_state_from  | The number of days from now to use as a lower bound on the date that the message is in the given state. Defaults to no lower bound. Ignored if filter_state is not provided.
-| filter_state_to    | The number of days from now to use as an upper bound on the date that the message is in the given state. Defaults to no upper bound. Ignored if filter_state is not provided.
-
-### Output
-
-| Column             | Description
-| ------------------ | -------------
-| Record UUID        | The unique ID for the message in the database.
-| Patient ID         | The generated short patient ID for use in SMS.
-| Reported Date      | The date the message was received or generated.
-| From               | This phone number the message is or will be sent from.
-| Contact Name       | The name of the user this message is assigned to.
-| Message Type       | The type of the message
-| Message State      | The state of the message at the time this export was generated
-| Received Timestamp | The datetime the message was received. Only applies to incoming messages.
-| Other Timestamps   | The datetime the message transitioned to each state.
-| Sent By            | The phone number the message was sent from. Only applies to incoming messages.
-| To Phone           | The phone number the message is or will be sent to. Only applies to outgoing messages.
-| Message Body       | The content of the message.
-
-### Examples
-
-Return only rows that are scheduled to be sent in the next ten days.
-
-```
-/export/messages?filter_state=scheduled&filter_state_to=10
-```
 
 ## GET /api/v1/messages
 
@@ -500,88 +577,11 @@ Content-Type: application/json; charset=utf-8
 }
 ```
 
-## Todo
+Todo: should updating the state value of a message require the doc's revision?
 
-Should updating the state value of a message require the doc revision?
-
-## Backwards Compatibility
-
-This is a new API so clients can start using it at will, the old one remains available.
-
-# Audit Log
-
-Export a file containing the audit log.
-
-## GET /api/v1/export/audit
-
-### Query Parameters
-
-| Variable           | Description
-| ------------------ | -------------
-| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
-| locale             | Locale for translatable data. Defaults to 'en'.
-| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
-| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
-
-# User Feedback
-
-Export a file containing the user feedback.
-
-## GET /api/v1/export/feedback
-
-### Query Parameters
-
-| Variable           | Description
-| ------------------ | -------------
-| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
-| locale             | Locale for translatable data. Defaults to 'en'.
-| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
-| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
 
 # Contacts
 
-## GET /api/v1/export/contacts
-
-Returns a JSON array of contacts. 
-
-### Query Parameters (required)
-
-| Variable           | Description
-| ------------------ | ------------- 
-| format             | The desired format of the file. Only 'json' is supported. 
-| query              | The query parameters in lucene query generator format.
-
-### Examples
-
-Get all contacts
-
-```
-GET /api/v1/export/contacts?query={"$operands":[{"type":["person","clinic","health_center","district_hospital"]}]}&format=json
-```
-
-```
-HTTP/1.1 200 
-Content-Type: application/json; charset=utf-8
-
-[
-  {
-    "_rev":"1-e39081e9217eb0d99b8bcc4c64f33905",
-    "_id":"a483e2e88487da478c7ad9e2a51bf785",
-    "name":"Gareth",
-    "type":"person"
-  },
-  {
-    "_rev":"1-e39081e9217eb0d99b8bcc4c64f33905",
-    "_id":"a483e2e88487da478c7ad9e2a51bf786",
-    "name":"Dunedin",
-    "type":"district_hospital"
-  }
-]
-```
-
-## POST /api/v1/contacts
-
-Create new contacts. 
 
 ## Supported Properties
 
@@ -600,6 +600,12 @@ Note: this does not accomodate having a `place` field on your contact form.
 | Key | Description       
 | -------- | -----------------
 | place | String that references a place or object that defines a new place. 
+
+
+## POST /api/v1/contacts
+
+Create new contacts. 
+
 
 
 ### Permissions
@@ -765,7 +771,7 @@ Content-Type: application/json
 }
 ```
 
-Example response:
+Example success response:
 
 ```
 HTTP/1.1 200 OK
@@ -885,7 +891,7 @@ Create a new user with a place and a contact.
 
 ### Permissions
 
-`can_create_users`  
+`can_create_users`, `cat_create_places`, `cat_create_contacts`
 
 
 ### Examples
@@ -936,6 +942,18 @@ Content-Type: application/json
 
 ```
 
+### Errors
+
+Response if the username already exists:
+
+```
+HTTP/1.1 409 Conflict
+Content-Type: text/plain
+
+Document update conflict.
+```
+
+
 ## POST /api/v1/users/{{username}}
 
 Allows you to change property values on a user account. Properties listed above
@@ -944,7 +962,7 @@ records is not supported.
 
 ### Permissions
 
-`can_update_users`  
+`can_update_users`, `can_update_places`, `can_update_contacts`
 
 ### URL Parameters
 
