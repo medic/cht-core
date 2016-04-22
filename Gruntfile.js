@@ -391,8 +391,7 @@ module.exports = function(grunt) {
     'default',
     'minify',
     'karma:unit_ci',
-    'nodeunit',
-    'exec:deploytest'
+    'nodeunit'
   ]);
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
@@ -402,9 +401,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('e2e', 'Deploy app and run e2e tests', [
-    'exec:addadmin',
     'exec:deploytest',
-    'exec:runapi',
     'protractor'
   ]);
 
