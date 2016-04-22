@@ -1,7 +1,9 @@
 var async = require('async'),
-    _ = require('underscore'),
-    db = require('../db'),
-    places = require('./places');
+    _ = require('underscore');
+
+var contacts  = require('./contacts'),
+    places = require('./places'),
+    db = require('../db');
 
 var USER_EDITABLE_FIELDS  = [
   'password',
@@ -152,25 +154,16 @@ var createUser = function(data, response, callback) {
   });
 };
 
-/*
- * Warning: not doing validation of the contact data against a form yet.  The
- * form is user defined in settings so being liberal with what gets saved to
- * the database. Ideally CouchDB could validate a given object against a form
- * in validate_doc_update.
- */
 var createContact = function(data, response, callback) {
   response = response || {};
-  // set contact type
-  data.contact.type = 'person';
-  db.medic.insert(data.contact, function(err, body) {
+  contacts.getOrCreateContact(data.contact, function(err, doc) {
     if (err) {
       return callback(err);
     }
-    // save contact id for user settings
-    data.contact = body.id;
+    data.contact = doc;
     response.contact = {
-      id: body.id,
-      rev: body.rev
+      id: doc._id,
+      rev: doc._rev
     };
     callback(null, data, response);
   });
@@ -195,8 +188,7 @@ var createUserSettings = function(data, response, callback) {
 };
 
 var createPlace = function(data, response, callback) {
-  console.log('createPlace', JSON.stringify(data,null,2));
-  module.exports._getOrCreatePlace(data.place, function(err, doc) {
+  places.getOrCreatePlace(data.place, function(err, doc) {
     data.place = doc;
     callback(err, data, response);
   });
@@ -205,18 +197,15 @@ var createPlace = function(data, response, callback) {
 var setContactParent = function(data, response, callback) {
   if (data.contact.parent) {
     // contact parent must exist
-    module.exports._getContactParent(data.contact.parent, function(err, facility) {
+    places.getPlace(data.contact.parent, function(err, place) {
       if (err) {
-        if (err.statusCode === 404) {
-          err.message = 'Failed to find contact parent.';
-        }
         return callback(err);
       }
-      if (!module.exports._hasParent(facility, data.place)) {
+      if (!module.exports._hasParent(place, data.place)) {
         return error400('Contact is not within place.', callback);
       }
       // save result to contact object
-      data.contact.parent = facility;
+      data.contact.parent = place;
       callback(null, data, response);
     });
   } else {
@@ -409,10 +398,7 @@ module.exports = {
   _getAdmins: getAdmins,
   _getAllUsers: getAllUsers,
   _getAllUserSettings: getAllUserSettings,
-  _getContactParent: db.medic.get,
   _getFacilities: getFacilities,
-  _getOrCreatePlace: places.getOrCreatePlace,
-  _getPlace: places._getPlace,
   _getSettingsUpdates: getSettingsUpdates,
   _getUserUpdates: getUserUpdates,
   _hasParent: hasParent,
@@ -471,8 +457,8 @@ module.exports = {
       },
       self._createPlace,
       self._setContactParent,
-      self._createUser,
       self._createContact,
+      self._createUser,
       self._createUserSettings,
     ], function(err, result, responseBody) {
       callback(err, responseBody);
@@ -505,7 +491,7 @@ module.exports = {
         if (data.place) {
           settings.facility_id = user.facility_id;
           series.push(function(cb) {
-            self._getPlace(user.facility_id, cb);
+            places.getPlace(user.facility_id, cb);
           });
         }
         if (data.contact) {

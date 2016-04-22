@@ -21,7 +21,6 @@ exports.tearDown = function (callback) {
     db.medic.view,
     db._users.get,
     db._users.insert,
-    contacts.createContact,
     controller._mapUsers,
     controller._createContact,
     controller._createPlace,
@@ -30,9 +29,7 @@ exports.tearDown = function (callback) {
     controller._getAdmins,
     controller._getAllUsers,
     controller._getAllUserSettings,
-    controller._getContactParent,
     controller._getFacilities,
-    controller._getPlace,
     controller._setContactParent,
     controller._validateUser,
     controller._validateUserSettings,
@@ -41,7 +38,10 @@ exports.tearDown = function (callback) {
     controller._updateUser,
     controller._updateUserSettings,
     controller.getList,
-    places.getOrCreatePlace
+    contacts.createContact,
+    contacts.getOrCreateContact,
+    places.getOrCreatePlace,
+    places.getPlace
   );
   callback();
 };
@@ -116,7 +116,6 @@ exports['getUserUpdates reassigns place field'] = function(test) {
     place: 'abc'
   };
   var user = controller._getUserUpdates('john', data);
-  console.log('user',user);
   test.equals(user.place, void 0);
   test.equals(user.facility_id, 'abc');
   test.done();
@@ -627,20 +626,20 @@ exports['createContact returns error from db insert'] = function(test) {
 };
 
 exports['createContact updates contact property'] = function(test) {
-  sinon.stub(contacts, 'createContact').callsArgWith(1, null, {
+  sinon.stub(contacts, 'getOrCreateContact').callsArgWith(1, null, {
     id: 'abc'
   });
   controller._createContact(userData, {}, function(err, data) {
     test.ok(!err);
-    test.equal(data.contact, 'abc');
+    test.deepEqual(data.contact, { id: 'abc' });
     test.done();
   });
 };
 
 exports['createContact sets up response'] = function(test) {
-  sinon.stub(contacts, 'createContact').callsArgWith(1, null, {
-    id: 'abc',
-    rev: '1-xyz'
+  sinon.stub(contacts, 'getOrCreateContact').callsArgWith(1, null, {
+    _id: 'abc',
+    _rev: '1-xyz'
   });
   controller._createContact(userData, {}, function(err, data, response) {
     test.ok(!err);
@@ -765,7 +764,7 @@ exports['createUser returns error if place lookup fails.'] = function(test) {
 
 exports['createUser returns error if place is not within contact.'] = function(test) {
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
-  sinon.stub(controller, '_getContactParent').callsArgWith(1, null, {
+  sinon.stub(places, 'getPlace').callsArgWith(1, null, {
     '_id': 'miami',
     parent: {
       '_id': 'florida'
@@ -784,7 +783,7 @@ exports['createUser succeeds if contact and place are the same.'] = function(tes
   sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {});
-  sinon.stub(controller, '_getContactParent').callsArgWith(1, null, {
+  sinon.stub(places, 'getPlace').callsArgWith(1, null, {
     '_id': 'foo'
   });
   userData.place = 'foo';
@@ -799,7 +798,7 @@ exports['createUser succeeds if contact is within place.'] = function(test) {
   sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {});
-  sinon.stub(controller, '_getContactParent').callsArgWith(1, null, {
+  sinon.stub(places, 'getPlace').callsArgWith(1, null, {
     '_id': 'miami',
     parent: {
       '_id': 'florida'
@@ -820,7 +819,7 @@ exports['createUser returns response object'] = function(test) {
   sinon.stub(controller, '_createUserSettings').callsArgWith(2, null, {}, {
     biz: 'baz'
   });
-  sinon.stub(controller, '_getContactParent').callsArg(1);
+  sinon.stub(places, 'getPlace').callsArg(1);
   sinon.stub(controller, '_hasParent').returns(true);
   controller.createUser(userData, function(err, response) {
     test.ok(!err);
@@ -831,14 +830,14 @@ exports['createUser returns response object'] = function(test) {
   });
 };
 
-exports['createUser resolves contact parent for waterfall'] = function(test) {
+exports['setContactParent resolves contact parent in waterfall'] = function(test) {
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
-  sinon.stub(controller, '_getContactParent').callsArgWith(1, null, {
+  sinon.stub(places, 'getPlace').callsArgWith(1, null, {
     biz: 'marquee'
   });
   sinon.stub(controller, '_hasParent').returns(true);
-  // checking first function in waterfall
-  sinon.stub(controller, '_createUser', function(data) {
+  // checking function after setContactParent
+  sinon.stub(controller, '_createContact', function(data) {
     test.deepEqual(data.contact.parent, { biz: 'marquee' });
     test.done();
   });
@@ -865,7 +864,7 @@ exports['updateUser fails if place fetch fails'] = function(test) {
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
-  sinon.stub(controller, '_getPlace').callsArgWith(1, 'Not today pal.');
+  sinon.stub(places, 'getPlace').callsArgWith(1, 'Not today pal.');
   var update = sinon.stub(controller, '_updateUser');
   var updateSettings = sinon.stub(controller, '_updateUserSettings');
   controller.updateUser('paul', data, function(err) {
@@ -968,7 +967,7 @@ exports['updateUser succeeds if place is defined and found'] = function(test) {
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
-  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(places, 'getPlace').callsArg(1);
   var update = sinon.stub(controller, '_updateUser').callsArg(2);
   var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
   controller.updateUser('paul', data, function(err) {
@@ -1009,7 +1008,7 @@ exports['updateUser updates password on user doc'] = function(test) {
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
-  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(places, 'getPlace').callsArg(1);
   sinon.stub(controller, '_updateAdminPassword').callsArg(2);
   var update = sinon.stub(controller, '_updateUser', function(id, data, callback) {
     test.equal(data.password, 'whachamacallit');
@@ -1056,7 +1055,7 @@ exports['updateUser updates facility_id on user and user settings'] = function(t
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {
     facility_id: 'maine'
   });
-  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(places, 'getPlace').callsArg(1);
   var update = sinon.stub(controller, '_updateUser', function(id, user, cb) {
     test.equal(user.facility_id, 'paris');
     cb();
@@ -1090,7 +1089,7 @@ exports['updateUser updates user, user settings doc and couchdb admins'] = funct
     phone: '123',
     known: false
   });
-  sinon.stub(controller, '_getPlace').callsArg(1);
+  sinon.stub(places, 'getPlace').callsArg(1);
   sinon.stub(controller, '_updateAdminPassword', function(user, pw, cb) {
     test.equal(user, 'paul');
     test.equal(pw, '*.*');

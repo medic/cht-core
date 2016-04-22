@@ -9,7 +9,7 @@ exports.tearDown = function (callback) {
   utils.restore(
     db.medic.get,
     db.medic.insert,
-    controller._getPlace,
+    controller.getPlace,
     controller._createPlace,
     controller._validatePlace
   );
@@ -112,7 +112,7 @@ exports['validatePlace does not return error if national office is missing paren
 
 exports['getPlace returns custom message on 404 errors.'] = function(test) {
   sinon.stub(db.medic, 'get').callsArgWith(1, {statusCode: 404});
-  controller._getPlace('x', function(err) {
+  controller.getPlace('x', function(err) {
     test.equal(err.message, 'Failed to find place.');
     test.done();
   });
@@ -155,7 +155,7 @@ exports['createPlaces rejects when parent lookup fails.'] = function(test) {
    parent: 'x'
   };
   var insert = sinon.stub(db.medic, 'insert');
-  sinon.stub(controller, '_getPlace').callsArgWith(1, 'boom');
+  sinon.stub(controller, 'getPlace').callsArgWith(1, 'boom');
   controller._createPlaces(place, function(err) {
     test.ok(err);
     test.equal(insert.callCount, 0);

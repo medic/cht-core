@@ -1,7 +1,5 @@
 var _ = require('underscore'),
-    async = require('async');
-
-var contacts = require('./contacts'),
+    contacts = require('./contacts'),
     db = require('../db');
 
 var getPlace = function(id, callback) {
@@ -37,7 +35,6 @@ var isAPlace = function(place) {
  * might be requested in one API call. Just checking `type` field values and
  * some required fields.
  */
-
 var validatePlace = function(place, callback) {
   var err = function(msg, code) {
     return callback({
@@ -111,7 +108,7 @@ var createPlace = function(place, callback) {
 var createPlaces = function(place, callback) {
   var self = module.exports;
   if (_.isString(place.parent)) {
-    self._getPlace(place.parent, function(err, doc) {
+    self.getPlace(place.parent, function(err, doc) {
       if (err) {
         return callback(err);
       }
@@ -133,7 +130,7 @@ var createPlaces = function(place, callback) {
 };
 
 module.exports = {
-  _getPlace: getPlace,
+  getPlace: getPlace,
   _createPlace: createPlace,
   _createPlaces: createPlaces,
   _validatePlace: validatePlace,
@@ -145,7 +142,7 @@ module.exports = {
     var self = module.exports;
     if (_.isString(place)) {
       // fetch place
-      self._getPlace(place, function(err, doc) {
+      self.getPlace(place, function(err, doc) {
         if (err) {
           return callback(err);
         }
@@ -157,7 +154,7 @@ module.exports = {
         if (err) {
           return callback(err);
         }
-        self._getPlace(resp.id, callback);
+        self.getPlace(resp.id, callback);
       });
     } else {
       callback('Place must be a new object or string identifier (UUID).');
