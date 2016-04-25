@@ -117,14 +117,10 @@ define( function( require, exports, module ) {
             var query = params.data.q;
             var skip = ((params.data.page || 1) - 1) * PAGE_SIZE;
 
-            Search({ // $scope
-                filterModel: {
-                    type: 'contacts',
-                    contactTypes: [dbObjectType],
-                },
-                filterQuery: {
-                    value: query
-                }
+            Search('contacts',
+            {   // filters
+                types: [dbObjectType],
+                search: query
             }, { // options
                 limit: PAGE_SIZE,
                 skip: skip
@@ -151,7 +147,6 @@ define( function( require, exports, module ) {
             templateResult: formatResult,
             templateSelection: formatSelection,
             matcher: matcher,
-            selectOnClose: true,
             minimumInputLength: 3,
             width: '100%',
         });
