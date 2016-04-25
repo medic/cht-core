@@ -1,13 +1,5 @@
 /**
- * Delete training data created on an instance.
- * Deletes reports, persons, clinics (=CHP areas for LG), within the training
- * branch, and within a time span.
- *
- * Usage:
- * node delete_training_data.js <dbUrl> <branchId> <startTimeMillis> <endTimeMillis>
- *
- * Example:
- * node delete_training_data.js http://admin:pass@localhost:5984/medic 52857bf2cef066525b2feb82805fb373 1458735592585 1458736086553
+ * Description and usage : see usage message below.
  */
 
 'use strict';
@@ -15,6 +7,17 @@
 var PouchDB = require('pouchdb');
 var _ = require('underscore');
 var fs = require('fs');
+var util = require('util');
+
+// Overload console.log to log to file.
+var setupLogging = function(logfile) {
+  var log_file = fs.createWriteStream(logfile, {flags : 'w'});
+  var log_stdout = process.stdout;
+  console.log = function(d) {
+    log_file.write(util.format(d) + '\n');
+    log_stdout.write(util.format(d) + '\n');
+  };
+};
 
 var getDocsFromRows = function(rows) {
   return _.map(rows, function(row) {
@@ -86,10 +89,16 @@ var filterByType = function(docsList, type) {
 var isContactFor = function(personId) {
   return db.query('medic/facilities_by_contact', {key: [personId], include_docs: true})
     .then(function(result) {
-      console.log('Person ' + personId + ' is contact for ' + result.rows.length + ' facilities');
       var ids = getIdsFromRows(result.rows);
-      console.log(ids);
+      if (result.rows.length > 0) {
+        console.log('Person ' + personId + ' is contact for ' + result.rows.length + ' facilities : ', ids);
+      }
       return getDocsFromRows(result.rows);
+    })
+    .catch(function(err) {
+      console.log('Error in isContactFor ' + personId);
+      console.log(err);
+      throw err;
     });
 };
 
@@ -112,21 +121,30 @@ var removeContact = function(person, facilitiesList) {
 };
 
 // If the persons are contacts for facilities, edit the facilities to remove the contact.
+// Do it them one after the other, rather than concurrently, to avoid too many requests on the DB.
 var cleanContactPersons = function(personsList) {
-  var promiseList = [];
+  var promise = Promise.resolve();
   _.each(personsList, function(person) {
-    var promise = isContactFor(person._id)
-      .then(_.partial(writeDocsToFile, logdir + '/cleaned_facilities_' + person._id + '.json'))
-      .then(_.partial(removeContact, person))
+    promise = promise.then(function() { return cleanContactPerson(person); });
+  });
+  return promise.then(function() { return personsList; });
+};
+
+var cleanContactPerson = function(person) {
+  return isContactFor(person._id)
+      .then(function(facilities) {
+        if (!facilities || facilities.length === 0) {
+          return;
+        }
+        return writeDocsToFile(logdir + '/cleaned_facilities_' + person._id + '.json', facilities)
+          .then(_.partial(removeContact, person));
+      })
       .catch(function (err) {
-        console.log('shit happened when removing contact ' + person._id);
+        console.log('Error when removing contact ' + person._id);
         console.log(err);
         throw err;
       });
-    promiseList.push(promise);
-  });
-  return Promise.all(promiseList);
-};
+    };
 
 var writeDocsToFile = function(filepath, docsList) {
   if (docsList.length === 0) {
@@ -136,7 +154,7 @@ var writeDocsToFile = function(filepath, docsList) {
   return new Promise(function(resolve,reject){
     fs.writeFile(filepath, JSON.stringify(docsList), function(err) {
       if(err) {
-        return reject(err);
+        return reject('Couldn\'t write to file' + filepath, err);
       }
       console.log('Wrote ' + docsList.length + ' docs to file ' + filepath);
       resolve(docsList);
@@ -144,37 +162,49 @@ var writeDocsToFile = function(filepath, docsList) {
   });
 };
 
+var createLogDir = function(logdir) {
+  if (!fs.existsSync(logdir)){
+    fs.mkdirSync(logdir);
+  }
+};
 
-if (process.argv.length < 7) {
+
+if (process.argv.length < 6) {
   console.log('Not enough arguments.');
-  console.log('Usage:\nnode delete_training_data.js <dbUrl> <branchId> ' +
-    '<startTimeMillis> <endTimeMillis> <logdir> [dryrun]');
+  console.log('Usage:\nnode delete_training_data.js <branchId> ' +
+    '<startTime> <endTime> <logdir> [dryrun]');
+  console.log('Will use DB URL+credentials from $COUCH_URL.');
   console.log('Deletes all \'data_record\', \'person\' and \'clinic\' data ' +
     'from a given branch (\'district_hospital\' type) that was created ' +
     'between the two timestamps.');
   console.log('The deleted docs will be written out to json files in the ' +
     'logdir.');
   console.log('The dryrun arg will run the whole process, including writing the files, without actually doing the deletions.');
-  console.log('Example:\nnode delete_training_data.js http://admin:pass@localhost:5984/medic 52857bf2cef066525b2feb82805fb373 1458735592585 1458736086553 . dryrun');
+  console.log('Example:\nexport COUCH_URL=\'http://admin:pass@localhost:5984/medic\'; node delete_training_data.js 52857bf2cef066525b2feb82805fb373 "2016-04-11 07:00 GMT+3:00" "2016-04-25 17:00 GMT+3:00" ./training_data_20160425 dryrun');
   process.exit();
 }
 
-var dbUrl = process.argv[2];
-var branchId = process.argv[3];
-var start = process.argv[4];
-var end = process.argv[5];
-var logdir = process.argv[6];
-var dryrun = process.argv[7];
+var dbUrl = process.env.COUCH_URL;
+var branchId = process.argv[2];
+var start = new Date(process.argv[3]);
+var end = new Date(process.argv[4]);
+var logdir = process.argv[5];
+var dryrun = process.argv[6];
 dryrun = (dryrun === 'dryrun');
 
-console.log('\nStarting deletion process with\ndbUrl = ' + dbUrl + '\nbranchId = ' + branchId +
-  '\nstartTimeMillis = ' + start + '\nendTimeMillis = ' + end + '\nlogdir = ' + logdir + '\ndryrun = ' + dryrun + '\n');
+setupLogging(logdir + '/debug.log');
+
+console.log('\nStarting deletion process with\ndbUrl = $COUCH_URL\nbranchId = ' + branchId +
+  '\nstartTimeMillis = ' + start.toUTCString() + '\nendTimeMillis = ' + end.toUTCString() + '\nlogdir = ' + logdir + '\ndryrun = ' + dryrun + '\n');
 
 var db = new PouchDB(dbUrl);
+createLogDir(logdir);
+var startTimestamp = start.getTime();
+var endTimestamp = end.getTime();
 
 console.log('Deleting reports');
 getDataReportsForBranch(branchId)
-  .then(_.partial(filterByDate, _, start, end))
+  .then(_.partial(filterByDate, _, startTimestamp, endTimestamp))
   .then(_.partial(writeDocsToFile, logdir + '/reports_deleted.json'))
   .then(deleteDocs)
   .then(function(result) {
@@ -182,7 +212,7 @@ getDataReportsForBranch(branchId)
     return result;
   })
   .then(_.partial(getContactsForBranch, branchId))
-  .then(_.partial(filterByDate, _, start, end))
+  .then(_.partial(filterByDate, _, startTimestamp, endTimestamp))
   .then(_.partial(filterByType, _, 'person'))
   .then(cleanContactPersons)
   .then(_.partial(writeDocsToFile, logdir + '/persons_deleted.json'))
@@ -194,7 +224,7 @@ getDataReportsForBranch(branchId)
   // Need to fetch them all over again, because they could have been edited if
   // their contact was just deleted.
   .then(_.partial(getContactsForBranch, branchId))
-  .then(_.partial(filterByDate, _, start, end))
+  .then(_.partial(filterByDate, _, startTimestamp, endTimestamp))
   .then(_.partial(filterByType, _, 'clinic'))
   .then(_.partial(writeDocsToFile, logdir + '/clinics_deleted.json'))
   .then(deleteDocs)
@@ -203,7 +233,7 @@ getDataReportsForBranch(branchId)
     return result;
   })
   .catch(function (err) {
-    console.log('shit happened');
+    console.log('Error!!!');
     console.log(err);
   });
 
