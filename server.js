@@ -404,6 +404,12 @@ app.get('/api/v1/users', function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res);
     }
+    if (_.isEmpty(req.body)) {
+      return serverUtils.error({
+        code: 400,
+        message: 'Request body is empty, check your content-type header.'
+      }, req, res);
+    }
     users.getList(function(err, body) {
       if (err) {
         return serverUtils.error(err, req, res);
@@ -431,6 +437,12 @@ app.post('/api/v1/users/:username', jsonParser, function(req, res) {
   auth.check(req, 'can_update_users', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res);
+    }
+    if (_.isEmpty(req.body)) {
+      return serverUtils.error({
+        code: 400,
+        message: 'Request body is empty, check your content-type header.'
+      }, req, res);
     }
     users.updateUser(req.params.username, req.body, function(err, body) {
       if (err) {
@@ -467,6 +479,26 @@ app.post('/api/v1/places', jsonParser, function(req, res) {
       }, req, res);
     }
     places.createPlace(req.body, function(err, body) {
+      if (err) {
+        return serverUtils.error(err, req, res);
+      }
+      res.json(body);
+    });
+  });
+});
+
+app.post('/api/v1/places/:id', jsonParser, function(req, res) {
+  auth.check(req, 'can_update_places', null, function(err) {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+    if (_.isEmpty(req.body)) {
+      return serverUtils.error({
+        code: 400,
+        message: 'Request body is empty, check your content-type header.'
+      }, req, res);
+    }
+    places.updatePlace(req.params.id, req.body, function(err, body) {
       if (err) {
         return serverUtils.error(err, req, res);
       }

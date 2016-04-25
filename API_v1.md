@@ -1,9 +1,5 @@
 # API v1 Draft
 
-HTTP response bodies are all in JSON format.  
-
-Respond with HTTP 200 status on successful requests.
-
 # Table of contents
 
 <!-- To update table of contents run: `npm run-script updatetoc` -->
@@ -587,7 +583,7 @@ Todo: should updating the state value of a message require the doc's revision?
 
 Use JSON in the request body to specify contact details.  
 
-Note: this does not accomodate having a `place` field on your contact form.
+Note: this does not accomodate having a `place` field on your contact form and will likely be revised soon.
 
 #### Required 
 
@@ -699,7 +695,7 @@ Create a new places and optionally a contact.
 
 ### Permissions
 
-`can_create_places`
+`can_create_places`, `cat_create_contacts`
 
 ### Examples
 
@@ -780,6 +776,46 @@ Content-Type: application/json
 {
   "id": "71df9d25ed6732ea3b4435862510d115",
   "rev": "1-a4060843d78f46a60a6f41051e40e3b5"
+}
+```
+
+Error response if facility structure is not correct:
+
+```
+HTTP/1.1 400 Bad Request
+Content-Type: text/plain
+
+Health Centers should have "district_hospital" parent type.
+```
+
+## POST /api/v1/places/{{id}}
+
+Update a place and optionally its contact.
+
+### Permissions
+
+`can_update_places`
+
+### Examples
+
+Update a place's contact.
+
+```
+POST /api/v1/places/1d83f2b4a27eceb40df9e9f9ad06d137
+Content-Type: application/json
+
+{
+ "contact": "71df9d25ed6732ea3b4435862505f7a9"
+}
+```
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": "1d83f2b4a27eceb40df9e9f9ad06d137",
+  "rev": "12-a4060843d78f46a60a6f41051e40e3b5"
 }
 ```
 

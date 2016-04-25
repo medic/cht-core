@@ -1,4 +1,5 @@
 var controller = require('../../controllers/places'),
+    contacts = require('../../controllers/contacts'),
     db = require('../../db'),
     utils = require('../utils'),
     sinon = require('sinon');
@@ -264,6 +265,29 @@ exports['createPlaces supports parents defined as uuids.'] = function(test) {
   });
   controller._createPlaces(place, function(err, val) {
     test.deepEqual({id: 'abc123'}, val);
+    test.done();
+  });
+};
+
+exports['updatePlace errors with empty data'] = function(test) {
+  controller.updatePlace('123', {}, function(err, resp) {
+    test.equal(err.code, 400);
+    test.done();
+  });
+};
+
+exports['updatePlace handles contact field'] = function(test) {
+  var data = {
+    contact: '71df9'
+  };
+  sinon.stub(controller, 'getPlace').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validatePlace').callsArg(1);
+  sinon.stub(contacts, 'getOrCreateContact').callsArg(1);
+  sinon.stub(db.medic, 'insert', function(doc, cb) {
+    cb(null, {id: 'x', rev: 'y'});
+  });
+  controller.updatePlace('123', data, function(err, resp) {
+    test.deepEqual(resp, { id: 'x', rev: 'y' });
     test.done();
   });
 };

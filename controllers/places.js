@@ -1,6 +1,10 @@
 var _ = require('underscore'),
-    contacts = require('./contacts'),
+    async = require('async');
+
+var contacts = require('./contacts'),
     db = require('../db');
+
+var PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact'];
 
 var getPlace = function(id, callback) {
   db.medic.get(id, function(err, doc) {
@@ -78,7 +82,8 @@ var validatePlace = function(place, callback) {
 };
 
 var createPlace = function(place, callback) {
-  validatePlace(place, function(err) {
+  var self = module.exports;
+  self._validatePlace(place, function(err) {
     if (err) {
       return callback(err);
     }
@@ -129,11 +134,89 @@ var createPlaces = function(place, callback) {
   }
 };
 
+/*
+ * Given a valid place, update editable fields.
+ */
+var updateFields = function(place, data) {
+  var ignore = [];
+  _.forEach(PLACE_EDITABLE_FIELDS , function(key) {
+    if (!_.isUndefined(data[key]) && ignore.indexOf(key) === -1) {
+      place[key] = data[key];
+    }
+  });
+  return place;
+};
+
+var updatePlace = function(id, data, callback) {
+    var self = module.exports,
+        props = PLACE_EDITABLE_FIELDS,
+        response = {},
+        series = [],
+        place;
+    if (!_.some(props, function(k) { return !_.isUndefined(data[k]); })) {
+      return callback({
+        code: 400,
+        message: 'One of the following fields are required: ' + props.join(', ')
+      });
+    }
+    self.getPlace(id, function(err, doc) {
+      if (err) {
+        return callback(err);
+      }
+      place = self._updateFields(doc, data);
+      if (data.contact) {
+        series.push(function(cb) {
+          contacts.getOrCreateContact(data.contact, function(err, doc) {
+            if (err) {
+              return cb(err);
+            }
+            place.contact = doc;
+            cb();
+          });
+        });
+      }
+      if (data.parent) {
+        series.push(function(cb) {
+          self.getOrCreatePlace(data.parent, function(err, doc) {
+            if (err) {
+              return cb(err);
+            }
+            place.parent = doc;
+            cb();
+          });
+        });
+      }
+      series.push(function(cb) {
+        self._validatePlace(place, function(err) {
+          if (err) {
+            return cb(err);
+          }
+          db.medic.insert(place, function(err, resp) {
+            if (err) {
+              return cb(err);
+            }
+            response.id = resp.id;
+            response.rev = resp.rev;
+            cb();
+          });
+        });
+      });
+      async.series(series, function(cb) {
+        if (err) {
+          return cb(err);
+        }
+        callback(null, response);
+      });
+    });
+  };
+
 module.exports = {
-  getPlace: getPlace,
   _createPlace: createPlace,
   _createPlaces: createPlaces,
+  _updateFields: updateFields,
   _validatePlace: validatePlace,
+  createPlace: createPlaces,
+  getPlace: getPlace,
   /*
    * Return existing or newly created place or error. Assumes stored places
    * are valid.
@@ -160,5 +243,5 @@ module.exports = {
       callback('Place must be a new object or string identifier (UUID).');
     }
   },
-  createPlace: createPlaces
+  updatePlace: updatePlace
 };
