@@ -93,7 +93,7 @@ describe('Cache service', function() {
         }
         count++;
       },
-      filter: function() {
+      invalidate: function() {
         return true;
       }
     });
@@ -125,7 +125,7 @@ describe('Cache service', function() {
         }
         count++;
       },
-      filter: function(doc) {
+      invalidate: function(doc) {
         return doc._id === newDoc._id;
       }
     });
@@ -156,7 +156,7 @@ describe('Cache service', function() {
         }
         count++;
       },
-      filter: function(doc) {
+      invalidate: function(doc) {
         return doc._id !== newDoc._id;
       }
     });
