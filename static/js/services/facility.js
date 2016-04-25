@@ -17,7 +17,7 @@ var _ = require('underscore');
             })
             .catch(callback);
         },
-        filter: function(doc) {
+        invalidate: function(doc) {
           return _.contains(CONTACT_TYPES, doc.type);
         }
       });

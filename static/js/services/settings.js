@@ -24,7 +24,7 @@ var _ = require('underscore'),
               callback(err);
             });
         },
-        filter: function(doc) {
+        invalidate: function(doc) {
           return doc._id === '_design/medic';
         }
       });
