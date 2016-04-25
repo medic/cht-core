@@ -272,6 +272,7 @@ exports['createPlaces supports parents defined as uuids.'] = function(test) {
 exports['updatePlace errors with empty data'] = function(test) {
   controller.updatePlace('123', {}, function(err, resp) {
     test.equal(err.code, 400);
+    test.ok(!resp);
     test.done();
   });
 };
