@@ -61,6 +61,7 @@
   require('./update-contact');
   require('./update-facility');
   require('./update-settings');
+  require('./update-user');
   require('./user');
   require('./users');
   require('./verified');
