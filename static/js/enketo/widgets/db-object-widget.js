@@ -161,6 +161,8 @@ define( function( require, exports, module ) {
                     delay: 500,
                     transport: query
                 },
+                allowClear: true,
+                placeholder: '',
                 templateResult: formatResult,
                 templateSelection: formatSelection,
                 matcher: matcher,
