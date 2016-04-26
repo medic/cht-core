@@ -170,6 +170,13 @@ var handleAnalyticsCall = function(req, res, controller) {
   });
 };
 
+var emptyJSONBodyError = function(req, res) {
+  return serverUtils.error({
+    code: 400,
+    message: 'Request body is empty or Content-Type header was not set to application/json.'
+  }, req, res);
+};
+
 app.get('/api/active-pregnancies', function(req, res) {
   handleAnalyticsCall(req, res, activePregnancies);
 });
@@ -404,12 +411,6 @@ app.get('/api/v1/users', function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res);
     }
-    if (_.isEmpty(req.body)) {
-      return serverUtils.error({
-        code: 400,
-        message: 'Request body is empty, check your content-type header.'
-      }, req, res);
-    }
     users.getList(function(err, body) {
       if (err) {
         return serverUtils.error(err, req, res);
@@ -439,10 +440,7 @@ app.post('/api/v1/users/:username', jsonParser, function(req, res) {
       return serverUtils.error(err, req, res);
     }
     if (_.isEmpty(req.body)) {
-      return serverUtils.error({
-        code: 400,
-        message: 'Request body is empty, check your content-type header.'
-      }, req, res);
+      return emptyJSONBodyError(req, res);
     }
     users.updateUser(req.params.username, req.body, function(err, body) {
       if (err) {
@@ -473,10 +471,7 @@ app.post('/api/v1/places', jsonParser, function(req, res) {
       return serverUtils.error(err, req, res);
     }
     if (_.isEmpty(req.body)) {
-      return serverUtils.error({
-        code: 400,
-        message: 'Request body is empty, check your content-type header.'
-      }, req, res);
+      return emptyJSONBodyError(req, res);
     }
     places.createPlace(req.body, function(err, body) {
       if (err) {
@@ -493,10 +488,7 @@ app.post('/api/v1/places/:id', jsonParser, function(req, res) {
       return serverUtils.error(err, req, res);
     }
     if (_.isEmpty(req.body)) {
-      return serverUtils.error({
-        code: 400,
-        message: 'Request body is empty, check your content-type header.'
-      }, req, res);
+      return emptyJSONBodyError(req, res);
     }
     places.updatePlace(req.params.id, req.body, function(err, body) {
       if (err) {
@@ -513,10 +505,7 @@ app.post('/api/v1/contacts', jsonParser, function(req, res) {
       return serverUtils.error(err, req, res);
     }
     if (_.isEmpty(req.body)) {
-      return serverUtils.error({
-        code: 400,
-        message: 'Request body is empty, check your content-type header.'
-      }, req, res);
+      return emptyJSONBodyError(req, res);
     }
     contacts.createContact(req.body, function(err, body) {
       if (err) {
