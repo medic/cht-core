@@ -28,11 +28,16 @@
 var PouchDB = require('pouchdb');
 var _ = require('underscore');
 var fs = require('fs');
+var mkdirp = require('mkdirp');
 var util = require('util');
 
 // Overload console.log to log to file.
-var setupLogging = function(logfile) {
-  var log_file = fs.createWriteStream(logfile, {flags : 'w'});
+var setupLogging = function(logdir, logfile) {
+  if (!mkdirp.sync(logdir)) {
+    console.log('Couldnt create logdir, aborting.');
+    process.exit();
+  }
+  var log_file = fs.createWriteStream(logdir + '/' + logfile, {flags : 'w'});
   log_file.write(''); // create file by writing in it
   var log_stdout = process.stdout;
   console.log = function(d) {
@@ -192,13 +197,6 @@ var writeDocsToFile = function(filepath, docsList) {
   });
 };
 
-var createLogDir = function(logdir) {
-  if (!fs.existsSync(logdir)){
-    fs.mkdirSync(logdir);
-  }
-};
-
-
 if (process.argv.length < 6) {
   console.log('Not enough arguments.');
   console.log('Usage:\nnode delete_training_data.js <branchId> ' +
@@ -214,21 +212,22 @@ if (process.argv.length < 6) {
   process.exit();
 }
 
+var now = new Date();
 var dbUrl = process.env.COUCH_URL;
 var branchId = process.argv[2];
 var start = new Date(process.argv[3]);
 var end = new Date(process.argv[4]);
-var logdir = process.argv[5];
+var logdir = process.argv[5] + '/' + now.getTime();
 var dryrun = process.argv[6];
 dryrun = (dryrun === 'dryrun');
 
-setupLogging(logdir + '/debug.log');
+setupLogging(logdir, 'debug.log');
 
+console.log('Now is ' + now.toUTCString() + '   (' + now + ')   (' + now.getTime() + ')');
 console.log('\nStarting deletion process with\ndbUrl = $COUCH_URL\nbranchId = ' + branchId +
-  '\nstartTimeMillis = ' + start.toUTCString() + '\nendTimeMillis = ' + end.toUTCString() + '\nlogdir = ' + logdir + '\ndryrun = ' + dryrun + '\n');
+  '\nstartTimeMillis = ' + start.toUTCString() + ' (' + start.getTime() + ')\nendTimeMillis = ' + end.toUTCString() + ' (' + end.getTime() + ')\nlogdir = ' + logdir + '\ndryrun = ' + dryrun + '\n');
 
 var db = new PouchDB(dbUrl);
-createLogDir(logdir);
 var startTimestamp = start.getTime();
 var endTimestamp = end.getTime();
 
