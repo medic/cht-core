@@ -96,7 +96,10 @@ describe('ResourceIcons service', function() {
       var service = injector.get('ResourceIcons');
       service.replacePlaceholders(dom);
       setTimeout(function() {
-        chai.expect(dom.html()).to.equal('<li><img class="resource-icon" name="child" src="data:image/png;base64,kiddlywinks"></li><li><img class="resource-icon" name="adult"></li>');
+        chai.expect(dom.find('.resource-icon[name="child"]').attr('src'))
+          .to.equal('data:image/png;base64,kiddlywinks');
+        chai.expect(dom.find('.resource-icon[name="adult"]').attr('src'))
+          .to.equal(undefined);
         done();
       });
     });
@@ -139,24 +142,20 @@ describe('ResourceIcons service', function() {
       var service = injector.get('ResourceIcons');
       service.replacePlaceholders(dom);
       setTimeout(function() {
-        chai.expect(dom.html()).to.equal(
-          '<li><img class="resource-icon" name="child" src="data:image/png;base64,kiddlywinks"></li>' +
-          '<li><img class="resource-icon" name="adult"></li>'
-        );
+        chai.expect(dom.find('.resource-icon[name="child"]').attr('src'))
+          .to.equal('data:image/png;base64,kiddlywinks');
+        chai.expect(dom.find('.resource-icon[name="adult"]').attr('src'))
+          .to.equal(undefined);
 
         Changes.args[0][0].callback(); // invoke the changes listener
         service.replacePlaceholders(dom);
         setTimeout(function() {
-          try {
-            chai.expect(dom.html()).to.equal(
-              '<li><img class="resource-icon" name="child" src="data:image/png;base64,kiddlywinks"></li>' +
-              '<li><img class="resource-icon" name="adult" src="data:image/png;base64,coffinstuffer"></li>'
-            );
-            chai.expect(get.callCount).to.equal(2);
-            done();
-          } catch(e) {
-            done(e);
-          }
+          chai.expect(dom.find('.resource-icon[name="child"]').attr('src'))
+            .to.equal('data:image/png;base64,kiddlywinks');
+          chai.expect(dom.find('.resource-icon[name="adult"]').attr('src'))
+            .to.equal('data:image/png;base64,coffinstuffer');
+          chai.expect(get.callCount).to.equal(2);
+          done();
         });
       });
     });
