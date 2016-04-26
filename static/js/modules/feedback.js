@@ -40,7 +40,7 @@ var registerUnhandledErrorHandler = function() {
       });
     } catch(e) {
       // stop infinite loop of exceptions
-      options.console.error('Error while trying to record error', e);
+      options.console.error('Error while trying to record error', e.toString(), e);
     }
   };
 };
