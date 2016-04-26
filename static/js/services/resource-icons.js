@@ -2,29 +2,37 @@ angular.module('inboxServices').factory('ResourceIcons', [
   '$log', 'DB', 'Changes',
   function($log, DB, Changes) {
 
-    var doc;
+    var cache = {
+      doc: undefined,
+      src: {}
+    };
+
+    var getIcon = function(name) {
+      return cache.doc &&
+             cache.doc.resources[name] &&
+             cache.doc._attachments[cache.doc.resources[name]];
+    };
 
     var getSrc = function(name) {
-      if (!doc) {
-        return;
+      if (!cache.src[name]) {
+        var icon = getIcon(name);
+        if (!icon) {
+          return;
+        }
+        cache.src[name] = 'data:' + icon.content_type + ';base64,' + icon.data;
       }
-      var filename = doc.resources[name];
-      var icon = filename && doc._attachments[filename];
-      if (!icon) {
-        return;
-      }
-      return 'data:' + icon.content_type + ';base64,' + icon.data;
+      return cache.src[name];
     };
 
     var updateDom = function(elem) {
       elem = elem || $(document.body);
-      Object.keys(doc.resources).forEach(function(name) {
-        var src = getSrc(name);
-        var elems = elem.find('img.resource-icon-' + name);
+      elem.find('.resource-icon').each(function(index, element) {
+        var elem = $(element);
+        var src = getSrc(elem.attr('name'));
         if (src) {
-          elems.attr('src', src);
+          elem.attr('src', src);
         } else {
-          elems.removeAttr('src');
+          elem.removeAttr('src');
         }
       });
     };
@@ -33,7 +41,10 @@ angular.module('inboxServices').factory('ResourceIcons', [
       return DB.get()
         .get('resources', { attachments: true })
         .then(function(res) {
-          doc = res;
+          cache = {
+            doc: res,
+            src: {}
+          };
           updateDom();
         })
         .catch(function(err) {
