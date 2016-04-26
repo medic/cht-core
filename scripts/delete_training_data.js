@@ -1,5 +1,26 @@
 /**
  * Description and usage : see usage message below.
+ *
+ * Postmortem (2016-04-25) : editing/deleting data triggers reindexing, that
+ * slows down couch, so you are likely to get `[Error: ETIMEDOUT] status: 400`
+ * halfway through the script. You can either wait for indexing to be done
+ * (couch logs will say `Index update finished for db: medic idx: _design/medic`)
+ * or extend the `os_process_timeout` (or both).
+ *
+ * Full procedure :
+ * - scp the script and the package.json into vm.
+ * - Find npm and add it to the path : `find /srv -name npm` and `export PATH=$PATH:<npm>`
+ * - run `npm install`
+ * - export COUCH_URL value
+ * - stop services : `sudo /boot/svc-down medic-core && \
+ * sudo /boot/svc-down gardener && \
+ * sudo /boot/svc-up medic-core openssh`
+ * - make DB backup : `sudo cp /path/to/couchdb/data/medic.couch medic-$(date +%Y%d%m%H%M%S).couch` (find path : `find /srv/storage -name medic.couch`)
+ * - restart couch : `sudo /boot/svc-up medic-core couchdb`
+ * - extend the couchdb timeout if needed : `curl -X PUT http://<credentials>@localhost:5984/_config/couchdb/os_process_timeout -d '"100000"'`
+ * - run script until all data is dead
+ * - reset the timeout to original value if needed
+ * - restart services : `sudo /boot/svc-up medic-core && sudo /boot/svc-up gardener`
  */
 
 'use strict';
