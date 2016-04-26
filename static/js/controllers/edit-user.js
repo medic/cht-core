@@ -33,7 +33,7 @@ var modal = require('../modules/modal');
       };
 
       var getType = function(type) {
-        return (type === 'admin' || type === 'unknown') ? undefined : type;
+        return type === 'unknown' ? undefined : type;
       };
 
       $scope.$on('EditUserInit', function(e, user) {
@@ -99,9 +99,15 @@ var modal = require('../modules/modal');
         return !Object.keys($scope.errors).length;
       };
 
-      var getRoles = function(type) {
+      var getRoles = function(type, includeAdmin) {
+        if (includeAdmin && type === 'admin') {
+          return ['_admin'];
+        }
+        if (!type || !rolesMap[type]) {
+          return [];
+        }
         // create a new array with the type first, by convention
-        return type ? [type].concat(rolesMap[type]) : [];
+        return [type].concat(rolesMap[type]);
       };
 
       var getSettingsUpdates = function() {
@@ -110,6 +116,7 @@ var modal = require('../modules/modal');
           fullname: $scope.editUserModel.fullname,
           email: $scope.editUserModel.email,
           phone: $scope.editUserModel.phone,
+          roles: getRoles($scope.editUserModel.type, true),
           language: $scope.editUserModel.language &&
                     $scope.editUserModel.language.code,
           facility_id: $scope.editUserModel.facility &&

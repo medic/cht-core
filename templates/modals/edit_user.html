@@ -36,7 +36,8 @@
 
           <div class="form-group" mm-auth="can_configure">
             <label for="type">{{'User Type' | translate}}</label>
-            <select id="type" class="form-control" ng-model="editUserModel.type">
+            <input id="name" type="text" class="form-control" ng-model="editUserModel.type" disabled="disabled" ng-if="editUserModel.type === 'admin'" />
+            <select id="type" class="form-control" ng-model="editUserModel.type" ng-if="editUserModel.type !== 'admin'">
               <option value=""></option>
               <optgroup ng-attr-label="{{'usertype.people' | translate}}">
                 <option value="national-manager">{{'usertype.national-manager' | translate}}</option>
