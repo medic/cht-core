@@ -29,18 +29,16 @@ var registerConsoleInterceptor = function() {
 var registerUnhandledErrorHandler = function() {
   // listen for unhandled errors
   options.window.onerror = function(message, file, line) {
+    var error = { message: message, file: file, line: line };
     try {
-      module.exports.submit(
-        { message: message, file: file, line: line },
-        {},
-        function(err) {
+      module.exports.submit(error, {}, function(err) {
         if (err) {
           options.console.error('Error saving feedback', err);
         }
       });
     } catch(e) {
       // stop infinite loop of exceptions
-      options.console.error('Error while trying to record error', e.toString(), e);
+      options.console.error('Error while trying to record error', JSON.stringify(error), e.toString(), e);
     }
   };
 };
