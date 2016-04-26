@@ -33,11 +33,20 @@ var util = require('util');
 // Overload console.log to log to file.
 var setupLogging = function(logfile) {
   var log_file = fs.createWriteStream(logfile, {flags : 'w'});
+  log_file.write(''); // create file by writing in it
   var log_stdout = process.stdout;
   console.log = function(d) {
     log_file.write(util.format(d) + '\n');
     log_stdout.write(util.format(d) + '\n');
   };
+};
+
+// Useful to keep track of the last seq number, and who knows what else?
+var printoutDbStats = function(data) {
+  return db.info().then(function (result) {
+    console.log('DB stats - ' + JSON.stringify(result));
+    return data;
+  });
 };
 
 var getDocsFromRows = function(rows) {
@@ -228,6 +237,7 @@ getDataReportsForBranch(branchId)
   .then(_.partial(filterByDate, _, startTimestamp, endTimestamp))
   .then(_.partial(writeDocsToFile, logdir + '/reports_deleted.json'))
   .then(deleteDocs)
+  .then(printoutDbStats)
   .then(function(result) {
     console.log('Reports deleted!\n\nDeleting persons');
     return result;
@@ -236,8 +246,10 @@ getDataReportsForBranch(branchId)
   .then(_.partial(filterByDate, _, startTimestamp, endTimestamp))
   .then(_.partial(filterByType, _, 'person'))
   .then(cleanContactPersons)
+  .then(printoutDbStats)
   .then(_.partial(writeDocsToFile, logdir + '/persons_deleted.json'))
   .then(deleteDocs)
+  .then(printoutDbStats)
   .then(function(result) {
     console.log('Persons deleted!\n\nDeleting clinics');
     return result;
@@ -249,6 +261,7 @@ getDataReportsForBranch(branchId)
   .then(_.partial(filterByType, _, 'clinic'))
   .then(_.partial(writeDocsToFile, logdir + '/clinics_deleted.json'))
   .then(deleteDocs)
+  .then(printoutDbStats)
   .then(function(result) {
     console.log('Clinics deleted!');
     return result;
