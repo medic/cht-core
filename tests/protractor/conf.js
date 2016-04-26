@@ -1,16 +1,20 @@
-var auth = require('./auth'),
+var _ = require('underscore'),
     utils = require('./utils'),
     spawn = require('child_process').spawn,
-    credentials = auth.getAuth(),
+    environment = require('./auth')(),
     api;
 
+_.templateSettings = {
+  interpolate: /\{\{(.+?)\}\}/g
+};
+
 var login = function(browser) {
-  browser.driver.get(
-    'http://localhost:5998/medic-test/login?redirect=' +
-    encodeURIComponent('/medic-test/_design/medic/_rewrite/#/messages?e2eTesting=true')
-  );
-  browser.driver.findElement(by.name('user')).sendKeys(credentials.user);
-  browser.driver.findElement(by.name('password')).sendKeys(credentials.pass);
+  var loginUrlTemplate = _.template('http://{{apiHost}}:{{apiPort}}/{{dbName}}/login?redirect=');
+  var redirectUrl = encodeURIComponent('/' + environment.dbName  + '/_design/medic/_rewrite/#/messages?e2eTesting=true');
+  var url = loginUrlTemplate(environment) + redirectUrl;
+  browser.driver.get(loginUrlTemplate(environment) + redirectUrl);
+  browser.driver.findElement(by.name('user')).sendKeys(environment.user);
+  browser.driver.findElement(by.name('password')).sendKeys(environment.pass);
   browser.driver.findElement(by.id('login')).click();
 
   // Login takes some time, so wait until it's done.
@@ -22,11 +26,12 @@ var login = function(browser) {
 
 var startApi = function() {
   return new Promise(function(resolve) {
+    var couchUrlTemplate = _.template('http://{{user}}:{{pass}}@{{couchHost}}:{{couchPort}}/{{dbName}}');
     api = spawn('node', ['server.js'], {
       cwd: 'api',
       env: {
-        API_PORT: 5998,
-        COUCH_URL: 'http://' + credentials.user + ':' + credentials.pass + '@localhost:5984/medic-test'
+        API_PORT: environment.apiPort,
+        COUCH_URL: couchUrlTemplate(environment)
       }
     });
     api.stdout.on('data', function(data) {
@@ -43,14 +48,14 @@ var startApi = function() {
 
 var setupSettings = function() {
   return utils.request({
-    path: '/medic-test/_design/medic/_rewrite/update_settings/medic',
+    path: '/' + environment.dbName  + '/_design/medic/_rewrite/update_settings/medic',
     method: 'PUT',
     body: JSON.stringify({ setup_complete: true })
   });
 };
 
 var setupUser = function() {
-  return utils.getDoc('org.couchdb.user:' + credentials.user)
+  return utils.getDoc('org.couchdb.user:' + environment.user)
     .then(function(doc) {
       doc.known = true;
       doc.language = 'en';

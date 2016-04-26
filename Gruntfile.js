@@ -409,7 +409,7 @@ module.exports = function(grunt) {
     'jshint',
     'karma:unit',
     'nodeunit',
-    'protractor'
+    'e2e'
   ]);
 
   grunt.registerTask('test_continuous', 'Lint, unit test running on a loop', [

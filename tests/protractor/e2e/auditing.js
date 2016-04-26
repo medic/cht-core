@@ -1,5 +1,5 @@
 var utils = require('../utils'),
-    auth = require('../auth');
+    environment = require('../auth')();
 
 describe('Auditing', function() {
 
@@ -105,7 +105,7 @@ describe('Auditing', function() {
       var doc = viewResult.rows[0].doc;
       expect(doc.history.length).toEqual(2);
       expect(doc.history[1].action).toEqual('delete');
-      expect(doc.history[1].user).toEqual(auth.getAuth().user);
+      expect(doc.history[1].user).toEqual(environment.user);
       expect(doc.history[1].doc._deleted).toEqual(true);
     }, function(err) {
       console.error('Error fetching audit doc', err);

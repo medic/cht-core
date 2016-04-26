@@ -1,15 +1,14 @@
 var http = require('http'),
-    auth = require('./auth'),
-    DBNAME = 'medic-test';
+    environment = require('./auth')();
 
 var originalSettings;
 
 var request = function(options) {
   var deferred = protractor.promise.defer();
 
-  options.hostname = 'localhost';
-  options.port = 5998;
-  options.auth = auth.getAuthString();
+  options.hostname = environment.apiHost;
+  options.port = environment.apiPort;
+  options.auth = environment.user + ':' + environment.pass;
 
   var req = http.request(options, function(res) {
     res.setEncoding('utf8');
@@ -46,7 +45,7 @@ module.exports = {
   saveDoc: function(doc) {
     var postData = JSON.stringify(doc);
     return request({
-      path: '/' + DBNAME,
+      path: '/' + environment.dbName,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -58,14 +57,14 @@ module.exports = {
 
   getDoc: function(id) {
     return request({
-      path: '/' + DBNAME + '/' + id,
+      path: '/' + environment.dbName + '/' + id,
       method: 'GET'
     });
   },
 
   getAuditDoc: function(id) {
     return request({
-      path: '/' + DBNAME + '-audit/_design/medic/_view/audit_records_by_doc?include_docs=true&key=["' + id + '"]',
+      path: '/' + environment.dbName + '-audit/_design/medic/_view/audit_records_by_doc?include_docs=true&key=["' + id + '"]',
       method: 'GET'
     });
   },
@@ -83,12 +82,12 @@ module.exports = {
       throw new Error('A previous test did not call revertSettings');
     }
     return request({
-      path: '/' + DBNAME + '/_design/medic/_rewrite/app_settings/medic',
+      path: '/' + environment.dbName + '/_design/medic/_rewrite/app_settings/medic',
       method: 'GET'
     }).then(function(settings) {
       originalSettings = settings;
       return request({
-        path: '/' + DBNAME + '/_design/medic/_rewrite/update_settings/medic',
+        path: '/' + environment.dbName + '/_design/medic/_rewrite/update_settings/medic',
         method: 'PUT',
         body: JSON.stringify(updates)
       });
@@ -100,7 +99,7 @@ module.exports = {
       throw new Error('No original settings to revert to');
     }
     return request({
-      path: '/' + DBNAME + '/_design/medic/_rewrite/update_settings/medic',
+      path: '/' + environment.dbName + '/_design/medic/_rewrite/update_settings/medic',
       method: 'PUT',
       body: JSON.stringify(originalSettings)
     }).then(function() {
