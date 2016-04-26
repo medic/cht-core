@@ -38,9 +38,10 @@ define( function( require, exports, module ) {
     Dbobjectwidget.prototype.constructor = Dbobjectwidget;
 
     Dbobjectwidget.prototype._init = function() {
-        var angularServices = angular.element(document.body).injector();
-        var translate = angularServices.get('$translate').instant;
-        var Search = angularServices.get('Search');
+        var aS = angular.element(document.body).injector();
+        var translate = aS.get('$translate').instant,
+            Search = aS.get('Search'),
+            DB = aS.get('DB').get();
 
         var formatResult = function(row) {
             if(!row.doc) {
@@ -82,8 +83,13 @@ define( function( require, exports, module ) {
         var $question = $(this.element);
 
         var $textInput = $question.find('input');
+        var value = $textInput.val();
         $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
         $textInput = $question.find('select');
+        var preSelectedOption = $('<option></option>')
+                  .attr('value', value)
+                  .text(value);
+        $textInput.append(preSelectedOption);
 
         var dbObjectType = $textInput.attr('data-type-xml');
 
@@ -139,30 +145,38 @@ define( function( require, exports, module ) {
             });
         };
 
-        $textInput.select2({
-            ajax: {
-                delay: 500,
-                transport: query
-            },
-            templateResult: formatResult,
-            templateSelection: formatSelection,
-            matcher: matcher,
-            minimumInputLength: 3,
-            width: '100%',
-        });
-
-        if (!$question.hasClass('or-appearance-bind-id-only')) {
-            $textInput.on('change', function() {
-                var selected = $textInput.select2('data');
-                var doc = selected && selected[0] && selected[0].doc;
-                if (doc) {
-                    var form = $question.closest('form.or');
-                    var field = $question.find('select[name]').attr('name');
-                    var objectRoot = field.substring(0, field.lastIndexOf('/'));
-                    updateFields(form, doc, objectRoot, field);
-                }
+        DB.get(preSelectedOption.attr('value'))
+          .then(function(doc) {
+            var text = formatSelection({doc: doc});
+            preSelectedOption.text(text);
+        }).catch(function(err) {
+            console.log('Error resolving initial selection from DB', err);
+        }).then(function() {
+            $textInput.select2({
+                ajax: {
+                    delay: 500,
+                    transport: query
+                },
+                templateResult: formatResult,
+                templateSelection: formatSelection,
+                matcher: matcher,
+                minimumInputLength: 3,
+                width: '100%',
             });
-        }
+
+            if (!$question.hasClass('or-appearance-bind-id-only')) {
+                $textInput.on('change', function() {
+                    var selected = $textInput.select2('data');
+                    var doc = selected && selected[0] && selected[0].doc;
+                    if (doc) {
+                        var form = $question.closest('form.or');
+                        var field = $question.find('select[name]').attr('name');
+                        var objectRoot = field.substring(0, field.lastIndexOf('/'));
+                        updateFields(form, doc, objectRoot, field);
+                    }
+                });
+            }
+        });
     };
 
     var updateFields = function(form, doc, objectRoot, keyPath) {
