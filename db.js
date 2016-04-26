@@ -87,7 +87,11 @@ if (couchUrl) {
     fti: function() {},
     request: function() {},
     getPath: function() {},
-    settings: {},
+    settings: {
+      protocol: 'http',
+      port: '123',
+      host: 'local'
+    },
     getSettings: function() {},
     sanitizeResponse: sanitizeResponse,
     use: function() {},
