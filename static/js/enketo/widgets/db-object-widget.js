@@ -38,10 +38,10 @@ define( function( require, exports, module ) {
     Dbobjectwidget.prototype.constructor = Dbobjectwidget;
 
     Dbobjectwidget.prototype._init = function() {
-        var aS = angular.element(document.body).injector();
-        var translate = aS.get('$translate').instant,
-            Search = aS.get('Search'),
-            DB = aS.get('DB').get();
+        var angularServices = angular.element(document.body).injector();
+        var translate = angularServices.get('$translate').instant,
+            Search = angularServices.get('Search'),
+            DB = angularServices.get('DB').get();
 
         var formatResult = function(row) {
             if(!row.doc) {
