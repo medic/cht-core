@@ -11,7 +11,6 @@ _.templateSettings = {
 var login = function(browser) {
   var loginUrlTemplate = _.template('http://{{apiHost}}:{{apiPort}}/{{dbName}}/login?redirect=');
   var redirectUrl = encodeURIComponent('/' + environment.dbName  + '/_design/medic/_rewrite/#/messages?e2eTesting=true');
-  var url = loginUrlTemplate(environment) + redirectUrl;
   browser.driver.get(loginUrlTemplate(environment) + redirectUrl);
   browser.driver.findElement(by.name('user')).sendKeys(environment.user);
   browser.driver.findElement(by.name('password')).sendKeys(environment.pass);
