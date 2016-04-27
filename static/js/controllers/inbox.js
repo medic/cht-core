@@ -5,6 +5,7 @@ var feedback = require('../modules/feedback'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
     format = require('../modules/format'),
+    select2Ajax = require('../modules/select2-ajax'),
     guidedSetup = require('../modules/guided-setup'),
     ajaxDownload = require('../modules/ajax-download');
 
@@ -15,8 +16,8 @@ var feedback = require('../modules/feedback'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES', 'Search',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES, Search) {
 
       Session.init();
 
@@ -319,77 +320,21 @@ var feedback = require('../modules/feedback'),
           $scope.facilities = hierarchy;
           $scope.facilitiesCount = total;
         });
-        Facility({ types: [ 'person' ] }, function(err, people) {
-          if (err) {
-            return $log.error('Failed to retrieve people', err);
-          }
-          $scope.people = people;
-          function formatResult(doc) {
-            return doc && format.contact(doc);
-          }
-
-          function $formatResult(data) {
-            if (data.text) {
-              return data.text;
-            }
-            return $(formatResult(data.doc));
-          }
-
-          function formatSelection(data) {
-            return data.text || data.doc.name;
-          }
-
-          $.fn.select2.amd.require(
-          ['select2/data/array', 'select2/utils'],
-          function (ArrayData, Utils) {
-            function CustomData ($element, options) {
-              CustomData.__super__.constructor.call(this, $element, options);
-            }
-
-            Utils.Extend(CustomData, ArrayData);
-
-            function sortResults(results) {
-              results.sort(function(a, b) {
-                var aName = formatResult(a).toLowerCase();
-                var bName = formatResult(b).toLowerCase();
-                return aName.localeCompare(bName);
-              });
-              return results;
-            }
-
-            CustomData.prototype.query = function (params, callback) {
-              var terms = params.term ? params.term.toLowerCase().split(/\s+/) : [];
-
-              var matches = _.filter(people, function(doc) {
-                var contact = doc.contact;
-                var name = contact && contact.name;
-                var phone = contact && contact.phone;
-                var tags = [ doc.name, name, phone ].join(' ').toLowerCase();
-                return _.every(terms, function(term) {
-                  return tags.indexOf(term) > -1;
-                });
-              });
-
-              matches = sortResults(matches);
-              matches = _.map(matches, function(doc) {
-                return { id: doc._id, doc: doc };
-              });
-
-              callback({ results: matches });
-            };
-
-            $('.update-facility [name=facility], #edit-user-profile [name=contact]').select2({
-              dataAdapter: CustomData,
-              templateResult: $formatResult,
-              templateSelection: formatSelection,
-              width: '100%',
-            });
-
-          });
-
-        });
       };
       updateAvailableFacilities();
+
+      // TODO: split this out so that these only need to be run when the pages
+      //       we care about are actually loaded
+      // FIXME: we need to defer it like this because otherwise the selector
+      //        doesn't select anything. I know, I know, I don't know what I'm
+      //        doing with my life either
+      $timeout(function() {
+        $('.update-facility [name=facility], #edit-user-profile [name=contact]').each(function(idx, el) {
+          select2Ajax.init($translate, Search, DB, $q)($(el), 'person', {
+            allowNew: false,
+          });
+        });
+      });
 
       var findIdInContactHierarchy = function(id, hierarchy) {
         return _.find(hierarchy, function(entry) {

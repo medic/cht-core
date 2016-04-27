@@ -132,10 +132,14 @@ var _ = require('underscore'),
       _.defaults(options, {
         pageSize: 20,
         allowNew: false,
+        templateSelection: formatSelection,
+        templateResult: formatResult
       });
 
       PAGE_SIZE = options.pageSize;
       ALLOW_NEW = options.allowNew;
+      formatResult = options.templateResult;
+      formatSelection = options.templateSelection;
 
       OBJECT_TYPE = objectType;
 
