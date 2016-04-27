@@ -9,10 +9,9 @@ define( function( require, exports, module ) {
     var _ = require('underscore');
     var Widget = require('enketo-core/src/js/Widget');
     var $ = require('jquery');
-    var format = require('../../modules/format');
-    require('enketo-core/src/js/plugins');
+    var select2Ajax = require('../../modules/select2-ajax');
 
-    var PAGE_SIZE = 20;
+    require('enketo-core/src/js/plugins');
 
     var pluginName = 'dbobjectwidget';
 
@@ -41,44 +40,8 @@ define( function( require, exports, module ) {
         var angularServices = angular.element(document.body).injector();
         var translate = angularServices.get('$translate').instant,
             Search = angularServices.get('Search'),
+            $q = angularServices.get('$q'),
             DB = angularServices.get('DB').get();
-
-        var formatResult = function(row) {
-            if(!row.doc) {
-                return $('<p>' + (row.text || '&nbsp;') + '</p>');
-            }
-            if(row.doc.type === 'person') {
-                return $(format.contact(row.doc));
-            }
-            // format escapes the content for us, and if we just return
-            // a string select2 escapes it again, so return an element instead.
-            return $('<span>' + format.clinic(row.doc) + '</span>');
-        };
-
-        var formatSelection = function(row) {
-            if(row.doc) {
-                return row.doc.name;
-            }
-            return row.text;
-        };
-
-        var matcher = function(params, data) {
-            var doc = data && data.doc;
-            if (!doc) {
-                return null;
-            }
-            var term = params.term && params.term.toLowerCase();
-            if (!term) {
-                return data;
-            }
-            var match = false;
-            Object.keys(doc).forEach(function(key) {
-                if (typeof doc[key] === 'string' && doc[key].toLowerCase().indexOf(term) !== -1) {
-                    match = true;
-                }
-            });
-            return match ? data : null;
-        };
 
         var $question = $(this.element);
 
@@ -93,83 +56,9 @@ define( function( require, exports, module ) {
 
         var dbObjectType = $textInput.attr('data-type-xml');
 
-        var prepareRows = function(documents, first) {
-            var rows = _.sortBy(documents, function(doc) {
-                return doc.name;
-            }).map(function(doc) {
-                return {
-                    id: doc._id,
-                    doc: doc
-                };
-            });
-
-            if (first) {
-                // add 'new' option if requested
-                if ($question.hasClass('or-appearance-allow-new')) {
-                    rows.unshift({
-                        id: 'NEW',
-                        text: translate('contact.type.' + dbObjectType + '.new'),
-                    });
-                }
-
-                // add blank option
-                rows.unshift({ id: '' });
-            }
-
-            return rows;
-        };
-
-        var query = function(params, successCb, failureCb) {
-            var query = params.data.q;
-            var skip = ((params.data.page || 1) - 1) * PAGE_SIZE;
-
-            Search({ // $scope
-                filterModel: {
-                    type: 'contacts',
-                    contactTypes: [dbObjectType],
-                },
-                filterQuery: {
-                    value: query
-                }
-            }, { // options
-                limit: PAGE_SIZE,
-                skip: skip
-            }, function(err, documents) {
-                if (err) {
-                    failureCb(err);
-                    console.log(dbObjectType + ' failed to load', err);
-                }
-
-                successCb({
-                    results: prepareRows(documents, skip === 0),
-                    pagination: {
-                        more: documents.length === PAGE_SIZE
-                    }
-                });
-            });
-        };
-
-        DB.get(preSelectedOption.attr('value'))
-          .then(function(doc) {
-            var text = formatSelection({doc: doc});
-            preSelectedOption.text(text);
-        }).catch(function(err) {
-            console.log('Error resolving initial selection from DB', err);
+        select2Ajax.init(translate, Search, DB, $q)($textInput, dbObjectType, {
+            allowNew: $question.hasClass('or-appearance-allow-new')
         }).then(function() {
-            $textInput.select2({
-                ajax: {
-                    delay: 500,
-                    transport: query
-                },
-                allowClear: true,
-                placeholder: '',
-                templateResult: formatResult,
-                templateSelection: formatSelection,
-                matcher: matcher,
-                minimumInputLength: 3,
-                width: '100%',
-            });
-
             if (!$question.hasClass('or-appearance-bind-id-only')) {
                 $textInput.on('change', function() {
                     var selected = $textInput.select2('data');
