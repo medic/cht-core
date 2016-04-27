@@ -5,11 +5,11 @@
         <div class="actions dropup" ng-show="currentTab === 'messages' || currentTab === 'reports' || currentTab === 'contacts'">
           <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" ng-show="currentTab === 'messages'">
             <span class="fa fa-plus"></span>
-            <p>{{'Send Message' | translate}}</p>
+            <p translate>Send Message</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" ng-show="currentTab === 'reports'" data-toggle="dropdown" ng-class="{'mm-icon-disabled': !nonContactForms.length}">
             <span class="fa fa-plus"></span>
-            <p>{{'Submit Report' | translate}}</p>
+            <p translate>Submit Report</p>
           </a>
           <ul class="dropdown-menu" ng-show="nonContactForms.length">
             <li ng-repeat="form in nonContactForms">
@@ -21,22 +21,22 @@
               <i class="fa fa-building fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
-            <p>{{'Add place' | translate}}</p>
+            <p translate>Add place</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.add()" ng-show="currentTab === 'contacts' && !facilities.length">
             <span class="fa-stack">
               <i class="fa fa-group fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
-            <p>{{'action.clinic.add' | translate}}</p>
+            <p translate>action.clinic.add</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'messages' || currentTab === 'reports' || currentTab === 'contacts'" ng-click="download()" mm-auth="can_access_directly">
             <span class="fa fa-arrow-down"></span>
-            <p>{{'Export' | translate}}</p>
+            <p translate>Export</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'contacts'" mm-auth="can_access_directly" data-toggle="modal" data-target="#import-contacts">
             <span class="fa fa-arrow-up"></span>
-            <p>{{'Import' | translate}}</p>
+            <p translate>Import</p>
           </a>
         </div>
       </div>
@@ -44,55 +44,55 @@
         <div class="actions dropup" ng-show="showActionBar && actionBar._id && !loadingContent && (('reports.detail' | isState) || ('contacts.detail' | isState))">
           <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="tel:{{actionBar.sendTo.phone}}" ng-show="currentTab === 'contacts'" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
             <span class="fa fa-phone"></span>
-            <p>{{'call' | translate}}</p>
+            <p translate>call</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{actionBar.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
             <span class="fa fa-envelope"></span>
-            <p>{{'Send Message' | translate}}</p>
+            <p translate>Send Message</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" data-send-to="{{actionBar.sendTo}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}" ng-show="currentTab !== 'contacts' || actionBar.sendTo.type !== 'health_center'">
             <span class="fa fa-envelope"></span>
-            <p>{{'Send Message' | translate}}</p>
+            <p translate>Send Message</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption desktop-only dropdown-toggle" ng-show="currentTab === 'contacts' && actionBar.sendTo.type === 'health_center'" data-toggle="dropdown">
             <span class="fa fa-envelope"></span>
-            <p>{{'Send Message' | translate}}</p>
+            <p translate>Send Message</p>
           </a>
           <ul class="dropdown-menu">
             <li>
-              <a class="send-message" data-send-to="{{actionBar.sendTo}}">{{'Send Message' | translate}}</a>
+              <a class="send-message" data-send-to="{{actionBar.sendTo}}" translate>Send Message</a>
             </li>
             <li>
-              <a class="send-message" data-send-to="{{actionBar.sendTo}}" data-everyone-at="true">{{'Message All' | translate}}</a>
+              <a class="send-message" data-send-to="{{actionBar.sendTo}}" data-everyone-at="true" translate>Message All</a>
             </li>
           </ul>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'reports' && !actionBar.verified" ng-click="emit('VerifyReport', true)">
             <span class="fa fa-check"></span>
-            <p>{{'Verify' | translate}}</p>
+            <p translate>Verify</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'reports' && actionBar.verified" ng-click="emit('VerifyReport', false)">
             <span class="fa fa-times"></span>
-            <p>{{'Unverify' | translate}}</p>
+            <p translate>Unverify</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'reports' && actionBar.type === 'xml'" ui-sref="reports.edit({ reportId: actionBar._id })">
             <span class="fa fa-pencil"></span>
-            <p>{{'Edit' | translate}}</p>
+            <p translate>Edit</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'reports' && actionBar.type !== 'xml'" ng-click="emit('EditReport')">
             <span class="fa fa-pencil"></span>
-            <p>{{'Edit' | translate}}</p>
+            <p translate>Edit</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'contacts'" ui-sref="contacts.edit({ id: actionBar._id })">
             <span class="fa fa-pencil"></span>
-            <p>{{'Edit' | translate}}</p>
+            <p translate>Edit</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'reports'" ng-click="actionBar.disableDelete || deleteDoc(actionBar._id)" ng-class="{'mm-icon-disabled': actionBar.disableDelete}" mm-auth="can_delete_reports">
             <span class="fa fa-trash-o"></span>
-            <p>{{'Delete' | translate}}</p>
+            <p translate>Delete</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'contacts'" ng-click="actionBar.disableDelete || deleteDoc(actionBar._id)" ng-class="{'mm-icon-disabled': actionBar.disableDelete}" mm-auth="can_delete_contacts">
             <span class="fa fa-trash-o"></span>
-            <p>{{'Delete' | translate}}</p>
+            <p translate>Delete</p>
           </a>
         </div>
       </div>
