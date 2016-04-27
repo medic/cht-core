@@ -502,12 +502,30 @@ body {
   }
 }
 
-.reports .inbox-items li {
-  .message-wrapper:hover {
-    border-left-color: @reports-color;
+.reports {
+  .inbox-items li {
+    .message-wrapper:hover {
+      border-left-color: @reports-color;
+    }
+    &.selected {
+      background-color: lighten(@reports-color, 30%);
+    }
+    input[type="checkbox"] {
+      display: none;
+      float: left;
+      height: 2em;
+    }
   }
-  &.selected {
-    background-color: lighten(@reports-color, 30%);
+  &.select-mode .inbox-items li {
+    input[type="checkbox"] {
+      display: inline;
+    }
+    .message-wrapper {
+      padding-left: 0;
+    }
+    .detail {
+      margin-left: 4em;
+    }
   }
 }
 

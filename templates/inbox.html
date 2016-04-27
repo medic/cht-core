@@ -7,7 +7,7 @@
     <link rel="shortcut icon" href="<%= baseURL %>/static/img/ico/icon_48.ico">
     <title>Medic Mobile</title>
   </head>
-  <body class="inbox {{currentTab}}" ng-controller="InboxCtrl" ng-class="{'show-content': showContent, 'bootstrapped': version && dbWarmedUp}">
+  <body class="inbox {{currentTab}}" ng-controller="InboxCtrl" ng-class="{'show-content': showContent, 'bootstrapped': version && dbWarmedUp, 'select-mode': selectMode}">
 
     <div class="bootstrap-layer">
       <div class="loader"></div>

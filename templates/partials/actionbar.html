@@ -1,11 +1,15 @@
 <div class="container-fluid action-container">
   <div class="row">
     <div class="inner">
-      <div class="col-sm-4 general-actions left-pane">
+      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab !== 'reports' || !selectMode">
         <div class="actions dropup" ng-show="currentTab === 'messages' || currentTab === 'reports' || currentTab === 'contacts'">
           <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" ng-show="currentTab === 'messages'">
             <span class="fa fa-plus"></span>
             <p translate>Send Message</p>
+          </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'reports'" mm-auth="can_delete_reports" ng-click="setSelectMode(true)">
+            <span class="fa fa-check-square"></span>
+            <p translate>select.mode.start</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" ng-show="currentTab === 'reports'" data-toggle="dropdown" ng-class="{'mm-icon-disabled': !nonContactForms.length}">
             <span class="fa fa-plus"></span>
@@ -37,6 +41,18 @@
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'contacts'" mm-auth="can_access_directly" data-toggle="modal" data-target="#import-contacts">
             <span class="fa fa-arrow-up"></span>
             <p translate>Import</p>
+          </a>
+        </div>
+      </div>
+      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && selectMode">
+        <div class="actions dropup">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption">
+            <span class="fa fa-check-square"></span>
+            <p translate>select.mode.select.all</p>
+          </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="setSelectMode(false)">
+            <span class="fa fa-times-circle-o"></span>
+            <p translate>select.mode.stop</p>
           </a>
         </div>
       </div>

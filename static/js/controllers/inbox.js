@@ -274,6 +274,7 @@ var feedback = require('../modules/feedback'),
 
       $scope.$on('$stateChangeSuccess', function(event, toState) {
         $scope.currentTab = toState.name.split('.')[0];
+        $scope.selectMode = false;
       });
 
       $scope.download = function() {
@@ -658,6 +659,10 @@ var feedback = require('../modules/feedback'),
           }, function () {
             $log.debug('User cancelled deleteDoc.');
           });
+      };
+
+      $scope.setSelectMode = function(value) {
+        $scope.selectMode = value;
       };
 
       $('body').on('mouseenter', '.relative-date, .autoreply', function() {
