@@ -27,7 +27,13 @@ console.log('\nStarting validation with\nbranchId = ' + branchId +
 
 
 var testDocs = function(file, type, findDistrictFunc) {
-  var docs = JSON.parse(fs.readFileSync(file, 'utf8'));
+  var docs = [];
+  try {
+    docs = JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch (err) {
+    console.log('Couldnt open file ' + file + '. Skipping. ' + err + '\n');
+    return;
+  }
   console.log('Read ' + docs.length + ' ' + type + 's from file. Will print out any problems.');
 
   _.each(docs, function(doc) {
@@ -53,7 +59,7 @@ var testContactDeletion = function(deletedContacts, logdir, filename) {
   }
 
   // Check contact is in deleted contacts file.
-  if(!_.findWhere(deletedContacts, { _id: contactId})) {
+  if(deletedContacts && !_.findWhere(deletedContacts, { _id: contactId})) {
     console.log('Contact ' + contactId + ' not found in contacts file!!');
     return;
   }
@@ -67,22 +73,32 @@ var testContactDeletion = function(deletedContacts, logdir, filename) {
   });
 };
 
+console.log('REPORTS');
 testDocs(logdir + '/reports_deleted.json', 'report',
   function(report) {
     return findDistrict(report.contact.parent, report._id);
   });
 
+console.log('PERSONS');
 testDocs(logdir + '/persons_deleted.json', 'person',
   function(person) {
     return findDistrict(person, person._id);
   });
 
+console.log('CLINICS');
 testDocs(logdir + '/clinics_deleted.json', 'clinic',
   function(clinic) {
     return findDistrict(clinic, clinic._id);
   });
 
-var deletedContacts = JSON.parse(fs.readFileSync(logdir + '/persons_deleted.json', 'utf8'));
+console.log('CONTACT LINKS');
+var deletedContacts = [];
+try {
+  deletedContacts = JSON.parse(fs.readFileSync(logdir + '/persons_deleted.json', 'utf8'));
+} catch (err) {
+  console.log('Couldnt open persons_deleted.json file. Skipping. ' + err + '\n');
+  return;
+}
 var logfiles = fs.readdirSync(logdir);
 console.log('Validating contact deletions. ' + logfiles.length + ' files to look through.');
 _.each(logfiles, function(logfile) {
