@@ -31,7 +31,7 @@
     "nools": "^0.4.1",
     "nvd3": "~1.1.15-beta",
     "openrosa-xpath-evaluator": "git://github.com/alxndrsn/openrosa-xpath-evaluator.git#3e9a0aa8232d54788ba6a94bf2c3c7b14ccb64fc",
-    "pouchdb": "~5.3.0",
+    "pouchdb": "^5.3.2",
     "properties": "^1.2.1",
     "select2": "~4.0.1",
     "underscore": "~1.8.3",
