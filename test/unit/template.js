@@ -1,6 +1,7 @@
 var template = require('../../lib/template'),
     config = require('../../config'),
-    sinon = require('sinon');
+    sinon = require('sinon'),
+    moment = require('moment');
 
 exports.tearDown = function(callback) {
   if (config.get.restore) {
@@ -22,55 +23,65 @@ exports['renders variables'] = function(test) {
 };
 
 exports['renders string dates'] = function(test) {
-  var get = sinon.stub(config, 'get').returns('DD-MMM-YYYY');
-  var input = 'reported on {{#date}}{{reported_date}}{{/date}}';
-  var context = { reported_date: '2016-03-06T03:45:41.000Z' };
+  var format = 'DD-MMM-YYYY';
+  var date = '2016-03-06T03:45:41.000Z';
+  var get = sinon.stub(config, 'get').returns(format);
+  var input = '{{#date}}{{reported_date}}{{/date}}';
+  var context = { reported_date: date };
   var actual = template.render(input, context);
-  test.equals(actual, 'reported on 06-Mar-2016');
+  test.equals(actual, moment(date).format(format));
   test.equals(get.callCount, 1);
   test.equals(get.args[0][0], 'date_format');
   test.done();
 };
 
 exports['renders integer dates'] = function(test) {
-  var get = sinon.stub(config, 'get').returns('DD-MMM-YYYY');
-  var input = 'reported on {{#date}}{{reported_date}}{{/date}}';
-  var context = { reported_date: 1457235941000 };
+  var format = 'DD-MMM-YYYY';
+  var date = 1457235941000;
+  var get = sinon.stub(config, 'get').returns(format);
+  var input = '{{#date}}{{reported_date}}{{/date}}';
+  var context = { reported_date: date };
   var actual = template.render(input, context);
-  test.equals(actual, 'reported on 06-Mar-2016');
+  test.equals(actual, moment(date).format(format));
   test.equals(get.callCount, 1);
   test.equals(get.args[0][0], 'date_format');
   test.done();
 };
 
 exports['renders integer datetime'] = function(test) {
-  var get = sinon.stub(config, 'get').returns('DD-MMMM-YYYY HH:mm:ss');
-  var input = 'reported on {{#datetime}}{{reported_date}}{{/datetime}}';
-  var context = { reported_date: 1457235941000 };
+  var format = 'DD-MMMM-YYYY HH:mm:ss';
+  var date = 1457235941000;
+  var get = sinon.stub(config, 'get').returns(format);
+  var input = '{{#datetime}}{{reported_date}}{{/datetime}}';
+  var context = { reported_date: date };
   var actual = template.render(input, context);
-  test.equals(actual, 'reported on 06-March-2016 16:45:41');
+  test.equals(actual, moment(date).format(format));
   test.equals(get.callCount, 1);
   test.equals(get.args[0][0], 'reported_date_format');
   test.done();
 };
 
 exports['renders Date dates'] = function(test) {
-  var get = sinon.stub(config, 'get').returns('DD-MMMM-YYYY');
-  var input = 'reported on {{#date}}Date({{reported_date}}){{/date}}';
-  var context = { reported_date: 1457235941000 };
+  var format = 'DD-MMMM-YYYY';
+  var date = 1457235941000;
+  var get = sinon.stub(config, 'get').returns(format);
+  var input = '{{#date}}Date({{reported_date}}){{/date}}';
+  var context = { reported_date: date };
   var actual = template.render(input, context);
-  test.equals(actual, 'reported on 06-March-2016');
+  test.equals(actual, moment(date).format(format));
   test.equals(get.callCount, 1);
   test.equals(get.args[0][0], 'date_format');
   test.done();
 };
 
 exports['renders Date datestimes'] = function(test) {
-  var get = sinon.stub(config, 'get').returns('DD-MMMM-YYYY HH:mm:ss');
-  var input = 'reported on {{#datetime}}Date({{reported_date}}){{/datetime}}';
-  var context = { reported_date: 1457235941000 };
+  var format = 'DD-MMMM-YYYY HH:mm:ss';
+  var date = 1457235941000;
+  var get = sinon.stub(config, 'get').returns(format);
+  var input = '{{#datetime}}Date({{reported_date}}){{/datetime}}';
+  var context = { reported_date: date };
   var actual = template.render(input, context);
-  test.equals(actual, 'reported on 06-March-2016 16:45:41');
+  test.equals(actual, moment(date).format(format));
   test.equals(get.callCount, 1);
   test.equals(get.args[0][0], 'reported_date_format');
   test.done();
