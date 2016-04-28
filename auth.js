@@ -1,38 +1,22 @@
-var http = require('http'),
+var request = require('request'),
+    url = require('url'),
     _ = require('underscore'),
     db = require('./db'),
     config = require('./config');
 
-var get = function(url, headers, callback) {
-  http.get({
-    host: db.settings.host,
+var get = function(path, headers, callback) {
+  var fullUrl = url.format({
+    protocol: db.settings.protocol,
+    hostname: db.settings.host,
     port: db.settings.port,
-    path: url,
-    headers: headers
-  }, function(res) {
-
-    var content = [];
-
-    res.on('data', function (chunk) {
-      content.push(chunk);
-    });
-
-    res.on('end', function () {
-      var json;
-      try {
-        json = JSON.parse(content.join(''));
-      } catch(e) {
-        return callback('Could not parse response');
-      }
-      callback(null, json);
-    });
-
-    res.on('error', function(e) {
-      callback(e);
-    });
-
-  }).on('error', function(e) {
-    callback(e.message);
+    pathname: path
+  });
+  request.get({
+    url: fullUrl,
+    headers: headers,
+    json: true
+  }, function(err, res, body) {
+    callback(err, body);
   });
 };
 
@@ -92,10 +76,9 @@ module.exports = {
         return callback({ code: 401, message: 'Not logged in', err: err });
       }
       if (auth && auth.userCtx && auth.userCtx.name) {
-        callback(null, auth.userCtx);
-      } else {
-        callback({ code: 401, message: 'Not logged in' });
+        return callback(null, auth.userCtx);
       }
+      callback({ code: 401, message: 'Not logged in' });
     });
   },
 
@@ -136,19 +119,24 @@ module.exports = {
 
   checkUrl: function(req, callback) {
     if (!req.params || !req.params.path) {
-      return callback('No path given');
+      return callback(new Error('No path given'));
     }
-    http.request({
-      method: 'HEAD',
-      host: db.settings.host,
+    var fullUrl = url.format({
+      protocol: db.settings.protocol,
+      hostname: db.settings.host,
       port: db.settings.port,
-      path: req.params.path,
-      headers: req.headers
-    }, function(res) {
-      callback(null, { status: res.statusCode } );
-    }).on('error', function(e) {
-      callback(e.message);
-    }).end();
+      pathname: req.params.path
+    });
+    request.head({
+      url: fullUrl,
+      headers: req.headers,
+      json: true
+    }, function(err, res) {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, res && { status: res.statusCode } );
+    });
   }
 
 };
