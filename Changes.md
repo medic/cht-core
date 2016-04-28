@@ -2,11 +2,12 @@
 
 ## 2.6.2
 
-### Apr 28, 2016
+### Apr 29, 2016
 
 - Update PouchDB to improve replication reliability and performance. Issue: #2134 #2167
 - When editing a CHP Area, previously set values for CHP, Branch, and Supervisor do not show up. Issue: #2223
 - Dropdowns in CHP Area create and edit forms have no blank option. Issue: #2227
+- Improve performance of Enketo db-object-widget. Issue: #2161
 - Ensure roles are always available on user-settings. Issue: #2199
 
 ## 2.6.1
