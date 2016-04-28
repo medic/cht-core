@@ -1,7 +1,7 @@
 var async = require('async'),
     _ = require('underscore');
 
-var contacts  = require('./contacts'),
+var people  = require('./people'),
     places = require('./places'),
     db = require('../db');
 
@@ -94,7 +94,7 @@ var validateContact = function(id, placeID, callback) {
       return callback(err, callback);
     }
     if (doc.type !== 'person') {
-      return error400('Wrong type, this is not a contact.', callback);
+      return error400('Wrong type, contact is not a person.', callback);
     }
     if (!module.exports._hasParent(doc, placeID)) {
       return error400('Contact is not within place.', callback);
@@ -156,7 +156,7 @@ var createUser = function(data, response, callback) {
 
 var createContact = function(data, response, callback) {
   response = response || {};
-  contacts.getOrCreateContact(data.contact, function(err, doc) {
+  people.getOrCreatePerson(data.contact, function(err, doc) {
     if (err) {
       return callback(err);
     }
@@ -480,8 +480,11 @@ module.exports = {
         response = {},
         settings,
         user;
-    var props = _.uniq(USER_EDITABLE_FIELDS .concat(SETTINGS_EDITABLE_FIELDS));
-    if (!_.some(props, function(k) { return !_.isUndefined(data[k]); })) {
+    var props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS));
+    var hasFields = _.some(props, function(k) {
+      return !_.isUndefined(data[k]);
+    });
+    if (!hasFields) {
       return error400(
         'One of the following fields are required: ' + props.join(', '),
         callback

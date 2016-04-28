@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     async = require('async');
 
-var contacts = require('./contacts'),
+var people = require('./people'),
     db = require('../db');
 
 var PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact'];
@@ -89,7 +89,7 @@ var createPlace = function(place, callback) {
     }
     if (place.contact) {
       // also validates contact if creating
-      contacts.getOrCreateContact(place.contact, function(err, doc) {
+      people.getOrCreatePerson(place.contact, function(err, doc) {
         if (err) {
           return callback(err);
         }
@@ -166,7 +166,7 @@ var updatePlace = function(id, data, callback) {
     place = self._updateFields(doc, data);
     if (data.contact) {
       series.push(function(cb) {
-        contacts.getOrCreateContact(data.contact, function(err, doc) {
+        people.getOrCreatePerson(data.contact, function(err, doc) {
           if (err) {
             return cb(err);
           }

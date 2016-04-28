@@ -36,7 +36,7 @@ var _ = require('underscore'),
     forms = require('./controllers/forms'),
     users = require('./controllers/users'),
     places = require('./controllers/places'),
-    contacts = require('./controllers/contacts'),
+    people = require('./controllers/people'),
     fti = require('./controllers/fti'),
     createDomain = require('domain').create,
     staticResources = /\/(templates|static)\//,
@@ -499,15 +499,15 @@ app.post('/api/v1/places/:id', jsonParser, function(req, res) {
   });
 });
 
-app.post('/api/v1/contacts', jsonParser, function(req, res) {
-  auth.check(req, 'can_create_contacts', null, function(err) {
+app.post('/api/v1/people', jsonParser, function(req, res) {
+  auth.check(req, 'can_create_people', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res);
     }
     if (_.isEmpty(req.body)) {
       return emptyJSONBodyError(req, res);
     }
-    contacts.createContact(req.body, function(err, body) {
+    people.createPerson(req.body, function(err, body) {
       if (err) {
         return serverUtils.error(err, req, res);
       }

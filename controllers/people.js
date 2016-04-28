@@ -2,11 +2,11 @@ var _ = require('underscore'),
     db = require('../db'),
     places = require('./places');
 
-var getContact = function(id, callback) {
+var getPerson = function(id, callback) {
   var error = function(msg, code) {
     return callback({
       code: code || 404,
-      message: msg || 'Failed to find contact.'
+      message: msg || 'Failed to find person.'
     });
   };
   db.medic.get(id, function(err, doc) {
@@ -23,11 +23,11 @@ var getContact = function(id, callback) {
   });
 };
 
-var isAContact = function(obj) {
+var isAPerson  = function(obj) {
   return obj.type === 'person';
 };
 
-var validateContact = function(obj, callback) {
+var validatePerson  = function(obj, callback) {
   var err = function(msg, code) {
     return callback({
       code: code || 400,
@@ -35,13 +35,13 @@ var validateContact = function(obj, callback) {
     });
   };
   if (!_.isObject(obj)) {
-    return err('Contact must be an object.');
+    return err('Person must be an object.');
   }
-  if (!isAContact(obj)) {
-    return err('Wrong type, this is not a contact.');
+  if (!isAPerson(obj)) {
+    return err('Wrong type, this is not a person.');
   }
   if (_.isUndefined(obj.name)) {
-    return err('Contact is missing a "name" property.');
+    return err('Person is missing a "name" property.');
   }
   if (!_.isString(obj.name)) {
     return err('Property "name" must be a string.');
@@ -50,17 +50,17 @@ var validateContact = function(obj, callback) {
 };
 
 /*
- * Set contact type, validate and write to database. Optionally create place.
+ * Set type, validate and write to database. Optionally create place.
  *
- * Warning: not doing validation of the contact data against a form yet.  The
- * form is user defined in settings so being liberal with what gets saved to
- * the database. Ideally CouchDB would validate a given object against a form
- * in validate_doc_update. https://github.com/medic/medic-webapp/issues/2203
+ * Warning: not doing validation of the data against a form yet.  The form is
+ * user defined in settings so being liberal with what gets saved to the
+ * database. Ideally CouchDB would validate a given object against a form in
+ * validate_doc_update. https://github.com/medic/medic-webapp/issues/2203
  */
-var createContact = function(data, callback) {
+var createPerson = function(data, callback) {
   data.type = 'person';
   var self = module.exports;
-  self.validateContact(data, function(err) {
+  self.validatePerson(data, function(err) {
     if (err) {
       return callback(err);
     }
@@ -80,14 +80,14 @@ var createContact = function(data, callback) {
 };
 
 /*
- * Return existing or newly created contact or error. Assumes stored contacts
+ * Return existing or newly created contact or error. Assumes stored records
  * are valid.
  */
-var getOrCreateContact = function(data, callback) {
+var getOrCreatePerson = function(data, callback) {
   var self = module.exports;
   if (_.isString(data)) {
     // fetch
-    self.getContact(data, function(err, doc) {
+    self.getPerson(data, function(err, doc) {
       if (err) {
         return callback(err);
       }
@@ -95,14 +95,14 @@ var getOrCreateContact = function(data, callback) {
     });
   } else if (_.isObject(data) && _.isUndefined(data._id)) {
     // create and fetch
-    self.createContact(data, function(err, resp) {
+    self.createPerson(data, function(err, resp) {
       if (err) {
         return callback(err);
       }
-      self.getContact(resp.id, callback);
+      self.getPerson(resp.id, callback);
     });
   } else {
-    callback('Contact must be a new object or string identifier (UUID).');
+    callback('Person must be a new object or string identifier (UUID).');
   }
 };
 
@@ -110,7 +110,7 @@ var getOrCreateContact = function(data, callback) {
  * Setting properties of module.exports rather than setting the entire object
  * at once avoids circular dependency loading issues.
  */
-module.exports.createContact = createContact;
-module.exports.getContact = getContact;
-module.exports.getOrCreateContact = getOrCreateContact;
-module.exports.validateContact = validateContact;
+module.exports.createPerson = createPerson;
+module.exports.getPerson = getPerson;
+module.exports.getOrCreatePerson = getOrCreatePerson;
+module.exports.validatePerson = validatePerson;

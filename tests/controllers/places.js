@@ -1,5 +1,5 @@
 var controller = require('../../controllers/places'),
-    contacts = require('../../controllers/contacts'),
+    people = require('../../controllers/people'),
     db = require('../../db'),
     utils = require('../utils'),
     sinon = require('sinon');
@@ -12,7 +12,8 @@ exports.tearDown = function (callback) {
     db.medic.insert,
     controller.getPlace,
     controller._createPlace,
-    controller._validatePlace
+    controller._validatePlace,
+    people.getOrCreatePerson
   );
   callback();
 };
@@ -283,7 +284,7 @@ exports['updatePlace handles contact field'] = function(test) {
   };
   sinon.stub(controller, 'getPlace').callsArgWith(1, null, {});
   sinon.stub(controller, '_validatePlace').callsArg(1);
-  sinon.stub(contacts, 'getOrCreateContact').callsArg(1);
+  sinon.stub(people, 'getOrCreatePerson').callsArg(1);
   sinon.stub(db.medic, 'insert', function(doc, cb) {
     cb(null, {id: 'x', rev: 'y'});
   });

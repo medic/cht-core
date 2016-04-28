@@ -1,5 +1,5 @@
 var controller = require('../../controllers/users'),
-    contacts = require('../../controllers/contacts'),
+    people = require('../../controllers/people'),
     places = require('../../controllers/places'),
     db = require('../../db'),
     utils = require('../utils'),
@@ -39,8 +39,8 @@ exports.tearDown = function (callback) {
     controller._updateUser,
     controller._updateUserSettings,
     controller.getList,
-    contacts.createContact,
-    contacts.getOrCreateContact,
+    people.createPerson,
+    people.getOrCreatePerson,
     places.getOrCreatePlace,
     places.getPlace
   );
@@ -619,7 +619,7 @@ exports['createUserSettings sets default roles on user-settings'] = function(tes
 
 
 exports['createContact returns error from db insert'] = function(test) {
-  sinon.stub(contacts, 'createContact').callsArgWith(1, 'yucky');
+  sinon.stub(people, 'createPerson').callsArgWith(1, 'yucky');
   controller._createContact(userData, {}, function(err) {
     test.ok(err);
     test.done();
@@ -627,7 +627,7 @@ exports['createContact returns error from db insert'] = function(test) {
 };
 
 exports['createContact updates contact property'] = function(test) {
-  sinon.stub(contacts, 'getOrCreateContact').callsArgWith(1, null, {
+  sinon.stub(people, 'getOrCreatePerson').callsArgWith(1, null, {
     id: 'abc'
   });
   controller._createContact(userData, {}, function(err, data) {
@@ -638,7 +638,7 @@ exports['createContact updates contact property'] = function(test) {
 };
 
 exports['createContact sets up response'] = function(test) {
-  sinon.stub(contacts, 'getOrCreateContact').callsArgWith(1, null, {
+  sinon.stub(people, 'getOrCreatePerson').callsArgWith(1, null, {
     _id: 'abc',
     _rev: '1-xyz'
   });
@@ -851,7 +851,7 @@ exports['setContactParent resolves contact parent in waterfall'] = function(test
 exports['updatePlace resolves place\'s contact in waterfall'] = function(test) {
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_setContactParent').callsArgWith(2, null, userData, {});
-  sinon.stub(contacts, 'getOrCreateContact').callsArgWith(1, null, {
+  sinon.stub(people, 'getOrCreatePerson').callsArgWith(1, null, {
     name: 'mickey'
   });
   sinon.stub(db.medic, 'insert').callsArg(1);
