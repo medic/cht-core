@@ -194,6 +194,13 @@ var createPlace = function(data, response, callback) {
   });
 };
 
+var updatePlace = function(data, response, callback) {
+  data.place.contact = data.contact;
+  db.medic.insert(data.place, function(err, body) {
+    callback(err, data, response);
+  });
+};
+
 var setContactParent = function(data, response, callback) {
   if (data.contact.parent) {
     // contact parent must exist
@@ -404,6 +411,7 @@ module.exports = {
   _hasParent: hasParent,
   _setContactParent: setContactParent,
   _updateAdminPassword: updateAdminPassword,
+  _updatePlace: updatePlace,
   _updateUser: updateUser,
   _updateUserSettings: updateUserSettings,
   _validateContact: validateContact,
@@ -458,6 +466,7 @@ module.exports = {
       self._createPlace,
       self._setContactParent,
       self._createContact,
+      self._updatePlace,
       self._createUser,
       self._createUserSettings,
     ], function(err, result, responseBody) {
