@@ -14,8 +14,8 @@ var feedback = require('../modules/feedback'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'CheckDate', 'DeleteDoc', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES', 'ConfirmModal', '$q',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, CheckDate, DeleteDoc, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES, ConfirmModal, $q) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'CheckDate', 'DeleteDoc', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'CONTACT_TYPES', 'ConfirmModal', '$q', 'UserLanguageModal',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, CheckDate, DeleteDoc, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, Auth, TrafficStats, XmlForms, RulesEngine, CONTACT_TYPES, ConfirmModal, $q, UserLanguageModal) {
 
       Session.init();
 
@@ -425,6 +425,7 @@ var feedback = require('../modules/feedback'),
         $scope.nonContactForms = xForms;
       });
 
+      // TODO when all modals are converted to on-demand modals, remove all these setup functions.
       $scope.setupGuidedSetup = function() {
         guidedSetup.init(Settings, UpdateSettings, translateFilter);
         modalsInited.guidedSetup = true;
@@ -437,33 +438,6 @@ var feedback = require('../modules/feedback'),
       };
 
       $scope.setupUserLanguage = function() {
-        $('#user-language').on('click', '.horizontal-options a', function(e) {
-          e.preventDefault();
-          var elem = $(this);
-          elem.closest('.horizontal-options')
-            .find('.selected')
-            .removeClass('selected');
-          elem.addClass('selected');
-        });
-        $('#user-language .btn-primary').on('click', function(e) {
-          e.preventDefault();
-          var btn = $(this);
-          btn.addClass('disabled');
-          var selected = $(this).closest('.modal-content')
-                                .find('.selected')
-                                .attr('data-value');
-          var id = 'org.couchdb.user:' + Session.userCtx().name;
-
-          UpdateUser(id, { language: selected })
-            .then(function() {
-              btn.removeClass('disabled');
-              $('#user-language').modal('hide');
-            })
-            .catch(function(err) {
-              btn.removeClass('disabled');
-              $log.error('Error updating user', err);
-            });
-        });
         modalsInited.userLanguage = true;
         showModals();
       };
@@ -481,8 +455,15 @@ var feedback = require('../modules/feedback'),
             return !user.language;
           },
           render: function(callback) {
-            $('#user-language').modal('show');
-            $('#user-language').on('hide.bs.modal', callback);
+            UserLanguageModal($scope.changeLanguage, $scope.enabledLocales)
+              .then(function(result) {
+                console.log('submitted', result);
+                callback();
+              })
+              .catch(function() {
+                console.log('dismissed');
+                callback();
+              });
           }
         },
         // welcome screen

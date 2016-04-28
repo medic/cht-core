@@ -40,9 +40,9 @@
     <ng-include src="'templates/modals/tour_select.html'" onload="setupTour()"></ng-include>
     <ng-include src="'templates/modals/update_facility.html'"></ng-include>
     <ng-include src="'templates/modals/update_password.html'"></ng-include>
-    <ng-include src="'templates/modals/user_language.html'" onload="setupUserLanguage()"></ng-include>
     <ng-include src="'templates/modals/version_update.html'"></ng-include>
     <ng-include src="'templates/modals/welcome.html'" onload="setupWelcome()"></ng-include>
+    {{setupUserLanguage()}}
 
     <script src="<%= baseURL %>/static/dist/inbox.js" type="text/javascript"></script>
     <script src="<%= baseURL %>/static/dist/templates.js" type="text/javascript"></script>
