@@ -196,7 +196,7 @@ var createPlace = function(data, response, callback) {
 
 var updatePlace = function(data, response, callback) {
   data.place.contact = data.contact;
-  db.medic.insert(data.place, function(err, body) {
+  db.medic.insert(data.place, function(err) {
     callback(err, data, response);
   });
 };
