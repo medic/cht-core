@@ -134,14 +134,17 @@ describe('Filter doc_by_place', function() {
     var runFilter = function(isUnassigned) {
       console.log('Starting doc_by_place filter, please be patient…');
       var unassignedParam = isUnassigned ? '&unassigned=true' : '';
-      return utils.request({
-        path: '/medic/_changes?style=all_docs&heartbeat=10000&filter=' + filterParam + '&id=testuser' + unassignedParam,
+      return utils.requestOnTestDb({
+        path: '/_changes?style=all_docs&heartbeat=10000&filter=' + filterParam + '&id=testuser' + unassignedParam,
         method: 'GET'
       }).then(function(response) {
-        console.log('…done');
+        console.log('…done filter');
         return response.results.map(function(doc) {
           return doc.id;
         });
+      })
+      .catch(function(err) {
+        console.log('Filter couldnt run!', err);
       });
     };
 

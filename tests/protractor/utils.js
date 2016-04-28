@@ -42,6 +42,11 @@ module.exports = {
 
   request: request,
 
+  requestOnTestDb: function(options) {
+    options.path = '/' + environment.dbName + options.path;
+    return request(options);
+  },
+
   saveDoc: function(doc) {
     var postData = JSON.stringify(doc);
     return request({
