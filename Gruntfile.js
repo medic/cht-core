@@ -179,20 +179,11 @@ module.exports = function(grunt) {
       deploy: {
         cmd: 'kanso push'
       },
-      deployci: {
-        cmd: 'kanso push http://localhost:5984/medic'
-      },
-      runapi: {
-        cmd: 'COUCH_URL=http://ci_test:pass@localhost:5984/medic node ./api/server.js > api.out &'
-      },
-      sleep: {
-        cmd: 'sleep 20'
-      },
-      addadmin: {
-        cmd: function() {
-          return 'curl -X PUT http://localhost:5984/_config/admins/ci_test -d \'"pass"\' &&' +
-                 'curl -HContent-Type:application/json -vXPUT http://ci_test:pass@localhost:5984/_users/org.couchdb.user:ci_test  --data-binary \'{"_id": "org.couchdb.user:ci_test", "name": "ci_test", "roles": [], "type": "user", "password": "pass", "language": "en", "known": true}\'';
-        }
+      deploytest: {
+        stderr: false,
+        cmd: 'curl -X DELETE http://admin:pass@localhost:5984/medic-test' +
+             ' && curl -X DELETE http://admin:pass@localhost:5984/medic-audit-test' +
+             ' && kanso push http://admin:pass@localhost:5984/medic-test'
       },
       undopatches: {
         cmd: function() {
@@ -389,8 +380,7 @@ module.exports = function(grunt) {
     'default',
     'minify',
     'karma:unit_ci',
-    'nodeunit',
-    'exec:deployci'
+    'nodeunit'
   ]);
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
@@ -399,11 +389,16 @@ module.exports = function(grunt) {
     'watch'
   ]);
 
+  grunt.registerTask('e2e', 'Deploy app and run e2e tests', [
+    'exec:deploytest',
+    'protractor'
+  ]);
+
   grunt.registerTask('test', 'Lint, unit, and integration test', [
     'jshint',
     'karma:unit',
     'nodeunit',
-    'protractor'
+    'e2e'
   ]);
 
   grunt.registerTask('test_continuous', 'Lint, unit test running on a loop', [
