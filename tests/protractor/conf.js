@@ -30,7 +30,8 @@ var startApi = function() {
       cwd: 'api',
       env: {
         API_PORT: environment.apiPort,
-        COUCH_URL: couchUrlTemplate(environment)
+        COUCH_URL: couchUrlTemplate(environment),
+        PATH: process.env.PATH
       }
     });
     api.stdout.on('data', function(data) {
