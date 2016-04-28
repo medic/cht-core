@@ -607,7 +607,7 @@ Create new contacts.
 ### Permissions
 
 
-`can_create_contacts`, `cat_create_places`
+`can_create_contacts`, `can_create_places`
 
 ### Examples
 
@@ -695,7 +695,7 @@ Create a new places and optionally a contact.
 
 ### Permissions
 
-`can_create_places`, `cat_create_contacts`
+`can_create_places`, `can_create_contacts`
 
 ### Examples
 
@@ -927,7 +927,7 @@ Create a new user with a place and a contact.
 
 ### Permissions
 
-`can_create_users`, `cat_create_places`, `cat_create_contacts`
+`can_create_users`, `can_create_places`, `can_create_contacts`
 
 
 ### Examples
