@@ -2,14 +2,11 @@
 
   inboxServices.factory('UserLanguageModal', ['$uibModal',
     function($uibModal) {
-      return function(changeLanguageFunc, enabledLocales) {
+      return function(enabledLocales) {
         var modalInstance = $uibModal.open({
           templateUrl: 'templates/modals/user_language.html',
           controller: 'UserLanguageModalCtrl',
           resolve: {
-            changeLanguageFunc: function () {
-              return changeLanguageFunc;
-            },
             enabledLocales: function () {
               return enabledLocales;
             }
@@ -20,13 +17,9 @@
     }
   ]);
 
-/**
- * Controller for all modals. To create modals, do not use this directly, use the Modal service.
- */
-// TODO instead of passing changeLanguageFunc, write a language service that we can inject.
 angular.module('inboxControllers').controller('UserLanguageModalCtrl',
-  ['changeLanguageFunc', 'enabledLocales', '$log', '$q', '$scope', 'Session', '$translate', '$uibModalInstance', 'UpdateUser',
-  function(changeLanguageFunc, enabledLocales, $log, $q, $scope, Session, $translate, $uibModalInstance, UpdateUser) {
+  ['enabledLocales', '$log', '$q', '$scope', 'Session', 'SetLanguage', '$translate', '$uibModalInstance', 'UpdateUser',
+  function(enabledLocales, $log, $q, $scope, Session, SetLanguage, $translate, $uibModalInstance, UpdateUser) {
     $scope.enabledLocales = enabledLocales;
 
     $scope.processing = false;
@@ -35,7 +28,7 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
     $scope.selectedLanguage = initialLanguageCode;
 
     $scope.changeLanguage = function(languageCode) {
-      changeLanguageFunc(languageCode);
+      SetLanguage(languageCode);
       $scope.selectedLanguage = languageCode;
     };
 

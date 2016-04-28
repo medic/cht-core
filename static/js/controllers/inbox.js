@@ -442,12 +442,6 @@ var feedback = require('../modules/feedback'),
         showModals();
       };
 
-      $scope.changeLanguage = function(code) {
-        moment.locale([code, 'en']);
-        $translate.use(code);
-        SetLanguageCookie(code);
-      };
-
       var startupModals = [
         // select language
         {
@@ -455,7 +449,7 @@ var feedback = require('../modules/feedback'),
             return !user.language;
           },
           render: function(callback) {
-            UserLanguageModal($scope.changeLanguage, $scope.enabledLocales)
+            UserLanguageModal($scope.enabledLocales)
               .then(function(result) {
                 console.log('submitted', result);
                 callback();

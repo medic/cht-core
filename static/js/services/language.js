@@ -2,6 +2,8 @@
 
   'use strict';
 
+  var moment = require('moment');
+
   var inboxServices = angular.module('inboxServices');
   var localeCookieKey = 'locale';
 
@@ -10,6 +12,16 @@
       return function(value) {
         ipCookie(localeCookieKey, value, { expires: 365, path: '/' });
         return value;
+      };
+    }
+  ]);
+
+  inboxServices.factory('SetLanguage', ['SetLanguageCookie', '$translate',
+    function(SetLanguageCookie, $translate) {
+      return function(code) {
+        moment.locale([code, 'en']);
+        $translate.use(code);
+        SetLanguageCookie(code);
       };
     }
   ]);
