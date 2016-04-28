@@ -106,9 +106,11 @@ var getOrCreateContact = function(data, callback) {
   }
 };
 
-module.exports = {
-  createContact: createContact,
-  getContact: getContact,
-  getOrCreateContact: getOrCreateContact,
-  validateContact: validateContact
-};
+/*
+ * Setting properties of module.exports rather than setting the entire object
+ * at once avoids circular dependency loading issues.
+ */
+module.exports.createContact = createContact;
+module.exports.getContact = getContact;
+module.exports.getOrCreateContact = getOrCreateContact;
+module.exports.validateContact = validateContact;

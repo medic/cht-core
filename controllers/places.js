@@ -148,100 +148,100 @@ var updateFields = function(place, data) {
 };
 
 var updatePlace = function(id, data, callback) {
-    var self = module.exports,
-        props = PLACE_EDITABLE_FIELDS,
-        response = {},
-        series = [],
-        place;
-    if (!_.some(props, function(k) { return !_.isUndefined(data[k]); })) {
-      return callback({
-        code: 400,
-        message: 'One of the following fields are required: ' + props.join(', ')
-      });
+  var self = module.exports,
+      props = PLACE_EDITABLE_FIELDS,
+      response = {},
+      series = [],
+      place;
+  if (!_.some(props, function(k) { return !_.isUndefined(data[k]); })) {
+    return callback({
+      code: 400,
+      message: 'One of the following fields are required: ' + props.join(', ')
+    });
+  }
+  self.getPlace(id, function(err, doc) {
+    if (err) {
+      return callback(err);
     }
-    self.getPlace(id, function(err, doc) {
-      if (err) {
-        return callback(err);
-      }
-      place = self._updateFields(doc, data);
-      if (data.contact) {
-        series.push(function(cb) {
-          contacts.getOrCreateContact(data.contact, function(err, doc) {
-            if (err) {
-              return cb(err);
-            }
-            place.contact = doc;
-            cb();
-          });
-        });
-      }
-      if (data.parent) {
-        series.push(function(cb) {
-          self.getOrCreatePlace(data.parent, function(err, doc) {
-            if (err) {
-              return cb(err);
-            }
-            place.parent = doc;
-            cb();
-          });
-        });
-      }
+    place = self._updateFields(doc, data);
+    if (data.contact) {
       series.push(function(cb) {
-        self._validatePlace(place, function(err) {
+        contacts.getOrCreateContact(data.contact, function(err, doc) {
           if (err) {
             return cb(err);
           }
-          db.medic.insert(place, function(err, resp) {
-            if (err) {
-              return cb(err);
-            }
-            response.id = resp.id;
-            response.rev = resp.rev;
-            cb();
-          });
+          place.contact = doc;
+          cb();
         });
       });
-      async.series(series, function(cb) {
+    }
+    if (data.parent) {
+      series.push(function(cb) {
+        self.getOrCreatePlace(data.parent, function(err, doc) {
+          if (err) {
+            return cb(err);
+          }
+          place.parent = doc;
+          cb();
+        });
+      });
+    }
+    series.push(function(cb) {
+      self._validatePlace(place, function(err) {
         if (err) {
           return cb(err);
         }
-        callback(null, response);
+        db.medic.insert(place, function(err, resp) {
+          if (err) {
+            return cb(err);
+          }
+          response.id = resp.id;
+          response.rev = resp.rev;
+          cb();
+        });
       });
     });
-  };
-
-module.exports = {
-  _createPlace: createPlace,
-  _createPlaces: createPlaces,
-  _updateFields: updateFields,
-  _validatePlace: validatePlace,
-  createPlace: createPlaces,
-  getPlace: getPlace,
-  /*
-   * Return existing or newly created place or error. Assumes stored places
-   * are valid.
-   */
-  getOrCreatePlace: function(place, callback) {
-    var self = module.exports;
-    if (_.isString(place)) {
-      // fetch place
-      self.getPlace(place, function(err, doc) {
-        if (err) {
-          return callback(err);
-        }
-        callback(null, doc);
-      });
-    } else if (_.isObject(place) && _.isUndefined(place._id)) {
-      // create and return place
-      self._createPlaces(place, function(err, resp) {
-        if (err) {
-          return callback(err);
-        }
-        self.getPlace(resp.id, callback);
-      });
-    } else {
-      callback('Place must be a new object or string identifier (UUID).');
-    }
-  },
-  updatePlace: updatePlace
+    async.series(series, function(cb) {
+      if (err) {
+        return cb(err);
+      }
+      callback(null, response);
+    });
+  });
 };
+
+/*
+ * Return existing or newly created place or error. Assumes stored places are
+ * valid.
+ */
+var getOrCreatePlace = function(place, callback) {
+  var self = module.exports;
+  if (_.isString(place)) {
+    // fetch place
+    self.getPlace(place, function(err, doc) {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, doc);
+    });
+  } else if (_.isObject(place) && _.isUndefined(place._id)) {
+    // create and return place
+    self._createPlaces(place, function(err, resp) {
+      if (err) {
+        return callback(err);
+      }
+      self.getPlace(resp.id, callback);
+    });
+  } else {
+    callback('Place must be a new object or string identifier (UUID).');
+  }
+};
+
+module.exports._createPlace = createPlace;
+module.exports._createPlaces = createPlaces;
+module.exports._updateFields = updateFields;
+module.exports._validatePlace = validatePlace;
+module.exports.createPlace = createPlaces;
+module.exports.getPlace = getPlace;
+module.exports.updatePlace = updatePlace;
+module.exports.getOrCreatePlace = getOrCreatePlace;
