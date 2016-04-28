@@ -23,12 +23,13 @@
   - [GET /api/v1/messages](#get-apiv1messages)
   - [GET /api/v1/messages/{{id}}](#get-apiv1messagesid)
   - [PUT /api/v1/messages/state/{{id}}](#put-apiv1messagesstateid)
-- [Contacts](#contacts)
+- [People](#people)
   - [Supported Properties](#supported-properties)
-  - [POST /api/v1/contacts](#post-apiv1contacts)
+  - [POST /api/v1/people](#post-apiv1people)
 - [Places](#places)
   - [Supported Properties](#supported-properties-1)
   - [POST /api/v1/places](#post-apiv1places)
+  - [POST /api/v1/places/{{id}}](#post-apiv1placesid)
 - [Users](#users)
   - [Supported Properties](#supported-properties-2)
   - [GET /api/v1/users](#get-apiv1users)
@@ -576,20 +577,20 @@ Content-Type: application/json; charset=utf-8
 Todo: should updating the state value of a message require the doc's revision?
 
 
-# Contacts
+# People
 
 
 ## Supported Properties
 
-Use JSON in the request body to specify contact details.  
+Use JSON in the request body to specify a person's details.  
 
-Note: this does not accomodate having a `place` field on your contact form and will likely be revised soon.
+Note: this does not accomodate having a `place` field on your form and will likely be revised soon.
 
 #### Required 
 
 | Key | Description       
 | -------- | -----------------
-| name | String used to describe the contact.
+| name | String used to describe the person.
 
 #### Optional 
 
@@ -598,24 +599,25 @@ Note: this does not accomodate having a `place` field on your contact form and w
 | place | String that references a place or object that defines a new place. 
 
 
-## POST /api/v1/contacts
+## POST /api/v1/people
 
-Create new contacts. 
+Create new people. 
 
 
 
 ### Permissions
 
+By default any user can create or modify a place.  Use these permissions to restrict access:
 
-`can_create_contacts`, `can_create_places`
+`can_create_people`, `can_create_places`
 
 ### Examples
 
 
-Create new contact and place hierarchy. 
+Create new person and place hierarchy. 
 
 ```
-POST /api/v1/contacts
+POST /api/v1/people
 Content-Type: application/json
 
 {
@@ -632,10 +634,10 @@ Content-Type: application/json
 }
 ```
 
-Create new contact and assign existing place.
+Create new person and assign existing place.
 
 ```
-POST /api/v1/contacts
+POST /api/v1/people
 Content-Type: application/json
 
 {
@@ -658,11 +660,11 @@ Content-Type: application/json
 
 # Places
 
-All place related requests are limited to users with admin privileges by default.
+By default any user can create or modify a place.
 
 ## Supported Properties
 
-Use JSON in the request body to specify place details.
+Use JSON in the request body to specify a place's details.
 
 #### Required Properties
 
@@ -676,7 +678,7 @@ Use JSON in the request body to specify place details.
 
 | Key | Description       
 | -------- | -----------------
-| contact | String identifier for a contact or object that defines a new one.
+| contact | String identifier for a person or object that defines a new person.
 
 
 #### Place Types
@@ -691,11 +693,13 @@ Use JSON in the request body to specify place details.
 
 ## POST /api/v1/places
 
-Create a new places and optionally a contact.
+Create a new place and optionally a contact.
 
 ### Permissions
 
-`can_create_places`, `can_create_contacts`
+By default any user can create new places.  Use these permissions to restrict access:
+
+`can_create_places`, `can_create_people`
 
 ### Examples
 
@@ -730,7 +734,7 @@ Content-Type: application/json
 ```
 
 
-Also creates contacts.
+Also creates contact (person).
 
 ```
 POST /api/v1/places
@@ -794,6 +798,8 @@ Update a place and optionally its contact.
 
 ### Permissions
 
+By default any user can update a place.  Use these permissions to restrict access:
+
 `can_update_places`
 
 ### Examples
@@ -836,7 +842,7 @@ will be undefined.
 | username | String identifier used for authentication.
 | password | Password string used for authentication.  Only allowed to be set, not retrieved.
 | place    | Place identifier string (UUID) or object this user resides in.
-| contact  | A contact object based on the form configured in the app.
+| contact  | A person object based on the form configured in the app.
 
 #### Optional
 
@@ -927,7 +933,7 @@ Create a new user with a place and a contact.
 
 ### Permissions
 
-`can_create_users`, `can_create_places`, `can_create_contacts`
+`can_create_users`, `can_create_places`, `can_create_people`
 
 
 ### Examples
@@ -993,12 +999,12 @@ Document update conflict.
 ## POST /api/v1/users/{{username}}
 
 Allows you to change property values on a user account. Properties listed above
-are supported except for `contact.parent`.  Creating or modifing contact
+are supported except for `contact.parent`.  Creating or modifing person
 records is not supported.
 
 ### Permissions
 
-`can_update_users`, `can_update_places`, `can_update_contacts`
+`can_update_users`, `can_update_places`, `can_update_people`
 
 ### URL Parameters
 
@@ -1038,7 +1044,7 @@ Content-Type: application/json
 
 ## DELETE /api/v1/users/{{username}}
 
-Delete a user.  Does not affect a contact or place associated to a user.
+Delete a user.  Does not affect a person or place associated to a user.
 
 ### Permissions
 
