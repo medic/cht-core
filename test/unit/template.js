@@ -21,7 +21,18 @@ exports['renders variables'] = function(test) {
   test.done();
 };
 
-exports['renders dates'] = function(test) {
+exports['renders string dates'] = function(test) {
+  var get = sinon.stub(config, 'get').returns('DD-MMM-YYYY');
+  var input = 'reported on {{#date}}{{reported_date}}{{/date}}';
+  var context = { reported_date: '2016-03-06T03:45:41.000Z' };
+  var actual = template.render(input, context);
+  test.equals(actual, 'reported on 06-Mar-2016');
+  test.equals(get.callCount, 1);
+  test.equals(get.args[0][0], 'date_format');
+  test.done();
+};
+
+exports['renders integer dates'] = function(test) {
   var get = sinon.stub(config, 'get').returns('DD-MMM-YYYY');
   var input = 'reported on {{#date}}{{reported_date}}{{/date}}';
   var context = { reported_date: 1457235941000 };
@@ -32,7 +43,7 @@ exports['renders dates'] = function(test) {
   test.done();
 };
 
-exports['renders datetimes'] = function(test) {
+exports['renders integer datetime'] = function(test) {
   var get = sinon.stub(config, 'get').returns('DD-MMMM-YYYY HH:mm:ss');
   var input = 'reported on {{#datetime}}{{reported_date}}{{/datetime}}';
   var context = { reported_date: 1457235941000 };
@@ -43,7 +54,7 @@ exports['renders datetimes'] = function(test) {
   test.done();
 };
 
-exports['renders dates when given Date objects'] = function(test) {
+exports['renders Date dates'] = function(test) {
   var get = sinon.stub(config, 'get').returns('DD-MMMM-YYYY');
   var input = 'reported on {{#date}}Date({{reported_date}}){{/date}}';
   var context = { reported_date: 1457235941000 };
@@ -54,7 +65,7 @@ exports['renders dates when given Date objects'] = function(test) {
   test.done();
 };
 
-exports['renders datestimes when given Date objects'] = function(test) {
+exports['renders Date datestimes'] = function(test) {
   var get = sinon.stub(config, 'get').returns('DD-MMMM-YYYY HH:mm:ss');
   var input = 'reported on {{#datetime}}Date({{reported_date}}){{/datetime}}';
   var context = { reported_date: 1457235941000 };
