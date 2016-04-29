@@ -46,10 +46,15 @@ var _ = require('underscore');
 
   inboxServices.factory('Facility', ['DbView', 'Cache', 'PLACE_TYPES',
     function(DbView, Cache, PLACE_TYPES) {
+      var keyify = function(types) {
+        return types.map(function(t) {
+          return [t];
+        });
+      };
 
       var cache = Cache({
         get: function(callback) {
-          DbView('facilities', { params: { include_docs: true } })
+          DbView('facilities', { params: { include_docs: true, keys: keyify(PLACE_TYPES) } })
             .then(function(data) {
               callback(null, data.results);
             })
