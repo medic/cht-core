@@ -15,6 +15,7 @@ describe('FacilityHierarchy service', function() {
         }
         callback(null, facilities);
       });
+      $provide.value('PLACE_TYPES', [ 'district_hospital', 'health_center', 'clinic' ]);
     });
     inject(function($injector) {
       service = $injector.get('FacilityHierarchy');
