@@ -13,6 +13,7 @@ describe('Facility service', function() {
       $provide.value('Cache', function(options) {
         return options.get;
       });
+      $provide.value('PLACE_TYPES', [ 'district_hospital', 'health_center', 'clinic' ]);
     });
     inject(function($injector) {
       service = $injector.get('Facility');
@@ -121,7 +122,9 @@ describe('Facility service', function() {
       }
     };
 
-    DbView.returns(KarmaUtils.mockPromise(null, { results: [ clinicA, healthCenter, clinicB ] }));
+    DbView.withArgs('facilities', {params: {include_docs: true, key: ['clinic']}}).returns(KarmaUtils.mockPromise(null, { results: [ clinicA, clinicB ] }));
+    DbView.withArgs('facilities', {params: {include_docs: true, key: ['health_center']}}).returns(KarmaUtils.mockPromise(null, { results: [ healthCenter ] }));
+
     service({ types: ['clinic'] }, function(err, actual) {
       chai.expect(err).to.equal(null);
       chai.expect(actual).to.deep.equal([ clinicA, clinicB ]);
