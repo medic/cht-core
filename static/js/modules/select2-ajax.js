@@ -73,7 +73,10 @@ var _ = require('underscore'),
 
       Search('contacts',
       {   // filters
-        types: [OBJECT_TYPE],
+        types: {
+          selected: [OBJECT_TYPE],
+          options: [OBJECT_TYPE, 'A dummy type, Gareth can we talk about this?']
+        },
         search: query
       }, { // options
         limit: PAGE_SIZE,
@@ -82,14 +85,15 @@ var _ = require('underscore'),
         if (err) {
           failureCb(err);
           console.log(OBJECT_TYPE + ' failed to load', err);
+        } else {
+          successCb({
+            results: prepareRows(documents, skip === 0),
+            pagination: {
+              more: documents.length === PAGE_SIZE
+            }
+          });
         }
 
-        successCb({
-          results: prepareRows(documents, skip === 0),
-          pagination: {
-            more: documents.length === PAGE_SIZE
-          }
-        });
       });
     };
 
