@@ -9,7 +9,7 @@ describe('Contact service', function() {
   beforeEach(function() {
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('LegacyFacility', function(options, callback) {
+      $provide.value('Facility', function(options, callback) {
         if (err) {
           return callback(err);
         }
