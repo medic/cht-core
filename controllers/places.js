@@ -201,11 +201,8 @@ var updatePlace = function(id, data, callback) {
         });
       });
     });
-    async.series(series, function(cb) {
-      if (err) {
-        return cb(err);
-      }
-      callback(null, response);
+    async.series(series, function(err) {
+      callback(err, response);
     });
   });
 };
@@ -233,7 +230,10 @@ var getOrCreatePlace = function(place, callback) {
       self.getPlace(resp.id, callback);
     });
   } else {
-    callback('Place must be a new object or string identifier (UUID).');
+    callback({
+      code:400,
+      message: 'Place must be a new object or string identifier (UUID).'
+    });
   }
 };
 
