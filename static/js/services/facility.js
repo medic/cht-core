@@ -44,8 +44,8 @@ var _ = require('underscore');
     }
   ]);
 
-  inboxServices.factory('Facility', ['DbView', 'Cache', 'CONTACT_TYPES',
-    function(DbView, Cache, CONTACT_TYPES) {
+  inboxServices.factory('Facility', ['DbView', 'Cache', 'PLACE_TYPES',
+    function(DbView, Cache, PLACE_TYPES) {
 
       var cache = Cache({
         get: function(callback) {
@@ -56,15 +56,24 @@ var _ = require('underscore');
             .catch(callback);
         },
         invalidate: function(doc) {
-          return _.contains(CONTACT_TYPES, doc.type);
+          return _.contains(PLACE_TYPES, doc.type);
         }
       });
 
       return function(options, callback) {
+
         if (!callback) {
           callback = options;
           options = {};
         }
+
+        if (!options.types ||
+            options.types.indexOf('person') !== -1) {
+
+          console.warn('A call to facility with the expectation of having ' +
+                       'person data', new Error());
+        }
+
         cache(function(err, res) {
           if (err) {
             return callback(err);
