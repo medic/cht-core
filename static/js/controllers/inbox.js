@@ -4,7 +4,6 @@ var feedback = require('../modules/feedback'),
     sendMessage = require('../modules/send-message'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
-    format = require('../modules/format'),
     select2Ajax = require('../modules/select2-ajax'),
     guidedSetup = require('../modules/guided-setup');
 
