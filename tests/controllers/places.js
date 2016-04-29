@@ -301,7 +301,7 @@ exports['updatePlace errors when function in series fails'] = function(test) {
   sinon.stub(controller, 'getPlace').callsArgWith(1, null, {});
   sinon.stub(controller, '_validatePlace').callsArg(1);
   sinon.stub(people, 'getOrCreatePerson').callsArgWith(1, 'go away');
-  controller.updatePlace('123', data, function(err, resp) {
+  controller.updatePlace('123', data, function(err) {
     test.ok(err);
     test.done();
   });
