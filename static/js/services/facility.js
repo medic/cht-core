@@ -6,6 +6,44 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
 
+  // Copied Facility into a legacy copy so we can move things piecemeal.
+  // If we ever get to a wonderful state where no one uses this DELETEEE IT
+  inboxServices.factory('LegacyFacility', ['DbView', 'Cache', 'CONTACT_TYPES',
+    function(DbView, Cache, CONTACT_TYPES) {
+
+      var cache = Cache({
+        get: function(callback) {
+          DbView('facilities', { params: { include_docs: true } })
+            .then(function(data) {
+              callback(null, data.results);
+            })
+            .catch(callback);
+        },
+        invalidate: function(doc) {
+          return _.contains(CONTACT_TYPES, doc.type);
+        }
+      });
+
+      return function(options, callback) {
+        if (!callback) {
+          callback = options;
+          options = {};
+        }
+        cache(function(err, res) {
+          if (err) {
+            return callback(err);
+          }
+          if (options.types) {
+            return callback(null, _.filter(res, function(doc) {
+              return options.types.indexOf(doc.type) !== -1;
+            }));
+          }
+          callback(null, res);
+        });
+      };
+    }
+  ]);
+
   inboxServices.factory('Facility', ['DbView', 'Cache', 'CONTACT_TYPES',
     function(DbView, Cache, CONTACT_TYPES) {
 
@@ -52,8 +90,8 @@ var _ = require('underscore');
     return descendant(id, parent.parent);
   };
 
-  inboxServices.factory('Contact', ['Facility', 'UserDistrict',
-    function(Facility, UserDistrict) {
+  inboxServices.factory('Contact', ['LegacyFacility', 'UserDistrict',
+    function(LegacyFacility, UserDistrict) {
       return function(callback) {
         UserDistrict(function(err, district) {
           if (err) {
@@ -64,7 +102,7 @@ var _ = require('underscore');
             types: [ 'person', 'health_center' ],
             targetScope: 'root'
           };
-          Facility(options, function(err, res) {
+          LegacyFacility(options, function(err, res) {
             if (err) {
               return callback(err);
             }
