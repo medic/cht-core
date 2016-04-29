@@ -7,8 +7,8 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditUserCtrl',
-    ['$rootScope', '$scope', 'DB', 'Facility', 'Session', 'UpdateUser', 'translateFilter', 'PLACE_TYPES',
-    function ($rootScope, $scope, DB, Facility, Session, UpdateUser, translateFilter, PLACE_TYPES) {
+    ['$rootScope', '$scope', 'DB', 'Facility', 'Language', 'Session', 'SetLanguage', 'UpdateUser', 'translateFilter', 'PLACE_TYPES',
+    function ($rootScope, $scope, DB, Facility, Language, Session, SetLanguage, UpdateUser, translateFilter, PLACE_TYPES) {
 
       Facility({ types: PLACE_TYPES }, function(err, facilities) {
         if (err) {
@@ -167,12 +167,12 @@ var modal = require('../modules/modal');
           var pane = modal.start($(modalId));
           var settings = getSettingsUpdates();
           var user = settingsOnly ? null : getUserUpdates();
-          if (settings.language && Session.userCtx().name === $scope.editUserModel.name) {
-            // editing current user's language, so update UI
-            $scope.changeLanguage(settings.language);
-          }
           UpdateUser($scope.editUserModel.id, settings, user)
             .then(function() {
+              if (settings.language && Session.userCtx().name === $scope.editUserModel.name) {
+                // editing current user, so update language
+                SetLanguage(settings.language);
+              }
               updateComplete(pane);
             })
             .catch(function(err) {
