@@ -168,6 +168,14 @@ module.exports = {
       ]
     },
     {
+      "name": "can_update_people",
+      "roles": []
+    },
+    {
+      "name": "can_update_places",
+      "roles": []
+    },
+    {
       "name": "can_create_records",
       "roles": [
         "national_admin",
@@ -182,6 +190,14 @@ module.exports = {
         "national_admin",
         "district_admin"
       ]
+    },
+    {
+      "name": "can_create_people",
+      "roles": []
+    },
+    {
+      "name": "can_create_places",
+      "roles": []
     },
     {
       "name": "can_view_tasks",
