@@ -7,48 +7,10 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  // Copied Facility into a legacy copy so we can move things piecemeal.
-  // If we ever get to a wonderful state where no one uses this DELETEEE IT
-  inboxServices.factory('LegacyFacility', ['DbView', 'Cache', 'CONTACT_TYPES',
+  inboxServices.factory('Facility', ['DbView', 'Cache', 'CONTACT_TYPES',
     function(DbView, Cache, CONTACT_TYPES) {
-
-      var cache = Cache({
-        get: function(callback) {
-          DbView('facilities', { params: { include_docs: true } })
-            .then(function(data) {
-              callback(null, data.results);
-            })
-            .catch(callback);
-        },
-        invalidate: function(doc) {
-          return _.contains(CONTACT_TYPES, doc.type);
-        }
-      });
-
-      return function(options, callback) {
-        if (!callback) {
-          callback = options;
-          options = {};
-        }
-        cache(function(err, res) {
-          if (err) {
-            return callback(err);
-          }
-          if (options.types) {
-            return callback(null, _.filter(res, function(doc) {
-              return options.types.indexOf(doc.type) !== -1;
-            }));
-          }
-          callback(null, res);
-        });
-      };
-    }
-  ]);
-
-  inboxServices.factory('Facility', ['DbView', 'Cache', 'PLACE_TYPES',
-    function(DbView, Cache, PLACE_TYPES) {
       var cacheByType = {};
-      PLACE_TYPES.forEach(function(type) {
+      CONTACT_TYPES.forEach(function(type) {
         cacheByType[type] = Cache({
           get: function(callback) {
             DbView('facilities', { params: { include_docs: true, key: [type] } })
@@ -70,10 +32,12 @@ var _ = require('underscore'),
         }
 
         if (!options.types || options.types.indexOf('person') !== -1) {
+          // We want to remove as many of these as possible, because for admins
+          // it involves downloading a _huge_ amount of data.
           console.warn('A call to facility with the expectation of having person data', new Error());
         }
 
-        var relevantCaches = (options.types ? options.types : PLACE_TYPES).map(function(type) {
+        var relevantCaches = (options.types ? options.types : CONTACT_TYPES).map(function(type) {
           return cacheByType[type];
         });
 
@@ -97,8 +61,8 @@ var _ = require('underscore'),
     return descendant(id, parent.parent);
   };
 
-  inboxServices.factory('Contact', ['LegacyFacility', 'UserDistrict',
-    function(LegacyFacility, UserDistrict) {
+  inboxServices.factory('Contact', ['Facility', 'UserDistrict',
+    function(Facility, UserDistrict) {
       return function(callback) {
         UserDistrict(function(err, district) {
           if (err) {
@@ -109,7 +73,7 @@ var _ = require('underscore'),
             types: [ 'person', 'health_center' ],
             targetScope: 'root'
           };
-          LegacyFacility(options, function(err, res) {
+          Facility(options, function(err, res) {
             if (err) {
               return callback(err);
             }
@@ -133,6 +97,7 @@ var _ = require('underscore'),
     }
   ]);
 
+  // TODO pass through Facility
   inboxServices.factory('District', ['DbView',
     function(DbView) {
       return function(callback) {
