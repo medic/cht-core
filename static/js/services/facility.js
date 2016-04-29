@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    async = require('async');
 
 (function () {
 
@@ -46,49 +47,41 @@ var _ = require('underscore');
 
   inboxServices.factory('Facility', ['DbView', 'Cache', 'PLACE_TYPES',
     function(DbView, Cache, PLACE_TYPES) {
-      var keyify = function(types) {
-        return types.map(function(t) {
-          return [t];
+      var cacheByType = {};
+      PLACE_TYPES.forEach(function(type) {
+        cacheByType[type] = Cache({
+          get: function(callback) {
+            DbView('facilities', { params: { include_docs: true, key: [type] } })
+              .then(function(data) {
+                callback(null, data.results);
+              })
+              .catch(callback);
+          },
+          invalidate: function(doc) {
+            return doc.type === type;
+          }
         });
-      };
-
-      var cache = Cache({
-        get: function(callback) {
-          DbView('facilities', { params: { include_docs: true, keys: keyify(PLACE_TYPES) } })
-            .then(function(data) {
-              callback(null, data.results);
-            })
-            .catch(callback);
-        },
-        invalidate: function(doc) {
-          return _.contains(PLACE_TYPES, doc.type);
-        }
       });
 
       return function(options, callback) {
-
         if (!callback) {
           callback = options;
           options = {};
         }
 
-        if (!options.types ||
-            options.types.indexOf('person') !== -1) {
-
-          console.warn('A call to facility with the expectation of having ' +
-                       'person data', new Error());
+        if (!options.types || options.types.indexOf('person') !== -1) {
+          console.warn('A call to facility with the expectation of having person data', new Error());
         }
 
-        cache(function(err, res) {
+        var relevantCaches = (options.types ? options.types : PLACE_TYPES).map(function(type) {
+          return cacheByType[type];
+        });
+
+        async.parallel(relevantCaches, function(err, results) {
           if (err) {
             return callback(err);
           }
-          if (options.types) {
-            return callback(null, _.filter(res, function(doc) {
-              return options.types.indexOf(doc.type) !== -1;
-            }));
-          }
-          callback(null, res);
+          callback(null, _.flatten(results));
         });
       };
     }
