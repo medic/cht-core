@@ -167,14 +167,10 @@ var modal = require('../modules/modal');
           var pane = modal.start($(modalId));
           var settings = getSettingsUpdates();
           var user = settingsOnly ? null : getUserUpdates();
-          var isLanguageChange = false;
-          if (settings.language && Session.userCtx().name === $scope.editUserModel.name) {
-            isLanguageChange = true;
-          }
           UpdateUser($scope.editUserModel.id, settings, user)
             .then(function() {
-              if (isLanguageChange) {
-                // editing current user's language, so update UI
+              if (settings.language && Session.userCtx().name === $scope.editUserModel.name) {
+                // editing current user, so update language
                 SetLanguage(settings.language);
               }
               updateComplete(pane);

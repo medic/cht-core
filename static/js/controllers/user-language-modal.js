@@ -1,26 +1,33 @@
-  var inboxServices = angular.module('inboxServices');
+var _ = require('underscore');
+var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('UserLanguageModal', ['$uibModal',
-    function($uibModal) {
-      return function(enabledLocales) {
-        var modalInstance = $uibModal.open({
-          templateUrl: 'templates/modals/user_language.html',
-          controller: 'UserLanguageModalCtrl',
-          resolve: {
-            enabledLocales: function () {
-              return enabledLocales;
-            }
-          }
-        });
-        return modalInstance.result;
-      };
-    }
-  ]);
+// TODO : make a single modal service for all modals. https://github.com/medic/medic-webapp/issues/2253
+inboxServices.factory('UserLanguageModal', ['$uibModal',
+  function($uibModal) {
+    return function() {
+      var modalInstance = $uibModal.open({
+        templateUrl: 'templates/modals/user_language.html',
+        controller: 'UserLanguageModalCtrl',
+      });
+      return modalInstance.result;
+    };
+  }
+]);
 
+/**
+ * Note : this modal is really a full-fledged page, it does more than UI stuff (does the language changing).
+ * It should eventually be a page.
+ * https://github.com/medic/medic-webapp/issues/2254
+ */
 angular.module('inboxControllers').controller('UserLanguageModalCtrl',
-  ['enabledLocales', '$log', '$q', '$scope', 'Session', 'SetLanguage', '$translate', '$uibModalInstance', 'UpdateUser',
-  function(enabledLocales, $log, $q, $scope, Session, SetLanguage, $translate, $uibModalInstance, UpdateUser) {
-    $scope.enabledLocales = enabledLocales;
+  ['$log', '$q', '$scope', 'Session', 'SetLanguage', 'Settings', '$translate', '$uibModalInstance', 'UpdateUser',
+  function($log, $q, $scope, Session, SetLanguage, Settings, $translate, $uibModalInstance, UpdateUser) {
+    Settings()
+      .then(function(settings) {
+        $scope.enabledLocales = _.reject(settings.locales, function(locale) {
+          return !!locale.disabled;
+        });
+      });
 
     $scope.processing = false;
     $scope.error = false;

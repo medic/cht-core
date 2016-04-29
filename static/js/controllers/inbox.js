@@ -437,7 +437,7 @@ var feedback = require('../modules/feedback'),
         showModals();
       };
 
-      $scope.setupUserLanguage = function() {
+      var setupUserLanguage = function() {
         modalsInited.userLanguage = true;
         showModals();
       };
@@ -449,13 +449,11 @@ var feedback = require('../modules/feedback'),
             return !user.language;
           },
           render: function(callback) {
-            UserLanguageModal($scope.enabledLocales)
-              .then(function(result) {
-                console.log('submitted', result);
+            UserLanguageModal()
+              .then(function() {
                 callback();
               })
               .catch(function() {
-                console.log('dismissed');
                 callback();
               });
           }
@@ -776,6 +774,7 @@ var feedback = require('../modules/feedback'),
       ];
 
       CountMessages.init();
+      setupUserLanguage();
 
       var showUpdateReady = function() {
         $('#version-update').modal('show');

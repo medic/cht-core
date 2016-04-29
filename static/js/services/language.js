@@ -1,8 +1,8 @@
+var moment = require('moment');
+
 (function () {
 
   'use strict';
-
-  var moment = require('moment');
 
   var inboxServices = angular.module('inboxServices');
   var localeCookieKey = 'locale';

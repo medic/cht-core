@@ -1,14 +1,21 @@
 describe('UserLanguageModalCtrl controller', function() {
   'use strict';
 
-  var createController, scope, stubSetLanguage, stubUpdateUser, spyUibModalInstance;
+  var createController, scope, stubSetLanguage, stubSettings, stubUpdateUser, spyUibModalInstance;
 
   beforeEach(function() {
     module('inboxApp');
 
     module(function($provide) {
-      $provide.factory('enabledLocales', function() {
-        return ['en', 'sw'];
+      stubSettings = sinon.stub();
+      stubSettings.returns(KarmaUtils.mockPromise(
+        {locales: [
+          {code: 'en', name: 'English'},
+          {code: 'sw', name: 'Swahili'},
+          {code: 'aa', name: 'AAAAAA', disabled: true},
+        ]}));
+      $provide.factory('Settings', function() {
+        return stubSettings;
       });
       $provide.factory('Session', function() {
         return { userCtx: function() { return {name: 'banana'}; } };
@@ -41,6 +48,15 @@ describe('UserLanguageModalCtrl controller', function() {
     createController();
   });
 
+  it('displays the enabled languages', function() {
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
+      chai.expect(scope.enabledLocales).to.equal([
+            {code: 'en', name: 'English'},
+            {code: 'sw', name: 'Swahili'}]);
+      });
+  });
+
   it('changes language on user selection', function() {
     var lang = 'aaaaaa';
     scope.changeLanguage(lang);
@@ -59,11 +75,11 @@ describe('UserLanguageModalCtrl controller', function() {
   });
 
   it('triggers saving on user submit', function() {
-    scope.changeLanguage('aaaaaa');
-    var initialLang = scope.selectedLanguage;
+    var selectedLang = 'klingon';
+    scope.changeLanguage(selectedLang);
     scope.ok();
     chai.assert(stubUpdateUser.called, 'Should call the processing function on user action');
-    chai.expect(stubUpdateUser.getCall(0).args[1].language).to.equal(initialLang);
+    chai.expect(stubUpdateUser.getCall(0).args[1].language).to.equal(selectedLang);
   });
 
   it('displays the processing mode modal while saving', function(done) {
