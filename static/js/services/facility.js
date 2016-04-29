@@ -97,20 +97,6 @@ var _ = require('underscore'),
     }
   ]);
 
-  // TODO pass through Facility
-  inboxServices.factory('District', ['DbView',
-    function(DbView) {
-      return function(callback) {
-        var options = { params: { key: ['district_hospital'], include_docs: true } };
-        DbView('facilities', options)
-          .then(function(data) {
-            callback(null, data.results);
-          })
-          .catch(callback);
-      };
-    }
-  ]);
-
   inboxServices.factory('ChildFacility', ['DbView',
     function(DbView) {
 
