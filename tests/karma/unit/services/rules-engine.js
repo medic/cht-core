@@ -407,7 +407,6 @@ describe('RulesEngine service', function() {
     var service = injector.get('RulesEngine');
     service.listen('test', 'task', function(err, actual) {
       callbackCount++;
-      console.log('callbackCount : ', callbackCount, ' - actual : ', actual);
       if (callbackCount === 4) {
         Changes.args[0][0].callback({
           deleted: true,
@@ -462,14 +461,20 @@ describe('RulesEngine service', function() {
     var service = injector.get('RulesEngine');
     service.listen('test', 'task', function(err, actual) {
       callbackCount++;
-      if (callbackCount === 4) {
+      if (callbackCount === 6) {
         Changes.args[0][0].callback({
           deleted: true,
           id: 2
         });
-      } else if (callbackCount === 5) {
-        chai.expect(actual[0].reports.length).to.equal(1);
-        chai.expect(actual[0].reports[0]._id).to.equal(3);
+      } else if (callbackCount === 7) {
+        // Both reports are still there
+        chai.expect(actual[0].reports.length).to.equal(2);
+        // Report 2 is deleted
+        chai.expect(actual[0].reports[0]._id).to.equal(2);
+        chai.expect(actual[0].reports[0].deleted).to.equal(true);
+        // Report 3 is not
+        chai.expect(actual[0].reports[1]._id).to.equal(3);
+        chai.expect(!!actual[0].reports[1].deleted).to.equal(false);
         done();
       }
     });
