@@ -407,14 +407,17 @@ describe('RulesEngine service', function() {
     var service = injector.get('RulesEngine');
     service.listen('test', 'task', function(err, actual) {
       callbackCount++;
+      console.log('callbackCount : ', callbackCount, ' - actual : ', actual);
       if (callbackCount === 4) {
         Changes.args[0][0].callback({
           deleted: true,
           id: 1
         });
-      } else if (callbackCount === 5) {
-        chai.expect(actual[0].contact).to.equal(null);
-        done();
+      } else if (callbackCount === 5 || callbackCount === 6 || callbackCount === 7) {
+        chai.expect(actual[0].contact.deleted).to.equal(true);
+        if (callbackCount === 7) {
+          done();
+        }
       }
     });
   });

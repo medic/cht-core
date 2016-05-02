@@ -207,7 +207,7 @@ var nools = require('nools'),
           if (fact) {
             if (fact.contact._id === change.id) {
               // deleted contact
-              fact.contact = null;
+              fact.contact.deleted = true;
             } else {
               // deleted report
               fact.reports = _.reject(fact.reports, function(report) {
