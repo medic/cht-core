@@ -12,7 +12,7 @@ var _ = require('underscore'),
 
     var formatResult = function(row) {
       if(!row.doc) {
-        return $('<p>' + (row.text || '&nbsp;') + '</p>');
+        return $('<span>' + (row.text || '&nbsp;') + '</span>');
       }
       if(row.doc.type === 'person') {
         return $(format.contact(row.doc));
