@@ -50,5 +50,6 @@
   require('./tasks-content');
   require('./theme');
   require('./tour-select');
+  require('./user-language-modal');
 
 }());

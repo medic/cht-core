@@ -1,3 +1,5 @@
+var moment = require('moment');
+
 (function () {
 
   'use strict';
@@ -10,6 +12,16 @@
       return function(value) {
         ipCookie(localeCookieKey, value, { expires: 365, path: '/' });
         return value;
+      };
+    }
+  ]);
+
+  inboxServices.factory('SetLanguage', ['SetLanguageCookie', '$translate',
+    function(SetLanguageCookie, $translate) {
+      return function(code) {
+        moment.locale([code, 'en']);
+        $translate.use(code);
+        SetLanguageCookie(code);
       };
     }
   ]);

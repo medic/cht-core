@@ -201,17 +201,20 @@ var nools = require('nools'),
       };
 
       var updateFacts = function(change) {
+        $log.error('rulesEngine got change', change);
         var fact;
         if (change.deleted) {
           fact = findFact(change.id);
           if (fact) {
             if (fact.contact._id === change.id) {
               // deleted contact
-              fact.contact = null;
+              fact.contact.deleted = true;
             } else {
               // deleted report
-              fact.reports = _.reject(fact.reports, function(report) {
-                return report._id === change.id;
+              _.each(fact.reports, function(report) {
+                if (report._id === change.id) {
+                  report.deleted = true;
+                }
               });
             }
             session.modify(fact);

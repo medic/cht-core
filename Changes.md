@@ -1,11 +1,21 @@
 # Medic Mobile Release Notes
 
+## 2.6.2
+
+### Apr 29, 2016
+
+- Update PouchDB to improve replication reliability and performance. Issue: #2134 #2167
+- When editing a CHP Area, previously set values for CHP, Branch, and Supervisor do not show up. Issue: #2223
+- Dropdowns in CHP Area create and edit forms have no blank option. Issue: #2227
+- Improve performance of Enketo db-object-widget. Issue: #2161
+- Ensure roles are always available on user-settings. Issue: #2199
+
 ## 2.6.1
 
 ### Apr 21, 2016
 
-- User's fullname is not showing up in /configuration/users. Issue #2200
-- Deleted documents cause sentinel log spam. Issue #1999
+- User's fullname is not showing up in /configuration/users. Issue: #2200
+- Deleted documents cause sentinel log spam. Issue: #1999
 - Disable nools for unrestricted users. Issue: medic-projects#149
 - Update libphonenumber and use strict validation. Issue: #2159 #2196
 - Contacts export response garbled. Issue: #2187

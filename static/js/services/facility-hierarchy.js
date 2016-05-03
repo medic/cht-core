@@ -52,8 +52,12 @@ var _ = require('underscore');
 
   inboxServices.factory('FacilityHierarchy', ['Facility', 'PLACE_TYPES',
     function(Facility, PLACE_TYPES) {
+      var hierarchyTypes = PLACE_TYPES.filter(function(pt) {
+        return pt !== 'clinic';
+      });
+
       return function(callback) {
-        Facility({ types: PLACE_TYPES }, function(err, facilities) {
+        Facility({ types: hierarchyTypes}, function(err, facilities) {
           if (err) {
             return callback(err);
           }

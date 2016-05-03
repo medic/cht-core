@@ -45,7 +45,9 @@ var moment = require('moment'),
           // unconfigured target type
           return;
         }
-        if (isRelevant(instance)) {
+        if (instance.deleted) {
+          delete target.instances[instance._id];
+        } else if (isRelevant(instance)) {
           target.instances[instance._id] = instance;
         }
         target.count = calculateCount(target);

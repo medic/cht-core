@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    async = require('async');
 
 (function () {
 
@@ -8,18 +9,20 @@ var _ = require('underscore');
 
   inboxServices.factory('Facility', ['DbView', 'Cache', 'CONTACT_TYPES',
     function(DbView, Cache, CONTACT_TYPES) {
-
-      var cache = Cache({
-        get: function(callback) {
-          DbView('facilities', { params: { include_docs: true } })
-            .then(function(data) {
-              callback(null, data.results);
-            })
-            .catch(callback);
-        },
-        invalidate: function(doc) {
-          return _.contains(CONTACT_TYPES, doc.type);
-        }
+      var cacheByType = {};
+      CONTACT_TYPES.forEach(function(type) {
+        cacheByType[type] = Cache({
+          get: function(callback) {
+            DbView('facilities', { params: { include_docs: true, key: [type] } })
+              .then(function(data) {
+                callback(null, data.results);
+              })
+              .catch(callback);
+          },
+          invalidate: function(doc) {
+            return doc.type === type;
+          }
+        });
       });
 
       return function(options, callback) {
@@ -27,16 +30,22 @@ var _ = require('underscore');
           callback = options;
           options = {};
         }
-        cache(function(err, res) {
+
+        if (!options.types || options.types.indexOf('person') !== -1) {
+          // We want to remove as many of these as possible, because for admins
+          // it involves downloading a _huge_ amount of data.
+          console.warn('A call to facility with the expectation of having person data', new Error());
+        }
+
+        var relevantCaches = (options.types ? options.types : CONTACT_TYPES).map(function(type) {
+          return cacheByType[type];
+        });
+
+        async.parallel(relevantCaches, function(err, results) {
           if (err) {
             return callback(err);
           }
-          if (options.types) {
-            return callback(null, _.filter(res, function(doc) {
-              return options.types.indexOf(doc.type) !== -1;
-            }));
-          }
-          callback(null, res);
+          callback(null, _.flatten(results));
         });
       };
     }
@@ -84,19 +93,6 @@ var _ = require('underscore');
             callback(null, contacts);
           });
         });
-      };
-    }
-  ]);
-
-  inboxServices.factory('District', ['DbView',
-    function(DbView) {
-      return function(callback) {
-        var options = { params: { key: ['district_hospital'], include_docs: true } };
-        DbView('facilities', options)
-          .then(function(data) {
-            callback(null, data.results);
-          })
-          .catch(callback);
       };
     }
   ]);

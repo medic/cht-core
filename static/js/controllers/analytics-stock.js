@@ -8,8 +8,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('AnalyticsStockCtrl',
-    ['$scope', '$log', '$timeout', 'UserDistrict', 'District', 'Settings', 'DB', 'ScheduledForms', 'DbView', 'ChildFacility', 'FormatDataRecord',
-    function ($scope, $log, $timeout, UserDistrict, District, Settings, DB, ScheduledForms, DbView, ChildFacility, FormatDataRecord) {
+    ['$scope', '$log', '$timeout', 'UserDistrict', 'Facility', 'Settings', 'DB', 'ScheduledForms', 'DbView', 'ChildFacility', 'FormatDataRecord',
+    function ($scope, $log, $timeout, UserDistrict, Facility, Settings, DB, ScheduledForms, DbView, ChildFacility, FormatDataRecord) {
 
       $scope.facilities = [];
       $scope.districts = [];
@@ -178,7 +178,7 @@ var _ = require('underscore'),
           $scope.setDistrict(district);
         } else {
           // national admin
-          District(function(err, districts) {
+          Facility({types: ['district_hospital']}, function(err, districts) {
             if (err) {
               $log.error(err);
             }

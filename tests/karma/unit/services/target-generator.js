@@ -160,6 +160,44 @@ describe('TargetGenerator service', function() {
     });
   });
 
+  it('deals with deleted instances', function(done) {
+    Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
+      { id: 'report', type: 'count' }
+    ] } } }));
+
+    var callbackCount = 0;
+    injector.get('TargetGenerator')(function(err, actual) {
+      if (callbackCount === 0) {
+        chai.expect(actual.length).to.equal(1);
+        chai.expect(actual[0].id).to.equal('report');
+        chai.expect(actual[0].type).to.equal('count');
+        chai.expect(actual[0].count).to.equal(2);
+      } else if (callbackCount === 1) {
+        chai.expect(actual.length).to.equal(1);
+        chai.expect(actual[0].id).to.equal('report');
+        chai.expect(actual[0].type).to.equal('count');
+        // Only one counted
+        chai.expect(actual[0].count).to.equal(1);
+        done();
+      } else {
+        done(new Error('callback called too many times'));
+      }
+      callbackCount++;
+    });
+
+    // first result from the RulesEngine
+    RulesEngine.listen.callsArgWith(2, null, [
+      { _id: '1', type: 'report', pass: true, date: now },
+      { _id: '2', type: 'report', pass: true, date: now }
+    ]);
+    setTimeout(function() {
+      // some time later... second result from the RulesEngine : deletion
+      RulesEngine.listen.args[0][2](null, [
+        { _id: '2', type: 'report', pass: true, date: now, deleted: true }
+      ]);
+    });
+  });
+
   it('updates for new emissions', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'count' }

@@ -154,7 +154,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
 
         $timeout(function() {
           tasks.forEach(function(task) {
-            if (task.resolved) {
+            if (task.resolved || task.deleted) {
               LiveList.tasks.remove(task);
             } else {
               LiveList.tasks.update(task);
