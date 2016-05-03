@@ -12,7 +12,6 @@
   require('./changes');
   require('./check-date');
   require('./clean-etag');
-  require('./confirm-modal');
   require('./contact-form');
   require('./contact-schema');
   require('./count-messages');
@@ -42,6 +41,7 @@
   require('./mark-read');
   require('./message-contacts');
   require('./message-state');
+  require('./modal');
   require('./moment-locale-data');
   require('./outgoing-messages-configuration');
   require('./properties');

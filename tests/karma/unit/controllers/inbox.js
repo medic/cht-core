@@ -70,9 +70,9 @@ describe('InboxCtrl controller', function() {
       $provide.factory('LiveListConfig', function() {
         return sinon.stub();
       });
-      $provide.factory('ConfirmModal', function() {
+      $provide.factory('Modal', function() {
         stubModal = sinon.stub();
-        // Always return as if user clicked delete. This ignores the DeleteDoc
+        // ConfirmModal : Always return as if user clicked delete. This ignores the DeleteDoc
         // altogether. The calling of the processingFunction is tested in
         // modal.js, not here.
         stubModal.returns(KarmaUtils.mockPromise());
