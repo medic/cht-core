@@ -14,8 +14,8 @@ var feedback = require('../modules/feedback'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'CheckDate', 'DeleteDoc', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'PLACE_TYPES', 'ConfirmModal', '$q', 'Search', 'UserLanguageModal',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, CheckDate, DeleteDoc, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, Auth, TrafficStats, XmlForms, RulesEngine, PLACE_TYPES, ConfirmModal, $q, Search, UserLanguageModal) {
+    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'CheckDate', 'DeleteDoc', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'PLACE_TYPES', 'ConfirmModal', '$q', 'Search', 'UserLanguageModal',
+    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, CheckDate, DeleteDoc, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, Auth, TrafficStats, XmlForms, RulesEngine, PLACE_TYPES, ConfirmModal, $q, Search, UserLanguageModal) {
 
       Session.init();
 
@@ -343,7 +343,7 @@ var feedback = require('../modules/feedback'),
       });
 
       $scope.setupSendMessage = function() {
-        sendMessage.init(Settings, Contact, translateFilter);
+        sendMessage.init(Settings, Contact, $translate.instant);
       };
 
       // get the forms for the forms filter
@@ -377,7 +377,7 @@ var feedback = require('../modules/feedback'),
 
       // TODO when all modals are converted to on-demand modals, remove all these setup functions.
       $scope.setupGuidedSetup = function() {
-        guidedSetup.init(Settings, UpdateSettings, translateFilter);
+        guidedSetup.init(Settings, UpdateSettings, $translate.instant);
         modalsInited.guidedSetup = true;
         showModals();
       };
@@ -439,7 +439,7 @@ var feedback = require('../modules/feedback'),
             return !user.known;
           },
           render: function() {
-            tour.start('intro', translateFilter);
+            tour.start('intro', $translate.instant);
             var id = 'org.couchdb.user:' + Session.userCtx().name;
 
             UpdateUser(id, { known: true })
@@ -542,7 +542,7 @@ var feedback = require('../modules/feedback'),
               pane.done();
             })
             .catch(function(err) {
-              pane.done(translateFilter('Error sending message'), err);
+              pane.done($translate.instant('Error sending message'), err);
             });
         });
       };
@@ -555,31 +555,21 @@ var feedback = require('../modules/feedback'),
         $rootScope.$broadcast.apply($rootScope, arguments);
       };
 
-      // TODO promisify DeleteDoc
-      var _deleteDoc = function(id) {
-        var deferred = $q.defer();
-        if (!id) {
-          return deferred.reject('Error deleting document : no docToDeleteId set');
-        }
-        DeleteDoc(id, function(err) {
-          if (err) {
-            return deferred.reject(err);
-          }
-          return deferred.resolve();
-        });
-        return deferred.promise;
-      };
-
       $scope.deleteDoc = function(id) {
-        ConfirmModal('templates/modals/delete_doc_confirm.html', function() { return _deleteDoc(id); })
-          .then(function () {
-            // Success!
+        ConfirmModal('templates/modals/delete_doc_confirm.html', function() {
+          if (!id) {
+            return $q.reject(new Error('Error deleting document: no docToDeleteId set'));
+          }
+          return DB.get().get(id).then(DeleteDoc);
+        })
+          .then(function() {
             if ($state.includes('contacts') || $state.includes('reports')) {
               $state.go($state.current.name, { id: null });
             }
-            Snackbar(translateFilter('document.deleted'));
-          }, function () {
-            $log.debug('User cancelled deleteDoc.');
+            $translate('document.deleted').then(Snackbar);
+          })
+          .catch(function(err) {
+            $log.debug('User cancelled deleteDoc.', err);
           });
       };
 
@@ -648,9 +638,9 @@ var feedback = require('../modules/feedback'),
         var message = $('#feedback [name=feedback]').val();
         feedback.submit(message, APP_CONFIG, function(err) {
           if (!err) {
-            Snackbar(translateFilter('feedback.submitted'));
+            $translate('feedback.submitted').then(Snackbar);
           }
-          pane.done(translateFilter('Error saving feedback'), err);
+          pane.done($translate.instant('Error saving feedback'), err);
         });
       };
 

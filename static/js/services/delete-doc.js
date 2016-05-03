@@ -1,62 +1,54 @@
+var _ = require('underscore');
+
 (function () {
 
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('DeleteDoc', ['DB',
-    function(DB) {
+  inboxServices.factory('DeleteDoc', ['$q', 'DB',
+    function($q, DB) {
 
-      var updateParent = function(doc, callback) {
+      var getParent = function(doc) {
         if (doc.type === 'person' && doc.parent && doc.parent._id) {
-          DB.get()
+          return DB.get()
             .get(doc.parent._id)
             .then(function(parent) {
               if (parent.contact.phone !== doc.phone) {
-                return callback();
+                return;
               }
               parent.contact = null;
-              DB.get()
-                .put(parent)
-                .then(function() {
-                  callback();
-                })
-                .catch(function(err) {
-                  callback(err);
-                });
-            })
-            .catch(function(err) {
-              if (err.reason === 'deleted') {
-                return callback();
-              }
-              return callback(err);
+              console.log('resolving parent', parent);
+              return parent;
             });
-        } else {
-          callback();
         }
+        return $q.resolve();
       };
 
-      return function(docId, callback) {
-        DB.get()
-          .get(docId)
-          .then(function(doc) {
-            updateParent(doc, function(err) {
-              if (err) {
-                return callback(err);
+      /**
+       * Delete the given docs. If 'person' type then also fix the
+       * contact hierarchy.
+       *
+       * @param docs {Object|Array} Document or array of documents to delete.
+       */
+      return function(docs) {
+        if (!_.isArray(docs)) {
+          docs = [ docs ];
+        }
+        docs.forEach(function(doc) {
+          doc._deleted = true;
+        });
+        return $q.all(docs.map(function(doc) {
+          return getParent(doc)
+            .then(function(parent) {
+              console.log('received parent', parent);
+              if (parent) {
+                docs.push(parent);
               }
-              doc._deleted = true;
-              DB.get()
-                .put(doc)
-                .then(function() {
-                  callback(null, doc);
-                })
-                .catch(function(err) {
-                  return callback(err);
-              });
             });
-          })
-          .catch(function(err) {
-            return callback(err);
+          }))
+          .then(function() {
+            return DB.get().bulkDocs(docs);
           });
       };
 

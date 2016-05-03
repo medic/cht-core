@@ -5,16 +5,19 @@ describe('DeleteUser service', function() {
   var service,
       $httpBackend,
       DeleteDoc,
+      get,
       cacheRemove;
 
   beforeEach(function() {
     module('inboxApp');
     cacheRemove = sinon.stub();
     DeleteDoc = sinon.stub();
+    get = sinon.stub();
     module(function ($provide) {
       $provide.factory('DeleteDoc', function() {
         return DeleteDoc;
       });
+      $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
     });
     inject(function($injector) {
       $httpBackend = $injector.get('$httpBackend');
@@ -32,7 +35,7 @@ describe('DeleteUser service', function() {
   afterEach(function() {
     $httpBackend.verifyNoOutstandingExpectation();
     $httpBackend.verifyNoOutstandingRequest();
-    KarmaUtils.restore(cacheRemove, DeleteDoc);
+    KarmaUtils.restore(cacheRemove, DeleteDoc, get);
   });
 
   it('returns errors', function(done) {
@@ -80,19 +83,24 @@ describe('DeleteUser service', function() {
       })
       .respond({ success: true });
 
-    DeleteDoc.callsArgWith(1);
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'org.couchdb.user:gareth' }));
+    DeleteDoc.returns(KarmaUtils.mockPromise());
 
     service({
       id: 'org.couchdb.user:gareth',
       name: 'gareth'
     }, function(err) {
       chai.expect(err).to.equal(undefined);
+      chai.expect(get.callCount).to.equal(1);
+      chai.expect(get.args[0][0]).to.equal('org.couchdb.user:gareth');
+
       chai.expect(DeleteDoc.callCount).to.equal(1);
-      chai.expect(DeleteDoc.firstCall.args[0]).to.equal('org.couchdb.user:gareth');
+      chai.expect(DeleteDoc.args[0][0]._id).to.equal('org.couchdb.user:gareth');
+
       chai.expect(cacheRemove.callCount).to.equal(3);
-      chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Agareth');
-      chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
-      chai.expect(cacheRemove.thirdCall.args[0]).to.equal('/_config/admins');
+      chai.expect(cacheRemove.args[0][0]).to.equal('/_users/org.couchdb.user%3Agareth');
+      chai.expect(cacheRemove.args[1][0]).to.equal('/_users/_all_docs?include_docs=true');
+      chai.expect(cacheRemove.args[2][0]).to.equal('/_config/admins');
       done();
     });
 

@@ -127,8 +127,8 @@ var _ = require('underscore');
     }
   ]);
 
-  inboxServices.factory('DeleteUser', ['$cacheFactory', '$http', 'DeleteDoc',
-    function($cacheFactory, $http, DeleteDoc) {
+  inboxServices.factory('DeleteUser', ['$cacheFactory', '$http', 'DB', 'DeleteDoc',
+    function($cacheFactory, $http, DB, DeleteDoc) {
 
       var deleteUser = function(id, callback) {
         var url = getUserUrl(id);
@@ -155,7 +155,11 @@ var _ = require('underscore');
             return callback(err);
           }
           removeCacheEntry($cacheFactory, id);
-          DeleteDoc(id, callback);
+          DB.get()
+            .get(id)
+            .then(DeleteDoc)
+            .then(callback)
+            .catch(callback);
         });
       };
     }

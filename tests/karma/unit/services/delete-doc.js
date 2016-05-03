@@ -4,16 +4,15 @@ describe('DeleteDoc service', function() {
 
   var service,
       get,
-      put,
-      message;
+      bulkDocs;
 
   beforeEach(function() {
     get = sinon.stub();
-    put = sinon.stub();
-    message = {};
+    bulkDocs = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.factory('DB', KarmaUtils.mockDB({ put: put, get: get }));
+      $provide.factory('DB', KarmaUtils.mockDB({ bulkDocs: bulkDocs, get: get }));
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject(function(_DeleteDoc_) {
       service = _DeleteDoc_;
@@ -21,41 +20,73 @@ describe('DeleteDoc service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(get, put);
+    KarmaUtils.restore(get, bulkDocs);
   });
 
-  it('returns db errors', function(done) {
-    get.returns(KarmaUtils.mockPromise('errcode1'));
-    service('abc', function(err) {
-      chai.expect(get.calledOnce).to.equal(true);
-      chai.expect(get.firstCall.args[0]).to.equal('abc');
-      chai.expect(err).to.equal('errcode1');
-      done();
-    });
+  it('returns put errors', function(done) {
+    bulkDocs.returns(KarmaUtils.mockPromise('errcode2'));
+    service({ _id: 'xyz' })
+      .then(function() {
+        done('expected error to be thrown');
+      })
+      .catch(function(err) {
+        chai.expect(get.callCount).to.equal(0);
+        chai.expect(bulkDocs.callCount).to.equal(1);
+        chai.expect(err).to.equal('errcode2');
+        done();
+      });
   });
 
-  it('returns audit errors', function(done) {
-    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz' }));
-    put.returns(KarmaUtils.mockPromise('errcode2'));
-    service('abc', function(err) {
-      chai.expect(get.calledOnce).to.equal(true);
-      chai.expect(put.calledOnce).to.equal(true);
-      chai.expect(err).to.equal('errcode2');
-      done();
-    });
+  it('marks the record deleted', function(done) {
+    bulkDocs.returns(KarmaUtils.mockPromise());
+    var record = {
+      _id: 'xyz',
+      type: 'data_record'
+    };
+    var expected = {
+      _id: 'xyz',
+      type: 'data_record',
+      _deleted: true
+    };
+    service(record)
+      .then(function() {
+        chai.expect(get.callCount).to.equal(0);
+        chai.expect(bulkDocs.callCount).to.equal(1);
+        chai.expect(bulkDocs.args[0][0][0]).to.deep.equal(expected);
+        done();
+      })
+      .catch(done);
   });
 
-  it('marks the message deleted', function(done) {
-    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz', type: 'data_record' }));
-    put.returns(KarmaUtils.mockPromise());
-    var expected = { _id: 'xyz', type: 'data_record', _deleted: true };
-    service('abc', function(err, actual) {
-      chai.expect(get.calledOnce).to.equal(true);
-      chai.expect(put.calledOnce).to.equal(true);
-      chai.expect(get.firstCall.args[0]).to.equal('abc');
-      chai.expect(actual).to.deep.equal(expected);
-      done();
-    });
+  it('marks multiple records deleted', function(done) {
+    bulkDocs.returns(KarmaUtils.mockPromise());
+    var record1 = {
+      _id: 'xyz',
+      type: 'data_record'
+    };
+    var record2 = {
+      _id: 'abc',
+      type: 'data_record'
+    };
+    var expected1 = {
+      _id: 'xyz',
+      type: 'data_record',
+      _deleted: true
+    };
+    var expected2 = {
+      _id: 'abc',
+      type: 'data_record',
+      _deleted: true
+    };
+    service([ record1, record2 ])
+      .then(function() {
+        chai.expect(get.callCount).to.equal(0);
+        chai.expect(bulkDocs.callCount).to.equal(1);
+        chai.expect(bulkDocs.args[0][0][0]).to.deep.equal(expected1);
+        chai.expect(bulkDocs.args[0][0][1]).to.deep.equal(expected2);
+        done();
+      })
+      .catch(done);
   });
 
   it('updates clinic deleted person is contact for', function(done) {
@@ -76,22 +107,26 @@ describe('DeleteDoc service', function() {
         _id: 'b'
       }
     };
-    get
-      .onFirstCall().returns(KarmaUtils.mockPromise(null, person))
-      .onSecondCall().returns(KarmaUtils.mockPromise(null, clinic));
-    put.returns(KarmaUtils.mockPromise());
-    service('a', function(err, actual) {
-      chai.expect(get.calledTwice).to.equal(true);
-      chai.expect(put.calledTwice).to.equal(true);
-      chai.expect(get.firstCall.args[0]).to.equal('a');
-      chai.expect(get.secondCall.args[0]).to.equal('b');
-      chai.expect(put.firstCall.args[0].contact).to.equal(null);
-      chai.expect(actual._deleted).to.equal(true);
-      done();
-    });
+    get.returns(KarmaUtils.mockPromise(null, clinic));
+    bulkDocs.returns(KarmaUtils.mockPromise());
+    service(person)
+      .then(function() {
+        chai.expect(get.callCount).to.equal(1);
+        chai.expect(get.args[0][0]).to.equal(clinic._id);
+
+        chai.expect(bulkDocs.callCount).to.equal(1);
+        chai.expect(bulkDocs.args[0][0].length).to.equal(2);
+        chai.expect(bulkDocs.args[0][0][0]._id).to.equal(person._id);
+        chai.expect(bulkDocs.args[0][0][0]._deleted).to.equal(true);
+        chai.expect(bulkDocs.args[0][0][1]._id).to.equal(clinic._id);
+        chai.expect(bulkDocs.args[0][0][1].contact).to.equal(null);
+
+        done();
+      })
+      .catch(done);
   });
 
-  it('done update clinic when phone does not match', function(done) {
+  it('does not update clinic when phone does not match', function(done) {
     var clinic = {
       _id: 'b',
       type: 'clinic',
@@ -109,18 +144,20 @@ describe('DeleteDoc service', function() {
         _id: 'b'
       }
     };
-    get
-      .onFirstCall().returns(KarmaUtils.mockPromise(null, person))
-      .onSecondCall().returns(KarmaUtils.mockPromise(null, clinic));
-    put.returns(KarmaUtils.mockPromise());
-    service('a', function(err, actual) {
-      chai.expect(get.calledTwice).to.equal(true);
-      chai.expect(put.calledOnce).to.equal(true);
-      chai.expect(get.firstCall.args[0]).to.equal('a');
-      chai.expect(get.secondCall.args[0]).to.equal('b');
-      chai.expect(actual._deleted).to.equal(true);
-      done();
-    });
+    get.returns(KarmaUtils.mockPromise(null, clinic));
+    bulkDocs.returns(KarmaUtils.mockPromise());
+    service(person)
+      .then(function() {
+        chai.expect(get.callCount).to.equal(1);
+        chai.expect(get.args[0][0]).to.equal(clinic._id);
+
+        chai.expect(bulkDocs.callCount).to.equal(1);
+        chai.expect(bulkDocs.args[0][0][0]._id).to.equal(person._id);
+        chai.expect(bulkDocs.args[0][0][0]._deleted).to.equal(true);
+
+        done();
+      })
+      .catch(done);
   });
 
 });
