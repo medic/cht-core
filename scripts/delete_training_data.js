@@ -7,20 +7,13 @@
  * (couch logs will say `Index update finished for db: medic idx: _design/medic`)
  * or extend the `os_process_timeout` (or both).
  *
- * Full procedure :
- * - scp the script and the package.json into vm.
- * - Find npm and add it to the path : `find /srv -name npm` and `export PATH=$PATH:<npm>`
- * - run `npm install`
- * - export COUCH_URL value
- * - stop services : `sudo /boot/svc-down medic-core && \
- * sudo /boot/svc-down gardener && \
- * sudo /boot/svc-up medic-core openssh`
- * - make DB backup : `sudo cp /path/to/couchdb/data/medic.couch medic-$(date +%Y%d%m%H%M%S).couch` (find path : `find /srv/storage -name medic.couch`)
- * - restart couch : `sudo /boot/svc-up medic-core couchdb`
- * - extend the couchdb timeout if needed : `curl -X PUT http://<credentials>@localhost:5984/_config/couchdb/os_process_timeout -d '"100000"'`
- * - run script until all data is dead
- * - reset the timeout to original value if needed
- * - restart services : `sudo /boot/svc-up medic-core && sudo /boot/svc-up gardener`
+ * Postmortem (2016-04-27) : after stopping couchdb, it would not start up
+ * again.
+ * Regardless why, this means that stopping the server is risky, so deletion
+ * should be done without stopping the server.
+ * After each deletion, the db gets reindexed and requests time out, so you
+ * want to minimize this. So adjust the dates to small enough time increments
+ * to have <100 docs deleted at a time.
  */
 
 'use strict';
@@ -29,21 +22,27 @@ var PouchDB = require('pouchdb');
 var _ = require('underscore');
 var fs = require('fs');
 var mkdirp = require('mkdirp');
+var prompt = require('prompt');
 var util = require('util');
 
+var log_file;
 // Overload console.log to log to file.
 var setupLogging = function(logdir, logfile) {
   if (!mkdirp.sync(logdir)) {
     console.log('Couldnt create logdir, aborting.');
     process.exit();
   }
-  var log_file = fs.createWriteStream(logdir + '/' + logfile, {flags : 'w'});
+  log_file = fs.createWriteStream(logdir + '/' + logfile, {flags : 'w'});
   log_file.write(''); // create file by writing in it
   var log_stdout = process.stdout;
   console.log = function(d) {
     log_file.write(util.format(d) + '\n');
     log_stdout.write(util.format(d) + '\n');
   };
+};
+
+var logToFile = function(d) {
+  log_file.write(util.format(d) + '\n');
 };
 
 // Useful to keep track of the last seq number, and who knows what else?
@@ -198,16 +197,16 @@ var writeDocsToFile = function(filepath, docsList) {
 };
 
 if (process.argv.length < 6) {
-  console.log('Not enough arguments.');
+  console.log('Not enough arguments.\n');
   console.log('Usage:\nnode delete_training_data.js <branchId> ' +
-    '<startTime> <endTime> <logdir> [dryrun]');
+    '<startTime> <endTime> <logdir> [dryrun]\n');
   console.log('Will use DB URL+credentials from $COUCH_URL.');
   console.log('Deletes all \'data_record\', \'person\' and \'clinic\' data ' +
     'from a given branch (\'district_hospital\' type) that was created ' +
     'between the two timestamps.');
   console.log('The deleted docs will be written out to json files in the ' +
     'logdir.');
-  console.log('The dryrun arg will run the whole process, including writing the files, without actually doing the deletions.');
+  console.log('The dryrun arg will run the whole process, including writing the files, without actually doing the deletions.\n');
   console.log('Example:\nexport COUCH_URL=\'http://admin:pass@localhost:5984/medic\'; node delete_training_data.js 52857bf2cef066525b2feb82805fb373 "2016-04-11 07:00 GMT+3:00" "2016-04-25 17:00 GMT+3:00" ./training_data_20160425 dryrun');
   process.exit();
 }
@@ -224,15 +223,49 @@ dryrun = (dryrun === 'dryrun');
 setupLogging(logdir, 'debug.log');
 
 console.log('Now is ' + now.toUTCString() + '   (' + now + ')   (' + now.getTime() + ')');
-console.log('\nStarting deletion process with\ndbUrl = $COUCH_URL\nbranchId = ' + branchId +
-  '\nstartTimeMillis = ' + start.toUTCString() + ' (' + start.getTime() + ')\nendTimeMillis = ' + end.toUTCString() + ' (' + end.getTime() + ')\nlogdir = ' + logdir + '\ndryrun = ' + dryrun + '\n');
+
+var userConfirm = function() {
+  return new Promise(function(resolve) {
+    var message = '\nStarting deletion process with\ndbUrl = $COUCH_URL\nbranchId = ' + branchId +
+      '\nstartTimeMillis = ' + start.toUTCString() + ' (' + start.getTime() +
+      ')\nendTimeMillis = ' + end.toUTCString() + ' (' + end.getTime() + ')\nlogdir = ' +
+      logdir + '\ndryrun = ' + dryrun + '\n';
+    logToFile(message); // log to logfile because prompt doesn't.
+
+    prompt.message = ''; // remove annoying pre-prompt message.
+    prompt.start();
+    var property = {
+      name: 'yesno',
+      message: message,
+      validator: /y[es]*|n[o]?/,
+      warning: 'Must respond yes or no',
+      default: 'yes'
+    };
+
+    prompt.get(property, function (err, result) {
+      if (err) {
+        console.log(err);
+        process.exit();
+      }
+      if (result.yesno !== 'yes') {
+        console.log('User backed out. Exiting.');
+        process.exit();
+      }
+      resolve();
+    });
+  });
+};
 
 var db = new PouchDB(dbUrl);
 var startTimestamp = start.getTime();
 var endTimestamp = end.getTime();
 
-console.log('Deleting reports');
-getDataReportsForBranch(branchId)
+userConfirm()
+  .then(function() {
+    console.log('Deleting reports');
+    return;
+  })
+  .then(_.partial(getDataReportsForBranch, branchId))
   .then(_.partial(filterByDate, _, startTimestamp, endTimestamp))
   .then(_.partial(writeDocsToFile, logdir + '/reports_deleted.json'))
   .then(deleteDocs)
@@ -269,5 +302,4 @@ getDataReportsForBranch(branchId)
     console.log('Error!!!');
     console.log(err);
   });
-
 
