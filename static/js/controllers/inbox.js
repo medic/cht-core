@@ -274,7 +274,9 @@ var feedback = require('../modules/feedback'),
 
       $scope.$on('$stateChangeSuccess', function(event, toState) {
         $scope.currentTab = toState.name.split('.')[0];
-        $scope.selectMode = false;
+        if (!$state.includes('reports')) {
+          $scope.selectMode = false;
+        }
       });
 
       $scope.download = function() {
@@ -663,6 +665,8 @@ var feedback = require('../modules/feedback'),
 
       $scope.setSelectMode = function(value) {
         $scope.selectMode = value;
+        $scope.clearSelected();
+        $state.go('reports.detail', { id: null });
       };
 
       $('body').on('mouseenter', '.relative-date, .autoreply', function() {

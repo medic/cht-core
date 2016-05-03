@@ -15,7 +15,7 @@ var _ = require('underscore'),
     function ($scope, $rootScope, $state, $stateParams, $timeout, $translate, $http, $log, TranslateFrom, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified, SearchFilters, DownloadUrl) {
 
       $scope.selectedGroup = null;
-      $scope.selected = null;
+      $scope.selected = [];
       $scope.filters = {
         search: $stateParams.query
       };
@@ -28,7 +28,7 @@ var _ = require('underscore'),
 
       $scope.updateGroup = function(group) {
         var pane = modal.start($('#edit-message-group'));
-        EditGroup($scope.selected._id, group)
+        EditGroup($scope.selected[0].report._id, group)
           .then(function() {
             pane.done();
           })
@@ -111,18 +111,25 @@ var _ = require('underscore'),
           updateDisplayFields(doc);
         }
 
-        liveList.setSelected(doc._id);
+        if ($scope.selectMode) {
+          $scope.selected.push({ report: doc, expanded: false });
+          $scope.settingSelected(true);
+        } else {
+          liveList.setSelected(doc._id);
 
-        var refreshing = doc && $scope.selected && $scope.selected.id === doc._id;
-        $scope.selected = doc;
-        setTitle(doc);
-        $scope.setActionBar({
-          _id: doc._id,
-          verified: doc.verified,
-          type: doc.content_type,
-          sendTo: doc
-        });
-        $scope.settingSelected(refreshing);
+          var refreshing = doc &&
+                           $scope.selected.length &&
+                           $scope.selected[0].report._id === doc._id;
+          $scope.selected = [ { report: doc, expanded: true } ];
+          setTitle(doc);
+          $scope.setActionBar({
+            _id: doc._id,
+            verified: doc.verified,
+            type: doc.content_type,
+            sendTo: doc
+          });
+          $scope.settingSelected(refreshing);
+        }
       };
 
       var _fetchFormattedReport = function(report) {
@@ -151,9 +158,10 @@ var _ = require('underscore'),
           $scope.clearSelected();
           return;
         }
-
-        $scope.clearSelected();
-        $scope.setLoadingContent(report);
+        if (!$scope.selectMode) {
+          $scope.clearSelected();
+          $scope.setLoadingContent(report);
+        }
 
         _fetchFormattedReport(report)
           .then(function(doc) {
@@ -212,7 +220,7 @@ var _ = require('underscore'),
               if (curr) {
                 $scope.setSelected(curr);
               } else if (!$scope.isMobile() &&
-                         !$scope.selected &&
+                         !$scope.selected.length &&
                          $state.is('reports.detail')) {
                 $timeout(function() {
                   var id = $('.inbox-items li').first().attr('data-record-id');
@@ -265,13 +273,15 @@ var _ = require('underscore'),
       };
 
       $scope.$on('ClearSelected', function() {
-        $scope.selected = null;
+        $scope.selected = [];
+        $('#reports-list input[type="checkbox"]')
+          .prop('checked', false);
         liveList.clearSelected();
       });
 
       $scope.$on('VerifyReport', function(e, verify) {
-        if ($scope.selected.form) {
-          Verified($scope.selected._id, verify, function(err) {
+        if ($scope.selected[0].report.form) {
+          Verified($scope.selected[0].report._id, verify, function(err) {
             if (err) {
               $log.error('Error verifying message', err);
             }
@@ -280,8 +290,8 @@ var _ = require('underscore'),
       });
 
       $scope.$on('EditReport', function() {
-        var val = ($scope.selected.contact && $scope.selected.contact._id) || '';
-        $('#edit-report [name=id]').val($scope.selected._id);
+        var val = ($scope.selected[0].report.contact && $scope.selected[0].report.contact._id) || '';
+        $('#edit-report [name=id]').val($scope.selected[0].report._id);
         $('#edit-report [name=facility]').select2('val', val);
         $('#edit-report').modal('show');
       });
@@ -386,6 +396,32 @@ var _ = require('underscore'),
       };
 
       $scope.search();
+
+      $('.inbox').on('click', '#reports-list .message-wrapper', function(e) {
+        if ($scope.selectMode) {
+          e.preventDefault();
+          e.stopPropagation();
+          var target = $(e.target).closest('li');
+          var reportId = target.attr('data-record-id');
+          var checkbox = target.find('input[type="checkbox"]');
+          var alreadySelected = _.find($scope.selected, function(i) {
+            return i.report._id === reportId;
+          });
+          $timeout(function() {
+            checkbox.prop('checked', !alreadySelected);
+            if (!alreadySelected) {
+              $scope.selectReport(reportId);
+            } else {
+              for (var i = 0; i < $scope.selected.length; i++) {
+                if ($scope.selected[i].report._id === reportId) {
+                  $scope.selected.splice(i, 1);
+                  return;
+                }
+              }
+            }
+          });
+        }
+      });
 
       $scope.$on('export', function() {
         if ($scope.currentTab === 'reports') {

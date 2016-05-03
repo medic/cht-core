@@ -868,6 +868,26 @@ a.fa:hover {
     .missing p {
       color: @lightgrey;
     }
+
+    &.summary {
+      padding: 1em;
+      .mm-badge {
+        float: left;
+      }
+      .sender,
+      .report-name {
+        padding-left: 3em;
+      }
+    }
+  }
+
+  .selection-count {
+    padding: 0.5em 1em;
+    margin: 0;
+    background-color: @label-color;
+    color: #FFFFFF;
+    font-size: 1.1em;
+    font-weight: bold;
   }
 
   .task-list > li {

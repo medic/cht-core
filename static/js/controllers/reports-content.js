@@ -38,6 +38,12 @@
         setMessageState(group, 'muted', 'scheduled');
       };
 
+      $scope.toggleExpand = function(selection) {
+        if ($scope.selectMode) {
+          selection.expanded = !selection.expanded;
+        }
+      };
+
       Changes({
         key: 'reports-content',
         filter: function(change) {

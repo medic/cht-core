@@ -56,7 +56,7 @@
           </a>
         </div>
       </div>
-      <div class="col-sm-8 detail-actions right-pane">
+      <div class="col-sm-8 detail-actions right-pane" ng-show="currentTab !== 'reports' || !selectMode">
         <div class="actions dropup" ng-show="showActionBar && actionBar._id && !loadingContent && (('reports.detail' | isState) || ('contacts.detail' | isState))">
           <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="tel:{{actionBar.sendTo.phone}}" ng-show="currentTab === 'contacts'" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
             <span class="fa fa-phone"></span>
@@ -109,6 +109,14 @@
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'contacts'" ng-click="actionBar.disableDelete || deleteDoc(actionBar._id)" ng-class="{'mm-icon-disabled': actionBar.disableDelete}" mm-auth="can_delete_contacts">
             <span class="fa fa-trash-o"></span>
             <p translate>Delete</p>
+          </a>
+        </div>
+      </div>
+      <div class="col-sm-8 detail-actions right-pane" ng-show="currentTab === 'reports' && selectMode">
+        <div class="actions dropup" ng-show="showActionBar && actionBar._id && !loadingContent && 'reports.detail' | isState">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" mm-auth="can_delete_contacts">
+            <span class="fa fa-trash-o"></span>
+            <p translate>select.mode.delete.all</p>
           </a>
         </div>
       </div>
