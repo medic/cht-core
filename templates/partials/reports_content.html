@@ -14,9 +14,9 @@
 
     <div class="selection-count" ng-show="selectMode" translate translate-values="{ number: {{selected.length}} }">select.mode.count</div>
 
-    <div ng-repeat="selection in selected track by selection.report._id" ng-init="report = selection.report">
+    <div ng-repeat="selection in selected track by selection.report._id" ng-init="report = selection.report" class="body report-body">
 
-      <div class="summary body" ng-show="!selection.expanded" ng-click="toggleExpand(selection)">
+      <div class="summary" ng-click="toggleExpand(selection)">
         <span class="mm-badge mm-badge-round mm-badge-border" ng-class="report.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
           <span class="fa" ng-class="{'fa-check': report.verified}"></span>
         </span>
@@ -25,64 +25,48 @@
         <div class="report-name">{{report | title:forms}}</div>
       </div>
 
-      <div ng-show="selection.expanded" ng-click="toggleExpand(selection)">
-
-        <div class="meta">
-          <div class="time" ng-bind-html="report.reported_date | fullDate"></div>
-          <mm-sender message="report"></mm-sender>
-        </div>
-
-        <div class="status">
-          <span class="mm-badge mm-badge-round mm-badge-border" ng-class="report.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
-            <span class="fa" ng-class="{'fa-check': report.verified}"></span>
-          </span>
-        </div>
-
-        <div class="body report-body">
-          <h2>{{report | title:forms}}</h2>
-          <ul>
-            <li ng-if="report.form && report.content_type !== 'xml'" ng-repeat="field in report.fields.data">
-              <label>
-                {{field.label}}
-                <span class="fa fa-cogs" ng-show="field.generated" translate translate-attr-title="Generated report field"></span>
-              </label>
-              <p>{{field.value}}</p>
-            </li>
-            <li ng-if="report.form && report.content_type === 'xml'" ng-repeat="field in displayFields" class="indent-{{field.depth}}">
-              <label translate>{{field.label}}</label>
-              <p>{{field.value}}</p>
-            </li>
-            <li ng-if="report.errors.length">
-              <label translate>Errors</label>
-              <ul>
-                <li ng-repeat="error in report.errors">
-                  {{error.message}}
-                </li>
-              </ul>
-            </li>
-            <li ng-if="report.sms_message.message">
-              <label translate>report.content.raw</label>
-              <p>{{report.sms_message.message}}</p>
-            </li>
-            <li ng-if="report.tasks.length">
-              <label ng-if="report.kujua_message" translate>tasks.0.messages.0.to</label>
-              <label ng-if="!report.kujua_message" translate>Automated Reply</label>
-              <ul class="task-list">
-                <li ng-repeat="task in report.tasks">
-                  <ul>
-                    <li ng-repeat="message in task.messages">
-                      {{report.kujua_message ? message.to : message.message}}
-                    </li>
-                  </ul>
-                  <span class="task-state" ng-bind-html="task | state"></span>
-                </li>
-                <li class="clear"></li>
-              </ul>
-            </li>
-          </ul>
-        </div>
-
-        <div class="body scheduled-tasks" ng-if="report.scheduled_tasks_by_group.length">
+      <div ng-show="selection.expanded">
+        <ul>
+          <li ng-if="report.form && report.content_type !== 'xml'" ng-repeat="field in report.fields.data">
+            <label>
+              {{field.label}}
+              <span class="fa fa-cogs" ng-show="field.generated" translate translate-attr-title="Generated report field"></span>
+            </label>
+            <p>{{field.value}}</p>
+          </li>
+          <li ng-if="report.form && report.content_type === 'xml'" ng-repeat="field in displayFields" class="indent-{{field.depth}}">
+            <label translate>{{field.label}}</label>
+            <p>{{field.value}}</p>
+          </li>
+          <li ng-if="report.errors.length">
+            <label translate>Errors</label>
+            <ul>
+              <li ng-repeat="error in report.errors">
+                {{error.message}}
+              </li>
+            </ul>
+          </li>
+          <li ng-if="report.sms_message.message">
+            <label translate>report.content.raw</label>
+            <p>{{report.sms_message.message}}</p>
+          </li>
+          <li ng-if="report.tasks.length">
+            <label ng-if="report.kujua_message" translate>tasks.0.messages.0.to</label>
+            <label ng-if="!report.kujua_message" translate>Automated Reply</label>
+            <ul class="task-list">
+              <li ng-repeat="task in report.tasks">
+                <ul>
+                  <li ng-repeat="message in task.messages">
+                    {{report.kujua_message ? message.to : message.message}}
+                  </li>
+                </ul>
+                <span class="task-state" ng-bind-html="task | state"></span>
+              </li>
+              <li class="clear"></li>
+            </ul>
+          </li>
+        </ul>
+        <div class="scheduled-tasks" ng-if="report.scheduled_tasks_by_group.length">
           <h2 translate>tasks</h2>
           <ul>
             <li ng-repeat="group in report.scheduled_tasks_by_group">

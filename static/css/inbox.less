@@ -807,30 +807,24 @@ a.fa:hover {
 .reports .item-content,
 .tasks .item-content {
 
-  .meta {
-    padding: 2em;
-    padding-top: 1em;
-  }
-
   .body {
 
-    padding-bottom: 2em;
     background-color: @form-background-color;
     border: 1px solid @seperator-color;
     border-radius: @radius-size;
-    margin: 0 1em 1em 1em;
+    margin: 1em;
+
+    &:last-child {
+      margin-bottom: 6em;
+    }
 
     p {
       font-weight: bold;
       font-size: 1.4em;
     }
 
-    h2 {
-      text-align: center;
-      margin: 1.25em 0 0.75em 0;
-      font-style: italic;
+    .report-name {
       font-weight: bold;
-      font-size: 1.75em;
     }
 
     h5 {
@@ -838,14 +832,10 @@ a.fa:hover {
       margin-top: -1em;
     }
 
-    > ul > li {
-      border-bottom: 1px solid @seperator-color;
+    > div > ul > li {
+      border-top: 1px solid @seperator-color;
       padding: 1em 3em 1em 2em;
       margin: 0;
-
-      &:last-child {
-        border-bottom: none;
-      }
       &.indent-1 {
         padding-left: 3em;
       }
@@ -869,7 +859,7 @@ a.fa:hover {
       color: @lightgrey;
     }
 
-    &.summary {
+    .summary {
       padding: 1em;
       .mm-badge {
         float: left;

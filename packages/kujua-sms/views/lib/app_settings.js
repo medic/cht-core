@@ -290,6 +290,13 @@ module.exports = {
       ]
     },
     {
+      "name": "can_bulk_delete_reports",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
       "name": "can_delete_contacts",
       "roles": [
         "national_admin",
