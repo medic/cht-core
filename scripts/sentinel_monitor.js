@@ -56,13 +56,14 @@ var readConfigFromFile = function(file) {
 var checkConfig = function(config) {
   var hasErrors = false;
   function checkProperty(propName) {
-    if (!config[propName]) {
+    if (!config.hasOwnProperty(propName)) {
       console.log('No ' + propName + ' in config. Aborting.');
       hasErrors = true;
     }
   }
   _.each(
-    ['logdir', 'errorString', 'maxNumRestarts', 'ageLimitMinutes', 'sender', 'recipients'], checkProperty);
+    ['instanceName', 'logdir', 'errorString', 'maxNumRestarts', 'ageLimitMinutes', 'sender', 'recipients'],
+    checkProperty);
   if (!config.sender.email) {
     console.log('No sender.email in config. Aborting.');
     hasErrors = true;
@@ -83,7 +84,7 @@ var checkConfig = function(config) {
 var findLogFiles = function(dir) {
   var logfiles = fs.readdirSync(dir);
   return _.filter(logfiles, function(fileName) {
-    return fileName.includes('sentinel');
+    return fileName.indexOf('sentinel') > -1;
   });
 };
 
@@ -135,11 +136,11 @@ var grep = function(string, file) {
   });
 };
 
-var sendEmail = function(senderEmail, senderPassword, recipients, numRestarts, ageLimitMinutes, dryrun) {
+var sendEmail = function(senderEmail, senderPassword, recipients, instanceName, numRestarts, ageLimitMinutes, dryrun) {
   var transporter = nodemailer.createTransport(
     'smtps://' + encodeURIComponent(senderEmail) + ':' + encodeURIComponent(senderPassword) + '@smtp.gmail.com');
-  var body = 'You may want to know that sentinel restarted ' + numRestarts + ' times in the last ' + ageLimitMinutes + ' minutes. Consider panicking.';
-  var subject = 'Sentinel alert!';
+  var body = 'You may want to know that ' + instanceName + '\'s sentinel restarted ' + numRestarts + ' times in the last ' + ageLimitMinutes + ' minutes. Consider panicking.';
+  var subject = 'Sentinel alert for ' + instanceName + '!';
   var mailOptions = {
     from: '"Sentinel Monitor" <' + senderEmail + '>',
     to: recipients.join(),
@@ -179,7 +180,7 @@ findRestartMessage(config.logdir + '/' + files[files.length - 1], config.errorSt
     console.log(numRestarts, 'restarts within last', config.ageLimitMinutes, 'minutes.');
     if (numRestarts > config.maxNumRestarts) {
       console.log('NOT OK!!!!\n');
-      sendEmail(config.sender.email, config.sender.password, config.recipients, numRestarts, config.ageLimitMinutes, config.dryrun);
+      sendEmail(config.sender.email, config.sender.password, config.recipients, config.instanceName, numRestarts, config.ageLimitMinutes, config.dryrun);
     } else {
       console.log('That\'s cool.');
     }
