@@ -125,8 +125,9 @@ var grep = function(string, file) {
     var cmd = 'grep "' + string + '" ' + file;
 
     exec(cmd, function(error, stdout, stderr) {
-      if (error) {
-        return reject(stderr, error);
+      if (error && error.code !== 1) {
+        console.log('Grep error', error);
+        return reject(error);
       }
       if (stderr) {
         return reject(stderr);
