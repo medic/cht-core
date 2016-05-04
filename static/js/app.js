@@ -109,7 +109,9 @@ _.templateSettings = {
 
   bootstrapper(function() {
     angular.element(document).ready(function() {
-      angular.bootstrap(document, [ 'inboxApp' ]);
+      angular.bootstrap(document, [ 'inboxApp' ], {
+        strictDi: true
+      });
     });
   });
 
