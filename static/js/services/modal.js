@@ -1,29 +1,29 @@
 var _ = require('underscore');
 
-/**
- * Service to start modals.
- *
- * Modal({
- *        templateUrl: templateUrlVal,
- *         controller: controllerName,
- *         args: {  // optional
- *           someInput: value,
- *           someFunctionTheModalNeeds: theFunction
- *         }
- *       }).then(function () {
- *         // User confirmed!
- *         doHappyThings();
- *       }, function () {
- *         // User rejected :(
- *         doMessedUpThings();
- *       });
- */
 (function () {
 
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
 
+  /**
+   * Service to start modals.
+   *
+   * Modal({
+   *  templateUrl: templateUrlVal,
+   *   controller: controllerName,
+   *   args: {  // optional
+   *     someInput: value,
+   *     someFunctionTheModalNeeds: theFunction
+   *   }
+   * }).then(function () {
+   *   // User confirmed!
+   *   doHappyThings();
+   * }, function () {
+   *   // User rejected :(
+   *   doMessedUpThings();
+   * });
+   */
   inboxServices.factory('Modal', ['$uibModal',
     function($uibModal) {
       return function(options) {
