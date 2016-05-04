@@ -201,7 +201,6 @@ var nools = require('nools'),
       };
 
       var updateFacts = function(change) {
-        $log.error('rulesEngine got change', change);
         var fact;
         if (change.deleted) {
           fact = findFact(change.id);

@@ -1,18 +1,4 @@
 var _ = require('underscore');
-var inboxServices = angular.module('inboxServices');
-
-// TODO : make a single modal service for all modals. https://github.com/medic/medic-webapp/issues/2253
-inboxServices.factory('UserLanguageModal', ['$uibModal',
-  function($uibModal) {
-    return function() {
-      var modalInstance = $uibModal.open({
-        templateUrl: 'templates/modals/user_language.html',
-        controller: 'UserLanguageModalCtrl',
-      });
-      return modalInstance.result;
-    };
-  }
-]);
 
 /**
  * Note : this modal is really a full-fledged page, it does more than UI stuff (does the language changing).
