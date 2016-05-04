@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 /**
  * Service to start modals.
  *
