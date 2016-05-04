@@ -75,7 +75,6 @@ var _ = require('underscore'),
       {   // filters
         types: {
           selected: [objectType]
-          options: [objectType, 'A dummy type, Gareth can we talk about this?']
         },
         search: query
       }, { // options

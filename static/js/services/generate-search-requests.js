@@ -23,7 +23,8 @@ var _ = require('underscore'),
           return;
         }
         if (filter.selected.length > 0 &&
-            filter.selected.length < filter.options.length) {
+           (!filter.options || filter.selected.length < filter.options.length)) {
+
           return {
             view: view,
             params: {
