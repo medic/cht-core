@@ -6,9 +6,9 @@ var _ = require('underscore'),
   'use strict';
 
   exports.init = function($translate, Search, DB, $q) {
-    var PAGE_SIZE,
-        ALLOW_NEW,
-        OBJECT_TYPE;
+    var pageSize,
+        allowNew,
+        objectType;
 
     var formatResult = function(row) {
       if(!row.doc) {
@@ -57,10 +57,10 @@ var _ = require('underscore'),
         };
       });
 
-      if (first && ALLOW_NEW) {
+      if (first && allowNew) {
         rows.unshift({
           id: 'NEW',
-          text: $translate('contact.type.' + OBJECT_TYPE + '.new'),
+          text: $translate('contact.type.' + objectType + '.new'),
         });
       }
 
@@ -69,31 +69,30 @@ var _ = require('underscore'),
 
     var query = function(params, successCb, failureCb) {
       var query = params.data.q;
-      var skip = ((params.data.page || 1) - 1) * PAGE_SIZE;
+      var skip = ((params.data.page || 1) - 1) * pageSize;
 
       Search('contacts',
       {   // filters
         types: {
-          selected: [OBJECT_TYPE],
-          options: [OBJECT_TYPE, 'A dummy type, Gareth can we talk about this?']
+          selected: [objectType]
+          options: [objectType, 'A dummy type, Gareth can we talk about this?']
         },
         search: query
       }, { // options
-        limit: PAGE_SIZE,
+        limit: pageSize,
         skip: skip
       }, function(err, documents) {
         if (err) {
-          failureCb(err);
-          console.log(OBJECT_TYPE + ' failed to load', err);
-        } else {
-          successCb({
-            results: prepareRows(documents, skip === 0),
-            pagination: {
-              more: documents.length === PAGE_SIZE
-            }
-          });
+          console.error(objectType + ' failed to load', err);
+          return failureCb(err);
         }
 
+        return successCb({
+          results: prepareRows(documents, skip === 0),
+          pagination: {
+            more: documents.length === pageSize
+          }
+        });
       });
     };
 
@@ -127,7 +126,7 @@ var _ = require('underscore'),
       });
     };
 
-    return function(selectEl, objectType, options) {
+    return function(selectEl, _objectType, options) {
       options = options || {};
       _.defaults(options, {
         pageSize: 20,
@@ -136,12 +135,12 @@ var _ = require('underscore'),
         templateResult: formatResult
       });
 
-      PAGE_SIZE = options.pageSize;
-      ALLOW_NEW = options.allowNew;
+      pageSize = options.pageSize;
+      allowNew = options.allowNew;
       formatResult = options.templateResult;
       formatSelection = options.templateSelection;
 
-      OBJECT_TYPE = objectType;
+      objectType = _objectType;
 
       return resolveInitialValue(selectEl)
       	.then(initSelect2)
