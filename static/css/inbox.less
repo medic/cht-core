@@ -516,15 +516,20 @@ body {
       height: 2em;
     }
   }
-  &.select-mode .inbox-items li {
-    input[type="checkbox"] {
-      display: inline;
+  &.select-mode {
+    .inbox-items li {
+      input[type="checkbox"] {
+        display: inline;
+      }
+      .message-wrapper {
+        padding-left: 0;
+      }
+      .detail {
+        margin-left: 4em;
+      }
     }
-    .message-wrapper {
-      padding-left: 0;
-    }
-    .detail {
-      margin-left: 4em;
+    .report-body .summary {
+      cursor: pointer;
     }
   }
 }
