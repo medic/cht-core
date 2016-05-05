@@ -6,6 +6,7 @@ sentinel/Procfile
 sentinel_working
 npm-debug.log
 node_modules
+node_modules_backup
 bower_components
 static/dist
 static/fonts
