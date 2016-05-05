@@ -1,0 +1,26 @@
+{
+    "extends" : "../.jshintrc",
+
+    // Custom Globals
+    "globals"       : {         // additional predefined global variables
+        "_"         : true,
+        "beforeEach": true,
+        "afterEach" : true,
+        "beforeAll" : true,
+        "afterAll"  : true,
+        "it"        : true,
+        "describe"  : true,
+        "inject"    : true,
+        "chai"      : true,
+        "sinon"     : true,
+        "expect"    : true,
+        "protractor": true,
+        "element"   : true,
+        "by"        : true,
+        "browser"   : true,
+        "KarmaUtils": true,
+        "Promise"   : true,
+        "Q"         : true,
+        "emit"      : true
+    }
+}
