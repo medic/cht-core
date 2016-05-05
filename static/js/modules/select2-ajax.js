@@ -29,24 +29,6 @@ var _ = require('underscore'),
       return row.text;
     };
 
-    var matcher = function(params, data) {
-      var doc = data && data.doc;
-      if (!doc) {
-        return null;
-      }
-      var term = params.term && params.term.toLowerCase();
-      if (!term) {
-        return data;
-      }
-      var match = false;
-      Object.keys(doc).forEach(function(key) {
-        if (typeof doc[key] === 'string' && doc[key].toLowerCase().indexOf(term) !== -1) {
-          match = true;
-        }
-      });
-      return match ? data : null;
-    };
-
     var prepareRows = function(documents, first) {
       var rows = _.sortBy(documents, function(doc) {
         return doc.name;
@@ -67,20 +49,27 @@ var _ = require('underscore'),
       return rows;
     };
 
-    var query = function(params, successCb, failureCb) {
-      var query = params.data.q;
-      var skip = ((params.data.page || 1) - 1) * pageSize;
+    var currentQuery;
 
-      Search('contacts',
-      {   // filters
+    var query = function(params, successCb, failureCb) {
+      currentQuery = params.data.q;
+      var skip = ((params.data.page || 1) - 1) * pageSize;
+      var filters = {
         types: {
           selected: [objectType]
         },
-        search: query
-      }, { // options
+        search: params.data.q
+      };
+      var options = {
         limit: pageSize,
         skip: skip
-      }, function(err, documents) {
+      };
+
+      Search('contacts', filters, options, function(err, documents) {
+        if (currentQuery !== params.data.q) {
+          return;
+        }
+
         if (err) {
           console.error(objectType + ' failed to load', err);
           return failureCb(err);
@@ -119,8 +108,6 @@ var _ = require('underscore'),
         placeholder: '',
         templateResult: formatResult,
         templateSelection: formatSelection,
-        matcher: matcher,
-        minimumInputLength: 3,
         width: '100%',
       });
     };
