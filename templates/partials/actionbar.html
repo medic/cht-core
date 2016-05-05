@@ -46,8 +46,12 @@
       </div>
       <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && selectMode">
         <div class="actions dropup">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption">
-            <span class="fa fa-check-square"></span>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="emit('DeselectAll')">
+            <span class="fa fa-square-o"></span>
+            <p translate>select.mode.deselect.all</p>
+          </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="emit('SelectAll')">
+            <span class="fa fa-check-square-o"></span>
             <p translate>select.mode.select.all</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="setSelectMode(false)">

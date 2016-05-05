@@ -423,6 +423,29 @@ var _ = require('underscore'),
         }
       });
 
+      $scope.isChecked = function(id) {
+        return !!_.find($scope.selected, function(selection) {
+          return selection.report._id === id;
+        });
+      };
+
+      $scope.$on('SelectAll', function() {
+        Search('reports', $scope.filters, { limit: 10000 }, function(err, data) {
+          if (err) {
+            return $log.error('Error selecting all', err);
+          }
+          $scope.selected = data.map(function(doc) {
+            return { report: doc, expanded: false };
+          });
+          $('#reports-list input[type="checkbox"]').prop('checked', true);
+        });
+      });
+
+      $scope.$on('DeselectAll', function() {
+        $scope.selected = [];
+        $('#reports-list input[type="checkbox"]').prop('checked', false);
+      });
+
       $scope.$on('export', function() {
         if ($scope.currentTab === 'reports') {
           DownloadUrl($scope.filters, 'reports', function(err, url) {
