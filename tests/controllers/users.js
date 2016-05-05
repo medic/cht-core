@@ -38,6 +38,7 @@ exports.tearDown = function (callback) {
     controller._updatePlace,
     controller._updateUser,
     controller._updateUserSettings,
+    controller._validateNewUsername,
     controller.getList,
     people.createPerson,
     people.getOrCreatePerson,
@@ -747,6 +748,7 @@ exports['createUser returns error if missing fields.'] = function(test) {
 };
 
 exports['createUser returns error if contact.parent lookup fails.'] = function(test) {
+  sinon.stub(controller, '_validateNewUsername').callsArg(1);
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_setContactParent').callsArgWith(2, 'kablooey');
   controller.createUser(userData, function(err) {
@@ -756,6 +758,7 @@ exports['createUser returns error if contact.parent lookup fails.'] = function(t
 };
 
 exports['createUser returns error if place lookup fails.'] = function(test) {
+  sinon.stub(controller, '_validateNewUsername').callsArg(1);
   sinon.stub(controller, '_createPlace').callsArgWith(2, 'fail');
   controller.createUser(userData, function(err) {
     test.ok(err);
@@ -764,6 +767,7 @@ exports['createUser returns error if place lookup fails.'] = function(test) {
 };
 
 exports['createUser returns error if place is not within contact.'] = function(test) {
+  sinon.stub(controller, '_validateNewUsername').callsArg(1);
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
   sinon.stub(places, 'getPlace').callsArgWith(1, null, {
     '_id': 'miami',
@@ -780,6 +784,7 @@ exports['createUser returns error if place is not within contact.'] = function(t
 };
 
 exports['createUser succeeds if contact and place are the same.'] = function(test) {
+  sinon.stub(controller, '_validateNewUsername').callsArg(1);
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
   sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
@@ -796,6 +801,7 @@ exports['createUser succeeds if contact and place are the same.'] = function(tes
 };
 
 exports['createUser succeeds if contact is within place.'] = function(test) {
+  sinon.stub(controller, '_validateNewUsername').callsArg(1);
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
   sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
@@ -816,6 +822,7 @@ exports['createUser succeeds if contact is within place.'] = function(test) {
 };
 
 exports['createUser returns response object'] = function(test) {
+  sinon.stub(controller, '_validateNewUsername').callsArg(1);
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
   sinon.stub(controller, '_createUser').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_createContact').callsArgWith(2, null, {}, {});
@@ -834,7 +841,45 @@ exports['createUser returns response object'] = function(test) {
   });
 };
 
+exports['createUser fails if new username does not validate'] = function(test) {
+  sinon.stub(controller, '_validateNewUsername').callsArgWith(1, 'sorry');
+  var insert = sinon.stub(db.medic, 'insert');
+  controller.createUser(userData, function(err) {
+    test.equals(err, 'sorry');
+    test.equal(insert.callCount, 0);
+    test.done();
+  });
+};
+
+exports['createUser errors if username exists in _users db'] = function(test) {
+  sinon.stub(db._users, 'get').callsArgWith(1, null, 'bob lives here already.');
+  var insert = sinon.stub(db.medic, 'insert');
+  controller.createUser(userData, function(err) {
+    test.deepEqual(err, {
+      code: 400,
+      message: 'Username "x" already taken.'
+    });
+    test.equal(insert.callCount, 0);
+    test.done();
+  });
+};
+
+exports['createUser errors if username exists in medic db'] = function(test) {
+  sinon.stub(db._users, 'get').callsArg(1);
+  sinon.stub(db.medic, 'get').callsArgWith(1, null, 'jane lives here too.');
+  var insert = sinon.stub(db.medic, 'insert');
+  controller.createUser(userData, function(err) {
+    test.deepEqual(err, {
+      code: 400,
+      message: 'Username "x" already taken.'
+    });
+    test.equal(insert.callCount, 0);
+    test.done();
+  });
+};
+
 exports['setContactParent resolves contact parent in waterfall'] = function(test) {
+  sinon.stub(controller, '_validateNewUsername').callsArg(1);
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
   sinon.stub(places, 'getPlace').callsArgWith(1, null, {
     biz: 'marquee'
@@ -849,6 +894,7 @@ exports['setContactParent resolves contact parent in waterfall'] = function(test
 };
 
 exports['updatePlace resolves place\'s contact in waterfall'] = function(test) {
+  sinon.stub(controller, '_validateNewUsername').callsArg(1);
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_setContactParent').callsArgWith(2, null, userData, {});
   sinon.stub(people, 'getOrCreatePerson').callsArgWith(1, null, {

@@ -127,6 +127,44 @@ var validateUserSettings = function(id, callback) {
   });
 };
 
+var validateNewUsername = function(username, callback) {
+  var id = createID(username);
+  var error = function() {
+    return {
+      code: 400,
+      message: 'Username "' + username + '" already taken.'
+    };
+  };
+  async.series([
+    function(cb) {
+      db._users.get(id, function(err) {
+        if (err) {
+          if (err.statusCode === 404) {
+            // username not in use, it's valid.
+            return cb();
+          }
+          err.message = 'Failed to validate new username: ' + err.message;
+          return cb(err);
+        }
+        cb(error());
+      });
+    },
+    function(cb) {
+      db.medic.get(id, function(err) {
+        if (err) {
+          if (err.statusCode === 404) {
+            // username not in use, it's valid.
+            return cb();
+          }
+          err.message = 'Failed to validate new username: ' + err.message;
+          return cb(err);
+        }
+        cb(error());
+      });
+    }
+  ], callback);
+};
+
 var updateUser = function(id, user, callback) {
   db._users.insert(user, id, callback);
 };
@@ -415,6 +453,7 @@ module.exports = {
   _updateUser: updateUser,
   _updateUserSettings: updateUserSettings,
   _validateContact: validateContact,
+  _validateNewUsername: validateNewUsername,
   _validateUser: validateUser,
   _validateUserSettings: validateUserSettings,
   deleteUser: function(username, callback) {
@@ -458,19 +497,24 @@ module.exports = {
     if (_.isUndefined(data.contact.parent) && _.isUndefined(data.place)) {
       return error400('Contact parent or place is required.', callback);
     }
-    async.waterfall([
-      function(cb) {
-        // start the waterfall
-        cb(null, data, response);
-      },
-      self._createPlace,
-      self._setContactParent,
-      self._createContact,
-      self._updatePlace,
-      self._createUser,
-      self._createUserSettings,
-    ], function(err, result, responseBody) {
-      callback(err, responseBody);
+    self._validateNewUsername(data.username, function(err) {
+      if (err) {
+        return callback(err);
+      }
+      async.waterfall([
+        function(cb) {
+          // start the waterfall
+          cb(null, data, response);
+        },
+        self._createPlace,
+        self._setContactParent,
+        self._createContact,
+        self._updatePlace,
+        self._createUser,
+        self._createUserSettings,
+      ], function(err, result, responseBody) {
+        callback(err, responseBody);
+      });
     });
   },
   updateUser: function(username, data, callback) {
