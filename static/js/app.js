@@ -62,8 +62,8 @@ _.templateSettings = {
       $translateProvider.useLoader('SettingsLoader', {});
       $translateProvider.useSanitizeValueStrategy('escape');
       $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
-      var isProduction = window.location.href.indexOf('localhost') === -1;
-      $compileProvider.debugInfoEnabled(!isProduction);
+      var isDevelopment = window.location.hostname === 'localhost';
+      $compileProvider.debugInfoEnabled(isDevelopment);
     }
   ]);
 
