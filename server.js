@@ -35,6 +35,8 @@ var _ = require('underscore'),
     records = require('./controllers/records'),
     forms = require('./controllers/forms'),
     users = require('./controllers/users'),
+    places = require('./controllers/places'),
+    people = require('./controllers/people'),
     fti = require('./controllers/fti'),
     createDomain = require('domain').create,
     staticResources = /\/(templates|static)\//,
@@ -166,6 +168,13 @@ var handleAnalyticsCall = function(req, res, controller) {
       res.json(obj);
     });
   });
+};
+
+var emptyJSONBodyError = function(req, res) {
+  return serverUtils.error({
+    code: 400,
+    message: 'Request body is empty or Content-Type header was not set to application/json.'
+  }, req, res);
 };
 
 app.get('/api/active-pregnancies', function(req, res) {
@@ -430,6 +439,9 @@ app.post('/api/v1/users/:username', jsonParser, function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res);
     }
+    if (_.isEmpty(req.body)) {
+      return emptyJSONBodyError(req, res);
+    }
     users.updateUser(req.params.username, req.body, function(err, body) {
       if (err) {
         return serverUtils.error(err, req, res);
@@ -453,6 +465,56 @@ app.delete('/api/v1/users/:username', jsonParser, function(req, res) {
   });
 });
 
+app.post('/api/v1/places', jsonParser, function(req, res) {
+  auth.check(req, 'can_create_places', null, function(err) {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+    if (_.isEmpty(req.body)) {
+      return emptyJSONBodyError(req, res);
+    }
+    places.createPlace(req.body, function(err, body) {
+      if (err) {
+        return serverUtils.error(err, req, res);
+      }
+      res.json(body);
+    });
+  });
+});
+
+app.post('/api/v1/places/:id', jsonParser, function(req, res) {
+  auth.check(req, 'can_update_places', null, function(err) {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+    if (_.isEmpty(req.body)) {
+      return emptyJSONBodyError(req, res);
+    }
+    places.updatePlace(req.params.id, req.body, function(err, body) {
+      if (err) {
+        return serverUtils.error(err, req, res);
+      }
+      res.json(body);
+    });
+  });
+});
+
+app.post('/api/v1/people', jsonParser, function(req, res) {
+  auth.check(req, 'can_create_people', null, function(err) {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+    if (_.isEmpty(req.body)) {
+      return emptyJSONBodyError(req, res);
+    }
+    people.createPerson(req.body, function(err, body) {
+      if (err) {
+        return serverUtils.error(err, req, res);
+      }
+      res.json(body);
+    });
+  });
+});
 
 // DB replication endpoint
 app.get('/medic/_changes', _.partial(require('./handlers/changes'), proxy));

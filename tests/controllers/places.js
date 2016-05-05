@@ -1,4 +1,5 @@
 var controller = require('../../controllers/places'),
+    people = require('../../controllers/people'),
     db = require('../../db'),
     utils = require('../utils'),
     sinon = require('sinon');
@@ -9,9 +10,10 @@ exports.tearDown = function (callback) {
   utils.restore(
     db.medic.get,
     db.medic.insert,
-    controller._getPlace,
+    controller.getPlace,
     controller._createPlace,
-    controller._validatePlace
+    controller._validatePlace,
+    people.getOrCreatePerson
   );
   callback();
 };
@@ -27,14 +29,14 @@ exports.setUp = function(callback) {
 
 exports['validatePlace returns error on string argument.'] = function(test) {
   controller._validatePlace('x', function(err) {
-    test.equal(err, 'Place must be an object.');
+    test.equal(err.message, 'Place must be an object.');
     test.done();
   });
 };
 
 exports['validatePlace returns error on number argument.'] = function(test) {
   controller._validatePlace(42, function(err) {
-    test.equal(err, 'Place must be an object.');
+    test.equal(err.message, 'Place must be an object.');
     test.done();
   });
 };
@@ -42,7 +44,7 @@ exports['validatePlace returns error on number argument.'] = function(test) {
 exports['validatePlace returns error when doc is wrong type.'] = function(test) {
   examplePlace.type = 'food';
   controller._validatePlace(examplePlace, function(err) {
-    test.equal(err, 'Wrong type, this is not a place.');
+    test.equal(err.message, 'Wrong type, this is not a place.');
     test.done();
   });
 };
@@ -50,7 +52,7 @@ exports['validatePlace returns error when doc is wrong type.'] = function(test) 
 exports['validatePlace returns error if clinic is missing parent'] = function(test) {
   delete examplePlace.parent;
   controller._validatePlace(examplePlace, function(err) {
-    test.equal(err, 'Place is missing a "parent" property.');
+    test.equal(err.message, 'Place is missing a "parent" property.');
     test.done();
   });
 };
@@ -59,7 +61,35 @@ exports['validatePlace returns error if health center is missing parent'] = func
   delete examplePlace.parent;
   examplePlace.type = 'health_center';
   controller._validatePlace(examplePlace, function(err) {
-    test.equal(err, 'Place is missing a "parent" property.');
+    test.equal(err.message, 'Place is missing a "parent" property.');
+    test.done();
+  });
+};
+
+exports['validatePlace returns error if health center has wrong parent type'] = function(test) {
+  var data = {
+    type: 'health_center',
+    name: 'St. Paul',
+    parent: {
+      name: 'MoH',
+      type: 'national_office'
+    }
+  };
+  controller._validatePlace(data, function(err) {
+    test.ok(err);
+    test.equal(err.message, 'Health Centers should have "district_hospital" parent type.');
+    test.done();
+  });
+};
+
+exports['validatePlace returns error if clinic has wrong parent type'] = function(test) {
+  examplePlace.parent = {
+    name: 'St Paul Hospital',
+    type: 'district_hospital'
+  };
+  controller._validatePlace(examplePlace, function(err) {
+    test.ok(err);
+    test.equal(err.message, 'Clinics should have "health_center" parent type.');
     test.done();
   });
 };
@@ -84,7 +114,7 @@ exports['validatePlace does not return error if national office is missing paren
 
 exports['getPlace returns custom message on 404 errors.'] = function(test) {
   sinon.stub(db.medic, 'get').callsArgWith(1, {statusCode: 404});
-  controller._getPlace('x', function(err) {
+  controller.getPlace('x', function(err) {
     test.equal(err.message, 'Failed to find place.');
     test.done();
   });
@@ -127,7 +157,7 @@ exports['createPlaces rejects when parent lookup fails.'] = function(test) {
    parent: 'x'
   };
   var insert = sinon.stub(db.medic, 'insert');
-  sinon.stub(controller, '_getPlace').callsArgWith(1, 'boom');
+  sinon.stub(controller, 'getPlace').callsArgWith(1, 'boom');
   controller._createPlaces(place, function(err) {
     test.ok(err);
     test.equal(insert.callCount, 0);
@@ -236,6 +266,43 @@ exports['createPlaces supports parents defined as uuids.'] = function(test) {
   });
   controller._createPlaces(place, function(err, val) {
     test.deepEqual({id: 'abc123'}, val);
+    test.done();
+  });
+};
+
+exports['updatePlace errors with empty data'] = function(test) {
+  controller.updatePlace('123', {}, function(err, resp) {
+    test.equal(err.code, 400);
+    test.ok(!resp);
+    test.done();
+  });
+};
+
+exports['updatePlace handles contact field'] = function(test) {
+  var data = {
+    contact: '71df9'
+  };
+  sinon.stub(controller, 'getPlace').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validatePlace').callsArg(1);
+  sinon.stub(people, 'getOrCreatePerson').callsArg(1);
+  sinon.stub(db.medic, 'insert', function(doc, cb) {
+    cb(null, {id: 'x', rev: 'y'});
+  });
+  controller.updatePlace('123', data, function(err, resp) {
+    test.deepEqual(resp, { id: 'x', rev: 'y' });
+    test.done();
+  });
+};
+
+exports['updatePlace errors when function in series fails'] = function(test) {
+  var data = {
+    contact: '71df9'
+  };
+  sinon.stub(controller, 'getPlace').callsArgWith(1, null, {});
+  sinon.stub(controller, '_validatePlace').callsArg(1);
+  sinon.stub(people, 'getOrCreatePerson').callsArgWith(1, 'go away');
+  controller.updatePlace('123', data, function(err) {
+    test.equals(err, 'go away');
     test.done();
   });
 };

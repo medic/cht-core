@@ -1,42 +1,183 @@
 # API v1 Draft
 
-HTTP response bodies are all in JSON format.  
-
-Respond with HTTP 200 status on successful requests.
-
 # Table of contents
+
+<!-- To update table of contents run: `npm run-script updatetoc` -->
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [Export](#export)
+  - [GET /api/v1/export/forms/{formcode}](#get-apiv1exportformsformcode)
+  - [GET /api/v1/export/messages](#get-apiv1exportmessages)
+  - [GET /api/v1/export/audit](#get-apiv1exportaudit)
+  - [GET /api/v1/export/feedback](#get-apiv1exportfeedback)
+  - [GET /api/v1/export/contacts](#get-apiv1exportcontacts)
 - [Forms](#forms)
   - [GET /api/v1/forms](#get-apiv1forms)
   - [GET /api/v1/forms/{{id}}.{{format}}](#get-apiv1formsidformat)
 - [Records](#records)
   - [POST /api/v1/records](#post-apiv1records)
-  - [GET /api/v1/export/forms/{formcode}](#get-apiv1exportformsformcode)
 - [Messages](#messages)
-  - [GET /api/v1/export/messages](#get-apiv1exportmessages)
   - [GET /api/v1/messages](#get-apiv1messages)
   - [GET /api/v1/messages/{{id}}](#get-apiv1messagesid)
   - [PUT /api/v1/messages/state/{{id}}](#put-apiv1messagesstateid)
-  - [Todo](#todo)
-  - [Backwards Compatibility](#backwards-compatibility)
-- [Audit Log](#audit-log)
-  - [GET /api/v1/export/audit](#get-apiv1exportaudit)
-- [User Feedback](#user-feedback)
-  - [GET /api/v1/export/feedback](#get-apiv1exportfeedback)
-- [Contacts](#contacts)
-  - [GET /api/v1/export/contacts](#get-apiv1exportcontacts)
-- [Users](#users)
+- [People](#people)
   - [Supported Properties](#supported-properties)
+  - [POST /api/v1/people](#post-apiv1people)
+- [Places](#places)
+  - [Supported Properties](#supported-properties-1)
+  - [POST /api/v1/places](#post-apiv1places)
+  - [POST /api/v1/places/{{id}}](#post-apiv1placesid)
+- [Users](#users)
+  - [Supported Properties](#supported-properties-2)
   - [GET /api/v1/users](#get-apiv1users)
   - [POST /api/v1/users](#post-apiv1users)
   - [POST /api/v1/users/{{username}}](#post-apiv1usersusername)
   - [DELETE /api/v1/users/{{username}}](#delete-apiv1usersusername)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# Export
+
+Request different types of data in various formats.
+
+## GET /api/v1/export/forms/{formcode}
+
+Download reports.
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | -------------
+| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
+| locale             | Locale for translatable data. Defaults to 'en'.
+| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
+| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
+| columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
+
+### Output
+
+| Column             | Description
+| ------------------ | -------------
+| Record UUID        | The unique ID for the report in the database.
+| Patient ID         | The generated short patient ID for use in SMS.
+| Reported Date      | The date the report was received.
+| From               | The phone number the report was sent from.
+| Contact Name       | The name of the user this report is assigned to.
+| Form               | The form code for this report.
+
+
+## GET /api/v1/export/messages
+
+Download messages.
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | -------------
+| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
+| locale             | Locale for translatable data. Defaults to 'en'.
+| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
+| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
+| columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
+| filter_state       | Used in conjunction with the parameters below to only return messages that were in a given state. Possible values are 'received', 'scheduled', 'pending', 'sent', 'cleared', or 'muted'.
+| filter_state_from  | The number of days from now to use as a lower bound on the date that the message is in the given state. Defaults to no lower bound. Ignored if filter_state is not provided.
+| filter_state_to    | The number of days from now to use as an upper bound on the date that the message is in the given state. Defaults to no upper bound. Ignored if filter_state is not provided.
+
+### Output
+
+| Column             | Description
+| ------------------ | -------------
+| Record UUID        | The unique ID for the message in the database.
+| Patient ID         | The generated short patient ID for use in SMS.
+| Reported Date      | The date the message was received or generated.
+| From               | This phone number the message is or will be sent from.
+| Contact Name       | The name of the user this message is assigned to.
+| Message Type       | The type of the message
+| Message State      | The state of the message at the time this export was generated
+| Received Timestamp | The datetime the message was received. Only applies to incoming messages.
+| Other Timestamps   | The datetime the message transitioned to each state.
+| Sent By            | The phone number the message was sent from. Only applies to incoming messages.
+| To Phone           | The phone number the message is or will be sent to. Only applies to outgoing messages.
+| Message Body       | The content of the message.
+
+### Examples
+
+Return only rows that are scheduled to be sent in the next ten days.
+
+```
+/export/messages?filter_state=scheduled&filter_state_to=10
+```
+
+
+## GET /api/v1/export/audit
+
+Export a file containing the audit log.
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | -------------
+| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
+| locale             | Locale for translatable data. Defaults to 'en'.
+| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
+| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
+
+
+## GET /api/v1/export/feedback
+
+Export a file containing the user feedback.
+
+### Query Parameters
+
+| Variable           | Description
+| ------------------ | -------------
+| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
+| locale             | Locale for translatable data. Defaults to 'en'.
+| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
+| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
+
+
+## GET /api/v1/export/contacts
+
+Returns a JSON array of contacts. 
+
+### Query Parameters (required)
+
+| Variable           | Description
+| ------------------ | ------------- 
+| format             | The desired format of the file. Only 'json' is supported. 
+| query              | The query parameters in lucene query generator format.
+
+### Examples
+
+Get all contacts
+
+```
+GET /api/v1/export/contacts?query={"$operands":[{"type":["person","clinic","health_center","district_hospital"]}]}&format=json
+```
+
+```
+HTTP/1.1 200 
+Content-Type: application/json; charset=utf-8
+
+[
+  {
+    "_rev":"1-e39081e9217eb0d99b8bcc4c64f33905",
+    "_id":"a483e2e88487da478c7ad9e2a51bf785",
+    "name":"Gareth",
+    "type":"person"
+  },
+  {
+    "_rev":"1-e39081e9217eb0d99b8bcc4c64f33905",
+    "_id":"a483e2e88487da478c7ad9e2a51bf786",
+    "name":"Dunedin",
+    "type":"district_hospital"
+  }
+]
+```
 
 
 # Forms
@@ -233,74 +374,7 @@ If invalid JSON return error response 500.
 If submitting JSON and correspending form is not found on the server you will receive an error.
 
 
-## GET /api/v1/export/forms/{formcode}
-
-Download reports.
-
-### Query Parameters
-
-| Variable           | Description
-| ------------------ | -------------
-| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
-| locale             | Locale for translatable data. Defaults to 'en'.
-| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
-| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
-| columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
-
-### Output
-
-| Column             | Description
-| ------------------ | -------------
-| Record UUID        | The unique ID for the report in the database.
-| Patient ID         | The generated short patient ID for use in SMS.
-| Reported Date      | The date the report was received.
-| From               | The phone number the report was sent from.
-| Contact Name       | The name of the user this report is assigned to.
-| Form               | The form code for this report.
-
 # Messages
-
-## GET /api/v1/export/messages
-
-Download messages.
-
-### Query Parameters
-
-| Variable           | Description
-| ------------------ | -------------
-| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
-| locale             | Locale for translatable data. Defaults to 'en'.
-| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
-| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
-| columns            | An orderered array of columns to export, eg: ["reported_date","from","related_entities.clinic.name"]
-| filter_state       | Used in conjunction with the parameters below to only return messages that were in a given state. Possible values are 'received', 'scheduled', 'pending', 'sent', 'cleared', or 'muted'.
-| filter_state_from  | The number of days from now to use as a lower bound on the date that the message is in the given state. Defaults to no lower bound. Ignored if filter_state is not provided.
-| filter_state_to    | The number of days from now to use as an upper bound on the date that the message is in the given state. Defaults to no upper bound. Ignored if filter_state is not provided.
-
-### Output
-
-| Column             | Description
-| ------------------ | -------------
-| Record UUID        | The unique ID for the message in the database.
-| Patient ID         | The generated short patient ID for use in SMS.
-| Reported Date      | The date the message was received or generated.
-| From               | This phone number the message is or will be sent from.
-| Contact Name       | The name of the user this message is assigned to.
-| Message Type       | The type of the message
-| Message State      | The state of the message at the time this export was generated
-| Received Timestamp | The datetime the message was received. Only applies to incoming messages.
-| Other Timestamps   | The datetime the message transitioned to each state.
-| Sent By            | The phone number the message was sent from. Only applies to incoming messages.
-| To Phone           | The phone number the message is or will be sent to. Only applies to outgoing messages.
-| Message Body       | The content of the message.
-
-### Examples
-
-Return only rows that are scheduled to be sent in the next ten days.
-
-```
-/export/messages?filter_state=scheduled&filter_state_to=10
-```
 
 ## GET /api/v1/messages
 
@@ -500,83 +574,255 @@ Content-Type: application/json; charset=utf-8
 }
 ```
 
-## Todo
+Todo: should updating the state value of a message require the doc's revision?
 
-Should updating the state value of a message require the doc revision?
 
-## Backwards Compatibility
+# People
 
-This is a new API so clients can start using it at will, the old one remains available.
 
-# Audit Log
+## Supported Properties
 
-Export a file containing the audit log.
+Use JSON in the request body to specify a person's details.  
 
-## GET /api/v1/export/audit
+Note: this does not accomodate having a `place` field on your form and will likely be revised soon.
 
-### Query Parameters
+#### Required 
 
-| Variable           | Description
-| ------------------ | -------------
-| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
-| locale             | Locale for translatable data. Defaults to 'en'.
-| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
-| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
+| Key | Description       
+| -------- | -----------------
+| name | String used to describe the person.
 
-# User Feedback
+#### Optional 
 
-Export a file containing the user feedback.
+| Key | Description       
+| -------- | -----------------
+| place | String that references a place or object that defines a new place. 
 
-## GET /api/v1/export/feedback
 
-### Query Parameters
+## POST /api/v1/people
 
-| Variable           | Description
-| ------------------ | -------------
-| format             | The format of the returned file, either 'csv' or 'xml'. Defaults to 'csv'.
-| locale             | Locale for translatable data. Defaults to 'en'.
-| tz                 | The timezone to show date values in, as an offset in minutes from GMT, for example '-120'.
-| skip_header_row    | 'true' to omit the column headings. Defaults to 'false'.
+Create new people. 
 
-# Contacts
 
-## GET /api/v1/export/contacts
 
-Returns a JSON array of contacts. 
+### Permissions
 
-### Query Parameters (required)
+By default any user can create or modify a place.  Use these permissions to restrict access:
 
-| Variable           | Description
-| ------------------ | ------------- 
-| format             | The desired format of the file. Only 'json' is supported. 
-| query              | The query parameters in lucene query generator format.
+`can_create_people`, `can_create_places`
 
 ### Examples
 
-Get all contacts
+
+Create new person and place hierarchy. 
 
 ```
-GET /api/v1/export/contacts?query={"$operands":[{"type":["person","clinic","health_center","district_hospital"]}]}&format=json
-```
+POST /api/v1/people
+Content-Type: application/json
 
-```
-HTTP/1.1 200 
-Content-Type: application/json; charset=utf-8
-
-[
-  {
-    "_rev":"1-e39081e9217eb0d99b8bcc4c64f33905",
-    "_id":"a483e2e88487da478c7ad9e2a51bf785",
-    "name":"Gareth",
-    "type":"person"
-  },
-  {
-    "_rev":"1-e39081e9217eb0d99b8bcc4c64f33905",
-    "_id":"a483e2e88487da478c7ad9e2a51bf786",
-    "name":"Dunedin",
-    "type":"district_hospital"
+{
+  "name": "Hannah",
+  "phone": "+2548277210095",
+  "place": {
+    "name": "CHP Area One",
+    "type": "health_center",
+    "parent": {
+      "name": "CHP Branch One",
+      "type": "district_hospital"
+    }
   }
-]
+}
+```
+
+Create new person and assign existing place.
+
+```
+POST /api/v1/people
+Content-Type: application/json
+
+{
+ "name": "Samuel",
+ "place": "1d83f2b4a27eceb40df9e9f9ad06d137"
+}
+```
+
+Example response:
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": "71df9d25ed6732ea3b4435862510d115",
+  "rev": "1-a4060843d78f46a60a6f41051e40e3b5"
+}
+```
+
+# Places
+
+By default any user can create or modify a place.
+
+## Supported Properties
+
+Use JSON in the request body to specify a place's details.
+
+#### Required Properties
+
+| Key | Description       
+| -------- | -----------------
+| name | String used to describe the place.
+| type | Place type
+| parent | String that references a place or object that defines a new place. Optional for District Hospital and National Office types.
+
+#### Optional Properties
+
+| Key | Description       
+| -------- | -----------------
+| contact | String identifier for a person or object that defines a new person.
+
+
+#### Place Types
+
+| Key | Description
+| -------- | -----------------
+| clinic | Clinic
+| health_center | Health Center
+| district_hospital | District Hospital
+| national_office | National Office
+
+
+## POST /api/v1/places
+
+Create a new place and optionally a contact.
+
+### Permissions
+
+By default any user can create new places.  Use these permissions to restrict access:
+
+`can_create_places`, `can_create_people`
+
+### Examples
+
+Create new place referencing existing parent.
+
+```
+POST /api/v1/places
+Content-Type: application/json
+
+{
+ "name": "Busia Clinic",
+ "type": "clinic",
+ "parent": "1d83f2b4a27eceb40df9e9f9ad06d137"
+}
+```
+
+
+Create child and parent places.
+
+```
+POST /api/v1/places
+Content-Type: application/json
+
+{
+  "name": "CHP Area One",
+  "type": "health_center",
+  "parent": {
+    "name": "CHP Branch One",
+    "type": "district_hospital"
+  }
+}
+```
+
+
+Also creates contact (person).
+
+```
+POST /api/v1/places
+Content-Type: application/json
+
+{
+  "name": "CHP Area One",
+  "type": "health_center",
+  "parent": {
+    "name": "CHP Branch One",
+    "type": "district_hospital"
+  },
+  "contact": {
+    "name": "Paul",
+    "phone": "+254883720611"
+  }
+}
+```
+
+Or assigns them.
+
+```
+POST /api/v1/places
+Content-Type: application/json
+
+{
+  "name": "CHP Area One",
+  "type": "health_center",
+  "parent": {
+    "name": "CHP Branch One",
+    "type": "district_hospital"
+  },
+  "contact": "71df9d25ed6732ea3b4435862510ef8e"
+}
+```
+
+Example success response:
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": "71df9d25ed6732ea3b4435862510d115",
+  "rev": "1-a4060843d78f46a60a6f41051e40e3b5"
+}
+```
+
+Error response if facility structure is not correct:
+
+```
+HTTP/1.1 400 Bad Request
+Content-Type: text/plain
+
+Health Centers should have "district_hospital" parent type.
+```
+
+## POST /api/v1/places/{{id}}
+
+Update a place and optionally its contact.
+
+### Permissions
+
+By default any user can update a place.  Use these permissions to restrict access:
+
+`can_update_places`
+
+### Examples
+
+Update a place's contact.
+
+```
+POST /api/v1/places/1d83f2b4a27eceb40df9e9f9ad06d137
+Content-Type: application/json
+
+{
+ "contact": "71df9d25ed6732ea3b4435862505f7a9"
+}
+```
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": "1d83f2b4a27eceb40df9e9f9ad06d137",
+  "rev": "12-a4060843d78f46a60a6f41051e40e3b5"
+}
 ```
 
 # Users
@@ -596,8 +842,7 @@ will be undefined.
 | username | String identifier used for authentication.
 | password | Password string used for authentication.  Only allowed to be set, not retrieved.
 | place    | Place identifier string (UUID) or object this user resides in.
-| contact  | A contact object based on the form configured in the app.
-| contact.parent | The parent place of the contact.  The contact must reside in or be equal to the place the user resides in.
+| contact  | A person object based on the form configured in the app.
 
 #### Optional
 
@@ -665,7 +910,6 @@ Content-Type: application/json; charset=utf-8
       "_id": "eeb17d6d-5dde-c2c0-62c4a1a0ca17d38b",
       "type": "district_hospital",
       "name": "Sample District",
-      "parent": {},
       "contact": {
         "_id": "eeb17d6d-5dde-c2c0-62c4a1a0ca17fd17",
         "type": "person",
@@ -689,15 +933,15 @@ Create a new user with a place and a contact.
 
 ### Permissions
 
-`can_create_users`  
+`can_create_users`, `can_create_places`, `can_create_people`
 
 
 ### Examples
 
 Create a new user that can authenticate with a username of "mary" and password
 of "secret" that can submit reports and view or modify records associated to
-their place.  The place is created behind the scenes and assigned to the
-contact.
+their place.  The place is created in the background and automatically linked
+to the contact.
 
 ```
 POST /api/v1/users
@@ -740,15 +984,27 @@ Content-Type: application/json
 
 ```
 
+### Errors
+
+Response if the username already exists:
+
+```
+HTTP/1.1 409 Conflict
+Content-Type: text/plain
+
+Document update conflict.
+```
+
+
 ## POST /api/v1/users/{{username}}
 
 Allows you to change property values on a user account. Properties listed above
-are supported except for `contact.parent`.  Creating or modifing contact
+are supported except for `contact.parent`.  Creating or modifing person
 records is not supported.
 
 ### Permissions
 
-`can_update_users`  
+`can_update_users`, `can_update_places`, `can_update_people`
 
 ### URL Parameters
 
@@ -772,6 +1028,7 @@ Content-Type: application/json
 
 ```
 HTTP/1.1 200 OK
+Content-Type: application/json
 
 {
   "user": {
@@ -787,7 +1044,7 @@ HTTP/1.1 200 OK
 
 ## DELETE /api/v1/users/{{username}}
 
-Delete a user.  Does not affect a contact or place associated to a user.
+Delete a user.  Does not affect a person or place associated to a user.
 
 ### Permissions
 

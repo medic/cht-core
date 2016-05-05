@@ -1,7 +1,9 @@
 var async = require('async'),
-    _ = require('underscore'),
-    db = require('../db'),
-    places = require('./places');
+    _ = require('underscore');
+
+var people  = require('./people'),
+    places = require('./places'),
+    db = require('../db');
 
 var USER_EDITABLE_FIELDS  = [
   'password',
@@ -92,7 +94,7 @@ var validateContact = function(id, placeID, callback) {
       return callback(err, callback);
     }
     if (doc.type !== 'person') {
-      return error400('Wrong type, this is not a contact.', callback);
+      return error400('Wrong type, contact is not a person.', callback);
     }
     if (!module.exports._hasParent(doc, placeID)) {
       return error400('Contact is not within place.', callback);
@@ -125,6 +127,44 @@ var validateUserSettings = function(id, callback) {
   });
 };
 
+var validateNewUsername = function(username, callback) {
+  var id = createID(username);
+  var error = function() {
+    return {
+      code: 400,
+      message: 'Username "' + username + '" already taken.'
+    };
+  };
+  async.series([
+    function(cb) {
+      db._users.get(id, function(err) {
+        if (err) {
+          if (err.statusCode === 404) {
+            // username not in use, it's valid.
+            return cb();
+          }
+          err.message = 'Failed to validate new username: ' + err.message;
+          return cb(err);
+        }
+        cb(error());
+      });
+    },
+    function(cb) {
+      db.medic.get(id, function(err) {
+        if (err) {
+          if (err.statusCode === 404) {
+            // username not in use, it's valid.
+            return cb();
+          }
+          err.message = 'Failed to validate new username: ' + err.message;
+          return cb(err);
+        }
+        cb(error());
+      });
+    }
+  ], callback);
+};
+
 var updateUser = function(id, user, callback) {
   db._users.insert(user, id, callback);
 };
@@ -152,25 +192,16 @@ var createUser = function(data, response, callback) {
   });
 };
 
-/*
- * Warning: not doing validation of the contact data against a form yet.  The
- * form is user defined in settings so being liberal with what gets saved to
- * the database. Ideally CouchDB could validate a given object against a form
- * in validate_doc_update.
- */
 var createContact = function(data, response, callback) {
   response = response || {};
-  // set contact type
-  data.contact.type = 'person';
-  db.medic.insert(data.contact, function(err, body) {
+  people.getOrCreatePerson(data.contact, function(err, doc) {
     if (err) {
       return callback(err);
     }
-    // save contact id for user settings
-    data.contact = body.id;
+    data.contact = doc;
     response.contact = {
-      id: body.id,
-      rev: body.rev
+      id: doc._id,
+      rev: doc._rev
     };
     callback(null, data, response);
   });
@@ -195,8 +226,15 @@ var createUserSettings = function(data, response, callback) {
 };
 
 var createPlace = function(data, response, callback) {
-  module.exports._getOrCreatePlace(data.place, function(err, doc) {
+  places.getOrCreatePlace(data.place, function(err, doc) {
     data.place = doc;
+    callback(err, data, response);
+  });
+};
+
+var updatePlace = function(data, response, callback) {
+  data.place.contact = data.contact;
+  db.medic.insert(data.place, function(err) {
     callback(err, data, response);
   });
 };
@@ -204,18 +242,15 @@ var createPlace = function(data, response, callback) {
 var setContactParent = function(data, response, callback) {
   if (data.contact.parent) {
     // contact parent must exist
-    module.exports._getContactParent(data.contact.parent, function(err, facility) {
+    places.getPlace(data.contact.parent, function(err, place) {
       if (err) {
-        if (err.statusCode === 404) {
-          err.message = 'Failed to find contact parent.';
-        }
         return callback(err);
       }
-      if (!module.exports._hasParent(facility, data.place)) {
+      if (!module.exports._hasParent(place, data.place)) {
         return error400('Contact is not within place.', callback);
       }
       // save result to contact object
-      data.contact.parent = facility;
+      data.contact.parent = place;
       callback(null, data, response);
     });
   } else {
@@ -408,18 +443,17 @@ module.exports = {
   _getAdmins: getAdmins,
   _getAllUsers: getAllUsers,
   _getAllUserSettings: getAllUserSettings,
-  _getContactParent: db.medic.get,
   _getFacilities: getFacilities,
-  _getOrCreatePlace: places.getOrCreatePlace,
-  _getPlace: places._getPlace,
   _getSettingsUpdates: getSettingsUpdates,
   _getUserUpdates: getUserUpdates,
   _hasParent: hasParent,
   _setContactParent: setContactParent,
   _updateAdminPassword: updateAdminPassword,
+  _updatePlace: updatePlace,
   _updateUser: updateUser,
   _updateUserSettings: updateUserSettings,
   _validateContact: validateContact,
+  _validateNewUsername: validateNewUsername,
   _validateUser: validateUser,
   _validateUserSettings: validateUserSettings,
   deleteUser: function(username, callback) {
@@ -463,18 +497,24 @@ module.exports = {
     if (_.isUndefined(data.contact.parent) && _.isUndefined(data.place)) {
       return error400('Contact parent or place is required.', callback);
     }
-    async.waterfall([
-      function(cb) {
-        // start the waterfall
-        cb(null, data, response);
-      },
-      self._createPlace,
-      self._setContactParent,
-      self._createUser,
-      self._createContact,
-      self._createUserSettings,
-    ], function(err, result, responseBody) {
-      callback(err, responseBody);
+    self._validateNewUsername(data.username, function(err) {
+      if (err) {
+        return callback(err);
+      }
+      async.waterfall([
+        function(cb) {
+          // start the waterfall
+          cb(null, data, response);
+        },
+        self._createPlace,
+        self._setContactParent,
+        self._createContact,
+        self._updatePlace,
+        self._createUser,
+        self._createUserSettings,
+      ], function(err, result, responseBody) {
+        callback(err, responseBody);
+      });
     });
   },
   updateUser: function(username, data, callback) {
@@ -484,8 +524,11 @@ module.exports = {
         response = {},
         settings,
         user;
-    var props = _.uniq(USER_EDITABLE_FIELDS .concat(SETTINGS_EDITABLE_FIELDS));
-    if (!_.some(props, function(k) { return !_.isUndefined(data[k]); })) {
+    var props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS));
+    var hasFields = _.some(props, function(k) {
+      return !_.isUndefined(data[k]);
+    });
+    if (!hasFields) {
       return error400(
         'One of the following fields are required: ' + props.join(', '),
         callback
@@ -504,7 +547,7 @@ module.exports = {
         if (data.place) {
           settings.facility_id = user.facility_id;
           series.push(function(cb) {
-            self._getPlace(user.facility_id, cb);
+            places.getPlace(user.facility_id, cb);
           });
         }
         if (data.contact) {
