@@ -78,29 +78,7 @@
     "globals"       : {         // additional predefined global variables
         "angular"   : true,
         "moment"    : true,
-        "_"         : true,
         "medicmobile_android": true,
-
-        // tests_ui globals
-        "beforeEach": true,
-        "afterEach" : true,
-        "beforeAll" : true,
-        "afterAll"  : true,
-        "it"        : true,
-        "describe"  : true,
-        "inject"    : true,
-        "chai"      : true,
-        "sinon"     : true,
-        "Tour"      : true,
-        "expect"    : true,
-        "protractor": true,
-        "element"   : true,
-        "by"        : true,
-        "browser"   : true,
-        "KarmaUtils": true,
-        "Promise"   : true,
-        "Q"         : true,
-        "emit"      : true,
-        "unescape"  : true
+        "Tour"      : true
     }
 }
