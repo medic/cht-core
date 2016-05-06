@@ -209,7 +209,8 @@ var feedback = require('../modules/feedback'),
       $scope.navigationCancel = function() {
         Modal({
           templateUrl: 'templates/modals/navigation_confirm.html',
-          controller: 'ConfirmModalCtrl'
+          controller: 'ConfirmModalCtrl',
+          args: { processingFunction: null }
         }).then(function () {
             if ($scope.cancelCallback) {
               $scope.cancelCallback();
