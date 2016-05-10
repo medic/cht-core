@@ -126,7 +126,8 @@ module.exports = function(grunt) {
             cwd: 'node_modules',
             src: [
               'bootstrap-daterangepicker/**',
-              'font-awesome/**'
+              'font-awesome/**',
+              'pouchdb/**'
             ],
             dest: 'node_modules_backup'
           }
@@ -190,7 +191,8 @@ module.exports = function(grunt) {
         cmd: function() {
           var modulesToPatch = [
             'bootstrap-daterangepicker',
-            'font-awesome'
+            'font-awesome',
+            'pouchdb'
           ];
           return modulesToPatch.map(function(module) {
             var backupPath = 'node_modules_backup/' + module;
@@ -217,7 +219,11 @@ module.exports = function(grunt) {
 
             // patch font-awesome to remove version attributes so appcache works
             // https://github.com/FortAwesome/Font-Awesome/issues/3286
-            'patch node_modules/font-awesome/less/path.less < patches/font-awesome-remove-version-attribute.patch'
+            'patch node_modules/font-awesome/less/path.less < patches/font-awesome-remove-version-attribute.patch',
+
+            // patch pouch to record seq even when no changes
+            // https://github.com/pouchdb/pouchdb/issues/5145
+            'patch node_modules/pouchdb/lib/index-browser.js < patches/pouchdb-update-seq-more-often.patch',
           ];
           return patches.join(' && ');
         }
