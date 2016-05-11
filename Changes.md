@@ -1,5 +1,11 @@
 # Medic Mobile Release Notes
 
+## 2.6.3
+
+### May 11, 2016
+
+- "console not defined" error when loading page. Issue: #2277
+
 ## 2.6.2
 
 ### May 6, 2016
