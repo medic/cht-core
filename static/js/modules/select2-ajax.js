@@ -71,7 +71,6 @@ var _ = require('underscore'),
         }
 
         if (err) {
-          console.error(objectType + ' failed to load', err);
           return failureCb(err);
         }
 
@@ -128,11 +127,7 @@ var _ = require('underscore'),
 
       objectType = _objectType;
 
-      return resolveInitialValue(selectEl)
-      	.then(initSelect2)
-      	.catch(function(err) {
-      		console.log('Error initialising select2', err);
-      	});
+      return resolveInitialValue(selectEl).then(initSelect2);
     };
   };
 })();
