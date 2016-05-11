@@ -109,14 +109,21 @@ var findRestartMessage = function(logfile, errorString) {
     });
 };
 
-var extractDate = function(loglines, errorString) {
+var extractDate = function(loglines) {
   var nonEmptyLines = _.filter(loglines,function(line) {
     return line !== '';
   });
+
   var dates = _.map(nonEmptyLines, function(logline) {
-    if (logline !== '') {
-      return Date.parse(logline.replace(errorString, ''));
+    // E.g. 2015-10-17T15:14:32.176Z
+    var dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/;
+    var date = dateFormat.exec(logline);
+    if (!date) {
+      console.log('Could not read date!!! Will use today.');
+      return new Date();
     }
+    console.log('date', Date.parse(date[0]));
+    return Date.parse(date[0]);
   });
   return dates;
 };
