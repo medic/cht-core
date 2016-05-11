@@ -8,6 +8,7 @@
 'user strict';
 
 var _ = require('underscore');
+var CronJob = require('cron').CronJob;
 var exec = require('child_process').exec;
 var fs = require('fs');
 var mkdirp = require('mkdirp');
@@ -26,19 +27,30 @@ var setupLogging = function(logdir, logfile) {
       process.exit();
     }
   }
-  var log_file = fs.createWriteStream(logdir + '/' + logfile, {flags : 'w'});
-  log_file.write(''); // create file by writing in it
-  var log_stdout = process.stdout;
+  var log_file = fs.createWriteStream(logdir + '/' + logfile, {flags : 'a'}); // append
   console.log = function() {
     function log(stuff) {
       log_file.write(stuff);
-      log_stdout.write(stuff);
     }
     for (var i = 0; i < arguments.length; i++) {
       log(util.format(arguments[i]) + ' ');
     }
     log('\n');
   };
+};
+
+var runCommand = function(commandString) {
+  return new Promise(function(resolve, reject) {
+    exec(commandString, function(error, stdout, stderr) {
+      if (error) {
+        return reject(error);
+      }
+      if (stderr) {
+        return reject(stderr);
+      }
+      resolve(stdout);
+    });
+  });
 };
 
 var readConfigFromFile = function(file) {
@@ -120,21 +132,9 @@ var numDatesInAgeLimit = function(dates, ageLimitMinutes) {
 };
 
 var grep = function(string, file) {
-  return new Promise(function(resolve, reject) {
-    console.log('Finding "' + string + '" in ' + file);
-    var cmd = 'grep "' + string + '" ' + file;
-
-    exec(cmd, function(error, stdout, stderr) {
-      if (error && error.code !== 1) {
-        console.log('Grep error', error);
-        return reject(error);
-      }
-      if (stderr) {
-        return reject(stderr);
-      }
-      resolve(stdout);
-    });
-  });
+  console.log('Finding "' + string + '" in ' + file);
+  var cmd = 'grep "' + string + '" ' + file;
+  return runCommand(cmd);
 };
 
 var sendEmail = function(senderEmail, senderPassword, recipients, instanceName, numRestarts, ageLimitMinutes, dryrun) {
@@ -165,27 +165,35 @@ var sendEmail = function(senderEmail, senderPassword, recipients, instanceName, 
   });
 };
 
-var now = new Date();
-setupLogging(__dirname + '/sentinel_monitor_log', now.toISOString());
+var monitor = function() {
+  var now = new Date();
+  setupLogging(__dirname, 'sentinel_monitor.log');
 
-console.log('Now is ' + now.toUTCString() + '   (' + now + ')   (' + now.getTime() + ')');
+  console.log('\n---------' + now.toUTCString() + '   (' + now + ')   (' + now.getTime() + ')');
 
-var config = readConfigFromFile(__dirname + '/sentinel_monitor_config.json');
-console.log('Config :\n', config, '\n');
+  var config = readConfigFromFile(__dirname + '/sentinel_monitor_config.json');
+  // Print out config, without the password.
+  var configCopy = JSON.parse(JSON.stringify(config));
+  configCopy.sender.password = '***';
+  console.log('Config :\n', configCopy, '\n');
 
-var files = findLogFiles(config.logdir);
-findRestartMessage(config.logdir + '/' + files[files.length - 1], config.errorString)
-  .then(_.partial(extractDate, _, config.errorString))
-  .then(_.partial(numDatesInAgeLimit, _, config.ageLimitMinutes))
-  .then(function(numRestarts) {
-    console.log(numRestarts, 'restarts within last', config.ageLimitMinutes, 'minutes.');
-    if (numRestarts > config.maxNumRestarts) {
-      console.log('NOT OK!!!!\n');
-      sendEmail(config.sender.email, config.sender.password, config.recipients, config.instanceName, numRestarts, config.ageLimitMinutes, config.dryrun);
-    } else {
-      console.log('That\'s cool.');
-    }
-  })
-  .catch(function(err) {
-    console.log('NOOOOOOO', err);
-  });
+  var files = findLogFiles(config.logdir);
+  findRestartMessage(config.logdir + '/' + files[files.length - 1], config.errorString)
+    .then(_.partial(extractDate, _, config.errorString))
+    .then(_.partial(numDatesInAgeLimit, _, config.ageLimitMinutes))
+    .then(function(numRestarts) {
+      console.log(numRestarts, 'restarts within last', config.ageLimitMinutes, 'minutes.');
+      if (numRestarts > config.maxNumRestarts) {
+        console.log('NOT OK!!!!\n');
+        sendEmail(config.sender.email, config.sender.password, config.recipients, config.instanceName, numRestarts, config.ageLimitMinutes, config.dryrun);
+      } else {
+        console.log('That\'s cool.');
+      }
+    })
+    .catch(function(err) {
+      console.log('Something went wrong', err);
+    });
+};
+
+// Run every 5 minutes.
+new CronJob('0 */5 * * * *', monitor, null, true);
