@@ -48,7 +48,9 @@ angular.module('inboxServices').factory('ResourceIcons', [
           updateDom();
         })
         .catch(function(err) {
-          $log.error('Error updating icons', err);
+          if (err.status !== 404) {
+            $log.error('Error updating icons', err);
+          }
         });
     };
 
