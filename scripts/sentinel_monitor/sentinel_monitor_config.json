@@ -8,12 +8,23 @@
 	// Dir from which to read the logs. Expecting log files names that contain "sentinel".
 	// Absolute path!
 	"logdir": "/srv/storage/gardener/logs/", // sentinel logs are in gardener dir
-	// String to look for in logs, which indicate the monitored problem happened.
-	"errorString": " - info: info: startup complete.",  // sentinel restart
 
-	// Will alert if more than maxNumRestarts within the last ageLimitMinutes.
-	"maxNumRestarts": 5,
-	"ageLimitMinutes": 60,
+	// Monitored errors : if the string occurs more than maxNumOccurrences within the last ageLimitMinutes,
+	// an email alert will be sent.
+	"errors": [
+		{
+			"name": "restarts",
+			"string": " - info: info: startup complete.",
+			"maxNumOccurrences": 5,
+			"ageLimitMinutes": 60
+		},
+		{
+			"name": "logged errors",
+			"string": "error",
+			"maxNumOccurrences": 10,
+			"ageLimitMinutes": 5
+		}
+	],
 
 	// Email alerts
 	"sender" : {

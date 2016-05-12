@@ -16,6 +16,18 @@ var nodemailer = require('nodemailer');
 var stripJsonComments = require('strip-json-comments');
 var util = require('util');
 
+// Fun fact : using file descriptor rather than WriteStream, because
+// fd has a synchronous close function, so that we can wait for
+// file close before killing process. With async close functions,
+// you end up killing before file is flushed and losing logs.
+var log_fd;
+
+var abort = function() {
+  // Close file properly, to not lose unflushed logs.
+  fs.closeSync(log_fd);
+  process.exit();
+};
+
 // Overload console.log to log to file.
 var setupLogging = function(logdir, logfile) {
   try {
@@ -24,13 +36,13 @@ var setupLogging = function(logdir, logfile) {
     // Dir doesn't exist. Create it.
     if (!mkdirp.sync(logdir)) {
       console.log('Couldnt create logdir, aborting.');
-      process.exit();
+      abort();
     }
   }
-  var log_file = fs.createWriteStream(logdir + '/' + logfile, {flags : 'a'}); // append
+  log_fd = fs.openSync(logdir + '/' + logfile, 'a');
   console.log = function() {
     function log(stuff) {
-      log_file.write(stuff);
+      fs.writeSync(log_fd, stuff);
     }
     for (var i = 0; i < arguments.length; i++) {
       log(util.format(arguments[i]) + ' ');
@@ -59,7 +71,7 @@ var readConfigFromFile = function(file) {
     config = JSON.parse(stripJsonComments(fs.readFileSync(file, 'utf8')));
   } catch (err) {
     console.log('Couldnt open config file ' + file + '. Aborting.');
-    process.exit();
+    abort();
   }
   checkConfig(config);
   return config;
@@ -74,8 +86,9 @@ var checkConfig = function(config) {
     }
   }
   _.each(
-    ['instanceName', 'logdir', 'errorString', 'maxNumRestarts', 'ageLimitMinutes', 'sender', 'recipients'],
+    ['instanceName', 'logdir', 'errors', 'sender', 'recipients'],
     checkProperty);
+
   if (!config.sender.email) {
     console.log('No sender.email in config. Aborting.');
     hasErrors = true;
@@ -88,8 +101,31 @@ var checkConfig = function(config) {
     console.log('sender.recipients is empty. Aborting.');
     hasErrors = true;
   }
+  if (config.errors && config.errors.length === 0) {
+    console.log('errors is empty. Aborting.');
+    hasErrors = true;
+  }
+  _.each(config.errors, function(errorObj) {
+    if (!errorObj.hasOwnProperty('name')) {
+      console.log('No name in error obj. Aborting.');
+      hasErrors = true;
+    }
+    if (!errorObj.hasOwnProperty('string')) {
+      console.log('No string in error obj. Aborting.');
+      hasErrors = true;
+    }
+    if (!errorObj.hasOwnProperty('maxNumOccurrences')) {
+      console.log('No maxNumOccurrences in error obj. Aborting.');
+      hasErrors = true;
+    }
+    if (!errorObj.hasOwnProperty('ageLimitMinutes')) {
+      console.log('No ageLimitMinutes in error obj. Aborting.');
+      hasErrors = true;
+    }
+  });
+
   if (hasErrors) {
-    process.exit();
+    abort();
   }
 };
 
@@ -100,11 +136,11 @@ var findLogFiles = function(dir) {
   });
 };
 
-var findRestartMessage = function(logfile, errorString) {
+var findErrorMessage = function(logfile, errorString) {
   return grep(errorString, logfile)
     .then(function(loglines) {
       loglines = loglines.split('\n');
-      console.log('Found', loglines.length, 'log lines');
+      console.log('Found', loglines.length, 'log lines containing error string.');
       return loglines;
     });
 };
@@ -122,7 +158,6 @@ var extractDate = function(loglines) {
       console.log('Could not read date!!! Will use today.');
       return new Date();
     }
-    console.log('date', Date.parse(date[0]));
     return Date.parse(date[0]);
   });
   return dates;
@@ -144,16 +179,23 @@ var grep = function(string, file) {
   return runCommand(cmd);
 };
 
-var sendEmail = function(senderEmail, senderPassword, recipients, instanceName, numRestarts, ageLimitMinutes, dryrun) {
+var sendEmail = function(senderEmail, senderPassword, recipients, instanceName, messages, dryrun) {
   var transporter = nodemailer.createTransport(
     'smtps://' + encodeURIComponent(senderEmail) + ':' + encodeURIComponent(senderPassword) + '@smtp.gmail.com');
-  var body = 'You may want to know that ' + instanceName + '\'s sentinel restarted ' + numRestarts + ' times in the last ' + ageLimitMinutes + ' minutes. Consider panicking.';
+
   var subject = 'Sentinel alert for ' + instanceName + '!';
+  var body = 'Bad news. The Sentinel from ' + instanceName + ' is acting weird. We found these problems:';
+  var textOnlyBody = body;
+  _.each(messages, function(message) {
+    body = body + '<p> - ' + message + '</p>';
+    textOnlyBody = textOnlyBody + '\n - ' + message;
+  });
+  textOnlyBody = textOnlyBody + '\n';
   var mailOptions = {
     from: '"Sentinel Monitor" <' + senderEmail + '>',
     to: recipients.join(),
     subject: subject,
-    text: 'Hello chickens 🐥,\n' + body,
+    text: 'Hello chickens 🐥,\n' + textOnlyBody,
     html: '<b>Hello chickens 🐥 !</b> <p>' + body + '</p>'
   };
   console.log('Sending email', mailOptions, '\n');
@@ -164,12 +206,33 @@ var sendEmail = function(senderEmail, senderPassword, recipients, instanceName, 
   return new Promise(function(resolve, reject) {
     transporter.sendMail(mailOptions, function(error, info){
       if(error){
+        console.log('Error sending message: ' + JSON.stringify(error));
         reject(error);
+        return;
       }
-      console.log('Message sent: ' + info.response);
+      console.log('Message sent: ' + JSON.stringify(info));
       resolve(info);
     });
   });
+};
+
+var monitorError = function(errorObj, logfile, emailMessages) {
+  console.log(' - ' + errorObj.name);
+  return findErrorMessage(logfile, errorObj.string)
+    .then(_.partial(extractDate, _, errorObj.string))
+    .then(_.partial(numDatesInAgeLimit, _, errorObj.ageLimitMinutes))
+    .then(function(numOccurrences) {
+      var message = numOccurrences + ' ' + errorObj.name + ' within the last ' + errorObj.ageLimitMinutes +
+      ' minutes. Limit is ' + errorObj.maxNumOccurrences + '.';
+      console.log(message);
+      if (numOccurrences > errorObj.maxNumOccurrences) {
+        console.log('NOT OK!!!!\n');
+        emailMessages.push(message);
+      } else {
+        console.log('That\'s cool.');
+      }
+      return;
+    });
 };
 
 var monitor = function() {
@@ -185,21 +248,24 @@ var monitor = function() {
   console.log('Config :\n', configCopy, '\n');
 
   var files = findLogFiles(config.logdir);
-  findRestartMessage(config.logdir + '/' + files[files.length - 1], config.errorString)
-    .then(_.partial(extractDate, _, config.errorString))
-    .then(_.partial(numDatesInAgeLimit, _, config.ageLimitMinutes))
-    .then(function(numRestarts) {
-      console.log(numRestarts, 'restarts within last', config.ageLimitMinutes, 'minutes.');
-      if (numRestarts > config.maxNumRestarts) {
-        console.log('NOT OK!!!!\n');
-        sendEmail(config.sender.email, config.sender.password, config.recipients, config.instanceName, numRestarts, config.ageLimitMinutes, config.dryrun);
-      } else {
-        console.log('That\'s cool.');
-      }
-    })
-    .catch(function(err) {
-      console.log('Something went wrong', err);
+  var logFileToParse = config.logdir + '/' + files[files.length - 1];
+
+  var emailMessages = [];
+  var megaPromise = Promise.resolve();
+  _.each(config.errors, function(errorObj) {
+    megaPromise = megaPromise.then(function() {
+      return monitorError(errorObj, logFileToParse, emailMessages);
     });
+  });
+  megaPromise = megaPromise.then(function() {
+    console.log();
+    if (emailMessages.length > 0) {
+      console.log('Found problems, sending email.');
+      sendEmail(config.sender.email, config.sender.password, config.recipients, config.instanceName, emailMessages, config.dryrun);
+    } else {
+      console.log('No problems!');
+    }
+  });
 };
 
 // Run every 5 minutes.
