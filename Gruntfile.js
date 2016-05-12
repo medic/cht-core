@@ -36,6 +36,7 @@ module.exports = function(grunt) {
           detectGlobals: false
         },
         options: {
+          transform: ['browserify-ngannotate'],
           alias: {
             'db': './packages/db/db',
             'kujua-utils': './packages/kujua-utils/kujua-utils',

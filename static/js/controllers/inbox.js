@@ -14,8 +14,49 @@ var feedback = require('../modules/feedback'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', 'translateFilter', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'CheckDate', 'DeleteDoc', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'PLACE_TYPES', '$q', 'Search', 'Modal',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, translateFilter, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, CheckDate, DeleteDoc, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, Auth, TrafficStats, XmlForms, RulesEngine, PLACE_TYPES, $q, Search, Modal) {
+    function (
+      $log,
+      $q,
+      $rootScope,
+      $scope,
+      $state,
+      $timeout,
+      $translate,
+      $window,
+      APP_CONFIG,
+      Auth,
+      BaseUrlService,
+      Changes,
+      CheckDate,
+      Contact,
+      CountMessages,
+      DB,
+      DBSync,
+      DeleteDoc,
+      Enketo,
+      Facility,
+      FacilityHierarchy,
+      JsonForms,
+      Language,
+      LiveListConfig,
+      Modal,
+      PLACE_TYPES,
+      ReadMessages,
+      RulesEngine,
+      Search,
+      SendMessage,
+      SetLanguageCookie,
+      Session,
+      Settings,
+      Snackbar,
+      TrafficStats,
+      translateFilter,
+      UpdateSettings,
+      UpdateUser,
+      UserSettings,
+      XmlForms
+    ) {
+      'ngInject';
 
       Session.init();
 
@@ -791,6 +832,6 @@ var feedback = require('../modules/feedback'),
       }
 
     }
-  ]);
+  );
 
 }());
