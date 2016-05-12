@@ -1,7 +1,11 @@
 describe('ConfirmModalCtrl controller', function() {
   'use strict';
 
-  var createController, processingFunction, scope, spyUibModalInstance;
+  var createController,
+      processingFunction,
+      model,
+      scope,
+      spyUibModalInstance;
 
   beforeEach(function() {
     module('inboxApp');
@@ -11,10 +15,14 @@ describe('ConfirmModalCtrl controller', function() {
         spyUibModalInstance = {close: sinon.spy(), dismiss: sinon.spy()};
         return spyUibModalInstance;
       });
+      model = {};
       processingFunction = sinon.stub();
       processingFunction.returns(KarmaUtils.mockPromise());
       $provide.factory('processingFunction', function() {
         return processingFunction;
+      });
+      $provide.factory('model', function() {
+        return model;
       });
     });
 

@@ -62,10 +62,19 @@
   'use strict';
 
   angular.module('inboxControllers').controller('ConfirmModalCtrl',
-    ['$log', 'processingFunction', '$q', '$scope', '$uibModalInstance',
-    function($log, processingFunction, $q, $scope, $uibModalInstance) {
+    function(
+      $log,
+      $q,
+      $scope,
+      $uibModalInstance,
+      model,
+      processingFunction
+    ) {
+      'ngInject';
+
       $scope.processing = false;
       $scope.error = false;
+      $scope.model = model;
 
       $scope.setProcessingMode = function() {
         $scope.processing = true;
@@ -81,21 +90,13 @@
           if (result.then && typeof result.then === 'function') {
             // It's a promise!
             result
-              .then(function() {
-                $scope.ok();
-              })
-              .catch(function(err) {
-                _setErrorMode(err);
-              });
+              .then($scope.ok)
+              .catch(_setErrorMode);
             return;
           }
 
           // Simple true/false result.
-          if (result) {
-            $scope.ok();
-          } else {
-            _setErrorMode();
-          }
+          $scope.ok();
         }
       };
 
@@ -115,5 +116,5 @@
         $uibModalInstance.dismiss('cancel');
       };
     }
-  ]);
+  );
 }());

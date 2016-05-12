@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 (function () {
 
   'use strict';
@@ -5,8 +7,13 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsContentCtrl',
-    ['$scope', '$stateParams', 'Changes', 'MessageState',
-    function ($scope, $stateParams, Changes, MessageState) {
+    function (
+      $scope,
+      $stateParams,
+      Changes,
+      MessageState
+    ) {
+      'ngInject';
 
       $scope.selectReport($stateParams.id);
       $scope.clearCancelTarget();
@@ -47,7 +54,11 @@
       Changes({
         key: 'reports-content',
         filter: function(change) {
-          return $scope.selected && $scope.selected._id === change.id;
+          return $scope.selected &&
+            $scope.selected.length &&
+            _.some($scope.selected, function(item) {
+              return item.report._id === change.id;
+            });
         },
         callback: function(change) {
           if (change.deleted) {
@@ -60,6 +71,6 @@
         }
       });
     }
-  ]);
+  );
 
 }());

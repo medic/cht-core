@@ -11,8 +11,28 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl',
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$translate', '$http', '$log', 'TranslateFrom', 'LiveList', 'Settings', 'MarkRead', 'Search', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified', 'SearchFilters', 'DownloadUrl',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, $translate, $http, $log, TranslateFrom, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified, SearchFilters, DownloadUrl) {
+    function (
+      $http,
+      $log,
+      $rootScope,
+      $scope,
+      $state,
+      $stateParams,
+      $timeout,
+      $translate,
+      DB,
+      DownloadUrl,
+      EditGroup,
+      FormatDataRecord,
+      LiveList,
+      MarkRead,
+      Search,
+      SearchFilters,
+      Settings,
+      TranslateFrom,
+      Verified
+    ) {
+      'ngInject';
 
       $scope.selectedGroup = null;
       $scope.selected = [];
@@ -106,6 +126,18 @@ var _ = require('underscore'),
         $scope.displayFields = fields;
       };
 
+      var setActionBar = function() {
+        var model = {
+          doc: _.pluck($scope.selected, 'report')
+        };
+        if (!$scope.selectMode && model.doc && model.doc.length === 1) {
+          model.verified = model.doc[0].verified;
+          model.type = model.doc[0].content_type;
+          model.sendTo = model.doc[0];
+        }
+        $scope.setActionBar(model);
+      };
+
       $scope.setSelected = function(doc) {
         if (doc.fields) {
           updateDisplayFields(doc);
@@ -114,6 +146,7 @@ var _ = require('underscore'),
         if ($scope.selectMode) {
           $scope.selected.push({ report: doc, expanded: false });
           $scope.settingSelected(true);
+          setActionBar();
         } else {
           liveList.setSelected(doc._id);
 
@@ -122,12 +155,7 @@ var _ = require('underscore'),
                            $scope.selected[0].report._id === doc._id;
           $scope.selected = [ { report: doc, expanded: true } ];
           setTitle(doc);
-          $scope.setActionBar({
-            _id: doc._id,
-            verified: doc.verified,
-            type: doc.content_type,
-            sendTo: doc
-          });
+          setActionBar();
           $scope.settingSelected(refreshing);
         }
       };
@@ -146,8 +174,8 @@ var _ = require('underscore'),
       $scope.refreshReportSilently = function(report) {
         _fetchFormattedReport(report)
           .then(function(doc) {
-              _setSelected(doc[0]);
-            })
+            _setSelected(doc[0]);
+          })
           .catch(function(err) {
             $log.error('Error fetching formatted report', err);
           });
@@ -415,6 +443,7 @@ var _ = require('underscore'),
               for (var i = 0; i < $scope.selected.length; i++) {
                 if ($scope.selected[i].report._id === reportId) {
                   $scope.selected.splice(i, 1);
+                  setActionBar();
                   return;
                 }
               }
@@ -437,12 +466,14 @@ var _ = require('underscore'),
           $scope.selected = data.map(function(doc) {
             return { report: doc, expanded: false };
           });
+          setActionBar();
           $('#reports-list input[type="checkbox"]').prop('checked', true);
         });
       });
 
       $scope.$on('DeselectAll', function() {
         $scope.selected = [];
+        setActionBar();
         $('#reports-list input[type="checkbox"]').prop('checked', false);
       });
 
@@ -468,6 +499,6 @@ var _ = require('underscore'),
         }
       });
     }
-  ]);
+  );
 
 }());

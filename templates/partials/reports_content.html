@@ -12,7 +12,10 @@
 
   <div id="reports-content" class="col-sm-8 item-content item-body" ng-show="!loadingContent && selected.length && selected[0].report.form !== undefined">
 
-    <div class="selection-count" ng-show="selectMode" translate translate-values="{ number: {{selected.length}} }">select.mode.count</div>
+    <div class="selection-count" ng-show="selectMode">
+      <span ng-show="selected.length === 1" translate>select.mode.count.singular</span>
+      <span ng-show="selected.length !== 1" translate translate-values="{ number: {{selected.length}} }">select.mode.count.plural</span>
+    </div>
 
     <div ng-repeat="selection in selected track by selection.report._id" ng-init="report = selection.report" class="body report-body">
 

@@ -610,24 +610,30 @@ var feedback = require('../modules/feedback'),
         $rootScope.$broadcast.apply($rootScope, arguments);
       };
 
-      $scope.deleteDoc = function(id) {
+      $scope.deleteDoc = function(docs) {
         Modal({
           templateUrl: 'templates/modals/delete_doc_confirm.html',
           controller: 'ConfirmModalCtrl',
           args: {
             processingFunction: function() {
-              if (!id) {
-                return $q.reject(new Error('Error deleting document: no docToDeleteId set'));
+              if (!docs || !docs.length) {
+                return $q.reject(new Error('Error deleting document: no doc selected'));
               }
-              return DB.get().get(id).then(DeleteDoc);
-            }
+              return DeleteDoc(docs);
+            },
+            model: { docs: docs }
           }
         })
-        .then(function () {
+        .then(function() {
           if ($state.includes('contacts') || $state.includes('reports')) {
-            $state.go($state.current.name, { id: null });
+            if ($scope.selectMode) {
+              $scope.clearSelected();
+            } else {
+              $state.go($state.current.name, { id: null });
+            }
           }
-          $translate('document.deleted').then(Snackbar);
+          var key = docs.length === 1 ? 'document.deleted' : 'document.deleted.plural';
+          $translate(key, { number: docs.length }).then(Snackbar);
         })
         .catch(function(err) {
           $log.debug('User cancelled deleteDoc.', err);
