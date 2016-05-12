@@ -18,14 +18,7 @@ You can fiddle with config, with frequency in sentinel_monitor_launcher.js, and 
 
 # Stop
 You need to stop the launcher process. If you only stop the monitor, the launcher will continue running the monitor periodically.
-1. Find the sentinel_monitor_launcher process :
-```
-$ sudo ps ax | grep sentinel_monitor_launcher
-14791 vm       node sentinel_monitor_launcher.js
-14821 vm       grep sentinel_monitor_launcher
-```
-2. Kill it!
-`kill 14791`
+Kill script : `./kill_sentinel_monitor.sh`
 
 # Troubleshooting
 None. It never makes trouble. Hopefully.
