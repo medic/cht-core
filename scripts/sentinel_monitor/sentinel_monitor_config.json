@@ -1,0 +1,37 @@
+{
+	// Run the test, but don't send any emails. Optional.
+	"dryrun": true,
+
+	// Name of instance that the script is running on. Will be used in alert emails.
+	"instanceName": "awesomeMedicProject",
+
+	// Dir from which to read the sentinel logs. Expecting log files names that contain "sentinel".
+	// Absolute path!
+	"logdir": "/srv/storage/gardener/logs/", // sentinel logs are in gardener dir
+
+	// Monitored errors : if the string occurs more than maxNumOccurrences within the last ageLimitMinutes,
+	// an email alert will be sent.
+	"errors": [
+		{
+			"name": "restarts",
+			"string": " - info: info: startup complete.",
+			"maxNumOccurrences": 5,
+			"ageLimitMinutes": 60
+		},
+		{
+			"name": "logged errors",
+			"string": "error",
+			"maxNumOccurrences": 10,
+			"ageLimitMinutes": 5
+		}
+	],
+
+	// Email alerts
+	"sender" : {
+		"email": "sentinel.monitor.medicmobile@gmail.com",
+//		"password": "<password>"
+		},
+	"recipients" : [
+		// "person@something.com", "other.person@somethingelse.org"
+	]
+}

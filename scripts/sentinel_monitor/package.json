@@ -1,0 +1,18 @@
+{
+  "name": "sentinel_monitor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "sentinel_monitor.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cron": "^1.1.0",
+    "fs": "0.0.2",
+    "nodemailer": "^2.4.0",
+    "strip-json-comments": "^2.0.1",
+    "underscore": "^1.8.3"
+  }
+}
