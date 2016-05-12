@@ -8,62 +8,11 @@
 'user strict';
 
 var _ = require('underscore');
-var CronJob = require('cron').CronJob;
 var exec = require('child_process').exec;
 var fs = require('fs');
-var mkdirp = require('mkdirp');
 var nodemailer = require('nodemailer');
 var stripJsonComments = require('strip-json-comments');
-var util = require('util');
 
-// Fun fact : using file descriptor rather than WriteStream, because
-// fd has a synchronous close function, so that we can wait for
-// file close before killing process. With async close functions,
-// you end up killing before file is flushed and losing logs.
-var log_fd;
-
-var abort = function() {
-  // Close file properly, to not lose unflushed logs.
-  fs.closeSync(log_fd);
-  process.exit();
-};
-
-// Overload console.log to log to file.
-var setupLogging = function(logdir, logfile) {
-  try {
-    fs.accessSync(logdir);
-  } catch (err) {
-    // Dir doesn't exist. Create it.
-    if (!mkdirp.sync(logdir)) {
-      console.log('Couldnt create logdir, aborting.');
-      abort();
-    }
-  }
-  log_fd = fs.openSync(logdir + '/' + logfile, 'a');
-  console.log = function() {
-    function log(stuff) {
-      fs.writeSync(log_fd, stuff);
-    }
-    for (var i = 0; i < arguments.length; i++) {
-      log(util.format(arguments[i]) + ' ');
-    }
-    log('\n');
-  };
-};
-
-var runCommand = function(commandString) {
-  return new Promise(function(resolve, reject) {
-    exec(commandString, function(error, stdout, stderr) {
-      if (error) {
-        return reject(error);
-      }
-      if (stderr) {
-        return reject(stderr);
-      }
-      resolve(stdout);
-    });
-  });
-};
 
 var readConfigFromFile = function(file) {
   var config = [];
@@ -71,7 +20,7 @@ var readConfigFromFile = function(file) {
     config = JSON.parse(stripJsonComments(fs.readFileSync(file, 'utf8')));
   } catch (err) {
     console.log('Couldnt open config file ' + file + '. Aborting.');
-    abort();
+    process.exit();
   }
   checkConfig(config);
   return config;
@@ -125,7 +74,7 @@ var checkConfig = function(config) {
   });
 
   if (hasErrors) {
-    abort();
+    process.exit();
   }
 };
 
@@ -140,17 +89,19 @@ var findErrorMessage = function(logfile, errorString) {
   return grep(errorString, logfile)
     .then(function(loglines) {
       loglines = loglines.split('\n');
+      loglines = _.filter(loglines,function(line) {
+        return line !== '';
+      });
       console.log('Found', loglines.length, 'log lines containing error string.');
       return loglines;
     });
 };
 
 var extractDate = function(loglines) {
-  var nonEmptyLines = _.filter(loglines,function(line) {
-    return line !== '';
-  });
-
-  var dates = _.map(nonEmptyLines, function(logline) {
+  if (loglines.length === 0) {
+    return [];
+  }
+  var dates = _.map(loglines, function(logline) {
     // E.g. 2015-10-17T15:14:32.176Z
     var dateFormat = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z/;
     var date = dateFormat.exec(logline);
@@ -176,7 +127,20 @@ var numDatesInAgeLimit = function(dates, ageLimitMinutes) {
 var grep = function(string, file) {
   console.log('Finding "' + string + '" in ' + file);
   var cmd = 'grep "' + string + '" ' + file;
-  return runCommand(cmd);
+  return new Promise(function(resolve, reject) {
+    exec(cmd, function(error, stdout, stderr) {
+      if (error) {
+        // grep returns with 1 when nothing is found. That's ok.
+        if (error.code !== 1) {
+          return reject(error);
+        }
+      }
+      if (stderr) {
+        return reject(stderr);
+      }
+      resolve(stdout);
+    });
+  });
 };
 
 var sendEmail = function(senderEmail, senderPassword, recipients, instanceName, messages, dryrun) {
@@ -237,8 +201,6 @@ var monitorError = function(errorObj, logfile, emailMessages) {
 
 var monitor = function() {
   var now = new Date();
-  setupLogging(__dirname, 'sentinel_monitor.log');
-
   console.log('\n---------' + now.toUTCString() + '   (' + now + ')   (' + now.getTime() + ')');
 
   var config = readConfigFromFile(__dirname + '/sentinel_monitor_config.json');
@@ -248,6 +210,7 @@ var monitor = function() {
   console.log('Config :\n', configCopy, '\n');
 
   var files = findLogFiles(config.logdir);
+  // Read the last file in the dir, it's the freshest.
   var logFileToParse = config.logdir + '/' + files[files.length - 1];
 
   var emailMessages = [];
@@ -257,16 +220,21 @@ var monitor = function() {
       return monitorError(errorObj, logFileToParse, emailMessages);
     });
   });
-  megaPromise = megaPromise.then(function() {
-    console.log();
-    if (emailMessages.length > 0) {
-      console.log('Found problems, sending email.');
-      sendEmail(config.sender.email, config.sender.password, config.recipients, config.instanceName, emailMessages, config.dryrun);
-    } else {
-      console.log('No problems!');
-    }
-  });
+  megaPromise = megaPromise
+    .then(function() {
+      console.log();
+      if (emailMessages.length > 0) {
+        console.log('Found problems, sending email.');
+        return sendEmail(config.sender.email, config.sender.password, config.recipients, config.instanceName, emailMessages, config.dryrun);
+      }
+      return console.log('No problems!');
+    })
+    .then(function() {
+      console.log('--- End of run');
+    })
+    .catch(function(err) {
+      console.error('Something went wrong!', err);
+    });
 };
 
-// Run every 5 minutes.
-new CronJob('0 */5 * * * *', monitor, null, true);
+monitor();

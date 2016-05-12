@@ -5,7 +5,7 @@
 	// Name of instance that the script is running on. Will be used in alert emails.
 	"instanceName": "awesomeMedicProject",
 
-	// Dir from which to read the logs. Expecting log files names that contain "sentinel".
+	// Dir from which to read the sentinel logs. Expecting log files names that contain "sentinel".
 	// Absolute path!
 	"logdir": "/srv/storage/gardener/logs/", // sentinel logs are in gardener dir
 
