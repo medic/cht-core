@@ -1,14 +1,23 @@
 # Medic Mobile Release Notes
 
+## 2.6.3
+
+### May 11, 2016
+
+- "console not defined" error when loading page. Issue: #2277
+
 ## 2.6.2
 
-### Apr 29, 2016
+### May 6, 2016
 
 - Update PouchDB to improve replication reliability and performance. Issue: #2134 #2167
 - When editing a CHP Area, previously set values for CHP, Branch, and Supervisor do not show up. Issue: #2223
 - Dropdowns in CHP Area create and edit forms have no blank option. Issue: #2227
+- allow-new appearance in Enketo doesn't make the "New" option appear. Issue: #2251
 - Improve performance of Enketo db-object-widget. Issue: #2161
 - Ensure roles are always available on user-settings. Issue: #2199
+- Form type filter doesn't include all forms. Issue: #1409
+- Added APIs for creating Users, People, and Places. Issue: #2046
 
 ## 2.6.1
 

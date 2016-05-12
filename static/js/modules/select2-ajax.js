@@ -6,9 +6,9 @@ var _ = require('underscore'),
   'use strict';
 
   exports.init = function($translate, Search, DB, $q) {
-    var PAGE_SIZE,
-        ALLOW_NEW,
-        OBJECT_TYPE;
+    var pageSize,
+        allowNew,
+        objectType;
 
     var formatResult = function(row) {
       if(!row.doc) {
@@ -29,24 +29,6 @@ var _ = require('underscore'),
       return row.text;
     };
 
-    var matcher = function(params, data) {
-      var doc = data && data.doc;
-      if (!doc) {
-        return null;
-      }
-      var term = params.term && params.term.toLowerCase();
-      if (!term) {
-        return data;
-      }
-      var match = false;
-      Object.keys(doc).forEach(function(key) {
-        if (typeof doc[key] === 'string' && doc[key].toLowerCase().indexOf(term) !== -1) {
-          match = true;
-        }
-      });
-      return match ? data : null;
-    };
-
     var prepareRows = function(documents, first) {
       var rows = _.sortBy(documents, function(doc) {
         return doc.name;
@@ -57,43 +39,47 @@ var _ = require('underscore'),
         };
       });
 
-      if (first && ALLOW_NEW) {
+      if (first && allowNew) {
         rows.unshift({
           id: 'NEW',
-          text: $translate('contact.type.' + OBJECT_TYPE + '.new'),
+          text: $translate('contact.type.' + objectType + '.new'),
         });
       }
 
       return rows;
     };
 
-    var query = function(params, successCb, failureCb) {
-      var query = params.data.q;
-      var skip = ((params.data.page || 1) - 1) * PAGE_SIZE;
+    var currentQuery;
 
-      Search('contacts',
-      {   // filters
+    var query = function(params, successCb, failureCb) {
+      currentQuery = params.data.q;
+      var skip = ((params.data.page || 1) - 1) * pageSize;
+      var filters = {
         types: {
-          selected: [OBJECT_TYPE],
-          options: [OBJECT_TYPE, 'A dummy type, Gareth can we talk about this?']
+          selected: [objectType]
         },
-        search: query
-      }, { // options
-        limit: PAGE_SIZE,
+        search: params.data.q
+      };
+      var options = {
+        limit: pageSize,
         skip: skip
-      }, function(err, documents) {
-        if (err) {
-          failureCb(err);
-          console.log(OBJECT_TYPE + ' failed to load', err);
-        } else {
-          successCb({
-            results: prepareRows(documents, skip === 0),
-            pagination: {
-              more: documents.length === PAGE_SIZE
-            }
-          });
+      };
+
+      Search('contacts', filters, options, function(err, documents) {
+        if (currentQuery !== params.data.q) {
+          return;
         }
 
+        if (err) {
+          return failureCb(err);
+        }
+
+        return successCb({
+          results: prepareRows(documents, skip === 0),
+          pagination: {
+            more: documents.length === pageSize
+          }
+        });
       });
     };
 
@@ -121,13 +107,11 @@ var _ = require('underscore'),
         placeholder: '',
         templateResult: formatResult,
         templateSelection: formatSelection,
-        matcher: matcher,
-        minimumInputLength: 3,
         width: '100%',
       });
     };
 
-    return function(selectEl, objectType, options) {
+    return function(selectEl, _objectType, options) {
       options = options || {};
       _.defaults(options, {
         pageSize: 20,
@@ -136,18 +120,14 @@ var _ = require('underscore'),
         templateResult: formatResult
       });
 
-      PAGE_SIZE = options.pageSize;
-      ALLOW_NEW = options.allowNew;
+      pageSize = options.pageSize;
+      allowNew = options.allowNew;
       formatResult = options.templateResult;
       formatSelection = options.templateSelection;
 
-      OBJECT_TYPE = objectType;
+      objectType = _objectType;
 
-      return resolveInitialValue(selectEl)
-      	.then(initSelect2)
-      	.catch(function(err) {
-      		console.log('Error initialising select2', err);
-      	});
+      return resolveInitialValue(selectEl).then(initSelect2);
     };
   };
 })();

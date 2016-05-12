@@ -5,6 +5,7 @@
  *   Modal({
  *           templateUrl: 'templates/modals/alert.html',
  *           controller: 'ConfirModalCtrl'
+ *           args: { processingFunction: null }
  *        })
  *       .then(function () {
  *         // Success!
@@ -61,8 +62,8 @@
   'use strict';
 
   angular.module('inboxControllers').controller('ConfirmModalCtrl',
-    ['$log', 'processingFunction', '$scope', '$uibModalInstance',
-    function($log, processingFunction, $scope, $uibModalInstance) {
+    ['$log', 'processingFunction', '$q', '$scope', '$uibModalInstance',
+    function($log, processingFunction, $q, $scope, $uibModalInstance) {
       $scope.processing = false;
       $scope.error = false;
 
@@ -72,7 +73,12 @@
 
         if (processingFunction) {
           var result = processingFunction();
-          if (result && result.then) {
+          if (!result) {
+            _setErrorMode();
+            return;
+          }
+
+          if (result.then && typeof result.then === 'function') {
             // It's a promise!
             result
               .then(function() {
@@ -100,6 +106,8 @@
       };
 
       $scope.ok = function() {
+        $scope.processing = false;
+        $scope.error = false;
         $uibModalInstance.close('ok');
       };
 

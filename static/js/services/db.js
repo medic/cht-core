@@ -27,7 +27,10 @@ var utils = require('kujua-utils'),
       };
 
       var getRemote = function(name) {
-        var options = { ajax: { timeout: 30000 } };
+        var options = {
+          skip_setup: true,
+          ajax: { timeout: 30000 }
+        };
         return getFromCache(getRemoteUrl(name), options);
       };
 

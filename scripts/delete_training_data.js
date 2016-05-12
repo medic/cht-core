@@ -6,6 +6,7 @@
  * halfway through the script. You can either wait for indexing to be done
  * (couch logs will say `Index update finished for db: medic idx: _design/medic`)
  * or extend the `os_process_timeout` (or both).
+ * curl -X PUT  <serverUrl>/_config/couchdb/os_process_timeout -d '"100000"'
  *
  * Postmortem (2016-04-27) : after stopping couchdb, it would not start up
  * again.
@@ -14,6 +15,12 @@
  * After each deletion, the db gets reindexed and requests time out, so you
  * want to minimize this. So adjust the dates to small enough time increments
  * to have <100 docs deleted at a time.
+ *
+ * 2016-05-10 : introducing batchSize. Run each function (reports, persons,
+ * or clinics) at a time (you don't want orphan contact persons...), by
+ * commenting out the other two, until there's no more.
+ * Until https://github.com/medic/medic-webapp/issues/2288 is solved, bump
+ * the rev on a form in between each batch (see bump_rev.js).
  */
 
 'use strict';
@@ -81,13 +88,14 @@ var deleteDocs = function(docs) {
     .then(function (result) {
       console.log('Deleted : ' + result.length + ':');
       console.log(result);
+      return result;
     });
 };
 
-var getContactsForBranch = function(branchId) {
+var getContactsForBranch = function(branchId, batchSize) {
   return db.query(
     'medic/contacts_by_place',
-    {key: [branchId], include_docs: true}
+    {key: [branchId], include_docs: true, limit: batchSize}
   ).then(function (result) {
     console.log('Contacts for branch : ' + result.rows.length);
     var docs = getDocsFromRows(result.rows);
@@ -95,10 +103,10 @@ var getContactsForBranch = function(branchId) {
   });
 };
 
-var getDataReportsForBranch = function(branchId) {
+var getDataReportsForBranch = function(branchId, batchSize) {
   return db.query(
     'medic/data_records_by_district',
-    {startkey: [branchId], endkey: [branchId + '\ufff0'], include_docs: true}
+    {startkey: [branchId], endkey: [branchId + '\ufff0'], include_docs: true, limit: batchSize}
   ).then(function (result) {
     console.log('Reports for branch : ' + result.rows.length);
     return getDocsFromRows(result.rows);
@@ -196,40 +204,14 @@ var writeDocsToFile = function(filepath, docsList) {
   });
 };
 
-if (process.argv.length < 6) {
-  console.log('Not enough arguments.\n');
-  console.log('Usage:\nnode delete_training_data.js <branchId> ' +
-    '<startTime> <endTime> <logdir> [dryrun]\n');
-  console.log('Will use DB URL+credentials from $COUCH_URL.');
-  console.log('Deletes all \'data_record\', \'person\' and \'clinic\' data ' +
-    'from a given branch (\'district_hospital\' type) that was created ' +
-    'between the two timestamps.');
-  console.log('The deleted docs will be written out to json files in the ' +
-    'logdir.');
-  console.log('The dryrun arg will run the whole process, including writing the files, without actually doing the deletions.\n');
-  console.log('Example:\nexport COUCH_URL=\'http://admin:pass@localhost:5984/medic\'; node delete_training_data.js 52857bf2cef066525b2feb82805fb373 "2016-04-11 07:00 GMT+3:00" "2016-04-25 17:00 GMT+3:00" ./training_data_20160425 dryrun');
-  process.exit();
-}
-
-var now = new Date();
-var dbUrl = process.env.COUCH_URL;
-var branchId = process.argv[2];
-var start = new Date(process.argv[3]);
-var end = new Date(process.argv[4]);
-var logdir = process.argv[5] + '/' + now.getTime();
-var dryrun = process.argv[6];
-dryrun = (dryrun === 'dryrun');
-
-setupLogging(logdir, 'debug.log');
-
-console.log('Now is ' + now.toUTCString() + '   (' + now + ')   (' + now.getTime() + ')');
-
 var userConfirm = function() {
   return new Promise(function(resolve) {
-    var message = '\nStarting deletion process with\ndbUrl = $COUCH_URL\nbranchId = ' + branchId +
+    var message = '\nStarting deletion process with\ndbUrl = $COUCH_URL' +
+      '\nbranchId = ' + branchId +
       '\nstartTimeMillis = ' + start.toUTCString() + ' (' + start.getTime() +
-      ')\nendTimeMillis = ' + end.toUTCString() + ' (' + end.getTime() + ')\nlogdir = ' +
-      logdir + '\ndryrun = ' + dryrun + '\n';
+      ')\nendTimeMillis = ' + end.toUTCString() + ' (' + end.getTime() + ')\nlogdir = ' + logdir +
+      '\nbatchSize = ' + batchSize +
+      '\ndryrun = ' + dryrun + '\n';
     logToFile(message); // log to logfile because prompt doesn't.
 
     prompt.message = ''; // remove annoying pre-prompt message.
@@ -256,48 +238,104 @@ var userConfirm = function() {
   });
 };
 
+var deleteReports = function(branchId, startTimestamp, endTimestamp, logdir, batchSize) {
+  return Promise.resolve()
+    .then(function() {
+      console.log('Deleting reports');
+      return;
+    })
+    .then(_.partial(getDataReportsForBranch, branchId, batchSize))
+    .then(_.partial(filterByDate, _, startTimestamp, endTimestamp))
+    .then(_.partial(writeDocsToFile, logdir + '/reports_deleted.json'))
+    .then(deleteDocs)
+    .then(printoutDbStats)
+    .then(function(result) {
+      console.log(result.length + ' reports deleted!\n');
+      return;
+    });
+};
+
+var deletePersons = function(branchId, startTimestamp, endTimestamp, logdir, batchSize) {
+  return Promise.resolve()
+    .then(function() {
+      console.log('Deleting persons');
+      return;
+    })
+    .then(_.partial(getContactsForBranch, branchId, batchSize))
+    .then(_.partial(filterByDate, _, startTimestamp, endTimestamp))
+    .then(_.partial(filterByType, _, 'person'))
+    // Remove contact links
+    .then(cleanContactPersons)
+    .then(printoutDbStats)
+    .then(_.partial(writeDocsToFile, logdir + '/persons_deleted.json'))
+    .then(deleteDocs)
+    .then(printoutDbStats)
+    .then(function(result) {
+      console.log(result.length + ' persons deleted!\n');
+      return;
+    });
+};
+
+var deleteClinics = function(branchId, startTimestamp, endTimestamp, logdir, batchSize) {
+  return Promise.resolve()
+    .then(function() {
+      console.log('Deleting clinics');
+      return;
+    })
+    // Need to fetch them all over again, because they could have been edited if
+    // their contact was just deleted.
+    .then(_.partial(getContactsForBranch, branchId, batchSize))
+    .then(_.partial(filterByDate, _, startTimestamp, endTimestamp))
+    .then(_.partial(filterByType, _, 'clinic'))
+    .then(_.partial(writeDocsToFile, logdir + '/clinics_deleted.json'))
+    .then(deleteDocs)
+    .then(printoutDbStats)
+    .then(function(result) {
+      console.log(result.length + ' clinics deleted!\n');
+      return;
+    });
+};
+
+
+// --------
+
+if (process.argv.length < 6) {
+  console.log('Not enough arguments.\n');
+  console.log('Usage:\nnode delete_training_data.js <branchId> ' +
+    '<startTime> <endTime> <logdir> [dryrun]\n');
+  console.log('Will use DB URL+credentials from $COUCH_URL.');
+  console.log('Deletes all \'data_record\', \'person\' and \'clinic\' data ' +
+    'from a given branch (\'district_hospital\' type) that was created ' +
+    'between the two timestamps.');
+  console.log('The deleted docs will be written out to json files in the ' +
+    'logdir.');
+  console.log('The dryrun arg will run the whole process, including writing the files, without actually doing the deletions.\n');
+  console.log('Example:\nexport COUCH_URL=\'http://admin:pass@localhost:5984/medic\'; node delete_training_data.js 52857bf2cef066525b2feb82805fb373 "2016-04-11 07:00 GMT+3:00" "2016-04-25 17:00 GMT+3:00" ./training_data_20160425 dryrun');
+  process.exit();
+}
+
+var now = new Date();
+var dbUrl = process.env.COUCH_URL;
+var branchId = process.argv[2];
+var start = new Date(process.argv[3]);
+var end = new Date(process.argv[4]);
+var logdir = process.argv[5] + '/' + now.getTime();
+var dryrun = process.argv[6];
+dryrun = (dryrun === 'dryrun');
+var batchSize = 200;
+
+setupLogging(logdir, 'debug.log');
+
+console.log('Now is ' + now.toUTCString() + '   (' + now + ')   (' + now.getTime() + ')');
+
 var db = new PouchDB(dbUrl);
 var startTimestamp = start.getTime();
 var endTimestamp = end.getTime();
 
 userConfirm()
-  .then(function() {
-    console.log('Deleting reports');
-    return;
-  })
-  .then(_.partial(getDataReportsForBranch, branchId))
-  .then(_.partial(filterByDate, _, startTimestamp, endTimestamp))
-  .then(_.partial(writeDocsToFile, logdir + '/reports_deleted.json'))
-  .then(deleteDocs)
-  .then(printoutDbStats)
-  .then(function(result) {
-    console.log('Reports deleted!\n\nDeleting persons');
-    return result;
-  })
-  .then(_.partial(getContactsForBranch, branchId))
-  .then(_.partial(filterByDate, _, startTimestamp, endTimestamp))
-  .then(_.partial(filterByType, _, 'person'))
-  .then(cleanContactPersons)
-  .then(printoutDbStats)
-  .then(_.partial(writeDocsToFile, logdir + '/persons_deleted.json'))
-  .then(deleteDocs)
-  .then(printoutDbStats)
-  .then(function(result) {
-    console.log('Persons deleted!\n\nDeleting clinics');
-    return result;
-  })
-  // Need to fetch them all over again, because they could have been edited if
-  // their contact was just deleted.
-  .then(_.partial(getContactsForBranch, branchId))
-  .then(_.partial(filterByDate, _, startTimestamp, endTimestamp))
-  .then(_.partial(filterByType, _, 'clinic'))
-  .then(_.partial(writeDocsToFile, logdir + '/clinics_deleted.json'))
-  .then(deleteDocs)
-  .then(printoutDbStats)
-  .then(function(result) {
-    console.log('Clinics deleted!');
-    return result;
-  })
+ // .then(_.partial(deleteReports, branchId, startTimestamp, endTimestamp, logdir, batchSize))
+ // .then(_.partial(deletePersons, branchId, startTimestamp, endTimestamp, logdir, batchSize))
+ // .then(_.partial(deleteClinics, branchId, startTimestamp, endTimestamp, logdir, batchSize))
   .catch(function (err) {
     console.log('Error!!!');
     console.log(err);

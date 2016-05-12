@@ -14,8 +14,48 @@ var feedback = require('../modules/feedback'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', 'Facility', 'FacilityHierarchy', 'JsonForms', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'CheckDate', 'DeleteDoc', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'Auth', 'TrafficStats', 'XmlForms', 'RulesEngine', 'PLACE_TYPES', '$q', 'Search', 'Modal',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, Facility, FacilityHierarchy, JsonForms, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, CheckDate, DeleteDoc, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, Auth, TrafficStats, XmlForms, RulesEngine, PLACE_TYPES, $q, Search, Modal) {
+    function (
+      $log,
+      $q,
+      $rootScope,
+      $scope,
+      $state,
+      $timeout,
+      $translate,
+      $window,
+      APP_CONFIG,
+      Auth,
+      BaseUrlService,
+      Changes,
+      CheckDate,
+      Contact,
+      CountMessages,
+      DB,
+      DBSync,
+      DeleteDoc,
+      Enketo,
+      Facility,
+      FacilityHierarchy,
+      JsonForms,
+      Language,
+      LiveListConfig,
+      Modal,
+      PLACE_TYPES,
+      ReadMessages,
+      RulesEngine,
+      Search,
+      SendMessage,
+      SetLanguageCookie,
+      Session,
+      Settings,
+      Snackbar,
+      TrafficStats,
+      UpdateSettings,
+      UpdateUser,
+      UserSettings,
+      XmlForms
+    ) {
+      'ngInject';
 
       Session.init();
 
@@ -209,7 +249,8 @@ var feedback = require('../modules/feedback'),
       $scope.navigationCancel = function() {
         Modal({
           templateUrl: 'templates/modals/navigation_confirm.html',
-          controller: 'ConfirmModalCtrl'
+          controller: 'ConfirmModalCtrl',
+          args: { processingFunction: null }
         }).then(function () {
             if ($scope.cancelCallback) {
               $scope.cancelCallback();
@@ -295,18 +336,27 @@ var feedback = require('../modules/feedback'),
       };
       updateAvailableFacilities();
 
-      // TODO: split this out so that these only need to be run when the pages
-      //       we care about are actually loaded
-      // FIXME: we need to defer it like this because otherwise the selector
-      //        doesn't select anything. I know, I know, I don't know what I'm
-      //        doing with my life either
-      $timeout(function() {
-        $('.update-facility [name=facility], #edit-user-profile [name=contact]').each(function(idx, el) {
-          select2Ajax.init($translate, Search, DB, $q)($(el), 'person', {
-            allowNew: false,
-          });
+      var setupSelect2Ajax = function(selector) {
+        $(selector).each(function(idx, el) {
+          var module = select2Ajax.init($translate, Search, DB, $q);
+          module($(el), 'person', { allowNew: false })
+            .catch(function(err) {
+              $log.error('Error initialising select2', err);
+            });
         });
-      });
+      };
+
+      $scope.setupEditUser = function() {
+        setupSelect2Ajax('#edit-user-profile [name=contact]');
+      };
+
+      $scope.setupEditReport = function() {
+        setupSelect2Ajax('.edit-report-dialog [name=facility]');
+      };
+
+      $scope.setupUpdateFacility = function() {
+        setupSelect2Ajax('.update-facility-dialog [name=facility]');
+      };
 
       var findIdInContactHierarchy = function(id, hierarchy) {
         return _.find(hierarchy, function(entry) {
@@ -781,6 +831,6 @@ var feedback = require('../modules/feedback'),
       }
 
     }
-  ]);
+  );
 
 }());

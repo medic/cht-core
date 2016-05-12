@@ -56,7 +56,7 @@ describe('DB service', function() {
       chai.expect(DbNameService.callCount).to.equal(1);
       chai.expect(pouchDB.callCount).to.equal(1);
       chai.expect(pouchDB.args[0][0]).to.equal('ftp//myhost:21/medicdb');
-      chai.expect(pouchDB.args[0][1]).to.deep.equal({ ajax: { timeout: 30000 } });
+      chai.expect(pouchDB.args[0][1]).to.deep.equal({ skip_setup: true, ajax: { timeout: 30000 } });
       done();
     });
 
@@ -86,9 +86,9 @@ describe('DB service', function() {
       chai.expect(DbNameService.callCount).to.equal(1);
       chai.expect(pouchDB.callCount).to.equal(2);
       chai.expect(pouchDB.args[0][0]).to.equal('ftp//myhost:21/medicdb');
-      chai.expect(pouchDB.args[0][1]).to.deep.equal({ ajax: { timeout: 30000 } });
+      chai.expect(pouchDB.args[0][1]).to.deep.equal({ skip_setup: true, ajax: { timeout: 30000 } });
       chai.expect(pouchDB.args[1][0]).to.equal('ftp//myhost:21/auditdb');
-      chai.expect(pouchDB.args[1][1]).to.deep.equal({ ajax: { timeout: 30000 } });
+      chai.expect(pouchDB.args[1][1]).to.deep.equal({ skip_setup: true, ajax: { timeout: 30000 } });
       done();
     });
 

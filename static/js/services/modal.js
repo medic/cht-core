@@ -24,16 +24,16 @@ var _ = require('underscore');
    *   doMessedUpThings();
    * });
    */
-  inboxServices.factory('Modal', ['$uibModal',
-    function($uibModal) {
+  inboxServices.factory('Modal', ['$q', '$uibModal',
+    function($q, $uibModal) {
       return function(options) {
         var formattedOptions = {};
         if (!options.templateUrl) {
-          return Promise.reject('No templateUrl speficied.');
+          return $q.reject('No templateUrl speficied.');
         }
         formattedOptions.templateUrl = options.templateUrl;
         if (!options.controller) {
-          return Promise.reject('No controller speficied.');
+          return $q.reject('No controller speficied.');
         }
         formattedOptions.controller = options.controller;
         if (options.args) {
