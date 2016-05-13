@@ -7,8 +7,7 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditUserCtrl',
-    ['$rootScope', '$scope', 'DB', 'Facility', 'Language', 'Session', 'SetLanguage', 'UpdateUser', 'translateFilter', 'PLACE_TYPES', '$window',
-    function ($rootScope, $scope, DB, Facility, Language, Session, SetLanguage, UpdateUser, translateFilter, PLACE_TYPES, $window) {
+    function ($rootScope, $scope, $window, DB, Facility, Language, PLACE_TYPES, Session, SetLanguage, UpdateUser, translateFilter) {
 
       Facility({ types: PLACE_TYPES }, function(err, facilities) {
         if (err) {
@@ -206,6 +205,6 @@ var modal = require('../modules/modal');
           });
       };
     }
-  ]);
+  );
 
 }());
