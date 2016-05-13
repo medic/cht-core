@@ -7,8 +7,8 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditUserCtrl',
-    ['$rootScope', '$scope', 'DB', 'Facility', 'Language', 'Session', 'SetLanguage', 'UpdateUser', 'translateFilter', 'PLACE_TYPES',
-    function ($rootScope, $scope, DB, Facility, Language, Session, SetLanguage, UpdateUser, translateFilter, PLACE_TYPES) {
+    ['$rootScope', '$scope', 'DB', 'Facility', 'Language', 'Session', 'SetLanguage', 'UpdateUser', 'translateFilter', 'PLACE_TYPES', '$window',
+    function ($rootScope, $scope, DB, Facility, Language, Session, SetLanguage, UpdateUser, translateFilter, PLACE_TYPES, $window) {
 
       Facility({ types: PLACE_TYPES }, function(err, facilities) {
         if (err) {
@@ -78,25 +78,41 @@ var modal = require('../modules/modal');
 
       var validatePassword = function() {
         $scope.errors = {};
-        if (!$scope.editUserModel.id && !$scope.editUserModel.password) {
-          $scope.errors.password = translateFilter('field is required', {
-            field: translateFilter('Password')
-          });
-        } else if ($scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
-          $scope.errors.password = translateFilter('Passwords must match');
+        var newUser = !$scope.editUserModel.id;
+        if (newUser) {
+          if (!$scope.editUserModel.password) {
+            $scope.errors.password = translateFilter('field is required', {
+              field: translateFilter('Password')
+            });
+            return false;
+          }
         }
+        if ($scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
+          $scope.errors.password = translateFilter('Passwords must match');
+          return false;
+        }
+        return true;
+      };
+
+      var validateUser = function() {
+        $scope.errors = {};
+        validatePassword();
+        validateName();
         return !Object.keys($scope.errors).length;
       };
 
-      var validate = function() {
+      var validateUserSettings = function() {
         $scope.errors = {};
-        validatePassword();
+        validateName();
+        return !Object.keys($scope.errors).length;
+      };
+
+      var validateName = function() {
         if (!$scope.editUserModel.name) {
           $scope.errors.name = translateFilter('field is required', {
             field: translateFilter('User Name')
           });
         }
-        return !Object.keys($scope.errors).length;
       };
 
       var getRoles = function(type, includeAdmin) {
@@ -139,7 +155,7 @@ var modal = require('../modules/modal');
         if (!err) {
           if ($scope.editUserModel.password) {
             // reload the page so the user can log in with the new password
-            document.location.reload(true);
+            $window.location.reload(true);
           }
           $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
           $scope.editUserModel = null;
@@ -161,26 +177,34 @@ var modal = require('../modules/modal');
         }
       };
 
-      $scope.editUser = function(settingsOnly) {
-        if (settingsOnly || validate()) {
-          var modalId = settingsOnly ? '#edit-user-settings' : '#edit-user-profile';
-          var pane = modal.start($(modalId));
-          var settings = getSettingsUpdates();
-          var user = settingsOnly ? null : getUserUpdates();
-          UpdateUser($scope.editUserModel.id, settings, user)
-            .then(function() {
-              if (settings.language && Session.userCtx().name === $scope.editUserModel.name) {
-                // editing current user, so update language
-                SetLanguage(settings.language);
-              }
-              updateComplete(pane);
-            })
-            .catch(function(err) {
-              updateComplete(pane, err);
-            });
+      // #edit-user-settings is the limited set of edits that any user can do to itself.
+      $scope.editUserSettings = function() {
+        if (validateUserSettings()) {
+          saveEdit('#edit-user-settings', $scope.editUserModel.id, getSettingsUpdates());
         }
       };
 
+      // #edit-user-profile is the admin view, which has additional fields.
+      $scope.editUser = function() {
+        if (validateUser()) {
+          saveEdit('#edit-user-profile', $scope.editUserModel.id, getSettingsUpdates(), getUserUpdates());
+        }
+      };
+
+      var saveEdit = function(modalId, userId, settingsUpdates, userUpdates) {
+        var pane = modal.start($(modalId));
+        UpdateUser(userId, settingsUpdates, userUpdates)
+          .then(function() {
+            if (settingsUpdates.language && Session.userCtx().name === settingsUpdates.name) {
+              // editing current user, so update language
+              SetLanguage(settingsUpdates.language);
+            }
+            updateComplete(pane);
+          })
+          .catch(function(err) {
+            updateComplete(pane, err);
+          });
+      };
     }
   ]);
 
