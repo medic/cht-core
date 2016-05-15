@@ -371,7 +371,6 @@ var feedback = require('../modules/feedback'),
           $scope.readStatus = data;
         });
       };
-      $scope.updateReadStatus();
       Changes({
         key: 'inbox-read-status',
         filter: function(change) {
@@ -685,6 +684,8 @@ var feedback = require('../modules/feedback'),
       };
 
       $scope.setupFilters = function() {
+
+        $scope.updateReadStatus();
 
         $('#search').on('click', function(e) {
           e.preventDefault();
