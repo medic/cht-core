@@ -136,7 +136,7 @@ var _ = require('underscore'),
                   };
                 })
                 .catch(function(err) {
-                  console.error('Error fetching reports', err);
+                  $log.error('Error fetching reports', err);
                 });
             });
           })

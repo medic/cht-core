@@ -7,11 +7,11 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditUserCtrl',
-    function ($rootScope, $scope, $window, DB, Facility, Language, PLACE_TYPES, Session, SetLanguage, UpdateUser, translateFilter) {
+    function ($log, $rootScope, $scope, $window, DB, Facility, Language, PLACE_TYPES, Session, SetLanguage, UpdateUser, translateFilter) {
 
       Facility({ types: PLACE_TYPES }, function(err, facilities) {
         if (err) {
-          return console.log('Error fetching facilities', err);
+          return $log.error('Error fetching facilities', err);
         }
         $scope.facilities = facilities;
       });

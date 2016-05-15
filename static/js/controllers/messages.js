@@ -58,7 +58,7 @@ var _ = require('underscore'),
         }
         MessageContact({ }, function(err, data) {
           if (err) {
-            return console.log('Error fetching contact', err);
+            return $log.error('Error fetching contact', err);
           }
           $scope.loading = false;
           options.messages = data;

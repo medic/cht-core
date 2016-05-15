@@ -37,8 +37,14 @@ var _ = require('underscore'),
   };
 
   inboxControllers.controller('ConfigurationExportCtrl',
-    ['$scope', 'DownloadUrl', 'DbView',
-    function ($scope, DownloadUrl, DbView) {
+    function (
+      $log,
+      $scope,
+      DbView,
+      DownloadUrl
+    ) {
+
+      'ngInject';
 
       var options =  { params: { include_docs: true, descending: true, limit: 20 } };
       DbView('feedback', options)
@@ -46,7 +52,7 @@ var _ = require('underscore'),
           $scope.feedback = mapFeedback(data);
         })
         .catch(function(err) {
-          return console.error('Error fetching feedback', err);
+          return $log.error('Error fetching feedback', err);
         });
 
       $scope.url = {};
@@ -63,12 +69,12 @@ var _ = require('underscore'),
         },
         function(err) {
           if (err) {
-            console.error('Error fetching url', err);
+            $log.error('Error fetching url', err);
           }
         }
       );
 
     }
-  ]);
+  );
 
 }());

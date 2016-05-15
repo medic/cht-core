@@ -5,8 +5,15 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsContentCtrl',
-    ['$scope', '$stateParams', 'Changes', 'MessageState',
-    function ($scope, $stateParams, Changes, MessageState) {
+    function (
+      $log,
+      $scope,
+      $stateParams,
+      Changes,
+      MessageState
+    ) {
+
+      'ngInject';
 
       $scope.selectReport($stateParams.id);
       $scope.clearCancelTarget();
@@ -26,7 +33,7 @@
         var groupNumber = group.rows[0].group;
         MessageState.set(id, groupNumber, from, to).catch(function(err) {
           group.loading = false;
-          console.log('Error setting message state', err);
+          $log.error('Error setting message state', err);
         });
       };
 
@@ -54,6 +61,6 @@
         }
       });
     }
-  ]);
+  );
 
 }());

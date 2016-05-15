@@ -22,8 +22,17 @@ var _ = require('underscore');
   };
 
   inboxControllers.controller('ConfigurationTranslationMessagesCtrl',
-    ['$scope', '$rootScope', '$q', 'translateFilter', 'Settings', 'Language', 'OutgoingMessagesConfiguration',
-    function ($scope, $rootScope, $q, translateFilter, Settings, Language, OutgoingMessagesConfiguration) {
+    function (
+      $log,
+      $q,
+      $rootScope,
+      $scope,
+      Language,
+      OutgoingMessagesConfiguration,
+      Settings
+    ) {
+
+      'ngInject';
 
       var updateTranslationModels = function() {
         Settings()
@@ -40,7 +49,7 @@ var _ = require('underscore');
             });
           })
           .catch(function(err) {
-            console.log('Error loading settings', err);
+            $log.error('Error loading settings', err);
           });
       };
 
@@ -58,7 +67,7 @@ var _ = require('underscore');
           }, true);
         })
         .catch(function(err) {
-          console.log('Error loading settings', err);
+          $log.error('Error loading settings', err);
         });
 
       $scope.prepareEditTranslation = function(translation) {
@@ -70,6 +79,6 @@ var _ = require('underscore');
         }
       });
     }
-  ]);
+  );
 
 }());

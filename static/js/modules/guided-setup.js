@@ -99,7 +99,7 @@ var libphonenumber = require('libphonenumber/utils'),
       $('#setup-wizard-save').removeClass('disabled');
       $('#guided-setup .loader').hide();
       if (err) {
-        console.log('Error updating settings', err);
+        console.error('Error updating settings', err);
         $('#guided-setup .error')
           .text(translateFilter('Error saving settings'))
           .show();
@@ -133,7 +133,7 @@ var libphonenumber = require('libphonenumber/utils'),
         }
       })
       .catch(function(err) {
-        console.log('Error fetching settings', err);
+        console.error('Error fetching settings', err);
       });
   };
 
