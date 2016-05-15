@@ -8,8 +8,15 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('DeleteLanguageCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'Settings', 'UpdateSettings',
-    function ($scope, $rootScope, translateFilter, Settings, UpdateSettings) {
+    function (
+      $rootScope,
+      $scope,
+      $translate,
+      Settings,
+      UpdateSettings
+    ) {
+
+      'ngInject';
 
       $scope.$on('DeleteLanguageInit', function(e, language) {
         $scope.language = language;
@@ -19,10 +26,9 @@ var _ = require('underscore'),
         var pane = modal.start($('#delete-language'));
         var code = $scope.language && $scope.language.code;
         if (!code) {
-          return pane.done(
-            translateFilter('Error saving settings'),
-            new Error('No language code in $scope so could not delete.')
-          );
+          $translate('Error saving settings').then(function(message) {
+            return pane.done(message, new Error('No language code in $scope so could not delete.'));
+          });
         }
         Settings()
           .then(function(settings) {
@@ -32,7 +38,10 @@ var _ = require('underscore'),
 
             UpdateSettings({ locales: locales }, function(err) {
               if (err) {
-                return pane.done(translateFilter('Error saving settings'), err);
+                $translate('Error saving settings').then(function(message) {
+                  pane.done(message, err);
+                });
+                return;
               }
               $scope.language = null;
               $rootScope.$broadcast('LanguageUpdated', {
@@ -43,10 +52,12 @@ var _ = require('underscore'),
             });
           })
           .catch(function(err) {
-            pane.done(translateFilter('Error retrieving settings'), err);
+            $translate('Error retrieving settings').then(function(message) {
+              pane.done(message, err);
+            });
           });
       };
     }
-  ]);
+  );
 
 }());

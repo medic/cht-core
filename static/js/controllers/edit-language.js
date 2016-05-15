@@ -20,26 +20,34 @@ var _ = require('underscore'),
     }
   };
 
-  var validate = function(model, translateFilter) {
+  var validate = function(model, $translate) {
     var errors = null;
     if (!model.name) {
       errors = errors || {};
-      errors.name = translateFilter('field is required', {
-        field: translateFilter('Name')
+      errors.name = $translate.instant('field is required', {
+        field: $translate.instant('Name')
       });
     }
     if (!model.code) {
       errors = errors || {};
-      errors.code = translateFilter('field is required', {
-        field: translateFilter('Language code')
+      errors.code = $translate.instant('field is required', {
+        field: $translate.instant('Language code')
       });
     }
     return errors;
   };
 
   inboxControllers.controller('EditLanguageCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'Settings', 'UpdateSettings',
-    function ($scope, $rootScope, translateFilter, Settings, UpdateSettings) {
+    function (
+      $rootScope,
+      $scope,
+      $translate,
+      Settings,
+      UpdateSettings
+    ) {
+
+      'ngInject';
+
       $scope.$on('EditLanguageInit', function(e, language) {
         $scope.language = {
           code: language && language.code,
@@ -49,7 +57,7 @@ var _ = require('underscore'),
         $scope.errors = {};
       });
       $scope.saveLanguage = function() {
-        $scope.errors = validate($scope.language, translateFilter);
+        $scope.errors = validate($scope.language, $translate);
         if (!$scope.errors) {
           var pane = modal.start($('#edit-language'));
           Settings()
@@ -58,7 +66,10 @@ var _ = require('underscore'),
               update(locales, $scope.language, $scope.editing);
               UpdateSettings({ locales: locales }, function(err) {
                 if (err) {
-                  return pane.done(translateFilter('Error saving settings'), err);
+                  $translate('Error saving settings').then(function(message) {
+                    pane.done(message, err);
+                  });
+                  return;
                 }
                 $scope.language = null;
                 $scope.editing = null;
@@ -71,11 +82,13 @@ var _ = require('underscore'),
               });
             })
             .catch(function(err) {
-              pane.done(translateFilter('Error retrieving settings'), err);
+              $translate('Error retrieving settings').then(function(message) {
+                pane.done(message, err);
+              });
             });
         }
       };
     }
-  ]);
+  );
 
 }());

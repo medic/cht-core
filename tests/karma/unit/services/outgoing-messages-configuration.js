@@ -6,11 +6,6 @@ describe('OutgoingMessagesConfiguration service', function() {
 
   beforeEach(function() {
     module('inboxApp');
-    module(function($provide) {
-      $provide.value('translateFilter', function(key) {
-        return '{' + key + '}';
-      });
-    });
     inject(function($injector) {
       service = $injector.get('OutgoingMessagesConfiguration');
     });
@@ -26,7 +21,7 @@ describe('OutgoingMessagesConfiguration service', function() {
 
   var expected = [
     {
-      label: '{Registrations} › P › {Messages}',
+      label: 'Registrations › P › Messages',
       translations: [
         {
           path: 'registrations[0].messages[0]',
@@ -44,7 +39,7 @@ describe('OutgoingMessagesConfiguration service', function() {
       ]
     },
     {
-      label: '{Registrations} › P › {Validations}',
+      label: 'Registrations › P › Validations',
       translations: [
         {
           path: 'registrations[0].validations.list[0]',
@@ -75,7 +70,7 @@ describe('OutgoingMessagesConfiguration service', function() {
       ]
     },
     {
-      label: '{Schedules} › ANC Reminders LMP › {Messages}',
+      label: 'Schedules › ANC Reminders LMP › Messages',
       translations: [
         {
           path: 'schedules[0].messages[0]',
@@ -98,7 +93,7 @@ describe('OutgoingMessagesConfiguration service', function() {
       ]
     },
     {
-      label: '{Patient Report} › Visits › {Messages}',
+      label: 'Patient Report › Visits › Messages',
       translations: [
         {
           path: 'patient_reports[0].messages[0]',
@@ -129,7 +124,7 @@ describe('OutgoingMessagesConfiguration service', function() {
       ]
     },
     {
-      label: '{Patient Report} › Visits › {Validations}',
+      label: 'Patient Report › Visits › Validations',
       translations: [
         {
           path: 'patient_reports[0].validations.list[0]',
@@ -143,7 +138,7 @@ describe('OutgoingMessagesConfiguration service', function() {
       ]
     },
     {
-      label: '{Notifications} › {Messages}',
+      label: 'Notifications › Messages',
       translations: [
         {
           path: 'notifications.messages[0]',
@@ -175,7 +170,7 @@ describe('OutgoingMessagesConfiguration service', function() {
       ]
     },
     {
-      label: '{Notifications} › {Validations}',
+      label: 'Notifications › Validations',
       translations: [
         {
           path: 'notifications.validations.list[0]',
