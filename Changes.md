@@ -2,9 +2,10 @@
 
 ## 2.6.3
 
-### May 11, 2016
+### May 16, 2016
 
 - "console not defined" error when loading page. Issue: #2277
+- Pouch doesn't update seq unless something has changed. Issue: #2288
 
 ## 2.6.2
 
