@@ -77,7 +77,6 @@ var modal = require('../modules/modal');
       };
 
       var validatePassword = function() {
-        $scope.errors = {};
         var newUser = !$scope.editUserModel.id;
         if (newUser) {
           if (!$scope.editUserModel.password) {
@@ -95,16 +94,11 @@ var modal = require('../modules/modal');
       };
 
       var validateUser = function() {
-        $scope.errors = {};
-        validatePassword();
-        validateName();
-        return !Object.keys($scope.errors).length;
+        return validatePassword() && validateName();
       };
 
       var validateUserSettings = function() {
-        $scope.errors = {};
-        validateName();
-        return !Object.keys($scope.errors).length;
+        return validateName();
       };
 
       var validateName = function() {
@@ -112,7 +106,9 @@ var modal = require('../modules/modal');
           $scope.errors.name = translateFilter('field is required', {
             field: translateFilter('User Name')
           });
+          return false;
         }
+        return true;
       };
 
       var getRoles = function(type, includeAdmin) {
@@ -164,6 +160,7 @@ var modal = require('../modules/modal');
       };
 
       $scope.updatePassword = function() {
+        $scope.errors = {};
         if (validatePassword()) {
           var pane = modal.start($('#update-password'));
           var updates = { password: $scope.editUserModel.password };
@@ -179,6 +176,7 @@ var modal = require('../modules/modal');
 
       // #edit-user-settings is the limited set of edits that any user can do to itself.
       $scope.editUserSettings = function() {
+        $scope.errors = {};
         if (validateUserSettings()) {
           saveEdit('#edit-user-settings', $scope.editUserModel.id, getSettingsUpdates());
         }
@@ -186,6 +184,7 @@ var modal = require('../modules/modal');
 
       // #edit-user-profile is the admin view, which has additional fields.
       $scope.editUser = function() {
+        $scope.errors = {};
         if (validateUser()) {
           saveEdit('#edit-user-profile', $scope.editUserModel.id, getSettingsUpdates(), getUserUpdates());
         }
