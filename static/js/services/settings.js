@@ -8,8 +8,15 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('Settings',
-    ['$q', 'Cache', 'DB', 'Session',
-    function($q, Cache, DB, Session) {
+    function(
+      $log,
+      $q,
+      Cache,
+      DB,
+      Session
+    ) {
+
+      'ngInject';
 
       var cache = Cache({
         get: function(callback) {
@@ -37,7 +44,7 @@ var _ = require('underscore'),
             try {
               callback(data);
             } catch(e) {
-              console.error('Error triggering listener callback.', event, data, callback);
+              $log.error('Error triggering listener callback.', event, data, callback);
             }
           });
         }
@@ -65,6 +72,6 @@ var _ = require('underscore'),
         return deferred;
       };
     }
-  ]);
+  );
 
 }());

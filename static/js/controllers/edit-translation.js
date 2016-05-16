@@ -47,8 +47,16 @@ var _ = require('underscore'),
   };
 
   inboxControllers.controller('EditTranslationCtrl',
-    ['$scope', '$rootScope', '$q', 'translateFilter', 'Settings', 'UpdateSettings',
-    function ($scope, $rootScope, $q, translateFilter, Settings, UpdateSettings) {
+    function (
+      $q,
+      $rootScope,
+      $scope,
+      $translate,
+      Settings,
+      UpdateSettings
+    ) {
+
+      'ngInject';
 
       var updateTranslation = function(settings) {
         var model = $scope.translationModel;
@@ -93,11 +101,13 @@ var _ = require('underscore'),
             pane.done();
           })
           .catch(function(err) {
-            pane.done(translateFilter('Error updating settings'), err);
+            $translate('Error updating settings').then(function(message) {
+              pane.done(message, err);
+            });
           });
       };
 
     }
-  ]);
+  );
 
 }());

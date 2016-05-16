@@ -6,8 +6,15 @@ var moment = require('moment');
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('FormatDate', ['$translate', 'Settings', 'MomentLocaleData',
-    function($translate, Settings, MomentLocaleData) {
+  inboxServices.factory('FormatDate',
+    function(
+      $log,
+      $translate,
+      MomentLocaleData,
+      Settings
+    ) {
+
+      'ngInject';
 
       var config = {
         date: 'DD-MMM-YYYY',
@@ -25,7 +32,7 @@ var moment = require('moment');
           config.datetime = res.reported_date_format;
         })
         .catch(function(err) {
-          console.log('Error fetching settings', err);
+          $log.error('Error fetching settings', err);
         });
 
       var format = function(date, key) {
@@ -86,6 +93,6 @@ var moment = require('moment');
         }
       };
     }
-  ]);
+  );
   
 }()); 

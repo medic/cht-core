@@ -5,8 +5,15 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationUsersCtrl',
-    ['$scope', '$rootScope', '$state', 'Users',
-    function ($scope, $rootScope, $state, Users) {
+    function (
+      $log,
+      $rootScope,
+      $scope,
+      $state,
+      Users
+    ) {
+
+      'ngInject';
 
       $scope.updateList = function() {
         $scope.loading = true;
@@ -14,7 +21,7 @@
           $scope.loading = false;
           if (err) {
             $scope.error = true;
-            return console.log('Error fetching users', err);
+            return $log.error('Error fetching users', err);
           }
           $scope.users = users;
         });
@@ -37,6 +44,6 @@
       $scope.updateList();
 
     }
-  ]);
+  );
 
 }());

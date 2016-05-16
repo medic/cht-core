@@ -7,8 +7,14 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ImportTranslationCtrl',
-    ['$scope', 'translateFilter', 'ImportProperties', 'FileReader',
-    function ($scope, translateFilter, ImportProperties, FileReader) {
+    function (
+      $scope,
+      $translate,
+      FileReader,
+      ImportProperties
+    ) {
+
+      'ngInject';
 
       $scope.$on('ImportTranslationInit', function(e, locale) {
         $scope.locale = locale;
@@ -19,22 +25,34 @@ var modal = require('../modules/modal');
         var pane = modal.start($('#import-translation'));
         var file = $('#import-translation [name="translations"]').prop('files')[0];
         if (!file) {
-          return pane.done(translateFilter('field is required', {
-            field: translateFilter('Translation file')
-          }), true);
+          $translate('Translation file').then(function(fieldName) {
+            $translate('field is required', { field: fieldName })
+              .then(function(message) {
+                pane.done(message, true);
+              });
+          });
+          return;
         }
         FileReader(file)
           .then(function(result) {
             ImportProperties(result, $scope.locale.code, function(err) {
-              pane.done(translateFilter('Error parsing file'), err);
+              if (err) {
+                $translate('Error parsing file').then(function(message) {
+                  pane.done(message, err);
+                });
+                return;
+              }
+              pane.done();
             });
           })
           .catch(function(err) {
-            pane.done(translateFilter('Error parsing file'), err);
+            $translate('Error parsing file').then(function(message) {
+              pane.done(message, err);
+            });
           });
       };
 
     }
-  ]);
+  );
 
 }());

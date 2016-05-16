@@ -7,8 +7,17 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationTranslationLanguagesCtrl',
-    ['$scope', '$rootScope', 'Settings', 'UpdateSettings', 'ExportProperties', 'OutgoingMessagesConfiguration',
-    function ($scope, $rootScope, Settings, UpdateSettings, ExportProperties, OutgoingMessagesConfiguration) {
+    function (
+      $log,
+      $rootScope,
+      $scope,
+      ExportProperties,
+      OutgoingMessagesConfiguration,
+      Settings,
+      UpdateSettings
+    ) {
+
+      'ngInject';
 
       var countMissingTranslations = function(translations, locale) {
         var result = 0;
@@ -50,12 +59,12 @@ var _ = require('underscore');
           .then(function(res) {
             var update = _.findWhere(res.locales, { code: locale.code });
             if (!update) {
-              return console.log('Could not find locale to update');
+              return $log.error(new Error('Could not find locale to update'));
             }
             update.disabled = disabled;
             UpdateSettings({ locales: res.locales }, function(err) {
               if (err) {
-                return console.log('Error updating settings', err);
+                return $log.error('Error updating settings', err);
               }
               var model = _.findWhere($scope.languagesModel.locales, { code: locale.code });
               if (model) {
@@ -64,7 +73,7 @@ var _ = require('underscore');
             });
           })
           .catch(function(err) {
-            console.log('Error loading settings', err);
+            $log.error('Error loading settings', err);
           });
       };
 
@@ -81,7 +90,7 @@ var _ = require('underscore');
           };
         })
         .catch(function(err) {
-          console.log('Error loading settings', err);
+          $log.error('Error loading settings', err);
         });
 
       $scope.prepareEditLanguage = function(locale) {
@@ -93,7 +102,7 @@ var _ = require('underscore');
       $scope.setLocale = function(locale) {
         UpdateSettings({ locale: locale.code }, function(err) {
           if (err) {
-            return console.log('Error updating settings', err);
+            return $log.error('Error updating settings', err);
           }
           $scope.languagesModel.default.locale = locale.code;
         });
@@ -101,7 +110,7 @@ var _ = require('underscore');
       $scope.setLocaleOutgoing = function(locale) {
         UpdateSettings({ locale_outgoing: locale.code }, function(err) {
           if (err) {
-            return console.log('Error updating settings', err);
+            return $log.error('Error updating settings', err);
           }
           $scope.languagesModel.default.outgoing = locale.code;
         });
@@ -122,6 +131,6 @@ var _ = require('underscore');
       };
 
     }
-  ]);
+  );
 
 }());

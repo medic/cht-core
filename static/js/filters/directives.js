@@ -12,7 +12,8 @@
     };
   });
 
-  module.directive('mmAuth', ['Auth', function(Auth) {
+  module.directive('mmAuth', function($log, Auth) {
+    'ngInject';
     var link = function(scope, element, attributes) {
       element.addClass('hidden');
       Auth(attributes.mmAuth.split(','))
@@ -21,7 +22,7 @@
         })
         .catch(function(err) {
           if (err) {
-            console.log('Error checking authorization', err);
+            $log.error('Error checking authorization', err);
           }
           element.addClass('hidden');
         });
@@ -30,6 +31,6 @@
       restrict: 'A',
       link: link
     };
-  }]);
+  });
 
 }());

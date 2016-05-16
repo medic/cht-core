@@ -8,8 +8,19 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesContentCtrl', 
-    ['$scope', '$state', '$stateParams', '$timeout', 'ContactConversation', 'MarkAllRead', 'Changes', 'Session',
-    function ($scope, $state, $stateParams, $timeout, ContactConversation, MarkAllRead, Changes, Session) {
+    function (
+      $log,
+      $scope,
+      $state,
+      $stateParams,
+      $timeout,
+      Changes,
+      ContactConversation,
+      MarkAllRead,
+      Session
+    ) {
+
+      'ngInject';
 
       var scrollToUnread = function() {
         var content = $('#message-content');
@@ -29,7 +40,7 @@ var _ = require('underscore'),
         MarkAllRead(docs, true)
           .then($scope.updateReadStatus)
           .catch(function(err) {
-            return console.log('Error marking all as read', err);
+            return $log.error('Error marking all as read', err);
           });
       };
 
@@ -66,7 +77,7 @@ var _ = require('underscore'),
           if (err) {
             $scope.loadingContent = false;
             $scope.error = true;
-            console.log('Error fetching contact conversation', err);
+            $log.error('Error fetching contact conversation', err);
             return;
           }
           if ($scope.selected && $scope.selected.id !== id) {
@@ -110,7 +121,7 @@ var _ = require('underscore'),
           }
           ContactConversation(opts, function(err, data) {
             if (err) {
-              return console.log('Error fetching contact conversation', err);
+              return $log.error('Error fetching contact conversation', err);
             }
             $scope.loadingMoreContent = false;
             var contentElem = $('#message-content');
@@ -194,6 +205,6 @@ var _ = require('underscore'),
         }
       });
     }
-  ]);
+  );
 
 }());

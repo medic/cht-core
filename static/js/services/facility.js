@@ -7,8 +7,16 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Facility', ['DbView', 'Cache', 'CONTACT_TYPES',
-    function(DbView, Cache, CONTACT_TYPES) {
+  inboxServices.factory('Facility',
+    function(
+      $log,
+      Cache,
+      CONTACT_TYPES,
+      DbView
+    ) {
+
+      'ngInject';
+
       var cacheByType = {};
       CONTACT_TYPES.forEach(function(type) {
         cacheByType[type] = Cache({
@@ -34,7 +42,7 @@ var _ = require('underscore'),
         if (!options.types || options.types.indexOf('person') !== -1) {
           // We want to remove as many of these as possible, because for admins
           // it involves downloading a _huge_ amount of data.
-          console.warn('A call to facility with the expectation of having person data', new Error());
+          $log.warn(new Error('A call to facility with the expectation of having person data'));
         }
 
         var relevantCaches = (options.types ? options.types : CONTACT_TYPES).map(function(type) {
@@ -49,7 +57,7 @@ var _ = require('underscore'),
         });
       };
     }
-  ]);
+  );
 
   var descendant = function(id, parent) {
     if (!parent) {

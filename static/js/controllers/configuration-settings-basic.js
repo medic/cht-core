@@ -9,8 +9,16 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationSettingsBasicCtrl',
-    ['$scope', '$timeout', 'translateFilter', 'Settings', 'UpdateSettings',
-    function ($scope, $timeout, translateFilter, Settings, UpdateSettings) {
+    function (
+      $log,
+      $scope,
+      $timeout,
+      Settings,
+      translateFilter,
+      UpdateSettings
+    ) {
+
+      'ngInject';
 
       var validateCountryCode = function() {
         var countryCode = $('#default-country-code').val();
@@ -68,7 +76,7 @@ var _ = require('underscore'),
           };
           UpdateSettings(settings, function(err) {
             if (err) {
-              console.log('Error updating settings', err);
+              $log.error('Error updating settings', err);
               $scope.status = { error: true, msg: translateFilter('Error saving settings') };
             } else {
               $scope.status = { success: true, msg: translateFilter('Saved') };
@@ -96,10 +104,10 @@ var _ = require('underscore'),
           $('#default-country-code').val(res.default_country_code).trigger('change');
         })
         .catch(function(err) {
-          console.log('Error loading settings', err);
+          $log.error('Error loading settings', err);
         });
 
     }
-  ]);
+  );
 
 }());

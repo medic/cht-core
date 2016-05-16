@@ -8,11 +8,13 @@ var _ = require('underscore');
 
   inboxControllers.controller('ReportsContentCtrl',
     function (
+      $log,
       $scope,
       $stateParams,
       Changes,
       MessageState
     ) {
+
       'ngInject';
 
       $scope.selectReport($stateParams.id);
@@ -33,7 +35,7 @@ var _ = require('underscore');
         var groupNumber = group.rows[0].group;
         MessageState.set(id, groupNumber, from, to).catch(function(err) {
           group.loading = false;
-          console.log('Error setting message state', err);
+          $log.error('Error setting message state', err);
         });
       };
 

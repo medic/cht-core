@@ -17,8 +17,15 @@ var moment = require('moment'),
   };
 
   inboxControllers.controller('ConfigurationFormsCtrl',
-    ['$scope', 'Settings', 'UpdateSettings', 'FileReader',
-    function ($scope, Settings, UpdateSettings, FileReader) {
+    function (
+      $log,
+      $scope,
+      FileReader,
+      Settings,
+      UpdateSettings
+    ) {
+
+      'ngInject';
 
       $scope.uploading = false;
 
@@ -27,7 +34,7 @@ var moment = require('moment'),
         $scope.error = !!err;
         $scope.success = !err;
         if (err) {
-          console.log('Upload failed', err);
+          $log.error('Upload failed', err);
         }
       };
 
@@ -74,9 +81,9 @@ var moment = require('moment'),
           $scope.download = generateDownload(settings.forms);
         })
         .catch(function(err) {
-          console.log('Error fetching settings', err);
+          $log.error('Error fetching settings', err);
         });
     }
-  ]);
+  );
 
 }());
