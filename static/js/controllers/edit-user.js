@@ -8,6 +8,7 @@ var modal = require('../modules/modal');
 
   inboxControllers.controller('EditUserCtrl',
     function ($log, $rootScope, $scope, $window, DB, Facility, Language, PLACE_TYPES, Session, SetLanguage, UpdateUser, translateFilter) {
+      'ngInject';
 
       Facility({ types: PLACE_TYPES }, function(err, facilities) {
         if (err) {
