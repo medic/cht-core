@@ -188,8 +188,8 @@ var _ = require('underscore'),
         }
         if (!$scope.selectMode) {
           $scope.clearSelected();
-          $scope.setLoadingContent(report);
         }
+        $scope.setLoadingContent(report);
 
         _fetchFormattedReport(report)
           .then(function(doc) {
@@ -459,15 +459,19 @@ var _ = require('underscore'),
       };
 
       $scope.$on('SelectAll', function() {
+        $scope.setLoadingContent(true);
         Search('reports', $scope.filters, { limit: 10000 }, function(err, data) {
           if (err) {
             return $log.error('Error selecting all', err);
           }
-          $scope.selected = data.map(function(doc) {
-            return { report: doc, expanded: false };
+          FormatDataRecord(data).then(function(formatted) {
+            $scope.selected = formatted.map(function(doc) {
+              return { report: doc, expanded: false };
+            });
+            $scope.settingSelected(true);
+            setActionBar();
+            $('#reports-list input[type="checkbox"]').prop('checked', true);
           });
-          setActionBar();
-          $('#reports-list input[type="checkbox"]').prop('checked', true);
         });
       });
 

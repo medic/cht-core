@@ -1,6 +1,6 @@
 <div class="content-pane right-pane">
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent">
+  <div class="col-sm-8 item-content empty-selection" ng-show="loadingContent && !selectMode">
     <div>
       <div class="loader"></div>
     </div>
@@ -10,9 +10,9 @@
     <div translate>No report selected</div>
   </div>
 
-  <div id="reports-content" class="col-sm-8 item-content item-body" ng-show="!loadingContent && selected.length && selected[0].report.form !== undefined">
+  <div id="reports-content" class="col-sm-8 item-content item-body" ng-show="selectMode || (!loadingContent && selected.length && selected[0].report.form !== undefined)">
 
-    <div class="selection-count" ng-show="selectMode">
+    <div class="selection-count" ng-show="selectMode && selected.length">
       <span ng-show="selected.length === 1" translate>select.mode.count.singular</span>
       <span ng-show="selected.length !== 1" translate translate-values="{ number: {{selected.length}} }">select.mode.count.plural</span>
     </div>
@@ -97,6 +97,10 @@
           </ul>
         </div>
       </div>
+    </div>
+
+    <div ng-show="loadingContent && selectMode">
+      <div class="loader"></div>
     </div>
   </div>
 </div>
