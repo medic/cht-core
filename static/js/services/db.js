@@ -14,8 +14,6 @@ var utils = require('kujua-utils'),
 
       var cache = {};
 
-      $window.PouchDB.adapter('worker', require('worker-pouch'));
-
       var getRemoteUrl = function(name) {
         name = name || DbNameService();
         var port = location.port ? ':' + location.port : '';
@@ -40,8 +38,7 @@ var utils = require('kujua-utils'),
           return Session.navigateToLogin();
         }
         return getFromCache(
-          (name || DbNameService()) + '-user-' + userCtx.name,
-          { adapter: 'worker' }
+          (name || DbNameService()) + '-user-' + userCtx.name
         );
       };
 
