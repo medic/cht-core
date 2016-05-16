@@ -30,6 +30,14 @@ module.exports = function(grunt) {
           to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'mm.dateSelected.daterangepicker\', this);\n'
         }]
       },
+      monkeypatchpouch: {
+        src: [ 'static/dist/inbox.js' ],
+        overwrite: true,
+        replacements: [{
+          from: /      if \(continuous\) \{\n        changesOpts\.live = true;\n        getChanges\(\);\n      \} else \{\n        changesCompleted = true;\n      \}/g,
+          to: '// START MONKEY PATCH FOR https://github.com/pouchdb/pouchdb/issues/5145\n      var complete = function () {\n        if (continuous) {\n          changesOpts.live = true;\n          getChanges();\n        } else {\n          changesCompleted = true;\n        }\n        processPendingBatch(true);\n      };\n      if (!currentBatch && changes.last_seq > last_seq) {\n        writingCheckpoint = true;\n        checkpointer.writeCheckpoint(changes.last_seq, session).then(function () {\n          writingCheckpoint = false;\n          result.last_seq = last_seq = changes.last_seq;\n          complete();\n        })\n        .catch(onCheckpointError);\n      } else {\n        changesCompleted = true;\n        complete();\n      }\n      return;\n// END MONKEY PATCH'
+        }]
+      },
       // replace cache busting which breaks appcache, needed until this is fixed:
       // https://github.com/FortAwesome/Font-Awesome/issues/3286
       monkeypatchfontawesome: {
@@ -313,6 +321,7 @@ module.exports = function(grunt) {
     'browserify:dist',
     'replace:hardcodeappsettings',
     'replace:monkeypatchdate',
+    'replace:monkeypatchpouch',
     'ngtemplates'
   ]);
 
