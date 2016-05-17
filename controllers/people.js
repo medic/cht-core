@@ -93,7 +93,7 @@ var getOrCreatePerson = function(data, callback) {
       }
       callback(null, doc);
     });
-  } else if (_.isObject(data) && _.isUndefined(data._id)) {
+  } else if (_.isObject(data) && _.isUndefined(data._rev)) {
     // create and fetch
     self.createPerson(data, function(err, resp) {
       if (err) {
