@@ -250,14 +250,16 @@ var feedback = require('../modules/feedback'),
         Modal({
           templateUrl: 'templates/modals/navigation_confirm.html',
           controller: 'ConfirmModalCtrl',
-          args: { processingFunction: null }
-        }).then(function () {
-            if ($scope.cancelCallback) {
-              $scope.cancelCallback();
-            }
-          }, function () {
-            $log.debug('User cancelled navigationCancel.');
-          });
+          args: { processingFunction: null, model: null }
+        })
+        .then(function () {
+          if ($scope.cancelCallback) {
+            $scope.cancelCallback();
+          }
+        })
+        .catch(function() {
+          $log.debug('User cancelled navigationCancel.');
+        });
       };
 
       $scope.closeContentPane = function() {

@@ -101,6 +101,19 @@
       border-left-color: #aaa;
     }
   }
+
+  &.disabled {
+    .mm-button {
+      cursor: not-allowed;
+    }
+    .mm-button-dropdown {
+      visibility: hidden;
+    }
+    .mm-button-icon,
+    .mm-button-text {
+      color: @grey;
+    }
+  }
 }
 
 .mm-dropdown-menu-inverse li a:hover {

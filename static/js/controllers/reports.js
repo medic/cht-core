@@ -249,12 +249,14 @@ var _ = require('underscore'),
                 $scope.setSelected(curr);
               } else if (!$scope.isMobile() &&
                          !$scope.selected.length &&
+                         !$scope.selectMode &&
                          $state.is('reports.detail')) {
                 $timeout(function() {
                   var id = $('.inbox-items li').first().attr('data-record-id');
                   $state.go('reports.detail', { id: id }, { location: 'replace' });
                 });
               }
+              syncCheckboxes();
               _initScroll();
             })
             .catch(function(err) {
@@ -297,7 +299,6 @@ var _ = require('underscore'),
             _query();
           }
         }
-
       };
 
       $scope.$on('ClearSelected', function() {
@@ -418,6 +419,10 @@ var _ = require('underscore'),
         });
       };
       $scope.resetFilterModel = function() {
+        if ($scope.selectMode && $scope.selected && $scope.selected.length) {
+          // can't filter when in select mode
+          return;
+        }
         $scope.filters = {};
         SearchFilters.reset();
         $scope.search();
@@ -452,9 +457,13 @@ var _ = require('underscore'),
         }
       });
 
-      $scope.isChecked = function(id) {
-        return !!_.find($scope.selected, function(selection) {
-          return selection.report._id === id;
+      var syncCheckboxes = function() {
+        $('#reports-list li').each(function() {
+          var id = $(this).attr('data-record-id');
+          var found = _.find($scope.selected, function(selection) {
+            return selection.report._id === id;
+          });
+          $(this).find('input[type="checkbox"]').prop('checked', found);
         });
       };
 
@@ -475,11 +484,13 @@ var _ = require('underscore'),
         });
       });
 
-      $scope.$on('DeselectAll', function() {
+      var deselectAll = function() {
         $scope.selected = [];
         setActionBar();
         $('#reports-list input[type="checkbox"]').prop('checked', false);
-      });
+      };
+
+      $scope.$on('DeselectAll', deselectAll);
 
       $scope.$on('export', function() {
         if ($scope.currentTab === 'reports') {
