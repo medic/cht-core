@@ -885,16 +885,20 @@ a.fa:hover {
 
 }
 
-.selection-count {
-  padding: 0.5em 1em;
-  margin: 0;
-  background-color: @label-color;
-  color: #FFFFFF;
-  font-size: 1.1em;
-  font-weight: bold;
+.item-content,
+.inbox-items {
+  .selection-count {
+    padding: 0.5em 1em;
+    margin: 0;
+    background-color: @label-color;
+    color: #FFFFFF;
+    font-size: 1.1em;
+    font-weight: bold;
+  }
 }
 
-.inbox-items .selection-count {
+.inbox-items .selection-count,
+.general-actions .delete-all {
   display: none;
 }
 
@@ -1279,7 +1283,8 @@ a.fa:hover {
       height: 100px;
     }
   }
-  .inbox-items .selection-count {
+  .inbox-items .selection-count,
+  .general-actions .delete-all {
     display: block;
   }
   .filters {
