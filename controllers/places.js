@@ -221,7 +221,7 @@ var getOrCreatePlace = function(place, callback) {
       }
       callback(null, doc);
     });
-  } else if (_.isObject(place) && _.isUndefined(place._id)) {
+  } else if (_.isObject(place) && _.isUndefined(place._rev)) {
     // create and return place
     self._createPlaces(place, function(err, resp) {
       if (err) {
