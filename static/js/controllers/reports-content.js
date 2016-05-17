@@ -53,6 +53,20 @@ var _ = require('underscore');
         }
       };
 
+      $scope.deselect = function(selection, $event) {
+        if ($scope.selectMode) {
+          $event.stopPropagation();
+          for (var i = 0; i < $scope.selected.length; i++) {
+            if ($scope.selected[i].report._id === selection._id) {
+              $scope.selected.splice(i, 1);
+              $('#reports-list li[data-record-id="' + selection._id + '"] input[type="checkbox"]')
+                .prop('checked', false);
+              return;
+            }
+          }
+        }
+      };
+
       Changes({
         key: 'reports-content',
         filter: function(change) {

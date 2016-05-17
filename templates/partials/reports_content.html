@@ -24,6 +24,9 @@
           <span class="fa" ng-class="{'fa-check': report.verified}"></span>
         </span>
         <div class="time" ng-bind-html="report.reported_date | fullDate"></div>
+        <a class="deselect" ng-show="selectMode" ng-click="deselect(report, $event)">
+          <i class="fa fa-minus-circle"></i>
+        </a>
         <mm-sender message="report"></mm-sender>
         <div class="report-name">{{report | title:forms}}</div>
       </div>
