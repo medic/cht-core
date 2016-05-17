@@ -878,19 +878,24 @@ a.fa:hover {
     }
   }
 
-  .selection-count {
-    padding: 0.5em 1em;
-    margin: 0;
-    background-color: @label-color;
-    color: #FFFFFF;
-    font-size: 1.1em;
-    font-weight: bold;
-  }
 
   .task-list > li {
     margin-top: 1em;
   }
 
+}
+
+.selection-count {
+  padding: 0.5em 1em;
+  margin: 0;
+  background-color: @label-color;
+  color: #FFFFFF;
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.inbox-items .selection-count {
+  display: none;
 }
 
 .tasks {
@@ -1273,6 +1278,9 @@ a.fa:hover {
     .padding {
       height: 100px;
     }
+  }
+  .inbox-items .selection-count {
+    display: block;
   }
   .filters {
     padding: 0;

@@ -54,6 +54,10 @@
             <span class="fa fa-check-square-o"></span>
             <p translate>select.mode.select.all</p>
           </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" mm-auth="can_bulk_delete_reports" ng-click="deleteDoc(actionBar.doc)" ng-class="{'mm-icon-disabled': !actionBar.doc.length}">
+            <span class="fa fa-trash-o"></span>
+            <p translate>select.mode.delete.all</p>
+          </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="setSelectMode(false)">
             <span class="fa fa-times-circle-o"></span>
             <p translate>select.mode.stop</p>

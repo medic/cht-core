@@ -266,7 +266,7 @@ var feedback = require('../modules/feedback'),
       };
 
       $scope.clearSelected = function() {
-        $scope.showContent = false;
+        $scope.setShowContent(false);
         $scope.loadingContent = false;
         $scope.showActionBar = false;
         $scope.setTitle();
@@ -276,7 +276,7 @@ var feedback = require('../modules/feedback'),
       $scope.settingSelected = function(refreshing) {
         $scope.loadingContent = false;
         $timeout(function() {
-          $scope.showContent = true;
+          $scope.setShowContent(true);
           $scope.showActionBar = true;
           if (!refreshing) {
             $timeout(function() {
@@ -287,6 +287,10 @@ var feedback = require('../modules/feedback'),
       };
 
       $scope.setShowContent = function(showContent) {
+        if (showContent && $scope.selectMode) {
+          // when in select mode we never show the RHS on mobile
+          return;
+        }
         $scope.showContent = showContent;
       };
 
@@ -305,7 +309,7 @@ var feedback = require('../modules/feedback'),
       $scope.setLoadingContent = function(id) {
         $scope.loadingContent = id;
         $timeout(function() {
-          $scope.showContent = true;
+          $scope.setShowContent(true);
         });
       };
 
@@ -610,6 +614,9 @@ var feedback = require('../modules/feedback'),
       };
 
       $scope.deleteDoc = function(docs) {
+        if (!docs || !docs.length) {
+          return;
+        }
         Modal({
           templateUrl: 'templates/modals/delete_doc_confirm.html',
           controller: 'ConfirmModalCtrl',
