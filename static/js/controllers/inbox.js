@@ -616,7 +616,13 @@ var feedback = require('../modules/feedback'),
       };
 
       $scope.deleteDoc = function(docs) {
-        if (!docs || !docs.length) {
+        if (!docs) {
+          return;
+        }
+        if (!_.isArray(docs)) {
+          docs = [ docs ];
+        }
+        if (!docs.length) {
           return;
         }
         Modal({

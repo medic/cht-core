@@ -18,7 +18,6 @@ var _ = require('underscore');
                 return;
               }
               parent.contact = null;
-              console.log('resolving parent', parent);
               return parent;
             });
         }
@@ -41,7 +40,6 @@ var _ = require('underscore');
         return $q.all(docs.map(function(doc) {
           return getParent(doc)
             .then(function(parent) {
-              console.log('received parent', parent);
               if (parent) {
                 docs.push(parent);
               }
