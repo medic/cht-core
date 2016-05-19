@@ -31,7 +31,7 @@
         <div class="report-name">{{report | title:forms}}</div>
       </div>
 
-      <div ng-show="selection.expanded">
+      <div class="details" ng-show="selection.expanded">
         <ul>
           <li ng-if="report.form && report.content_type !== 'xml'" ng-repeat="field in report.fields.data">
             <label>
