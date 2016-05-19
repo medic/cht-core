@@ -20,6 +20,7 @@ var SETTINGS_EDITABLE_FIELDS  = [
   'known',
   'place',
   'contact',
+  'external_id',
   'type'
 ];
 
@@ -330,6 +331,7 @@ var mapUsers = function(users, settings, facilities, admins) {
       type: getType(user.doc, admins),
       language: { code: setting.language },
       contact: getDoc(setting.contact_id, facilities),
+      external_id: setting.external_id,
       known: user.doc.known
     };
   });

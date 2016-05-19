@@ -102,6 +102,16 @@ exports['getSettingsUpdates reassigns place and contact fields'] = function(test
   test.done();
 };
 
+exports['getSettingsUpdates supports external_id field'] = function(test) {
+  var data = {
+    fullname: 'John',
+    external_id: 'CHP020'
+  };
+  var settings = controller._getSettingsUpdates('john', data);
+  test.equals(settings.external_id, 'CHP020');
+  test.equal(settings.fullname, 'John');
+  test.done();
+};
 
 exports['getUserUpdates enforces name field based on id'] = function(test) {
   var data = {
@@ -208,7 +218,6 @@ exports['getType returns role when user is in admins list and has role'] = funct
 };
 
 exports['getList collects user infos'] = function(test) {
-  test.expect(16);
   sinon.stub(controller, '_getAdmins').callsArg(0);
   sinon.stub(controller, '_getAllUsers').callsArgWith(0, null, [
     {
@@ -241,7 +250,8 @@ exports['getList collects user infos'] = function(test) {
       name: 'milan',
       fullname: 'Milan A',
       email: 'm@a.com',
-      phone: '987654321'
+      phone: '987654321',
+      external_id: 'LTT093'
     }
   ]);
   controller.getList(function(err, data) {
@@ -263,6 +273,7 @@ exports['getList collects user infos'] = function(test) {
     test.equals(milan.phone, '987654321');
     test.deepEqual(milan.place, facilityb);
     test.equals(milan.type, 'district-admin');
+    test.equals(milan.external_id, 'LTT093');
     test.done();
   });
 };
