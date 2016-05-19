@@ -38,6 +38,14 @@ module.exports = function(grunt) {
           to: '// START MONKEY PATCH FOR https://github.com/pouchdb/pouchdb/issues/5145\n      var complete = function () {\n        if (continuous) {\n          changesOpts.live = true;\n          getChanges();\n        } else {\n          changesCompleted = true;\n        }\n        processPendingBatch(true);\n      };\n      if (!currentBatch && changes.last_seq > last_seq) {\n        writingCheckpoint = true;\n        checkpointer.writeCheckpoint(changes.last_seq, session).then(function () {\n          writingCheckpoint = false;\n          result.last_seq = last_seq = changes.last_seq;\n          complete();\n        })\n        .catch(onCheckpointError);\n      } else {\n        changesCompleted = true;\n        complete();\n      }\n      return;\n// END MONKEY PATCH'
         }]
       },
+      monkeypatchworkerpouch: {
+        src: [ 'static/dist/inbox.js' ],
+        overwrite: true,
+        replacements: [{
+          from: /self.onmessage = function \(event\) \{/g,
+          to: '(function(con) { var prop, method; var empty = {}; var dummy = function() {}; var properties = \'memory\'.split(\',\'); var methods = \'assert,clear,count,debug,dir,dirxml,error,exception,group,groupCollapsed,groupEnd,info,log,markTimeline,profile,profileEnd,table,time,timeEnd,timeStamp,trace,warn\'.split(\',\'); while (prop = properties.pop()) con[prop] = empty; while (method = methods.pop()) con[method] = dummy; })(self.console = self.console || {}); self.onmessage = function (event) {'
+        }]
+      },
       // replace cache busting which breaks appcache, needed until this is fixed:
       // https://github.com/FortAwesome/Font-Awesome/issues/3286
       monkeypatchfontawesome: {
@@ -325,6 +333,7 @@ module.exports = function(grunt) {
     'replace:hardcodeappsettings',
     'replace:monkeypatchdate',
     'replace:monkeypatchpouch',
+    'replace:monkeypatchworkerpouch',
     'ngtemplates'
   ]);
 
