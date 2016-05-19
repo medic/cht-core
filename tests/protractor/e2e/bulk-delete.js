@@ -1,5 +1,4 @@
-var utils = require('../utils'),
-    environment = require('../auth')();
+var utils = require('../utils');
 
 describe('Bulk delete reports', function() {
 
