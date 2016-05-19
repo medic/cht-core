@@ -79,7 +79,7 @@ describe('Auditing', function() {
     element(by.id('messages-tab')).click();
 
     // check message is displayed correctly
-    var listitem = element(by.css('.inbox-items li[data-record-id="+64555555555"]'));
+    listitem = element(by.css('.inbox-items li[data-record-id="+64555555555"]'));
     browser.wait(function() {
       return browser.isElementPresent(listitem);
     }, 5000);
