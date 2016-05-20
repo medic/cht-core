@@ -27,6 +27,7 @@
 
 var PouchDB = require('pouchdb');
 var _ = require('underscore');
+var url = require('url');
 var utils = require('./delete_training_data_utils.js');
 
 var deleteReports = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
@@ -122,11 +123,13 @@ console.log('Now is ' + now.toUTCString() + '   (' + now + ')   (' + now.getTime
 var db = new PouchDB(dbUrl);
 var startTimestamp = start.getTime();
 var endTimestamp = end.getTime();
-
+var parsedUrl = url.parse(dbUrl);
 
 utils.fetchBranchInfo(db, branchId)
   .then(function(branchInfo) {
-    var message = '\nStarting deletion process with\ndbUrl = $COUCH_URL' +
+    var host
+    var message = '\nStarting deletion process with' + 
+      '\ndbUrl = ' + parsedUrl.host + parsedUrl.pathname +
       '\nbranch = ' + JSON.stringify(branchInfo) +
       '\nstartTimeMillis = ' + start.toUTCString() + ' (' + start.getTime() +
       ')\nendTimeMillis = ' + end.toUTCString() + ' (' + end.getTime() + ')\nlogdir = ' + logdir +
