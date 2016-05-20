@@ -7,9 +7,20 @@ var utils = require('kujua-utils'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('DB', [
-    '$http', '$timeout', '$log', '$window', 'pouchDB', 'Session', 'DbNameService', 'CleanETag', 'E2ETESTING',
-    function($http, $timeout, $log, $window, pouchDB, Session, DbNameService, CleanETag, E2ETESTING) {
+  inboxServices.factory('DB',
+    function(
+      $http,
+      $log,
+      $timeout,
+      $window,
+      CleanETag,
+      DbNameService,
+      E2ETESTING,
+      pouchDB,
+      Session
+    ) {
+
+      'ngInject';
 
       var cache = {};
 
@@ -142,6 +153,6 @@ var utils = require('kujua-utils'),
         watchDesignDoc: watchDesignDoc
       };
     }
-  ]);
+  );
 
 }());
