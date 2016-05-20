@@ -7,6 +7,7 @@
 var PouchDB = require('pouchdb');
 var _ = require('underscore');
 var fs = require('fs');
+var url = require('url');
 var utils = require('./delete_training_data_utils.js');
 
 var getUsernames = function(groupFile) {
@@ -237,10 +238,12 @@ console.log('Now is ' + now.toUTCString() + '   (' + now + ')   (' + now.getTime
 var db = new PouchDB(dbUrl);
 var startTimestamp = start.getTime();
 var endTimestamp = end.getTime();
+var parsedUrl = url.parse(dbUrl);
 
 utils.fetchBranchInfo(db, branchId)
   .then(function(branchInfo) {
-    var message = '\nStarting deletion process with\ndbUrl = $COUCH_URL' +
+    var message = '\nStarting deletion process with' + 
+      '\ndbUrl = ' + parsedUrl.host + parsedUrl.pathname +
       '\nbranch = ' + JSON.stringify(branchInfo) +
       '\ngroupFile = ' + groupFile +
       '\nstartTimeMillis = ' + start.toUTCString() + ' (' + start.getTime() +
