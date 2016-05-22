@@ -54,7 +54,7 @@
             <span class="fa fa-check-square-o"></span>
             <p translate>select.mode.select.all</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" mm-auth="can_bulk_delete_reports" ng-click="deleteDoc(actionBar.doc)" ng-class="{'mm-icon-disabled': !actionBar.doc.length}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" mm-auth="can_bulk_delete_reports" ng-click="deleteDoc(actionBar.selected)" ng-class="{'mm-icon-disabled': !actionBar.selected.length}">
             <span class="fa fa-trash-o"></span>
             <p translate>select.mode.delete.all</p>
           </a>
@@ -65,7 +65,7 @@
         </div>
       </div>
       <div class="col-sm-8 detail-actions right-pane" ng-show="currentTab !== 'reports' || !selectMode">
-        <div class="actions dropup" ng-show="showActionBar && actionBar.doc && !loadingContent && (('reports.detail' | isState) || ('contacts.detail' | isState))">
+        <div class="actions dropup" ng-show="showActionBar && actionBar.selected && !loadingContent && (('reports.detail' | isState) || ('contacts.detail' | isState))">
           <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="tel:{{actionBar.sendTo.phone}}" ng-show="currentTab === 'contacts'" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
             <span class="fa fa-phone"></span>
             <p translate>call</p>
@@ -98,7 +98,7 @@
             <span class="fa fa-times"></span>
             <p translate>Unverify</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'reports' && actionBar.type === 'xml'" ui-sref="reports.edit({ reportId: actionBar.doc[0]._id })">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'reports' && actionBar.type === 'xml'" ui-sref="reports.edit({ reportId: actionBar.selected[0]._id })">
             <span class="fa fa-pencil"></span>
             <p translate>Edit</p>
           </a>
@@ -106,23 +106,23 @@
             <span class="fa fa-pencil"></span>
             <p translate>Edit</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'contacts'" ui-sref="contacts.edit({ id: actionBar.doc._id })">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'contacts'" ui-sref="contacts.edit({ id: actionBar.selected[0]._id })">
             <span class="fa fa-pencil"></span>
             <p translate>Edit</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'reports'" ng-click="actionBar.disableDelete || deleteDoc(actionBar.doc)" ng-class="{'mm-icon-disabled': actionBar.disableDelete}" mm-auth="can_delete_reports">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'reports'" ng-click="actionBar.disableDelete || deleteDoc(actionBar.selected)" ng-class="{'mm-icon-disabled': actionBar.disableDelete}" mm-auth="can_delete_reports">
             <span class="fa fa-trash-o"></span>
             <p translate>Delete</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'contacts'" ng-click="actionBar.disableDelete || deleteDoc(actionBar.doc)" ng-class="{'mm-icon-disabled': actionBar.disableDelete}" mm-auth="can_delete_contacts">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'contacts'" ng-click="actionBar.disableDelete || deleteDoc(actionBar.selected)" ng-class="{'mm-icon-disabled': actionBar.disableDelete}" mm-auth="can_delete_contacts">
             <span class="fa fa-trash-o"></span>
             <p translate>Delete</p>
           </a>
         </div>
       </div>
       <div class="col-sm-8 detail-actions right-pane" ng-show="currentTab === 'reports' && selectMode">
-        <div class="actions dropup" ng-show="showActionBar && actionBar.doc.length && (!loadingContent || selectMode) && 'reports.detail' | isState">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="deleteDoc(actionBar.doc)">
+        <div class="actions dropup" ng-show="showActionBar && actionBar.selected.length && (!loadingContent || selectMode) && 'reports.detail' | isState">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="deleteDoc(actionBar.selected)">
             <span class="fa fa-trash-o"></span>
             <p translate>select.mode.delete.all</p>
           </a>

@@ -34,8 +34,12 @@ var _ = require('underscore'),
     ) {
       'ngInject';
 
-      $scope.selectedGroup = null;
+      // selected objects have the form
+      //    { report: { ... }, expanded: false }
+      // where the report is the db doc and expanded is whether to
+      // show the details or just the summary in the content pane.
       $scope.selected = [];
+      $scope.selectedGroup = null;
       $scope.filters = {
         search: $stateParams.query
       };
@@ -128,9 +132,11 @@ var _ = require('underscore'),
 
       var setActionBar = function() {
         var model = {
-          doc: _.pluck($scope.selected, 'report')
+          selected: _.pluck($scope.selected, 'report')
         };
-        if (!$scope.selectMode && model.doc && model.doc.length === 1) {
+        if (!$scope.selectMode &&
+            model.selected &&
+            model.selected.length === 1) {
           model.verified = model.doc[0].verified;
           model.type = model.doc[0].content_type;
           model.sendTo = model.doc[0];
@@ -187,6 +193,7 @@ var _ = require('underscore'),
           return;
         }
         if (!$scope.selectMode) {
+          // in selected mode we append to the list so don't clear it
           $scope.clearSelected();
         }
         $scope.setLoadingContent(report);
