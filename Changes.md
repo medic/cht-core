@@ -2,11 +2,12 @@
 
 ## 2.6.3
 
-### May 20, 2016
+### May 23, 2016
 
 - "console not defined" error when loading page. Issue: #2277
 - Pouch doesn't update seq unless something has changed. Issue: #2288
 - Snackbar showing all the time. Issue: #2306
+- Support external_id property on user-settings docs. Issue: #2310
 
 ## 2.6.2
 
