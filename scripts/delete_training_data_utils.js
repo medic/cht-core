@@ -188,6 +188,17 @@ var fetchBranchInfo = function(db, branchId) {
     });
 };
 
+var fetchBranch = function(db, branchId) {
+    return db.get(branchId)
+    .then(function(result) {
+      return [ result ];
+    })
+    .catch(function(err) {
+      console.log('Couldnt find branch ' + branchId);
+      throw err;
+    });
+};
+
 var userConfirm = function(message) {
   console.log(message); // log to logfile because prompt doesn't.
 
@@ -220,6 +231,7 @@ module.exports = {
   cleanContactPersons: cleanContactPersons,
   deleteDocs: deleteDocs,
   fetchBranchInfo: fetchBranchInfo,
+  fetchBranch: fetchBranch,
   filterByType: filterByType,
   filterByDate: filterByDate,
   getContactsForPlace: getContactsForPlace,

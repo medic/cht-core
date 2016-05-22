@@ -27,6 +27,7 @@
 
 var PouchDB = require('pouchdb');
 var _ = require('underscore');
+var url = require('url');
 var utils = require('./delete_training_data_utils.js');
 
 var deleteReports = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
@@ -87,6 +88,47 @@ var deleteClinics = function(db, dryrun, branchId, startTimestamp, endTimestamp,
     });
 };
 
+var deleteHealthCenters = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
+  return Promise.resolve()
+    .then(function() {
+      console.log('Deleting health centers');
+      return;
+    })
+    // Need to fetch them all over again, because they could have been edited if
+    // their contact was just deleted.
+    .then(_.partial(utils.getContactsForPlace, db, branchId, batchSize))
+    .then(_.partial(utils.filterByDate, _, startTimestamp, endTimestamp))
+    .then(_.partial(utils.filterByType, _, 'health_center'))
+    .then(_.partial(utils.writeDocsToFile, logdir + '/health_centers_deleted.json'))
+    .then(_.partial(utils.deleteDocs, dryrun, db))
+    .then(_.partial(utils.printoutDbStats, db))
+    .then(function(result) {
+      console.log(result.length + ' health centers deleted!\n');
+      return;
+    });
+};
+
+var deleteBranches = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
+    
+  return Promise.resolve()
+    .then(function() {
+      console.log('Deleting branches');
+      return;
+    })
+    // Need to fetch them all over again, because they could have been edited if
+    // their contact was just deleted.
+    .then(_.partial(utils.fetchBranch, db, branchId))
+    .then(_.partial(utils.filterByDate, _, startTimestamp, endTimestamp))
+    .then(_.partial(utils.filterByType, _, 'district_hospital'))
+    .then(_.partial(utils.writeDocsToFile, logdir + '/branches_deleted.json'))
+    .then(_.partial(utils.deleteDocs, dryrun, db))
+    .then(_.partial(utils.printoutDbStats, db))
+    .then(function(result) {
+      console.log(result.length + ' branch deleted!\n');
+      return;
+    });
+};
+
 // --------
 
 if (process.argv.length < 6) {
@@ -122,11 +164,12 @@ console.log('Now is ' + now.toUTCString() + '   (' + now + ')   (' + now.getTime
 var db = new PouchDB(dbUrl);
 var startTimestamp = start.getTime();
 var endTimestamp = end.getTime();
-
+var parsedUrl = url.parse(dbUrl);
 
 utils.fetchBranchInfo(db, branchId)
   .then(function(branchInfo) {
-    var message = '\nStarting deletion process with\ndbUrl = $COUCH_URL' +
+    var message = '\nStarting deletion process with' + 
+      '\ndbUrl = ' + parsedUrl.host + parsedUrl.pathname +
       '\nbranch = ' + JSON.stringify(branchInfo) +
       '\nstartTimeMillis = ' + start.toUTCString() + ' (' + start.getTime() +
       ')\nendTimeMillis = ' + end.toUTCString() + ' (' + end.getTime() + ')\nlogdir = ' + logdir +
@@ -137,6 +180,8 @@ utils.fetchBranchInfo(db, branchId)
 //  .then(_.partial(deleteReports, db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize))
 //  .then(_.partial(deletePersons, db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize))
 //  .then(_.partial(deleteClinics, db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize))
+//  .then(_.partial(deleteHealthCenters, db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize))
+//  .then(_.partial(deleteBranches, db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize))
   .catch(function (err) {
     console.log('Error!!!');
     console.log(err);

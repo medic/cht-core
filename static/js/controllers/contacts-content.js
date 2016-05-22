@@ -7,40 +7,55 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsContentCtrl',
-    ['$parse', '$scope', '$stateParams', '$q', '$log', 'DB', 'RulesEngine', 'Search', 'Changes', 'ContactSchema', 'UserDistrict', 'XmlForms',
-    function($parse, $scope, $stateParams, $q, $log, DB, RulesEngine, Search, Changes, ContactSchema, UserDistrict, XmlForms) {
+    function(
+      $log,
+      $parse,
+      $q,
+      $scope,
+      $stateParams,
+      Changes,
+      ContactSchema,
+      DB,
+      RulesEngine,
+      Search,
+      UserDistrict,
+      XmlForms
+    ) {
+
+      'ngInject';
 
       $scope.showParentLink = false;
 
-      var getReports = function(id) {
+      var searchForReports = function(id) {
         return $q(function(resolve, reject) {
           Search('reports', { subjectIds: [ id ] }, {}, function(err, data) {
             if (err) {
               return reject(err);
             }
-            $q.all(_.map(data, function(report) {
-              return $q(function(resolve, reject) {
-                DB.get()
-                  .query('medic/forms', { include_docs: true, key: report.form })
-                  .then(function(res) {
-                    if (res.rows.length) {
-                      report.formTitle = res.rows[0].doc.title;
-                    } else {
-                      report.formTitle = report.form;
-                    }
-                    resolve(report);
-                  })
-                  .catch(reject);
-              });
-            }))
-            .then(resolve)
-            .catch(reject);
+            resolve(data);
           });
         });
       };
 
-      var getContact = function(id) {
-        return DB.get().get(id);
+      var getReports = function(id) {
+        return $q.all([
+          searchForReports(id),
+          DB.get().query('medic/forms', { include_docs: true })
+        ]).then(function(results) {
+          var reports = results[0];
+          var forms = results[1].rows;
+          reports.forEach(function(report) {
+            var form = _.find(forms, function(form) {
+              return form.doc.internalId === report.form;
+            });
+            if (form) {
+              report.formTitle = form.doc.title;
+            } else {
+              report.formTitle = report.form;
+            }
+          });
+          return reports;
+        });
       };
 
       var sortChildren = function(children) {
@@ -105,7 +120,7 @@ var _ = require('underscore');
 
       var getInitialData = function(id) {
         return $q.all([
-          getContact(id),
+          DB.get().get(id),
           getChildren(id),
           getContactFor(id),
           getReports(id)
@@ -220,6 +235,6 @@ var _ = require('underscore');
       });
 
     }
-  ]);
+  );
 
 }());
