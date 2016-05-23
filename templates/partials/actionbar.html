@@ -7,10 +7,6 @@
             <span class="fa fa-plus"></span>
             <p translate>Send Message</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" ng-show="currentTab === 'reports'" mm-auth="can_bulk_delete_reports" ng-click="setSelectMode(true)">
-            <span class="fa fa-check-square"></span>
-            <p translate>select.mode.start</p>
-          </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" ng-show="currentTab === 'reports'" data-toggle="dropdown" ng-class="{'mm-icon-disabled': !nonContactForms.length}">
             <span class="fa fa-plus"></span>
             <p translate>Submit Report</p>
@@ -42,6 +38,10 @@
             <span class="fa fa-arrow-up"></span>
             <p translate>Import</p>
           </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" ng-show="currentTab === 'reports'" mm-auth="can_bulk_delete_reports" ng-click="setSelectMode(true)">
+            <span class="fa fa-check-circle"></span>
+            <p translate>select.mode.start</p>
+          </a>
         </div>
       </div>
       <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && selectMode">
@@ -59,7 +59,7 @@
             <p translate>select.mode.delete.all</p>
           </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-stop" ng-click="setSelectMode(false)">
-            <span class="fa fa-times-circle-o"></span>
+            <span class="fa fa-times-circle"></span>
             <p translate>select.mode.stop</p>
           </a>
         </div>
