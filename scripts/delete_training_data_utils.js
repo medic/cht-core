@@ -62,25 +62,95 @@ var deleteDocs = function(dryrun, db, docs) {
       console.log('Deleted : ' + result.length + ':');
       console.log(result);
       return result;
+    })
+    .catch(function(err) {
+      console.log('Ignoring error in deleteDoc, because db times out all the time anyway.');
+      return docsWithDeleteField;
     });
 };
 
-var getContactsForPlace = function(db, placeId, batchSize) {
+/**
+ * queryFunc(skip) : queries db, returns list of docs.
+ * processFunc(docs, skip) : filters docs, deletes them.
+ */
+var queryInBatches = function(queryFunc, processFunc) {
+  var skip = 0;
+  var loopCounter = 0;
+  var done = false;
+  var timeoutSecs = 5;
+  var batchSize = 0;
+  var loopFunc = function() {
+    console.log(new Date());
+    loopCounter++;
+    console.log('loop ' + loopCounter);
+    if (loopCounter > 100) {
+      throw 'too many loops';
+    }
+    return Promise.resolve()
+      .then(_.partial(queryFunc, skip))
+      .then(function(docs) {
+        if (docs.length === 0) {
+          done = true;
+          throw 'No more docs!';
+        }
+        batchSize = docs.length;
+        return docs;
+      })
+      .then(_.partial(processFunc, _ /* docs */, skip))
+      .then(function(result) {
+        skip = skip + batchSize - result.length;
+        timeoutSecs = 5;
+        return loopFunc();
+      })
+      .catch(function(err) {
+        if (!done) {
+          console.log(err);
+          timeoutSecs = timeoutSecs * 2;
+          if (timeoutSecs > 120) {
+            timeoutSecs = 120;
+          }
+          console.log('query timed out! Wait around ' + timeoutSecs + ' seconds and then retry.\n');
+          setTimeout(loopFunc, timeoutSecs * 1000);
+          return;
+        }
+        throw err;
+      });
+  };
+
+  return loopFunc()
+    .catch(function(err) {
+      console.log('Done!');
+      console.log(err);
+    });
+};
+
+// Skip : how many records to skip before outputting (~= offset)
+var getContactsForPlace = function(db, placeId, skip, batchSize) {
+  console.log('query with batchsize ' + batchSize + ' , skip ' + skip);
   return db.query(
     'medic/contacts_by_place',
-    {key: [placeId], include_docs: true, limit: batchSize}
+    {key: [placeId], include_docs: true, limit: batchSize, skip: skip}
   ).then(function (result) {
+    console.log('total_rows : ' + result.total_rows + ', offset : ' + result.offset);
     console.log('Contacts for place : ' + result.rows.length);
     var docs = getDocsFromRows(result.rows);
     return docs;
   });
 };
 
-var getDataRecordsForBranch = function(db, branchId, batchSize) {
+// Skip : how many records to skip before outputting (~= offset)
+var getDataRecordsForBranch = function(db, branchId, skip, batchSize) {
+  console.log('query with batchsize ' + batchSize + ' , skip ' + skip);
   return db.query(
     'medic/data_records_by_district',
-    {startkey: [branchId], endkey: [branchId + '\ufff0'], include_docs: true, limit: batchSize}
+    {
+      startkey: [branchId, 'Mukono'],
+      endkey: [branchId + '\ufff0'],
+      skip: skip,
+      include_docs: true,
+      limit: batchSize }
   ).then(function (result) {
+    console.log('total_rows : ' + result.total_rows + ', offset : ' + result.offset);
     console.log('Reports for branch : ' + result.rows.length);
     return getDocsFromRows(result.rows);
   });
@@ -167,7 +237,7 @@ var writeDocsToFile = function(filepath, docsList) {
     return docsList;
   }
   return new Promise(function(resolve,reject){
-    fs.writeFile(filepath, JSON.stringify(docsList), function(err) {
+    fs.writeFile(filepath, JSON.stringify(docsList), {flag: 'a'}, function(err) {
       if(err) {
         return reject('Couldn\'t write to file' + filepath, err);
       }
@@ -237,6 +307,7 @@ module.exports = {
   getContactsForPlace: getContactsForPlace,
   getDataRecordsForBranch: getDataRecordsForBranch,
   printoutDbStats: printoutDbStats,
+  queryInBatches: queryInBatches,
   setupLogging: setupLogging,
   userConfirm: userConfirm,
   writeDocsToFile: writeDocsToFile

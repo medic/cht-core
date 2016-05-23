@@ -31,60 +31,62 @@ var url = require('url');
 var utils = require('./delete_training_data_utils.js');
 
 var deleteReports = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
-  return Promise.resolve()
-    .then(function() {
+  return utils.queryInBatches(
+    function(skip) {
       console.log('Deleting reports');
-      return;
-    })
-    .then(_.partial(utils.getDataRecordsForBranch, db, branchId, batchSize))
-    .then(_.partial(utils.filterByDate, _, startTimestamp, endTimestamp))
-    .then(_.partial(utils.writeDocsToFile, logdir + '/reports_deleted.json'))
-    .then(_.partial(utils.deleteDocs, dryrun, db))
-    .then(_.partial(utils.printoutDbStats, db))
-    .then(function(result) {
-      console.log(result.length + ' reports deleted!\n');
-      return;
+      return utils.getDataRecordsForBranch(db, branchId, skip, batchSize);
+    },
+    function(docs, skip) {
+      return Promise.resolve()
+        .then(_.partial(utils.filterByDate, docs, startTimestamp, endTimestamp))
+        .then(_.partial(utils.writeDocsToFile, logdir + '/reports_deleted_' + skip + '.json'))
+        .then(_.partial(utils.deleteDocs, dryrun, db))
+        .then(function(result) {
+          console.log(result.length + ' reports deleted!\n');
+          return result;
+        });
     });
 };
 
 var deletePersons = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
-  return Promise.resolve()
-    .then(function() {
+  return utils.queryInBatches(
+    function(skip) {
       console.log('Deleting persons');
-      return;
-    })
-    .then(_.partial(utils.getContactsForPlace, db, branchId, batchSize))
-    .then(_.partial(utils.filterByDate, _, startTimestamp, endTimestamp))
-    .then(_.partial(utils.filterByType, _, 'person'))
-    // Remove contact links
-    .then(_.partial(utils.cleanContactPersons, db, dryrun, logdir))
-    .then(_.partial(utils.printoutDbStats, db))
-    .then(_.partial(utils.writeDocsToFile, logdir + '/persons_deleted.json'))
-    .then(_.partial(utils.deleteDocs, dryrun, db))
-    .then(_.partial(utils.printoutDbStats, db))
-    .then(function(result) {
-      console.log(result.length + ' persons deleted!\n');
-      return;
+      return utils.getContactsForPlace(db, branchId, skip, batchSize);
+    },
+    function(docs, skip) {
+      return Promise.resolve()
+        .then(_.partial(utils.filterByDate, docs, startTimestamp, endTimestamp))
+        .then(_.partial(utils.filterByType, _, 'person'))
+        // Remove contact links
+        .then(_.partial(utils.cleanContactPersons, db, dryrun, logdir))
+        .then(_.partial(utils.writeDocsToFile, logdir + '/persons_deleted_' + skip + '.json'))
+        .then(_.partial(utils.deleteDocs, dryrun, db))
+        .then(function(result) {
+          console.log(result.length + ' persons deleted!\n');
+          return result;
+        });
     });
 };
 
 var deleteClinics = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
-  return Promise.resolve()
-    .then(function() {
+  return utils.queryInBatches(
+    function(skip) {
       console.log('Deleting clinics');
-      return;
-    })
-    // Need to fetch them all over again, because they could have been edited if
-    // their contact was just deleted.
-    .then(_.partial(utils.getContactsForPlace, db, branchId, batchSize))
-    .then(_.partial(utils.filterByDate, _, startTimestamp, endTimestamp))
-    .then(_.partial(utils.filterByType, _, 'clinic'))
-    .then(_.partial(utils.writeDocsToFile, logdir + '/clinics_deleted.json'))
-    .then(_.partial(utils.deleteDocs, dryrun, db))
-    .then(_.partial(utils.printoutDbStats, db))
-    .then(function(result) {
-      console.log(result.length + ' clinics deleted!\n');
-      return;
+      // Need to fetch them all over again, because they could have been edited if
+      // their contact was just deleted.
+      return utils.getContactsForPlace(db, branchId, skip, batchSize);
+    },
+    function(docs, skip) {
+      return Promise.resolve()
+        .then(_.partial(utils.filterByDate, docs, startTimestamp, endTimestamp))
+        .then(_.partial(utils.filterByType, _, 'clinic'))
+        .then(_.partial(utils.writeDocsToFile, logdir + '/clinics_deleted_' + skip + '.json'))
+        .then(_.partial(utils.deleteDocs, dryrun, db))
+        .then(function(result) {
+          console.log(result.length + ' clinics deleted!\n');
+          return result;
+        });
     });
 };
 
@@ -96,7 +98,7 @@ var deleteHealthCenters = function(db, dryrun, branchId, startTimestamp, endTime
     })
     // Need to fetch them all over again, because they could have been edited if
     // their contact was just deleted.
-    .then(_.partial(utils.getContactsForPlace, db, branchId, batchSize))
+    .then(_.partial(utils.getContactsForPlace, db, branchId, 0, batchSize))
     .then(_.partial(utils.filterByDate, _, startTimestamp, endTimestamp))
     .then(_.partial(utils.filterByType, _, 'health_center'))
     .then(_.partial(utils.writeDocsToFile, logdir + '/health_centers_deleted.json'))
@@ -109,7 +111,7 @@ var deleteHealthCenters = function(db, dryrun, branchId, startTimestamp, endTime
 };
 
 var deleteBranches = function(db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize) {
-    
+
   return Promise.resolve()
     .then(function() {
       console.log('Deleting branches');
@@ -131,10 +133,10 @@ var deleteBranches = function(db, dryrun, branchId, startTimestamp, endTimestamp
 
 // --------
 
-if (process.argv.length < 6) {
+if (process.argv.length < 7) {
   console.log('Not enough arguments.\n');
   console.log('Usage:\nnode delete_training_data.js <branchId> ' +
-    '<startTime> <endTime> <logdir> [dryrun]\n');
+    '<startTime> <endTime> <logdir> <batchSize> [dryrun]\n');
   console.log('Will use DB URL+credentials from $COUCH_URL.');
   console.log('Deletes all \'data_record\', \'person\' and \'clinic\' data ' +
     'from a given branch (\'district_hospital\' type) that was created ' +
@@ -142,7 +144,7 @@ if (process.argv.length < 6) {
   console.log('The deleted docs will be written out to json files in the ' +
     'logdir.');
   console.log('The dryrun arg will run the whole process, including writing the files, without actually doing the deletions.\n');
-  console.log('Example:\nexport COUCH_URL=\'http://admin:pass@localhost:5984/medic\'; node delete_training_data.js 52857bf2cef066525b2feb82805fb373 "2016-04-11 07:00 GMT+3:00" "2016-04-25 17:00 GMT+3:00" ./training_data_20160425 dryrun');
+  console.log('Example:\nexport COUCH_URL=\'http://admin:pass@localhost:5984/medic\'; node delete_training_data.js 52857bf2cef066525b2feb82805fb373 "2016-04-11 07:00 GMT+3:00" "2016-04-25 17:00 GMT+3:00" ./training_data_20160425 500 dryrun');
   process.exit();
 }
 
@@ -152,9 +154,9 @@ var branchId = process.argv[2];
 var start = new Date(process.argv[3]);
 var end = new Date(process.argv[4]);
 var logdir = process.argv[5] + '/' + now.getTime();
-var dryrun = process.argv[6];
+var batchSize = parseInt(process.argv[6]);
+var dryrun = process.argv[7];
 dryrun = (dryrun === 'dryrun');
-var batchSize = 20000;
 
 var logfile = 'debug.log';
 utils.setupLogging(logdir, logfile);
@@ -168,7 +170,7 @@ var parsedUrl = url.parse(dbUrl);
 
 utils.fetchBranchInfo(db, branchId)
   .then(function(branchInfo) {
-    var message = '\nStarting deletion process with' + 
+    var message = '\nStarting deletion process with' +
       '\ndbUrl = ' + parsedUrl.host + parsedUrl.pathname +
       '\nbranch = ' + JSON.stringify(branchInfo) +
       '\nstartTimeMillis = ' + start.toUTCString() + ' (' + start.getTime() +
@@ -177,6 +179,7 @@ utils.fetchBranchInfo(db, branchId)
       '\ndryrun = ' + dryrun + '\n';
     return utils.userConfirm(message);
   })
+  // Only uncomment one at a time. With the retries, it's not nicely organized any more.
 //  .then(_.partial(deleteReports, db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize))
 //  .then(_.partial(deletePersons, db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize))
 //  .then(_.partial(deleteClinics, db, dryrun, branchId, startTimestamp, endTimestamp, logdir, batchSize))
