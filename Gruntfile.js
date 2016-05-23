@@ -245,6 +245,10 @@ module.exports = function(grunt) {
       other: {
         files: ['lib/**/*'],
         tasks: ['appcache', 'deploy']
+      },
+      ddocs: {
+        files: ['ddocs/**/*'],
+        tasks: ['compileddocs', 'appcache', 'deploy']
       }
     },
     notify_hooks: {
