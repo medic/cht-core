@@ -146,7 +146,7 @@ describe('Bulk delete reports', function() {
     expect(element.all(by.css('#reports-content .report-body')).count()).toBe(2);
 
     // delete all selected
-    element(by.css('.action-container .delete-all')).click();
+    element(by.css('.action-container .detail-actions .delete-all')).click();
     var confirmButton = element(by.css('#delete-confirm .submit'));
     browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton), 5000);
     confirmButton.click();
