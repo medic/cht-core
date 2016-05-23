@@ -168,9 +168,12 @@ var _ = require('underscore'),
       if (err) {
         return callback(err);
       }
-      data = filter({}, data);
       $phone.select2({
-        data: data,
+        ajax: {
+          transport: function(params, successCb) {
+            successCb({ results: filter({ term: params.data.q }, data)});
+          }
+        },
         allowClear: true,
         tags: true,
         createSearchChoice: createChoiceFromNumber,
