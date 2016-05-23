@@ -137,9 +137,10 @@ var _ = require('underscore'),
         if (!$scope.selectMode &&
             model.selected &&
             model.selected.length === 1) {
-          model.verified = model.doc[0].verified;
-          model.type = model.doc[0].content_type;
-          model.sendTo = model.doc[0];
+          var doc = model.selected[0];
+          model.verified = doc.verified;
+          model.type = doc.content_type;
+          model.sendTo = doc;
         }
         $scope.setActionBar(model);
       };
