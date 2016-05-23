@@ -251,6 +251,7 @@ var _ = require('underscore'),
                 $state.go('reports.detail', { id: id }, { location: 'replace' });
               });
             }
+            syncCheckboxes();
             _initScroll();
           })
           .catch(function(err) {
