@@ -186,8 +186,29 @@ var _ = require('underscore'),
           liveList.set([]);
         }
 
-        Search('reports', $scope.filters, options, function(err, data) {
-          if (err) {
+        Search('reports', $scope.filters, options)
+          .then(FormatDataRecord)
+          .then(function(data) {
+            $scope.moreItems = liveList.moreItems = data.length >= options.limit;
+            $scope.loading = false;
+            $scope.appending = false;
+            $scope.error = false;
+            $scope.errorSyntax = false;
+            _updateLiveList(data);
+            var curr = _.findWhere(data, { _id: $state.params.id });
+            if (curr) {
+              $scope.setSelected(curr);
+            } else if (!$scope.isMobile() &&
+                       !$scope.selected &&
+                       $state.is('reports.detail')) {
+              $timeout(function() {
+                var id = $('.inbox-items li').first().attr('data-record-id');
+                $state.go('reports.detail', { id: id }, { location: 'replace' });
+              });
+            }
+            _initScroll();
+          })
+          .catch(function(err) {
             $scope.error = true;
             $scope.loading = false;
             if ($scope.filters.search &&
@@ -196,36 +217,8 @@ var _ = require('underscore'),
               // invalid freetext filter query
               $scope.errorSyntax = true;
             }
-            return $log.error('Error loading messages', err);
-          }
-
-          $scope.moreItems = liveList.moreItems = data.length >= options.limit;
-
-          FormatDataRecord(data)
-            .then(function(data) {
-              $scope.loading = false;
-              $scope.appending = false;
-              $scope.error = false;
-              $scope.errorSyntax = false;
-              _updateLiveList(data);
-              var curr = _.findWhere(data, { _id: $state.params.id });
-              if (curr) {
-                $scope.setSelected(curr);
-              } else if (!$scope.isMobile() &&
-                         !$scope.selected &&
-                         $state.is('reports.detail')) {
-                $timeout(function() {
-                  var id = $('.inbox-items li').first().attr('data-record-id');
-                  $state.go('reports.detail', { id: id }, { location: 'replace' });
-                });
-              }
-              _initScroll();
-            })
-            .catch(function(err) {
-              $scope.error = true;
-              $log.error('Error formatting record', err);
-            });
-        });
+            $log.error('Error loading messages', err);
+          });
       };
 
       $scope.search = function() {
