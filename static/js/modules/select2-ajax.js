@@ -65,22 +65,22 @@ var _ = require('underscore'),
         skip: skip
       };
 
-      Search('contacts', filters, options, function(err, documents) {
-        if (currentQuery !== params.data.q) {
-          return;
-        }
-
-        if (err) {
-          return failureCb(err);
-        }
-
-        return successCb({
-          results: prepareRows(documents, skip === 0),
-          pagination: {
-            more: documents.length === pageSize
+      Search('contacts', filters, options)
+        .then(function(documents) {
+          if (currentQuery === params.data.q) {
+            return successCb({
+              results: prepareRows(documents, skip === 0),
+              pagination: {
+                more: documents.length === pageSize
+              }
+            });
+          }
+        })
+        .catch(function(err) {
+          if (currentQuery === params.data.q) {
+            failureCb(err);
           }
         });
-      });
     };
 
     var resolveInitialValue = function(selectEl) {

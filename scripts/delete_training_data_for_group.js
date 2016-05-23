@@ -21,7 +21,7 @@ var getUsernames = function(groupFile) {
 
   var lines = group.split('\n');
   lines = _.filter(lines, function(line) { return line !== ''; });
-  lines = _.each(lines, function(line) { line.trim(); });
+  lines = _.map(lines, function(line) { return line.trim(); });
   if (lines.length === 0) {
     console.log('Groupfile contained no usernames. Aborting.');
     process.exit();
@@ -124,18 +124,15 @@ var filterReportsForGroup = function(dataRecords, users) {
 // look at parent, if health_center then check, if not parent etc.
 var filterPersonsForGroup = function(persons, users) {
   var filtered = _.filter(persons, function(person) {
+    if (!person.parent || !person.parent.parent || !person.parent.parent._id) {
+      console.log('no chp found for person ' + person.name + ' (' + person._id + ')');
+      return false;
+    }
+    if (person.parent.parent.type !== 'health_center') {
+      console.log('grandparent is not a chp - for person ' + person.name + ' (' + person._id + ')');
+      return false;
+    }
     var found = !!_.find(users, function(user) {
-      if (!person.parent || !person.parent.parent || !person.parent.parent._id) {
-        console.log('no chp found for person ' + person.name + ' (' + person._id + ')');
-        return false;
-      }
-      if (person.parent.parent.type !== 'health_center') {
-        console.log('grandparent is not a chp - for person ' + person.name + ' (' + person._id + ')');
-        return false;
-      }
-      if (person.parent.parent._id === user.facility_id) {
-        console.log('match person ' + person._id + ' to chp ' + user._id);
-      }
       return person.parent.parent._id === user.facility_id;
     });
     return found;
@@ -169,9 +166,6 @@ var deletePersons = function(db, dryrun, branchId, users, startTimestamp, endTim
 var filterClinicsForGroup = function(clinics, users) {
   var filtered = _.filter(clinics, function(clinic) {
     var index = _.find(users, function(user) {
-      if (clinic.parent._id === user.facility_id) {
-        console.log('FOUND : clinic ' + clinic._id + ' matched to user ' + user._id);
-      }
       return clinic.parent._id === user.facility_id;
     });
     return !!index;
@@ -238,10 +232,10 @@ var deleteHealthCenters = function(db, dryrun, branchId, users, startTimestamp, 
 
 // --------
 
-if (process.argv.length < 7) {
+if (process.argv.length < 8) {
   console.log('Not enough arguments.\n');
   console.log('Usage:\nnode delete_training_data_for_group.js ' +
-    '<branchId> <groupFile> <startTime> <endTime> <logdir> [dryrun]\n');
+    '<branchId> <groupFile> <startTime> <endTime> <logdir> <batchSize> [dryrun]\n');
   console.log('Will use DB URL+credentials from $COUCH_URL.');
   console.log('Deletes all \'data_record\', \'person\' and \'clinic\' data ' +
     'from a given branch (\'district_hospital\' type) for a group of users, that was created ' +
@@ -249,7 +243,7 @@ if (process.argv.length < 7) {
   console.log('The deleted docs will be written out to json files in the ' +
     'logdir.');
   console.log('The dryrun arg will run the whole process, including writing the files, without actually doing the deletions.\n');
-  console.log('Example:\nexport COUCH_URL=\'http://admin:pass@localhost:5984/medic\'; node delete_training_data_for_group.js 52857bf2cef066525b2feb82805fb373 ./group1.txt "2016-04-11 07:00 GMT+3:00" "2016-04-25 17:00 GMT+3:00" ./training_data_20160425 dryrun');
+  console.log('Example:\nexport COUCH_URL=\'http://admin:pass@localhost:5984/medic\'; node delete_training_data_for_group.js 52857bf2cef066525b2feb82805fb373 ./group1.txt "2016-04-11 07:00 GMT+3:00" "2016-04-25 17:00 GMT+3:00" ./training_data_20160425 5000 dryrun');
   process.exit();
 }
 
@@ -260,9 +254,9 @@ var groupFile = process.argv[3];
 var start = new Date(process.argv[4]);
 var end = new Date(process.argv[5]);
 var logdir = process.argv[6] + '/' + now.getTime();
-var dryrun = process.argv[7];
+var batchSize = process.argv[7];
+var dryrun = process.argv[8];
 dryrun = (dryrun === 'dryrun');
-var batchSize = 20000;
 
 var logfile = 'debug.log';
 utils.setupLogging(logdir, logfile);

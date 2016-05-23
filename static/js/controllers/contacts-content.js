@@ -26,20 +26,9 @@ var _ = require('underscore');
 
       $scope.showParentLink = false;
 
-      var searchForReports = function(id) {
-        return $q(function(resolve, reject) {
-          Search('reports', { subjectIds: [ id ] }, {}, function(err, data) {
-            if (err) {
-              return reject(err);
-            }
-            resolve(data);
-          });
-        });
-      };
-
       var getReports = function(id) {
         return $q.all([
-          searchForReports(id),
+          Search('reports', { subjectIds: [ id ] }),
           DB.get().query('medic/forms', { include_docs: true })
         ]).then(function(results) {
           var reports = results[0];

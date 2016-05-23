@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    async = require('async');
+var _ = require('underscore');
 
 (function () {
 
@@ -7,8 +6,15 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
   
-  inboxServices.factory('Search', ['DB', 'DbView', 'GenerateSearchRequests',
-    function(DB, DbView, GenerateSearchRequests) {
+  inboxServices.factory('Search',
+    function(
+      $q,
+      DB,
+      DbView,
+      GenerateSearchRequests
+    ) {
+
+      'ngInject';
 
       var _currentQuery = {};
 
@@ -54,78 +60,70 @@ var _ = require('underscore'),
         return intersection;
       };
 
-      var view = function(request, callback) {
-        DbView(request.view, { params: request.params })
+      var view = function(request) {
+        return DbView(request.view, { params: request.params })
           .then(function(data) {
-            callback(null, data.results);
-          })
-          .catch(callback);
+            return data.results;
+          });
       };
 
-      var filter = function(type, requests, options, callback) {
-        async.map(requests, view, function(err, responses) {
-          if (err) {
-            return callback(err);
-          }
-          var intersection = getIntersection(responses);
-          var page = getPage(type, intersection, options);
-          if (!page.length) {
-            return callback(null, []);
-          }
-          DB.get()
-            .allDocs({ include_docs: true, keys: page })
-            .then(function(response) {
-              callback(null, _.pluck(response.rows, 'doc'));
-            })
-            .catch(function(err) {
-              callback(err);
-            });
-        });
+      var filter = function(type, requests, options) {
+        return $q.all(requests.map(view))
+          .then(function(responses) {
+            var intersection = getIntersection(responses);
+            var page = getPage(type, intersection, options);
+            if (!page.length) {
+              return [];
+            }
+            return DB.get()
+              .allDocs({ include_docs: true, keys: page })
+              .then(function(response) {
+                return $q.resolve(_.pluck(response.rows, 'doc'));
+              });
+          });
       };
 
-      var execute = function(type, requests, options, callback) {
+      var execute = function(type, requests, options) {
         if (requests.length === 1 && requests[0].params.include_docs) {
           // filter not required - just get the view directly
           _.defaults(requests[0].params, {
             limit: options.limit,
             skip: options.skip
           });
-          view(requests[0], callback);
-        } else {
-          // filtering
-          filter(type, requests, options, callback);
+          return view(requests[0]);
         }
+        // filtering
+        return filter(type, requests, options);
       };
 
-      var generateRequests = function(type, filters, options, callback) {
-        var requests;
-        try {
-          requests = GenerateSearchRequests(type, filters);
-        } catch(e) {
-          return callback(e);
-        }
+      var generateRequests = function(type, filters, options) {
+        var requests = GenerateSearchRequests(type, filters);
         if (!options.force && debounce(type, filters, requests)) {
-          return;
+          return [];
         }
-        callback(null, requests);
+        return requests;
       };
 
-      return function(type, filters, options, callback) {
+      return function(type, filters, options) {
+        options = options || {};
         _.defaults(options, {
           limit: 50,
           skip: 0
         });
-        generateRequests(type, filters, options, function(err, requests) {
-          if (err) {
-            return callback(err);
-          }
-          execute(type, requests, options, function(err, results) {
+        return $q.resolve(generateRequests(type, filters, options))
+          .then(function(requests) {
+            return execute(type, requests, options);
+          })
+          .then(function(results) {
             _currentQuery = {};
-            callback(err, results);
+            return results;
+          })
+          .catch(function(err) {
+            _currentQuery = {};
+            throw err;
           });
-        });
       };
     }
-  ]);
+  );
 
 }());

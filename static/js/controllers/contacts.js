@@ -1,5 +1,4 @@
 var _ = require('underscore'),
-    async = require('async'),
     scrollLoader = require('../modules/scroll-loader'),
     ajaxDownload = require('../modules/ajax-download');
 
@@ -10,8 +9,8 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl',
-    ['$log', '$scope', '$state', '$timeout', '$http', 'DB', 'LiveList', 'UserSettings', 'Search', 'SearchFilters', 'DownloadUrl',
-    function ($log, $scope, $state, $timeout, $http, DB, LiveList, UserSettings, Search, SearchFilters, DownloadUrl) {
+    ['$q', '$log', '$scope', '$state', '$timeout', '$http', 'DB', 'LiveList', 'UserSettings', 'Search', 'SearchFilters', 'DownloadUrl',
+    function ($q, $log, $scope, $state, $timeout, $http, DB, LiveList, UserSettings, Search, SearchFilters, DownloadUrl) {
 
       var liveList = LiveList.contacts;
 
@@ -32,6 +31,17 @@ var _ = require('underscore'),
         });
       }
 
+      var getUserSettings = function() {
+        return $q(function(resolve, reject) {
+          UserSettings(function(err, user) {
+            if (err) {
+              return reject(err);
+            }
+            resolve(user);
+          });
+        });
+      };
+
       var _query = function(options) {
         options = options || {};
         options.limit = 50;
@@ -46,58 +56,58 @@ var _ = require('underscore'),
           options.skip = liveList.count();
         }
 
-        // curry the Search service so async.parallel can provide the
-        // callback as the final callback argument
-        var contactSearch = _.partial(Search, 'contacts', $scope.filters, options);
-        async.parallel([ contactSearch, UserSettings ], function(err, results) {
-          if (err) {
-            $scope.error = true;
-            return $log.error('Error searching for contacts', err);
-          }
+        $q.all([
+          Search('contacts', $scope.filters, options),
+          getUserSettings()
+        ])
+          .then(function(results) {
+            var data = results[0];
+            $scope.moreItems = liveList.moreItems = data.length >= options.limit;
 
-          var data = results[0];
-          $scope.moreItems = liveList.moreItems = data.length >= options.limit;
+            // filter special contacts which should not be displayed
+            var user = results[1];
+            data = _.reject(data, function(contact) {
+              return contact._id === user.facility_id ||
+                     contact._id === user.contact_id;
+            });
 
-          // filter special contacts which should not be displayed
-          var user = results[1];
-          data = _.reject(data, function(contact) {
-            return contact._id === user.facility_id ||
-                contact._id === user.contact_id;
-          });
-
-          if (options.skip) {
-            $timeout(function() {
-              _.each(data, function(contact) {
-                liveList.insert(contact, false);
-              });
-              liveList.refresh();
-              completeLoad();
-            })
-            .then(completeLoad);
-          } else if (options.silent) {
-            _.each(data, liveList.update);
-            completeLoad();
-          } else {
-            $timeout(function() {
-              liveList.set(data);
-              _initScroll();
-
-              if (!data.length) {
-                $scope.clearSelected();
-              } else if (!options.stay &&
-                         !$scope.isMobile() &&
-                         $state.is('contacts.detail') &&
-                         !$state.params.id) {
-                // wait for selected to be set before checking
-                $timeout(function() {
-                  var id = $('.inbox-items li').first().attr('data-record-id');
-                  $state.go('contacts.detail', { id: id }, { location: 'replace' });
+            if (options.skip) {
+              $timeout(function() {
+                _.each(data, function(contact) {
+                  liveList.insert(contact, false);
                 });
-              }
-            })
-            .then(completeLoad);
-          }
-        });
+                liveList.refresh();
+                completeLoad();
+              })
+              .then(completeLoad);
+            } else if (options.silent) {
+              _.each(data, liveList.update);
+              completeLoad();
+            } else {
+              $timeout(function() {
+                liveList.set(data);
+                _initScroll();
+
+                if (!data.length) {
+                  $scope.clearSelected();
+                } else if (!options.stay &&
+                           !$scope.isMobile() &&
+                           $state.is('contacts.detail') &&
+                           !$state.params.id) {
+                  // wait for selected to be set before checking
+                  $timeout(function() {
+                    var id = $('.inbox-items li').first().attr('data-record-id');
+                    $state.go('contacts.detail', { id: id }, { location: 'replace' });
+                  });
+                }
+              })
+              .then(completeLoad);
+            }
+          })
+          .catch(function(err) {
+            $scope.error = true;
+            $log.error('Error searching for contacts', err);
+          });
       };
 
       $scope.setSelected = function(selected) {

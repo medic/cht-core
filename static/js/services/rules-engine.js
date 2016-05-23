@@ -2,8 +2,8 @@ var nools = require('nools'),
     utils = require('kujua-utils'),
     _ = require('underscore'),
     // number of weeks before reported date to assume for start of pregnancy
-    noLmpDateModifier = 4,
-    knownTypes = ['task', 'target'];
+    NO_LMP_DATE_MODIFIER = 4,
+    KNOWN_TYPES = ['task', 'target'];
 
 (function () {
 
@@ -11,8 +11,18 @@ var nools = require('nools'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('RulesEngine', ['$q', '$log', 'Search', 'Settings', 'Changes', 'CONTACT_TYPES', 'Session',
-    function($q, $log, Search, Settings, Changes, CONTACT_TYPES, Session) {
+  inboxServices.factory('RulesEngine',
+    function(
+      $log,
+      $q,
+      Changes,
+      CONTACT_TYPES,
+      Search,
+      Session,
+      Settings
+    ) {
+
+      'ngInject';
 
       if (utils.isUserAdmin(Session.userCtx())) {
         // No-op all rules engine work for admins for now
@@ -49,7 +59,7 @@ var nools = require('nools'),
             return result;
           },
           getLmpDate: function(doc) {
-            var weeks = doc.fields.last_menstrual_period || noLmpDateModifier;
+            var weeks = doc.fields.last_menstrual_period || NO_LMP_DATE_MODIFIER;
             return this.addDate(new Date(doc.reported_date), weeks * -7);
           },
           getSchedule: function(name) {
@@ -99,26 +109,6 @@ var nools = require('nools'),
         };
       };
 
-      var search = function(type, filters) {
-        var deferred = $q.defer();
-        var options = { limit: 99999999, force: true };
-        Search(type, filters, options, function(err, docs) {
-          if (err) {
-            return deferred.reject(err);
-          }
-          deferred.resolve(docs);
-        });
-        return deferred.promise;
-      };
-
-      var getContacts = function() {
-        return search('contacts', {});
-      };
-
-      var getDataRecords = function() {
-        return search('reports', { valid: true });
-      };
-
       var getContactId = function(doc) {
         // get the associated patient or place id to group reports by
         return doc.patient_id || doc.place_id ||
@@ -163,7 +153,7 @@ var nools = require('nools'),
       };
 
       var assertFacts = function() {
-        knownTypes.forEach(function(type) {
+        KNOWN_TYPES.forEach(function(type) {
           session.on(type, function(fact) {
             notifyCallbacks(fact, type);
           });
@@ -284,7 +274,11 @@ var nools = require('nools'),
             initNools(settings);
           }
           registerListener();
-          return $q.all([ getDataRecords(), getContacts() ])
+          var options = { limit: 99999999, force: true };
+          return $q.all([
+            Search('reports', { valid: true }, options),
+            Search('contacts', {}, options)
+          ])
             .then(function(results) {
               facts = deriveFacts(results[0], results[1]);
               assertFacts();
@@ -307,6 +301,6 @@ var nools = require('nools'),
         },
       };
     }
-  ]);
+  );
 
 }());
