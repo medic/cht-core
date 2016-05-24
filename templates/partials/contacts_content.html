@@ -7,7 +7,7 @@
   </div>
 
   <div class="col-sm-8 item-content empty-selection" ng-show="!selected && !loadingContent">
-    <div>{{'No contact selected' | translate}}</div>
+    <div translate>No contact selected</div>
   </div>
 
   <div class="col-sm-8 item-content item-body" ng-show="selected && !loadingContent">
@@ -43,7 +43,7 @@
                   </p>
                 </li>
                 <li ng-if="selected.contactFor.length">
-                  <label>{{'Primary Contact For' | translate}}</label>
+                  <label translate>Primary Contact For</label>
                   <ul>
                     <li class="row" ng-repeat="place in selected.contactFor">
                       <div class="col-sm-4">
@@ -66,7 +66,7 @@
               <li ng-repeat="child in selected.children">
                 <a ui-sref="contacts.detail({ id: child.doc._id })">
                   <div>
-                    <i class="fa fa-star" ng-show="child.doc._id === selected.doc.contact._id" title="{{'Primary contact' | translate}}"></i>
+                    <i class="fa fa-star" ng-show="child.doc._id === selected.doc.contact._id" translate-attr-title="Primary contact"></i>
                     {{child.doc.name}}
                   </div>
                   <div class="subtext">{{child.doc.contact.name}}</div>
@@ -76,26 +76,26 @@
               <li class="add" ng-show="selected.doc.type === 'clinic'">
                 <a ui-sref="contacts.addChild({ type: 'person', parent_id: selected.doc._id })">
                   <i class="fa fa-plus"></i>
-                  <div>{{'Add person' | translate}}</div>
+                  <div translate>Add person</div>
                 </a>
               </li>
               <li class="add" ng-show="selected.doc.type === 'health_center'">
                 <a ui-sref="contacts.addChild({ type: 'clinic', parent_id: selected.doc._id })">
                   <i class="fa fa-plus"></i>
-                  <div>{{'Add place' | translate}}</div>
+                  <div translate>Add place</div>
                 </a>
               </li>
               <li class="add" ng-show="selected.doc.type === 'district_hospital'">
                 <a ui-sref="contacts.addChild({ type: 'health_center', parent_id: selected.doc._id })">
                   <i class="fa fa-plus"></i>
-                  <div>{{'Add place' | translate}}</div>
+                  <div translate>Add place</div>
                 </a>
               </li>
             </ul>
           </div>
         </div>
         <div class="col-sm-4" ng-if="(selected.tasks | filter:{resolved:false}:strict).length">
-          <h3>{{'Tasks' | translate}}</h3>
+          <h3 translate>Tasks</h3>
           <div class="card action-list">
             <ul>
               <li ng-repeat="task in selected.tasks | filter:{resolved:false}:strict | orderBy:'date'">
@@ -109,7 +109,7 @@
           </div>
         </div>
         <div class="col-sm-4" ng-if="relevantForms.length">
-          <h3>{{'Submit Report' | translate}}</h3>
+          <h3 translate>Submit Report</h3>
           <div class="card action-list">
             <ul>
               <li ng-repeat="form in relevantForms">
@@ -121,12 +121,12 @@
           </div>
         </div>
         <div class="col-sm-4" ng-if="selected.reports.length">
-          <h3>{{'Reports' | translate}}</h3>
+          <h3 translate>Reports</h3>
           <div class="card action-list">
             <ul>
-              <li ng-repeat="report in selected.reports">
+              <li ng-repeat="report in selected.reports track by report._id">
                 <a ui-sref="reports.detail({ id: report._id })">
-                  <div>{{report.formTitle | translateFrom}}</div>
+                  <div>{{report | summary:forms}}</div>
                   <div ng-bind-html="report.reported_date | relativeDate" class="subtext"></div>
                 </a>
               </li>

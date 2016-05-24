@@ -187,7 +187,6 @@ var _ = require('underscore'),
         }
 
         Search('reports', $scope.filters, options)
-          .then(FormatDataRecord)
           .then(function(data) {
             $scope.moreItems = liveList.moreItems = data.length >= options.limit;
             $scope.loading = false;
@@ -195,10 +194,7 @@ var _ = require('underscore'),
             $scope.error = false;
             $scope.errorSyntax = false;
             _updateLiveList(data);
-            var curr = _.findWhere(data, { _id: $state.params.id });
-            if (curr) {
-              $scope.setSelected(curr);
-            } else if (!$scope.isMobile() &&
+            if (!$state.params.id && !$scope.isMobile() &&
                        !$scope.selected &&
                        $state.is('reports.detail')) {
               $timeout(function() {

@@ -33,6 +33,7 @@
   require('./format-date');
   require('./generate-search-query');
   require('./generate-search-requests');
+  require('./get-data-records');
   require('./import-contacts');
   require('./kanso-packages');
   require('./language');

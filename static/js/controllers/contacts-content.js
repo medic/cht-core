@@ -26,27 +26,6 @@ var _ = require('underscore');
 
       $scope.showParentLink = false;
 
-      var getReports = function(id) {
-        return $q.all([
-          Search('reports', { subjectIds: [ id ] }),
-          DB.get().query('medic/forms', { include_docs: true })
-        ]).then(function(results) {
-          var reports = results[0];
-          var forms = results[1].rows;
-          reports.forEach(function(report) {
-            var form = _.find(forms, function(form) {
-              return form.doc.internalId === report.form;
-            });
-            if (form) {
-              report.formTitle = form.doc.title;
-            } else {
-              report.formTitle = report.form;
-            }
-          });
-          return reports;
-        });
-      };
-
       var sortChildren = function(children) {
         children.sort(function(lhs, rhs) {
           if (lhs.doc.date_of_birth &&
@@ -112,7 +91,7 @@ var _ = require('underscore');
           DB.get().get(id),
           getChildren(id),
           getContactFor(id),
-          getReports(id)
+          Search('reports', { subjectIds: [ id ] })
         ])
           .then(function(results) {
             var selected = {

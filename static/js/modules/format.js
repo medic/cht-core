@@ -38,11 +38,12 @@ var _ = require('underscore');
   };
 
   exports.contact = function(doc) {
-    var contact = doc.type !== 'person' && doc.contact ? doc.contact : doc;
+    var contact = (doc.type !== 'person' && doc.contact) ? doc.contact : doc;
+    var place = doc.place || (doc.type === 'person' ? doc.parent : doc);
     return exports.sender({
       name: contact.name,
       phone: contact.phone,
-      parent: doc.type === 'person' ? doc.parent : doc
+      parent: place
     });
   };
 

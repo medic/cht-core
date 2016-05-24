@@ -9,9 +9,9 @@ var _ = require('underscore');
   inboxServices.factory('Search',
     function(
       $q,
-      DB,
       DbView,
-      GenerateSearchRequests
+      GenerateSearchRequests,
+      GetDataRecords
     ) {
 
       'ngInject';
@@ -69,31 +69,9 @@ var _ = require('underscore');
 
       var filter = function(type, requests, options) {
         return $q.all(requests.map(view))
-          .then(function(responses) {
-            var intersection = getIntersection(responses);
-            var page = getPage(type, intersection, options);
-            if (!page.length) {
-              return [];
-            }
-            return DB.get()
-              .allDocs({ include_docs: true, keys: page })
-              .then(function(response) {
-                return $q.resolve(_.pluck(response.rows, 'doc'));
-              });
-          });
-      };
-
-      var execute = function(type, requests, options) {
-        if (requests.length === 1 && requests[0].params.include_docs) {
-          // filter not required - just get the view directly
-          _.defaults(requests[0].params, {
-            limit: options.limit,
-            skip: options.skip
-          });
-          return view(requests[0]);
-        }
-        // filtering
-        return filter(type, requests, options);
+          .then(getIntersection)
+          .then(_.partial(getPage, type, _, options))
+          .then(_.partial(GetDataRecords, _, options));
       };
 
       var generateRequests = function(type, filters, options) {
@@ -112,7 +90,7 @@ var _ = require('underscore');
         });
         return $q.resolve(generateRequests(type, filters, options))
           .then(function(requests) {
-            return execute(type, requests, options);
+            return filter(type, requests, options);
           })
           .then(function(results) {
             _currentQuery = {};

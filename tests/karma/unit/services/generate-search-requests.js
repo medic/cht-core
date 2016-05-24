@@ -20,7 +20,6 @@ describe('GenerateSearchRequests service', function() {
     chai.expect(result[0]).to.deep.equal({
       view: 'reports_by_date',
       params: {
-        include_docs: true,
         descending: true
       }
     });
@@ -40,7 +39,6 @@ describe('GenerateSearchRequests service', function() {
       chai.expect(result[0]).to.deep.equal({
         view: 'reports_by_date',
         params: {
-          include_docs: true,
           descending: true
         }
       });
@@ -151,10 +149,7 @@ describe('GenerateSearchRequests service', function() {
     var result = service('contacts', {});
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0]).to.deep.equal({
-      view: 'contacts_by_name',
-      params: {
-        include_docs: true
-      }
+      view: 'contacts_by_name'
     });
   });
 
