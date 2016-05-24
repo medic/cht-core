@@ -86,12 +86,12 @@ var _ = require('underscore');
         return fields;
       };
 
-      var getInitialData = function(id) {
+      var getInitialData = function(contactId) {
         return $q.all([
-          DB.get().get(id),
-          getChildren(id),
-          getContactFor(id),
-          Search('reports', { subjectIds: [ id ] })
+          DB.get().get(contactId),
+          getChildren(contactId),
+          getContactFor(contactId),
+          Search('reports', { subjectIds: [ contactId ] })
         ])
           .then(function(results) {
             var selected = {
