@@ -116,18 +116,20 @@ var _ = require('underscore'),
         return results;
       };
 
-      var updateDisplayFields = function(report) {
+      var getDisplayFields = function(report) {
         // calculate fields to display
+        if (!report.fields) {
+          return [];
+        }
         var label = 'report.' + report.form;
         var fields = getFields([], report.fields, label, 0);
         var hide = report.hidden_fields || [];
         hide.push('inputs');
-        fields = _.reject(fields, function(field) {
+        return _.reject(fields, function(field) {
           return _.some(hide, function(h) {
             return field.label.indexOf(label + '.' + h) === 0;
           });
         });
-        $scope.displayFields = fields;
       };
 
       var setActionBar = function() {
@@ -146,10 +148,8 @@ var _ = require('underscore'),
       };
 
       $scope.setSelected = function(doc) {
-        if (doc.fields) {
-          updateDisplayFields(doc);
-        }
-
+        var displayFields = getDisplayFields(doc);
+        var refreshing = true;
         if ($scope.selectMode) {
           var existing = _.find($scope.selected, function(existing) {
             return existing.report._id === doc._id;
@@ -157,21 +157,26 @@ var _ = require('underscore'),
           if (existing) {
             existing.report = doc;
           } else {
-            $scope.selected.push({ report: doc, expanded: false });
+            $scope.selected.push({
+              report: doc,
+              expanded: false,
+              displayFields: displayFields
+            });
           }
-          $scope.settingSelected(true);
-          setActionBar();
         } else {
           liveList.setSelected(doc._id);
-
-          var refreshing = doc &&
-                           $scope.selected.length &&
-                           $scope.selected[0].report._id === doc._id;
-          $scope.selected = [ { report: doc, expanded: true } ];
+          refreshing = doc &&
+                       $scope.selected.length &&
+                       $scope.selected[0].report._id === doc._id;
+          $scope.selected = [ {
+            report: doc,
+            expanded: true,
+            displayFields: displayFields
+          } ];
           setTitle(doc);
-          setActionBar();
-          $scope.settingSelected(refreshing);
         }
+        setActionBar();
+        $scope.settingSelected(refreshing);
       };
 
       var _fetchFormattedReport = function(report) {

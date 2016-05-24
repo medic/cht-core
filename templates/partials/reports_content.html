@@ -40,7 +40,7 @@
             </label>
             <p>{{field.value}}</p>
           </li>
-          <li ng-if="report.form && report.content_type === 'xml'" ng-repeat="field in displayFields" class="indent-{{field.depth}}">
+          <li ng-if="report.form && report.content_type === 'xml'" ng-repeat="field in selection.displayFields" class="indent-{{field.depth}}">
             <label translate>{{field.label}}</label>
             <p>{{field.value}}</p>
           </li>
