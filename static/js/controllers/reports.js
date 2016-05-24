@@ -151,7 +151,14 @@ var _ = require('underscore'),
         }
 
         if ($scope.selectMode) {
-          $scope.selected.push({ report: doc, expanded: false });
+          var existing = _.find($scope.selected, function(existing) {
+            return existing.report._id === doc._id;
+          });
+          if (existing) {
+            existing.report = doc;
+          } else {
+            $scope.selected.push({ report: doc, expanded: false });
+          }
           $scope.settingSelected(true);
           setActionBar();
         } else {
@@ -186,6 +193,23 @@ var _ = require('underscore'),
           .catch(function(err) {
             $log.error('Error fetching formatted report', err);
           });
+      };
+
+      $scope.unselectReport = function(report) {
+        if ($scope.selectMode) {
+          // remove just this one item
+          liveList.remove(report);
+          for (var i = 0; i < $scope.selected.length; i++) {
+            if ($scope.selected[i].report._id === report._id) {
+              $scope.selected.splice(i, 1);
+            }
+          }
+          $scope.settingSelected(true);
+          setActionBar();
+        } else {
+          // clear all
+          $scope.selectReport();
+        }
       };
 
       $scope.selectReport = function(report) {

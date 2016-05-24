@@ -76,11 +76,18 @@ angular.module('inboxServices').factory('LiveListConfig', [
           }
           return r2.reported_date - r1.reported_date;
         },
-        listItem: function(report) {
+        listItem: function(report, removedDomElement) {
           var reportHtml = $templateCache.get('templates/partials/reports_list_item.html');
           var scope = $scope.$new();
           scope.report = report;
-          return reportHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
+          var element = reportHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
+          if (removedDomElement &&
+              removedDomElement.find('input[type="checkbox"]').is(':checked')) {
+            // updating an item that was selected in select mode
+            element = $(element);
+            element.find('input[type="checkbox"]').prop('checked', true);
+          }
+          return element;
         },
       };
 
@@ -204,8 +211,8 @@ angular.module('inboxServices').factory('LiveList', [
       }
     }
 
-    function listItemFor(idx, doc) {
-      var li = $(idx.listItem(doc));
+    function listItemFor(idx, doc, removedDomElement) {
+      var li = $(idx.listItem(doc, removedDomElement));
       if (doc._id === idx.selected) {
         li.addClass('selected');
       }
@@ -285,14 +292,14 @@ angular.module('inboxServices').factory('LiveList', [
       return false;
     }
 
-    function _insert(listName, newItem, skipDomAppend) {
+    function _insert(listName, newItem, skipDomAppend, removedDomElement) {
       var idx = indexes[listName];
 
       if (!idx.list) {
         return;
       }
 
-      var li = listItemFor(idx, newItem);
+      var li = listItemFor(idx, newItem, removedDomElement);
 
       var newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
       idx.list.splice(newItemIndex, 0, newItem);
@@ -315,8 +322,8 @@ angular.module('inboxServices').factory('LiveList', [
     }
 
     function _update(listName, updatedItem) {
-      _remove(listName, updatedItem);
-      _insert(listName, updatedItem);
+      var removed = _remove(listName, updatedItem);
+      _insert(listName, updatedItem, false, removed);
     }
 
     function _remove(listName, removedItem) {
@@ -335,10 +342,12 @@ angular.module('inboxServices').factory('LiveList', [
       }
       if (removeIndex !== null) {
         idx.list.splice(removeIndex, 1);
-        idx.dom.splice(removeIndex, 1);
+        var removed = idx.dom.splice(removeIndex, 1);
 
-        $(idx.selector).children().eq(removeIndex)
-            .remove();
+        $(idx.selector).children().eq(removeIndex).remove();
+        if (removed.length) {
+          return removed[0];
+        }
       }
     }
 
