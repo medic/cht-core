@@ -53,17 +53,10 @@ var _ = require('underscore');
         }
       };
 
-      $scope.deselect = function(selection, $event) {
+      $scope.deselect = function(report, $event) {
         if ($scope.selectMode) {
           $event.stopPropagation();
-          for (var i = 0; i < $scope.selected.length; i++) {
-            if ($scope.selected[i].report._id === selection._id) {
-              $scope.selected.splice(i, 1);
-              $('#reports-list li[data-record-id="' + selection._id + '"] input[type="checkbox"]')
-                .prop('checked', false);
-              return;
-            }
-          }
+          $scope.deselectReport(report);
         }
       };
 
@@ -79,7 +72,7 @@ var _ = require('underscore');
         callback: function(change) {
           if (change.deleted) {
             $scope.$apply(function() {
-              $scope.unselectReport(change.doc);
+              $scope.handleDeletedReport(change.doc);
             });
           } else {
             $scope.refreshReportSilently(change.doc);

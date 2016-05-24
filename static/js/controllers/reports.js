@@ -200,17 +200,23 @@ var _ = require('underscore'),
           });
       };
 
-      $scope.unselectReport = function(report) {
+      $scope.deselectReport = function(report) {
+        for (var i = 0; i < $scope.selected.length; i++) {
+          if ($scope.selected[i].report._id === report._id) {
+            $scope.selected.splice(i, 1);
+          }
+        }
+        $('#reports-list li[data-record-id="' + report._id + '"] input[type="checkbox"]')
+          .prop('checked', false);
+        $scope.settingSelected(true);
+        setActionBar();
+      };
+
+      $scope.handleDeletedReport = function(report) {
         if ($scope.selectMode) {
           // remove just this one item
           liveList.remove(report);
-          for (var i = 0; i < $scope.selected.length; i++) {
-            if ($scope.selected[i].report._id === report._id) {
-              $scope.selected.splice(i, 1);
-            }
-          }
-          $scope.settingSelected(true);
-          setActionBar();
+          $scope.deselectReport(report);
         } else {
           // clear all
           $scope.selectReport();
