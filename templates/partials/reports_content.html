@@ -6,7 +6,7 @@
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && (!selected.length || selected[0].report.form === undefined)">
+  <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && !selected.length">
     <div translate>No report selected</div>
   </div>
 
@@ -17,53 +17,57 @@
       <span ng-show="selected.length !== 1" translate translate-values="{ number: {{selected.length}} }">select.mode.count.plural</span>
     </div>
 
-    <div ng-repeat="selection in selected track by selection.report._id" ng-init="report = selection.report" class="body report-body">
+    <div ng-repeat="selection in selected track by selection._id" ng-init="summary = selection.report || selection.summary" class="body report-body">
 
       <div class="summary" ng-click="toggleExpand(selection)">
-        <span class="mm-badge mm-badge-round mm-badge-border" ng-class="report.errors.length ? 'mm-badge-red' : 'mm-badge-green'">
-          <span class="fa" ng-class="{'fa-check': report.verified}"></span>
+        <span class="mm-badge mm-badge-round mm-badge-border" ng-class="(selection.summary && selection.summary.valid) || (selection.report && !selection.report.errors.length) ? 'mm-badge-green' : 'mm-badge-red'">
+          <span class="fa" ng-class="{'fa-check': summary.verified}"></span>
         </span>
-        <div class="time" ng-bind-html="report.reported_date | fullDate"></div>
-        <a class="deselect" ng-show="selectMode" ng-click="deselect(report, $event)">
+        <div class="time" ng-bind-html="summary.reported_date | fullDate"></div>
+        <a class="deselect" ng-show="selectMode" ng-click="deselect(summary, $event)">
           <i class="fa fa-minus-circle"></i>
         </a>
-        <mm-sender message="report"></mm-sender>
-        <div class="report-name">{{report | title:forms}}</div>
+        <mm-sender message="summary"></mm-sender>
+        <div class="report-name">{{summary | title:forms}}</div>
+      </div>
+
+      <div ng-show="selection.loading">
+        <div class="loader"></div>
       </div>
 
       <div class="details" ng-show="selection.expanded">
         <ul>
-          <li ng-if="report.form && report.content_type !== 'xml'" ng-repeat="field in report.fields.data">
+          <li ng-if="selection.report.form && selection.report.content_type !== 'xml'" ng-repeat="field in selection.report.fields.data">
             <label>
               {{field.label}}
               <span class="fa fa-cogs" ng-show="field.generated" translate translate-attr-title="Generated report field"></span>
             </label>
             <p>{{field.value}}</p>
           </li>
-          <li ng-if="report.form && report.content_type === 'xml'" ng-repeat="field in selection.displayFields" class="indent-{{field.depth}}">
+          <li ng-if="selection.report.form && selection.report.content_type === 'xml'" ng-repeat="field in selection.displayFields" class="indent-{{field.depth}}">
             <label translate>{{field.label}}</label>
             <p>{{field.value}}</p>
           </li>
-          <li ng-if="report.errors.length">
+          <li ng-if="selection.report.errors.length">
             <label translate>Errors</label>
             <ul>
-              <li ng-repeat="error in report.errors">
+              <li ng-repeat="error in selection.report.errors">
                 {{error.message}}
               </li>
             </ul>
           </li>
-          <li ng-if="report.sms_message.message">
-            <label translate>report.content.raw</label>
-            <p>{{report.sms_message.message}}</p>
+          <li ng-if="selection.report.sms_message.message">
+            <label translate>selection.report.content.raw</label>
+            <p>{{selection.report.sms_message.message}}</p>
           </li>
-          <li ng-if="report.tasks.length">
-            <label ng-if="report.kujua_message" translate>tasks.0.messages.0.to</label>
-            <label ng-if="!report.kujua_message" translate>Automated Reply</label>
+          <li ng-if="selection.report.tasks.length">
+            <label ng-if="selection.report.kujua_message" translate>tasks.0.messages.0.to</label>
+            <label ng-if="!selection.report.kujua_message" translate>Automated Reply</label>
             <ul class="task-list">
-              <li ng-repeat="task in report.tasks">
+              <li ng-repeat="task in selection.report.tasks">
                 <ul>
                   <li ng-repeat="message in task.messages">
-                    {{report.kujua_message ? message.to : message.message}}
+                    {{selection.report.kujua_message ? message.to : message.message}}
                   </li>
                 </ul>
                 <span class="task-state" ng-bind-html="task | state"></span>
@@ -72,10 +76,10 @@
             </ul>
           </li>
         </ul>
-        <div class="scheduled-tasks" ng-if="report.scheduled_tasks_by_group.length">
+        <div class="scheduled-tasks" ng-if="selection.report.scheduled_tasks_by_group.length">
           <h2 translate>tasks</h2>
           <ul>
-            <li ng-repeat="group in report.scheduled_tasks_by_group">
+            <li ng-repeat="group in selection.report.scheduled_tasks_by_group">
               <p>
                 {{group.group}}
                 <span ng-hide="group.loading">

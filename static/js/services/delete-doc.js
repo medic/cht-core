@@ -6,8 +6,13 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('DeleteDoc', ['$q', 'DB',
-    function($q, DB) {
+  inboxServices.factory('DeleteDoc',
+    function(
+      $q,
+      DB
+    ) {
+
+      'ngInject';
 
       var getParent = function(doc) {
         if (doc.type === 'person' && doc.parent && doc.parent._id) {
@@ -34,23 +39,27 @@ var _ = require('underscore');
         if (!_.isArray(docs)) {
           docs = [ docs ];
         }
-        docs.forEach(function(doc) {
-          doc._deleted = true;
+        var toUpdate = docs.map(function(doc) {
+          return {
+            _id: doc._id,
+            _rev: doc._rev,
+            _deleted: true
+          };
         });
         return $q.all(docs.map(function(doc) {
           return getParent(doc)
             .then(function(parent) {
               if (parent) {
-                docs.push(parent);
+                toUpdate.push(parent);
               }
             });
           }))
           .then(function() {
-            return DB.get().bulkDocs(docs);
+            return DB.get().bulkDocs(toUpdate);
           });
       };
 
     }
-  ]);
+  );
 
 }());

@@ -49,7 +49,20 @@ var _ = require('underscore');
 
       $scope.toggleExpand = function(selection) {
         if ($scope.selectMode) {
-          selection.expanded = !selection.expanded;
+          if (selection.report || selection.expanded) {
+            selection.expanded = !selection.expanded;
+          } else {
+            selection.loading = true;
+            $scope.refreshReportSilently(selection._id)
+              .then(function() {
+                selection.loading = false;
+                selection.expanded = true;
+              })
+              .catch(function(err) {
+                selection.loading = false;
+                $log.error('Error fetching doc for expansion', err);
+              });
+          }
         }
       };
 
@@ -66,7 +79,7 @@ var _ = require('underscore');
           return $scope.selected &&
             $scope.selected.length &&
             _.some($scope.selected, function(item) {
-              return item.report._id === change.id;
+              return item._id === change.id;
             });
         },
         callback: function(change) {

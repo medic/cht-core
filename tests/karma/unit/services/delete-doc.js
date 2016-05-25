@@ -41,11 +41,12 @@ describe('DeleteDoc service', function() {
     bulkDocs.returns(KarmaUtils.mockPromise());
     var record = {
       _id: 'xyz',
+      _rev: '123',
       type: 'data_record'
     };
     var expected = {
       _id: 'xyz',
-      type: 'data_record',
+      _rev: '123',
       _deleted: true
     };
     return service(record).then(function() {
@@ -59,20 +60,22 @@ describe('DeleteDoc service', function() {
     bulkDocs.returns(KarmaUtils.mockPromise());
     var record1 = {
       _id: 'xyz',
+      _rev: '123',
       type: 'data_record'
     };
     var record2 = {
       _id: 'abc',
+      _rev: '456',
       type: 'data_record'
     };
     var expected1 = {
       _id: 'xyz',
-      type: 'data_record',
+      _rev: '123',
       _deleted: true
     };
     var expected2 = {
       _id: 'abc',
-      type: 'data_record',
+      _rev: '456',
       _deleted: true
     };
     return service([ record1, record2 ]).then(function() {

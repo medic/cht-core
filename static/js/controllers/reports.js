@@ -52,7 +52,7 @@ var _ = require('underscore'),
 
       $scope.updateGroup = function(group) {
         var pane = modal.start($('#edit-message-group'));
-        EditGroup($scope.selected[0].report._id, group)
+        EditGroup($scope.selected[0]._id, group)
           .then(function() {
             pane.done();
           })
@@ -133,9 +133,10 @@ var _ = require('underscore'),
       };
 
       var setActionBar = function() {
-        var model = {
-          selected: _.pluck($scope.selected, 'report')
-        };
+        var model = {};
+        model.selected = $scope.selected.map(function(s) {
+          return s.report || s.summary;
+        });
         if (!$scope.selectMode &&
             model.selected &&
             model.selected.length === 1) {
@@ -148,16 +149,16 @@ var _ = require('underscore'),
       };
 
       $scope.setSelected = function(doc) {
-        var displayFields = getDisplayFields(doc);
         var refreshing = true;
+        var displayFields = getDisplayFields(doc);
         if ($scope.selectMode) {
-          var existing = _.find($scope.selected, function(existing) {
-            return existing.report._id === doc._id;
-          });
+          var existing = _.findWhere($scope.selected, { _id: doc._id });
           if (existing) {
             existing.report = doc;
+            existing.displayFields = displayFields;
           } else {
             $scope.selected.push({
+              _id: doc._id,
               report: doc,
               expanded: false,
               displayFields: displayFields
@@ -167,8 +168,9 @@ var _ = require('underscore'),
           liveList.setSelected(doc._id);
           refreshing = doc &&
                        $scope.selected.length &&
-                       $scope.selected[0].report._id === doc._id;
+                       $scope.selected[0]._id === doc._id;
           $scope.selected = [ {
+            _id: doc._id,
             report: doc,
             expanded: true,
             displayFields: displayFields
@@ -185,13 +187,12 @@ var _ = require('underscore'),
           return DB.get()
             .get(report)
             .then(FormatDataRecord);
-        } else {
-          return FormatDataRecord(report);
         }
+        return FormatDataRecord(report);
       };
 
       $scope.refreshReportSilently = function(report) {
-        _fetchFormattedReport(report)
+        return _fetchFormattedReport(report)
           .then(function(doc) {
             _setSelected(doc[0]);
           })
@@ -202,7 +203,7 @@ var _ = require('underscore'),
 
       $scope.deselectReport = function(report) {
         for (var i = 0; i < $scope.selected.length; i++) {
-          if ($scope.selected[i].report._id === report._id) {
+          if ($scope.selected[i]._id === report._id) {
             $scope.selected.splice(i, 1);
           }
         }
@@ -228,16 +229,18 @@ var _ = require('underscore'),
           $scope.clearSelected();
           return;
         }
+        $scope.setLoadingContent(report);
         if (!$scope.selectMode) {
           // in selected mode we append to the list so don't clear it
           $scope.clearSelected();
         }
-        $scope.setLoadingContent(report);
-
         _fetchFormattedReport(report)
+          .then(function(formatted) {
+            return formatted && formatted.length && formatted[0];
+          })
           .then(function(doc) {
             if (doc) {
-              _setSelected(doc[0]);
+              _setSelected(doc);
               _initScroll();
             }
           })
@@ -273,10 +276,11 @@ var _ = require('underscore'),
             $scope.error = false;
             $scope.errorSyntax = false;
             _updateLiveList(data);
-            if (!$state.params.id && !$scope.isMobile() &&
-                       !$scope.selected &&
-                       !$scope.selectMode &&
-                       $state.is('reports.detail')) {
+            if (!$state.params.id &&
+                !$scope.isMobile() &&
+                !$scope.selected &&
+                !$scope.selectMode &&
+                $state.is('reports.detail')) {
               $timeout(function() {
                 var id = $('.inbox-items li').first().attr('data-record-id');
                 $state.go('reports.detail', { id: id }, { location: 'replace' });
@@ -342,7 +346,7 @@ var _ = require('underscore'),
 
       $scope.$on('VerifyReport', function(e, verify) {
         if ($scope.selected[0].report.form) {
-          Verified($scope.selected[0].report._id, verify, function(err) {
+          Verified($scope.selected[0]._id, verify, function(err) {
             if (err) {
               $log.error('Error verifying message', err);
             }
@@ -352,7 +356,7 @@ var _ = require('underscore'),
 
       $scope.$on('EditReport', function() {
         var val = ($scope.selected[0].report.contact && $scope.selected[0].report.contact._id) || '';
-        $('#edit-report [name=id]').val($scope.selected[0].report._id);
+        $('#edit-report [name=id]').val($scope.selected[0]._id);
         $('#edit-report [name=facility]').select2('val', val);
         $('#edit-report').modal('show');
       });
@@ -469,16 +473,14 @@ var _ = require('underscore'),
           var target = $(e.target).closest('li');
           var reportId = target.attr('data-record-id');
           var checkbox = target.find('input[type="checkbox"]');
-          var alreadySelected = _.find($scope.selected, function(i) {
-            return i.report._id === reportId;
-          });
+          var alreadySelected = _.findWhere($scope.selected, { _id: reportId });
           $timeout(function() {
             checkbox.prop('checked', !alreadySelected);
             if (!alreadySelected) {
               $scope.selectReport(reportId);
             } else {
               for (var i = 0; i < $scope.selected.length; i++) {
-                if ($scope.selected[i].report._id === reportId) {
+                if ($scope.selected[i]._id === reportId) {
                   $scope.selected.splice(i, 1);
                   setActionBar();
                   return;
@@ -492,28 +494,29 @@ var _ = require('underscore'),
       var syncCheckboxes = function() {
         $('#reports-list li').each(function() {
           var id = $(this).attr('data-record-id');
-          var found = _.find($scope.selected, function(selection) {
-            return selection.report._id === id;
-          });
+          var found = _.findWhere($scope.selected, { _id: id });
           $(this).find('input[type="checkbox"]').prop('checked', found);
         });
       };
 
       $scope.$on('SelectAll', function() {
         $scope.setLoadingContent(true);
-        Search('reports', $scope.filters, { limit: 10000 }, function(err, data) {
-          if (err) {
-            return $log.error('Error selecting all', err);
-          }
-          FormatDataRecord(data).then(function(formatted) {
-            $scope.selected = formatted.map(function(doc) {
-              return { report: doc, expanded: false };
+        Search('reports', $scope.filters, { limit: 10000 })
+          .then(function(summaries) {
+            $scope.selected = summaries.map(function(summary) {
+              return {
+                _id: summary._id,
+                summary: summary,
+                expanded: false
+              };
             });
             $scope.settingSelected(true);
             setActionBar();
             $('#reports-list input[type="checkbox"]').prop('checked', true);
+          })
+          .catch(function(err) {
+            $log.error('Error selecting all', err);
           });
-        });
       });
 
       var deselectAll = function() {
