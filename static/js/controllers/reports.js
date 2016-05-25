@@ -480,6 +480,8 @@ var _ = require('underscore'),
           var reportId = target.attr('data-record-id');
           var checkbox = target.find('input[type="checkbox"]');
           var alreadySelected = _.findWhere($scope.selected, { _id: reportId });
+          // timeout so if the user clicked the checkbox it has time to
+          // register before we set it to the correct value.
           $timeout(function() {
             checkbox.prop('checked', !alreadySelected);
             if (!alreadySelected) {
