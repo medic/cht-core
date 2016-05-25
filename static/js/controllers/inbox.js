@@ -409,9 +409,11 @@ var feedback = require('../modules/feedback'),
               };
             });
             $scope.forms = xFormSummaries.concat(jsonForms);
+            $rootScope.$broadcast('formsLoaded');
           });
         })
         .catch(function(err) {
+          $rootScope.$broadcast('formsLoaded');
           $log.error('Failed to retrieve forms', err);
         });
 

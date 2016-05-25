@@ -374,7 +374,9 @@ var _ = require('underscore'),
         $scope.search();
       };
 
-      $scope.search();
+      $scope.$on('formsLoaded', function() {
+        $scope.search();
+      });
 
       $scope.$on('export', function() {
         if ($scope.currentTab === 'reports') {
