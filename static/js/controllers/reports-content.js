@@ -48,21 +48,22 @@ var _ = require('underscore');
       };
 
       $scope.toggleExpand = function(selection) {
-        if ($scope.selectMode) {
-          if (selection.report || selection.expanded) {
-            selection.expanded = !selection.expanded;
-          } else {
-            selection.loading = true;
-            $scope.refreshReportSilently(selection._id)
-              .then(function() {
-                selection.loading = false;
-                selection.expanded = true;
-              })
-              .catch(function(err) {
-                selection.loading = false;
-                $log.error('Error fetching doc for expansion', err);
-              });
-          }
+        if (!$scope.selectMode) {
+          return;
+        }
+        if (selection.report || selection.expanded) {
+          selection.expanded = !selection.expanded;
+        } else {
+          selection.loading = true;
+          $scope.refreshReportSilently(selection._id)
+            .then(function() {
+              selection.loading = false;
+              selection.expanded = true;
+            })
+            .catch(function(err) {
+              selection.loading = false;
+              $log.error('Error fetching doc for expansion', err);
+            });
         }
       };
 
