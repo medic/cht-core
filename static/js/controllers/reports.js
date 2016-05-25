@@ -202,16 +202,21 @@ var _ = require('underscore'),
           });
       };
 
-      $scope.deselectReport = function(report) {
-        for (var i = 0; i < $scope.selected.length; i++) {
-          if ($scope.selected[i]._id === report._id) {
-            $scope.selected.splice(i, 1);
-          }
+      var spliceSelected = function(id) {
+        var index = _.findIndex($scope.selected, function(s) {
+          return s._id === id;
+        });
+        if (index !== -1) {
+          $scope.selected.splice(index, 1);
+          setActionBar();
         }
+      };
+
+      $scope.deselectReport = function(report) {
+        spliceSelected(report._id);
         $('#reports-list li[data-record-id="' + report._id + '"] input[type="checkbox"]')
           .prop('checked', false);
         $scope.settingSelected(true);
-        setActionBar();
       };
 
       $scope.handleDeletedReport = function(report) {
@@ -480,13 +485,7 @@ var _ = require('underscore'),
             if (!alreadySelected) {
               $scope.selectReport(reportId);
             } else {
-              for (var i = 0; i < $scope.selected.length; i++) {
-                if ($scope.selected[i]._id === reportId) {
-                  $scope.selected.splice(i, 1);
-                  setActionBar();
-                  return;
-                }
-              }
+              spliceSelected(reportId);
             }
           });
         }
