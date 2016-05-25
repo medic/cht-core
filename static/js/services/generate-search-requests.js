@@ -134,10 +134,7 @@ var _ = require('underscore'),
           getUnfiltered: function() {
             return {
               view: 'reports_by_date',
-              params: {
-                include_docs: true,
-                descending: true
-              }
+              params: { descending: true }
             };
           },
           views: {
@@ -153,10 +150,7 @@ var _ = require('underscore'),
         contacts: {
           getUnfiltered: function() {
             return {
-              view: 'contacts_by_name',
-              params: {
-                include_docs: true
-              }
+              view: 'contacts_by_name'
             };
           },
           views: {

@@ -9,8 +9,22 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl',
-    ['$q', '$log', '$scope', '$state', '$timeout', '$http', 'DB', 'LiveList', 'UserSettings', 'Search', 'SearchFilters', 'DownloadUrl',
-    function ($q, $log, $scope, $state, $timeout, $http, DB, LiveList, UserSettings, Search, SearchFilters, DownloadUrl) {
+    function (
+      $http,
+      $log,
+      $q,
+      $scope,
+      $state,
+      $timeout,
+      DB,
+      DownloadUrl,
+      LiveList,
+      Search,
+      SearchFilters,
+      UserSettings
+    ) {
+
+      'ngInject';
 
       var liveList = LiveList.contacts;
 
@@ -200,6 +214,6 @@ var _ = require('underscore'),
       });
 
     }
-  ]);
+  );
 
 }());

@@ -274,7 +274,11 @@ var nools = require('nools'),
             initNools(settings);
           }
           registerListener();
-          var options = { limit: 99999999, force: true };
+          var options = {
+            limit: 99999999,
+            force: true,
+            include_docs: true
+          };
           return $q.all([
             Search('reports', { valid: true }, options),
             Search('contacts', {}, options)

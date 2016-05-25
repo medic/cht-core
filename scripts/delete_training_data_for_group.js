@@ -94,20 +94,21 @@ var checkUsersAreInBranch = function(db, users, branchId) {
 
 // users is like [{ _id: user._id, facility_id: user.facility_id, contact_id: user.contact_id }]
 var deleteReports = function(db, dryrun, branchId, users, startTimestamp, endTimestamp, logdir, batchSize) {
-  return Promise.resolve()
-    .then(function() {
+  return utils.queryInBatches(
+    function(skip) {
       console.log('Deleting reports');
-      return;
-    })
-    .then(_.partial(utils.getDataRecordsForBranch, db, branchId, batchSize))
-    .then(_.partial(utils.filterByDate, _, startTimestamp, endTimestamp))
-    .then(_.partial(filterReportsForGroup, _, users))
-    .then(_.partial(utils.writeDocsToFile, logdir + '/reports_deleted.json'))
-    .then(_.partial(utils.deleteDocs, dryrun, db))
-    .then(_.partial(utils.printoutDbStats, db))
-    .then(function(result) {
-      console.log(result.length + ' reports deleted!\n');
-      return users;
+      return utils.getDataRecordsForBranch(db, branchId, skip, batchSize);
+    },
+    function(docs, skip) {
+      return Promise.resolve()
+        .then(_.partial(utils.filterByDate, docs, startTimestamp, endTimestamp))
+        .then(_.partial(filterReportsForGroup, _, users))
+        .then(_.partial(utils.writeDocsToFile, logdir + '/reports_deleted_' + skip + '.json'))
+        .then(_.partial(utils.deleteDocs, dryrun, db))
+        .then(function(result) {
+          console.log(result.length + ' reports deleted!\n');
+          return result;
+        });
     });
 };
 
@@ -142,24 +143,24 @@ var filterPersonsForGroup = function(persons, users) {
 };
 
 var deletePersons = function(db, dryrun, branchId, users, startTimestamp, endTimestamp, logdir, batchSize) {
-  return Promise.resolve()
-    .then(function() {
+  return utils.queryInBatches(
+    function(skip) {
       console.log('Deleting persons');
-      return;
-    })
-    .then(_.partial(utils.getContactsForPlace, db, branchId, batchSize))
-    .then(_.partial(utils.filterByDate, _, startTimestamp, endTimestamp))
-    .then(_.partial(utils.filterByType, _, 'person'))
-    .then(_.partial(filterPersonsForGroup, _, users))
-    // Remove contact links
-    .then(_.partial(utils.cleanContactPersons, db, dryrun, logdir))
-    .then(_.partial(utils.printoutDbStats, db))
-    .then(_.partial(utils.writeDocsToFile, logdir + '/persons_deleted.json'))
-    .then(_.partial(utils.deleteDocs, dryrun, db))
-    .then(_.partial(utils.printoutDbStats, db))
-    .then(function(result) {
-      console.log(result.length + ' persons deleted!\n');
-      return users;
+      return utils.getContactsForPlace(db, branchId, skip, batchSize);
+    },
+    function(docs, skip) {
+      return Promise.resolve()
+        .then(_.partial(utils.filterByDate, docs, startTimestamp, endTimestamp))
+        .then(_.partial(utils.filterByType, _, 'person'))
+        .then(_.partial(filterPersonsForGroup, _, users))
+        // Remove contact links
+        .then(_.partial(utils.cleanContactPersons, db, dryrun, logdir))
+        .then(_.partial(utils.writeDocsToFile, logdir + '/persons_deleted_' + skip + '.json'))
+        .then(_.partial(utils.deleteDocs, dryrun, db))
+        .then(function(result) {
+          console.log(result.length + ' persons deleted!\n');
+          return result;
+        });
     });
 };
 
@@ -189,23 +190,24 @@ var filterHealthCenterForGroup = function(healthCenters, users) {
 };
 
 var deleteClinics = function(db, dryrun, branchId, users, startTimestamp, endTimestamp, logdir, batchSize) {
-  return Promise.resolve()
-    .then(function() {
+  return utils.queryInBatches(
+    function(skip) {
       console.log('Deleting clinics');
-      return;
-    })
-    // Need to fetch them all over again, because they could have been edited if
-    // their contact was just deleted.
-    .then(_.partial(utils.getContactsForPlace, db, branchId, batchSize))
-    .then(_.partial(utils.filterByDate, _, startTimestamp, endTimestamp))
-    .then(_.partial(utils.filterByType, _, 'clinic'))
-    .then(_.partial(filterClinicsForGroup, _, users))
-    .then(_.partial(utils.writeDocsToFile, logdir + '/clinics_deleted.json'))
-    .then(_.partial(utils.deleteDocs, dryrun, db))
-    .then(_.partial(utils.printoutDbStats, db))
-    .then(function(result) {
-      console.log(result.length + ' clinics deleted!\n');
-      return users;
+      // Need to fetch them all over again, because they could have been edited if
+      // their contact was just deleted.
+      return utils.getContactsForPlace(db, branchId, skip, batchSize);
+    },
+    function(docs, skip) {
+      return Promise.resolve()
+        .then(_.partial(utils.filterByDate, docs, startTimestamp, endTimestamp))
+        .then(_.partial(utils.filterByType, _, 'clinic'))
+        .then(_.partial(filterClinicsForGroup, _, users))
+        .then(_.partial(utils.writeDocsToFile, logdir + '/clinics_deleted_' + skip + '.json'))
+        .then(_.partial(utils.deleteDocs, dryrun, db))
+        .then(function(result) {
+          console.log(result.length + ' clinics deleted!\n');
+          return result;
+        });
     });
 };
 
@@ -217,7 +219,7 @@ var deleteHealthCenters = function(db, dryrun, branchId, users, startTimestamp, 
     })
     // Need to fetch them all over again, because they could have been edited if
     // their contact was just deleted.
-    .then(_.partial(utils.getContactsForPlace, db, branchId, batchSize))
+    .then(_.partial(utils.getContactsForPlace, db, branchId, 0, batchSize))
     .then(_.partial(utils.filterByDate, _, startTimestamp, endTimestamp))
     .then(_.partial(utils.filterByType, _, 'health_center'))
     .then(_.partial(filterHealthCenterForGroup, _, users))
@@ -254,7 +256,7 @@ var groupFile = process.argv[3];
 var start = new Date(process.argv[4]);
 var end = new Date(process.argv[5]);
 var logdir = process.argv[6] + '/' + now.getTime();
-var batchSize = process.argv[7];
+var batchSize = parseInt(process.argv[7]);
 var dryrun = process.argv[8];
 dryrun = (dryrun === 'dryrun');
 
@@ -270,7 +272,7 @@ var parsedUrl = url.parse(dbUrl);
 
 utils.fetchBranchInfo(db, branchId)
   .then(function(branchInfo) {
-    var message = '\nStarting deletion process with' + 
+    var message = '\nStarting deletion process with' +
       '\ndbUrl = ' + parsedUrl.host + parsedUrl.pathname +
       '\nbranch = ' + JSON.stringify(branchInfo) +
       '\ngroupFile = ' + groupFile +
@@ -287,6 +289,7 @@ utils.fetchBranchInfo(db, branchId)
     return users;
   })
   .then(_.partial(checkUsersAreInBranch, db, _, branchId))
+  // Only uncomment one at a time. With the retries, it's not nicely organized any more.
 //  .then(_.partial(deleteReports, db, dryrun, branchId, _, startTimestamp, endTimestamp, logdir, batchSize))
 //  .then(_.partial(deletePersons, db, dryrun, branchId, _, startTimestamp, endTimestamp, logdir, batchSize))
 //  .then(_.partial(deleteClinics, db, dryrun, branchId, _, startTimestamp, endTimestamp, logdir, batchSize))

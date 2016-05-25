@@ -14,12 +14,9 @@ var _ = require('underscore'),
       if(!row.doc) {
         return $('<span>' + (row.text || '&nbsp;') + '</span>');
       }
-      if(row.doc.type === 'person') {
-        return $(format.contact(row.doc));
-      }
       // format escapes the content for us, and if we just return
       // a string select2 escapes it again, so return an element instead.
-      return $('<span>' + format.clinic(row.doc) + '</span>');
+      return $(format.contact(row.doc));
     };
 
     var formatSelection = function(row) {

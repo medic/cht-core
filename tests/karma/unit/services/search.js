@@ -3,19 +3,19 @@ describe('Search service', function() {
   'use strict';
 
   var service,
-      allDocs,
       DbView,
-      GenerateSearchRequests;
+      GenerateSearchRequests,
+      GetDataRecords;
 
   beforeEach(function() {
     DbView = sinon.stub();
     GenerateSearchRequests = sinon.stub();
-    allDocs = sinon.stub();
+    GetDataRecords = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.factory('DB', KarmaUtils.mockDB({ allDocs: allDocs }));
       $provide.value('DbView', DbView);
       $provide.value('GenerateSearchRequests', GenerateSearchRequests);
+      $provide.value('GetDataRecords', GetDataRecords);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject(function($injector) {
@@ -24,7 +24,7 @@ describe('Search service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(allDocs);
+    KarmaUtils.restore(DbView, GenerateSearchRequests, GetDataRecords);
   });
 
   describe('reports', function() {
@@ -33,7 +33,6 @@ describe('Search service', function() {
       GenerateSearchRequests.returns([{
         view: 'reports_by_date',
         params: {
-          include_docs: true,
           descending: true
         }
       }]);
@@ -53,11 +52,11 @@ describe('Search service', function() {
       GenerateSearchRequests.returns([{
         view: 'reports_by_date',
         params: {
-          include_docs: true,
           descending: true
         }
       }]);
       DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, []));
       return service('reports', {})
         .then(function(actual) {
           chai.expect(actual.length).to.equal(0);
@@ -71,20 +70,21 @@ describe('Search service', function() {
       GenerateSearchRequests.returns([{
         view: 'reports_by_date',
         params: {
-          include_docs: true,
           descending: true
         }
       }]);
-      DbView.returns(KarmaUtils.mockPromise(null, { results: expected }));
+      DbView.returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 3 }, { id: 4 } ] } }));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, expected));
       return service('reports', {})
         .then(function(actual) {
           chai.expect(actual).to.deep.equal(expected);
-          chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
-          chai.expect(DbView.calledOnce).to.equal(true);
+          chai.expect(GenerateSearchRequests.callCount).to.equal(1);
+          chai.expect(DbView.callCount).to.equal(1);
           chai.expect(DbView.args[0][0]).to.equal('reports_by_date');
-          chai.expect(DbView.args[0][1]).to.deep.equal({
-            params: { include_docs: true, descending: true, limit: 50, skip: 0 }
-          });
+          chai.expect(DbView.args[0][1]).to.deep.equal({ params: { descending: true } });
+          chai.expect(GetDataRecords.callCount).to.equal(1);
+          chai.expect(GetDataRecords.args[0][0]).to.deep.equal([ 3, 4 ]);
+          chai.expect(GetDataRecords.args[0][1]).to.deep.equal({ limit: 50, skip: 0 });
         });
     });
 
@@ -93,56 +93,53 @@ describe('Search service', function() {
       GenerateSearchRequests.returns([{
         view: 'reports_by_date',
         params: {
-          include_docs: true,
           descending: true
         }
       }]);
-      DbView.returns(KarmaUtils.mockPromise(null, { results: expected }));
+      DbView.returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 3 } ] } }));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, expected));
       return service('reports', {}, { limit: 10, skip: 5 })
         .then(function(actual) {
           chai.expect(actual).to.deep.equal(expected);
           chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
           chai.expect(DbView.calledOnce).to.equal(true);
           chai.expect(DbView.args[0][0]).to.equal('reports_by_date');
-          chai.expect(DbView.args[0][1]).to.deep.equal({
-            params: { include_docs: true, descending: true, limit: 10, skip: 5 }
-          });
+          chai.expect(DbView.args[0][1]).to.deep.equal({ params: { descending: true } });
+          chai.expect(GetDataRecords.callCount).to.equal(1);
+          chai.expect(GetDataRecords.args[0][0]).to.deep.equal([ ]);
+          chai.expect(GetDataRecords.args[0][1]).to.deep.equal({ limit: 10, skip: 5 });
         });
     });
 
     it('returns results when one filter', function() {
+      var expected = [ { id: 'a' }, { id: 'b' } ];
       GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
       DbView.returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 } ] } }));
-      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } }, { doc: { id: 'b' } } ] }));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, expected));
       return service('reports', {})
         .then(function(actual) {
-          chai.expect(actual).to.deep.equal([ { id: 'a' }, { id: 'b' } ]);
+          chai.expect(actual).to.deep.equal(expected);
           chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
           chai.expect(DbView.calledOnce).to.equal(true);
           chai.expect(DbView.args[0][0]).to.equal('get_stuff');
-          chai.expect(DbView.args[0][1]).to.deep.equal({
-            params: { key: [ 'a' ] }
-          });
-          chai.expect(allDocs.calledOnce).to.equal(true);
-          chai.expect(allDocs.args[0][0].keys).to.deep.equal([ 'a', 'b' ]);
+          chai.expect(DbView.args[0][1]).to.deep.equal({ params: { key: [ 'a' ] } });
+          chai.expect(GetDataRecords.callCount).to.equal(1);
         });
     });
 
     it('removes duplicates before pagination', function() {
+      var expected = [ { id: 'a' }, { id: 'b' } ];
       GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
       DbView.returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'a', value: 1 } ] }}));
-      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } }, { doc: { id: 'b' } } ] }));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, expected));
       return service('reports', {})
         .then(function(actual) {
-          chai.expect(actual).to.deep.equal([ { id: 'a' }, { id: 'b' } ]);
+          chai.expect(actual).to.deep.equal(expected);
           chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
           chai.expect(DbView.calledOnce).to.equal(true);
           chai.expect(DbView.args[0][0]).to.equal('get_stuff');
-          chai.expect(DbView.args[0][1]).to.deep.equal({
-            params: { key: [ 'a' ] }
-          });
-          chai.expect(allDocs.calledOnce).to.equal(true);
-          chai.expect(allDocs.args[0][0].keys).to.deep.equal([ 'a', 'b' ]);
+          chai.expect(DbView.args[0][1]).to.deep.equal({ params: { key: [ 'a' ] } });
+          chai.expect(GetDataRecords.callCount).to.equal(1);
         });
     });
 
@@ -157,13 +154,12 @@ describe('Search service', function() {
       }
       GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
       DbView.returns(KarmaUtils.mockPromise(null, { results: viewResult }));
-      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ ] }));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, []));
       return service('reports', {}, { limit: 10 })
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([]);
-          chai.expect(allDocs.calledOnce).to.equal(true);
-          chai.expect(allDocs.args[0][0].keys.length).to.equal(10);
-          chai.expect(allDocs.args[0][0].keys).to.deep.equal(expected);
+          chai.expect(GetDataRecords.callCount).to.equal(1);
+          chai.expect(GetDataRecords.args[0][0]).to.deep.equal(expected);
         });
     });
 
@@ -178,39 +174,35 @@ describe('Search service', function() {
       }
       GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
       DbView.returns(KarmaUtils.mockPromise(null, { results: viewResult }));
-      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ ] }));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, []));
       return service('reports', {}, { skip: 10 })
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([]);
-          chai.expect(allDocs.calledOnce).to.equal(true);
-          chai.expect(allDocs.args[0][0].keys.length).to.equal(5);
-          chai.expect(allDocs.args[0][0].keys).to.deep.equal(expected);
+          chai.expect(GetDataRecords.callCount).to.equal(1);
+          chai.expect(GetDataRecords.args[0][0]).to.deep.equal(expected);
         });
     });
 
     it('returns results when multiple filters', function() {
+      var expected = [ { id: 'a' }, { id: 'b' } ];
       GenerateSearchRequests.returns([
         { view: 'get_stuff', params: { key: [ 'a' ] } },
         { view: 'get_moar_stuff', params: { startkey: [ {} ] } }
       ]);
       DbView.onCall(0).returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'c', value: 3 } ] }}));
       DbView.onCall(1).returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 }, { id: 'd', value: 4 } ] }}));
-      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } }, { doc: { id: 'b' } } ] }));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, expected));
       return service('reports', {})
         .then(function(actual) {
-          chai.expect(actual).to.deep.equal([ { id: 'a' }, { id: 'b' } ]);
-          chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
+          chai.expect(actual).to.deep.equal(expected);
+          chai.expect(GenerateSearchRequests.callCount).to.equal(1);
           chai.expect(DbView.calledTwice).to.equal(true);
           chai.expect(DbView.args[0][0]).to.equal('get_stuff');
-          chai.expect(DbView.args[0][1]).to.deep.equal({
-            params: { key: [ 'a' ] }
-          });
+          chai.expect(DbView.args[0][1]).to.deep.equal({ params: { key: [ 'a' ] } });
           chai.expect(DbView.args[1][0]).to.equal('get_moar_stuff');
-          chai.expect(DbView.args[1][1]).to.deep.equal({
-            params: { startkey: [ {} ] }
-          });
-          chai.expect(allDocs.calledOnce).to.equal(true);
-          chai.expect(allDocs.args[0][0].keys).to.deep.equal([ 'a', 'b' ]);
+          chai.expect(DbView.args[1][1]).to.deep.equal({ params: { startkey: [ {} ] } });
+          chai.expect(GetDataRecords.callCount).to.equal(1);
+          chai.expect(GetDataRecords.args[0][0]).to.deep.equal([ 'a', 'b' ]);
         });
     });
 
@@ -227,20 +219,22 @@ describe('Search service', function() {
         })
         .catch(function(err) {
           chai.expect(err).to.equal('boom');
-          chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
-          chai.expect(DbView.calledTwice).to.equal(true);
+          chai.expect(GenerateSearchRequests.callCount).to.equal(1);
+          chai.expect(DbView.callCount).to.equal(2);
         });
     });
 
     it('does not get when no ids', function() {
       GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
       DbView.returns(KarmaUtils.mockPromise(null, { results: { rows: [] }}));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, []));
       return service('reports', {})
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([]);
-          chai.expect(GenerateSearchRequests.calledOnce).to.equal(true);
-          chai.expect(DbView.calledOnce).to.equal(true);
-          chai.expect(allDocs.callCount).to.equal(0);
+          chai.expect(GenerateSearchRequests.callCount).to.equal(1);
+          chai.expect(DbView.callCount).to.equal(1);
+          chai.expect(GetDataRecords.callCount).to.equal(1);
+          chai.expect(GetDataRecords.args[0][0]).to.deep.equal([]);
         });
     });
 
@@ -249,12 +243,13 @@ describe('Search service', function() {
   describe('debouncing', function() {
 
     it('debounces if the same query is executed twice', function(done) {
+      var expected = [ { id: 'a' } ];
       GenerateSearchRequests.returns([ { view: 'get_stuff', params: { } } ]);
       DbView.returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 } ] }}));
-      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } } ] }));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, expected));
       service('reports', {})
         .then(function(actual) {
-          chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
+          chai.expect(actual).to.deep.equal(expected);
           setTimeout(done); // defer execution to give the second query time to execute
         });
       service('reports', {})
@@ -264,14 +259,15 @@ describe('Search service', function() {
     });
 
     it('does not debounce if the same query is executed twice with the force option', function() {
+      var expected = [ { id: 'a' } ];
       GenerateSearchRequests.returns([ { view: 'get_stuff', params: { } } ]);
       DbView.returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 } ] }}));
-      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } } ] }));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, expected));
       var firstReturned = false;
       service('reports', {})
         .then(function(actual) {
           firstReturned = true;
-          chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
+          chai.expect(actual).to.deep.equal(expected);
         });
       return service('reports', {}, { force: true })
         .then(function(actual) {
@@ -287,9 +283,9 @@ describe('Search service', function() {
       DbView
         .onCall(0).returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 } ] }}))
         .onCall(1).returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'b', value: 2 } ] }}));
-      allDocs
-        .onFirstCall().returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } } ] }))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'b' } } ] }));
+      GetDataRecords
+        .onFirstCall().returns(KarmaUtils.mockPromise(null, [ { id: 'a' } ]))
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, [ { id: 'b' } ]));
       var firstReturned = false;
       service('reports', { freetext: 'first' })
         .then(function(actual) {
@@ -306,20 +302,22 @@ describe('Search service', function() {
     });
 
     it('does not debounce subsequent queries', function() {
+      var expected = [ { id: 'a' } ];
       GenerateSearchRequests.returns([ { view: 'get_stuff', params: { } } ]);
       DbView.returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 } ] }}));
-      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ { doc: { id: 'a' } } ] }));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, expected));
       return service('reports', {})
         .then(function(actual) {
-          chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
+          chai.expect(actual).to.deep.equal(expected);
         })
         .then(function() {
           return service('reports', {});
         })
         .then(function(actual) {
-          chai.expect(actual).to.deep.equal([ { id: 'a' } ]);
+          chai.expect(actual).to.deep.equal(expected);
           chai.expect(GenerateSearchRequests.callCount).to.equal(2);
           chai.expect(DbView.callCount).to.equal(2);
+          chai.expect(GetDataRecords.callCount).to.equal(2);
         });
     });
 
@@ -338,13 +336,12 @@ describe('Search service', function() {
       }
       GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
       DbView.returns(KarmaUtils.mockPromise(null, { results: viewResult }));
-      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ ] }));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, []));
       return service('contacts', {}, { limit: 10 })
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([]);
-          chai.expect(allDocs.calledOnce).to.equal(true);
-          chai.expect(allDocs.args[0][0].keys.length).to.equal(10);
-          chai.expect(allDocs.args[0][0].keys).to.deep.equal(expected);
+          chai.expect(GetDataRecords.callCount).to.equal(1);
+          chai.expect(GetDataRecords.args[0][0]).to.deep.equal(expected);
         });
     });
 
@@ -359,13 +356,12 @@ describe('Search service', function() {
       }
       GenerateSearchRequests.returns([ { view: 'get_stuff', params: { key: [ 'a' ] } } ]);
       DbView.returns(KarmaUtils.mockPromise(null, { results: viewResult }));
-      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [ ] }));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, []));
       return service('contacts', {}, { skip: 10 })
         .then(function(actual) {
           chai.expect(actual).to.deep.equal([]);
-          chai.expect(allDocs.calledOnce).to.equal(true);
-          chai.expect(allDocs.args[0][0].keys.length).to.equal(5);
-          chai.expect(allDocs.args[0][0].keys).to.deep.equal(expected);
+          chai.expect(GetDataRecords.callCount).to.equal(1);
+          chai.expect(GetDataRecords.args[0][0]).to.deep.equal(expected);
         });
     });
 

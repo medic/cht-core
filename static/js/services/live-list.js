@@ -9,11 +9,22 @@ function PARSER($parse, scope) {
 
 // medic-webapp specific config for LiveList.
 // This service should be invoked once at startup.
-angular.module('inboxServices').factory('LiveListConfig', [
-  '$log', '$parse', '$templateCache', '$timeout',
-      'Changes', 'DB', 'LiveList', 'RulesEngine', 'CONTACT_TYPES',
-  function($log, $parse, $templateCache, $timeout,
-      Changes, DB, LiveList, RulesEngine, CONTACT_TYPES) {
+angular.module('inboxServices').factory('LiveListConfig',
+  function(
+    $log,
+    $parse,
+    $templateCache,
+    $timeout,
+    Changes,
+    CONTACT_TYPES,
+    GetDataRecords,
+    DB,
+    LiveList,
+    RulesEngine
+  ) {
+
+    'ngInject';
+
     // Configure LiveList service
     return function($scope) {
 
@@ -54,7 +65,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
             LiveList.contacts.remove({ _id: change.id });
             return;
           }
-          LiveList.contacts.update(change.doc);
+          GetDataRecords(change.id).then(LiveList.contacts.update);
         },
         filter: function(change) {
           return CONTACT_TYPES.indexOf(change.doc.type) !== -1;
@@ -110,7 +121,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
             LiveList.reports.remove({ _id: change.id });
             return;
           }
-          LiveList.reports.update(change.doc);
+          GetDataRecords(change.id).then(LiveList.reports.update);
         },
         filter: function(change) {
           return change.doc.form;
@@ -177,11 +188,15 @@ angular.module('inboxServices').factory('LiveListConfig', [
 
     };
   }
-]);
+);
 
-angular.module('inboxServices').factory('LiveList', [
-  '$timeout', 'ResourceIcons',
-  function($timeout, ResourceIcons) {
+angular.module('inboxServices').factory('LiveList',
+  function(
+    $timeout,
+    ResourceIcons
+  ) {
+    'ngInject';
+
     var api = {};
     var indexes = {};
 
@@ -455,4 +470,4 @@ angular.module('inboxServices').factory('LiveList', [
 
     return api;
   }
-]);
+);
