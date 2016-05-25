@@ -374,7 +374,7 @@ var _ = require('underscore'),
         $scope.search();
       };
 
-      $scope.$on('formsLoaded', function() {
+      $scope.$on('formLoadingComplete', function() {
         $scope.search();
       });
 
