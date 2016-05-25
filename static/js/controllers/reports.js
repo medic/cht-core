@@ -35,9 +35,10 @@ var _ = require('underscore'),
       'ngInject';
 
       // selected objects have the form
-      //    { report: { ... }, expanded: false }
-      // where the report is the db doc and expanded is whether to
-      // show the details or just the summary in the content pane.
+      //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
+      // where the summary is the data required for the collapsed view,
+      // report is the db doc, and expanded is whether to how the details
+      // or just the summary in the content pane.
       $scope.selected = [];
       $scope.selectedGroup = null;
       $scope.filters = {
