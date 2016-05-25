@@ -514,19 +514,13 @@ body {
       display: none;
       float: left;
       height: 2em;
+      position: absolute;
+      left: 5px;
     }
   }
   &.select-mode {
-    .inbox-items li {
-      input[type="checkbox"] {
-        display: inline;
-      }
-      .message-wrapper {
-        padding-left: 0;
-      }
-      .detail {
-        margin-left: 4em;
-      }
+    .inbox-items li input[type="checkbox"] {
+      display: inline;
     }
     .report-body .summary {
       cursor: pointer;
