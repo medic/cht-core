@@ -15,20 +15,17 @@
         // inspired by https://github.com/paulmillr/console-polyfill
         var consolePolyfill = function(global) {
           var replace = function(con, props, replacement) {
-            props = props.split(',');
-            var prop = props.pop();
-            while (prop) {
+            props.split(',').forEach(function(prop) {
               if (!con[prop]) {
                 con[prop] = replacement;
               }
-              prop = props.pop();
-            }
+            });
           };
           global.console = global.console || {};
           var PROPERTIES = 'memory';
           var METHODS = 'assert,clear,count,debug,dir,dirxml,error,exception,group,' +
-             'groupCollapsed,groupEnd,info,log,markTimeline,profile,profiles,profileEnd,' +
-             'show,table,time,timeEnd,timeline,timelineEnd,timeStamp,trace,warn';
+            'groupCollapsed,groupEnd,info,log,markTimeline,profile,profiles,profileEnd,' +
+            'show,table,time,timeEnd,timeline,timelineEnd,timeStamp,trace,warn';
           replace(global.console, PROPERTIES, {});
           replace(global.console, METHODS, function() {});
         };
