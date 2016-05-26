@@ -51,7 +51,8 @@ module.exports = function(grunt) {
             'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath',
             'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
             'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils',
-            'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber'
+            'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber',
+            'worker-pouch/workerified': './node_modules/worker-pouch/lib/workerified/'
           },
         },
       }
