@@ -48,7 +48,7 @@ describe('InboxCtrl controller', function() {
         };
       });
       $provide.factory('DeleteDoc', function() {
-        return sinon.spy();
+        return KarmaUtils.nullPromise();
       });
       $provide.factory('XmlForms', function() {
         return sinon.stub();
@@ -112,9 +112,6 @@ describe('InboxCtrl controller', function() {
       $provide.factory('TrafficStats', function() {
         return sinon.stub();
       });
-      $provide.factory('translateFilter', function() {
-        return sinon.stub();
-      });
       $provide.factory('UpdateUser', function() {
         return sinon.stub();
       });
@@ -160,7 +157,6 @@ describe('InboxCtrl controller', function() {
       chai.assert(spyState.go.called, 'Should change state');
       chai.expect(spyState.go.args[0][0]).to.equal(spyState.current.name);
       chai.expect(spyState.go.args[0][1]).to.deep.equal({ id: null });
-      chai.assert(snackbar.called, 'Should display toast');
       done();
     });
   });
@@ -176,7 +172,6 @@ describe('InboxCtrl controller', function() {
       scope.$apply(); // needed to resolve the promises
 
       chai.assert.isFalse(spyState.go.called, 'state change should not happen');
-      chai.assert(snackbar.called, 'Should display toast');
       done();
     });
   });

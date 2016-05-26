@@ -188,6 +188,13 @@ var _ = require('underscore'),
               to: end.valueOf()
             });
           })
+          .on('show.daterangepicker', function(e, picker) {
+            setTimeout(function() {
+              if ($('#dateRangeDropdown').is('.disabled')) {
+                picker.hide();
+              }
+            });
+          })
           .on('mm.dateSelected.daterangepicker', function(e, picker) {
             if (isMobile()) {
               // mobile version - only show one calendar at a time

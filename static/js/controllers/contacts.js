@@ -130,7 +130,7 @@ var _ = require('underscore'),
         $scope.setTitle(selected.doc.name);
         $scope.clearCancelTarget();
         $scope.setActionBar({
-          _id: selected.doc._id,
+          selected: [ selected.doc ],
           sendTo: selected.doc,
           disableDelete: (selected.children && selected.children.length) ||
                          (selected.contactFor && selected.contactFor.length)

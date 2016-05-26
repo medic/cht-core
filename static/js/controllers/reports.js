@@ -11,11 +11,36 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsCtrl',
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$translate', '$http', '$log', 'TranslateFrom', 'LiveList', 'Settings', 'MarkRead', 'Search', 'EditGroup', 'FormatDataRecord', 'DB', 'Verified', 'SearchFilters', 'DownloadUrl',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, $translate, $http, $log, TranslateFrom, LiveList, Settings, MarkRead, Search, EditGroup, FormatDataRecord, DB, Verified, SearchFilters, DownloadUrl) {
+    function (
+      $http,
+      $log,
+      $rootScope,
+      $scope,
+      $state,
+      $stateParams,
+      $timeout,
+      $translate,
+      DB,
+      DownloadUrl,
+      EditGroup,
+      FormatDataRecord,
+      LiveList,
+      MarkRead,
+      Search,
+      SearchFilters,
+      Settings,
+      TranslateFrom,
+      Verified
+    ) {
+      'ngInject';
 
+      // selected objects have the form
+      //    { _id: 'abc', summary: { ... }, report: { ... }, expanded: false }
+      // where the summary is the data required for the collapsed view,
+      // report is the db doc, and expanded is whether to how the details
+      // or just the summary in the content pane.
+      $scope.selected = [];
       $scope.selectedGroup = null;
-      $scope.selected = null;
       $scope.filters = {
         search: $stateParams.query
       };
@@ -28,7 +53,7 @@ var _ = require('underscore'),
 
       $scope.updateGroup = function(group) {
         var pane = modal.start($('#edit-message-group'));
-        EditGroup($scope.selected._id, group)
+        EditGroup($scope.selected[0]._id, group)
           .then(function() {
             pane.done();
           })
@@ -92,36 +117,68 @@ var _ = require('underscore'),
         return results;
       };
 
-      var updateDisplayFields = function(report) {
+      var getDisplayFields = function(report) {
         // calculate fields to display
+        if (!report.fields) {
+          return [];
+        }
         var label = 'report.' + report.form;
         var fields = getFields([], report.fields, label, 0);
         var hide = report.hidden_fields || [];
         hide.push('inputs');
-        fields = _.reject(fields, function(field) {
+        return _.reject(fields, function(field) {
           return _.some(hide, function(h) {
             return field.label.indexOf(label + '.' + h) === 0;
           });
         });
-        $scope.displayFields = fields;
+      };
+
+      var setActionBar = function() {
+        var model = {};
+        model.selected = $scope.selected.map(function(s) {
+          return s.report || s.summary;
+        });
+        if (!$scope.selectMode &&
+            model.selected &&
+            model.selected.length === 1) {
+          var doc = model.selected[0];
+          model.verified = doc.verified;
+          model.type = doc.content_type;
+          model.sendTo = doc;
+        }
+        $scope.setActionBar(model);
       };
 
       $scope.setSelected = function(doc) {
-        if (doc.fields) {
-          updateDisplayFields(doc);
+        var refreshing = true;
+        var displayFields = getDisplayFields(doc);
+        if ($scope.selectMode) {
+          var existing = _.findWhere($scope.selected, { _id: doc._id });
+          if (existing) {
+            existing.report = doc;
+            existing.displayFields = displayFields;
+          } else {
+            $scope.selected.push({
+              _id: doc._id,
+              report: doc,
+              expanded: false,
+              displayFields: displayFields
+            });
+          }
+        } else {
+          liveList.setSelected(doc._id);
+          refreshing = doc &&
+                       $scope.selected.length &&
+                       $scope.selected[0]._id === doc._id;
+          $scope.selected = [ {
+            _id: doc._id,
+            report: doc,
+            expanded: true,
+            displayFields: displayFields
+          } ];
+          setTitle(doc);
         }
-
-        liveList.setSelected(doc._id);
-
-        var refreshing = doc && $scope.selected && $scope.selected.id === doc._id;
-        $scope.selected = doc;
-        setTitle(doc);
-        $scope.setActionBar({
-          _id: doc._id,
-          verified: doc.verified,
-          type: doc.content_type,
-          sendTo: doc
-        });
+        setActionBar();
         $scope.settingSelected(refreshing);
       };
 
@@ -131,19 +188,46 @@ var _ = require('underscore'),
           return DB.get()
             .get(report)
             .then(FormatDataRecord);
-        } else {
-          return FormatDataRecord(report);
         }
+        return FormatDataRecord(report);
       };
 
       $scope.refreshReportSilently = function(report) {
-        _fetchFormattedReport(report)
+        return _fetchFormattedReport(report)
           .then(function(doc) {
-              _setSelected(doc[0]);
-            })
+            _setSelected(doc[0]);
+          })
           .catch(function(err) {
             $log.error('Error fetching formatted report', err);
           });
+      };
+
+      var spliceSelected = function(id) {
+        var index = _.findIndex($scope.selected, function(s) {
+          return s._id === id;
+        });
+        if (index !== -1) {
+          $scope.selected.splice(index, 1);
+          setActionBar();
+        }
+      };
+
+      $scope.deselectReport = function(report) {
+        spliceSelected(report._id);
+        $('#reports-list li[data-record-id="' + report._id + '"] input[type="checkbox"]')
+          .prop('checked', false);
+        $scope.settingSelected(true);
+      };
+
+      $scope.handleDeletedReport = function(report) {
+        if ($scope.selectMode) {
+          // remove just this one item
+          liveList.remove(report);
+          $scope.deselectReport(report);
+        } else {
+          // clear all
+          $scope.selectReport();
+        }
       };
 
       $scope.selectReport = function(report) {
@@ -151,14 +235,18 @@ var _ = require('underscore'),
           $scope.clearSelected();
           return;
         }
-
-        $scope.clearSelected();
         $scope.setLoadingContent(report);
-
+        if (!$scope.selectMode) {
+          // in selected mode we append to the list so don't clear it
+          $scope.clearSelected();
+        }
         _fetchFormattedReport(report)
+          .then(function(formatted) {
+            return formatted && formatted.length && formatted[0];
+          })
           .then(function(doc) {
             if (doc) {
-              _setSelected(doc[0]);
+              _setSelected(doc);
               _initScroll();
             }
           })
@@ -194,14 +282,17 @@ var _ = require('underscore'),
             $scope.error = false;
             $scope.errorSyntax = false;
             _updateLiveList(data);
-            if (!$state.params.id && !$scope.isMobile() &&
-                       !$scope.selected &&
-                       $state.is('reports.detail')) {
+            if (!$state.params.id &&
+                !$scope.isMobile() &&
+                !$scope.selected &&
+                !$scope.selectMode &&
+                $state.is('reports.detail')) {
               $timeout(function() {
                 var id = $('.inbox-items li').first().attr('data-record-id');
                 $state.go('reports.detail', { id: id }, { location: 'replace' });
               });
             }
+            syncCheckboxes();
             _initScroll();
           })
           .catch(function(err) {
@@ -250,17 +341,18 @@ var _ = require('underscore'),
             _query();
           }
         }
-
       };
 
       $scope.$on('ClearSelected', function() {
-        $scope.selected = null;
+        $scope.selected = [];
+        $('#reports-list input[type="checkbox"]')
+          .prop('checked', false);
         liveList.clearSelected();
       });
 
       $scope.$on('VerifyReport', function(e, verify) {
-        if ($scope.selected.form) {
-          Verified($scope.selected._id, verify, function(err) {
+        if ($scope.selected[0].report.form) {
+          Verified($scope.selected[0]._id, verify, function(err) {
             if (err) {
               $log.error('Error verifying message', err);
             }
@@ -269,8 +361,8 @@ var _ = require('underscore'),
       });
 
       $scope.$on('EditReport', function() {
-        var val = ($scope.selected.contact && $scope.selected.contact._id) || '';
-        $('#edit-report [name=id]').val($scope.selected._id);
+        var val = ($scope.selected[0].report.contact && $scope.selected[0].report.contact._id) || '';
+        $('#edit-report [name=id]').val($scope.selected[0]._id);
         $('#edit-report [name=facility]').select2('val', val);
         $('#edit-report').modal('show');
       });
@@ -369,6 +461,10 @@ var _ = require('underscore'),
         });
       };
       $scope.resetFilterModel = function() {
+        if ($scope.selectMode && $scope.selected && $scope.selected.length) {
+          // can't filter when in select mode
+          return;
+        }
         $scope.filters = {};
         SearchFilters.reset();
         $scope.search();
@@ -377,6 +473,63 @@ var _ = require('underscore'),
       $scope.$on('formLoadingComplete', function() {
         $scope.search();
       });
+
+      $('.inbox').on('click', '#reports-list .message-wrapper', function(e) {
+        if ($scope.selectMode) {
+          e.preventDefault();
+          e.stopPropagation();
+          var target = $(e.target).closest('li');
+          var reportId = target.attr('data-record-id');
+          var checkbox = target.find('input[type="checkbox"]');
+          var alreadySelected = _.findWhere($scope.selected, { _id: reportId });
+          // timeout so if the user clicked the checkbox it has time to
+          // register before we set it to the correct value.
+          $timeout(function() {
+            checkbox.prop('checked', !alreadySelected);
+            if (!alreadySelected) {
+              $scope.selectReport(reportId);
+            } else {
+              spliceSelected(reportId);
+            }
+          });
+        }
+      });
+
+      var syncCheckboxes = function() {
+        $('#reports-list li').each(function() {
+          var id = $(this).attr('data-record-id');
+          var found = _.findWhere($scope.selected, { _id: id });
+          $(this).find('input[type="checkbox"]').prop('checked', found);
+        });
+      };
+
+      $scope.$on('SelectAll', function() {
+        $scope.setLoadingContent(true);
+        Search('reports', $scope.filters, { limit: 10000 })
+          .then(function(summaries) {
+            $scope.selected = summaries.map(function(summary) {
+              return {
+                _id: summary._id,
+                summary: summary,
+                expanded: false
+              };
+            });
+            $scope.settingSelected(true);
+            setActionBar();
+            $('#reports-list input[type="checkbox"]').prop('checked', true);
+          })
+          .catch(function(err) {
+            $log.error('Error selecting all', err);
+          });
+      });
+
+      var deselectAll = function() {
+        $scope.selected = [];
+        setActionBar();
+        $('#reports-list input[type="checkbox"]').prop('checked', false);
+      };
+
+      $scope.$on('DeselectAll', deselectAll);
 
       $scope.$on('export', function() {
         if ($scope.currentTab === 'reports') {
@@ -400,6 +553,6 @@ var _ = require('underscore'),
         }
       });
     }
-  ]);
+  );
 
 }());

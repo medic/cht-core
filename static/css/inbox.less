@@ -502,12 +502,29 @@ body {
   }
 }
 
-.reports .inbox-items li {
-  .message-wrapper:hover {
-    border-left-color: @reports-color;
+.reports {
+  .inbox-items li {
+    .message-wrapper:hover {
+      border-left-color: @reports-color;
+    }
+    &.selected {
+      background-color: lighten(@reports-color, 30%);
+    }
+    input[type="checkbox"] {
+      display: none;
+      float: left;
+      height: 2em;
+      position: absolute;
+      left: 5px;
+    }
   }
-  &.selected {
-    background-color: lighten(@reports-color, 30%);
+  &.select-mode {
+    .inbox-items li input[type="checkbox"] {
+      display: inline;
+    }
+    .report-body .summary {
+      cursor: pointer;
+    }
   }
 }
 
@@ -696,6 +713,11 @@ body {
     height: 10em;
     clear: left;
   }
+  .deselect {
+    float: right;
+    clear: right;
+    font-size: 1.2em;
+  }
 }
 
 .incomplete .body h2 {
@@ -791,30 +813,24 @@ a.fa:hover {
 .reports .item-content,
 .tasks .item-content {
 
-  .meta {
-    padding: 2em;
-    padding-top: 1em;
-  }
-
   .body {
 
-    padding-bottom: 2em;
     background-color: @form-background-color;
     border: 1px solid @seperator-color;
     border-radius: @radius-size;
-    margin: 0 1em 1em 1em;
+    margin: 1em;
+
+    &:last-child {
+      margin-bottom: 6em;
+    }
 
     p {
       font-weight: bold;
       font-size: 1.4em;
     }
 
-    h2 {
-      text-align: center;
-      margin: 1.25em 0 0.75em 0;
-      font-style: italic;
+    .report-name {
       font-weight: bold;
-      font-size: 1.75em;
     }
 
     h5 {
@@ -822,14 +838,10 @@ a.fa:hover {
       margin-top: -1em;
     }
 
-    > ul > li {
-      border-bottom: 1px solid @seperator-color;
+    > div > ul > li {
+      border-top: 1px solid @seperator-color;
       padding: 1em 3em 1em 2em;
       margin: 0;
-
-      &:last-child {
-        border-bottom: none;
-      }
       &.indent-1 {
         padding-left: 3em;
       }
@@ -852,12 +864,41 @@ a.fa:hover {
     .missing p {
       color: @lightgrey;
     }
+
+    .summary {
+      padding: 1em;
+      .mm-badge {
+        float: left;
+      }
+      .sender,
+      .report-name {
+        padding-left: 3em;
+      }
+    }
   }
+
 
   .task-list > li {
     margin-top: 1em;
   }
 
+}
+
+.item-content,
+.inbox-items {
+  .selection-count {
+    padding: 0.5em 1em;
+    margin: 0;
+    background-color: @label-color;
+    color: #FFFFFF;
+    font-size: 1.1em;
+    font-weight: bold;
+  }
+}
+
+.inbox-items .selection-count,
+.general-actions .delete-all {
+  display: none;
 }
 
 .tasks {
@@ -1240,6 +1281,10 @@ a.fa:hover {
     .padding {
       height: 100px;
     }
+  }
+  .inbox-items .selection-count,
+  .general-actions .delete-all {
+    display: block;
   }
   .filters {
     padding: 0;

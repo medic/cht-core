@@ -55,7 +55,7 @@ describe('Auditing', function() {
 
   it('audits message deletion', function() {
 
-    // reload messages tab page
+    // reload messages tab page (changes feeds are disabled)
     element(by.id('reports-tab')).click();
     browser.sleep(100);
     element(by.id('messages-tab')).click();
@@ -69,13 +69,25 @@ describe('Auditing', function() {
       return browser.isElementPresent(listitem);
     }, 5000);
 
+    // mark item read
+    listitem.click();
+    browser.sleep(1000);
+
+    // reload messages tab page (changes feeds are disabled)
+    element(by.id('reports-tab')).click();
+    browser.sleep(100);
+    element(by.id('messages-tab')).click();
+
     // check message is displayed correctly
+    listitem = element(by.css('.inbox-items li[data-record-id="+64555555555"]'));
+    browser.wait(function() {
+      return browser.isElementPresent(listitem);
+    }, 5000);
     listitem.click();
     var newMessage = element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .data p span'));
     expect(newMessage.getText()).toEqual('hello!');
 
     // delete the message
-    browser.sleep(1000);
     newMessage.click();
     element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .fa-trash-o')).click();
     var confirmButton = element(by.css('#delete-confirm .submit'));

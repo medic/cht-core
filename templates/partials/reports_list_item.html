@@ -1,5 +1,6 @@
-<li class="{{isRead(report) ? 'read' : ''}}">
+<li class="{{isRead(report) ? 'read' : ''}}" data-record-id="{{report._id}}">
   <a class="message-wrapper" href="#reports/{{report._id}}">
+    <input type="checkbox">
     <span class="mm-badge mm-badge-round mm-badge-border {{report.valid ? 'mm-badge-green' : 'mm-badge-red'}}">
       <span class="fa {{report.verified ? 'fa-check' : ''}}"></span>
     </span>

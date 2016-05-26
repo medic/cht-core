@@ -1,17 +1,18 @@
 <div role="document" id="delete-confirm">
   <div class="modal-header">
     <button type="button" class="cancel close" ng-click="cancel()">&times;</button>
-    <h3>{{'Confirm' | translate}}</h3>
+    <h3 translate>Confirm</h3>
   </div>
   <div class="modal-body">
-    <p>{{'confirm.delete' | translate}}</p>
+    <p ng-show="model.docs.length === 1" translate>confirm.delete</p>
+    <p ng-show="model.docs.length !== 1" translate translate-values="{ number: {{model.docs.length}} }">confirm.delete.plural</p>
   </div>
   <div class="modal-footer">
-    <p class="note" ng-show="error">{{'Error deleting document.' | translate}}</p>
-    <a class="btn cancel" ng-click="cancel()">{{'Cancel' | translate}}</a>
+    <p class="note" ng-show="error" translate>Error deleting document.</p>
+    <a class="btn cancel" ng-click="cancel()" translate>Cancel</a>
     <a class="btn submit btn-danger" ng-class="{disabled: processing}" ng-click="setProcessingMode()" >
-      <span ng-show="!processing">{{'Delete' | translate}}</span>
-      <span ng-show="processing">{{'Deleting' | translate}}</span>
+      <span ng-show="!processing" translate>Delete</span>
+      <span ng-show="processing" translate>Deleting</span>
     </a>
   </div>
 </div>

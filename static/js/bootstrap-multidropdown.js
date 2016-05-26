@@ -87,6 +87,12 @@
     };
 
     $element.on('update', updateMultipleSelect);
+    $element.on('click', function(e) {
+      if ($element.is('.disabled')) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    });
     $element.on('click', '[role=menuitem]', selectItem);
     $element.on('hide.bs.dropdown', hideMenu);
 

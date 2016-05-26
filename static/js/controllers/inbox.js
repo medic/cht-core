@@ -50,7 +50,6 @@ var feedback = require('../modules/feedback'),
       Settings,
       Snackbar,
       TrafficStats,
-      translateFilter,
       UpdateSettings,
       UpdateUser,
       UserSettings,
@@ -251,14 +250,16 @@ var feedback = require('../modules/feedback'),
         Modal({
           templateUrl: 'templates/modals/navigation_confirm.html',
           controller: 'ConfirmModalCtrl',
-          args: { processingFunction: null }
-        }).then(function () {
-            if ($scope.cancelCallback) {
-              $scope.cancelCallback();
-            }
-          }, function () {
-            $log.debug('User cancelled navigationCancel.');
-          });
+          args: { processingFunction: null, model: null }
+        })
+        .then(function () {
+          if ($scope.cancelCallback) {
+            $scope.cancelCallback();
+          }
+        })
+        .catch(function() {
+          $log.debug('User cancelled navigationCancel.');
+        });
       };
 
       $scope.closeContentPane = function() {
@@ -267,7 +268,7 @@ var feedback = require('../modules/feedback'),
       };
 
       $scope.clearSelected = function() {
-        $scope.showContent = false;
+        $scope.setShowContent(false);
         $scope.loadingContent = false;
         $scope.showActionBar = false;
         $scope.setTitle();
@@ -277,7 +278,7 @@ var feedback = require('../modules/feedback'),
       $scope.settingSelected = function(refreshing) {
         $scope.loadingContent = false;
         $timeout(function() {
-          $scope.showContent = true;
+          $scope.setShowContent(true);
           $scope.showActionBar = true;
           if (!refreshing) {
             $timeout(function() {
@@ -288,6 +289,10 @@ var feedback = require('../modules/feedback'),
       };
 
       $scope.setShowContent = function(showContent) {
+        if (showContent && $scope.selectMode) {
+          // when in select mode we never show the RHS on mobile
+          return;
+        }
         $scope.showContent = showContent;
       };
 
@@ -306,7 +311,7 @@ var feedback = require('../modules/feedback'),
       $scope.setLoadingContent = function(id) {
         $scope.loadingContent = id;
         $timeout(function() {
-          $scope.showContent = true;
+          $scope.setShowContent(true);
         });
       };
 
@@ -318,6 +323,9 @@ var feedback = require('../modules/feedback'),
 
       $scope.$on('$stateChangeSuccess', function(event, toState) {
         $scope.currentTab = toState.name.split('.')[0];
+        if (!$state.includes('reports')) {
+          $scope.selectMode = false;
+        }
       });
 
       $scope.download = function() {
@@ -392,7 +400,7 @@ var feedback = require('../modules/feedback'),
       });
 
       $scope.setupSendMessage = function() {
-        sendMessage.init(Settings, Contact, translateFilter);
+        sendMessage.init(Settings, Contact, $translate.instant);
       };
 
       // get the forms for the forms filter
@@ -428,7 +436,7 @@ var feedback = require('../modules/feedback'),
 
       // TODO when all modals are converted to on-demand modals, remove all these setup functions.
       $scope.setupGuidedSetup = function() {
-        guidedSetup.init(Settings, UpdateSettings, translateFilter);
+        guidedSetup.init(Settings, UpdateSettings, $translate.instant);
         modalsInited.guidedSetup = true;
         showModals();
       };
@@ -493,7 +501,7 @@ var feedback = require('../modules/feedback'),
             return !user.known;
           },
           render: function() {
-            tour.start('intro', translateFilter);
+            tour.start('intro', $translate.instant);
             var id = 'org.couchdb.user:' + Session.userCtx().name;
 
             UpdateUser(id, { known: true })
@@ -596,7 +604,7 @@ var feedback = require('../modules/feedback'),
               pane.done();
             })
             .catch(function(err) {
-              pane.done(translateFilter('Error sending message'), err);
+              pane.done($translate.instant('Error sending message'), err);
             });
         });
       };
@@ -609,37 +617,49 @@ var feedback = require('../modules/feedback'),
         $rootScope.$broadcast.apply($rootScope, arguments);
       };
 
-      // TODO promisify DeleteDoc
-      var _deleteDoc = function(id) {
-        var deferred = $q.defer();
-        if (!id) {
-          return deferred.reject('Error deleting document : no docToDeleteId set');
+      $scope.deleteDoc = function(docs) {
+        if (!docs) {
+          return;
         }
-        DeleteDoc(id, function(err) {
-          if (err) {
-            return deferred.reject(err);
-          }
-          return deferred.resolve();
-        });
-        return deferred.promise;
-      };
-
-      $scope.deleteDoc = function(id) {
+        if (!_.isArray(docs)) {
+          docs = [ docs ];
+        }
+        if (!docs.length) {
+          return;
+        }
         Modal({
           templateUrl: 'templates/modals/delete_doc_confirm.html',
           controller: 'ConfirmModalCtrl',
           args: {
-            processingFunction: function() { return _deleteDoc(id); }
+            processingFunction: function() {
+              if (!docs || !docs.length) {
+                return $q.reject(new Error('Error deleting document: no doc selected'));
+              }
+              return DeleteDoc(docs);
+            },
+            model: { docs: docs }
           }
-        }).then(function () {
-            // Success!
-            if ($state.includes('contacts') || $state.includes('reports')) {
+        })
+        .then(function() {
+          if ($state.includes('contacts') || $state.includes('reports')) {
+            if ($scope.selectMode) {
+              $scope.clearSelected();
+            } else {
               $state.go($state.current.name, { id: null });
             }
-            Snackbar(translateFilter('document.deleted'));
-          }, function () {
-            $log.debug('User cancelled deleteDoc.');
-          });
+          }
+          var key = docs.length === 1 ? 'document.deleted' : 'document.deleted.plural';
+          $translate(key, { number: docs.length }).then(Snackbar);
+        })
+        .catch(function(err) {
+          $log.debug('User cancelled deleteDoc.', err);
+        });
+      };
+
+      $scope.setSelectMode = function(value) {
+        $scope.selectMode = value;
+        $scope.clearSelected();
+        $state.go('reports.detail', { id: null });
       };
 
       $('body').on('mouseenter', '.relative-date, .autoreply', function() {
@@ -701,9 +721,9 @@ var feedback = require('../modules/feedback'),
         var message = $('#feedback [name=feedback]').val();
         feedback.submit(message, APP_CONFIG, function(err) {
           if (!err) {
-            Snackbar(translateFilter('feedback.submitted'));
+            $translate('feedback.submitted').then(Snackbar);
           }
-          pane.done(translateFilter('Error saving feedback'), err);
+          pane.done($translate.instant('Error saving feedback'), err);
         });
       };
 

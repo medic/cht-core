@@ -7,7 +7,7 @@
   </div>
 
   <div class="col-sm-8 item-content empty-selection" ng-show="!selected.messages[0] && !loadingContent">
-    <div>{{'No message selected' | translate}}</div>
+    <div translate>No message selected</div>
   </div>
 
   <div class="message-content-wrapper" ng-show="selected.messages[0] && !loadingContent">
@@ -16,19 +16,15 @@
     </div>
     <div id="message-content" class="col-sm-8 item-content">
       <div class="loader" ng-show="loadingMoreContent"></div>
-      <p class="loading-status" ng-show="allLoaded">
-        {{'No more messages' | translate}}
-      </p>
+      <p class="loading-status" ng-show="allLoaded" translate>No more messages</p>
       <div>
         <div class="body">
           <ul>
             <li class="animate-repeat" ng-repeat="message in selected.messages | orderBy:'doc.reported_date'" data-record-id="{{message.doc._id}}" ng-class="{'outgoing': message.doc.kujua_message, 'incoming': !message.doc.kujua_message}">
-              <div class="marker" ng-if="firstUnread.id === message.doc._id">
-                {{'Unread below' | translate}}
-              </div>
+              <div class="marker" ng-if="firstUnread.id === message.doc._id" translate>Unread below</div>
               <span class="message-body">
                 <div class="actions">
-                  <a class="btn btn-link fa fa-trash-o" ng-attr-title="{{'Delete' | translate}}" ng-click="deleteDoc(message.doc._id)" mm-auth="can_delete_messages"></a>
+                  <a class="btn btn-link fa fa-trash-o" translate-attr-title="Delete" ng-click="deleteDoc(message.doc)" mm-auth="can_delete_messages"></a>
                 </div>
                 <div class="data">
                   <p>
@@ -69,9 +65,9 @@
         </div>
       </div>
       <div class="message-actions">
-        <a class="btn btn-link" ng-mousedown="addRecipients(selected.messages[0].value)">{{'Add recipient' | translate}}</a>
+        <a class="btn btn-link" ng-mousedown="addRecipients(selected.messages[0].value)" translate>Add recipient</a>
         <span class="count"></span>
-        <a class="btn submit btn-primary" ng-mousedown="sendMessage($event)" ng-attr-data-working-label="{{'Sending' | translate}}">{{'Send' | translate}}</a>
+        <a class="btn submit btn-primary" ng-mousedown="sendMessage($event)" translate-attr-data-working-label="Sending" translate>Send</a>
       </div>
     </div>
   </div>

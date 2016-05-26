@@ -180,7 +180,7 @@ var _ = require('underscore'),
         filter: function(change) {
           return $scope.currentTab === 'messages' &&
             $scope.selected &&
-            $scope.selected.id === change.id;
+            _.findWhere($scope.selected.messages, { id: change.id });
         }
       });
 

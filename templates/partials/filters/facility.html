@@ -1,4 +1,4 @@
-<span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="Number of facilities" ng-show="facilities.length">
+<span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="Number of facilities" ng-show="facilities.length" ng-class="{ 'disabled': selectMode && selected.length }">
   <span id="facility" class="mm-button" data-toggle="dropdown">
     <span class="mm-button-icon">
       <span class="fa fa-hospital-o"></span>
