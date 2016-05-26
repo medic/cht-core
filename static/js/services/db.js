@@ -17,57 +17,15 @@ var utils = require('kujua-utils'),
       DbNameService,
       E2ETESTING,
       pouchDB,
-      Session
+      Session,
+      WebWorker
     ) {
 
       'ngInject';
 
       var cache = {};
 
-      var consolePolyfill = function(global) {
-        var replace = function(con, props, replacement) {
-          props = props.split(',');
-          var prop = props.pop();
-          while (prop) {
-            if (!con[prop]) {
-              con[prop] = replacement;
-            }
-            prop = props.pop();
-          }
-        };
-        global.console = global.console || {};
-        var PROPERTIES = 'memory';
-        var METHODS = 'assert,clear,count,debug,dir,dirxml,error,exception,group,' +
-           'groupCollapsed,groupEnd,info,log,markTimeline,profile,profiles,profileEnd,' +
-           'show,table,time,timeEnd,timeline,timelineEnd,timeStamp,trace,warn';
-        replace(global.console, PROPERTIES, {});
-        replace(global.console, METHODS, function() {});
-      };
-
-      var createWorker = function(code) {
-        /* global webkitURL */
-        code = [
-          '(' + consolePolyfill.toString() + ')(typeof window === \'undefined\' ? this : window);',
-          code
-        ];
-
-        var createBlob = require('pouchdb-binary-util').createBlob;
-        var URLCompat = typeof URL !== 'undefined' ? URL : webkitURL;
-
-        function makeBlobURI(script) {
-          var blob = createBlob([script], {type: 'text/javascript'});
-          return URLCompat.createObjectURL(blob);
-        }
-
-        var blob = createBlob(code, {type: 'text/javascript'});
-        return new Worker(makeBlobURI(blob));
-      };
-
-      // TODO angular service to wrap it with the necessary goodies
-      // TODO test on alpha.dev - should have console fail!
-      // TODO add console polyfill to service
-      // TODO test on alpha.dev - should not have console fail!
-      var pouchWorker = createWorker(require('worker-pouch/workerified'));
+      var pouchWorker = WebWorker(require('worker-pouch/workerified'));
 
       $window.PouchDB.adapter('worker', require('worker-pouch/client'));
 

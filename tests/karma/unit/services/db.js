@@ -106,8 +106,8 @@ describe('DB service', function() {
       chai.expect(DbNameService.callCount).to.equal(1);
       chai.expect(pouchDB.callCount).to.equal(1);
       chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny');
-      // TODO reenable
-      // chai.expect(pouchDB.args[0][1]).to.deep.equal({ adapter: 'worker', auto_compaction: true });
+      chai.expect(pouchDB.args[0][1].adapter).to.equal('worker');
+      chai.expect(pouchDB.args[0][1].auto_compaction).to.equal(true);
       done();
     });
 
@@ -140,11 +140,12 @@ describe('DB service', function() {
       chai.expect(actual2).to.equal(expected2);
       chai.expect(DbNameService.callCount).to.equal(1);
       chai.expect(pouchDB.callCount).to.equal(2);
-      // TODO reenable
-      // chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny');
-      // chai.expect(pouchDB.args[0][1]).to.deep.equal({ adapter: 'worker', auto_compaction: true });
-      // chai.expect(pouchDB.args[1][0]).to.equal('auditdb-user-johnny');
-      // chai.expect(pouchDB.args[1][1]).to.deep.equal({ adapter: 'worker', auto_compaction: true });
+      chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny');
+      chai.expect(pouchDB.args[0][1].adapter).to.equal('worker');
+      chai.expect(pouchDB.args[0][1].auto_compaction).to.equal(true);
+      chai.expect(pouchDB.args[1][0]).to.equal('auditdb-user-johnny');
+      chai.expect(pouchDB.args[1][1].adapter).to.equal('worker');
+      chai.expect(pouchDB.args[1][1].auto_compaction).to.equal(true);
       done();
     });
 

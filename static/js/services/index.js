@@ -66,6 +66,7 @@
   require('./user');
   require('./users');
   require('./verified');
+  require('./web-worker');
   require('./xml-forms');
   require('./xslt');
 
