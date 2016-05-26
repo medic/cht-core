@@ -306,12 +306,12 @@ app.get('/api/v1/fti/:view', function(req, res) {
 });
 
 app.get('/api/v1/messages', function(req, res) {
-  auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err, ctx) {
+  auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res, true);
     }
     var opts = _.pick(req.query, 'limit', 'start', 'descending', 'state');
-    messages.getMessages(opts, ctx && ctx.district, function(err, result) {
+    messages.getMessages(opts, function(err, result) {
       if (err) {
         return serverUtils.serverError(err.message, req, res);
       }
@@ -321,11 +321,11 @@ app.get('/api/v1/messages', function(req, res) {
 });
 
 app.get('/api/v1/messages/:id', function(req, res) {
-  auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err, ctx) {
+  auth.check(req, ['can_view_data_records','can_view_unallocated_data_records'], null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res, true);
     }
-    messages.getMessage(req.params.id, ctx && ctx.district, function(err, result) {
+    messages.getMessage(req.params.id, function(err, result) {
       if (err) {
         return serverUtils.serverError(err.message, req, res);
       }
@@ -335,11 +335,11 @@ app.get('/api/v1/messages/:id', function(req, res) {
 });
 
 app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
-  auth.check(req, 'can_update_messages', null, function(err, ctx) {
+  auth.check(req, 'can_update_messages', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res, true);
     }
-    messages.updateMessage(req.params.id, req.body, ctx && ctx.district, function(err, result) {
+    messages.updateMessage(req.params.id, req.body, function(err, result) {
       if (err) {
         return serverUtils.serverError(err.message, req, res);
       }

@@ -2,7 +2,7 @@ var db = require('../db');
 
 module.exports = {
 
-  getMessages: function(options, district, callback) {
+  getMessages: function(options, callback) {
     options = options || {};
     var v_opts = {
       limit: options.limit || 25,
@@ -36,7 +36,7 @@ module.exports = {
     });
   },
 
-  getMessage: function(id, district, callback) {
+  getMessage: function(id, callback) {
     if (!id) {
       return callback({code: 500, message: 'Missing "id" parameter.'});
     }
@@ -70,8 +70,8 @@ module.exports = {
     });
   },
 
-  updateMessage: function(id, body, district, callback) {
-    module.exports.getMessage(id, district, function(err, msg) {
+  updateMessage: function(id, body, callback) {
+    module.exports.getMessage(id, function(err, msg) {
       if (err) {
         return callback(err);
       }

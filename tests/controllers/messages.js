@@ -16,7 +16,7 @@ exports.tearDown = function (callback) {
 exports['getMessages returns errors'] = function(test) {
   test.expect(2);
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, 'bang');
-  controller.getMessages(null, null, function(err) {
+  controller.getMessages(null, function(err) {
     test.equals(err, 'bang');
     test.equals(getView.callCount, 1);
     test.done();
@@ -26,7 +26,7 @@ exports['getMessages returns errors'] = function(test) {
 exports['getMessages passes limit param value of 100 to view'] = function(test) {
   test.expect(2);
   var getView = sinon.stub(db.medic, 'view').callsArg(3);
-  controller.getMessages({limit: 500}, null, function() {
+  controller.getMessages({limit: 500}, function() {
     test.equals(getView.callCount, 1);
     // assert query parameters on view call use right limit value
     test.deepEqual({limit: 500}, getView.getCall(0).args[2]);
@@ -37,7 +37,7 @@ exports['getMessages passes limit param value of 100 to view'] = function(test) 
 exports['getMessages returns 500 error if limit over 100'] = function(test) {
   test.expect(3);
   var getView = sinon.stub(db.medic, 'view');
-  controller.getMessages({limit: 9999}, null, function(err) {
+  controller.getMessages({limit: 9999}, function(err) {
     test.equals(err.code, 500);
     test.equals(err.message, 'Limit max is 1000');
     test.equals(getView.callCount, 0);
@@ -48,7 +48,7 @@ exports['getMessages returns 500 error if limit over 100'] = function(test) {
 exports['getMessage returns 404 if view returns empty rows'] = function(test) {
   test.expect(3);
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: []});
-  controller.getMessage('foo', null, function(err) {
+  controller.getMessage('foo', function(err) {
     test.equals(err.code, 404);
     test.equals(err.message, 'Not Found');
     test.equals(getView.callCount, 1);
@@ -61,7 +61,7 @@ exports['getMessage returns view data'] = function(test) {
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: [{
     value: {message: 'test'}
   }]});
-  controller.getMessage('foo', null, function(err, results) {
+  controller.getMessage('foo', function(err, results) {
     test.ok(!err);
     test.equals(getView.callCount, 1);
     test.deepEqual({ message: 'test' }, results);
@@ -71,8 +71,8 @@ exports['getMessage returns view data'] = function(test) {
 
 exports['updateMessage returns errors'] = function(test) {
   test.expect(2);
-  var get = sinon.stub(controller, 'getMessage').callsArgWith(2, 'boom');
-  controller.updateMessage('c38uz32a', null, null, function(err) {
+  var get = sinon.stub(controller, 'getMessage').callsArgWith(1, 'boom');
+  controller.updateMessage('c38uz32a', null, function(err) {
     test.deepEqual(err, 'boom');
     test.equals(get.callCount, 1);
     test.done();
