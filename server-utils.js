@@ -31,8 +31,7 @@ module.exports = {
   },
 
   serverError: function(err, req, res) {
-    console.error('Server error: ');
-    console.log('  detail: ' + (err.stack || JSON.stringify(err)));
+    console.error('Server error:', err);
     res.writeHead(500, {
       'Content-Type': 'text/plain'
     });
