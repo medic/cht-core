@@ -76,6 +76,7 @@ var deleteDocs = function(dryrun, db, docs) {
 var queryInBatches = function(queryFunc, processFunc) {
   var skip = 0;
   var loopCounter = 0;
+  var maxLoops = 500;
   var done = false;
   var timeoutSecs = 5;
   var batchSize = 0;
@@ -83,7 +84,7 @@ var queryInBatches = function(queryFunc, processFunc) {
     console.log(new Date());
     loopCounter++;
     console.log('loop ' + loopCounter);
-    if (loopCounter > 100) {
+    if (loopCounter > maxLoops) {
       throw 'too many loops';
     }
     return Promise.resolve()
@@ -144,7 +145,7 @@ var getDataRecordsForBranch = function(db, branchId, skip, batchSize) {
   return db.query(
     'medic/data_records_by_district',
     {
-      startkey: [branchId, 'Mukono'],
+      startkey: [branchId],
       endkey: [branchId + '\ufff0'],
       skip: skip,
       include_docs: true,
@@ -231,20 +232,42 @@ var cleanContactPerson = function(db, dryrun, logdir, person) {
       });
     };
 
+var _writeToFile = function(filepath, text) {
+  return new Promise(function(resolve,reject){
+    fs.writeFile(filepath, text, {flag: 'a'}, function(err) {
+      if(err) {
+        return reject('Couldn\'t write to file' + filepath, err);
+      }
+      resolve();
+    });
+  });
+};
+
 var writeDocsToFile = function(filepath, docsList) {
   if (docsList.length === 0) {
     // don't write empty files.
     return docsList;
   }
-  return new Promise(function(resolve,reject){
-    fs.writeFile(filepath, JSON.stringify(docsList), {flag: 'a'}, function(err) {
-      if(err) {
-        return reject('Couldn\'t write to file' + filepath, err);
-      }
+  return _writeToFile(filepath, JSON.stringify(docsList))
+    .then(function() {
       console.log('Wrote ' + docsList.length + ' docs to file ' + filepath);
-      resolve(docsList);
+      return docsList;
     });
+};
+
+var writeDocsIdsToFile = function(filepath, docsList) {
+  if (docsList.length === 0) {
+    // don't write empty files.
+    return docsList;
+  }
+  var megaPromise = Promise.resolve();
+  _.each(docsList, function(doc) {
+    megaPromise = megaPromise.then(_.partial(_writeToFile, filepath, doc._id + '\n'));
   });
+  return megaPromise.then(function() {
+      console.log('Wrote ' + docsList.length + ' docs to file ' + filepath);
+      return docsList;
+    });
 };
 
 var fetchBranchInfo = function(db, branchId) {
@@ -310,5 +333,6 @@ module.exports = {
   queryInBatches: queryInBatches,
   setupLogging: setupLogging,
   userConfirm: userConfirm,
+  writeDocsIdsToFile: writeDocsIdsToFile,
   writeDocsToFile: writeDocsToFile
 };

@@ -40,6 +40,7 @@ var deleteReports = function(db, dryrun, branchId, startTimestamp, endTimestamp,
       return Promise.resolve()
         .then(_.partial(utils.filterByDate, docs, startTimestamp, endTimestamp))
         .then(_.partial(utils.writeDocsToFile, logdir + '/reports_deleted_' + skip + '.json'))
+        .then(_.partial(utils.writeDocsIdsToFile, logdir + '/reports_deleted_ids.json'))
         .then(_.partial(utils.deleteDocs, dryrun, db))
         .then(function(result) {
           console.log(result.length + ' reports deleted!\n');
@@ -61,6 +62,7 @@ var deletePersons = function(db, dryrun, branchId, startTimestamp, endTimestamp,
         // Remove contact links
         .then(_.partial(utils.cleanContactPersons, db, dryrun, logdir))
         .then(_.partial(utils.writeDocsToFile, logdir + '/persons_deleted_' + skip + '.json'))
+        .then(_.partial(utils.writeDocsIdsToFile, logdir + '/persons_deleted_ids.json'))
         .then(_.partial(utils.deleteDocs, dryrun, db))
         .then(function(result) {
           console.log(result.length + ' persons deleted!\n');
@@ -82,6 +84,7 @@ var deleteClinics = function(db, dryrun, branchId, startTimestamp, endTimestamp,
         .then(_.partial(utils.filterByDate, docs, startTimestamp, endTimestamp))
         .then(_.partial(utils.filterByType, _, 'clinic'))
         .then(_.partial(utils.writeDocsToFile, logdir + '/clinics_deleted_' + skip + '.json'))
+        .then(_.partial(utils.writeDocsIdsToFile, logdir + '/clinics_deleted_ids.json'))
         .then(_.partial(utils.deleteDocs, dryrun, db))
         .then(function(result) {
           console.log(result.length + ' clinics deleted!\n');
