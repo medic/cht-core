@@ -24,30 +24,30 @@ var utils = require('kujua-utils'),
 
       var cache = {};
 
-      // var consolePolyfill = function(global) {
-      //   var replace = function(con, props, replacement) {
-      //     props = props.split(',');
-      //     var prop = props.pop();
-      //     while (prop) {
-      //       if (!con[prop]) {
-      //         con[prop] = replacement;
-      //       }
-      //       prop = props.pop();
-      //     }
-      //   };
-      //   global.console = global.console || {};
-      //   var PROPERTIES = 'memory';
-      //   var METHODS = 'assert,clear,count,debug,dir,dirxml,error,exception,group,' +
-      //      'groupCollapsed,groupEnd,info,log,markTimeline,profile,profiles,profileEnd,' +
-      //      'show,table,time,timeEnd,timeline,timelineEnd,timeStamp,trace,warn';
-      //   replace(global.console, PROPERTIES, {});
-      //   replace(global.console, METHODS, function() {});
-      // };
+      var consolePolyfill = function(global) {
+        var replace = function(con, props, replacement) {
+          props = props.split(',');
+          var prop = props.pop();
+          while (prop) {
+            if (!con[prop]) {
+              con[prop] = replacement;
+            }
+            prop = props.pop();
+          }
+        };
+        global.console = global.console || {};
+        var PROPERTIES = 'memory';
+        var METHODS = 'assert,clear,count,debug,dir,dirxml,error,exception,group,' +
+           'groupCollapsed,groupEnd,info,log,markTimeline,profile,profiles,profileEnd,' +
+           'show,table,time,timeEnd,timeline,timelineEnd,timeStamp,trace,warn';
+        replace(global.console, PROPERTIES, {});
+        replace(global.console, METHODS, function() {});
+      };
 
       var createWorker = function(code) {
         /* global webkitURL */
         code = [
-          // '(' + consolePolyfill.toString() + ')(typeof window === \'undefined\' ? this : window);',
+          '(' + consolePolyfill.toString() + ')(typeof window === \'undefined\' ? this : window);',
           code
         ];
 
