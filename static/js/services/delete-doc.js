@@ -56,6 +56,17 @@ var _ = require('underscore');
           }))
           .then(function() {
             return DB.get().bulkDocs(toUpdate);
+          })
+          // No silent fails! Throw on error.
+          .then(function(results) {
+            var errors = _.filter(results, function(result) {
+              if (result.error) {
+                return result;
+              }
+            });
+            if (errors.length) {
+              throw errors;
+            }
           });
       };
 

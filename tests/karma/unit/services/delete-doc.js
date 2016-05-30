@@ -23,7 +23,7 @@ describe('DeleteDoc service', function() {
     KarmaUtils.restore(get, bulkDocs);
   });
 
-  it('returns put errors', function(done) {
+  it('returns bulkDocs errors', function(done) {
     bulkDocs.returns(KarmaUtils.mockPromise('errcode2'));
     service({ _id: 'xyz' })
       .then(function() {
@@ -33,6 +33,41 @@ describe('DeleteDoc service', function() {
         chai.expect(get.callCount).to.equal(0);
         chai.expect(bulkDocs.callCount).to.equal(1);
         chai.expect(err).to.equal('errcode2');
+        done();
+      });
+  });
+
+  it('throws if silent errors in bulkDocs', function(done) {
+    var clinic = {
+      _id: 'b',
+      type: 'clinic',
+      contact: {
+        name: 'sally',
+        phone: '+555'
+      }
+    };
+    var person = {
+      _id: 'a',
+      type: 'person',
+      phone: '+555',
+      name: 'sally',
+      parent: {
+        _id: 'b'
+      }
+    };
+    get.returns(KarmaUtils.mockPromise(null, clinic));
+    bulkDocs.returns(KarmaUtils.mockPromise(
+      null,
+      // person is not deleted, but clinic is edited just fine. Oops.
+      [{id: person._id, error:'conflict'}, {id: clinic._id}]));
+    return service(person)
+      .then(function() {
+        done('expected error to be thrown');
+      })
+      .catch(function(err) {
+        chai.expect(err.length).to.equal(1);
+        chai.expect(err[0]).to.have.property('error');
+        chai.expect(err[0].id).to.equal(person._id);
         done();
       });
   });
@@ -81,6 +116,7 @@ describe('DeleteDoc service', function() {
     return service([ record1, record2 ]).then(function() {
       chai.expect(get.callCount).to.equal(0);
       chai.expect(bulkDocs.callCount).to.equal(1);
+      chai.expect(bulkDocs.args[0][0].length).to.equal(2);
       chai.expect(bulkDocs.args[0][0][0]).to.deep.equal(expected1);
       chai.expect(bulkDocs.args[0][0][1]).to.deep.equal(expected2);
     });

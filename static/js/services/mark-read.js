@@ -25,7 +25,7 @@ var _ = require('underscore');
   var updateMessages = function(user, read, messages) {
     return _.compact(_.map(messages, _.partial(updateMessage, user, read)));
   };
-  
+
   inboxServices.factory('MarkRead', ['DB', 'Session',
     function(DB, Session) {
       return function(messageId, read) {
@@ -42,12 +42,13 @@ var _ = require('underscore');
       };
     }
   ]);
-  
+
   inboxServices.factory('MarkAllRead', ['DB', 'Session',
     function(DB, Session) {
       return function(messages, read) {
         var user = Session.userCtx().name;
         var updated = updateMessages(user, read, messages);
+        // Conflicts will fail silently. That's ok.
         return DB.get().bulkDocs(updated);
       };
     }
