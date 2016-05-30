@@ -47,7 +47,7 @@ var _ = require('underscore'),
 
       var liveList = LiveList.reports;
 
-      var _setSelectedGroup = function(group) {
+      var setSelectedGroup = function(group) {
         $scope.selectedGroup = angular.copy(group);
       };
 
@@ -64,15 +64,15 @@ var _ = require('underscore'),
           });
       };
 
-      var _updateLiveList = function(updated) {
+      var updateLiveList = function(updated) {
         _.each(updated, function(report) {
-          liveList.update(report, false);
+          liveList.update(report);
         });
         $scope.hasReports = liveList.count() > 0;
         liveList.refresh();
       };
 
-      var _setSelected = function(report) {
+      var setSelected = function(report) {
         $scope.setSelected(report);
         if (!$scope.isRead(report)) {
           $scope.readStatus.forms--;
@@ -182,7 +182,7 @@ var _ = require('underscore'),
         $scope.settingSelected(refreshing);
       };
 
-      var _fetchFormattedReport = function(report) {
+      var fetchFormattedReport = function(report) {
         if (_.isString(report)) {
           // id only - fetch the full doc
           return DB.get()
@@ -193,9 +193,9 @@ var _ = require('underscore'),
       };
 
       $scope.refreshReportSilently = function(report) {
-        return _fetchFormattedReport(report)
+        return fetchFormattedReport(report)
           .then(function(doc) {
-            _setSelected(doc[0]);
+            setSelected(doc[0]);
           })
           .catch(function(err) {
             $log.error('Error fetching formatted report', err);
@@ -240,14 +240,14 @@ var _ = require('underscore'),
           // in selected mode we append to the list so don't clear it
           $scope.clearSelected();
         }
-        _fetchFormattedReport(report)
+        fetchFormattedReport(report)
           .then(function(formatted) {
             return formatted && formatted.length && formatted[0];
           })
           .then(function(doc) {
             if (doc) {
-              _setSelected(doc);
-              _initScroll();
+              setSelected(doc);
+              initScroll();
             }
           })
           .catch(function(err) {
@@ -256,7 +256,7 @@ var _ = require('underscore'),
           });
       };
 
-      var _query = function(options) {
+      var query = function(options) {
         options = options || {};
         options.limit = 50;
         if (!options.silent) {
@@ -281,7 +281,7 @@ var _ = require('underscore'),
             $scope.appending = false;
             $scope.error = false;
             $scope.errorSyntax = false;
-            _updateLiveList(data);
+            updateLiveList(data);
             if (!$state.params.id &&
                 !$scope.isMobile() &&
                 !$scope.selected &&
@@ -293,7 +293,7 @@ var _ = require('underscore'),
               });
             }
             syncCheckboxes();
-            _initScroll();
+            initScroll();
           })
           .catch(function(err) {
             $scope.error = true;
@@ -325,7 +325,7 @@ var _ = require('underscore'),
           $scope.filtered = true;
           liveList = LiveList['report-search'];
           liveList.set([]);
-          _query();
+          query();
         } else {
           $scope.filtered = false;
           liveList = LiveList.reports;
@@ -335,10 +335,10 @@ var _ = require('underscore'),
               liveList.refresh();
               $scope.hasReports = liveList.count() > 0;
               $scope.moreItems = liveList.moreItems;
-              _initScroll();
+              initScroll();
             });
           } else {
-            _query();
+            query();
           }
         }
       };
@@ -367,10 +367,10 @@ var _ = require('underscore'),
         $('#edit-report').modal('show');
       });
 
-      var _initScroll = function() {
+      var initScroll = function() {
         scrollLoader.init(function() {
           if (!$scope.loading && $scope.moreItems) {
-            _query({ skip: true });
+            query({ skip: true });
           }
         });
       };
@@ -416,7 +416,7 @@ var _ = require('underscore'),
       };
 
       $scope.edit = function(group) {
-        _setSelectedGroup(group);
+        setSelectedGroup(group);
         $('#edit-message-group').modal('show');
         initEditMessageModal();
       };
