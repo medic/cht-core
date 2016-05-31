@@ -7,8 +7,7 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksCtrl',
-    ['$scope', '$state', '$timeout', 'LiveList', 'TranslateFrom',
-    function ($scope, $state, $timeout, LiveList, TranslateFrom) {
+    function($scope, $state, $timeout, LiveList, RulesEngine, TranslateFrom) {
 
       var setSelectedTask = function(task) {
         LiveList.tasks.setSelected(task._id);
@@ -42,6 +41,7 @@ var _ = require('underscore');
       $scope.selected = null;
       $scope.error = false;
       $scope.hasTasks = LiveList.tasks.count() > 0;
+      $scope.tasksDisabled = !RulesEngine.enabled;
 
       LiveList.tasks.notifyChange = function(task) {
         $scope.hasTasks = LiveList.tasks.count() > 0;
@@ -72,6 +72,6 @@ var _ = require('underscore');
       });
 
     }
-  ]);
+  );
 
 }());

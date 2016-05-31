@@ -4,7 +4,10 @@
     {{'Error fetching tasks.' | translate}}
     <a ng-click="refreshTaskList()">{{'Try again.' | translate}}</a>
   </p>
-  <p class="loading-status" ng-show="!error && !hasTasks">
+  <p class="loading-status" ng-show="!error && !hasTasks && !tasksDisabled">
     {{'No tasks found' | translate}}
+  </p>
+  <p class="loading-status" ng-show="tasksDisabled">
+    {{'tasks.disabled' || translate}}
   </p>
 </div>

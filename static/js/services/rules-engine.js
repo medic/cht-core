@@ -27,6 +27,7 @@ var nools = require('nools'),
       if (utils.isUserAdmin(Session.userCtx())) {
         // No-op all rules engine work for admins for now
         return {
+          enabled: false,
           init: $q.resolve(),
           listen: function() {}
         };
@@ -290,6 +291,7 @@ var nools = require('nools'),
         });
 
       return {
+        enabled: true,
         init: init,
         listen: function(name, type, callback) {
           if (!callbacks[type]) {
