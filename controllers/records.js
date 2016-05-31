@@ -21,7 +21,7 @@ var request = function(opts, callback) {
 
 var createByForm = function(data, callback) {
   var required = ['message', 'from'],
-      optional = ['reported_date', 'locale'];
+      optional = ['reported_date', 'locale', 'gateway_ref'];
   for (var k in required) {
     if (!exists(data[required[k]])) {
       return callback(new Error('Missing required field: ' + required[k]));
