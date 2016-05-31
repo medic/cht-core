@@ -7,8 +7,8 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Users', ['$http', 'Facility', 'Admins', 'DbView',
-    function($http, Facility, Admins, DbView) {
+  inboxServices.factory('Users',
+    function($http, PLACE_TYPES, Admins, DbView, Facility) {
 
       var getType = function(user, admins) {
         if (user.doc.roles && user.doc.roles.length) {
@@ -65,8 +65,10 @@ var _ = require('underscore'),
       };
 
       return function(callback) {
+        var Place = _.partial(Facility, { types:PLACE_TYPES });
+
         async.parallel(
-          [ getAllUsers, getAllUserSettings, Facility, Admins ],
+          [ getAllUsers, getAllUserSettings, Place, Admins ],
           function(err, results) {
             if (err) {
               return callback(err);
@@ -76,6 +78,6 @@ var _ = require('underscore'),
         );
       };
     }
-  ]);
+  );
 
 }());

@@ -15,12 +15,6 @@ describe('Users service', function() {
     module('inboxApp');
     DbView = sinon.stub();
     module(function ($provide) {
-      $provide.value('Facility', function(callback) {
-        if (facilitiesError) {
-          return callback(facilitiesError);
-        }
-        callback(null, [ facilitya, facilityb, facilityc ]);
-      });
       $provide.value('Admins', function(callback) {
         if (adminsError) {
           return callback(adminsError);
@@ -28,6 +22,17 @@ describe('Users service', function() {
         callback(null, { gareth: 'abc' });
       });
       $provide.value('DbView', DbView);
+      $provide.value('Facility', function(options, callback) {
+        if (arguments.length === 1) {
+          callback = options;
+          options = {};
+        }
+        if (facilitiesError) {
+          return callback(facilitiesError);
+        }
+        callback(null, [ facilitya, facilityb, facilityc ]);
+      });
+      $provide.value('PLACE_TYPES', [ 'place' ]);
     });
     inject(function($injector) {
       $httpBackend = $injector.get('$httpBackend');
