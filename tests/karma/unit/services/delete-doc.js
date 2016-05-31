@@ -65,9 +65,31 @@ describe('DeleteDoc service', function() {
         done('expected error to be thrown');
       })
       .catch(function(err) {
-        chai.expect(err.length).to.equal(1);
-        chai.expect(err[0]).to.have.property('error');
-        chai.expect(err[0].id).to.equal(person._id);
+        chai.expect(err).to.have.property('errors');
+        chai.expect(err.errors.length).to.equal(1);
+        chai.expect(err.errors[0].id).to.equal(person._id);
+        done();
+      });
+  });
+
+  it('doesn\'t allow deleting duplicate docs', function(done) {
+    var person = {
+      _id: 'a',
+      type: 'person',
+      phone: '+555',
+      name: 'sally',
+      parent: {
+        _id: 'b'
+      }
+    };
+    return service([person, person])
+      .then(function() {
+        done('expected error to be thrown');
+      })
+      .catch(function(err) {
+        chai.expect(err).to.have.property('errors');
+        chai.expect(err.errors.length).to.equal(1);
+        chai.expect(err.errors[0].id).to.equal(person._id);
         done();
       });
   });
