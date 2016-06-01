@@ -6,17 +6,13 @@ describe('DBSync service', function() {
       to,
       from,
       getRemote,
-      UserDistrict,
-      Settings,
       userCtx,
       $rootScope;
 
   beforeEach(function() {
     to = sinon.stub();
     from = sinon.stub();
-    UserDistrict = sinon.stub();
     getRemote = sinon.stub();
-    Settings = sinon.stub();
     userCtx = {};
     module('inboxApp');
     module(function ($provide) {
@@ -24,12 +20,6 @@ describe('DBSync service', function() {
         { replicate: { to: to, from: from } },
         getRemote
       ));
-      $provide.factory('UserDistrict', function() {
-        return UserDistrict;
-      });
-      $provide.factory('Settings', function() {
-        return Settings;
-      });
       $provide.factory('Session', function() {
         return {
           userCtx: function() {
@@ -45,7 +35,7 @@ describe('DBSync service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(to, from, getRemote, UserDistrict, Settings);
+    KarmaUtils.restore(to, from, getRemote);
   });
 
   it('does nothing for admin', function(done) {
@@ -55,7 +45,6 @@ describe('DBSync service', function() {
       $rootScope.$apply(); // needed to resolve the promises
       chai.expect(to.callCount).to.equal(0);
       chai.expect(from.callCount).to.equal(0);
-      chai.expect(UserDistrict.callCount).to.equal(0);
       done();
     });
   });
@@ -65,70 +54,24 @@ describe('DBSync service', function() {
     getRemote.returns('REMOTEDB');
     to.returns(KarmaUtils.mockPromise());
     from.returns(KarmaUtils.mockPromise());
-    UserDistrict.callsArgWith(0, null, 'a');
-    Settings.returns(KarmaUtils.mockPromise(null, {}));
     service(function() { });
     setTimeout(function() {
       $rootScope.$apply(); // needed to resolve the promises
-
-      chai.expect(UserDistrict.callCount).to.equal(1);
-
-      chai.expect(from.callCount).to.equal(1);
+      chai.expect(from.callCount).to.equal(2); // initial sync then continuous
       chai.expect(from.args[0][0]).to.equal('REMOTEDB');
       chai.expect(from.args[0][1].live).to.equal(false);
       chai.expect(from.args[0][1].retry).to.equal(false);
-      chai.expect(from.args[0][1].filter).to.equal('erlang_filters/doc_by_place');
-      chai.expect(from.args[0][1].query_params.id).to.equal('a');
-      chai.expect(from.args[0][1].query_params.unassigned).to.equal(undefined);
-
-      setTimeout(function() {
-        chai.expect(from.callCount).to.equal(2);
-        chai.expect(from.args[1][0]).to.equal('REMOTEDB');
-        chai.expect(from.args[1][1].live).to.equal(true);
-        chai.expect(from.args[1][1].retry).to.equal(true);
-        chai.expect(from.args[1][1].filter).to.equal('erlang_filters/doc_by_place');
-        chai.expect(from.args[1][1].query_params.id).to.equal('a');
-        chai.expect(from.args[1][1].query_params.unassigned).to.equal(undefined);
-
-        chai.expect(to.callCount).to.equal(1);
-        chai.expect(to.args[0][0]).to.equal('REMOTEDB');
-        chai.expect(to.args[0][1].live).to.equal(true);
-        chai.expect(to.args[0][1].retry).to.equal(true);
-        var backoff = to.args[0][1].back_off_function;
-        chai.expect(backoff(0)).to.equal(1000);
-        chai.expect(backoff(2000)).to.equal(4000);
-        chai.expect(backoff(31000)).to.equal(60000);
-        done();
-      });
-    });
-  });
-
-  it('requests unassigned docs if setting set and district admin', function(done) {
-    userCtx = { roles: [ 'district_admin' ] };
-    getRemote.returns('REMOTEDB');
-    to.returns(KarmaUtils.mockPromise());
-    from.returns(KarmaUtils.mockPromise());
-    UserDistrict.callsArgWith(0, null, 'a');
-    Settings.returns(KarmaUtils.mockPromise(null, { district_admins_access_unallocated_messages: true }));
-    service(function() { });
-    setTimeout(function() {
-      $rootScope.$apply(); // needed to resolve the promises
-      chai.expect(from.args[0][1].query_params.unassigned).to.equal(true);
-      done();
-    });
-  });
-
-  it('does not request unassigned docs if setting set and not district admin', function(done) {
-    userCtx = { };
-    getRemote.returns('REMOTEDB');
-    to.returns(KarmaUtils.mockPromise());
-    from.returns(KarmaUtils.mockPromise());
-    UserDistrict.callsArgWith(0, null, 'a');
-    Settings.returns(KarmaUtils.mockPromise(null, { district_admins_access_unallocated_messages: true }));
-    service(function() { });
-    setTimeout(function() {
-      $rootScope.$apply(); // needed to resolve the promises
-      chai.expect(from.args[0][1].query_params.unassigned).to.equal(undefined);
+      chai.expect(from.args[1][0]).to.equal('REMOTEDB');
+      chai.expect(from.args[1][1].live).to.equal(true);
+      chai.expect(from.args[1][1].retry).to.equal(true);
+      chai.expect(to.callCount).to.equal(1);
+      chai.expect(to.args[0][0]).to.equal('REMOTEDB');
+      chai.expect(to.args[0][1].live).to.equal(true);
+      chai.expect(to.args[0][1].retry).to.equal(true);
+      var backoff = to.args[0][1].back_off_function;
+      chai.expect(backoff(0)).to.equal(1000);
+      chai.expect(backoff(2000)).to.equal(4000);
+      chai.expect(backoff(31000)).to.equal(60000);
       done();
     });
   });
