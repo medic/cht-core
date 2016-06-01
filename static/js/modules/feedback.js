@@ -75,8 +75,10 @@ module.exports = {
     if (!options.document && typeof document !== 'undefined') {
       options.document = document;
     }
-    registerConsoleInterceptor();
-    registerUnhandledErrorHandler();
+    if (!options.window._medicMobileTesting) {
+      registerConsoleInterceptor();
+      registerUnhandledErrorHandler();
+    }
   },
   submit: function(info, appInfo, callback) {
     create(info, appInfo, function(err, doc) {

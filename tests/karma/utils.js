@@ -82,3 +82,5 @@ chai.assert.deepEqual = function() {
     );
   }
 };
+
+window._medicMobileTesting = true;
