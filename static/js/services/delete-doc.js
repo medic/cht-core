@@ -29,6 +29,26 @@ var _ = require('underscore');
         return $q.resolve();
       };
 
+      var checkForDuplicates = function(docs) {
+        var errors = [];
+        var dedup = [];
+        docs.forEach(function(doc) {
+          if (dedup.indexOf(doc._id) !== -1) {
+            errors.push({
+              error: 'conflict',
+              message : 'Duplicate documents to delete, with id ' + doc._id + '. Not deleting to avoid conflict.',
+              id: doc._id
+            });
+          }
+          dedup.push(doc._id);
+        });
+        if (errors.length) {
+          var error = new Error('Deletion error');
+          error.errors = errors;
+          throw error;
+        }
+      };
+
       /**
        * Delete the given docs. If 'person' type then also fix the
        * contact hierarchy.
@@ -39,42 +59,22 @@ var _ = require('underscore');
         if (!_.isArray(docs)) {
           docs = [ docs ];
         }
-        try {
-          var dedup = {};
-          _.each(docs, function(doc) {
-            if (dedup[doc._id]) {
-              throw {
-                name: 'Deletion error',
-                message: 'Deletion error',
-                errors: [{
-                  error: 'conflict',
-                  message : 'Duplicate documents to delete, with id ' + doc._id + '. Not deleting to avoid conflict.',
-                  id: doc._id
-                }]
-              };
-            }
-            dedup[doc._id] = doc._id;
-          });
-        } catch(err) {
-          return $q.reject(err);
-        }
-        var toUpdate = docs.map(function(doc) {
-          return {
-            _id: doc._id,
-            _rev: doc._rev,
-            _deleted: true
-          };
+        docs.forEach(function(doc) {
+          doc._deleted = true;
         });
         return $q.all(docs.map(function(doc) {
           return getParent(doc)
             .then(function(parent) {
               if (parent) {
-                toUpdate.push(parent);
+                docs.push(parent);
               }
             });
           }))
           .then(function() {
-            return DB.get().bulkDocs(toUpdate);
+            return checkForDuplicates(docs);
+          })
+          .then(function() {
+            return DB.get().bulkDocs(docs);
           })
           // No silent fails! Throw on error.
           .then(function(results) {
@@ -84,11 +84,9 @@ var _ = require('underscore');
               }
             });
             if (errors.length) {
-              throw {
-                name: 'Deletion error',
-                message: 'Deletion error',
-                errors: errors
-              };
+              var error = new Error('Deletion error');
+              error.errors = errors;
+              throw error;
             }
           });
       };
