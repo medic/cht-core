@@ -84,8 +84,7 @@ var utils = require('kujua-utils'),
               .changes({
                 live: true,
                 since: 'now',
-                doc_ids: [ '_design/medic' ],
-                timeout: 1000 * 60 * 60
+                doc_ids: [ '_design/medic' ]
               })
               .on('change', function(change) {
                 if (isAdmin()) {

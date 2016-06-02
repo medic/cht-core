@@ -17,12 +17,17 @@ var _ = require('underscore'),
   };
 
   var authenticationIssue = function(errors) {
-    return _.find(errors, function(error) { return error.status === 401;});
+    return _.findWhere(errors, { status: 401 });
   };
 
-  inboxServices.factory('DBSync', [
-    '$log', 'DB', 'UserDistrict', 'Session', 'Settings', '$q',
-    function($log, DB, UserDistrict, Session, Settings, $q) {
+  inboxServices.factory('DBSync',
+    function(
+      $log,
+      DB,
+      Session
+    ) {
+
+      'ngInject';
 
       var getDataUsage = function() {
         if (window.medicmobile_android && window.medicmobile_android.getDataUsage) {
@@ -40,6 +45,7 @@ var _ = require('underscore'),
           live: true,
           retry: true,
           timeout: false,
+          heartbeat: 10000,
           back_off_function: backOffFunction
         });
         var fn = DB.get().replicate[direction];
@@ -77,32 +83,6 @@ var _ = require('underscore'),
           });
       };
 
-      var getUserDistrict = function() {
-        var deferred = $q.defer();
-        UserDistrict(function(err, district) {
-          if (err) {
-            deferred.reject(err);
-            return;
-          }
-          deferred.resolve(district);
-        });
-        return deferred.promise;
-      };
-
-      var getQueryParams = function(userCtx) {
-        return $q.all([Settings(), getUserDistrict()])
-          .then(function(values) {
-            var settings = values[0];
-            var district = values[1];
-            var params = { id: district };
-            if (utils.hasPerm(userCtx, 'can_view_unallocated_data_records') &&
-                settings.district_admins_access_unallocated_messages) {
-              params.unassigned = true;
-            }
-            return params;
-          });
-      };
-
       var initialReplicationDone = function(err, replicateDoneCallback) {
         var result = {};
         result.status = err ? 'initial.replication.status.failed' : 'initial.replication.status.complete';
@@ -120,12 +100,8 @@ var _ = require('underscore'),
         replicateDoneCallback(null, result);
       };
 
-      var startContinuousReplication = function(params) {
-        replicate('from', {
-          filter: 'erlang_filters/doc_by_place',
-          query_params: params
-        });
-
+      var startContinuousReplication = function() {
+        replicate('from');
         replicate('to', {
           filter: function(doc) {
             // don't try to replicate ddoc back to the server
@@ -141,29 +117,22 @@ var _ = require('underscore'),
           $log.debug('You have administrative privileges; not replicating');
           return replicateDoneCallback();
         }
-        getQueryParams(userCtx)
-          .then(function(params) {
-            replicate('from', {
-              filter: 'erlang_filters/doc_by_place',
-              live: false,
-              retry: false,
-              query_params: params,
-              timeout: 30000, // ms
-            })
-            .then(function() {
-              initialReplicationDone(null, replicateDoneCallback);
-              startContinuousReplication(params);
-            })
-            .catch(function(err) {
-              initialReplicationDone(err, replicateDoneCallback);
-              startContinuousReplication(params);
-            });
+        replicate('from', {
+          live: false,
+          retry: false,
+          timeout: 30000,
+          heartbeat: false
+        })
+          .then(function() {
+            initialReplicationDone(null, replicateDoneCallback);
+            startContinuousReplication();
           })
           .catch(function(err) {
             initialReplicationDone(err, replicateDoneCallback);
+            startContinuousReplication();
           });
       };
     }
-  ]);
+  );
 
 }());
