@@ -5,22 +5,23 @@ describe('UserDistrict service', function() {
   var service,
       user,
       userCtx,
-      get;
+      get,
+      isAdmin;
 
   beforeEach(function() {
     get = sinon.stub();
+    isAdmin = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
       $provide.value('UserSettings', function(callback) {
         callback(null, user);
       });
-      $provide.factory('Session', function() {
-        return {
-          userCtx: function() {
-            return userCtx;
-          }
-        };
+      $provide.value('Session', {
+        userCtx: function() {
+          return userCtx;
+        },
+        isAdmin: isAdmin
       });
     });
     inject(function($injector) {
@@ -31,7 +32,7 @@ describe('UserDistrict service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(get);
+    KarmaUtils.restore(get, isAdmin);
   });
 
   it('returns nothing for db admin', function(done) {
@@ -39,6 +40,7 @@ describe('UserDistrict service', function() {
       name: 'greg',
       roles: ['_admin']
     };
+    isAdmin.returns(true);
 
     service(function(err, actual) {
       chai.expect(err).to.equal(undefined);
@@ -54,6 +56,7 @@ describe('UserDistrict service', function() {
       name: 'greg',
       roles: ['national_admin']
     };
+    isAdmin.returns(true);
 
     service(function(err, actual) {
       chai.expect(err).to.equal(undefined);
@@ -69,6 +72,7 @@ describe('UserDistrict service', function() {
       name: 'jeff',
       roles: ['district_admin']
     };
+    isAdmin.returns(false);
 
     user = {
       name: 'jeff',
@@ -92,6 +96,7 @@ describe('UserDistrict service', function() {
       name: 'jeff',
       roles: ['analytics']
     };
+    isAdmin.returns(false);
 
     service(function(err) {
       chai.expect(err.message).to.equal('The administrator needs to give you additional privileges to use this site.');
@@ -103,6 +108,7 @@ describe('UserDistrict service', function() {
   it('returns error for not logged in', function(done) {
 
     userCtx = {};
+    isAdmin.returns(false);
 
     service(function(err) {
       chai.expect(err.message).to.equal('Not logged in');

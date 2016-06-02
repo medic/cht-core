@@ -1,5 +1,3 @@
-var utils = require('kujua-utils');
-
 (function () {
 
   'use strict';
@@ -23,10 +21,6 @@ var utils = require('kujua-utils');
       var pouchWorker = WebWorker(require('worker-pouch/workerified'));
 
       $window.PouchDB.adapter('worker', require('worker-pouch/client'));
-
-      var isAdmin = function() {
-        return utils.isUserAdmin(Session.userCtx());
-      };
 
       var getRemote = function() {
         var options = {
@@ -60,7 +54,7 @@ var utils = require('kujua-utils');
       };
 
       var get = function() {
-        return isAdmin() ? getRemote() : getLocal();
+        return Session.isAdmin() ? getRemote() : getLocal();
       };
 
       return {

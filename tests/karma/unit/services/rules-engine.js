@@ -195,8 +195,8 @@ describe('RulesEngine service', function() {
       $provide.value('Changes', Changes);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('Session', {
-        userCtx: function() {
-          return {};
+        isAdmin: function() {
+          return false;
         }
       });
     });

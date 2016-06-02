@@ -30,7 +30,7 @@ var utils = require('kujua-utils');
         if (!userCtx || !userCtx.name) {
           return callback(new Error('Not logged in'));
         }
-        if (utils.isUserAdmin(userCtx)) {
+        if (Session.isAdmin()) {
           return callback();
         }
         if (!utils.isUserDistrictAdmin(userCtx)) {

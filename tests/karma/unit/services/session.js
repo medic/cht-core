@@ -183,4 +183,35 @@ describe('Session service', function() {
     done();
   });
 
+  describe('isAdmin function', function() {
+
+    it('returns false if not logged in', function(done) {
+      ipCookie.returns({});
+      var actual = service.isAdmin();
+      chai.expect(actual).to.equal(false);
+      done();
+    });
+
+    it('returns true for _admin', function(done) {
+      ipCookie.returns({ roles: [ '_admin' ] });
+      var actual = service.isAdmin();
+      chai.expect(actual).to.equal(true);
+      done();
+    });
+
+    it('returns true for national_admin', function(done) {
+      ipCookie.returns({ roles: [ 'national_admin', 'some_other_role' ] });
+      var actual = service.isAdmin();
+      chai.expect(actual).to.equal(true);
+      done();
+    });
+
+    it('returns false for everyone else', function(done) {
+      ipCookie.returns({ roles: [ 'district_admin', 'some_other_role' ] });
+      var actual = service.isAdmin();
+      chai.expect(actual).to.equal(false);
+      done();
+    });
+
+  });
 });

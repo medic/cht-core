@@ -1,4 +1,5 @@
-var COOKIE_NAME = 'userCtx';
+var COOKIE_NAME = 'userCtx',
+    utils = require('kujua-utils');
 
 (function () {
 
@@ -77,6 +78,10 @@ var COOKIE_NAME = 'userCtx';
         init: function() {
           checkCurrentSession();
           listenForSessionChanges();
+        },
+
+        isAdmin: function() {
+          return utils.isUserAdmin(getUserCtx());
         }
       };
 

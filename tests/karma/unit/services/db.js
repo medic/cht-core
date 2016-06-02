@@ -5,12 +5,14 @@ describe('DB service', function() {
   var service,
       Location,
       userCtx,
-      pouchDB;
+      pouchDB,
+      isAdmin;
 
   beforeEach(function() {
     Location = {};
     userCtx = sinon.stub();
     pouchDB = sinon.stub();
+    isAdmin = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('$window', function() {
@@ -22,9 +24,10 @@ describe('DB service', function() {
       $provide.factory('pouchDB', function() {
         return pouchDB;
       });
-      $provide.factory('Session', function() {
-        return { userCtx: userCtx };
-      });
+      $provide.value('Session', {
+        userCtx: userCtx,
+        isAdmin: isAdmin
+      } );
       $provide.value('Location', Location);
     });
     inject(function(_DB_) {
@@ -33,12 +36,13 @@ describe('DB service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(pouchDB, userCtx);
+    KarmaUtils.restore(pouchDB, userCtx, isAdmin);
   });
 
   describe('getRemote function', function() {
 
     it('sets ajax timeout', function(done) {
+      isAdmin.returns(false);
       Location.url = 'ftp//myhost:21/medicdb';
       var expected = 'hello';
       pouchDB.returns(expected);
@@ -51,6 +55,7 @@ describe('DB service', function() {
     });
 
     it('caches pouchdb instances', function(done) {
+      isAdmin.returns(false);
       Location.url = 'ftp//myhost:21/medicdb';
       var expected = 'hello';
       pouchDB.returns(expected);
@@ -67,6 +72,7 @@ describe('DB service', function() {
   describe('get function', function() {
 
     it('sets ajax timeout', function(done) {
+      isAdmin.returns(false);
       Location.dbName = 'medicdb';
       userCtx.returns({ name: 'johnny' });
       var expected = 'hello';
@@ -81,6 +87,7 @@ describe('DB service', function() {
     });
 
     it('caches pouchdb instances', function(done) {
+      isAdmin.returns(false);
       Location.dbName = 'medicdb';
       userCtx.returns({ name: 'johnny' });
       var expected = 'hello';
@@ -89,8 +96,8 @@ describe('DB service', function() {
       var actual2 = service.get();
       chai.expect(actual1).to.equal(expected);
       chai.expect(actual2).to.equal(expected);
-      // twice to check if admin, twice to get user name
-      chai.expect(userCtx.callCount).to.equal(4);
+      chai.expect(isAdmin.callCount).to.equal(2);
+      chai.expect(userCtx.callCount).to.equal(2);
       chai.expect(pouchDB.callCount).to.equal(1);
       done();
     });

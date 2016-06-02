@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    utils = require('kujua-utils');
+var _ = require('underscore');
 
 (function () {
 
@@ -111,8 +110,7 @@ var _ = require('underscore'),
       };
 
       return function(replicateDoneCallback) {
-        var userCtx = Session.userCtx();
-        if (utils.isUserAdmin(userCtx)) {
+        if (Session.isAdmin()) {
           // admins have potentially too much data so bypass local pouch
           $log.debug('You have administrative privileges; not replicating');
           return replicateDoneCallback();

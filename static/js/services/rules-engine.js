@@ -1,5 +1,4 @@
 var nools = require('nools'),
-    utils = require('kujua-utils'),
     _ = require('underscore'),
     // number of weeks before reported date to assume for start of pregnancy
     NO_LMP_DATE_MODIFIER = 4,
@@ -24,7 +23,7 @@ var nools = require('nools'),
 
       'ngInject';
 
-      if (utils.isUserAdmin(Session.userCtx())) {
+      if (Session.isAdmin()) {
         // No-op all rules engine work for admins for now
         return {
           enabled: false,

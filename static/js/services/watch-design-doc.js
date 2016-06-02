@@ -1,5 +1,4 @@
-var utils = require('kujua-utils'),
-    async = require('async');
+var async = require('async');
 
 (function () {
 
@@ -20,10 +19,6 @@ var utils = require('kujua-utils'),
     ) {
 
       'ngInject';
-
-      var isAdmin = function() {
-        return utils.isUserAdmin(Session.userCtx());
-      };
 
       var updateLocalDesignDoc = function(ddoc, updates, callback) {
         ddoc.app_settings = updates.app_settings;
@@ -62,7 +57,7 @@ var utils = require('kujua-utils'),
       return function(callback) {
         if (!E2ETESTING) {
           async.forever(function(next) {
-            if (!isAdmin()) {
+            if (!Session.isAdmin()) {
               // check current ddoc revision vs local pouch version
               $http({
                 method: 'HEAD',
@@ -87,7 +82,7 @@ var utils = require('kujua-utils'),
                 doc_ids: [ '_design/medic' ]
               })
               .on('change', function(change) {
-                if (isAdmin()) {
+                if (Session.isAdmin()) {
                   // admins access ddoc from remote db directly so
                   // no need to check local ddoc
                   return callback();

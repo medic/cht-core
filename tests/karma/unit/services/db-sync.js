@@ -6,27 +6,21 @@ describe('DBSync service', function() {
       to,
       from,
       getRemote,
-      userCtx,
+      isAdmin,
       $rootScope;
 
   beforeEach(function() {
     to = sinon.stub();
     from = sinon.stub();
     getRemote = sinon.stub();
-    userCtx = {};
+    isAdmin = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB(
         { replicate: { to: to, from: from } },
         getRemote
       ));
-      $provide.factory('Session', function() {
-        return {
-          userCtx: function() {
-            return userCtx;
-          }
-        };
-      });
+      $provide.value('Session', { isAdmin: isAdmin } );
     });
     inject(function(_DBSync_, _$rootScope_) {
       service = _DBSync_;
@@ -35,11 +29,11 @@ describe('DBSync service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(to, from, getRemote);
+    KarmaUtils.restore(to, from, getRemote, isAdmin);
   });
 
   it('does nothing for admin', function(done) {
-    userCtx = { roles: [ '_admin' ] };
+    isAdmin.returns(true);
     service(function() { });
     setTimeout(function() {
       $rootScope.$apply(); // needed to resolve the promises
@@ -50,7 +44,7 @@ describe('DBSync service', function() {
   });
 
   it('initiates sync for non-admin', function(done) {
-    userCtx = { };
+    isAdmin.returns(false);
     getRemote.returns('REMOTEDB');
     to.returns(KarmaUtils.mockPromise());
     from.returns(KarmaUtils.mockPromise());
