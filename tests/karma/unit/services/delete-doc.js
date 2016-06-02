@@ -84,6 +84,27 @@ describe('DeleteDoc service', function() {
         phone: '+555'
       }
     };
+    return service([ clinic, clinic ])
+      .then(function() {
+        done(new Error('expected error to be thrown'));
+      })
+      .catch(function(err) {
+        chai.expect(err).to.have.property('errors');
+        chai.expect(err.errors.length).to.equal(1);
+        chai.expect(err.errors[0].id).to.equal(clinic._id);
+        done();
+      });
+  });
+
+  it('does not allow deleting child and parent that will conflict', function(done) {
+    var clinic = {
+      _id: 'b',
+      type: 'clinic',
+      contact: {
+        name: 'sally',
+        phone: '+555'
+      }
+    };
     var person = {
       _id: 'a',
       type: 'person',
