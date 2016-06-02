@@ -102,6 +102,7 @@ if (couchUrl) {
       updateWithHandler: function() {},
       fetchRevs: function() {},
       bulk: function() {},
+      changes: function() {},
       attachment: {
         get: function() {}
       }

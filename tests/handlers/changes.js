@@ -3,7 +3,8 @@ var sinon = require('sinon'),
     auth = require('../../auth'),
     config = require('../../config'),
     serverUtils = require('../../server-utils'),
-    changes = require('../../handlers/changes');
+    changes = require('../../handlers/changes'),
+    db = require('../../db');
 
 exports.tearDown = function (callback) {
   testUtils.restore(
@@ -13,7 +14,10 @@ exports.tearDown = function (callback) {
     serverUtils.serverError,
     serverUtils.error,
     config.get,
-    console.error);
+    console.error,
+    db.medic.changes,
+    db.medic.view
+  );
 
   callback();
 };
@@ -37,48 +41,6 @@ exports['allows "can_access_directly" users direct access'] = function(test) {
   changes(proxy, testReq, testRes);
 };
 
-exports['allows access with the correct facilityId'] = function(test) {
-  test.expect(2);
-
-  var testReq = {query: {filter: 'medic/doc_by_place', id: 'facilityId'}};
-  var testRes = 'fake response';
-  var userCtx = 'fake userCtx';
-
-  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  sinon.stub(auth, 'hasAllPermissions').returns(false);
-  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
-  sinon.stub(config, 'get').returns(false);
-
-  var proxy = {web: function(req, res) {
-    test.equals(req, testReq);
-    test.equals(res, testRes);
-    test.done();
-  }};
-
-  changes(proxy, testReq, testRes);
-};
-
-exports['allows filtering with the erlang filter'] = function(test) {
-  test.expect(2);
-
-  var testReq = {query: {filter: 'erlang_filters/doc_by_place', id: 'facilityId'}};
-  var testRes = 'fake response';
-  var userCtx = 'fake userCtx';
-
-  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  sinon.stub(auth, 'hasAllPermissions').returns(false);
-  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
-  sinon.stub(config, 'get').returns(false);
-
-  var proxy = {web: function(req, res) {
-    test.equals(req, testReq);
-    test.equals(res, testRes);
-    test.done();
-  }};
-
-  changes(proxy, testReq, testRes);
-};
-
 exports['allows access to replicate medic settings'] = function(test) {
   test.expect(2);
 
@@ -86,7 +48,8 @@ exports['allows access to replicate medic settings'] = function(test) {
     query: {
       filter: '_doc_ids',
       doc_ids: '["_design/medic"]'
-  }};
+    }
+  };
   var testRes = 'fake response';
   var userCtx = 'fake userCtx';
 
@@ -94,200 +57,156 @@ exports['allows access to replicate medic settings'] = function(test) {
   sinon.stub(auth, 'hasAllPermissions').returns(false);
   sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
 
-  var proxy = {web: function(req, res) {
-    test.equals(req, testReq);
-    test.equals(res, testRes);
-    test.done();
-  }};
+  var proxy = {
+    web: function(req, res) {
+      test.equals(req, testReq);
+      test.equals(res, testRes);
+      test.done();
+    }
+  };
 
   changes(proxy, testReq, testRes);
 };
 
-exports['allows unallocated access when its configured and the user has permission'] = function(test) {
-  test.expect(2);
-
+exports['filters the changes to relevant ones'] = function(test) {
+  test.expect(21);
 
   var testReq = {
     query: {
-      filter: 'medic/doc_by_place',
-      id: 'facilityId',
-      unassigned: 'true'
-    },
+      since: 1,
+      heartbeat: 10000,
+      feed: 'longpole',
+      doc_ids: ['xxx'] // should be ignored - we can't trust users
+    }
   };
-  var testRes = 'fake response';
+
   var userCtx = 'fake userCtx';
+  var deletedId = 'abc';
+  var allowedId = 'def';
+  var blockedId = 'hij';
+  var unchangedId = 'klm';
+
+  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
+  sinon.stub(auth, 'hasAllPermissions').returns(false);
+  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
+  sinon.stub(config, 'get').returns(false);
+
+  // change log
+  sinon.stub(db.medic, 'changes').callsArgWith(1, null, {
+    results: [
+      {
+        seq: 2,
+        id: deletedId,
+        deleted: true
+      },
+      {
+        seq: 4,
+        id: allowedId
+      },
+      {
+        seq: 10,
+        id: blockedId
+      }
+    ]
+  });
+
+  // the view returns the list of ids the user is allowed to see
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId },
+      { id: allowedId }
+    ]
+  });
+
+  var testRes = {
+    json: function(result) {
+      test.equals(result.last_seq, 10);
+      test.equals(result.results.length, 2);
+      test.equals(result.results[0].seq, 2);
+      test.equals(result.results[0].id, deletedId);
+      test.equals(result.results[0].deleted, true);
+      test.equals(result.results[1].seq, 4);
+      test.equals(result.results[1].id, allowedId);
+      test.equals(db.medic.changes.callCount, 1);
+      test.equals(db.medic.changes.args[0][0].since, 1);
+      test.equals(db.medic.changes.args[0][0].heartbeat, 10000);
+      test.equals(db.medic.changes.args[0][0].feed, 'longpole');
+      test.equals(db.medic.changes.args[0][0].doc_ids, undefined);
+      test.equals(auth.getFacilityId.callCount, 1);
+      test.equals(auth.getFacilityId.args[0][0], testReq);
+      test.equals(auth.getFacilityId.args[0][1], userCtx);
+      test.equals(db.medic.view.callCount, 1);
+      test.equals(db.medic.view.args[0][0], 'medic');
+      test.equals(db.medic.view.args[0][1], 'doc_by_place');
+      test.equals(db.medic.view.args[0][2].keys.length, 2);
+      test.equals(db.medic.view.args[0][2].keys[0], '_all');
+      test.equals(db.medic.view.args[0][2].keys[1], 'facilityId');
+      test.done();
+    }
+  };
+  changes({}, testReq, testRes);
+};
+
+exports['allows unallocated access when its configured and the user has permission'] = function(test) {
+  test.expect(11);
+
+  var testReq = { query: {} };
+
+  var userCtx = 'fake userCtx';
+  var deletedId = 'abc';
+  var allowedId = 'def';
+  var blockedId = 'hij';
+  var unchangedId = 'klm';
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
   var hasAllPermissions = sinon.stub(auth, 'hasAllPermissions');
   hasAllPermissions.withArgs(userCtx, 'can_access_directly').returns(false);
   hasAllPermissions.withArgs(userCtx, 'can_view_unallocated_data_records').returns(true);
   sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
-  sinon.stub(config, 'get').withArgs('district_admins_access_unallocated_messages').returns(true);
+  sinon.stub(config, 'get').returns(true);
 
-  var proxy = {web: function(req, res) {
-    test.equals(req, testReq);
-    test.equals(res, testRes);
-    test.done();
-  }};
-
-  changes(proxy, testReq, testRes);
-};
-
-exports['throws a server error if getUserCtx fails'] = function(test) {
-  test.expect(4);
-
-  var testGetUserCtxError = 'something went wrong';
-  var testReq = 'fake request';
-  var testRes = 'fake response';
-
-  var proxy = {web: sinon.spy()};
-  sinon.stub(auth, 'getUserCtx').callsArgWith(1, testGetUserCtxError, null);
-  sinon.stub(serverUtils, 'serverError', function(err, req, res) {
-    test.equals(err, testGetUserCtxError);
-    test.equals(req, testReq);
-    test.equals(res, testRes);
-    test.equals(proxy.web.callCount, 0);
-    test.done();
+  // change log
+  sinon.stub(db.medic, 'changes').callsArgWith(1, null, {
+    results: [
+      {
+        seq: 2,
+        id: deletedId,
+        deleted: true
+      },
+      {
+        seq: 4,
+        id: allowedId
+      },
+      {
+        seq: 10,
+        id: blockedId
+      }
+    ]
   });
 
-  changes(proxy, testReq, testRes);
-};
-
-exports['doesn\'t accept no filter param - #2004'] = function(test) {
-  test.expect(5);
-
-  var testReq = { query: {} };
-  var testRes = 'fake response';
-  var userCtx = 'fake userCtx';
-  var proxy = { web: sinon.spy() };
-
-  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  sinon.stub(auth, 'hasAllPermissions').returns(false);
-  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'some random facility');
-  var errorSpy = sinon.spy(console, 'error');
-
-  sinon.stub(serverUtils, 'error', function(err, req, res) {
-    test.ok(errorSpy.firstCall.args[0].indexOf('restricted filter:') > 0);
-    test.equals(err.code, 403);
-    test.equals(req, testReq);
-    test.equals(res, testRes);
-    test.equals(proxy.web.callCount, 0);
-    test.done();
+  // the view returns the list of ids the user is allowed to see
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId },
+      { id: allowedId }
+    ]
   });
 
-  changes(proxy, testReq, testRes);
-};
-
-exports['doesn\'t accept unknown filters'] = function(test) {
-  test.expect(5);
-
-  var testReq = {query: {filter: 'naughtybadtimefilter'}};
-  var testRes = 'fake response';
-  var userCtx = 'fake userCtx';
-  var proxy = {web: sinon.spy()};
-
-  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  sinon.stub(auth, 'hasAllPermissions').returns(false);
-  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'some random facility');
-  var errorSpy = sinon.spy(console, 'error');
-
-  sinon.stub(serverUtils, 'error', function(err, req, res) {
-    test.ok(errorSpy.firstCall.args[0].indexOf('restricted filter:') > 0);
-    test.equals(err.code, 403);
-    test.equals(req, testReq);
-    test.equals(res, testRes);
-    test.equals(proxy.web.callCount, 0);
-    test.done();
-  });
-
-  changes(proxy, testReq, testRes);
-};
-
-exports['doesn\'t accept incorrect facilityId based on the given user'] = function(test) {
-  test.expect(5);
-
-  var testReq = {query: {filter: 'medic/doc_by_place', id: 'incorrectFacilityId'}};
-  var testRes = 'fake response';
-  var userCtx = 'fake userCtx';
-  var proxy = {web: sinon.spy()};
-
-  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  sinon.stub(auth, 'hasAllPermissions').returns(false);
-  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
-  sinon.stub(config, 'get').returns(false);
-  var errorSpy = sinon.spy(console, 'error');
-
-  sinon.stub(serverUtils, 'error', function(err, req, res) {
-    test.ok(errorSpy.firstCall.args[0].indexOf('restricted filter params') > 0);
-    test.equals(err.code, 403);
-    test.equals(req, testReq);
-    test.equals(res, testRes);
-    test.equals(proxy.web.callCount, 0);
-    test.done();
-  });
-
-  changes(proxy, testReq, testRes);
-};
-
-exports['doesn\'t allow unallocated message viewing without correct permission'] = function(test) {
-  test.expect(5);
-
-  var testReq = {
-    query: {
-      filter: 'medic/doc_by_place',
-      id: 'facilityId',
-      unassigned: 'true'
-    },
+  var testRes = {
+    json: function(result) {
+      test.equals(result.last_seq, 10);
+      test.equals(result.results.length, 2);
+      test.equals(result.results[0].seq, 2);
+      test.equals(result.results[0].id, deletedId);
+      test.equals(result.results[0].deleted, true);
+      test.equals(result.results[1].seq, 4);
+      test.equals(result.results[1].id, allowedId);
+      test.equals(db.medic.view.args[0][2].keys.length, 3);
+      test.equals(db.medic.view.args[0][2].keys[0], '_all');
+      test.equals(db.medic.view.args[0][2].keys[1], 'facilityId');
+      test.equals(db.medic.view.args[0][2].keys[2], '_unassigned');
+      test.done();
+    }
   };
-  var testRes = 'fake response';
-  var userCtx = 'fake userCtx';
-  var proxy = {web: sinon.spy()};
-
-  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  var hasAllPermissions = sinon.stub(auth, 'hasAllPermissions');
-  hasAllPermissions.withArgs(userCtx, 'can_access_directly').returns(false);
-  hasAllPermissions.withArgs(userCtx, 'can_view_unallocated_data_records').returns(false);
-  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
-  sinon.stub(config, 'get').withArgs('district_admins_access_unallocated_messages').returns(true);
-  var errorSpy = sinon.spy(console, 'error');
-
-  sinon.stub(serverUtils, 'error', function(err, req, res) {
-    test.ok(errorSpy.firstCall.args[0].indexOf('restricted filter params') > 0);
-    test.equals(err.code, 403);
-    test.equals(req, testReq);
-    test.equals(res, testRes);
-    test.equals(proxy.web.callCount, 0);
-    test.done();
-  });
-
-  changes(proxy, testReq, testRes);
-};
-
-exports['doesn\'t allow you to replicate any doc_ids except the ddoc'] = function(test) {
-  test.expect(5);
-
-  var testReq = {
-    query: {
-      filter: '_doc_ids',
-      doc_ids: '["badDocument"]'
-  }};
-  var testRes = 'fake response';
-  var userCtx = 'fake userCtx';
-  var proxy = {web: sinon.spy()};
-
-  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  sinon.stub(auth, 'hasAllPermissions').returns(false);
-  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
-  var errorSpy = sinon.spy(console, 'error');
-
-  sinon.stub(serverUtils, 'error', function(err, req, res) {
-    test.ok(errorSpy.firstCall.args[0].indexOf('restricted filter id: ["badDocument"]') > 0);
-    test.equals(err.code, 403);
-    test.equals(req, testReq);
-    test.equals(res, testRes);
-    test.equals(proxy.web.callCount, 0);
-    test.done();
-  });
-
-  changes(proxy, testReq, testRes);
+  changes({}, testReq, testRes);
 };
