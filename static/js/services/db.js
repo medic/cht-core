@@ -1,5 +1,4 @@
-var utils = require('kujua-utils'),
-    async = require('async');
+var utils = require('kujua-utils');
 
 (function () {
 
@@ -9,13 +8,9 @@ var utils = require('kujua-utils'),
 
   inboxServices.factory('DB',
     function(
-      $http,
-      $log,
-      $timeout,
       $window,
-      CleanETag,
-      DbNameService,
       E2ETESTING,
+      Location,
       pouchDB,
       Session,
       WebWorker
@@ -29,31 +24,24 @@ var utils = require('kujua-utils'),
 
       $window.PouchDB.adapter('worker', require('worker-pouch/client'));
 
-      var getRemoteUrl = function(name) {
-        name = name || DbNameService();
-        var loc = $window.location;
-        var port = loc.port ? ':' + loc.port : '';
-        return loc.protocol + '//' + loc.hostname + port + '/' + name;
-      };
-
       var isAdmin = function() {
         return utils.isUserAdmin(Session.userCtx());
       };
 
-      var getRemote = function(name) {
+      var getRemote = function() {
         var options = {
           skip_setup: true,
           ajax: { timeout: 30000 }
         };
-        return getFromCache(getRemoteUrl(name), options);
+        return getFromCache(Location.url, options);
       };
 
-      var getLocal = function(name) {
+      var getLocal = function() {
         var userCtx = Session.userCtx();
         if (!userCtx) {
           return Session.navigateToLogin();
         }
-        name = (name || DbNameService()) + '-user-' + userCtx.name;
+        var name = Location.dbName + '-user-' + userCtx.name;
         var options = {
           adapter: 'worker',
           worker: function () {
@@ -71,92 +59,13 @@ var utils = require('kujua-utils'),
         return cache[name];
       };
 
-      var get = function(name) {
-        return isAdmin() ? getRemote(name) : getLocal(name);
-      };
-
-      var updateLocalDesignDoc = function(ddoc, updates, callback) {
-        ddoc.app_settings = updates.app_settings;
-        ddoc.views = updates.views;
-        ddoc.remote_rev = updates._rev;
-        getLocal()
-          .put(ddoc)
-          .then(callback)
-          .catch(function(err) {
-            $log.error('Error updating local ddoc.', err);
-          });
-      };
-
-      var checkLocalDesignDoc = function(rev, callback) {
-        getLocal()
-          .get('_design/medic')
-          .then(function(localDdoc) {
-            if (localDdoc.remote_rev === rev) {
-              return;
-            }
-            return getRemote()
-              .get('_design/medic')
-              .then(function(remoteDdoc) {
-                updateLocalDesignDoc(localDdoc, remoteDdoc, callback);
-              });
-          })
-          .catch(function(err) {
-            if (err.status === 401) {
-              Session.navigateToLogin();
-            } else {
-              $log.error('Error updating ddoc. Check your connection and try again.', err);
-            }
-          });
-      };
-
-      var watchDesignDoc = function(callback) {
-        if (!E2ETESTING) {
-          async.forever(function(next) {
-            if (!isAdmin()) {
-              // check current ddoc revision vs local pouch version
-              $http({
-                method: 'HEAD',
-                url: getRemoteUrl() + '/_design/medic'
-              }).success(function(data, status, headers) {
-                var rev = CleanETag(headers().etag);
-                checkLocalDesignDoc(rev, callback);
-              }).catch(function(err) {
-                if (err.status === 401) {
-                  Session.navigateToLogin();
-                } else {
-                  $log.error('Error watching HEAD of ddoc', err);
-                }
-              });
-            }
-
-            // Listen for remote ddoc changes
-            getRemote()
-              .changes({
-                live: true,
-                since: 'now',
-                doc_ids: [ '_design/medic' ],
-                timeout: 1000 * 60 * 60
-              })
-              .on('change', function(change) {
-                if (isAdmin()) {
-                  // admins access ddoc from remote db directly so
-                  // no need to check local ddoc
-                  return callback();
-                }
-                checkLocalDesignDoc(change.changes[0].rev, callback);
-              })
-              .on('error', function(err) {
-                $log.debug('Error watching for changes on the design doc', err);
-                $timeout(next, 10000);
-              });
-          });
-        }
+      var get = function() {
+        return isAdmin() ? getRemote() : getLocal();
       };
 
       return {
         get: get,
-        getRemote: getRemote,
-        watchDesignDoc: watchDesignDoc
+        getRemote: getRemote
       };
     }
   );

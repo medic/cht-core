@@ -19,7 +19,9 @@ describe('TasksContentCtrl', function() {
     var createController = function() {
       $controller('TasksContentCtrl', {
         $scope: $scope,
-        Enketo: Enketo
+        Enketo: Enketo,
+        DB: sinon.stub(),
+        WatchDesignDoc: sinon.stub()
       });
     };
 

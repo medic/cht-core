@@ -7,8 +7,15 @@ var _ = require('underscore');
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('ImportContacts',
-    ['$http', '$q', 'DB', 'BaseUrlService', 'CleanETag',
-    function($http, $q, DB, BaseUrlService, CleanETag) {
+    function(
+      $http,
+      $q,
+      CleanETag,
+      DB,
+      Location
+    ) {
+
+      'ngInject';
 
       var savePerson = function(doc) {
         var person = {
@@ -71,12 +78,12 @@ var _ = require('underscore');
       };
 
       return function(contacts, overwrite) {
-        var baseUrl = BaseUrlService() + '/_db/';
+        var baseUrl = Location.path + '/_db/';
         return $q.all(_.map(contacts, function(contact) {
           return importContact(baseUrl, overwrite, contact);
         }));
       };
     }
-  ]);
+  );
 
 }());

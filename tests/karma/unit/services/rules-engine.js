@@ -194,6 +194,11 @@ describe('RulesEngine service', function() {
       $provide.value('Settings', Settings);
       $provide.value('Changes', Changes);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
+      $provide.value('Session', {
+        userCtx: function() {
+          return {};
+        }
+      });
     });
     inject(function($injector) {
       injector = $injector;

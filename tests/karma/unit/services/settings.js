@@ -15,6 +15,9 @@ describe('Settings service', function() {
           return options.get;
         });
         $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
+        $provide.value('Session', function() {
+          return sinon.stub();
+        });
       });
       inject(function(_Settings_, _$rootScope_) {
         service = _Settings_;
@@ -86,7 +89,6 @@ describe('Settings service', function() {
         service,
         cacheCallback;
 
-
     function triggerCacheChange(err, settings) {
       cacheCallback(err, settings);
     }
@@ -98,6 +100,10 @@ describe('Settings service', function() {
           return function(callback) {
             cacheCallback = callback;
           };
+        });
+        $provide.factory('DB', KarmaUtils.mockDB({ get: function() {} }));
+        $provide.value('Session', function() {
+          return sinon.stub();
         });
       });
       inject(function($injector) {
@@ -127,11 +133,12 @@ describe('Settings service', function() {
         expect(changeCount).to.equal(3);
         expect(invocationIndexes).to.deep.equal([1, 2, 3]);
         done();
-      }, 200);
+      });
     });
 
     it('triggers error handler when an error occurs', function(done) {
-      var changeCount = 0, errorCount = 0;
+      var changeCount = 0,
+          errorCount = 0;
 
       service()
         .on('change', function() {
@@ -147,7 +154,7 @@ describe('Settings service', function() {
         expect(changeCount).to.equal(0);
         expect(errorCount).to.equal(1);
         done();
-      }, 200);
+      });
     });
 
   });

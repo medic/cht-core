@@ -24,7 +24,8 @@ var _ = require('underscore'),
             .get('_design/medic')
             .then(function(ddoc) {
               callback(null, _.defaults(ddoc.app_settings, defaults));
-            }).catch(function(err) {
+            })
+            .catch(function(err) {
               if (err && err.status === 401) {
                 Session.navigateToLogin();
               }

@@ -8,7 +8,7 @@ describe('Session service', function() {
       location,
       appCache,
       appCacheListener,
-      DbNameService,
+      Location,
       kansoLogout,
       kansoInfo,
       kansoSessionListener;
@@ -19,7 +19,7 @@ describe('Session service', function() {
     ipCookieRemove = sinon.stub();
     appCacheListener = sinon.stub();
     ipCookie.remove = ipCookieRemove;
-    DbNameService = sinon.stub();
+    Location = {};
     kansoLogout = sinon.stub();
     kansoInfo = sinon.stub();
     kansoSessionListener = sinon.stub();
@@ -33,9 +33,7 @@ describe('Session service', function() {
       $provide.factory('ipCookie', function() {
         return ipCookie;
       });
-      $provide.factory('DbNameService', function() {
-        return DbNameService;
-      });
+      $provide.value('Location', Location);
       $provide.factory('$window', function() {
         return {
           location: location,
@@ -56,7 +54,7 @@ describe('Session service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(ipCookie, ipCookieRemove, DbNameService, kansoLogout, kansoInfo, kansoSessionListener, appCacheListener);
+    KarmaUtils.restore(ipCookie, ipCookieRemove, kansoLogout, kansoInfo, kansoSessionListener, appCacheListener);
   });
 
   it('gets the user context', function(done) {
@@ -70,7 +68,7 @@ describe('Session service', function() {
 
   it('logs out', function(done) {
     location.href = 'CURRENT_URL';
-    DbNameService.returns('DB_NAME');
+    Location.dbName = 'DB_NAME';
     kansoLogout.callsArg(0);
     service.logout();
     chai.expect(kansoLogout.callCount).to.equal(1);
@@ -82,7 +80,7 @@ describe('Session service', function() {
   it('logs out if no user context', function(done) {
     ipCookie.returns({});
     location.href = 'CURRENT_URL';
-    DbNameService.returns('DB_NAME');
+    Location.dbName = 'DB_NAME';
     kansoLogout.callsArg(0);
     service.init();
     chai.expect(kansoLogout.callCount).to.equal(1);
@@ -94,7 +92,7 @@ describe('Session service', function() {
   it('redirects to login if not logged in remotely', function(done) {
     ipCookie.returns({ name: 'bryan' });
     location.href = 'CURRENT_URL';
-    DbNameService.returns('DB_NAME');
+    Location.dbName = 'DB_NAME';
     kansoInfo.callsArgWith(0, { status: 401 });
     service.init();
     chai.expect(kansoLogout.callCount).to.equal(0);
@@ -116,7 +114,7 @@ describe('Session service', function() {
   it('logs out if remote userCtx inconsistent', function(done) {
     ipCookie.returns({ name: 'bryan' });
     location.href = 'CURRENT_URL';
-    DbNameService.returns('DB_NAME');
+    Location.dbName = 'DB_NAME';
     kansoLogout.callsArg(0);
     kansoInfo.callsArgWith(0, null, { userCtx: { name: 'jimmy' } });
     service.init();
@@ -141,7 +139,7 @@ describe('Session service', function() {
   it('redirects to login on remote session change', function(done) {
     ipCookie.returns({ name: 'bryan' });
     location.href = 'CURRENT_URL';
-    DbNameService.returns('DB_NAME');
+    Location.dbName = 'DB_NAME';
     kansoLogout.callsArg(0);
     kansoInfo
       .onFirstCall().callsArgWith(0, null, { userCtx: { name: 'bryan' } })
@@ -158,7 +156,7 @@ describe('Session service', function() {
   it('does not redirect to login on remote session change if offline', function(done) {
     ipCookie.returns({ name: 'bryan' });
     location.href = 'CURRENT_URL';
-    DbNameService.returns('DB_NAME');
+    Location.dbName = 'DB_NAME';
     kansoInfo
       .onFirstCall().callsArgWith(0, null, { userCtx: { name: 'bryan' } })
       .onSecondCall().callsArgWith(0, { status: 404 });
@@ -172,7 +170,7 @@ describe('Session service', function() {
   it('waits for app cache download before logging out', function(done) {
     ipCookie.returns({});
     location.href = 'CURRENT_URL';
-    DbNameService.returns('DB_NAME');
+    Location.dbName = 'DB_NAME';
     kansoLogout.callsArg(0);
     appCache.status = 3;
     service.init();
