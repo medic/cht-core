@@ -7,7 +7,6 @@
   require('./analytics-modules');
   require('./app-info');
   require('./auth');
-  require('./base');
   require('./cache');
   require('./changes');
   require('./check-date');
@@ -37,6 +36,7 @@
   require('./import-contacts');
   require('./kanso-packages');
   require('./language');
+  require('./location');
   require('./markdown');
   require('./live-list');
   require('./mark-read');
@@ -66,6 +66,7 @@
   require('./user');
   require('./users');
   require('./verified');
+  require('./watch-design-doc');
   require('./web-worker');
   require('./xml-forms');
   require('./xslt');

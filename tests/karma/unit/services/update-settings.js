@@ -8,9 +8,7 @@ describe('UpdateSettings service', function() {
   beforeEach(function() {
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('BaseUrlService', function() {
-        return 'BASEURL';
-      });
+      $provide.value('Location', { path: 'BASEURL' });
     });
     inject(function($injector) {
       $httpBackend = $injector.get('$httpBackend');

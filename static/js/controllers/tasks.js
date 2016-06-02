@@ -8,6 +8,7 @@ var _ = require('underscore');
 
   inboxControllers.controller('TasksCtrl',
     function($scope, $state, $timeout, LiveList, RulesEngine, TranslateFrom) {
+      'ngInject';
 
       var setSelectedTask = function(task) {
         LiveList.tasks.setSelected(task._id);

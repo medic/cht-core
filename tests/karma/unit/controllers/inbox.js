@@ -3,11 +3,11 @@ describe('InboxCtrl controller', function() {
   'use strict';
 
   var createController,
-    scope,
-    snackbar,
-    spyState,
-    stubModal;
-  var dummyId = 'dummydummy';
+      scope,
+      snackbar,
+      spyState,
+      stubModal,
+      dummyId = 'dummydummy';
 
   beforeEach(function() {
     snackbar = sinon.stub();
@@ -22,13 +22,16 @@ describe('InboxCtrl controller', function() {
           return Promise.resolve({});
         };
       });
-      $provide.factory('BaseUrlService', function() {
-        return sinon.stub();
+      $provide.factory('Location', function() {
+        return function() {
+          return { path: 'localhost' };
+        };
       });
       $provide.factory('DB', function() {
-        return {
-          watchDesignDoc: function() {}
-        };
+        return sinon.stub();
+      });
+      $provide.factory('WatchDesignDoc', function() {
+        return sinon.stub();
       });
       $provide.factory('DBSync', function() {
         return sinon.stub();

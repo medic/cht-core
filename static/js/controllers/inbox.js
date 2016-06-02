@@ -25,7 +25,6 @@ var feedback = require('../modules/feedback'),
       $window,
       APP_CONFIG,
       Auth,
-      BaseUrlService,
       Changes,
       CheckDate,
       Contact,
@@ -39,6 +38,7 @@ var feedback = require('../modules/feedback'),
       JsonForms,
       Language,
       LiveListConfig,
+      Location,
       Modal,
       PLACE_TYPES,
       ReadMessages,
@@ -53,6 +53,7 @@ var feedback = require('../modules/feedback'),
       UpdateSettings,
       UpdateUser,
       UserSettings,
+      WatchDesignDoc,
       XmlForms
     ) {
       'ngInject';
@@ -111,7 +112,7 @@ var feedback = require('../modules/feedback'),
       $scope.title = undefined;
       $scope.tours = [];
 
-      $scope.baseUrl = BaseUrlService();
+      $scope.baseUrl = Location.path;
 
       if ($window.medicmobile_android) {
         $scope.android_app_version = $window.medicmobile_android.getAppVersion();
@@ -838,7 +839,7 @@ var feedback = require('../modules/feedback'),
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
           showUpdateReady();
         }
-        DB.watchDesignDoc(function() {
+        WatchDesignDoc(function() {
           // if the manifest hasn't changed, prompt user to reload settings
           window.applicationCache.addEventListener('noupdate', showUpdateReady);
           // check if the manifest has changed. if it has, download and prompt

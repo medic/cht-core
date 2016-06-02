@@ -1,9 +1,14 @@
 /* globals XSLTProcessor */
-angular.module('inboxServices').service('XSLT', [
-  '$http', '$q', 'BaseUrlService',
-  function($http, $q, BaseUrlService) {
+angular.module('inboxServices').service('XSLT',
+  function(
+    $http,
+    $q,
+    Location
+  ) {
 
-    var staticRoot = BaseUrlService() + '/static/dist/xslt/';
+    'ngInject';
+
+    var staticRoot = Location.path + '/static/dist/xslt/';
     var processors = {};
     var xmlSerializer = new XMLSerializer();
 
@@ -35,4 +40,4 @@ angular.module('inboxServices').service('XSLT', [
       }
     };
   }
-]);
+);

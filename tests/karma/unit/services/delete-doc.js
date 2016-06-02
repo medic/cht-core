@@ -56,10 +56,13 @@ describe('DeleteDoc service', function() {
       }
     };
     get.returns(KarmaUtils.mockPromise(null, clinic));
-    bulkDocs.returns(KarmaUtils.mockPromise(
-      null,
+    bulkDocs.returns(KarmaUtils.mockPromise(null,
       // person is not deleted, but clinic is edited just fine. Oops.
-      [{id: person._id, error:'conflict'}, {id: clinic._id}]));
+      [
+        { id: person._id, error:'conflict' },
+        { id: clinic._id }
+      ]
+    ));
     return service(person)
       .then(function() {
         done('expected error to be thrown');
@@ -72,7 +75,36 @@ describe('DeleteDoc service', function() {
       });
   });
 
-  it('doesn\'t allow deleting duplicate docs', function(done) {
+  it('does not allow deleting duplicate docs', function(done) {
+    var clinic = {
+      _id: 'b',
+      type: 'clinic',
+      contact: {
+        name: 'sally',
+        phone: '+555'
+      }
+    };
+    return service([ clinic, clinic ])
+      .then(function() {
+        done(new Error('expected error to be thrown'));
+      })
+      .catch(function(err) {
+        chai.expect(err).to.have.property('errors');
+        chai.expect(err.errors.length).to.equal(1);
+        chai.expect(err.errors[0].id).to.equal(clinic._id);
+        done();
+      });
+  });
+
+  it('does not allow deleting child and parent that will conflict', function(done) {
+    var clinic = {
+      _id: 'b',
+      type: 'clinic',
+      contact: {
+        name: 'sally',
+        phone: '+555'
+      }
+    };
     var person = {
       _id: 'a',
       type: 'person',
@@ -82,14 +114,15 @@ describe('DeleteDoc service', function() {
         _id: 'b'
       }
     };
-    return service([person, person])
+    get.returns(KarmaUtils.mockPromise(null, clinic));
+    return service([ person, clinic ])
       .then(function() {
-        done('expected error to be thrown');
+        done(new Error('expected error to be thrown'));
       })
       .catch(function(err) {
         chai.expect(err).to.have.property('errors');
         chai.expect(err.errors.length).to.equal(1);
-        chai.expect(err.errors[0].id).to.equal(person._id);
+        chai.expect(err.errors[0].id).to.equal(clinic._id);
         done();
       });
   });
@@ -104,6 +137,7 @@ describe('DeleteDoc service', function() {
     var expected = {
       _id: 'xyz',
       _rev: '123',
+      type: 'data_record',
       _deleted: true
     };
     return service(record).then(function() {
@@ -128,11 +162,13 @@ describe('DeleteDoc service', function() {
     var expected1 = {
       _id: 'xyz',
       _rev: '123',
+      type: 'data_record',
       _deleted: true
     };
     var expected2 = {
       _id: 'abc',
       _rev: '456',
+      type: 'data_record',
       _deleted: true
     };
     return service([ record1, record2 ]).then(function() {

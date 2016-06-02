@@ -6,8 +6,16 @@ var COOKIE_NAME = 'userCtx';
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Session', ['$window', 'ipCookie', 'KansoPackages', 'DbNameService', '$log',
-    function($window, ipCookie, KansoPackages, DbNameService, $log) {
+  inboxServices.factory('Session',
+    function(
+      $log,
+      $window,
+      ipCookie,
+      KansoPackages,
+      Location
+    ) {
+
+      'ngInject';
 
       var getUserCtx = function() {
         return ipCookie(COOKIE_NAME);
@@ -25,7 +33,7 @@ var COOKIE_NAME = 'userCtx';
         $log.warn('User must reauthenticate');
         ipCookie.remove(COOKIE_NAME);
         waitForAppCache(function() {
-          $window.location.href = '/' + DbNameService() + '/login' +
+          $window.location.href = '/' + Location.dbName + '/login' +
             '?redirect=' + encodeURIComponent($window.location.href);
         });
       };
@@ -73,6 +81,6 @@ var COOKIE_NAME = 'userCtx';
       };
 
     }
-  ]);
+  );
 
 }());

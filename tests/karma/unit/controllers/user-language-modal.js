@@ -1,7 +1,12 @@
 describe('UserLanguageModalCtrl controller', function() {
   'use strict';
 
-  var createController, scope, stubSetLanguage, stubSettings, stubUpdateUser, spyUibModalInstance;
+  var createController,
+      scope,
+      stubSetLanguage,
+      stubSettings,
+      stubUpdateUser,
+      spyUibModalInstance;
 
   beforeEach(function() {
     module('inboxApp');
@@ -9,11 +14,11 @@ describe('UserLanguageModalCtrl controller', function() {
     module(function($provide) {
       stubSettings = sinon.stub();
       stubSettings.returns(KarmaUtils.mockPromise(
-        {locales: [
-          {code: 'en', name: 'English'},
-          {code: 'sw', name: 'Swahili'},
-          {code: 'aa', name: 'AAAAAA', disabled: true},
-        ]}));
+        { locales: [
+          { code: 'en', name: 'English' },
+          { code: 'sw', name: 'Swahili' },
+          { code: 'aa', name: 'AAAAAA', disabled: true }
+        ] }));
       $provide.factory('Settings', function() {
         return stubSettings;
       });
@@ -52,9 +57,10 @@ describe('UserLanguageModalCtrl controller', function() {
     setTimeout(function() {
       scope.$apply(); // needed to resolve the promises
       chai.expect(scope.enabledLocales).to.equal([
-            {code: 'en', name: 'English'},
-            {code: 'sw', name: 'Swahili'}]);
-      });
+        { code: 'en', name: 'English' },
+        { code: 'sw', name: 'Swahili' }
+      ]);
+    });
   });
 
   it('changes language on user selection', function() {
