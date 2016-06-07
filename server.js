@@ -101,22 +101,6 @@ app.all(pathPrefix + '_local/*', function(req, res) {
   proxy.web(req, res);
 });
 
-var audit = function(req, res) {
-  var ap = new AuditProxy();
-  ap.on('error', function(e) {
-    serverUtils.serverError(e, req, res);
-  });
-  ap.on('not-authorized', function() {
-    serverUtils.notLoggedIn(req, res);
-  });
-  ap.audit(proxyForAuditing, req, res);
-};
-
-var auditPath = pathPrefix + '*';
-app.put(auditPath, audit);
-app.post(auditPath, audit);
-app.delete(auditPath, audit);
-
 app.get('/setup/poll', function(req, res) {
   var p = require('./package.json');
   res.json({
@@ -517,7 +501,9 @@ app.post('/api/v1/people', jsonParser, function(req, res) {
 });
 
 // DB replication endpoint
-app.get('/medic/_changes', _.partial(require('./handlers/changes'), proxy));
+var changesHander = _.partial(require('./handlers/changes'), proxy);
+app.get(pathPrefix + '_changes', changesHander);
+app.post(pathPrefix + '_changes', jsonParser, changesHander);
 
 var writeHeaders = function(req, res, headers, redirect) {
   res.oldWriteHead = res.writeHead;
@@ -578,6 +564,22 @@ proxy.on('proxyReq', function(proxyReq, req, res) {
 app.get(pathPrefix + '_design/' + db.settings.ddoc + '/_rewrite', function(req, res) {
   res.redirect(appPrefix);
 });
+
+var audit = function(req, res) {
+  var ap = new AuditProxy();
+  ap.on('error', function(e) {
+    serverUtils.serverError(e, req, res);
+  });
+  ap.on('not-authorized', function() {
+    serverUtils.notLoggedIn(req, res);
+  });
+  ap.audit(proxyForAuditing, req, res);
+};
+
+var auditPath = pathPrefix + '*';
+app.put(auditPath, audit);
+app.post(auditPath, audit);
+app.delete(auditPath, audit);
 
 app.all('*', function(req, res) {
   proxy.web(req, res);

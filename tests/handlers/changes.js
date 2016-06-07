@@ -15,7 +15,7 @@ exports.tearDown = function (callback) {
     serverUtils.error,
     config.get,
     console.error,
-    db.medic.changes,
+    db.request,
     db.medic.view
   );
 
@@ -69,7 +69,7 @@ exports['allows access to replicate medic settings'] = function(test) {
 };
 
 exports['filters the changes to relevant ones'] = function(test) {
-  test.expect(20);
+  test.expect(22);
 
   var userCtx = { name: 'mobile' };
   var deletedId = 'abc';
@@ -93,7 +93,7 @@ exports['filters the changes to relevant ones'] = function(test) {
   sinon.stub(config, 'get').returns(false);
 
   // change log
-  sinon.stub(db.medic, 'changes').callsArgWith(1, null, {
+  sinon.stub(db, 'request').callsArgWith(1, null, {
     results: [
       {
         seq: 2,
@@ -123,12 +123,13 @@ exports['filters the changes to relevant ones'] = function(test) {
       test.equals(result.results[0].deleted, true);
       test.equals(result.results[1].seq, 4);
       test.equals(result.results[1].id, allowedId);
-      test.equals(db.medic.changes.callCount, 1);
-      test.equals(db.medic.changes.args[0][0].since, 1);
-      test.equals(db.medic.changes.args[0][0].heartbeat, 10000);
-      test.equals(db.medic.changes.args[0][0].feed, 'longpole');
-      var expectedDocIds = JSON.stringify([ deletedId, unchangedId, allowedId, resourcesId, userId ]);
-      test.equals(db.medic.changes.args[0][0].doc_ids, expectedDocIds);
+      test.equals(db.request.callCount, 1);
+      test.equals(db.request.args[0][0].path, '_changes');
+      test.deepEqual(db.request.args[0][0].body.doc_ids, [ deletedId, unchangedId, allowedId, resourcesId, userId ]);
+      test.equals(db.request.args[0][0].method, 'POST');
+      test.equals(db.request.args[0][0].qs.since, 1);
+      test.equals(db.request.args[0][0].qs.heartbeat, 10000);
+      test.equals(db.request.args[0][0].qs.feed, 'longpole');
       test.equals(auth.getFacilityId.callCount, 1);
       test.equals(auth.getFacilityId.args[0][0], testReq);
       test.equals(auth.getFacilityId.args[0][1], userCtx);
@@ -161,7 +162,7 @@ exports['allows unallocated access when it is configured and the user has permis
   sinon.stub(config, 'get').returns(true);
 
   // change log
-  sinon.stub(db.medic, 'changes').callsArgWith(1, null, {
+  sinon.stub(db, 'request').callsArgWith(1, null, {
     results: [
       {
         seq: 2,
@@ -223,7 +224,7 @@ exports['rejects when user requests undeleted docs they are not allowed to see']
   sinon.stub(config, 'get').returns(false);
 
   // change log
-  sinon.stub(db.medic, 'changes').callsArgWith(1, null, {
+  sinon.stub(db, 'request').callsArgWith(1, null, {
     results: [
       {
         seq: 2,

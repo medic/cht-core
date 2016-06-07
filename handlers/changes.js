@@ -42,8 +42,14 @@ var getUsersDocIds = function(req, userCtx, callback) {
 
 var getChanges = function(req, ids, callback) {
   var params = _.pick(req.query, 'timeout', 'style', 'heartbeat', 'since', 'feed', 'limit', 'filter');
-  params.doc_ids = JSON.stringify(ids);
-  db.medic.changes(params, callback);
+  // we cannot call 'changes' because our query string might be too long for get
+  db.request({
+    db: db.settings.db,
+    path: '_changes',
+    qs: params,
+    body: { doc_ids: ids },
+    method: 'POST'
+  }, callback);
 };
 
 var prepareResponse = function(req, res, changes, verifiedIds) {
@@ -54,6 +60,22 @@ var prepareResponse = function(req, res, changes, verifiedIds) {
     return serverUtils.error({ code: 403, message: 'Forbidden' }, req, res);
   }
   res.json(changes);
+};
+
+var getRequestIds = function(req, callback) {
+  if (req.body && req.body.doc_ids) {
+    // POST request
+    return callback(null, req.body.doc_ids);
+  }
+  if (req.query && req.query.doc_ids) {
+    // GET request
+    try {
+      return callback(null, JSON.parse(req.query.doc_ids));
+    } catch(e) {
+      return callback({ code: 400, message: 'Invalid doc_ids param' });
+    }
+  }
+  return callback(null, []);
 };
 
 module.exports = function(proxy, req, res) {
@@ -69,21 +91,17 @@ module.exports = function(proxy, req, res) {
         if (err) {
           return serverUtils.error(err, req, res);
         }
-        var ids = viewIds;
-        if (req.query.doc_ids) {
-          try {
-            var queryIds = JSON.parse(req.query.doc_ids);
-            ids = _.union(queryIds, viewIds);
-          } catch(e) {
-            return serverUtils.error({ code: 400, message: 'Invalid doc_ids param' }, req, res);
-          }
-        }
-        // return serverUtils.error(err, req, res);
-        getChanges(req, ids, function(err, changes) {
+        getRequestIds(req, function(err, requestIds) {
           if (err) {
             return serverUtils.error(err, req, res);
           }
-          prepareResponse(req, res, changes, viewIds);
+          var ids = _.union(requestIds, viewIds);
+          getChanges(req, ids, function(err, changes) {
+            if (err) {
+              return serverUtils.error(err, req, res);
+            }
+            prepareResponse(req, res, changes, viewIds);
+          });
         });
       });
     }
