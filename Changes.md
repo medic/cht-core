@@ -1,5 +1,28 @@
 # Medic Mobile Release Notes
 
+## 2.7.0
+
+### June 8, 2016
+
+#### Features
+
+- Bulk delete reports. Issue: #1000
+
+#### Bug fixes
+
+- Report list item summaries aren't translated. Issue: #2100
+- Fix form type filter. Issue: #1409
+
+#### Performance
+
+- Replication performance. Issue: #2286
+- Improve search performance. Issue: #2302
+- Don't fetch form titles for each Contact report. Issue: #2300
+- Only fetch relevant data for the Users service. Issue: #2262
+- Remove clinics from the Facility filter dropdown. Issue: #2218
+- Optimize admin bandwidth concerns. Issue: #2211
+- We request facilities from the server over and over again. Issue: #2210
+
 ## 2.6.3
 
 ### May 23, 2016
