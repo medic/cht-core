@@ -69,22 +69,23 @@ exports['allows access to replicate medic settings'] = function(test) {
 };
 
 exports['filters the changes to relevant ones'] = function(test) {
-  test.expect(21);
+  test.expect(20);
+
+  var userCtx = { name: 'mobile' };
+  var deletedId = 'abc';
+  var allowedId = 'def';
+  var unchangedId = 'klm';
+  var resourcesId = 'resources';
+  var userId = 'org.couchdb.user:mobile';
 
   var testReq = {
     query: {
       since: 1,
       heartbeat: 10000,
       feed: 'longpole',
-      doc_ids: ['xxx'] // should be ignored - we can't trust users
+      doc_ids: JSON.stringify([ deletedId, unchangedId ])
     }
   };
-
-  var userCtx = 'fake userCtx';
-  var deletedId = 'abc';
-  var allowedId = 'def';
-  var blockedId = 'hij';
-  var unchangedId = 'klm';
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
   sinon.stub(auth, 'hasAllPermissions').returns(false);
@@ -102,10 +103,6 @@ exports['filters the changes to relevant ones'] = function(test) {
       {
         seq: 4,
         id: allowedId
-      },
-      {
-        seq: 10,
-        id: blockedId
       }
     ]
   });
@@ -120,7 +117,6 @@ exports['filters the changes to relevant ones'] = function(test) {
 
   var testRes = {
     json: function(result) {
-      test.equals(result.last_seq, 10);
       test.equals(result.results.length, 2);
       test.equals(result.results[0].seq, 2);
       test.equals(result.results[0].id, deletedId);
@@ -131,7 +127,8 @@ exports['filters the changes to relevant ones'] = function(test) {
       test.equals(db.medic.changes.args[0][0].since, 1);
       test.equals(db.medic.changes.args[0][0].heartbeat, 10000);
       test.equals(db.medic.changes.args[0][0].feed, 'longpole');
-      test.equals(db.medic.changes.args[0][0].doc_ids, undefined);
+      var expectedDocIds = JSON.stringify([ deletedId, unchangedId, allowedId, resourcesId, userId ]);
+      test.equals(db.medic.changes.args[0][0].doc_ids, expectedDocIds);
       test.equals(auth.getFacilityId.callCount, 1);
       test.equals(auth.getFacilityId.args[0][0], testReq);
       test.equals(auth.getFacilityId.args[0][1], userCtx);
@@ -147,15 +144,13 @@ exports['filters the changes to relevant ones'] = function(test) {
   changes({}, testReq, testRes);
 };
 
-exports['allows unallocated access when its configured and the user has permission'] = function(test) {
-  test.expect(11);
+exports['allows unallocated access when it is configured and the user has permission'] = function(test) {
+  test.expect(10);
 
   var testReq = { query: {} };
-
-  var userCtx = 'fake userCtx';
+  var userCtx = { name: 'mobile' };
   var deletedId = 'abc';
   var allowedId = 'def';
-  var blockedId = 'hij';
   var unchangedId = 'klm';
 
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
@@ -176,10 +171,6 @@ exports['allows unallocated access when its configured and the user has permissi
       {
         seq: 4,
         id: allowedId
-      },
-      {
-        seq: 10,
-        id: blockedId
       }
     ]
   });
@@ -194,7 +185,6 @@ exports['allows unallocated access when its configured and the user has permissi
 
   var testRes = {
     json: function(result) {
-      test.equals(result.last_seq, 10);
       test.equals(result.results.length, 2);
       test.equals(result.results[0].seq, 2);
       test.equals(result.results[0].id, deletedId);
@@ -205,6 +195,56 @@ exports['allows unallocated access when its configured and the user has permissi
       test.equals(db.medic.view.args[0][2].keys[0], '_all');
       test.equals(db.medic.view.args[0][2].keys[1], 'facilityId');
       test.equals(db.medic.view.args[0][2].keys[2], '_unassigned');
+      test.done();
+    }
+  };
+  changes({}, testReq, testRes);
+};
+
+exports['rejects when user requests undeleted docs they are not allowed to see'] = function(test) {
+  test.expect(2);
+
+  var userCtx = { name: 'mobile' };
+  var blockedId = 'abc';
+  var allowedId = 'xyz';
+
+  var testReq = {
+    query: {
+      since: 1,
+      heartbeat: 10000,
+      feed: 'longpole',
+      doc_ids: JSON.stringify([ blockedId ])
+    }
+  };
+
+  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
+  sinon.stub(auth, 'hasAllPermissions').returns(false);
+  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
+  sinon.stub(config, 'get').returns(false);
+
+  // change log
+  sinon.stub(db.medic, 'changes').callsArgWith(1, null, {
+    results: [
+      {
+        seq: 2,
+        id: blockedId
+      }
+    ]
+  });
+
+  // the view returns the list of ids the user is allowed to see
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    rows: [
+      { id: allowedId }
+    ]
+  });
+
+  var testRes = {
+    writeHead: function(code) {
+      test.equals(code, 403);
+    },
+    end: function(message) {
+      test.equals(message, 'Forbidden');
       test.done();
     }
   };

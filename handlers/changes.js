@@ -40,29 +40,20 @@ var getUsersDocIds = function(req, userCtx, callback) {
   });
 };
 
-var getChanges = function(req, callback) {
-  var params = _.pick(req.query, 'timeout', 'style', 'heartbeat', 'since', 'feed');
+var getChanges = function(req, ids, callback) {
+  var params = _.pick(req.query, 'timeout', 'style', 'heartbeat', 'since', 'feed', 'limit', 'filter');
+  params.doc_ids = JSON.stringify(ids);
   db.medic.changes(params, callback);
 };
 
-var prepareResponse = function(req, res, changes, ids) {
-  var result = {
-    results: [],
-    last_seq: req.query.since
-  };
-  var len = changes.results.length;
-  var limit = req.query.limit || len;
-  for (var i = 0; i < len && result.results.length < limit; i++) {
-    var change = changes.results[i];
-    // update last_seq whether or not this change applies
-    result.last_seq = change.seq;
-    // Send all deletions to the client even for docs they're not
-    // allowed to see. This only leaks the _id and _rev.
-    if (change.deleted || _.contains(ids, change.id)) {
-      result.results.push(change);
-    }
+var prepareResponse = function(req, res, changes, verifiedIds) {
+  var allowed = _.every(changes.results, function(change) {
+    return change.deleted || _.contains(verifiedIds, change.id);
+  });
+  if (!allowed) {
+    return serverUtils.error({ code: 403, message: 'Forbidden' }, req, res);
   }
-  res.json(result);
+  res.json(changes);
 };
 
 module.exports = function(proxy, req, res) {
@@ -74,15 +65,25 @@ module.exports = function(proxy, req, res) {
         (req.query.filter === '_doc_ids' && req.query.doc_ids === '["_design/medic"]')) {
       proxy.web(req, res);
     } else {
-      getChanges(req, function(err, changes) {
+      getUsersDocIds(req, userCtx, function(err, viewIds) {
         if (err) {
           return serverUtils.error(err, req, res);
         }
-        getUsersDocIds(req, userCtx, function(err, ids) {
+        var ids = viewIds;
+        if (req.query.doc_ids) {
+          try {
+            var queryIds = JSON.parse(req.query.doc_ids);
+            ids = _.union(queryIds, viewIds);
+          } catch(e) {
+            return serverUtils.error({ code: 400, message: 'Invalid doc_ids param' }, req, res);
+          }
+        }
+        // return serverUtils.error(err, req, res);
+        getChanges(req, ids, function(err, changes) {
           if (err) {
             return serverUtils.error(err, req, res);
           }
-          prepareResponse(req, res, changes, ids);
+          prepareResponse(req, res, changes, viewIds);
         });
       });
     }
