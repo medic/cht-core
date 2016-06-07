@@ -77,7 +77,7 @@ var getRequestIds = function(req, callback) {
     } catch(e) {
       return callback({ code: 400, message: 'Invalid doc_ids param' });
     }
-    callback(null, docIds);
+    return callback(null, docIds);
   }
   return callback(null, []);
 };

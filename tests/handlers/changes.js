@@ -124,30 +124,32 @@ exports['filters the changes to relevant ones'] = function(test) {
       result += slice;
     },
     end: function() {
-      result = JSON.parse(result);
-      test.equals(result.results.length, 2);
-      test.equals(result.results[0].seq, 2);
-      test.equals(result.results[0].id, deletedId);
-      test.equals(result.results[0].deleted, true);
-      test.equals(result.results[1].seq, 4);
-      test.equals(result.results[1].id, allowedId);
-      test.equals(db.request.callCount, 1);
-      test.equals(db.request.args[0][0].path, '_changes');
-      test.deepEqual(db.request.args[0][0].body.doc_ids, [ deletedId, unchangedId, allowedId, resourcesId, userId ]);
-      test.equals(db.request.args[0][0].method, 'POST');
-      test.equals(db.request.args[0][0].qs.since, 1);
-      test.equals(db.request.args[0][0].qs.heartbeat, 10000);
-      test.equals(db.request.args[0][0].qs.feed, 'longpole');
-      test.equals(auth.getFacilityId.callCount, 1);
-      test.equals(auth.getFacilityId.args[0][0], testReq);
-      test.equals(auth.getFacilityId.args[0][1], userCtx);
-      test.equals(db.medic.view.callCount, 1);
-      test.equals(db.medic.view.args[0][0], 'medic');
-      test.equals(db.medic.view.args[0][1], 'doc_by_place');
-      test.equals(db.medic.view.args[0][2].keys.length, 2);
-      test.equals(db.medic.view.args[0][2].keys[0], '_all');
-      test.equals(db.medic.view.args[0][2].keys[1], 'facilityId');
-      test.done();
+      setTimeout(function() { // timeout to make sure nothing else tries to respond
+        result = JSON.parse(result);
+        test.equals(result.results.length, 2);
+        test.equals(result.results[0].seq, 2);
+        test.equals(result.results[0].id, deletedId);
+        test.equals(result.results[0].deleted, true);
+        test.equals(result.results[1].seq, 4);
+        test.equals(result.results[1].id, allowedId);
+        test.equals(db.request.callCount, 1);
+        test.equals(db.request.args[0][0].path, '_changes');
+        test.deepEqual(db.request.args[0][0].body.doc_ids, [ deletedId, unchangedId, allowedId, resourcesId, userId ]);
+        test.equals(db.request.args[0][0].method, 'POST');
+        test.equals(db.request.args[0][0].qs.since, 1);
+        test.equals(db.request.args[0][0].qs.heartbeat, 10000);
+        test.equals(db.request.args[0][0].qs.feed, 'longpole');
+        test.equals(auth.getFacilityId.callCount, 1);
+        test.equals(auth.getFacilityId.args[0][0], testReq);
+        test.equals(auth.getFacilityId.args[0][1], userCtx);
+        test.equals(db.medic.view.callCount, 1);
+        test.equals(db.medic.view.args[0][0], 'medic');
+        test.equals(db.medic.view.args[0][1], 'doc_by_place');
+        test.equals(db.medic.view.args[0][2].keys.length, 2);
+        test.equals(db.medic.view.args[0][2].keys[0], '_all');
+        test.equals(db.medic.view.args[0][2].keys[1], 'facilityId');
+        test.done();
+      });
     }
   };
   changes({}, testReq, testRes);
