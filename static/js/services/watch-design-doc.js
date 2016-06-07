@@ -77,6 +77,7 @@ var async = require('async');
             // Listen for remote ddoc changes
             DB.getRemote()
               .changes({
+                timeout: 1000 * 60 * 60, // one hour
                 live: true,
                 since: 'now',
                 doc_ids: [ '_design/medic' ]
