@@ -4,7 +4,8 @@ var _ = require('underscore'),
     serverUtils = require('../server-utils'),
     db = require('../db'),
     ALL_KEY = [ '_all' ], // key in the doc_by_place view for records everyone can access
-    UNASSIGNED_KEY = [ '_unassigned' ]; // key in the doc_by_place view for unassigned records
+    UNASSIGNED_KEY = [ '_unassigned' ], // key in the doc_by_place view for unassigned records
+    HEARTBEAT_FEEDS = [ 'longpoll', 'continuous' ];
 
 var getViewKeys = function(req, userCtx, callback) {
   auth.getFacilityId(req, userCtx, function(err, facilityId) {
@@ -42,7 +43,8 @@ var getUsersDocIds = function(req, userCtx, callback) {
 
 var getChanges = function(req, ids, callback) {
   var params = _.pick(req.query, 'timeout', 'style', 'heartbeat', 'since', 'feed', 'limit', 'filter');
-  // we cannot call 'changes' because our query string might be too long for get
+  // we cannot call 'changes' in nano because it only uses GET requests and
+  // our query string might be too long for GET
   db.request({
     db: db.settings.db,
     path: '_changes',
@@ -57,9 +59,9 @@ var prepareResponse = function(req, res, changes, verifiedIds) {
     return change.deleted || _.contains(verifiedIds, change.id);
   });
   if (!allowed) {
-    return serverUtils.error({ code: 403, message: 'Forbidden' }, req, res);
+    return res.write('Forbidden');
   }
-  res.json(changes);
+  res.write(JSON.stringify(changes));
 };
 
 var getRequestIds = function(req, callback) {
@@ -69,13 +71,25 @@ var getRequestIds = function(req, callback) {
   }
   if (req.query && req.query.doc_ids) {
     // GET request
+    var docIds;
     try {
-      return callback(null, JSON.parse(req.query.doc_ids));
+      docIds = JSON.parse(req.query.doc_ids);
     } catch(e) {
       return callback({ code: 400, message: 'Invalid doc_ids param' });
     }
+    callback(null, docIds);
   }
   return callback(null, []);
+};
+
+var defibrillator = function(req, res) {
+  if (req.query &&
+      req.query.heartbeat &&
+      HEARTBEAT_FEEDS.indexOf(req.query.feed) !== -1) {
+    return setInterval(function() {
+      res.write('\n');
+    }, req.query.heartbeat);
+  }
 };
 
 module.exports = function(proxy, req, res) {
@@ -96,11 +110,18 @@ module.exports = function(proxy, req, res) {
             return serverUtils.error(err, req, res);
           }
           var ids = _.union(requestIds, viewIds);
+          res.type('json');
+          var heartbeat = defibrillator(req, res);
           getChanges(req, ids, function(err, changes) {
-            if (err) {
-              return serverUtils.error(err, req, res);
+            if (heartbeat) {
+              clearInterval(heartbeat);
             }
-            prepareResponse(req, res, changes, viewIds);
+            if (err) {
+              res.write('Error processing your changes');
+            } else {
+              prepareResponse(req, res, changes, viewIds);
+            }
+            res.end();
           });
         });
       });

@@ -115,8 +115,16 @@ exports['filters the changes to relevant ones'] = function(test) {
     ]
   });
 
+  var result = '';
+
   var testRes = {
-    json: function(result) {
+    type: function() {},
+    writeHead: function() {},
+    write: function(slice) {
+      result += slice;
+    },
+    end: function() {
+      result = JSON.parse(result);
       test.equals(result.results.length, 2);
       test.equals(result.results[0].seq, 2);
       test.equals(result.results[0].id, deletedId);
@@ -184,8 +192,16 @@ exports['allows unallocated access when it is configured and the user has permis
     ]
   });
 
+  var result = '';
+
   var testRes = {
-    json: function(result) {
+    type: function() {},
+    writeHead: function() {},
+    write: function(slice) {
+      result += slice;
+    },
+    end: function() {
+      result = JSON.parse(result);
       test.equals(result.results.length, 2);
       test.equals(result.results[0].seq, 2);
       test.equals(result.results[0].id, deletedId);
@@ -203,7 +219,7 @@ exports['allows unallocated access when it is configured and the user has permis
 };
 
 exports['rejects when user requests undeleted docs they are not allowed to see'] = function(test) {
-  test.expect(2);
+  test.expect(1);
 
   var userCtx = { name: 'mobile' };
   var blockedId = 'abc';
@@ -240,12 +256,16 @@ exports['rejects when user requests undeleted docs they are not allowed to see']
     ]
   });
 
+  var result = '';
+
   var testRes = {
-    writeHead: function(code) {
-      test.equals(code, 403);
+    type: function() {},
+    writeHead: function() {},
+    write: function(slice) {
+      result += slice;
     },
-    end: function(message) {
-      test.equals(message, 'Forbidden');
+    end: function() {
+      test.equals(result, 'Forbidden');
       test.done();
     }
   };
