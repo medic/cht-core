@@ -1,6 +1,7 @@
 var EventEmitter = require('events').EventEmitter,
     util = require('util'),
     passStream = require('pass-stream'),
+    _ = require('underscore'),
     auth = require('./auth'),
     db = require('./db'),
     couchdbAudit = require('couchdb-audit');
@@ -46,22 +47,24 @@ AuditProxy.prototype.audit = function(proxy, req, res) {
       cb();
     };
 
-    var endFn = function(cb) {
-      var self = this;
-      var options = { buffer: buffer };
-      var doc = parse(dataBuffer.join(''));
+    var audit = function(doc, cb) {
       if (!doc) {
-        // ignore non-json requests
-        proxy.web(req, res, options);
-        dataBuffer.forEach(function(item) {
-          self.push(item);
-        });
-        return cb();
+        // don't audit non-json requests
+        return cb(null, dataBuffer);
+      }
+
+      var docs = doc.docs || [ doc ];
+      docs = _.reject(docs, function(doc) {
+        return doc._id && doc._id.indexOf('_local/') === 0;
+      });
+      if (!docs.length) {
+        // don't audit requests without auditable docs
+        return cb(null, dataBuffer);
       }
 
       couchdbAudit
         .withNano(db, db.settings.db, db.settings.auditDb, db.settings.ddoc, ctx.user)
-        .log(doc.docs || [doc], function(err) {
+        .log(docs, function(err) {
           if (err) {
             return cb(err);
           }
@@ -69,10 +72,23 @@ AuditProxy.prototype.audit = function(proxy, req, res) {
           // audit might modify the doc (eg: generating an id)
           // so we need to update the content-length header
           req.headers['content-length'] = Buffer.byteLength(data);
-          proxy.web(req, res, options);
-          self.push(data);
-          return cb();
+          cb(null, [ data ]);
         });
+    };
+
+    var endFn = function(cb) {
+      var self = this;
+      var options = { buffer: buffer };
+      var doc = parse(dataBuffer.join(''));
+      audit(doc, function(err, data) {
+        if (err) {
+          return cb(err);
+        }
+        // proxy the request through to the app as if nothing happened
+        proxy.web(req, res, options);
+        data.forEach(self.push);
+        return cb();
+      });
     };
 
     var ps = passStream(writeFn, endFn);
