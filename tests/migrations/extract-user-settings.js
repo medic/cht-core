@@ -80,6 +80,7 @@ exports['ignores users ddoc'] = function(test) {
 exports['returns errors from insert'] = function(test) {
   test.expect(2);
   var list = sinon.stub(db._users, 'list').callsArgWith(1, null, { rows: [ ddoc, userA, userB ] });
+  sinon.stub(db.medic, 'get').callsArgWith(1, { error: 'not_found'});
   sinon.stub(db.medic, 'insert').callsArgWith(1, 'boom');
   migration.run(function(err) {
     test.equals(err, 'boom');
@@ -91,6 +92,7 @@ exports['returns errors from insert'] = function(test) {
 exports['returns errors from update'] = function(test) {
   test.expect(1);
   sinon.stub(db._users, 'list').callsArgWith(1, null, { rows: [ ddoc, userA, userB ] });
+  sinon.stub(db.medic, 'get').callsArgWith(1, { error: 'not_found'});
   var medicInsert = sinon.stub(db.medic, 'insert');
   medicInsert
     .onFirstCall().callsArgWith(1)
@@ -192,8 +194,7 @@ exports['converts "known" field to boolean'] = function(test) {
 };
 
 exports['skips when user-settings already exists'] = function(test) {
-  console.log('STARTTTTT');
-//  test.expect(2);
+  test.expect(7);
   var list = sinon.stub(db._users, 'list')
     .callsArgWith(1, null, { rows: [ ddoc, userA, userB ] });
   var medicGet = sinon.stub(db.medic, 'get');
