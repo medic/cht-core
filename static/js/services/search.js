@@ -46,15 +46,15 @@ var _ = require('underscore');
           start = options.skip;
           end = start + options.limit;
         }
-        return _.pluck(_.sortBy(rows, 'value').slice(start, end), 'id');
+        return _.sortBy(rows, 'value').slice(start, end);
       };
 
       var getIntersection = function(responses) {
-        var intersection = responses.pop().rows;
+        var intersection = responses.pop();
         intersection = _.uniq(intersection, 'id');
         _.each(responses, function(response) {
           intersection = _.reject(intersection, function(row) {
-            return !_.findWhere(response.rows, { id: row.id });
+            return !_.findWhere(response, { id: row.id });
           });
         });
         return intersection;
@@ -63,15 +63,25 @@ var _ = require('underscore');
       var view = function(request) {
         return DbView(request.view, { params: request.params })
           .then(function(data) {
-            return data.results;
+            return data.results.rows;
           });
       };
 
-      var filter = function(type, requests, options) {
+      var viewPaginated = function(request, options) {
+        request.params.limit = options.limit;
+        request.params.skip = options.skip;
+        return view(request);
+      };
+
+      var getRows = function(type, requests, options) {
+        if (requests.length === 1) {
+          // only 1 request - let the db do the pagination for us
+          return viewPaginated(requests[0], options);
+        }
+        // multiple requests - have to manually paginate
         return $q.all(requests.map(view))
           .then(getIntersection)
-          .then(_.partial(getPage, type, _, options))
-          .then(_.partial(GetDataRecords, _, options));
+          .then(_.partial(getPage, type, _, options));
       };
 
       var generateRequests = function(type, filters, options) {
@@ -90,7 +100,10 @@ var _ = require('underscore');
         });
         return $q.resolve(generateRequests(type, filters, options))
           .then(function(requests) {
-            return filter(type, requests, options);
+            return getRows(type, requests, options);
+          })
+          .then(function(results) {
+            return GetDataRecords(_.pluck(results, 'id'), options);
           })
           .then(function(results) {
             _currentQuery = {};
