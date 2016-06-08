@@ -22,6 +22,7 @@
 - Remove clinics from the Facility filter dropdown. Issue: #2218
 - Optimize admin bandwidth concerns. Issue: #2211
 - We request facilities from the server over and over again. Issue: #2210
+- Don't audit _local docs. Issue: #2366
 
 ## 2.6.3
 
