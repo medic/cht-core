@@ -23,6 +23,8 @@
 - Optimize admin bandwidth concerns. Issue: #2211
 - We request facilities from the server over and over again. Issue: #2210
 - Don't audit _local docs. Issue: #2366
+- All requests to CouchDB time out after 10 seconds. Issue: #2325
+- Long delay loading contact dropdowns. Issue: #2326
 
 ## 2.6.3
 
