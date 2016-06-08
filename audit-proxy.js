@@ -86,7 +86,7 @@ AuditProxy.prototype.audit = function(proxy, req, res) {
         }
         // proxy the request through to the app as if nothing happened
         proxy.web(req, res, options);
-        data.forEach(self.push);
+        data.forEach(self.push, self);
         return cb();
       });
     };
