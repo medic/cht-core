@@ -8,6 +8,10 @@ var async = require('async'),
 var updateUser = function(admins, row, callback) {
   db.medic.get(row.id, function(err, userSettingsDoc) {
     if (err) {
+      if (err.statusCode === 404) {
+        // no user-settings doc to update
+        return callback();
+      }
       return callback(err);
     }
     userSettingsDoc.roles = row.doc.roles;
