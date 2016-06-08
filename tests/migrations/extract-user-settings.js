@@ -95,8 +95,8 @@ exports['returns errors from update'] = function(test) {
   sinon.stub(db.medic, 'get').callsArgWith(1, { error: 'not_found'});
   var medicInsert = sinon.stub(db.medic, 'insert');
   medicInsert
-    .onFirstCall().callsArgWith(1)
-    .onSecondCall().callsArgWith(1);
+    .onFirstCall().callsArg(1)
+    .onSecondCall().callsArg(1);
   sinon.stub(db._users, 'insert').callsArgWith(1, 'boom');
 
   migration.run(function(err) {
@@ -113,12 +113,12 @@ exports['saves doc for settings'] = function(test) {
   sinon.stub(db.medic, 'get').callsArgWith(1, { error: 'not_found'});
   var medicInsert = sinon.stub(db.medic, 'insert');
   medicInsert
-    .onFirstCall().callsArgWith(1)
-    .onSecondCall().callsArgWith(1);
+    .onFirstCall().callsArg(1)
+    .onSecondCall().callsArg(1);
   var userUpdate = sinon.stub(db._users, 'insert');
   userUpdate
-    .onFirstCall().callsArgWith(1)
-    .onSecondCall().callsArgWith(1);
+    .onFirstCall().callsArg(1)
+    .onSecondCall().callsArg(1);
 
   migration.run(function(err) {
     test.equals(err, undefined);
@@ -180,12 +180,8 @@ exports['converts "known" field to boolean'] = function(test) {
     .callsArgWith(1, null, { rows: [ ddoc, userA ] });
   // user-settings doesn't exist yet.
   sinon.stub(db.medic, 'get').callsArgWith(1, { error: 'not_found'});
-  var medicInsert = sinon.stub(db.medic, 'insert');
-  medicInsert
-    .onFirstCall().callsArgWith(1);
-  var userUpdate = sinon.stub(db._users, 'insert');
-  userUpdate
-    .onFirstCall().callsArgWith(1);
+  var medicInsert = sinon.stub(db.medic, 'insert').callsArg(1);
+  sinon.stub(db._users, 'insert').callsArg(1);
 
   migration.run(function() {
     test.equal(medicInsert.args[0][0].known, true);
@@ -193,21 +189,18 @@ exports['converts "known" field to boolean'] = function(test) {
   });
 };
 
-exports['skips when user-settings already exists'] = function(test) {
+exports['skips and does not fail when user-settings already exists'] = function(test) {
   test.expect(7);
-  var list = sinon.stub(db._users, 'list')
-    .callsArgWith(1, null, { rows: [ ddoc, userA, userB ] });
+  var list = sinon.stub(db._users, 'list').callsArgWith(1, null, {
+    rows: [ ddoc, userA, userB ]
+  });
   var medicGet = sinon.stub(db.medic, 'get');
   medicGet
     // user-settings already exists for userA
     .onFirstCall().callsArgWith(1, null, { _id: userA.id })
     .onSecondCall().callsArgWith(1, { error: 'not_found' });
-  var medicInsert = sinon.stub(db.medic, 'insert');
-  medicInsert
-    .onFirstCall().callsArgWith(1);
-  var userUpdate = sinon.stub(db._users, 'insert');
-  userUpdate
-    .onFirstCall().callsArgWith(1);
+  var medicInsert = sinon.stub(db.medic, 'insert').callsArg(1);
+  var userUpdate = sinon.stub(db._users, 'insert').callsArg(1);
   migration.run(function(err) {
     test.equals(err, undefined);
     test.equals(list.callCount, 1);
