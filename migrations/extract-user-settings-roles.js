@@ -58,7 +58,7 @@ module.exports = {
         if (err) {
           return callback(err);
         }
-        async.each(
+        async.eachSeries(
           filterResults(result.rows),
           function(row, callback) {
             updateUser(admins, row, callback);
