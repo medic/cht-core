@@ -12,13 +12,23 @@ var updateUser = function(row, callback) {
 };
 
 var splitUser = function(row, callback) {
-  var settings = _.omit(row.doc, fieldsToOmitFromSettings);
-  settings.type = 'user-settings';
-  db.medic.insert(settings, function(err) {
-    if (err) {
-      return callback(err);
+  db.medic.get(row.doc._id, function(err) {
+    if (!err) {
+      // Doc already exists, no need to migrate.
+      return callback();
     }
-    updateUser(row, callback);
+    var settings = _.omit(row.doc, fieldsToOmitFromSettings);
+    settings.type = 'user-settings';
+    // Convert string value to boolean value, otherwise validate_doc_update will reject.
+    if (settings.known === 'true') {
+      settings.known = true;
+    }
+    db.medic.insert(settings, function(err) {
+      if (err) {
+        return callback(err);
+      }
+      updateUser(row, callback);
+    });
   });
 };
 

@@ -20,7 +20,7 @@ var userA = {
     derived_key: 'derived1',
     password_scheme: 'pbkdf2',
     iterations: 10,
-    known: 'true',
+    known: true,
     type: 'user',
     roles: []
   }
@@ -42,7 +42,7 @@ var userB = {
 };
 
 exports.tearDown = function (callback) {
-  utils.restore(db._users.list, db._users.insert, db.medic.insert);
+  utils.restore(db._users.list, db._users.insert, db.medic.insert, db.medic.get);
   callback();
 };
 
@@ -107,6 +107,8 @@ exports['saves doc for settings'] = function(test) {
   test.expect(8);
   var list = sinon.stub(db._users, 'list')
     .callsArgWith(1, null, { rows: [ ddoc, userA, userB ] });
+  // user-settings doesn't exist yet.
+  sinon.stub(db.medic, 'get').callsArgWith(1, { error: 'not_found'});
   var medicInsert = sinon.stub(db.medic, 'insert');
   medicInsert
     .onFirstCall().callsArgWith(1)
@@ -119,7 +121,7 @@ exports['saves doc for settings'] = function(test) {
   migration.run(function(err) {
     test.equals(err, undefined);
     test.equals(list.callCount, 1);
-    
+
     test.equals(medicInsert.callCount, 2);
     test.same(medicInsert.args[0][0], {
       _id: 'org.couchdb.user:a',
@@ -128,7 +130,7 @@ exports['saves doc for settings'] = function(test) {
       email: 'a@b.com',
       phone: '0211111111',
       language: 'en',
-      known: 'true',
+      known: true,
       type: 'user-settings',
       facility_id: 'd012fe8f511c536273ab13e4d3025d2d',
       roles: []
@@ -167,3 +169,57 @@ exports['saves doc for settings'] = function(test) {
     test.done();
   });
 };
+
+exports['converts "known" field to boolean'] = function(test) {
+  test.expect(1);
+  // String value instead of boolean.
+  userA.known = 'true';
+  sinon.stub(db._users, 'list')
+    .callsArgWith(1, null, { rows: [ ddoc, userA ] });
+  // user-settings doesn't exist yet.
+  sinon.stub(db.medic, 'get').callsArgWith(1, { error: 'not_found'});
+  var medicInsert = sinon.stub(db.medic, 'insert');
+  medicInsert
+    .onFirstCall().callsArgWith(1);
+  var userUpdate = sinon.stub(db._users, 'insert');
+  userUpdate
+    .onFirstCall().callsArgWith(1);
+
+  migration.run(function() {
+    test.equal(medicInsert.args[0][0].known, true);
+    test.done();
+  });
+};
+
+exports['skips when user-settings already exists'] = function(test) {
+  console.log('STARTTTTT');
+//  test.expect(2);
+  var list = sinon.stub(db._users, 'list')
+    .callsArgWith(1, null, { rows: [ ddoc, userA, userB ] });
+  var medicGet = sinon.stub(db.medic, 'get');
+  medicGet
+    // user-settings already exists for userA
+    .onFirstCall().callsArgWith(1, null, { _id: userA.id })
+    .onSecondCall().callsArgWith(1, { error: 'not_found' });
+  var medicInsert = sinon.stub(db.medic, 'insert');
+  medicInsert
+    .onFirstCall().callsArgWith(1);
+  var userUpdate = sinon.stub(db._users, 'insert');
+  userUpdate
+    .onFirstCall().callsArgWith(1);
+  migration.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(list.callCount, 1);
+    test.equals(medicGet.callCount, 2);
+
+    test.equals(medicInsert.callCount, 1);
+    test.equals(medicInsert.args[0][0]._id, userB.id);
+
+    test.equals(userUpdate.callCount, 1);
+    test.equals(userUpdate.args[0][0]._id, userB.id);
+    test.done();
+  });
+
+};
+
+
