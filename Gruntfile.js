@@ -178,11 +178,6 @@ module.exports = function(grunt) {
       }
     },
     exec: {
-      compileddoc: {
-        cmd: function(ddocName) {
-          return 'kanso show "ddocs/'+ddocName+'"> ddocs/compiled/'+ddocName+'.json';
-        }
-      },
       deploy: {
         cmd: 'kanso push'
       },
@@ -246,10 +241,6 @@ module.exports = function(grunt) {
       other: {
         files: ['lib/**/*'],
         tasks: ['appcache', 'deploy']
-      },
-      ddocs: {
-        files: ['ddocs/**/*'],
-        tasks: ['compileddocs', 'appcache', 'deploy']
       }
     },
     notify_hooks: {
@@ -367,10 +358,6 @@ module.exports = function(grunt) {
     'postcss'
   ]);
 
-  grunt.registerTask('compileddocs', 'Compile all Ddocs', [
-    'exec:compileddoc:erlang_filters'
-  ]);
-
   grunt.registerTask('deploy', 'Deploy the webapp', [
     'exec:deploy',
     'notify:deployed'
@@ -382,8 +369,7 @@ module.exports = function(grunt) {
     'mmjs',
     'copy:enketoxslt',
     'copy:inbox',
-    'appcache',
-    'compileddocs'
+    'appcache'
   ]);
 
   grunt.registerTask('minify', 'Minify JS and CSS', [
