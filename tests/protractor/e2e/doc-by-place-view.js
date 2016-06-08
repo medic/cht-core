@@ -2,7 +2,7 @@ var utils = require('../utils'),
     environment = require('../auth')(),
     async = require('async');
 
-describe('Filter doc_by_place', function() {
+describe('view doc_by_place', function() {
 
   'use strict';
 
@@ -124,27 +124,26 @@ describe('Filter doc_by_place', function() {
   ];
 
   // TODO: consider removing this and just pulling ids from the two arrays above
-  var docByPlaceIds, docByPlaceIds_unassigned;
+  var docByPlaceIds,
+      docByPlaceIds_unassigned;
+
   beforeAll(function(done) {
     var alldocs = documentsToReturn.concat(documentsToIgnore, documentsToIgnoreSometimes);
 
-    //var filterParam = 'medic%2Fdoc_by_place'; // js filter
-    var filterParam = 'erlang_filters%2Fdoc_by_place';
+    var getChanges = function(keys) {
+      console.log('Requesting changes, please be patient…');
 
-    var runFilter = function(isUnassigned) {
-      console.log('Starting doc_by_place filter, please be patient…');
-      var unassignedParam = isUnassigned ? '&unassigned=true' : '';
       return utils.requestOnTestDb({
-        path: '/_changes?style=all_docs&heartbeat=10000&filter=' + filterParam + '&id=testuser' + unassignedParam,
+        path: '/_design/medic/_view/doc_by_place?keys=' + JSON.stringify(keys),
         method: 'GET'
       }).then(function(response) {
-        console.log('…done filter');
-        return response.results.map(function(doc) {
+        console.log('…got changes', response);
+        return response.rows.map(function(doc) {
           return doc.id;
         });
       })
       .catch(function(err) {
-        console.log('Filter couldnt run!', err);
+        console.log('Error requesting changes', err);
       });
     };
 
@@ -166,12 +165,13 @@ describe('Filter doc_by_place', function() {
           console.log('…done');
         }
 
-        runFilter(false)
+        getChanges([['_all'], ['testuser']])
           .then(function(docs) {
             docByPlaceIds = docs;
-            runFilter(true)
-              .then(function(moreDocs) {
-                docByPlaceIds_unassigned = moreDocs;
+
+            getChanges([['_all'], ['_unassigned'], ['testuser']])
+              .then(function(docs) {
+                docByPlaceIds_unassigned = docs;
                 done();
               });
           });
@@ -194,14 +194,6 @@ describe('Filter doc_by_place', function() {
     expect(docByPlaceIds).not.toContain('_design/medic');
   });
 
-  it('Contains the resources doc', function() {
-    expect(docByPlaceIds).toContain('resources');
-  });
-
-  it('Contains the user document', function() {
-    expect(docByPlaceIds).toContain('org.couchdb.user:' + environment.user);
-  });
-
   it('Should always return forms', function() {
     expect(docByPlaceIds).toContain('form:doc_by_place_test_form');
   });
@@ -217,11 +209,6 @@ describe('Filter doc_by_place', function() {
 
     it('Should return health_centers if the recursive parent is the user', function() {
       expect(docByPlaceIds).toContain('health_center_parent');
-    });
-
-    it('Should return the actual person document', function() {
-      expect(docByPlaceIds).toContain('testuser');
-      expect(docByPlaceIds).not.toContain('not_the_testuser');
     });
 
     it('Should check the contact of the first message of the first task in kujua messages', function() {

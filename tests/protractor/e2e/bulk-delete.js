@@ -117,12 +117,10 @@ describe('Bulk delete reports', function() {
     expect(element(by.css('#reports-content .report-body .details')).isDisplayed()).toBeFalsy();
 
     // expand selection
-    console.log('expand');
     element(by.css('#reports-content .report-body .summary')).click();
     expect(element(by.css('#reports-content .report-body .details')).isDisplayed()).toBeTruthy();
 
     // collapse selection
-    console.log('collapse');
     element(by.css('#reports-content .report-body .summary')).click();
     expect(element(by.css('#reports-content .report-body .details')).isDisplayed()).toBeFalsy();
     
@@ -131,6 +129,7 @@ describe('Bulk delete reports', function() {
 
     // select all
     element(by.css('.action-container .select-all')).click();
+    browser.sleep(1000);
     expect(element(by.css('#reports-content .selection-count > span:nth-child(2)')).isDisplayed()).toBeTruthy();
     expect(element.all(by.css('#reports-content .report-body')).count()).toBe(3);
 
