@@ -1,5 +1,4 @@
 var utils = require('../utils'),
-    environment = require('../auth')(),
     async = require('async');
 
 describe('view doc_by_place', function() {
