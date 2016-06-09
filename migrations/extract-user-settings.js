@@ -12,7 +12,6 @@ var updateUser = function(row, callback) {
 };
 
 var migrateUser = function(row, callback) {
-  console.log('migrating', row.doc._id);
   db.medic.get(row.doc._id, function(err) {
     if (!err) {
       // Doc already exists, no need to migrate.
