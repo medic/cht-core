@@ -11,24 +11,42 @@ var updateUser = function(row, callback) {
   db._users.insert(user, callback);
 };
 
-var splitUser = function(row, callback) {
+var migrateUser = function(row, callback) {
+  console.log('migrating', row.doc._id);
   db.medic.get(row.doc._id, function(err) {
     if (!err) {
       // Doc already exists, no need to migrate.
       return callback();
     }
-    var settings = _.omit(row.doc, fieldsToOmitFromSettings);
-    settings.type = 'user-settings';
-    // Convert string value to boolean value, otherwise validate_doc_update will reject.
-    if (settings.known === 'true') {
-      settings.known = true;
+    if (row.doc._id === row.doc._id.toLowerCase()) {
+      return splitUser(row, callback);
     }
-    db.medic.insert(settings, function(err) {
-      if (err) {
-        return callback(err);
+    // Uppercase in the login! Change it to lowercase.
+    var lowercase = row.doc._id.toLowerCase();
+    db._users.get(lowercase, function(err) {
+      if (err && err.error === 'not_found') {
+        // No user called lowercase. No conflict.
+        row.doc._id = lowercase;
+        row.doc.name = row.doc.name.toLowerCase();
+        return splitUser(row, callback);
       }
-      updateUser(row, callback);
+      return callback(new Error('Cannot create lowercase username ' + lowercase + ', user already exists.'));
     });
+  });
+};
+
+var splitUser = function(row, callback) {
+  var settings = _.omit(row.doc, fieldsToOmitFromSettings);
+  settings.type = 'user-settings';
+  // Convert string value to boolean value, otherwise validate_doc_update will reject.
+  if (settings.known === 'true') {
+    settings.known = true;
+  }
+  db.medic.insert(settings, function(err) {
+    if (err) {
+      return callback(err);
+    }
+    updateUser(row, callback);
   });
 };
 
@@ -46,7 +64,7 @@ module.exports = {
       if (err) {
         return callback(err);
       }
-      async.each(filterResults(result.rows), splitUser, callback);
+      async.each(filterResults(result.rows), migrateUser, callback);
     });
   }
 };

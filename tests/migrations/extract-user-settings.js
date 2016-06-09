@@ -213,7 +213,32 @@ exports['skips and does not fail when user-settings already exists'] = function(
     test.equals(userUpdate.args[0][0]._id, userB.id);
     test.done();
   });
-
 };
+
+exports['lowercases _id and name fields'] = function(test) {
+  test.expect(4);
+  userA.id = 'org.couchdb.user:Aa';
+  userA.key = 'org.couchdb.user:Aa';
+  userA.doc._id = 'org.couchdb.user:Aa';
+  userA.doc.name = 'Aa';
+
+  sinon.stub(db._users, 'list')
+    .callsArgWith(1, null, { rows: [ ddoc, userA ] });
+  // user-settings doesn't exist yet.
+  sinon.stub(db.medic, 'get').callsArgWith(1, { error: 'not_found'});
+  // _users doesn't exist yet.
+  sinon.stub(db._users, 'get').callsArgWith(1, { error: 'not_found'});
+  var medicInsert = sinon.stub(db.medic, 'insert').callsArg(1);
+  var userUpdate = sinon.stub(db._users, 'insert').callsArg(1);
+
+  migration.run(function() {
+    test.equal(medicInsert.args[0][0]._id, 'org.couchdb.user:aa');
+    test.equal(medicInsert.args[0][0].name, 'aa');
+    test.equal(userUpdate.args[0][0]._id, 'org.couchdb.user:aa');
+    test.equal(userUpdate.args[0][0].name, 'aa');
+    test.done();
+  });
+};
+
 
 

@@ -17,7 +17,10 @@ var error = function(migration, err) {
 var getMeta = function(callback) {
   db.medic.view('medic', 'doc_by_type', { include_docs: true, key: [ 'meta' ] }, function(err, meta) {
     if (err) {
-      return callback(err);
+      return callback(
+        new Error(
+          'Could not run migrations without doc_by_type view. Update ddoc. ' +
+          JSON.stringify(err)));
     }
     meta = meta && meta.rows && meta.rows[0] && meta.rows[0].doc;
     if (!meta) {
