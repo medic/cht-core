@@ -55,10 +55,11 @@ var getChanges = function(req, ids, callback) {
 };
 
 var prepareResponse = function(req, res, changes, verifiedIds) {
-  var allowed = _.every(changes.results, function(change) {
+  var rejected = _.reject(changes.results, function(change) {
     return change.deleted || _.contains(verifiedIds, change.id);
   });
-  if (!allowed) {
+  if (rejected.length) {
+    console.error('User attempting to replicate these docs without permission: ', _.pluck(rejected, 'id'));
     return res.write('Forbidden');
   }
   res.write(JSON.stringify(changes));
