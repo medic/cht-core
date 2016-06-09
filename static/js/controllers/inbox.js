@@ -102,14 +102,11 @@ var feedback = require('../modules/feedback'),
       $scope.errorSyntax = false;
       $scope.appending = false;
       $scope.languages = [];
-      $scope.forms = [];
       $scope.facilities = [];
       $scope.people = [];
-      $scope.totalItems = undefined;
       $scope.filterQuery = { value: undefined };
       $scope.version = APP_CONFIG.version;
       $scope.actionBar = {};
-      $scope.title = undefined;
       $scope.tours = [];
 
       $scope.baseUrl = Location.path;

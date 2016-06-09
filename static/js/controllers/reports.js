@@ -470,9 +470,14 @@ var _ = require('underscore'),
         $scope.search();
       };
 
-      $scope.$on('formLoadingComplete', function() {
+      if ($scope.forms) { // if forms are already loaded
         $scope.search();
-      });
+      } else { // otherwise wait for loading to complete
+        $scope.loading = true;
+        $scope.$on('formLoadingComplete', function() {
+          $scope.search();
+        });
+      }
 
       $('.inbox').on('click', '#reports-list .message-wrapper', function(e) {
         if ($scope.selectMode) {
