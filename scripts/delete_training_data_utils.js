@@ -171,6 +171,40 @@ var filterByType = function(docsList, type) {
   return filteredList;
 };
 
+// Only keep the persons that are family members.
+// Avoids deleting CHP contacts and district supervisors.
+var filterFamilyMembers = function(personsList, logdir) {
+  if (personsList.lenth === 0) {
+    console.log('Filtered for only family members : 0');
+    return [];
+  }
+  var groups = _.groupBy(personsList, function(person) {
+    if (!person.parent || person.parent.type === 'clinic') {
+      return 'familyMember';
+    }
+    return 'other';
+  });
+  return Promise.resolve()
+    .then(function() {
+      if (!groups.other) {
+        return;
+      }
+      console.log('Non-family members : ' + groups.other.length);
+      var undated = _.filter(groups.other, function(person) {
+        return !person.reported_date;
+      });
+      console.log('Non-family members without reported_date (should not exist!) : ' + undated.length);
+      return writeDocsToFile(logdir + '/NOT_DELETED_non_family_members.json', groups.other);
+    })
+    .then(function() {
+      if (!groups.familyMember) {
+        groups.familyMember = [];
+      }
+      console.log('Filtered for only family members : ' + groups.familyMember.length);
+      return groups.familyMember;
+    });
+};
+
 // Find which facilities (if any) this person is a contact for.
 var isContactFor = function(db, personId) {
   return db.query('medic/facilities_by_contact', {key: [personId], include_docs: true})
@@ -265,7 +299,31 @@ var writeDocsIdsToFile = function(filepath, docsList) {
     megaPromise = megaPromise.then(_.partial(_writeToFile, filepath, doc._id + '\n'));
   });
   return megaPromise.then(function() {
-      console.log('Wrote ' + docsList.length + ' docs to file ' + filepath);
+      console.log('Wrote ' + docsList.length + ' doc ids to file ' + filepath);
+      return docsList;
+    });
+};
+
+var writeDocsDatesToFile = function(filepath, docsList) {
+  if (docsList.length === 0) {
+    // don't write empty files.
+    return docsList;
+  }
+  var megaPromise = Promise.resolve();
+  _.each(docsList, function(doc) {
+    var date = new Date(doc.reported_date);
+    var name = '';
+    if (doc.type === 'data_record' || doc.type === 'clinic') {
+      name = doc.contact.name;
+    }
+    if (doc.type === 'person') {
+      name = doc.name;
+    }
+    megaPromise = megaPromise.then(_.partial(_writeToFile, filepath,
+      date + ' --- ' + doc.reported_date + ' --- ' + doc._id + ' --- ' + name + '\n'));
+  });
+  return megaPromise.then(function() {
+      console.log('Wrote ' + docsList.length + ' doc dates to file ' + filepath);
       return docsList;
     });
 };
@@ -327,6 +385,7 @@ module.exports = {
   fetchBranch: fetchBranch,
   filterByType: filterByType,
   filterByDate: filterByDate,
+  filterFamilyMembers: filterFamilyMembers,
   getContactsForPlace: getContactsForPlace,
   getDataRecordsForBranch: getDataRecordsForBranch,
   printoutDbStats: printoutDbStats,
@@ -334,5 +393,6 @@ module.exports = {
   setupLogging: setupLogging,
   userConfirm: userConfirm,
   writeDocsIdsToFile: writeDocsIdsToFile,
+  writeDocsDatesToFile: writeDocsDatesToFile,
   writeDocsToFile: writeDocsToFile
 };

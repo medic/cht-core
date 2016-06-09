@@ -37,9 +37,10 @@ db.get(placeId)
   })
   .then(function(docs) {
     return Promise.resolve()
-          .then(_.partial(utils.writeDocsToFile, logdir + '/contacts_deleted.json', docs))
-          .then(_.partial(utils.writeDocsIdsToFile, logdir + '/contacts_deleted_ids.json', docs))
-          .then(_.partial(utils.deleteDocs, dryrun, db, docs));
+          .then(_.partial(utils.filterFamilyMembers, docs))
+          .then(_.partial(utils.writeDocsToFile, logdir + '/contacts_deleted.json', _))
+          .then(_.partial(utils.writeDocsIdsToFile, logdir + '/contacts_deleted_ids.json', _))
+          .then(_.partial(utils.deleteDocs, dryrun, db, _));
   })
   .catch(function(err) {
       console.log(err);

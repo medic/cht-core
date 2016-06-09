@@ -153,6 +153,7 @@ var deletePersons = function(db, dryrun, branchId, users, startTimestamp, endTim
       return Promise.resolve()
         .then(_.partial(utils.filterByDate, docs, startTimestamp, endTimestamp))
         .then(_.partial(utils.filterByType, _, 'person'))
+        .then(_.partial(utils.filterFamilyMembers, _))
         .then(_.partial(filterPersonsForGroup, _, users))
         // Remove contact links
         .then(_.partial(utils.cleanContactPersons, db, dryrun, logdir))
