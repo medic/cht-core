@@ -19,6 +19,7 @@ describe('GenerateSearchRequests service', function() {
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0]).to.deep.equal({
       view: 'reports_by_date',
+      ordered: true,
       params: {
         descending: true
       }
@@ -27,7 +28,7 @@ describe('GenerateSearchRequests service', function() {
 
   describe('form filter', function() {
 
-    it('all selected', function() {
+    it('all selected executes the unfiltered search', function() {
       var filters = {
         forms: {
           selected: [ { code: 'P' }, { code: 'R' } ],
@@ -38,6 +39,7 @@ describe('GenerateSearchRequests service', function() {
       chai.expect(result.length).to.equal(1);
       chai.expect(result[0]).to.deep.equal({
         view: 'reports_by_date',
+        ordered: true,
         params: {
           descending: true
         }
@@ -149,6 +151,7 @@ describe('GenerateSearchRequests service', function() {
     var result = service('contacts', {});
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0]).to.deep.equal({
+      ordered: true,
       view: 'contacts_by_name'
     });
   });

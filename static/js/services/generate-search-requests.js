@@ -133,6 +133,7 @@ var _ = require('underscore'),
         reports: {
           getUnfiltered: function() {
             return {
+              ordered: true,
               view: 'reports_by_date',
               params: { descending: true }
             };
@@ -150,6 +151,7 @@ var _ = require('underscore'),
         contacts: {
           getUnfiltered: function() {
             return {
+              ordered: true,
               view: 'contacts_by_name'
             };
           },
