@@ -999,8 +999,8 @@ Document update conflict.
 ## POST /api/v1/users/{{username}}
 
 Allows you to change property values on a user account. Properties listed above
-are supported except for `contact.parent`.  Creating or modifing person
-records is not supported.
+are supported except for `contact.parent`.  Creating or modifying people
+through the user is not supported, see People section.
 
 ### Permissions
 
