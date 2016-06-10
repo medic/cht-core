@@ -60,7 +60,7 @@ var prepareResponse = function(req, res, changes, verifiedIds) {
   });
   if (rejected.length) {
     console.error('User attempting to replicate these docs without permission: ', _.pluck(rejected, 'id'));
-    return res.write('Forbidden');
+    return res.write(JSON.stringify({ error: 'Forbidden' }));
   }
   res.write(JSON.stringify(changes));
 };
