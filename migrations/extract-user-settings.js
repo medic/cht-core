@@ -8,10 +8,12 @@ var fieldsToIncludeInUser = fieldsToOmitFromSettings.concat(fieldsToIncludeInBot
 
 var updateUser = function(row, callback) {
   var user = _.pick(row.doc, fieldsToIncludeInUser);
+  console.log('inserting _user', user);
   db._users.insert(user, callback);
 };
 
 var migrateUser = function(row, callback) {
+  console.log('migrating user', row.doc._id);
   db.medic.get(row.doc._id, function(err) {
     if (!err) {
       // Doc already exists, no need to migrate.
@@ -21,15 +23,25 @@ var migrateUser = function(row, callback) {
       return splitUser(row, callback);
     }
     // Uppercase in the login! Change it to lowercase.
-    var lowercase = row.doc._id.toLowerCase();
-    db._users.get(lowercase, function(err) {
-      if (err && err.error === 'not_found') {
-        // No user called lowercase. No conflict.
-        row.doc._id = lowercase;
-        row.doc.name = row.doc.name.toLowerCase();
-        return splitUser(row, callback);
+    var lowercaseId = row.doc._id.toLowerCase();
+    db._users.get(lowercaseId, function(err) {
+      if (!err || err.error !== 'not_found') {
+        // Existing user called lowercase. Conflict!
+        return callback(new Error('Cannot create lowercase username ' + lowercase + ', user already exists.'));
       }
-      return callback(new Error('Cannot create lowercase username ' + lowercase + ', user already exists.'));
+      var uppercaseUser = _.pick(row.doc, fieldsToIncludeInUser);
+      row.doc._id = lowercaseId;
+      row.doc.name = row.doc.name.toLowerCase();
+      delete row.doc._rev;
+      return splitUser(row, function(err) {
+        if (err) {
+          return callback(err);
+        }
+        console.log('inserted _user');
+        uppercaseUser._deleted = true;
+        console.log('inserting _user', uppercaseUser);
+        db._users.insert(uppercaseUser, callback);
+      });
     });
   });
 };
@@ -41,10 +53,12 @@ var splitUser = function(row, callback) {
   if (settings.known === 'true') {
     settings.known = true;
   }
+  console.log('inserting user-settings', settings);
   db.medic.insert(settings, function(err) {
     if (err) {
       return callback(err);
     }
+    console.log('inserted user-settings');
     updateUser(row, callback);
   });
 };
@@ -63,7 +77,8 @@ module.exports = {
       if (err) {
         return callback(err);
       }
-      async.each(filterResults(result.rows), migrateUser, callback);
+      // Run only one at a time, in case there are duplicate uppercase vs lowercase users.
+      async.eachSeries(filterResults(result.rows), migrateUser, callback);
     });
   }
 };

@@ -216,7 +216,7 @@ exports['skips and does not fail when user-settings already exists'] = function(
 };
 
 exports['lowercases _id and name fields'] = function(test) {
-  test.expect(4);
+  test.expect(11);
   userA.id = 'org.couchdb.user:Aa';
   userA.key = 'org.couchdb.user:Aa';
   userA.doc._id = 'org.couchdb.user:Aa';
@@ -232,10 +232,21 @@ exports['lowercases _id and name fields'] = function(test) {
   var userUpdate = sinon.stub(db._users, 'insert').callsArg(1);
 
   migration.run(function() {
+    test.equal(medicInsert.callCount, 1);
     test.equal(medicInsert.args[0][0]._id, 'org.couchdb.user:aa');
     test.equal(medicInsert.args[0][0].name, 'aa');
+
+    test.equal(userUpdate.callCount, 2);
+    // inserted lowercase
     test.equal(userUpdate.args[0][0]._id, 'org.couchdb.user:aa');
     test.equal(userUpdate.args[0][0].name, 'aa');
+    test.equal(userUpdate.args[0][0]._rev, null);
+    // deleted uppercase
+    test.equal(userUpdate.args[1][0]._id, 'org.couchdb.user:Aa');
+    test.equal(userUpdate.args[1][0].name, 'Aa');
+    test.equal(userUpdate.args[0][0]._rev, userA.doc._rev);
+    test.equal(userUpdate.args[1][0]._deleted, true);
+
     test.done();
   });
 };
