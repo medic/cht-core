@@ -8,12 +8,10 @@ var fieldsToIncludeInUser = fieldsToOmitFromSettings.concat(fieldsToIncludeInBot
 
 var updateUser = function(row, callback) {
   var user = _.pick(row.doc, fieldsToIncludeInUser);
-  console.log('inserting _user', user);
   db._users.insert(user, callback);
 };
 
 var migrateUser = function(row, callback) {
-  console.log('migrating user', row.doc._id);
   db.medic.get(row.doc._id, function(err) {
     if (!err) {
       // Doc already exists, no need to migrate.
@@ -37,9 +35,7 @@ var migrateUser = function(row, callback) {
         if (err) {
           return callback(err);
         }
-        console.log('inserted _user');
         uppercaseUser._deleted = true;
-        console.log('inserting _user', uppercaseUser);
         db._users.insert(uppercaseUser, callback);
       });
     });
@@ -53,12 +49,10 @@ var splitUser = function(row, callback) {
   if (settings.known === 'true') {
     settings.known = true;
   }
-  console.log('inserting user-settings', settings);
   db.medic.insert(settings, function(err) {
     if (err) {
       return callback(err);
     }
-    console.log('inserted user-settings');
     updateUser(row, callback);
   });
 };
