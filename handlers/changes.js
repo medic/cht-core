@@ -34,7 +34,6 @@ var getUsersDocIds = function(req, userCtx, callback) {
         return callback(err);
       }
       var ids = _.pluck(viewResult.rows, 'id');
-      ids.push('resources');
       ids.push('org.couchdb.user:' + userCtx.name);
       callback(null, ids);
     });

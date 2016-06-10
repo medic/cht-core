@@ -75,7 +75,6 @@ exports['filters the changes to relevant ones'] = function(test) {
   var deletedId = 'abc';
   var allowedId = 'def';
   var unchangedId = 'klm';
-  var resourcesId = 'resources';
   var userId = 'org.couchdb.user:mobile';
 
   var testReq = {
@@ -134,7 +133,7 @@ exports['filters the changes to relevant ones'] = function(test) {
         test.equals(result.results[1].id, allowedId);
         test.equals(db.request.callCount, 1);
         test.equals(db.request.args[0][0].path, '_changes');
-        test.deepEqual(db.request.args[0][0].body.doc_ids, [ deletedId, unchangedId, allowedId, resourcesId, userId ]);
+        test.deepEqual(db.request.args[0][0].body.doc_ids, [ deletedId, unchangedId, allowedId, userId ]);
         test.equals(db.request.args[0][0].method, 'POST');
         test.equals(db.request.args[0][0].qs.since, 1);
         test.equals(db.request.args[0][0].qs.heartbeat, 10000);
