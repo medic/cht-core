@@ -8,8 +8,21 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('AnalyticsStockCtrl',
-    ['$scope', '$log', '$timeout', 'UserDistrict', 'Facility', 'Settings', 'DB', 'ScheduledForms', 'DbView', 'ChildFacility', 'FormatDataRecord',
-    function ($scope, $log, $timeout, UserDistrict, Facility, Settings, DB, ScheduledForms, DbView, ChildFacility, FormatDataRecord) {
+    function (
+      $log,
+      $scope,
+      $timeout,
+      ChildFacility,
+      DB,
+      DbView,
+      Facility,
+      FormatDataRecord,
+      ScheduledForms,
+      Settings,
+      UserDistrict
+    ) {
+
+      'ngInject';
 
       $scope.facilities = [];
       $scope.districts = [];
@@ -168,26 +181,24 @@ var _ = require('underscore'),
           });
       };
 
-      UserDistrict(function(err, district) {
-
-        if (err) {
-          return $log.error('Error fetching district', err);
-        }
-
-        if (district) {
-          $scope.setDistrict(district);
-        } else {
-          // national admin
-          Facility({types: ['district_hospital']}, function(err, districts) {
-            if (err) {
-              $log.error(err);
-            }
-            $scope.districts = districts;
-          });
-        }
-
-      });
+      UserDistrict()
+        .then(function(district) {
+          if (district) {
+            $scope.setDistrict(district);
+          } else {
+            // national admin
+            Facility({types: ['district_hospital']}, function(err, districts) {
+              if (err) {
+                $log.error(err);
+              }
+              $scope.districts = districts;
+            });
+          }
+        })
+        .catch(function(err) {
+          $log.error('Error fetching district', err);
+        });
     }
-  ]);
+  );
 
 }());

@@ -1,4 +1,6 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    ALL_KEY = [ '_all' ], // key in the doc_by_place view for records everyone can access
+    UNASSIGNED_KEY = [ '_unassigned' ]; // key in the doc_by_place view for unassigned records
 
 (function () {
 
@@ -23,11 +25,39 @@ var _ = require('underscore');
     function(
       $log,
       $q,
+      Auth,
       DB,
-      Session
+      Session,
+      Settings,
+      UserDistrict
     ) {
 
       'ngInject';
+
+      var getViewKeys = function() {
+        var keys = [ ALL_KEY ];
+        return UserDistrict()
+          .then(function(facilityId) {
+            if (facilityId) {
+              keys.push([ facilityId ]);
+            }
+          })
+          .then(Settings)
+          .then(function(settings) {
+            if (settings.district_admins_access_unallocated_messages) {
+              return Auth('can_view_unallocated_data_records')
+                .then(function() {
+                  keys.push(UNASSIGNED_KEY);
+                })
+                .catch(function() {
+                  // can't view unallocated - swallow and continue
+                });
+            }
+          })
+          .then(function() {
+            return keys;
+          });
+      };
 
       var getOptions = function(direction, options) {
         options = options || {};
@@ -39,9 +69,18 @@ var _ = require('underscore');
           back_off_function: backOffFunction
         });
         if (direction === 'from') {
-          return DB.get().allDocs()
-            .then(function(res) {
-              options.doc_ids = _.without(_.pluck(res.rows, 'id'), '_design/medic');
+          return getViewKeys()
+            .then(function(keys) {
+              return DB.get().query('medic/doc_by_place', { keys: keys });
+            })
+            .then(function(viewResult) {
+              var userCtx = Session.userCtx();
+              var ids = _.pluck(viewResult.rows, 'id');
+              ids.push('org.couchdb.user:' + userCtx && userCtx.name);
+              return ids;
+            })
+            .then(function(ids) {
+              options.doc_ids = ids;
               return options;
             });
         } else {
@@ -60,39 +99,43 @@ var _ = require('underscore');
       var replicateTiming = {};
 
       var replicate = function(direction, options) {
-        return getOptions(direction, options).then(function(options) {
-          replicateTiming[direction] = {};
-          replicateTiming[direction].start =
-            replicateTiming[direction].last = Date.now();
+        return getOptions(direction, options)
+          .then(function(options) {
+            replicateTiming[direction] = {};
+            replicateTiming[direction].start =
+              replicateTiming[direction].last = Date.now();
 
-          return DB.get().replicate[direction](DB.getRemote(), options)
-            .on('denied', function(err) {
-              // In theory this could be caused by 401s
-              // TODO: work out what `err` looks like and navigate to login
-              // when we detect it's a 401
-              $log.error('Denied replicating ' + direction + ' remote server', err);
-            })
-            .on('error', function(err) {
-              $log.error('Error replicating ' + direction + ' remote server', err);
-            })
-            .on('paused', function() {
-              var now = Date.now();
-              var start = replicateTiming[direction].start;
-              var last = replicateTiming[direction].last;
-              replicateTiming[direction].last = now;
+            return DB.get().replicate[direction](DB.getRemote(), options)
+              .on('denied', function(err) {
+                // In theory this could be caused by 401s
+                // TODO: work out what `err` looks like and navigate to login
+                // when we detect it's a 401
+                $log.error('Denied replicating ' + direction + ' remote server', err);
+              })
+              .on('error', function(err) {
+                $log.error('Error replicating ' + direction + ' remote server', err);
+              })
+              .on('paused', function() {
+                var now = Date.now();
+                var start = replicateTiming[direction].start;
+                var last = replicateTiming[direction].last;
+                replicateTiming[direction].last = now;
 
-              $log.info('Replicate ' + direction + ' hitting pause after ' +
-                ((now - start) / 1000) +
-                ' total seconds, with ' +
-                ((now - last) / 1000) +
-                ' seconds between pauses.', start, last, now);
-            })
-            .on('complete', function (info) {
-              if (!info.ok && authenticationIssue(info.errors)) {
-                Session.navigateToLogin();
-              }
-            });
-        });
+                $log.info('Replicate ' + direction + ' hitting pause after ' +
+                  ((now - start) / 1000) +
+                  ' total seconds, with ' +
+                  ((now - last) / 1000) +
+                  ' seconds between pauses.', start, last, now);
+              })
+              .on('complete', function (info) {
+                if (!info.ok && authenticationIssue(info.errors)) {
+                  Session.navigateToLogin();
+                }
+              });
+          })
+          .catch(function(err) {
+            $log.error('Error getting sync options', err);
+          });
 
       };
 

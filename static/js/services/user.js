@@ -6,51 +6,51 @@ var utils = require('kujua-utils');
 
   var inboxServices = angular.module('inboxServices');
 
-  var getWithRemoteFallback = function(DB, id, callback) {
-    DB.get()
+  var getWithRemoteFallback = function(DB, id) {
+    return DB.get()
       .get(id)
-      .then(function(response) {
-        callback(null, response);
-      })
       .catch(function() {
         // might be first load - try the remote db
-        DB.getRemote()
-          .get(id)
-          .then(function(response) {
-            callback(null, response);
-          })
-          .catch(callback);
+        return DB.getRemote().get(id);
       });
   };
 
-  inboxServices.factory('UserDistrict', ['DB', 'UserSettings', 'Session',
-    function(DB, UserSettings, Session) {
-      return function(callback) {
+  inboxServices.factory('UserDistrict',
+    function(
+      $q,
+      DB,
+      Session
+    ) {
+      'ngInject';
+
+      return function() {
         var userCtx = Session.userCtx();
         if (!userCtx || !userCtx.name) {
-          return callback(new Error('Not logged in'));
+          return $q.reject(new Error('Not logged in'));
         }
         if (Session.isAdmin()) {
-          return callback();
+          return $q.resolve();
         }
         if (!utils.isUserDistrictAdmin(userCtx)) {
-          return callback(new Error('The administrator needs to give you additional privileges to use this site.'));
+          return $q.reject(new Error('The administrator needs to give you additional privileges to use this site.'));
         }
-        UserSettings(function(err, user) {
-          if (err) {
-            return callback(err);
-          }
-          if (!user.facility_id) {
-            return callback(new Error('No district assigned to district admin.'));
-          }
-          // ensure the facility exists
-          getWithRemoteFallback(DB, user.facility_id, function(err) {
-            callback(err, user.facility_id);
+        return getWithRemoteFallback(DB, 'org.couchdb.user:' + userCtx.name)
+          .then(function(user) {
+            if (!user.facility_id) {
+              return $q.reject(new Error('No district assigned to district admin.'));
+            }
+            return user.facility_id;
+          })
+          .then(function(facilityId) {
+            // ensure the facility exists
+            return getWithRemoteFallback(DB, facilityId)
+              .then(function() {
+                return facilityId;
+              });
           });
-        });
       };
     }
-  ]);
+  );
 
   inboxServices.factory('UserSettings', ['DB', 'Session',
     function(DB, Session) {
@@ -59,7 +59,11 @@ var utils = require('kujua-utils');
         if (!userCtx) {
           return callback(new Error('UserCtx not found.'));
         }
-        getWithRemoteFallback(DB, 'org.couchdb.user:' + userCtx.name, callback);
+        getWithRemoteFallback(DB, 'org.couchdb.user:' + userCtx.name)
+          .then(function(user) {
+            callback(null, user);
+          })
+          .catch(callback);
       };
     }
   ]);

@@ -5,9 +5,23 @@ var _ = require('underscore');
   'use strict';
 
   var inboxControllers = angular.module('inboxControllers');
-  inboxControllers.controller('ContactsEditCtrl', [
-    '$log', '$scope', '$state', '$q', '$translate', 'ContactForm', 'ContactSchema', 'DB', 'Enketo', 'EnketoTranslation', 'UserDistrict', 'Snackbar',
-    function ($log, $scope, $state, $q, $translate, ContactForm, ContactSchema, DB, Enketo, EnketoTranslation, UserDistrict, Snackbar) {
+  inboxControllers.controller('ContactsEditCtrl',
+    function (
+      $log,
+      $q,
+      $scope,
+      $state,
+      $translate,
+      ContactForm,
+      ContactSchema,
+      DB,
+      Enketo,
+      EnketoTranslation,
+      Snackbar,
+      UserDistrict
+    ) {
+
+      'ngInject';
 
       DB = DB.get();
 
@@ -19,30 +33,24 @@ var _ = require('underscore');
       });
 
       var getVisibleLevel = function() {
-        return $q(function(resolve, reject) {
-          UserDistrict(function(err, facility_id) {
-            if (err) {
-              return reject(err);
+        return UserDistrict()
+          .then(function(facilityId) {
+            if (!facilityId) {
+              return $q.resolve();
             }
-            if (!facility_id) {
-              return resolve();
+            return DB.get(facilityId);
+          })
+          .then(function(doc) {
+            return doc.type;
+          })
+          .catch(function(err) {
+            if (err.status === 404) {
+              // TODO it seems like my user can't access its own facility object.
+              // This is likely a local issue, so here's what should happen above.
+              return 'health_center';
             }
-            DB.get(facility_id)
-              .then(function(doc) {
-                resolve(doc.type);
-              })
-              .catch(function(err) {
-                if (err.status !== 404) {
-                  return reject(err);
-                }
-
-                // TODO it seems like my user can't access its own facility object.
-                // This is likely a local issue, so here's what should happen above.
-                resolve('health_center');
-              })
-              .catch(reject);
+            throw err;
           });
-        });
       };
 
       var setupSchemas = function() {
@@ -372,6 +380,6 @@ var _ = require('underscore');
       });
 
     }
-  ]);
+  );
 
 }());

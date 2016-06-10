@@ -106,15 +106,16 @@ var _ = require('underscore');
       };
 
       var updateParentLink = function() {
-        UserDistrict(function(err, district) {
-          if (err) {
-            return $log.error('Error getting user district', err);
-          }
-          var parentId = $scope.selected.doc &&
-                         $scope.selected.doc.parent &&
-                         $scope.selected.doc.parent._id;
-          $scope.showParentLink = parentId && district !== parentId;
-        });
+        UserDistrict()
+          .then(function(district) {
+            var parentId = $scope.selected.doc &&
+                           $scope.selected.doc.parent &&
+                           $scope.selected.doc.parent._id;
+            $scope.showParentLink = parentId && district !== parentId;
+          })
+          .catch(function(err) {
+            $log.error('Error getting user district', err);
+          });
       };
 
       var mergeTasks = function(tasks) {
