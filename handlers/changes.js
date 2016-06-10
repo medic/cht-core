@@ -4,8 +4,7 @@ var _ = require('underscore'),
     serverUtils = require('../server-utils'),
     db = require('../db'),
     ALL_KEY = [ '_all' ], // key in the doc_by_place view for records everyone can access
-    UNASSIGNED_KEY = [ '_unassigned' ], // key in the doc_by_place view for unassigned records
-    HEARTBEAT_FEEDS = [ 'longpoll', 'continuous' ];
+    UNASSIGNED_KEY = [ '_unassigned' ]; // key in the doc_by_place view for unassigned records
 
 var getViewKeys = function(req, userCtx, callback) {
   auth.getFacilityId(req, userCtx, function(err, facilityId) {
@@ -83,9 +82,7 @@ var getRequestIds = function(req, callback) {
 };
 
 var defibrillator = function(req, res) {
-  if (req.query &&
-      req.query.heartbeat &&
-      HEARTBEAT_FEEDS.indexOf(req.query.feed) !== -1) {
+  if (req.query && req.query.heartbeat) {
     return setInterval(function() {
       res.write('\n');
     }, req.query.heartbeat);
