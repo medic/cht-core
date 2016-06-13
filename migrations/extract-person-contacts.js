@@ -20,7 +20,8 @@ var extract = function(row, callback) {
     db.medic.insert({
       type: 'person',
       name: doc.contact.name,
-      phone: doc.contact.phone
+      phone: doc.contact.phone,
+      parent: doc
     }, function(err, result) {
       if (err) {
         return callback(err);
