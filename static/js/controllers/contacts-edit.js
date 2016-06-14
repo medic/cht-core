@@ -23,8 +23,6 @@ var _ = require('underscore');
 
       'ngInject';
 
-      DB = DB.get();
-
       $scope.loadingContent = true;
       $scope.loadingTypes = true;
       $scope.setShowContent(true);
@@ -38,7 +36,7 @@ var _ = require('underscore');
             if (!facilityId) {
               return $q.resolve();
             }
-            return DB.get(facilityId);
+            return DB.get().get(facilityId);
           })
           .then(function(doc) {
             return doc.type;
@@ -113,7 +111,7 @@ var _ = require('underscore');
 
       var getContact = function() {
         if ($state.params.id) {
-          return DB.get($state.params.id);
+          return DB.get().get($state.params.id);
         }
         return $q.resolve();
       };
@@ -226,7 +224,7 @@ var _ = require('underscore');
         return $q.resolve()
           .then(function() {
             if(docId) {
-              return DB.get(docId);
+              return DB.get().get(docId);
             }
             return null;
           })
@@ -252,14 +250,14 @@ var _ = require('underscore');
 
         var put;
         if(doc._id) {
-          put = DB.put(doc);
+          put = DB.get().put(doc);
         } else {
           doc.reported_date = Date.now();
-          put = DB.post(doc);
+          put = DB.get().post(doc);
         }
         return put
           .then(function(response) {
-            return DB.get(response.id);
+            return DB.get().get(response.id);
           });
       }
 
@@ -318,7 +316,7 @@ var _ = require('underscore');
                 if (typeof docId === 'object') {
                   docId = doc[f]._id;
                 }
-                return DB.get(doc[f])
+                return DB.get().get(doc[f])
                   .then(function(dbFieldValue) {
                     doc[f] = dbFieldValue;
                     return doc;
@@ -350,7 +348,7 @@ var _ = require('underscore');
             return $q
               .all(_.map(children, function(child) {
                 child.parent = doc;
-                return DB.put(child);
+                return DB.get().put(child);
               }))
               .then(function() {
                 return doc;
