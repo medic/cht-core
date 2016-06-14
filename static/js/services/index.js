@@ -18,7 +18,7 @@
   require('./db-sync');
   require('./db-view');
   require('./debug');
-  require('./delete-doc');
+  require('./delete-docs');
   require('./download-url');
   require('./edit-group');
   require('./enketo');

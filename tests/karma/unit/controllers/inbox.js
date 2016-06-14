@@ -50,7 +50,7 @@ describe('InboxCtrl controller', function() {
           init: sinon.stub()
         };
       });
-      $provide.factory('DeleteDoc', function() {
+      $provide.factory('DeleteDocs', function() {
         return KarmaUtils.nullPromise();
       });
       $provide.factory('XmlForms', function() {
@@ -75,7 +75,7 @@ describe('InboxCtrl controller', function() {
       });
       $provide.factory('Modal', function() {
         stubModal = sinon.stub();
-        // ConfirmModal : Always return as if user clicked delete. This ignores the DeleteDoc
+        // ConfirmModal : Always return as if user clicked delete. This ignores the DeleteDocs
         // altogether. The calling of the processingFunction is tested in
         // modal.js, not here.
         stubModal.returns(KarmaUtils.mockPromise());

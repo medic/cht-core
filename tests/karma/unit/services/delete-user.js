@@ -4,18 +4,18 @@ describe('DeleteUser service', function() {
 
   var service,
       $httpBackend,
-      DeleteDoc,
+      DeleteDocs,
       get,
       cacheRemove;
 
   beforeEach(function() {
     module('inboxApp');
     cacheRemove = sinon.stub();
-    DeleteDoc = sinon.stub();
+    DeleteDocs = sinon.stub();
     get = sinon.stub();
     module(function ($provide) {
-      $provide.factory('DeleteDoc', function() {
-        return DeleteDoc;
+      $provide.factory('DeleteDocs', function() {
+        return DeleteDocs;
       });
       $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
     });
@@ -35,7 +35,7 @@ describe('DeleteUser service', function() {
   afterEach(function() {
     $httpBackend.verifyNoOutstandingExpectation();
     $httpBackend.verifyNoOutstandingRequest();
-    KarmaUtils.restore(cacheRemove, DeleteDoc, get);
+    KarmaUtils.restore(cacheRemove, DeleteDocs, get);
   });
 
   it('returns errors', function(done) {
@@ -84,7 +84,7 @@ describe('DeleteUser service', function() {
       .respond({ success: true });
 
     get.returns(KarmaUtils.mockPromise(null, { _id: 'org.couchdb.user:gareth' }));
-    DeleteDoc.returns(KarmaUtils.mockPromise());
+    DeleteDocs.returns(KarmaUtils.mockPromise());
 
     service({
       id: 'org.couchdb.user:gareth',
@@ -94,8 +94,8 @@ describe('DeleteUser service', function() {
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.args[0][0]).to.equal('org.couchdb.user:gareth');
 
-      chai.expect(DeleteDoc.callCount).to.equal(1);
-      chai.expect(DeleteDoc.args[0][0]._id).to.equal('org.couchdb.user:gareth');
+      chai.expect(DeleteDocs.callCount).to.equal(1);
+      chai.expect(DeleteDocs.args[0][0]._id).to.equal('org.couchdb.user:gareth');
 
       chai.expect(cacheRemove.callCount).to.equal(3);
       chai.expect(cacheRemove.args[0][0]).to.equal('/_users/org.couchdb.user%3Agareth');

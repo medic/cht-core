@@ -1,4 +1,4 @@
-describe('DeleteDoc service', function() {
+describe('DeleteDocs service', function() {
 
   'use strict';
 
@@ -14,8 +14,8 @@ describe('DeleteDoc service', function() {
       $provide.factory('DB', KarmaUtils.mockDB({ bulkDocs: bulkDocs, get: get }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
-    inject(function(_DeleteDoc_) {
-      service = _DeleteDoc_;
+    inject(function(_DeleteDocs_) {
+      service = _DeleteDocs_;
     });
   });
 

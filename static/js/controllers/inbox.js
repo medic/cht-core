@@ -31,7 +31,7 @@ var feedback = require('../modules/feedback'),
       CountMessages,
       DB,
       DBSync,
-      DeleteDoc,
+      DeleteDocs,
       Enketo,
       Facility,
       FacilityHierarchy,
@@ -633,7 +633,7 @@ var feedback = require('../modules/feedback'),
               if (!docs || !docs.length) {
                 return $q.reject(new Error('Error deleting document: no doc selected'));
               }
-              return DeleteDoc(docs);
+              return DeleteDocs(docs);
             },
             model: { docs: docs }
           }

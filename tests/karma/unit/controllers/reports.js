@@ -75,7 +75,7 @@ describe('ReportsCtrl controller', function() {
         'MarkRead': MarkRead,
         'Search': Search,
         'Verified': {},
-        'DeleteDoc': {},
+        'DeleteDocs': {},
         'UpdateFacility': {},
         'MessageState': {},
         'EditGroup': {},

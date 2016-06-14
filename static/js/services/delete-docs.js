@@ -6,7 +6,7 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('DeleteDoc',
+  inboxServices.factory('DeleteDocs',
     function(
       $q,
       DB

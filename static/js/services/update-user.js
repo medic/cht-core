@@ -17,8 +17,17 @@ var _ = require('underscore');
     cache.remove('/_config/admins');
   };
 
-  inboxServices.factory('UpdateUser', ['$log', '$cacheFactory', '$http', 'DB', 'Admins', '$q',
-    function($log, $cacheFactory, $http, DB, Admins, $q) {
+  inboxServices.factory('UpdateUser',
+    function(
+      $cacheFactory,
+      $http,
+      $q,
+      $log,
+      Admins,
+      DB
+    ) {
+
+      'ngInject';
 
       var createId = function(name) {
         return 'org.couchdb.user:' + name;
@@ -125,10 +134,17 @@ var _ = require('underscore');
           });
       };
     }
-  ]);
+  );
 
-  inboxServices.factory('DeleteUser', ['$cacheFactory', '$http', 'DB', 'DeleteDoc',
-    function($cacheFactory, $http, DB, DeleteDoc) {
+  inboxServices.factory('DeleteUser',
+    function(
+      $cacheFactory,
+      $http,
+      DB,
+      DeleteDocs
+    ) {
+
+      'ngInject';
 
       var deleteUser = function(id, callback) {
         var url = getUserUrl(id);
@@ -157,12 +173,12 @@ var _ = require('underscore');
           removeCacheEntry($cacheFactory, id);
           DB.get()
             .get(id)
-            .then(DeleteDoc)
+            .then(DeleteDocs)
             .then(callback)
             .catch(callback);
         });
       };
     }
-  ]);
+  );
 
 }());
