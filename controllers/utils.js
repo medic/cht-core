@@ -11,7 +11,11 @@ var parseDate = function(str) {
 };
 
 var isDateStrValid = function(str) {
-  return moment(str, 'YYYY-MM-DDTHH:mm:ssZ', true).isValid();
+  var formats = [
+    'YYYY-MM-DDTHH:mm:ssZ',
+    'YYYY-MM-DDTHH:mm:ss.SSSZ'
+  ];
+  return moment(str, formats, true).isValid();
 };
 
 var formatDate = function(date) {

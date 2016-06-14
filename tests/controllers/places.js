@@ -1,5 +1,6 @@
 var controller = require('../../controllers/places'),
     people = require('../../controllers/people'),
+    cutils = require('../../controllers/utils'),
     db = require('../../db'),
     utils = require('../utils'),
     sinon = require('sinon');
@@ -13,7 +14,8 @@ exports.tearDown = function (callback) {
     controller.getPlace,
     controller._createPlace,
     controller._validatePlace,
-    people.getOrCreatePerson
+    people.getOrCreatePerson,
+    cutils.isDateStrValid
   );
   callback();
 };
@@ -270,69 +272,18 @@ exports['createPlaces supports parents defined as uuids.'] = function(test) {
   });
 };
 
-exports['createPlaces rejects reported_date formatted as integer.'] = function(test) {
+exports['createPlaces rejects invalid reported_date.'] = function(test) {
   var place = {
     name: 'Test',
-    reported_date: 1234,
-    type: 'district_hospital'
+    type: 'district_hospital',
+    reported_date: 'x'
   };
-  controller._createPlaces(place, function(err) {
+  sinon.stub(cutils, 'isDateStrValid').returns(false);
+  controller.createPlace(place, function(err) {
     test.equal(err.code, 400);
-    test.equal(err.message, 'Reported date is invalid: 1234');
+    test.equal(err.message, 'Reported date is invalid: x');
     test.done();
   });
-};
-
-exports['createPlaces rejects reported_date missing timezone.'] = function(test) {
-  var place = {
-    name: 'Test',
-    reported_date: '2011-10-10T14:48:00',
-    type: 'district_hospital'
-  };
-  controller._createPlaces(place, function(err) {
-    test.equal(err.code, 400);
-    test.equal(err.message, 'Reported date is invalid: 2011-10-10T14:48:00');
-    test.done();
-  });
-};
-
-exports['createPlaces rejects reported_date with timezone with 5 digits.'] = function(test) {
-  var place = {
-    name: 'Test',
-    reported_date: '2011-10-10T14:48:00-00000',
-    type: 'district_hospital'
-  };
-  controller._createPlaces(place, function(err) {
-    test.equal(err.code, 400);
-    test.equal(err.message, 'Reported date is invalid: 2011-10-10T14:48:00-00000');
-    test.done();
-  });
-};
-
-exports['createPlaces accepts properly formatted reported_date field.'] = function(test) {
-  var place = {
-    name: 'Test',
-    reported_date: '2011-10-10T14:48:00-03',
-    type: 'district_hospital'
-  };
-  sinon.stub(db.medic, 'insert', function(doc) {
-    test.equal(doc.reported_date, 1318268880000);
-    test.done();
-  });
-  controller._createPlaces(place);
-};
-
-exports['createPlaces accepts reported_date with 4 digit timezone.'] = function(test) {
-  var place = {
-    name: 'Test',
-    reported_date: '2011-10-10T14:48:00-0330',
-    type: 'district_hospital'
-  };
-  sinon.stub(db.medic, 'insert', function(doc) {
-    test.equal(doc.reported_date, 1318270680000);
-    test.done();
-  });
-  controller._createPlaces(place);
 };
 
 exports['createPlaces sets a default reported_date.'] = function(test) {

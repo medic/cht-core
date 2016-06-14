@@ -123,3 +123,53 @@ exports['getAllRegistrations generates multiple queries when over limit'] = func
     test.done();
   });
 };
+
+exports['describe isDateStrValid'] = function(test) {
+  var tests = [
+    {
+      // reject integers
+      val: 1234,
+      res: false
+    },
+    {
+      // reject badly formatted string
+      val: 'xyz',
+      res: false
+    },
+    {
+      // reject badly formatted string
+      val: 'Mar, 12 2001',
+      res: false
+    },
+    {
+      // reject missing timezone
+      val: '2011-10-10T14:48:00',
+      res: false
+    },
+    {
+      // rejects timezone with 5 digits
+      val: '2011-10-10T14:48:00-00000',
+      res: false
+    },
+    {
+      // accepts proper format
+      val: '2011-10-10T14:48:00-03',
+      res: true
+    },
+    {
+      // accept 4 digit timezone
+      val: '2011-10-10T14:48:00-0330',
+      res: true
+    },
+    {
+      // accept output from native javascript method
+      val: new Date().toISOString(),
+      res: true
+    }
+  ];
+  test.expect(test.length);
+  tests.forEach(function(t) {
+    test.equals(t.res, utils.isDateStrValid(t.val));
+  });
+  test.done();
+};

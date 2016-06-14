@@ -1,5 +1,6 @@
 var controller = require('../../controllers/people'),
     places = require('../../controllers/places'),
+    cutils = require('../../controllers/utils'),
     db = require('../../db'),
     utils = require('../utils'),
     sinon = require('sinon');
@@ -13,7 +14,8 @@ exports.tearDown = function (callback) {
     controller.getPerson,
     controller.createPerson,
     controller.validatePerson,
-    places.getOrCreatePlace
+    places.getOrCreatePlace,
+    cutils.isDateStrValid
   );
   callback();
 };
@@ -109,68 +111,21 @@ exports['createPerson returns error from db insert'] = function(test) {
   });
 };
 
-exports['createPerson  rejects reported_date formatted as integer.'] = function(test) {
+exports['createPerson rejects invalid reported_date.'] = function(test) {
   var person = {
     name: 'Test',
-    reported_date: 1234
+    reported_date: 'x'
   };
   sinon.stub(places, 'getOrCreatePlace').callsArg(1);
+  sinon.stub(cutils, 'isDateStrValid').returns(false);
   controller.createPerson (person, function(err) {
     test.equal(err.code, 400);
-    test.equal(err.message, 'Reported date is invalid: 1234');
+    test.equal(err.message, 'Reported date is invalid: x');
     test.done();
   });
 };
 
-exports['createPerson  rejects reported_date missing timezone.'] = function(test) {
-  var person = {
-    name: 'Test',
-    reported_date: '2011-10-10T14:48:00'
-  };
-  controller.createPerson (person, function(err) {
-    test.equal(err.code, 400);
-    test.equal(err.message, 'Reported date is invalid: 2011-10-10T14:48:00');
-    test.done();
-  });
-};
-
-exports['createPerson  rejects reported_date with timezone with 5 digits.'] = function(test) {
-  var person = {
-    name: 'Test',
-    reported_date: '2011-10-10T14:48:00-00000'
-  };
-  controller.createPerson(person, function(err) {
-    test.equal(err.code, 400);
-    test.equal(err.message, 'Reported date is invalid: 2011-10-10T14:48:00-00000');
-    test.done();
-  });
-};
-
-exports['createPerson  accepts properly formatted reported_date field.'] = function(test) {
-  var person = {
-    name: 'Test',
-    reported_date: '2011-10-10T14:48:00-03'
-  };
-  sinon.stub(db.medic, 'insert', function(doc) {
-    test.equal(doc.reported_date, 1318268880000);
-    test.done();
-  });
-  controller.createPerson(person);
-};
-
-exports['createPerson  accepts reported_date with 4 digit timezone.'] = function(test) {
-  var person = {
-    name: 'Test',
-    reported_date: '2011-10-10T14:48:00-0330'
-  };
-  sinon.stub(db.medic, 'insert', function(doc) {
-    test.equal(doc.reported_date, 1318270680000);
-    test.done();
-  });
-  controller.createPerson(person);
-};
-
-exports['createPerson  sets a default reported_date.'] = function(test) {
+exports['createPerson sets a default reported_date.'] = function(test) {
   var person = {
     name: 'Test'
   };

@@ -597,8 +597,7 @@ Note: this does not accomodate having a `place` field on your form and will like
 | Key | Description       
 | -------- | -----------------
 | place | String that references a place or object that defines a new place. 
-| reported_date | Date string that is compatible with this format: "YYYY-MM-DDTHH:mm:ssZ".   Where "Z" is a timezone value like "-03" or "+1245".  Example: "2011-10-10T14:48:00-0300". If omitted the current time is used.
-
+| reported_date | Date string that is compatible with this format: "YYYY-MM-DDTHH:mm:ssZ".   Where "Z" is a timezone value like "-03" or "+1245".  Example: "2011-10-10T14:48:00-0300". If omitted the current time is used.  A compatible date string can be generated using the `toISOString` method on a Javascript Date object.
 
 ## POST /api/v1/people
 
@@ -680,8 +679,7 @@ Use JSON in the request body to specify a place's details.
 | Key | Description       
 | -------- | -----------------
 | contact | String identifier for a person or object that defines a new person.
-| reported_date | Date string that is compatible with this format: "YYYY-MM-DDTHH:mm:ssZ".   Where "Z" is a timezone value like "-03" or "+1245".  Example: "2011-10-10T14:48:00-0300". If omitted the current time is used.
-
+| reported_date | Date string that is compatible with this format: "YYYY-MM-DDTHH:mm:ssZ".   Where "Z" is a timezone value like "-03" or "+1245".  Example: "2011-10-10T14:48:00-0300". If omitted the current time is used.  A compatible date string can be generated using the `toISOString` method on a Javascript Date object.
 
 #### Place Types
 
