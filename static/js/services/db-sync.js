@@ -104,8 +104,8 @@ var _ = require('underscore'),
             replicateTiming[direction] = {};
             replicateTiming[direction].start =
               replicateTiming[direction].last = Date.now();
-
-            return DB.get().replicate[direction](DB.getRemote(), options)
+            var remote = DB.get({ remote: true });
+            return DB.get().replicate[direction](remote, options)
               .on('denied', function(err) {
                 // In theory this could be caused by 401s
                 // TODO: work out what `err` looks like and navigate to login

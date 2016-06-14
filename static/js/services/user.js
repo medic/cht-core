@@ -11,7 +11,7 @@ var utils = require('kujua-utils');
       .get(id)
       .catch(function() {
         // might be first load - try the remote db
-        return DB.getRemote().get(id);
+        return DB.get({ remote: true }).get(id);
       });
   };
 

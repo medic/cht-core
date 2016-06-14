@@ -36,13 +36,12 @@ window.KarmaUtils = {
       };
     };
   },
-  mockDB: function(db, getRemote) {
+  mockDB: function(db) {
     return function() {
       return {
         get: function() {
           return db;
-        },
-        getRemote: getRemote
+        }
       };
     };
   }
