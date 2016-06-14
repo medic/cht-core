@@ -2,6 +2,7 @@ var _ = require('underscore'),
     async = require('async');
 
 var people = require('./people'),
+    utils = require('./utils'),
     db = require('../db');
 
 var PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact'];
@@ -55,6 +56,9 @@ var validatePlace = function(place, callback) {
   if (_.isUndefined(place.name)) {
     return err('Place is missing a "name" property.');
   }
+  if (!_.isUndefined(place.reported_date) && !utils.isDateStrValid(place.reported_date)) {
+    return err('Reported date is invalid: ' + place.reported_date);
+  }
   if (!_.isString(place.name)) {
     return err('Property "name" must be a string.');
   }
@@ -86,6 +90,11 @@ var createPlace = function(place, callback) {
   self._validatePlace(place, function(err) {
     if (err) {
       return callback(err);
+    }
+    if (!place.reported_date) {
+      place.reported_date = new Date().valueOf();
+    } else {
+      place.reported_date = utils.parseDate(place.reported_date).valueOf();
     }
     if (place.contact) {
       // also validates contact if creating

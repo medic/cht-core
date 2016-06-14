@@ -1,5 +1,6 @@
 var _ = require('underscore'),
     db = require('../db'),
+    utils = require('./utils'),
     places = require('./places');
 
 var getPerson = function(id, callback) {
@@ -46,6 +47,9 @@ var validatePerson  = function(obj, callback) {
   if (!_.isString(obj.name)) {
     return err('Property "name" must be a string.');
   }
+  if (!_.isUndefined(obj.reported_date) && !utils.isDateStrValid(obj.reported_date)) {
+    return err('Reported date is invalid: ' + obj.reported_date);
+  }
   callback();
 };
 
@@ -63,6 +67,11 @@ var createPerson = function(data, callback) {
   self.validatePerson(data, function(err) {
     if (err) {
       return callback(err);
+    }
+    if (!data.reported_date) {
+      data.reported_date = new Date().valueOf();
+    } else {
+      data.reported_date = utils.parseDate(data.reported_date).valueOf();
     }
     if (data.place) {
       places.getOrCreatePlace(data.place, function(err, place) {

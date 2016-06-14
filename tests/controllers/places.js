@@ -270,6 +270,85 @@ exports['createPlaces supports parents defined as uuids.'] = function(test) {
   });
 };
 
+exports['createPlaces rejects reported_date formatted as integer.'] = function(test) {
+  var place = {
+    name: 'Test',
+    reported_date: 1234,
+    type: 'district_hospital'
+  };
+  controller._createPlaces(place, function(err) {
+    test.equal(err.code, 400);
+    test.equal(err.message, 'Reported date is invalid: 1234');
+    test.done();
+  });
+};
+
+exports['createPlaces rejects reported_date missing timezone.'] = function(test) {
+  var place = {
+    name: 'Test',
+    reported_date: '2011-10-10T14:48:00',
+    type: 'district_hospital'
+  };
+  controller._createPlaces(place, function(err) {
+    test.equal(err.code, 400);
+    test.equal(err.message, 'Reported date is invalid: 2011-10-10T14:48:00');
+    test.done();
+  });
+};
+
+exports['createPlaces rejects reported_date with timezone with 5 digits.'] = function(test) {
+  var place = {
+    name: 'Test',
+    reported_date: '2011-10-10T14:48:00-00000',
+    type: 'district_hospital'
+  };
+  controller._createPlaces(place, function(err) {
+    test.equal(err.code, 400);
+    test.equal(err.message, 'Reported date is invalid: 2011-10-10T14:48:00-00000');
+    test.done();
+  });
+};
+
+exports['createPlaces accepts properly formatted reported_date field.'] = function(test) {
+  var place = {
+    name: 'Test',
+    reported_date: '2011-10-10T14:48:00-03',
+    type: 'district_hospital'
+  };
+  sinon.stub(db.medic, 'insert', function(doc) {
+    test.equal(doc.reported_date, 1318268880000);
+    test.done();
+  });
+  controller._createPlaces(place);
+};
+
+exports['createPlaces accepts reported_date with 4 digit timezone.'] = function(test) {
+  var place = {
+    name: 'Test',
+    reported_date: '2011-10-10T14:48:00-0330',
+    type: 'district_hospital'
+  };
+  sinon.stub(db.medic, 'insert', function(doc) {
+    test.equal(doc.reported_date, 1318270680000);
+    test.done();
+  });
+  controller._createPlaces(place);
+};
+
+exports['createPlaces sets a default reported_date.'] = function(test) {
+  var place = {
+    name: 'Test',
+    type: 'district_hospital'
+  };
+  sinon.stub(db.medic, 'insert', function(doc) {
+    // should be set to within 5 seconds of now
+    test.ok(doc.reported_date <= (new Date().valueOf()));
+    test.ok(doc.reported_date > (new Date().valueOf() - 5000));
+    test.done();
+  });
+  controller._createPlaces(place);
+};
+
 exports['updatePlace errors with empty data'] = function(test) {
   controller.updatePlace('123', {}, function(err, resp) {
     test.equal(err.code, 400);
