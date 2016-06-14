@@ -54,7 +54,7 @@ var modal = require('../modules/modal');
         var $contact = $('#edit-user-profile [name=contact]');
         if (user.contact_id) {
           $contact.empty();
-          DB.get().get(user.contact_id)
+          DB().get(user.contact_id)
             .then(function(contact) {
               $contact
                 .append($('<option>', {

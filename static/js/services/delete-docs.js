@@ -16,7 +16,7 @@ var _ = require('underscore');
 
       var getParent = function(doc) {
         if (doc.type === 'person' && doc.parent && doc.parent._id) {
-          return DB.get()
+          return DB()
             .get(doc.parent._id)
             .then(function(parent) {
               if (parent.contact.phone !== doc.phone) {
@@ -74,7 +74,7 @@ var _ = require('underscore');
             return checkForDuplicates(docs);
           })
           .then(function() {
-            return DB.get().bulkDocs(docs);
+            return DB().bulkDocs(docs);
           })
           // No silent fails! Throw on error.
           .then(function(results) {

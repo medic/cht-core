@@ -27,7 +27,7 @@
       };
 
       if (!E2ETESTING) {
-        DB.get()
+        DB()
           .changes({
             live: true,
             since: 'now',

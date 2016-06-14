@@ -13,19 +13,19 @@ var _ = require('underscore');
       FileReader
     ) {
 
-      var withAvailableForms = DB.get().query('medic/forms')
+      var withAvailableForms = DB().query('medic/forms')
         .then(function(res) {
           return _.pluck(res.rows, 'id');
         });
 
       function getXmlAttachment(doc) {
-        return DB.get().getAttachment(doc._id, 'xml')
+        return DB().getAttachment(doc._id, 'xml')
           .then(FileReader);
       }
 
       function getFormById(availableForms, id) {
         if (_.contains(availableForms, id)) {
-          return DB.get().get(id)
+          return DB().get(id)
             .then(getXmlAttachment);
         }
       }

@@ -20,7 +20,7 @@ var _ = require('underscore'),
 
       var cache = Cache({
         get: function(callback) {
-          DB.get()
+          DB()
             .get('_design/medic')
             .then(function(ddoc) {
               callback(null, _.defaults(ddoc.app_settings, defaults));

@@ -30,14 +30,14 @@ var _ = require('underscore');
     function(DB, Session) {
       return function(messageId, read) {
         var user = Session.userCtx().name;
-        return DB.get()
+        return DB()
           .get(messageId)
           .then(_.partial(updateMessage, user, read))
           .then(function(doc) {
             if (!doc) {
               return;
             }
-            return DB.get().put(doc);
+            return DB().put(doc);
           });
       };
     }
@@ -49,7 +49,7 @@ var _ = require('underscore');
         var user = Session.userCtx().name;
         var updated = updateMessages(user, read, messages);
         // Conflicts will fail silently. That's ok.
-        return DB.get().bulkDocs(updated);
+        return DB().bulkDocs(updated);
       };
     }
   ]);

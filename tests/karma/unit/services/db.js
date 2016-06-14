@@ -46,7 +46,7 @@ describe('DB service', function() {
       Location.url = 'ftp//myhost:21/medicdb';
       var expected = 'hello';
       pouchDB.returns(expected);
-      var actual = service.get({ remote: true });
+      var actual = service({ remote: true });
       chai.expect(actual).to.equal(expected);
       chai.expect(pouchDB.callCount).to.equal(1);
       chai.expect(pouchDB.args[0][0]).to.equal('ftp//myhost:21/medicdb');
@@ -59,8 +59,8 @@ describe('DB service', function() {
       Location.url = 'ftp//myhost:21/medicdb';
       var expected = 'hello';
       pouchDB.returns(expected);
-      var actual1 = service.get({ remote: true });
-      var actual2 = service.get({ remote: true });
+      var actual1 = service({ remote: true });
+      var actual2 = service({ remote: true });
       chai.expect(actual1).to.equal(expected);
       chai.expect(actual2).to.equal(expected);
       chai.expect(pouchDB.callCount).to.equal(1);
@@ -77,7 +77,7 @@ describe('DB service', function() {
       userCtx.returns({ name: 'johnny' });
       var expected = 'hello';
       pouchDB.returns(expected);
-      var actual = service.get();
+      var actual = service();
       chai.expect(actual).to.equal(expected);
       chai.expect(pouchDB.callCount).to.equal(1);
       chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny');
@@ -92,8 +92,8 @@ describe('DB service', function() {
       userCtx.returns({ name: 'johnny' });
       var expected = 'hello';
       pouchDB.returns(expected);
-      var actual1 = service.get();
-      var actual2 = service.get();
+      var actual1 = service();
+      var actual2 = service();
       chai.expect(actual1).to.equal(expected);
       chai.expect(actual2).to.equal(expected);
       chai.expect(isAdmin.callCount).to.equal(2);

@@ -33,7 +33,7 @@ var _ = require('underscore');
       };
 
       var getResourcesDoc = function() {
-        return DB.get().get('resources', { attachments: true });
+        return DB().get('resources', { attachments: true });
       };
 
       getResourcesDoc()
@@ -47,13 +47,13 @@ var _ = require('underscore');
 
       var addAttachment = function(file) {
         $scope.submitting = true;
-        DB.get()
+        DB()
           .putAttachment('resources', file.name, $scope.doc._rev, file, file.type)
           .then(getResourcesDoc)
           .then(function(doc) {
             doc.resources[$scope.name] = file.name;
             $scope.doc = doc;
-            return DB.get().put(doc);
+            return DB().put(doc);
           })
           .then(function(response) {
             $scope.doc._rev = response.rev;

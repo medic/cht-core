@@ -13,7 +13,7 @@
           return $q.resolve({ form: $state.params.formId });
         }
         if ($state.params.reportId) { // editing
-          return DB.get().get($state.params.reportId);
+          return DB().get($state.params.reportId);
         }
         return $q.reject(new Error('Must have either formId or reportId'));
       };

@@ -10,7 +10,7 @@ var _ = require('underscore');
     'DB',
     function(DB) {
       return function(params, callback) {
-        DB.get()
+        DB()
           .query('medic/data_records_by_contact', params)
           .then(function(res) {
             callback(null, res.rows);

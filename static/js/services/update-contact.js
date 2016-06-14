@@ -13,9 +13,9 @@ var async = require('async'),
       var updateDoc = function(doc, updates) {
         var updated = _.extend(doc || {}, updates);
         if (updated._id) {
-          return DB.get().put(updated);
+          return DB().put(updated);
         } else {
-          return DB.get().post(updated);
+          return DB().post(updated);
         }
       };
 
@@ -30,7 +30,7 @@ var async = require('async'),
           endkey: [ parent._id, {} ],
           include_docs: true
         };
-        DB.get()
+        DB()
           .query('medic/facility_by_parent', options)
           .then(function(response) {
             async.each(
@@ -64,7 +64,7 @@ var async = require('async'),
           endkey: [ contact._id, {} ],
           include_docs: true
         };
-        DB.get()
+        DB()
           .query('medic/facilities_by_contact', options)
           .then(function(response) {
             async.each(

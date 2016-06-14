@@ -44,7 +44,7 @@
               $scope.loadingForm = false;
             })
             .then(function() {
-              return DB.get().query('medic/forms', { include_docs: true, key: action.form });
+              return DB().query('medic/forms', { include_docs: true, key: action.form });
             })
             .then(function(res) {
               if (res.rows[0]) {

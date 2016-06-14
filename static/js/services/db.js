@@ -53,16 +53,12 @@
         return cache[name];
       };
 
-      var get = function(options) {
+      return function(options) {
         options = options || {};
         if (options.remote || Session.isAdmin()) {
           return getRemote();
         }
         return getLocal();
-      };
-
-      return {
-        get: get
       };
     }
   );

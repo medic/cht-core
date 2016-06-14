@@ -36,7 +36,7 @@ var _ = require('underscore');
             if (!facilityId) {
               return $q.resolve();
             }
-            return DB.get().get(facilityId);
+            return DB().get(facilityId);
           })
           .then(function(doc) {
             return doc.type;
@@ -111,7 +111,7 @@ var _ = require('underscore');
 
       var getContact = function() {
         if ($state.params.id) {
-          return DB.get().get($state.params.id);
+          return DB().get($state.params.id);
         }
         return $q.resolve();
       };
@@ -224,7 +224,7 @@ var _ = require('underscore');
         return $q.resolve()
           .then(function() {
             if(docId) {
-              return DB.get().get(docId);
+              return DB().get(docId);
             }
             return null;
           })
@@ -250,14 +250,14 @@ var _ = require('underscore');
 
         var put;
         if(doc._id) {
-          put = DB.get().put(doc);
+          put = DB().put(doc);
         } else {
           doc.reported_date = Date.now();
-          put = DB.get().post(doc);
+          put = DB().post(doc);
         }
         return put
           .then(function(response) {
-            return DB.get().get(response.id);
+            return DB().get(response.id);
           });
       }
 
@@ -316,7 +316,7 @@ var _ = require('underscore');
                 if (typeof docId === 'object') {
                   docId = doc[f]._id;
                 }
-                return DB.get().get(doc[f])
+                return DB().get(doc[f])
                   .then(function(dbFieldValue) {
                     doc[f] = dbFieldValue;
                     return doc;
@@ -348,7 +348,7 @@ var _ = require('underscore');
             return $q
               .all(_.map(children, function(child) {
                 child.parent = doc;
-                return DB.get().put(child);
+                return DB().put(child);
               }))
               .then(function() {
                 return doc;

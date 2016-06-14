@@ -21,7 +21,7 @@ var _ = require('underscore');
 
       $scope.url = window.location.hostname;
       $scope.userCtx = Session.userCtx();
-      DB.get().get('_design/medic')
+      DB().get('_design/medic')
         .then(function(ddoc) {
           var rev = ddoc.remote_rev || ddoc._rev;
           $scope.ddocVersion = rev.split('-')[0];
@@ -46,7 +46,7 @@ var _ = require('underscore');
         });
       }
 
-      DB.get().info().then(function (result) {
+      DB().info().then(function (result) {
         $scope.dbInfo = JSON.stringify(result, null, 2);
       }).catch(function (err) {
         $log.error('Failed to fetch DB info', err);
@@ -54,7 +54,7 @@ var _ = require('underscore');
 
       $scope.help_loading = true;
 
-      var helpPageGet = DB.get().query('medic/help_pages');
+      var helpPageGet = DB().query('medic/help_pages');
 
       $q.all([ helpPageGet, Language() ])
         .then(function(results) {

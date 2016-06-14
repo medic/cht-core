@@ -47,7 +47,7 @@ var _ = require('underscore');
 
       var getOrCreateUserSettings = function(id, name) {
         if (id) {
-          return DB.get()
+          return DB()
             .get(id);
         } else {
           return $q.when({
@@ -119,7 +119,7 @@ var _ = require('underscore');
         return getOrCreateUserSettings(id, updates.name)
           .then(function(settings) {
             var updated = _.extend(settings, updates);
-            return DB.get()
+            return DB()
               .put(updated);
           });
       };
@@ -171,7 +171,7 @@ var _ = require('underscore');
             return callback(err);
           }
           removeCacheEntry($cacheFactory, id);
-          DB.get()
+          DB()
             .get(id)
             .then(DeleteDocs)
             .then(callback)

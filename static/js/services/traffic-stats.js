@@ -11,7 +11,7 @@
         var stats = JSON.parse($window.medicmobile_android.getDataUsage());
         stats.timestamp = Date.now();
 
-        DB.get()
+        DB()
           .query('medic/doc_by_type', { key: [ 'traffic_stats' ], include_docs: true })
           .then(function(res) {
             var doc;
@@ -25,11 +25,11 @@
                 user: Session.userCtx().name,
                 traffic: [stats]
               };
-              return DB.get().post(doc);
+              return DB().post(doc);
             }
             doc = res.rows[0].doc;
             doc.traffic.push(stats);
-            return DB.get().put(doc);
+            return DB().put(doc);
           })
           .then(function(response) {
             $log.debug('Saved traffic_stats', stats, response);

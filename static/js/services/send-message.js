@@ -89,7 +89,7 @@ var _ = require('underscore'),
               async.forEachSeries(
                 explodedRecipients,
                 function(data, callback) {
-                  DB.get()
+                  DB()
                     .id()
                     .then(function(id) {
                       doc.tasks.push(createTask(settings, data, message, user, id));
@@ -103,7 +103,7 @@ var _ = require('underscore'),
                   if (err) {
                     return deferred.reject(err);
                   }
-                  DB.get()
+                  DB()
                     .post(doc)
                     .then(deferred.resolve)
                     .catch(deferred.reject);

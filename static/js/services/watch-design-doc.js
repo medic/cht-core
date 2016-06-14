@@ -24,7 +24,7 @@ var async = require('async');
         ddoc.app_settings = updates.app_settings;
         ddoc.views = updates.views;
         ddoc.remote_rev = updates._rev;
-        DB.get()
+        DB()
           .put(ddoc)
           .then(callback)
           .catch(function(err) {
@@ -33,13 +33,13 @@ var async = require('async');
       };
 
       var checkLocalDesignDoc = function(rev, callback) {
-        DB.get()
+        DB()
           .get('_design/medic')
           .then(function(localDdoc) {
             if (localDdoc.remote_rev === rev) {
               return;
             }
-            return DB.get({ remote: true })
+            return DB({ remote: true })
               .get('_design/medic')
               .then(function(remoteDdoc) {
                 updateLocalDesignDoc(localDdoc, remoteDdoc, callback);
@@ -75,7 +75,7 @@ var async = require('async');
             }
 
             // Listen for remote ddoc changes
-            DB.get({ remote: true })
+            DB({ remote: true })
               .changes({
                 timeout: 1000 * 60 * 60, // one hour
                 live: true,

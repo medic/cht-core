@@ -7,11 +7,11 @@ var utils = require('kujua-utils');
   var inboxServices = angular.module('inboxServices');
 
   var getWithRemoteFallback = function(DB, id) {
-    return DB.get()
+    return DB()
       .get(id)
       .catch(function() {
         // might be first load - try the remote db
-        return DB.get({ remote: true }).get(id);
+        return DB({ remote: true }).get(id);
       });
   };
 
@@ -79,7 +79,7 @@ var utils = require('kujua-utils');
             if (!user.contact_id) {
               return resolve();
             }
-            DB.get().get(user.contact_id).then(resolve).catch(reject);
+            DB().get(user.contact_id).then(resolve).catch(reject);
           });
         });
       };

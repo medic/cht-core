@@ -7,11 +7,11 @@
   inboxServices.factory('Verified', ['DB',
     function(DB) {
       return function(messageId, verified, callback) {
-        DB.get()
+        DB()
           .get(messageId)
           .then(function(message) {
             message.verified = verified;
-            DB.get()
+            DB()
               .post(message)
               .then(function() {
                 callback(null, message);

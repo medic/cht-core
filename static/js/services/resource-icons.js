@@ -38,7 +38,7 @@ angular.module('inboxServices').factory('ResourceIcons', [
     };
 
     var updateResources = function() {
-      return DB.get()
+      return DB()
         .get('resources', { attachments: true })
         .then(function(res) {
           cache = {

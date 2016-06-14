@@ -8,7 +8,7 @@ inboxControllers.controller('HelpCtrl',
     $scope.loading = true;
 
     var docId = 'help:' + $stateParams.page;
-    var docGet = DB.get().get(docId);
+    var docGet = DB().get(docId);
 
     $q.all([ docGet, Language() ])
       .then(function(results) {

@@ -47,11 +47,11 @@
       $scope.setCancelTarget(function() {
         $state.go('contacts.detail', { id: $state.params.id });
       });
-      DB.get()
+      DB()
         .get($state.params.id)
         .then(render)
         .then(function() {
-          return DB.get().query('medic/forms', { include_docs: true, key: $state.params.formId });
+          return DB().query('medic/forms', { include_docs: true, key: $state.params.formId });
         })
         .then(function(res) {
           if (res.rows[0]) {

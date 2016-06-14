@@ -9,7 +9,7 @@ var _ = require('underscore');
   inboxServices.factory('DbView', ['DB',
     function(DB) {
       return function(viewName, options) {
-        return DB.get()
+        return DB()
           .query('medic/' + viewName, options.params)
           .then(function(results) {
             var meta = {

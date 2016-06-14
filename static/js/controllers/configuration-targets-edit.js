@@ -35,7 +35,7 @@ var _ = require('underscore');
           $log.error('Error fetching target', err);
         });
 
-      DB.get()
+      DB()
         .get('resources')
         .then(function(icons) {
           $scope.icons = Object.keys(icons.resources);

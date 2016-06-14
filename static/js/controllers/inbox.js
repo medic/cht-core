@@ -83,7 +83,7 @@ var feedback = require('../modules/feedback'),
 
       feedback.init({
         saveDoc: function(doc, callback) {
-          DB.get().post(doc)
+          DB().post(doc)
             .then(function() {
               callback();
             })

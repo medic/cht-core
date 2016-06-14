@@ -58,7 +58,7 @@ var _ = require('underscore');
           endkey: [ id, {} ],
           include_docs: true
         };
-        return DB.get()
+        return DB()
           .query('medic/facility_by_parent', options)
           .then(function(children) {
             sortChildren(children.rows);
@@ -71,7 +71,7 @@ var _ = require('underscore');
           key: [ id ],
           include_docs: true
         };
-        return DB.get().query('medic/facilities_by_contact', options);
+        return DB().query('medic/facilities_by_contact', options);
       };
 
       var selectedSchemaVisibleFields = function(selected) {
@@ -88,7 +88,7 @@ var _ = require('underscore');
 
       var getInitialData = function(contactId) {
         return $q.all([
-          DB.get().get(contactId),
+          DB().get(contactId),
           getChildren(contactId),
           getContactFor(contactId),
           Search('reports', { subjectIds: [ contactId ] })

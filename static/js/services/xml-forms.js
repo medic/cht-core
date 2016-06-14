@@ -31,7 +31,7 @@ var _ = require('underscore');
       var listeners = {};
 
       var getForms = function() {
-        return DB.get()
+        return DB()
           .query('medic/forms', { include_docs: true })
           .then(function(res) {
             return res.rows

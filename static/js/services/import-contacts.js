@@ -24,7 +24,7 @@ var _ = require('underscore');
           phone: doc.contact.phone,
           parent: doc
         };
-        return DB.get()
+        return DB()
           .put(person)
           .then(function(response) {
             doc.contact.type = 'person';
@@ -38,7 +38,7 @@ var _ = require('underscore');
           // delete _rev since this is a new doc in this database
           delete contact._rev;
         }
-        return DB.get()
+        return DB()
           .put(contact)
           .then(function(response) {
             contact._id = response._id;
@@ -48,7 +48,7 @@ var _ = require('underscore');
             }
             return savePerson(contact)
               .then(function() {
-                return DB.get().put(contact);
+                return DB().put(contact);
               })
               .then(function(response) {
                 contact._rev = response._rev;

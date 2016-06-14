@@ -9,10 +9,10 @@ var _ = require('underscore');
   inboxServices.factory('UpdateFacility', ['DB',
     function(DB) {
       return function(messageId, facilityId, callback) {
-        DB.get()
+        DB()
           .get(messageId)
           .then(function(message) {
-            DB.get()
+            DB()
               .get(facilityId)
               .then(function(facility) {
                 message.contact = facility;
@@ -21,7 +21,7 @@ var _ = require('underscore');
                     return error.code === 'sys.facility_not_found';
                   });
                 }
-                DB.get()
+                DB()
                   .put(message)
                   .then(function(response) {
                     message._rev = response._rev;

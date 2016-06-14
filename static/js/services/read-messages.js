@@ -31,7 +31,7 @@
     function(DB, Session) {
       return function(callback) {
         var user = Session.userCtx().name;
-        DB.get()
+        DB()
           .query('medic/data_records_read_by_type', { group: true })
           .then(function(res) {
             callback(null, calculateStatus(res, user));

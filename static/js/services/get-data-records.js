@@ -30,7 +30,7 @@ var _ = require('underscore');
       'ngInject';
 
       var getDocs = function(ids) {
-        return DB.get()
+        return DB()
           .allDocs({ keys: ids, include_docs: true })
           .then(function(response) {
             return _.pluck(response.rows, 'doc');
@@ -41,7 +41,7 @@ var _ = require('underscore');
         ids = ids.map(function(id) {
           return [ id ];
         });
-        return DB.get()
+        return DB()
           .query('medic/doc_summaries_by_id', { keys: ids })
           .then(function(response) {
             return _.map(response.rows, function(row) {

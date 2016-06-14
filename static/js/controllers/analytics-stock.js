@@ -67,7 +67,7 @@ var _ = require('underscore'),
         if ($scope.expandedRecord === id) {
           $scope.expandedRecord = null;
         } else {
-          DB.get()
+          DB()
             .get(id)
             .then(FormatDataRecord)
             .then(function(formatted) {
@@ -105,7 +105,7 @@ var _ = require('underscore'),
       $scope.setDistrict = function(district) {
         $scope.district = district;
         var dates = stockUtils.getDates($scope.filters);
-        DB.get()
+        DB()
           .get(district.id || district._id)
           .then(function(district) {
             ChildFacility(district, function(err, facilities) {

@@ -185,7 +185,7 @@ var _ = require('underscore'),
       var fetchFormattedReport = function(report) {
         if (_.isString(report)) {
           // id only - fetch the full doc
-          return DB.get()
+          return DB()
             .get(report)
             .then(FormatDataRecord);
         }

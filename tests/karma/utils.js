@@ -38,10 +38,8 @@ window.KarmaUtils = {
   },
   mockDB: function(db) {
     return function() {
-      return {
-        get: function() {
-          return db;
-        }
+      return function() {
+        return db;
       };
     };
   }

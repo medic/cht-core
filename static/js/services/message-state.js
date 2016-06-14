@@ -16,7 +16,7 @@ var _ = require('underscore'),
           });
         },
         set: function(recordId, group, fromState, toState) {
-          return DB.get()
+          return DB()
             .get(recordId)
             .then(function(doc) {
               var changed = false;
@@ -29,7 +29,7 @@ var _ = require('underscore'),
               if (!changed) {
                 return;
               }
-              return DB.get().put(doc);
+              return DB().put(doc);
             });
         }
       };

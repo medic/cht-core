@@ -71,7 +71,7 @@ var _ = require('underscore'),
         if (direction === 'from') {
           return getViewKeys()
             .then(function(keys) {
-              return DB.get().query('medic/doc_by_place', { keys: keys });
+              return DB().query('medic/doc_by_place', { keys: keys });
             })
             .then(function(viewResult) {
               var userCtx = Session.userCtx();
@@ -104,8 +104,8 @@ var _ = require('underscore'),
             replicateTiming[direction] = {};
             replicateTiming[direction].start =
               replicateTiming[direction].last = Date.now();
-            var remote = DB.get({ remote: true });
-            return DB.get().replicate[direction](remote, options)
+            var remote = DB({ remote: true });
+            return DB().replicate[direction](remote, options)
               .on('denied', function(err) {
                 // In theory this could be caused by 401s
                 // TODO: work out what `err` looks like and navigate to login
