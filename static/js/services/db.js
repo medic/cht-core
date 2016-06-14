@@ -7,7 +7,6 @@
   inboxServices.factory('DB',
     function(
       $window,
-      E2ETESTING,
       Location,
       pouchDB,
       Session,
@@ -54,8 +53,7 @@
       };
 
       return function(options) {
-        options = options || {};
-        if (options.remote || Session.isAdmin()) {
+        if ((options && options.remote) || Session.isAdmin()) {
           return getRemote();
         }
         return getLocal();
