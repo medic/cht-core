@@ -34,12 +34,13 @@ var _ = require('underscore');
         return UserDistrict()
           .then(function(facilityId) {
             if (!facilityId) {
-              return $q.resolve();
+              // Admin! Sees everything.
+              return facilityId;
             }
-            return DB().get(facilityId);
-          })
-          .then(function(doc) {
-            return doc.type;
+            return DB().get(facilityId)
+              .then(function(doc) {
+                return doc.type;
+              });
           })
           .catch(function(err) {
             if (err.status === 404) {
