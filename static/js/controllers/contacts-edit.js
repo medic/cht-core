@@ -34,7 +34,7 @@ var _ = require('underscore');
         return UserDistrict()
           .then(function(facilityId) {
             if (!facilityId) {
-              return $q.resolve();
+              return $q.reject('Facility ID not supplied');
             }
             return DB().get(facilityId);
           })
