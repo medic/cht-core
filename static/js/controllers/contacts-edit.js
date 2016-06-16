@@ -35,7 +35,7 @@ var _ = require('underscore');
           .then(function(facilityId) {
             if (!facilityId) {
               // Admin! Sees everything.
-              return facilityId;
+              return;
             }
             return DB().get(facilityId)
               .then(function(doc) {

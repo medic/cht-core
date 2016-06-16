@@ -16,7 +16,7 @@ var utils = require('kujua-utils');
   };
 
   // If the user has role district_admin, returns their facility_id.
-  // If the user is admin, return ''.
+  // If the user is admin, return undefined.
   // Else throw error.
   inboxServices.factory('UserDistrict',
     function(

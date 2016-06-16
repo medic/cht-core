@@ -92,6 +92,61 @@ describe('UserDistrict service', function() {
 
   });
 
+  it('returns error for district admin without a facility_id', function() {
+
+    userCtx = {
+      name: 'jeff',
+      roles: ['district_admin']
+    };
+    isAdmin.returns(false);
+
+    user = {
+      name: 'jeff',
+      roles: ['district_admin']
+    };
+
+    get.onCall(0).returns(KarmaUtils.mockPromise(null, user));
+
+    return service()
+      .then(function() {
+        throw new Error('Expected error to be thrown');
+      })
+      .catch(function(err) {
+        chai.expect(err.message).to.equal('No district assigned to district admin.');
+      });
+
+  });
+
+  it('returns error for district admin with a facility_id that doesn\'t exist', function() {
+
+    userCtx = {
+      name: 'jeff',
+      roles: ['district_admin']
+    };
+    isAdmin.returns(false);
+
+    user = {
+      name: 'jeff',
+      roles: ['district_admin'],
+      facility_id: 'x'
+    };
+
+    var err404 = {status: 404, name: 'not_found', message: 'missing', error: true, reason: 'missing'};
+
+    get.onCall(0).returns(KarmaUtils.mockPromise(null, user));
+    get.onCall(1).returns(KarmaUtils.mockPromise(err404));
+    get.onCall(2).returns(KarmaUtils.mockPromise(err404));
+
+    return service()
+      .then(function() {
+        throw new Error('Expected error to be thrown');
+      })
+      .catch(function(err) {
+        chai.expect(err.status).to.equal(404);
+      });
+
+  });
+
   it('returns error for non admin', function() {
 
     userCtx = {
