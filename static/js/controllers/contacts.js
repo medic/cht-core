@@ -120,6 +120,8 @@ var _ = require('underscore'),
           })
           .catch(function(err) {
             $scope.error = true;
+            $scope.loading = false;
+            $scope.appending = false;
             $log.error('Error searching for contacts', err);
           });
       };
