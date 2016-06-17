@@ -5,8 +5,7 @@ describe('Language service', function() {
   var service,
       UserSettings = sinon.stub(),
       Settings = sinon.stub(),
-      ipCookie = sinon.stub(),
-      $rootScope;
+      ipCookie = sinon.stub();
 
   beforeEach(function() {
     module('inboxApp');
@@ -14,9 +13,9 @@ describe('Language service', function() {
       $provide.value('UserSettings', UserSettings);
       $provide.value('Settings', Settings);
       $provide.value('ipCookie', ipCookie);
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
-    inject(function(_Language_, _$rootScope_) {
-      $rootScope = _$rootScope_;
+    inject(function(_Language_) {
       service = _Language_;
     });
   });
@@ -27,7 +26,7 @@ describe('Language service', function() {
 
   it('uses the language configured in user', function(done) {
     ipCookie.returns(null);
-    UserSettings.callsArgWith(0, null, { language: 'latin' });
+    UserSettings.returns(KarmaUtils.mockPromise(null, { language: 'latin' }));
     service().then(function(actual) {
       chai.expect(actual).to.equal('latin');
       chai.expect(UserSettings.callCount).to.equal(1);
@@ -39,12 +38,11 @@ describe('Language service', function() {
       chai.expect(ipCookie.args[1][2]).to.deep.equal({ expires: 365, path: '/' });
       done();
     });
-    $rootScope.$digest();
   });
 
   it('uses the language configured in settings', function(done) {
     ipCookie.returns(null);
-    UserSettings.callsArgWith(0, null, { });
+    UserSettings.returns(KarmaUtils.mockPromise(null, { }));
     Settings.returns(KarmaUtils.mockPromise(null, { locale: 'yiddish' }));
     service().then(function(actual) {
       chai.expect(actual).to.equal('yiddish');
@@ -57,14 +55,11 @@ describe('Language service', function() {
       chai.expect(ipCookie.args[1][2]).to.deep.equal({ expires: 365, path: '/' });
       done();
     });
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
   });
 
   it('defaults', function(done) {
     ipCookie.returns(null);
-    UserSettings.callsArgWith(0, null, { });
+    UserSettings.returns(KarmaUtils.mockPromise(null, { }));
     Settings.returns(KarmaUtils.mockPromise(null, { }));
     service().then(function(actual) {
       chai.expect(actual).to.equal('en');
@@ -77,9 +72,6 @@ describe('Language service', function() {
       chai.expect(ipCookie.args[1][2]).to.deep.equal({ expires: 365, path: '/' });
       done();
     });
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
   });
 
   it('uses cookie if set', function(done) {
@@ -91,7 +83,6 @@ describe('Language service', function() {
       chai.expect(actual).to.equal('ca');
       done();
     });
-    $rootScope.$digest();
   });
 
 });

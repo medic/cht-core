@@ -15,8 +15,8 @@ describe('SendMessage service', function() {
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ post: post, id: id }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('UserSettings', function(callback) {
-        callback(null, { phone: '+5551', name: 'jack' });
+      $provide.value('UserSettings', function() {
+        return KarmaUtils.mockPromise(null, { phone: '+5551', name: 'jack' });
       });
       $provide.value('Settings', Settings);
     });

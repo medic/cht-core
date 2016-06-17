@@ -55,42 +55,43 @@ var utils = require('kujua-utils');
     }
   );
 
-  inboxServices.factory('UserSettings', ['DB', 'Session',
-    function(DB, Session) {
-      return function(callback) {
+  inboxServices.factory('UserSettings',
+    function(
+      $q,
+      DB,
+      Session
+    ) {
+      'ngInject';
+      return function() {
         var userCtx = Session.userCtx();
         if (!userCtx) {
-          return callback(new Error('UserCtx not found.'));
+          return $q.reject(new Error('UserCtx not found'));
         }
-        getWithRemoteFallback(DB, 'org.couchdb.user:' + userCtx.name)
-          .then(function(user) {
-            callback(null, user);
-          })
-          .catch(callback);
+        return getWithRemoteFallback(DB, 'org.couchdb.user:' + userCtx.name);
       };
     }
-  ]);
+  );
 
-  inboxServices.factory('UserContact', ['$q', 'DB', 'UserSettings',
-    function($q, DB, UserSettings) {
+  inboxServices.factory('UserContact',
+    function(
+      DB,
+      UserSettings
+    ) {
+      'ngInject';
       return function() {
-        return $q(function(resolve, reject) {
-          UserSettings(function(err, user) {
-            if (err) {
-              return reject(err);
-            }
-            if (!user.contact_id) {
-              return resolve();
-            }
-            DB().get(user.contact_id).then(resolve).catch(reject);
+        return UserSettings()
+          .then(function(user) {
+            return user.contact_id && DB().get(user.contact_id);
           });
-        });
       };
     }
-  ]);
+  );
 
-  inboxServices.factory('Admins', ['$http',
-    function($http) {
+  inboxServices.factory('Admins',
+    function(
+      $http
+    ) {
+      'ngInject';
       return function(callback) {
         $http.get('/_config/admins', { cache: true })
           .success(function(data) {
@@ -99,6 +100,6 @@ var utils = require('kujua-utils');
           .error(callback);
       };
     }
-  ]);
+  );
 
 }());

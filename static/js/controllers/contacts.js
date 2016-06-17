@@ -45,17 +45,6 @@ var _ = require('underscore'),
         });
       }
 
-      var getUserSettings = function() {
-        return $q(function(resolve, reject) {
-          UserSettings(function(err, user) {
-            if (err) {
-              return reject(err);
-            }
-            resolve(user);
-          });
-        });
-      };
-
       var _query = function(options) {
         options = options || {};
         options.limit = 50;
@@ -72,7 +61,7 @@ var _ = require('underscore'),
 
         $q.all([
           Search('contacts', $scope.filters, options),
-          getUserSettings()
+          UserSettings()
         ])
           .then(function(results) {
             var data = results[0];

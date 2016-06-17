@@ -1,7 +1,22 @@
 /* globals EnketoForm */
-angular.module('inboxServices').service('Enketo', [
-  '$window', '$log', '$q', 'Auth', 'DB', 'EnketoTranslation', 'EnketoPrepopulationData', 'FileReader', 'UserSettings', 'XSLT', 'Language', 'TranslateFrom',
-  function($window, $log, $q, Auth, DB, EnketoTranslation, EnketoPrepopulationData, FileReader, UserSettings, XSLT, Language, TranslateFrom) {
+angular.module('inboxServices').service('Enketo',
+  function(
+    $log,
+    $q,
+    $window,
+    Auth,
+    DB,
+    EnketoPrepopulationData,
+    EnketoTranslation,
+    FileReader,
+    Language,
+    TranslateFrom,
+    UserSettings,
+    XSLT
+  ) {
+
+    'ngInject';
+
     var objUrls = [];
 
     var replaceJavarosaMediaWithLoaders = function(formInternalId, form) {
@@ -254,17 +269,13 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     var getContactId = function() {
-      var deferred = $q.defer();
-      UserSettings(function(err, user) {
-        if (err) {
-          return deferred.reject(err);
-        }
-        if (!user || !user.contact_id) {
-          return deferred.reject(new Error('Your user does not have an associated contact. Talk to your administrator to correct this.'));
-        }
-        deferred.resolve(user.contact_id);
-      });
-      return deferred.promise;
+      return UserSettings()
+        .then(function(user) {
+          if (!user || !user.contact_id) {
+            throw new Error('Your user does not have an associated contact. Talk to your administrator to correct this.');
+          }
+          return user.contact_id;
+        });
     };
 
     var create = function(formInternalId, record) {
@@ -323,4 +334,4 @@ angular.module('inboxServices').service('Enketo', [
       xmlCache = {};
     };
   }
-]);
+);

@@ -22,7 +22,7 @@ describe('UserContact service', function() {
   });
 
   it('returns error from user settings', function(done) {
-    UserSettings.callsArgWith(0, 'boom');
+    UserSettings.returns(KarmaUtils.mockPromise('boom'));
     service()
       .then(function() {
         done(new Error('Expected error to be thrown'));
@@ -35,7 +35,7 @@ describe('UserContact service', function() {
   });
 
   it('returns null when no configured contact', function(done) {
-    UserSettings.callsArgWith(0, null, {});
+    UserSettings.returns(KarmaUtils.mockPromise(null, {}));
     service()
       .then(function(contact) {
         chai.expect(contact).to.equal(undefined);
@@ -48,7 +48,7 @@ describe('UserContact service', function() {
   });
 
   it('returns error from getting contact', function(done) {
-    UserSettings.callsArgWith(0, null, { contact_id: 'nobody' });
+    UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: 'nobody' }));
     get.returns(KarmaUtils.mockPromise('boom'));
     service()
       .then(function() {
@@ -67,7 +67,7 @@ describe('UserContact service', function() {
 
   it('returns contact', function(done) {
     var expected = { _id: 'somebody', name: 'Some Body' };
-    UserSettings.callsArgWith(0, null, { contact_id: 'somebody' });
+    UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: 'somebody' }));
     get.returns(KarmaUtils.mockPromise(null, expected));
     service()
       .then(function(contact) {

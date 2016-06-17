@@ -534,25 +534,24 @@ var feedback = require('../modules/feedback'),
         $rootScope.$broadcast('EditUserInit', editUserModel);
       };
 
-      var updateEditUserModel = function(callback) {
-        UserSettings(function(err, user) {
-          if (err) {
-            return $log.error('Error getting user', err);
-          }
-          editUserModel = {
-            id: user._id,
-            rev: user._rev,
-            name: user.name,
-            fullname: user.fullname,
-            email: user.email,
-            phone: user.phone,
-            language: { code: user.language },
-            contact_id: user.contact_id
-          };
-          if (callback) {
-            callback(user);
-          }
-        });
+      var updateEditUserModel = function() {
+        return UserSettings()
+          .then(function(user) {
+            editUserModel = {
+              id: user._id,
+              rev: user._rev,
+              name: user.name,
+              fullname: user.fullname,
+              email: user.email,
+              phone: user.phone,
+              language: { code: user.language },
+              contact_id: user.contact_id
+            };
+            return user;
+          })
+          .catch(function(err) {
+            $log.error('Error getting user settings', err);
+          });
       };
 
       Changes({
@@ -570,7 +569,7 @@ var feedback = require('../modules/feedback'),
           $scope.enabledLocales = _.reject(settings.locales, function(locale) {
             return !!locale.disabled;
           });
-          updateEditUserModel(function(user) {
+          updateEditUserModel().then(function(user) {
             filteredModals = _.filter(startupModals, function(modal) {
               return modal.required(settings, user);
             });
