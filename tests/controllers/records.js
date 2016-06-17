@@ -23,6 +23,7 @@ exports['create returns error when unsupported content type'] = function(test) {
 
 exports['create form returns formated error from string'] = function(test) {
   test.expect(2);
+  sinon.stub(db, 'getPath').returns('dummy/path');
   var req = sinon.stub(db, 'request').callsArgWith(1, 'icky');
   controller.create({
     message: 'test',
@@ -48,6 +49,7 @@ exports['create form returns error if missing required field'] = function(test) 
 
 exports['create json returns formated error from string'] = function(test) {
   test.expect(2);
+  sinon.stub(db, 'getPath').returns('dummy/path');
   var req = sinon.stub(db, 'request').callsArgWith(1, 'icky');
   var body = {
     _meta: {
@@ -68,7 +70,7 @@ exports['create json returns error if missing _meta property'] = function(test) 
   var body = { name: 'bob' };
   controller.create(body, 'json', function(err) {
     test.equal(err.message, 'Missing _meta property.');
-    // request should never be called if validation does not 
+    // request should never be called if validation fails
     test.equals(req.callCount, 0);
     test.done();
   });

@@ -3,7 +3,8 @@ var request = require('request'),
     sinon = require('sinon'),
     auth = require('../auth'),
     utils = require('./utils'),
-    config = require('../config');
+    config = require('../config'),
+    db = require('../db');
 
 exports.setUp = function(callback) {
   callback();
@@ -16,13 +17,21 @@ exports.tearDown = function (callback) {
 
 exports['auth returns error when not logged in'] = function(test) {
   test.expect(9);
+  db.settings = {
+    protocol: 'protocol',
+    port: 'port',
+    host: 'hostname',
+    db: 'dbName',
+    auditDb: 'auditDbName',
+    ddoc: 'medic'
+  };
   var format = sinon.stub(url, 'format').returns('http://abc.com');
   var get = sinon.stub(request, 'get').callsArgWith(1, null, null);
   auth.check({ }, null, null, function(err) {
     test.equals(format.callCount, 1);
-    test.equals(format.args[0][0].protocol, 'http');
-    test.equals(format.args[0][0].hostname, 'local');
-    test.equals(format.args[0][0].port, '123');
+    test.equals(format.args[0][0].protocol, 'protocol');
+    test.equals(format.args[0][0].hostname, 'hostname');
+    test.equals(format.args[0][0].port, 'port');
     test.equals(format.args[0][0].pathname, '/_session');
     test.equals(get.callCount, 1);
     test.equals(get.args[0][0].url, 'http://abc.com');
