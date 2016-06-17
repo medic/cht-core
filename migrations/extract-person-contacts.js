@@ -1,36 +1,42 @@
 var async = require('async'),
-    db = require('../db');
+    db = require('../db'),
+    people = require('../controllers/people'),
+    places = require('../controllers/places');
 
 var extract = function(row, callback) {
-  db.medic.get(row.id, function(err, doc) {
+  db.medic.get(row.id, function(err, facility) {
     if (err) {
       if (err.statusCode === 404) {
         return callback();
       }
       return callback(err);
     }
-    if (!doc.contact) {
+    if (!facility.contact) {
       // no contact to migrate
       return callback();
     }
-    if (doc.contact._id) {
+    if (facility.contact._id) {
       // already migrated
       return callback();
     }
-    db.medic.insert({
-      type: 'person',
-      name: doc.contact.name,
-      phone: doc.contact.phone,
-      parent: doc
-    }, function(err, result) {
-      if (err) {
-        return callback(err);
-      }
-      doc.contact.type = 'person';
-      doc.contact._id = result.id;
-      doc.contact._rev = result.rev;
-      db.medic.insert(doc, callback);
-    });
+    people.createPerson(
+      {
+        name: facility.contact.name,
+        phone: facility.contact.phone,
+        place: facility._id
+      },
+      function(err, result) {
+        if (err) {
+          return callback(err);
+        }
+        places.updatePlace(facility._id, { contact: result.id },
+          function(err, result) {
+            if (err) {
+              console.error('Failed to update contact on facility', facility._id);
+            }
+            callback(err, result);
+        });
+      });
   });
 };
 
