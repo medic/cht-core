@@ -26,7 +26,7 @@ describe('UserSettings service', function() {
     KarmaUtils.restore(userCtx, get);
   });
 
-  it('errors when no user ctx', function() {
+  it('errors when no user ctx', function(done) {
     userCtx.returns();
     return service()
       .then(function() {
@@ -34,6 +34,7 @@ describe('UserSettings service', function() {
       })
       .catch(function(err) {
         chai.expect(err.message).to.equal('UserCtx not found');
+        done();
       });
   });
 
@@ -64,7 +65,7 @@ describe('UserSettings service', function() {
       });
   });
 
-  it('errors if remote db errors', function() {
+  it('errors if remote db errors', function(done) {
     userCtx.returns({ name: 'jack' });
     get
       .onCall(0).returns(KarmaUtils.mockPromise({ code: 404 }))
@@ -79,6 +80,7 @@ describe('UserSettings service', function() {
         chai.expect(get.args[0][0]).to.equal('org.couchdb.user:jack');
         chai.expect(get.args[1][0]).to.equal('org.couchdb.user:jack');
         chai.expect(err.message).to.equal('nope');
+        done();
       });
   });
 
