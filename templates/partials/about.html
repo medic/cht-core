@@ -17,28 +17,6 @@
       </ul>
     </div>
 
-    <div ng-if="initialReplication">
-      <h3 translate>initial.replication.title</h3>
-      <ul>
-        <li>
-          <span translate>initial.replication.status</span>:
-          <span translate>{{initialReplication.status}}</span>
-        </li>
-        <li ng-show="initialReplication.duration">
-          <span translate>initial.replication.duration</span>:
-          <span translate="number.seconds" translate-values="{ number: '{{initialReplication.duration / 1000 | number:1}}' }"></span>
-        </li>
-        <li ng-show="initialReplication.dataUsage">
-          <span translate>android_app.data_usage.rx</span>:
-          <span translate="number.bytes" translate-values="{ number: '{{initialReplication.dataUsage.rx | number}}' }"></span>
-        </li>
-        <li ng-show="initialReplication.dataUsage">
-          <span translate>android_app.data_usage.tx</span>:
-          <span translate="number.bytes" translate-values="{ number: '{{initialReplication.dataUsage.tx | number}}' }"></span>
-        </li>
-      </ul>
-    </div>
-
     <div ng-if="androidDataUsage">
       <h3 translate>android_app.data_usage.title</h3>
       <p translate>android_app.data_usage.description</p>

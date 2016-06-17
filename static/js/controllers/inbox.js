@@ -59,19 +59,8 @@ var feedback = require('../modules/feedback'),
       'ngInject';
 
       Session.init();
-
       TrafficStats($scope);
-
-      $scope.initialReplication = {
-        status: 'initial.replication.status.in_progress'
-      };
-
-      DBSync(function(err, result) {
-        if (err) {
-          $log.debug('Error initializing DB sync. Continuing anyway.', err);
-        }
-        $scope.initialReplication = result;
-      });
+      DBSync();
 
       RulesEngine.init
         .then(function() {
