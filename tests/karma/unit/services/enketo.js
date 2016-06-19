@@ -162,7 +162,7 @@ describe('Enketo service', function() {
         })
         .catch(function(actual) {
           chai.expect(enketoInit.callCount).to.equal(1);
-          chai.expect(actual).to.deep.equal(expected);
+          chai.expect(actual.message).to.equal(JSON.stringify(expected));
           done();
         });
     });
