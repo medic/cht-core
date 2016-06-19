@@ -65,28 +65,23 @@ describe('DBSync service', function() {
       { id: 'i' },
       { id: 'c' }
     ] }));
-    service(function() {
-      setTimeout(function() {
-        chai.expect(query.callCount).to.equal(2); // 2 'from' calls, 0 'to' calls
-        chai.expect(query.args[0][0]).to.equal('medic/doc_by_place');
-        chai.expect(query.args[0][1].keys).to.deep.equal([['_all'], ['abc']]);
-        chai.expect(from.callCount).to.equal(2); // initial sync then continuous
-        console.log(JSON.stringify(from.args[0]));
-        chai.expect(from.args[0][1].live).to.equal(false);
-        chai.expect(from.args[0][1].retry).to.equal(false);
-        chai.expect(from.args[0][1].doc_ids).to.deep.equal(['m','e','d','i','c','mobile']);
-        chai.expect(from.args[1][1].live).to.equal(true);
-        chai.expect(from.args[1][1].retry).to.equal(true);
-        chai.expect(from.args[1][1].doc_ids).to.deep.equal(['m','e','d','i','c','mobile']);
-        chai.expect(to.callCount).to.equal(1);
-        chai.expect(to.args[0][1].live).to.equal(true);
-        chai.expect(to.args[0][1].retry).to.equal(true);
-        var backoff = to.args[0][1].back_off_function;
-        chai.expect(backoff(0)).to.equal(1000);
-        chai.expect(backoff(2000)).to.equal(4000);
-        chai.expect(backoff(31000)).to.equal(60000);
-        done();
-      });
+    service();
+    setTimeout(function() {
+      chai.expect(query.callCount).to.equal(1); // 1 'from' calls, 0 'to' calls
+      chai.expect(query.args[0][0]).to.equal('medic/doc_by_place');
+      chai.expect(query.args[0][1].keys).to.deep.equal([['_all'], ['abc']]);
+      chai.expect(from.callCount).to.equal(1);
+      chai.expect(from.args[0][1].live).to.equal(true);
+      chai.expect(from.args[0][1].retry).to.equal(true);
+      chai.expect(from.args[0][1].doc_ids).to.deep.equal(['m','e','d','i','c','mobile']);
+      chai.expect(to.callCount).to.equal(1);
+      chai.expect(to.args[0][1].live).to.equal(true);
+      chai.expect(to.args[0][1].retry).to.equal(true);
+      var backoff = to.args[0][1].back_off_function;
+      chai.expect(backoff(0)).to.equal(1000);
+      chai.expect(backoff(2000)).to.equal(4000);
+      chai.expect(backoff(31000)).to.equal(60000);
+      done();
     });
   });
 

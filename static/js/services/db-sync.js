@@ -88,14 +88,6 @@ var _ = require('underscore'),
         }
       };
 
-      var getDataUsage = function() {
-        if (window.medicmobile_android && window.medicmobile_android.getDataUsage) {
-          return JSON.parse(window.medicmobile_android.getDataUsage());
-        }
-      };
-
-      var dbSyncStartTime = Date.now();
-      var dbSyncStartData = getDataUsage();
       var replicateTiming = {};
 
       var replicate = function(direction, options) {
@@ -139,24 +131,12 @@ var _ = require('underscore'),
 
       };
 
-      var initialReplicationDone = function(err, replicateDoneCallback) {
-        var result = {};
-        result.status = err ? 'initial.replication.status.failed' : 'initial.replication.status.complete';
-        result.duration = Date.now() - dbSyncStartTime;
-        var dbSyncEndData = getDataUsage();
-        if (dbSyncStartData && dbSyncEndData) {
-          result.dataUsage = {
-            rx: dbSyncEndData.app.rx - dbSyncStartData.app.rx,
-            tx: dbSyncEndData.app.tx - dbSyncStartData.app.tx,
-          };
+      return function() {
+        if (Session.isAdmin()) {
+          // admins have potentially too much data so bypass local pouch
+          $log.debug('You have administrative privileges; not replicating');
+          return;
         }
-        dbSyncStartTime = null;
-        dbSyncStartData = null;
-        $log.info('Initial sync complete in ' + (result.duration / 1000) + ' seconds');
-        replicateDoneCallback(null, result);
-      };
-
-      var startContinuousReplication = function() {
         replicate('from');
         replicate('to', {
           filter: function(doc) {
@@ -164,29 +144,6 @@ var _ = require('underscore'),
             return doc._id !== '_design/medic';
           }
         });
-      };
-
-      return function(replicateDoneCallback) {
-        if (Session.isAdmin()) {
-          // admins have potentially too much data so bypass local pouch
-          $log.debug('You have administrative privileges; not replicating');
-          return replicateDoneCallback();
-        }
-
-        replicate('from', {
-          live: false,
-          retry: false,
-          timeout: 30000,
-          heartbeat: false
-        })
-          .then(function() {
-            initialReplicationDone(null, replicateDoneCallback);
-            startContinuousReplication();
-          })
-          .catch(function(err) {
-            initialReplicationDone(err, replicateDoneCallback);
-            startContinuousReplication();
-          });
       };
     }
   );
