@@ -501,7 +501,7 @@ app.post('/api/v1/people', jsonParser, function(req, res) {
 });
 
 // DB replication endpoint
-var changesHander = _.partial(require('./handlers/changes'), proxy);
+var changesHander = _.partial(require('./handlers/changes').request, proxy);
 app.get(pathPrefix + '_changes', changesHander);
 app.post(pathPrefix + '_changes', jsonParser, changesHander);
 
