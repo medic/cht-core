@@ -41,7 +41,7 @@ define( function( require, exports, module ) {
         var translate = angularServices.get('$translate').instant,
             Search = angularServices.get('Search'),
             $q = angularServices.get('$q'),
-            DB = angularServices.get('DB').get();
+            DB = angularServices.get('DB');
 
         var $question = $(this.element);
 

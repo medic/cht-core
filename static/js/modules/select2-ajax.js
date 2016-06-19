@@ -85,7 +85,7 @@ var _ = require('underscore'),
       if (!value || value.length === 0) {
         return $q.resolve(selectEl);
       } else {
-        return DB.get(value)
+        return DB().get(value)
           .then(function(doc) {
             var text = formatSelection({doc: doc});
             selectEl.children('option[value='+value+']').text(text);

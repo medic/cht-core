@@ -180,7 +180,7 @@ angular.module('inboxServices').service('Enketo',
           });
           var loadErrors = form.init();
           if (loadErrors && loadErrors.length) {
-            return $q.reject(loadErrors);
+            return $q.reject(new Error(JSON.stringify(loadErrors)));
           }
           wrapper.show();
 
