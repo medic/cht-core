@@ -59,6 +59,7 @@
   require('./target-generator');
   require('./traffic-stats');
   require('./translate-from');
+  require('./translation-loader');
   require('./update-contact');
   require('./update-facility');
   require('./update-settings');

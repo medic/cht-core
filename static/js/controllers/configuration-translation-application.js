@@ -39,12 +39,25 @@ var _ = require('underscore');
       $rootScope,
       $scope,
       Language,
-      Settings
+      Settings,
+      TranslationLoader
     ) {
 
       'ngInject';
 
       var updateTranslationModels = function() {
+        // TODO fetch docs directly based on selected lhs and rhs
+        $q.all($scope.locales.map(function(locale) {
+          return TranslationLoader({ key: locale.code });
+        }))
+          .then(function(translations) {
+            console.log('translations', translations);
+            $scope.translationModels = createTranslationModels(
+              translations,
+              $scope.localeModel
+            );
+          });
+
         Settings()
           .then(function(settings) {
             $scope.translationModels = createTranslationModels(
@@ -57,11 +70,12 @@ var _ = require('underscore');
           });
       };
 
-      $q.all([Settings(), Language()])
+      $q.all([ Settings(), Language() ])
         .then(function(results) {
           var settings = results[0];
           var language = results[1];
           $scope.locales = settings.locales;
+          console.log('settings.locales', settings.locales);
           $scope.localeModel = createLanguageModel(language, settings.locales);
           updateTranslationModels();
           $scope.$watch('localeModel', function(curr, prev) {
@@ -74,6 +88,7 @@ var _ = require('underscore');
           $log.error('Error loading settings', err);
         });
 
+      // TODO Pull out as angular modal controller thingee
       $scope.prepareEditTranslation = function(translation) {
         $rootScope.$broadcast('EditTranslationInit', translation, $scope.locales);
       };
