@@ -19,11 +19,13 @@ var _ = require('underscore');
           return DB()
             .get(doc.parent._id)
             .then(function(parent) {
-              if (parent.contact.phone !== doc.phone) {
-                return;
+              if (parent.contact &&
+                  parent.contact._id &&
+                  parent.contact._id === doc._id) {
+                // this doc is the contact for the parent - update parent
+                parent.contact = null;
+                return parent;
               }
-              parent.contact = null;
-              return parent;
             });
         }
         return $q.resolve();
