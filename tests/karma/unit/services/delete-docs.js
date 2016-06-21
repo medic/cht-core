@@ -239,7 +239,7 @@ describe('DeleteDocs service', function() {
     });
   });
 
-  it('handles the parents contact being null', function() {
+  it('handles the parents contact being null - #2416', function() {
     var clinic = {
       _id: 'b',
       type: 'clinic'
@@ -261,6 +261,32 @@ describe('DeleteDocs service', function() {
       chai.expect(bulkDocs.args[0][0].length).to.equal(1);
       chai.expect(bulkDocs.args[0][0][0]._id).to.equal(person._id);
       chai.expect(bulkDocs.args[0][0][0]._deleted).to.equal(true);
+    });
+  });
+
+  it('does not modify the given array - #2417', function() {
+    var clinic = {
+      _id: 'b',
+      type: 'clinic',
+      contact: {
+        _id: 'a',
+        name: 'sally'
+      }
+    };
+    var person = {
+      _id: 'a',
+      type: 'person',
+      name: 'sally',
+      parent: {
+        _id: 'b'
+      }
+    };
+    var docs = [ person ];
+    get.returns(KarmaUtils.mockPromise(null, clinic));
+    bulkDocs.returns(KarmaUtils.mockPromise());
+    return service(docs).then(function() {
+      chai.expect(docs.length).to.equal(1);
+      chai.expect(bulkDocs.args[0][0].length).to.equal(2);
     });
   });
 });

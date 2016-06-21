@@ -60,6 +60,8 @@ var _ = require('underscore');
       return function(docs) {
         if (!_.isArray(docs)) {
           docs = [ docs ];
+        } else {
+          docs = _.clone(docs);
         }
         docs.forEach(function(doc) {
           doc._deleted = true;
