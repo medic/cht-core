@@ -33,18 +33,24 @@
         <dt translate>debug.db_info.seq</dt>
         <dd>{{dbInfo.update_seq}}</dd>
         <dt translate>replication.last.success.to</dt>
-        <dd ng-if="replicationStatus.lastSuccess.to">
+        <dd ng-if="!replicationStatus.disabled && replicationStatus.lastSuccess.to">
           {{replicationStatus.lastSuccess.to | simpleDateTime}}
         </dd>
-        <dd ng-if="!replicationStatus.lastSuccess.to" translate>
+        <dd ng-if="!replicationStatus.disabled && !replicationStatus.lastSuccess.to" translate>
           replication.last.success.unknown
+        </dd>
+        <dd ng-if="replicationStatus.disabled" translate>
+          replication.disabled
         </dd>
         <dt translate>replication.last.success.from</dt>
-        <dd ng-if="replicationStatus.lastSuccess.from">
+        <dd ng-if="!replicationStatus.disabled && replicationStatus.lastSuccess.from">
           {{replicationStatus.lastSuccess.from | simpleDateTime}}
         </dd>
-        <dd ng-if="!replicationStatus.lastSuccess.from" translate>
+        <dd ng-if="!replicationStatus.disabled && !replicationStatus.lastSuccess.from" translate>
           replication.last.success.unknown
+        </dd>
+        <dd ng-if="replicationStatus.disabled" translate>
+          replication.disabled
         </dd>
       </dl>
     </div>

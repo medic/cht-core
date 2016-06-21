@@ -120,8 +120,9 @@ var _ = require('underscore'),
 
       return function(successCallback) {
         if (Session.isAdmin()) {
-          // admins have potentially too much data so bypass local pouch
-          $log.debug('You have administrative privileges; not replicating');
+          if (successCallback) {
+            successCallback({ disabled: true });
+          }
           return;
         }
         replicate('from', successCallback);

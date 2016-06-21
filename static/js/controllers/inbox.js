@@ -68,6 +68,8 @@ var feedback = require('../modules/feedback'),
       DBSync(function(status) {
         if (status.disabled) {
           $scope.replicationStatus.disabled = true;
+          // admins have potentially too much data so bypass local pouch
+          $log.debug('You have administrative privileges; not replicating');
           return;
         }
         var now = Date.now();
