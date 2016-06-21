@@ -64,7 +64,6 @@ var runMigration = function(migration, callback) {
 
 var runMigrations = function(meta, migrations, callback) {
   migrations.sort(sortMigrations);
-  console.log('Migrations:', migrations);
   async.eachSeries(
     migrations,
     function(migration, callback) {
