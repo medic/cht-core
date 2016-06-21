@@ -174,6 +174,26 @@ describe('Search service', function() {
         });
     });
 
+    it('returns the last page correctly when reverse sorted - #2411', function() {
+      var viewResult = { rows: [] };
+      for (var i = 0; i < 15; i++) {
+        viewResult.rows.push({ id: i, value: 15 - i });
+      }
+      GenerateSearchRequests.returns([
+        { view: 'get_stuff', params: { key: [ 'a' ] } },
+        { view: 'get_moar_stuff', params: { key: [ 'b' ] } }
+      ]);
+      DbView.onCall(0).returns(KarmaUtils.mockPromise(null, { results: viewResult }));
+      DbView.onCall(1).returns(KarmaUtils.mockPromise(null, { results: viewResult }));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, []));
+      return service('reports', {}, { skip: 14, limit: 5 })
+        .then(function(actual) {
+          chai.expect(actual).to.deep.equal([]);
+          chai.expect(GetDataRecords.callCount).to.equal(1);
+          chai.expect(GetDataRecords.args[0][0]).to.deep.equal([ 14 ]);
+        });
+    });
+
     it('returns results when multiple filters', function() {
       var expected = [ { id: 'a' }, { id: 'b' } ];
       GenerateSearchRequests.returns([

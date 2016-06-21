@@ -41,6 +41,9 @@ var _ = require('underscore');
           // descending
           end = rows.length - options.skip;
           start = end - options.limit;
+          if (start < 0) {
+            start = 0;
+          }
         } else {
           // ascending
           start = options.skip;
