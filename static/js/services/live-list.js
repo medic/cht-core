@@ -25,6 +25,20 @@ angular.module('inboxServices').factory('LiveListConfig',
 
     'ngInject';
 
+    var handleChange = function(change, lists) {
+      if (change.deleted) {
+        lists.forEach(function(list) {
+          list.remove({ _id: change.id });
+        });
+        return;
+      }
+      GetDataRecords(change.id).then(function(doc) {
+        lists.forEach(function(list) {
+          list.update(doc);
+        });
+      });
+    };
+
     // Configure LiveList service
     return function($scope) {
 
@@ -61,11 +75,7 @@ angular.module('inboxServices').factory('LiveListConfig',
       Changes({
         key: 'contacts-list',
         callback: function(change) {
-          if (change.deleted) {
-            LiveList.contacts.remove({ _id: change.id });
-            return;
-          }
-          GetDataRecords(change.id).then(LiveList.contacts.update);
+          handleChange(change, [ LiveList.contacts, LiveList['contact-search'] ]);
         },
         filter: function(change) {
           return CONTACT_TYPES.indexOf(change.doc.type) !== -1;
@@ -117,11 +127,7 @@ angular.module('inboxServices').factory('LiveListConfig',
       Changes({
         key: 'reports-list',
         callback: function(change) {
-          if (change.deleted) {
-            LiveList.reports.remove({ _id: change.id });
-            return;
-          }
-          GetDataRecords(change.id).then(LiveList.reports.update);
+          handleChange(change, [ LiveList.reports, LiveList['report-search'] ]);
         },
         filter: function(change) {
           return change.doc.form;
