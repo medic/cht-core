@@ -68,34 +68,28 @@ var _ = require('underscore'),
           heartbeat: 10000,
           back_off_function: backOffFunction
         });
-        if (direction === 'from') {
-          return getViewKeys()
-            .then(function(keys) {
-              return DB().query('medic/doc_by_place', { keys: keys });
-            })
-            .then(function(viewResult) {
-              var userCtx = Session.userCtx();
-              var ids = _.pluck(viewResult.rows, 'id');
-              ids.push('org.couchdb.user:' + userCtx && userCtx.name);
-              return ids;
-            })
-            .then(function(ids) {
-              options.doc_ids = ids;
-              return options;
-            });
-        } else {
+        if (direction === 'to') {
           return $q.resolve(options);
         }
+        return getViewKeys()
+          .then(function(keys) {
+            return DB().query('medic/doc_by_place', { keys: keys });
+          })
+          .then(function(viewResult) {
+            var userCtx = Session.userCtx();
+            var ids = _.pluck(viewResult.rows, 'id');
+            ids.push('org.couchdb.user:' + userCtx && userCtx.name);
+            return ids;
+          })
+          .then(function(ids) {
+            options.doc_ids = ids;
+            return options;
+          });
       };
 
-      var replicateTiming = {};
-
-      var replicate = function(direction, options) {
+      var replicate = function(direction, successCallback, options) {
         return getOptions(direction, options)
           .then(function(options) {
-            replicateTiming[direction] = {};
-            replicateTiming[direction].start =
-              replicateTiming[direction].last = Date.now();
             var remote = DB({ remote: true });
             return DB().replicate[direction](remote, options)
               .on('denied', function(err) {
@@ -107,17 +101,10 @@ var _ = require('underscore'),
               .on('error', function(err) {
                 $log.error('Error replicating ' + direction + ' remote server', err);
               })
-              .on('paused', function() {
-                var now = Date.now();
-                var start = replicateTiming[direction].start;
-                var last = replicateTiming[direction].last;
-                replicateTiming[direction].last = now;
-
-                $log.info('Replicate ' + direction + ' hitting pause after ' +
-                  ((now - start) / 1000) +
-                  ' total seconds, with ' +
-                  ((now - last) / 1000) +
-                  ' seconds between pauses.', start, last, now);
+              .on('paused', function(err) {
+                if (!err && successCallback) {
+                  successCallback({ direction: direction });
+                }
               })
               .on('complete', function (info) {
                 if (!info.ok && authenticationIssue(info.errors)) {
@@ -131,14 +118,14 @@ var _ = require('underscore'),
 
       };
 
-      return function() {
+      return function(successCallback) {
         if (Session.isAdmin()) {
           // admins have potentially too much data so bypass local pouch
           $log.debug('You have administrative privileges; not replicating');
           return;
         }
-        replicate('from');
-        replicate('to', {
+        replicate('from', successCallback);
+        replicate('to', successCallback, {
           filter: function(doc) {
             // don't try to replicate ddoc back to the server
             return doc._id !== '_design/medic';

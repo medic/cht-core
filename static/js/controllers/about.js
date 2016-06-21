@@ -47,7 +47,7 @@ var _ = require('underscore');
       }
 
       DB().info().then(function (result) {
-        $scope.dbInfo = JSON.stringify(result, null, 2);
+        $scope.dbInfo = result;
       }).catch(function (err) {
         $log.error('Failed to fetch DB info', err);
       });
