@@ -43,7 +43,7 @@ var _ = require('underscore'),
 
   var initialReplication = function(db, username) {
     if (utils.isUserAdmin(getUserCtx())) {
-      return callback();
+      return window.PouchDB.utils.Promise.resolve();
     }
     var dbSyncStartTime = Date.now();
     var dbSyncStartData = getDataUsage();
