@@ -78,16 +78,16 @@ var _ = require('underscore'),
         });
       };
 
-      $scope.$on('EditTranslationInit', function(e, translation, locales) {
+      $scope.$on('EditTranslationInit', function(e, key, translations) {
         $scope.translationModel = { 
-          key: translation.key,
-          path: translation.path,
-          default: translation.default
+          key: key,
+          // path: translation.path,
+          // default: translation.default
         };
-        $scope.translationModel.values = _.map(locales, function(locale) {
+        $scope.translationModel.values = Object.keys(translations).map(function(locale) {
           return {
             locale: locale,
-            value: findValue(locale, translation)
+            value: translations[locale][key]
           };
         });
       });

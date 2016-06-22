@@ -71,6 +71,7 @@ var _ = require('underscore');
         });
 
       $scope.prepareEditTranslation = function(translation) {
+        // TODO update this too...
         $rootScope.$broadcast('EditTranslationInit', translation, $scope.locales);
       };
       $scope.$on('TranslationUpdated', function(e, data) {

@@ -14,7 +14,7 @@
           </div>
 
           <div class="form-group" ng-repeat="translation in translationModel.values">
-            <label>{{translation.locale.name}}</label>
+            <label>{{translation.locale}}</label>
             <textarea class="form-control" ng-model="translation.value">{{translation.value}}</textarea>
           </div>
 

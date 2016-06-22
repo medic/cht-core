@@ -6,67 +6,70 @@ var _ = require('underscore');
 
   var inboxControllers = angular.module('inboxControllers');
 
-  var findTranslation = function(locale, translation) {
-    var value = _.findWhere(translation.translations, { locale: locale });
-    return value && value.content;
-  };
-
-  var createLanguageModel = function(language, languages) {
-    var rhs = _.find(languages, function(current) {
-      return current.code !== language;
-    });
-    return {
-      lhs: language || 'en',
-      rhs: rhs && rhs.code || 'en'
-    };
-  };
-
-  var createTranslationModels = function(translations, localeModel) {
-    return _.map(translations, function(translation) {
-      return {
-        key: translation.key,
-        lhs: findTranslation(localeModel.lhs, translation),
-        rhs: findTranslation(localeModel.rhs, translation),
-        raw: translation
-      };
-    });
-  };
-
   inboxControllers.controller('ConfigurationTranslationApplicationCtrl',
     function (
       $log,
       $q,
       $rootScope,
       $scope,
+      DB,
       Language,
-      Settings,
-      TranslationLoader
+      Settings
     ) {
 
       'ngInject';
 
-      var updateTranslationModels = function() {
-        // TODO fetch docs directly based on selected lhs and rhs
-        $q.all($scope.locales.map(function(locale) {
-          return TranslationLoader({ key: locale.code });
-        }))
-          .then(function(translations) {
-            console.log('translations', translations);
-            $scope.translationModels = createTranslationModels(
-              translations,
-              $scope.localeModel
-            );
-          });
+      var createLanguageModel = function(language, languages) {
+        var rhs = _.find(languages, function(current) {
+          return current.code !== language;
+        });
+        return {
+          lhs: language || 'en',
+          rhs: rhs && rhs.code || 'en'
+        };
+      };
 
-        Settings()
-          .then(function(settings) {
+      var createTranslationModels = function() {
+        // TODO null checks
+        var lhs = $scope.translations[$scope.localeModel.lhs];
+        var rhs = $scope.translations[$scope.localeModel.rhs];
+        return Object.keys(lhs).map(function(key) {
+          return {
+            key: key,
+            lhs: lhs[key],
+            rhs: rhs[key]
+          }
+        });
+      };
+
+      var getTranslations = function(locale) {
+        return DB().get('messages-' + locale)
+          .catch(function(err) {
+            if (err.status === 404) {
+              // doc not found - run with it
+              return {};
+            }
+            throw err;
+          });
+      };
+
+      var updateTranslationModels = function() {
+        $q.all($scope.locales.map(function(locale) {
+          return getTranslations(locale.code);
+        }))
+          .then(function(results) {
+            $scope.translations = {};
+            results.forEach(function(doc) {
+              $scope.translations[doc.code] = doc.values;
+            });
+            console.log('results', results, $scope.translations);
             $scope.translationModels = createTranslationModels(
-              settings.translations,
-              $scope.localeModel
+              results[0],
+              results[1]
             );
           })
           .catch(function(err) {
-            $log.error('Error loading settings', err);
+            $log.error('Error fetching translation documents', err);
           });
       };
 
@@ -89,9 +92,11 @@ var _ = require('underscore');
         });
 
       // TODO Pull out as angular modal controller thingee
-      $scope.prepareEditTranslation = function(translation) {
-        $rootScope.$broadcast('EditTranslationInit', translation, $scope.locales);
+      // TODO Change translation to key
+      $scope.prepareEditTranslation = function(key) {
+        $rootScope.$broadcast('EditTranslationInit', key, $scope.translations);
       };
+      // TODO use db changes feed
       $scope.$on('TranslationUpdated', function(e, data) {
         if (data.translations) {
           updateTranslationModels();

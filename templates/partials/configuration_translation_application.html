@@ -6,7 +6,7 @@
     <select class="form-control small" ng-model="localeModel.rhs" ng-options="locale.code as locale.name for locale in locales"></select>
   </div>
 </div>
-<div class="row translation selection" ng-repeat="translation in translationModels" data-toggle="modal" data-target="#edit-translation" ng-click="prepareEditTranslation(translation.raw)">
+<div class="row translation selection" ng-repeat="translation in translationModels" data-toggle="modal" data-target="#edit-translation" ng-click="prepareEditTranslation(translation.key)">
   <div class="col-xs-6">
     {{translation.lhs}}
   </div>
