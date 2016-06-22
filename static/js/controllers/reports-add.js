@@ -5,8 +5,18 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ReportsAddCtrl',
-    ['$log', '$scope', '$state', '$q', '$translate', 'DB', 'Enketo', 'Snackbar',
-    function ($log, $scope, $state, $q, $translate, DB, Enketo, Snackbar) {
+    function (
+      $log,
+      $q,
+      $scope,
+      $state,
+      $translate,
+      DB,
+      Enketo,
+      Snackbar
+    ) {
+
+      'ngInject';
 
       var getSelected = function() {
         if ($state.params.formId) { // adding
@@ -52,8 +62,8 @@
 
       $scope.save = function() {
         $scope.saving = true;
-        // TODO pass doc here
-        Enketo.save($scope.selected.form, $scope.form, $scope.selected._id)
+        var doc = $scope.selected[0].report;
+        Enketo.save(doc.form, $scope.form, doc._id)
           .then(function(doc) {
             $log.debug('saved report', doc);
             $scope.saving = false;
@@ -73,6 +83,6 @@
         }
       });
     }
-  ]);
+  );
 
 }());
