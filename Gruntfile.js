@@ -224,6 +224,10 @@ module.exports = function(grunt) {
             // patch pouch to record seq even when no changes
             // https://github.com/pouchdb/pouchdb/issues/5145
             'patch node_modules/pouchdb/lib/index-browser.js < patches/pouchdb-update-seq-more-often.patch',
+
+            // patch pouch to not use doc_ids in the replication id calculation
+            // https://github.com/medic/medic-webapp/issues/2404
+            'patch node_modules/pouchdb/lib/index-browser.js < patches/pouchdb-replication-id-generator.patch',
           ];
           return patches.join(' && ');
         }

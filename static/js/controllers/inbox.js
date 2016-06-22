@@ -60,7 +60,24 @@ var feedback = require('../modules/feedback'),
 
       Session.init();
       TrafficStats($scope);
-      DBSync();
+
+      $scope.replicationStatus = {
+        disabled: false,
+        lastSuccess: { }
+      };
+      DBSync(function(status) {
+        if (status.disabled) {
+          $scope.replicationStatus.disabled = true;
+          // admins have potentially too much data so bypass local pouch
+          $log.debug('You have administrative privileges; not replicating');
+          return;
+        }
+        var now = Date.now();
+        var last = $scope.replicationStatus.lastSuccess[status.direction];
+        $scope.replicationStatus.lastSuccess[status.direction] = now;
+        var delay = last ? (now - last) / 1000 : 'unknown';
+        $log.info('Replicate ' + status.direction + ' server successful with ' + delay + ' seconds since the previous successful replication.');
+      });
 
       RulesEngine.init
         .then(function() {

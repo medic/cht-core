@@ -101,14 +101,13 @@ describe('DeleteDocs service', function() {
       _id: 'b',
       type: 'clinic',
       contact: {
-        name: 'sally',
-        phone: '+555'
+        _id: 'a',
+        name: 'sally'
       }
     };
     var person = {
       _id: 'a',
       type: 'person',
-      phone: '+555',
       name: 'sally',
       parent: {
         _id: 'b'
@@ -185,14 +184,13 @@ describe('DeleteDocs service', function() {
       _id: 'b',
       type: 'clinic',
       contact: {
-        name: 'sally',
-        phone: '+555'
+        _id: 'a',
+        name: 'sally'
       }
     };
     var person = {
       _id: 'a',
       type: 'person',
-      phone: '+555',
       name: 'sally',
       parent: {
         _id: 'b'
@@ -212,19 +210,18 @@ describe('DeleteDocs service', function() {
     });
   });
 
-  it('does not update clinic when phone does not match', function() {
+  it('does not update clinic when id does not match', function() {
     var clinic = {
       _id: 'b',
       type: 'clinic',
       contact: {
-        name: 'sally',
-        phone: '+666'
+        _id: 'c',
+        name: 'sally'
       }
     };
     var person = {
       _id: 'a',
       type: 'person',
-      phone: '+555',
       name: 'sally',
       parent: {
         _id: 'b'
@@ -236,9 +233,60 @@ describe('DeleteDocs service', function() {
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.args[0][0]).to.equal(clinic._id);
       chai.expect(bulkDocs.callCount).to.equal(1);
+      chai.expect(bulkDocs.args[0][0].length).to.equal(1);
       chai.expect(bulkDocs.args[0][0][0]._id).to.equal(person._id);
       chai.expect(bulkDocs.args[0][0][0]._deleted).to.equal(true);
     });
   });
 
+  it('handles the parents contact being null - #2416', function() {
+    var clinic = {
+      _id: 'b',
+      type: 'clinic'
+    };
+    var person = {
+      _id: 'a',
+      type: 'person',
+      name: 'sally',
+      parent: {
+        _id: 'b'
+      }
+    };
+    get.returns(KarmaUtils.mockPromise(null, clinic));
+    bulkDocs.returns(KarmaUtils.mockPromise());
+    return service(person).then(function() {
+      chai.expect(get.callCount).to.equal(1);
+      chai.expect(get.args[0][0]).to.equal(clinic._id);
+      chai.expect(bulkDocs.callCount).to.equal(1);
+      chai.expect(bulkDocs.args[0][0].length).to.equal(1);
+      chai.expect(bulkDocs.args[0][0][0]._id).to.equal(person._id);
+      chai.expect(bulkDocs.args[0][0][0]._deleted).to.equal(true);
+    });
+  });
+
+  it('does not modify the given array - #2417', function() {
+    var clinic = {
+      _id: 'b',
+      type: 'clinic',
+      contact: {
+        _id: 'a',
+        name: 'sally'
+      }
+    };
+    var person = {
+      _id: 'a',
+      type: 'person',
+      name: 'sally',
+      parent: {
+        _id: 'b'
+      }
+    };
+    var docs = [ person ];
+    get.returns(KarmaUtils.mockPromise(null, clinic));
+    bulkDocs.returns(KarmaUtils.mockPromise());
+    return service(docs).then(function() {
+      chai.expect(docs.length).to.equal(1);
+      chai.expect(bulkDocs.args[0][0].length).to.equal(2);
+    });
+  });
 });

@@ -1,0 +1,19 @@
+*** node_modules/pouchdb/lib/index-browser.js	2016-06-22 15:40:11.732292676 +1200
+--- node_modules/pouchdb/lib/index-browser-patched.js	2016-06-22 15:41:00.607189213 +1200
+***************
+*** 3466,3472 ****
+  // Generate a unique id particular to this replication.
+  // Not guaranteed to align perfectly with CouchDB's rep ids.
+  function generateReplicationId(src, target, opts) {
+!   var docIds = opts.doc_ids ? opts.doc_ids.sort(pouchCollate.collate) : '';
+    var filterFun = opts.filter ? opts.filter.toString() : '';
+    var queryParams = '';
+    var filterViewName =  '';
+--- 3466,3472 ----
+  // Generate a unique id particular to this replication.
+  // Not guaranteed to align perfectly with CouchDB's rep ids.
+  function generateReplicationId(src, target, opts) {
+!   var docIds = '';
+    var filterFun = opts.filter ? opts.filter.toString() : '';
+    var queryParams = '';
+    var filterViewName =  '';
