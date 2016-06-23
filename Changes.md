@@ -4,7 +4,7 @@
 
 ### Jun 23, 2016
 
-- Fixed bug in reporting rates for weekly time unit.
+- Fixed bug in reporting rates for weekly time unit. #2429
 
 ## 0.4.11
 
