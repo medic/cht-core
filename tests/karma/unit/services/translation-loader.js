@@ -100,7 +100,6 @@ describe('TranslationLoader service', function() {
 
   it('returns "en" wrapped in hypens for test locale', function() {
     var options = { key: 'test' };
-    var settings = { };
     var doc = {
       prawn: 'prawn',
       bbq: 'barbeque'

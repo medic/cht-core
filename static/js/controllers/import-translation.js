@@ -10,16 +10,15 @@ var modal = require('../modules/modal');
     function (
       $scope,
       $translate,
+      $uibModalInstance,
       FileReader,
-      ImportProperties
+      ImportProperties,
+      model
     ) {
 
       'ngInject';
-
-      $scope.$on('ImportTranslationInit', function(e, locale) {
-        $scope.locale = locale;
-        $scope.translationFile = null;
-      });
+      
+      $scope.locale = model;
 
       $scope.import = function() {
         var pane = modal.start($('#import-translation'));
@@ -35,7 +34,7 @@ var modal = require('../modules/modal');
         }
         FileReader(file)
           .then(function(result) {
-            ImportProperties(result, $scope.locale.code, function(err) {
+            ImportProperties(result, $scope.locale, function(err) {
               if (err) {
                 $translate('Error parsing file').then(function(message) {
                   pane.done(message, err);
@@ -43,6 +42,7 @@ var modal = require('../modules/modal');
                 return;
               }
               pane.done();
+              $uibModalInstance.close('ok');
             });
           })
           .catch(function(err) {
@@ -50,6 +50,10 @@ var modal = require('../modules/modal');
               pane.done(message, err);
             });
           });
+      };
+
+      $scope.cancel = function() {
+        $uibModalInstance.dismiss('cancel');
       };
 
     }

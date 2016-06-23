@@ -1,8 +1,8 @@
 var _ = require('underscore'),
     properties = require('properties'),
     objectpath = require('views/lib/objectpath'),
-    applicationTextSection = 'Application Text',
-    outgoingMessagesSection = 'Outgoing Messages';
+    APPLICATION_TEXT_SECTION_NAME = 'Application Text',
+    OUTGOING_MESSAGES_SECTION_NAME = 'Outgoing Messages';
 
 (function () {
 
@@ -19,15 +19,6 @@ var _ = require('underscore'),
     translation.content = value;
   };
 
-  var mergeTranslations = function(parsed, settings, locale) {
-    _.pairs(parsed).forEach(function(pair) {
-      var setting = _.findWhere(settings.translations, { key: pair[0] });
-      if (setting) {
-        mergeTranslation(setting.translations, locale, pair[1]);
-      }
-    });
-  };
-
   var mergeSettings = function(parsed, settings, locale) {
     _.pairs(parsed).forEach(function(pair) {
       var setting = objectpath.get(settings, pair[0]);
@@ -37,35 +28,42 @@ var _ = require('underscore'),
     });
   };
 
+  var mergeTranslations = function(parsed, doc) {
+    Object.keys(parsed).forEach(function(key) {
+      doc.values[key] = parsed[key];
+    });
+  };
+
   inboxServices.factory('ImportProperties',
-    ['translateFilter', 'Settings', 'UpdateSettings',
-    function(translateFilter, Settings, UpdateSettings) {
-      return function(contents, locale, callback) {
+    function(
+      DB,
+      Settings,
+      UpdateSettings
+    ) {
+      'ngInject';
+      return function(contents, doc, callback) {
         properties.parse(contents, { sections: true }, function(err, parsed) {
           if (err) {
-            return callback(translateFilter('Error parsing properties file') + '. ' + err);
+            return callback(err);
           }
-          Settings()
+          mergeTranslations(parsed[APPLICATION_TEXT_SECTION_NAME], doc);
+          DB()
+            .put(doc)
+            .then(Settings)
             .then(function(settings) {
-              mergeTranslations(parsed[applicationTextSection], settings, locale);
-              mergeSettings(parsed[outgoingMessagesSection], settings, locale);
-              UpdateSettings(settings, function(err) {
-                if (err) {
-                  return callback(translateFilter('Error saving settings') + '. ' + err);
-                }
-                callback();
-              });
+              mergeSettings(parsed[OUTGOING_MESSAGES_SECTION_NAME], settings, doc.code);
+              UpdateSettings(settings, callback);
             })
             .catch(function(err) {
-              callback(translateFilter('Error retrieving settings') + '. ' + err);
+              return callback(err);
             });
         });
       };
     }
-  ]);
+  );
 
   var getProperty = function(key, translation, locale) {
-    var value = _.findWhere(translation.translations, { locale: locale });
+    var value = _.findWhere(translation.translations, { locale: locale.code });
     return {
       key: key,
       value: value && value.content
@@ -73,17 +71,19 @@ var _ = require('underscore'),
   };
 
   inboxServices.factory('ExportProperties',
-    ['OutgoingMessagesConfiguration',
-    function(OutgoingMessagesConfiguration) {
+    function(
+      OutgoingMessagesConfiguration
+    ) {
+      'ngInject';
       return function(settings, locale) {
         var stringifier = properties.createStringifier();
 
-        stringifier.section(applicationTextSection);
-        settings.translations.forEach(function(translation) {
-          stringifier.property(getProperty(translation.key, translation, locale));
+        stringifier.section(APPLICATION_TEXT_SECTION_NAME);
+        Object.keys(locale.values).forEach(function(key) {
+          stringifier.property({ key: key, value: locale.values[key] });
         });
 
-        stringifier.section(outgoingMessagesSection);
+        stringifier.section(OUTGOING_MESSAGES_SECTION_NAME);
         var messages = OutgoingMessagesConfiguration(settings);
         messages.forEach(function(subsection) {
           subsection.translations.forEach(function(translation) {
@@ -94,6 +94,6 @@ var _ = require('underscore'),
         return properties.stringify(stringifier);
       };
     }
-  ]);
+  );
 
 }()); 

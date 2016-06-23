@@ -1,77 +1,77 @@
-<div id="language-accordion" class="panel-group" role="tablist">
-  <div class="panel panel-default" ng-repeat="localeModel in languagesModel.locales" ng-class="{'disabled': localeModel.locale.disabled}">
-    <div class="panel-heading" role="tab" id="locale-{{localeModel.locale.code}}">
+<button type="button" class="btn btn-primary" ng-click="editLanguage()">
+  <i class="fa fa-plus"></i>
+  <span translate>Add new language</span>
+</button>
+
+<div class="loader" ng-show="loading"></div>
+
+<div id="language-accordion" ng-show="!loading" class="panel-group" role="tablist">
+  <div class="panel panel-default" ng-repeat="localeModel in languagesModel.locales track by localeModel.doc._id" ng-class="{'disabled': !localeModel.doc.enabled}">
+    <div class="panel-heading" role="tab" id="locale-{{localeModel.doc.code}}">
       <h4 class="panel-title">
-        <a class="collapsed" data-toggle="collapse" data-target="#locale-{{localeModel.locale.code}}-body" data-parent="#language-accordion">
-          {{localeModel.locale.name}}
-          <span class="fa-stack default" ng-attr-title="{{'Default Application Language' | translate}}" ng-show="localeModel.locale.code === languagesModel.default.locale">
+        <a class="collapsed" data-toggle="collapse" data-target="#locale-{{localeModel.doc.code}}-body" data-parent="#language-accordion">
+          {{localeModel.doc.name}}
+          <span class="fa-stack default" translate translate-attr-title="Default Application Language" ng-show="localeModel.doc.code === languagesModel.default.locale">
             <i class="fa fa-file-o fa-stack-2x"></i>
             <i class="fa fa-star fa-stack-1x"></i>
           </span>
-          <span class="fa-stack default" ng-attr-title="{{'Language For Outgoing Messages' | translate}}" ng-show="localeModel.locale.code === languagesModel.default.outgoing">
+          <span class="fa-stack default" translate translate-attr-title="Language For Outgoing Messages" ng-show="localeModel.doc.code === languagesModel.default.outgoing">
             <i class="fa fa-envelope-o fa-stack-2x"></i>
             <i class="fa fa-star fa-stack-1x"></i>
           </span>
         </a>
       </h4>
     </div>
-    <div id="locale-{{localeModel.locale.code}}-body" class="panel-collapse collapse" role="tabpanel">
+    <div id="locale-{{localeModel.doc.code}}-body" class="panel-collapse collapse" role="tabpanel">
       <div class="panel-body action-list">
-        <div class="alert alert-warning" role="alert" ng-show="{{localeModel.missing > 0}}">
-          {{'Missing translations' | translate:localeModel}}
-        </div>
+        <div class="alert alert-warning" role="alert" ng-show="{{localeModel.missing > 0}}" translate translate-values="localeModel">Missing translations</div>
         <div>
-          <button type="button" class="btn btn-link" data-toggle="modal" data-target="#edit-language" ng-click="prepareEditLanguage(localeModel.locale)">
-            <i class="fa fa-pencil"></i>{{'Edit' | translate}}
+          <button type="button" class="btn btn-link" ng-click="editLanguage(localeModel.doc)">
+            <i class="fa fa-pencil"></i><span translate>Edit</span>
           </button>
         </div>
-        <div ng-hide="localeModel.locale.disabled">
-          <button type="button" class="btn btn-link" ng-click="disableLanguage(localeModel.locale)">
-            <i class="fa fa-ban"></i>{{'Disable' | translate}}
+        <div ng-if="localeModel.doc.enabled">
+          <button type="button" class="btn btn-link" ng-click="disableLanguage(localeModel.doc)">
+            <i class="fa fa-ban"></i><span translate>Disable</span>
           </button>
         </div>
-        <div ng-hide="!localeModel.locale.disabled">
-          <button type="button" class="btn btn-link" ng-click="enableLanguage(localeModel.locale)">
-            <i class="fa fa-circle-o"></i>{{'Enable' | translate}}
+        <div ng-if="!localeModel.doc.enabled">
+          <button type="button" class="btn btn-link" ng-click="enableLanguage(localeModel.doc)">
+            <i class="fa fa-circle-o"></i><span translate>Enable</span>
           </button>
         </div>
-        <div ng-hide="localeModel.locale.disabled">
-          <button type="button" class="btn btn-link" ng-click="setLocale(localeModel.locale)" ng-disabled="localeModel.locale.code === languagesModel.default.locale">
-            <span class="fa-stack default" ng-attr-title="{{'Default Application Language' | translate}}">
+        <div ng-if="localeModel.doc.enabled">
+          <button type="button" class="btn btn-link" ng-click="setLocale(localeModel.doc)" ng-disabled="localeModel.doc.code === languagesModel.default.locale">
+            <span class="fa-stack default">
               <i class="fa fa-file-o fa-stack-2x"></i>
               <i class="fa fa-star fa-stack-1x"></i>
-            </span>{{'Set as default application language' | translate}}
+            </span><span translate>Set as default application language</span>
           </button>
         </div>
-        <div ng-hide="localeModel.locale.disabled">
-          <button type="button" class="btn btn-link" ng-click="setLocaleOutgoing(localeModel.locale)" ng-disabled="localeModel.locale.code === languagesModel.default.outgoing">
-            <span class="fa-stack default" ng-attr-title="{{'Language For Outgoing Messages' | translate}}">
+        <div ng-if="localeModel.doc.enabled">
+          <button type="button" class="btn btn-link" ng-click="setLocaleOutgoing(localeModel.doc)" ng-disabled="localeModel.doc.code === languagesModel.default.outgoing">
+            <span class="fa-stack default">
               <i class="fa fa-envelope-o fa-stack-2x"></i>
               <i class="fa fa-star fa-stack-1x"></i>
-            </span>{{'Set as language for outgoing messages' | translate}}
+            </span><span translate>Set as language for outgoing messages</span>
           </button>
         </div>
         <div>
           <a class="btn btn-link" ng-attr-download="{{localeModel.export.name}}" ng-href="{{localeModel.export.url}}">
-            <i class="fa fa-arrow-down"></i>{{'Export' | translate}}
+            <i class="fa fa-arrow-down"></i><span translate>Export</span>
           </a>
         </div>
         <div>
-          <button type="button" class="btn btn-link" data-toggle="modal" data-target="#import-translation" ng-click="prepareImport(localeModel.locale)">
-            <i class="fa fa-arrow-up"></i>{{'Import' | translate}}
+          <button type="button" class="btn btn-link" data-toggle="modal" ng-click="prepareImport(localeModel.doc)">
+            <i class="fa fa-arrow-up"></i><span translate>Import</span>
           </button>
         </div>
         <div>
-          <button type="button" class="btn btn-link btn-danger" data-toggle="modal" data-target="#delete-language" ng-click="prepareDeleteLanguage(localeModel.locale)">
-            <i class="fa fa-trash-o"></i>{{'Delete' | translate}}
+          <button type="button" class="btn btn-link btn-danger" ng-click="deleteDoc(localeModel.doc)">
+            <i class="fa fa-trash-o"></i><span translate>Delete</span>
           </button>
         </div>
       </div>
     </div>
   </div>
 </div>
-
-<button type="button" class="btn btn-link" data-toggle="modal" data-target="#edit-language" ng-click="prepareEditLanguage()">
-  <i class="fa fa-plus"></i>
-  {{'Add new language' | translate}}
-</button>

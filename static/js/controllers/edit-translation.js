@@ -8,11 +8,6 @@ var _ = require('underscore'),
 
   var inboxControllers = angular.module('inboxControllers');
 
-  var findValue = function(locale, translation) {
-    var result = _.findWhere(translation.translations, { locale: locale.code });
-    return result && result.content;
-  };
-
   var mapPopulatedValues = function(populatedValues) {
     return _.map(populatedValues, function(value) {
       return {

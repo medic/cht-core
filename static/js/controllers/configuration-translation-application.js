@@ -38,7 +38,7 @@ var _ = require('underscore');
             key: key,
             lhs: lhs[key],
             rhs: rhs[key]
-          }
+          };
         });
       };
 
