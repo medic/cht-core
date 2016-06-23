@@ -5,6 +5,7 @@
 ### Jun 23, 2016
 
 - Fixed bug in reporting rates for weekly time unit. #2429
+- Log warnings in sentinel when ID collisions happen. #1898
 
 ## 0.4.11
 
