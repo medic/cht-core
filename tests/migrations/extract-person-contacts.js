@@ -11,85 +11,252 @@ exports.tearDown = function (callback) {
 };
 
 exports['run does nothing if no facilities'] = function(test) {
-  test.expect(2);
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [] });
-  migration.run(function(err) {
-    test.equals(err, undefined);
-    test.equals(getView.callCount, 1);
-    test.done();
-  });
-};
-
-exports['run does nothing if facilities have no contact'] = function(test) {
-  test.expect(4);
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
-  var getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, {  });
-  migration.run(function(err) {
-    test.equals(err, undefined);
-    test.equals(getView.callCount, 1);
-    test.equals(getDoc.callCount, 1);
-    test.equals(getDoc.firstCall.args[0], 'a');
-    test.done();
-  });
-};
-
-exports['run does nothing if facilities have been migrated'] = function(test) {
-  test.expect(4);
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
-  var getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, { contact: { _id: 'b' } });
-  migration.run(function(err) {
-    test.equals(err, undefined);
-    test.equals(getView.callCount, 1);
-    test.equals(getDoc.callCount, 1);
-    test.equals(getDoc.firstCall.args[0], 'a');
-    test.done();
-  });
-};
-
-exports['run saves a person doc and updates the facility'] = function(test) {
-  test.expect(12);
-  var placesList = [
-    { _id: 'a', contact: { name: 'alfred adamson', phone: 'a123' } },
-    // Already migrated
-    { _id: 'b', contact: { _id: 'd', name: 'boris botham', phone: 'b123' } },
-    { _id: 'c', contact: { name: 'chris cairns', phone: 'c123' } }
-  ];
-  var placeIds = placesList.map(function(place) { return place._id; });
-  var contactIds = placesList.map(function(place) { return 'contact' + place._id; });
-
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
-    { id: placeIds[0] }, { id: placeIds[1] }, { id: placeIds[2] }] });
-
-  // Getting each place doc for migration
+  var getView = sinon.stub(db.medic, 'view');
   var getDoc = sinon.stub(db.medic, 'get');
-  getDoc.onFirstCall().callsArgWith(1, null, placesList[0]);
-  getDoc.onSecondCall().callsArgWith(1, null, placesList[1]);
-  getDoc.onThirdCall().callsArgWith(1, null, placesList[2]);
-
-  var createPerson = sinon.stub(people, 'createPerson');
+  var insertDoc = sinon.stub(db.medic, 'insert');
   var updatePlace = sinon.stub(places, 'updatePlace');
-  // saving the first new contact
-  createPerson.onCall(0).callsArgWith(1, null, { id: contactIds[0], rev: '1' });
-  // updating the facility with the new contact
-  updatePlace.onCall(0).callsArgWith(2, null, { id: placeIds[0], rev: '2' });
-  // saving the second new contact
-  createPerson.onCall(1).callsArgWith(1, null, { id: contactIds[2], rev: '1' });
-  // updating the facility with the new contact
-  updatePlace.onCall(1).callsArgWith(2, null, { id: placeIds[2], rev: '2' });
+  var createPerson = sinon.stub(people, 'createPerson');
+
+  test.expect(6);
+  getView.callsArgWith(3, null, { rows: [] });
+  getDoc.callsArgWith(1, null, {  });
+  migration.run(function(err) {
+    test.equals(err, undefined);
+    // Called once per place type.
+    test.equals(getView.callCount, 3);
+    test.equals(getDoc.callCount, 0);
+    // No edits happened.
+    test.equals(insertDoc.callCount, 0);
+    test.equals(updatePlace.callCount, 0);
+    test.equals(createPerson.callCount, 0);
+    test.done();
+  });
+};
+
+var testParentUpdated = function(test, doc, docWithoutParent) {
+  var getView = sinon.stub(db.medic, 'view');
+  var getDoc = sinon.stub(db.medic, 'get');
+  var insertDoc = sinon.stub(db.medic, 'insert');
+  var updatePlace = sinon.stub(places, 'updatePlace');
+  var createPerson = sinon.stub(people, 'createPerson');
+  test.expect(12);
+
+  // Get the 3 levels of hierarchy
+  getView.onCall(0).callsArgWith(3, null, { rows: [ { id: 'a' }] });
+  getView.onCall(1).callsArgWith(3, null, { rows: [ ] });
+  getView.onCall(2).callsArgWith(3, null, { rows: [ ] });
+
+  // Get doc for parent update
+  getDoc.onCall(0).callsArgWith(1, null, doc);
+  // Get parent doc
+  getDoc.onCall(1).callsArgWith(1, null, { _id: 'b', contact: {}, newKey: 'newValue' });
+  // Update doc : deleted parent
+  insertDoc.onCall(0).callsArgWith(1, null);
+  // Update doc : update the parent field
+  updatePlace.onCall(0).callsArgWith(2, null);
+  // Get doc for contact update : no contact, so skipped.
+  getDoc.onCall(2).callsArgWith(1, null, { _id: 'a', parent: { _id: 'b'} });
 
   migration.run(function(err) {
     test.equals(err, undefined);
-    test.equals(getView.callCount, 1);
+    // Called once per place type.
+    test.equals(getView.callCount, 3);
+
     test.equals(getDoc.callCount, 3);
-    test.equals(getDoc.firstCall.args[0], placeIds[0]);
-    test.equals(getDoc.secondCall.args[0], placeIds[1]);
-    test.equals(getDoc.thirdCall.args[0], placeIds[2]);
-    test.deepEqual(createPerson.args[0][0], { name: placesList[0].contact.name, phone: placesList[0].contact.phone, place: placesList[0]._id });
-    test.deepEqual(createPerson.args[1][0], { name: placesList[2].contact.name, phone: placesList[2].contact.phone, place: placesList[2]._id });
-    test.deepEqual(updatePlace.args[0][0], placeIds[0]);
-    test.deepEqual(updatePlace.args[0][1], { contact: contactIds[0] });
-    test.deepEqual(updatePlace.args[1][0], placeIds[2]);
-    test.deepEqual(updatePlace.args[1][1], { contact: contactIds[2] });
+    test.equals(getDoc.firstCall.args[0], 'a');
+    test.equals(getDoc.secondCall.args[0], 'b');
+    test.equals(getDoc.thirdCall.args[0], 'a');
+
+    // Parent was deleted, then reset.
+    test.equals(insertDoc.callCount, 1);
+    test.deepEqual(insertDoc.firstCall.args[0], docWithoutParent);
+    test.equals(updatePlace.callCount, 1);
+    test.equals(updatePlace.firstCall.args[0], 'a');
+    test.deepEqual(updatePlace.firstCall.args[1], { parent: 'b'});
+
+    // No contact created.
+    test.equals(createPerson.callCount, 0);
+
+    test.done();
+  });
+};
+
+exports['run still updates parent if facility have no contact'] = function(test) {
+  testParentUpdated(
+    test,
+    {
+      _id: 'a',
+      parent: { _id: 'b', contact: {}}
+    },
+    {
+      _id: 'a',
+    });
+};
+
+exports['run still updates parent if facility has migrated contact'] = function(test) {
+  testParentUpdated(test,
+    {
+      _id: 'a',
+      parent: { _id: 'b', contact: {}},
+      contact: { _id: 'd' }
+    },
+    {
+      _id: 'a',
+      contact: { _id: 'd' }
+    });
+};
+
+var testContactUpdated = function(test, doc, docWithoutContact) {
+  var getView = sinon.stub(db.medic, 'view');
+  var getDoc = sinon.stub(db.medic, 'get');
+  var insertDoc = sinon.stub(db.medic, 'insert');
+  var updatePlace = sinon.stub(places, 'updatePlace');
+  var createPerson = sinon.stub(people, 'createPerson');
+  test.expect(12);
+
+  // Get the 3 levels of hierarchy
+  getView.onCall(0).callsArgWith(3, null, { rows: [ { id: 'a' }] });
+  getView.onCall(1).callsArgWith(3, null, { rows: [ ] });
+  getView.onCall(2).callsArgWith(3, null, { rows: [ ] });
+
+  // Get doc for parent update : no parent, so parent update is skipped.
+  getDoc.onCall(0).callsArgWith(1, null, doc);
+  // Get doc for contact update.
+  getDoc.onCall(1).callsArgWith(1, null, doc);
+  // Update doc : deleted contact
+  insertDoc.onCall(0).callsArgWith(1, null);
+  // Create person doc
+  createPerson.onCall(0).callsArgWith(1, null, { id: 'c'});
+  // Update doc : reset the contact field
+  updatePlace.onCall(0).callsArgWith(2, null);
+
+  migration.run(function(err) {
+    test.equals(err, undefined);
+    // Called once per place type.
+    test.equals(getView.callCount, 3);
+
+    test.equals(getDoc.callCount, 2);
+    test.equals(getDoc.firstCall.args[0], 'a');
+    test.equals(getDoc.secondCall.args[0], 'a');
+
+    // Contact was deleted, then reset.
+    test.equals(insertDoc.callCount, 1);
+    test.deepEqual(insertDoc.firstCall.args[0], docWithoutContact);
+    test.equals(updatePlace.callCount, 1);
+    test.equals(updatePlace.firstCall.args[0], 'a');
+    test.deepEqual(updatePlace.firstCall.args[1], { contact: 'c'});
+
+    // Contact was created.
+    test.equals(createPerson.callCount, 1);
+    test.deepEqual(createPerson.firstCall.args[0], {
+        name: 'name',
+        phone: 'phone',
+        place: 'a'
+      });
+
+    test.done();
+  });
+
+};
+
+exports['run still updates contact if facility has no parent'] = function(test) {
+  testContactUpdated(
+    test,
+    { _id: 'a', contact: { name: 'name', 'phone': 'phone'} },
+    { _id: 'a'});
+};
+
+
+exports['run still updates contact if facility has migrated parent'] = function(test) {
+  testContactUpdated(
+    test,
+    {
+      _id: 'a',
+      contact: { name: 'name', 'phone': 'phone'},
+      parent: {_id: 'b', contact: {_id: 'f'}}
+    },
+    {
+      _id: 'a',
+      parent: {_id: 'b', contact: {_id: 'f'}}
+    });
+};
+
+exports['run updates contact and parent'] = function(test) {
+  var getView = sinon.stub(db.medic, 'view');
+  var getDoc = sinon.stub(db.medic, 'get');
+  var insertDoc = sinon.stub(db.medic, 'insert');
+  var updatePlace = sinon.stub(places, 'updatePlace');
+  var createPerson = sinon.stub(people, 'createPerson');
+  test.expect(16);
+
+  // Get the 3 levels of hierarchy
+  getView.onCall(0).callsArgWith(3, null, { rows: [ { id: 'a' }] });
+  getView.onCall(1).callsArgWith(3, null, { rows: [ ] });
+  getView.onCall(2).callsArgWith(3, null, { rows: [ ] });
+
+  // Get doc for parent update
+  getDoc.onCall(0).callsArgWith(1, null, {
+      _id: 'a',
+      contact: { name: 'name', 'phone': 'phone'},
+      parent: {_id: 'b', contact: { name: 'name1', 'phone': 'phone1' }}
+    });
+  // Get parent doc
+  getDoc.onCall(1).callsArgWith(1, null, { _id: 'b', contact: {}, newKey: 'newValue' });
+  // Update doc : deleted parent
+  insertDoc.onCall(0).callsArgWith(1, null);
+  // Update doc : update the parent field
+  updatePlace.onCall(0).callsArgWith(2, null);
+  // Get doc for contact update
+  getDoc.onCall(2).callsArgWith(1, null,
+    {
+      _id: 'a',
+      contact: { name: 'name', 'phone': 'phone'},
+      parent: { _id: 'b', contact: {_id: 'f'}}
+    });
+  // Update doc : deleted contact
+  insertDoc.onCall(1).callsArgWith(1, null);
+  // Create person doc
+  createPerson.onCall(0).callsArgWith(1, null, { id: 'c'});
+  // Update doc : reset the contact field
+  updatePlace.onCall(1).callsArgWith(2, null);
+
+  migration.run(function(err) {
+    test.equals(err, undefined);
+    // Called once per place type.
+    test.equals(getView.callCount, 3);
+
+    test.equals(getDoc.callCount, 3);
+    test.equals(getDoc.firstCall.args[0], 'a');
+    test.equals(getDoc.secondCall.args[0], 'b');
+    test.equals(getDoc.thirdCall.args[0], 'a');
+
+    test.equals(insertDoc.callCount, 2);
+    test.equals(updatePlace.callCount, 2);
+    // Parent was deleted, then reset.
+    test.deepEqual(insertDoc.firstCall.args[0],
+      {
+        _id: 'a',
+        contact: { name: 'name', 'phone': 'phone'},
+      });
+    test.equals(updatePlace.firstCall.args[0], 'a');
+    test.deepEqual(updatePlace.firstCall.args[1], { parent: 'b'});
+
+    // Contact was deleted, then reset.
+    test.deepEqual(insertDoc.secondCall.args[0],
+      {
+        _id: 'a',
+        parent: { _id: 'b', contact: {_id: 'f'}}
+      });
+    test.equals(updatePlace.secondCall.args[0], 'a');
+    test.deepEqual(updatePlace.secondCall.args[1], { contact: 'c'});
+    // Contact created.
+    test.equals(createPerson.callCount, 1);
+    test.deepEqual(createPerson.firstCall.args[0], {
+        name: 'name',
+        phone: 'phone',
+        place: 'a'
+      });
+
     test.done();
   });
 };
