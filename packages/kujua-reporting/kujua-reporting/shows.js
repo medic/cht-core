@@ -250,7 +250,7 @@ var renderReportingTotals = function(totals, doc) {
 
 };
 
-function registerListeners() {
+function registerListeners(reporting_freq) {
     charts.initPieChart();
     $('body').on('click', '[data-page=reporting_rates] #date-nav a', function(e) {
         e.preventDefault();
@@ -263,7 +263,7 @@ function registerListeners() {
             startmonth: link.attr('data-startmonth'),
             startquarter: link.attr('data-startquarter'),
             startyear: link.attr('data-startyear')
-        });
+        }, reporting_freq);
         getViewChildFacilities(facility_doc, renderReports);
     });
 };
@@ -482,10 +482,18 @@ var render = function (name, context) {
 };
 
 var renderFacility = exports.renderFacility = function(form, facility, settings) {
+
+    var reporting_freq;
+    _.each(settings['kujua-reporting'], function(conf) {
+      if (conf.code === form.code) {
+        reporting_freq = conf.reporting_freq;
+      };
+    });
+
     // init globals :\
     db = db.current();
-    registerListeners();
-    dates = dates || utils.getDates({});
+    registerListeners(reporting_freq);
+    dates = dates || utils.getDates({}, reporting_freq);
     sms_utils.info = appinfo.getAppInfo();
 
     if (typeof form === 'object') {

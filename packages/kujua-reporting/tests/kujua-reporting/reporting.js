@@ -56,6 +56,26 @@ exports['getDates list - no query params'] = function (test) {
     test.done();
 };
 
+/*
+ *  reporting_freq: weekly
+ *  query string: {}
+ */
+exports['getDates returns reporting_freq of week given weekly param'] = function (test) {
+    var dates = utils.getDates({}, 'weekly');
+    test.equal(dates.reporting_freq, 'week');
+    test.done();
+};
+
+/*
+ *  reporting_freq: undefined
+ *  query string: {}
+ */
+exports['getDates returns reporting_freq of month given undefined param'] = function (test) {
+    var dates = utils.getDates({});
+    test.equal(dates.reporting_freq, 'month');
+    test.done();
+};
+
 
 /*
  *  reporting_freq: month

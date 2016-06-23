@@ -1,5 +1,11 @@
 # Medic Mobile Release Notes
 
+## 0.4.12
+
+### Jun 23, 2016
+
+- Fixed bug in reporting rates for weekly time unit.
+
 ## 0.4.11
 
 ### Feb 4, 2016
