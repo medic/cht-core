@@ -4,6 +4,10 @@ var async = require('async'),
     places = require('../controllers/places');
 
 /**
+ * WARNING : THIS MIGRATION IS POTENTIALLY DESTRUCTIVE IF IT MESSES UP HALFWAY, SO GET YOUR SYSTEM
+ * OFFLINE BEFORE RUNNING IT!
+ * See upgrade checklist : https://github.com/medic/medic-webapp/issues/2400
+ *
  * This migration updates old-style contacts (`contact: { name:..., phone: ...}`) to new-style contacts
  * (`contact: {_id:..., name:..., phone: ..., parent: ...}`).
  * It updates them all the way up the parent chain inside each doc.
@@ -15,20 +19,53 @@ var async = require('async'),
  * `contact` field.
  */
 
+/**
+ * Migrates the `contact` of the facility from old style to new, and creates the corresponding `person` doc.
+ * Before :
+ * Facility :
+ * {
+ *    _id: ...,
+ *    type: health_center,
+ *    name: myfacility,
+ *    contact: { name: Alice, phone: 123} // old-style contact
+ *  }
+ *
+ * After :
+ * Person is created:
+ * {
+ *    _id: ...,
+ *    type: person,
+ *    name: Alice,
+ *    phone: 123,
+ *    created_date: 12345678
+ *    parent: { <contents of facility doc except facility.contact (no loops!)> }
+ * }
+ * Facility :
+ * {
+ *    _id: ...,
+ *    name: myfacility,
+ *    type: health_center,
+ *    contact: { <contents of person doc> } // new-style contact
+ *  }
+ *
+ * For creating the person, we use `people.createPerson` rather than db.medic.insert in order to set
+ * `create_date` and any other necessary edits.
+ * To set the parent of the new person, `people.createPerson` takes a place Id as argument, and
+ * fetches the existing place doc to set it as parent. So we start by deleting the contact field from the
+ * parent doc, and saving that doc, so that it can be used as parent for the new person.
+ * Then we reset the contact field on that parent doc, with `places.updatePlace`.
+ */
 var createPerson = function(id, callback) {
   var checkContact = function(facility, callback) {
-    if (!facility.contact) {
-      // no contact to migrate
-      return callback({ skip: true });
-    }
-    if (facility.contact._id) {
-      // already migrated
+    if (!facility.contact || facility.contact._id) {
+      // no contact to migrate or contact already migrated
       return callback({ skip: true });
     }
     callback();
   };
 
-  // Remove old-style contact, so that the created `person`'s `parent.contact` is blank.
+  // Remove old-style contact field from the facility, so that the `person` we will create will not have a
+  // loop (`person.parent.contact = person`!).
   var removeContact = function(facility, callback) {
     var oldContact = facility.contact;
     delete facility.contact;
@@ -41,7 +78,7 @@ var createPerson = function(id, callback) {
     });
   };
 
-  // Create a separate person doc to represent the contact.
+  // Create a new person doc to represent the contact.
   var createPerson = function(facilityId, oldContact, callback) {
     people.createPerson(
       {
@@ -52,6 +89,7 @@ var createPerson = function(id, callback) {
       function(err, result) {
         if (err) {
           // TODO : reset the contact : facility.contact = oldContact.
+          // https://github.com/medic/medic-webapp/issues/2435
           return callback(new Error('Could not create person. Facility ' + facilityId +
             ' got its contact deleted, put it back!\n' + oldContact + '\n' +
             JSON.stringify(err, null, 2)));
@@ -60,7 +98,7 @@ var createPerson = function(id, callback) {
     });
   };
 
-  // Re-set the contact : this time use the newly created `person` doc.
+  // Re-set the contact field in the facility : set it to the contents of the newly created `person` doc.
   var resetContact = function(facilityId, personId, callback) {
     places.updatePlace(facilityId, { contact: personId },
       function(err) {
@@ -99,15 +137,68 @@ var createPerson = function(id, callback) {
 
 // For a given doc, update its parent to the latest version of the parent doc.
 // Note that since we migrate in order of depth, the grandparents will be already updated.
+/**
+ * Updates the `parent` of the facility, which can be outdated since we've migrated the parent's contact.
+ * Before :
+ * Facility :
+ * {
+ *    _id: ...,
+ *    type: health_center,
+ *    name: myfacility,
+ *    parent: {
+ *        _id: ...,
+ *        type: district_hospital,
+ *        name: myparent,
+ *        contact: { name: Alice, phone: 123} // old-style contact
+ *    }
+ * }
+ * Parent of the facility :
+ * {
+ *     _id: ...,
+ *     type: district_hospital,
+ *     name: myparent,
+ *     contact: { // new-style contact
+ *         _id: ...,
+ *         type: person,
+ *         name: Alice,
+ *         phone: 123,
+ *         created_date: 12345678
+ *         parent: { ... }
+ *     }
+ * }
+ *
+ * After :
+ * Facility :
+ * {
+ *    _id: ...,
+ *    type: health_center,
+ *    name: myfacility,
+ *    parent: {
+ *        _id: ...,
+ *        type: district_hospital,
+ *        name: myparent,
+ *        contact: { // new-style contact
+ *            _id: ...,
+ *            type: person,
+ *            name: Alice,
+ *            phone: 123,
+ *            created_date: 12345678
+ *            parent: { ... }
+ *        }
+ *    }
+ * }
+ * Parent of the facility : unchanged.
+ *
+ */
 var updateParents = function(id, callback) {
   var checkParent = function(facility, callback) {
-    if (!facility.parent || (Object.keys(facility.parent).length === 0)) { // tmp should we remove the empty parents?
-      // No parent.
+    // Should we remove the empty parents?
+    // https://github.com/medic/medic-webapp/issues/2436
+    if (!facility.parent || (Object.keys(facility.parent).length === 0)) {
       return callback({ skip: true });
     }
 
-    var parentId = facility.parent._id;
-    if (!parentId) {
+    if (!facility.parent._id) {
       return callback(new Error('facility ' + facility._id + ' has a parent without an _id.'));
     }
 

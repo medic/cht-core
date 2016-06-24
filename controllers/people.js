@@ -55,6 +55,7 @@ var validatePerson  = function(obj, callback) {
 
 /*
  * Set type, validate and write to database. Optionally create place.
+ * `place` field should be an id string, or a new place object. Can't be an existing place object.
  *
  * Warning: not doing validation of the data against a form yet.  The form is
  * user defined in settings so being liberal with what gets saved to the

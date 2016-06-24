@@ -223,6 +223,7 @@ var updatePlace = function(id, data, callback) {
 /*
  * Return existing or newly created place or error. Assumes stored places are
  * valid.
+ * `place` should be an id string, or a new place object. Can't be an existing place object.
  */
 var getOrCreatePlace = function(place, callback) {
   var self = module.exports;
