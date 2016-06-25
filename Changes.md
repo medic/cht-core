@@ -6,7 +6,7 @@
 
 - Fixed bug in reporting rates for weekly time unit. #2429
 - Log warnings in sentinel when ID collisions happen. #1898
-- Support integration with `medic-gateway` for sending and receiving SMS medic-api#69 
+- Support integration with [medic-gateway](https://github.com/medic/medic-gateway) for sending and receiving SMS medic-api#69 
 
 ## 0.4.11
 
