@@ -6,33 +6,34 @@ var _ = require('underscore');
 
   var inboxControllers = angular.module('inboxControllers');
 
-  var findTranslation = function(locale, translations) {
-    var value = _.findWhere(translations, { locale: locale });
-    return value && value.content;
-  };
-
-  var createLanguageModel = function(language, languages) {
-    var rhs = _.find(languages, function(current) {
-      return current.code !== language;
-    });
-    return {
-      lhs: language || 'en',
-      rhs: rhs && rhs.code || 'en'
-    };
-  };
-
   inboxControllers.controller('ConfigurationTranslationMessagesCtrl',
     function (
       $log,
       $q,
-      $rootScope,
       $scope,
+      DB,
       Language,
+      Modal,
       OutgoingMessagesConfiguration,
       Settings
     ) {
 
       'ngInject';
+
+      var findTranslation = function(locale, translations) {
+        var value = _.findWhere(translations, { locale: locale });
+        return value && value.content;
+      };
+
+      var createLanguageModel = function(language) {
+        var rhs = _.find($scope.locales, function(current) {
+          return current.code !== language;
+        });
+        return {
+          lhs: language || 'en',
+          rhs: rhs && rhs.code || 'en'
+        };
+      };
 
       var updateTranslationModels = function() {
         Settings()
@@ -53,12 +54,13 @@ var _ = require('underscore');
           });
       };
 
-      $q.all([Settings(), Language()])
+      $q.all([
+          DB().query('medic/doc_by_type', { key: [ 'translations' ], include_docs: true }),
+          Language()
+        ])
         .then(function(results) {
-          var settings = results[0];
-          var language = results[1];
-          $scope.locales = settings.locales;
-          $scope.localeModel = createLanguageModel(language, settings.locales);
+          $scope.locales = _.pluck(results[0].rows, 'doc');
+          $scope.localeModel = createLanguageModel(results[1]);
           updateTranslationModels();
           $scope.$watch('localeModel', function(curr, prev) {
             if (prev.lhs !== curr.lhs || prev.rhs !== curr.rhs) {
@@ -71,14 +73,21 @@ var _ = require('underscore');
         });
 
       $scope.prepareEditTranslation = function(translation) {
-        // TODO update this too...
-        $rootScope.$broadcast('EditTranslationInit', translation, $scope.locales);
+        Modal({
+          templateUrl: 'templates/modals/edit_translation_messages.html',
+          controller: 'EditTranslationMessagesCtrl',
+          args: {
+            processingFunction: null,
+            model: {
+              translation: translation,
+              locales: $scope.locales
+            }
+          }
+        })
+        .catch(function() {
+          $log.debug('User cancelled EditLanguage modal.');
+        });
       };
-      $scope.$on('TranslationUpdated', function(e, data) {
-        if (!data.translations) {
-          updateTranslationModels();
-        }
-      });
     }
   );
 

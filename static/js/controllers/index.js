@@ -34,6 +34,7 @@
   require('./edit-language');
   require('./edit-report');
   require('./edit-translation');
+  require('./edit-translation-messages');
   require('./edit-user');
   require('./error');
   require('./help');

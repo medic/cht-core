@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    modal = require('../modules/modal'),
-    objectpath = require('views/lib/objectpath');
+    modal = require('../modules/modal');
 
 (function () {
 
@@ -8,98 +7,48 @@ var _ = require('underscore'),
 
   var inboxControllers = angular.module('inboxControllers');
 
-  var mapPopulatedValues = function(populatedValues) {
-    return _.map(populatedValues, function(value) {
-      return {
-        locale: value.locale.code,
-        content: value.value
-      };
-    });
-  };
-
-  var createTranslationUpdate = function(settings, model, populatedValues) {
-    var updated = _.findWhere(settings.translations, { key: model.key });
-    updated.translations = mapPopulatedValues(populatedValues);
-    return { translations: settings.translations };
-  };
-
-  var createSettingsUpdate = function(settings, model, populatedValues) {
-    var trunk = model.path.split('.')[0].replace(/\[[0-9]*\]/, '');
-    var updated = {};
-    updated[trunk] = settings[trunk];
-    var leaf = objectpath.get(updated, model.path);
-    leaf.message = mapPopulatedValues(populatedValues);
-    return updated;
-  };
-
-  var getUpdateFn = function(model) {
-    if (model.key) {
-      return createTranslationUpdate;
-    }
-    if (model.path) {
-      return createSettingsUpdate;
-    }
-  };
-
   inboxControllers.controller('EditTranslationCtrl',
     function (
-      $q,
-      $rootScope,
       $scope,
       $translate,
-      Settings,
-      UpdateSettings
+      $uibModalInstance,
+      DB,
+      model
     ) {
 
       'ngInject';
 
-      var updateTranslation = function(settings) {
-        var model = $scope.translationModel;
-        var populatedValues = _.filter(model.values, function(value) {
-          return !!value.value;
-        });
-        var updateFn = getUpdateFn(model);
-        if (!updateFn) {
-          return $q.reject(new Error('Invalid translation model'));
-        }
-        return $q(function(resolve, reject) {
-          var update = updateFn(settings, model, populatedValues);
-          UpdateSettings(update, function(err) {
-            if (err) {
-              return reject(err);
-            }
-            resolve(update);
-          });
-        });
-      };
-
-      $scope.$on('EditTranslationInit', function(e, key, translations) {
-        $scope.translationModel = { 
-          key: key,
-          // path: translation.path,
-          // default: translation.default
-        };
-        $scope.translationModel.values = Object.keys(translations).map(function(locale) {
-          return {
-            locale: locale,
-            value: translations[locale][key]
-          };
-        });
+      var original = {};
+      $scope.translationModel = model;
+      $scope.translationModel.locales = _.pluck($scope.translationModel.locales, 'doc');
+      $scope.translationModel.locales.forEach(function(locale) {
+        original[locale.code] = locale.values[model.key];
       });
 
-      $scope.saveTranslation = function() {
+      $scope.submit = function() {
         var pane = modal.start($('#edit-translation'));
-        return Settings()
-          .then(updateTranslation)
-          .then(function(update) {
-            $rootScope.$broadcast('TranslationUpdated', update);
-            pane.done();
-          })
-          .catch(function(err) {
-            $translate('Error updating settings').then(function(message) {
-              pane.done(message, err);
+        var updated = _.filter($scope.translationModel.locales, function(locale) {
+          return original[locale.code] !== locale.values[model.key];
+        });
+        if (!updated.length) {
+          pane.done();
+          $uibModalInstance.close('ok');
+        } else {
+          DB().bulkDocs(updated)
+            .then(function() {
+              pane.done();
+              $uibModalInstance.close('ok');
+            })
+            .catch(function(err) {
+              $translate('Error updating settings').then(function(message) {
+                pane.done(message, err);
+              });
             });
-          });
+        }
+      };
+
+      $scope.cancel = function() {
+        $uibModalInstance.dismiss('cancel');
       };
 
     }
