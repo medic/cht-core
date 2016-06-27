@@ -42,4 +42,8 @@ if [ "$TRAVIS_BRANCH" == "develop" ]; then
     push 'alpha'
 fi;
 
+if [ "$TRAVIS_BRANCH" == "v2" ]; then
+    push 'release-v2'
+fi;
+
 exit 0;
