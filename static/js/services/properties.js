@@ -45,11 +45,13 @@ var _ = require('underscore'),
             if (!updated) {
               return;
             }
-            return UpdateSettings(settings, function(err) {
-              if (err) {
-                return $q.reject(err);
-              }
-              return $q.resolve();
+            return $q(function(resolve, reject) {
+              UpdateSettings(settings, function(err) {
+                if (err) {
+                  return reject(err);
+                }
+                return resolve();
+              });
             });
           });
       };

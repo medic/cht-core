@@ -80,6 +80,9 @@ describe('ImportProperties service', function() {
       rootScope.$digest();
       setTimeout(function() {
         rootScope.$digest();
+        setTimeout(function() {
+          rootScope.$digest();
+        });
       });
     });
     return service(content, doc).then(function() {
