@@ -1,16 +1,21 @@
-<div class="row selection-heading">
-  <div class="col-xs-6">
-    <select class="form-control small" ng-model="localeModel.lhs" ng-options="translation.doc.code as translation.doc.name for translation in translations"></select>
-  </div>
-  <div class="col-xs-6">
-    <select class="form-control small" ng-model="localeModel.rhs" ng-options="translation.doc.code as translation.doc.name for translation in translations"></select>
-  </div>
+<div>
+  <a class="btn btn-primary" ng-click="editTranslation()" translate>translation.add</a>
 </div>
-<div class="row translation selection" ng-repeat="translation in translationModels track by translation.key" ng-click="editTranslation(translation.key)">
-  <div class="col-xs-6">
-    {{translation.lhs}}
+<div class="section">
+  <div class="row selection-heading">
+    <div class="col-xs-6">
+      <select class="form-control small" ng-model="localeModel.lhs" ng-options="translation.doc.code as translation.doc.name for translation in translations"></select>
+    </div>
+    <div class="col-xs-6">
+      <select class="form-control small" ng-model="localeModel.rhs" ng-options="translation.doc.code as translation.doc.name for translation in translations"></select>
+    </div>
   </div>
-  <div class="col-xs-6">
-    {{translation.rhs}}
+  <div class="row translation selection" ng-repeat="translation in translationModels track by translation.key" ng-click="editTranslation(translation.key)">
+    <div class="col-xs-6">
+      {{translation.lhs}}
+    </div>
+    <div class="col-xs-6">
+      {{translation.rhs}}
+    </div>
   </div>
 </div>

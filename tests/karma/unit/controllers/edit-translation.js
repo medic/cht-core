@@ -42,13 +42,30 @@ describe('EditTranslationCtrl controller', function() {
       ]
     };
     createController();
-    chai.expect(scope.translationModel).to.deep.equal({
-      key: 'title.key',
+    chai.expect(scope.key).to.equal('title.key');
+    chai.expect(scope.editing).to.equal(true);
+    chai.expect(scope.locales).to.deep.equal([
+      { code: 'en', values: { 'title.key': 'Welcome', 'bye': 'Goodbye' } },
+      { code: 'fr', values: { 'title.key': 'Bonjour', 'bye': 'Au revoir' } }
+    ]);
+    chai.expect(scope.values).to.deep.equal({ en: 'Welcome', fr: 'Bonjour' });
+  });
+
+  it('render new', function() {
+    model = {
       locales: [
-        { code: 'en', values: { 'title.key': 'Welcome', 'bye': 'Goodbye' } },
-        { code: 'fr', values: { 'title.key': 'Bonjour', 'bye': 'Au revoir' } }
+        { doc: { code: 'en', values: { 'title.key': 'Welcome', 'bye': 'Goodbye' } } },
+        { doc: { code: 'fr', values: { 'title.key': 'Bonjour', 'bye': 'Au revoir' } } }
       ]
-    });
+    };
+    createController();
+    chai.expect(scope.key).to.equal(undefined);
+    chai.expect(scope.editing).to.equal(false);
+    chai.expect(scope.locales).to.deep.equal([
+      { code: 'en', values: { 'title.key': 'Welcome', 'bye': 'Goodbye' } },
+      { code: 'fr', values: { 'title.key': 'Bonjour', 'bye': 'Au revoir' } }
+    ]);
+    chai.expect(scope.values).to.deep.equal({ en: null, fr: null });
   });
 
   it('save', function(done) {
@@ -62,8 +79,8 @@ describe('EditTranslationCtrl controller', function() {
     };
     bulkDocs.returns(KarmaUtils.mockPromise());
     createController();
-    scope.translationModel.locales[0].values['title.key'] = 'Hello';
-    scope.translationModel.locales[1].values['title.key'] = 'Bienvenue';
+    scope.values.en = 'Hello';
+    scope.values.fr = 'Bienvenue';
     scope.submit();
     setTimeout(function() {
       rootScope.$digest();
@@ -79,4 +96,31 @@ describe('EditTranslationCtrl controller', function() {
     });
   });
 
+  it('save new', function(done) {
+    model = {
+      locales: [
+        { doc: { code: 'en', newValue: 'a', values: { 'title.key': 'Welcome', 'bye': 'Goodbye' } } },
+        { doc: { code: 'fr', newValue: 'b', values: { 'title.key': 'Bonjour', 'bye': 'Au revoir' } } },
+        { doc: { code: 'es', newValue: '', values: { 'title.key': 'Hola', 'bye': 'Hasta luego' } } }
+      ]
+    };
+    bulkDocs.returns(KarmaUtils.mockPromise());
+    createController();
+    scope.key = 'somethingelse';
+    scope.values.en = 'a';
+    scope.values.fr = 'b';
+    scope.submit();
+    setTimeout(function() {
+      rootScope.$digest();
+      var updated = bulkDocs.args[0][0];
+      chai.expect(updated.length).to.equal(3);
+      chai.expect(updated[0].code).to.equal('en');
+      chai.expect(updated[0].values.somethingelse).to.equal('a');
+      chai.expect(updated[1].code).to.equal('fr');
+      chai.expect(updated[1].values.somethingelse).to.equal('b');
+      chai.expect(updated[2].code).to.equal('es');
+      chai.expect(updated[2].values.somethingelse).to.equal(null);
+      done();
+    });
+  });
 });

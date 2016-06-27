@@ -18,18 +18,33 @@ var _ = require('underscore'),
 
       'ngInject';
 
-      var original = {};
-      $scope.translationModel = model;
-      $scope.translationModel.locales = _.pluck($scope.translationModel.locales, 'doc');
-      $scope.translationModel.locales.forEach(function(locale) {
-        original[locale.code] = locale.values[model.key];
+      $scope.key = model.key;
+      $scope.editing = !!model.key;
+      $scope.locales = _.pluck(model.locales, 'doc');
+      $scope.values = {};
+
+      $scope.locales.forEach(function(locale) {
+        var value = $scope.key ? locale.values[$scope.key] : null;
+        $scope.values[locale.code] = value;
       });
+
+      var getUpdatedLocales = function() {
+        return _.filter($scope.locales, function(locale) {
+          var newValue = $scope.values[locale.code];
+          if (
+            !$scope.editing ||
+            ($scope.editing && locale.values[$scope.key] !== newValue)
+          ) {
+            locale.values[$scope.key] = newValue;
+            return true;
+          }
+          return false;
+        });
+      };
 
       $scope.submit = function() {
         var pane = modal.start($('#edit-translation'));
-        var updated = _.filter($scope.translationModel.locales, function(locale) {
-          return original[locale.code] !== locale.values[model.key];
-        });
+        var updated = getUpdatedLocales();
         if (!updated.length) {
           pane.done();
           $uibModalInstance.close('ok');
