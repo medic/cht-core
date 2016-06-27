@@ -313,8 +313,8 @@ var feedback = require('../modules/feedback'),
       };
 
       $scope.setLoadingContent = function(id) {
-        $scope.loadingContent = id;
         $timeout(function() {
+          $scope.loadingContent = id;
           $scope.setShowContent(true);
         });
       };

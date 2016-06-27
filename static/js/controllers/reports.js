@@ -236,10 +236,6 @@ var _ = require('underscore'),
           return;
         }
         $scope.setLoadingContent(report);
-        if (!$scope.selectMode) {
-          // in selected mode we append to the list so don't clear it
-          $scope.clearSelected();
-        }
         fetchFormattedReport(report)
           .then(function(formatted) {
             return formatted && formatted.length && formatted[0];
