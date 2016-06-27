@@ -2,14 +2,14 @@ describe('ExportProperties service', function() {
 
   'use strict';
 
-  var service;
+  var service,
+      OutgoingMessagesConfiguration;
 
   beforeEach(function() {
     module('inboxApp');
+    OutgoingMessagesConfiguration = sinon.stub();
     module(function($provide) {
-      $provide.value('OutgoingMessagesConfiguration', function() {
-        return outgoingMessagesConfiguration;
-      });
+      $provide.value('OutgoingMessagesConfiguration', OutgoingMessagesConfiguration);
     });
     inject(function($injector) {
       service = $injector.get('ExportProperties');
@@ -18,35 +18,17 @@ describe('ExportProperties service', function() {
 
   it('retrieves properties', function(done) {
 
-    var settings = {
-      translations: [
-        {
-          key: 'Hello',
-          default: 'Hello',
-          translations: [
-            { locale: 'en', content: 'Gidday' },
-            { locale: 'fr', content: 'Bonjour' }
-          ]
-        },
-        {
-          key: 'Goodbye',
-          default: 'Goodbye',
-          translations: [
-            { locale: 'en', content: 'See ya' },
-            { locale: 'fr', content: 'Au revoir' }
-          ]
-        },
-        {
-          key: 'New thing',
-          default: 'New',
-          translations: [
-            { locale: 'en', content: 'New' },
-            { locale: 'fr', content: 'Nouveau' }
-          ]
-        }
-      ]
+    var doc = {
+      code: 'en',
+      values: {
+        'Hello': 'Gidday',
+        'Goodbye': 'See ya',
+        'New thing': 'New'
+      }
     };
 
+    OutgoingMessagesConfiguration.returns(config);
+    var settings = { something: true };
     var expected = '[Application Text]\n' +
                    'Hello = Gidday\n' +
                    'Goodbye = See ya\n' +
@@ -56,13 +38,14 @@ describe('ExportProperties service', function() {
                    'registrations[0].validations.list[0] = {{#patient_name}}The registration format is incorrect, ensure the message starts with P followed by space and the mother\'s name (maximum of 30 characters).{{/patient_name}}{{^patient_name}}The registration format is incorrect. ensure the message starts with P followed by space and the mother\'s name.{{/patient_name}}.\n' +
                    'registrations[0].validations.list[1] = The registration format for \'{{patient_name}}\' is incorrect, please ensure that LMP is a number between 0 and 42.';
 
-    var actual = service(settings, 'en');
+    var actual = service(settings, doc);
     chai.expect(actual).to.equal(expected);
+    chai.expect(OutgoingMessagesConfiguration.args[0][0]).to.deep.equal(settings);
     done();
 
   });
 
-  var outgoingMessagesConfiguration = [
+  var config = [
     {
       label: '{Registrations} › P › {Messages}',
       translations: [

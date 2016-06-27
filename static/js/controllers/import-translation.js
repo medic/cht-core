@@ -34,16 +34,11 @@ var modal = require('../modules/modal');
         }
         FileReader(file)
           .then(function(result) {
-            ImportProperties(result, $scope.locale, function(err) {
-              if (err) {
-                $translate('Error parsing file').then(function(message) {
-                  pane.done(message, err);
-                });
-                return;
-              }
-              pane.done();
-              $uibModalInstance.close('ok');
-            });
+            return ImportProperties(result, $scope.locale);
+          })
+          .then(function() {
+            pane.done();
+            $uibModalInstance.close('ok');
           })
           .catch(function(err) {
             $translate('Error parsing file').then(function(message) {
