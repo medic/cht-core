@@ -166,7 +166,9 @@ var _ = require('underscore'),
             });
           }
         } else {
-          liveList.setSelected(doc._id);
+          if (liveList.initialised()) {
+            liveList.setSelected(doc._id);
+          }
           refreshing = doc &&
                        $scope.selected.length &&
                        $scope.selected[0]._id === doc._id;
@@ -231,15 +233,11 @@ var _ = require('underscore'),
       };
 
       $scope.selectReport = function(report) {
-        if (!report || !liveList.initialised()) {
+        if (!report) {
           $scope.clearSelected();
           return;
         }
         $scope.setLoadingContent(report);
-        if (!$scope.selectMode) {
-          // in selected mode we append to the list so don't clear it
-          $scope.clearSelected();
-        }
         fetchFormattedReport(report)
           .then(function(formatted) {
             return formatted && formatted.length && formatted[0];
