@@ -84,52 +84,6 @@
         "description": "Medic Mobile Settings",
         "type": "object",
         "properties": {
-            "locales": {
-                "title": "Locales",
-                "description": "A list of available locales with a unique short code (egs: 'en', 'fr') and a human readable name of the locale (egs: 'English', 'French')",
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "code": {
-                            "type": "string",
-                            "title": "Code",
-                            "default": ""
-                        },
-                        "name": {
-                            "type": "string",
-                            "title": "Display Name",
-                            "default": ""
-                        }
-                    }
-                },
-                "default": [
-                    {
-                        "code": "en",
-                        "name": "English"
-                    },
-                    {
-                        "code": "es",
-                        "name": "Español (Spanish)"
-                    },
-                    {
-                        "code": "fr",
-                        "name": "Français (French)"
-                    },
-                    {
-                        "code": "ne",
-                        "name": "नेपाली (Nepali)"
-                    },
-                    {
-                        "code": "sw",
-                        "name": "Kiswahili (Swahili)"
-                    },
-                    {
-                        "code": "hi",
-                        "name": "हिन्दी (Hindi)"
-                    }
-                ]
-            },
             "locale": {
                 "title": "Default Locale For Website",
                 "type": "string",
@@ -1161,50 +1115,6 @@
                                                     }
                                                 }
                                             }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "translations": {
-                "title": "Translations",
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "key": {
-                            "type": "string",
-                            "title": "Key",
-                            "default": ""
-                        },
-                        "default": {
-                            "type": "string",
-                            "title": "Default",
-                            "default": "",
-                            "je:hint": "textarea",
-                            "je:textarea": {
-                                "rows": 2
-                            }
-                        },
-                        "translations": {
-                            "type": "array",
-                            "title": "",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "locale": {
-                                        "title": "Locale",
-                                        "type": "string"
-                                    },
-                                    "content": {
-                                        "title": "Translation",
-                                        "type": "string",
-                                        "je:hint": "textarea",
-                                        "je:textarea": {
-                                            "rows": 2
                                         }
                                     }
                                 }
