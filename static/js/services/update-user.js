@@ -139,37 +139,29 @@ var _ = require('underscore');
 
       'ngInject';
 
-      var deleteUser = function(id, callback) {
+      var deleteCouchUser = function(id) {
         var url = getUserUrl(id);
-        $http.get(url)
-          .success(function(user) {
+        return $http.get(url)
+          .then(function(response) {
+            var user = response.data;
             user._deleted = true;
-            $http.put(url, user)
-              .success(function() {
-                callback();
-              })
-              .error(function(data) {
-                callback(new Error(data));
-              });
-          })
-          .error(function(data) {
-            callback(new Error(data));
+            return $http.put(url, user);
           });
       };
 
-      return function(user, callback) {
+      var deleteMedicUser = function(id) {
+        return DB().get(id).then(DeleteDocs);
+      };
+
+      return function(user) {
         var id = user.id;
-        deleteUser(id, function(err) {
-          if (err) {
-            return callback(err);
-          }
-          removeCacheEntry($cacheFactory, id);
-          DB()
-            .get(id)
-            .then(DeleteDocs)
-            .then(callback)
-            .catch(callback);
-        });
+        return deleteCouchUser(user.id)
+          .then(function() {
+            return deleteMedicUser(user.id);
+          })
+          .then(function() {
+            removeCacheEntry($cacheFactory, id);
+          });
       };
     }
   );
