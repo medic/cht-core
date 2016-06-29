@@ -17,14 +17,16 @@
 
       $scope.updateList = function() {
         $scope.loading = true;
-        Users(function(err, users) {
-          $scope.loading = false;
-          if (err) {
+        Users()
+          .then(function(users) {
+            $scope.users = users;
+            $scope.loading = false;
+          })
+          .catch(function(err) {
             $scope.error = true;
-            return $log.error('Error fetching users', err);
-          }
-          $scope.users = users;
-        });
+            $scope.loading = false;
+            $log.error('Error fetching users', err);
+          });
       };
 
       $scope.deleteUserPrepare = function(user, $event) {

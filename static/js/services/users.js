@@ -68,23 +68,20 @@ var _ = require('underscore');
         );
       };
 
-      return function(callback) {
-        $q.all([
+      return function() {
+        return $q.all([
           getAllUsers(),
           getAllUserSettings(),
           Facility({ types: PLACE_TYPES }),
           Admins()
         ])
           .then(function(results) {
-            callback(null, mapUsers(
+            return mapUsers(
               results[0].data.rows,
               results[1].results,
               results[2],
               results[3]
-            ));
-          })
-          .catch(function(err) {
-            callback(err);
+            );
           });
       };
     }

@@ -35,7 +35,7 @@ describe('Users service', function() {
     $httpBackend.verifyNoOutstandingRequest();
   });
 
-  it('retrieves users', function(done) {
+  it('retrieves users', function() {
     var users = [
       {
         id: 'org.couchdb.user:x',
@@ -79,8 +79,12 @@ describe('Users service', function() {
       .expect('GET', '/_users/_all_docs?include_docs=true')
       .respond({ rows: users });
 
-    service(function(err, actual) {
-      chai.expect(err).to.equal(null);
+    setTimeout(function() {
+      rootScope.$apply(); // needed to resolve the promises
+      $httpBackend.flush();
+    });
+
+    return service().then(function(actual) {
       chai.expect(actual.length).to.equal(2);
 
       var lucas = actual[0];
@@ -100,18 +104,11 @@ describe('Users service', function() {
       chai.expect(milan.phone).to.equal('987654321');
       chai.expect(milan.facility).to.deep.equal(facilityb);
       chai.expect(milan.type).to.equal('district-admin');
-
-      done();
-    });
-
-    setTimeout(function() {
-      rootScope.$apply(); // needed to resolve the promises
-      $httpBackend.flush();
     });
 
   });
 
-  it('filters out non-users', function(done) {
+  it('filters out non-users', function() {
 
     var users = [
       { 
@@ -162,8 +159,12 @@ describe('Users service', function() {
       .expect('GET', '/_users/_all_docs?include_docs=true')
       .respond({ rows: users });
 
-    service(function(err, actual) {
-      chai.expect(err).to.equal(null);
+    setTimeout(function() {
+      rootScope.$apply(); // needed to resolve the promises
+      $httpBackend.flush();
+    });
+
+    return service().then(function(actual) {
       chai.expect(actual.length).to.equal(1);
 
       var milan = actual[0];
@@ -174,18 +175,11 @@ describe('Users service', function() {
       chai.expect(milan.phone).to.equal('987654321');
       chai.expect(milan.facility).to.deep.equal(facilityb);
       chai.expect(milan.type).to.equal('district-admin');
-
-      done();
-    });
-
-    setTimeout(function() {
-      rootScope.$apply(); // needed to resolve the promises
-      $httpBackend.flush();
     });
 
   });
 
-  it('handles minimal users', function(done) {
+  it('handles minimal users', function() {
 
     var users = [
       { 
@@ -204,8 +198,12 @@ describe('Users service', function() {
       .expect('GET', '/_users/_all_docs?include_docs=true')
       .respond({ rows: users });
 
-    service(function(err, actual) {
-      chai.expect(err).to.equal(null);
+    setTimeout(function() {
+      rootScope.$apply(); // needed to resolve the promises
+      $httpBackend.flush();
+    });
+
+    return service().then(function(actual) {
       chai.expect(actual.length).to.equal(1);
 
       var lucas = actual[0];
@@ -216,18 +214,11 @@ describe('Users service', function() {
       chai.expect(lucas.phone).to.equal(undefined);
       chai.expect(lucas.facility).to.equal(undefined);
       chai.expect(lucas.type).to.equal('unknown');
-
-      done();
-    });
-
-    setTimeout(function() {
-      rootScope.$apply(); // needed to resolve the promises
-      $httpBackend.flush();
     });
 
   });
 
-  it('replaces admins type', function(done) {
+  it('replaces admins type', function() {
 
     var users = [
       { 
@@ -246,21 +237,18 @@ describe('Users service', function() {
       .expect('GET', '/_users/_all_docs?include_docs=true')
       .respond({ rows: users });
 
-    service(function(err, actual) {
-      chai.expect(err).to.equal(null);
+    setTimeout(function() {
+      rootScope.$apply(); // needed to resolve the promises
+      $httpBackend.flush();
+    });
+
+    return service().then(function(actual) {
       chai.expect(actual.length).to.equal(1);
 
       var gareth = actual[0];
       chai.expect(gareth.id).to.equal('org.couchdb.user:gareth');
       chai.expect(gareth.name).to.equal('gareth');
       chai.expect(gareth.type).to.equal('admin');
-
-      done();
-    });
-
-    setTimeout(function() {
-      rootScope.$apply(); // needed to resolve the promises
-      $httpBackend.flush();
     });
 
   });
@@ -275,15 +263,19 @@ describe('Users service', function() {
     Admins.returns(KarmaUtils.mockPromise(null, { gareth: true }));
     Facility.returns(KarmaUtils.mockPromise(null, [ facilitya, facilityb, facilityc ]));
 
-    service(function(err) {
-      chai.expect(err.data).to.equal('Not found');
-      done();
-    });
-
     setTimeout(function() {
       rootScope.$apply(); // needed to resolve the promises
       $httpBackend.flush();
     });
+
+    service()
+      .then(function() {
+        done(new Error('expected error to be thrown'));
+      })
+      .catch(function(err) {
+        chai.expect(err.data).to.equal('Not found');
+        done();
+      });
   });
 
   it('returns errors from facilities service', function(done) {
@@ -321,15 +313,19 @@ describe('Users service', function() {
       .expect('GET', '/_users/_all_docs?include_docs=true')
       .respond({ rows: users });
 
-    service(function(err) {
-      chai.expect(err).to.equal('BOOM');
-      done();
-    });
-
     setTimeout(function() {
       rootScope.$apply(); // needed to resolve the promises
       $httpBackend.flush();
     });
+
+    service()
+      .then(function() {
+        done(new Error('expected error to be thrown'));
+      })
+      .catch(function(err) {
+        chai.expect(err).to.equal('BOOM');
+        done();
+      });
 
   });
 
@@ -369,15 +365,19 @@ describe('Users service', function() {
       .expect('GET', '/_users/_all_docs?include_docs=true')
       .respond({ rows: users });
 
-    service(function(err) {
-      chai.expect(err).to.equal('POW');
-      done();
-    });
-
     setTimeout(function() {
       rootScope.$apply(); // needed to resolve the promises
       $httpBackend.flush();
     });
+
+    service()
+      .then(function() {
+        done(new Error('expected error to be thrown'));
+      })
+      .catch(function(err) {
+        chai.expect(err).to.equal('POW');
+        done();
+      });
 
   });
 
