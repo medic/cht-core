@@ -10,7 +10,9 @@
   require('./cache');
   require('./changes');
   require('./check-date');
+  require('./child-facility');
   require('./clean-etag');
+  require('./contact');
   require('./contact-form');
   require('./contact-schema');
   require('./count-messages');
