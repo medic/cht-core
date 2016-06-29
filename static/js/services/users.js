@@ -68,22 +68,11 @@ var _ = require('underscore');
         );
       };
 
-      var getPlace = function() {
-        return $q(function(resolve, reject) {
-          Facility({ types: PLACE_TYPES }, function(err, results) {
-            if (err) {
-              return reject(err);
-            }
-            resolve(results);
-          });
-        });
-      };
-
       return function(callback) {
         $q.all([
           getAllUsers(),
           getAllUserSettings(),
-          getPlace(),
+          Facility({ types: PLACE_TYPES }),
           Admins()
         ])
           .then(function(results) {

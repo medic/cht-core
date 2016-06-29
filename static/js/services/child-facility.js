@@ -4,7 +4,7 @@ angular.module('inboxServices').factory('ChildFacility',
     'use strict';
     'ngInject';
 
-    return function(parent, callback) {
+    return function(parent) {
       var params = {
         group: true
       };
@@ -17,13 +17,9 @@ angular.module('inboxServices').factory('ChildFacility',
         params.startkey = [ parent.parent._id, parent._id ];
         params.endkey = [ parent.parent._id, parent._id, {} ];
       } else {
-        return callback('Doc not currently supported.');
+        throw new Error('Doc not currently supported.');
       }
-      DbView('total_clinics_by_facility', { params: params })
-        .then(function(data) {
-          callback(null, data.results);
-        })
-        .catch(callback);
+      return DbView('total_clinics_by_facility', { params: params });
     };
 
   }

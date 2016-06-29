@@ -50,21 +50,24 @@ var _ = require('underscore');
     callback(null, results, total);
   };
 
-  inboxServices.factory('FacilityHierarchy', ['Facility', 'PLACE_TYPES',
-    function(Facility, PLACE_TYPES) {
+  inboxServices.factory('FacilityHierarchy',
+    function(
+      Facility,
+      PLACE_TYPES
+    ) {
+      'ngInject';
       var hierarchyTypes = PLACE_TYPES.filter(function(pt) {
         return pt !== 'clinic';
       });
 
       return function(callback) {
-        Facility({ types: hierarchyTypes}, function(err, facilities) {
-          if (err) {
-            return callback(err);
-          }
-          buildHierarchy(facilities, callback);
-        });
+        Facility({ types: hierarchyTypes })
+          .then(function(facilities) {
+            buildHierarchy(facilities, callback);
+          })
+          .catch(callback);
       };
     }
-  ]);
+  );
 
 }());

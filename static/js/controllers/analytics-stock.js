@@ -108,50 +108,52 @@ var _ = require('underscore'),
         DB()
           .get(district.id || district._id)
           .then(function(district) {
-            ChildFacility(district, function(err, facilities) {
-              if (err) {
-                return $log.error(err);
-              }
-              getViewReports(DbView, district, dates)
-                .then(function(reports) {
-                  $scope.totals = stockUtils.getTotals(facilities, reports, dates);
-                  if (district.type === 'health_center') {
-                    $scope.clinics = stockUtils.getRowsHC(facilities, reports, dates);
-                    _.each($scope.clinics, function(f) {
-                      f.chart = [
-                        { key: 'valid', y: f.valid_percent },
-                        { key: 'missing', y: 100 - f.valid_percent }
-                      ];
-                    });
-                  } else {
-                    $scope.facilities = stockUtils.getRows(facilities, reports, dates);
-                    _.each($scope.facilities, function(f) {
-                      f.chart = [
-                        { key: 'valid', y: f.valid_percent },
-                        { key: 'missing', y: 100 - f.valid_percent }
-                      ];
-                    });
-                  }
-                  $scope.chart = [
-                    { key: 'valid', y: $scope.totals.complete },
-                    { key: 'missing', y: $scope.totals.not_submitted },
-                    { key: 'invalid', y: $scope.totals.incomplete }
-                  ];
-                  $scope.xFunction = function() {
-                    return function(d) {
-                      return d.key;
+            ChildFacility(district)
+              .then(function(facilities) {
+                facilities = facilities.results;
+                getViewReports(DbView, district, dates)
+                  .then(function(reports) {
+                    $scope.totals = stockUtils.getTotals(facilities, reports, dates);
+                    if (district.type === 'health_center') {
+                      $scope.clinics = stockUtils.getRowsHC(facilities, reports, dates);
+                      _.each($scope.clinics, function(f) {
+                        f.chart = [
+                          { key: 'valid', y: f.valid_percent },
+                          { key: 'missing', y: 100 - f.valid_percent }
+                        ];
+                      });
+                    } else {
+                      $scope.facilities = stockUtils.getRows(facilities, reports, dates);
+                      _.each($scope.facilities, function(f) {
+                        f.chart = [
+                          { key: 'valid', y: f.valid_percent },
+                          { key: 'missing', y: 100 - f.valid_percent }
+                        ];
+                      });
+                    }
+                    $scope.chart = [
+                      { key: 'valid', y: $scope.totals.complete },
+                      { key: 'missing', y: $scope.totals.not_submitted },
+                      { key: 'invalid', y: $scope.totals.incomplete }
+                    ];
+                    $scope.xFunction = function() {
+                      return function(d) {
+                        return d.key;
+                      };
                     };
-                  };
-                  $scope.yFunction = function() {
-                    return function(d) {
-                      return d.y;
+                    $scope.yFunction = function() {
+                      return function(d) {
+                        return d.y;
+                      };
                     };
-                  };
-                })
-                .catch(function(err) {
-                  $log.error('Error fetching reports', err);
-                });
-            });
+                  })
+                  .catch(function(err) {
+                    $log.error('Error fetching reports', err);
+                  });
+              })
+              .catch(function(err) {
+                $log.error(err);
+              });
           })
           .catch(function(err) {
             $log.error(err);
@@ -187,12 +189,13 @@ var _ = require('underscore'),
             $scope.setDistrict(district);
           } else {
             // national admin
-            Facility({types: ['district_hospital']}, function(err, districts) {
-              if (err) {
+            Facility({ types: [ 'district_hospital' ] })
+              .then(function(districts) {
+                $scope.districts = districts;
+              })
+              .catch(function(err) {
                 $log.error(err);
-              }
-              $scope.districts = districts;
-            });
+              });
           }
         })
         .catch(function(err) {

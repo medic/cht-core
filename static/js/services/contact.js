@@ -29,25 +29,24 @@ angular.module('inboxServices').factory('Contact',
           types: [ 'person', 'health_center' ],
           targetScope: 'root'
         };
-        Facility(options, function(err, res) {
-          if (err) {
-            return callback(err);
-          }
-          var contacts = [];
-          _.each(res, function(contact) {
-            if (contact.type === 'person' && contact.phone) {
-              contacts.push(contact);
-            } else if (contact.type === 'health_center') {
-              contacts.push(_.extend({
-                everyoneAt: true,
-                descendants: _.filter(res, function(child) {
-                  return descendant(contact._id, child.parent);
-                })
-              }, contact));
-            }
-          });
-          callback(null, contacts);
-        });
+        Facility(options)
+          .then(function(res) {
+            var contacts = [];
+            _.each(res, function(contact) {
+              if (contact.type === 'person' && contact.phone) {
+                contacts.push(contact);
+              } else if (contact.type === 'health_center') {
+                contacts.push(_.extend({
+                  everyoneAt: true,
+                  descendants: _.filter(res, function(child) {
+                    return descendant(contact._id, child.parent);
+                  })
+                }, contact));
+              }
+            });
+            callback(null, contacts);
+          })
+          .catch(callback);
       });
     };
   }

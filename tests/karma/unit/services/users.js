@@ -73,7 +73,7 @@ describe('Users service', function() {
     ]}));
 
     Admins.returns(KarmaUtils.mockPromise(null, { gareth: true }));
-    Facility.callsArgWith(1, null, [ facilitya, facilityb, facilityc ]);
+    Facility.returns(KarmaUtils.mockPromise(null, [ facilitya, facilityb, facilityc ]));
 
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
@@ -156,7 +156,7 @@ describe('Users service', function() {
     ]}));
 
     Admins.returns(KarmaUtils.mockPromise(null, { gareth: true }));
-    Facility.callsArgWith(1, null, [ facilitya, facilityb, facilityc ]);
+    Facility.returns(KarmaUtils.mockPromise(null, [ facilitya, facilityb, facilityc ]));
 
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
@@ -198,7 +198,7 @@ describe('Users service', function() {
 
     DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
     Admins.returns(KarmaUtils.mockPromise(null, { gareth: true }));
-    Facility.callsArgWith(1, null, [ facilitya, facilityb, facilityc ]);
+    Facility.returns(KarmaUtils.mockPromise(null, [ facilitya, facilityb, facilityc ]));
 
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
@@ -240,7 +240,7 @@ describe('Users service', function() {
 
     DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
     Admins.returns(KarmaUtils.mockPromise(null, { gareth: true }));
-    Facility.callsArgWith(1, null, [ facilitya, facilityb, facilityc ]);
+    Facility.returns(KarmaUtils.mockPromise(null, [ facilitya, facilityb, facilityc ]));
 
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
@@ -273,7 +273,7 @@ describe('Users service', function() {
 
     DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
     Admins.returns(KarmaUtils.mockPromise(null, { gareth: true }));
-    Facility.callsArgWith(1, null, [ facilitya, facilityb, facilityc ]);
+    Facility.returns(KarmaUtils.mockPromise(null, [ facilitya, facilityb, facilityc ]));
 
     service(function(err) {
       chai.expect(err.data).to.equal('Not found');
@@ -315,7 +315,7 @@ describe('Users service', function() {
 
     DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
     Admins.returns(KarmaUtils.mockPromise(null, { gareth: true }));
-    Facility.callsArgWith(1, 'BOOM');
+    Facility.returns(KarmaUtils.mockPromise('BOOM'));
 
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')
@@ -363,7 +363,7 @@ describe('Users service', function() {
 
     DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
     Admins.returns(KarmaUtils.mockPromise('POW'));
-    Facility.callsArgWith(1, null, [ facilitya, facilityb, facilityc ]);
+    Facility.returns(KarmaUtils.mockPromise(null, [ facilitya, facilityb, facilityc ]));
 
     $httpBackend
       .expect('GET', '/_users/_all_docs?include_docs=true')

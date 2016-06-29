@@ -7,20 +7,34 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('EditUserCtrl',
-    function ($log, $rootScope, $scope, $window, DB, Facility, Language, PLACE_TYPES, Session, SetLanguage, UpdateUser, translateFilter) {
+    function (
+      $log,
+      $rootScope,
+      $scope,
+      $translate,
+      $window,
+      DB,
+      Facility,
+      Language,
+      PLACE_TYPES,
+      Session,
+      SetLanguage,
+      UpdateUser
+    ) {
       'ngInject';
 
-      Facility({ types: PLACE_TYPES }, function(err, facilities) {
-        if (err) {
-          return $log.error('Error fetching facilities', err);
-        }
-        $scope.facilities = facilities;
-      });
+      Facility({ types: PLACE_TYPES })
+        .then(function(facilities) {
+          $scope.facilities = facilities;
+        })
+        .catch(function(err) {
+          $log.error('Error fetching facilities', err);
+        });
 
       var typeMap = {
-        clinic: translateFilter('Clinic'),
-        district_hospital: translateFilter('District Hospital'),
-        health_center: translateFilter('Health Center')
+        clinic: $translate.instant('Clinic'),
+        district_hospital: $translate.instant('District Hospital'),
+        health_center: $translate.instant('Health Center')
       };
 
       var rolesMap = {
@@ -80,14 +94,14 @@ var modal = require('../modules/modal');
         var newUser = !$scope.editUserModel.id;
         if (newUser) {
           if (!$scope.editUserModel.password) {
-            $scope.errors.password = translateFilter('field is required', {
-              field: translateFilter('Password')
+            $scope.errors.password = $translate.instant('field is required', {
+              field: $translate.instant('Password')
             });
             return false;
           }
         }
         if ($scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
-          $scope.errors.password = translateFilter('Passwords must match');
+          $scope.errors.password = $translate.instant('Passwords must match');
           return false;
         }
         return true;
@@ -103,8 +117,8 @@ var modal = require('../modules/modal');
 
       var validateName = function() {
         if (!$scope.editUserModel.name) {
-          $scope.errors.name = translateFilter('field is required', {
-            field: translateFilter('User Name')
+          $scope.errors.name = $translate.instant('field is required', {
+            field: $translate.instant('User Name')
           });
           return false;
         }
@@ -156,7 +170,7 @@ var modal = require('../modules/modal');
           $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
           $scope.editUserModel = null;
         }
-        pane.done(translateFilter('Error updating user'), err);
+        pane.done($translate.instant('Error updating user'), err);
       };
 
       $scope.updatePassword = function() {

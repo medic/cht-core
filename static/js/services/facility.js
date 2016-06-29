@@ -4,6 +4,7 @@ var _ = require('underscore'),
 angular.module('inboxServices').factory('Facility',
   function(
     $log,
+    $q,
     Cache,
     CONTACT_TYPES,
     DbView
@@ -28,11 +29,8 @@ angular.module('inboxServices').factory('Facility',
       });
     });
 
-    return function(options, callback) {
-      if (!callback) {
-        callback = options;
-        options = {};
-      }
+    return function(options) {
+      options = options || {};
 
       if (!options.types || options.types.indexOf('person') !== -1) {
         // We want to remove as many of these as possible, because for admins
@@ -43,13 +41,14 @@ angular.module('inboxServices').factory('Facility',
       var relevantCaches = (options.types ? options.types : CONTACT_TYPES).map(function(type) {
         return cacheByType[type];
       });
-
+      var deferred = $q.defer();
       async.parallel(relevantCaches, function(err, results) {
         if (err) {
-          return callback(err);
+          return deferred.reject(err);
         }
-        callback(null, _.flatten(results));
+        deferred.resolve(_.flatten(results));
       });
+      return deferred.promise;
     };
   }
 );
