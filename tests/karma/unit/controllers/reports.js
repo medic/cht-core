@@ -7,7 +7,6 @@ describe('ReportsCtrl controller', function() {
       report,
       get,
       post,
-      DB,
       LiveList,
       UserDistrict,
       MarkRead,
@@ -98,11 +97,11 @@ describe('ReportsCtrl controller', function() {
   it('verifies the given report', function() {
     get.returns(KarmaUtils.mockPromise(null, { _id: 'def', name: 'hello' }));
     post.returns(KarmaUtils.mockPromise());
-    var controller = createController();
+    createController();
     scope.selected[0] = {
       _id: 'abc',
       report: { form: 'P' }
-    }
+    };
     scope.$broadcast('VerifyReport', null, true);
     setTimeout(function() {
       chai.expect(get.callCount).to.equal(1);
