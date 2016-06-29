@@ -37,36 +37,32 @@ var _ = require('underscore');
         if (id) {
           return $http.get(getUserUrl(id), { cache: true, targetScope: 'root' })
             .then(function(result) { return result.data; });
-        } else {
-          return $q.when({
-            _id: createId(name),
-            type: 'user'
-          });
         }
+        return $q.when({
+          _id: createId(name),
+          type: 'user'
+        });
       };
 
       var getOrCreateUserSettings = function(id, name) {
         if (id) {
-          return DB()
-            .get(id);
-        } else {
-          return $q.when({
-            _id: createId(name),
-            type: 'user-settings'
-          });
+          return DB().get(id);
         }
+        return $q.when({
+          _id: createId(name),
+          type: 'user-settings'
+        });
       };
 
       var updatePassword = function(updated) {
         if (!updated.password) {
           // password not changed, do nothing
-          return;
+          return $q.when();
         }
         return Admins()
           .then(function(admins) {
             if (admins[updated.name]) {
               // an admin so admin password change required
-              console.log('putting', updated.name, admins, '"' + updated.password + '"');
               return $http.put(
                 '/_config/admins/' + updated.name,
                 '"' + updated.password + '"'
