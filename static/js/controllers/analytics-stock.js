@@ -110,7 +110,6 @@ var _ = require('underscore'),
           .then(function(district) {
             ChildFacility(district)
               .then(function(facilities) {
-                facilities = facilities.results;
                 getViewReports(DbView, district, dates)
                   .then(function(reports) {
                     $scope.totals = stockUtils.getTotals(facilities, reports, dates);

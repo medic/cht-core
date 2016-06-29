@@ -19,7 +19,10 @@ angular.module('inboxServices').factory('ChildFacility',
       } else {
         throw new Error('Doc not currently supported.');
       }
-      return DbView('total_clinics_by_facility', { params: params });
+      return DbView('total_clinics_by_facility', { params: params })
+        .then(function(response) {
+          return response.results;
+        });
     };
 
   }
