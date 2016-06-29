@@ -57,29 +57,27 @@ var _ = require('underscore');
         }
       };
 
-
       var updatePassword = function(updated) {
         if (!updated.password) {
           // password not changed, do nothing
-          return $q.when();
+          return;
         }
-        var deferred = $q.defer();
-        Admins(function(err, admins) {
-          if (err) {
-            if (err.error === 'unauthorized') {
-              // not an admin
-              return deferred.resolve();
+        return Admins()
+          .then(function(admins) {
+            if (admins[updated.name]) {
+              // an admin so admin password change required
+              console.log('putting', updated.name, admins, '"' + updated.password + '"');
+              return $http.put(
+                '/_config/admins/' + updated.name,
+                '"' + updated.password + '"'
+              );
             }
-            return deferred.reject(err);
-          }
-          if (!admins[updated.name]) {
-            // not an admin so admin password change not required
-            return deferred.resolve();
-          }
-
-          deferred.resolve($http.put('/_config/admins/' + updated.name, '"' + updated.password + '"'));
-        });
-        return deferred.promise;
+          })
+          .catch(function(err) {
+            if (err.error !== 'unauthorized') {
+              throw err;
+            }
+          });
       };
 
       var updateUser = function(id, updates) {
@@ -95,20 +93,19 @@ var _ = require('underscore');
               updated.derived_key = undefined;
               updated.salt = undefined;
             }
-            return $http
-              .put(getUserUrl(user._id), updated)
+            return $http.put(getUserUrl(user._id), updated)
               .then(function() {
-                updatePassword(updated)
-                  .then(function() {
-                    removeCacheEntry($cacheFactory, user._id);
-                    return updated;
-                  })
-                  .catch(function(err) {
-                    removeCacheEntry($cacheFactory, user._id);
-                    throw err;
-                  });
-                });
+                return updatePassword(updated);
+              })
+              .then(function() {
+                removeCacheEntry($cacheFactory, user._id);
+                return updated;
+              })
+              .catch(function(err) {
+                removeCacheEntry($cacheFactory, user._id);
+                throw err;
               });
+          });
       };
 
       var updateSettings = function(id, updates) {

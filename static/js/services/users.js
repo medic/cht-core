@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    async = require('async');
+var _ = require('underscore');
 
 (function () {
 
@@ -8,7 +7,16 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('Users',
-    function($http, PLACE_TYPES, Admins, DbView, Facility) {
+    function(
+      $http,
+      $q,
+      Admins,
+      DbView,
+      Facility,
+      PLACE_TYPES
+    ) {
+
+      'ngInject';
 
       var getType = function(user, admins) {
         if (user.doc.roles && user.doc.roles.length) {
@@ -46,36 +54,49 @@ var _ = require('underscore'),
         });
       };
 
-      var getAllUsers = function(callback) {
-        $http
-          .get('/_users/_all_docs', { cache: true, params: { include_docs: true } })
-          .success(function(data) {
-            callback(null, data);
-          })
-          .error(callback);
+      var getAllUsers = function() {
+        return $http.get('/_users/_all_docs', {
+          cache: true,
+          params: { include_docs: true }
+        });
       };
 
-      var getAllUserSettings = function(callback) {
-        var options = { params: { include_docs: true, key: ['user-settings'] } };
-        DbView('doc_by_type', options)
-          .then(function(data) {
-            callback(null, data.results);
-          })
-          .catch(callback);
+      var getAllUserSettings = function() {
+        return DbView(
+          'doc_by_type',
+          { params: { include_docs: true, key: ['user-settings'] } }
+        );
+      };
+
+      var getPlace = function() {
+        return $q(function(resolve, reject) {
+          Facility({ types: PLACE_TYPES }, function(err, results) {
+            if (err) {
+              return reject(err);
+            }
+            resolve(results);
+          });
+        });
       };
 
       return function(callback) {
-        var Place = _.partial(Facility, { types:PLACE_TYPES });
-
-        async.parallel(
-          [ getAllUsers, getAllUserSettings, Place, Admins ],
-          function(err, results) {
-            if (err) {
-              return callback(err);
-            }
-            callback(null, mapUsers(results[0].rows, results[1], results[2], results[3]));
-          }
-        );
+        $q.all([
+          getAllUsers(),
+          getAllUserSettings(),
+          getPlace(),
+          Admins()
+        ])
+          .then(function(results) {
+            callback(null, mapUsers(
+              results[0].data.rows,
+              results[1].results,
+              results[2],
+              results[3]
+            ));
+          })
+          .catch(function(err) {
+            callback(err);
+          });
       };
     }
   );
