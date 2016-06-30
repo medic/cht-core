@@ -5,7 +5,7 @@ var _ = require('underscore'),
 
   'use strict';
 
-  exports.init = function($translate, Search, DB, $q) {
+  exports.init = function($translate, Search, DB, $q, Session) {
     var pageSize,
         allowNew,
         objectType;
@@ -105,25 +105,17 @@ var _ = require('underscore'),
         templateResult: formatResult,
         templateSelection: formatSelection,
         width: '100%',
+        minimumInputLength: Session.isAdmin() ? 3 : 0
       });
     };
 
     return function(selectEl, _objectType, options) {
       options = options || {};
-      _.defaults(options, {
-        pageSize: 20,
-        allowNew: false,
-        templateSelection: formatSelection,
-        templateResult: formatResult
-      });
-
-      pageSize = options.pageSize;
-      allowNew = options.allowNew;
-      formatResult = options.templateResult;
-      formatSelection = options.templateSelection;
-
+      pageSize = options.pageSize || 20;
+      allowNew = options.allowNew || false;
+      formatResult = options.templateResult || formatResult;
+      formatSelection = options.templateSelection || formatSelection;
       objectType = _objectType;
-
       return resolveInitialValue(selectEl).then(initSelect2);
     };
   };

@@ -348,7 +348,7 @@ var feedback = require('../modules/feedback'),
 
       var setupSelect2Ajax = function(selector) {
         $(selector).each(function(idx, el) {
-          var module = select2Ajax.init($translate, Search, DB, $q);
+          var module = select2Ajax.init($translate, Search, DB, $q, Session);
           module($(el), 'person', { allowNew: false })
             .catch(function(err) {
               $log.error('Error initialising select2', err);
