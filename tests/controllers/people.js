@@ -125,6 +125,32 @@ exports['createPerson rejects invalid reported_date.'] = function(test) {
   });
 };
 
+exports['createPerson accepts valid reported_date in ms since epoch.'] = function(test) {
+  var person = {
+    name: 'Test',
+    reported_date: '123'
+  };
+  sinon.stub(places, 'getOrCreatePlace').callsArg(1);
+  sinon.stub(db.medic, 'insert', function(doc) {
+    test.ok(doc.reported_date === 123);
+    test.done();
+  });
+  controller.createPerson(person);
+};
+
+exports['createPerson accepts valid reported_date in string format'] = function(test) {
+  var person = {
+    name: 'Test',
+    reported_date: '2011-10-10T14:48:00-0300'
+  };
+  sinon.stub(places, 'getOrCreatePlace').callsArg(1);
+  sinon.stub(db.medic, 'insert', function(doc) {
+    test.ok(doc.reported_date === new Date('2011-10-10T14:48:00-0300').valueOf());
+    test.done();
+  });
+  controller.createPerson(person);
+};
+
 exports['createPerson sets a default reported_date.'] = function(test) {
   var person = {
     name: 'Test'
