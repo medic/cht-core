@@ -259,7 +259,6 @@ angular.module('inboxServices').service('EnketoTranslation', [
     var nodesToJs = function(data) {
       var fields = {};
       withElements(data)
-        .filter(without('meta'))
         .each(function(n) {
           var hasChildren = withElements(n.childNodes).size().value();
           if(hasChildren) {
