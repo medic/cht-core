@@ -127,8 +127,28 @@ exports['getAllRegistrations generates multiple queries when over limit'] = func
 exports['describe isDateStrValid'] = function(test) {
   var tests = [
     {
-      // reject integers
-      val: 1234,
+      // reject object type
+      val: {},
+      res: false
+    },
+    {
+      // reject null type
+      val: null,
+      res: false
+    },
+    {
+      // reject undefined type
+      val: undefined,
+      res: false
+    },
+    {
+      // reject array type
+      val: [],
+      res: false
+    },
+    {
+      // reject empty string
+      val: '',
       res: false
     },
     {
@@ -139,6 +159,11 @@ exports['describe isDateStrValid'] = function(test) {
     {
       // reject badly formatted string
       val: 'Mar, 12 2001',
+      res: false
+    },
+    {
+      // reject incomplete string, use strict matching
+      val: '2011-10-10',
       res: false
     },
     {
@@ -159,6 +184,51 @@ exports['describe isDateStrValid'] = function(test) {
     {
       // accept 4 digit timezone
       val: '2011-10-10T14:48:00-0330',
+      res: true
+    },
+    {
+      // accept Z for UTC
+      val: '2011-10-10T14:48:00Z',
+      res: true
+    },
+    {
+      // accept ms since epoch
+      val: '0',
+      res: true
+    },
+    {
+      // accept ms since epoch
+      val: 0,
+      res: true
+    },
+    {
+      // accept ms since epoch
+      val: '123',
+      res: true
+    },
+    {
+      // accept ms since epoch
+      val: 123,
+      res: true
+    },
+    {
+      // accept ms since epoch
+      val: '1467383343484',
+      res: true
+    },
+    {
+      // accept ms since epoch
+      val: 1467383343484,
+      res: true
+    },
+    {
+      // accept output from native javascript method
+      val: new Date().valueOf(),
+      res: true
+    },
+    {
+      // accept output from native javascript method
+      val: '2016-07-01T14:58:26.336Z',
       res: true
     },
     {

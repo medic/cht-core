@@ -6,16 +6,18 @@ var _ = require('underscore'),
     luceneConditionalLimit = 1000,
     noLmpDateModifier = 4;
 
+var tsFormats = [
+  'YYYY-MM-DDTHH:mm:ssZ',
+  'YYYY-MM-DDTHH:mm:ss.SSSZ', // native JS Date.toISOString format
+  'x' // ms since epoch (stored format)
+];
+
 var parseDate = function(str) {
-  return moment(str, 'YYYY-MM-DDTHH:mm:ssZ', true);
+  return moment(str, tsFormats, true);
 };
 
 var isDateStrValid = function(str) {
-  var formats = [
-    'YYYY-MM-DDTHH:mm:ssZ',
-    'YYYY-MM-DDTHH:mm:ss.SSSZ'
-  ];
-  return moment(str, formats, true).isValid();
+  return moment(str, tsFormats, true).isValid();
 };
 
 var formatDate = function(date) {
