@@ -1,4 +1,5 @@
-var modal = require('../modules/modal');
+var modal = require('../modules/modal'),
+    select2Ajax = require('../modules/select2-ajax');
 
 (function () {
 
@@ -9,27 +10,26 @@ var modal = require('../modules/modal');
   inboxControllers.controller('EditUserCtrl',
     function (
       $log,
+      $q,
       $rootScope,
       $scope,
       $translate,
+      $uibModalInstance,
       $window,
       DB,
-      Facility,
-      Language,
+      model,
       PLACE_TYPES,
+      Search,
       Session,
       SetLanguage,
-      UpdateUser
+      UpdateUser,
+      UserSettings
     ) {
       'ngInject';
 
-      Facility({ types: PLACE_TYPES })
-        .then(function(facilities) {
-          $scope.facilities = facilities;
-        })
-        .catch(function(err) {
-          $log.error('Error fetching facilities', err);
-        });
+      $scope.cancel = function() {
+        $uibModalInstance.dismiss('cancel');
+      };
 
       var typeMap = {
         clinic: $translate.instant('Clinic'),
@@ -46,44 +46,54 @@ var modal = require('../modules/modal');
         'gateway': ['kujua_gateway']
       };
 
-      var getType = function(type) {
-        return type === 'unknown' ? undefined : type;
+      var getType = function(roles) {
+        if (roles && roles.length) {
+          return roles[0];
+        }
       };
 
-      $scope.$on('EditUserInit', function(e, user) {
-        if (!user) {
-          $scope.editUserModel = {};
-          return;
-        }
+      if (model) {
         $scope.editUserModel = {
-          id: user.id,
-          name: user.name,
-          fullname: user.fullname,
-          email: user.email,
-          phone: user.phone,
-          facility: user.facility,
-          type: getType(user.type),
-          language: user.language
+          id: model._id,
+          name: model.name,
+          fullname: model.fullname,
+          email: model.email,
+          phone: model.phone,
+          facility: model.facility_id,
+          type: getType(model.roles),
+          language: { code: model.language },
+          contact: model.contact_id
         };
-        var $contact = $('#edit-user-profile [name=contact]');
-        if (user.contact_id) {
-          $contact.empty();
-          DB().get(user.contact_id)
-            .then(function(contact) {
-              $contact
-                .append($('<option>', {
-                  selected: 'selected',
-                  value: contact._id,
-                  text: contact.name,
-                }))
-                .val(contact._id)
-                .trigger('change');
-            });
-        } else {
-          $contact
-              .val(null)
-              .trigger('change');
-        }
+      } else {
+        // get the current user
+
+        UserSettings()
+          .then(function(user) {
+            if (!user) {
+              $scope.editUserModel = {};
+              return;
+            }
+            $scope.editUserModel = {
+              id: user._id,
+              name: user.name,
+              fullname: user.fullname,
+              email: user.email,
+              phone: user.phone,
+              language: { code: user.language }
+            };
+          })
+          .catch(function(err) {
+            $log.error('Error fetching user settings', err);
+          });
+
+      }
+
+      $uibModalInstance.rendered.then(function() {
+        // only the #edit-user-profile modal has these fields
+        select2Ajax.init($translate.instant, Search, DB, $q, Session)
+          ($('#edit-user-profile [name=contact]'), 'person');
+        select2Ajax.init($translate.instant, Search, DB, $q, Session)
+          ($('#edit-user-profile [name=facility]'), PLACE_TYPES);
       });
 
       $scope.typeName = function(facility) {
@@ -100,19 +110,12 @@ var modal = require('../modules/modal');
             return false;
           }
         }
-        if ($scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
+        if ($scope.editUserModel.password &&
+            $scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
           $scope.errors.password = $translate.instant('Passwords must match');
           return false;
         }
         return true;
-      };
-
-      var validateUser = function() {
-        return validatePassword() && validateName();
-      };
-
-      var validateUserSettings = function() {
-        return validateName();
       };
 
       var validateName = function() {
@@ -145,8 +148,7 @@ var modal = require('../modules/modal');
           roles: getRoles($scope.editUserModel.type, true),
           language: $scope.editUserModel.language &&
                     $scope.editUserModel.language.code,
-          facility_id: $scope.editUserModel.facility &&
-                       $scope.editUserModel.facility._id,
+          facility_id: $('#edit-user-profile [name=facility]').val(),
           contact_id: $('#edit-user-profile [name=contact]').val()
         };
       };
@@ -156,21 +158,22 @@ var modal = require('../modules/modal');
           name: $scope.editUserModel.name,
           password: $scope.editUserModel.password,
           roles: getRoles($scope.editUserModel.type),
-          facility_id: $scope.editUserModel.facility &&
-                       $scope.editUserModel.facility._id
+          facility_id: $('#edit-user-profile [name=facility]').val()
         };
       };
 
       var updateComplete = function(pane, err) {
-        if (!err) {
-          if ($scope.editUserModel.password) {
-            // reload the page so the user can log in with the new password
-            $window.location.reload(true);
-          }
-          $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
-          $scope.editUserModel = null;
+        if (err) {
+          pane.done($translate.instant('Error updating user'), err);
+          return;
         }
-        pane.done($translate.instant('Error updating user'), err);
+        if ($scope.editUserModel.password) {
+          // reload the page so the user can log in with the new password
+          $window.location.reload(true);
+        }
+        $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
+        $scope.editUserModel = null;
+        $uibModalInstance.close('ok');
       };
 
       $scope.updatePassword = function() {
@@ -191,7 +194,7 @@ var modal = require('../modules/modal');
       // #edit-user-settings is the limited set of edits that any user can do to itself.
       $scope.editUserSettings = function() {
         $scope.errors = {};
-        if (validateUserSettings()) {
+        if (validateName()) {
           saveEdit('#edit-user-settings', $scope.editUserModel.id, getSettingsUpdates());
         }
       };
@@ -199,7 +202,7 @@ var modal = require('../modules/modal');
       // #edit-user-profile is the admin view, which has additional fields.
       $scope.editUser = function() {
         $scope.errors = {};
-        if (validateUser()) {
+        if (validatePassword() && validateName()) {
           saveEdit('#edit-user-profile', $scope.editUserModel.id, getSettingsUpdates(), getUserUpdates());
         }
       };

@@ -154,13 +154,12 @@ var _ = require('underscore');
       };
 
       return function(user) {
-        var id = user.id;
-        return deleteCouchUser(user.id)
+        return deleteCouchUser(user._id)
           .then(function() {
-            return deleteMedicUser(user.id);
+            return deleteMedicUser(user._id);
           })
           .then(function() {
-            removeCacheEntry($cacheFactory, id);
+            removeCacheEntry($cacheFactory, user._id);
           });
       };
     }

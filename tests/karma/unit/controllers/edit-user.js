@@ -3,45 +3,67 @@ describe('EditUserCtrl controller', function() {
   'use strict';
 
   var createController,
-      rootScope,
       scope,
       UpdateUser;
 
-  beforeEach(module('inboxApp'));
+  beforeEach(function() {
+    module('inboxApp');
 
-  beforeEach(inject(function($rootScope, $controller) {
-    scope = $rootScope.$new();
-    scope.editUserModel = {
-      id: 'user.id',
+    module(function($provide) {
+      $provide.factory('$uibModalInstance', function() {
+        return {
+          rendered: KarmaUtils.mockPromise(),
+          close: function() {}
+        };
+      });
+      $provide.factory('processingFunction', function() {
+        return null;
+      });
+      $provide.factory('model', function() {
+        return model;
+      });
+    });
+
+    var model = {
+      _id: 'user.id',
       name: 'user.name',
       fullname: 'user.fullname',
       email: 'user.email',
       phone: 'user.phone',
-      facility: {name: 'user.facility', _id: 'facility_id'},
-      type: 'user.type',
-      language: {name: 'user.language', code: 'zz'}
+      facility_id: 'abc',
+      contact_id: 'xyz',
+      roles: [ 'manager' ],
+      language: 'zz'
     };
-    rootScope = $rootScope;
+
     UpdateUser = sinon.stub();
     UpdateUser.returns(KarmaUtils.mockPromise());
 
-    createController = function() {
-      return $controller('EditUserCtrl', {
-        '$scope': scope,
-        '$rootScope': $rootScope,
-        'DB': sinon.stub(),
-        'Facility': KarmaUtils.nullPromise(),
-        'Language': sinon.stub(),
-        'PLACE_TYPES': {},
-        'Session': sinon.stub(),
-        'SetLanguage': sinon.stub(),
-        'UpdateUser': UpdateUser,
-        '$window': {location: {reload: sinon.stub()}}
-      });
-    };
+    inject(function($rootScope, $controller) {
+      scope = $rootScope.$new();
+      createController = function() {
+        return $controller('EditUserCtrl', {
+          '$scope': scope,
+          '$rootScope': $rootScope,
+          'DB': sinon.stub(),
+          'Language': sinon.stub(),
+          'PLACE_TYPES': [],
+          'Search': sinon.stub(),
+          'Session': {
+            userCtx: function() {
+              return { name: 'greg' };
+            }
+          },
+          'SetLanguage': sinon.stub(),
+          'UpdateUser': UpdateUser,
+          'UserSettings': sinon.stub(),
+          '$window': {location: {reload: sinon.stub()}}
+        });
+      };
+    });
 
     createController();
-  }));
+  });
 
   // TODO : test the initialization of editUserModel.
 

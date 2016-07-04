@@ -56,7 +56,7 @@ describe('DeleteUser service', function() {
       })
       .respond(404, 'Not found');
 
-    service({ id: 'org.couchdb.user:gareth', name: 'gareth' })
+    service({ _id: 'org.couchdb.user:gareth', name: 'gareth' })
       .then(function() {
         done(new Error('expected error to be thrown'));
       })
@@ -102,7 +102,7 @@ describe('DeleteUser service', function() {
       });
     });
 
-    return service({ id: 'org.couchdb.user:gareth', name: 'gareth' })
+    return service({ _id: 'org.couchdb.user:gareth', name: 'gareth' })
       .then(function() {
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0]).to.equal('org.couchdb.user:gareth');
