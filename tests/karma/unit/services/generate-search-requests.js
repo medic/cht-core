@@ -265,7 +265,6 @@ describe('GenerateSearchRequests service', function() {
       };
       var result = service('contacts', filters);
       chai.expect(result.length).to.equal(1);
-      console.log(JSON.stringify(result, null ,2));
       chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
       chai.expect(result[0].params).to.deep.equal({
         startkey: [ 'clinic', 'someth' ],
