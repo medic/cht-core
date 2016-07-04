@@ -92,12 +92,8 @@ var utils = require('kujua-utils');
       $http
     ) {
       'ngInject';
-      return function(callback) {
-        $http.get('/_config/admins', { cache: true })
-          .success(function(data) {
-            callback(null, data);
-          })
-          .error(callback);
+      return function() {
+        return $http.get('/_config/admins', { cache: true });
       };
     }
   );

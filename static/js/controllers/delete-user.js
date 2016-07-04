@@ -22,17 +22,17 @@ var modal = require('../modules/modal');
 
       $scope.deleteUserConfirm = function() {
         var pane = modal.start($('#delete-user-confirm'));
-        DeleteUser($scope.deleteUser, function(err) {
-          if (err) {
+        DeleteUser($scope.deleteUser)
+          .then(function() {
+            $scope.deleteUser = null;
+            $rootScope.$broadcast('UsersUpdated');
+            pane.done();
+          })
+          .catch(function(err) {
             $translate('Error deleting document').then(function(message) {
               pane.done(message, err);
             });
-            return;
-          }
-          $scope.deleteUser = null;
-          $rootScope.$broadcast('UsersUpdated');
-          pane.done();
-        });
+          });
       };
 
     }

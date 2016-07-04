@@ -40,9 +40,15 @@ var modal = require('../modules/modal');
           return;
         }
         var pane = modal.start($modal);
-        UpdateFacility(docId, facilityId, function(err) {
-          pane.done($translate.instant('Error updating facility'), err);
-        });
+        UpdateFacility(docId, facilityId)
+          .then(function() {
+            pane.done();
+          })
+          .catch(function(err) {
+            $translate('Error updating facility').then(function(msg) {
+              pane.done(msg, err);
+            });
+          });
       };
 
     }

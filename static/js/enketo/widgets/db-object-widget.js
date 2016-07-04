@@ -41,7 +41,8 @@ define( function( require, exports, module ) {
         var translate = angularServices.get('$translate').instant,
             Search = angularServices.get('Search'),
             $q = angularServices.get('$q'),
-            DB = angularServices.get('DB');
+            DB = angularServices.get('DB'),
+            Session = angularServices.get('Session');
 
         var $question = $(this.element);
 
@@ -56,7 +57,7 @@ define( function( require, exports, module ) {
 
         var dbObjectType = $textInput.attr('data-type-xml');
 
-        select2Ajax.init(translate, Search, DB, $q)($textInput, dbObjectType, {
+        select2Ajax.init(translate, Search, DB, $q, Session)($textInput, dbObjectType, {
             allowNew: $question.hasClass('or-appearance-allow-new')
         }).then(function() {
             if (!$question.hasClass('or-appearance-bind-id-only')) {

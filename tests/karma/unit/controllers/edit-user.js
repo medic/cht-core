@@ -3,48 +3,67 @@ describe('EditUserCtrl controller', function() {
   'use strict';
 
   var createController,
-      rootScope,
       scope,
       UpdateUser;
 
-  beforeEach(module('inboxApp'));
+  beforeEach(function() {
+    module('inboxApp');
 
-  beforeEach(inject(function($rootScope, $controller) {
-    scope = $rootScope.$new();
-    scope.editUserModel = {
-          id: 'user.id',
-          name: 'user.name',
-          fullname: 'user.fullname',
-          email: 'user.email',
-          phone: 'user.phone',
-          facility: {name: 'user.facility', _id: 'facility_id'},
-          type: 'user.type',
-          language: {name: 'user.language', code: 'zz'}
+    module(function($provide) {
+      $provide.factory('$uibModalInstance', function() {
+        return {
+          rendered: KarmaUtils.mockPromise(),
+          close: function() {}
         };
-    rootScope = $rootScope;
-    UpdateUser = sinon.stub();
-    UpdateUser.returns(KarmaUtils.mockPromise());
-    var translateFilter = sinon.stub();
-    translateFilter.returns('Bonjour monde');
-
-    createController = function() {
-      return $controller('EditUserCtrl', {
-        '$scope': scope,
-        '$rootScope': $rootScope,
-        'DB': sinon.stub(),
-        'Facility': sinon.stub(),
-        'Language': sinon.stub(),
-        'PLACE_TYPES': {},
-        'Session': sinon.stub(),
-        'SetLanguage': sinon.stub(),
-        'translateFilter': translateFilter,
-        'UpdateUser': UpdateUser,
-        '$window': {location: {reload: sinon.stub()}}
       });
+      $provide.factory('processingFunction', function() {
+        return null;
+      });
+      $provide.factory('model', function() {
+        return model;
+      });
+    });
+
+    var model = {
+      _id: 'user.id',
+      name: 'user.name',
+      fullname: 'user.fullname',
+      email: 'user.email',
+      phone: 'user.phone',
+      facility_id: 'abc',
+      contact_id: 'xyz',
+      roles: [ 'manager' ],
+      language: 'zz'
     };
 
+    UpdateUser = sinon.stub();
+    UpdateUser.returns(KarmaUtils.mockPromise());
+
+    inject(function($rootScope, $controller) {
+      scope = $rootScope.$new();
+      createController = function() {
+        return $controller('EditUserCtrl', {
+          '$scope': scope,
+          '$rootScope': $rootScope,
+          'DB': sinon.stub(),
+          'Language': sinon.stub(),
+          'PLACE_TYPES': [],
+          'Search': sinon.stub(),
+          'Session': {
+            userCtx: function() {
+              return { name: 'greg' };
+            }
+          },
+          'SetLanguage': sinon.stub(),
+          'UpdateUser': UpdateUser,
+          'UserSettings': sinon.stub(),
+          '$window': {location: {reload: sinon.stub()}}
+        });
+      };
+    });
+
     createController();
-  }));
+  });
 
   // TODO : test the initialization of editUserModel.
 

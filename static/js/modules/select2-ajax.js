@@ -5,10 +5,10 @@ var _ = require('underscore'),
 
   'use strict';
 
-  exports.init = function($translate, Search, DB, $q) {
+  exports.init = function($translate, Search, DB, $q, Session) {
     var pageSize,
         allowNew,
-        objectType;
+        types;
 
     var formatResult = function(row) {
       if(!row.doc) {
@@ -39,7 +39,7 @@ var _ = require('underscore'),
       if (first && allowNew) {
         rows.unshift({
           id: 'NEW',
-          text: $translate('contact.type.' + objectType + '.new'),
+          text: $translate('contact.type.' + types[0] + '.new'),
         });
       }
 
@@ -52,9 +52,7 @@ var _ = require('underscore'),
       currentQuery = params.data.q;
       var skip = ((params.data.page || 1) - 1) * pageSize;
       var filters = {
-        types: {
-          selected: [objectType]
-        },
+        types: { selected: types },
         search: params.data.q
       };
       var options = {
@@ -84,14 +82,13 @@ var _ = require('underscore'),
       var value = selectEl.val();
       if (!value || value.length === 0) {
         return $q.resolve(selectEl);
-      } else {
-        return DB().get(value)
-          .then(function(doc) {
-            var text = formatSelection({doc: doc});
-            selectEl.children('option[value='+value+']').text(text);
-            return $q.resolve(selectEl);
-          });
       }
+      return DB().get(value)
+        .then(function(doc) {
+          var text = formatSelection({ doc: doc });
+          selectEl.children('option[value=' + value + ']').text(text);
+          return selectEl;
+        });
     };
 
     var initSelect2 = function(selectEl) {
@@ -105,25 +102,20 @@ var _ = require('underscore'),
         templateResult: formatResult,
         templateSelection: formatSelection,
         width: '100%',
+        minimumInputLength: Session.isAdmin() ? 3 : 0
       });
     };
 
-    return function(selectEl, _objectType, options) {
+    return function(selectEl, _types, options) {
       options = options || {};
-      _.defaults(options, {
-        pageSize: 20,
-        allowNew: false,
-        templateSelection: formatSelection,
-        templateResult: formatResult
-      });
-
-      pageSize = options.pageSize;
-      allowNew = options.allowNew;
-      formatResult = options.templateResult;
-      formatSelection = options.templateSelection;
-
-      objectType = _objectType;
-
+      pageSize = options.pageSize || 20;
+      allowNew = options.allowNew || false;
+      formatResult = options.templateResult || formatResult;
+      formatSelection = options.templateSelection || formatSelection;
+      types = Array.isArray(_types) ? _types : [ _types ];
+      if (allowNew && types.length !== 1) {
+        throw new Error('Unsupported options: cannot allowNew with ' + types.length + ' types');
+      }
       return resolveInitialValue(selectEl).then(initSelect2);
     };
   };

@@ -14,6 +14,7 @@ describe('Facility service', function() {
         return options.get;
       });
       $provide.value('PLACE_TYPES', [ 'district_hospital', 'health_center', 'clinic' ]);
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject(function($injector) {
       service = $injector.get('Facility');
@@ -22,22 +23,24 @@ describe('Facility service', function() {
 
   it('returns errors from request', function(done) {
     DbView.returns(KarmaUtils.mockPromise('boom'));
-    service({}, function(err) {
-      chai.expect(err).to.equal('boom');
-      done();
-    });
+    service({})
+      .then(function() {
+        done(new Error('expected error to be thrown'));
+      })
+      .catch(function(err) {
+        chai.expect(err).to.equal('boom');
+        done();
+      });
   });
 
-  it('returns zero when no facilities', function(done) {
+  it('returns zero when no facilities', function() {
     DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
-    service({}, function(err, actual) {
-      chai.expect(err).to.equal(null);
+    return service({}).then(function(actual) {
       chai.expect(actual).to.deep.equal([]);
-      done();
     });
   });
 
-  it('returns all clinics when no user district', function(done) {
+  it('returns all clinics when no user district', function() {
 
     var clinicA = {
       _id: '920a7f6a-d01d-5cfe-7c9182fe6551322a',
@@ -125,10 +128,8 @@ describe('Facility service', function() {
     DbView.withArgs('facilities', {params: {include_docs: true, key: ['clinic']}}).returns(KarmaUtils.mockPromise(null, { results: [ clinicA, clinicB ] }));
     DbView.withArgs('facilities', {params: {include_docs: true, key: ['health_center']}}).returns(KarmaUtils.mockPromise(null, { results: [ healthCenter ] }));
 
-    service({ types: ['clinic'] }, function(err, actual) {
-      chai.expect(err).to.equal(null);
+    return service({ types: ['clinic'] }).then(function(actual) {
       chai.expect(actual).to.deep.equal([ clinicA, clinicB ]);
-      done();
     });
   });
 

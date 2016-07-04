@@ -9,22 +9,25 @@
       $log,
       $rootScope,
       $scope,
-      $state,
-      Users
+      DbView,
+      Modal
     ) {
 
       'ngInject';
 
       $scope.updateList = function() {
         $scope.loading = true;
-        Users(function(err, users) {
-          $scope.loading = false;
-          if (err) {
+        var params = { include_docs: true, key: ['user-settings'] };
+        DbView('doc_by_type', { params: params })
+          .then(function(settings) {
+            $scope.users = settings.results;
+            $scope.loading = false;
+          })
+          .catch(function(err) {
             $scope.error = true;
-            return $log.error('Error fetching users', err);
-          }
-          $scope.users = users;
-        });
+            $scope.loading = false;
+            $log.error('Error fetching users', err);
+          });
       };
 
       $scope.deleteUserPrepare = function(user, $event) {
@@ -33,8 +36,18 @@
         $('#delete-user-confirm').modal('show');
       };
 
-      $scope.editUserPrepare = function(user) {
-        $rootScope.$broadcast('EditUserInit', user);
+      $scope.editUser = function(user) {
+        Modal({
+          templateUrl: 'templates/modals/edit_user.html',
+          controller: 'EditUserCtrl',
+          args: {
+            processingFunction: null,
+            model: user
+          }
+        })
+        .catch(function(err) {
+          $log.debug('User cancelled edit user.', err);
+        });
       };
 
       $scope.$on('UsersUpdated', function() {

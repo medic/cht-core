@@ -60,6 +60,7 @@ Description:
 
     release
     release_v2
+    rc
     beta
     alpha
 

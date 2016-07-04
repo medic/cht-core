@@ -1,13 +1,12 @@
 var _ = require('underscore'),
-    moment = require('moment');
+    moment = require('moment'),
+    END_OF_ALPHABET = '\ufff0';
 
 (function () {
 
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
-
-  var END_OF_ALPHABET = '\ufff0';
 
   inboxServices.factory('GenerateSearchRequests', [
     function() {
@@ -19,7 +18,7 @@ var _ = require('underscore'),
       };
 
       var getViewForMultidropdown = function(view, filter, mapKeys) {
-        if (!view || !filter || !filter.selected) {
+        if (!filter || !filter.selected) {
           return;
         }
         if (filter.selected.length > 0 &&
@@ -35,9 +34,6 @@ var _ = require('underscore'),
       };
 
       var getViewForTernarySelect = function(view, value) {
-        if (!view) {
-          return;
-        }
         if (value === true || value === false) {
           return {
             view: view,
@@ -48,10 +44,9 @@ var _ = require('underscore'),
         }
       };
 
-      var reportedDate = function(filters, type) {
-        var view = type.views.reportedDate;
+      var reportedDate = function(filters, view) {
         var dateRange = filters.date;
-        if (!view || !dateRange || (!dateRange.to && !dateRange.from)) {
+        if (!dateRange || (!dateRange.to && !dateRange.from)) {
           return;
         }
         // increment end date so it's inclusive
@@ -66,31 +61,27 @@ var _ = require('underscore'),
         };
       };
 
-      var form = function(filters, type) {
-        return getViewForMultidropdown(type.views.form, filters.forms, function(forms) {
+      var form = function(filters, view) {
+        return getViewForMultidropdown(view, filters.forms, function(forms) {
           return _.map(forms, function(form) {
             return [ form.code ];
           });
         });
       };
 
-      var validity = function(filters, type) {
-        return getViewForTernarySelect(type.views.validity, filters.valid);
+      var validity = function(filters, view) {
+        return getViewForTernarySelect(view, filters.valid);
       };
 
-      var verification = function(filters, type) {
-        return getViewForTernarySelect(type.views.verification, filters.verified);
+      var verification = function(filters, view) {
+        return getViewForTernarySelect(view, filters.verified);
       };
 
-      var place = function(filters, type) {
-        return getViewForMultidropdown(type.views.place, filters.facilities, getKeysArray);
+      var place = function(filters, view) {
+        return getViewForMultidropdown(view, filters.facilities, getKeysArray);
       };
 
-      var freetext = function(filters, type) {
-        var view = type.views.freetext;
-        if (!view) {
-          return;
-        }
+      var freetext = function(filters, view) {
         if (filters.search) {
           var words = filters.search.toLowerCase().split(/\s+/);
           return words.map(function(word) {
@@ -111,10 +102,9 @@ var _ = require('underscore'),
         }
       };
 
-      var subject = function(filters, type) {
-        var view = type.views.subject;
+      var subject = function(filters, view) {
         var subjectIds = filters.subjectIds;
-        if (!view || !subjectIds || !subjectIds.length) {
+        if (!subjectIds || !subjectIds.length) {
           return;
         }
         return {
@@ -125,64 +115,74 @@ var _ = require('underscore'),
         };
       };
 
-      var documentType = function(filters, type) {
-        return getViewForMultidropdown(type.views.documentType, filters.types, getKeysArray);
+      var documentType = function(filters, view) {
+        return getViewForMultidropdown(view, filters.types, getKeysArray);
       };
 
       var types = {
-        reports: {
-          getUnfiltered: function() {
-            return {
-              ordered: true,
+        reports: function(filters) {
+          var requests = [];
+          requests.push(reportedDate(filters, 'reports_by_date'));
+          requests.push(form(filters, 'reports_by_form'));
+          requests.push(validity(filters, 'reports_by_validity'));
+          requests.push(verification(filters, 'reports_by_verification'));
+          requests.push(place(filters, 'reports_by_place'));
+          requests.push(freetext(filters, 'reports_by_freetext'));
+          requests.push(subject(filters, 'reports_by_subject'));
+          requests = _.compact(_.flatten(requests));
+          if (!requests.length) {
+            requests.push({
               view: 'reports_by_date',
-              params: { descending: true }
-            };
-          },
-          views: {
-            reportedDate: 'reports_by_date',
-            form: 'reports_by_form',
-            validity: 'reports_by_validity',
-            verification: 'reports_by_verification',
-            place: 'reports_by_place',
-            freetext: 'reports_by_freetext',
-            subject: 'reports_by_subject'
-          }
-        },
-        contacts: {
-          getUnfiltered: function() {
-            return {
               ordered: true,
-              view: 'contacts_by_name'
-            };
-          },
-          views: {
-            place: 'contacts_by_place',
-            freetext: 'contacts_by_freetext',
-            documentType: 'contacts_by_type'
+              params: { descending: true }
+            });
           }
+          return requests;
+        },
+        contacts: function(filters) {
+          var placeViews = place(filters, 'contacts_by_place');
+          var typeViews = documentType(filters, 'contacts_by_type');
+          var freetextViews = freetext(filters, 'contacts_by_freetext');
+          if (!placeViews &&
+              typeViews && typeViews.params.keys.length === 1 &&
+              freetextViews && freetextViews.length) {
+            var type = typeViews.params.keys[0][0];
+            return freetextViews.map(function(freetextView) {
+              var result = { view: 'contacts_by_type_freetext' };
+              if (freetextView.key) {
+                result.params = {
+                  key: [ type, freetextView.params.key[0] ]
+                };
+              } else {
+                result.params = {
+                  startkey: [ type, freetextView.params.startkey[0] ],
+                  endkey: [ type, freetextView.params.endkey[0] ]
+                };
+              }
+              return result;
+            });
+          }
+          var requests = [];
+          requests.push(placeViews);
+          requests.push(freetextViews);
+          requests.push(typeViews);
+          requests = _.compact(_.flatten(requests));
+          if (!requests.length) {
+            requests.push({
+              view: 'contacts_by_name',
+              ordered: true
+            });
+          }
+          return requests;
         }
-      };
-
-      var getRequests = function(filters, type) {
-        var requests = [];
-        requests.push(reportedDate(filters, type));
-        requests.push(form(filters, type));
-        requests.push(validity(filters, type));
-        requests.push(verification(filters, type));
-        requests.push(place(filters, type));
-        requests.push(freetext(filters, type));
-        requests.push(documentType(filters, type));
-        requests.push(subject(filters, type));
-        requests = _.compact(_.flatten(requests));
-        return requests.length ? requests : [ type.getUnfiltered() ];
       };
 
       return function(type, filters) {
-        var typeModel = types[type];
-        if (!typeModel) {
+        var builder = types[type];
+        if (!builder) {
           throw new Error('Unknown type: ' + type);
         }
-        return getRequests(filters, typeModel);
+        return builder(filters);
       };
     }
   ]);

@@ -29,8 +29,7 @@ var _ = require('underscore'),
       Search,
       SearchFilters,
       Settings,
-      TranslateFrom,
-      Verified
+      TranslateFrom
     ) {
       'ngInject';
 
@@ -350,11 +349,14 @@ var _ = require('underscore'),
 
       $scope.$on('VerifyReport', function(e, verify) {
         if ($scope.selected[0].report.form) {
-          Verified($scope.selected[0]._id, verify, function(err) {
-            if (err) {
+          DB().get($scope.selected[0]._id)
+            .then(function(message) {
+              message.verified = verify;
+              return DB().post(message);
+            })
+            .catch(function(err) {
               $log.error('Error verifying message', err);
-            }
-          });
+            });
         }
       });
 

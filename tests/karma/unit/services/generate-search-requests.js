@@ -251,5 +251,47 @@ describe('GenerateSearchRequests service', function() {
         endkey: [ 'visit\ufff0' ],
       });
     });
+
+    /*
+      this is a very common use case so we have a custom view for handling it
+    */
+    it('contacts freetext with a single document type - #2445', function() {
+      var filters = {
+        search: 'someth',
+        types: {
+          selected: [ 'clinic' ],
+          options: [ 'person', 'clinic', 'district_hospital' ]
+        }
+      };
+      var result = service('contacts', filters);
+      chai.expect(result.length).to.equal(1);
+      chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
+      chai.expect(result[0].params).to.deep.equal({
+        startkey: [ 'clinic', 'someth' ],
+        endkey: [ 'clinic', 'someth\ufff0' ],
+      });
+    });
+
+    it('contacts multiple word freetext with a single document type', function() {
+      var filters = {
+        search: 'some thing',
+        types: {
+          selected: [ 'clinic' ],
+          options: [ 'person', 'clinic', 'district_hospital' ]
+        }
+      };
+      var result = service('contacts', filters);
+      chai.expect(result.length).to.equal(2);
+      chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
+      chai.expect(result[0].params).to.deep.equal({
+        startkey: [ 'clinic', 'some' ],
+        endkey: [ 'clinic', 'some\ufff0' ],
+      });
+      chai.expect(result[1].view).to.equal('contacts_by_type_freetext');
+      chai.expect(result[1].params).to.deep.equal({
+        startkey: [ 'clinic', 'thing' ],
+        endkey: [ 'clinic', 'thing\ufff0' ],
+      });
+    });
   });
 });

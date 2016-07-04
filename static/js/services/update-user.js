@@ -37,49 +37,43 @@ var _ = require('underscore');
         if (id) {
           return $http.get(getUserUrl(id), { cache: true, targetScope: 'root' })
             .then(function(result) { return result.data; });
-        } else {
-          return $q.when({
-            _id: createId(name),
-            type: 'user'
-          });
         }
+        return $q.when({
+          _id: createId(name),
+          type: 'user'
+        });
       };
 
       var getOrCreateUserSettings = function(id, name) {
         if (id) {
-          return DB()
-            .get(id);
-        } else {
-          return $q.when({
-            _id: createId(name),
-            type: 'user-settings'
-          });
+          return DB().get(id);
         }
+        return $q.when({
+          _id: createId(name),
+          type: 'user-settings'
+        });
       };
-
 
       var updatePassword = function(updated) {
         if (!updated.password) {
           // password not changed, do nothing
           return $q.when();
         }
-        var deferred = $q.defer();
-        Admins(function(err, admins) {
-          if (err) {
-            if (err.error === 'unauthorized') {
-              // not an admin
-              return deferred.resolve();
+        return Admins()
+          .then(function(admins) {
+            if (admins[updated.name]) {
+              // an admin so admin password change required
+              return $http.put(
+                '/_config/admins/' + updated.name,
+                '"' + updated.password + '"'
+              );
             }
-            return deferred.reject(err);
-          }
-          if (!admins[updated.name]) {
-            // not an admin so admin password change not required
-            return deferred.resolve();
-          }
-
-          deferred.resolve($http.put('/_config/admins/' + updated.name, '"' + updated.password + '"'));
-        });
-        return deferred.promise;
+          })
+          .catch(function(err) {
+            if (err.error !== 'unauthorized') {
+              throw err;
+            }
+          });
       };
 
       var updateUser = function(id, updates) {
@@ -95,20 +89,19 @@ var _ = require('underscore');
               updated.derived_key = undefined;
               updated.salt = undefined;
             }
-            return $http
-              .put(getUserUrl(user._id), updated)
+            return $http.put(getUserUrl(user._id), updated)
               .then(function() {
-                updatePassword(updated)
-                  .then(function() {
-                    removeCacheEntry($cacheFactory, user._id);
-                    return updated;
-                  })
-                  .catch(function(err) {
-                    removeCacheEntry($cacheFactory, user._id);
-                    throw err;
-                  });
-                });
+                return updatePassword(updated);
+              })
+              .then(function() {
+                removeCacheEntry($cacheFactory, user._id);
+                return updated;
+              })
+              .catch(function(err) {
+                removeCacheEntry($cacheFactory, user._id);
+                throw err;
               });
+          });
       };
 
       var updateSettings = function(id, updates) {
@@ -146,37 +139,28 @@ var _ = require('underscore');
 
       'ngInject';
 
-      var deleteUser = function(id, callback) {
+      var deleteCouchUser = function(id) {
         var url = getUserUrl(id);
-        $http.get(url)
-          .success(function(user) {
+        return $http.get(url)
+          .then(function(response) {
+            var user = response.data;
             user._deleted = true;
-            $http.put(url, user)
-              .success(function() {
-                callback();
-              })
-              .error(function(data) {
-                callback(new Error(data));
-              });
-          })
-          .error(function(data) {
-            callback(new Error(data));
+            return $http.put(url, user);
           });
       };
 
-      return function(user, callback) {
-        var id = user.id;
-        deleteUser(id, function(err) {
-          if (err) {
-            return callback(err);
-          }
-          removeCacheEntry($cacheFactory, id);
-          DB()
-            .get(id)
-            .then(DeleteDocs)
-            .then(callback)
-            .catch(callback);
-        });
+      var deleteMedicUser = function(id) {
+        return DB().get(id).then(DeleteDocs);
+      };
+
+      return function(user) {
+        return deleteCouchUser(user._id)
+          .then(function() {
+            return deleteMedicUser(user._id);
+          })
+          .then(function() {
+            removeCacheEntry($cacheFactory, user._id);
+          });
       };
     }
   );

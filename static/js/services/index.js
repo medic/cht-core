@@ -10,7 +10,9 @@
   require('./cache');
   require('./changes');
   require('./check-date');
+  require('./child-facility');
   require('./clean-etag');
+  require('./contact');
   require('./contact-form');
   require('./contact-schema');
   require('./count-messages');
@@ -59,14 +61,10 @@
   require('./target-generator');
   require('./traffic-stats');
   require('./translate-from');
-  require('./translation-loader');
-  require('./update-contact');
   require('./update-facility');
   require('./update-settings');
   require('./update-user');
   require('./user');
-  require('./users');
-  require('./verified');
   require('./watch-design-doc');
   require('./web-worker');
   require('./xml-forms');
