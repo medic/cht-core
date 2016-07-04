@@ -1,7 +1,7 @@
 <div class="tab-content">
-  <a id="add-user" class="btn btn-primary" ng-click="editUserPrepare()" data-toggle="modal" data-target="#edit-user-profile">
+  <a id="add-user" class="btn btn-primary" ng-click="editUser({})">
     <i class="fa fa-plus"></i>
-    {{'Add User' | translate}}
+    <span translate>Add User</span>
   </a>
 </div>
 
@@ -9,27 +9,27 @@
 
 <div class="tab-content user-management" ng-hide="loading">
 
-  <p ng-show="error" class="alert alert-danger" role="alert">
-    {{'Error fetching users' | translate}}
-  </p>
+  <p ng-show="error" class="alert alert-danger" role="alert" translate>Error fetching users</p>
 
   <div class="row selection-heading" ng-hide="error">
-    <div class="col-xs-2">{{'User Name' | translate}}</div>
-    <div class="col-xs-2">{{'Full Name' | translate}}</div>
-    <div class="col-xs-2">{{'User Type' | translate}}</div>
-    <div class="col-xs-2">{{'Facility' | translate}}</div>
-    <div class="col-xs-2">{{'Email Address' | translate}}</div>
-    <div class="col-xs-1">{{'Phone Number' | translate}}</div>
+    <div class="col-xs-2" translate>User Name</div>
+    <div class="col-xs-2" translate>Full Name</div>
+    <div class="col-xs-2" translate>User Type</div>
+    <div class="col-xs-2" translate>Email Address</div>
+    <div class="col-xs-1" translate>Phone Number</div>
+    <div class="col-xs-1" translate>Facility</div>
+    <div class="col-xs-1" translate>Contact</div>
     <div class="col-xs-1"></div>
   </div>
 
-  <div class="row selection" ng-repeat="user in users" ng-click="editUserPrepare(user)" data-toggle="modal" data-target="#edit-user-profile">
+  <div class="row selection" ng-repeat="user in users" ng-click="editUser(user)">
     <div class="col-xs-2">{{user.name}}</div>
     <div class="col-xs-2">{{user.fullname}}</div>
-    <div class="col-xs-2"><span ng-if="user.type">{{'usertype.' + user.type | translate}}</span></div>
-    <div class="col-xs-2">{{user.facility.name}}</div>
+    <div class="col-xs-2"><span ng-if="user.roles[0]" translate>usertype.{{user.roles[0]}}</span></div>
     <div class="col-xs-2">{{user.email}}</div>
     <div class="col-xs-1">{{user.phone}}</div>
+    <div class="col-xs-1"><i class="fa fa-check" ng-if="user.facility_id"></i></div>
+    <div class="col-xs-1"><i class="fa fa-check" ng-if="user.contact_id"></i></div>
     <div class="col-xs-1 delete">
       <a class="btn btn-sm btn-danger" ng-click="deleteUserPrepare(user, $event)"><i class="fa fa-trash-o"></i></a>
     </div>

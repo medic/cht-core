@@ -356,10 +356,6 @@ var feedback = require('../modules/feedback'),
         });
       };
 
-      $scope.setupEditUser = function() {
-        setupSelect2Ajax('#edit-user-profile [name=contact]');
-      };
-
       $scope.setupEditReport = function() {
         setupSelect2Ajax('.edit-report-dialog [name=facility]');
       };
@@ -534,48 +530,12 @@ var feedback = require('../modules/feedback'),
         }
       };
 
-      var editUserModel = {};
-
-      $scope.editCurrentUserPrepare = function() {
-        $rootScope.$broadcast('EditUserInit', editUserModel);
-      };
-
-      var updateEditUserModel = function() {
-        return UserSettings()
-          .then(function(user) {
-            editUserModel = {
-              id: user._id,
-              rev: user._rev,
-              name: user.name,
-              fullname: user.fullname,
-              email: user.email,
-              phone: user.phone,
-              language: { code: user.language },
-              contact_id: user.contact_id
-            };
-            return user;
-          })
-          .catch(function(err) {
-            $log.error('Error getting user settings', err);
-          });
-      };
-
-      Changes({
-        key: 'inbox-user',
-        filter: function(change) {
-          return change.id === editUserModel.id;
-        },
-        callback: function() {
-          updateEditUserModel();
-        }
-      });
-
       Settings()
         .then(function(settings) {
           $scope.enabledLocales = _.reject(settings.locales, function(locale) {
             return !!locale.disabled;
           });
-          updateEditUserModel().then(function(user) {
+          return UserSettings().then(function(user) {
             filteredModals = _.filter(startupModals, function(modal) {
               return modal.required(settings, user);
             });

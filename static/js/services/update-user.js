@@ -165,7 +165,7 @@ var _ = require('underscore');
       };
 
       return function(user, callback) {
-        var id = user.id;
+        var id = user._id;
         deleteUser(id, function(err) {
           if (err) {
             return callback(err);
