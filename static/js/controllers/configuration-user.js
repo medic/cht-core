@@ -22,9 +22,6 @@
             model: null
           }
         })
-        .then(function() {
-          console.log('saved');
-        })
         .catch(function(err) {
           $log.debug('User cancelled update password.', err);
         });
