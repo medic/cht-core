@@ -11,11 +11,13 @@ if (couchUrl) {
     module.exports = nano(couchUrl.substring(0, couchUrl.indexOf('/', 10)));
     module.exports.medic = nano(couchUrl);
 
+    var dbName = parsedUrl.path.replace('/','');
     module.exports.settings = {
         protocol: parsedUrl.protocol,
         port: parsedUrl.port,
         host: parsedUrl.hostname,
-        db: parsedUrl.path.replace('/',''),
+        db: dbName,
+        auditDb: dbName + '-audit',
         ddoc: 'medic'
     };
 

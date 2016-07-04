@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "dependencies": {
     "async": "^1.4.0",
-    "couchdb-audit": "^0.2.1",
+    "couchdb-audit": "^0.3.0",
     "epi-week": "^0.0.1",
     "follow": "^0.12.1",
     "later": "^1.1.6",

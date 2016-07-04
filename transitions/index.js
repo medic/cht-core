@@ -219,7 +219,7 @@ var attach = function() {
 
     var db = require('../db'),
         audit = require('couchdb-audit')
-            .withNano(db, db.settings.db, db.settings.ddoc, db.settings.username);
+            .withNano(db, db.settings.db, db.settings.auditDb, db.settings.ddoc, db.settings.username);
 
     var backlog_delay = 500; // ms
     var progress_interval = 500; // items
