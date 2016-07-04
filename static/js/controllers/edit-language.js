@@ -42,7 +42,6 @@ var _ = require('underscore'),
       };
 
       $scope.submit = function() {
-        console.log('saving', model);
         $scope.errors = validate($scope.language);
         if (!$scope.errors) {
           var pane = modal.start($('#edit-language'));
