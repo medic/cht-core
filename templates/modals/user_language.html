@@ -1,21 +1,21 @@
 <div id="user-language" role="document">
   <div class="modal-header">
     <button type="button" class="cancel close" ng-click="cancel()">&times;</button>
-    <h3>{{'Select a language' | translate}}</h3>
+    <h3 translate>Select a language</h3>
   </div>
   <div class="modal-body">
     <p class="horizontal-options locale">
-      <a ng-repeat="language in enabledLocales" ng-class="{selected: language.code === selectedLanguage}" ng-attr-data-value="{{language.code}}" ng-click="changeLanguage(language.code)">
+      <a ng-repeat="language in enabledLocales track by language.code" ng-class="{selected: language.code === selectedLanguage}" ng-click="changeLanguage(language.code)">
         <span class="rectangle" ng-bind="language.name"></span>
       </a>
     </p>
   </div>
   <div class="modal-footer">
-    <p class="note" ng-show="error">{{'Error setting language.' | translate}}</p>
-    <a class="btn cancel" ng-click="cancel()">{{'Cancel' | translate}}</a>
-    <a class="btn btn-primary" ng-class="{disabled: processing}" ng-click="ok()" >
-      <span ng-show="!processing">{{'Submit' | translate}}</span>
-      <span ng-show="processing">{{'Submitting' | translate}}</span>
+    <p class="note" ng-show="error" translate>Error setting language.</p>
+    <a class="btn cancel" ng-click="cancel()" translate>Cancel</a>
+    <a class="btn btn-primary" ng-class="{ disabled: processing }" ng-click="ok()" >
+      <span ng-show="!processing" translate>Submit</span>
+      <span ng-show="processing" translate>Submitting</span>
     </a>
   </div>
 </div>

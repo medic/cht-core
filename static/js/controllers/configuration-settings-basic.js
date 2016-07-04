@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    libphonenumber = require('libphonenumber/utils'),
+var libphonenumber = require('libphonenumber/utils'),
     countries = require('../modules/countries');
 
 (function () {
@@ -97,9 +96,6 @@ var _ = require('underscore'),
             locale_outgoing: res.locale_outgoing,
             gateway_number: res.gateway_number
           };
-          $scope.enabledLocales = _.reject(res.locales, function(locale) {
-            return !!locale.disabled;
-          });
           $('#default-country-code').select2({ width: '20em', data: countries.list });
           $('#default-country-code').val(res.default_country_code).trigger('change');
         })

@@ -27,8 +27,8 @@ describe('InboxCtrl controller', function() {
           return { path: 'localhost' };
         };
       });
-      $provide.factory('DB', function() {
-        return sinon.stub();
+      $provide.value('DB', function() {
+        return { query: KarmaUtils.nullPromise() };
       });
       $provide.factory('WatchDesignDoc', function() {
         return sinon.stub();

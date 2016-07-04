@@ -529,17 +529,18 @@ var feedback = require('../modules/feedback'),
         }
       };
 
-      Settings()
-        .then(function(settings) {
-          $scope.enabledLocales = _.reject(settings.locales, function(locale) {
-            return !!locale.disabled;
+      DB()
+        .query('medic/doc_by_type', { key: [ 'translations', true ] })
+        .then(function(result) {
+          $scope.enabledLocales = _.pluck(result.rows, 'value');
+        });
+
+      $q.all([ Settings(), UserSettings() ])
+        .then(function(results) {
+          filteredModals = _.filter(startupModals, function(modal) {
+            return modal.required(results[0], results[1]);
           });
-          return UserSettings().then(function(user) {
-            filteredModals = _.filter(startupModals, function(modal) {
-              return modal.required(settings, user);
-            });
-            showModals();
-          });
+          showModals();
         })
         .catch(function(err) {
           $log.error('Error fetching settings', err);

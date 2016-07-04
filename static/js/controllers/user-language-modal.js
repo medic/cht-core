@@ -6,13 +6,23 @@ var _ = require('underscore');
  * https://github.com/medic/medic-webapp/issues/2254
  */
 angular.module('inboxControllers').controller('UserLanguageModalCtrl',
-  ['$log', '$q', '$scope', 'Session', 'SetLanguage', 'Settings', '$translate', '$uibModalInstance', 'UpdateUser',
-  function($log, $q, $scope, Session, SetLanguage, Settings, $translate, $uibModalInstance, UpdateUser) {
-    Settings()
-      .then(function(settings) {
-        $scope.enabledLocales = _.reject(settings.locales, function(locale) {
-          return !!locale.disabled;
-        });
+  function(
+    $log,
+    $scope,
+    $translate,
+    $uibModalInstance,
+    DB,
+    Session,
+    SetLanguage,
+    UpdateUser
+  ) {
+
+    'ngInject';
+
+    DB()
+      .query('medic/doc_by_type', { key: [ 'translations', true ] })
+      .then(function(result) {
+        $scope.enabledLocales = _.pluck(result.rows, 'value');
       });
 
     $scope.processing = false;
@@ -38,11 +48,11 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
         .catch(function(err) {
           // Reset to initial language.
           $scope.changeLanguage(initialLanguageCode);
-          _setErrorMode(err);
+          setErrorMode(err);
         });
     };
 
-    var _setErrorMode = function(err) {
+    var setErrorMode = function(err) {
       $log.error('Error in modal', err);
       $scope.processing = false;
       $scope.error = true;
@@ -54,4 +64,4 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
       $uibModalInstance.dismiss('cancel');
     };
   }
-]);
+);

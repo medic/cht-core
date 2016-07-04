@@ -3,8 +3,8 @@ describe('UserLanguageModalCtrl controller', function() {
 
   var createController,
       scope,
+      dbQuery,
       stubSetLanguage,
-      stubSettings,
       stubUpdateUser,
       spyUibModalInstance;
 
@@ -12,18 +12,18 @@ describe('UserLanguageModalCtrl controller', function() {
     module('inboxApp');
 
     module(function($provide) {
-      stubSettings = sinon.stub();
-      stubSettings.returns(KarmaUtils.mockPromise(
-        { locales: [
-          { code: 'en', name: 'English' },
-          { code: 'sw', name: 'Swahili' },
-          { code: 'aa', name: 'AAAAAA', disabled: true }
-        ] }));
-      $provide.factory('Settings', function() {
-        return stubSettings;
-      });
+      dbQuery = sinon.stub();
+      dbQuery.returns(KarmaUtils.mockPromise(
+        { rows: [
+          { value: { code: 'en', name: 'English' } },
+          { value: { code: 'sw', name: 'Swahili' } }
+        ] }
+      ));
+      $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery }));
       $provide.factory('Session', function() {
-        return { userCtx: function() { return {name: 'banana'}; } };
+        return { userCtx: function() {
+          return { name: 'banana' };
+        } };
       });
       stubSetLanguage = sinon.stub();
       stubSetLanguage.returns(KarmaUtils.mockPromise());
