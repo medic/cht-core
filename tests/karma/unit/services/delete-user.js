@@ -56,7 +56,7 @@ describe('DeleteUser service', function() {
       })
       .respond(404, 'Not found');
 
-    service({ id: 'org.couchdb.user:gareth', name: 'gareth' }, function(err) {
+    service({ _id: 'org.couchdb.user:gareth', name: 'gareth' }, function(err) {
       chai.expect(err.message).to.equal('Not found');
       chai.expect(cacheRemove.callCount).to.equal(0);
       done();
@@ -87,7 +87,7 @@ describe('DeleteUser service', function() {
     DeleteDocs.returns(KarmaUtils.mockPromise());
 
     service({
-      id: 'org.couchdb.user:gareth',
+      _id: 'org.couchdb.user:gareth',
       name: 'gareth'
     }, function(err) {
       chai.expect(err).to.equal(undefined);
