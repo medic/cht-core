@@ -6,80 +6,96 @@ var _ = require('underscore');
 
   var inboxControllers = angular.module('inboxControllers');
 
-  var findTranslation = function(locale, translation) {
-    var value = _.findWhere(translation.translations, { locale: locale });
-    return value && value.content;
-  };
-
-  var createLanguageModel = function(language, languages) {
-    var rhs = _.find(languages, function(current) {
-      return current.code !== language;
-    });
-    return {
-      lhs: language || 'en',
-      rhs: rhs && rhs.code || 'en'
-    };
-  };
-
-  var createTranslationModels = function(translations, localeModel) {
-    return _.map(translations, function(translation) {
-      return {
-        key: translation.key,
-        lhs: findTranslation(localeModel.lhs, translation),
-        rhs: findTranslation(localeModel.rhs, translation),
-        raw: translation
-      };
-    });
-  };
-
   inboxControllers.controller('ConfigurationTranslationApplicationCtrl',
     function (
       $log,
-      $q,
-      $rootScope,
       $scope,
+      Changes,
+      DB,
       Language,
-      Settings
+      Modal
     ) {
 
       'ngInject';
 
+      var updateLocaleModel = function(language) {
+        var rhs = _.find($scope.translations, function(translation) {
+          return translation.doc.code !== language;
+        });
+        $scope.localeModel = {
+          lhs: language || 'en',
+          rhs: rhs && rhs.doc.code || 'en'
+        };
+      };
+
+      var findTranslation = function(locale) {
+        var translation = _.find($scope.translations, function(translation) {
+          return translation.doc.code === locale;
+        });
+        return translation && translation.doc;
+      };
+
       var updateTranslationModels = function() {
-        Settings()
-          .then(function(settings) {
-            $scope.translationModels = createTranslationModels(
-              settings.translations,
-              $scope.localeModel
-            );
+        var lhsTranslation = findTranslation($scope.localeModel.lhs);
+        var rhsTranslation = findTranslation($scope.localeModel.rhs);
+        var lhs = (lhsTranslation && lhsTranslation.values) || {};
+        var rhs = (rhsTranslation && rhsTranslation.values) || {};
+        $scope.translationModels = Object.keys(lhs).map(function(key) {
+          return {
+            key: key,
+            lhs: lhs[key],
+            rhs: rhs[key]
+          };
+        });
+      };
+
+      var updateTranslations = function() {
+        return DB()
+          .query('medic/doc_by_type', { key: [ 'translations' ], include_docs: true })
+          .then(function(results) {
+            $scope.translations = results.rows;
           })
           .catch(function(err) {
-            $log.error('Error loading settings', err);
+            $log.error('Error fetching translation documents', err);
           });
       };
 
-      $q.all([Settings(), Language()])
-        .then(function(results) {
-          var settings = results[0];
-          var language = results[1];
-          $scope.locales = settings.locales;
-          $scope.localeModel = createLanguageModel(language, settings.locales);
+      updateTranslations()
+        .then(Language)
+        .then(function(language) {
+          updateLocaleModel(language);
           updateTranslationModels();
           $scope.$watch('localeModel', function(curr, prev) {
             if (prev.lhs !== curr.lhs || prev.rhs !== curr.rhs) {
               updateTranslationModels();
             }
           }, true);
-        })
-        .catch(function(err) {
-          $log.error('Error loading settings', err);
         });
 
-      $scope.prepareEditTranslation = function(translation) {
-        $rootScope.$broadcast('EditTranslationInit', translation, $scope.locales);
+      $scope.editTranslation = function(key) {
+        Modal({
+          templateUrl: 'templates/modals/edit_translation.html',
+          controller: 'EditTranslationCtrl',
+          args: {
+            processingFunction: null,
+            model: {
+              key: key,
+              locales: _.values($scope.translations)
+            }
+          }
+        })
+        .catch(function() {
+          $log.debug('User cancelled EditLanguage modal.');
+        });
       };
-      $scope.$on('TranslationUpdated', function(e, data) {
-        if (data.translations) {
-          updateTranslationModels();
+
+      Changes({
+        key: 'configuration-translation-application',
+        filter: function(change) {
+          return change.doc.type === 'translations';
+        },
+        callback: function() {
+          updateTranslations().then(updateTranslationModels);
         }
       });
 

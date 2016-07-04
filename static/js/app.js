@@ -54,50 +54,22 @@ _.templateSettings = {
     'pouchdb'
   ]);
 
-  app.config(['$stateProvider', '$urlRouterProvider', '$translateProvider', '$compileProvider',
-    function($stateProvider, $urlRouterProvider, $translateProvider, $compileProvider) {
-      $urlRouterProvider.otherwise('/error/404');
-      router($stateProvider);
-      $urlRouterProvider.when('', '/home');
-      $translateProvider.useLoader('SettingsLoader', {});
-      $translateProvider.useSanitizeValueStrategy('escape');
-      $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
-      var isDevelopment = window.location.hostname === 'localhost';
-      $compileProvider.debugInfoEnabled(isDevelopment);
-    }
-  ]);
-
-  app.factory('SettingsLoader', ['Settings', function (Settings) {
-    return function (options) {
-      return Settings().then(function(res) {
-        options.key = options.key || res.locale || 'en';
-
-        var test = false;
-        if (options.key === 'test') {
-          options.key = 'en';
-          test = true;
-        }
-
-        var data = {};
-        if (res.translations) {
-          res.translations.forEach(function(translation) {
-            var key = translation.key;
-            var value = translation.default || key;
-            translation.translations.forEach(function(val) {
-              if (val.locale === options.key) {
-                value = val.content;
-              }
-            });
-            if (test) {
-              value = '-' + value + '-';
-            }
-            data[key] = value;
-          });
-        }
-        return data;
-      });
-    };
-  }]);
+  app.config(function(
+    $compileProvider,
+    $stateProvider,
+    $translateProvider,
+    $urlRouterProvider
+  ) {
+    'ngInject';
+    $urlRouterProvider.otherwise('/error/404');
+    router($stateProvider);
+    $urlRouterProvider.when('', '/home');
+    $translateProvider.useLoader('TranslationLoader', {});
+    $translateProvider.useSanitizeValueStrategy('escape');
+    $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
+    var isDevelopment = window.location.hostname === 'localhost';
+    $compileProvider.debugInfoEnabled(isDevelopment);
+  });
 
   // Protractor waits for requests to complete so we have to disable
   // long polling requests.

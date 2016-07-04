@@ -4,198 +4,118 @@ describe('ImportProperties service', function() {
 
   var service,
       Settings,
-      actual;
+      put,
+      UpdateSettings,
+      rootScope;
 
   beforeEach(function() {
     Settings = sinon.stub();
+    UpdateSettings = sinon.stub();
+    put = sinon.stub();
     module('inboxApp');
     module(function($provide) {
       $provide.value('translateFilter', function(key) {
         return '{' + key + '}';
       });
       $provide.value('Settings', Settings);
-      $provide.value('UpdateSettings', function(updated, callback) {
-        actual = updated;
-        callback();
-      });
+      $provide.value('UpdateSettings', UpdateSettings);
+      $provide.factory('DB', KarmaUtils.mockDB({ put: put }));
     });
-    inject(function($injector) {
+    inject(function($injector, $rootScope) {
+      rootScope = $rootScope;
       service = $injector.get('ImportProperties');
     });
-    actual = null;
   });
 
   afterEach(function() {
-    KarmaUtils.restore(Settings);
+    KarmaUtils.restore(Settings, UpdateSettings, put);
   });
 
-  it('updates settings', function(done) {
-    Settings.returns(KarmaUtils.mockPromise(null, {
-      translations: [
-        {
-          key: 'Hello',
-          default: 'Hello',
-          translations: [
-            { locale: 'en', content: 'Gidday' },
-            { locale: 'fr', content: 'Hi' }
-          ]
-        },
-        {
-          key: 'Goodbye',
-          default: 'Goodbye',
-          translations: [
-            { locale: 'en', content: 'See ya' },
-            { locale: 'fr', content: 'Bye' }
-          ]
-        },
-        {
-          key: 'New',
-          default: 'New',
-          translations: [
-            { locale: 'en', content: 'New' },
-            { locale: 'fr', content: 'Nouveau' }
-          ]
-        }
-      ]
-    }));
-
-    var expected = {
-      translations: [
-        {
-          key: 'Hello',
-          default: 'Hello',
-          translations: [
-            { locale: 'en', content: 'Gidday' },
-            { locale: 'fr', content: 'Bonjour' }
-          ]
-        },
-        {
-          key: 'Goodbye',
-          default: 'Goodbye',
-          translations: [
-            { locale: 'en', content: 'See ya' },
-            { locale: 'fr', content: 'Au revoir' }
-          ]
-        },
-        {
-          key: 'New',
-          default: 'New',
-          translations: [
-            { locale: 'en', content: 'New' },
-            { locale: 'fr', content: 'Nouveau' }
-          ]
-        }
-      ]
+  it('updates settings', function() {
+    var content = '[Application Text]\n' +
+                  'Hello = Bonjour\n' +
+                  'Goodbye = Au revoir';
+    var doc = {
+      code: 'fr',
+      values: {
+        'Hello': 'hello',
+        'Goodbye': 'bye'
+      }
     };
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
+    put.returns(KarmaUtils.mockPromise(null, {}));
+    setTimeout(function() {
+      rootScope.$digest();
+      setTimeout(function() {
+        rootScope.$digest();
+      });
+    });
+    return service(content, doc)
+      .then(function() {
+        chai.expect(put.args[0][0]).to.deep.equal({
+          code: 'fr',
+          values: {
+            'Hello': 'Bonjour',
+            'Goodbye': 'Au revoir'
+          }
+        });
+        chai.expect(UpdateSettings.callCount).to.equal(0);
+      });
 
-    service('[Application Text]\nHello = Bonjour\nGoodbye = Au revoir', 'fr', function(err) {
-      chai.expect(err).to.equal(undefined);
-      chai.expect(actual).to.deep.equal(expected);
-      done();
+  });
+
+  it('updates locale docs', function() {
+    var content = '[Application Text]\n' +
+                  'Hello = Bonjour\n' +
+                  'Goodbye = Au revoir';
+    var doc = {
+      code: 'fr',
+      values: {
+        'Hello': 'hello'
+      }
+    };
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
+    put.returns(KarmaUtils.mockPromise(null, {}));
+    setTimeout(function() {
+      rootScope.$digest();
+      setTimeout(function() {
+        rootScope.$digest();
+        setTimeout(function() {
+          rootScope.$digest();
+        });
+      });
+    });
+    return service(content, doc).then(function() {
+      chai.expect(put.args[0][0]).to.deep.equal({
+        code: 'fr',
+        values: {
+          'Hello': 'Bonjour',
+          'Goodbye': 'Au revoir'
+        }
+      });
+      chai.expect(UpdateSettings.callCount).to.equal(0);
     });
 
   });
 
-  it('adds new translations', function(done) {
-
-    Settings.returns(KarmaUtils.mockPromise(null, {
-      translations: [
-        {
-          key: 'Hello',
-          default: 'Hello',
-          translations: [
-            { locale: 'en', content: 'Gidday' },
-            { locale: 'fr', content: 'Hi' }
-          ]
-        },
-        {
-          key: 'Goodbye',
-          default: 'Goodbye',
-          translations: [
-            { locale: 'en', content: 'See ya' }
-          ]
-        }
-      ]
-    }));
-
-    var expected = {
-      translations: [
-        {
-          key: 'Hello',
-          default: 'Hello',
-          translations: [
-            { locale: 'en', content: 'Gidday' },
-            { locale: 'fr', content: 'Bonjour' }
-          ]
-        },
-        {
-          key: 'Goodbye',
-          default: 'Goodbye',
-          translations: [
-            { locale: 'en', content: 'See ya' },
-            { locale: 'fr', content: 'Au revoir' }
-          ]
-        }
-      ]
-    };
-
-    service('[Application Text]\nHello = Bonjour\nGoodbye = Au revoir', 'fr', function(err) {
-      chai.expect(err).to.equal(undefined);
-      chai.expect(actual).to.deep.equal(expected);
-      done();
-    });
-
-  });
-
-  it('ignores unknown keys', function(done) {
-
-    Settings.returns(KarmaUtils.mockPromise(null, {
-      translations: [
-        {
-          key: 'Hello',
-          default: 'Hello',
-          translations: [
-            { locale: 'en', content: 'Gidday' },
-            { locale: 'fr', content: 'Hi' }
-          ]
-        }
-      ]
-    }));
-
-    var expected = {
-      translations: [
-        {
-          key: 'Hello',
-          default: 'Hello',
-          translations: [
-            { locale: 'en', content: 'Gidday' },
-            { locale: 'fr', content: 'Bonjour' }
-          ]
-        }
-      ]
-    };
-
-    service('[Application Text]\nHello = Bonjour\nGoodbye = Au revoir', 'fr', function(err) {
-      chai.expect(err).to.equal(undefined);
-      chai.expect(actual).to.deep.equal(expected);
-      done();
-    });
-
-  });
-
-  it('imports outgoing messages translations', function(done) {
-
+  it('imports outgoing messages translations', function() {
+    var doc = { code: 'en', values: {} };
+    var content = '[Outgoing Messages]\n' +
+                  'registrations[0].messages[0] = MESSAGE 1\n' +
+                  'registrations[0].validations.list[0] = VALIDATION 1\n' +
+                  'registrations[0].validations.list[1] = VALIDATION 2';
     Settings.returns(KarmaUtils.mockPromise(null, exampleSettings));
-
-    var properties = '[Outgoing Messages]\n' +
-                     'registrations[0].messages[0] = MESSAGE 1\n' +
-                     'registrations[0].validations.list[0] = VALIDATION 1\n' +
-                     'registrations[0].validations.list[1] = VALIDATION 2';
-
-    service(properties, 'en', function(err) {
-      chai.expect(err).to.equal(undefined);
-      chai.expect(actual).to.deep.equal(expected);
-      done();
+    UpdateSettings.callsArg(1);
+    put.returns(KarmaUtils.mockPromise(null, {}));
+    setTimeout(function() {
+      rootScope.$digest();
+      setTimeout(function() {
+        rootScope.$digest();
+      });
+    });
+    return service(content, doc).then(function() {
+      chai.expect(put.callCount).to.equal(0);
+      chai.expect(UpdateSettings.args[0][0]).to.deep.equal(expected);
     });
 
   });

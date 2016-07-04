@@ -7,7 +7,10 @@ describe('EditTranslationCtrl controller', function() {
       scope,
       translateFilter,
       Settings,
-      UpdateSettings;
+      uibModalInstance,
+      UpdateSettings,
+      bulkDocs,
+      model;
 
   beforeEach(module('inboxApp'));
 
@@ -15,149 +18,109 @@ describe('EditTranslationCtrl controller', function() {
     scope = $rootScope.$new();
     rootScope = $rootScope;
     translateFilter = sinon.stub();
+    uibModalInstance = sinon.stub();
     Settings = sinon.stub();
     UpdateSettings = sinon.stub();
+    bulkDocs = sinon.stub();
+    model = {};
     createController = function() {
       return $controller('EditTranslationCtrl', {
         '$scope': scope,
-        '$rootScope': $rootScope,
-        'translateFilter': translateFilter,
-        'Settings': Settings,
-        'UpdateSettings': UpdateSettings
+        '$uibModalInstance': uibModalInstance,
+        'DB': function() { return { bulkDocs: bulkDocs }; },
+        'model': model
       });
     };
   }));
 
-  it('init for translation', function() {
-    createController();
-    var translation = {
+  it('render', function() {
+    model = {
       key: 'title.key',
-      default: 'Welcome',
-      translations: [
-        { locale: 'en', content: 'Welcome' },
-        { locale: 'fr', content: 'Bonjour' },
+      locales: [
+        { doc: { code: 'en', values: { 'title.key': 'Welcome', 'bye': 'Goodbye' } } },
+        { doc: { code: 'fr', values: { 'title.key': 'Bonjour', 'bye': 'Au revoir' } } }
       ]
     };
-    var locales = [
-      { code: 'en' },
-      { code: 'fr' }
-    ];
-    rootScope.$broadcast('EditTranslationInit', translation, locales);
-    chai.expect(scope.translationModel.key).to.equal('title.key');
-    chai.expect(scope.translationModel.default).to.equal('Welcome');
-    chai.expect(scope.translationModel.path).to.equal(undefined);
-    chai.expect(scope.translationModel.values[0].locale.code).to.equal('en');
-    chai.expect(scope.translationModel.values[0].value).to.equal('Welcome');
-    chai.expect(scope.translationModel.values[1].locale.code).to.equal('fr');
-    chai.expect(scope.translationModel.values[1].value).to.equal('Bonjour');
+    createController();
+    chai.expect(scope.key).to.equal('title.key');
+    chai.expect(scope.editing).to.equal(true);
+    chai.expect(scope.locales).to.deep.equal([
+      { code: 'en', values: { 'title.key': 'Welcome', 'bye': 'Goodbye' } },
+      { code: 'fr', values: { 'title.key': 'Bonjour', 'bye': 'Au revoir' } }
+    ]);
+    chai.expect(scope.values).to.deep.equal({ en: 'Welcome', fr: 'Bonjour' });
   });
 
-  it('init for settings', function() {
-    createController();
-    var translation = {
-      path: 'forms[0].registration',
-      default: 'Welcome',
-      translations: [
-        { locale: 'en', content: 'Welcome' },
-        { locale: 'fr', content: 'Bonjour' },
+  it('render new', function() {
+    model = {
+      locales: [
+        { doc: { code: 'en', values: { 'title.key': 'Welcome', 'bye': 'Goodbye' } } },
+        { doc: { code: 'fr', values: { 'title.key': 'Bonjour', 'bye': 'Au revoir' } } }
       ]
     };
-    var locales = [
-      { code: 'en' },
-      { code: 'fr' }
-    ];
-    rootScope.$broadcast('EditTranslationInit', translation, locales);
-    chai.expect(scope.translationModel.key).to.equal(undefined);
-    chai.expect(scope.translationModel.default).to.equal('Welcome');
-    chai.expect(scope.translationModel.path).to.equal('forms[0].registration');
-    chai.expect(scope.translationModel.values[0].locale.code).to.equal('en');
-    chai.expect(scope.translationModel.values[0].value).to.equal('Welcome');
-    chai.expect(scope.translationModel.values[1].locale.code).to.equal('fr');
-    chai.expect(scope.translationModel.values[1].value).to.equal('Bonjour');
+    createController();
+    chai.expect(scope.key).to.equal(undefined);
+    chai.expect(scope.editing).to.equal(false);
+    chai.expect(scope.locales).to.deep.equal([
+      { code: 'en', values: { 'title.key': 'Welcome', 'bye': 'Goodbye' } },
+      { code: 'fr', values: { 'title.key': 'Bonjour', 'bye': 'Au revoir' } }
+    ]);
+    chai.expect(scope.values).to.deep.equal({ en: null, fr: null });
   });
 
-  it('save translation', function(done) {
-    createController();
-    var updated;
-    rootScope.$on('TranslationUpdated', function(e, update) {
-      updated = update;
-    });
-    scope.translationModel = {
+  it('save', function(done) {
+    model = {
       key: 'title.key',
-      default: 'Welcome',
-      values: [
-        { locale: { code: 'en' }, value: 'Welcome' },
-        { locale: { code: 'es' }, value: 'Hola' }
+      locales: [
+        { doc: { code: 'en', values: { 'title.key': 'Welcome', 'bye': 'Goodbye' } } },
+        { doc: { code: 'fr', values: { 'title.key': 'Bonjour', 'bye': 'Au revoir' } } },
+        { doc: { code: 'es', values: { 'title.key': 'Hola', 'bye': 'Hasta luego' } } }
       ]
     };
-    Settings.returns(KarmaUtils.mockPromise(null, {
-      translations: [
-        {
-          key: 'title.key',
-          translations: [
-            { locale: 'en', content: 'Hello!' },
-            { locale: 'fr', content: 'Bonjour' }
-          ]
-        }
-      ]
-    }));
-    UpdateSettings.callsArgWith(1);
-    scope.saveTranslation()
-      .then(function() {
-        chai.expect(updated.translations[0].key).to.equal('title.key');
-        chai.expect(updated.translations[0].translations.length).to.equal(2);
-        chai.expect(updated.translations[0].translations[0].locale).to.equal('en');
-        chai.expect(updated.translations[0].translations[0].content).to.equal('Welcome');
-        chai.expect(updated.translations[0].translations[1].locale).to.equal('es');
-        chai.expect(updated.translations[0].translations[1].content).to.equal('Hola');
-        done();
-      })
-      .catch(done);
+    bulkDocs.returns(KarmaUtils.mockPromise());
+    createController();
+    scope.values.en = 'Hello';
+    scope.values.fr = 'Bienvenue';
+    scope.submit();
     setTimeout(function() {
       rootScope.$digest();
+      var updated = bulkDocs.args[0][0];
+      chai.expect(updated.length).to.equal(2); // spanish not saved as not updated
+      chai.expect(updated[0].code).to.equal('en');
+      chai.expect(updated[0].values['title.key']).to.equal('Hello');
+      chai.expect(updated[0].values.bye).to.equal('Goodbye');
+      chai.expect(updated[1].code).to.equal('fr');
+      chai.expect(updated[1].values['title.key']).to.equal('Bienvenue');
+      chai.expect(updated[1].values.bye).to.equal('Au revoir');
+      done();
     });
   });
 
-  it('save settings', function(done) {
-    createController();
-    var updated;
-    rootScope.$on('TranslationUpdated', function(e, update) {
-      updated = update;
-    });
-    scope.translationModel = {
-      path: 'forms[0].registration',
-      default: 'Welcome',
-      values: [
-        { locale: { code: 'en' }, value: 'Welcome' },
-        { locale: { code: 'es' }, value: 'Hola' }
+  it('save new', function(done) {
+    model = {
+      locales: [
+        { doc: { code: 'en', newValue: 'a', values: { 'title.key': 'Welcome', 'bye': 'Goodbye' } } },
+        { doc: { code: 'fr', newValue: 'b', values: { 'title.key': 'Bonjour', 'bye': 'Au revoir' } } },
+        { doc: { code: 'es', newValue: '', values: { 'title.key': 'Hola', 'bye': 'Hasta luego' } } }
       ]
     };
-    Settings.returns(KarmaUtils.mockPromise(null, {
-      forms: [
-        {
-          registration: {
-            message: [
-              { locale: 'en', content: 'Hello!' },
-              { locale: 'fr', content: 'Bonjour' }
-            ]
-          }
-        }
-      ]
-    }));
-    UpdateSettings.callsArgWith(1);
-    scope.saveTranslation()
-      .then(function() {
-        chai.expect(updated.forms[0].registration.message.length).to.equal(2);
-        chai.expect(updated.forms[0].registration.message[0].locale).to.equal('en');
-        chai.expect(updated.forms[0].registration.message[0].content).to.equal('Welcome');
-        chai.expect(updated.forms[0].registration.message[1].locale).to.equal('es');
-        chai.expect(updated.forms[0].registration.message[1].content).to.equal('Hola');
-        done();
-      })
-      .catch(done);
+    bulkDocs.returns(KarmaUtils.mockPromise());
+    createController();
+    scope.key = 'somethingelse';
+    scope.values.en = 'a';
+    scope.values.fr = 'b';
+    scope.submit();
     setTimeout(function() {
       rootScope.$digest();
+      var updated = bulkDocs.args[0][0];
+      chai.expect(updated.length).to.equal(3);
+      chai.expect(updated[0].code).to.equal('en');
+      chai.expect(updated[0].values.somethingelse).to.equal('a');
+      chai.expect(updated[1].code).to.equal('fr');
+      chai.expect(updated[1].values.somethingelse).to.equal('b');
+      chai.expect(updated[2].code).to.equal('es');
+      chai.expect(updated[2].values.somethingelse).to.equal(null);
+      done();
     });
   });
-
 });

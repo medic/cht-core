@@ -30,11 +30,11 @@
   require('./contacts-content');
   require('./contacts-edit');
   require('./contacts-report');
-  require('./delete-language');
   require('./delete-user');
   require('./edit-language');
   require('./edit-report');
   require('./edit-translation');
+  require('./edit-translation-messages');
   require('./edit-user');
   require('./error');
   require('./help');

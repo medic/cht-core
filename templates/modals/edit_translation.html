@@ -1,30 +1,24 @@
-<div class="modal fade edit-translation" id="edit-translation" role="dialog" ng-controller="EditTranslationCtrl">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{'Edit translation' | translate}}</h3>
+<div id="edit-translation" role="document">
+  <div class="modal-header">
+    <button type="button" class="cancel close" ng-click="cancel()">&times;</button>
+    <h3 ng-if="editing" translate>Edit translation</h3>
+    <h3 ng-if="!editing" translate>translation.add</h3>
+  </div>
+  <div class="modal-body">
+    <form action="" method="POST">
+      <div class="form-group">
+        <label translate>translation.key</label>
+        <input class="form-control" ng-model="key" ng-disabled="editing">
       </div>
-      <div class="modal-body">
-        <form action="" method="POST">
-
-          <div class="form-group default" ng-hide="!translationModel.default">
-            <label>{{'Default' | translate}}</label>
-            <p>{{translationModel.default}}</p>
-          </div>
-
-          <div class="form-group" ng-repeat="translation in translationModel.values">
-            <label>{{translation.locale.name}}</label>
-            <textarea class="form-control" ng-model="translation.value">{{translation.value}}</textarea>
-          </div>
-
-        </form>
+      <div class="form-group" ng-repeat="locale in locales track by locale._id">
+        <label>{{locale.name}}</label>
+        <textarea class="form-control" ng-model="values[locale.code]"></textarea>
       </div>
-      <div class="modal-footer">
-        <p class="note"></p>
-        <a class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
-        <a class="btn submit btn-primary" ng-click="saveTranslation()" ng-attr-data-working-label="{{'Submitting' | translate}}">{{'Submit' | translate}}</a>
-      </div>
-    </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <p class="note"></p>
+    <a class="btn cancel" ng-click="cancel()" translate>Cancel</a>
+    <a class="btn submit btn-primary" ng-click="submit()" translate-attr-data-working-label="Submitting" translate>Submit</a>
   </div>
 </div>
