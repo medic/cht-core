@@ -293,5 +293,41 @@ describe('GenerateSearchRequests service', function() {
         endkey: [ 'clinic', 'thing\ufff0' ],
       });
     });
+
+    it('contacts multiple word freetext with multiple document types', function() {
+      var filters = {
+        search: 'some thing',
+        types: {
+          selected: [ 'clinic', 'district_hospital' ],
+          options: [ 'person', 'clinic', 'district_hospital' ]
+        }
+      };
+      var result = service('contacts', filters);
+      chai.expect(result.length).to.equal(2);
+      chai.expect(result[0].view).to.equal('contacts_by_type_freetext');
+      chai.expect(result[0].union).to.equal(true);
+      chai.expect(result[0].params).to.deep.equal([
+        {
+          startkey: [ 'clinic', 'some' ],
+          endkey: [ 'clinic', 'some\ufff0' ],
+        },
+        {
+          startkey: [ 'district_hospital', 'some' ],
+          endkey: [ 'district_hospital', 'some\ufff0' ],
+        }
+      ]);
+      chai.expect(result[1].view).to.equal('contacts_by_type_freetext');
+      chai.expect(result[1].union).to.equal(true);
+      chai.expect(result[1].params).to.deep.equal([
+        {
+          startkey: [ 'clinic', 'thing' ],
+          endkey: [ 'clinic', 'thing\ufff0' ],
+        },
+        {
+          startkey: [ 'district_hospital', 'thing' ],
+          endkey: [ 'district_hospital', 'thing\ufff0' ],
+        }
+      ]);
+    });
   });
 });
