@@ -144,21 +144,31 @@ var _ = require('underscore'),
           var typeViews = documentType(filters, 'contacts_by_type');
           var freetextViews = freetext(filters, 'contacts_by_freetext');
           if (!placeViews &&
-              typeViews && typeViews.params.keys.length === 1 &&
+              typeViews && typeViews.params.keys.length &&
               freetextViews && freetextViews.length) {
-            var type = typeViews.params.keys[0][0];
             return freetextViews.map(function(freetextView) {
-              var result = { view: 'contacts_by_type_freetext' };
-              if (freetextView.key) {
-                result.params = {
-                  key: [ type, freetextView.params.key[0] ]
-                };
-              } else {
-                result.params = {
-                  startkey: [ type, freetextView.params.startkey[0] ],
-                  endkey: [ type, freetextView.params.endkey[0] ]
-                };
+              var result = {
+                view: 'contacts_by_type_freetext',
+                union: typeViews.params.keys.length > 1
+              };
+              if (result.union) {
+                result.params = [];
               }
+              typeViews.params.keys.forEach(function(typeKey) {
+                var type = typeKey[0];
+                var params = {};
+                if (freetextView.key) {
+                  params.key = [ type, freetextView.params.key[0] ];
+                } else {
+                  params.startkey = [ type, freetextView.params.startkey[0] ];
+                  params.endkey = [ type, freetextView.params.endkey[0] ];
+                }
+                if (result.union) {
+                  result.params.push(params);
+                } else {
+                  result.params = params;
+                }
+              });
               return result;
             });
           }

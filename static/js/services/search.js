@@ -64,9 +64,14 @@ var _ = require('underscore');
       };
 
       var view = function(request) {
-        return DbView(request.view, { params: request.params })
+        var params = request.union ? request.params : [ request.params ];
+        return $q.all(params.map(function(param) {
+          return DbView(request.view, { params: param });
+        }))
           .then(function(data) {
-            return data.results.rows;
+            return _.flatten(data.map(function(datum) {
+              return datum.results.rows;
+            }), true);
           });
       };
 

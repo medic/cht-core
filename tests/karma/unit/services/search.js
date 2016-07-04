@@ -384,6 +384,31 @@ describe('Search service', function() {
         });
     });
 
+    it('unions views when necessary - #2445', function() {
+      // this tests a performance tweak for a specific use case
+      var expected = [ { id: 'a' }, { id: 'b' }, { id: 'c' } ];
+      GenerateSearchRequests.returns([ {
+        view: 'get_stuff',
+        union: true,
+        params: [ { key: [ 'a' ] }, { key: [ 'b' ] } ]
+      } ]);
+      DbView.onCall(0).returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 } ] }}));
+      DbView.onCall(1).returns(KarmaUtils.mockPromise(null, { results: { rows: [ { id: 'b', value: 2 }, { id: 'c', value: 3 } ] }}));
+      GetDataRecords.returns(KarmaUtils.mockPromise(null, expected));
+      return service('contacts', {})
+        .then(function(actual) {
+          chai.expect(actual).to.deep.equal(expected);
+          chai.expect(GenerateSearchRequests.callCount).to.equal(1);
+          chai.expect(DbView.callCount).to.equal(2);
+          chai.expect(DbView.args[0][0]).to.equal('get_stuff');
+          chai.expect(DbView.args[0][1]).to.deep.equal({ params: { key: [ 'a' ] } });
+          chai.expect(DbView.args[1][0]).to.equal('get_stuff');
+          chai.expect(DbView.args[1][1]).to.deep.equal({ params: { key: [ 'b' ] } });
+          chai.expect(GetDataRecords.callCount).to.equal(1);
+          chai.expect(GetDataRecords.args[0][0]).to.deep.equal([ 'a', 'b', 'c' ]);
+        });
+    });
+
   });
 
 });
