@@ -1,5 +1,18 @@
 # Medic Mobile Release Notes
 
+## 2.7.1
+
+### July 4, 2016
+
+#### Bug fixes
+
+- Creating user via fails due to invalid reported_date. Issue: #2449
+
+#### Performance improvements
+
+- App takes minutes to load a person dropdown. Issue: #2445
+- Cannot load Configuration Users page. Issue: #2444
+
 ## 2.7.0
 
 ### June 8, 2016
@@ -13,7 +26,7 @@
 - Report list item summaries aren't translated. Issue: #2100
 - Fix form type filter. Issue: #1409
 
-#### Performance
+#### Performance improvements
 
 - Replication performance. Issue: #2286
 - Improve search performance. Issue: #2302
