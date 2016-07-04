@@ -1,242 +1,484 @@
 var sinon = require('sinon'),
-    fs = require('fs'),
     properties = require('properties'),
-    config = require('../config'),
-    translations = require('../translations'),
     utils = require('./utils'),
-    db = require('../db');
+    db = require('../db'),
+    translations = require('../translations');
 
 exports.tearDown = function (callback) {
   utils.restore(
-    fs.readdir,
-    fs.readFile,
-    config.get,
     properties.parse,
     db.medic.get,
-    db.medic.insert
+    db.medic.attachment.get,
+    db.medic.view,
+    db.medic.bulk
   );
   callback();
 };
 
-exports['run does nothing if no translations'] = function(test) {
+exports['run returns errors from get ddoc'] = function(test) {
   test.expect(2);
-  var configGet = sinon.stub(config, 'get').returns([]);
-  var readdir = sinon.stub(fs, 'readdir').callsArgWith(1, null, []);
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, 'boom');
+  translations.run(function(err) {
+    test.equals(err, 'boom');
+    test.equals(dbGet.args[0][0], '_design/medic');
+    test.done();
+  });
+};
+
+exports['run does nothing if no attachments'] = function(test) {
+  test.expect(2);
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, {});
+  var dbAttachment = sinon.stub(db.medic.attachment, 'get');
   translations.run(function() {
-    test.equals(configGet.callCount, 1);
-    test.equals(readdir.callCount, 1);
+    test.equals(dbGet.callCount, 1);
+    test.equals(dbAttachment.callCount, 0);
     test.done();
   });
 };
 
-exports['run returns errors from readdir'] = function(test) {
-  test.expect(1);
-  sinon.stub(config, 'get').returns([]);
-  sinon.stub(fs, 'readdir').callsArgWith(1, 'boom');
-  translations.run(function(err) {
-    test.equals(err, 'boom');
-    test.done();
-  });
-};
-
-exports['run returns errors from readFile'] = function(test) {
+exports['run does nothing if no translation attachments'] = function(test) {
   test.expect(2);
-  var configGet = sinon.stub(config, 'get').returns([]);
-  var readdir = sinon.stub(fs, 'readdir').callsArgWith(1, null, [ 'messages-en.properties' ]);
-  sinon.stub(fs, 'readFile').callsArgWith(2, 'boom');
-  translations.run(function(err) {
-    test.equals(configGet.callCount, 1);
-    test.equals(readdir.callCount, 1);
-    test.equals(err, 'boom');
+  var ddoc = { _attachments: [ { 'logo.png': {} } ] };
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
+  var dbAttachment = sinon.stub(db.medic.attachment, 'get');
+  translations.run(function() {
+    test.equals(dbGet.callCount, 1);
+    test.equals(dbAttachment.callCount, 0);
     test.done();
   });
 };
 
-exports['run returns errors from readFile'] = function(test) {
-  test.expect(3);
-  var configGet = sinon.stub(config, 'get').returns([]);
-  var readdir = sinon.stub(fs, 'readdir').callsArgWith(1, null, [ 'messages.properties' ]);
+exports['run returns errors from getting attachment'] = function(test) {
+  test.expect(5);
+  var ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
+  var dbAttachment = sinon.stub(db.medic.attachment, 'get').callsArgWith(2, 'boom');
   translations.run(function(err) {
-    test.equals(configGet.callCount, 1);
-    test.equals(readdir.callCount, 1);
-    test.equals(err.message, 'Could not parse country code for translation file "messages.properties"');
+    test.equals(dbGet.callCount, 1);
+    test.equals(dbAttachment.callCount, 1);
+    test.equals(dbAttachment.args[0][0], '_design/medic');
+    test.equals(dbAttachment.args[0][1], 'translations/messages-en.properties');
+    test.equals(err, 'boom');
     test.done();
   });
 };
 
 exports['run returns errors from properties parse'] = function(test) {
-  test.expect(6);
-  var configGet = sinon.stub(config, 'get').returns([]);
-  var readdir = sinon.stub(fs, 'readdir').callsArgWith(1, null, [ 'messages-en.properties' ]);
-  var readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'some buffer');
+  test.expect(5);
+  var ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
+  var dbAttachment = sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'some buffer');
   var parse = sinon.stub(properties, 'parse').callsArgWith(1, 'boom');
   translations.run(function(err) {
-    test.equals(configGet.callCount, 1);
-    test.equals(readdir.callCount, 1);
-    test.equals(readFile.callCount, 1);
-    test.equals(parse.callCount, 1);
-    test.equals(parse.firstCall.args[0], 'some buffer');
     test.equals(err, 'boom');
+    test.equals(dbGet.callCount, 1);
+    test.equals(dbAttachment.callCount, 1);
+    test.equals(parse.callCount, 1);
+    test.equals(parse.args[0][0], 'some buffer');
     test.done();
   });
 };
 
-exports['run returns errors from db get'] = function(test) {
-  test.expect(6);
-  var configGet = sinon.stub(config, 'get').returns([]);
-  var readdir = sinon.stub(fs, 'readdir').callsArgWith(1, null, [ 'messages-en.properties' ]);
-  var readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'some buffer');
+exports['run returns errors from getting backup files'] = function(test) {
+  test.expect(9);
+  var ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
+  var dbAttachment = sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'some buffer');
   var parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { first: '1st' });
-  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, 'boom');
+  var dbView = sinon.stub(db.medic, 'view').callsArgWith(3, 'boom');
   translations.run(function(err) {
-    test.equals(configGet.callCount, 1);
-    test.equals(readdir.callCount, 1);
-    test.equals(readFile.callCount, 1);
-    test.equals(parse.callCount, 1);
-    test.equals(dbGet.callCount, 1);
     test.equals(err, 'boom');
+    test.equals(dbGet.callCount, 1);
+    test.equals(dbAttachment.callCount, 1);
+    test.equals(parse.callCount, 1);
+    test.equals(dbView.callCount, 1);
+    test.equals(dbView.args[0][0], 'medic');
+    test.equals(dbView.args[0][1], 'doc_by_type');
+    test.equals(dbView.args[0][2].key[0], 'translations-backup');
+    test.equals(dbView.args[0][2].include_docs, true);
     test.done();
   });
 };
 
-exports['run does not save if nothing changed'] = function(test) {
+exports['run returns errors from getting translations files'] = function(test) {
+  test.expect(9);
+  var ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
+  var backups = [ { doc: { _id: 'messages-en-backup', values: { hello: 'Hello' } } } ];
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
+  var dbAttachment = sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'some buffer');
+  var parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { first: '1st' });
+  var dbView = sinon.stub(db.medic, 'view');
+  dbView.onCall(0).callsArgWith(3, null, { rows: backups });
+  dbView.onCall(1).callsArgWith(3, 'boom');
+  translations.run(function(err) {
+    test.equals(err, 'boom');
+    test.equals(dbGet.callCount, 1);
+    test.equals(dbAttachment.callCount, 1);
+    test.equals(parse.callCount, 1);
+    test.equals(dbView.callCount, 2);
+    test.equals(dbView.args[1][0], 'medic');
+    test.equals(dbView.args[1][1], 'doc_by_type');
+    test.equals(dbView.args[1][2].key[0], 'translations');
+    test.equals(dbView.args[1][2].include_docs, true);
+    test.done();
+  });
+};
+
+exports['does nothing if translation unchanged'] = function(test) {
   test.expect(5);
-  var configGet = sinon.stub(config, 'get').returns([
-    {
-      key: 'first',
-      translations: [{ locale: 'en', default: '1st', content: '1st' }]
-    },
-    {
-      key: 'second',
-      translations: [{ locale: 'en', default: '2nd', content: '2nd' }]
-    }
-  ]);
-  var readdir = sinon.stub(fs, 'readdir').callsArgWith(1, null, [ 'messages-en.properties' ]);
-  var readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'some buffer');
-  var parse = sinon.stub(properties, 'parse').callsArgWith(1, null, {
-    first: '1st',
-    second: '2nd'
-  });
+  var ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
+  var backups = [ { doc: {
+    _id: 'messages-en-backup',
+    code: 'en',
+    type: 'translations-backup',
+    values: { hello: 'Hello' }
+  } } ];
+  var docs = [ { doc: {
+    _id: 'messages-en',
+    code: 'en',
+    type: 'translations',
+    values: { hello: 'Gidday' }
+  } } ];
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
+  var dbAttachment = sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'some buffer');
+  var parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: 'Hello' });
+  var dbView = sinon.stub(db.medic, 'view');
+  dbView.onCall(0).callsArgWith(3, null, { rows: backups });
+  dbView.onCall(1).callsArgWith(3, null, { rows: docs });
   translations.run(function(err) {
-    test.equals(configGet.callCount, 1);
-    test.equals(readdir.callCount, 1);
-    test.equals(readFile.callCount, 1);
-    test.equals(parse.callCount, 1);
-    test.equals(err, null);
-    test.done();
-  });
-};
-
-exports['run handles empty configuration'] = function(test) {
-  test.expect(7);
-  var configGet = sinon.stub(config, 'get').returns(undefined);
-  var readdir = sinon.stub(fs, 'readdir').callsArgWith(1, null, [ 'messages-en.properties' ]);
-  var readFile = sinon.stub(fs, 'readFile').callsArgWith(2, null, 'some buffer');
-  var parse = sinon.stub(properties, 'parse').callsArgWith(1, null, {
-    first: '1st',
-    second: '2nd'
-  });
-  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, {
-    app_settings: { }
-  });
-  var dbInsert = sinon.stub(db.medic, 'insert').callsArgWith(1);
-  translations.run(function(err) {
-    test.equals(configGet.callCount, 1);
-    test.equals(readdir.callCount, 1);
-    test.equals(readFile.callCount, 1);
-    test.equals(parse.callCount, 1);
+    test.equals(err, undefined);
     test.equals(dbGet.callCount, 1);
-    test.same(dbInsert.firstCall.args[0], {
-      app_settings: {
-        translations: [
-          {
-            key: 'first',
-            translations: [ { locale: 'en', default: '1st', content: '1st' } ]
-          },
-          {
-            key: 'second',
-            translations: [ { locale: 'en', default: '2nd', content: '2nd' } ]
-          }
-        ]
-      }
-    });
-    test.equals(err, null);
+    test.equals(dbAttachment.callCount, 1);
+    test.equals(parse.callCount, 1);
+    test.equals(dbView.callCount, 2);
     test.done();
   });
 };
 
-exports['run saves all changes'] = function(test) {
+exports['returns errors from db bulk'] = function(test) {
+  test.expect(6);
+  var ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
+  var backups = [ { doc: {
+    _id: 'messages-en-backup',
+    code: 'en',
+    type: 'translations-backup',
+    values: { hello: 'Hello', bye: 'Goodbye' }
+  } } ];
+  var docs = [ { doc: {
+    _id: 'messages-en',
+    code: 'en',
+    type: 'translations',
+    values: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
+  } } ];
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
+  var dbAttachment = sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'some buffer');
+  var parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+  var dbView = sinon.stub(db.medic, 'view');
+  dbView.onCall(0).callsArgWith(3, null, { rows: backups });
+  dbView.onCall(1).callsArgWith(3, null, { rows: docs });
+  var dbBulk = sinon.stub(db.medic, 'bulk').callsArgWith(1, 'boom');
+  translations.run(function(err) {
+    test.equals(err, 'boom');
+    test.equals(dbGet.callCount, 1);
+    test.equals(dbAttachment.callCount, 1);
+    test.equals(parse.callCount, 1);
+    test.equals(dbView.callCount, 2);
+    test.equals(dbBulk.callCount, 1);
+    test.done();
+  });
+};
+
+exports['merges updated translations where not modified by configuration'] = function(test) {
   test.expect(7);
-  var configGet = sinon.stub(config, 'get').returns([
-    {
-      key: 'first',
-      translations: [
-        { locale: 'en', default: '1st', content: '1st' }, // unchanged
-        { locale: 'fr', default: '1st', content: '1' } // changed
-      ]
-    },
-    {
-      key: 'second',
-      translations: [
-        { locale: 'en', default: '2nd', content: '2nd' }, // not updated
-        { locale: 'fr', default: '2nd', content: '2nd' } // not provided in file
-      ]
-    }
-  ]);
-  var readdir = sinon.stub(fs, 'readdir').callsArgWith(1, null, [
-    'messages-en.properties',
-    'messages-fr.properties',
-    'messages-es.properties'
-  ]);
-  var readFile = sinon.stub(fs, 'readFile');
-  readFile.onFirstCall().callsArgWith(2, null, 'some buffer');
-  readFile.onSecondCall().callsArgWith(2, null, 'some buffer');
-  readFile.onThirdCall().callsArgWith(2, null, 'some buffer');
+  var ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
+  var backups = [ { doc: {
+    _id: 'messages-en-backup',
+    code: 'en',
+    type: 'translations-backup',
+    values: { hello: 'Hello', bye: 'Goodbye' }
+  } } ];
+  var docs = [ { doc: {
+    _id: 'messages-en',
+    code: 'en',
+    type: 'translations',
+    values: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
+  } } ];
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
+  var dbAttachment = sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'some buffer');
+  var parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED', empty: null });
+  var dbView = sinon.stub(db.medic, 'view');
+  dbView.onCall(0).callsArgWith(3, null, { rows: backups });
+  dbView.onCall(1).callsArgWith(3, null, { rows: docs });
+  var dbBulk = sinon.stub(db.medic, 'bulk').callsArgWith(1);
+  translations.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(dbGet.callCount, 1);
+    test.equals(dbAttachment.callCount, 1);
+    test.equals(parse.callCount, 1);
+    test.equals(dbView.callCount, 2);
+    test.equals(dbBulk.callCount, 1);
+    test.deepEqual(dbBulk.args[0][0], { docs: [
+      { // merged translations doc
+        _id: 'messages-en',
+        code: 'en',
+        type: 'translations',
+        values: {
+          hello: 'Hello UPDATED',
+          bye: 'Goodbye CUSTOMISED',
+          added: 'ADDED',
+          empty: null
+        }
+      },
+      { // updated backup doc
+        _id: 'messages-en-backup',
+        code: 'en',
+        type: 'translations-backup',
+        values: {
+          hello: 'Hello UPDATED',
+          bye: 'Goodbye UPDATED',
+          added: 'ADDED',
+          empty: null
+        }
+      }
+    ] });
+    test.done();
+  });
+};
+
+exports['do not update if existing and attached translation is null'] = function(test) {
+  // this is a special case broken by checking falsey
+  test.expect(2);
+  var ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
+  var backups = [ { doc: {
+    _id: 'messages-en-backup',
+    code: 'en',
+    type: 'translations-backup',
+    values: { empty: null }
+  } } ];
+  var docs = [ { doc: {
+    _id: 'messages-en',
+    code: 'en',
+    type: 'translations',
+    values: { empty: null }
+  } } ];
+  sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
+  sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'some buffer');
+  sinon.stub(properties, 'parse').callsArgWith(1, null, { empty: null });
+  var dbView = sinon.stub(db.medic, 'view');
+  dbView.onCall(0).callsArgWith(3, null, { rows: backups });
+  dbView.onCall(1).callsArgWith(3, null, { rows: docs });
+  var dbBulk = sinon.stub(db.medic, 'bulk').callsArgWith(1);
+  translations.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(dbBulk.callCount, 0);
+    test.done();
+  });
+};
+
+exports['creates new language'] = function(test) {
+  test.expect(7);
+  var ddoc = { _attachments: { 'translations/messages-fr.properties': {} } };
+  var backups = [ { doc: {
+    _id: 'messages-en-backup',
+    code: 'en',
+    type: 'translations-backup',
+    values: { hello: 'Hello', bye: 'Goodbye' }
+  } } ];
+  var docs = [ { doc: {
+    _id: 'messages-en',
+    code: 'en',
+    type: 'translations',
+    values: { hello: 'Hello', bye: 'Goodbye CUSTOMISED' }
+  } } ];
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
+  var dbAttachment = sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'some buffer');
+  var parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+  var dbView = sinon.stub(db.medic, 'view');
+  dbView.onCall(0).callsArgWith(3, null, { rows: backups });
+  dbView.onCall(1).callsArgWith(3, null, { rows: docs });
+  var dbBulk = sinon.stub(db.medic, 'bulk').callsArgWith(1);
+  translations.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(dbGet.callCount, 1);
+    test.equals(dbAttachment.callCount, 1);
+    test.equals(parse.callCount, 1);
+    test.equals(dbView.callCount, 2);
+    test.equals(dbBulk.callCount, 1);
+    test.deepEqual(dbBulk.args[0][0], { docs: [
+      { // new
+        _id: 'messages-fr',
+        type: 'translations',
+        code: 'fr',
+        name: 'Français (French)',
+        enabled: true,
+        values: {
+          hello: 'Hello UPDATED',
+          bye: 'Goodbye UPDATED',
+          added: 'ADDED'
+        }
+      },
+      { // updated backup doc
+        _id: 'messages-fr-backup',
+        type: 'translations-backup',
+        code: 'fr',
+        values: {
+          hello: 'Hello UPDATED',
+          bye: 'Goodbye UPDATED',
+          added: 'ADDED'
+        }
+      }
+    ] });
+    test.done();
+  });
+};
+
+exports['does not recreate deleted language'] = function(test) {
+  test.expect(7);
+  var ddoc = { _attachments: {
+    'translations/messages-fr.properties': {}
+  } };
+  var backups = [
+    { doc: {
+      _id: 'messages-en-backup',
+      type: 'translations-backup',
+      code: 'en',
+      values: { hello: 'Hello', bye: 'Goodbye' }
+    } },
+    { doc: {
+      _id: 'messages-fr-backup',
+      type: 'translations-backup',
+      code: 'fr',
+      values: { hello: 'Hello', bye: 'Goodbye' }
+    } }
+  ];
+  var docs = [ { doc: {
+    _id: 'messages-en',
+    type: 'translations',
+    code: 'en',
+    values: { hello: 'Hello', bye: 'Goodbye' }
+  } } ];
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
+  var dbAttachment = sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'some buffer');
+  var parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
+  var dbView = sinon.stub(db.medic, 'view');
+  dbView.onCall(0).callsArgWith(3, null, { rows: backups });
+  dbView.onCall(1).callsArgWith(3, null, { rows: docs });
+  var dbBulk = sinon.stub(db.medic, 'bulk').callsArgWith(1);
+  translations.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(dbGet.callCount, 1);
+    test.equals(dbAttachment.callCount, 1);
+    test.equals(parse.callCount, 1);
+    test.equals(dbView.callCount, 2);
+    test.equals(dbBulk.callCount, 1);
+    test.deepEqual(dbBulk.args[0][0], { docs: [
+      { // updated backup doc
+        _id: 'messages-fr-backup',
+        type: 'translations-backup',
+        code: 'fr',
+        values: {
+          hello: 'Hello UPDATED',
+          bye: 'Goodbye UPDATED',
+          added: 'ADDED'
+        }
+      }
+    ] });
+    test.done();
+  });
+};
+
+exports['merges multiple translation files'] = function(test) {
+  test.expect(7);
+  var ddoc = { _attachments: {
+    'translations/messages-en.properties': {},
+    'translations/messages-fr.properties': {}
+  } };
+  var backups = [
+    { doc: {
+      _id: 'messages-en-backup',
+      code: 'en',
+      type: 'translations-backup',
+      values: { hello: 'Hello EN', bye: 'Goodbye EN' }
+    } },
+    { doc: {
+      _id: 'messages-fr-backup',
+      code: 'fr',
+      type: 'translations-backup',
+      values: { hello: 'Hello FR', bye: 'Goodbye FR' }
+    } }
+  ];
+  var docs = [
+    { doc: {
+      _id: 'messages-en',
+      code: 'en',
+      type: 'translations',
+      values: { hello: 'Hello EN', bye: 'Goodbye EN CUSTOMISED' }
+    } },
+    { doc: {
+      _id: 'messages-fr',
+      code: 'fr',
+      type: 'translations',
+      values: { hello: 'Hello FR', bye: 'Goodbye FR CUSTOMISED' }
+    } }
+  ];
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
+  var dbAttachment = sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'some buffer');
   var parse = sinon.stub(properties, 'parse');
-  parse.onFirstCall().callsArgWith(1, null, {
-    first: 'FIRST',
-    second: '2nd'
-  });
-  parse.onSecondCall().callsArgWith(1, null, {
-    first: '1st',
-    second: 'deux'
-  });
-  parse.onThirdCall().callsArgWith(1, null, {
-    first: 'uno',
-    second: null // should be ignored
-  });
-  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, {
-    app_settings: { translations: [ { key: 'last', translations: [] } ] }
-  });
-  var dbInsert = sinon.stub(db.medic, 'insert').callsArgWith(1);
+  parse.onCall(0).callsArgWith(1, null, { hello: 'Hello EN UPDATED', bye: 'Goodbye EN UPDATED', added: 'EN ADDED' });
+  parse.onCall(1).callsArgWith(1, null, { hello: 'Hello FR UPDATED', bye: 'Goodbye FR UPDATED', added: 'FR ADDED' });
+  var dbView = sinon.stub(db.medic, 'view');
+  dbView.onCall(0).callsArgWith(3, null, { rows: backups });
+  dbView.onCall(1).callsArgWith(3, null, { rows: docs });
+  var dbBulk = sinon.stub(db.medic, 'bulk').callsArgWith(1);
   translations.run(function(err) {
-    test.equals(configGet.callCount, 1);
-    test.equals(readdir.callCount, 1);
-    test.equals(readFile.callCount, 3);
-    test.equals(parse.callCount, 3);
+    test.equals(err, undefined);
     test.equals(dbGet.callCount, 1);
-    test.same(dbInsert.firstCall.args[0], {
-      app_settings: {
-        translations: [
-          {
-            key: 'first',
-            translations: [
-              { locale: 'en', default: 'FIRST', content: 'FIRST' },
-              { locale: 'fr', default: '1st', content: '1' },
-              { locale: 'es', default: 'uno', content: 'uno' }
-            ]
-          },
-          {
-            key: 'second',
-            translations: [
-              { locale: 'en', default: '2nd', content: '2nd' },
-              { locale: 'fr', default: 'deux', content: 'deux' }
-            ]
-          }
-        ]
+    test.equals(dbAttachment.callCount, 2);
+    test.equals(parse.callCount, 2);
+    test.equals(dbView.callCount, 2);
+    test.equals(dbBulk.callCount, 1);
+    test.deepEqual(dbBulk.args[0][0], { docs: [
+      {
+        _id: 'messages-en',
+        code: 'en',
+        type: 'translations',
+        values: {
+          hello: 'Hello EN UPDATED',
+          bye: 'Goodbye EN CUSTOMISED',
+          added: 'EN ADDED'
+        }
+      },
+      {
+        _id: 'messages-en-backup',
+        code: 'en',
+        type: 'translations-backup',
+        values: {
+          hello: 'Hello EN UPDATED',
+          bye: 'Goodbye EN UPDATED',
+          added: 'EN ADDED'
+        }
+      },
+      {
+        _id: 'messages-fr',
+        code: 'fr',
+        type: 'translations',
+        values: {
+          hello: 'Hello FR UPDATED',
+          bye: 'Goodbye FR CUSTOMISED',
+          added: 'FR ADDED'
+        }
+      },
+      {
+        _id: 'messages-fr-backup',
+        code: 'fr',
+        type: 'translations-backup',
+        values: {
+          hello: 'Hello FR UPDATED',
+          bye: 'Goodbye FR UPDATED',
+          added: 'FR ADDED'
+        }
       }
-    });
-    test.equals(err, null);
+    ] });
     test.done();
   });
 };

@@ -1,7 +1,8 @@
 var _ = require('underscore'),
     follow = require('follow'),
     db = require('./db'),
-    settings;
+    settings,
+    translations = {};
 
 var defaults = {
   anc_forms: {
@@ -31,8 +32,6 @@ var getMessage = function(value, locale) {
   if (!_.isObject(value)) {
     return value;
   }
-
-  locale = locale || (settings && settings.locale) || 'en';
 
   var test = false;
   if (locale === 'test') {
@@ -64,62 +63,74 @@ var getMessage = function(value, locale) {
   return result;
 };
 
+var loadSettings = function(callback) {
+  db.medic.get('_design/medic', function(err, ddoc) {
+    if (err) {
+      return callback(err);
+    }
+    settings = ddoc.app_settings;
+    _.defaults(settings, defaults);
+    callback();
+  });
+};
+
+var loadTranslations = function() {
+  var options = { key: [ 'translations' ], include_docs: true };
+  db.medic.view('medic', 'doc_by_type', options, function(err, result) {
+    if (err) {
+      console.error('Error loading translations - starting up anyway', err);
+      return;
+    }
+    result.rows.forEach(function(row) {
+      translations[row.doc.code] = row.doc.values;
+    });
+  });
+};
+
 module.exports = {
   get: function(key) {
     return settings[key];
   },
   translate: function(key, locale, ctx) {
-    var value;
-    ctx = ctx || {};
-
     if (_.isObject(locale)) {
       ctx = locale;
       locale = null;
     }
-
+    locale = locale || (settings && settings.locale) || 'en';
     if (_.isObject(key)) {
       return getMessage(key, locale) || key;
     }
-
-    value = _.findWhere(settings.translations, { key: key });
-
-    value = getMessage(value, locale) || key;
-
+    var value = (translations[locale] && translations[locale][key]) ||
+                (translations.en && translations.en[key]) ||
+                key;
     // underscore templates will return ReferenceError if all variables in
     // template are not defined.
     try {
-      return _.template(value)(ctx);
+      return _.template(value)(ctx || {});
     } catch(e) {
       return value;
     }
   },
   load: function(callback) {
-    db.medic.get('_design/medic', function(err, ddoc) {
-      if (err) {
-        return callback(err);
-      }
-      settings = ddoc.app_settings;
-      _.defaults(settings, defaults);
-      callback();
-    });
+    loadSettings(callback);
+    loadTranslations();
   },
   listen: function() {
-    var feed = new follow.Feed({
-      db: process.env.COUCH_URL,
-      since: 'now',
-      filter: 'medic/design_doc'
+    var feed = new follow.Feed({ db: process.env.COUCH_URL, since: 'now' });
+    feed.on('change', function(change) {
+      if (change.id === '_design/medic') {
+        console.log('Detected settings change - reloading');
+        loadSettings(function(err) {
+          if (err) {
+            console.error('Failed to reload settings', err);
+            process.exit(1);
+          }
+        });
+      } else if (change.id.indexOf('messages-') === 0) {
+        console.log('Detected translations change - reloading');
+        loadTranslations();
+      }
     });
-
-    feed.on('change', function() {
-      console.log('Detected settings change - reloading');
-      module.exports.load(function(err) {
-        if (err) {
-          console.log('Failed to reload settings', err);
-          process.exit(1);
-        }
-      });
-    });
-
     feed.follow();
   }
 };

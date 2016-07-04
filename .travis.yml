@@ -9,7 +9,6 @@ before_script:
   - npm install grunt-cli -g
 
 script: 
-  - bash validate-translations
   - grunt test
 
 notifications:

@@ -593,14 +593,6 @@ proxyForAuditing.on('error', function(err, req, res) {
   serverUtils.serverError(JSON.stringify(err), req, res);
 });
 
-migrations.run(function(err) {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log('Database migrations completed successfully');
-  }
-});
-
 ddocExtraction.run(function(err) {
   if (err) {
     console.error(err);
@@ -614,16 +606,22 @@ config.load(function(err) {
     console.error('Error loading config', err);
     process.exit(1);
   }
+  config.listen();
+  scheduler.init();
+  app.listen(apiPort, function() {
+    console.log('Medic API listening on port ' + apiPort);
+  });
   translations.run(function(err) {
     if (err) {
       return console.error('Error merging translations', err);
     }
     console.log('Translations merged successfully');
-  });
-  config.listen();
-  scheduler.init();
-  app.listen(apiPort, function() {
-    console.log('Medic API listening on port ' + apiPort);
+    migrations.run(function(err) {
+      if (err) {
+        return console.error(err);
+      }
+      console.log('Database migrations completed successfully');
+    });
   });
 });
 

@@ -1,99 +1,156 @@
-var fs = require('fs'),
-    path = require('path'),
-    async = require('async'),
+var async = require('async'),
     _ = require('underscore'),
     properties = require('properties'),
     db = require('./db'),
-    config = require('./config'),
-    dir = path.join(__dirname, 'translations');
+    DDOC_ID = '_design/medic',
+    TRANSLATION_FILE_NAME_REGEX = /translations\/messages\-([a-z]*)\.properties/,
+    DOC_TYPE = 'translations',
+    BACKUP_TYPE = 'translations-backup';
 
-var extractCountryCode = function(filename) {
-  var parts = /messages\-([a-z]*)\.properties/.exec(filename);
+var LOCAL_NAME_MAP = {
+  en: 'English',
+  es: 'Español (Spanish)',
+  fr: 'Français (French)',
+  ne: 'नेपाली (Nepali)',
+  sw: 'Kiswahili (Swahili)',
+  hi: 'हिन्दी (Hindi)'
+};
+
+var extractLocaleCode = function(filename) {
+  var parts = TRANSLATION_FILE_NAME_REGEX.exec(filename);
   if (parts && parts[1]) {
     return parts[1].toLowerCase();
   }
 };
 
-var merge = function(memo, locale, key, value) {
-  if (!value) {
-    return;
-  }
-  var setting = _.findWhere(memo.translations, { key: key });
-  if (!setting) {
-    setting = { key: key };
-    memo.translations.push(setting);
-    memo.changed = true;
-  }
-  if (!setting.translations) {
-    setting.translations = [];
-  }
-  var translation = _.findWhere(setting.translations, { locale: locale });
-  if (translation) {
-    if (translation.default === translation.content &&
-        translation.content !== value) {
-      translation.content = value;
-      memo.changed = true;
-    }
-    if (translation.default !== value) {
-      translation.default = value;
-      memo.changed = true;
-    }
-  } else {
-    setting.translations.push({
-      locale: locale,
-      content: value,
-      default: value
-    });
-  }
+var createBackup = function(attachment) {
+  return {
+    _id: [ 'messages', attachment.code, 'backup' ].join('-'),
+    type: BACKUP_TYPE,
+    code: attachment.code,
+    values: attachment.values
+  };
 };
 
-var processFile = function(memo, file, callback) {
-  var code = extractCountryCode(file);
-  if (!code) {
-    return callback(new Error('Could not parse country code for translation file "' + file + '"'));
-  }
-  fs.readFile(path.join(dir, file), 'utf-8', function(err, data) {
+var createDoc = function(attachment) {
+  return {
+    _id: [ 'messages', attachment.code ].join('-'),
+    type: DOC_TYPE,
+    code: attachment.code,
+    name: LOCAL_NAME_MAP[attachment.code] || attachment.code,
+    enabled: true,
+    values: attachment.values
+  };
+};
+
+var merge = function(attachments, backups, docs) {
+  var updatedDocs = [];
+  attachments.forEach(function(attachment) {
+    var code = attachment.code;
+    if (!code) {
+      return;
+    }
+    var backup = _.findWhere(backups, { code: code });
+    if (!backup) {
+      // new language
+      updatedDocs.push(createDoc(attachment));
+      updatedDocs.push(createBackup(attachment));
+      return;
+    }
+    var doc = _.findWhere(docs, { code: code });
+    if (doc) {
+      // language hasn't been deleted - free to update
+      var updated = false;
+      Object.keys(attachment.values).forEach(function(key) {
+        var existing = doc.values[key];
+        var backedUp = backup.values[key];
+        var attached = attachment.values[key];
+        if (typeof existing === 'undefined' ||
+            (existing === backedUp && backedUp !== attached)) {
+          // new or updated translation
+          doc.values[key] = attachment.values[key];
+          updated = true;
+        }
+      });
+      if (updated) {
+        updatedDocs.push(doc);
+      }
+    }
+    if (!_.isEqual(backup.values, attachment.values)) {
+      // backup the modified attachment
+      backup.values = attachment.values;
+      updatedDocs.push(backup);
+    }
+  });
+  return updatedDocs;
+};
+
+var getAttachment = function(name, callback) {
+  db.medic.attachment.get(DDOC_ID, name, function(err, attachment) {
     if (err) {
       return callback(err);
     }
-    properties.parse(data, function(err, parsed) {
+    properties.parse(attachment.toString('utf8'), function(err, values) {
       if (err) {
         return callback(err);
       }
-      _.pairs(parsed).forEach(function(pair) {
-        merge(memo, code, pair[0], pair[1]);
+      callback(null, {
+        code: extractLocaleCode(name),
+        values: values
       });
-      callback();
     });
+  });
+};
+
+var getAttachments = function(callback) {
+  db.medic.get(DDOC_ID, function(err, ddoc) {
+    if (err) {
+      return callback(err);
+    }
+    if (!ddoc._attachments) {
+      return callback(null, []);
+    }
+    var attachments = _.filter(Object.keys(ddoc._attachments), function(key) {
+      return key.match(TRANSLATION_FILE_NAME_REGEX);
+    });
+    async.map(attachments, getAttachment, callback);
+  });
+};
+
+var getDocs = function(type, callback) {
+  var options = { key: [ type ], include_docs: true };
+  db.medic.view('medic', 'doc_by_type', options, function(err, response) {
+    if (err) {
+      return callback(err);
+    }
+    callback(null, _.pluck(response.rows, 'doc'));
   });
 };
 
 module.exports = {
   run: function(callback) {
-    fs.readdir(dir, function(err, files) {
+    getAttachments(function(err, attachments) {
       if (err) {
         return callback(err);
       }
-      var memo = {
-        translations: config.get('translations') || [],
-        changed: false
-      };
-      async.each(
-        files,
-        _.partial(processFile, memo),
-        function(err) {
-          if (err || !memo.changed) {
+      if (!attachments.length) {
+        return callback();
+      }
+      getDocs(BACKUP_TYPE, function(err, backups) {
+        if (err) {
+          return callback(err);
+        }
+        getDocs(DOC_TYPE, function(err, docs) {
+          if (err) {
             return callback(err);
           }
-          db.medic.get('_design/medic', function(err, ddoc) {
-            if (err) {
-              return callback(err);
-            }
-            ddoc.app_settings.translations = memo.translations;
-            db.medic.insert(ddoc, callback);
-          });
-        }
-      );
+          var updatedDocs = merge(attachments, backups, docs);
+          if (!updatedDocs.length) {
+            return callback();
+          }
+          db.medic.bulk({ docs: updatedDocs }, callback);
+        });
+      });
     });
   }
 };

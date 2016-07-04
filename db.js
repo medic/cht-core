@@ -80,6 +80,12 @@ if (couchUrl) {
                         module.exports.settings.ddoc);
     module.exports.request({ path: uri }, cb);
   };
+  module.exports.updateSettings = function(updates, cb) {
+    var uri = path.join(module.exports.getPath(), 'update_settings',
+                        module.exports.settings.ddoc);
+    module.exports.request({ path: uri, method: 'put', body: updates }, cb);
+  };
+
   module.exports.sanitizeResponse = sanitizeResponse;
 } else if (process.env.TEST_ENV) {
   // Running tests only
@@ -93,6 +99,7 @@ if (couchUrl) {
       host: 'local'
     },
     getSettings: function() {},
+    updateSettings: function() {},
     sanitizeResponse: sanitizeResponse,
     use: function() {},
     medic: {

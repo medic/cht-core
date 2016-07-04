@@ -444,7 +444,6 @@ exports['replicates new docs to relevant feeds'] = function(test) {
     type: function() {},
     writeHead: function() {},
     write: function(slice) {
-      console.log('WRITING: ', slice);
       result += slice;
     },
     end: function() {

@@ -165,6 +165,7 @@ var extractKeysFromDoc = function(doc) {
       emitPlace(place);
       break;
     case 'form':
+    case 'translations':
       keys.push([ ALL_KEY ]);
       break;
     case 'clinic':
