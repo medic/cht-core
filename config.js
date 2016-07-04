@@ -1,7 +1,9 @@
 var _ = require('underscore'),
     follow = require('follow'),
+    db = require('./db'),
+    logger = require('./lib/logger'),
     config = require('./defaults'),
-    logger = require('./lib/logger');
+    translations = {};
 
 function initInfo(callback) {
     var db = require('./db'),
@@ -11,7 +13,7 @@ function initInfo(callback) {
         reduce: true
     }, function(err, data) {
         if (err) {
-            console.log('Error getting last_valid_seq', err);
+            logger.info('Error getting last_valid_seq', err);
             return callback(err);
         }
         var first = data.rows.pop();
@@ -20,27 +22,38 @@ function initInfo(callback) {
     });
 }
 
+function loadTranslations() {
+    var options = { key: [ 'translations' ], include_docs: true };
+    db.medic.view('medic', 'doc_by_type', options, function(err, result) {
+        if (err) {
+            logger.error('Error loading translations - starting up anyway', err);
+            return;
+        }
+        result.rows.forEach(function(row) {
+            translations[row.doc.code] = row.doc.values;
+        });
+    });
+}
+
 function initFeed(callback) {
     /*
      * Use since=now on ddoc listener so we don't replay an old change.
      */
-    var feed = new follow.Feed({
-        db: process.env.COUCH_URL,
-        since: 'now'
-    });
-
-    feed.filter = function(doc) {
-        return doc._id === '_design/medic';
-    };
+    var feed = new follow.Feed({ db: process.env.COUCH_URL, since: 'now' });
 
     /*
      * Hack until figure out a better way to reload app settings in all
      * the calling contexts.
      */
     feed.on('change', function(change) {
-        logger.debug('change event on doc %s seq %s', change.id, change.seq);
-        logger.info('reload triggered, exiting...');
-        process.exit(0);
+        if (change.id === '_design/medic') {
+            logger.debug('change event on doc %s seq %s', change.id, change.seq);
+            logger.info('reload triggered, exiting...');
+            process.exit(0);
+        } else if (change.id.indexOf('messages-') === 0) {
+            logger.info('Detected translations change - reloading');
+            loadTranslations();
+        }
     });
 
     feed.follow();
@@ -49,10 +62,6 @@ function initFeed(callback) {
 
 function initConfig(data, callback) {
     var settings = data.settings;
-    // append custom translations to defaults
-    if (settings.translations) {
-        settings.translations = config.translations.concat(settings.translations);
-    }
     // merge defaults with app settings
     _.extend(config, settings);
     logger.debug(
@@ -74,14 +83,17 @@ module.exports = {
     get: function(key) {
         return config[key];
     },
+    getTranslations: function() {
+        return translations;
+    },
     init: function(callback) {
-        var db = require('./db');
         db.medic.get(config.settings_path, function(err, data) {
             if (err) {
                 return callback(err);
             }
             initConfig(data, callback);
         });
+        loadTranslations();
     },
     db_info: null,
     last_valid_seq: null

@@ -29,6 +29,7 @@ exports.tearDown = function(callback) {
         transition._translate,
         transition._addMessage,
         config.get,
+        config.getTranslations,
         messages.addMessage
     ]);
     callback();
@@ -189,12 +190,9 @@ exports['isReportedAfterStartDate returns false when reported date is before sta
 exports['add response if unstructured message and setting enabled'] = function(test) {
 
     sinon.stub(transition, '_isConfigFormsOnlyMode').returns(false);
-    sinon.stub(config, 'get').returns([
-        {
-            'key': 'sms_received',
-            'default': 'SMS rcvd, thx!'
-        }
-    ]);
+    sinon.stub(config, 'getTranslations').returns({
+        en: { sms_received: 'SMS rcvd, thx!' }
+    });
 
     var messageFn = sinon.spy(messages, 'addMessage');
 
@@ -220,12 +218,9 @@ exports['add response if unstructured message and setting enabled'] = function(t
 
 exports['add response if unstructured message (form prop is undefined)'] = function(test) {
     // stub the translations config
-    sinon.stub(config, 'get').returns([
-        {
-            'key': 'sms_received',
-            'default': 'SMS rcvd, thx!'
-        }
-    ]);
+    sinon.stub(config, 'getTranslations').returns({
+        en: { sms_received: 'SMS rcvd, thx!' }
+    });
     var messageFn = sinon.spy(messages, 'addMessage');
     test.expect(4);
     var doc = {
@@ -254,12 +249,9 @@ exports['do not add response if valid form'] = function(test) {
      * on different transition.
      */
 
-    sinon.stub(config, 'get').returns([
-        {
-            'key': 'sms_received',
-            'default': 'SMS rcvd, thx!'
-        }
-    ]);
+    sinon.stub(config, 'getTranslations').returns({
+        en: { sms_received: 'SMS rcvd, thx!' }
+    });
     var messageFn = sinon.spy(messages, 'addMessage');
     test.expect(3);
     var doc = {
@@ -279,12 +271,9 @@ exports['do not add response if valid form'] = function(test) {
 exports['add response if form not found'] = function(test) {
     sinon.stub(transition, '_isConfigFormsOnlyMode').returns(false);
     // stub the translations config
-    sinon.stub(config, 'get').returns([
-        {
-            'key': 'sms_received',
-            'default': 'SMS rcvd, thx!'
-        }
-    ]);
+    sinon.stub(config, 'getTranslations').returns({
+        en: { sms_received: 'SMS rcvd, thx!' }
+    });
     var messageFn = sinon.spy(messages, 'addMessage');
     test.expect(4);
     var doc = {
@@ -342,23 +331,11 @@ exports['add response if form not found and respect locale'] = function(test) {
     sinon.stub(transition, '_isConfigFormsOnlyMode').returns(false);
     sinon.stub(transition, '_getLocale').returns('fr');
     // stub the translations config
-    sinon.stub(config, 'get').returns([
-        {
-            key: 'sms_received',
-            default: 'SMS message rcvd',
-            translations: [
-                {
-                    locale: 'fr',
-                    content: 'Merci, votre message a été bien reçu.'
-                },
-                {
-                    locale: 'es',
-                    content: 'Recibimos tu mensaje.'
-
-                }
-            ]
-        }
-    ]);
+    sinon.stub(config, 'getTranslations').returns({
+        en: { sms_received: 'SMS message rcvd' },
+        fr: { sms_received: 'Merci, votre message a été bien reçu.' },
+        es: { sms_received: 'Recibimos tu mensaje.' }
+    });
     var messageFn = sinon.spy(messages, 'addMessage');
     test.expect(4);
 
@@ -390,12 +367,9 @@ exports['add response if form not found and respect locale'] = function(test) {
 exports['add response to empty message'] = function (test) {
     sinon.stub(transition, '_isConfigFormsOnlyMode').returns(false);
     // stub the translations config
-    sinon.stub(config, 'get').returns([
-        {
-            'key': 'empty',
-            'default': 'SMS appears empty.'
-        }
-    ]);
+    sinon.stub(config, 'getTranslations').returns({
+        en: { empty: 'SMS appears empty.' }
+    });
     var messageFn = sinon.spy(messages, 'addMessage');
     test.expect(4);
     var doc = {
