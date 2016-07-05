@@ -46,11 +46,8 @@ define( function( require, exports, module ) {
                         return true;
                     }
 
-                    // TODO surely there's a nicer way to get this.  We should
-                    // probably include the ID(s) of entities we're editing in
-                    // the enketo model.
-                    var contactBeingEdited = angular.element( $( '.enketo form' ) ).scope().enketo_contact;
-                    if ( !contactBeingEdited || results.rows[ 0 ].id !== contactBeingEdited.docId ) {
+                    var contactBeingEdited = $('#contact-form').attr('data-editing');
+                    if ( results.rows[ 0 ].id !== contactBeingEdited ) {
                         throw new Error( 'phone number not unique: "' + fieldValue + '"' );
                     }
 

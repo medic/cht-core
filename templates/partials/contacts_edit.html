@@ -8,7 +8,7 @@
     <div>{{'error.loading.form' | translate}}</div>
   </div>
   <div class="col-sm-8 item-content" ng-show="!loadingContent && !contentError">
-    <div id="contact-form" class="enketo">
+    <div id="contact-form" class="enketo" data-editing="{{ enketoContact.docId }}">
 
       <div class="form-group" ng-show="category === 'place' && !contactId && canCreateDifferentPlaceTypes">
         <label class="question">
