@@ -56,6 +56,7 @@ describe('EditUserCtrl controller', function() {
               return { name: 'greg' };
             }
           },
+          'Settings': KarmaUtils.nullPromise(),
           'SetLanguage': sinon.stub(),
           'UpdateUser': UpdateUser,
           'UserSettings': sinon.stub(),

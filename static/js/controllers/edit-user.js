@@ -1,4 +1,5 @@
-var modal = require('../modules/modal'),
+var _ = require('underscore'),
+    modal = require('../modules/modal'),
     select2Ajax = require('../modules/select2-ajax');
 
 (function () {
@@ -22,6 +23,7 @@ var modal = require('../modules/modal'),
       PLACE_TYPES,
       Search,
       Session,
+      Settings,
       SetLanguage,
       UpdateUser,
       UserSettings
@@ -31,6 +33,13 @@ var modal = require('../modules/modal'),
       $scope.cancel = function() {
         $uibModalInstance.dismiss('cancel');
       };
+
+      Settings()
+        .then(function(settings) {
+          $scope.enabledLocales = _.reject(settings.locales, function(locale) {
+            return !!locale.disabled;
+          });
+        });
 
       var typeMap = {
         clinic: $translate.instant('Clinic'),
