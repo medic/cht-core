@@ -46,14 +46,7 @@ var _ = require('underscore'),
         updated[trunk] = settings[trunk];
         var leaf = objectpath.get(updated, $scope.configuration.path);
         leaf.message = $scope.configuration.translations;
-        $q(function(resolve, reject) {
-          UpdateSettings(updated, function(err) {
-            if (err) {
-              return reject(err);
-            }
-            resolve();
-          });
-        });
+        return UpdateSettings(updated);
       };
 
       $scope.submit = function() {

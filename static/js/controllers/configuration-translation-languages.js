@@ -108,20 +108,22 @@ var _ = require('underscore');
         });
       };
       $scope.setLocale = function(locale) {
-        UpdateSettings({ locale: locale.code }, function(err) {
-          if (err) {
-            return $log.error('Error updating settings', err);
-          }
-          $scope.languagesModel.default.locale = locale.code;
-        });
+        UpdateSettings({ locale: locale.code })
+          .then(function() {
+            $scope.languagesModel.default.locale = locale.code;
+          })
+          .catch(function(err) {
+            $log.error('Error updating settings', err);
+          });
       };
       $scope.setLocaleOutgoing = function(locale) {
-        UpdateSettings({ locale_outgoing: locale.code }, function(err) {
-          if (err) {
-            return $log.error('Error updating settings', err);
-          }
-          $scope.languagesModel.default.outgoing = locale.code;
-        });
+        UpdateSettings({ locale_outgoing: locale.code })
+          .then(function() {
+            $scope.languagesModel.default.outgoing = locale.code;
+          })
+          .catch(function(err) {
+            $log.error('Error updating settings', err);
+          });
       };
       $scope.disableLanguage = function(doc) {
         setLanguageStatus(doc, false);

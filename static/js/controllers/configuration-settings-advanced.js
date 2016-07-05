@@ -68,19 +68,19 @@ var _ = require('underscore'),
           changes.forms_only_mode = !changes.accept_messages;
           delete changes.accept_messages;
           changes.outgoing_phone_replace.match = $('#outgoing-phone-replace-match').val();
-          UpdateSettings(changes, function(err) {
-            if (err) {
-              $log.error('Error updating settings', err);
-              $scope.status = { error: true, msg: translateFilter('Error saving settings') };
-            } else {
+          UpdateSettings(changes)
+            .then(function() {
               $scope.status = { success: true, msg: translateFilter('Saved') };
               $timeout(function() {
                 if ($scope.status) {
                   $scope.status.success = false;
                 }
               }, 3000);
-            }
-          });
+            })
+            .catch(function(err) {
+              $log.error('Error updating settings', err);
+              $scope.status = { error: true, msg: translateFilter('Error saving settings') };
+            });
         }
       };
 

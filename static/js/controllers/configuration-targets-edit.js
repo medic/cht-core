@@ -7,8 +7,18 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationTargetsEditCtrl',
-    ['$scope', '$stateParams', '$state', '$q', '$log', 'Settings', 'UpdateSettings', 'DB',
-    function ($scope, $stateParams, $state, $q, $log, Settings, UpdateSettings, DB) {
+    function (
+      $log,
+      $q,
+      $scope,
+      $state,
+      $stateParams,
+      DB,
+      Settings,
+      UpdateSettings
+    ) {
+
+      'ngInject';
 
       $scope.errors = {};
       $scope.status = null;
@@ -54,17 +64,6 @@ var _ = require('underscore');
         return $q.resolve({ tasks: { targets: { items: items } } });
       };
 
-      var updateSettings = function(updates) {
-        return $q(function(resolve, reject) {
-          UpdateSettings(updates, function(err) {
-            if (err) {
-              return reject(err);
-            }
-            resolve();
-          });
-        });
-      };
-
       $scope.delete = function() {
         if (!$stateParams.id) {
           return;
@@ -72,7 +71,7 @@ var _ = require('underscore');
         $scope.saving = true;
         Settings()
           .then(removeItem)
-          .then(updateSettings)
+          .then(UpdateSettings)
           .then(function() {
             $scope.saving = false;
             $state.go('configuration.targets');
@@ -140,7 +139,7 @@ var _ = require('underscore');
 
         Settings()
           .then(updateItem)
-          .then(updateSettings)
+          .then(UpdateSettings)
           .then(function() {
             $scope.saving = false;
             $scope.status = 'Saved';
@@ -153,6 +152,6 @@ var _ = require('underscore');
       };
 
     }
-  ]);
+  );
 
 }());

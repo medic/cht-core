@@ -21,8 +21,7 @@ describe('UpdateSettings service', function() {
     $httpBackend.verifyNoOutstandingRequest();
   });
 
-  it('updates settings', function(done) {
-
+  it('updates settings', function() {
     var updates = {
       isTrue: true,
       isString: 'hello'
@@ -30,18 +29,11 @@ describe('UpdateSettings service', function() {
     $httpBackend
       .expect('PUT', 'BASEURL/update_settings/medic', JSON.stringify(updates))
       .respond({ success: true });
-
-    service(updates, function(err) {
-      chai.expect(err).to.equal(undefined);
-      done();
-    });
-
-    $httpBackend.flush();
-
+    setTimeout($httpBackend.flush);
+    return service(updates);
   });
 
-  it('replaces settings', function(done) {
-
+  it('replaces settings', function() {
     var updates = {
       isTrue: true,
       isString: 'hello'
@@ -49,18 +41,11 @@ describe('UpdateSettings service', function() {
     $httpBackend
       .expect('PUT', 'BASEURL/update_settings/medic?replace=true', JSON.stringify(updates))
       .respond({ success: true });
-
-    service(updates, { replace: true }, function(err) {
-      chai.expect(err).to.equal(undefined);
-      done();
-    });
-
-    $httpBackend.flush();
-
+    setTimeout($httpBackend.flush);
+    return service(updates, { replace: true });
   });
 
   it('returns errors', function(done) {
-
     var updates = {
       isTrue: true,
       isString: 'hello'
@@ -68,15 +53,15 @@ describe('UpdateSettings service', function() {
     $httpBackend
       .expect('PUT', 'BASEURL/update_settings/medic', JSON.stringify(updates))
       .respond(404, 'Not found');
-
-    service(updates, function(err) {
-      chai.expect(err).to.not.equal(null);
-      chai.expect(err.message).to.equal('Not found');
-      done();
-    });
-
+    service(updates)
+      .then(function() {
+        done(new Error('expected error'));
+      })
+      .catch(function(err) {
+        chai.expect(err.data).to.equal('Not found');
+        done();
+      });
     $httpBackend.flush();
-
   });
 
 });

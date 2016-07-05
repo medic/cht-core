@@ -487,11 +487,10 @@ var feedback = require('../modules/feedback'),
           render: function(callback) {
             $('#guided-setup').modal('show');
             $('#guided-setup').on('hide.bs.modal', callback);
-            UpdateSettings({ setup_complete: true }, function(err) {
-              if (err) {
+            UpdateSettings({ setup_complete: true })
+              .catch(function(err) {
                 $log.error('Error marking setup_complete', err);
-              }
-            });
+              });
           }
         },
         // tour

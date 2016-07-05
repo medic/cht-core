@@ -5,8 +5,15 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationTargetsCtrl',
-    ['$scope', '$log', '$state', 'Settings', 'UpdateSettings',
-    function ($scope, $log, $state, Settings, UpdateSettings) {
+    function (
+      $log,
+      $scope,
+      $state,
+      Settings,
+      UpdateSettings
+    ) {
+
+      'ngInject';
 
       $scope.configuration = {};
       $scope.loading = true;
@@ -14,12 +21,13 @@
 
       var setEnabled = function(value) {
         var settings = { tasks: { targets: { enabled: value } } };
-        UpdateSettings(settings, function(err) {
-          if (err) {
-            return $log.error('Error updating settings', err);
-          }
-          $scope.configuration.enabled = value;
-        });
+        UpdateSettings(settings)
+          .then(function() {
+            $scope.configuration.enabled = value;
+          })
+          .catch(function(err) {
+            $log.error('Error updating settings', err);
+          });
       };
 
       $scope.enable = function() {
@@ -46,6 +54,6 @@
         });
 
     }
-  ]);
+  );
 
 }());

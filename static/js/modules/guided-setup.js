@@ -95,18 +95,20 @@ var libphonenumber = require('libphonenumber/utils'),
     if (val) {
       settings.statistics_submission = val;
     }
-    UpdateSettings(settings, function(err) {
-      $('#setup-wizard-save').removeClass('disabled');
-      $('#guided-setup .loader').hide();
-      if (err) {
+    UpdateSettings(settings)
+      .then(function() {
+        $('#setup-wizard-save').removeClass('disabled');
+        $('#guided-setup .loader').hide();
+        $('#guided-setup').modal('hide');
+      })
+      .catch(function(err) {
+        $('#setup-wizard-save').removeClass('disabled');
+        $('#guided-setup .loader').hide();
         console.error('Error updating settings', err);
         $('#guided-setup .error')
           .text(translateFilter('Error saving settings'))
           .show();
-        return;
-      }
-      $('#guided-setup').modal('hide');
-    });
+      });
   };
 
   var bindSettings = function(Settings) {

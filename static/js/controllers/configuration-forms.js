@@ -44,28 +44,31 @@ var moment = require('moment'),
         $scope.success = false;
         var files = $('#forms-upload-form .uploader')[0].files;
         if (!files || files.length === 0) {
-          uploadFinished('File not found');
+          uploadFinished(new Error('File not found'));
         }
+        var settings = { forms: {} };
         FileReader(files[0])
           .then(function(result) {
-            var settings = { forms: {} };
             try {
               // expects array of forms
-              var json = JSON.parse(result);
-              json.forEach(function(form) {
-                if (form.meta && form.meta.code) {
-                  settings.forms[form.meta.code.toUpperCase()] = form;
-                }
-              });
+              return JSON.parse(result);
             } catch(e) {
-              return uploadFinished(e);
+              throw new Error('Error parsing form json');
             }
-            UpdateSettings(settings, { replace: true }, function(err) {
-              if (!err) {
-                $scope.forms = settings.forms;
+          })
+          .then(function(json) {
+            json.forEach(function(form) {
+              if (form.meta && form.meta.code) {
+                settings.forms[form.meta.code.toUpperCase()] = form;
               }
-              uploadFinished(err);
             });
+          })
+          .then(function() {
+            return UpdateSettings(settings, { replace: true });
+          })
+          .then(function() {
+            $scope.forms = settings.forms;
+            uploadFinished();
           })
           .catch(uploadFinished);
       };

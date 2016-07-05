@@ -45,14 +45,7 @@ var _ = require('underscore'),
             if (!updated) {
               return;
             }
-            return $q(function(resolve, reject) {
-              UpdateSettings(settings, function(err) {
-                if (err) {
-                  return reject(err);
-                }
-                return resolve();
-              });
-            });
+            return UpdateSettings(settings);
           });
       };
 

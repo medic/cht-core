@@ -73,19 +73,19 @@ var libphonenumber = require('libphonenumber/utils'),
             gateway_number: $scope.basicSettingsModel.gateway_number,
             default_country_code: $('#default-country-code').val()
           };
-          UpdateSettings(settings, function(err) {
-            if (err) {
-              $log.error('Error updating settings', err);
-              $scope.status = { error: true, msg: translateFilter('Error saving settings') };
-            } else {
+          UpdateSettings(settings)
+            .then(function() {
               $scope.status = { success: true, msg: translateFilter('Saved') };
               $timeout(function() {
                 if ($scope.status) {
                   $scope.status.success = false;
                 }
               }, 3000);
-            }
-          });
+            })
+            .catch(function(err) {
+              $log.error('Error updating settings', err);
+              $scope.status = { error: true, msg: translateFilter('Error saving settings') };
+            });
         }
       };
 

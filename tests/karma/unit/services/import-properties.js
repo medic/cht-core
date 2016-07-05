@@ -105,7 +105,7 @@ describe('ImportProperties service', function() {
                   'registrations[0].validations.list[0] = VALIDATION 1\n' +
                   'registrations[0].validations.list[1] = VALIDATION 2';
     Settings.returns(KarmaUtils.mockPromise(null, exampleSettings));
-    UpdateSettings.callsArg(1);
+    UpdateSettings.returns(KarmaUtils.mockPromise());
     put.returns(KarmaUtils.mockPromise(null, {}));
     setTimeout(function() {
       rootScope.$digest();
