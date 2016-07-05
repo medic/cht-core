@@ -4,7 +4,6 @@ var feedback = require('../modules/feedback'),
     sendMessage = require('../modules/send-message'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
-    select2Ajax = require('../modules/select2-ajax'),
     guidedSetup = require('../modules/guided-setup');
 
 (function () {
@@ -43,6 +42,7 @@ var feedback = require('../modules/feedback'),
       ReadMessages,
       RulesEngine,
       Search,
+      Select2Search,
       SendMessage,
       SetLanguageCookie,
       Session,
@@ -347,8 +347,7 @@ var feedback = require('../modules/feedback'),
 
       var setupSelect2Ajax = function(selector) {
         $(selector).each(function(idx, el) {
-          var module = select2Ajax.init($translate, Search, DB, $q, Session);
-          module($(el), 'person', { allowNew: false })
+          Select2Search($(el), 'person', { allowNew: false })
             .catch(function(err) {
               $log.error('Error initialising select2', err);
             });

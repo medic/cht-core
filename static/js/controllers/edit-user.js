@@ -1,5 +1,4 @@
-var modal = require('../modules/modal'),
-    select2Ajax = require('../modules/select2-ajax');
+var modal = require('../modules/modal');
 
 (function () {
 
@@ -20,6 +19,7 @@ var modal = require('../modules/modal'),
       model,
       PLACE_TYPES,
       Search,
+      Select2Search,
       Session,
       SetLanguage,
       UpdateUser,
@@ -90,10 +90,8 @@ var modal = require('../modules/modal'),
 
       $uibModalInstance.rendered.then(function() {
         // only the #edit-user-profile modal has these fields
-        select2Ajax.init($translate.instant, Search, DB, $q, Session)
-          ($('#edit-user-profile [name=contact]'), 'person');
-        select2Ajax.init($translate.instant, Search, DB, $q, Session)
-          ($('#edit-user-profile [name=facility]'), PLACE_TYPES);
+        Select2Search($('#edit-user-profile [name=contact]'), 'person');
+        Select2Search($('#edit-user-profile [name=facility]'), PLACE_TYPES);
       });
 
       $scope.typeName = function(facility) {

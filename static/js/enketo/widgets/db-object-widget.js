@@ -9,7 +9,6 @@ define( function( require, exports, module ) {
     var _ = require('underscore');
     var Widget = require('enketo-core/src/js/Widget');
     var $ = require('jquery');
-    var select2Ajax = require('../../modules/select2-ajax');
 
     require('enketo-core/src/js/plugins');
 
@@ -38,11 +37,7 @@ define( function( require, exports, module ) {
 
     Dbobjectwidget.prototype._init = function() {
         var angularServices = angular.element(document.body).injector();
-        var translate = angularServices.get('$translate').instant,
-            Search = angularServices.get('Search'),
-            $q = angularServices.get('$q'),
-            DB = angularServices.get('DB'),
-            Session = angularServices.get('Session');
+        var Select2Search = angularServices.get('Select2Search');
 
         var $question = $(this.element);
 
@@ -57,7 +52,7 @@ define( function( require, exports, module ) {
 
         var dbObjectType = $textInput.attr('data-type-xml');
 
-        select2Ajax.init(translate, Search, DB, $q, Session)($textInput, dbObjectType, {
+        Select2Search($textInput, dbObjectType, {
             allowNew: $question.hasClass('or-appearance-allow-new')
         }).then(function() {
             if (!$question.hasClass('or-appearance-bind-id-only')) {

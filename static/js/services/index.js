@@ -54,6 +54,7 @@
   require('./scheduled-forms');
   require('./search');
   require('./search-filters');
+  require('./select2-search');
   require('./send-message');
   require('./session');
   require('./settings');

@@ -54,6 +54,7 @@ describe('EditUserCtrl controller', function() {
               return { name: 'greg' };
             }
           },
+          'Select2Search': sinon.stub(),
           'SetLanguage': sinon.stub(),
           'UpdateUser': UpdateUser,
           'UserSettings': sinon.stub(),

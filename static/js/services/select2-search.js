@@ -1,14 +1,22 @@
 var _ = require('underscore'),
-    format = require('./format');
+    format = require('../modules/format');
 
-(function() {
+angular.module('inboxServices').factory('Select2Search',
+  function(
+    $q,
+    $translate,
+    DB,
+    Search,
+    Session
+  ) {
 
-  'use strict';
+    'use strict';
+    'ngInject';
 
-  exports.init = function($translate, Search, DB, $q, Session) {
     var pageSize,
         allowNew,
-        types;
+        types,
+        currentQuery;
 
     var formatResult = function(row) {
       if(!row.doc) {
@@ -39,14 +47,12 @@ var _ = require('underscore'),
       if (first && allowNew) {
         rows.unshift({
           id: 'NEW',
-          text: $translate('contact.type.' + types[0] + '.new'),
+          text: $translate.instant('contact.type.' + types[0] + '.new'),
         });
       }
 
       return rows;
     };
-
-    var currentQuery;
 
     var query = function(params, successCb, failureCb) {
       currentQuery = params.data.q;
@@ -118,5 +124,5 @@ var _ = require('underscore'),
       }
       return resolveInitialValue(selectEl).then(initSelect2);
     };
-  };
-})();
+  }
+);
