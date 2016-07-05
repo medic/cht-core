@@ -33,16 +33,21 @@ var canRun = function(options) {
         doc = change.doc,
         transition = options.transition;
 
-    var isRevSame = function() {
+    var isRevSame = function(doc) {
         if (doc.transitions && doc.transitions[key]) {
             return parseInt(doc._rev) === parseInt(doc.transitions[key].last_rev);
         }
         return false;
     };
 
+    var isV2XmlDataRecord = function(doc) {
+        return doc.type === 'data_record' && doc.content_type && doc.content_type === 'xml';
+    };
+
     /*
      * Ignore deleted records, confirm transition has filter function and
      * skip transition if filter returns false.
+     * Ignore 2.x XML data_records, they don't use need sentinel post-processing.
      *
      * If transition was already applied then only run again if doc rev is not
      * equal to transition rev.  If revs are the same then transition just ran.
@@ -55,7 +60,8 @@ var canRun = function(options) {
         transition &&
         typeof transition.filter === 'function' &&
         transition.filter(doc) &&
-        !isRevSame()
+        !isRevSame(doc) &&
+        !isV2XmlDataRecord(doc)
     );
 };
 

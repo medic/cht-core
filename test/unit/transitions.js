@@ -83,6 +83,29 @@ exports['canRun returns true if rev is different'] = function(test) {
     test.done();
 };
 
+exports['canRun returns false for v2.x xml forms'] = function(test) {
+    test.equals(transitions.canRun({
+        key: 'x',
+        change: {
+            doc: {
+                _rev: '1',
+
+                transitions: {
+                    x: {
+                        last_rev: '2'
+                    }
+                },
+                type: 'data_record',
+                content_type: 'xml'
+            }
+        },
+        transition: {
+            filter: function() { return true; }
+        }
+    }), false);
+    test.done();
+};
+
 exports['canRun returns true if transition is not defined'] = function(test) {
     test.expect(2);
     test.equals(transitions.canRun({
