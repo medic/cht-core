@@ -31,6 +31,14 @@ var modal = require('../modules/modal');
         $uibModalInstance.dismiss('cancel');
       };
 
+      DB()
+        .query('medic/doc_by_type', { key: [ 'translations', true ] })
+        .then(function(result) {
+          $scope.enabledLocales = result.rows.map(function(row) {
+            return row.value;
+          });
+        });
+
       var typeMap = {
         clinic: $translate.instant('Clinic'),
         district_hospital: $translate.instant('District Hospital'),
