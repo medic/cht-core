@@ -15,7 +15,7 @@ var _ = require('underscore');
   };
 
   var isMobile = function() {
-    return $('#mobile-detection').is(':visible');
+    return $('#mobile-detection').css('display') === 'inline';
   };
 
   var mmShowMessageList = function() {
@@ -35,13 +35,12 @@ var _ = require('underscore');
   };
 
   var mmShow = function(list, show) {
-    if (isMobile()) {
-      var scope = angular.element($('body')).scope();
-      if (scope) {
-        var id = show ? undefined : $(list).find('li').filter(':first').attr('data-record-id');
-        scope.$apply(function() {
-          scope.setMessage(id);
-        });
+    var showing = !$('body').is('.show-content');
+    if (isMobile() && show !== showing) {
+      if (!show) {
+        $(list).find('li').filter(':first').find('a').trigger('click');
+      } else {
+        $('.navigation .filter-bar-back a').trigger('click');
       }
     }
   };
