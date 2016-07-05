@@ -78,7 +78,7 @@ var _ = require('underscore');
             return Enketo.renderFromXmlString($('#contact-form'), form);
           })
           .then(function(form) {
-            $scope.enketo_contact = {
+            $scope.enketoContact = {
               type: type,
               formInstance: form,
               docId: type === $scope.contact.type? $scope.contactId: null,
@@ -165,7 +165,7 @@ var _ = require('underscore');
         }
         return Enketo.renderFromXmlString(container, form, getFormInstanceData())
           .then(function(form) {
-            $scope.enketo_contact = {
+            $scope.enketoContact = {
               type: $scope.contact.type,
               formInstance: form,
               docId: $scope.contactId,
@@ -187,8 +187,8 @@ var _ = require('underscore');
         });
 
       $scope.save = function() {
-        var form = $scope.enketo_contact.formInstance;
-        var docId = $scope.enketo_contact.docId;
+        var form = $scope.enketoContact.formInstance;
+        var docId = $scope.enketoContact.docId;
         $scope.saving = true;
         $scope.savingError = null;
 
@@ -239,7 +239,7 @@ var _ = require('underscore');
             if(original) {
               submitted = $.extend({}, original, submitted);
             } else {
-              submitted.type = $scope.enketo_contact.type;
+              submitted.type = $scope.enketoContact.type;
             }
 
             return saveDoc(submitted, original, extras, repeated);
@@ -372,8 +372,8 @@ var _ = require('underscore');
       $scope.$on('$destroy', function() {
         if (!$state.includes('contacts.add')) {
           $scope.setTitle();
-          if ($scope.enketo_contact && $scope.enketo_contact.formInstance) {
-            Enketo.unload($scope.enketo_contact.formInstance);
+          if ($scope.enketoContact && $scope.enketoContact.formInstance) {
+            Enketo.unload($scope.enketoContact.formInstance);
           }
         }
       });
