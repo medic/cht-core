@@ -12,7 +12,6 @@ var _ = require('underscore'),
     scheduler = require('./scheduler'),
     AuditProxy = require('./audit-proxy'),
     migrations = require('./migrations'),
-    ddocExtraction = require('./ddoc-extraction'),
     translations = require('./translations'),
     target = 'http://' + db.settings.host + ':' + db.settings.port,
     proxy = require('http-proxy').createProxyServer({ target: target }),
@@ -591,14 +590,6 @@ proxy.on('error', function(err, req, res) {
 
 proxyForAuditing.on('error', function(err, req, res) {
   serverUtils.serverError(JSON.stringify(err), req, res);
-});
-
-ddocExtraction.run(function(err) {
-  if (err) {
-    console.error(err);
-  } else {
-    console.log('DDoc extraction completed successfully');
-  }
 });
 
 config.load(function(err) {
