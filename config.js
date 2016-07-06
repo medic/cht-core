@@ -23,7 +23,11 @@ function initInfo(callback) {
 }
 
 function loadTranslations() {
-    var options = { key: [ 'translations' ], include_docs: true };
+    var options = {
+        startkey: [ 'translations', false ],
+        endkey: [ 'translations', true ],
+        include_docs: true
+    };
     db.medic.view('medic', 'doc_by_type', options, function(err, result) {
         if (err) {
             logger.error('Error loading translations - starting up anyway', err);
