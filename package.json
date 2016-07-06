@@ -53,6 +53,7 @@
     "grunt-contrib-nodeunit": "^1.0.0",
     "grunt-contrib-uglify": "^1.0.1",
     "grunt-contrib-watch": "^1.0.0",
+    "grunt-couch": "^1.5.1",
     "grunt-exec": "^0.4.6",
     "grunt-karma": "^0.12.2",
     "grunt-notify": "^0.4.5",
