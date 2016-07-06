@@ -595,7 +595,7 @@ proxyForAuditing.on('error', function(err, req, res) {
 
 ddocExtraction.run(function(err) {
   if (err) {
-    console.error(err);
+    console.error('Something went wrong trying to extract ddocs', err);
   } else {
     console.log('DDoc extraction completed successfully');
   }

@@ -34,45 +34,36 @@ var updateIfRequired = function(masterRevision, attachmentName, callback) {
 
     db.medic.get('_design/medic/'+attachmentName, function(attachErr, attachedDdoc) {
       if (attachErr) {
-        callback(attachErr);
+        return callback(attachErr);
       }
 
-      if (ddocErr && ddocErr.error === 'not_found') {
-        console.log(ddocName + ' is new, uploading');
+      if (ddoc && ddoc.parentRev === masterRevision) {
+        // already up to date
+        return callback();
+      }
 
-        attachedDdoc.parentRev = masterRevision;
-        db.medic.insert(attachedDdoc, callback);
-      } else if (ddoc && ddoc.parentRev !== masterRevision) {
+      if (ddoc) {
+        // update
         console.log(ddocName + ' may have changed, re-uploading');
-
         attachedDdoc._rev = ddoc._rev;
-        attachedDdoc.parentRev = masterRevision;
-        db.medic.insert(attachedDdoc, callback);
       } else {
-        callback();
+        // insert
+        console.log(ddocName + ' is new, uploading');
       }
+
+      attachedDdoc.parentRev = masterRevision;
+      db.medic.insert(attachedDdoc, callback);
     });
   });
 };
 
-module.exports = {
-  run: function(runComplete) {
-    async.waterfall([
-        getMasterDdoc,
-        extractDdocs,
-        function(masterRevision, attachmentNames, callback) {
-          async.each(
-            attachmentNames,
-            _.partial(updateIfRequired, masterRevision),
-            callback);
-        }
-      ], function(err) {
-        if (err) {
-          console.log('Something went wrong trying to extract ddocs', err, console.trace());
-        }
+var updateAll = function(masterRevision, attachmentNames, callback) {
+  async.each(attachmentNames, _.partial(updateIfRequired, masterRevision), callback);
+};
 
-        runComplete(err);
-      });
+module.exports = {
+  run: function(callback) {
+    async.waterfall([ getMasterDdoc, extractDdocs, updateAll ], callback);
   }
 };
 
