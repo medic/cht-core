@@ -8,6 +8,8 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [Overview](#overview)
+  - [Timestamps](#timestamps)
 - [Export](#export)
   - [GET /api/v1/export/forms/{formcode}](#get-apiv1exportformsformcode)
   - [GET /api/v1/export/messages](#get-apiv1exportmessages)
@@ -38,6 +40,31 @@
   - [DELETE /api/v1/users/{{username}}](#delete-apiv1usersusername)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+# Overview
+
+## Timestamps
+
+Various properties throughout this API use a timestamp value, the
+following formats are supported:
+
+ - ISO 8601 combined date and time with timezone of the format below where "Z"
+   is offset from UTC like "-03", "+1245", or just "Z" which is UTC (0 offset);
+
+       YYYY-MM-DDTHH:mm:ssZ
+       YYYY-MM-DDTHH:mm:ss.SSSZ
+
+ - Milliseconds since Unix Epoch
+
+A compatible value can be generated using the `toISOString` or `toValue` method
+on a Javascript Date object.
+
+### Examples
+
+  - 2011-10-10T14:48:00-0300
+  - 2016-07-01T13:48:24+00:00
+  - 2016-07-01T13:48:24Z 
+  - 1467383343484 (MS since Epoch)
 
 # Export
 
@@ -297,7 +324,7 @@ allow multiple content types to appear in a single `Content-Type` header.
 | -------- | ----------------- |
 | message  | Message string in a supported format like Muvuku or Textforms.  Depending if your Medic Mobile instance is configured in forms-only mode or not you might recieve an error if the form is not found.  |
 | from |   Reporting phone number. |
-| reported_date |  Unix or Moment.js compatible timestamp of when the message was received on the gateway. Default: Date.now() |
+| reported_date |  Timestamp in MS since Unix Epoch of when the message was received on the gateway. Defaults to now. |
 | locale |  Optional locale string. |
   
 
@@ -312,7 +339,7 @@ All property names will be lowercased and any properties beginning with `_` (und
 | ----------- | ----------------- |
 | _meta.form  | The form code.    |
 | _meta.from  |  Reporting phone number. | 
-| _meta.reported_date |  Unix or Moment.js compatible timestamp of when the message was received on the gateway.  Default: now() |
+| _meta.reported_date |  Timestamp in MS since Unix Epoch of when the message was received on the gateway. Defaults to now. |
 | _meta.locale | Optional locale string.  Example: 'fr' |
     
 
@@ -597,7 +624,7 @@ Note: this does not accomodate having a `place` field on your form and will like
 | Key | Description       
 | -------- | -----------------
 | place | String that references a place or object that defines a new place. 
-| reported_date | Date string that is compatible with this format: "YYYY-MM-DDTHH:mm:ssZ".   Where "Z" is a timezone value like "-03" or "+1245".  Example: "2011-10-10T14:48:00-0300". If omitted the current time is used.  A compatible date string can be generated using the `toISOString` method on a Javascript Date object.
+| reported_date |  Timestamp of when the record was reported or created. Defaults to now.
 
 ## POST /api/v1/people
 
@@ -679,7 +706,7 @@ Use JSON in the request body to specify a place's details.
 | Key | Description       
 | -------- | -----------------
 | contact | String identifier for a person or object that defines a new person.
-| reported_date | Date string that is compatible with this format: "YYYY-MM-DDTHH:mm:ssZ".   Where "Z" is a timezone value like "-03" or "+1245".  Example: "2011-10-10T14:48:00-0300". If omitted the current time is used.  A compatible date string can be generated using the `toISOString` method on a Javascript Date object.
+| reported_date |  Timestamp of when the record was reported or created. Defaults to now.
 
 #### Place Types
 
