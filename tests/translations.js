@@ -101,7 +101,7 @@ exports['run returns errors from getting backup files'] = function(test) {
 };
 
 exports['run returns errors from getting translations files'] = function(test) {
-  test.expect(9);
+  test.expect(12);
   var ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
   var backups = [ { doc: { _id: 'messages-en-backup', values: { hello: 'Hello' } } } ];
   var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
@@ -118,7 +118,10 @@ exports['run returns errors from getting translations files'] = function(test) {
     test.equals(dbView.callCount, 2);
     test.equals(dbView.args[1][0], 'medic');
     test.equals(dbView.args[1][1], 'doc_by_type');
-    test.equals(dbView.args[1][2].key[0], 'translations');
+    test.equals(dbView.args[1][2].startkey[0], 'translations');
+    test.equals(dbView.args[1][2].startkey[1], false);
+    test.equals(dbView.args[1][2].endkey[0], 'translations');
+    test.equals(dbView.args[1][2].endkey[1], true);
     test.equals(dbView.args[1][2].include_docs, true);
     test.done();
   });

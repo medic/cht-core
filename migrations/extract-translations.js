@@ -3,7 +3,7 @@ var _ = require('underscore'),
     DOC_TYPE = 'translations';
 
 var getDocs = function(callback) {
-  var options = { key: [ DOC_TYPE ], include_docs: true };
+  var options = { key: [ DOC_TYPE, true ], include_docs: true };
   db.medic.view('medic', 'doc_by_type', options, function(err, response) {
     if (err) {
       return callback(err);

@@ -180,7 +180,7 @@ exports['returns errors from settings update'] = function(test) {
 };
 
 exports['merges configuration into docs'] = function(test) {
-  test.expect(12);
+  test.expect(13);
   var translations = [
     { key: 'hello', default: 'Hi', translations: [
       { locale: 'en', content: 'Hello configured' },
@@ -242,6 +242,7 @@ exports['merges configuration into docs'] = function(test) {
     test.equals(view.args[0][0], 'medic');
     test.equals(view.args[0][1], 'doc_by_type');
     test.equals(view.args[0][2].key[0], 'translations');
+    test.equals(view.args[0][2].key[1], true);
     test.equals(view.args[0][2].include_docs, true);
     test.equals(bulk.callCount, 1);
     test.deepEqual(bulk.args[0][0].docs, [

@@ -117,8 +117,7 @@ var getAttachments = function(callback) {
   });
 };
 
-var getDocs = function(type, callback) {
-  var options = { key: [ type ], include_docs: true };
+var getDocs = function(options, callback) {
   db.medic.view('medic', 'doc_by_type', options, function(err, response) {
     if (err) {
       return callback(err);
@@ -136,11 +135,17 @@ module.exports = {
       if (!attachments.length) {
         return callback();
       }
-      getDocs(BACKUP_TYPE, function(err, backups) {
+      var backupOptions = { key: [ BACKUP_TYPE ], include_docs: true };
+      getDocs(backupOptions, function(err, backups) {
         if (err) {
           return callback(err);
         }
-        getDocs(DOC_TYPE, function(err, docs) {
+        var docOptions = {
+          startkey: [ DOC_TYPE, false ],
+          endkey: [ DOC_TYPE, true ],
+          include_docs: true
+        };
+        getDocs(docOptions, function(err, docs) {
           if (err) {
             return callback(err);
           }
