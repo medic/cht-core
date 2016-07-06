@@ -21,7 +21,7 @@ var _ = require('underscore'),
       var cache = Cache({
         get: function(callback) {
           DB()
-            .get('_design/medic')
+            .get('_design/medic-client')
             .then(function(ddoc) {
               callback(null, _.defaults(ddoc.app_settings, defaults));
             })
@@ -33,7 +33,7 @@ var _ = require('underscore'),
             });
         },
         invalidate: function(doc) {
-          return doc._id === '_design/medic';
+          return doc._id === '_design/medic-client';
         }
       });
 
