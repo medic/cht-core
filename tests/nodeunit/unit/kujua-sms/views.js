@@ -1,17 +1,20 @@
-var views = require('../../../../packages/kujua-sms/kujua-sms/views'),
-    clientViews = require('../../../../ddocs/compiled.json');
+var vm = require('vm'),
+    views = require('../../../../packages/kujua-sms/kujua-sms/views'),
+    clientViews = require('../../../../ddocs/compiled.json'),
+    viewContext = {};
 
-eval('var data_records_read_by_type = ' + clientViews.docs[0].views.data_records_read_by_type.map);
 var results;
 
 exports.setUp = function (callback) {
   results = [];
-  emit = function(key, val) {
+  viewContext.emit = function(key, val) {
     results.push({
       key: key,
       val: val
     });
   };
+  var script = new vm.Script('data_records_read_by_type = ' + clientViews.docs[0].views.data_records_read_by_type.map);
+  script.runInNewContext(viewContext);
   callback();
 };
 
@@ -34,7 +37,7 @@ exports['data_records_read_by_type map emits nothing when not data_record'] = fu
   var doc = {
     type: 'facility'
   };
-  data_records_read_by_type(doc)
+  viewContext.data_records_read_by_type(doc);
   test.same(results.length, 0);
   test.done();
 };
@@ -43,7 +46,7 @@ exports['data_records_read_by_type map emits empty dh id when no facility'] = fu
   var doc = {
     type: 'data_record'
   };
-  data_records_read_by_type(doc);
+  viewContext.data_records_read_by_type(doc);
   test.same(results.length, 1);
   test.same(results[0].key[0], '_total');
   test.same(results[0].key[1], 'messages');
@@ -66,7 +69,7 @@ exports['data_records_read_by_type map emits one record per task'] = function (t
       }
     ]
   };
-  data_records_read_by_type(doc);
+  viewContext.data_records_read_by_type(doc);
   test.same(results.length, 2);
   test.same(results[0].key[0], '_total');
   test.same(results[0].key[1], 'messages');
@@ -83,7 +86,7 @@ exports['data_records_read_by_type map emits dh id'] = function (test) {
     form: 'ZYX',
     contact: { parent: { parent: { _id: 'abc', type: 'district_hospital' } } }
   };
-  data_records_read_by_type(doc);
+  viewContext.data_records_read_by_type(doc);
   test.same(results.length, 1);
   test.same(results[0].key[0], '_total');
   test.same(results[0].key[1], 'forms');
@@ -96,7 +99,7 @@ exports['data_records_read_by_type map emits no read when empty array'] = functi
     type: 'data_record',
     read: []
   };
-  data_records_read_by_type(doc);
+  viewContext.data_records_read_by_type(doc);
   test.same(results.length, 1);
   test.same(results[0].key[0], '_total');
   test.same(results[0].key[1], 'messages');
@@ -111,7 +114,7 @@ exports['data_records_read_by_type map emits read when populated array'] = funct
     form: 'ZYX',
     contact: { parent: { parent: { _id: 'abc', type: 'district_hospital' } } }
   };
-  data_records_read_by_type(doc);
+  viewContext.data_records_read_by_type(doc);
   test.same(results.length, 4);
   test.same(results[0].key[0], '_total');
   test.same(results[0].key[1], 'forms');
