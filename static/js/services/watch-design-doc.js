@@ -6,6 +6,9 @@ var async = require('async');
 
   var inboxServices = angular.module('inboxServices');
 
+  // TODO delete me!
+  // TODO replace with some other method of change notification - 
+  //      maybe watch local ddoc and include medic ddoc rev in client ddoc?
   inboxServices.factory('WatchDesignDoc',
     function(
       $http,

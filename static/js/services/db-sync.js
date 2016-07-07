@@ -79,7 +79,7 @@ var _ = require('underscore'),
         }
         return getViewKeys()
           .then(function(keys) {
-            return DB().query('medic/doc_by_place', { keys: keys });
+            return DB().query('medic-client/doc_by_place', { keys: keys });
           })
           .then(function(viewResult) {
             var userCtx = Session.userCtx();

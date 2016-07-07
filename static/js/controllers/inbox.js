@@ -52,7 +52,7 @@ var feedback = require('../modules/feedback'),
       UpdateSettings,
       UpdateUser,
       UserSettings,
-      WatchDesignDoc,
+      // WatchDesignDoc,
       XmlForms
     ) {
       'ngInject';
@@ -799,18 +799,18 @@ var feedback = require('../modules/feedback'),
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
           showUpdateReady();
         }
-        WatchDesignDoc(function() {
-          // if the manifest hasn't changed, prompt user to reload settings
-          window.applicationCache.addEventListener('noupdate', showUpdateReady);
-          // check if the manifest has changed. if it has, download and prompt
-          try {
-            window.applicationCache.update();
-          } catch(e) {
-            // chrome incognito mode active
-            $log.error('Error updating the appcache.', e);
-            showUpdateReady();
-          }
-        });
+        // WatchDesignDoc(function() {
+        //   // if the manifest hasn't changed, prompt user to reload settings
+        //   window.applicationCache.addEventListener('noupdate', showUpdateReady);
+        //   // check if the manifest has changed. if it has, download and prompt
+        //   try {
+        //     window.applicationCache.update();
+        //   } catch(e) {
+        //     // chrome incognito mode active
+        //     $log.error('Error updating the appcache.', e);
+        //     showUpdateReady();
+        //   }
+        // });
       }
 
     }
