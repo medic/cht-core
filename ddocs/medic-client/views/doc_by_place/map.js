@@ -15,7 +15,7 @@ function(doc) {
     return;
   };
 
-  if (doc._id === 'resources' || doc._id === '_design/medic-client') {
+  if (doc._id === 'resources') {
     emit([ '_all' ]);
     return;
   }

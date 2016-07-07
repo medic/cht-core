@@ -42,7 +42,7 @@ var _ = require('underscore');
           return [ id ];
         });
         return DB()
-          .query('medic/doc_summaries_by_id', { keys: ids })
+          .query('medic-client/doc_summaries_by_id', { keys: ids })
           .then(function(response) {
             return _.map(response.rows, function(row) {
               row.value._id = row.id;
