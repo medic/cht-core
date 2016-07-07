@@ -68,7 +68,7 @@ describe('DBSync service', function() {
     service();
     setTimeout(function() {
       chai.expect(query.callCount).to.equal(1); // 1 'from' calls, 0 'to' calls
-      chai.expect(query.args[0][0]).to.equal('medic/doc_by_place');
+      chai.expect(query.args[0][0]).to.equal('medic-client/doc_by_place');
       chai.expect(query.args[0][1].keys).to.deep.equal([['_all'], ['abc']]);
       chai.expect(from.callCount).to.equal(1);
       chai.expect(from.args[0][1].live).to.equal(true);

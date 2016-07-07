@@ -57,7 +57,7 @@ describe('Settings service', function() {
           chai.expect(actual.date_format).to.equal(expected.date_format);
           // date format from defaults: kujua_sms/views/lib/app_settings
           chai.expect(actual.reported_date_format).to.equal('DD-MMM-YYYY HH:mm:ss');
-          chai.expect(get.args[0][0]).to.equal('_design/medic');
+          chai.expect(get.args[0][0]).to.equal('_design/medic-client');
           done();
         })
         .catch(done);
