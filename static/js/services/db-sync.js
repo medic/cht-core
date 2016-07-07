@@ -56,6 +56,12 @@ var _ = require('underscore'),
           })
           .then(function() {
             return keys;
+          })
+          .catch(function(err) {
+            // allow some replication otherwise the user can get stuck
+            // unable to fix their own configuration
+            $log.error('Error fetching sync options - using with minimum options', err);
+            return [ ALL_KEY ];
           });
       };
 
