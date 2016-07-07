@@ -32,7 +32,7 @@ var modal = require('../modules/modal');
       };
 
       DB()
-        .query('medic/doc_by_type', { key: [ 'translations', true ] })
+        .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
         .then(function(result) {
           $scope.enabledLocales = result.rows.map(function(row) {
             return row.value;

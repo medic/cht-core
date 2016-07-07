@@ -82,7 +82,7 @@ describe('EditUserCtrl controller', function() {
         chai.expect(scope.enabledLocales[0].code).to.equal('en');
         chai.expect(scope.enabledLocales[1].code).to.equal('fr');
         chai.expect(dbQuery.callCount).to.equal(1);
-        chai.expect(dbQuery.args[0][0]).to.equal('medic/doc_by_type');
+        chai.expect(dbQuery.args[0][0]).to.equal('medic-client/doc_by_type');
         chai.expect(dbQuery.args[0][1].key[0]).to.equal('translations');
         chai.expect(dbQuery.args[0][1].key[1]).to.equal(true);
         chai.expect(scope.editUserModel).to.deep.equal({

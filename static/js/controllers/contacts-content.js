@@ -71,7 +71,7 @@ var _ = require('underscore');
           key: [ id ],
           include_docs: true
         };
-        return DB().query('medic/facilities_by_contact', options);
+        return DB().query('medic-client/facilities_by_contact', options);
       };
 
       var selectedSchemaVisibleFields = function(selected) {
