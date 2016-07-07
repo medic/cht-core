@@ -13,7 +13,7 @@ var _ = require('underscore');
       FileReader
     ) {
 
-      var withAvailableForms = DB().query('medic/forms')
+      var withAvailableForms = DB().query('medic-client/forms')
         .then(function(res) {
           return _.pluck(res.rows, 'id');
         });

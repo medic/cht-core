@@ -161,153 +161,6 @@ exports.data_records_valid_by_year_month_and_form = {
     reduce: '_count'
 };
 
-exports.data_records_read_by_type = {
-    map: function(doc) {
-        var type,
-            dh;
-
-        var emitRead = function(doc, type, dh) {
-            emit(['_total', type, dh]);
-            if (doc.read) {
-                doc.read.forEach(function(user) {
-                    if (user) {
-                        emit([user, type, dh]);
-                    }
-                });
-            }
-        };
-
-        var getDistrictId = function(facility, type) {
-            while (facility && facility.type !== 'district_hospital') {
-                facility = facility.parent;
-            }
-            return facility && facility._id;
-        };
-
-        if (doc.type === 'data_record') {
-            type = doc.form ? 'forms' : 'messages';
-            dh = getDistrictId(doc.contact);
-            if (dh) {
-                emitRead(doc, type, dh);
-            } else if (doc.tasks) {
-                doc.tasks.forEach(function(task) {
-                    dh = getDistrictId(task.messages[0].contact);
-                    emitRead(doc, type, dh);
-                });
-            } else {
-                emitRead(doc, type);
-            }
-        }
-    },
-    reduce: '_count'
-};
-
-
-exports.data_records_by_contact = {
-    map: function(doc) {
-        var getPosition = function(facility) {
-            if (facility) {
-                var nameParts = [];
-                while (facility) {
-                    if (facility.name) {
-                        nameParts.push(facility.name);
-                    }
-                    facility = facility.parent;
-                }
-                if (nameParts.length) {
-                    return nameParts;
-                }
-            }
-        };
-        var emitContact = function(key, date, value) {
-            if (key) {
-                emit([key, date], value);
-            }
-        };
-
-        var message,
-            facility,
-            contactName,
-            key,
-            position;
-        if (doc.type === 'data_record' && !doc.form) {
-            if (doc.kujua_message) {
-                // outgoing
-                doc.tasks.forEach(function(task) {
-                    message = task.messages[0];
-                    facility = message.contact;
-                    key = (facility && facility._id) || message.to;
-                    if (!facility) {
-                        contactName = message.to;
-                        position = undefined;
-                    } else {
-                        position = getPosition(facility.parent);
-                        contactName = facility.name;
-                    }
-                    emitContact(key, doc.reported_date, {
-                        date: doc.reported_date,
-                        read: doc.read,
-                        facility: facility,
-                        message: message.message,
-                        contact: {
-                            name: contactName,
-                            parent: position
-                        }
-                    });
-                });
-            } else if (doc.sms_message) {
-                // incoming
-                facility = doc.contact;
-                message = doc.sms_message;
-                position = facility && getPosition(facility.parent) || doc.from;
-                contactName = (facility && facility.name) || doc.from;
-                key = (facility && facility._id) || doc.from;
-                emitContact(key, doc.reported_date, {
-                    date: doc.reported_date,
-                    read: doc.read,
-                    facility: facility,
-                    message: message.message,
-                    contact: {
-                        name: contactName,
-                        parent: position
-                    }
-                });
-            }
-        }
-    },
-    reduce: function(key, values) {
-        var max = { date: 0 };
-        var read;
-        values.forEach(function(value) {
-            if (!read || !value.read) {
-                read = value.read || [];
-            } else {
-                read = read.filter(function(user) {
-                    return value.read.indexOf(user) !== -1;
-                });
-            }
-            if (value.date > max.date) {
-                max = value;
-            }
-        });
-        max.read = read;
-
-        // needed to reduce object size
-        max.facility = undefined;
-
-        if (max.message) {
-            var code = max.message.charCodeAt(99);
-            if (0xD800 <= code && code <= 0xDBFF) {
-              max.message = max.message.substr(0, 99);
-            } else {
-              max.message = max.message.substr(0, 100);
-            }
-        }
-
-        return max;
-    }
-};
-
 exports.data_records_by_district = {
     map: function(doc) {
         var getDistrict = function(facility) {
@@ -322,17 +175,6 @@ exports.data_records_by_district = {
             if (dh) {
                 emit([dh._id, dh.name], null);
             }
-        }
-    }
-};
-
-exports.facility_by_parent = {
-    map: function (doc) {
-        if (doc.type === 'clinic' ||
-            doc.type === 'health_center' ||
-            doc.type === 'district_hospital' ||
-            doc.type === 'person') {
-            emit([doc.parent._id, doc.name, doc.type], true);
         }
     }
 };
@@ -361,18 +203,6 @@ exports.clinic_by_phone = {
     map: function(doc) {
         if (doc.type === 'clinic' && doc.contact && doc.contact.phone) {
             emit([doc.contact.phone]);
-        }
-    }
-};
-
-/*
- * Get person based on phone number
- * Used in the medic-data generate script
- */
-exports.person_by_phone = {
-    map: function (doc) {
-        if (doc.type === 'person') {
-            emit([doc.phone]);
         }
     }
 };
@@ -483,25 +313,5 @@ exports.duplicate_form_submissions = {
             return sum(values);
         }
         return values.length;
-    }
-};
-
-/*
- * Allow for quering of xml forms based on the doc id minus the prefix.
- */
-exports.forms = {
-    map: function(doc) {
-        if (doc.type !== 'form' || !doc._attachments || !doc._attachments.xml) {
-            return;
-        }
-        emit(doc.internalId);
-    }
-};
-
-exports.help_pages = {
-    map: function(doc) {
-        if (doc.type === 'help' && doc._id.indexOf('help:') === 0) {
-            emit(doc._id.substring(5), doc.title);
-        }
     }
 };

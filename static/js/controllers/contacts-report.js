@@ -51,7 +51,7 @@
         .get($state.params.id)
         .then(render)
         .then(function() {
-          return DB().query('medic/forms', { include_docs: true, key: $state.params.formId });
+          return DB().query('medic-client/forms', { include_docs: true, key: $state.params.formId });
         })
         .then(function(res) {
           if (res.rows[0]) {

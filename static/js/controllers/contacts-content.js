@@ -59,7 +59,7 @@ var _ = require('underscore');
           include_docs: true
         };
         return DB()
-          .query('medic/facility_by_parent', options)
+          .query('medic-client/facility_by_parent', options)
           .then(function(children) {
             sortChildren(children.rows);
             return children;
