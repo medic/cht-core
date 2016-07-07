@@ -51,7 +51,11 @@ var _ = require('underscore');
 
       var updateTranslations = function() {
         return DB()
-          .query('medic/doc_by_type', { key: [ 'translations' ], include_docs: true })
+          .query('medic/doc_by_type', {
+            startkey: [ 'translations', false ],
+            endkey: [ 'translations', true ],
+            include_docs: true
+          })
           .then(function(results) {
             $scope.translations = results.rows;
           })

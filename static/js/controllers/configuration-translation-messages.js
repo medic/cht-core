@@ -55,7 +55,11 @@ var _ = require('underscore');
       };
 
       $q.all([
-          DB().query('medic/doc_by_type', { key: [ 'translations' ], include_docs: true }),
+          DB().query('medic/doc_by_type', {
+            startkey: [ 'translations', false ],
+            endkey: [ 'translations', true ],
+            include_docs: true
+          }),
           Language()
         ])
         .then(function(results) {
