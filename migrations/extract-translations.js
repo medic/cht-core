@@ -57,7 +57,7 @@ module.exports = {
         return callback(err);
       }
       var settings = data.settings;
-      if (!settings.translations.length) {
+      if (!settings.translations || !settings.translations.length) {
         return callback();
       }
       updateDocs(settings, function(err) {
