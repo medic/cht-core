@@ -72,7 +72,7 @@ var _ = require('underscore'),
 
   var replicateDdoc = function(db) {
     return db.remote
-      .get('_design/medic')
+      .get('_design/medic-client')
       .then(function(ddoc) {
         var minimal = _.pick(ddoc, '_id', 'app_settings', 'views');
         minimal.remote_rev = ddoc._rev;
@@ -93,7 +93,7 @@ var _ = require('underscore'),
     var db = getDbInfo(username);
 
     db.local
-      .get('_design/medic')
+      .get('_design/medic-client')
       .then(function() {
         // ddoc found - bootstrap immediately
         callback();
