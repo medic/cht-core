@@ -1,5 +1,5 @@
 var vm = require('vm'),
-    views = require('../../../../packages/kujua-sms/kujua-sms/views'),
+    views = require('../../../../lib/views'),
     clientViews = require('../../../../ddocs/compiled.json'),
     viewContext = {};
 
