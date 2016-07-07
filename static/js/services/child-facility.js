@@ -1,5 +1,7 @@
+var _ = require('underscore');
+
 angular.module('inboxServices').factory('ChildFacility',
-  function(DbView) {
+  function(DB) {
 
     'use strict';
     'ngInject';
@@ -19,9 +21,9 @@ angular.module('inboxServices').factory('ChildFacility',
       } else {
         throw new Error('Doc not currently supported.');
       }
-      return DbView('total_clinics_by_facility', { params: params })
-        .then(function(response) {
-          return response.results;
+      return DB().query('medic/total_clinics_by_facility', params)
+        .then(function(result) {
+          return _.pluck(result.rows, 'doc');
         });
     };
 

@@ -3,13 +3,13 @@ describe('Facility service', function() {
   'use strict';
 
   var service,
-      DbView;
+      dbQuery;
 
   beforeEach(function() {
     module('inboxApp');
-    DbView = sinon.stub();
+    dbQuery = sinon.stub();
     module(function($provide) {
-      $provide.value('DbView', DbView);
+      $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery }));
       $provide.value('Cache', function(options) {
         return options.get;
       });
@@ -22,7 +22,7 @@ describe('Facility service', function() {
   });
 
   it('returns errors from request', function(done) {
-    DbView.returns(KarmaUtils.mockPromise('boom'));
+    dbQuery.returns(KarmaUtils.mockPromise('boom'));
     service({})
       .then(function() {
         done(new Error('expected error to be thrown'));
@@ -34,7 +34,7 @@ describe('Facility service', function() {
   });
 
   it('returns zero when no facilities', function() {
-    DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
+    dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [] }));
     return service({}).then(function(actual) {
       chai.expect(actual).to.deep.equal([]);
     });
@@ -125,8 +125,8 @@ describe('Facility service', function() {
       }
     };
 
-    DbView.withArgs('facilities', {params: {include_docs: true, key: ['clinic']}}).returns(KarmaUtils.mockPromise(null, { results: [ clinicA, clinicB ] }));
-    DbView.withArgs('facilities', {params: {include_docs: true, key: ['health_center']}}).returns(KarmaUtils.mockPromise(null, { results: [ healthCenter ] }));
+    dbQuery.withArgs('medic/facilities', {include_docs: true, key: ['clinic']}).returns(KarmaUtils.mockPromise(null, { rows: [ { doc: clinicA }, { doc: clinicB } ] }));
+    dbQuery.withArgs('medic/facilities', {include_docs: true, key: ['health_center']}).returns(KarmaUtils.mockPromise(null, { rows: [ { doc: healthCenter } ] }));
 
     return service({ types: ['clinic'] }).then(function(actual) {
       chai.expect(actual).to.deep.equal([ clinicA, clinicB ]);

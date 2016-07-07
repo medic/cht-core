@@ -14,7 +14,6 @@ var _ = require('underscore'),
       $timeout,
       ChildFacility,
       DB,
-      DbView,
       Facility,
       FormatDataRecord,
       ScheduledForms,
@@ -110,7 +109,7 @@ var _ = require('underscore'),
           .then(function(district) {
             ChildFacility(district)
               .then(function(facilities) {
-                getViewReports(DbView, district, dates)
+                getViewReports(district, dates)
                   .then(function(reports) {
                     $scope.totals = stockUtils.getTotals(facilities, reports, dates);
                     if (district.type === 'health_center') {
@@ -159,7 +158,7 @@ var _ = require('underscore'),
           });
       };
 
-      var getViewReports = function(DbView, doc, dates) {
+      var getViewReports = function(doc, dates) {
         var params = stockUtils.getReportingViewArgs(dates),
             view = 'data_records_by_form_year_month_facility';
 
@@ -167,15 +166,15 @@ var _ = require('underscore'),
           view = 'data_records_by_form_year_week_facility';
         }
 
-        return DbView(view, { params: params })
+        return DB().query('medic/' + view, params)
           .then(function(data) {
             // additional filtering for this facility
             var saved_data = [];
             var idx = doc.type === 'health_center' ? 4 : 3;
             for (var i in data.results.rows) {
-              if (doc._id === data.results.rows[i].key[idx]) {
+              if (doc._id === data.results.rows[i].doc.key[idx]) {
                 // keep orig ordering
-                saved_data.unshift(data.results.rows[i]);
+                saved_data.unshift(data.results.rows[i].doc);
               }
             }
             return saved_data;

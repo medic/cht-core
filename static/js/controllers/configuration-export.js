@@ -22,15 +22,15 @@ var _ = require('underscore'),
   var mapFeedback = function(data) {
     var result = {
       page: {
-        number: data.results.length,
-        total: data.meta.total_rows
+        number: data.rows.length,
+        total: data.total_rows
       }
     };
-    result.items = _.map(data.results, function(doc) {
+    result.items = _.map(data.rows, function(row) {
       return {
-        id: doc._id,
-        time: moment(doc.meta.time),
-        info: safeStringify(doc.info)
+        id: row.doc._id,
+        time: moment(row.doc.meta.time),
+        info: safeStringify(row.doc.info)
       };
     });
     return result;
@@ -40,14 +40,13 @@ var _ = require('underscore'),
     function (
       $log,
       $scope,
-      DbView,
+      DB,
       DownloadUrl
     ) {
 
       'ngInject';
 
-      var options =  { params: { include_docs: true, descending: true, limit: 20 } };
-      DbView('feedback', options)
+      DB().query('medic/feedback', { include_docs: true, descending: true, limit: 20 })
         .then(function(data) {
           $scope.feedback = mapFeedback(data);
         })

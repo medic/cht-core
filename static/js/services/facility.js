@@ -7,7 +7,7 @@ angular.module('inboxServices').factory('Facility',
     $q,
     Cache,
     CONTACT_TYPES,
-    DbView
+    DB
   ) {
 
     'use strict';
@@ -17,9 +17,9 @@ angular.module('inboxServices').factory('Facility',
     CONTACT_TYPES.forEach(function(type) {
       cacheByType[type] = Cache({
         get: function(callback) {
-          DbView('facilities', { params: { include_docs: true, key: [type] } })
-            .then(function(data) {
-              callback(null, data.results);
+          DB().query('medic/facilities', { include_docs: true, key: [type] })
+            .then(function(result) {
+              callback(null, _.pluck(result.rows, 'doc'));
             })
             .catch(callback);
         },
