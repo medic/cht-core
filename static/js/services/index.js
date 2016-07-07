@@ -18,7 +18,6 @@
   require('./count-messages');
   require('./db');
   require('./db-sync');
-  require('./db-view');
   require('./debug');
   require('./delete-docs');
   require('./download-url');

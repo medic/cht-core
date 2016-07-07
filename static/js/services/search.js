@@ -9,7 +9,7 @@ var _ = require('underscore');
   inboxServices.factory('Search',
     function(
       $q,
-      DbView,
+      DB,
       GenerateSearchRequests,
       GetDataRecords
     ) {
@@ -65,12 +65,12 @@ var _ = require('underscore');
 
       var view = function(request) {
         var params = request.union ? request.params : [ request.params ];
-        return $q.all(params.map(function(param) {
-          return DbView(request.view, { params: param });
+        return $q.all(params.map(function(params) {
+          return DB().query(request.view, params);
         }))
           .then(function(data) {
             return _.flatten(data.map(function(datum) {
-              return datum.results.rows;
+              return datum.rows;
             }), true);
           });
       };

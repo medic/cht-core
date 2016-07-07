@@ -32,22 +32,16 @@ define( function( require, exports, module ) {
                     // assumption that we have an object type `person` with a
                     // field `phone`.
 
-                    var options = {
-                        params: {
-                            key: [ phoneNumber ]
-                        }
-                    };
-                    var DbView = angularServices.get( 'DbView' );
-                    return DbView( 'person_by_phone', options );
+                    var DB = angularServices.get( 'DB' );
+                    return DB().query('medic/person_by_phone', { key: [ phoneNumber ] });
                 } )
                 .then( function( res ) {
-                    var results = res.results;
-                    if ( results.rows.length === 0 ) {
+                    if ( res.rows.length === 0 ) {
                         return true;
                     }
 
                     var contactBeingEdited = $('#contact-form').attr('data-editing');
-                    if ( results.rows[ 0 ].id !== contactBeingEdited ) {
+                    if ( res.rows[ 0 ].id !== contactBeingEdited ) {
                         throw new Error( 'phone number not unique: "' + fieldValue + '"' );
                     }
 

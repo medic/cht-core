@@ -122,17 +122,17 @@ var _ = require('underscore'),
       var types = {
         reports: function(filters) {
           var requests = [];
-          requests.push(reportedDate(filters, 'reports_by_date'));
-          requests.push(form(filters, 'reports_by_form'));
-          requests.push(validity(filters, 'reports_by_validity'));
-          requests.push(verification(filters, 'reports_by_verification'));
-          requests.push(place(filters, 'reports_by_place'));
-          requests.push(freetext(filters, 'reports_by_freetext'));
-          requests.push(subject(filters, 'reports_by_subject'));
+          requests.push(reportedDate(filters, 'medic/reports_by_date'));
+          requests.push(form(filters, 'medic/reports_by_form'));
+          requests.push(validity(filters, 'medic/reports_by_validity'));
+          requests.push(verification(filters, 'medic/reports_by_verification'));
+          requests.push(place(filters, 'medic/reports_by_place'));
+          requests.push(freetext(filters, 'medic/reports_by_freetext'));
+          requests.push(subject(filters, 'medic/reports_by_subject'));
           requests = _.compact(_.flatten(requests));
           if (!requests.length) {
             requests.push({
-              view: 'reports_by_date',
+              view: 'medic/reports_by_date',
               ordered: true,
               params: { descending: true }
             });
@@ -140,15 +140,15 @@ var _ = require('underscore'),
           return requests;
         },
         contacts: function(filters) {
-          var placeViews = place(filters, 'contacts_by_place');
-          var typeViews = documentType(filters, 'contacts_by_type');
-          var freetextViews = freetext(filters, 'contacts_by_freetext');
+          var placeViews = place(filters, 'medic/contacts_by_place');
+          var typeViews = documentType(filters, 'medic/contacts_by_type');
+          var freetextViews = freetext(filters, 'medic/contacts_by_freetext');
           if (!placeViews &&
               typeViews && typeViews.params.keys.length &&
               freetextViews && freetextViews.length) {
             return freetextViews.map(function(freetextView) {
               var result = {
-                view: 'contacts_by_type_freetext',
+                view: 'medic/contacts_by_type_freetext',
                 union: typeViews.params.keys.length > 1
               };
               if (result.union) {
@@ -179,7 +179,7 @@ var _ = require('underscore'),
           requests = _.compact(_.flatten(requests));
           if (!requests.length) {
             requests.push({
-              view: 'contacts_by_name',
+              view: 'medic/contacts_by_name',
               ordered: true
             });
           }

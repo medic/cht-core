@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 (function () {
 
   'use strict';
@@ -9,7 +11,7 @@
       $log,
       $rootScope,
       $scope,
-      DbView,
+      DB,
       Modal
     ) {
 
@@ -18,9 +20,9 @@
       $scope.updateList = function() {
         $scope.loading = true;
         var params = { include_docs: true, key: ['user-settings'] };
-        DbView('doc_by_type', { params: params })
+        DB().query('medic/doc_by_type', params)
           .then(function(settings) {
-            $scope.users = settings.results;
+            $scope.users = _.pluck(settings.rows, 'doc');
             $scope.loading = false;
           })
           .catch(function(err) {
