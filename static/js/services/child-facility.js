@@ -21,7 +21,7 @@ angular.module('inboxServices').factory('ChildFacility',
       } else {
         throw new Error('Doc not currently supported.');
       }
-      return DB().query('medic/total_clinics_by_facility', params)
+      return DB().query('medic-client/total_clinics_by_facility', params)
         .then(function(result) {
           return _.pluck(result.rows, 'doc');
         });
