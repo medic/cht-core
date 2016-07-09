@@ -269,7 +269,7 @@
             "anc_forms": {
                 "title": "ANC Reports",
                 "type": "object",
-                "description": "? @mandric",
+                "description": "Define your ANC related form codes here, these forms will be used to generate analytics.",
                 "properties": {
                     "registration": {
                         "type": "string",
@@ -364,7 +364,7 @@
             "reminders": {
                 "title": "Scheduled Report Reminders",
                 "type": "array",
-                "description": "@mandric: no projects in medic-projects are using this. Is it deprecated?",
+                "description": "Configure this for forms that should be reported on a repetitive schedule.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -411,34 +411,6 @@
                             "type": "string",
                             "title": "Form",
                             "description": "Form code for which to trigger actions. e.g. ANCR"
-                        },
-                        "fields": {
-                            "title": "Fields",
-                            "type": "array",
-                            "description": "Available field names for use in validations. @mandric what is this for? Fields are already listed in the validations.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "field_name": {
-                                        "type": "string",
-                                        "title": "Field Name"
-                                    },
-                                    "title": {
-                                        "type": "string",
-                                        "title": "Display Name"
-                                    }
-                                }
-                            },
-                            "default": []
-                        },
-                        "help": {
-                            "title": "Help",
-                            "type": "string",
-                            "description": "Instructions explaining how to use this form, including description and form submission examples in <a href=\"http://daringfireball.net/projects/markdown/syntax\">Markdown format</a>. e.g. Register for this message workflow by sending an SMS with the following format: `ANCR <patientname>`.\n\nFor example, to register \"Maria Soleil\" you would send: `ANCR Maria Soleil` @mandric where is this used?",
-                            "je:hint": "textarea",
-                            "je:textarea": {
-                                "rows": 4
-                            }
                         },
                         "events": {
                             "type": "array",
@@ -585,7 +557,7 @@
             },
             "patient_reports": {
                 "title": "Patient Reports",
-                "description": "@mandric What is this? It contains similar things to registrations.",
+                "description": "To clear reminder schedules define your visit forms here.",
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -745,7 +717,7 @@
                 "default": []
             },
             "schedules": {
-                "description": "Schedules are lists of messages that will be sent out periodically. You can trigger them when specific reports come in, see 'Form Actions'. When a schedule is attached to a report, you will see the list of messages at the bottom of the report in Medic Mobile. Within the schedule, messages are organized in groups. E.g. in a schedule of ANC visit reminders, there is a group of messages for each visit: one message 1 week before, one message on the due date, one message 1 week after. @mandric where do you specify what clears the groups in the schedule?",
+                "description": "Schedules are lists of messages that will be sent out periodically. You can trigger them when specific reports come in, see 'Form Actions'. When a schedule is attached to a report, you will see the list of messages at the bottom of the report in Medic Mobile. Within the schedule, messages are organized in groups. E.g. in a schedule of ANC visit reminders, there is a group of messages for each visit: one message 1 week before, one message on the due date, one message 1 week after. The message groups are cleared by visit reports that are configured in the previous section.",
                 "title": "Schedules",
                 "type": "array",
                 "items": {
@@ -854,7 +826,7 @@
             "notifications": {
                 "title": "Notifications",
                 "type": "object",
-                "description": "@mandric what is this? can it be achieved by 'registrations', with new types of actions (mute, unmute)",
+                "description": "Define the forms that are used to enable or disable all scheduled messages for a reporter/recipient.",
                 "properties": {
                     "off_form": {
                         "type": "string",
@@ -869,7 +841,7 @@
                     "confirm_deactivation": {
                         "type": "boolean",
                         "title": "Confirm Muting Notifications?",
-                        "description": "Disable stopping (@mandric is that right?) of notification based on reports, requires administrator action."
+                        "description": "Disable stopping of notification based on form submission, administrators are notified instead."
                     },
                     "validations": {
                         "type": "object",
