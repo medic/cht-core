@@ -27,6 +27,7 @@
     "font-awesome": "^4.5.0",
     "google-libphonenumber": "^1.0.16",
     "jquery": "^2.1.4",
+    "leveldown": "^1.4.6",
     "moment": "^2.12.0",
     "nools": "^0.4.1",
     "nvd3": "^1.1.15-beta",
