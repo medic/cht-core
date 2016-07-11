@@ -1,7 +1,9 @@
 language: node_js
 sudo: false
 node_js:
-   - "5.6"
+  - "6.3"
+  - "5.6"
+  - "0.12"
 
 addons:
   firefox: latest-esr
@@ -22,18 +24,17 @@ script:
   - node --stack_size=10000 `which grunt` ci
 
 after_success:
-  - ./scripts/ci/after_success.sh
-#  - python ./scripts/ci/travis_after_all.py
-#  - export $(cat .to_export_back)
-#  - |
-#      if [ "$BUILD_LEADER" = "YES" ]; then
-#        if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-#          echo "All jobs succeeded! Publishing..."
-#          bash ./scripts/ci/after_success.sh
-#        else
-#          echo "Some jobs failed. Not publishing."
-#        fi
-#      fi
+  - python ./scripts/ci/travis_after_all.py
+  - export $(cat .to_export_back)
+  - |
+      if [ "$BUILD_LEADER" = "YES" ]; then
+        if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
+          echo "All jobs succeeded! Publishing..."
+          bash ./scripts/ci/after_success.sh
+        else
+          echo "Some jobs failed. Not publishing."
+        fi
+      fi
 
 notifications:
   webhooks: 
