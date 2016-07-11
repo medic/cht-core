@@ -78,6 +78,19 @@ var prepareResponse = function(feed, changes) {
   feed.res.write(JSON.stringify(changes));
 };
 
+var cleanUp = function(feed) {
+  if (feed.heartbeat) {
+    clearInterval(feed.heartbeat);
+  }
+  var index = _.indexOf(continuousFeeds, feed);
+  if (index !== -1) {
+    continuousFeeds.splice(index, 1);
+  }
+  if (feed.changesReq) {
+    feed.changesReq.abort();
+  }
+};
+
 var getChanges = function(feed) {
   // we cannot call 'changes' in nano because it only uses GET requests and
   // our query string might be too long for GET
@@ -88,18 +101,13 @@ var getChanges = function(feed) {
     body: { doc_ids: _.union(feed.requestedIds, feed.validatedIds) },
     method: 'POST'
   }, function(err, changes) {
-    if (feed.heartbeat) {
-      clearInterval(feed.heartbeat);
-    }
     if (err) {
       feed.res.write(error(503, 'Error processing your changes'));
     } else {
       prepareResponse(feed, changes);
     }
     feed.res.end();
-    continuousFeeds = _.reject(continuousFeeds, function(feed) {
-      return feed.res.finished;
-    });
+    cleanUp(feed);
   });
 };
 
@@ -238,6 +246,9 @@ module.exports = {
           res: res,
           userCtx: userCtx
         };
+        req.on('close', function() {
+          cleanUp(feed);
+        });
         initFeed(feed, function(err) {
           if (err) {
             return serverUtils.error(err, req, res);
@@ -252,10 +263,18 @@ module.exports = {
         });
       }
     });
-  },
-  // used for testing
-  _reset: function() {
-    continuousFeeds = [];
-    inited = false;
   }
 };
+
+// used for testing
+if (process.env.TEST_ENV) {
+  _.extend(module.exports, {
+    _reset: function() {
+      continuousFeeds = [];
+      inited = false;
+    },
+    _getFeeds: function() {
+      return continuousFeeds;
+    }
+  });
+}
