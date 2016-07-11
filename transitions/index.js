@@ -6,21 +6,56 @@ var _ = require('underscore'),
     config = require('../config'),
     transitions = {};
 
+/*
+ * Add new transitions here to make them available for configuration.  For
+ * security reasons, we want to avoid doing a `require` based on random input,
+ * hence we maintain this index of transitions.
+ */
+var availableTransitions = [
+  'accept_patient_reports',
+  'conditional_alerts',
+  'default_responses',
+  'update_sent_by',
+  'ohw_counseling',
+  'ohw_emergency_report',
+  'ohw_notifications',
+  'resolve_pending',
+  'registration',
+  'twilio_message',
+  'update_clinics',
+  'update_notifications',
+  'update_scheduled_reports',
+  'update_sent_forms'
+];
+
 if (!process.env.TEST_ENV) {
-    _.each(config.get('transitions'), function(conf, key) {
-        if (conf.disable) {
-            logger.warn('transition %s %s is disabled', key, conf.load);
-            return;
-        }
-        try {
-            transitions[key] = require('../' + conf.load);
-        } catch(e) {
-            // log exception
-            logger.error('failed loading transition %s %s', key, conf.load);
-            logger.error(e);
-        }
-    });
+  loadTransitions();
 }
+
+var loadTransitions = function() {
+  var self = module.exports;
+  _.each(config.get('transitions'), function(conf, key) {
+      if (!conf || conf.disable) {
+          logger.warn('transition %s is disabled', key);
+          return;
+      }
+      if (availableTransitions.indexOf(key) === -1) {
+          logger.warn('transition %s not available.', key);
+          return;
+      }
+      self._loadTransition(key);
+  });
+};
+
+var loadTransition = function(key) {
+  try {
+      logger.info('loading transition %s', key);
+      transitions[key] = require('./' + key);
+  } catch(e) {
+      logger.error('failed loading transition %s', key);
+      logger.error(e);
+  }
+};
 
 /*
  * Determines whether a transition is okay to run on a document.  Removed
@@ -359,6 +394,8 @@ var hasTransitionErrors = function(doc) {
 };
 
 module.exports = {
+    _loadTransition: loadTransition,
+    _loadTransitions: loadTransitions,
     canRun: canRun,
     attach: attach,
     finalize: finalize,

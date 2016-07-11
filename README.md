@@ -6,6 +6,25 @@ Develop      | Master
 
 Get node deps with  `npm install`.
 
+## Run
+
+`node server.js`
+
+Debug mode:
+
+`node server.js debug`
+
+## Run Tests
+
+`grunt test`
+
+
+## Overview
+
+Sentinel uses the changes feed on a CouchDB database and runs a set of
+transitions on a document.  It also manages some scheduled tasks like message
+schedules.
+
 ## Settings
 
 Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
@@ -14,27 +33,71 @@ Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 export COUCH_URL='http://root:123qwe@localhost:5984/medic'
 ```
 
-Sentinel works with Medic Mobile and listens to changes on the database. It is 
-configured through the dashboard Medic Mobile app settings screen.
+Default settings values are in `defaults.js`.  On initial start, and when there
+are changes to the ddoc, sentinel reads `ddoc.app_setings` to determine configuration.
 
-Default settings values are in `defaults.js`.
+By default all transitions are disabled, to enable a transition modify the
+`transitions` property on `ddoc.app_settings`.
 
-## Run
+### Transitions Configuration Examples
 
-`node ./server.js`
+Enabled
 
-Debug mode:
+```
+{
+  "transitions": {
+    "registrations": true,
+    "default_responses": true,
+    "update_clinics": true
+  }
+}
+```
 
-`node ./server.js debug`
+```
+{
+  "transitions": {
+    "registrations": {
+      "param": "val"
+    },
+    "default_responses": {},
+    "update_clinics": {}
+  }
+}
+```
 
-## Run Tests
+Disabled
 
-`grunt test`
+```
+{
+  "transitions": {}
+}
+```
+
+```
+{
+  "transitions": {
+    "registrations": false
+  }
+}
+```
+
+```
+{
+  "transitions": {
+    "registrations": {
+      "disable": true
+    }
+  }
+}
+```
 
 ## Transitions API
 
 A transition does async processing of a document once per rev/change, and obeys
 the following rules:
+
+* has a `filter` function that determines if it needs to run/be applied to a
+  document.
 
 * accepts a document as a reference and makes changes using that reference,
   copying is discouraged.
