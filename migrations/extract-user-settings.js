@@ -25,7 +25,7 @@ var migrateUser = function(row, callback) {
     db._users.get(lowercaseId, function(err) {
       if (!err || err.error !== 'not_found') {
         // Existing user called lowercase. Conflict!
-        return callback(new Error('Cannot create lowercase username ' + lowercase + ', user already exists.'));
+        return callback(new Error('Cannot create lowercase username ' + lowercaseId + ', user already exists.'));
       }
       var uppercaseUser = _.pick(row.doc, fieldsToIncludeInUser);
       row.doc._id = lowercaseId;
