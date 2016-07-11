@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 2.7.2
+
+### July 11, 2016
+
+#### Bug fixes
+
+- Connection refused when trying to load app. Issue: #2476
+
 ## 2.7.1
 
 ### July 4, 2016
