@@ -8,6 +8,7 @@
     "couchdb-audit": "^0.3.0",
     "epi-week": "^0.0.1",
     "follow": "^0.12.1",
+    "grunt-contrib-jshint": "^1.0.0",
     "later": "^1.1.6",
     "libphonenumber": "^0.0.9",
     "moment": "^2.10.6",
@@ -16,7 +17,7 @@
     "request": "^2.60.0",
     "underscore": "^1.8.3",
     "uuid": "^2.0.1",
-    "winston": "^1.0.1"
+    "winston": "^2.2.0"
   },
   "devDependencies": {
     "grunt": "^1.0.0",
