@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     moment = require('moment'),
-    libphonenumber = require('libphonenumber'),
+    phoneUtil = require('google-libphonenumber').PhoneNumberUtil.getInstance(),
     config = require('../config'),
     utils = require('../lib/utils'),
     logger = require('../lib/logger'),
@@ -34,7 +34,7 @@ module.exports = {
             gw = self._getConfig('gateway_number'),
             from = doc.sms_message && doc.sms_message.from;
         if (typeof gw === 'string' && typeof from === 'string') {
-            return libphonenumber.phoneUtil.isNumberMatch(gw, from) >= 3;
+            return phoneUtil.isNumberMatch(gw, from) >= 3;
         }
         return false;
     },
