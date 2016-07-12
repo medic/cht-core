@@ -335,6 +335,11 @@ module.exports = function(grunt) {
         extDot: 'last'
       },
     },
+    auto_install: {
+      npm: {
+        bower: false
+      }
+    }
   });
 
   grunt.task.run('notify_hooks');
@@ -343,7 +348,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [
     'exec:undopatches',
-    'npm-install',
+    'auto_install:npm',
     'copy:librariestopatch',
     'exec:applypatches'
   ]);
