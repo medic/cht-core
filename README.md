@@ -7,11 +7,12 @@ For latest changes and release announcements see our [change log](Changes.md).
 
 Medic Mobile combines messaging, data collection, and analytics for health workers and health systems in hard-to-reach areas with or without internet connectivity.
 
-The `medic-webapp` repository is the core application in the Medic Mobile stack. When health workers submit data — using text messages (SMS), our mobile applications, or our SIM applications — the web app colunfirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
+The `medic-webapp` repository is the core application in the Medic Mobile stack. When health workers submit data — using text messages (SMS), our mobile applications, or our SIM applications — the web app comfirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
 
 The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally, as part of a virtual machine (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
 
 For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
+For going into details of architecture, and of which repos within https://github.com/medic you need, see the [Architecture Overview](architecture.md).
 
 ## Development Setup
 
@@ -141,9 +142,70 @@ node ./server.js
 
 See [Medic API](https://github.com/medic/medic-api) for more information.
 
-### Push the dashboard
 
-[Garden Dashboard](https://github.com/garden20/dashboard) is used to manage the couchapp.
+### Try it out
+
+Navigate your browser to:
+
+```
+http://localhost:5988/medic/login
+```
+
+### App_settings
+
+The app is very customizeable, and that customization lives in the app_settings. Look for the `app_settings`
+field in the `medic` design doc.
+
+At first that `app_settings` field will be empty and you will have the default settings:
+https://github.com/medic/medic-webapp/blob/develop/packages/kujua-sms/views/lib/app_settings.js
+
+You can update these settings with the
+[scripts/update_settings.js](https://github.com/medic/medic-webapp/blob/develop/scripts/update_app_settings.sh)
+script, or by editing the file in Futon directly.
+
+For more details on what you can use in settings, check out the [schema of supported settings](https://github.com/medic/medic-webapp/blob/develop/kanso.json#L83).
+
+### Forms
+
+Forms define information flows. Users fill in forms by SMS, or through SIMapps, or medic-collect, or the android app, or the desktop app. You can have forms for registering new patients, for sending in the status of a patient, for creating a new health center, ...
+
+Initially your instance will have the [default forms defined inside the default settings](https://github.com/medic/medic-webapp/blob/develop/packages/kujua-sms/views/lib/app_settings.js#L321).
+
+You can load new forms either through the webapp's interface (in Configuration), or from command line with the [load_forms.js](https://github.com/medic/medic-webapp/blob/develop/scripts/load_forms.js)
+
+### Data
+To fill your app with generated data, you can batch-load messages from a CSV file, with the [load_messages.js](https://github.com/medic/medic-webapp/blob/develop/scripts/load_messages.js) script.
+
+
+Use `curl` to submit a single message:
+
+```
+curl -i -u gateway:123qwe \
+    --data-urlencode 'message=Test One two' \
+    --data-urlencode 'from=+13125551212' \
+    --data-urlencode 'sent_timestamp=1403965605868' \
+    -X POST \
+    http://localhost:5988/api/v1/records
+```
+
+
+### Tests
+
+To run precommit tests:
+
+1. Update Webdriver: `node_modules/protractor/bin/webdriver-manager update`
+2. Start Webdriver: `node_modules/protractor/bin/webdriver-manager start`
+3. Run tests: `grunt test`
+
+Some kanso tests are run in-browser; you can run them manually if you browse to `/medic/_design/medic/_rewrite/test`.
+
+### Push the dashboard (optional)
+
+[Garden Dashboard](https://github.com/garden20/dashboard) is used to download the couchapp onto a couchdb server, and later to update it.
+
+If you just want to build and run locally for development, you don't need
+Dashboard, because `grunt dev` will push the app to your local couchdb server.
+If you want to download the app that someone else pushed to a Market, then you need Dashboard.
 
 To install Dashboard, first change the CouchDB's `secure_rewrites` configuration
 parameter to false:
@@ -170,53 +232,11 @@ Finally install our app in the dashboard.
 
 Now you've just overwritten your development installation so you probably want to do another `grunt dev` to overwrite it again.
 
-### Try it out
 
-Navigate your browser to:
+### Deploy to Market (optional)
 
-```
-http://localhost:5988/medic/login
-```
-
-
-### Tests
-
-To run precommit tests:
-
-1. Update Webdriver: `node_modules/protractor/bin/webdriver-manager update`
-2. Start Webdriver: `node_modules/protractor/bin/webdriver-manager start`
-3. Run tests: `grunt test`
-
-Some kanso tests are run in-browser; you can run them manually if you browse to `/medic/_design/medic/_rewrite/test`.
-
-### Loading Data
-
-Loading your form definitions in the settings interface is supported, but you can
-also do that from command line:
-
-```
-node scripts/load_forms.js
-```
-
-To batch-load messages from a CSV file, run:
-
-```
-node scripts/load_messages.js
-```
-
-Use `curl` to submit a single message:
-
-```
-curl -i -u gateway:123qwe \
-    --data-urlencode 'message=Test One two' \
-    --data-urlencode 'from=+13125551212' \
-    --data-urlencode 'sent_timestamp=1403965605868' \
-    -X POST \
-    http://localhost:5988/api/v1/records
-```
-
-
-### Deploy to Market
+For your app to be accessible easily to other server instances, you can push it to an online Market.
+Each instance, through its local Dashboard, will pull the app down.
 
 When deploying to the market, include the sentinel package in the couchapp so
 [gardener](https://github.com/garden20/gardener) can manage the process. This

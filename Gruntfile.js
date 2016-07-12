@@ -1,5 +1,4 @@
-var kansoJson = require('./kanso.json'),
-    path = require('path');
+var kansoJson = require('./kanso.json');
 
 module.exports = function(grunt) {
 
@@ -59,7 +58,9 @@ module.exports = function(grunt) {
             'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
             'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils',
             'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber',
-            'worker-pouch/workerified': './node_modules/worker-pouch/lib/workerified/'
+            'worker-pouch/workerified': './node_modules/worker-pouch/lib/workerified/',
+            'pouchdb-generate-replication-id': './static/js/modules/pouchdb-generate-replication-id-patched',
+            'pouchdb-generate-replication-id-original': './node_modules/pouchdb-generate-replication-id'
           },
         },
       }
@@ -138,8 +139,7 @@ module.exports = function(grunt) {
             cwd: 'node_modules',
             src: [
               'bootstrap-daterangepicker/**',
-              'font-awesome/**',
-              'pouchdb/**'
+              'font-awesome/**'
             ],
             dest: 'node_modules_backup'
           }
@@ -164,24 +164,6 @@ module.exports = function(grunt) {
             dest: 'static/dist/xslt/'
           }
         ]
-      },
-      // npm v3 puts nested node_modules at the top level. copy the css resources
-      // so sass compilation still works.
-      enketocss: {
-        files: [
-          {
-            src: [
-              'node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.css',
-              'node_modules/bootstrap-timepicker/css/bootstrap-timepicker.css',
-              'node_modules/bootstrap-slider-basic/sass/_bootstrap-slider.scss'
-            ],
-            dest: 'node_modules/enketo-core/',
-            filter: function (filepath) {
-              // return false if the file exists
-              return !grunt.file.exists(path.join('node_modules/enketo-core/', filepath));
-            }
-          }
-        ]
       }
     },
     exec: {
@@ -198,8 +180,7 @@ module.exports = function(grunt) {
         cmd: function() {
           var modulesToPatch = [
             'bootstrap-daterangepicker',
-            'font-awesome',
-            'pouchdb'
+            'font-awesome'
           ];
           return modulesToPatch.map(function(module) {
             var backupPath = 'node_modules_backup/' + module;
@@ -227,14 +208,6 @@ module.exports = function(grunt) {
             // patch font-awesome to remove version attributes so appcache works
             // https://github.com/FortAwesome/Font-Awesome/issues/3286
             'patch node_modules/font-awesome/less/path.less < patches/font-awesome-remove-version-attribute.patch',
-
-            // patch pouch to record seq even when no changes
-            // https://github.com/pouchdb/pouchdb/issues/5145
-            'patch node_modules/pouchdb/lib/index-browser.js < patches/pouchdb-update-seq-more-often.patch',
-
-            // patch pouch to not use doc_ids in the replication id calculation
-            // https://github.com/medic/medic-webapp/issues/2404
-            'patch node_modules/pouchdb/lib/index-browser.js < patches/pouchdb-replication-id-generator.patch',
           ];
           return patches.join(' && ');
         }
@@ -339,6 +312,15 @@ module.exports = function(grunt) {
       }
     },
     sass: {
+      options: {
+        importer: function(url, prev, done) {
+          // fixes relative enketo-core submodule references in npm 3.x.x
+          if (/\/node_modules\//.test(url) && /\/node_modules\/enketo-core\//.test(prev)) {
+            url = '../../' + url;
+          }
+          done({ file: url });
+        }
+      },
       compile: {
         cwd: 'static/css',
         dest: 'build',
@@ -350,6 +332,11 @@ module.exports = function(grunt) {
         extDot: 'last'
       },
     },
+    auto_install: {
+      npm: {
+        bower: false
+      }
+    }
   });
 
   grunt.task.run('notify_hooks');
@@ -358,7 +345,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [
     'exec:undopatches',
-    'npm-install',
+    'auto_install:npm',
     'copy:librariestopatch',
     'exec:applypatches'
   ]);
@@ -371,7 +358,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
-    'copy:enketocss',
     'sass',
     'less',
     'postcss'
