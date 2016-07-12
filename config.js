@@ -28,7 +28,7 @@ function loadTranslations() {
         endkey: [ 'translations', true ],
         include_docs: true
     };
-    db.medic.view('medic', 'doc_by_type', options, function(err, result) {
+    db.medic.view('medic-client', 'doc_by_type', options, function(err, result) {
         if (err) {
             logger.error('Error loading translations - starting up anyway', err);
             return;
