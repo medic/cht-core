@@ -47,8 +47,6 @@ var _ = require('underscore'),
     serverUtils = require('./server-utils'),
     apiPort = process.env.API_PORT || 5988;
 
-http.globalAgent.maxSockets = 100;
-
 // requires content-type application/json header
 var jsonParser = bodyParser.json({limit: '32mb'});
 
