@@ -3,7 +3,7 @@ var controller = require('../../controllers/export-data'),
     config = require('../../config'),
     fti = require('../../controllers/fti'),
     childProcess = require('child_process'),
-    jszip = require('jszip'),
+    JSZip = require('jszip'),
     sinon = require('sinon'),
     utils = require('../utils'),
     moment = require('moment');
@@ -180,7 +180,7 @@ exports['get exports messages in xml'] = function(test) {
       } }
     ]
   });
-  var expected =  '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html140" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="{Messages:en}"><Table>' +
+  var expected =  '<?xml version="1.0" encoding="UTF-8"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html140" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><?mso-application progid="Excel.Sheet"?><Worksheet ss:Name="{Messages:en}"><Table>' +
                     '<Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell><Cell><Data ss:Type="String">{patient_id:en}</Data></Cell><Cell><Data ss:Type="String">{reported_date:en}</Data></Cell><Cell><Data ss:Type="String">{from:en}</Data></Cell><Cell><Data ss:Type="String">{contact.name:en}</Data></Cell><Cell><Data ss:Type="String">{contact.parent.name:en}</Data></Cell><Cell><Data ss:Type="String">{contact.parent.parent.contact.name:en}</Data></Cell><Cell><Data ss:Type="String">{contact.parent.parent.name:en}</Data></Cell><Cell><Data ss:Type="String">{contact.parent.parent.parent.name:en}</Data></Cell><Cell><Data ss:Type="String">{task.type:en}</Data></Cell><Cell><Data ss:Type="String">{task.state:en}</Data></Cell><Cell><Data ss:Type="String">{received:en}</Data></Cell><Cell><Data ss:Type="String">{scheduled:en}</Data></Cell><Cell><Data ss:Type="String">{pending:en}</Data></Cell><Cell><Data ss:Type="String">{sent:en}</Data></Cell><Cell><Data ss:Type="String">{cleared:en}</Data></Cell><Cell><Data ss:Type="String">{muted:en}</Data></Cell><Cell><Data ss:Type="String">{Message UUID:en}</Data></Cell><Cell><Data ss:Type="String">{Sent By:en}</Data></Cell><Cell><Data ss:Type="String">{To Phone:en}</Data></Cell><Cell><Data ss:Type="String">{Message Body:en}</Data></Cell></Row>' +
                     '<Row><Cell><Data ss:Type="String">abc</Data></Cell><Cell><Data ss:Type="String">123456</Data></Cell><Cell><Data ss:Type="String">02, Jan 1970, 10:17:36 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{Automated Reply:en}</Data></Cell><Cell><Data ss:Type="String">sent</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">02, Jan 1970, 10:17:36 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+123456789</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">hello</Data></Cell></Row>' +
                     '<Row><Cell><Data ss:Type="String">hij</Data></Cell><Cell><Data ss:Type="String">123456</Data></Cell><Cell><Data ss:Type="String">02, Jan 1970, 10:17:36 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{Task Message:en}</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+123456789</Data></Cell><Cell><Data ss:Type="String">hello</Data></Cell></Row>' +
@@ -247,7 +247,7 @@ exports['get exports reports in xml with each type on a separate tab'] = functio
       }
     }
   });
-  var expected =  '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html140" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">' +
+  var expected =  '<?xml version="1.0" encoding="UTF-8"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html140" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><?mso-application progid="Excel.Sheet"?>' +
                     '<Worksheet ss:Name="{Reports:en}"><Table>' +
                       '<Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell></Row>' +
                       '<Row><Cell><Data ss:Type="String">abc</Data></Cell></Row>' +
@@ -326,7 +326,7 @@ exports['if form definition not found then cannot add specific columns'] = funct
       }
     }
   });
-  var expected =  '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html140" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">' +
+  var expected =  '<?xml version="1.0" encoding="UTF-8"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html140" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><?mso-application progid="Excel.Sheet"?>' +
                     '<Worksheet ss:Name="{Reports:en}"><Table>' +
                       '<Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell></Row>' +
                       '<Row><Cell><Data ss:Type="String">abc</Data></Cell></Row>' +
@@ -841,7 +841,7 @@ exports['get audit log handles special characters'] = function(test) {
       } }
     ]
   });
-  var expected = '<?xml version="1.0" encoding="UTF-8"?><?mso-application progid="Excel.Sheet"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html140" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><Worksheet ss:Name="{Audit:en}"><Table><Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell><Cell><Data ss:Type="String">{Type:en}</Data></Cell><Cell><Data ss:Type="String">{Timestamp:en}</Data></Cell><Cell><Data ss:Type="String">{Author:en}</Data></Cell><Cell><Data ss:Type="String">{Action:en}</Data></Cell><Cell><Data ss:Type="String">{Document:en}</Data></Cell></Row><Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">feedback</Data></Cell><Cell><Data ss:Type="String">01, Jan 1970, 03:25:45 +00:00</Data></Cell><Cell><Data ss:Type="String">gareth</Data></Cell><Cell><Data ss:Type="String">create</Data></Cell><Cell><Data ss:Type="String">{"type":"feedback","description":"😎😎😎"}</Data></Cell></Row></Table></Worksheet></Workbook>';
+  var expected = '<?xml version="1.0" encoding="UTF-8"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html140" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><?mso-application progid="Excel.Sheet"?><Worksheet ss:Name="{Audit:en}"><Table><Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell><Cell><Data ss:Type="String">{Type:en}</Data></Cell><Cell><Data ss:Type="String">{Timestamp:en}</Data></Cell><Cell><Data ss:Type="String">{Author:en}</Data></Cell><Cell><Data ss:Type="String">{Action:en}</Data></Cell><Cell><Data ss:Type="String">{Document:en}</Data></Cell></Row><Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">feedback</Data></Cell><Cell><Data ss:Type="String">01, Jan 1970, 03:25:45 +00:00</Data></Cell><Cell><Data ss:Type="String">gareth</Data></Cell><Cell><Data ss:Type="String">create</Data></Cell><Cell><Data ss:Type="String">{"type":"feedback","description":"😎😎😎"}</Data></Cell></Row></Table></Worksheet></Workbook>';
   controller.get({ type: 'audit', tz: '0', format: 'xml' }, function(err, results) {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
@@ -958,7 +958,7 @@ exports['get logs returns zip file'] = function(test) {
     test.equals(spawn.firstCall.args[1][0], '/boot/print-logs');
     test.equals(spawn.firstCall.args[2].stdio, 'pipe');
     test.equals(err, null);
-    var result = new jszip()
+    var result = new JSZip()
       .load(results)
       .file('server-logs-' + moment().format('YYYYMMDD') + '.md')
       .asText();

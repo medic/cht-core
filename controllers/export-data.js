@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    jszip = require('jszip'),
+    JSZip = require('jszip'),
     childProcess = require('child_process'),
     csv = require('fast-csv'),
     objectPath = require('object-path'),
@@ -249,7 +249,7 @@ var exportTypes = {
 
 var createLogZip = function(rv) {
   var filename = 'server-logs-' + moment().format('YYYYMMDD') + '.md';
-  return new jszip()
+  return new JSZip()
     .file(filename, Buffer.concat(rv))
     .generate({ type: 'nodebuffer', compression: 'deflate' });
 };
