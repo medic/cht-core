@@ -15,7 +15,7 @@ var error = function(migration, err) {
 };
 
 var getMeta = function(callback) {
-  db.medic.view('medic', 'doc_by_type', { include_docs: true, key: [ 'meta' ] }, function(err, meta) {
+  db.medic.view('medic-client', 'doc_by_type', { include_docs: true, key: [ 'meta' ] }, function(err, meta) {
     if (err) {
       return callback(
         new Error(

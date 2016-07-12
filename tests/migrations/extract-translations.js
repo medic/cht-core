@@ -239,7 +239,7 @@ exports['merges configuration into docs'] = function(test) {
     test.equals(err, undefined);
     test.equals(getSettings.callCount, 1);
     test.equals(view.callCount, 1);
-    test.equals(view.args[0][0], 'medic');
+    test.equals(view.args[0][0], 'medic-client');
     test.equals(view.args[0][1], 'doc_by_type');
     test.equals(view.args[0][2].key[0], 'translations');
     test.equals(view.args[0][2].key[1], true);

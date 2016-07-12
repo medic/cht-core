@@ -277,7 +277,7 @@ var migrateOneType = function(type, callback) {
   };
 
   db.medic.view(
-    'medic',
+    'medic-client',
     'contacts_by_type',
     { key: [ type ] },
     function(err, result) {

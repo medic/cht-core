@@ -82,7 +82,7 @@ module.exports = {
     var opts = {
       include_docs: true
     };
-    db.medic.view('medic', 'forms', opts, function(err, data) {
+    db.medic.view('medic-client', 'forms', opts, function(err, data) {
       if (err) {
         return callback(err);
       }
@@ -99,7 +99,7 @@ module.exports = {
       include_docs: true,
       limit: 1
     };
-    db.medic.view('medic', 'forms', opts, function(err, data) {
+    db.medic.view('medic-client', 'forms', opts, function(err, data) {
       if (err) {
         return callback(err);
       }

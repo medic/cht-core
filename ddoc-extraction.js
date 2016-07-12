@@ -1,75 +1,69 @@
-var db = require('./db'),
-    async = require('async'),
-    _ = require('underscore');
+var async = require('async'),
+    _ = require('underscore'),
+    db = require('./db'),
+    DDOC_ATTACHMENT_ID = '_design/medic/ddocs/compiled.json',
+    CLIENT_DDOC_ID = '_design/medic-client';
 
-var getMasterDdoc = function(callback) {
+var getSettings = function(callback) {
   db.medic.get('_design/medic', function(err, ddoc) {
-    // explitly call the callback with just these two params. Couch passes more
-    // params to the callback, and we don't want those feeding into async.waterfall
-    callback(err, ddoc);
-  });
-};
-
-var extractDdocs = function(ddoc, callback) {
-  var attachmentNames = Object.keys(ddoc._attachments).filter(function(name) {
-    // return name.startsWith('ddocs/compiled/'); // for nodejs > 0.12
-    return name.indexOf('ddocs/compiled/') === 0;
-  });
-
-  callback(null, ddoc._rev, attachmentNames);
-};
-
-var ddocNameFromAttachmentName = function(attachmentName) {
-  var designDocNameFromFilePath = /ddocs\/compiled\/(.+)\.json/;
-  return '_design/' + designDocNameFromFilePath.exec(attachmentName)[1];
-};
-
-var updateIfRequired = function(masterRevision, attachmentName, callback) {
-  var ddocName = ddocNameFromAttachmentName(attachmentName);
-
-  db.medic.get(ddocName, function(ddocErr, ddoc) {
-    if (ddocErr && ddocErr.error !== 'not_found') {
-      return callback(ddocErr);
+    if (err) {
+      return callback(err);
     }
-
-    db.medic.get('_design/medic/'+attachmentName, function(attachErr, attachedDdoc) {
-      if (attachErr) {
-        return callback(attachErr);
-      }
-
-      if (ddoc && ddoc.parentRev === masterRevision) {
-        // already up to date
-        return callback();
-      }
-
-      if (ddoc) {
-        // update
-        console.log(ddocName + ' may have changed, re-uploading');
-        attachedDdoc._rev = ddoc._rev;
-      } else {
-        // insert
-        console.log(ddocName + ' is new, uploading');
-      }
-
-      attachedDdoc.parentRev = masterRevision;
-      db.medic.insert(attachedDdoc, callback);
-    });
+    callback(null, ddoc.app_settings);
   });
 };
 
-var updateAll = function(masterRevision, attachmentNames, callback) {
-  async.each(attachmentNames, _.partial(updateIfRequired, masterRevision), callback);
+var getCompiledDdocs = function(callback) {
+  db.medic.get(DDOC_ATTACHMENT_ID, function(err, ddocs) {
+    if (err) {
+      if (err.error === 'not_found') {
+        return callback(null, []);
+      }
+      return callback(err);
+    }
+    callback(null, ddocs.docs);
+  });
+};
+
+var updateIfRequired = function(settings, ddoc, callback) {
+  db.medic.get(ddoc._id, function(err, oldDdoc) {
+    if (err && err.error !== 'not_found') {
+      return callback(err);
+    }
+    ddoc._rev = oldDdoc && oldDdoc._rev;
+    if (ddoc._id === CLIENT_DDOC_ID) {
+      ddoc.app_settings = settings;
+    }
+    if (oldDdoc && _.isEqual(ddoc, oldDdoc)) {
+      // unmodified
+      return callback();
+    }
+    console.log('Updating ddoc ' + ddoc._id);
+    db.medic.insert(ddoc, callback);
+  });
+};
+
+var updateAll = function(ddocs, callback) {
+  getSettings(function(err, settings) {
+    if (err) {
+      return callback(err);
+    }
+    async.each(ddocs, function(ddoc, cb) {
+      updateIfRequired(settings, ddoc, cb);
+    }, callback);
+  });
 };
 
 module.exports = {
   run: function(callback) {
-    async.waterfall([ getMasterDdoc, extractDdocs, updateAll ], callback);
+    getCompiledDdocs(function(err, ddocs) {
+      if (err) {
+        return callback(err);
+      }
+      if (!ddocs.length) {
+        return callback();
+      }
+      updateAll(ddocs, callback);
+    });
   }
 };
-
-if (process.env.TEST_ENV) {
-  _.extend(module.exports, {
-    ddocNameFromAttachmentName: ddocNameFromAttachmentName,
-    extractDdocs: extractDdocs,
-  });
-}

@@ -590,34 +590,34 @@ proxyForAuditing.on('error', function(err, req, res) {
   serverUtils.serverError(JSON.stringify(err), req, res);
 });
 
-ddocExtraction.run(function(err) {
-  if (err) {
-    console.error('Something went wrong trying to extract ddocs', err);
-  } else {
-    console.log('DDoc extraction completed successfully');
-  }
-});
-
 config.load(function(err) {
   if (err) {
     console.error('Error loading config', err);
     process.exit(1);
   }
-  config.listen();
-  scheduler.init();
-  app.listen(apiPort, function() {
-    console.log('Medic API listening on port ' + apiPort);
-  });
-  translations.run(function(err) {
+  ddocExtraction.run(function(err) {
     if (err) {
-      return console.error('Error merging translations', err);
+      console.error('Something went wrong trying to extract ddocs', err);
+      process.exit(1);
+    } else {
+      console.log('DDoc extraction completed successfully');
     }
-    console.log('Translations merged successfully');
-    migrations.run(function(err) {
+    config.listen();
+    scheduler.init();
+    app.listen(apiPort, function() {
+      console.log('Medic API listening on port ' + apiPort);
+    });
+    translations.run(function(err) {
       if (err) {
-        return console.error(err);
+        return console.error('Error merging translations', err);
       }
-      console.log('Database migrations completed successfully');
+      console.log('Translations merged successfully');
+      migrations.run(function(err) {
+        if (err) {
+          return console.error(err);
+        }
+        console.log('Database migrations completed successfully');
+      });
     });
   });
 });

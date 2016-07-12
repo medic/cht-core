@@ -5,6 +5,7 @@ var sinon = require('sinon'),
     serverUtils = require('../../server-utils'),
     handler = require('../../handlers/changes'),
     db = require('../../db'),
+    ddocId = '_design/medic-client',
     changes;
 
 exports.setUp = function(callback) {
@@ -141,7 +142,7 @@ exports['filters the changes to relevant ones'] = function(test) {
         test.equals(result.results[1].id, allowedId);
         test.equals(db.request.callCount, 1);
         test.equals(db.request.args[0][0].path, '_changes');
-        test.deepEqual(db.request.args[0][0].body.doc_ids, [ deletedId, unchangedId, allowedId, userId ]);
+        test.deepEqual(db.request.args[0][0].body.doc_ids, [ deletedId, unchangedId, allowedId, userId, ddocId ]);
         test.equals(db.request.args[0][0].method, 'POST');
         test.equals(db.request.args[0][0].qs.since, 1);
         test.equals(db.request.args[0][0].qs.heartbeat, 10000);
@@ -150,7 +151,7 @@ exports['filters the changes to relevant ones'] = function(test) {
         test.equals(auth.getFacilityId.args[0][0], testReq);
         test.equals(auth.getFacilityId.args[0][1], userCtx);
         test.equals(db.medic.view.callCount, 1);
-        test.equals(db.medic.view.args[0][0], 'medic');
+        test.equals(db.medic.view.args[0][0], 'medic-client');
         test.equals(db.medic.view.args[0][1], 'doc_by_place');
         test.equals(db.medic.view.args[0][2].keys.length, 2);
         test.equals(db.medic.view.args[0][2].keys[0], '_all');
@@ -337,7 +338,7 @@ exports['updates the feed when the doc is updated'] = function(test) {
         test.equals(result.results[1].id, allowedId);
         test.equals(db.request.callCount, 1);
         test.equals(db.request.args[0][0].path, '_changes');
-        test.deepEqual(db.request.args[0][0].body.doc_ids, [ deletedId, unchangedId, allowedId, userId ]);
+        test.deepEqual(db.request.args[0][0].body.doc_ids, [ deletedId, unchangedId, allowedId, userId, ddocId ]);
         test.equals(db.request.args[0][0].method, 'POST');
         test.equals(db.request.args[0][0].qs.since, 1);
         test.equals(db.request.args[0][0].qs.heartbeat, 10000);
@@ -346,7 +347,7 @@ exports['updates the feed when the doc is updated'] = function(test) {
         test.equals(auth.getFacilityId.args[0][0], testReq);
         test.equals(auth.getFacilityId.args[0][1], userCtx);
         test.equals(db.medic.view.callCount, 1);
-        test.equals(db.medic.view.args[0][0], 'medic');
+        test.equals(db.medic.view.args[0][0], 'medic-client');
         test.equals(db.medic.view.args[0][1], 'doc_by_place');
         test.equals(db.medic.view.args[0][2].keys.length, 2);
         test.equals(db.medic.view.args[0][2].keys[0], '_all');
@@ -457,11 +458,11 @@ exports['replicates new docs to relevant feeds'] = function(test) {
         test.equals(result.results[0].seq, 4);
         test.equals(result.results[0].id, newId);
         test.equals(db.request.callCount, 3); // once for each user, and then once on the change
-        test.deepEqual(db.request.args[0][0].body.doc_ids, [ unchangedId, userId1 ]);
-        test.deepEqual(db.request.args[1][0].body.doc_ids, [ unchangedId, userId2 ]);
-        test.deepEqual(db.request.args[2][0].body.doc_ids, [ unchangedId, newId, userId2 ]);
+        test.deepEqual(db.request.args[0][0].body.doc_ids, [ unchangedId, userId1, ddocId ]);
+        test.deepEqual(db.request.args[1][0].body.doc_ids, [ unchangedId, userId2, ddocId ]);
+        test.deepEqual(db.request.args[2][0].body.doc_ids, [ unchangedId, newId, userId2, ddocId ]);
         test.equals(db.medic.view.callCount, 3);
-        test.equals(db.medic.view.args[0][0], 'medic');
+        test.equals(db.medic.view.args[0][0], 'medic-client');
         test.equals(db.medic.view.args[0][1], 'doc_by_place');
         test.equals(db.medic.view.args[0][2].keys.length, 2);
         test.equals(db.medic.view.args[0][2].keys[0], '_all');

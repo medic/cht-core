@@ -182,6 +182,7 @@ var exportTypes = {
     }
   },
   feedback: {
+    ddoc: 'medic-client',
     view: 'feedback',
     generate: function(rows, options) {
       options.columns = createColumnModels([
@@ -520,7 +521,7 @@ var getRecordsView = function(type, params, callback) {
     options.endkey = [0];
   }
   var actual = type.db || db.medic;
-  actual.view('medic', type.view, options, callback);
+  actual.view(type.ddoc || 'medic', type.view, options, callback);
 };
 
 var getRecords = function(type, params, callback) {

@@ -92,7 +92,7 @@ exports['run returns errors from getting backup files'] = function(test) {
     test.equals(dbAttachment.callCount, 1);
     test.equals(parse.callCount, 1);
     test.equals(dbView.callCount, 1);
-    test.equals(dbView.args[0][0], 'medic');
+    test.equals(dbView.args[0][0], 'medic-client');
     test.equals(dbView.args[0][1], 'doc_by_type');
     test.equals(dbView.args[0][2].key[0], 'translations-backup');
     test.equals(dbView.args[0][2].include_docs, true);
@@ -116,7 +116,7 @@ exports['run returns errors from getting translations files'] = function(test) {
     test.equals(dbAttachment.callCount, 1);
     test.equals(parse.callCount, 1);
     test.equals(dbView.callCount, 2);
-    test.equals(dbView.args[1][0], 'medic');
+    test.equals(dbView.args[1][0], 'medic-client');
     test.equals(dbView.args[1][1], 'doc_by_type');
     test.equals(dbView.args[1][2].startkey[0], 'translations');
     test.equals(dbView.args[1][2].startkey[1], false);

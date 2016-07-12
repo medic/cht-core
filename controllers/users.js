@@ -59,7 +59,7 @@ var getAllUserSettings = function(callback) {
     include_docs: true,
     key: ['user-settings']
   };
-  db.medic.view('medic', 'doc_by_type', opts, function(err, results) {
+  db.medic.view('medic-client', 'doc_by_type', opts, function(err, results) {
     if (err) {
       return callback(err);
     }
@@ -76,7 +76,7 @@ var getAllUsers = function(callback) {
 };
 
 var getFacilities = function(callback) {
-  db.medic.view('medic', 'facilities', {include_docs: true}, function(err, results) {
+  db.medic.view('medic-client', 'facilities', {include_docs: true}, function(err, results) {
     if (err) {
       return callback(err);
     }

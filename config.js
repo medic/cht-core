@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     follow = require('follow'),
     db = require('./db'),
+    ddocExtraction = require('./ddoc-extraction'),
     settings,
     translations = {};
 
@@ -76,7 +77,7 @@ var loadSettings = function(callback) {
 
 var loadTranslations = function() {
   var options = { key: [ 'translations', true ], include_docs: true };
-  db.medic.view('medic', 'doc_by_type', options, function(err, result) {
+  db.medic.view('medic-client', 'doc_by_type', options, function(err, result) {
     if (err) {
       console.error('Error loading translations - starting up anyway', err);
       return;
@@ -123,6 +124,12 @@ module.exports = {
         loadSettings(function(err) {
           if (err) {
             console.error('Failed to reload settings', err);
+            process.exit(1);
+          }
+        });
+        ddocExtraction.run(function(err) {
+          if (err) {
+            console.error('Something went wrong trying to extract ddocs', err);
             process.exit(1);
           }
         });
