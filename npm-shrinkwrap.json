@@ -119,7 +119,7 @@
         "isarray": {
           "version": "1.0.0",
           "from": "isarray@~1.0.0",
-          "resolved": "https://registry.npmjs.org/isarray/-/isarray-1.0.0.tgz"
+          "resolved": "http://registry.npmjs.org/isarray/-/isarray-1.0.0.tgz"
         },
         "jstransform": {
           "version": "11.0.3",
@@ -526,10 +526,25 @@
       "from": "bootstrap@>=3.3.5 <3.4.0",
       "resolved": "http://registry.npmjs.org/bootstrap/-/bootstrap-3.3.6.tgz"
     },
+    "bootstrap-datepicker": {
+      "version": "1.6.1",
+      "from": "bootstrap-datepicker@>=1.6.0 <1.7.0",
+      "resolved": "http://registry.npmjs.org/bootstrap-datepicker/-/bootstrap-datepicker-1.6.1.tgz"
+    },
     "bootstrap-daterangepicker": {
       "version": "2.1.19",
       "from": "bootstrap-daterangepicker@>=2.1.18 <2.2.0",
       "resolved": "http://registry.npmjs.org/bootstrap-daterangepicker/-/bootstrap-daterangepicker-2.1.19.tgz"
+    },
+    "bootstrap-slider-basic": {
+      "version": "3.2.0",
+      "from": "bootstrap-slider-basic@>=3.2.0 <3.3.0",
+      "resolved": "http://registry.npmjs.org/bootstrap-slider-basic/-/bootstrap-slider-basic-3.2.0.tgz"
+    },
+    "bootstrap-timepicker": {
+      "version": "0.2.7",
+      "from": "bootstrap-timepicker@>=0.2.0 <0.3.0",
+      "resolved": "http://registry.npmjs.org/bootstrap-timepicker/-/bootstrap-timepicker-0.2.7.tgz"
     },
     "bootstrap-tour": {
       "version": "0.10.3",
@@ -1353,25 +1368,8 @@
     },
     "enketo-core": {
       "version": "4.5.5",
-      "from": "git://github.com/enketo/enketo-core.git#4.5.5",
-      "resolved": "git://github.com/enketo/enketo-core.git#b1ba22e5957d10fec0064f90567a846feb726921",
-      "dependencies": {
-        "bootstrap-datepicker": {
-          "version": "1.5.1",
-          "from": "bootstrap-datepicker@>=1.5.0 <1.6.0",
-          "resolved": "http://registry.npmjs.org/bootstrap-datepicker/-/bootstrap-datepicker-1.5.1.tgz"
-        },
-        "bootstrap-slider-basic": {
-          "version": "3.2.0",
-          "from": "bootstrap-slider-basic@>=3.2.0 <3.3.0",
-          "resolved": "http://registry.npmjs.org/bootstrap-slider-basic/-/bootstrap-slider-basic-3.2.0.tgz"
-        },
-        "bootstrap-timepicker": {
-          "version": "0.2.7",
-          "from": "bootstrap-timepicker@>=0.2.0 <0.3.0",
-          "resolved": "http://registry.npmjs.org/bootstrap-timepicker/-/bootstrap-timepicker-0.2.7.tgz"
-        }
-      }
+      "from": "enketo-core@4.5.5",
+      "resolved": "http://registry.npmjs.org/enketo-core/-/enketo-core-4.5.5.tgz"
     },
     "enketo-xpathjs": {
       "version": "1.2.4",
@@ -3704,7 +3702,7 @@
         "xtend": {
           "version": "4.0.1",
           "from": "xtend@^4.0.1",
-          "resolved": "https://registry.npmjs.org/xtend/-/xtend-4.0.1.tgz"
+          "resolved": "http://registry.npmjs.org/xtend/-/xtend-4.0.1.tgz"
         }
       }
     },
@@ -5201,7 +5199,7 @@
         "isarray": {
           "version": "1.0.0",
           "from": "isarray@~1.0.0",
-          "resolved": "https://registry.npmjs.org/isarray/-/isarray-1.0.0.tgz"
+          "resolved": "http://registry.npmjs.org/isarray/-/isarray-1.0.0.tgz"
         },
         "readable-stream": {
           "version": "2.1.4",
@@ -5248,7 +5246,7 @@
         "xtend": {
           "version": "4.0.1",
           "from": "xtend@>=4.0.0 <4.1.0",
-          "resolved": "http://registry.npmjs.org/xtend/-/xtend-4.0.1.tgz"
+          "resolved": "https://registry.npmjs.org/xtend/-/xtend-4.0.1.tgz"
         }
       }
     },
@@ -5399,7 +5397,7 @@
         "xtend": {
           "version": "4.0.1",
           "from": "xtend@>=4.0.0 <4.1.0-0",
-          "resolved": "http://registry.npmjs.org/xtend/-/xtend-4.0.1.tgz"
+          "resolved": "https://registry.npmjs.org/xtend/-/xtend-4.0.1.tgz"
         }
       }
     },

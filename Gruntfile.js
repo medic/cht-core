@@ -158,24 +158,6 @@ module.exports = function(grunt) {
             dest: 'static/dist/xslt/'
           }
         ]
-      },
-      // npm v3 puts nested node_modules at the top level. copy the css resources
-      // so sass compilation still works.
-      enketocss: {
-        files: [
-          {
-            src: [
-              'node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.css',
-              'node_modules/bootstrap-timepicker/css/bootstrap-timepicker.css',
-              'node_modules/bootstrap-slider-basic/sass/_bootstrap-slider.scss'
-            ],
-            dest: 'node_modules/enketo-core/',
-            filter: function (filepath) {
-              // return false if the file exists
-              return !grunt.file.exists(path.join('node_modules/enketo-core/', filepath));
-            }
-          }
-        ]
       }
     },
     exec: {
@@ -316,6 +298,15 @@ module.exports = function(grunt) {
       }
     },
     sass: {
+      options: {
+        importer: function(url, prev, done) {
+          // fixes relative enketo-core submodule references in npm 3.x.x
+          if (/\/node_modules\//.test(url) && /\/node_modules\/enketo-core\//.test(prev)) {
+            url = '../../' + url;
+          }
+          done({ file: url });
+        }
+      },
       compile: {
         cwd: 'static/css',
         dest: 'build',
@@ -353,7 +344,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
-    'copy:enketocss',
     'sass',
     'less',
     'postcss'
