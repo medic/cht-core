@@ -1,5 +1,4 @@
-var kansoJson = require('./kanso.json'),
-    path = require('path');
+var kansoJson = require('./kanso.json');
 
 module.exports = function(grunt) {
 
