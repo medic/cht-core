@@ -41,6 +41,11 @@ module.exports = function(grunt) {
       deploy: {
         cmd: 'node server.js'
       }
+    },
+    auto_install: {
+      npm: {
+        bower: false
+      }
     }
   });
 
@@ -48,7 +53,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
   grunt.loadNpmTasks('grunt-env');
-  grunt.loadNpmTasks('grunt-npm-install');
+  grunt.loadNpmTasks('grunt-auto-install');
   grunt.loadNpmTasks('grunt-exec');
 
   // Default tasks
@@ -60,7 +65,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('deploy', [
-    'npm-install',
+    'auto_install:npm',
     'exec:deploy'
   ]);
 };
