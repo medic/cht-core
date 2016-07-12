@@ -72,7 +72,7 @@ var _ = require('underscore');
       var getLanguages = function() {
         $scope.loading = true;
         $q.all([
-          DB().query('medic/doc_by_type', {
+          DB().query('medic-client/doc_by_type', {
             startkey: [ 'translations', false ],
             endkey: [ 'translations', true ],
             include_docs: true

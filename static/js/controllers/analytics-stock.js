@@ -166,7 +166,7 @@ var _ = require('underscore'),
           view = 'data_records_by_form_year_week_facility';
         }
 
-        return DB().query('medic/' + view, params)
+        return DB().query('medic-client/' + view, params)
           .then(function(data) {
             // additional filtering for this facility
             var saved_data = [];

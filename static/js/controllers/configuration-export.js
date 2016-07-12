@@ -46,7 +46,7 @@ var _ = require('underscore'),
 
       'ngInject';
 
-      DB().query('medic/feedback', { include_docs: true, descending: true, limit: 20 })
+      DB().query('medic-client/feedback', { include_docs: true, descending: true, limit: 20 })
         .then(function(data) {
           $scope.feedback = mapFeedback(data);
         })

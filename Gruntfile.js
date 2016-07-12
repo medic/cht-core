@@ -22,6 +22,13 @@ module.exports = function(grunt) {
         }]
       }
     },
+    'couch-compile': {
+      ddocs: {
+        files: {
+          'ddocs/compiled.json': [ 'ddocs/*', '!ddocs/compiled.json' ]
+        }
+      }
+    },
     browserify: {
       options: {
         browserifyOptions: {
@@ -218,6 +225,14 @@ module.exports = function(grunt) {
       other: {
         files: ['lib/**/*'],
         tasks: ['appcache', 'deploy']
+      },
+      compiledddocs: {
+        files: ['ddocs/**/*'],
+        tasks: ['couch-compile', 'deploy']
+      },
+      ddocs: {
+        files: ['kanso.json'],
+        tasks: ['deploy']
       }
     },
     notify_hooks: {
@@ -357,6 +372,7 @@ module.exports = function(grunt) {
     'mmnpm',
     'mmcss',
     'mmjs',
+    'couch-compile',
     'copy:enketoxslt',
     'copy:inbox',
     'appcache'

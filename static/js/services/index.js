@@ -66,7 +66,6 @@
   require('./update-settings');
   require('./update-user');
   require('./user');
-  require('./watch-design-doc');
   require('./web-worker');
   require('./xml-forms');
   require('./xslt');

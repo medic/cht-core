@@ -125,8 +125,8 @@ describe('Facility service', function() {
       }
     };
 
-    dbQuery.withArgs('medic/facilities', {include_docs: true, key: ['clinic']}).returns(KarmaUtils.mockPromise(null, { rows: [ { doc: clinicA }, { doc: clinicB } ] }));
-    dbQuery.withArgs('medic/facilities', {include_docs: true, key: ['health_center']}).returns(KarmaUtils.mockPromise(null, { rows: [ { doc: healthCenter } ] }));
+    dbQuery.withArgs('medic-client/facilities', {include_docs: true, key: ['clinic']}).returns(KarmaUtils.mockPromise(null, { rows: [ { doc: clinicA }, { doc: clinicB } ] }));
+    dbQuery.withArgs('medic-client/facilities', {include_docs: true, key: ['health_center']}).returns(KarmaUtils.mockPromise(null, { rows: [ { doc: healthCenter } ] }));
 
     return service({ types: ['clinic'] }).then(function(actual) {
       chai.expect(actual).to.deep.equal([ clinicA, clinicB ]);

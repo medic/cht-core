@@ -52,7 +52,6 @@ var feedback = require('../modules/feedback'),
       UpdateSettings,
       UpdateUser,
       UserSettings,
-      WatchDesignDoc,
       XmlForms
     ) {
       'ngInject';
@@ -528,7 +527,7 @@ var feedback = require('../modules/feedback'),
       };
 
       DB()
-        .query('medic/doc_by_type', { key: [ 'translations', true ] })
+        .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
         .then(function(result) {
           $scope.enabledLocales = _.pluck(result.rows, 'value');
         });
@@ -799,16 +798,23 @@ var feedback = require('../modules/feedback'),
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
           showUpdateReady();
         }
-        WatchDesignDoc(function() {
-          // if the manifest hasn't changed, prompt user to reload settings
-          window.applicationCache.addEventListener('noupdate', showUpdateReady);
-          // check if the manifest has changed. if it has, download and prompt
-          try {
-            window.applicationCache.update();
-          } catch(e) {
-            // chrome incognito mode active
-            $log.error('Error updating the appcache.', e);
-            showUpdateReady();
+        Changes({
+          key: 'inbox-ddoc',
+          filter: function(change) {
+            console.log('change', change);
+            return change.id === '_design/medic-client';
+          },
+          callback: function() {
+            // if the manifest hasn't changed, prompt user to reload settings
+            window.applicationCache.addEventListener('noupdate', showUpdateReady);
+            // check if the manifest has changed. if it has, download and prompt
+            try {
+              window.applicationCache.update();
+            } catch(e) {
+              // chrome incognito mode active
+              $log.error('Error updating the appcache.', e);
+              showUpdateReady();
+            }
           }
         });
       }

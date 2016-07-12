@@ -26,7 +26,7 @@ angular.module('inboxServices').service('Enketo',
         return;
       }
 
-      DB().query('medic/forms', { key: formInternalId })
+      DB().query('medic-client/forms', { key: formInternalId })
         .then(function(res) {
           if (!res.rows.length) {
             throw new Error('Requested form not found');
@@ -82,7 +82,7 @@ angular.module('inboxServices').service('Enketo',
     var withFormByFormInternalId = function(formInternalId) {
       if (!xmlCache[formInternalId]) {
         xmlCache[formInternalId] = DB()
-          .query('medic/forms', { include_docs: true, key: formInternalId })
+          .query('medic-client/forms', { include_docs: true, key: formInternalId })
           .then(function(res) {
             if (!res.rows.length) {
               throw new Error('Requested form not found');

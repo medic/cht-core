@@ -20,7 +20,7 @@ var _ = require('underscore');
       $scope.updateList = function() {
         $scope.loading = true;
         var params = { include_docs: true, key: ['user-settings'] };
-        DB().query('medic/doc_by_type', params)
+        DB().query('medic-client/doc_by_type', params)
           .then(function(settings) {
             $scope.users = _.pluck(settings.rows, 'doc');
             $scope.loading = false;

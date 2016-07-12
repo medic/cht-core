@@ -29,7 +29,8 @@
         "static/fonts",
         "static/img",
         "templates/inbox.html",
-        "translations"
+        "translations",
+        "ddocs/compiled.json"
     ],
     "changelog": "Changes.md",
     "node_module_folders" : "api,sentinel",
@@ -41,7 +42,6 @@
         "libphonenumber": null,
         "kujua-sms": null,
         "kujua-utils": null,
-        "kujua-reporting": null,
         "cookies": null,
         "kanso-app-settings": null,
         "app-settings": ">=0.0.2",

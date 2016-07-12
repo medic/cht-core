@@ -31,7 +31,7 @@ describe('Search service', function() {
 
     it('returns error when dbQuery errors when no filters', function() {
       GenerateSearchRequests.returns([{
-        view: 'reports_by_date',
+        view: 'medic-client/reports_by_date',
         ordered: true,
         params: {
           descending: true
@@ -51,7 +51,7 @@ describe('Search service', function() {
 
     it('handles no rows when no filters', function() {
       GenerateSearchRequests.returns([{
-        view: 'reports_by_date',
+        view: 'medic-client/reports_by_date',
         ordered: true,
         params: {
           descending: true
@@ -70,7 +70,7 @@ describe('Search service', function() {
     it('returns results when no filters', function() {
       var expected = [ { id: 1 }, { id: 2 } ];
       GenerateSearchRequests.returns([{
-        view: 'reports_by_date',
+        view: 'medic-client/reports_by_date',
         ordered: true,
         params: {
           descending: true
@@ -83,7 +83,7 @@ describe('Search service', function() {
           chai.expect(actual).to.deep.equal(expected);
           chai.expect(GenerateSearchRequests.callCount).to.equal(1);
           chai.expect(dbQuery.callCount).to.equal(1);
-          chai.expect(dbQuery.args[0][0]).to.equal('reports_by_date');
+          chai.expect(dbQuery.args[0][0]).to.equal('medic-client/reports_by_date');
           chai.expect(dbQuery.args[0][1]).to.deep.equal({ descending: true, limit: 50, skip: 0 });
           chai.expect(GetDataRecords.callCount).to.equal(1);
           chai.expect(GetDataRecords.args[0][0]).to.deep.equal([ 3, 4 ]);

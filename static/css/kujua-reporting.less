@@ -1,0 +1,395 @@
+@import "variables";
+
+.content-reporting {
+  margin-top: 100px;
+}
+.incomplete, .not_submitted, .complete {
+  font-size: 1.1em;
+  font-weight: bold;
+}
+
+.incomplete .percent, .incomplete .highlight {
+  color: @red;
+}
+
+.complete .percent, .complete .highlight {
+  color: @green;
+}
+
+.not_submitted .percent, .not_submitted .highlight {
+  color: @grey;
+}
+
+#totals {
+  h3 {
+    font-size: 1em;
+    text-align: center;
+    color: @grey;
+    font-weight: 300;
+    margin: 1.5em 0 0 0;
+    line-height: 1.5em;
+  }
+  h4 {
+    font-size: 4em;
+    text-align: center;
+    margin-top: 1.6em;
+    padding-top: .85em;
+  }
+  .col1 h4 {
+    background: url('../kujua-reporting/img/icon-hospital.png') no-repeat center top;
+  }
+  .col2 h4 {
+    background: url('../kujua-reporting/img/icon-bag.png') no-repeat center top;
+  }
+  .col4 h4 {
+    background: url('../kujua-reporting/img/icon-form.png') no-repeat center top;
+  }
+  .col5 h4 {
+    background: url('../kujua-reporting/img/icon-warn.png') no-repeat center top;
+  }
+  .totals-hc {
+    .col1 h4 {
+      background: url('../kujua-reporting/img/icon-bag.png') no-repeat center top;
+    }
+    .col2 h4 {
+      background: url('../kujua-reporting/img/icon-complete.png') no-repeat center top;
+    }
+    .col4 h4 {
+      background: url('../kujua-reporting/img/icon-form.png') no-repeat center top;
+    }
+    .col5 h4 {
+      background: url('../kujua-reporting/img/icon-warn.png') no-repeat center top;
+    }
+  }
+  .chart {
+    height: 300px;
+    .chartwrapper {
+      margin: 0px auto;
+      width: 220px;
+    }
+  }
+}
+
+#date-nav {
+  margin: 0 auto;
+  padding: 1em 0;
+  clear: both;
+  border-top: 1px solid @lightgrey;
+  border-bottom: 1px solid @lightgrey;
+  .title h3 {
+    color: @grey;
+    font-size: 1.12em;
+    font-weight: normal;
+    margin: 0.7em 1em 0 0;
+  }
+  .row {
+    margin: 0 10px;
+    text-align: center;
+  }
+  .nav {
+    display: inline-block;
+  }
+  .btn-group {
+    margin: 3px;
+  }
+}
+
+#stats {
+  .contact-phone {
+    .add-message {
+      vertical-align: text-bottom;
+    }
+  }
+  table {
+    margin-bottom: 0;
+    .border-radius(0);
+    tr, td {
+      .border-radius(0);
+    }
+    th {
+      background-color: #fff;
+      padding-top: 30px;
+      padding-bottom: 30px;
+      font-size: 1.25em;
+      color: @grey;
+    }
+  }
+
+  td, th {
+    padding: 15px 0 15px 30px;
+    border-left: none;
+    border-right: none;
+    font-size: 1.1em;
+  }
+  .first-column {
+    width: 40%;
+  }
+  .first-column-hc {
+    width: 67%;
+  }
+  .mini-pie {
+    font-size: 2em;
+    margin-top: 5px;
+    &.fa-times {
+      color: @red;
+    }
+    &.fa-check {
+      color: @green;
+    }
+  }
+}
+
+.stats-meta > div {
+  padding: 5px 10px 0;
+}
+
+.stats-meta h2 {
+  color: #a8a8a8;
+  line-height: 1.23em;
+}
+
+#content {
+  .pagination {
+    margin-left: auto;
+    margin-right: auto;
+    width: 26em;
+  }
+
+  .field {
+    padding: 1em 0 0 0;
+    .label label {
+      margin-right: 1em;
+    }
+    .content {
+      margin-left: 0;
+      min-width: 0;
+      .inner span {
+        padding-top: .675em;
+        display: block;
+      }
+    }
+  }
+}
+
+#reporting-data {
+  .data-record {
+    background-color:#ebebeb;
+    .period {
+      color: @gold;
+      font-weight: bold;
+    }
+    .period,
+    .status {
+      text-align: center;
+      color: @grey;
+
+      .important {
+        color: @red;
+      }
+      .success {
+        color: @green;
+      }
+    }
+    .phone {
+      font-family: Georgia, serif;
+      font-weight: normal;
+    }
+  }
+  .not-valid {
+    color: red;
+    font-weight: bold;
+  }
+  .valid {
+    color: @green;
+    font-weight: bold;
+  }
+  tr[rel] {
+    cursor: pointer;
+  }
+  .data-records {
+    padding: 0;
+    td, th {
+      padding: 20px 0 20px 30px;
+      vertical-align: middle;
+    }
+    th {
+      border: none;
+      color: #afafaf;
+    }
+    table {
+      margin: 0;
+    }
+    .data-record[rel] {
+      cursor: pointer;
+    }
+    .data-record-details {
+      font-size: .8em;
+      td, th, .loading {
+        padding: 10px 0 10px 30px;
+      }
+      td:first-child {
+        width: 30%;
+      }
+      > td {
+        padding: 0;
+      }
+      .data-records-table {
+        overflow: auto;
+      }
+      .responses ul, .errors ul {
+        padding: 0;
+        margin: 0;
+        list-style: none;
+        li {
+          padding: 0;
+        }
+      }
+    }
+  }
+  .facility-name {
+    color: @aqua;
+    .facility-clinics {
+      border-left: 1px solid #CCC;
+      padding-left: .5em;
+      margin-left: .25em;
+      color: @grey;
+    }
+  }
+  .valid-reports {
+    color: @grey;
+    em {
+      color: black;
+      font-weight: 600;
+      font-size: 1.1em;
+    }
+  }
+  .valid-percent em {
+    font-style: normal;
+    font-weight: bold;
+    font-size: 1.3em;
+    margin-left: 1em;
+    display: block;
+    float: left;
+    min-width: 52px;
+  }
+  .valid-percent .mini-pie {
+    display: block;
+    float: left;
+    margin-left: 18px;
+    margin-top: -2px;
+  }
+  .facility-link:hover {
+    cursor: pointer;
+  }
+  .facility-link {
+    .name {
+      display: inline-block;
+    }
+    .name:before {
+      font-family: FontAwesome;
+      content: '\f0da';
+      padding: 2px;
+      color: @grayDark;
+    }
+    &.expanded .name:before {
+      content: '\f0d7';
+      padding: 0;
+    }
+    .add-message {
+      vertical-align: text-bottom;
+    }
+  }
+}
+
+.page-header {
+  .reporting {
+    .controls {
+      position: absolute;
+      padding-top: 5px;
+    }
+    .nav.facilities {
+      margin: 0;
+      vertical-align: middle;
+      display: inline-block;
+      text-align: left;
+      font-size: 14px;
+    }
+    h1 {
+      text-align: center;
+    }
+  }
+}
+
+.clinic-data {
+  border-right: 1px solid #DDD;
+}
+.clinic-data #reporting-data .valid-percent em {
+  margin-left: 2em;
+}
+
+.clinic-data #reporting-data .valid-percent .mini-pie {
+  right: 335px;
+}
+
+.pagination .month {
+  display: none;
+  list-style-type: none;
+  float: left;
+}
+
+#reporting-district-choice {
+  padding-bottom: 40px;
+  padding-top: 20px;
+  .form-name {
+    padding: 20px;
+    text-align: center;
+  }
+  .district-name {
+    padding: 10px 0 10px 20px;
+  }
+  .child-name {
+    padding: 15px 0 15px 40px;
+  }
+  .facility {
+    cursor: pointer;
+    &:hover {
+      background-color: @highlight-color;
+    }
+  }
+}
+
+.row.content .reporting {
+  background-color: #FFF;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0em;
+}
+
+.analytics .content .send-message {
+  margin-left: 0.5em;
+}
+
+@media (max-width: 767px) {
+  #stats table {
+    .data-record, thead {
+      font-size: 0.8em;
+    }
+  }
+  #stats td,
+  #stats th,
+  #reporting-data .data-records th,
+  #reporting-data .data-records td,
+  #reporting-data .data-records .data-record-details td,
+  #reporting-data .data-records .data-record-details th,
+  #reporting-data .data-records .data-record-details .loading {
+    padding-left: 10px;
+  }
+  #totals {
+    h4 {
+      font-size: 2em;
+      text-align: center;
+      margin-top: 1em;
+      padding-top: 1.5em;
+    }
+  }
+}

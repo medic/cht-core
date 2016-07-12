@@ -56,7 +56,7 @@ describe('GetDataRecords service', function() {
         .then(function(actual) {
           chai.expect(actual).to.equal(null);
           chai.expect(query.callCount).to.equal(1);
-          chai.expect(query.args[0][0]).to.equal('medic/doc_summaries_by_id');
+          chai.expect(query.args[0][0]).to.equal('medic-client/doc_summaries_by_id');
           chai.expect(query.args[0][1]).to.deep.equal({ keys: [[ '5' ]] });
           chai.expect(allDocs.callCount).to.equal(0);
         });
@@ -70,7 +70,7 @@ describe('GetDataRecords service', function() {
         .then(function(actual) {
           chai.expect(actual).to.deep.equal({ _id: '5', name: 'five' });
           chai.expect(query.callCount).to.equal(1);
-          chai.expect(query.args[0][0]).to.equal('medic/doc_summaries_by_id');
+          chai.expect(query.args[0][0]).to.equal('medic-client/doc_summaries_by_id');
           chai.expect(query.args[0][1]).to.deep.equal({ keys: [[ '5' ]] });
           chai.expect(allDocs.callCount).to.equal(0);
         });
@@ -90,7 +90,7 @@ describe('GetDataRecords service', function() {
             { _id: '7', name: 'seven' }
           ]);
           chai.expect(query.callCount).to.equal(1);
-          chai.expect(query.args[0][0]).to.equal('medic/doc_summaries_by_id');
+          chai.expect(query.args[0][0]).to.equal('medic-client/doc_summaries_by_id');
           chai.expect(query.args[0][1]).to.deep.equal({ keys: [[ '5' ], [ '6' ], [ '7' ]] });
           chai.expect(allDocs.callCount).to.equal(0);
         });

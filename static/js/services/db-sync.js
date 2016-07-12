@@ -56,6 +56,12 @@ var _ = require('underscore'),
           })
           .then(function() {
             return keys;
+          })
+          .catch(function(err) {
+            // allow some replication otherwise the user can get stuck
+            // unable to fix their own configuration
+            $log.error('Error fetching sync options - using with minimum options', err);
+            return [ ALL_KEY ];
           });
       };
 
@@ -73,7 +79,7 @@ var _ = require('underscore'),
         }
         return getViewKeys()
           .then(function(keys) {
-            return DB().query('medic/doc_by_place', { keys: keys });
+            return DB().query('medic-client/doc_by_place', { keys: keys });
           })
           .then(function(viewResult) {
             var userCtx = Session.userCtx();

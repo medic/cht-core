@@ -51,7 +51,7 @@ var _ = require('underscore');
 
       var updateTranslations = function() {
         return DB()
-          .query('medic/doc_by_type', {
+          .query('medic-client/doc_by_type', {
             startkey: [ 'translations', false ],
             endkey: [ 'translations', true ],
             include_docs: true

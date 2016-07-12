@@ -12,7 +12,7 @@
         stats.timestamp = Date.now();
 
         DB()
-          .query('medic/doc_by_type', { key: [ 'traffic_stats' ], include_docs: true })
+          .query('medic-client/doc_by_type', { key: [ 'traffic_stats' ], include_docs: true })
           .then(function(res) {
             var doc;
             if (res.rows.length > 1) {

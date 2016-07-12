@@ -54,7 +54,7 @@ var _ = require('underscore');
 
       $scope.help_loading = true;
 
-      var helpPageGet = DB().query('medic/help_pages');
+      var helpPageGet = DB().query('medic-client/help_pages');
 
       $q.all([ helpPageGet, Language() ])
         .then(function(results) {

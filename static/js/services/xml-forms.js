@@ -32,7 +32,7 @@ var _ = require('underscore');
 
       var getForms = function() {
         return DB()
-          .query('medic/forms', { include_docs: true })
+          .query('medic-client/forms', { include_docs: true })
           .then(function(res) {
             return res.rows
               .filter(function(row) {

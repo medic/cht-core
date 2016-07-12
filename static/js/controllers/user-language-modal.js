@@ -20,7 +20,7 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
     'ngInject';
 
     DB()
-      .query('medic/doc_by_type', { key: [ 'translations', true ] })
+      .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
       .then(function(result) {
         $scope.enabledLocales = _.pluck(result.rows, 'value');
       });

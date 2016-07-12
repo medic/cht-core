@@ -11,7 +11,7 @@ var _ = require('underscore');
     function(DB) {
       return function(params, callback) {
         DB()
-          .query('medic/data_records_by_contact', params)
+          .query('medic-client/data_records_by_contact', params)
           .then(function(res) {
             callback(null, res.rows);
           })
