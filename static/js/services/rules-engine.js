@@ -1,7 +1,6 @@
 var nools = require('nools'),
     _ = require('underscore'),
     // number of weeks before reported date to assume for start of pregnancy
-    NO_LMP_DATE_MODIFIER = 4,
     KNOWN_TYPES = ['task', 'target'];
 
 (function () {
@@ -40,74 +39,7 @@ var nools = require('nools'),
       var flow;
       var Contact;
 
-      var getUtils = function(settings) {
-        return {
-          isTimely: function(date, event) {
-            var due = new Date(date);
-            var start = this.addDate(null, event.start);
-            var end = this.addDate(null, (event.end + 1) * -1);
-            return due.getTime() < start.getTime() && due.getTime() > end.getTime();
-          },
-          addDate: function(date, days) {
-            var result;
-            if (date) {
-              result = new Date(date.getTime());
-            } else {
-              result = new Date();
-            }
-            result.setDate(result.getDate() + days);
-            return result;
-          },
-          getLmpDate: function(doc) {
-            var weeks = doc.fields.last_menstrual_period || NO_LMP_DATE_MODIFIER;
-            return this.addDate(new Date(doc.reported_date), weeks * -7);
-          },
-          getSchedule: function(name) {
-            return _.findWhere(settings.tasks.schedules, { name: name });
-          },
-          getMostRecentTimestamp: function(reports, form) {
-            var report = this.getMostRecentReport(reports, form);
-            return report && report.reported_date;
-          },
-          getMostRecentReport: function(reports, form) {
-            var result = null;
-            reports.forEach(function(report) {
-              if (report.form === form &&
-                 (!result || report.reported_date > result.reported_date)) {
-                result = report;
-              }
-            });
-            return result;
-          },
-          isFormSubmittedInWindow: function(reports, form, start, end, count) {
-            var result = false;
-            reports.forEach(function(report) {
-              if (!result && report.form === form) {
-                if (report.reported_date >= start && report.reported_date <= end) {
-                  if (!count ||
-                     (count && report.fields && report.fields.follow_up_count > count)) {
-                    result = true;
-                  }
-                }
-              }
-            });
-            return result;
-          },
-          isFirstReportNewer: function(firstReport, secondReport) {
-            if (firstReport && firstReport.reported_date) {
-              if (secondReport && secondReport.reported_date) {
-                return firstReport.reported_date > secondReport.reported_date;
-              }
-              return true;
-            }
-            return null;
-          },
-          isDateValid: function(date) {
-            return !isNaN(date.getTime());
-          },
-          MS_IN_DAY: 24*60*60*1000 // 1 day in ms
-        };
-      };
+      var nootils = require('../modules/nootils');
 
       var getContactId = function(doc) {
         // get the associated patient or place id to group reports by
@@ -257,7 +189,7 @@ var nools = require('nools'),
         if (!flow) {
           flow = nools.compile(settings.tasks.rules, {
             name: 'medic',
-            scope: { Utils: getUtils(settings) }
+            scope: { Utils: nootils(settings) }
           });
         }
         Contact = flow.getDefined('contact');
