@@ -26,8 +26,6 @@ You will need to install the following:
 
 [CouchDB](http://couchdb.apache.org) v1.6.1
 
-[couchdb-lucene](https://github.com/rnewson/couchdb-lucene) v1.0.2 or greater
-
 ### Setup CouchDB
 
 Setup admin access:
@@ -68,31 +66,6 @@ npm install kanso -g
 
 ```
 npm install grunt-cli -g
-```
-
-### Configure Lucene
-
-Add the following to CouchDB's `httpd_global_handlers` configuration section:
-
-```
-_fti = {couch_httpd_proxy, handle_proxy_req, <<"http://127.0.0.1:5985">>}
-```
-
-Update `$lucene_home/conf/couchdb-lucene.ini` so the URL has credentials, e.g.:
-
-```
-url=http://admin:pass@localhost:5984/
-```
-
-Start lucene using the `$lucene_home/bin/run` script.
-
-You should now see an identical welcome message at two different URLs:
-
-```
-curl http://localhost:5985
-{"couchdb-lucene":"Welcome","version":"1.0.2"}
-curl http://localhost:5984/_fti
-{"couchdb-lucene":"Welcome","version":"1.0.2"}
 ```
 
 ## Develop
