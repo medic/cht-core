@@ -12,8 +12,6 @@ EOF
 fi
 
 testScript="$1"
-taskRules="$2"
-taskSchedules="$3"
 
 # Force node_modules resolution relative to the current working directory.
 # This allows test scripts to pick up the dependency versions supplied by webapp
