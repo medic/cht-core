@@ -274,11 +274,11 @@ var _ = require('underscore'),
         validatePhoneNumbers, $phoneField, $phoneField.select2('data')
       );
       if (!result.valid) {
-        return;
+        return result;
       }
       validated = result.value;
     }
-    resolveRecipients(validated)
+    return resolveRecipients(validated)
       .then(function(recipients) {
         return {
           valid: true,
