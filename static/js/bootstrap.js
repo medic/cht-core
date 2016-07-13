@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    utils = require('kujua-utils');
+var utils = require('kujua-utils');
 
 (function () {
 
@@ -61,22 +60,12 @@ var _ = require('underscore'),
       })
       .then(function() {
         var duration = Date.now() - dbSyncStartTime;
-        console.info('Initial sync finished in ' + (duration / 1000) + ' seconds')
+        console.info('Initial sync finished in ' + (duration / 1000) + ' seconds');
         if (dbSyncStartData) {
           var dbSyncEndData = getDataUsage();
           var rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
           console.info('Initial sync received ' + rx + 'B of data');
         }
-      })
-  };
-
-  var replicateDdoc = function(db) {
-    return db.remote
-      .get('_design/medic-client')
-      .then(function(ddoc) {
-        var minimal = _.pick(ddoc, '_id', 'app_settings', 'views');
-        minimal.remote_rev = ddoc._rev;
-        return db.local.put(minimal);
       });
   };
 
@@ -102,10 +91,6 @@ var _ = require('underscore'),
         // no ddoc found - do replication
         initialReplication(db, username)
           .then(function() {
-            return replicateDdoc(db);
-          })
-          .then(function() {
-            console.log('Local DDOC stored - starting app');
             // replication complete - bootstrap angular
             callback();
           })

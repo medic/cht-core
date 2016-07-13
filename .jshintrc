@@ -79,6 +79,7 @@
         "angular"   : true,
         "moment"    : true,
         "medicmobile_android": true,
-        "Tour"      : true
+        "Tour"      : true,
+        "unescape"  : true
     }
 }
