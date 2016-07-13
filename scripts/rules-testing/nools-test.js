@@ -9,7 +9,7 @@ function traverse(keys, element) {
   var key = keys.shift();
   if(!key || typeof element === 'undefined') return element;
   if(key === '*') {
-          return _.map(element, function(e) { return traverse(keys, e); });
+    return _.map(element, function(e) { return traverse(keys, e); });
   }
   return traverse(keys, element[key]);
 }
