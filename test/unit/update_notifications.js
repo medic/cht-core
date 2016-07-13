@@ -104,6 +104,92 @@ exports['no configured on or off form returns false'] = function(test) {
     });
 };
 
+exports['add error when event type not found'] = function(test) {
+    var doc = {};
+    var config = {
+        messages: [{
+            event_type: 'biz',
+            message: [{
+                content: 'baz',
+                locale: 'en'
+            }]
+        }]
+    };
+    transition._addErr('foo', config, doc);
+    test.same(doc.errors[0], {
+        code:'invalid_report',
+        message: 'Failed to complete notification request, event type "foo" misconfigured.'
+    });
+    test.done();
+};
+
+exports['add error when event type message not found'] = function(test) {
+    var doc = {};
+    var config = {
+        messages: [{
+            event_type: 'foo',
+            message: []
+        }]
+    };
+    transition._addErr('foo', config, doc);
+    test.same(doc.errors[0], {
+        code:'invalid_report',
+        message: 'Failed to complete notification, event type "foo" misconfigured.'
+    });
+    test.done();
+};
+
+exports['add message creates error when event type not found'] = function(test) {
+    var doc = {};
+    var config = {
+        messages: [{
+            event_type: 'biz',
+            message: [{
+                content: 'baz',
+                locale: 'en'
+            }]
+        }]
+    };
+    transition._addMsg('foo', config, doc);
+    test.same(doc.errors[0], {
+        code:'invalid_report',
+        message: 'Failed to complete notification request, event type "foo" misconfigured.'
+    });
+    test.done();
+};
+
+exports['add message creates error when event type message not found'] = function(test) {
+    var doc = {};
+    var config = {
+        messages: [{
+            event_type: 'foo',
+            message: []
+        }]
+    };
+    transition._addMsg('foo', config, doc);
+    test.same(doc.errors[0], {
+        code:'invalid_report',
+        message: 'Failed to complete notification request, event type "foo" misconfigured.'
+    });
+    test.done();
+};
+
+exports['add error when event type message not found'] = function(test) {
+    var doc = {};
+    var config = {
+        messages: [{
+            event_type: 'foo',
+            message: []
+        }]
+    };
+    transition._addErr('foo', config, doc);
+    test.same(doc.errors[0], {
+        code:'invalid_report',
+        message: 'Failed to complete notification request, event type "foo" misconfigured.'
+    });
+    test.done();
+};
+
 exports['no configured on or off message returns false'] = function(test) {
     sinon.stub(transition, 'getConfig').returns({ off_form: 'off' });
     transition.onMatch({

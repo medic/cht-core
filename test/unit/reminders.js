@@ -121,8 +121,10 @@ exports['runReminder decorates options with moment if found'] = function(test) {
 };
 
 exports['does not match reminder if in next minute'] = function(test) {
-    var window = sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour')),
+    var past = moment().subtract(1, 'hour'),
         now = moment();
+
+    var window = sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, past);
 
     reminders.matchReminder({
         reminder: {

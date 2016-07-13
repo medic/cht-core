@@ -1,6 +1,5 @@
 var _ = require('underscore'),
     moment = require('moment'),
-    phoneUtil = require('google-libphonenumber').PhoneNumberUtil.getInstance(),
     config = require('../config'),
     utils = require('../lib/utils'),
     logger = require('../lib/logger'),
@@ -30,11 +29,9 @@ module.exports = {
      * Avoid infinite loops of auto-reply messages between gateway and itself.
      */
     _isMessageFromGateway: function(doc) {
-        var self = module.exports,
-            gw = self._getConfig('gateway_number'),
-            from = doc.sms_message && doc.sms_message.from;
-        if (typeof gw === 'string' && typeof from === 'string') {
-            return phoneUtil.isNumberMatch(gw, from) >= 3;
+        var from = doc.sms_message && doc.sms_message.from;
+        if (typeof from === 'string') {
+            return utils._isMessageFromGateway(from);
         }
         return false;
     },
@@ -88,11 +85,12 @@ module.exports = {
         return utils.translate(key, locale);
     },
     _addMessage: function(doc, msg) {
-        messages.addMessage({
-            doc: doc,
-            phone: doc.from,
-            message: msg
-        });
+        var opts = {
+                doc: doc,
+                phone: doc.from,
+                message: msg
+            };
+        messages.addMessage(opts);
     },
     onMatch: function(change, db, audit, callback) {
 
