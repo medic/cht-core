@@ -159,55 +159,53 @@ var _ = require('underscore'),
     return data;
   };
 
-  var initPhoneField = function($phone, callback) {
-    if (!$phone) {
-      return;
+  var initPhoneField = function($phone) {
+    if (!$phone.length) {
+      throw new Error('phone field not found');
     }
     $phone.parent().show();
-    contact(function(err, data) {
-      if (err) {
-        return callback(err);
-      }
-      $phone.select2({
-        ajax: {
-          transport: function(params, successCb) {
-            successCb({ results: filter({ term: params.data.q }, data)});
-          }
-        },
-        allowClear: true,
-        tags: true,
-        createSearchChoice: createChoiceFromNumber,
-        dropdownParent: $('#send-message'),
-        templateResult: formatResult,
-        templateSelection: formatSelection,
-        width: '100%',
+    return contact()
+      .then(function(data) {
+        $phone.select2({
+          ajax: {
+            transport: function(params, successCb) {
+              successCb({ results: filter({ term: params.data.q }, data)});
+            }
+          },
+          allowClear: true,
+          tags: true,
+          createSearchChoice: createChoiceFromNumber,
+          dropdownParent: $('#send-message'),
+          templateResult: formatResult,
+          templateSelection: formatSelection,
+          width: '100%',
+        });
       });
-      callback();
-    });
   };
 
   exports.showModal = function(options) {
-    initPhoneField($('#send-message [name=phone]'), function(err) {
-      if (err) {
-        return console.error('Error initialising phone search');
-      }
-      var $modal = $('#send-message');
-      $modal.find('.has-error').removeClass('has-error');
-      $modal.find('.help-block').text('');
-      var val = [],
-          to = options.to;
-      if (to) {
-        if (typeof to === 'string') {
-          val.push(to);
-        } else if (to) {
-          val.push(to._id);
+    initPhoneField($('#send-message [name=phone]'))
+      .then(function() {
+        var $modal = $('#send-message');
+        $modal.find('.has-error').removeClass('has-error');
+        $modal.find('.help-block').text('');
+        var val = [],
+            to = options.to;
+        if (to) {
+          if (typeof to === 'string') {
+            val.push(to);
+          } else if (to) {
+            val.push(to._id);
+          }
         }
-      }
-      $modal.find('[name=phone]').val(val).trigger('change');
-      $modal.find('[name=message]').val(options.message || '');
-      $modal.find('.count').text('');
-      $modal.modal('show');
-    });
+        $modal.find('[name=phone]').val(val).trigger('change');
+        $modal.find('[name=message]').val(options.message || '');
+        $modal.find('.count').text('');
+        $modal.modal('show');
+      })
+      .catch(function(err) {
+        console.error('Error initialising phone search', err);
+      });
   };
 
   var contact;
@@ -250,27 +248,25 @@ var _ = require('underscore'),
     recipients = _recipients;
   };
 
-  var resolveRecipients = function(recipients, callback) {
-    contact(function(err, contacts) {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, _.map(recipients, function(recipient) {
-        // see if we can resolve the facility
-        var phone = (recipient.doc && recipient.doc.phone) ||
-                    (recipient.doc && recipient.doc.contact.phone) ||
-                    (recipient.phone) ||
-                    (recipient.contact.phone);
-        var match = _.find(contacts, function(contact) {
-          return contact.phone === phone &&
-                 contact.everyoneAt === recipient.everyoneAt;
+  var resolveRecipients = function(recipients) {
+    return contact()
+      .then(function(contacts) {
+        return _.map(recipients, function(recipient) {
+          // see if we can resolve the facility
+          var phone = (recipient.doc && recipient.doc.phone) ||
+                      (recipient.doc && recipient.doc.contact.phone) ||
+                      (recipient.phone) ||
+                      (recipient.contact.phone);
+          var match = _.find(contacts, function(contact) {
+            return contact.phone === phone &&
+                   contact.everyoneAt === recipient.everyoneAt;
+          });
+          return match || recipient;
         });
-        return match || recipient;
-      }));
-    });
+      });
   };
 
-  var validateRecipients = function($modal, callback) {
+  var validateRecipients = function($modal) {
     var validated = recipients;
     if ($modal.is('.modal')) {
       var $phoneField = $modal.find('[name=phone]');
@@ -278,19 +274,17 @@ var _ = require('underscore'),
         validatePhoneNumbers, $phoneField, $phoneField.select2('data')
       );
       if (!result.valid) {
-        return callback(result);
+        return;
       }
       validated = result.value;
     }
-    resolveRecipients(validated, function(err, recipients) {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, {
-        valid: true,
-        value: recipients
+    resolveRecipients(validated)
+      .then(function(recipients) {
+        return {
+          valid: true,
+          value: recipients
+        };
       });
-    });
   };
 
   exports.validate = function(target, callback) {
@@ -307,15 +301,12 @@ var _ = require('underscore'),
       validateMessage, $messageField, $messageField.val().trim()
     );
 
-    validateRecipients($modal, function(err, phone) {
-      if (err) {
-        return;
-      }
-      if (phone.valid && message.valid) {
-        callback(phone.value, message.value);
-      }
-    });
-
+    validateRecipients($modal)
+      .then(function(phone) {
+        if (phone.valid && message.valid) {
+          callback(phone.value, message.value);
+        }
+      });
   };
 
 }());
