@@ -227,12 +227,8 @@ exports['pass uniqueWithin validation on old doc'] = function(test) {
         _id: 'same',
         xyz: '444'
     };
-    //exists args { '0': { _id: 'same', xyz: '444', xyz_uniqueWithin: '' },
-    //    '1': 'xyz:"444" AND reported_date<date>:[1969-12-17T23:00:00.000 TO 3000-01-01T00:00:00]',
-    //      '2': [Function] }
     validation.validate(doc, validations, function(errors) {
         var start = moment().subtract(2, 'weeks').toISOString().replace(/Z$/,'');
-        //test.ok(fti.calledWith('data_records'));
         test.ok(fti.calledWith('data_records', {
             q: 'xyz:"444" AND reported_date<date>:[' + start + ' TO 3000-01-01T00:00:00]',
             include_docs: true
