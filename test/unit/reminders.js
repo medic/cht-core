@@ -128,7 +128,8 @@ exports['does not match reminder if in next minute'] = function(test) {
 
     reminders.matchReminder({
         reminder: {
-            cron: (now.minutes() + 1) + ' ' + now.format('HH * * *') // will generate cron job matching the current hour but 1 minute into future
+             // generate cron job 1 minute into future
+            cron: now.clone().add(1, 'minute').format('m HH * * *')
         }
     }, function(err, matches) {
         test.equals(err, null);
