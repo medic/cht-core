@@ -33,7 +33,7 @@ exports.tearDown = function (callback) {
 exports['allows "can_access_directly" users direct access'] = function(test) {
   test.expect(2);
 
-  var testReq = 'fake request';
+  var testReq = { query:{} };
   var testRes = 'fake response';
 
   var userCtx = 'fake userCtx';
@@ -440,7 +440,8 @@ exports['replicates new docs to relevant feeds'] = function(test) {
       setTimeout(function() { // timeout to make sure nothing else tries to respond
         test.done(new Error('First user should not be told about new doc'));
       });
-    }
+    },
+    setHeader: function() {},
   };
 
   var result = '';
@@ -471,7 +472,8 @@ exports['replicates new docs to relevant feeds'] = function(test) {
         test.equals(db.medic.view.args[2][2].keys[1], 'b');
         test.done();
       });
-    }
+    },
+    setHeader: function() {},
   };
   handler.request({}, testReq, testRes1); // first user
   handler.request({}, testReq, testRes2); // second user
@@ -547,7 +549,8 @@ exports['cleans up when the client connection is closed - #2476'] = function(tes
 
   var testRes = {
     type: function() {},
-    writeHead: function() {}
+    writeHead: function() {},
+    setHeader: function() {},
   };
   handler.request({}, testReq, testRes);
 
