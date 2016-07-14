@@ -801,7 +801,6 @@ var feedback = require('../modules/feedback'),
         Changes({
           key: 'inbox-ddoc',
           filter: function(change) {
-            console.log('change', change);
             return change.id === '_design/medic-client';
           },
           callback: function() {
