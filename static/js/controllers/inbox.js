@@ -788,6 +788,16 @@ var feedback = require('../modules/feedback'),
         }, 2 * 60 * 60 * 1000);
       };
 
+      Changes({
+        key: 'inbox-translations',
+        filter: function(change) {
+          return change.doc.type === 'translations';
+        },
+        callback: function(change) {
+          $translate.refresh(change.doc.code);
+        }
+      });
+
       if (window.applicationCache) {
         window.applicationCache.addEventListener('updateready', showUpdateReady);
         window.applicationCache.addEventListener('error', function(err) {
