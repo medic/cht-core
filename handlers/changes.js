@@ -238,6 +238,14 @@ module.exports = {
       if (err) {
         return serverUtils.error(err, req, res);
       }
+
+      if (req.query.feed === 'longpoll' ||
+          req.query.feed === 'continuous' ||
+          req.query.feed === 'eventsource') {
+        // Disable nginx proxy buffering to allow hearbeats for long-running feeds
+        res.setHeader('X-Accel-Buffering', 'no');
+      }
+
       if (auth.hasAllPermissions(userCtx, 'can_access_directly') ||
           (req.query.filter === '_doc_ids' && req.query.doc_ids === '["_design/medic"]')) {
         proxy.web(req, res);
