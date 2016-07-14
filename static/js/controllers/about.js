@@ -21,11 +21,25 @@ var _ = require('underscore');
 
       $scope.url = window.location.hostname;
       $scope.userCtx = Session.userCtx();
-      DB().get('_design/medic')
-        .then(function(ddoc) {
-          var rev = ddoc.remote_rev || ddoc._rev;
-          $scope.ddocVersion = rev.split('-')[0];
+
+      DB({remote: true}).allDocs({keys: ['_design/medic']})
+        .then(function(info) {
+          $scope.ddocVersion = info.rows[0].value.rev.split('-')[0];
+        })
+        .catch(function(err) {
+          $log.debug('Couldnt access _design/medic for about section', err);
+          $scope.ddocVersion = 'offline'; // TODO translate?
         });
+
+      DB().allDocs({keys: ['_design/medic-client']})
+        .then(function(info) {
+          $scope.clientDdocVersion = info.rows[0].value.rev.split('-')[0];
+        })
+        .catch(function(err) {
+          $log.debug('Couldnt access _design/medic-client for about section', err);
+          $scope.clientDdocVersion = 'offline'; // TODO translate?
+        });
+
       $scope.reload = function() {
         window.location.reload(false);
       };
