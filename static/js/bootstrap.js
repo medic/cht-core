@@ -42,7 +42,7 @@ var utils = require('kujua-utils');
 
   var initialReplication = function(db, username) {
     if (utils.isUserAdmin(getUserCtx())) {
-      return window.PouchDB.utils.Promise.resolve();
+      return require('pouchdb-promise').resolve();
     }
     var dbSyncStartTime = Date.now();
     var dbSyncStartData = getDataUsage();
