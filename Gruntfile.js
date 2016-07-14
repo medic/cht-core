@@ -232,6 +232,10 @@ module.exports = function(grunt) {
       ddocs: {
         files: ['kanso.json'],
         tasks: ['deploy']
+      },
+      translations: {
+        files: ['translations/*'],
+        tasks: ['deploy']
       }
     },
     notify_hooks: {
