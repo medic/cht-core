@@ -71,9 +71,9 @@ var _ = require('underscore');
           })
           .catch(function(err) {
             if (err.status !== 401) {
-              // unauthorized - not an admin
               throw err;
             }
+            // else unauthorized - not an admin
           });
       };
 
