@@ -135,7 +135,7 @@ var _ = require('underscore'),
         replicate('to', successCallback, {
           filter: function(doc) {
             // don't try to replicate ddoc back to the server
-            return doc._id !== '_design/medic';
+            return doc._id !== '_design/medic-client';
           }
         });
       };
