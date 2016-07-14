@@ -17,7 +17,7 @@ var _ = require('underscore'),
         });
       };
 
-      var getViewForMultidropdown = function(view, filter, mapKeys) {
+      var getListForMultidropdown = function(list, filter, mapKeys) {
         if (!filter || !filter.selected) {
           return;
         }
@@ -25,7 +25,7 @@ var _ = require('underscore'),
            (!filter.options || filter.selected.length < filter.options.length)) {
 
           return {
-            view: view,
+            list: list,
             params: {
               keys: mapKeys(filter.selected)
             }
@@ -33,10 +33,10 @@ var _ = require('underscore'),
         }
       };
 
-      var getViewForTernarySelect = function(view, value) {
+      var getListForTernarySelect = function(list, value) {
         if (value === true || value === false) {
           return {
-            view: view,
+            list: list,
             params: {
               key: [ value ]
             }
@@ -44,7 +44,7 @@ var _ = require('underscore'),
         }
       };
 
-      var reportedDate = function(filters, view) {
+      var reportedDate = function(filters, list) {
         var dateRange = filters.date;
         if (!dateRange || (!dateRange.to && !dateRange.from)) {
           return;
@@ -53,7 +53,7 @@ var _ = require('underscore'),
         var to = moment(dateRange.to).add(1, 'days');
         var from = moment(dateRange.from || 0);
         return {
-          view: view,
+          list: list,
           params: {
             startkey: [ from.valueOf() ],
             endkey: [ to.valueOf() ]
@@ -61,27 +61,27 @@ var _ = require('underscore'),
         };
       };
 
-      var form = function(filters, view) {
-        return getViewForMultidropdown(view, filters.forms, function(forms) {
+      var form = function(filters, list) {
+        return getListForMultidropdown(list, filters.forms, function(forms) {
           return _.map(forms, function(form) {
             return [ form.code ];
           });
         });
       };
 
-      var validity = function(filters, view) {
-        return getViewForTernarySelect(view, filters.valid);
+      var validity = function(filters, list) {
+        return getListForTernarySelect(list, filters.valid);
       };
 
-      var verification = function(filters, view) {
-        return getViewForTernarySelect(view, filters.verified);
+      var verification = function(filters, list) {
+        return getListForTernarySelect(list, filters.verified);
       };
 
-      var place = function(filters, view) {
-        return getViewForMultidropdown(view, filters.facilities, getKeysArray);
+      var place = function(filters, list) {
+        return getListForMultidropdown(list, filters.facilities, getKeysArray);
       };
 
-      var freetext = function(filters, view) {
+      var freetext = function(filters, list) {
         if (filters.search) {
           var words = filters.search.toLowerCase().split(/\s+/);
           return words.map(function(word) {
@@ -95,73 +95,73 @@ var _ = require('underscore'),
               params.endkey = [ word + END_OF_ALPHABET ];
             }
             return {
-              view: view,
+              list: list,
               params: params
             };
           });
         }
       };
 
-      var subject = function(filters, view) {
+      var subject = function(filters, list) {
         var subjectIds = filters.subjectIds;
         if (!subjectIds || !subjectIds.length) {
           return;
         }
         return {
-          view: view,
+          list: list,
           params: {
             keys: getKeysArray(subjectIds)
           }
         };
       };
 
-      var documentType = function(filters, view) {
-        return getViewForMultidropdown(view, filters.types, getKeysArray);
+      var documentType = function(filters, list) {
+        return getListForMultidropdown(list, filters.types, getKeysArray);
       };
 
       var types = {
         reports: function(filters) {
           var requests = [];
-          requests.push(reportedDate(filters, 'medic-client/reports_by_date'));
-          requests.push(form(filters, 'medic-client/reports_by_form'));
-          requests.push(validity(filters, 'medic-client/reports_by_validity'));
-          requests.push(verification(filters, 'medic-client/reports_by_verification'));
-          requests.push(place(filters, 'medic-client/reports_by_place'));
-          requests.push(freetext(filters, 'medic-client/reports_by_freetext'));
-          requests.push(subject(filters, 'medic-client/reports_by_subject'));
+          requests.push(reportedDate(filters, 'medic-client/sort_by_value/reports_by_date'));
+          requests.push(form(filters, 'medic-client/sort_by_value/reports_by_form'));
+          requests.push(validity(filters, 'medic-client/sort_by_value/reports_by_validity'));
+          requests.push(verification(filters, 'medic-client/sort_by_value/reports_by_verification'));
+          requests.push(place(filters, 'medic-client/sort_by_value/reports_by_place'));
+          requests.push(freetext(filters, 'medic-client/sort_by_value/reports_by_freetext'));
+          requests.push(subject(filters, 'medic-client/sort_by_value/reports_by_subject'));
           requests = _.compact(_.flatten(requests));
           if (!requests.length) {
             requests.push({
-              view: 'medic-client/reports_by_date',
+              list: 'medic-client/sort_by_value/reports_by_date',
               ordered: true,
-              params: { descending: true }
+              params: { desc: true }
             });
           }
           return requests;
         },
         contacts: function(filters) {
-          var placeViews = place(filters, 'medic-client/contacts_by_place');
-          var typeViews = documentType(filters, 'medic-client/contacts_by_type');
-          var freetextViews = freetext(filters, 'medic-client/contacts_by_freetext');
-          if (!placeViews &&
-              typeViews && typeViews.params.keys.length &&
-              freetextViews && freetextViews.length) {
-            return freetextViews.map(function(freetextView) {
+          var placeLists = place(filters, 'medic-client/sort_by_value/contacts_by_place');
+          var typeLists = documentType(filters, 'medic-client/sort_by_value/contacts_by_type');
+          var freetextLists = freetext(filters, 'medic-client/sort_by_value/contacts_by_freetext');
+          if (!placeLists &&
+              typeLists && typeLists.params.keys.length &&
+              freetextLists && freetextLists.length) {
+            return freetextLists.map(function(freetextList) {
               var result = {
-                view: 'medic-client/contacts_by_type_freetext',
-                union: typeViews.params.keys.length > 1
+                list: 'medic-client/sort_by_value/contacts_by_type_freetext',
+                union: typeLists.params.keys.length > 1
               };
               if (result.union) {
                 result.params = [];
               }
-              typeViews.params.keys.forEach(function(typeKey) {
+              typeLists.params.keys.forEach(function(typeKey) {
                 var type = typeKey[0];
                 var params = {};
-                if (freetextView.key) {
-                  params.key = [ type, freetextView.params.key[0] ];
+                if (freetextList.key) {
+                  params.key = [ type, freetextList.params.key[0] ];
                 } else {
-                  params.startkey = [ type, freetextView.params.startkey[0] ];
-                  params.endkey = [ type, freetextView.params.endkey[0] ];
+                  params.startkey = [ type, freetextList.params.startkey[0] ];
+                  params.endkey = [ type, freetextList.params.endkey[0] ];
                 }
                 if (result.union) {
                   result.params.push(params);
@@ -173,13 +173,13 @@ var _ = require('underscore'),
             });
           }
           var requests = [];
-          requests.push(placeViews);
-          requests.push(freetextViews);
-          requests.push(typeViews);
+          requests.push(placeLists);
+          requests.push(freetextLists);
+          requests.push(typeLists);
           requests = _.compact(_.flatten(requests));
           if (!requests.length) {
             requests.push({
-              view: 'medic-client/contacts_by_name',
+              list: 'medic-client/sort_by_value/contacts_by_name',
               ordered: true
             });
           }

@@ -20,6 +20,7 @@
       var pouchWorker = WebWorker(require('worker-pouch/workerified'));
 
       $window.PouchDB.adapter('worker', require('worker-pouch/client'));
+      $window.PouchDB.plugin(require('pouchdb-list'));
 
       var getRemote = function() {
         var options = {

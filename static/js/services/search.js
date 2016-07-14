@@ -63,11 +63,38 @@ var _ = require('underscore');
         return intersection;
       };
 
-      var view = function(request) {
+      var list = function(request) {
         var params = request.union ? request.params : [ request.params ];
         return $q.all(params.map(function(params) {
-          return DB().query(request.view, params);
+          // remap params to query object
+          var query = {};
+
+          if(params.skip !== undefined) {
+            query.s = params.skip;
+            delete params.skip;
+          }
+
+          if(params.limit !== undefined) {
+            query.lim = params.limit;
+            delete params.limit;
+          }
+
+          if(params.endkey !== undefined) {
+            query.endkey = JSON.stringify(params.endkey);
+            delete params.endkey;
+          }
+
+          if(params.startkey !== undefined) {
+            query.startkey = JSON.stringify(params.startkey);
+            delete params.startkey;
+          }
+
+          params.query = query;
+          return DB().list(request.list, params);
         }))
+          .then(function(res) {
+            return _.chain(res).pluck('body').map(JSON.parse).value();
+          })
           .then(function(data) {
             return _.flatten(data.map(function(datum) {
               return datum.rows;
@@ -75,20 +102,22 @@ var _ = require('underscore');
           });
       };
 
-      var viewPaginated = function(request, options) {
+      var listPaginated = function(request, options) {
         request.params = request.params || {};
         request.params.limit = options.limit;
         request.params.skip = options.skip;
-        return view(request);
+        return list(request);
       };
 
       var getRows = function(type, requests, options) {
         if (requests.length === 1 && requests[0].ordered) {
-          // 1 ordered view - let the db do the pagination for us
-          return viewPaginated(requests[0], options);
+          // 1 ordered list - let the db do the pagination for us
+          return listPaginated(requests[0], options);
         }
         // multiple requests - have to manually paginate
-        return $q.all(requests.map(view))
+        // TODO the point of this ticket is to avoid manual pagination, so this
+        // needs a closer look.
+        return $q.all(requests.map(list))
           .then(getIntersection)
           .then(_.partial(getPage, type, _, options));
       };
