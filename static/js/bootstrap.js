@@ -41,9 +41,6 @@ var utils = require('kujua-utils');
   };
 
   var initialReplication = function(db, username) {
-    if (utils.isUserAdmin(getUserCtx())) {
-      return require('pouchdb-promise').resolve();
-    }
     var dbSyncStartTime = Date.now();
     var dbSyncStartData = getDataUsage();
     return db.local.replicate.from(db.remote, {
@@ -76,6 +73,9 @@ var utils = require('kujua-utils');
   };
 
   module.exports = function(callback) {
+    if (utils.isUserAdmin(getUserCtx())) {
+      return callback();
+    }
 
     var userCtx = getUserCtx();
     var username = userCtx && userCtx.name;
