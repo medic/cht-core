@@ -178,14 +178,20 @@ describe('UpdateUser service', function() {
 
     Admins.returns(KarmaUtils.mockPromise(null, { gareth: true }));
 
-    service('org.couchdb.user:jerome', null, updates);
+    service('org.couchdb.user:jerome', null, updates)
+      .then(function() {
+        chai.expect(cacheRemove.callCount).to.equal(3);
+        chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Ajerome');
+        chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
+        chai.expect(cacheRemove.thirdCall.args[0]).to.equal('/_config/admins');
+        done();
+      });
+
     setTimeout(function() {
       scope.$apply(); // needed to resolve the promises
-      chai.expect(cacheRemove.callCount).to.equal(3);
-      chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Ajerome');
-      chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
-      chai.expect(cacheRemove.thirdCall.args[0]).to.equal('/_config/admins');
-      done();
+      setTimeout(function() {
+        scope.$apply(); // needed to resolve the promises
+      });
     });
 
     $httpBackend.flush();

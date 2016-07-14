@@ -54,7 +54,7 @@ var _ = require('underscore');
         });
       };
 
-      var updatePassword = function(updated) {
+      var updateAdminPassword = function(updated) {
         if (!updated.password) {
           // password not changed, do nothing
           return $q.when();
@@ -70,7 +70,8 @@ var _ = require('underscore');
             }
           })
           .catch(function(err) {
-            if (err.error !== 'unauthorized') {
+            if (err.status !== 401) {
+              // unauthorized - not an admin
               throw err;
             }
           });
@@ -91,7 +92,7 @@ var _ = require('underscore');
             }
             return $http.put(getUserUrl(user._id), updated)
               .then(function() {
-                return updatePassword(updated);
+                return updateAdminPassword(updated);
               })
               .then(function() {
                 removeCacheEntry($cacheFactory, user._id);
