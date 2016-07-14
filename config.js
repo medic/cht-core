@@ -2,8 +2,9 @@ var _ = require('underscore'),
     follow = require('follow'),
     db = require('./db'),
     ddocExtraction = require('./ddoc-extraction'),
-    settings,
-    translations = {};
+    translations = require('./translations'),
+    settings = {},
+    translationCache = {};
 
 var defaults = {
   anc_forms: {
@@ -83,7 +84,7 @@ var loadTranslations = function() {
       return;
     }
     result.rows.forEach(function(row) {
-      translations[row.doc.code] = row.doc.values;
+      translationCache[row.doc.code] = row.doc.values;
     });
   });
 };
@@ -101,8 +102,8 @@ module.exports = {
     if (_.isObject(key)) {
       return getMessage(key, locale) || key;
     }
-    var value = (translations[locale] && translations[locale][key]) ||
-                (translations.en && translations.en[key]) ||
+    var value = (translationCache[locale] && translationCache[locale][key]) ||
+                (translationCache.en && translationCache.en[key]) ||
                 key;
     // underscore templates will return ReferenceError if all variables in
     // template are not defined.
@@ -121,6 +122,11 @@ module.exports = {
     feed.on('change', function(change) {
       if (change.id === '_design/medic') {
         console.log('Detected settings change - reloading');
+        translations.run(function(err) {
+          if (err) {
+            console.error('Failed to update translation docs', err);
+          }
+        });
         loadSettings(function(err) {
           if (err) {
             console.error('Failed to reload settings', err);
