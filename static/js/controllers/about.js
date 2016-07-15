@@ -36,8 +36,7 @@ var _ = require('underscore');
           $scope.clientDdocVersion = info.rows[0].value.rev.split('-')[0];
         })
         .catch(function(err) {
-          $log.debug('Couldnt access _design/medic-client for about section', err);
-          $scope.clientDdocVersion = 'offline'; // TODO translate?
+          $log.error('Couldnt access _design/medic-client for about section', err);
         });
 
       $scope.reload = function() {
