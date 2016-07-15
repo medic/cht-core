@@ -11,7 +11,8 @@ var _ = require('underscore');
       $q,
       DB,
       GenerateSearchRequests,
-      GetDataRecords
+      GetDataRecords,
+      Session
     ) {
 
       'ngInject';
@@ -80,12 +81,20 @@ var _ = require('underscore');
           }
 
           if(params.endkey !== undefined) {
-            query.endkey = JSON.stringify(params.endkey);
+            if(Session.isAdmin()) {
+              query.endkey = JSON.stringify(params.endkey);
+            } else {
+              query.endkey = params.endkey;
+            }
             delete params.endkey;
           }
 
           if(params.startkey !== undefined) {
-            query.startkey = JSON.stringify(params.startkey);
+            if(Session.isAdmin()) {
+              query.startkey = JSON.stringify(params.startkey);
+            } else {
+              query.startkey = params.startkey;
+            }
             delete params.startkey;
           }
 
