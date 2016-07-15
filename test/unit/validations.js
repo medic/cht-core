@@ -228,7 +228,7 @@ exports['pass uniqueWithin validation on old doc'] = function(test) {
         xyz: '444'
     };
     validation.validate(doc, validations, function(errors) {
-        var start = moment().subtract(2, 'weeks').toISOString();
+        var start = moment().subtract(2, 'weeks').toISOString().replace(/Z$/,'');
         test.ok(fti.calledWith('data_records', {
             q: 'xyz:"444" AND reported_date<date>:[' + start + ' TO 3000-01-01T00:00:00]',
             include_docs: true
@@ -239,8 +239,44 @@ exports['pass uniqueWithin validation on old doc'] = function(test) {
             message: 'Duplicate xyz {{xyz}}.'
         }]);
         test.done();
-        
     });
+};
+
+exports['formatParam does not encode unicode'] = function(test) {
+    test.same(validation._formatParam('form', 'द'), 'form:"द"');
+    test.done();
+};
+
+exports['formatParam escapes quotes in values'] = function(test) {
+    test.same(
+        validation._formatParam('form', ' " AND everything'),
+        'form:" \\" AND everything"'
+    );
+    test.done();
+};
+
+exports['formatParam rejects quotes in field names'] = function(test) {
+    test.same(
+        validation._formatParam('*:"everything', 'xyz'),
+        '*:everything:"xyz"'
+    );
+    test.done();
+};
+
+exports['formatParam quotes strings'] = function(test) {
+    test.same(
+        validation._formatParam('birds', 'pigeon'),
+        'birds:"pigeon"'
+    );
+    test.done();
+};
+
+exports['formatParam use <int> query on integers'] = function(test) {
+    test.same(
+        validation._formatParam('lmp', 11),
+        'lmp<int>:11'
+    );
+    test.done();
 };
 
 exports['pass exists validation when matching document'] = function(test) {

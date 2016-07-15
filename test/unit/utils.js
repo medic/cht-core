@@ -3,12 +3,23 @@ process.env.TEST_ENV = 'hello'; // required for ../../db.js
 var _ = require('underscore'),
     db = require('../../db'),
     sinon = require('sinon'),
-    utils = require('../../lib/utils');
+    utils = require('../../lib/utils'),
+    config = require('../../config');
+
+var restore = function(objs) {
+    _.each(objs, function(obj) {
+        if (obj.restore) {
+            obj.restore();
+        }
+    });
+};
 
 exports.tearDown = function(callback) {
-    if (db.medic.view.restore) {
-        db.medic.view.restore();
-    }
+    restore([
+        db.medic.view,
+        config.getTranslations,
+        config.get
+    ]);
     callback();
 };
 
@@ -441,6 +452,71 @@ exports['applyPhoneFilters performs replace'] = function(test) {
     test.equals(utils.applyPhoneFilters(config, '00101'), '9101');
     test.equals(utils.applyPhoneFilters(config, '456'), '456');
     test.equals(utils.applyPhoneFilters(config, '159841125'), '29841125');
+    test.done();
+};
 
+exports['translate returns message if key found in translations'] = function(test) {
+    sinon.stub(config, 'getTranslations').returns({
+        en: { sms_received: 'got it!' }
+    });
+    test.equals(utils.translate('sms_received'), 'got it!');
+    test.done();
+};
+
+exports['translate returns key if translations not found'] = function(test) {
+    sinon.stub(config, 'getTranslations').returns({});
+    test.equals(utils.translate('sms_received'), 'sms_received');
+    test.done();
+};
+
+exports['describe isOutgoingAllowed'] = function(test) {
+    /*
+     * Support comma separated string config to match an outgoing phone number
+     * or MNO (mobile network operator) defined string.
+     */
+    var tests = [
+      // denied
+      ['+123', '+123', false],
+      ['+123', '+123999999', false],
+      ['SAFARI', 'SAFARICOM', false],
+      ['Safari', 'SAFARICOM', false],
+      ['+123,+456,+789', '+456', false],
+      ['+123,+456,+789', '+4569999999', false],
+      ['SAFARI, ORANGE', 'ORANGE NET', false],
+      ['0', '0000123', false],
+      ['0', '0', false],
+      // allowed
+      ['+123', '+999', true],
+      ['SAFARI, ORANGE NET', 'ORANGE', true],
+      ['VIVO', 'EM VIVO', true],
+      ['0', '-1', true],
+      // allow falsey inputs
+      ['snarf', undefined, true],
+      ['snarf', null, true],
+      ['', '+123', true],
+      ['', '', true]
+    ];
+    _.each(tests, function(t) {
+      var s = sinon.stub(config, 'get');
+      s.withArgs('outgoing_deny_list').returns(t[0]);
+      test.equals(utils.isOutgoingAllowed(t[1]), t[2]);
+      s.restore();
+    });
+    test.done();
+};
+
+exports['describe _isMessageFromGateway'] = function(test) {
+    var tests = [
+      ['+774455558888', '77-44-5555-8888', true],
+      ['+774455558889', '77-44-5555-8888', false],
+      // missing country code matches
+      ['+41446681800', '446681800', true]
+    ];
+    _.each(tests, function(t) {
+      var s = sinon.stub(config, 'get');
+      s.withArgs('gateway_number').returns(t[0]);
+      test.equals(utils._isMessageFromGateway(t[1]), t[2]);
+      s.restore();
+    });
     test.done();
 };

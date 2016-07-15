@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     sinon = require('sinon'),
     config = require('../../config'),
+    utils = require('../../lib/utils'),
     messages = require('../../lib/messages'),
     transition = require('../../transitions/default_responses');
 
@@ -30,7 +31,9 @@ exports.tearDown = function(callback) {
         transition._addMessage,
         config.get,
         config.getTranslations,
-        messages.addMessage
+        messages.addMessage,
+        utils.isOutgoingAllowed,
+        utils._isMessageFromGateway
     ]);
     callback();
 };
@@ -77,50 +80,39 @@ exports['when doc has errors still pass filter'] = function(test) {
     test.done();
 };
 
-exports['do not pass filter when message is from gateway'] = function(test) {
-    sinon.stub(transition, '_getConfig').returns('+774455558888');
+exports['filter passes when message is from gateway'] = function(test) {
+    sinon.stub(utils, '_isMessageFromGateway').returns(true);
     test.equals(transition.filter({
-        from: '+222',
-        type: 'data_record',
-        sms_message: {
-            from: '+774455558888'
-        }
-    }), false);
+        from: 'x',
+        type: 'data_record'
+    }), true);
     test.done();
 };
 
-exports['do not pass filter when gateway config is missing country code'] = function(test) {
-    sinon.stub(transition, '_getConfig').returns('446681800');
+exports['filter passes when message is not from gateway'] = function(test) {
+    sinon.stub(utils, '_isMessageFromGateway').returns(false);
     test.equals(transition.filter({
-        from: '+222',
-        type: 'data_record',
-        sms_message: {
-            from: '+41446681800'
-        }
-    }), false);
+        from: 'x',
+        type: 'data_record'
+    }), true);
     test.done();
 };
 
-exports['do not pass filter when numbers are same but different formats'] = function(test) {
-    sinon.stub(transition, '_getConfig').returns('77-44-5555-8888');
+exports['filter passes when response is allowed'] = function(test) {
+    // Filter passes because message is added with a 'denied' state.
+    sinon.stub(utils, 'isOutgoingAllowed').returns(true);
     test.equals(transition.filter({
-        from: '+222',
-        type: 'data_record',
-        sms_message: {
-            from: '+774455558888'
-        }
-    }), false);
+        from: 'x',
+        type: 'data_record'
+    }), true);
     test.done();
 };
 
 exports['pass filter when message is not from gateway'] = function(test) {
     sinon.stub(transition, '_getConfig').returns('+774455558889');
     test.equals(transition.filter({
-        from: '+222',
-        type: 'data_record',
-        sms_message: {
-            from: '+774455558888'
-        }
+        from: 'x',
+        type: 'data_record'
     }), true);
     test.done();
 };
@@ -164,14 +156,14 @@ exports['when doc has no errors, form is not found returns false'] = function(te
 
 exports['isReportedAfterStartDate returns false if config start date is whitespace'] = function(test) {
     transition._isReportedAfterStartDate.restore();
-    sinon.stub(transition, '_getConfig').returns({ start_date: ' ' });
+    sinon.stub(transition, '_getConfig').withArgs('default_responses').returns({ start_date: ' ' });
     test.equals(transition._isReportedAfterStartDate({}), false);
     test.done();
 };
 
 exports['isReportedAfterStartDate returns true when reported date is after start date'] = function(test) {
     transition._isReportedAfterStartDate.restore();
-    sinon.stub(transition, '_getConfig').returns({ start_date: '2014-01-01' });
+    sinon.stub(transition, '_getConfig').withArgs('default_responses').returns({ start_date: '2014-01-01' });
     test.equals(transition._isReportedAfterStartDate({
         reported_date: 1412641215000
     }), true);
@@ -180,7 +172,7 @@ exports['isReportedAfterStartDate returns true when reported date is after start
 
 exports['isReportedAfterStartDate returns false when reported date is before start date'] = function(test) {
     transition._isReportedAfterStartDate.restore();
-    sinon.stub(transition, '_getConfig').returns({ start_date: '2014-12-01' });
+    sinon.stub(transition, '_getConfig').withArgs('default_responses').returns({ start_date: '2014-12-01' });
     test.equals(transition._isReportedAfterStartDate({
         reported_date: 1412641215000
     }), false);
@@ -217,7 +209,6 @@ exports['add response if unstructured message and setting enabled'] = function(t
 };
 
 exports['add response if unstructured message (form prop is undefined)'] = function(test) {
-    // stub the translations config
     sinon.stub(config, 'getTranslations').returns({
         en: { sms_received: 'SMS rcvd, thx!' }
     });
@@ -248,7 +239,6 @@ exports['do not add response if valid form'] = function(test) {
      * skip response handling here because validation and responses are handled
      * on different transition.
      */
-
     sinon.stub(config, 'getTranslations').returns({
         en: { sms_received: 'SMS rcvd, thx!' }
     });
@@ -365,8 +355,7 @@ exports['add response if form not found and respect locale'] = function(test) {
 };
 
 exports['add response to empty message'] = function (test) {
-    sinon.stub(transition, '_isConfigFormsOnlyMode').returns(false);
-    // stub the translations config
+    sinon.stub(config, 'get').withArgs('forms_only_mode').returns(true);
     sinon.stub(config, 'getTranslations').returns({
         en: { empty: 'SMS appears empty.' }
     });
@@ -394,3 +383,51 @@ exports['add response to empty message'] = function (test) {
     });
 };
 
+exports['add response when recipient is allowed'] = function (test) {
+    sinon.stub(utils, 'isOutgoingAllowed').returns(true);
+    sinon.stub(config, 'getTranslations').returns({
+        en: { sms_received: 'ahoy mate' }
+    });
+    var messageFn = sinon.spy(messages, 'addMessage');
+    test.expect(4);
+    var doc = {
+        from: 'x',
+        type: 'data_record'
+    };
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+        test.ok(messageFn.calledOnce);
+        test.ok(messageFn.calledWith({
+            doc: doc,
+            phone: 'x',
+            message: 'ahoy mate'
+        }));
+        test.equals(err, null);
+        test.equals(changed, true);
+        test.done();
+    });
+};
+
+exports['add response with denied state when recipient is denied'] = function (test) {
+    sinon.stub(utils, 'isOutgoingAllowed').returns(false);
+    sinon.stub(config, 'getTranslations').returns({
+        en: { sms_received: 'ahoy mate' }
+    });
+    var messageFn = sinon.spy(messages, 'addMessage');
+    test.expect(4);
+    var doc = {
+        from: 'x',
+        type: 'data_record'
+    };
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+        test.ok(messageFn.calledOnce);
+        test.ok(messageFn.calledWith({
+            doc: doc,
+            phone: 'x',
+            message: 'ahoy mate',
+            state: 'denied'
+        }));
+        test.equals(err, null);
+        test.equals(changed, true);
+        test.done();
+    });
+};

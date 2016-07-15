@@ -121,12 +121,15 @@ exports['runReminder decorates options with moment if found'] = function(test) {
 };
 
 exports['does not match reminder if in next minute'] = function(test) {
-    var window = sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour')),
+    var past = moment().subtract(1, 'hour'),
         now = moment();
+
+    var window = sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, past);
 
     reminders.matchReminder({
         reminder: {
-            cron: (now.minutes() + 1) + ' ' + now.format('HH * * *') // will generate cron job matching the current hour but 1 minute into future
+             // generate cron job 1 minute into future
+            cron: now.clone().add(1, 'minute').format('m HH * * *')
         }
     }, function(err, matches) {
         test.equals(err, null);

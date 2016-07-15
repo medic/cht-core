@@ -42,6 +42,36 @@ var hasRun = function(doc) {
 };
 
 module.exports = {
+    _addErr: function(event_type, config, doc) {
+        var locale = utils.getLocale(doc),
+            err_msg = 'Failed to complete notification request, event type "%s" misconfigured.',
+            evConf = _.findWhere(config.messages, {
+                event_type: event_type
+            });
+        var msg = messages.getMessage(evConf && evConf.message, locale);
+        if (msg) {
+            messages.addError(doc, msg);
+        } else {
+            messages.addError(doc, err_msg.replace('%s', event_type));
+        }
+    },
+    _addMsg: function(event_type, config, doc, registrations) {
+        var locale = utils.getLocale(doc),
+            evConf = _.findWhere(config.messages, {
+                event_type: event_type
+            });
+        var msg = messages.getMessage(evConf && evConf.message, locale);
+        if (msg) {
+            messages.addMessage({
+                doc: doc,
+                message: msg,
+                phone: messages.getRecipientPhone(doc, msg.recipient),
+                registrations: registrations
+            });
+        } else {
+            module.exports._addErr(event_type, config, doc);
+        }
+    },
     filter: function(doc) {
         return Boolean(
             doc &&
@@ -71,17 +101,17 @@ module.exports = {
         return validation.validate(doc, validations, callback);
     },
     onMatch: function(change, db, audit, callback) {
-        var doc = change.doc,
+        var self = module.exports,
+            doc = change.doc,
             patient_id = doc.patient_id,
             config = module.exports.getConfig(),
-            locale = utils.getLocale(doc),
             eventType = getEventType(config, doc);
 
         if (!eventType) {
             return callback(null, false);
         }
 
-        module.exports.validate(config, doc, function(errors) {
+        self.validate(config, doc, function(errors) {
 
             if (errors && errors.length > 0) {
                 messages.addErrors(doc, errors);
@@ -106,35 +136,22 @@ module.exports = {
                 id: patient_id
             }, function(err, registrations) {
 
-                function addErr(event_type) {
-                    var msg = getMessage(config, event_type);
-                    if (msg) {
-                        messages.addError(doc, messages.getMessage(msg, locale));
-                    } else {
-                        messages.addError(doc, event_type);
-                    }
-                }
-
-                function addMsg(event_type) {
-                    var msg = getMessage(config, event_type);
-                    messages.addMessage({
-                        doc: doc,
-                        message: messages.getMessage(msg, locale),
-                        phone: messages.getRecipientPhone(doc, msg.recipient),
-                        registrations: registrations
-                    });
-                }
-
                 if (err) {
                     callback(err);
                 } else if (registrations.length) {
-                    if (eventType.mute && config.confirm_deactivation) {
-                        addErr('confirm_deactivation');
-                        return callback(null, true);
+                    if (eventType.mute) {
+                        if (config.confirm_deactivation) {
+                            self._addErr('confirm_deactivation', config, doc);
+                            self._addMsg('confirm_deactivation', config, doc, registrations);
+                            return callback(null, true);
+                        } else {
+                            self._addMsg('on_mute', config, doc, registrations);
+                        }
+                    } else {
+                        self._addMsg('on_unmute', config, doc, registrations);
                     }
-                    addMsg(eventType.type);
                     async.each(registrations, function(registration, callback) {
-                        module.exports.modifyRegistration({
+                        self.modifyRegistration({
                             audit: audit,
                             mute: eventType.mute,
                             registration: registration.doc
@@ -147,8 +164,8 @@ module.exports = {
                         }
                     });
                 } else {
-                    addErr('patient_not_found');
-                    addMsg('patient_not_found');
+                    self._addErr('patient_not_found', config, doc);
+                    self._addMsg('patient_not_found', config, doc, registrations);
                     callback(null, true);
                 }
             });
