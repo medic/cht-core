@@ -165,11 +165,13 @@ exports['sendReminders calls getClinics'] = function(test) {
     });
 };
 
-exports['getClinics calls db.view'] = function(test) {
+exports['getClinics calls db view'] = function(test) {
     var db = {
-        view: function() {}
+        medic: {
+            view: function() {}
+        }
     };
-    sinon.stub(db, 'view').callsArgWith(3, null, {
+    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
         rows: [
             {
                 doc: {
@@ -186,7 +188,7 @@ exports['getClinics calls db.view'] = function(test) {
         test.ok(_.isArray(clinics));
         test.equals(clinics.length, 1);
         test.equals(_.first(clinics).id, 'xxx');
-        test.ok(db.view.called);
+        test.ok(db.medic.view.called);
         test.done();
     });
 };
@@ -196,9 +198,11 @@ exports['getClinics ignores clinics with matching sent_reminders'] = function(te
         now = moment().startOf('hour');
 
     db = {
-        view: function() {}
+        medic: {
+            view: function() {}
+        }
     };
-    sinon.stub(db, 'view').callsArgWith(3, null, {
+    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
         rows: [
             {
                 doc: {
@@ -428,10 +432,12 @@ exports['getReminderWindow returns a day ago when no results from db'] = functio
         time = moment().startOf('hour').subtract(1, 'day');
 
     db = {
-        view: function() {}
+        medic: {
+            view: function() {}
+        }
     };
 
-    view = sinon.stub(db, 'view').callsArgWithAsync(3, null, {
+    view = sinon.stub(db.medic, 'view').callsArgWithAsync(3, null, {
         rows: []
     });
 
@@ -446,15 +452,15 @@ exports['getReminderWindow returns a day ago when no results from db'] = functio
 };
 
 exports['getReminderWindow calls view looking for old events and returns date found'] = function(test) {
-    var db,
-        view,
-        now = moment();
+    var now = moment();
 
-    db = {
-        view: function() {}
+    var db = {
+        medic: {
+            view: function() {}
+        }
     };
 
-    view = sinon.stub(db, 'view').callsArgWithAsync(3, null, {
+    var view = sinon.stub(db.medic, 'view').callsArgWithAsync(3, null, {
         rows: [
             {
                 key: [ 'XXX', now.clone().subtract(1, 'hour').toISOString() ]

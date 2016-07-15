@@ -28,10 +28,6 @@ var availableTransitions = [
   'update_sent_forms'
 ];
 
-if (!process.env.TEST_ENV) {
-  loadTransitions();
-}
-
 var loadTransitions = function() {
   var self = module.exports;
   _.each(config.get('transitions'), function(conf, key) {
@@ -396,3 +392,7 @@ module.exports = {
     applyTransition: applyTransition,
     applyTransitions: applyTransitions
 };
+
+if (!process.env.TEST_ENV) {
+  loadTransitions();
+}

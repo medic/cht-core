@@ -115,7 +115,7 @@ module.exports = {
         var db = options.db;
 
         // gets all clinics
-        db.view('kujua-sentinel', 'clinic_by_phone', {
+        db.medic.view('kujua-sentinel', 'clinic_by_phone', {
             include_docs: true
         }, function(err, data) {
             if (err) {
@@ -194,7 +194,7 @@ module.exports = {
             floor = now.clone().startOf('hour').subtract(1, 'day'),
             form = options.reminder && options.reminder.form;
 
-        db.view('kujua-sentinel', 'sent_reminders', {
+        db.medic.view('kujua-sentinel', 'sent_reminders', {
             descending: true,
             limit: 1,
             startkey: [form, now.toISOString()],

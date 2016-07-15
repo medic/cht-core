@@ -10,7 +10,7 @@ var date = require('../date'),
 
 tasks = _.compact(_.map(fs.readdirSync(__dirname), function(file) {
     try {
-        if (!/^index\./.test(file)) {
+        if (!/(^index\.|^\.)/.test(file)) {
             return require('./' + file);
         }
     } catch(e) {
