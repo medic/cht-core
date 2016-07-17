@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 2.7.3
+
+### July 18, 2016
+
+#### Bug fixes
+
+- Remove maxSockets limit to allow more concurrent connections. Issue: #2492
+
 ## 2.7.2
 
 ### July 11, 2016
