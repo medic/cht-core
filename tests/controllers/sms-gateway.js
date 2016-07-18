@@ -1,12 +1,15 @@
-var controller = require('../controllers/sms-gateway'),
-    messageUtils = require('../controllers/messages'),
-    recordUtils = require('../controllers/records'),
+var controller = require('../../controllers/sms-gateway'),
+    messageUtils = require('../../controllers/messages'),
+    recordUtils = require('../../controllers/records'),
+    utils = require('../utils'),
     sinon = require('sinon');
 
 exports.tearDown = function (callback) {
-  restoreStub(messageUtils.getMessages);
-  restoreStub(messageUtils.updateMessage);
-  restoreStub(recordUtils.create);
+  utils.restore(
+    messageUtils.getMessages,
+    messageUtils.updateMessage,
+    recordUtils.create
+  );
   callback();
 };
 
@@ -222,10 +225,4 @@ function mockJsonRequest(responseBody) {
 function mockWoMessages(woMessages) {
   var getMessages = sinon.stub(messageUtils, 'getMessages');
   getMessages.callsArgWith(1, null, woMessages);
-}
-
-function restoreStub(stub) {
-  if(stub.restore) {
-    stub.restore();
-  }
 }
