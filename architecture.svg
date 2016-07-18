@@ -4,70 +4,88 @@
     <description>Created with Sketch (http://www.bohemiancoding.com/sketch)</description>
     <defs></defs>
     <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
-        <g id="Rectangle-1-+-Medic-OS" sketch:type="MSLayerGroup" transform="translate(21.000000, 354.000000)">
+        <g id="Medic-OS" sketch:type="MSLayerGroup" transform="translate(21.000000, 354.000000)">
             <rect id="Rectangle-1" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="600" height="50"></rect>
-            <text id="Medic-OS" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
+            <text sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
                 <tspan x="273.45576" y="29.2402344">Medic OS</tspan>
             </text>
         </g>
-        <g id="Rectangle-2-+-Couch-DB" sketch:type="MSLayerGroup" transform="translate(22.000000, 287.000000)">
+        <g id="Couch-DB" sketch:type="MSLayerGroup" transform="translate(22.000000, 287.000000)">
             <rect id="Rectangle-2" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="600" height="50"></rect>
-            <text id="Couch-DB" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
+            <text sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
                 <tspan x="271" y="27">Couch DB</tspan>
             </text>
         </g>
-        <g id="Rectangle-2-+-Medic-Analytics/Post" sketch:type="MSLayerGroup" transform="translate(444.000000, 206.000000)">
-            <rect id="Rectangle-2" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="180" height="60"></rect>
-            <g id="Rectangle-11-+-Medic-Couch2PG" transform="translate(31.000000, 28.000000)">
-                <rect id="Rectangle-11" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="120" height="24"></rect>
-                <text id="Medic-Couch2PG" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
-                    <tspan x="13" y="16">Medic Couch2PG</tspan>
-                </text>
-            </g>
+        <g id="Medic-Analytics" sketch:type="MSLayerGroup" transform="translate(442.000000, 190.000000)">
+            <rect id="Rectangle-2" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="180" height="40"></rect>
             <text id="Medic-Analytics-(Pos" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
-                <tspan x="19" y="20">Medic Analytics (Postgres)</tspan>
+                <tspan x="19" y="24">Medic Analytics (Postgres)</tspan>
             </text>
         </g>
-        <g id="Rectangle-4-+-Nginx-(reverse-proxy" sketch:type="MSLayerGroup" transform="translate(22.000000, 142.000000)">
+        <g id="Medic-Couch2PG" sketch:type="MSLayerGroup" transform="translate(442.000000, 235.000000)">
+            <rect id="Rectangle-11" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="180" height="40"></rect>
+            <text id="Couch2PG" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
+                <tspan x="61" y="24">Couch2PG</tspan>
+            </text>
+        </g>
+        <g id="Nginx" sketch:type="MSLayerGroup" transform="translate(22.000000, 142.000000)">
             <rect id="Rectangle-4" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="600" height="40"></rect>
             <text id="HTTP-Reverse-Proxy-(" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
                 <tspan x="218.36394" y="24.3571429">HTTP Reverse Proxy (Nginx)</tspan>
             </text>
         </g>
-        <g id="Rectangle-5-+-Medic-API" sketch:type="MSLayerGroup" transform="translate(231.000000, 218.000000)">
+        <g id="Medic-API" sketch:type="MSLayerGroup" transform="translate(231.000000, 218.000000)">
             <rect id="Rectangle-5" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="180" height="40"></rect>
-            <text id="Medic-API" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
+            <text sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
                 <tspan x="61" y="24">Medic API</tspan>
             </text>
         </g>
-        <g id="Rectangle-6-+-Medic-Sentinel" sketch:type="MSLayerGroup" transform="translate(22.000000, 218.000000)">
+        <g id="Medic-Sentinel" sketch:type="MSLayerGroup" transform="translate(22.000000, 218.000000)">
             <rect id="Rectangle-6" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="180" height="40"></rect>
-            <text id="Medic-Sentinel" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
+            <text sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
                 <tspan x="51" y="24">Medic Sentinel</tspan>
             </text>
         </g>
         <g id="Group" sketch:type="MSLayerGroup" transform="translate(63.000000, 44.000000)">
-            <g id="Rectangle-6-+-Medic-Webapp">
+            <g id="Medic-Webapp">
                 <rect id="Rectangle-6" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="120" height="70"></rect>
-                <text id="Medic-Webapp" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
+                <text sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
                     <tspan x="18" y="24">Medic Webapp</tspan>
                 </text>
+                <g id="PouchDB" transform="translate(10.000000, 36.000000)">
+                    <rect id="Rectangle-11" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="102" height="24"></rect>
+                    <text sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
+                        <tspan x="25" y="16">PouchDB</tspan>
+                    </text>
+                </g>
             </g>
-            <g id="Rectangle-6-+-Medic-Gateway" transform="translate(132.000000, 0.000000)">
+            <g id="Medic-Gateway" transform="translate(132.000000, 0.000000)">
                 <rect id="Rectangle-6" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="120" height="70"></rect>
-                <text id="Medic-Gateway" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
+                <text sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
                     <tspan x="19" y="24">Medic Gateway</tspan>
                 </text>
+                <g id="SMS" transform="translate(17.000000, 33.000000)">
+                    <ellipse id="Oval-1" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" cx="43" cy="15" rx="43" ry="15"></ellipse>
+                    <text sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
+                        <tspan x="29" y="20">SMS</tspan>
+                    </text>
+                </g>
             </g>
-            <g id="Rectangle-6-copy-+-Medic-Android" transform="translate(266.000000, 0.000000)">
+            <g id="Medic-Android" transform="translate(266.000000, 0.000000)">
                 <rect id="Rectangle-6-copy" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="120" height="70"></rect>
-                <text id="Medic-Android" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
+                <text sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
                     <tspan x="22" y="24">Medic Android</tspan>
                 </text>
+                <g id="Medic-Webapp" transform="translate(10.000000, 36.000000)">
+                    <rect id="Rectangle-11" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="102" height="24"></rect>
+                    <text sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
+                        <tspan x="12" y="16">Medic Webapp</tspan>
+                    </text>
+                </g>
             </g>
-            <g id="Rectangle-6-+-Medic-Collect" transform="translate(398.000000, 30.000000)">
+            <g id="Medic-Collect" transform="translate(398.000000, 30.000000)">
                 <rect id="Rectangle-6" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="120" height="40"></rect>
-                <text id="Medic-Collect" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
+                <text sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
                     <tspan x="24" y="24">Medic Collect</tspan>
                 </text>
             </g>
@@ -75,7 +93,7 @@
         <path d="M113.5,257.5 L113.5,286.5" id="Line" stroke="#979797" stroke-linecap="square" sketch:type="MSShapeGroup"></path>
         <path d="M321.5,182.5 L321.5,217.5" id="Line" stroke="#979797" stroke-linecap="square" sketch:type="MSShapeGroup"></path>
         <path d="M320.5,257.5 L320.5,286.5" id="Line" stroke="#979797" stroke-linecap="square" sketch:type="MSShapeGroup"></path>
-        <path d="M533.5,257.5 L533.5,286.5" id="Line" stroke="#979797" stroke-linecap="square" sketch:type="MSShapeGroup"></path>
+        <path d="M533.5,275.5 L533.5,286.5" id="Line" stroke="#979797" stroke-linecap="square" sketch:type="MSShapeGroup"></path>
         <path d="M121.5,113.5 L121.499999,141.5" id="Line" stroke="#979797" stroke-linecap="square" sketch:type="MSShapeGroup"></path>
         <path d="M254.5,113.5 L254.5,142.5" id="Line" stroke="#979797" stroke-linecap="square" sketch:type="MSShapeGroup"></path>
         <path d="M391.5,113.5 L391.5,142.5" id="Line" stroke="#979797" stroke-linecap="square" sketch:type="MSShapeGroup"></path>
@@ -84,24 +102,6 @@
             <path d="M0.5,5.5 L35.5,5.5" id="Line" stroke="#979797" stroke-linecap="square" sketch:type="MSShapeGroup"></path>
             <text id="HTTP" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
                 <tspan x="48" y="11">HTTP</tspan>
-            </text>
-        </g>
-        <g id="Oval-1-+-SMS" sketch:type="MSLayerGroup" transform="translate(212.000000, 77.000000)">
-            <ellipse id="Oval-1" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" cx="43" cy="15" rx="43" ry="15"></ellipse>
-            <text id="SMS" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
-                <tspan x="29" y="20">SMS</tspan>
-            </text>
-        </g>
-        <g id="Rectangle-11-+-PouchDB" sketch:type="MSLayerGroup" transform="translate(73.000000, 80.000000)">
-            <rect id="Rectangle-11" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="102" height="24"></rect>
-            <text id="PouchDB" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
-                <tspan x="25" y="16">PouchDB</tspan>
-            </text>
-        </g>
-        <g id="Rectangle-11-+-PouchDB" sketch:type="MSLayerGroup" transform="translate(339.000000, 80.000000)">
-            <rect id="Rectangle-11" stroke="#979797" fill="#D8D8D8" sketch:type="MSShapeGroup" x="0" y="0" width="102" height="24"></rect>
-            <text id="Medic-Webapp" sketch:type="MSTextLayer" font-family="Helvetica" font-size="12" font-weight="normal" fill="#000000">
-                <tspan x="12" y="16">Medic Webapp</tspan>
             </text>
         </g>
     </g>
