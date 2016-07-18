@@ -15,7 +15,7 @@ var namespace = function(id, callback) {
     if (doc.fields || !doc.form) {
       return callback();
     }
-    form = forms[doc.form];
+    var form = forms[doc.form];
     if (!form) {
       return callback();
     }

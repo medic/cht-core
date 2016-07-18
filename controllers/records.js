@@ -23,8 +23,10 @@ var createByForm = function(data, callback) {
   var required = ['message', 'from'],
       optional = ['reported_date', 'locale', 'gateway_ref'];
   for (var k in required) {
-    if (!exists(data[required[k]])) {
-      return callback(new Error('Missing required field: ' + required[k]));
+    if (required.hasOwnProperty(k)) {
+      if (!exists(data[required[k]])) {
+        return callback(new Error('Missing required field: ' + required[k]));
+      }
     }
   }
   // filter out any unwanted fields
@@ -43,8 +45,10 @@ var createRecordByJSON = function(data, callback) {
     return callback(new Error('Missing _meta property.'));
   }
   for (var k in required) {
-    if (!exists(data._meta[required[k]])) {
-      return callback(new Error('Missing required field: ' + required[k]));
+    if (required.hasOwnProperty(k)) {
+      if (!exists(data._meta[required[k]])) {
+        return callback(new Error('Missing required field: ' + required[k]));
+      }
     }
   }
   // filter out any unwanted fields

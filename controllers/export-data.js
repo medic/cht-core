@@ -78,11 +78,13 @@ var exportTypes = {
           columns = options.columns.concat([]);
           if (def) {
             for (var k in def.fields) {
-              var labels = def.fields[k].labels.short;
-              columns.push({
-                column: 'fields.' + k,
-                label: labels[options.locale] || labels.en || k
-              });
+              if (def.fields.hasOwnProperty(k)) {
+                var labels = def.fields[k].labels.short;
+                columns.push({
+                  column: 'fields.' + k,
+                  label: labels[options.locale] || labels.en || k
+                });
+              }
             }
           }
           var label = def && def.meta && def.meta.label;
