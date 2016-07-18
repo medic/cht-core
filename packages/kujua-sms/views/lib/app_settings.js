@@ -183,11 +183,11 @@ module.exports = {
         "date_entry",
         "gateway"
       ],
-      [
-        "name": "can_access_gateway_api",
-        "roles": [
-          "gateway"
-        ]
+    },
+    {
+      "name": "can_access_gateway_api",
+      "roles": [
+        "gateway"
       ]
     },
     {
