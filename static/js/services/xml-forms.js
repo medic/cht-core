@@ -164,6 +164,9 @@ var _ = require('underscore');
               })
               .then(function(results) {
                 listener.callback(null, results);
+              })
+              .catch(function(err) {
+                console.log('Failed to load XML forms.', err);
               });
           })
           .catch(callback);
