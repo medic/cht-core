@@ -642,6 +642,12 @@ describe('EnketoTranslation service', function() {
       // given
       var xml =
         '<treatments id="ASDF" version="abc123">' +
+          '<inputs>' +
+            '<meta>' +
+              '<location>' +
+                '<lat>-47.15</lat>' +
+                '<long>-126.72</long>' +
+          '</location></meta></inputs>' +
           '<date>Last Friday</date>' +
           '<district>' +
             '<id>d1</id>' +
@@ -664,6 +670,14 @@ describe('EnketoTranslation service', function() {
 
       // then
       assert.deepEqual(js, {
+        inputs: {
+          meta: {
+            location: {
+              lat: '-47.15',
+              long: '-126.72'
+            }
+          }
+        },
         date: 'Last Friday',
         district: {
           id: 'd1',
