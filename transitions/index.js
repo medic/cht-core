@@ -377,8 +377,10 @@ var hasTransitions = function(doc) {
 var hasTransitionErrors = function(doc) {
     var transitions = doc.transitions || {};
     for (var key in transitions) {
-        if (!transitions[key].ok) {
-            return true;
+        if (transitions.hasOwnProperty(key)) {
+            if (!transitions[key].ok) {
+                return true;
+            }
         }
     }
 };

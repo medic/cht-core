@@ -48,9 +48,11 @@ var checkDups = function(callback) {
            'weight'
         ];
         for (var i in keys) {
-            var k = keys[i];
-            if (row.doc[k] !== new_doc[k]) {
-                return false;
+            if (keys.hasOwnProperty(i)) {
+                var k = keys[i];
+                if (row.doc[k] !== new_doc[k]) {
+                    return false;
+                }
             }
         }
         return true;

@@ -202,8 +202,7 @@ module.exports = {
         }, function(err, result) {
             var row;
 
-            if (err) {
-            } else {
+            if (!err) {
                 row = _.first(result.rows);
 
                 if (row) {
