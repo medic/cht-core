@@ -99,14 +99,28 @@ app.all(pathPrefix + '_local/*', function(req, res) {
   proxy.web(req, res);
 });
 
+var handleApiCall = function(req, res, controller) {
+  auth.getUserCtx(req, function(err) {
+    if (err) {
+      return serverUtils.notLoggedIn(res);
+    }
+    controller.get({ district: req.query.district }, function(err, obj) {
+      if (err) {
+        return serverUtils.serverError(err, res);
+      }
+      res.json(obj);
+    });
+  });
+};
+
 var handleApiPost = function(req, res, controller) {
   auth.getUserCtx(req, function(err) {
     if (err) {
-      return notLoggedIn(res);
+      return serverUtils.notLoggedIn(res);
     }
     controller.post(req, function(err, obj) {
       if (err) {
-        return serverError(err, res);
+        return serverUtils.serverError(err, res);
       }
       res.json(obj);
     });
@@ -192,7 +206,7 @@ app.get('/api/upcoming-due-dates', function(req, res) {
 app.get('/api/sms', function(req, res) {
   auth.check(req, 'can_access_gateway_api', null, function(err) {
     if (err) {
-      return serverError(err, res);
+      return serverUtils.serverError(err, res);
     }
     handleApiCall(req, res, smsGateway);
   });
@@ -200,7 +214,7 @@ app.get('/api/sms', function(req, res) {
 app.post('/api/sms', function(req, res) {
   auth.check(req, 'can_access_gateway_api', null, function(err) {
     if (err) {
-      return serverError(err, res);
+      return serverUtils.serverError(err, res);
     }
     handleApiPost(req, res, smsGateway);
   });
@@ -655,8 +669,6 @@ ddocExtraction.run(function(err) {
 
 // Define error-handling middleware last.
 // http://expressjs.com/guide/error-handling.html
-// jshint ignore:start
-app.use(function(err, req, res, next) {
+app.use(function(err, req, res, next) { // jshint ignore:line
   serverUtils.serverError(err, req, res);
 });
-// jshint ignore:end
