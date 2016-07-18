@@ -100,30 +100,20 @@ app.all(pathPrefix + '_local/*', function(req, res) {
 });
 
 var handleApiCall = function(req, res, controller) {
-  auth.getUserCtx(req, function(err) {
+  controller.get({ district: req.query.district }, function(err, obj) {
     if (err) {
-      return serverUtils.notLoggedIn(res);
+      return serverUtils.error(err, res);
     }
-    controller.get({ district: req.query.district }, function(err, obj) {
-      if (err) {
-        return serverUtils.serverError(err, res);
-      }
-      res.json(obj);
-    });
+    res.json(obj);
   });
 };
 
 var handleApiPost = function(req, res, controller) {
-  auth.getUserCtx(req, function(err) {
+  controller.post(req, function(err, obj) {
     if (err) {
-      return serverUtils.notLoggedIn(res);
+      return serverUtils.error(err, res);
     }
-    controller.post(req, function(err, obj) {
-      if (err) {
-        return serverUtils.serverError(err, res);
-      }
-      res.json(obj);
-    });
+    res.json(obj);
   });
 };
 
@@ -206,15 +196,16 @@ app.get('/api/upcoming-due-dates', function(req, res) {
 app.get('/api/sms', function(req, res) {
   auth.check(req, 'can_access_gateway_api', null, function(err) {
     if (err) {
-      return serverUtils.serverError(err, res);
+      return serverUtils.error(err, res);
     }
     handleApiCall(req, res, smsGateway);
   });
 });
+
 app.post('/api/sms', function(req, res) {
   auth.check(req, 'can_access_gateway_api', null, function(err) {
     if (err) {
-      return serverUtils.serverError(err, res);
+      return serverUtils.error(err, res);
     }
     handleApiPost(req, res, smsGateway);
   });
