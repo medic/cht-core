@@ -19,6 +19,7 @@ var feedback = require('../modules/feedback'),
       $rootScope,
       $scope,
       $state,
+      $stateParams,
       $timeout,
       $translate,
       $window,
@@ -225,7 +226,7 @@ var feedback = require('../modules/feedback'),
           if ($scope.cancelCallback) {
             $scope.navigationCancel();
           } else {
-            $scope.closeContentPane();
+            $scope.clearSelected();
           }
           $scope.$apply();
           return true;
@@ -264,17 +265,16 @@ var feedback = require('../modules/feedback'),
         });
       };
 
-      $scope.closeContentPane = function() {
-        $scope.clearSelected();
-        $state.go($state.current.name, { id: null });
-      };
-
       $scope.clearSelected = function() {
-        $scope.setShowContent(false);
-        $scope.loadingContent = false;
-        $scope.showActionBar = false;
-        $scope.setTitle();
-        $scope.$broadcast('ClearSelected');
+        if ($stateParams.id) {
+          $state.go($state.current.name, { id: null });
+        } else {
+          $scope.setShowContent(false);
+          $scope.loadingContent = false;
+          $scope.showActionBar = false;
+          $scope.setTitle();
+          $scope.$broadcast('ClearSelected');
+        }
       };
 
       $scope.settingSelected = function(refreshing) {

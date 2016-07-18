@@ -344,7 +344,8 @@ var _ = require('underscore'),
         $scope.selected = [];
         $('#reports-list input[type="checkbox"]')
           .prop('checked', false);
-        liveList.clearSelected();
+        LiveList.reports.clearSelected();
+        LiveList['report-search'].clearSelected();
       });
 
       $scope.$on('VerifyReport', function(e, verify) {

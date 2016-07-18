@@ -130,6 +130,8 @@ var _ = require('underscore'),
 
       $scope.$on('ClearSelected', function() {
         $scope.selected = null;
+        LiveList.contacts.clearSelected();
+        LiveList['contact-search'].clearSelected();
       });
 
       $scope.search = function() {
