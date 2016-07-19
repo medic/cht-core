@@ -31,19 +31,19 @@ function push {
 }
 
 if [ "$TRAVIS_BRANCH" == "master" ]; then
-    push 'release'
+#    push 'release'
 fi;
 
 if [ "$TRAVIS_BRANCH" == "testing" ]; then
-    push 'beta'
+#    push 'beta'
 fi;
 
 if [ "$TRAVIS_BRANCH" == "develop" ]; then
-    push 'alpha'
+#    push 'alpha'
 fi;
 
 if [ "$TRAVIS_BRANCH" == "v2" ]; then
-    push 'release-v2'
+#    push 'release-v2'
 fi;
 
 exit 0;
