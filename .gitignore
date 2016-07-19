@@ -4,6 +4,7 @@ sentinel/settings.js
 sentinel/settings-test.js
 sentinel/Procfile
 sentinel_working
+api_working
 npm-debug.log
 node_modules
 node_modules_backup
