@@ -157,24 +157,24 @@ The app is very customizeable, and that customization lives in the app_settings.
 field in the `medic` design doc.
 
 At first that `app_settings` field will be empty and you will have the default settings:
-https://github.com/medic/medic-webapp/blob/develop/packages/kujua-sms/views/lib/app_settings.js
+https://github.com/medic/medic-webapp/blob/master/packages/kujua-sms/views/lib/app_settings.js
 
 You can update these settings with the
-[scripts/update_settings.js](https://github.com/medic/medic-webapp/blob/develop/scripts/update_app_settings.sh)
+[scripts/update_settings.js](https://github.com/medic/medic-webapp/blob/master/scripts/update_app_settings.sh)
 script, or by editing the file in Futon directly.
 
-For more details on what you can use in settings, check out the [schema of supported settings](https://github.com/medic/medic-webapp/blob/develop/kanso.json#L83).
+For more details on what you can use in settings, check out the [schema of supported settings](https://github.com/medic/medic-webapp/blob/master/kanso.json#L83).
 
 ### Forms
 
 Forms define information flows. Users fill in forms by SMS, or through SIMapps, or medic-collect, or the android app, or the desktop app. You can have forms for registering new patients, for sending in the status of a patient, for creating a new health center, ...
 
-Initially your instance will have the [default forms defined inside the default settings](https://github.com/medic/medic-webapp/blob/develop/packages/kujua-sms/views/lib/app_settings.js#L321).
+Initially your instance will have the [default forms defined inside the default settings](https://github.com/medic/medic-webapp/blob/master/packages/kujua-sms/views/lib/app_settings.js#L327).
 
-You can load new forms either through the webapp's interface (in Configuration), or from command line with the [load_forms.js](https://github.com/medic/medic-webapp/blob/develop/scripts/load_forms.js)
+You can load new forms either through the webapp's interface (in Configuration), or from command line with the [load_forms.js](https://github.com/medic/medic-webapp/blob/master/scripts/load_forms.js)
 
 ### Data
-To fill your app with generated data, you can batch-load messages from a CSV file, with the [load_messages.js](https://github.com/medic/medic-webapp/blob/develop/scripts/load_messages.js) script.
+To fill your app with generated data, you can batch-load messages from a CSV file, with the [load_messages.js](https://github.com/medic/medic-webapp/blob/master/scripts/load_messages.js) script.
 
 
 Use `curl` to submit a single message:
