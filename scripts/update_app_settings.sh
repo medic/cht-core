@@ -5,7 +5,7 @@
 # Warning : this is meant to update pre-existing app_settings, not create new ones. Whatever fields are already
 # in the settings will be updated by the new versions in the settings file you pass, and if the settings file
 # doesn't contain some fields, the pre-existing versions of the fields will stick around.
-# See https://github.com/medic/medic-webapp/blob/develop/packages/app-settings/README.md#update-settings
+# See https://github.com/medic/medic-webapp/blob/master/packages/app-settings/README.md#update-settings
 set -eux
 
 FILE="$1"
