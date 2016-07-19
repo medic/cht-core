@@ -42,6 +42,7 @@
     "autoprefixer": "^6.3.6",
     "browserify-ngannotate": "^2.0.0",
     "chai": "^3.5.0",
+    "csv": "^0.4.0",
     "grunt": "^1.0.0",
     "grunt-angular-templates": "^1.0.3",
     "grunt-appcache": "^0.2.0",
