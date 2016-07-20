@@ -1,19 +1,13 @@
-#!/bin/bash
+#!/bin/bash -x
 
 ARGS='this.dependencies["kanso-gardener"] = null;'
 ARGS+='this.dependencies_included = true;'
 
 # Process append to the version string if pre-release
-if [ "$TRAVIS_BRANCH" == "testing" ]; then
-    ARGS+="this.version += \"-beta.$TRAVIS_BUILD_NUMBER\";"
-fi
-
-if [ "$TRAVIS_BRANCH" == "develop" ]; then
+if [ "$TRAVIS_BRANCH" == "master" ]; then
     ARGS+="this.version += \"-alpha.$TRAVIS_BUILD_NUMBER\";"
-fi
-
-if [ "$TRAVIS_BRANCH" == "rc" ]; then
-    ARGS+="this.version += \"-rc.$TRAVIS_BUILD_NUMBER\";"
+elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
+    ARGS+="this.version = \"$TRAVIS_TAG\";"
 fi
 
 # Install npm deps in module directories and tweak kanso gardener related
