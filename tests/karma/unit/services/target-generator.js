@@ -4,11 +4,14 @@ describe('TargetGenerator service', function() {
 
   var Settings,
       RulesEngine,
+      UserContact,
       injector,
       now = new Date().valueOf();
 
   beforeEach(function() {
     Settings = sinon.stub();
+    UserContact = sinon.stub();
+    UserContact.returns(KarmaUtils.mockPromise());
     RulesEngine = {
       listen: sinon.stub(),
     };
@@ -16,6 +19,7 @@ describe('TargetGenerator service', function() {
     module(function ($provide) {
       $provide.value('Settings', Settings);
       $provide.value('RulesEngine', RulesEngine);
+      $provide.value('UserContact', UserContact);
     });
     inject(function($injector) {
       injector = $injector;
