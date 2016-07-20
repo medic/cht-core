@@ -9,6 +9,11 @@ if (arg === 'debug') {
     logger.transports.console.level = arg;
 }
 
+if (process.env.TEST_ENV) {
+    logger.info('TEST_ENV is set, server does not run in test mode.');
+    return;
+}
+
 function completeSetup(err) {
     if (err) {
         console.error(JSON.stringify(err));
