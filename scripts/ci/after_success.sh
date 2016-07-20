@@ -33,21 +33,23 @@ function push {
 # every master build gets pushed to alpha market
 if [ "$TRAVIS_BRANCH" == "master" ]; then
     push 'alpha'
-fi;
 
 # match tags of the form "0.4.12"
-if [[ "$TRAVIS_TAG" =~ ^0\.[0-9]+\.[0-9]+$ ]]; then
+elif [[ "$TRAVIS_TAG" =~ ^0\.[0-9]+\.[0-9]+$ ]]; then
     push 'release'
-fi;
 
 # match tags of the form "2.7.3"
-if [[ "$TRAVIS_TAG" =~ ^2\.[0-9]+\.[0-9]+$ ]]; then
+elif [[ "$TRAVIS_TAG" =~ ^2\.[0-9]+\.[0-9]+$ ]]; then
     push 'release-v2'
-fi;
+
+# match tags of the form "2.8.0-beta.1"
+elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-beta\.[0-9]+$ ]]; then
+    push 'beta'
 
 # match tags of the form "2.8.0-rc.1"
-if [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
-    push 'beta'
+elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
+    push 'rc'
+
 fi;
 
 exit 0;
