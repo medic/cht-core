@@ -141,7 +141,7 @@ var hasNewApplicableDoc = function(feed, docs) {
 
 // WARNING: If updating this function also update the doc_by_place view in lib/views.js
 var extractKeysFromDoc = function(doc) {
-  if (doc._id === 'resources') {
+  if (doc._id === 'resources' || doc._id === 'appcache') {
     return [[ ALL_KEY ]];
   }
   var keys = [];
