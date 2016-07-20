@@ -73,6 +73,9 @@ var _ = require('underscore'),
 
       var setSelected = function(report) {
         $scope.setSelected(report);
+        if ($scope.selectMode) {
+          return;
+        }
         if (!$scope.isRead(report)) {
           $scope.readStatus.forms--;
         }
