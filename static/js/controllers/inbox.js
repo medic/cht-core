@@ -811,7 +811,9 @@ var feedback = require('../modules/feedback'),
         Changes({
           key: 'inbox-ddoc',
           filter: function(change) {
-            return change.id === '_design/medic';
+            return change.id === '_design/medic' ||
+                   change.id === '_design/medic-client' ||
+                   change.id === 'appcache';
           },
           callback: function() {
             // if the manifest hasn't changed, prompt user to reload settings
