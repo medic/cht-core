@@ -256,7 +256,7 @@ var _ = require('underscore'),
           var phone = (recipient.doc && recipient.doc.phone) ||
                       (recipient.doc && recipient.doc.contact.phone) ||
                       (recipient.phone) ||
-                      (recipient.contact.phone);
+                      (recipient.contact && recipient.contact.phone);
           var match = _.find(contacts, function(contact) {
             return contact.phone === phone &&
                    contact.everyoneAt === recipient.everyoneAt;
