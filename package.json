@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "0.4.11",
+  "version": "0.4.12",
   "repository": {
     "type": "git",
     "url": "git://github.com/medic/medic-webapp.git"
