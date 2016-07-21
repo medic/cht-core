@@ -43,16 +43,20 @@ var _ = require('underscore'),
       };
 
       var mapRecipients = function(recipients) {
-        var results = _.filter(recipients, function(recipient) {
-          return recipient.phone ||
-                 recipient.contact && recipient.contact.phone;
-        });
-        return _.map(results, function(recipient) {
-          return {
-            phone: recipient.phone || recipient.contact.phone,
-            facility: recipient
-          };
-        });
+        return _.chain(recipients)
+          .map(function(recipient) {
+            var phone = recipient.phone ||
+                   (recipient.contact && recipient.contact.phone) ||
+                   (recipient.doc && recipient.doc.contact && recipient.doc.contact.phone);
+            return {
+              facility: recipient,
+              phone: phone
+            };
+          })
+          .filter(function(recipient) {
+            return recipient.phone;
+          })
+          .value();
       };
 
       var formatRecipients = function(recipients) {
