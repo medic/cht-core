@@ -27,21 +27,27 @@ schedules.
 
 Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 
-```
+```bash
 export COUCH_URL='http://root:123qwe@localhost:5984/medic'
 ```
 
+Throughout this document we will be refering to `ddoc`. Here we mean the currently deployed `_design/medic` ddoc from medic-webapp.
+
 Default settings values are in `defaults.js`.  On initial start, and when there
-are changes to the ddoc, sentinel reads `ddoc.app_setings` to determine configuration.
+are changes to the ddoc, sentinel reads `ddoc.app_settings` to determine configuration.
 
 By default all transitions are disabled, to enable a transition modify the
 `transitions` property on `ddoc.app_settings`.
 
 ### Transitions Configuration Examples
 
-Enabled
+#### Enabled
 
-```
+A transition is enabled if the value associated with its name is [truthy](https://developer.mozilla.org/en-US/docs/Glossary/Truthy).
+
+In both of these examples all three transitions are enabled:
+
+```json
 {
   "transitions": {
     "registrations": true,
@@ -51,7 +57,7 @@ Enabled
 }
 ```
 
-```
+```json 
 {
   "transitions": {
     "registrations": {
@@ -63,15 +69,19 @@ Enabled
 }
 ```
 
-Disabled
+#### Disabled
 
-```
+A transition is disabled if either the value associated with its name is [falsey](https://developer.mozilla.org/en-US/docs/Glossary/Falsy), or it has `"disable"` set to `true`, or the transition is missing.
+
+In all three examples below the `registrations` transition is disabled.
+
+```json
 {
   "transitions": {}
 }
 ```
 
-```
+```json
 {
   "transitions": {
     "registrations": false
@@ -79,7 +89,7 @@ Disabled
 }
 ```
 
-```
+```json
 {
   "transitions": {
     "registrations": {
