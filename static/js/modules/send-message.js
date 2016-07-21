@@ -211,8 +211,10 @@ var _ = require('underscore'),
   var contact;
   var recipients = [];
   var settings = {};
+  var Promise;
 
-  exports.init = function(Settings, Contact, _translateFn) {
+  exports.init = function($q, Settings, Contact, _translateFn) {
+    Promise = $q;
     contact = Contact;
     translateFn = _translateFn;
     Settings()
@@ -274,7 +276,7 @@ var _ = require('underscore'),
         validatePhoneNumbers, $phoneField, $phoneField.select2('data')
       );
       if (!result.valid) {
-        return result;
+        return Promise.resolve(result);
       }
       validated = result.value;
     }

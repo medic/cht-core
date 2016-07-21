@@ -397,7 +397,7 @@ var feedback = require('../modules/feedback'),
       });
 
       $scope.setupSendMessage = function() {
-        sendMessage.init(Settings, Contact, $translate.instant);
+        sendMessage.init($q, Settings, Contact, $translate.instant);
       };
 
       // get the forms for the forms filter
