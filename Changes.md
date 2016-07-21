@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 0.4.12
+
+### Jul 21, 2016
+
+- Fixed bug in reporting rates for weekly time unit. #2429
+- Log warnings in sentinel when ID collisions happen. #1898
+- Support integration with [medic-gateway](https://github.com/medic/medic-gateway) for sending and receiving SMS medic-api#69 
+
 ## 2.7.3
 
 ### July 18, 2016
