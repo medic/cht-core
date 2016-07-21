@@ -372,8 +372,20 @@ function getLabel(field, locale) {
 }
 
 
+/**
+ * Determine locale/language of a record based on a locale value:
+ *  - Set on the document
+ *  - Reported in a form field named `locale`
+ *  - Configured in the gateway and set on message post
+ *  - Configured in the settings
+ *  - Defaults to 'en'
+ */
 function getLocale(record) {
-    return record.locale || (record.sms_message && record.sms_message.locale) || 'en';
+    return record.locale ||
+           (record.fields && record.fields.locale) ||
+           (record.sms_message && record.sms_message.locale) ||
+           exports.info.locale ||
+           'en';
 }
 
 /*
