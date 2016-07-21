@@ -60,7 +60,7 @@ exports.clinic_by_refid = {
 exports.person_by_phone = {
     map: function (doc) {
         if (doc.type === 'person') {
-            emit([doc.phone], doc);
+            emit([doc.phone], null);
         }
     }
 };
