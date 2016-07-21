@@ -34,19 +34,19 @@ function push {
 if [ "$TRAVIS_BRANCH" == "master" ]; then
     push 'alpha'
 
-# match tags of the form "0.4.12"
+# match tags of the form "0.n.n"
 elif [[ "$TRAVIS_TAG" =~ ^0\.[0-9]+\.[0-9]+$ ]]; then
     push 'release'
 
-# match tags of the form "2.7.3"
+# match tags of the form "2.n.n"
 elif [[ "$TRAVIS_TAG" =~ ^2\.[0-9]+\.[0-9]+$ ]]; then
     push 'release-v2'
 
-# match tags of the form "2.8.0-beta.1"
+# match tags of the form "n.n.n-beta.n"
 elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-beta\.[0-9]+$ ]]; then
     push 'beta'
 
-# match tags of the form "2.8.0-rc.1"
+# match tags of the form "n.n.n-rc.n"
 elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
     push 'rc'
 
