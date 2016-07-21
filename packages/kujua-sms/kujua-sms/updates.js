@@ -263,9 +263,15 @@ var add_sms = exports.add_sms = function(doc, request) {
     };
     options = _.extend(req.form, options);
 
-    // if locale was not passed in form data then check query string
-    if (!options.locale) {
-        options.locale = (req.query && req.query.locale) || utils.info.locale;
+    /**
+     * If a locale value was passed in using form or query string then save
+     * that to the sms_message data, otherwise leave locale undefined.  The
+     * sms_message.locale property can be used as an override when supporting
+     * responses in multiple languages based on a gateway configuration or a
+     * special form field `locale`.
+     */
+    if (!options.locale && (req.query && req.query.locale)) {
+        options.locale = req.query.locale;
     }
 
     var def = utils.info.getForm(options.form),
