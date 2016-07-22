@@ -69,7 +69,7 @@ describe('SendMessage service', function() {
       .catch(done);
   });
 
-  it.only('create doc for non-contact recipient', function(done) {
+  it('create doc for non-contact recipient', function(done) {
 
     id.returns(KarmaUtils.mockPromise(null, 53));
     post.returns(KarmaUtils.mockPromise());
