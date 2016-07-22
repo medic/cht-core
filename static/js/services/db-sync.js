@@ -132,11 +132,13 @@ var _ = require('underscore'),
           return;
         }
         replicate('from', successCallback);
-        replicate('to', successCallback, {
-          filter: function(doc) {
-            // don't try to replicate ddoc back to the server
-            return doc._id !== '_design/medic-client';
-          }
+        Auth('can_edit').then(function() {
+          replicate('to', successCallback, {
+            filter: function(doc) {
+              // don't try to replicate ddoc back to the server
+              return doc._id !== '_design/medic-client';
+            }
+          });
         });
       };
     }
