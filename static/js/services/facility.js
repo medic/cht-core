@@ -35,7 +35,7 @@ angular.module('inboxServices').factory('Facility',
       if (!options.types || options.types.indexOf('person') !== -1) {
         // We want to remove as many of these as possible, because for admins
         // it involves downloading a _huge_ amount of data.
-        $log.warn(new Error('A call to facility with the expectation of having person data'));
+        console.trace('WARNING: call made to FacilitySrv with the expectation of having person data');
       }
 
       var relevantCaches = (options.types ? options.types : CONTACT_TYPES).map(function(type) {
