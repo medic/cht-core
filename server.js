@@ -196,7 +196,7 @@ app.get('/api/upcoming-due-dates', function(req, res) {
 app.get('/api/sms', function(req, res) {
   auth.check(req, 'can_access_gateway_api', null, function(err) {
     if (err) {
-      return serverUtils.error(err, res);
+      return serverUtils.error(err, req, res);
     }
     handleApiCall(req, res, smsGateway);
   });
@@ -205,7 +205,7 @@ app.get('/api/sms', function(req, res) {
 app.post('/api/sms', function(req, res) {
   auth.check(req, 'can_access_gateway_api', null, function(err) {
     if (err) {
-      return serverUtils.error(err, res);
+      return serverUtils.error(err, req, res);
     }
     handleApiPost(req, res, smsGateway);
   });
