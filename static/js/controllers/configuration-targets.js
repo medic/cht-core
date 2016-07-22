@@ -45,7 +45,7 @@
       Settings()
         .then(function(settings) {
           $scope.loading = false;
-          $scope.configuration = settings.tasks.targets;
+          $scope.configuration = settings.tasks && settings.tasks.targets;
         })
         .catch(function(err) {
           $scope.loading = false;
