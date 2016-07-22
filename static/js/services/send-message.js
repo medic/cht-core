@@ -47,7 +47,8 @@ var _ = require('underscore'),
           .map(function(recipient) {
             var phone = recipient.phone ||
                    (recipient.contact && recipient.contact.phone) ||
-                   (recipient.doc && recipient.doc.contact && recipient.doc.contact.phone);
+                   (recipient.doc && recipient.doc.contact && recipient.doc.contact.phone) ||
+                   recipient.text;
             return {
               facility: recipient,
               phone: phone

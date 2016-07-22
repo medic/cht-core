@@ -98,6 +98,36 @@ describe('SendMessage service', function() {
       .catch(done);
   });
 
+  it.only('create doc for non-contact recipient from select2', function(done) {
+
+    id.returns(KarmaUtils.mockPromise(null, 53));
+    post.returns(KarmaUtils.mockPromise());
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
+
+    var recipient = {
+      selected: false,
+      disabled: false,
+      text: '+5552',
+      id: '+5552',
+      _resultId: 'select2-phone-os-result-ef7y-+447890119334',
+      element: {}
+    };
+
+    service(recipient, 'hello')
+      .then(function() {
+        chai.expect(id.callCount).to.equal(1);
+        chai.expect(post.callCount).to.equal(1);
+        assertMessage(post.args[0][0].tasks[0], {
+          from: '+5551',
+          sent_by: 'jack',
+          to: '+5552',
+          uuid: 53,
+        });
+        done();
+      })
+      .catch(done);
+  });
+
   it('normalizes phone numbers', function(done) {
     // Note : only valid phone numbers can be normalized.
 
