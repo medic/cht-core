@@ -97,6 +97,9 @@ curl http://localhost:5984/_fti
 
 ## Develop
 
+### Localization
+All text labels in the app are localized. See [here](https://github.com/medic/medic-docs/blob/master/md/dev/translations.md) for more details on how to add new labels or modify existing ones.
+
 ### Build
 
 ```
