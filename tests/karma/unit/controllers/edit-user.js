@@ -23,7 +23,7 @@ describe('EditUserCtrl controller', function() {
       phone: 'user.phone',
       facility_id: 'abc',
       contact_id: 'xyz',
-      roles: [ 'manager' ],
+      roles: [ 'district-manager' ],
       language: 'zz'
     };
 
@@ -44,7 +44,6 @@ describe('EditUserCtrl controller', function() {
       $provide.value('UpdateUser', UpdateUser);
       $provide.value('UserSettings', UserSettings);
     });
-
 
     inject(function($rootScope, $controller) {
       scope = $rootScope.$new();
@@ -205,19 +204,22 @@ describe('EditUserCtrl controller', function() {
       var updateUserArgs = UpdateUser.getCall(0).args;
       chai.expect(updateUserArgs[0]).to.equal('user.id');
 
-      var settingsUdates = updateUserArgs[1];
-      _.each(
-        ['name', 'fullname', 'email', 'phone', 'roles', 'language', 'facility_id', 'contact_id'],
-        function(field) {
-          chai.expect(settingsUdates).to.have.property(field);
+      var settingsUpdates = updateUserArgs[1];
+      ['name', 'fullname', 'email', 'phone', 'language']
+        .forEach(function(field) {
+          chai.expect(settingsUpdates).to.have.property(field);
         });
-      chai.expect(settingsUdates.name).to.equal(scope.editUserModel.name);
-      chai.expect(settingsUdates.fullname).to.equal(scope.editUserModel.fullname);
-      chai.expect(settingsUdates.email).to.equal(scope.editUserModel.email);
-      chai.expect(settingsUdates.phone).to.equal(scope.editUserModel.phone);
-      chai.expect(settingsUdates.facility_id).to.equal(scope.editUserModel.facility._id);
-      chai.expect(settingsUdates.language).to.equal(scope.editUserModel.language.code);
-      // TODO test roles and contact_id.
+      // users don't have permission to change their own roles, facility, or contact
+      ['roles', 'facility_id', 'contact_id']
+        .forEach(function(field) {
+          chai.expect(settingsUpdates).to.not.have.property(field);
+        });
+      chai.expect(settingsUpdates.name).to.equal(scope.editUserModel.name);
+      chai.expect(settingsUpdates.fullname).to.equal(scope.editUserModel.fullname);
+      chai.expect(settingsUpdates.email).to.equal(scope.editUserModel.email);
+      chai.expect(settingsUpdates.phone).to.equal(scope.editUserModel.phone);
+      chai.expect(settingsUpdates.facility_id).to.equal(scope.editUserModel.facility._id);
+      chai.expect(settingsUpdates.language).to.equal(scope.editUserModel.language.code);
     });
   });
 
@@ -279,30 +281,29 @@ describe('EditUserCtrl controller', function() {
 
       chai.expect(updateUserArgs[0]).to.equal('user.id');
 
-      var settingsUdates = updateUserArgs[1];
-      _.each(
-        ['name', 'fullname', 'email', 'phone', 'roles', 'language', 'facility_id', 'contact_id'],
-        function(field) {
-          chai.expect(settingsUdates).to.have.property(field);
+      var settingsUpdates = updateUserArgs[1];
+      ['name', 'fullname', 'email', 'phone', 'roles', 'language', 'facility_id', 'contact_id']
+        .forEach(function(field) {
+          chai.expect(settingsUpdates).to.have.property(field);
         });
-      chai.expect(settingsUdates.name).to.equal(scope.editUserModel.name);
-      chai.expect(settingsUdates.fullname).to.equal(scope.editUserModel.fullname);
-      chai.expect(settingsUdates.email).to.equal(scope.editUserModel.email);
-      chai.expect(settingsUdates.phone).to.equal(scope.editUserModel.phone);
-      chai.expect(settingsUdates.facility_id).to.equal(scope.editUserModel.facility._id);
-      chai.expect(settingsUdates.language).to.equal(scope.editUserModel.language.code);
-      // TODO test roles and contact_id.
+      chai.expect(settingsUpdates.name).to.equal(scope.editUserModel.name);
+      chai.expect(settingsUpdates.fullname).to.equal(scope.editUserModel.fullname);
+      chai.expect(settingsUpdates.email).to.equal(scope.editUserModel.email);
+      chai.expect(settingsUpdates.phone).to.equal(scope.editUserModel.phone);
+      chai.expect(settingsUpdates.facility_id).to.equal(scope.editUserModel.facility._id);
+      chai.expect(settingsUpdates.contact_id).to.equal(scope.editUserModel.contact_id);
+      chai.expect(settingsUpdates.language).to.equal(scope.editUserModel.language.code);
+      chai.expect(settingsUpdates.roles).to.deep.equal(['district-manager', 'kujua_user', 'data_entry', 'district_admin']);
 
       var userUdates = updateUserArgs[2];
-      _.each(
-        ['name', 'password', 'roles', 'facility_id'],
-        function(field) {
+      ['name', 'password', 'roles', 'facility_id']
+        .forEach(function(field) {
           chai.expect(userUdates).to.have.property(field);
         });
       chai.expect(userUdates.name).to.equal(scope.editUserModel.name);
       chai.expect(userUdates.password).to.equal(scope.editUserModel.password);
       chai.expect(userUdates.facility_id).to.equal(scope.editUserModel.facility._id);
-      // TODO test roles.
+      chai.expect(userUdates.roles).to.deep.equal(['district-manager', 'kujua_user', 'data_entry', 'district_admin']);
     });
   });
 });

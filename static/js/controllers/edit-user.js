@@ -145,18 +145,22 @@ var modal = require('../modules/modal');
         return [type].concat(rolesMap[type]);
       };
 
-      var getSettingsUpdates = function() {
-        return {
+      var getSettingsUpdates = function(updatingSelf) {
+        var settings = {
           name: $scope.editUserModel.name,
           fullname: $scope.editUserModel.fullname,
           email: $scope.editUserModel.email,
           phone: $scope.editUserModel.phone,
-          roles: getRoles($scope.editUserModel.type, true),
           language: $scope.editUserModel.language &&
-                    $scope.editUserModel.language.code,
-          facility_id: $('#edit-user-profile [name=facility]').val(),
-          contact_id: $('#edit-user-profile [name=contact]').val()
+                    $scope.editUserModel.language.code
         };
+        if (!updatingSelf) {
+          // users don't have permission to update their own security settings
+          settings.roles = getRoles($scope.editUserModel.type, true);
+          settings.facility_id = $('#edit-user-profile [name=facility]').val();
+          settings.contact_id = $('#edit-user-profile [name=contact]').val();
+        }
+        return settings;
       };
 
       var getUserUpdates = function() {
@@ -201,7 +205,7 @@ var modal = require('../modules/modal');
       $scope.editUserSettings = function() {
         $scope.errors = {};
         if (validateName()) {
-          saveEdit('#edit-user-settings', $scope.editUserModel.id, getSettingsUpdates());
+          saveEdit('#edit-user-settings', $scope.editUserModel.id, getSettingsUpdates(true));
         }
       };
 
