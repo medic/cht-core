@@ -23,6 +23,9 @@ var getClinic = function(id, callback) {
 };
 
 var getContact = function(contactId, clinicId, callback) {
+  if (!contactId) {
+    return getClinic(clinicId, callback);
+  }
   db.medic.get(contactId, function(err, contact) {
     if (err) {
       if (err.statusCode === 404) {

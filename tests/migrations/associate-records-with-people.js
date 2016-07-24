@@ -42,7 +42,7 @@ var contact = {
   _rev: '18-e29f1c960a0555eac80a5ecebb0f48fe',
   type: 'person',
   name: 'Abram Alred',
-  phone: '+64274622636',
+  phone: '+64274655536',
   parent: clinic
 };
 
@@ -60,7 +60,7 @@ var outgoingMessage = {
         {
           from: '0211111111',
           sent_by: 'gareth',
-          to: '+64274622636',
+          to: '+64274655536',
           facility: {
             _id: 'eeb17d6d-5dde-c2c0-8049b4903e2fb0a5',
             _rev: '3-844b233140608c7dfc14ee77a5f40739',
@@ -71,7 +71,7 @@ var outgoingMessage = {
               _rev: '2-a4d5537f8c570ec59a2c23cf541f9fea',
               type: 'person',
               name: 'Abram Alred',
-              phone: '+64274622636'
+              phone: '+64274655536'
             },
             parent: {
               _id: 'eeb17d6d-5dde-c2c0-2ecb7b280392fae8',
@@ -91,6 +91,49 @@ var outgoingMessage = {
                 },
                 parent: {}
               }
+            }
+          },
+          message: 'hey',
+          uuid: '1a69cd4d-abe1-ad93-87aeb4bc2202dae3'
+        }
+      ],
+      state: 'pending',
+      state_history: [
+        {
+          state: 'pending',
+          timestamp: '2015-03-26T20:54:19.143Z'
+        }
+      ]
+    }
+  ],
+  kujua_message: true,
+  type: 'data_record',
+  sent_by: 'gareth'
+};
+
+var outgoingMessageWithoutContactId = {
+  _id: '1a69cd4dabe1ad9387aeb4bc220607be',
+  _rev: '1-e8e08a0b9ca35de453ea2f23b09df2b0',
+  errors: [],
+  form: null,
+  from: '0211111111',
+  reported_date: 1427403259117,
+  related_entities: {},
+  tasks: [
+    {
+      messages: [
+        {
+          from: '0211111111',
+          sent_by: 'gareth',
+          to: '+64274655536',
+          facility: {
+            _id: 'eeb17d6d-5dde-c2c0-8049b4903e2fb0a5',
+            _rev: '3-844b233140608c7dfc14ee77a5f40739',
+            type: 'clinic',
+            name: 'Sagebush',
+            contact: {
+              name: 'Abram Alred',
+              phone: '+64274655536'
             }
           },
           message: 'hey',
@@ -176,7 +219,7 @@ var incomingMessage = {
   _id: '7fd3a9e4a8089b42af94fed47a32ef71',
   _rev: '3-d2b108f1f628e82b62909f85b48cbb75',
   type: 'data_record',
-  from: '+64274622636',
+  from: '+64274655536',
   related_entities: {
     clinic: {
       _id: 'eeb17d6d-5dde-c2c0-8049b4903e2fb0a5',
@@ -188,7 +231,7 @@ var incomingMessage = {
         _rev: '17-0e13e75199e34c49c31dd3b0422172e8',
         type: 'person',
         name: 'Abram Alred',
-        phone: '+64274622636'
+        phone: '+64274655536'
       },
       parent: {
         _id: 'eeb17d6d-5dde-c2c0-2ecb7b280392fae8',
@@ -218,7 +261,7 @@ var incomingMessage = {
     message_id: '2221',
     sent_timestamp: '1429062964602',
     message: 'incoming 2',
-    from: '+64274622636',
+    from: '+64274655536',
     type: 'sms_message',
     form: 'INCOMING',
     locale: 'en'
@@ -398,6 +441,29 @@ exports['run migrates outgoing message'] = function(test) {
     var message = saveDoc.args[0][0].tasks[0].messages[0];
     test.equals(message.facility, null);
     test.deepEqual(message.contact, contact);
+    test.done();
+  });
+};
+
+exports['run migrates outgoing message to facility without contact id - #2545'] = function(test) {
+  test.expect(10);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
+  var getDoc = sinon.stub(db.medic, 'get');
+  getDoc.onCall(0).callsArgWith(1, null, clone(outgoingMessageWithoutContactId));
+  getDoc.onCall(1).callsArgWith(1, null, clinic);
+  var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
+  migration.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(getView.callCount, 1);
+    test.equals(getDoc.callCount, 2);
+    test.equals(getDoc.args[0][0], 'a');
+    test.equals(getDoc.args[1][0], clinic._id);
+    test.equals(saveDoc.callCount, 1);
+    var message = saveDoc.args[0][0].tasks[0].messages[0];
+    test.equals(message.facility, null);
+    test.deepEqual(message.contact.phone, clinic.contact.phone);
+    test.deepEqual(message.contact.name, clinic.contact.name);
+    test.deepEqual(message.contact.parent, clinic);
     test.done();
   });
 };
