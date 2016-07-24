@@ -95,7 +95,7 @@ exports['error handles unknown errors'] = function(test) {
   test.equals(writeHead.args[0][0], 500);
   test.equals(writeHead.args[0][1]['Content-Type'], 'text/plain');
   test.equals(end.callCount, 1);
-  test.equals(end.args[0][0], undefined);
+  test.equals(end.args[0][0], 'Server error');
   test.done();
 };
 

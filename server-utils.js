@@ -39,14 +39,14 @@ module.exports = {
     if (typeof err === 'string') {
       return module.exports.serverError(err, req, res);
     }
-    if (err.code === 500) {
-      return module.exports.serverError(err.message, req, res);
-    }
-    if (err.code === 401) {
+    var code = err.code || err.statusCode || 500;
+    var message = err.message || err.reason;
+    if (code === 401) {
       return module.exports.notLoggedIn(req, res, showPrompt);
     }
-    var code = (err.code || err.statusCode) || 500;
-    var message = err.message || err.reason;
+    if (code === 500) {
+      return module.exports.serverError(message, req, res);
+    }
     respond(req, res, code, message);
   },
 
@@ -79,8 +79,8 @@ module.exports = {
   /**
    * Only to be used when handling unexpected errors.
    */
-  serverError: function(err, req, res) {
-    console.error('Server error:\n', err);
-    respond(req, res, 500, 'Server error', err);
+  serverError: function(message, req, res) {
+    console.error('Server error:\n', message);
+    respond(req, res, 500, 'Server error', message);
   }
 };
