@@ -1,5 +1,3 @@
-var _ = require('underscore');
-
 angular.module('inboxServices').factory('ChildFacility',
   function(DB) {
 
