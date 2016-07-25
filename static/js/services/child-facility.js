@@ -23,7 +23,7 @@ angular.module('inboxServices').factory('ChildFacility',
       }
       return DB().query('medic-client/total_clinics_by_facility', params)
         .then(function(result) {
-          return _.pluck(result.rows, 'doc');
+          return result.rows;
         });
     };
 
