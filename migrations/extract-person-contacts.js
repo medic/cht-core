@@ -113,7 +113,7 @@ var createPerson = function(id, callback) {
   db.medic.get(id, function(err, facility) {
     if (err) {
       if (err.statusCode === 404) {
-        return callback(new Error('facility ' + facility._id + ' not found.'));
+        return callback(new Error('facility ' + id + ' not found.'));
       }
       return callback(err);
     }
@@ -246,7 +246,7 @@ var updateParents = function(id, callback) {
   db.medic.get(id, function(err, facility) {
     if (err) {
       if (err.statusCode === 404) {
-        return callback(new Error('facility ' + facility._id + ' not found.'));
+        return callback(new Error('facility ' + id + ' not found.'));
       }
       return callback(err);
     }
