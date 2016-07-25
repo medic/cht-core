@@ -69,6 +69,9 @@ var _ = require('underscore'),
         });
         $scope.hasReports = liveList.count() > 0;
         liveList.refresh();
+        if ($state.params.id) {
+          liveList.setSelected($state.params.id);
+        }
       };
 
       var setSelected = function(report) {
@@ -379,7 +382,7 @@ var _ = require('underscore'),
         });
       };
 
-      if (!$stateParams.id) {
+      if (!$state.params.id) {
         $scope.selectReport();
       }
 
