@@ -171,12 +171,11 @@ var _ = require('underscore'),
             // additional filtering for this facility
             var saved_data = [];
             var idx = doc.type === 'health_center' ? 4 : 3;
-            for (var i in data.results.rows) {
-              if (doc._id === data.results.rows[i].doc.key[idx]) {
-                // keep orig ordering
-                saved_data.unshift(data.results.rows[i].doc);
+            data.rows.forEach(function(row) {
+              if (doc._id === row.doc.key[idx]) {
+                saved_data.push(row.doc);
               }
-            }
+            });
             return saved_data;
           });
       };
