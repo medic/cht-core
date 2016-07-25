@@ -483,6 +483,12 @@ var _ = require('underscore'),
         $scope.loading = true;
         $scope.$on('formLoadingComplete', function() {
           $scope.search();
+          var doc = $scope.selected &&
+                    $scope.selected[0] &&
+                    $scope.selected[0].report;
+          if (doc) {
+            setTitle(doc);
+          }
         });
       }
 
