@@ -2,6 +2,7 @@
 
   <div class="form-select">
     <a class="btn btn-link" ng-class="{ 'disabled': filters.form === form.meta.code }" ng-click="setForm(form.meta.code)" ng-repeat="form in forms">{{form.meta.label | translateFrom}}</a>
+    <div class="loader" ng-hide="forms"></div>
   </div>
 
   <div class="time-select" ng-show="district">
@@ -12,10 +13,11 @@
     <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'year' && filters.quantity === 5 }" ng-click="setTime({ time_unit: 'year', quantity: 5 })">Last 5 Years</a>
   </div>
   
-  <div class="row facility-select" ng-show="!district">
+  <div class="row facility-select" ng-show="filters.form && !district">
     <div class="col-sm-12 facility" ng-repeat="district in districts | orderBy:'name'" ng-click="setDistrict(district)">
       {{district.name}}
     </div>
+    <div class="loader" ng-hide="districts"></div>
   </div>
 
   <div ng-show="district" class="district-totals">

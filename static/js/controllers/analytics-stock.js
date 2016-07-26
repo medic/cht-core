@@ -24,7 +24,6 @@ var _ = require('underscore'),
       'ngInject';
 
       $scope.facilities = [];
-      $scope.districts = [];
 
       Settings()
         .then(function(settings) {
