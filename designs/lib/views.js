@@ -65,14 +65,6 @@ exports.person_by_phone = {
     }
 };
 
-exports.ohw_registered_patients = {
-    map: function(doc) {
-        if (doc.form === 'ORPT' && doc.patient_id) {
-            emit(doc.patient_id, null);
-        }
-    }
-};
-
 exports.registered_patients = {
     map: function(doc) {
         if (doc.form &&
