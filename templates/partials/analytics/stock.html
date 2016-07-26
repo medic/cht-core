@@ -4,14 +4,6 @@
     <a class="btn btn-link" ng-class="{ 'disabled': filters.form === form.meta.code }" ng-click="setForm(form.meta.code)" ng-repeat="form in forms">{{form.meta.label | translateFrom}}</a>
     <div class="loader" ng-hide="forms"></div>
   </div>
-
-  <div class="time-select" ng-show="district">
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'month' && filters.quantity === 1 }" ng-click="setTime({ time_unit: 'month', quantity: 1 })">Last 1 Month</a>
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'month' && filters.quantity === 3 }" ng-click="setTime({ time_unit: 'month', quantity: 3 })">Last 3 Months</a>
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'month' && filters.quantity === 6 }" ng-click="setTime({ time_unit: 'month', quantity: 6 })">Last 6 Months</a>
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'year' && filters.quantity === 1 }" ng-click="setTime({ time_unit: 'year', quantity: 1 })">Last 1 Year</a>
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'year' && filters.quantity === 5 }" ng-click="setTime({ time_unit: 'year', quantity: 5 })">Last 5 Years</a>
-  </div>
   
   <div class="row facility-select" ng-show="filters.form && !district">
     <div class="col-sm-12 facility" ng-repeat="district in districts | orderBy:'name'" ng-click="setDistrict(district)">
@@ -59,6 +51,14 @@
         <h3 translate>analytics.stock.incomplete</h3>
       </div>
     </div>
+  </div>
+
+  <div class="time-select" ng-show="district">
+    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'month' && filters.quantity === 1 }" ng-click="setTime({ time_unit: 'month', quantity: 1 })">Last 1 Month</a>
+    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'month' && filters.quantity === 3 }" ng-click="setTime({ time_unit: 'month', quantity: 3 })">Last 3 Months</a>
+    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'month' && filters.quantity === 6 }" ng-click="setTime({ time_unit: 'month', quantity: 6 })">Last 6 Months</a>
+    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'year' && filters.quantity === 1 }" ng-click="setTime({ time_unit: 'year', quantity: 1 })">Last 1 Year</a>
+    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'year' && filters.quantity === 5 }" ng-click="setTime({ time_unit: 'year', quantity: 5 })">Last 5 Years</a>
   </div>
 
   <div class="facility-select" ng-show="district && district.type === 'district_hospital'">
