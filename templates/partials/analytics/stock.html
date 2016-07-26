@@ -4,7 +4,7 @@
     <a class="btn btn-link" ng-class="{ 'disabled': filters.form === form.meta.code }" ng-click="setForm(form.meta.code)" ng-repeat="form in forms">{{form.meta.label | translateFrom}}</a>
   </div>
 
-  <div class="time-select">
+  <div class="time-select" ng-show="district">
     <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'month' && filters.quantity === 1 }" ng-click="setTime({ time_unit: 'month', quantity: 1 })">Last 1 Month</a>
     <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'month' && filters.quantity === 3 }" ng-click="setTime({ time_unit: 'month', quantity: 3 })">Last 3 Months</a>
     <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'month' && filters.quantity === 6 }" ng-click="setTime({ time_unit: 'month', quantity: 6 })">Last 6 Months</a>
