@@ -37,7 +37,7 @@ function completeSetup(err) {
     }
 }
 
-db.request({ db: 'medic', doc: '_design/kujua-sentinel' }, function(err, doc) {
+db.medic.get('_design/kujua-sentinel', function(err, doc) {
     var base = require('./designs/base.json'),
         matches;
 
