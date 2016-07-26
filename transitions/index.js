@@ -4,6 +4,9 @@ var _ = require('underscore'),
     utils = require('../lib/utils'),
     logger = require('../lib/logger'),
     config = require('../config'),
+    db = require('../db'),
+    PROCESSING_DELAY = 50, // ms
+    PROGRESS_REPORT_INTERVAL = 500, // items
     transitions = {};
 
 /*
@@ -95,7 +98,7 @@ var canRun = function(options) {
  * did nothing and saving is unnecessary.  If results has a true value in
  * it then a change was made.
  */
-var finalize = function(options) {
+var finalize = function(options, callback) {
     var change = options.change,
         audit = options.audit,
         results = options.results;
@@ -105,32 +108,33 @@ var finalize = function(options) {
     var changed = _.some(results, function(i) {
         return Boolean(i);
     });
-    if (changed) {
-        logger.debug(
-            'calling audit.saveDoc on doc %s seq %s',
-            change.id, change.seq
-        );
-        audit.saveDoc(change.doc, function(err) {
-            // todo: how to handle a failed save? for now just
-            // waiting until next change and try again.
-            if (err) {
-                logger.error(
-                    'error saving changes on doc %s seq %s: %s',
-                    change.id, change.seq, JSON.stringify(err)
-                );
-            } else {
-                logger.info(
-                    'saved changes on doc %s seq %s',
-                    change.id, change.seq
-                );
-            }
-        });
-    } else {
+    if (!changed) {
         logger.debug(
             'nothing changed skipping audit.saveDoc for doc %s seq %s',
             change.id, change.seq
         );
+        return callback();
     }
+    logger.debug(
+        'calling audit.saveDoc on doc %s seq %s',
+        change.id, change.seq
+    );
+    audit.saveDoc(change.doc, function(err) {
+        // todo: how to handle a failed save? for now just
+        // waiting until next change and try again.
+        if (err) {
+            logger.error(
+                'error saving changes on doc %s seq %s: %s',
+                change.id, change.seq, JSON.stringify(err)
+            );
+        } else {
+            logger.info(
+                'saved changes on doc %s seq %s',
+                change.id, change.seq
+            );
+        }
+        return callback();
+    });
 };
 
 /*
@@ -200,7 +204,7 @@ var applyTransition = function(options, callback) {
     });
 };
 
-var applyTransitions = function(options) {
+var applyTransitions = function(options, callback) {
     var operations = [];
     _.each(transitions, function(transition, key) {
         var opts = {
@@ -242,18 +246,62 @@ var applyTransitions = function(options) {
             change: options.change,
             audit: options.audit,
             results: results
+        }, callback);
+    });
+};
+
+var getMetaData = function(callback) {
+    db.medic.get('sentinel-meta-data', function(err, doc) {
+        if (err) {
+            if (err.statusCode !== 404) {
+                return callback(err);
+            }
+            doc = {
+                _id: 'sentinel-meta-data',
+                processed_seq: 0
+            };
+        }
+        callback(null, doc);
+    });
+};
+
+var getProcessedSeq = function(callback) {
+    getMetaData(function(err, doc) {
+        if (err) {
+            logger.error('Error getting meta data', err);
+            return callback(err);
+        }
+        callback(null, doc.processed_seq);
+    });
+};
+
+var updateMetaData = function(seq, callback) {
+    getMetaData(function(err, metaData) {
+        if (err) {
+            logger.error('Error updating metaData', err);
+            return callback();
+        }
+        metaData.processed_seq = seq;
+        db.medic.insert(metaData, function(err) {
+            if (err) {
+                logger.error('Error updating metaData', err);
+            }
+            return callback();
         });
     });
 };
 
 var attach = function() {
 
-    var db = require('../db'),
-        audit = require('couchdb-audit')
+    var audit = require('couchdb-audit')
             .withNano(db, db.settings.db, db.settings.auditDb, db.settings.ddoc, db.settings.username);
 
-    var backlog_delay = 500; // ms
-    var progress_interval = 500; // items
+    var processed = 0;
+    var changeQueue = async.queue(function(task, callback) {
+        processChange(task, function() {
+            _.delay(callback, PROCESSING_DELAY);
+        });
+    });
 
     var match_types = [
         'data_record',
@@ -262,127 +310,57 @@ var attach = function() {
         'district'
     ];
 
-    /* Tell everyone we're here */
+    // tell everyone we're here
     logger.info('backlog: processing enabled');
 
-    var feed = new follow.Feed({
-        db: process.env.COUCH_URL,
-        include_docs: true,
-        // start from last valid transition ran, or the beginning of the
-        // changes feed. since: 0 will re-run through all changes.
-        since: config.last_valid_seq || 'now'
-    });
-
-    feed.filter = function(doc) {
-        return match_types.indexOf(doc.type) >= 0;
-    };
-
-    feed.on('change', function(change) {
-        logger.debug('change event on doc %s seq %s', change.id, change.seq);
-        applyTransitions({
-            change: change,
-            audit: audit,
-            db: db
-        });
-    });
-
-    feed.follow();
-    logger.info('backlog: fetching changes feed...');
-
-    /*
-     * Process changes feed docs in the past where transitions have not run or
-     * transitions had errors.
-     */
-    db.medic.changes({
-        feed: 'polling',
-        since: config.last_valid_seq || 'now',
-        descending: true
-    }, function (err, data) {
-
-        /* Keep statistics */
-        var processed = 0, failures = 0;
-
+    getProcessedSeq(function(err, processedSeq) {
         if (err) {
-            return logger.error('backlog error: ', err);
+            logger.error('backlog: error fetching processed seq', err);
+            return;
         }
-
-        logger.info(
-          'backlog: processing %d items, %dms per item',
-            _.size(data.results), backlog_delay
-        );
-
-        /* For each change in feed... */
-        async.eachSeries(data.results,
-
-            /* Item iterator */
-            function (change, next_fn) {
-
-                /* Convenience */
-                var id = change.id;
-
-                /* Skip uninteresting documents */
-                if (change.deleted || id.match(/^_design\//)) {
-                    return next_fn();
-                }
-
-                /* Be somewhat informative */
-                if (processed > 0 && (processed % progress_interval) === 0) {
-                    logger.info('backlog: %d items processed', processed);
-                }
-
-                /* Fetch entire changed document */
-                db.medic.get(id, function(e, doc) {
-                    if (e) {
-                        failures++;
-                        logger.error('backlog: fetch failed for %s (%s)', id, e);
-                        return _.delay(next_fn, backlog_delay);
-                    }
-                    change.doc = doc;
-                    if (hasTransitionErrors(doc) || !hasTransitions(doc)) {
-                        logger.debug(
-                            'backlog: processing matched on %s seq %s',
-                            id, change.seq
-                        );
-                        applyTransitions({
-                            change: change,
-                            audit: audit,
-                            db: db
-                        });
-                    } else {
-                        logger.debug(
-                            'backlog: processing skipped on %s seq %s',
-                            id, change.seq
-                        );
-                    }
-                    /* Next */
-                    processed++;
-                    return _.delay(next_fn, backlog_delay);
-                });
-            },
-
-            /* Completion handler */
-            function () {
-                logger.info(
-                    'backlog: processing complete, %d failures', failures
-                );
+        logger.info('backlog: fetching changes feed, starting from %s', processedSeq);
+        var feed = new follow.Feed({
+            db: process.env.COUCH_URL,
+            since: processedSeq
+        });
+        feed.on('change', function(change) {
+            // skip uninteresting documents
+            if (change.deleted || change.id.match(/^_design\//)) {
+                return;
             }
-        );
+            changeQueue.push(change);
+        });
+        feed.follow();
     });
-};
 
-var hasTransitions = function(doc) {
-    return Object.keys(doc.transitions || {}).length > 0;
-};
-
-var hasTransitionErrors = function(doc) {
-    var transitions = doc.transitions || {};
-    for (var key in transitions) {
-        if (transitions.hasOwnProperty(key)) {
-            if (!transitions[key].ok) {
-                return true;
-            }
+    var processChange = function(change, callback) {
+        if (!change) {
+            return callback();
         }
-    }
+        var id = change.id;
+        db.medic.get(id, function(err, doc) {
+            if (err) {
+                logger.error('backlog: fetch failed for %s (%s)', id, err);
+                return callback();
+            }
+            if (match_types.indexOf(doc.type) === -1) {
+                // not a doc we know how to transition - ignore
+                return callback();
+            }
+            if (processed > 0 && (processed % PROGRESS_REPORT_INTERVAL) === 0) {
+                logger.info('backlog: %d items processed', processed);
+            }
+            logger.debug('change event on doc %s seq %s', change.id, change.seq);
+            module.exports.applyTransitions({
+                change: change,
+                audit: audit,
+                db: db
+            }, function() {
+                processed++;
+                updateMetaData(change.seq, callback);
+            });
+        });
+    };
 };
 
 module.exports = {

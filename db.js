@@ -38,7 +38,12 @@ if (couchUrl) {
     // Running tests only
     module.exports = {
         fti: function() {},
-        medic: { view: function() {} }
+        medic: {
+            view: function() {},
+            get: function() {},
+            insert: function() {}
+        },
+        settings: {}
     };
 } else {
     console.log(

@@ -28,10 +28,6 @@
         "registered_patients": {
             "map": "function (doc) {\n        if (doc.form &&\n            (!doc.errors || doc.errors.length === 0) &&\n            doc.patient_id &&\n            doc.transitions &&\n            doc.transitions.registration &&\n            doc.transitions.registration.ok ) {\n                emit(String(doc.patient_id), null);\n        }\n    }"
         },
-        "last_valid_seq": {
-            "map": "function (doc) {\n        var transitions = doc.transitions || {};\n            keys = Object.keys(transitions);\n\n        keys.forEach(function(key) {\n            emit(key, transitions[key]);\n        });\n    }",
-            "reduce": "function (keys, values) {\n        return values.reduce(function(memo, result) {\n            if (memo.ok) {\n                if (!result.ok || result.seq > memo.seq) {\n                   return result;\n                } else {\n                   return memo;\n                }\n            } else if (result.seq < memo.seq) {\n                return result;\n            } else {\n                return memo;\n            }\n        }, { ok: true, seq: 0 });\n    }"
-        },
         "data_records_by_form_year_week_clinic_id_and_reported_date": {
             "map": "function (doc) {\n        if (doc.type === 'data_record'\n                && doc.contact\n                && doc.contact.parent\n                && doc.year\n                && (doc.week || doc.week_number)\n                && doc.form\n                && doc.reported_date) {\n            emit([\n                doc.form,\n                doc.year,\n                doc.week || doc.week_number,\n                doc.contact.parent._id,\n                doc.reported_date\n            ], null);\n        }\n    }"
         },

@@ -86,31 +86,6 @@ exports.registered_patients = {
     }
 }
 
-exports.last_valid_seq = {
-    map: function(doc) {
-        var transitions = doc.transitions || {};
-            keys = Object.keys(transitions);
-
-        keys.forEach(function(key) {
-            emit(key, transitions[key]);
-        });
-    }, reduce: function(keys, values) {
-        return values.reduce(function(memo, result) {
-            if (memo.ok) {
-                if (!result.ok || result.seq > memo.seq) {
-                   return result;
-                } else {
-                   return memo;
-                }
-            } else if (result.seq < memo.seq) {
-                return result;
-            } else {
-                return memo;
-            }
-        }, { ok: true, seq: 0 });
-    }
-};
-
 exports.data_records_by_form_year_week_clinic_id_and_reported_date = {
     map: function (doc) {
         if (doc.type === 'data_record'

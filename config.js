@@ -5,23 +5,6 @@ var _ = require('underscore'),
     config = require('./defaults'),
     translations = {};
 
-function initInfo(callback) {
-    var db = require('./db'),
-        self = module.exports;
-
-    db.medic.view('kujua-sentinel', 'last_valid_seq', {
-        reduce: true
-    }, function(err, data) {
-        if (err) {
-            logger.info('Error getting last_valid_seq', err);
-            return callback(err);
-        }
-        var first = data.rows.pop();
-        self.last_valid_seq = (first && first.value.seq);
-        callback();
-    });
-}
-
 function loadTranslations() {
     var options = {
         startkey: [ 'translations', false ],
@@ -39,7 +22,7 @@ function loadTranslations() {
     });
 }
 
-function initFeed(callback) {
+function initFeed() {
     /*
      * Use since=now on ddoc listener so we don't replay an old change.
      */
@@ -61,7 +44,6 @@ function initFeed(callback) {
     });
 
     feed.follow();
-    callback();
 }
 
 function initConfig(data, callback) {
@@ -75,15 +57,13 @@ function initConfig(data, callback) {
         config.schedule_evening_hours,
         config.schedule_evening_minutes
     );
-    initFeed(function() {
-        initInfo(callback);
-    });
+    initFeed();
+    callback();
 }
 
 module.exports = {
     _initConfig: initConfig,
     _initFeed: initFeed,
-    _initInfo: initInfo,
     get: function(key) {
         return config[key];
     },
@@ -99,6 +79,5 @@ module.exports = {
         });
         loadTranslations();
     },
-    db_info: null,
-    last_valid_seq: null
+    db_info: null
 };

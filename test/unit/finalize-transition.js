@@ -26,8 +26,9 @@ exports['save not called if transition results are null'] = function(test) {
         change: { doc: doc },
         audit: audit,
         results: null
+    }, function() {
+        test.done();
     });
-    test.done();
 };
 
 exports['save is called if transition results have changes'] = function(test) {

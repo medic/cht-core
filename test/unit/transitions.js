@@ -1,13 +1,31 @@
 var _ = require('underscore'),
     sinon = require('sinon'),
+    follow = require('follow'),
+    audit = require('couchdb-audit'),
     config = require('../../config'),
+    db = require('../../db'),
     transitions = require('../../transitions');
 
 exports.tearDown = function(callback) {
-  if (config.get.restore) {
-    config.get.restore();
-  }
-  callback();
+    if (config.get.restore) {
+        config.get.restore();
+    }
+    if (db.medic.get.restore) {
+        db.medic.get.restore();
+    }
+    if (db.medic.insert.restore) {
+        db.medic.insert.restore();
+    }
+    if (transitions.applyTransitions.restore) {
+        transitions.applyTransitions.restore();
+    }
+    if (follow.Feed.restore) {
+        follow.Feed.restore();
+    }
+    if (audit.withNano.restore) {
+        audit.withNano.restore();
+    }
+    callback();
 };
 
 exports['has canRun fn'] = function(test) {
@@ -125,55 +143,116 @@ exports['canRun returns true if transition is not defined'] = function(test) {
     test.done();
 };
 
-
 exports['describe loadTransitions'] = function(test) {
-  // A list of states to test, first arg is the `transitions` config value and
-  // second is whether you expect loadTransition to get called.
-  var tests = [
-    // empty configuration
-    [{}, false],
-    [undefined, false],
-    [null, false],
-    // falsey configuration
-    [{registration: null}, false],
-    [{registration: undefined}, false],
-    // transition not available
-    [{foo: true}, false],
-    // available and enabled
-    [{registration: {}}, true],
-    [{registration: true}, true],
-    [{registration: 'x'}, true],
-    [{
-      registration: {
-        param: 'val'
-      }
-    }, true],
-    // support old style
-    [{
-      registration: {
-        load: '../etc/passwd'
-      }
-    }, true],
-    // support old style disable property
-    [{
-      registration: {
-        disable: true
-      }
-    }, false],
-    [{
-      registration: {
-        disable: false
-      }
-    }, true]
-  ];
-  test.expect(tests.length);
-  tests.forEach(function(t) {
-    sinon.stub(config, 'get').returns(t[0]);
-    var stub = sinon.stub(transitions, '_loadTransition');
-    transitions._loadTransitions();
-    test.equal(stub.called, t[1]);
-    stub.restore();
-    config.get.restore();
-  });
-  test.done();
+    // A list of states to test, first arg is the `transitions` config value and
+    // second is whether you expect loadTransition to get called.
+    var tests = [
+        // empty configuration
+        [{}, false],
+        [undefined, false],
+        [null, false],
+        // falsey configuration
+        [{registration: null}, false],
+        [{registration: undefined}, false],
+        // transition not available
+        [{foo: true}, false],
+        // available and enabled
+        [{registration: {}}, true],
+        [{registration: true}, true],
+        [{registration: 'x'}, true],
+        [{
+            registration: {
+                param: 'val'
+            }
+        }, true],
+        // support old style
+        [{
+            registration: {
+                load: '../etc/passwd'
+            }
+        }, true],
+        // support old style disable property
+        [{
+            registration: {
+                disable: true
+            }
+        }, false],
+        [{
+            registration: {
+                disable: false
+            }
+        }, true]
+    ];
+    test.expect(tests.length);
+    tests.forEach(function(t) {
+        sinon.stub(config, 'get').returns(t[0]);
+        var stub = sinon.stub(transitions, '_loadTransition');
+        transitions._loadTransitions();
+        test.equal(stub.called, t[1]);
+        stub.restore();
+        config.get.restore();
+    });
+    test.done();
+};
+
+exports['attach handles missing meta data doc'] = function(test) {
+    var get = sinon.stub(db.medic, 'get');
+    get.withArgs('sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
+    get.withArgs('abc').callsArgWith(1, null, { type: 'data_record' });
+    var insert = sinon.stub(db.medic, 'insert').callsArg(1);
+    var on = sinon.stub();
+    var start = sinon.stub();
+    var feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start });
+    var applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
+    sinon.stub(audit, 'withNano');
+    transitions.attach();
+    test.equal(feed.callCount, 1);
+    test.equal(feed.args[0][0].since, 0);
+    test.equal(on.callCount, 1);
+    test.equal(on.args[0][0], 'change');
+    test.equal(start.callCount, 1);
+    // invoke the change handler
+    on.args[0][1]({ id: 'abc', seq: 55 });
+    // wait for the queue processor
+    setTimeout(function() {
+        test.equal(get.callCount, 3);
+        test.equal(applyTransitions.callCount, 1);
+        test.equal(applyTransitions.args[0][0].change.id, 'abc');
+        test.equal(applyTransitions.args[0][0].change.seq, 55);
+        test.equal(insert.callCount, 1);
+        test.equal(insert.args[0][0]._id, 'sentinel-meta-data');
+        test.equal(insert.args[0][0].processed_seq, 55);
+        test.done();
+    });
+};
+
+exports['attach handles existing meta data doc'] = function(test) {
+    var get = sinon.stub(db.medic, 'get');
+    get.withArgs('sentinel-meta-data').callsArgWith(1, null, { _id: 'sentinel-meta-data', processed_seq: 22 });
+    get.withArgs('abc').callsArgWith(1, null, { type: 'data_record' });
+    var insert = sinon.stub(db.medic, 'insert').callsArg(1);
+    var on = sinon.stub();
+    var start = sinon.stub();
+    var feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start });
+    var applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
+    sinon.stub(audit, 'withNano');
+    transitions.attach();
+    test.equal(feed.callCount, 1);
+    test.equal(feed.args[0][0].since, 22);
+    test.equal(on.callCount, 1);
+    test.equal(on.args[0][0], 'change');
+    test.equal(start.callCount, 1);
+    // invoke the change handler
+    on.args[0][1]({ id: 'abc', seq: 55 });
+    // wait for the queue processor
+    setTimeout(function() {
+        test.equal(get.callCount, 3);
+        test.equal(applyTransitions.callCount, 1);
+        test.equal(applyTransitions.args[0][0].change.id, 'abc');
+        test.equal(applyTransitions.args[0][0].change.seq, 55);
+        test.equal(insert.callCount, 1);
+        test.equal(insert.args[0][0]._id, 'sentinel-meta-data');
+        test.equal(insert.args[0][0].processed_seq, 55);
+        test.done();
+    });
 };
