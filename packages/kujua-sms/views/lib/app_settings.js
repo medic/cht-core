@@ -180,7 +180,7 @@ module.exports = {
       "roles": [
         "national_admin",
         "district_admin",
-        "date_entry",
+        "data_entry",
         "gateway"
       ],
     },
