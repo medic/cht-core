@@ -410,8 +410,3 @@ exports['when silence_type is comma separated act on multiple schedules'] = func
         test.done();
     });
 };
-
-exports['is not repeatable'] = function(test) {
-    test.equals(Boolean(transition.repeatable), false);
-    test.done();
-};
