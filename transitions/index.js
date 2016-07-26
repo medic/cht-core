@@ -38,6 +38,46 @@ var KNOWN_DOC_TYPES = [
     'district'
 ];
 
+var processed = 0;
+
+var changeQueue = async.queue(function(task, callback) {
+    processChange(task, function() {
+        _.delay(callback, PROCESSING_DELAY);
+    });
+});
+
+var processChange = function(change, callback) {
+    if (!change) {
+        return callback();
+    }
+    var id = change.id;
+    db.medic.get(id, function(err, doc) {
+        if (err) {
+            logger.error('transitions: fetch failed for %s (%s)', id, err);
+            return callback();
+        }
+        if (KNOWN_DOC_TYPES.indexOf(doc.type) === -1) {
+            // not a doc we know how to transition - ignore
+            return callback();
+        }
+        if (processed > 0 && (processed % PROGRESS_REPORT_INTERVAL) === 0) {
+            logger.info('transitions: %d items processed', processed);
+        }
+        change.doc = doc;
+        logger.debug('change event on doc %s seq %s', change.id, change.seq);
+        var audit = require('couchdb-audit')
+                .withNano(db, db.settings.db, db.settings.auditDb, db.settings.ddoc, db.settings.username);
+        module.exports.applyTransitions({
+            change: change,
+            audit: audit,
+            db: db
+        }, function() {
+            processed++;
+            updateMetaData(change.seq, callback);
+        });
+    });
+};
+
 var loadTransitions = function() {
   var self = module.exports;
   _.each(config.get('transitions'), function(conf, key) {
@@ -300,15 +340,7 @@ var updateMetaData = function(seq, callback) {
 
 var attach = function() {
 
-    var audit = require('couchdb-audit')
-            .withNano(db, db.settings.db, db.settings.auditDb, db.settings.ddoc, db.settings.username);
 
-    var processed = 0;
-    var changeQueue = async.queue(function(task, callback) {
-        processChange(task, function() {
-            _.delay(callback, PROCESSING_DELAY);
-        });
-    });
 
     // tell everyone we're here
     logger.info('transitions: processing enabled');
@@ -332,41 +364,12 @@ var attach = function() {
         });
         feed.follow();
     });
-
-    var processChange = function(change, callback) {
-        if (!change) {
-            return callback();
-        }
-        var id = change.id;
-        db.medic.get(id, function(err, doc) {
-            if (err) {
-                logger.error('transitions: fetch failed for %s (%s)', id, err);
-                return callback();
-            }
-            if (KNOWN_DOC_TYPES.indexOf(doc.type) === -1) {
-                // not a doc we know how to transition - ignore
-                return callback();
-            }
-            if (processed > 0 && (processed % PROGRESS_REPORT_INTERVAL) === 0) {
-                logger.info('transitions: %d items processed', processed);
-            }
-            change.doc = doc;
-            logger.debug('change event on doc %s seq %s', change.id, change.seq);
-            module.exports.applyTransitions({
-                change: change,
-                audit: audit,
-                db: db
-            }, function() {
-                processed++;
-                updateMetaData(change.seq, callback);
-            });
-        });
-    };
 };
 
 module.exports = {
     _loadTransition: loadTransition,
     _loadTransitions: loadTransitions,
+    _changeQueue: changeQueue,
     canRun: canRun,
     attach: attach,
     finalize: finalize,

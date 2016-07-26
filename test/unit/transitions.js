@@ -25,6 +25,7 @@ exports.tearDown = function(callback) {
     if (audit.withNano.restore) {
         audit.withNano.restore();
     }
+    transitions._changeQueue.kill();
     callback();
 };
 
@@ -205,16 +206,8 @@ exports['attach handles missing meta data doc'] = function(test) {
     var feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start });
     var applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
     sinon.stub(audit, 'withNano');
-    transitions.attach();
-    test.equal(feed.callCount, 1);
-    test.equal(feed.args[0][0].since, 0);
-    test.equal(on.callCount, 1);
-    test.equal(on.args[0][0], 'change');
-    test.equal(start.callCount, 1);
-    // invoke the change handler
-    on.args[0][1]({ id: 'abc', seq: 55 });
     // wait for the queue processor
-    setTimeout(function() {
+    transitions._changeQueue.drain = function() {
         test.equal(get.callCount, 3);
         test.equal(applyTransitions.callCount, 1);
         test.equal(applyTransitions.args[0][0].change.id, 'abc');
@@ -223,7 +216,15 @@ exports['attach handles missing meta data doc'] = function(test) {
         test.equal(insert.args[0][0]._id, 'sentinel-meta-data');
         test.equal(insert.args[0][0].processed_seq, 55);
         test.done();
-    });
+    };
+    transitions.attach();
+    test.equal(feed.callCount, 1);
+    test.equal(feed.args[0][0].since, 0);
+    test.equal(on.callCount, 1);
+    test.equal(on.args[0][0], 'change');
+    test.equal(start.callCount, 1);
+    // invoke the change handler
+    on.args[0][1]({ id: 'abc', seq: 55 });
 };
 
 exports['attach handles existing meta data doc'] = function(test) {
@@ -236,16 +237,8 @@ exports['attach handles existing meta data doc'] = function(test) {
     var feed = sinon.stub(follow, 'Feed').returns({ on: on, follow: start });
     var applyTransitions = sinon.stub(transitions, 'applyTransitions').callsArg(1);
     sinon.stub(audit, 'withNano');
-    transitions.attach();
-    test.equal(feed.callCount, 1);
-    test.equal(feed.args[0][0].since, 22);
-    test.equal(on.callCount, 1);
-    test.equal(on.args[0][0], 'change');
-    test.equal(start.callCount, 1);
-    // invoke the change handler
-    on.args[0][1]({ id: 'abc', seq: 55 });
     // wait for the queue processor
-    setTimeout(function() {
+    transitions._changeQueue.drain = function() {
         test.equal(get.callCount, 3);
         test.equal(applyTransitions.callCount, 1);
         test.equal(applyTransitions.args[0][0].change.id, 'abc');
@@ -254,5 +247,13 @@ exports['attach handles existing meta data doc'] = function(test) {
         test.equal(insert.args[0][0]._id, 'sentinel-meta-data');
         test.equal(insert.args[0][0].processed_seq, 55);
         test.done();
-    });
+    };
+    transitions.attach();
+    test.equal(feed.callCount, 1);
+    test.equal(feed.args[0][0].since, 22);
+    test.equal(on.callCount, 1);
+    test.equal(on.args[0][0], 'change');
+    test.equal(start.callCount, 1);
+    // invoke the change handler
+    on.args[0][1]({ id: 'abc', seq: 55 });
 };
