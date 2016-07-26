@@ -14,21 +14,31 @@ var _ = require('underscore'),
  * security reasons, we want to avoid doing a `require` based on random input,
  * hence we maintain this index of transitions.
  */
-var availableTransitions = [
-  'accept_patient_reports',
-  'conditional_alerts',
-  'default_responses',
-  'update_sent_by',
-  'ohw_counseling',
-  'ohw_emergency_report',
-  'ohw_notifications',
-  'resolve_pending',
-  'registration',
-  'twilio_message',
-  'update_clinics',
-  'update_notifications',
-  'update_scheduled_reports',
-  'update_sent_forms'
+var AVAILABLE_TRANSITIONS = [
+    'accept_patient_reports',
+    'conditional_alerts',
+    'default_responses',
+    'update_sent_by',
+    'ohw_counseling',
+    'ohw_emergency_report',
+    'ohw_notifications',
+    'resolve_pending',
+    'registration',
+    'twilio_message',
+    'update_clinics',
+    'update_notifications',
+    'update_scheduled_reports',
+    'update_sent_forms'
+];
+
+/*
+ * The list of doc types which transitions expect
+ */
+var KNOWN_DOC_TYPES = [
+    'data_record',
+    'clinic',
+    'health_center',
+    'district'
 ];
 
 var loadTransitions = function() {
@@ -38,7 +48,7 @@ var loadTransitions = function() {
           logger.warn('transition %s is disabled', key);
           return;
       }
-      if (availableTransitions.indexOf(key) === -1) {
+      if (AVAILABLE_TRANSITIONS.indexOf(key) === -1) {
           logger.warn('transition %s not available.', key);
           return;
       }
@@ -303,22 +313,15 @@ var attach = function() {
         });
     });
 
-    var match_types = [
-        'data_record',
-        'clinic',
-        'health_center',
-        'district'
-    ];
-
     // tell everyone we're here
-    logger.info('backlog: processing enabled');
+    logger.info('transitions: processing enabled');
 
     getProcessedSeq(function(err, processedSeq) {
         if (err) {
-            logger.error('backlog: error fetching processed seq', err);
+            logger.error('transitions: error fetching processed seq', err);
             return;
         }
-        logger.info('backlog: fetching changes feed, starting from %s', processedSeq);
+        logger.info('transitions: fetching changes feed, starting from %s', processedSeq);
         var feed = new follow.Feed({
             db: process.env.COUCH_URL,
             since: processedSeq
@@ -340,16 +343,17 @@ var attach = function() {
         var id = change.id;
         db.medic.get(id, function(err, doc) {
             if (err) {
-                logger.error('backlog: fetch failed for %s (%s)', id, err);
+                logger.error('transitions: fetch failed for %s (%s)', id, err);
                 return callback();
             }
-            if (match_types.indexOf(doc.type) === -1) {
+            if (KNOWN_DOC_TYPES.indexOf(doc.type) === -1) {
                 // not a doc we know how to transition - ignore
                 return callback();
             }
             if (processed > 0 && (processed % PROGRESS_REPORT_INTERVAL) === 0) {
-                logger.info('backlog: %d items processed', processed);
+                logger.info('transitions: %d items processed', processed);
             }
+            change.doc = doc;
             logger.debug('change event on doc %s seq %s', change.id, change.seq);
             module.exports.applyTransitions({
                 change: change,
@@ -374,5 +378,5 @@ module.exports = {
 };
 
 if (!process.env.TEST_ENV) {
-  loadTransitions();
+    loadTransitions();
 }
