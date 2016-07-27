@@ -1,4 +1,4 @@
-<div class="stock-monitoring">
+<div class="reporting-rates">
 
   <div class="form-select">
     <a class="btn btn-link" ng-class="{ 'disabled': filters.form === form.meta.code }" ng-click="setForm(form.meta.code)" ng-repeat="form in forms">{{form.meta.label | translateFrom}}</a>
@@ -19,12 +19,12 @@
       <div class="col-sm-2 col-xs-6">
         <i class="fa fa-hospital-o"></i>
         <h4>{{totals.health_centers_size}}</h4>
-        <h3 translate>analytics.stock.health_centers_size</h3>
+        <h3 translate>analytics.reporting.health_centers_size</h3>
       </div>
       <div class="col-sm-2 col-xs-6">
         <i class="fa fa-medkit"></i>
         <h4>{{totals.clinics_size}}</h4>
-        <h3 translate>analytics.stock.clinics_size</h3>
+        <h3 translate>analytics.reporting.clinics_size</h3>
       </div>
       <div class="col-sm-4 col-xs-12">
         <div class="large-pie">
@@ -45,12 +45,12 @@
       <div class="col-sm-2 col-xs-6">
         <i class="fa fa-file-o"></i>
         <h4>{{totals.not_submitted}}</h4>
-        <h3 translate>analytics.stock.not_submitted</h3>
+        <h3 translate>analytics.reporting.not_submitted</h3>
       </div>
       <div class="col-sm-2 col-xs-6">
         <i class="fa fa-exclamation-triangle"></i>
         <h4>{{totals.incomplete}}</h4>
-        <h3 translate>analytics.stock.incomplete</h3>
+        <h3 translate>analytics.reporting.incomplete</h3>
       </div>
     </div>
   </div>

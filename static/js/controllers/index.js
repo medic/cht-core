@@ -9,7 +9,7 @@
   require('./about');
   require('./analytics');
   require('./analytics-anc');
-  require('./analytics-stock');
+  require('./analytics-reporting');
   require('./analytics-targets');
   require('./configuration');
   require('./configuration-export');
