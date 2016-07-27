@@ -7,8 +7,8 @@ var moment = require('moment'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TargetGenerator', ['$log', '$parse','$q', 'RulesEngine', 'Settings', 'UserContact',
-    function($log, $parse, $q, RulesEngine, Settings, UserContact) {
+  inboxServices.factory('TargetGenerator', ['$q', '$log', 'Settings', 'RulesEngine',
+    function($q, $log, Settings, RulesEngine) {
 
       var targets = [];
 
@@ -55,19 +55,11 @@ var moment = require('moment'),
 
       var init = Settings()
         .then(function(settings) {
-          UserContact()
-            .then(function(user) {
-              targets = settings.tasks.targets.items.map(function(item) {
-                var result = _.clone(item);
-                result.instances = {};
-                return result;
-              }).filter(function(item) {
-                if (item.context) {
-                  return $parse(item.context)({ user: user });
-                }
-                return true;
-              });
-            });
+          targets = settings.tasks.targets.items.map(function(item) {
+            var result = _.clone(item);
+            result.instances = {};
+            return result;
+          });
         });
 
       return function(callback) {
