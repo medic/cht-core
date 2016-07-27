@@ -203,6 +203,7 @@ describe('ContactSchema service', function() {
             contact: {
               type: 'db:person',
               required: true,
+              parent: 'PARENT'
             },
             external_id: {
               type: 'string',
@@ -233,6 +234,7 @@ describe('ContactSchema service', function() {
             contact: {
               type: 'db:person',
               required: true,
+              parent: 'PARENT'
             },
             external_id: {
               type: 'string',
@@ -263,6 +265,7 @@ describe('ContactSchema service', function() {
             contact: {
               type: 'db:person',
               required: true,
+              parent: 'PARENT'
             },
             location: {
               type: 'geopoint',

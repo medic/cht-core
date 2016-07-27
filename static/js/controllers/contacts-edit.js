@@ -297,8 +297,9 @@ var _ = require('underscore');
                 extra.type = customType[2];
                 extra.reported_date = Date.now();
 
-                var isChild = extra.parent === 'PARENT';
-                if(isChild) {
+                var isChild = extra.parent === 'PARENT' ||
+                              (!extra.parent && conf.parent === 'PARENT');
+                if (isChild) {
                   delete extra.parent;
                 }
 
