@@ -103,6 +103,7 @@ var _ = require('underscore'),
       $scope.setDistrict = function(district) {
         $scope.district = district;
         var dates = stockUtils.getDates($scope.filters);
+        $scope.loadingTotals = true;
         DB()
           .get(district.id || district._id)
           .then(function(district) {
@@ -143,9 +144,11 @@ var _ = require('underscore'),
                         return d.y;
                       };
                     };
+                    $scope.loadingTotals = false;
                   })
                   .catch(function(err) {
                     $log.error('Error fetching reports', err);
+                    $scope.loadingTotals = false;
                   });
               })
               .catch(function(err) {
