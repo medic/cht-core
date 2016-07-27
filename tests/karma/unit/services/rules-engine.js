@@ -4,8 +4,10 @@ describe('RulesEngine service', function() {
 
   var Search,
       Settings,
+      UserContact,
       Changes,
-      injector;
+      injector,
+      nools;
 
   /* jshint quotmark: false */
   var rules =
@@ -187,11 +189,13 @@ describe('RulesEngine service', function() {
   beforeEach(function() {
     Search = sinon.stub();
     Settings = sinon.stub();
+    UserContact = sinon.stub();
     Changes = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.value('Search', Search);
       $provide.value('Settings', Settings);
+      $provide.value('UserContact', UserContact);
       $provide.value('Changes', Changes);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('Session', {
@@ -206,8 +210,17 @@ describe('RulesEngine service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(Search, Settings, Changes);
+    if (nools) {
+      nools.deleteFlow('medic');
+    }
+    KarmaUtils.restore(Search, Settings, Changes, UserContact);
   });
+
+  var getService = function() {
+    var service = injector.get('RulesEngine');
+    nools = service._nools;
+    return service;
+  };
 
   it('returns search errors', function(done) {
     Search.returns(KarmaUtils.mockPromise('boom'));
@@ -217,7 +230,8 @@ describe('RulesEngine service', function() {
         schedules: schedules
       }
     }));
-    var service = injector.get('RulesEngine');
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    var service = getService();
     service.listen('test', 'task', function(err) {
       chai.expect(err).to.equal('boom');
       chai.expect(Search.callCount).to.equal(2);
@@ -227,7 +241,8 @@ describe('RulesEngine service', function() {
 
   it('returns settings errors', function(done) {
     Settings.returns(KarmaUtils.mockPromise('boom'));
-    var service = injector.get('RulesEngine');
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    var service = getService();
     service.listen('test', 'task', function(err) {
       chai.expect(err).to.equal('boom');
       chai.expect(Settings.callCount).to.equal(1);
@@ -237,7 +252,8 @@ describe('RulesEngine service', function() {
 
   it('returns empty when settings returns no config', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, {}));
-    var service = injector.get('RulesEngine');
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    var service = getService();
     service.listen('test', 'task', function(err, actual) {
       chai.expect(Search.callCount).to.equal(0);
       chai.expect(Settings.callCount).to.equal(1);
@@ -263,6 +279,7 @@ describe('RulesEngine service', function() {
         schedules: schedules
       }
     }));
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
 
     var expectations = {
       '1-visit-1': {
@@ -327,8 +344,10 @@ describe('RulesEngine service', function() {
       }
     };
 
-    var service = injector.get('RulesEngine');
+    var service = getService();
+    var compile = sinon.spy(service._nools, 'compile');
     var callbackCount = 0;
+
     service.listen('test', 'task', function(err, actuals) {
       actuals.forEach(function(actual) {
         var expected = expectations[actual._id];
@@ -344,6 +363,13 @@ describe('RulesEngine service', function() {
         if (callbackCount === 10) {
           chai.expect(Search.callCount).to.equal(2);
           chai.expect(Settings.callCount).to.equal(1);
+          chai.expect(UserContact.callCount).to.equal(1);
+          chai.expect(compile.callCount).to.equal(1);
+          chai.expect(compile.args[0][0]).to.deep.equal(rules);
+          chai.expect(compile.args[0][1].name).to.equal('medic');
+          chai.expect(compile.args[0][1].scope).to.have.property('Utils');
+          chai.expect(compile.args[0][1].scope.user.name).to.equal('Jim');
+          compile.restore();
           done();
         }
       });
@@ -360,8 +386,9 @@ describe('RulesEngine service', function() {
         schedules: schedules
       }
     }));
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
 
-    var service = injector.get('RulesEngine');
+    var service = getService();
     var expected = {};
     service.listen('test', 'task', function(err, results) {
       results.forEach(function(result) {
@@ -407,9 +434,10 @@ describe('RulesEngine service', function() {
         schedules: schedules
       }
     }));
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
 
     var callbackCount = 0;
-    var service = injector.get('RulesEngine');
+    var service = getService();
     service.listen('test', 'task', function(err, actual) {
       callbackCount++;
       if (callbackCount === 4) {
@@ -461,9 +489,10 @@ describe('RulesEngine service', function() {
         schedules: schedules
       }
     }));
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
 
     var callbackCount = 0;
-    var service = injector.get('RulesEngine');
+    var service = getService();
     service.listen('test', 'task', function(err, actual) {
       callbackCount++;
       if (callbackCount === 6) {
@@ -513,9 +542,10 @@ describe('RulesEngine service', function() {
         schedules: schedules
       }
     }));
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
 
     var callbackCount = 0;
-    var service = injector.get('RulesEngine');
+    var service = getService();
     service.listen('test', 'task', function(err, actual) {
       if (err) {
         return done(err);
@@ -570,9 +600,10 @@ describe('RulesEngine service', function() {
         schedules: schedules
       }
     }));
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
 
     var callbackCount = 0;
-    var service = injector.get('RulesEngine');
+    var service = getService();
     service.listen('test', 'task', function(err, actual) {
       if (err) {
         return done(err);
@@ -619,9 +650,10 @@ describe('RulesEngine service', function() {
         schedules: schedules
       }
     }));
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
 
     var callbackCount = 0;
-    var service = injector.get('RulesEngine');
+    var service = getService();
     service.listen('test', 'task', function(err, actual) {
       if (err) {
         return done(err);
@@ -668,9 +700,10 @@ describe('RulesEngine service', function() {
         schedules: schedules
       }
     }));
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
 
     var callbackCount = 0;
-    var service = injector.get('RulesEngine');
+    var service = getService();
     service.listen('test', 'task', function(err, actual) {
       if (err) {
         return done(err);
