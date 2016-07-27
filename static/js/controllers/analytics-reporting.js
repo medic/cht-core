@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    stockUtils = require('../modules/stock-reporting-utils');
+    reportingUtils = require('../modules/reporting-rates-utils');
 
 (function () {
 
@@ -7,7 +7,7 @@ var _ = require('underscore'),
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('AnalyticsStockCtrl',
+  inboxControllers.controller('AnalyticsReportingCtrl',
     function (
       $log,
       $scope,
@@ -102,7 +102,7 @@ var _ = require('underscore'),
 
       $scope.setDistrict = function(district) {
         $scope.district = district;
-        var dates = stockUtils.getDates($scope.filters);
+        var dates = reportingUtils.getDates($scope.filters);
         DB()
           .get(district.id || district._id)
           .then(function(district) {
@@ -110,9 +110,9 @@ var _ = require('underscore'),
               .then(function(facilities) {
                 getViewReports(district, dates)
                   .then(function(reports) {
-                    $scope.totals = stockUtils.getTotals(facilities, reports, dates);
+                    $scope.totals = reportingUtils.getTotals(facilities, reports, dates);
                     if (district.type === 'health_center') {
-                      $scope.clinics = stockUtils.getRowsHC(facilities, reports, dates);
+                      $scope.clinics = reportingUtils.getRowsHC(facilities, reports, dates);
                       _.each($scope.clinics, function(f) {
                         f.chart = [
                           { key: 'valid', y: f.valid_percent },
@@ -120,7 +120,7 @@ var _ = require('underscore'),
                         ];
                       });
                     } else {
-                      $scope.facilities = stockUtils.getRows(facilities, reports, dates);
+                      $scope.facilities = reportingUtils.getRows(facilities, reports, dates);
                       _.each($scope.facilities, function(f) {
                         f.chart = [
                           { key: 'valid', y: f.valid_percent },
@@ -158,7 +158,7 @@ var _ = require('underscore'),
       };
 
       var getViewReports = function(doc, dates) {
-        var params = stockUtils.getReportingViewArgs(dates),
+        var params = reportingUtils.getReportingViewArgs(dates),
             view = 'data_records_by_form_year_month_facility';
 
         if (dates.reporting_freq === 'week') {

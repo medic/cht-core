@@ -84,12 +84,12 @@
           }
         }
       })
-      .state('analytics.stock', {
-        url: '/stock',
+      .state('analytics.reporting', {
+        url: '/reporting',
         views: {
           content: {
-            controller: 'AnalyticsStockCtrl',
-            templateUrl: 'templates/partials/analytics/stock.html'
+            controller: 'AnalyticsReportingCtrl',
+            templateUrl: 'templates/partials/analytics/reporting.html'
           }
         }
       })
