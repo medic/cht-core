@@ -17,7 +17,8 @@ var nools = require('nools'),
       CONTACT_TYPES,
       Search,
       Session,
-      Settings
+      Settings,
+      UserContact
     ) {
 
       'ngInject';
@@ -184,26 +185,28 @@ var nools = require('nools'),
         });
       };
 
-      var initNools = function(settings) {
+      var initNools = function(settings, user) {
         flow = nools.getFlow('medic');
         if (!flow) {
           flow = nools.compile(settings.tasks.rules, {
             name: 'medic',
-            scope: { Utils: nootils(settings) }
+            scope: { Utils: nootils(settings), user: user }
           });
         }
         Contact = flow.getDefined('contact');
         session = flow.getSession();
       };
 
-      var init = Settings()
-        .then(function(settings) {
+      var init = $q.all([ Settings(), UserContact() ])
+        .then(function(results) {
+          var settings = results[0];
+          var user = results[1];
           if (!settings.tasks || !settings.tasks.rules) {
             // no rules configured
-            return $q.resolve;
+            return $q.resolve();
           }
           if (!flow) {
-            initNools(settings);
+            initNools(settings, user);
           }
           registerListener();
           var options = {
@@ -236,6 +239,7 @@ var nools = require('nools'),
             })
             .catch(callback);
         },
+        _nools: nools // exposed for testing
       };
     }
   );
