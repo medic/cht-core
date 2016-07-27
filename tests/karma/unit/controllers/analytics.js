@@ -47,19 +47,19 @@ describe('AnalyticsCtrl controller', function() {
 
   it('renders first module', function(done) {
     AnalyticsModules.returns(KarmaUtils.mockPromise(null, [
-      { state: 'stock' }
+      { state: 'reporting' }
     ]));
     createController('anc');
     scope.$digest();
     setTimeout(function() {
-      chai.expect(scope.selected.state).to.equal('stock');
+      chai.expect(scope.selected.state).to.equal('reporting');
       done();
     });
   });
 
   it('renders specified module', function(done) {
     AnalyticsModules.returns(KarmaUtils.mockPromise(null, [
-      { state: 'stock' },
+      { state: 'reporting' },
       { state: 'anc' }
     ]));
     createController('anc');
@@ -85,7 +85,7 @@ describe('AnalyticsCtrl controller', function() {
 
   it('does not jump to child state if multiple modules present', function(done) {
     AnalyticsModules.returns(KarmaUtils.mockPromise(null, [
-      { state: 'stock' },
+      { state: 'reporting' },
       { state: 'anc' }
     ]));
     createController('analytics');

@@ -37,10 +37,10 @@ var _ = require('underscore');
         };
       };
 
-      var getStockMonitoringModule = function(settings, scheduledForms) {
+      var getReportingRatesModule = function(settings, scheduledForms) {
         return {
-          label: 'Stock Monitoring',
-          state: 'analytics.stock',
+          label: 'Reporting Rates',
+          state: 'analytics.reporting',
           available: function() {
             return scheduledForms.length;
           }
@@ -50,7 +50,7 @@ var _ = require('underscore');
       var getModules = function(settings, scheduledForms) {
         return _.filter([
           getAncModule(settings, scheduledForms),
-          getStockMonitoringModule(settings, scheduledForms),
+          getReportingRatesModule(settings, scheduledForms),
           getTargetsModule(settings, scheduledForms)
         ], function(module) {
           return module.available();
