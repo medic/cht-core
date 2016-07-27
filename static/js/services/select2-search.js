@@ -42,9 +42,10 @@ angular.module('inboxServices').factory('Select2Search',
       if (allowNew && types.length !== 1) {
         throw new Error('Unsupported options: cannot allowNew with ' + types.length + ' types');
       }
+      var addNewText = $translate.instant('contact.type.' + types[0] + '.new');
 
-      var prepareRows = function(documents, first) {
-        var rows = _.sortBy(documents, function(doc) {
+      var prepareRows = function(documents) {
+        return _.sortBy(documents, function(doc) {
           return doc.name;
         }).map(function(doc) {
           return {
@@ -52,15 +53,6 @@ angular.module('inboxServices').factory('Select2Search',
             doc: doc
           };
         });
-
-        if (first && allowNew) {
-          rows.unshift({
-            id: 'NEW',
-            text: $translate.instant('contact.type.' + types[0] + '.new'),
-          });
-        }
-
-        return rows;
       };
 
       var query = function(params, successCb, failureCb) {
@@ -119,6 +111,14 @@ angular.module('inboxServices').factory('Select2Search',
           width: '100%',
           minimumInputLength: Session.isAdmin() ? 3 : 0
         });
+        if (allowNew) {
+          var button = $('<a class="btn btn-link add-new"><i class="fa fa-plus"></i> ' + addNewText + '</a>')
+            .on('click', function() {
+              selectEl.append($('<option value="NEW" selected="selected">' + addNewText + '</option>'));
+              selectEl.trigger('change');
+            });
+          selectEl.after(button);
+        }
       };
       
       return resolveInitialValue(selectEl).then(initSelect2);
