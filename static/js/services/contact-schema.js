@@ -15,6 +15,7 @@ var CLINIC = {
     contact: {
       type: 'db:person',
       required: true,
+      parent: 'PARENT'
     },
     location: {
       type: 'geopoint',
@@ -34,6 +35,7 @@ var DISTRICT_HOSPITAL = {
     contact: {
       type: 'db:person',
       required: true,
+      parent: 'PARENT'
     },
     external_id: 'string',
     notes: 'text',
@@ -55,6 +57,7 @@ var HEALTH_CENTER = {
     contact: {
       type: 'db:person',
       required: true,
+      parent: 'PARENT'
     },
     external_id: 'string',
     notes: 'text',
@@ -153,7 +156,7 @@ function validateSchema(type, schema) {
   return true;
 }
 
-angular.module('inboxServices').service('ContactSchema', [
+angular.module('inboxServices').service('ContactSchema',
   function() {
     return {
       get: function() {
@@ -204,4 +207,4 @@ angular.module('inboxServices').service('ContactSchema', [
       validate: validateSchema,
     };
   }
-]);
+);
