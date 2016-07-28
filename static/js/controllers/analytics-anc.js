@@ -1,6 +1,23 @@
 var _ = require('underscore'),
     moment = require('moment');
 
+/*
+ * This module is used for displaying ANC statistics. The page contains
+ * a set of "widgets" which display different stats in different ways
+ * including charts and tables. Each widget requests its data directly
+ * from an api endpoint which means all the computation happens on
+ * server side and subsequently it doesn't work offline.
+ *
+ * The server uses lucene heavily to generate the statistics  so you'll
+ * need to install and run couchdb-lucene (instructions in the README).
+ *
+ * To enable the widget you must complete the anc_forms section of the
+ * settings and provide valid JSON forms for each of:
+ *    'registration', 'registrationLmp', 'visit', 'delivery', 'flag'
+ *
+ * Standard configurations are available in:
+ *    https://github.com/medic/medic-data/tree/master/data/generic-anc/base
+ */
 (function () {
 
   'use strict';
