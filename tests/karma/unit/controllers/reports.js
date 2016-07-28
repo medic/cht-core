@@ -85,7 +85,7 @@ describe('ReportsCtrl controller', function() {
         'DB': KarmaUtils.mockDB({ get: get, post: post })(),
         'LiveList': LiveList,
         'SearchFilters': function() {},
-        'DownloadUrl': function() {}
+        'Export': function() {}
       });
     };
   }));

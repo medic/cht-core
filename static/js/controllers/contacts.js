@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    scrollLoader = require('../modules/scroll-loader'),
-    ajaxDownload = require('../modules/ajax-download');
+    scrollLoader = require('../modules/scroll-loader');
 
 (function () {
 
@@ -10,14 +9,13 @@ var _ = require('underscore'),
 
   inboxControllers.controller('ContactsCtrl',
     function (
-      $http,
       $log,
       $q,
       $scope,
       $state,
       $timeout,
       DB,
-      DownloadUrl,
+      Export,
       LiveList,
       Search,
       SearchFilters,
@@ -186,16 +184,7 @@ var _ = require('underscore'),
 
       $scope.$on('export', function() {
         if ($scope.currentTab === 'contacts') {
-          DownloadUrl($scope.filters, 'contacts', function(err, url) {
-            if (err) {
-              return $log.error(err);
-            }
-            $http.post(url)
-              .then(ajaxDownload.download)
-              .catch(function(err) {
-                $log.error('Error downloading', err);
-              });
-          });
+          Export($scope.filters, 'reports');
         }
       });
 

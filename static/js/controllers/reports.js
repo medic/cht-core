@@ -1,8 +1,7 @@
 var _ = require('underscore'),
     moment = require('moment'),
     modal = require('../modules/modal'),
-    scrollLoader = require('../modules/scroll-loader'),
-    ajaxDownload = require('../modules/ajax-download');
+    scrollLoader = require('../modules/scroll-loader');
 
 (function () {
 
@@ -12,7 +11,6 @@ var _ = require('underscore'),
 
   inboxControllers.controller('ReportsCtrl',
     function (
-      $http,
       $log,
       $rootScope,
       $scope,
@@ -21,8 +19,8 @@ var _ = require('underscore'),
       $timeout,
       $translate,
       DB,
-      DownloadUrl,
       EditGroup,
+      Export,
       FormatDataRecord,
       LiveList,
       MarkRead,
@@ -551,16 +549,7 @@ var _ = require('underscore'),
 
       $scope.$on('export', function() {
         if ($scope.currentTab === 'reports') {
-          DownloadUrl($scope.filters, 'reports', function(err, url) {
-            if (err) {
-              return $log.error(err);
-            }
-            $http.post(url)
-              .then(ajaxDownload.download)
-              .catch(function(err) {
-                $log.error('Error downloading', err);
-              });
-          });
+          Export($scope.filters, 'reports');
         }
       });
 

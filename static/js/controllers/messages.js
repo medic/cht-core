@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    ajaxDownload = require('../modules/ajax-download');
+var _ = require('underscore');
 
 (function () {
 
@@ -8,8 +7,18 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', '$http', '$log', 'MessageContact', 'Changes', 'DownloadUrl',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, $http, $log, MessageContact, Changes, DownloadUrl) {
+    function (
+      $log,
+      $rootScope,
+      $scope,
+      $state,
+      $stateParams,
+      $timeout,
+      Changes,
+      Export,
+      MessageContact
+    ) {
+      'ngInject';
 
       var removeDeletedMessages = function(messages) {
         var existingKey;
@@ -93,16 +102,7 @@ var _ = require('underscore'),
 
       $scope.$on('export', function() {
         if ($scope.currentTab === 'messages') {
-          DownloadUrl(null, 'messages', function(err, url) {
-            if (err) {
-              return $log.error(err);
-            }
-            $http.post(url)
-              .then(ajaxDownload.download)
-              .catch(function(err) {
-                $log.error('Error downloading', err);
-              });
-          });
+          Export($scope.filters, 'reports');
         }
       });
 
@@ -130,6 +130,6 @@ var _ = require('underscore'),
       }
 
     }
-  ]);
+  );
 
 }());

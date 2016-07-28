@@ -14,24 +14,24 @@ describe('GenerateSearchQuery service', function() {
     });
   });
 
-  it('creates filter query for forms type', function() {
+  it('creates filter query for forms type', function(done) {
     var filters = {
       date: {
         from: date20130208,
         to: date20130612
       }
     };
-    service('reports', filters, {}, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        {$operands:[
-          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
-          {type:'report'}
-        ]}
-      );
-    });
+    var actual = service('reports', filters);
+    chai.expect(actual.query).to.deep.equal(
+      {$operands:[
+        {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+        {type:'report'}
+      ]}
+    );
+    done();
   });
 
-  it('creates filter query for selected forms', function() {
+  it('creates filter query for selected forms', function(done) {
     var filters = {
       forms: {
         selected: [ { code: 'A'}, { code: 'B'}, { code: 'C'} ],
@@ -42,18 +42,18 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    service('reports', filters, {}, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        {$operands:[
-          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
-          {type:'report'},
-          {form:['A','B','C']}
-        ]}
-      );
-    });
+    var actual = service('reports', filters);
+    chai.expect(actual.query).to.deep.equal(
+      {$operands:[
+        {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+        {type:'report'},
+        {form:['A','B','C']}
+      ]}
+    );
+    done();
   });
 
-  it('creates filter query for all forms when all are selected', function() {
+  it('creates filter query for all forms when all are selected', function(done) {
     var filters = {
       forms: {
         selected: [ { code: 'A'}, { code: 'B'}, { code: 'C'} ],
@@ -64,17 +64,17 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    service('reports', filters, {}, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        {$operands:[
-          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
-          {type:'report'}
-        ]}
-      );
-    });
+    var actual = service('reports', filters);
+    chai.expect(actual.query).to.deep.equal(
+      {$operands:[
+        {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+        {type:'report'}
+      ]}
+    );
+    done();
   });
 
-  it('creates filter query for invalid', function() {
+  it('creates filter query for invalid', function(done) {
     var filters = {
       valid: false,
       date: {
@@ -82,18 +82,18 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    service('reports', filters, {}, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        {$operands:[
-          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
-          {type:'report'},
-          {$operator: 'not', $operands: { errors: 0 }}
-        ]}
-      );
-    });
+    var actual = service('reports', filters);
+    chai.expect(actual.query).to.deep.equal(
+      {$operands:[
+        {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+        {type:'report'},
+        {$operator: 'not', $operands: { errors: 0 }}
+      ]}
+    );
+    done();
   });
 
-  it('creates filter query for valid', function() {
+  it('creates filter query for valid', function(done) {
     var filters = {
       valid: true,
       date: {
@@ -101,18 +101,18 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    service('reports', filters, {}, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        {$operands:[
-          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
-          {type:'report'},
-          {errors:0}
-        ]}
-      );
-    });
+    var actual = service('reports', filters);
+    chai.expect(actual.query).to.deep.equal(
+      {$operands:[
+        {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+        {type:'report'},
+        {errors:0}
+      ]}
+    );
+    done();
   });
 
-  it('creates filter query for unverified', function() {
+  it('creates filter query for unverified', function(done) {
     var filters = {
       verified: false,
       date: {
@@ -120,18 +120,18 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    service('reports', filters, {}, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        {$operands:[
-          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
-          {type:'report'},
-          {verified:false}
-        ]}
-      );
-    });
+    var actual = service('reports', filters);
+    chai.expect(actual.query).to.deep.equal(
+      {$operands:[
+        {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+        {type:'report'},
+        {verified:false}
+      ]}
+    );
+    done();
   });
 
-  it('creates filter query for verified', function() {
+  it('creates filter query for verified', function(done) {
     var filters = {
       verified: true,
       date: {
@@ -139,18 +139,18 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    service('reports', filters, {}, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        {$operands:[
-          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
-          {type:'report'},
-          {verified:true}
-        ]}
-      );
-    });
+    var actual = service('reports', filters);
+    chai.expect(actual.query).to.deep.equal(
+      {$operands:[
+        {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+        {type:'report'},
+        {verified:true}
+      ]}
+    );
+    done();
   });
 
-  it('creates filter query for selected clinics', function() {
+  it('creates filter query for selected clinics', function(done) {
     var filters = {
       facilities: {
         selected: ['a', 'b', 'c'],
@@ -161,18 +161,18 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    service('reports', filters, {}, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        {$operands:[
-          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
-          {type:'report'},
-          {clinic:['a','b','c']}
-        ]}
-      );
-    });
+    var actual = service('reports', filters);
+    chai.expect(actual.query).to.deep.equal(
+      {$operands:[
+        {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+        {type:'report'},
+        {clinic:['a','b','c']}
+      ]}
+    );
+    done();
   });
 
-  it('creates filter query for all clinics when all selected', function() {
+  it('creates filter query for all clinics when all selected', function(done) {
     var filters = {
       facilities: {
         selected: ['a', 'b', 'c'],
@@ -183,17 +183,17 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    service('reports', filters, {}, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        {$operands:[
-          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
-          {type:'report'}
-        ]}
-      );
-    });
+    var actual = service('reports', filters);
+    chai.expect(actual.query).to.deep.equal(
+      {$operands:[
+        {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+        {type:'report'}
+      ]}
+    );
+    done();
   });
 
-  it('creates filter query with freetext', function() {
+  it('creates filter query with freetext', function(done) {
     var filters = {
       search: 'pref',
       date: {
@@ -201,18 +201,18 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    service('reports', filters, {}, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        {$operands:[
-          'pref*',
-          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
-          {type:'report'}
-        ]}
-      );
-    });
+    var actual = service('reports', filters);
+    chai.expect(actual.query).to.deep.equal(
+      {$operands:[
+        'pref*',
+        {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+        {type:'report'}
+      ]}
+    );
+    done();
   });
 
-  it('creates filter query with freetext referencing a specific field', function() {
+  it('creates filter query with freetext referencing a specific field', function(done) {
     var filters = {
       search: 'patient_id:12345',
       date: {
@@ -220,69 +220,28 @@ describe('GenerateSearchQuery service', function() {
         to: date20130612
       }
     };
-    service('reports', filters, {}, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        {$operands:[
-          'patient_id:12345',
-          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
-          {type:'report'}
-        ]}
-      );
-    });
+    var actual = service('reports', filters);
+    chai.expect(actual.query).to.deep.equal(
+      {$operands:[
+        'patient_id:12345',
+        {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
+        {type:'report'}
+      ]}
+    );
+    done();
   });
 
-  it('creates filter query with specific ids', function() {
-    var filters = {
-      date: {
-        from: date20130208,
-        to: date20130612
-      }
-    };
-    var options = {
-      changes: [ { id: 'a' }, { id: 'b' } ]
-    };
-    service('reports', filters, options, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        {$operands:[
-          {reported_date:{'$from':'2013-02-08','$to':'2013-06-13'}},
-          {type:'report'},
-          {uuid:['a','b']}
-        ]}
-      );
-    });
+  it('creates query for contacts', function(done) {
+    var actual = service('contacts', {});
+    chai.expect(actual.query).to.deep.equal(
+      { $operands: [
+        { type: [ 'district_hospital', 'health_center', 'clinic', 'person' ] }
+      ] }
+    );
+    done();
   });
 
-  it('creates filter query ignoring filters', function() {
-    var filters = {
-      date: {
-        from: date20130208,
-        to: date20130612
-      }
-    };
-    var options = {
-      ignoreFilter: true,
-      changes: [ { id: 'a' } ]
-    };
-    service('reports', filters, options, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        {$operands:[
-          {uuid:['a']}
-        ]}
-      );
-    });
-  });
-
-  it('creates query for contacts', function() {
-    service('contacts', {}, {}, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        { $operands: [
-          { type: [ 'district_hospital', 'health_center', 'clinic', 'person' ] }
-        ] }
-      );
-    });
-  });
-
-  it('creates query for contacts with filters', function() {
+  it('creates query for contacts with filters', function(done) {
     var filters = {
       types: {
         selected: [ 'clinic', 'health_center' ],
@@ -294,14 +253,14 @@ describe('GenerateSearchQuery service', function() {
       },
       search: 'newp'
     };
-    service('contacts', filters, {}, function(err, result) {
-      chai.expect(result.query).to.deep.equal(
-        {$operands:[
-          'newp*',
-          {type:['clinic','health_center']},
-          {clinic:['c','a','b']}
-        ]}
-      );
-    });
+    var actual = service('contacts', filters);
+    chai.expect(actual.query).to.deep.equal(
+      {$operands:[
+        'newp*',
+        {type:['clinic','health_center']},
+        {clinic:['c','a','b']}
+      ]}
+    );
+    done();
   });
 });

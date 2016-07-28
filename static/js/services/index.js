@@ -25,6 +25,7 @@
   require('./enketo');
   require('./enketo-prepopulation-data');
   require('./enketo-translation');
+  require('./export');
   require('./facility');
   require('./facility-hierarchy');
   require('./file-reader');

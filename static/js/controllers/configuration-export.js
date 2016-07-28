@@ -1,5 +1,4 @@
 var _ = require('underscore'),
-    async = require('async'),
     moment = require('moment');
 
 (function () {
@@ -55,23 +54,16 @@ var _ = require('underscore'),
         });
 
       $scope.url = {};
-      async.each(
-        [ 'logs', 'audit', 'feedback' ],
-        function(type, callback) {
-          DownloadUrl(null, type, function(err, url) {
-            if (err) {
-              return callback(err);
-            }
+
+      [ 'logs', 'audit', 'feedback' ].forEach(function(type) {
+        DownloadUrl(null, type)
+          .then(function(url) {
             $scope.url[type] = url;
-            callback();
-          });
-        },
-        function(err) {
-          if (err) {
+          })
+          .catch(function(err) {
             $log.error('Error fetching url', err);
-          }
-        }
-      );
+          });
+      });
 
     }
   );

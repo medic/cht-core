@@ -7,8 +7,11 @@ var _ = require('underscore'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('GenerateSearchQuery', [ 'CONTACT_TYPES',
-    function(CONTACT_TYPES) {
+  inboxServices.factory('GenerateSearchQuery',
+    function(
+      CONTACT_TYPES
+    ) {
+      'ngInject';
 
       var formatDate = function(date) {
         return date.utcOffset(0).format('YYYY-MM-DD');
@@ -86,12 +89,6 @@ var _ = require('underscore'),
         }
       };
 
-      var formatIds = function(options) {
-        if (options.changes && options.changes.length) {
-          return { uuid: _.pluck(options.changes, 'id') };
-        }
-      };
-
       var formatFreetext = function(filters) {
         var freetext = filters.search;
         if (freetext && freetext.indexOf(':') === -1) {
@@ -100,19 +97,16 @@ var _ = require('underscore'),
         return freetext;
       };
 
-      var types = {
+      var TYPES = {
         reports: {
-          buildQuery: function(filters, options, operands) {
-            if (!options.ignoreFilter) {
-              operands.push(formatFreetext(filters));
-              operands.push(formatReportedDate(filters));
-              operands.push(formatReportType());
-              operands.push(formatClinics(filters));
-              operands.push(formatForm(filters));
-              operands.push(formatErrors(filters));
-              operands.push(formatVerified(filters));
-            }
-            operands.push(formatIds(options));
+          buildQuery: function(filters, operands) {
+            operands.push(formatFreetext(filters));
+            operands.push(formatReportedDate(filters));
+            operands.push(formatReportType());
+            operands.push(formatClinics(filters));
+            operands.push(formatForm(filters));
+            operands.push(formatErrors(filters));
+            operands.push(formatVerified(filters));
           },
           schema: {
             errors: 'int',
@@ -121,7 +115,7 @@ var _ = require('underscore'),
           }
         },
         contacts: {
-          buildQuery: function(filters, options, operands) {
+          buildQuery: function(filters, operands) {
             operands.push(formatFreetext(filters));
             operands.push(formatContactsType(filters));
             operands.push(formatClinics(filters));
@@ -129,27 +123,18 @@ var _ = require('underscore'),
         }
       };
 
-      return function(typeName, filters, options, callback) {
-
-        if (!callback) {
-          callback = options;
-          options = {};
-        }
-
-        var type = types[typeName];
+      return function(typeName, filters) {
+        var type = TYPES[typeName];
         if (!type) {
-          return callback(new Error('Unknown type'));
+          throw new Error('Unknown type');
         }
-
         var operands = [];
-        type.buildQuery(filters, options, operands);
-
-        callback(null, {
+        type.buildQuery(filters, operands);
+        return {
           schema: type.schema,
           query: { $operands: _.compact(operands) }
-        });
-
+        };
       };
     }
-  ]);
+  );
 }());

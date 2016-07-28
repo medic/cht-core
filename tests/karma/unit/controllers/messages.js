@@ -39,7 +39,7 @@ describe('MessagesCtrl controller', function() {
         'MarkAllRead': {},
         'ContactConversation': ContactConversation,
         'MessageContact': MessageContact,
-        'DownloadUrl': function() {}
+        'Export': function() {}
       });
     };
   }));
