@@ -101,15 +101,16 @@ var _ = require('underscore'),
       };
 
       $scope.setDistrict = function(district) {
+        $scope.error = false;
+        $scope.loadingTotals = true;
         $scope.district = district;
         var dates = stockUtils.getDates($scope.filters);
-        $scope.loadingTotals = true;
         DB()
           .get(district.id || district._id)
           .then(function(district) {
-            ChildFacility(district)
+            return ChildFacility(district)
               .then(function(facilities) {
-                getViewReports(district, dates)
+                return getViewReports(district, dates)
                   .then(function(reports) {
                     $scope.totals = stockUtils.getTotals(facilities, reports, dates);
                     if (district.type === 'health_center') {
@@ -145,18 +146,13 @@ var _ = require('underscore'),
                       };
                     };
                     $scope.loadingTotals = false;
-                  })
-                  .catch(function(err) {
-                    $log.error('Error fetching reports', err);
-                    $scope.loadingTotals = false;
                   });
-              })
-              .catch(function(err) {
-                $log.error(err);
               });
           })
           .catch(function(err) {
             $log.error(err);
+            $scope.error = true;
+            $scope.loadingTotals = false;
           });
       };
 

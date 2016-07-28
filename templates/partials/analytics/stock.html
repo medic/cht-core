@@ -13,8 +13,9 @@
   </div>
 
   <div ng-show="district" class="district-totals">
+    <div class="alert alert-danger" role="alert" ng-show="error" translate>analytics.connection.error</div>
     <div class="loader" ng-show="loadingTotals"></div>
-    <div class="row" ng-hide="loadingTotals">
+    <div class="row" ng-hide="loadingTotals || error">
       <div class="col-sm-2 col-xs-6">
         <i class="fa fa-hospital-o"></i>
         <h4>{{totals.health_centers_size}}</h4>
