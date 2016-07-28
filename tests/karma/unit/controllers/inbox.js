@@ -60,7 +60,7 @@ describe('InboxCtrl controller', function() {
         return sinon.stub();
       });
       $provide.factory('FacilityHierarchy', function() {
-        return sinon.stub();
+        return KarmaUtils.nullPromise();
       });
       $provide.factory('JsonForms', function() {
         return function() {

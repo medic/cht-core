@@ -7,16 +7,13 @@ var _ = require('underscore');
   var inboxServices = angular.module('inboxServices');
 
   var removeOrphans = function(children) {
-    var count = 0;
-    for (var i = children.length - 1; i >= 0 ; i--) {
+    for (var i = children.length - 1; i >= 0; i--) {
       if (children[i].doc.stub) {
         children.splice(i, 1);
       } else {
-        count++;
-        count += removeOrphans(children[i].children);
+        removeOrphans(children[i].children);
       }
     }
-    return count;
   };
 
   var getIdPath = function(facility) {
@@ -28,7 +25,7 @@ var _ = require('underscore');
     return path;
   };
 
-  var buildHierarchy = function(facilities, callback) {
+  var buildHierarchy = function(facilities) {
     var results = [];
     facilities.forEach(function(row) {
       var result = results;
@@ -46,8 +43,8 @@ var _ = require('underscore');
         result = found.children;
       });
     });
-    var total = removeOrphans(results);
-    callback(null, results, total);
+    removeOrphans(results);
+    return results;
   };
 
   inboxServices.factory('FacilityHierarchy',
@@ -60,12 +57,11 @@ var _ = require('underscore');
         return pt !== 'clinic';
       });
 
-      return function(callback) {
-        Facility({ types: hierarchyTypes })
+      return function() {
+        return Facility({ types: hierarchyTypes })
           .then(function(facilities) {
-            buildHierarchy(facilities, callback);
-          })
-          .catch(callback);
+            return buildHierarchy(facilities);
+          });
       };
     }
   );
