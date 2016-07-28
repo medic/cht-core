@@ -5,18 +5,23 @@ var sinon = require('sinon'),
     utils = require('../utils'),
     migration = require('../../migrations/extract-person-contacts');
 
+var createPerson, getDoc, getView, insertDoc, updatePlace;
+
+exports.setUp = function(done) {
+  getView = sinon.stub(db.medic, 'view');
+  getDoc = sinon.stub(db.medic, 'get');
+  insertDoc = sinon.stub(db.medic, 'insert');
+  updatePlace = sinon.stub(places, 'updatePlace');
+  createPerson = sinon.stub(people, 'createPerson');
+  done();
+};
+
 exports.tearDown = function (callback) {
   utils.restore(db.medic.view, db.medic.get, db.medic.insert, people.createPerson, places.updatePlace);
   callback();
 };
 
 exports['run does nothing if no facilities'] = function(test) {
-  var getView = sinon.stub(db.medic, 'view');
-  var getDoc = sinon.stub(db.medic, 'get');
-  var insertDoc = sinon.stub(db.medic, 'insert');
-  var updatePlace = sinon.stub(places, 'updatePlace');
-  var createPerson = sinon.stub(people, 'createPerson');
-
   test.expect(6);
   getView.callsArgWith(3, null, { rows: [] });
   getDoc.callsArgWith(1, null, {  });
@@ -34,11 +39,6 @@ exports['run does nothing if no facilities'] = function(test) {
 };
 
 var testParentUpdated = function(test, doc, docWithoutParent) {
-  var getView = sinon.stub(db.medic, 'view');
-  var getDoc = sinon.stub(db.medic, 'get');
-  var insertDoc = sinon.stub(db.medic, 'insert');
-  var updatePlace = sinon.stub(places, 'updatePlace');
-  var createPerson = sinon.stub(people, 'createPerson');
   test.expect(12);
 
   // Get the 3 levels of hierarchy
@@ -107,11 +107,6 @@ exports['run still updates parent if facility has migrated contact'] = function(
 };
 
 var testContactUpdated = function(test, doc, docWithoutContact) {
-  var getView = sinon.stub(db.medic, 'view');
-  var getDoc = sinon.stub(db.medic, 'get');
-  var insertDoc = sinon.stub(db.medic, 'insert');
-  var updatePlace = sinon.stub(places, 'updatePlace');
-  var createPerson = sinon.stub(people, 'createPerson');
   test.expect(12);
 
   // Get the 3 levels of hierarchy
@@ -182,11 +177,6 @@ exports['run still updates contact if facility has migrated parent'] = function(
 };
 
 exports['run updates contact and parent'] = function(test) {
-  var getView = sinon.stub(db.medic, 'view');
-  var getDoc = sinon.stub(db.medic, 'get');
-  var insertDoc = sinon.stub(db.medic, 'insert');
-  var updatePlace = sinon.stub(places, 'updatePlace');
-  var createPerson = sinon.stub(people, 'createPerson');
   test.expect(16);
 
   // Get the 3 levels of hierarchy
