@@ -30,7 +30,7 @@ var _ = require('underscore');
       query.startkey.push(options.id);
       query.endkey.push(options.id);
     }
-    (options.queryOptions.descending ? query.startkey : query.endkey).push({});
+    (query.descending ? query.startkey : query.endkey).push({});
     return query;
   };
 
