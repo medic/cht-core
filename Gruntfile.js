@@ -169,17 +169,17 @@ module.exports = function(grunt) {
       deploy: {
         cmd: 'kanso push'
       },
+      setupAdmin: {
+        cmd: 'curl -X PUT http://localhost:5984/_config/admins/admin -d \'"pass"\'' +
+             ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
+             ' -H "Content-Type: application/json" ' +
+             ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\''
+      },
       deploytest: {
         stderr: false,
         cmd: 'curl -X DELETE http://admin:pass@localhost:5984/medic-test' +
              ' && curl -X DELETE http://admin:pass@localhost:5984/medic-audit-test' +
              ' && kanso push http://admin:pass@localhost:5984/medic-test'
-      },
-      deploytestci: {
-        stderr: false,
-        cmd: 'curl -X DELETE http://localhost:5984/medic-test' +
-             ' && curl -X DELETE http://localhost:5984/medic-audit-test' +
-             ' && kanso push http://localhost:5984/medic-test'
       },
       undopatches: {
         cmd: function() {
@@ -398,8 +398,8 @@ module.exports = function(grunt) {
     'minify',
     'karma:unit_ci',
     'nodeunit',
-    'exec:deploytestci',
-    'protractor'
+    'exec:setupAdmin',
+    'e2e'
   ]);
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
