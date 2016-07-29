@@ -391,7 +391,8 @@ module.exports = function(grunt) {
     'default',
     'minify',
     'karma:unit_ci',
-    'nodeunit'
+    'nodeunit',
+    'e2e'
   ]);
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
