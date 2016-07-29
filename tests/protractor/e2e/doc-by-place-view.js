@@ -133,7 +133,7 @@ describe('view doc_by_place', function() {
       console.log('Requesting changes, please be patient…');
 
       return utils.requestOnTestDb({
-        path: '/_design/medic/_view/doc_by_place?keys=' + JSON.stringify(keys),
+        path: '/_design/medic-client/_view/doc_by_place?keys=' + JSON.stringify(keys),
         method: 'GET'
       }).then(function(response) {
         console.log('…got changes', response);
