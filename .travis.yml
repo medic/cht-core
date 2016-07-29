@@ -19,7 +19,7 @@ before_script:
   - npm install kanso -g
   - npm install grunt-cli -g
   - npm --prefix api install
-  - ./node_modules/protractor/bin/webdriver-manager update
+  - ./node_modules/.bin/webdriver-manager update
   - nohup bash -c "./node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager start 2>&1 &"
   - sleep 3
 

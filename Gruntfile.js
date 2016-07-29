@@ -175,6 +175,12 @@ module.exports = function(grunt) {
              ' && curl -X DELETE http://admin:pass@localhost:5984/medic-audit-test' +
              ' && kanso push http://admin:pass@localhost:5984/medic-test'
       },
+      deploytestci: {
+        stderr: false,
+        cmd: 'curl -X DELETE http://localhost:5984/medic-test' +
+             ' && curl -X DELETE http://localhost:5984/medic-audit-test' +
+             ' && kanso push http://localhost:5984/medic-test'
+      },
       undopatches: {
         cmd: function() {
           var modulesToPatch = [
@@ -392,7 +398,8 @@ module.exports = function(grunt) {
     'minify',
     'karma:unit_ci',
     'nodeunit',
-    'e2e'
+    'exec:deploytestci',
+    'protractor'
   ]);
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
