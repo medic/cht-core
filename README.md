@@ -196,8 +196,8 @@ curl -i -u gateway:123qwe \
 
 To run precommit tests:
 
-1. Update Webdriver: `node_modules/protractor/bin/webdriver-manager update`
-2. Start Webdriver: `node_modules/protractor/bin/webdriver-manager start`
+1. Update Webdriver: `./node_modules/.bin/webdriver-manager update`
+2. Start Webdriver: `./node_modules/.bin/webdriver-manager start`
 3. Run tests: `grunt test`
 
 Some kanso tests are run in-browser; you can run them manually if you browse to `/medic/_design/medic/_rewrite/test`.

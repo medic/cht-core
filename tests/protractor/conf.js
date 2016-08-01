@@ -35,7 +35,7 @@ var startApi = function() {
       }
     });
     api.stdout.on('data', function(data) {
-      if (data.toString() === 'Database migrations completed successfully\n') {
+      if (data.toString().indexOf('Database migrations completed successfully') >= 0) {
         resolve();
       }
       console.log('[api] ' + data);
@@ -69,8 +69,8 @@ exports.config = {
   specs: [ 'e2e/**/*.js' ],
   framework: 'jasmine2',
   capabilities: {
-    browserName: 'chrome'
-    // browserName: 'firefox'
+    // browserName: 'chrome'
+    browserName: 'firefox'
   },
   onPrepare: function() {
     var started = startApi();
