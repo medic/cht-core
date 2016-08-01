@@ -20,7 +20,7 @@ before_script:
   - npm install grunt-cli -g
   - npm --prefix api install
   - |
-      if [ -e ./node_modules/.bin/webdriver-manager ]; then
+      if [-e ./node_modules/.bin/webdriver-manager]; then
         ./node_modules/.bin/webdriver-manager update
         nohup bash -c "./node_modules/.bin/webdriver-manager start 2>&1 &"
       else
