@@ -35,7 +35,7 @@ var startApi = function() {
       }
     });
     api.stdout.on('data', function(data) {
-      if (data.toString().indexOf('Database migrations completed successfully') >= 0) {
+      if (data.toString().indexOf('Medic API listening on port') >= 0) {
         resolve();
       }
       console.log('[api] ' + data);
