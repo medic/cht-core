@@ -3,6 +3,7 @@ sudo: false
 node_js:
   - "6.3"
   - "5.6"
+  - "0.12"
 
 addons:
   firefox: latest-esr
@@ -18,8 +19,14 @@ before_script:
   - npm install kanso -g
   - npm install grunt-cli -g
   - npm --prefix api install
-  - ./node_modules/.bin/webdriver-manager update
-  - nohup bash -c "./node_modules/.bin/webdriver-manager start 2>&1 &"
+  - |
+      if [-e ./node_modules/.bin/webdriver-manager]; then
+        ./node_modules/.bin/webdriver-manager update
+        nohup bash -c "./node_modules/.bin/webdriver-manager start 2>&1 &"
+      else
+        ./node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager update
+        nohup bash -c "./node_modules/grunt-protractor-runner/node_modules/protractor/bin/webdriver-manager start 2>&1 &"
+      fi
   - sleep 3
 
 script:
