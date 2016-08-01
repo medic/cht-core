@@ -56,14 +56,18 @@ var moment = require('moment'),
       var init = Settings()
         .then(function(settings) {
           UserContact()
-            .then(function(user) {
+            .then(function(userContact) {
               targets = settings.tasks.targets.items.map(function(item) {
                 var result = _.clone(item);
                 result.instances = {};
                 return result;
               }).filter(function(item) {
                 if (item.context) {
-                  return $parse(item.context)({ user: user });
+                  // Clone the `userContact` object to prevent bad context
+                  // expressions from modifying it - this could leak into other
+                  // expressions.
+                  var clone = JSON.parse(JSON.stringify(userContact));
+                  return $parse(item.context)({ userContact: clone });
                 }
                 return true;
               });
