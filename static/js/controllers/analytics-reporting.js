@@ -10,6 +10,7 @@ var _ = require('underscore'),
   inboxControllers.controller('AnalyticsReportingCtrl',
     function (
       $log,
+      $q,
       $scope,
       $timeout,
       ChildFacility,
@@ -108,45 +109,45 @@ var _ = require('underscore'),
         DB()
           .get(district.id || district._id)
           .then(function(district) {
-            return ChildFacility(district)
-              .then(function(facilities) {
-                return getViewReports(district, dates)
-                  .then(function(reports) {
-                    $scope.totals = reportingUtils.getTotals(facilities, reports, dates);
-                    if (district.type === 'health_center') {
-                      $scope.clinics = reportingUtils.getRowsHC(facilities, reports, dates);
-                      _.each($scope.clinics, function(f) {
-                        f.chart = [
-                          { key: 'valid', y: f.valid_percent },
-                          { key: 'missing', y: 100 - f.valid_percent }
-                        ];
-                      });
-                    } else {
-                      $scope.facilities = reportingUtils.getRows(facilities, reports, dates);
-                      _.each($scope.facilities, function(f) {
-                        f.chart = [
-                          { key: 'valid', y: f.valid_percent },
-                          { key: 'missing', y: 100 - f.valid_percent }
-                        ];
-                      });
-                    }
-                    $scope.chart = [
-                      { key: 'valid', y: $scope.totals.complete },
-                      { key: 'missing', y: $scope.totals.not_submitted },
-                      { key: 'invalid', y: $scope.totals.incomplete }
+            return $q.all([ChildFacility(district), getViewReports(district, dates)])
+              .then(function(results) {
+                var facilities = results[0];
+                var reports = results[1];
+
+                $scope.totals = reportingUtils.getTotals(facilities, reports, dates);
+                if (district.type === 'health_center') {
+                  $scope.clinics = reportingUtils.getRowsHC(facilities, reports, dates);
+                  _.each($scope.clinics, function(f) {
+                    f.chart = [
+                      { key: 'valid', y: f.valid_percent },
+                      { key: 'missing', y: 100 - f.valid_percent }
                     ];
-                    $scope.xFunction = function() {
-                      return function(d) {
-                        return d.key;
-                      };
-                    };
-                    $scope.yFunction = function() {
-                      return function(d) {
-                        return d.y;
-                      };
-                    };
-                    $scope.loadingTotals = false;
                   });
+                } else {
+                  $scope.facilities = reportingUtils.getRows(facilities, reports, dates);
+                  _.each($scope.facilities, function(f) {
+                    f.chart = [
+                      { key: 'valid', y: f.valid_percent },
+                      { key: 'missing', y: 100 - f.valid_percent }
+                    ];
+                  });
+                }
+                $scope.chart = [
+                  { key: 'valid', y: $scope.totals.complete },
+                  { key: 'missing', y: $scope.totals.not_submitted },
+                  { key: 'invalid', y: $scope.totals.incomplete }
+                ];
+                $scope.xFunction = function() {
+                  return function(d) {
+                    return d.key;
+                  };
+                };
+                $scope.yFunction = function() {
+                  return function(d) {
+                    return d.y;
+                  };
+                };
+                $scope.loadingTotals = false;
               });
           })
           .catch(function(err) {
