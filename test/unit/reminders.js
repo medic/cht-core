@@ -478,7 +478,7 @@ exports['getReminderWindow calls view looking for old events and returns date fo
             viewOpts = call.args[2];
 
         test.equals(view.callCount, 1);
-        test.equals(call.args[0], 'kujua-sentinel');
+        test.equals(call.args[0], 'medic');
         test.equals(call.args[1], 'sent_reminders');
 
         test.equals(viewOpts.limit, 1);

@@ -87,7 +87,7 @@ module.exports = {
             return callback();
         }
 
-        db.medic.view('kujua-sentinel', view, q, function(err, data) {
+        db.medic.view('medic', view, q, function(err, data) {
             callback(err, data && data.rows);
         });
     },

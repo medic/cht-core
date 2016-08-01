@@ -8,7 +8,7 @@ module.exports = function(db, audit, callback) {
     var now = moment(date.getDate()),
         overdue = now.clone().subtract(7, 'days');
 
-    db.medic.view('kujua-sentinel', 'due_tasks', {
+    db.medic.view('medic', 'due_tasks', {
         include_docs: true,
         endkey: now.toISOString(),
         startkey: overdue.toISOString()

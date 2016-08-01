@@ -15,8 +15,7 @@ module.exports = function(grunt) {
         jshintrc: true,
         ignores: [
           'node_modules/**',
-          'lib/pupil/**',
-          'designs/**'
+          'lib/pupil/**'
         ]
       },
       all: [

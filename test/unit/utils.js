@@ -187,7 +187,7 @@ exports['getRecentForm calls through to db view correctly'] = function(test) {
 
     sinon.stub(db.medic, 'view')
         .withArgs(
-            'kujua-sentinel', 
+            'medic', 
             'data_records_by_form_and_clinic', 
             {
                 startkey: [formName, clinicId],
