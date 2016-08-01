@@ -151,7 +151,7 @@ var _ = require('underscore'),
               });
           })
           .catch(function(err) {
-            $log.error(err);
+            $log.error('Error setting district.', err);
             $scope.error = true;
             $scope.loadingTotals = false;
           });
@@ -185,12 +185,9 @@ var _ = require('underscore'),
             $scope.setDistrict(district);
           } else {
             // national admin
-            Facility({ types: [ 'district_hospital' ] })
+            return Facility({ types: [ 'district_hospital' ] })
               .then(function(districts) {
                 $scope.districts = districts;
-              })
-              .catch(function(err) {
-                $log.error(err);
               });
           }
         })
