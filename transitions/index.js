@@ -136,7 +136,7 @@ var canRun = function(options) {
         transition &&
         typeof transition.filter === 'function' &&
         transition.filter(doc) &&
-        !isRevSame(doc)
+        !isRevSame()
     );
 };
 
