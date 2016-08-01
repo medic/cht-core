@@ -68,10 +68,15 @@ exports.config = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
   specs: [ 'e2e/**/*.js' ],
   framework: 'jasmine2',
-  capabilities: {
-    // browserName: 'chrome'
-    browserName: 'firefox'
-  },
+  // capabilities: {
+  //   browserName: 'chrome'
+  //   browserName: 'firefox'
+  // },
+  multiCapabilities: [{
+    'browserName': 'firefox'
+  }, {
+    'browserName': 'chrome'
+  }],
   onPrepare: function() {
     var started = startApi();
     browser.driver.wait(started, 10 * 1000, 'Server should start within 10 seconds');
