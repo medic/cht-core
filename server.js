@@ -629,30 +629,33 @@ proxyForAuditing.on('error', function(err, req, res) {
 
 ddocExtraction.run(function(err) {
   if (err) {
-    console.error('Something went wrong trying to extract ddocs', err);
+    console.error('Fatal error trying to extract ddocs', err);
     process.exit(1);
   }
   console.log('DDoc extraction completed successfully');
   config.load(function(err) {
     if (err) {
-      console.error('Error loading config', err);
+      console.error('Fatal error loading config', err);
       process.exit(1);
     }
+    console.log('Configuration loaded successfully');
     config.listen();
-    scheduler.init();
-    app.listen(apiPort, function() {
-      console.log('Medic API listening on port ' + apiPort);
-    });
     translations.run(function(err) {
       if (err) {
-        return console.error('Error merging translations', err);
+        console.error('Fatal error merging translations', err);
+        process.exit(1);
       }
       console.log('Translations merged successfully');
       migrations.run(function(err) {
         if (err) {
-          return console.error(err);
+          console.error('Fatal error running database migrations', err);
+          process.exit(1);
         }
         console.log('Database migrations completed successfully');
+        scheduler.init();
+        app.listen(apiPort, function() {
+          console.log('Medic API listening on port ' + apiPort);
+        });
       });
     });
   });
