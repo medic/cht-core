@@ -85,13 +85,11 @@ var _ = require('underscore'),
         }
       };
 
-      $scope.setTime = function(time) {
-        if (time.time_unit) {
-          $scope.filters.time_unit = time.time_unit;
-        }
-        if (time.quantity) {
-          $scope.filters.quantity = time.quantity;
-        }
+      $scope.setTimeUnit = function(time) {
+        $scope.filters.time_unit = time;
+      };
+      $scope.setTimeQuantity = function(num) {
+        $scope.filters.quantity = num;
       };
 
       $scope.setForm = function(form) {

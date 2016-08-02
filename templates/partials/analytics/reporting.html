@@ -56,20 +56,36 @@
   </div>
 
   <div class="time-select" ng-show="district">
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.quantity === 1 }" ng-click="setTime({ quantity: 1 })" translate>Last {{filters.time_unit}}</a>
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.quantity === 3 }" ng-click="setTime({ quantity: 3 })" translate>Last 3 {{filters.time_unit}}s</a>
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.quantity === 6 }" ng-click="setTime({ quantity: 6 })" translate>Last 6 {{filters.time_unit}}s</a>
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.quantity === 12 }" ng-click="setTime({ quantity: 12 })" translate>Last 12 {{filters.time_unit}}s</a>
+    <a class="btn btn-link"
+      ng-class="{ 'disabled': filters.quantity === 1 }"
+      ng-click="setTimeQuantity(1)"
+      translate="analytics.reporting.last_time_unit"
+      translate-values="{ time_unit: '{{ filters.time_unit }}' }"></a>
+    <a class="btn btn-link"
+      ng-class="{ 'disabled': filters.quantity === 3 }"
+      ng-click="setTimeQuantity(3)"
+      translate="analytics.reporting.last_time_unit.plural"
+      translate-values="{ quantity: 3, time_unit: '{{ filters.time_unit }}' }"></a>
+    <a class="btn btn-link"
+      ng-class="{ 'disabled': filters.quantity === 6 }"
+      ng-click="setTimeQuantity(6)"
+      translate="analytics.reporting.last_time_unit.plural"
+      translate-values="{ quantity: 6, time_unit: '{{ filters.time_unit }}' }"></a>
+    <a class="btn btn-link"
+      ng-class="{ 'disabled': filters.quantity === 12 }"
+      ng-click="setTimeQuantity(12)"
+      translate="analytics.reporting.last_time_unit.plural"
+      translate-values="{ quantity: 12, time_unit: '{{ filters.time_unit }}' }"></a>
     <div class="btn-group">
       <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown">
         <span translate>analytics.reporting.change_time_unit</span> <span class="caret"></span>
       </button>
       <ul class="dropdown-menu" role="menu">
         <li><a ng-show="filters.reporting_freq === 'weekly'"
-          ng-click="setTime({ time_unit: 'week' })" translate>Week</a></li>
-        <li><a ng-click="setTime({ time_unit: 'month' })" translate>Month</a></li>
-        <li><a ng-click="setTime({ time_unit: 'quarter' })" translate>Quarter</a></li>
-        <li><a ng-click="setTime({ time_unit: 'year' })" translate>Year</a></li>
+          ng-click="setTimeUnit('week')" translate>week</a></li>
+        <li><a ng-click="setTimeUnit('month')" translate>month</a></li>
+        <li><a ng-click="setTimeUnit('quarter')" translate>quarter</a></li>
+        <li><a ng-click="setTimeUnit('year')" translate>year</a></li>
       </ul>
     </div>
   </div>
