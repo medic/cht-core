@@ -49,8 +49,7 @@ var _ = require('underscore'),
         if (!dateRange || (!dateRange.to && !dateRange.from)) {
           return;
         }
-        // increment end date so it's inclusive
-        var to = moment(dateRange.to).add(1, 'days');
+        var to = moment(dateRange.to);
         var from = moment(dateRange.from || 0);
         return {
           view: view,
