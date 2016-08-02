@@ -141,10 +141,8 @@ describe('GenerateSearchRequests service', function() {
     var result = service('reports', filters);
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0].view).to.equal('medic-client/reports_by_date');
-    chai.expect(result[0].params).to.deep.equal({
-      startkey: [ 1360321199999 ],
-      endkey: [ 1371124799999 ]
-    });
+    chai.expect(result[0].params.startkey[0]).to.equal(1360321199999);
+    chai.expect(result[0].params.endkey[0]).to.equal(1371038399999);
   });
 
   it('creates unfiltered contacts request for no filter', function() {
