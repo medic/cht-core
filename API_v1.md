@@ -51,8 +51,8 @@ following formats are supported:
  - ISO 8601 combined date and time with timezone of the format below where "Z"
    is offset from UTC like "-03", "+1245", or just "Z" which is UTC (0 offset);
 
-       YYYY-MM-DDTHH:mm:ssZ
-       YYYY-MM-DDTHH:mm:ss.SSSZ
+        YYYY-MM-DDTHH:mm:ssZ
+        YYYY-MM-DDTHH:mm:ss.SSSZ
 
  - Milliseconds since Unix Epoch
 
