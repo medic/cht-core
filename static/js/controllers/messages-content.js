@@ -69,7 +69,7 @@ var _ = require('underscore'),
           return;
         }
         $('#message-content').off('scroll', _checkScroll);
-        $scope.setSelected({ id: id });
+        $scope.setSelected({ id: id, messages: [] });
         if (!options.silent) {
           $scope.setLoadingContent(id);
         }
