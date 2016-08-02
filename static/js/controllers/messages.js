@@ -61,21 +61,16 @@ var _ = require('underscore');
         }
       };
 
-      var updateConversations = function(options, callback) {
+      var updateConversations = function(options) {
         if (!options.changes) {
           $scope.loading = true;
         }
-        MessageContact({ }, function(err, data) {
-          if (err) {
-            return $log.error('Error fetching contact', err);
-          }
-          $scope.loading = false;
-          options.messages = data;
-          setMessages(options);
-          if (callback) {
-            callback();
-          }
-        });
+        return MessageContact({})
+          .then(function(data) {
+            $scope.loading = false;
+            options.messages = data;
+            setMessages(options);
+          });
       };
 
       $scope.setSelected = function(doc) {
@@ -88,17 +83,21 @@ var _ = require('underscore');
       $scope.messages = [];
       $scope.selected = null;
       setMessages();
-      updateConversations({ }, function() {
-        if (!$state.params.id &&
-            $scope.messages.length &&
-            !$scope.isMobile() &&
-            $state.is('messages.detail')) {
-          $timeout(function() {
-            var id = $('.inbox-items li').first().attr('data-record-id');
-            $state.go('messages.detail', { id: id }, { location: 'replace' });
-          });
-        }
-      });
+      updateConversations({ })
+        .then(function() {
+          if (!$state.params.id &&
+              $scope.messages.length &&
+              !$scope.isMobile() &&
+              $state.is('messages.detail')) {
+            $timeout(function() {
+              var id = $('.inbox-items li').first().attr('data-record-id');
+              $state.go('messages.detail', { id: id }, { location: 'replace' });
+            });
+          }
+        })
+        .catch(function(err) {
+          $log.error('Error fetching contact', err);
+        });
 
       $scope.$on('export', function() {
         if ($scope.currentTab === 'messages') {

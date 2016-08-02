@@ -27,13 +27,7 @@ window.KarmaUtils = {
   // a promise than never resolves or rejects
   nullPromise: function() {
     return function() {
-      return {
-        then: function() {
-          return {
-            catch: function() {}
-          };
-        }
-      };
+      return Q.defer().promise;
     };
   },
   mockDB: function(db) {

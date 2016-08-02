@@ -20,23 +20,26 @@ describe('MessageContact service', function() {
     KarmaUtils.restore(query);
   });
 
-  it('builds admin list', function(done) {
+  it('builds admin list', function() {
     var expected = {
       rows: [ 'a', 'b' ]
     };
     query.returns(KarmaUtils.mockPromise(null, expected));
-    service({}, function(err, actual) {
+    return service({}).then(function(actual) {
       chai.expect(actual).to.deep.equal(expected.rows);
-      done();
     });
   });
 
   it('returns errors from db query', function(done) {
     query.returns(KarmaUtils.mockPromise('server error'));
-    service({}, function(err) {
-      chai.expect(err).to.equal('server error');
-      done();
-    });
+    service({})
+      .then(function() {
+        done(new Error('exception expected'));
+      })
+      .catch(function(err) {
+        chai.expect(err).to.equal('server error');
+        done();
+      });
   });
 
 });

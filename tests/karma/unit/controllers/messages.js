@@ -4,10 +4,7 @@ describe('MessagesCtrl controller', function() {
 
   var createController,
       scope,
-      UserDistrict,
-      ContactConversation,
-      MessageContact,
-      Changes;
+      UserDistrict;
 
   beforeEach(module('inboxApp'));
 
@@ -26,19 +23,13 @@ describe('MessagesCtrl controller', function() {
       callback();
     };
 
-    ContactConversation = function() { };
-
-    MessageContact = function() { };
-
-    Changes = function() { };
-
     createController = function() {
       return $controller('MessagesCtrl', {
         '$scope': scope,
-        'Changes': Changes,
+        'Changes': function() {},
         'MarkAllRead': {},
-        'ContactConversation': ContactConversation,
-        'MessageContact': MessageContact,
+        'ContactConversation': KarmaUtils.nullPromise(),
+        'MessageContact': KarmaUtils.nullPromise(),
         'Export': function() {}
       });
     };
