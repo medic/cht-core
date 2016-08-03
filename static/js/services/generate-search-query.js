@@ -19,6 +19,7 @@ var _ = require('underscore'),
 
       var formatReportedDate = function(filters) {
         if (filters.date && (filters.date.to || filters.date.from)) {
+          // increment end date so it's inclusive
           var to = moment(filters.date.to).add(1, 'days');
           var from = moment(filters.date.from || 0);
           return {
