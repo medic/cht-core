@@ -135,119 +135,14 @@ var feedback = require('../modules/feedback'),
         }
       };
 
-      /**
-       * Close the highest-priority dropdown within a particular container.
-       * @return {boolean} `true` if a dropdown was closed; `false` otherwise.
-       */
-      var closeDropdownsIn = function($container) {
-        // If there are any select2 dropdowns open, close them.  The select
-        // boxes are closed while they are checked - this saves us having to
-        // iterate over them twice
-        if(_.chain($container.find('select.select2-hidden-accessible'))
-            .map(function(e) {
-              e = $(e);
-              if(e.select2('isOpen')) {
-                e.select2('close');
-                return true;
-              }
-            })
-            .contains(true)
-            .value()) {
-          return true;
+      $scope.$on('HideContent', function() {
+        if ($scope.cancelCallback) {
+          $scope.navigationCancel();
+        } else {
+          $scope.clearSelected();
         }
-
-        // If there is a dropdown menu open, close it
-        var $dropdown = $container.find('.filter.dropdown.open:visible');
-        if ($dropdown.length) {
-          $dropdown.removeClass('open');
-          return true;
-        }
-
-        // On an Enketo form, go to the previous page (if there is one)
-        if ($container.find('.enketo .btn.previous-page:visible:enabled:not(".disabled")').length) {
-          window.history.back();
-          return true;
-        }
-
-        return false;
-      };
-
-      /**
-       * Handle hardware back-button presses when inside the android app.
-       * @return {boolean} `true` if angular handled the back button; otherwise
-       *   the android app will handle it as it sees fit.
-       */
-      $scope.handleAndroidBack = function() {
-        // If there's a modal open, close any dropdowns inside it, or try to
-        // close the modal itself.
-        var $modal = $('.modal:visible');
-        if ($modal.length) {
-          // find the modal with highest z-index, and ignore the rest
-          var $topModal;
-          $modal.each(function(i, next) {
-            if (!$topModal) {
-              $topModal = $(next);
-              return;
-            }
-            var $next = $(next);
-            if ($topModal.css('z-index') <= $next.css('z-index')) {
-              $topModal = $next;
-            }
-          });
-
-          if (!closeDropdownsIn($topModal)) {
-            // Try to close by clicking modal's top-right `X` or `[ Cancel ]`
-            // button.
-            $topModal.find('.btn.cancel:visible:not(:disabled),' +
-                'button.cancel.close:visible:not(:disabled)').click();
-          }
-          return true;
-        }
-
-        // If the hotdog hamburger options menu is open, close it
-        var $optionsMenu = $('.dropdown.options.open');
-        if($optionsMenu.length) {
-          $optionsMenu.removeClass('open');
-          return true;
-        }
-
-        // If there is an actionbar drop-up menu open, close it
-        var $dropup = $('.actions.dropup.open:visible');
-        if ($dropup.length) {
-          $dropup.removeClass('open');
-          return true;
-        }
-
-        if (closeDropdownsIn($('body'))) {
-          return true;
-        }
-
-        // If viewing RHS content, do as the filter-bar X/< button does
-        if ($scope.showContent) {
-          if ($scope.cancelCallback) {
-            $scope.navigationCancel();
-          } else {
-            $scope.closeContentPane();
-          }
-          $scope.$apply();
-          return true;
-        }
-
-        // If we're viewing a help page, return to the about page
-        if ($state.includes('help')) {
-          $state.go('about');
-          return true;
-        }
-
-        // If we're viewing a tab, but not the primary tab, go to primary tab
-        var primaryState = $('#messages-tab:visible').length ? 'messages' : 'tasks';
-        if (!$state.includes(primaryState)) {
-          $state.go(primaryState);
-          return true;
-        }
-
-        return false;
-      };
+        $scope.$apply();
+      });
 
       // User wants to cancel current flow, or pressed back button, etc.
       $scope.navigationCancel = function() {
@@ -480,7 +375,7 @@ var feedback = require('../modules/feedback'),
             $('#welcome').on('hide.bs.modal', callback);
           }
         },
-        // guided setup
+        // guided setup_complete
         {
           required: function(settings) {
             return !settings.setup_complete;
