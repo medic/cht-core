@@ -24,6 +24,29 @@ var _ = require('underscore'),
 
       'ngInject';
 
+      var translationKeys = {
+        week: [
+          'week',
+          'week.plural'
+        ],
+        month: [
+          'month',
+          'month.plural'
+        ],
+        quarter: [
+          'quarter',
+          'quarter.plural'
+        ],
+        year: [
+          'year',
+          'year.plural'
+        ]
+      };
+
+      $scope.getTranslationKey = function(key, plural) {
+        return plural ? translationKeys[key][1] : translationKeys[key][0];
+      };
+
       $scope.facilities = [];
 
       Settings()
