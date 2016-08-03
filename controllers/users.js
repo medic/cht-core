@@ -264,7 +264,7 @@ var setContactParent = function(data, response, callback) {
  * Update admin password if user is an admin.
  */
 var updateAdminPassword = function(username, password, callback) {
-  if (_.isUndefined(username) || _.isUndefined(password)) {
+  if (!username || !password) {
     return callback();
   }
   module.exports._getAdmins(function(err, admins) {
@@ -489,14 +489,14 @@ module.exports = {
         missing = [],
         response = {};
     required.forEach(function(prop) {
-      if (_.isUndefined(data[prop])) {
+      if (!data[prop]) {
         missing.push(prop);
       }
     });
     if (missing.length > 0) {
       return error400('Missing required fields: ' + missing.join(', '), callback);
     }
-    if (_.isUndefined(data.contact.parent) && _.isUndefined(data.place)) {
+    if (!data.contact.parent && !data.place) {
       return error400('Contact parent or place is required.', callback);
     }
     self._validateNewUsername(data.username, function(err) {
@@ -528,7 +528,7 @@ module.exports = {
         user;
     var props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS));
     var hasFields = _.some(props, function(k) {
-      return !_.isUndefined(data[k]);
+      return !_.isNull(data[k]) && !_.isUndefined(data[k]);
     });
     if (!hasFields) {
       return error400(

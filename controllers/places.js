@@ -166,7 +166,9 @@ var updatePlace = function(id, data, callback) {
       response = {},
       series = [],
       place;
-  if (!_.some(props, function(k) { return !_.isUndefined(data[k]); })) {
+  if (!_.some(props, function(k) {
+    return !_.isNull(data[k]) && !_.isUndefined(data[k]);
+  })) {
     return callback({
       code: 400,
       message: 'One of the following fields are required: ' + props.join(', ')
@@ -235,7 +237,7 @@ var getOrCreatePlace = function(place, callback) {
       }
       callback(null, doc);
     });
-  } else if (_.isObject(place) && _.isUndefined(place._rev)) {
+  } else if (_.isObject(place) && !place._rev) {
     // create and return place
     self._createPlaces(place, function(err, resp) {
       if (err) {
