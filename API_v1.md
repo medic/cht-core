@@ -985,7 +985,7 @@ Content-Type: application/json
   },
   "contact": {
     "name": "Mary Anyango",
-    "phone": "+2868917046",
+    "phone": "+2868917046"
   }
 }
 ```
