@@ -373,7 +373,7 @@ var feedback = require('../modules/feedback'),
             $('#welcome').on('hide.bs.modal', callback);
           }
         },
-        // guided setup_complete
+        // guided setup
         {
           required: function(settings) {
             return !settings.setup_complete;
