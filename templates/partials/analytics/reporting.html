@@ -56,11 +56,53 @@
   </div>
 
   <div class="time-select" ng-show="district">
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'month' && filters.quantity === 1 }" ng-click="setTime({ time_unit: 'month', quantity: 1 })">Last 1 Month</a>
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'month' && filters.quantity === 3 }" ng-click="setTime({ time_unit: 'month', quantity: 3 })">Last 3 Months</a>
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'month' && filters.quantity === 6 }" ng-click="setTime({ time_unit: 'month', quantity: 6 })">Last 6 Months</a>
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'year' && filters.quantity === 1 }" ng-click="setTime({ time_unit: 'year', quantity: 1 })">Last 1 Year</a>
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.time_unit === 'year' && filters.quantity === 5 }" ng-click="setTime({ time_unit: 'year', quantity: 5 })">Last 5 Years</a>
+    <a class="btn btn-link"
+      ng-class="{ 'disabled': filters.quantity === 1 }"
+      ng-click="setTimeQuantity(1)"
+      translate="analytics.reporting.last_time_unit"
+      translate-values="{
+        time_unit: '{{ getTranslationKey(filters.time_unit) | translate }}'
+      }"
+    ></a>
+    <a class="btn btn-link"
+      ng-class="{ 'disabled': filters.quantity === 3 }"
+      ng-click="setTimeQuantity(3)"
+      translate="analytics.reporting.last_time_unit"
+      translate-values="{
+        quantity: 3,
+        time_unit: '{{ getTranslationKey(filters.time_unit, true) | translate }}'
+      }"
+    ></a>
+    <a class="btn btn-link"
+      ng-class="{ 'disabled': filters.quantity === 6 }"
+      ng-click="setTimeQuantity(6)"
+      translate="analytics.reporting.last_time_unit"
+      translate-values="{
+        quantity: 6,
+        time_unit: '{{ getTranslationKey(filters.time_unit, true) | translate }}'
+      }"
+    ></a>
+    <a class="btn btn-link"
+      ng-class="{ 'disabled': filters.quantity === 12 }"
+      ng-click="setTimeQuantity(12)"
+      translate="analytics.reporting.last_time_unit"
+      translate-values="{
+        quantity: 12,
+        time_unit: '{{ getTranslationKey(filters.time_unit, true) | translate }}'
+      }"
+    ></a>
+    <div class="btn-group">
+      <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown">
+        <span translate>analytics.reporting.change_time_unit</span> <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu" role="menu">
+        <li><a ng-show="filters.reporting_freq === 'weekly'"
+          ng-click="setTimeUnit('week')" translate>week</a></li>
+        <li><a ng-click="setTimeUnit('month')" translate>month</a></li>
+        <li><a ng-click="setTimeUnit('quarter')" translate>quarter</a></li>
+        <li><a ng-click="setTimeUnit('year')" translate>year</a></li>
+      </ul>
+    </div>
   </div>
 
   <div class="facility-select" ng-show="district && district.type === 'district_hospital'">
