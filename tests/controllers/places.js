@@ -59,6 +59,14 @@ exports['validatePlace returns error if clinic is missing parent'] = function(te
   });
 };
 
+exports['validatePlace returns error if clinic has null parent'] = function(test) {
+  examplePlace.parent = null;
+  controller._validatePlace(examplePlace, function(err) {
+    test.ok(err.message.indexOf('parent') > -1);
+    test.done();
+  });
+};
+
 exports['validatePlace returns error if health center is missing parent'] = function(test) {
   delete examplePlace.parent;
   examplePlace.type = 'health_center';

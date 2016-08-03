@@ -67,7 +67,7 @@ var validatePlace = function(place, callback) {
     return err('Property "name" on place ' + placeId + ' must be a string.');
   }
   if (['clinic', 'health_center'].indexOf(place.type) !== -1) {
-    if (_.isUndefined(place.parent)) {
+    if (!place.parent) {
       return err('Place ' + placeId + ' is missing a "parent" property.');
     }
     if (place.type === 'clinic' && place.parent.type !== 'health_center') {
