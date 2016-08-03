@@ -48,7 +48,7 @@ exports['error calls serverError when given 500 error'] = function(test) {
   var serverError = sinon.stub(serverUtils, 'serverError');
   serverUtils.error({ code: 500, message: 'some string' }, req, res);
   test.equals(serverError.callCount, 1);
-  test.equals(serverError.args[0][0], 'some string');
+  test.equals(serverError.args[0][0].message, 'some string');
   test.done();
 };
 
@@ -141,7 +141,7 @@ exports['notLoggedIn responds with JSON if requested'] = function(test) {
   test.done();
 };
 
-exports['serverError responds with given string'] = function(test) {
+exports['serverError does not leak errors information to the client'] = function(test) {
   test.expect(5);
   var writeHead = sinon.stub(res, 'writeHead');
   var end = sinon.stub(res, 'end');
@@ -150,38 +150,12 @@ exports['serverError responds with given string'] = function(test) {
   test.equals(writeHead.args[0][0], 500);
   test.equals(writeHead.args[0][1]['Content-Type'], 'text/plain');
   test.equals(end.callCount, 1);
-  test.equals(end.args[0][0], 'Server error: "boom"');
-  test.done();
-};
-
-exports['serverError responds with given message'] = function(test) {
-  test.expect(5);
-  var writeHead = sinon.stub(res, 'writeHead');
-  var end = sinon.stub(res, 'end');
-  serverUtils.serverError({ message: 'boom'}, req, res);
-  test.equals(writeHead.callCount, 1);
-  test.equals(writeHead.args[0][0], 500);
-  test.equals(writeHead.args[0][1]['Content-Type'], 'text/plain');
-  test.equals(end.callCount, 1);
-  test.equals(end.args[0][0], 'Server error: {"message":"boom"}');
-  test.done();
-};
-
-exports['serverError handles unknown errors'] = function(test) {
-  test.expect(5);
-  var writeHead = sinon.stub(res, 'writeHead');
-  var end = sinon.stub(res, 'end');
-  serverUtils.serverError({ foo: 'bar' }, req, res);
-  test.equals(writeHead.callCount, 1);
-  test.equals(writeHead.args[0][0], 500);
-  test.equals(writeHead.args[0][1]['Content-Type'], 'text/plain');
-  test.equals(end.callCount, 1);
-  test.equals(end.args[0][0], 'Server error: {"foo":"bar"}');
+  test.equals(end.args[0][0], 'Server error');
   test.done();
 };
 
 exports['serverError responds with JSON'] = function(test) {
-  test.expect(8);
+  test.expect(7);
   var status = sinon.stub(res, 'status');
   var json = sinon.stub(res, 'json');
   var get = sinon.stub(req, 'get');
@@ -194,6 +168,5 @@ exports['serverError responds with JSON'] = function(test) {
   test.equals(json.callCount, 1);
   test.equals(json.args[0][0].code, 500);
   test.equals(json.args[0][0].error, 'Server error');
-  test.equals(json.args[0][0].details.foo, 'bar');
   test.done();
 };
