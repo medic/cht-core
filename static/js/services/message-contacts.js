@@ -11,7 +11,7 @@ var _ = require('underscore');
     function(DB) {
       return function(params, callback) {
         DB()
-          .query('medic-client/data_records_by_contact', params)
+          .query('medic-client/messages_by_contact_date', params)
           .then(function(res) {
             callback(null, res.rows);
           })
@@ -42,7 +42,7 @@ var _ = require('underscore');
       }
     });
   };
-  
+
   inboxServices.factory('MessageContact', ['$rootScope', 'MessageContactsRaw',
     function($rootScope, MessageContactsRaw) {
       return function(options, callback) {
@@ -52,7 +52,7 @@ var _ = require('underscore');
       };
     }
   ]);
-  
+
   inboxServices.factory('ContactConversation', ['$rootScope', 'MessageContactsRaw',
     function($rootScope, MessageContactsRaw) {
       return function(options, callback) {
