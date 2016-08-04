@@ -27,7 +27,7 @@ var runIfNeeded = function(callback) {
 
 var fetchValidFormSubmissions = function(callback) {
   var params = { group: true, group_level: 3 };
-  getView('data_records_by_year_month_form_facility', params, function(err, response) {
+  getView('data_records_by_year_month_form_place', params, function(err, response) {
     if (err) {
       return callback(err);
     }
@@ -62,7 +62,7 @@ var fetchDeliveryLocations = function(callback) {
 };
 
 var fetchActiveFacilities = function(callback) {
-  getView('data_records_by_year_month_form_facility', { group: true }, function(err, response) {
+  getView('data_records_by_year_month_form_place', { group: true }, function(err, response) {
     if (err) {
       return callback(err);
     }

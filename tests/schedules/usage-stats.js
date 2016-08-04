@@ -121,7 +121,7 @@ exports['go saves a doc with results'] = function(test) {
       startkey: [1969, 11],
       endkey: [1969, 11, {}]
     });
-    test.equals(view.getCall(1).args[1], 'data_records_by_year_month_form_facility');
+    test.equals(view.getCall(1).args[1], 'data_records_by_year_month_form_place');
     test.deepEqual(view.getCall(1).args[2], {
       group: true,
       group_level: 3,
@@ -134,7 +134,7 @@ exports['go saves a doc with results'] = function(test) {
       startkey: [1969, 11],
       endkey: [1969, 11, {}]
     });
-    test.equals(view.getCall(3).args[1], 'data_records_by_year_month_form_facility');
+    test.equals(view.getCall(3).args[1], 'data_records_by_year_month_form_place');
     test.deepEqual(view.getCall(3).args[2], {
       group: true,
       startkey: [1969, 11],
