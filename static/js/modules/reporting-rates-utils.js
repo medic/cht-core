@@ -146,13 +146,13 @@ var _ = require('underscore'),
      * Parses params from the HTTP request and returns object used throughout
      * reporting rates interface.
      *
-     * @param {Object} q - parsed request params.
-     * @param {String} reporting_freq - 'week' or 'month' default is month.
+     * @param {Object} q - Options
      * @api public
      */
-    exports.getDates = function (q, reporting_freq) {
+    exports.getDates = function (q) {
         var now = moment(),
             selected_time_unit = q.time_unit || 'month',
+            reporting_freq = q.reporting_freq,
             dates = {},
             list = [],
             date,

@@ -5,6 +5,7 @@
   angular.module('inboxServices', ['ngResource']);
 
   require('./analytics-modules');
+  require('./android-api');
   require('./app-info');
   require('./auth');
   require('./cache');

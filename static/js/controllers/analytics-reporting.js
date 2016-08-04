@@ -24,6 +24,29 @@ var _ = require('underscore'),
 
       'ngInject';
 
+      var translationKeys = {
+        week: [
+          'week',
+          'week.plural'
+        ],
+        month: [
+          'month',
+          'month.plural'
+        ],
+        quarter: [
+          'quarter',
+          'quarter.plural'
+        ],
+        year: [
+          'year',
+          'year.plural'
+        ]
+      };
+
+      $scope.getTranslationKey = function(key, plural) {
+        return plural ? translationKeys[key][1] : translationKeys[key][0];
+      };
+
       $scope.facilities = [];
 
       Settings()
@@ -31,8 +54,12 @@ var _ = require('underscore'),
           $scope.filters = {
             time_unit: 'month',
             quantity: 3,
-            form: settings['kujua-reporting'][0].code
+            form: settings['kujua-reporting'][0].code,
+            reporting_freq: settings['kujua-reporting'][0].reporting_freq
           };
+          if ($scope.filters.reporting_freq === 'weekly') {
+            $scope.filters.time_unit = 'week';
+          }
           $scope.$watch('filters', function() {
             if ($scope.district) {
               $scope.setDistrict($scope.district);
@@ -81,9 +108,11 @@ var _ = require('underscore'),
         }
       };
 
-      $scope.setTime = function(time) {
-        $scope.filters.time_unit = time.time_unit;
-        $scope.filters.quantity = time.quantity;
+      $scope.setTimeUnit = function(time) {
+        $scope.filters.time_unit = time;
+      };
+      $scope.setTimeQuantity = function(num) {
+        $scope.filters.quantity = num;
       };
 
       $scope.setForm = function(form) {
@@ -171,8 +200,8 @@ var _ = require('underscore'),
             var saved_data = [];
             var idx = doc.type === 'health_center' ? 4 : 3;
             data.rows.forEach(function(row) {
-              if (doc._id === row.doc.key[idx]) {
-                saved_data.push(row.doc);
+              if (doc._id === row.key[idx]) {
+                saved_data.push(row);
               }
             });
             return saved_data;
