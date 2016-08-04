@@ -180,15 +180,15 @@ exports['addMessage adds uuid'] = function(test) {
 };
 
 exports['getRecentForm calls through to db view correctly'] = function(test) {
-    
+
     var formName = 'someForm';
     var clinicId = 'someClinicId';
     var result = [{_id: 'someRowId'}];
 
     sinon.stub(db.medic, 'view')
         .withArgs(
-            'medic', 
-            'data_records_by_form_and_clinic', 
+            'medic',
+            'reports_by_form_and_clinic',
             {
                 startkey: [formName, clinicId],
                 endkey: [formName, clinicId],
@@ -199,7 +199,7 @@ exports['getRecentForm calls through to db view correctly'] = function(test) {
 
     test.expect(2);
     utils.getRecentForm({
-        formName: formName, 
+        formName: formName,
         doc: {
             contact: {
                 parent: {

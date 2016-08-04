@@ -117,7 +117,7 @@ exports['use week view when doc has week property'] = function(test) {
       view: function(ddoc, view) {
         test.same(
             view,
-            'data_records_by_form_year_week_clinic_id_and_reported_date'
+            'reports_by_form_year_week_clinic_id_reported_date'
         );
         test.done();
       }
@@ -132,7 +132,7 @@ exports['use month view when doc has month property'] = function(test) {
       view: function(ddoc, view) {
           test.same(
               view,
-              'data_records_by_form_year_month_clinic_id_and_reported_date'
+              'reports_by_form_year_month_clinic_id_reported_date'
           );
           test.done();
       }
