@@ -76,7 +76,7 @@ var getAllUsers = function(callback) {
 };
 
 var getFacilities = function(callback) {
-  db.medic.view('medic-client', 'facilities', {include_docs: true}, function(err, results) {
+  db.medic.view('medic-client', 'contacts_by_type', {include_docs: true}, function(err, results) {
     if (err) {
       return callback(err);
     }
