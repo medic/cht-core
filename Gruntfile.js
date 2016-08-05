@@ -181,6 +181,14 @@ module.exports = function(grunt) {
              ' && curl -X DELETE http://admin:pass@localhost:5984/medic-audit-test' +
              ' && kanso push http://admin:pass@localhost:5984/medic-test'
       },
+      test_integration_setup: {
+        cmd: 'cp -r node_modules/ node_modules.integration.bak &&' +
+            'npm install api/',
+      },
+      test_integration_cleanup: {
+        cmd: 'rm -r node_modules/ &&' +
+            'mv node_modules.integration.bak node_modules',
+      },
       undopatches: {
         cmd: function() {
           var modulesToPatch = [
@@ -285,6 +293,11 @@ module.exports = function(grunt) {
     },
     nodeunit: {
       all: ['tests/nodeunit/unit/**/*.js']
+    },
+    mochaTest: {
+      integration: {
+        src: ['tests/integration/**/*.js'],
+      },
     },
     ngtemplates: {
       inboxApp: {
@@ -417,12 +430,22 @@ module.exports = function(grunt) {
     'jshint',
     'karma:unit',
     'nodeunit',
+    'test_integration',
     'e2e'
   ]);
 
   grunt.registerTask('test_continuous', 'Lint, unit test running on a loop', [
     'jshint',
     'karma:unit_continuous'
+  ]);
+
+  grunt.registerTask('test_integration', [
+    'exec:test_integration_setup',
+    'continue:on',
+      'mochaTest:integration',
+    'continue:off',
+    'exec:test_integration_cleanup',
+    'continue:fail-on-warning',
   ]);
 
 };
