@@ -8,7 +8,7 @@ emit = function(e) {
 exports.setUp = function(cb) {
   emitted = [];
   cb();
-}
+};
 
 exports['No emit on empty doc'] = function(test) {
   views.tasks_pending.map({});
@@ -27,7 +27,7 @@ exports['No emit for empty tasks'] = function(test) {
   test.deepEqual(emitted, []);
 
   test.done();
-}
+};
 
 exports['No emit when tasks missing messages'] = function(test) {
   views.tasks_pending.map({
