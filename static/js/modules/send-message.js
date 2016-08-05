@@ -6,10 +6,6 @@ var _ = require('underscore'),
 
   'use strict';
 
-  var translateFn = function(key) {
-    return key;
-  };
-
   var validateMessage = function(message) {
     return {
       valid: !!message,
@@ -212,6 +208,7 @@ var _ = require('underscore'),
   var recipients = [];
   var settings = {};
   var Promise;
+  var translateFn;
 
   exports.init = function($q, Settings, Contact, _translateFn) {
     Promise = $q;

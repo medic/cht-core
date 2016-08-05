@@ -150,7 +150,7 @@ describe('GenerateSearchRequests service', function() {
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0]).to.deep.equal({
       ordered: true,
-      view: 'medic-client/contacts_by_name'
+      view: 'medic-client/contacts_by_type_index_name'
     });
   });
 

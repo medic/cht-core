@@ -178,7 +178,7 @@ var _ = require('underscore'),
           requests = _.compact(_.flatten(requests));
           if (!requests.length) {
             requests.push({
-              view: 'medic-client/contacts_by_name',
+              view: 'medic-client/contacts_by_type_index_name',
               ordered: true
             });
           }
