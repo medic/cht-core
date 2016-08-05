@@ -81,7 +81,7 @@ module.exports = {
         } else if (doc.from) {
             q.key = [ String(doc.from) ];
             q.include_docs = true;
-            db.medic.view('medic-client', 'person_by_phone', q, function(err, data) {
+            db.medic.view('medic-client', 'people_by_phone', q, function(err, data) {
                 var first = _.first(data.rows);
                 if (!first) {
                     return callback();

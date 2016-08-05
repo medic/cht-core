@@ -78,11 +78,11 @@ module.exports = {
         if (doc.fields.week || doc.fields.week_number) {
             q.startkey = [doc.form, doc.fields.year, doc.fields.week || doc.fields.week_number, clinic_id];
             q.endkey = [doc.form, doc.fields.year, doc.fields.week || doc.fields.week_number, clinic_id, {}];
-            view = 'data_records_by_form_year_week_clinic_id_and_reported_date';
+            view = 'reports_by_form_year_week_clinic_id_reported_date';
         } else if (doc.fields.month || doc.fields.month_num) {
             q.startkey = [doc.form, doc.fields.year, doc.fields.month || doc.fields.month_num, clinic_id];
             q.endkey = [doc.form, doc.fields.year, doc.fields.month || doc.fields.month_num, clinic_id, {}];
-            view = 'data_records_by_form_year_month_clinic_id_and_reported_date';
+            view = 'reports_by_form_year_month_clinic_id_reported_date';
         } else {
             return callback();
         }
