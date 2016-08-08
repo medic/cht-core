@@ -16,12 +16,9 @@ var login = function(browser) {
   browser.driver.findElement(by.name('password')).sendKeys(environment.pass);
   browser.driver.findElement(by.id('login')).click();
   // Login takes some time, so wait until it's done.
-  browser.wait(function() {
-    return browser.driver.findElement(by.css('body.bootstrapped'));
-  }, 10000);
-  return browser.driver.getCurrentUrl().then(function(url) {
-    return /_design/.test(url);
-  });
+  return browser.driver.wait(function() {
+    return browser.driver.isElementPresent(by.css('body.bootstrapped'));
+  }, 20 * 1000, 'Login should be complete within 20 seconds');
 };
 
 var startApi = function() {
@@ -80,9 +77,7 @@ exports.config = {
     browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
     browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
     browser.driver.sleep(1000);
-    return browser.driver.wait(function() {
-      return login(browser);
-    }, 10 * 1000, 'Login should be complete within 10 seconds');
+    return login(browser);
   },
   onCleanUp: function() {
     api.kill();
