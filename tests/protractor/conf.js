@@ -15,9 +15,10 @@ var login = function(browser) {
   browser.driver.findElement(by.name('user')).sendKeys(environment.user);
   browser.driver.findElement(by.name('password')).sendKeys(environment.pass);
   browser.driver.findElement(by.id('login')).click();
-
   // Login takes some time, so wait until it's done.
-  browser.driver.sleep(10000);
+  browser.wait(function() {
+    return browser.driver.findElement(by.css('body.bootstrapped'));
+  }, 10000);
   return browser.driver.getCurrentUrl().then(function(url) {
     return /_design/.test(url);
   });
