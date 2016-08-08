@@ -188,10 +188,10 @@ var _ = require('underscore'),
 
       var getViewReports = function(doc, dates) {
         var params = reportingUtils.getReportingViewArgs(dates),
-            view = 'data_records_by_form_year_month_facility';
+            view = 'reports_by_form_year_month_places';
 
         if (dates.reporting_freq === 'week') {
-          view = 'data_records_by_form_year_week_facility';
+          view = 'reports_by_form_year_week_places';
         }
 
         return DB().query('medic-client/' + view, params)

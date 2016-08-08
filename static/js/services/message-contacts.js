@@ -21,12 +21,12 @@ var _ = require('underscore');
   var query = function(DB, options) {
     var params = generateQuery(options);
     return DB()
-      .query('medic-client/data_records_by_contact', params)
+      .query('medic-client/messages_by_contact_date', params)
       .then(function(res) {
         return res.rows;
       });
   };
-  
+
   inboxServices.factory('MessageContact',
     function(
       DB
@@ -39,7 +39,7 @@ var _ = require('underscore');
       };
     }
   );
-  
+
   inboxServices.factory('ContactConversation',
     function(
       DB

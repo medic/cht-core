@@ -23,7 +23,7 @@ db.get(placeId)
     console.log('Found place ' + place._id + ' : ' + place.name);
 
     return db.query(
-      'medic/facilities_by_parent',
+      'medic/places_by_type_parent_id_name',
       {
         startkey: ['clinic', placeId],
         endkey: ['clinic', placeId + '\ufff0'],
