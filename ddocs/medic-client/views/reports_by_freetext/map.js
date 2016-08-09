@@ -24,8 +24,10 @@ function(doc) {
     for (var key in doc) {
       emitField(key, doc[key], doc.reported_date);
     }
-    for (var key in doc.fields) {
-      emitField(key, doc.fields[key], doc.reported_date);
+    if (doc.fields) {
+      for (var key in doc.fields) {
+        emitField(key, doc.fields[key], doc.reported_date);
+      }
     }
     if (doc.contact && doc.contact._id) {
       emit([ 'contact:' + doc.contact._id ], doc.reported_date);
