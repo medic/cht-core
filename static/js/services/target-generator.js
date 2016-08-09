@@ -7,8 +7,17 @@ var moment = require('moment'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TargetGenerator', ['$log', '$parse','$q', 'RulesEngine', 'Settings', 'UserContact',
-    function($log, $parse, $q, RulesEngine, Settings, UserContact) {
+  inboxServices.factory('TargetGenerator',
+    function(
+      $log,
+      $parse,
+      $q,
+      RulesEngine,
+      Settings,
+      UserContact
+    ) {
+
+      'ngInect';
 
       var targets = [];
 
@@ -53,25 +62,30 @@ var moment = require('moment'),
         target.count = calculateCount(target);
       };
 
-      var init = Settings()
-        .then(function(settings) {
-          UserContact()
-            .then(function(userContact) {
-              targets = settings.tasks.targets.items.map(function(item) {
-                var result = _.clone(item);
-                result.instances = {};
-                return result;
-              }).filter(function(item) {
-                if (item.context) {
-                  // Clone the `userContact` object to prevent bad context
-                  // expressions from modifying it - this could leak into other
-                  // expressions.
-                  var clone = JSON.parse(JSON.stringify(userContact));
-                  return $parse(item.context)({ userContact: clone });
-                }
-                return true;
-              });
-            });
+      var init = $q.all([ Settings(), UserContact() ])
+        .then(function(results) {
+          var items = results[0].tasks &&
+                      results[0].tasks.targets &&
+                      results[0].tasks.targets.items;
+          var userContact = results[1];
+          if (!items) {
+            targets = [];
+            return;
+          }
+          targets = items.map(function(item) {
+            var result = _.clone(item);
+            result.instances = {};
+            return result;
+          }).filter(function(item) {
+            if (item.context) {
+              // Clone the `userContact` object to prevent bad context
+              // expressions from modifying it - this could leak into other
+              // expressions.
+              var clone = JSON.parse(JSON.stringify(userContact));
+              return $parse(item.context)({ user: clone });
+            }
+            return true;
+          });
         });
 
       return function(callback) {
@@ -87,6 +101,6 @@ var moment = require('moment'),
           .catch(callback);
       };
     }
-  ]);
+  );
 
 }());
