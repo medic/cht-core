@@ -1,5 +1,14 @@
 # Medic Mobile Release Notes
 
+## 2.8.0
+
+### August 9, 2016
+
+#### Features
+
+- Pass user's info to rule to customize Tasks per user type or location. Issue: #2408
+- Add context to target types and goals. Issue: #2409
+
 ## 2.7.3
 
 ### July 18, 2016
@@ -98,6 +107,14 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 - Added Tasks feature for rich event scheduling.
 - Forms can now be provided in XForm format for rich form UIs.
 - Added a configurable Target analytics module.
+
+## 0.4.12
+
+### Jul 21, 2016
+
+- Fixed bug in reporting rates for weekly time unit. #2429
+- Log warnings in sentinel when ID collisions happen. #1898
+- Support integration with [medic-gateway](https://github.com/medic/medic-gateway) for sending and receiving SMS medic-api#69
 
 ## 0.4.11
 
