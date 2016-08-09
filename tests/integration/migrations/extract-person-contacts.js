@@ -63,4 +63,43 @@ describe('extract-person-contacts migration', function() {
 
     });
   });
+
+  it('should not break if parent of contact not found', function() {
+    // given
+    return utils.initDb([
+      {
+        _id: 'abc',
+        type: 'health_center',
+        name: 'Homa Bay Health',
+        parent: {
+          _id: 'def',
+          type: 'district_hospital',
+          name: 'Kisumu',
+          contact: {
+            name: 'Madam Regina',
+            phone: '+1234567890'
+          }
+        }
+      }
+    ])
+    .then(function() {
+
+      // when
+      return utils.runMigration('extract-person-contacts');
+
+    })
+    .then(function() {
+
+      // expect
+      return utils.assertDb([
+        {
+          _id: 'abc',
+          type: 'health_center',
+          name: 'Homa Bay Health',
+        },
+      ]);
+
+    });
+  });
+
 });
