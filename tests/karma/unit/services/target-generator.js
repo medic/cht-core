@@ -183,6 +183,22 @@ describe('TargetGenerator service', function() {
     });
   });
 
+  // loop waiting for rules engine listener to be registered
+  var getListener = function(callback) {
+    var interval;
+    var count = 0;
+    interval = setInterval(function() {
+      if (RulesEngine.listen.args[0]) {
+        clearInterval(interval);
+        callback(RulesEngine.listen.args[0][2]);
+      }
+      if (count++ >= 1000) {
+        // stop looping and wait for test to timeout
+        clearInterval(interval);
+      }
+    }, 1);
+  };
+
   it('deals with deleted instances', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'count' }
@@ -213,12 +229,12 @@ describe('TargetGenerator service', function() {
       { _id: '1', type: 'report', pass: true, date: now },
       { _id: '2', type: 'report', pass: true, date: now }
     ]);
-    setTimeout(function() {
+    getListener(function(listener) {
       // some time later... second result from the RulesEngine : deletion
-      RulesEngine.listen.args[0][2](null, [
+      listener(null, [
         { _id: '2', type: 'report', pass: true, date: now, deleted: true }
       ]);
-    }, 1);
+    });
   });
 
   it('updates for new emissions', function(done) {
@@ -249,12 +265,12 @@ describe('TargetGenerator service', function() {
     RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: now }
     ]);
-    setTimeout(function() {
+    getListener(function(listener) {
       // some time later... second result from the RulesEngine
-      RulesEngine.listen.args[0][2](null, [
+      listener(null, [
         { _id: '2', type: 'report', pass: true, date: now }
       ]);
-    }, 1);
+    });
   });
 
   it('duplicate instances are updated', function(done) {
@@ -287,15 +303,15 @@ describe('TargetGenerator service', function() {
       { _id: '1', type: 'report', pass: true, date: now },
       { _id: '2', type: 'report', pass: true, date: now }
     ]);
-    setTimeout(function() {
+    getListener(function(listener) {
       // some time later... second result from the RulesEngine
-      RulesEngine.listen.args[0][2](null, [
+      listener(null, [
         { _id: '1', type: 'report', pass: true, date: now },
         { _id: '2', type: 'report', pass: false, date: now },
         { _id: '3', type: 'report', pass: true, date: now },
         { _id: '4', type: 'report', pass: true, date: now }
       ]);
-    }, 1);
+    });
   });
 
   it('excludes targets for which the expression fails', function(done) {
