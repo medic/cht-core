@@ -82,7 +82,7 @@ var moment = require('moment'),
               // expressions from modifying it - this could leak into other
               // expressions.
               var clone = JSON.parse(JSON.stringify(userContact));
-              return $parse(item.context)({ userContact: clone });
+              return $parse(item.context)({ user: clone });
             }
             return true;
           });

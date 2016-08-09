@@ -301,8 +301,8 @@ describe('TargetGenerator service', function() {
   it('excludes targets for which the expression fails', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'none',  type: 'count' },
-      { id: 'true',  type: 'count', context: 'userContact.name === "geoff"' },
-      { id: 'false', type: 'count', context: 'userContact.name === "jeff"' }
+      { id: 'true',  type: 'count', context: 'user.name === "geoff"' },
+      { id: 'false', type: 'count', context: 'user.name === "jeff"' }
     ] } } }));
     UserContact.returns(KarmaUtils.mockPromise(null, { name: 'geoff' }));
     RulesEngine.listen.callsArgWith(2, null, [
