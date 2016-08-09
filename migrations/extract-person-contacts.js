@@ -210,11 +210,9 @@ var updateParents = function(id, callback) {
     // Check the parent exists before doing anything crazy.
     db.medic.get(facility.parent._id, function(err) {
       if (err) {
-        if (err.statusCode === 404) {
-          return callback(new Error('Parent ' + facility.parent._id +
-           ' of facility ' + facility._id + ' not found.'));
+        if (err.statusCode !== 404) {
+          return callback(err);
         }
-        return callback(err);
       }
       return callback();
     });
@@ -233,13 +231,22 @@ var updateParents = function(id, callback) {
   };
 
   var resetParent = function(facilityId, parentId, callback) {
-    places.updatePlace(facilityId, { parent: parentId },
-      function(err) {
-        if (err) {
-          return callback(new Error('Failed to update parent on facility ' + facilityId + ' - ' +
-            JSON.stringify(err, null, 2)));
+    db.medic.get(parentId, function(err) {
+      if (err) {
+        if (err.statusCode === 404) {
+          // Parent does not exist, so cannot be reset
+          return callback();
         }
-        return callback();
+        return callback(err);
+      }
+      places.updatePlace(facilityId, { parent: parentId },
+        function(err) {
+          if (err) {
+            return callback(new Error('Failed to update parent on facility ' + facilityId + ' - ' +
+              JSON.stringify(err, null, 2)));
+          }
+          return callback();
+      });
     });
   };
 

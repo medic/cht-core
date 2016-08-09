@@ -39,7 +39,7 @@ exports['run does nothing if no facilities'] = function(test) {
 };
 
 var testParentUpdated = function(test, doc, docWithoutParent) {
-  test.expect(12);
+  test.expect(13);
 
   // Get the 3 levels of hierarchy
   getView.onCall(0).callsArgWith(3, null, { rows: [ { id: 'a' }] });
@@ -50,22 +50,25 @@ var testParentUpdated = function(test, doc, docWithoutParent) {
   getDoc.onCall(0).callsArgWith(1, null, doc);
   // Get parent doc
   getDoc.onCall(1).callsArgWith(1, null, { _id: 'b', contact: {}, newKey: 'newValue' });
+  getDoc.onCall(2).callsArgWith(1, null, { _id: 'b', contact: {}, newKey: 'newValue' });
+
   // Update doc : deleted parent
   insertDoc.onCall(0).callsArgWith(1, null);
   // Update doc : update the parent field
   updatePlace.onCall(0).callsArgWith(2, null);
   // Get doc for contact update : no contact, so skipped.
-  getDoc.onCall(2).callsArgWith(1, null, { _id: 'a', parent: { _id: 'b'} });
+  getDoc.onCall(3).callsArgWith(1, null, { _id: 'a', parent: { _id: 'b'} });
 
   migration.run(function(err) {
     test.equals(err, undefined);
     // Called once per place type.
     test.equals(getView.callCount, 3);
 
-    test.equals(getDoc.callCount, 3);
+    test.equals(getDoc.callCount, 4);
     test.equals(getDoc.firstCall.args[0], 'a');
     test.equals(getDoc.secondCall.args[0], 'b');
-    test.equals(getDoc.thirdCall.args[0], 'a');
+    test.equals(getDoc.thirdCall.args[0], 'b');
+    test.equals(getDoc.lastCall.args[0], 'a');
 
     // Parent was deleted, then reset.
     test.equals(insertDoc.callCount, 1);
@@ -177,7 +180,7 @@ exports['run still updates contact if facility has migrated parent'] = function(
 };
 
 exports['run updates contact and parent'] = function(test) {
-  test.expect(16);
+  test.expect(17);
 
   // Get the 3 levels of hierarchy
   getView.onCall(0).callsArgWith(3, null, { rows: [ { id: 'a' }] });
@@ -192,12 +195,13 @@ exports['run updates contact and parent'] = function(test) {
     });
   // Get parent doc
   getDoc.onCall(1).callsArgWith(1, null, { _id: 'b', contact: {}, newKey: 'newValue' });
+  getDoc.onCall(2).callsArgWith(1, null, { _id: 'b', contact: {}, newKey: 'newValue' });
   // Update doc : deleted parent
   insertDoc.onCall(0).callsArgWith(1, null);
   // Update doc : update the parent field
   updatePlace.onCall(0).callsArgWith(2, null);
   // Get doc for contact update
-  getDoc.onCall(2).callsArgWith(1, null,
+  getDoc.onCall(3).callsArgWith(1, null,
     {
       _id: 'a',
       contact: { name: 'name', 'phone': 'phone'},
@@ -215,10 +219,11 @@ exports['run updates contact and parent'] = function(test) {
     // Called once per place type.
     test.equals(getView.callCount, 3);
 
-    test.equals(getDoc.callCount, 3);
+    test.equals(getDoc.callCount, 4);
     test.equals(getDoc.firstCall.args[0], 'a');
     test.equals(getDoc.secondCall.args[0], 'b');
-    test.equals(getDoc.thirdCall.args[0], 'a');
+    test.equals(getDoc.thirdCall.args[0], 'b');
+    test.equals(getDoc.lastCall.args[0], 'a');
 
     test.equals(insertDoc.callCount, 2);
     test.equals(updatePlace.callCount, 2);
