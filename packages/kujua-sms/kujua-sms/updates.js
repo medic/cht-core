@@ -356,19 +356,20 @@ exports.update_message_task = function(doc, request) {
  * Return task object that matches message uuid or a falsey value if match
  * fails.
  */
-var getTask = function(uuid, doc, type) {
-    type = type || 'message';
-    if (!uuid || !doc || !doc.tasks) {
-        return;
-    }
-    if (type === 'message') {
-        for (var i in doc.tasks) {
-            for (var j in doc.tasks[i].messages) {
-                if (uuid === doc.tasks[i].messages[j].uuid) {
-                    return doc.tasks[i];
-                }
+var getTask = function(uuid, doc) {
+    for (var i in doc.tasks) {
+        for (var j in doc.tasks[i].messages) {
+            if (uuid === doc.tasks[i].messages[j].uuid) {
+                return doc.tasks[i];
             }
-        };
-    }
+        }
+    };
+    for (var i in doc.scheduled_tasks) {
+        for (var j in doc.scheduled_tasks[i].messages) {
+            if (uuid === doc.scheduled_tasks[i].messages[j].uuid) {
+                return doc.scheduled_tasks[i];
+            }
+        }
+    };
     return;
 };
