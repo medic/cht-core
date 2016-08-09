@@ -1,4 +1,4 @@
-var controller = require('../../controllers/messages'),
+var controller = require('../../controllers/message-utils'),
     db = require('../../db'),
     utils = require('../utils'),
     sinon = require('sinon');
@@ -7,7 +7,6 @@ exports.tearDown = function (callback) {
   utils.restore(
     db.medic.view,
     db.medic.updateWithHandler,
-    controller._updateCouchDB,
     controller.getMessage
   );
   callback();
@@ -25,11 +24,11 @@ exports['getMessages returns errors'] = function(test) {
 
 exports['getMessages passes limit param value of 100 to view'] = function(test) {
   test.expect(2);
-  var getView = sinon.stub(db.medic, 'view').callsArg(3);
-  controller.getMessages({limit: 500}, function() {
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [] });
+  controller.getMessages({ limit: 500 }, function() {
     test.equals(getView.callCount, 1);
     // assert query parameters on view call use right limit value
-    test.deepEqual({limit: 500}, getView.getCall(0).args[2]);
+    test.deepEqual({ limit: 500 }, getView.getCall(0).args[2]);
     test.done();
   });
 };
@@ -37,7 +36,7 @@ exports['getMessages passes limit param value of 100 to view'] = function(test) 
 exports['getMessages returns 500 error if limit over 100'] = function(test) {
   test.expect(3);
   var getView = sinon.stub(db.medic, 'view');
-  controller.getMessages({limit: 9999}, function(err) {
+  controller.getMessages({ limit: 9999 }, function(err) {
     test.equals(err.code, 500);
     test.equals(err.message, 'Limit max is 1000');
     test.equals(getView.callCount, 0);
@@ -75,31 +74,6 @@ exports['updateMessage returns errors'] = function(test) {
   controller.updateMessage('c38uz32a', null, function(err) {
     test.deepEqual(err, 'boom');
     test.equals(get.callCount, 1);
-    test.done();
-  });
-};
-
-/*
- * `_updateCouchDB` should reformat error objects from couchdb/nano to be
- * compatible with this API
- */
-exports['_updateCouchDB returns proper errors'] = function(test) {
-  test.expect(2);
-  var update = sinon.stub(db.medic, 'updateWithHandler').callsArgWith(4, {
-    payload: {
-      success: false,
-      error: 'there was a conflict somehow'
-    },
-    statusCode: 409,
-    headers: {},
-    request: {}
-  });
-  controller._updateCouchDB('c38uz32a', null, function(err) {
-    test.deepEqual(err.payload, {
-      success: false,
-      error: 'there was a conflict somehow'
-    });
-    test.equals(update.callCount, 1);
     test.done();
   });
 };

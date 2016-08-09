@@ -98,24 +98,6 @@ app.all(pathPrefix + '_local/*', function(req, res) {
   proxy.web(req, res);
 });
 
-var handleApiCall = function(req, res, controller) {
-  controller.get({ district: req.query.district }, function(err, obj) {
-    if (err) {
-      return serverUtils.error(err, res);
-    }
-    res.json(obj);
-  });
-};
-
-var handleApiPost = function(req, res, controller) {
-  controller.post(req, function(err, obj) {
-    if (err) {
-      return serverUtils.error(err, res);
-    }
-    res.json(obj);
-  });
-};
-
 app.get('/setup/poll', function(req, res) {
   var p = require('./package.json');
   res.json({
@@ -197,16 +179,26 @@ app.get('/api/sms', function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res);
     }
-    handleApiCall(req, res, smsGateway);
+    smsGateway.get(function(err, obj) {
+      if (err) {
+        return serverUtils.error(err, res);
+      }
+      res.json(obj);
+    });
   });
 });
 
-app.post('/api/sms', function(req, res) {
+app.post('/api/sms', jsonParser, function(req, res) {
   auth.check(req, 'can_access_gateway_api', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res);
     }
-    handleApiPost(req, res, smsGateway);
+    smsGateway.post(req, function(err, obj) {
+      if (err) {
+        return serverUtils.error(err, res);
+      }
+      res.json(obj);
+    });
   });
 });
 

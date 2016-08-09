@@ -3,9 +3,14 @@
  * @see https://github.com/medic/medic-gateway
  */
 
-var _ = require('underscore'),
-    messageUtils = require('./messages'),
-    recordUtils = require('./records');
+var async = require('async'),
+    messageUtils = require('./message-utils'),
+    recordUtils = require('./record-utils'),
+    STATUS_MAP = {
+      SENT: 'sent',
+      DELIVERED: 'delivered',
+      FAILED: 'failed'
+    };
 
 function warn() {
   var args = Array.prototype.slice.call(arguments, 0);
@@ -13,143 +18,112 @@ function warn() {
   console.error.apply(console, args);
 }
 
-function readBody(stream) {
-  var body = '';
-  return new Promise(function(resolve, reject) {
-    stream.on('data', function(data) {
-      body += data.toString();
-    });
-    stream.on('end', function() {
-      resolve(body);
-    });
-    stream.on('error', reject);
-  });
+function saveToDb(message, callback) {
+  recordUtils.createByForm({
+    from: message.from,
+    message: message.content,
+    gateway_ref: message.id,
+  }, callback);
 }
 
-function saveToDb(gatewayRequest, wtMessage) {
-  var messageBody = {
-    from: wtMessage.from,
-    message: wtMessage.content,
-    gateway_ref: wtMessage.id,
-  };
-
-  return new Promise(function(resolve, reject) {
-    recordUtils.create(messageBody, function(err) {
-      if (err) {
-        return reject(err);
-      }
-      resolve();
-    });
-  });
-}
-
-function getWebappState(update) {
-  switch(update.status) {
-    case 'SENT':
-      return 'sent';
-    case 'DELIVERED':
-      return 'delivered';
-    case 'FAILED':
-      return 'failed';
-  }
-}
-
-function updateStateFor(update) {
-  var newState = getWebappState(update);
+function updateStateFor(update, callback) {
+  var newState = STATUS_MAP[update.status];
   if (!newState) {
-    return Promise.reject(new Error('Could not work out new state for update: ' + JSON.stringify(update)));
+    return callback(new Error('Could not work out new state for update: ' + JSON.stringify(update)));
   }
-
-  if (update.status === 'FAILED' && update.reason) {
-    return updateState(update.id, newState, update.reason);
-  }
-
-  return updateState(update.id, newState);
+  updateState(update.id, newState, update.reason, callback);
 }
 
-function updateState(messageId, newState, failureReason) {
+function updateState(messageId, newState, reason, callback) {
   var updateBody = {
     state: newState,
   };
-
-  if (failureReason) {
-    updateBody.details = { reason:failureReason };
+  if (reason) {
+    updateBody.details = { reason: reason };
   }
+  messageUtils.updateMessage(messageId, updateBody, callback);
+}
 
-  return new Promise(function(resolve, reject) {
-    messageUtils.updateMessage(messageId, updateBody, function(err) {
+function markMessagesScheduled(messages, callback) {
+  async.eachSeries(
+    messages,
+    function(message, callback) {
+      updateState(message.id, 'scheduled', null, callback);
+    },
+    function(err) {
       if (err) {
-        return reject(err);
+        warn(err);
       }
-      return resolve();
+      return callback();
+    }
+  );
+}
+
+function getOutgoing(callback) {
+  messageUtils.getMessages({ state: 'pending' }, function(err, pendingMessages) {
+    if (err) {
+      warn(err);
+      return callback(null, []);
+    }
+    var messages = pendingMessages.map(function(message) {
+      return {
+        id: message.id,
+        to: message.to,
+        content: message.message,
+      };
+    });
+    markMessagesScheduled(messages, function() {
+      callback(null, messages);
     });
   });
 }
 
-function getWebappOriginatingMessages() {
-  return new Promise(function(resolve) {
-    var opts = { state: 'pending' };
-    messageUtils.getMessages(opts, function(err, pendingMessages) {
-      var woMessages = { docs: [], outgoingPayload: [] };
+// Process webapp-terminating messages
+function processMessages(req, callback) {
+  if (!req.body.messages) {
+    return callback();
+  }
+  async.eachSeries(req.body.messages, saveToDb, function(err) {
+    if (err) {
+      warn(err);
+    }
+    callback();
+  });
+}
 
-      if (err) {
-        warn(err);
-        return resolve(woMessages);
-      }
-
-      _.each(pendingMessages, function(pendingMessage) {
-        woMessages.docs.push(pendingMessage);
-        woMessages.outgoingPayload.push({
-          id: pendingMessage.id,
-          to: pendingMessage.to,
-          content: pendingMessage.message,
-        });
-      });
-      resolve(woMessages);
-    });
+// Process message status updates
+function processUpdates(req, callback) {
+  if (!req.body.updates) {
+    return callback();
+  }
+  async.eachSeries(req.body.updates, updateStateFor, function(err) {
+    if (err) {
+      warn(err);
+    }
+    callback();
   });
 }
 
 module.exports = {
-  get: function(options, callback) {
+  get: function(callback) {
     callback(null, { 'medic-gateway': true });
   },
   post: function(req, callback) {
-    readBody(req)
-      .then(JSON.parse)
-      .then(function(request) {
-        // Process webapp-terminating messages asynchronously
-        Promise.resolve()
-          .then(function() {
-            if(request.messages) {
-              _.forEach(request.messages, function(webappTerminatingMessage) {
-                saveToDb(req, webappTerminatingMessage)
-                  .catch(warn);
-              });
-            }
-          })
-          .catch(warn);
-
-        // Process WO message status updates asynchronously
-        Promise.resolve()
-          .then(function() {
-            if(request.updates) {
-              _.forEach(request.updates, function(update) {
-                updateStateFor(update)
-                  .catch(warn);
-              });
-            }
-          })
-          .catch(warn);
-      })
-      .then(getWebappOriginatingMessages)
-      .then(function(woMessages) {
-        callback(null, { messages: woMessages.outgoingPayload });
-        _.forEach(woMessages.docs, function(doc) {
-          updateState(doc.id, 'scheduled')
-            .catch(warn);
-        });
-      })
-      .catch(callback);
+    async.series([
+      function(callback) {
+        processMessages(req, callback);
+      },
+      function(callback) {
+        processUpdates(req, callback);
+      },
+      function(callback) {
+        getOutgoing(callback);
+      }
+    ], function(err, results) {
+      if (err) {
+        return callback(err);
+      }
+      callback(null, { messages: results[2] });
+    });
   },
 };
