@@ -11,7 +11,6 @@ describe('TargetGenerator service', function() {
   beforeEach(function() {
     Settings = sinon.stub();
     UserContact = sinon.stub();
-    UserContact.returns(KarmaUtils.mockPromise());
     RulesEngine = {
       listen: sinon.stub(),
     };
@@ -20,6 +19,7 @@ describe('TargetGenerator service', function() {
       $provide.value('Settings', Settings);
       $provide.value('RulesEngine', RulesEngine);
       $provide.value('UserContact', UserContact);
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject(function($injector) {
       injector = $injector;
@@ -27,19 +27,31 @@ describe('TargetGenerator service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(Settings, RulesEngine);
+    KarmaUtils.restore(Settings, RulesEngine, UserContact);
   });
 
   it('returns settings errors', function(done) {
     Settings.returns(KarmaUtils.mockPromise('boom'));
+    UserContact.returns(KarmaUtils.mockPromise());
     injector.get('TargetGenerator')(function(err) {
       chai.expect(err).to.equal('boom');
       done();
     });
   });
 
+  it('returns empty array when no targets are configured', function(done) {
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
+    UserContact.returns(KarmaUtils.mockPromise());
+    RulesEngine.listen.callsArgWith(2, null, []);
+    injector.get('TargetGenerator')(function(err, actual) {
+      chai.expect(actual).to.deep.equal([]);
+      done();
+    });
+  });
+
   it('returns task generator errors', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [] } } }));
+    UserContact.returns(KarmaUtils.mockPromise());
     RulesEngine.listen.callsArgWith(2, 'boom');
     injector.get('TargetGenerator')(function(err) {
       chai.expect(err).to.equal('boom');
@@ -49,6 +61,7 @@ describe('TargetGenerator service', function() {
 
   it('returns empty when no targets are emitted', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [] } } }));
+    UserContact.returns(KarmaUtils.mockPromise());
     RulesEngine.listen.callsArgWith(2, null, []);
     injector.get('TargetGenerator')(function(err, actual) {
       chai.expect(actual).to.deep.equal([]);
@@ -60,6 +73,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'known' }
     ] } } }));
+    UserContact.returns(KarmaUtils.mockPromise());
     RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'unknown' }
     ]);
@@ -74,6 +88,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'count' }
     ] } } }));
+    UserContact.returns(KarmaUtils.mockPromise());
     RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', date: now, pass: true },
       { _id: '2', type: 'report', date: now, pass: false },
@@ -92,6 +107,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'count' }
     ] } } }));
+    UserContact.returns(KarmaUtils.mockPromise());
     RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: now },
       { _id: '2', type: 'report', pass: true, date: 0 },
@@ -110,6 +126,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'percent' }
     ] } } }));
+    UserContact.returns(KarmaUtils.mockPromise());
     RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', date: now, pass: true },
       { _id: '2', type: 'report', date: 0, pass: false },
@@ -129,6 +146,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'percent' }
     ] } } }));
+    UserContact.returns(KarmaUtils.mockPromise());
     RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: 0 } // too old to be relevant, so not included in count
     ]);
@@ -146,6 +164,7 @@ describe('TargetGenerator service', function() {
       { id: 'report', type: 'count' },
       { id: 'registration', type: 'percent' }
     ] } } }));
+    UserContact.returns(KarmaUtils.mockPromise());
     RulesEngine.listen.callsArgWith(2, null, [
       { _id: '1', type: 'report', pass: true, date: now },
       { _id: '2', type: 'report', pass: true, date: now },
@@ -168,7 +187,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'count' }
     ] } } }));
-
+    UserContact.returns(KarmaUtils.mockPromise());
     var callbackCount = 0;
     injector.get('TargetGenerator')(function(err, actual) {
       if (callbackCount === 0) {
@@ -206,7 +225,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'count' }
     ] } } }));
-
+    UserContact.returns(KarmaUtils.mockPromise());
     var callbackCount = 0;
     injector.get('TargetGenerator')(function(err, actual) {
       if (callbackCount === 0) {
@@ -242,7 +261,7 @@ describe('TargetGenerator service', function() {
     Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
       { id: 'report', type: 'count' }
     ] } } }));
-
+    UserContact.returns(KarmaUtils.mockPromise());
     var callbackCount = 0;
     injector.get('TargetGenerator')(function(err, actual) {
       if (callbackCount === 0) {
@@ -276,6 +295,30 @@ describe('TargetGenerator service', function() {
         { _id: '3', type: 'report', pass: true, date: now },
         { _id: '4', type: 'report', pass: true, date: now }
       ]);
+    }, 1);
+  });
+
+  it('excludes targets for which the expression fails', function(done) {
+    Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
+      { id: 'none',  type: 'count' },
+      { id: 'true',  type: 'count', context: 'userContact.name === "geoff"' },
+      { id: 'false', type: 'count', context: 'userContact.name === "jeff"' }
+    ] } } }));
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'geoff' }));
+    RulesEngine.listen.callsArgWith(2, null, [
+      { _id: '1', type: 'none', date: now, pass: true },
+      { _id: '2', type: 'true', date: now, pass: true },
+      { _id: '3', type: 'false', date: now, pass: true }
+    ]);
+    injector.get('TargetGenerator')(function(err, actual) {
+      chai.expect(actual.length).to.equal(2);
+      chai.expect(actual[0].id).to.equal('none');
+      chai.expect(actual[0].type).to.equal('count');
+      chai.expect(actual[0].count).to.equal(1);
+      chai.expect(actual[1].id).to.equal('true');
+      chai.expect(actual[1].type).to.equal('count');
+      chai.expect(actual[1].count).to.equal(1);
+      done();
     });
   });
 
