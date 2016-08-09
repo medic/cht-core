@@ -218,7 +218,7 @@ describe('TargetGenerator service', function() {
       RulesEngine.listen.args[0][2](null, [
         { _id: '2', type: 'report', pass: true, date: now, deleted: true }
       ]);
-    });
+    }, 1);
   });
 
   it('updates for new emissions', function(done) {
@@ -254,7 +254,7 @@ describe('TargetGenerator service', function() {
       RulesEngine.listen.args[0][2](null, [
         { _id: '2', type: 'report', pass: true, date: now }
       ]);
-    });
+    }, 1);
   });
 
   it('duplicate instances are updated', function(done) {
