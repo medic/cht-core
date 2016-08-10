@@ -4,9 +4,6 @@ node_js:
   - "6.3"
   - "5.6"
 
-env:
-  - COUCH_URL=http://admin:pass@localhost:5984/medic
-
 addons:
   firefox: latest-esr
 
