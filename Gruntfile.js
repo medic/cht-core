@@ -181,6 +181,9 @@ module.exports = function(grunt) {
              ' && curl -X DELETE http://admin:pass@localhost:5984/medic-audit-test' +
              ' && kanso push http://admin:pass@localhost:5984/medic-test'
       },
+      deploy_integration: {
+        cmd: 'kanso push $COUCH_URL',
+      },
       test_integration_setup: {
         cmd: 'cp -r node_modules/ node_modules.integration.bak &&' +
             'npm install api/',
@@ -411,7 +414,7 @@ module.exports = function(grunt) {
     'minify',
     'karma:unit_ci',
     'nodeunit',
-    'exec:deploy',
+    'exec:deploy_integration',
     'test_integration',
     'exec:setupAdmin',
     'e2e'
