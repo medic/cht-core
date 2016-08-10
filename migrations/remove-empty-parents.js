@@ -6,13 +6,8 @@ function removeDeadParents(row, callback) {
   if(row.doc.parent && !_.isEmpty(row.doc.parent)) {
     return callback();
   }
-  db.medic.get(row.id, function(err, doc) {
-    if(err) {
-      return callback(err);
-    }
-    delete doc.parent;
-    db.medic.insert(callback);
-  });
+  delete row.doc.parent;
+  db.medic.insert(row.doc, callback);
 }
 
 module.exports = {
