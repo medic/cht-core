@@ -411,6 +411,7 @@ module.exports = function(grunt) {
     'minify',
     'karma:unit_ci',
     'nodeunit',
+    'test_integration',
     'exec:setupAdmin',
     'e2e'
   ]);
