@@ -141,9 +141,10 @@ describe('GenerateSearchRequests service', function() {
     var result = service('reports', filters);
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0].view).to.equal('reports_by_date');
+    console.log(JSON.stringify(result[0].params));
     chai.expect(result[0].params).to.deep.equal({
       startkey: [ 1360321199999 ],
-      endkey: [ 1371124799999 ]
+      endkey: [ 1371038399999 ]
     });
   });
 
