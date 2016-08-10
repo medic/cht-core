@@ -2,12 +2,20 @@
 
 ## 2.8.0
 
-### August 9, 2016
+### August 10, 2016
 
 #### Features
 
 - Pass user's info to rule to customize Tasks per user type or location. Issue: #2408
 - Add context to target types and goals. Issue: #2409
+- Update default translations
+
+#### Bug fixes
+
+- Android back button doesn't work as expected. Issue: #2600
+- In date filter for Reports tab, the selected dates are being offset by 1 day. Issue: #2185
+- 'New Contact' option does not appear without a search. Issue: #2516
+- Place contact should be a child of the place. Issue: #1710
 
 ## 2.7.3
 
