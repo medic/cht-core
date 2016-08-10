@@ -8,7 +8,8 @@ var _ = require('underscore'),
   exports.init = function($translate, Search, DB, $q, Session) {
     var pageSize,
         allowNew,
-        types;
+        types,
+        addNewText;
 
     var formatResult = function(row) {
       if(!row.doc) {
@@ -26,8 +27,8 @@ var _ = require('underscore'),
       return row.text;
     };
 
-    var prepareRows = function(documents, first) {
-      var rows = _.sortBy(documents, function(doc) {
+    var prepareRows = function(documents) {
+      return _.sortBy(documents, function(doc) {
         return doc.name;
       }).map(function(doc) {
         return {
@@ -35,15 +36,6 @@ var _ = require('underscore'),
           doc: doc
         };
       });
-
-      if (first && allowNew) {
-        rows.unshift({
-          id: 'NEW',
-          text: $translate('contact.type.' + types[0] + '.new'),
-        });
-      }
-
-      return rows;
     };
 
     var currentQuery;
@@ -104,6 +96,14 @@ var _ = require('underscore'),
         width: '100%',
         minimumInputLength: Session.isAdmin() ? 3 : 0
       });
+      if (allowNew) {
+        var button = $('<a class="btn btn-link add-new"><i class="fa fa-plus"></i> ' + addNewText + '</a>')
+          .on('click', function() {
+            selectEl.append($('<option value="NEW" selected="selected">' + addNewText + '</option>'));
+            selectEl.trigger('change');
+          });
+        selectEl.after(button);
+      }
     };
 
     return function(selectEl, _types, options) {
@@ -116,6 +116,7 @@ var _ = require('underscore'),
       if (allowNew && types.length !== 1) {
         throw new Error('Unsupported options: cannot allowNew with ' + types.length + ' types');
       }
+      addNewText = $translate('contact.type.' + types[0] + '.new');
       return resolveInitialValue(selectEl).then(initSelect2);
     };
   };
