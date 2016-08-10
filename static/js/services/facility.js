@@ -17,7 +17,7 @@ angular.module('inboxServices').factory('Facility',
     CONTACT_TYPES.forEach(function(type) {
       cacheByType[type] = Cache({
         get: function(callback) {
-          DB().query('medic-client/facilities', { include_docs: true, key: [type] })
+          DB().query('medic-client/contacts_by_type', { include_docs: true, key: [type] })
             .then(function(result) {
               callback(null, _.pluck(result.rows, 'doc'));
             })
