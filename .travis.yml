@@ -14,7 +14,6 @@ before_script:
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - curl -X PUT localhost:5984/medic
-  - curl -X PUT http://localhost:5984/_config/admins/admin -d '"pass"'
   - bash ./scripts/ci/setup.sh
   - npm install kanso -g
   - npm install grunt-cli -g
