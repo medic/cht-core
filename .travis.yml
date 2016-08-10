@@ -24,8 +24,6 @@ before_script:
   - npm --prefix api install
   - ./node_modules/.bin/webdriver-manager update
   - nohup bash -c "./node_modules/.bin/webdriver-manager start 2>&1 &"
-  - grunt default
-  - kanso push $COUCH_URL
 
 script:
   - node --stack_size=10000 `which grunt` ci
