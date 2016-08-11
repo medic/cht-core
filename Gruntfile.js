@@ -324,6 +324,7 @@ module.exports = function(grunt) {
         network: '*',
         cache: {
           patterns: [
+            'static/manifest.json',
             'static/audio/**/*',
             'static/dist/**/*',
             'static/fonts/**/*',

@@ -24,6 +24,7 @@
     "load": "lib/app",
     "modules": ["lib"],
     "attachments": [
+        "static/manifest.json",
         "static/audio",
         "static/dist",
         "static/fonts",
