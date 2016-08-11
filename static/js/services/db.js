@@ -9,12 +9,15 @@
       $window,
       Location,
       pouchDB,
-      Session
+      Session,
+      WebWorker
     ) {
 
       'ngInject';
 
       var cache = {};
+
+      var pouchWorker = WebWorker(require('worker-pouch/workerified'));
 
       $window.PouchDB.adapter('worker', require('worker-pouch/client'));
 
@@ -33,14 +36,11 @@
         }
         var name = Location.dbName + '-user-' + userCtx.name;
         var options = {
-        /*
-          // Temporary : remove web worker for testing firefox persistent storage #2623
           adapter: 'worker',
           worker: function () {
             return pouchWorker;
-          },*/
-          auto_compaction: true,
-          storage: 'persistent'
+          },
+          auto_compaction: true
         };
         return getFromCache(name, options);
       };

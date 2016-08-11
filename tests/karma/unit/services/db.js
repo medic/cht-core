@@ -81,7 +81,7 @@ describe('DB service', function() {
       chai.expect(actual).to.equal(expected);
       chai.expect(pouchDB.callCount).to.equal(1);
       chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny');
-// disabled temporarily #2623 - put it back!! chai.expect(pouchDB.args[0][1].adapter).to.equal('worker');
+      chai.expect(pouchDB.args[0][1].adapter).to.equal('worker');
       chai.expect(pouchDB.args[0][1].auto_compaction).to.equal(true);
       done();
     });
