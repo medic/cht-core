@@ -34,11 +34,13 @@ angular.module('inboxServices').factory('Select2Search',
       options = options || {};
       var currentQuery;
 
-      var pageSize = options.pageSize || 20;
-      var allowNew = options.allowNew || false;
-      var formatResult = options.templateResult || defaultFormatResult;
-      var formatSelection = options.templateSelection || defaultFormatSelection;
-      var types = Array.isArray(_types) ? _types : [ _types ];
+      var pageSize = options.pageSize || 20,
+          allowNew = options.allowNew || false,
+          formatResult = options.templateResult || defaultFormatResult,
+          formatSelection = options.templateSelection || defaultFormatSelection,
+          tags = options.tags || false,
+          types = Array.isArray(_types) ? _types : [ _types ];
+
       if (allowNew && types.length !== 1) {
         throw new Error('Unsupported options: cannot allowNew with ' + types.length + ' types');
       }
@@ -106,6 +108,7 @@ angular.module('inboxServices').factory('Select2Search',
           },
           allowClear: true,
           placeholder: '',
+          tags: tags,
           templateResult: formatResult,
           templateSelection: formatSelection,
           width: '100%',
@@ -120,7 +123,7 @@ angular.module('inboxServices').factory('Select2Search',
           selectEl.after(button);
         }
       };
-      
+
       return resolveInitialValue(selectEl).then(initSelect2);
     };
   }

@@ -161,7 +161,7 @@ describe('ContactSchema service', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().person, {
           type: 'person',
-          badge: 'fa-user',
+          icon: 'fa-user',
           fields: {
             name: {
               type: 'string',
@@ -193,7 +193,6 @@ describe('ContactSchema service', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().district_hospital, {
           type: 'district_hospital',
-          badge: 'fa-building',
           icon: 'fa-building',
           fields: {
             name: {
@@ -220,7 +219,6 @@ describe('ContactSchema service', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().health_center, {
           type: 'health_center',
-          badge: 'fa-hospital-a',
           icon: 'fa-hospital-o',
           fields: {
             name: {
@@ -251,7 +249,6 @@ describe('ContactSchema service', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().clinic, {
           type: 'clinic',
-          badge: 'fa-group',
           icon: 'fa-group',
           fields: {
             name: {

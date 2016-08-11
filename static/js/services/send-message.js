@@ -62,6 +62,7 @@ var _ = require('underscore'),
 
       var formatRecipients = function(recipients) {
         var result = _.flatten(_.map(recipients, function(r) {
+          // TODO: deal with everyone at correctly
           return mapRecipients(r.everyoneAt ? r.descendants : [ r ]);
         }));
         return _.uniq(result, false, function(r) {

@@ -25,9 +25,10 @@ var feedback = require('../modules/feedback'),
       $window,
       APP_CONFIG,
       Auth,
+      ContactSchema,
+      CONTACT_TYPES,
       Changes,
       CheckDate,
-      Contact,
       CountMessages,
       DB,
       DBSync,
@@ -293,7 +294,7 @@ var feedback = require('../modules/feedback'),
       });
 
       $scope.setupSendMessage = function() {
-        sendMessage.init($q, Settings, Contact, $translate.instant);
+        sendMessage.init($q, Settings, Select2Search, $translate.instant, CONTACT_TYPES, ContactSchema);
       };
 
       // get the forms for the forms filter
@@ -450,6 +451,8 @@ var feedback = require('../modules/feedback'),
           $log.error('Error loading language', err);
         });
 
+      // TODO: does this need to be in inbox? It's used from message_content.html
+      //       and send_message.html
       $scope.sendMessage = function(event) {
         sendMessage.validate(event.target, function(recipients, message) {
           var pane = modal.start($(event.target).closest('.message-form'));

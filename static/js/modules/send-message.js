@@ -2,6 +2,12 @@ var _ = require('underscore'),
     libphonenumber = require('libphonenumber/utils'),
     format = require('./format');
 
+// TODO: move this to a controller, see:
+//   - confirm-modal.js
+//   - user-language-modal.js
+// For ideas.
+// TODO: Split out validation logic so that messages-content can get all that
+//       just from the service
 (function () {
 
   'use strict';
@@ -17,6 +23,7 @@ var _ = require('underscore'),
   };
 
   var validatePhoneNumber = function(data) {
+    // TODO: intergate correct with everyoneAt
     if (data.everyoneAt) {
       return true;
     }
@@ -71,149 +78,118 @@ var _ = require('underscore'),
     return result;
   };
 
-  var formatEveryoneAt = function(row) {
-    return translateFn('Everyone at', {
-      facility: row.doc.name,
-      count: row.descendants && row.descendants.length
-    });
-  };
+  // var formatPlace = function(row) {
+  //   // TODO: we have lost count because it's no longer calculated. This currently
+  //   // comes back as name - All Contacts. This looks OK, but it may be that
+  //   // it's important to know how many people you're sending SMS to. This could
+  //   // be hard to fix since we need to essentially check the DB in a blocking
+  //   // fashion (no promises for us) but it could be achieved
+  //   return translateFn('Everyone at', {
+  //     facility: row.doc.name,
+  //     count: row.descendants && row.descendants.length
+  //   });
+  // };
 
   var formatResult = function(row) {
-    var icon,
-        contact;
     if (row.text) {
       return row.text;
     }
-    if (row.everyoneAt) {
-      icon = 'fa-hospital-o';
-      contact = format.sender({
-        name: formatEveryoneAt(row),
-        parent: row.parent
-      });
-    } else if (row.freetext) {
-      icon = 'fa-user';
+
+    var icon, contact;
+
+    if (!row.doc) {
+      icon = CONTACT_SCHEMA.person.icon;
       contact = '<span class="freetext">' + row.id + '</span>';
     } else {
-      icon = 'fa-user';
+      var type = row.doc.type;
+      icon = CONTACT_SCHEMA[type].icon;
+
       contact = format.contact(row.doc);
+      // TODO: detect if this is "everyone at" and display something different maybe?
+      // } else {
+      //   contact = format.sender({
+      //     name: formatPlace(row),
+      //     parent: row.parent
+      //   });
+      // }
     }
-    return $('<span class="fa fa-fw ' + icon + '"></span>' + contact);
+
+    return $('<span class="fa fa-fw ' + icon + '"></span>' +  contact);
   };
 
   var formatSelection = function(row) {
-    if (row.everyoneAt) {
-      return formatEveryoneAt(row);
-    }
     if (row.doc) {
-      return row.doc.name || row.doc.phone;
+      // TODO detect if this is "everyone at" and display something different maybe?
+      // if (row.doc.type !== 'person') {
+      //   return formatPlace(row);
+      // } else {
+        return row.doc.name || row.doc.phone;
+      // }
+    } else {
+      return row.id;
     }
-    return row.id;
-  };
-
-  var createChoiceFromNumber = function(phone) {
-    return {
-      id: phone,
-      freetext: true,
-      phone: phone
-    };
-  };
-
-  var filter = function(options, contacts) {
-    var terms = options.term ?
-      _.map(options.term.toLowerCase().split(/\s+/), function(term) {
-        if (libphonenumber.validate(settings, term)) {
-          return libphonenumber.format(settings, term);
-        }
-        return term;
-      }) : [];
-    var matches = _.filter(contacts, function(val) {
-      var tags = [ val.name, val.phone ];
-      var parent = val.parent;
-      while (parent) {
-        tags.push(parent.name);
-        parent = parent.parent;
-      }
-      tags = tags.join(' ').toLowerCase();
-      return _.every(terms, function(term) {
-        return tags.indexOf(term) > -1;
-      });
-    });
-    matches.sort(function(a, b) {
-      return a.name.toLowerCase().localeCompare(
-             b.name.toLowerCase());
-    });
-    var data = _.map(matches, function(doc) {
-      return { id: doc._id, doc: doc, everyoneAt: doc.everyoneAt };
-    });
-
-    // if a valid phone number is entered, allow it to be selected as a recipient
-    if (libphonenumber.validate(settings, options.term)) {
-      var formatted = libphonenumber.format(settings, options.term);
-      data.unshift(createChoiceFromNumber(formatted));
-    }
-
-    return data;
   };
 
   var initPhoneField = function($phone) {
-    if (!$phone.length) {
-      throw new Error('phone field not found');
-    }
-    $phone.parent().show();
-    return contact()
-      .then(function(data) {
-        $phone.select2({
-          ajax: {
-            transport: function(params, successCb) {
-              successCb({ results: filter({ term: params.data.q }, data)});
-            }
-          },
-          allowClear: true,
-          tags: true,
-          createSearchChoice: createChoiceFromNumber,
-          dropdownParent: $('#send-message'),
-          templateResult: formatResult,
-          templateSelection: formatSelection,
-          width: '100%',
-        });
-      });
-  };
+    // TODO reinstate a lost feature whereby entering in freetext is validated
+    // and once it's a valid phone number it appears as its own entry in the
+    // dropdown with an iuc
+    // TODO consider hooking into this to detect "everyone at" contacts and injecting
+    // that option in
+    return Select2Search($phone, CONTACT_TYPES, {
+      tags: true,
+      templateResult: formatResult,
+      templateSelection: formatSelection,
+    });
+};
 
   exports.showModal = function(options) {
-    initPhoneField($('#send-message [name=phone]'))
-      .then(function() {
-        var $modal = $('#send-message');
-        $modal.find('.has-error').removeClass('has-error');
-        $modal.find('.help-block').text('');
-        var val = [],
-            to = options.to;
-        if (to) {
-          if (typeof to === 'string') {
-            val.push(to);
-          } else if (to) {
-            val.push(to._id);
-          }
-        }
-        $modal.find('[name=phone]').val(val).trigger('change');
-        $modal.find('[name=message]').val(options.message || '');
-        $modal.find('.count').text('');
-        $modal.modal('show');
-      })
-      .catch(function(err) {
-        console.error('Error initialising phone search', err);
-      });
+    options = options || {};
+
+
+    var $modal = $('#send-message');
+    $modal.find('.has-error').removeClass('has-error');
+    $modal.find('.help-block').text('');
+
+    var val = [],
+        to = options.to,
+        message = options.message || '';
+
+    if (to) {
+      if (typeof to === 'string') {
+        val.push(to);
+      } else if (to) {
+        val.push(to._id);
+      }
+    }
+
+    $modal.find('[name=phone]').val(val).trigger('change');
+    $modal.find('[name=message]').val(message);
+    $modal.find('.count').text('');
+    $modal.modal('show');
+
+    // TODO: should we really be doing this multiple times? Every time show
+    //       model is run we re-run the select2 stuff!
+    return initPhoneField($('#send-message [name=phone]'));
   };
 
-  var contact;
   var recipients = [];
   var settings = {};
   var Promise;
   var translateFn;
+  var Select2Search;
+  var CONTACT_TYPES;
+  var CONTACT_SCHEMA;
+  var DB;
 
-  exports.init = function($q, Settings, Contact, _translateFn) {
+  exports.init = function($q, Settings, _select2Search, _translateFn, _contactTypes, _contactSchema, _db) {
     Promise = $q;
-    contact = Contact;
+    Select2Search = _select2Search;
+    CONTACT_TYPES = _contactTypes;
     translateFn = _translateFn;
+    CONTACT_SCHEMA = _contactSchema.get();
+    DB = _db;
+
     Settings()
       .then(function(_settings) {
         settings = _settings;
@@ -223,19 +199,7 @@ var _ = require('underscore'),
             return;
           }
           event.preventDefault();
-          var to = target.attr('data-send-to');
-          if (to) {
-            try {
-              to = JSON.parse(to);
-            } catch(e) {}
-          }
-          if (to && to.type === 'data_record') {
-            to = to.contact || to.from;
-          }
-          exports.showModal({
-            to: to,
-            everyoneAt: target.attr('data-everyone-at') === 'true'
-          });
+          exports.showModal();
         });
       })
       .catch(function(err) {
@@ -248,25 +212,16 @@ var _ = require('underscore'),
   };
 
   var resolveRecipients = function(recipients) {
-    return contact()
-      .then(function(contacts) {
-        return _.map(recipients, function(recipient) {
-          // see if we can resolve the facility
-          var phone = (recipient.doc && recipient.doc.phone) ||
-                      (recipient.doc && recipient.doc.contact.phone) ||
-                      (recipient.phone) ||
-                      (recipient.contact && recipient.contact.phone);
-          var match = _.find(contacts, function(contact) {
-            return contact.phone === phone &&
-                   contact.everyoneAt === recipient.everyoneAt;
-          });
-          return match || recipient;
-        });
-      });
+    // TODO potentially use DB.allDocs to resolve pure phone numbers into
+    //      real contacts?
+    return Promise.resolve(recipients);
   };
 
+  //TODO: this takes data from either a recipient set elsewhere, or from the model
+  // passed in. Refactor so that both are passed in
   var validateRecipients = function($modal) {
     var validated = recipients;
+
     if ($modal.is('.modal')) {
       var $phoneField = $modal.find('[name=phone]');
       var result = updateValidation(
@@ -277,6 +232,7 @@ var _ = require('underscore'),
       }
       validated = result.value;
     }
+
     return resolveRecipients(validated)
       .then(function(recipients) {
         return {
@@ -301,9 +257,9 @@ var _ = require('underscore'),
     );
 
     validateRecipients($modal)
-      .then(function(phone) {
-        if (phone.valid && message.valid) {
-          callback(phone.value, message.value);
+      .then(function(validatedRecipients) {
+        if (validatedRecipients.valid && message.valid) {
+          callback(validatedRecipients.value, message.value);
         }
       });
   };

@@ -41,7 +41,7 @@ function(doc) {
       }
       place = place.parent;
     }
-    var phone = doc.contact && doc.contact.phone;
+    var phone = doc.phone || doc.contact && doc.contact.phone;
     var name = doc.name || phone;
     emit([ doc._id ], {
       _rev: doc._rev,
