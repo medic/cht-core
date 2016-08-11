@@ -36,11 +36,14 @@
         }
         var name = Location.dbName + '-user-' + userCtx.name;
         var options = {
+        /*
+          // Temporary : remove web worker for testing firefox persistent storage #2623
           adapter: 'worker',
           worker: function () {
             return pouchWorker;
-          },
-          auto_compaction: true
+          },*/
+          auto_compaction: true,
+          storage: 'persistent'
         };
         return getFromCache(name, options);
       };

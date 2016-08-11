@@ -33,9 +33,13 @@ var utils = require('kujua-utils');
       skip_setup: true,
       ajax: { timeout: 30000 }
     };
+    var localDbOptions = {
+      auto_compaction: true,
+      storage: 'persistent'
+    };
     return {
       name: dbName,
-      local: window.PouchDB(dbName + '-user-' + username),
+      local: window.PouchDB(dbName + '-user-' + username, localDbOptions),
       remote: window.PouchDB(url.slice(0, dbNameLocation), remoteDbOptions)
     };
   };
