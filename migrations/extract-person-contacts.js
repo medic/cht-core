@@ -46,6 +46,8 @@ var async = require('async'),
  *    name: myfacility,
  *    type: health_center,
  *    contact: { <contents of person doc> } // new-style contact
+      // doc.contact.parent should actually contain the doc itself, but
+      // doc.contact.parent.contact should not be included
  *  }
  *
  * For creating the person, we use `people.createPerson` rather than db.medic.insert in order to set
