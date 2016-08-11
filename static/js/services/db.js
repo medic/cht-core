@@ -9,15 +9,12 @@
       $window,
       Location,
       pouchDB,
-      Session,
-      WebWorker
+      Session
     ) {
 
       'ngInject';
 
       var cache = {};
-
-      var pouchWorker = WebWorker(require('worker-pouch/workerified'));
 
       $window.PouchDB.adapter('worker', require('worker-pouch/client'));
 
