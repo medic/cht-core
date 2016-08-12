@@ -9,7 +9,7 @@ before_script:
   - npm install grunt-cli -g
 
 script: 
-  - grunt test
+  - grunt ci
 
 notifications:
   webhooks: 

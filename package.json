@@ -39,6 +39,8 @@
     "grunt-contrib-nodeunit": "^1.0.0",
     "grunt-env": "^0.4.4",
     "grunt-exec": "^0.4.6",
+    "grunt-mocha-test": "^0.12.7",
+    "mocha": "^3.0.2",
     "nodeunit": "latest",
     "sinon": "latest"
   },

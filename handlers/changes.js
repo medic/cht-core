@@ -276,7 +276,7 @@ module.exports = {
 };
 
 // used for testing
-if (process.env.TEST_ENV) {
+if (process.env.UNIT_TEST_ENV) {
   _.extend(module.exports, {
     _reset: function() {
       continuousFeeds = [];
