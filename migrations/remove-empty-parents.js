@@ -2,28 +2,42 @@ var _ = require('underscore'),
     async = require('async'),
     db = require('../db');
 
-function removeDeadParents(row, callback) {
-  if(row.doc.parent && !_.isEmpty(row.doc.parent)) {
-    return callback();
+var emptyParentsView = function(doc) {
+  if (['district_hospital', 'health_center', 'clinic', 'person'].indexOf(doc.type) === -1 ||
+      (doc.parent && Object.keys(doc.parent).length)) {
+    return;
   }
-  delete row.doc.parent;
-  db.medic.insert(row.doc, callback);
+  emit(true);
 }
 
 module.exports = {
   name: 'remove-empty-parents',
   created: new Date(2016, 7, 10, 13, 37, 0, 0),
   run: function(callback) {
-    // pull full list of contacts, and remove dead parents
-    db.medic.view(
-      'medic-client',
-      'contacts_by_type',
-      { include_docs:true },
-      function(err, result) {
-        if (err) {
-          return callback(err);
-        }
-        async.each(result.rows, removeDeadParents, callback);
+    db.request({
+      db: 'medic',
+      method: 'POST',
+      path: '_temp_view',
+      body: { map: emptyParentsView.toString() },
+      qs: {
+        include_docs: true,
+      }
+    }, function(err, result) {
+      if (err) {
+        return callback(err);
+      }
+
+      var docs = result.rows.map(function(row) {
+        return row.doc;
       });
+
+      docs.forEach(function(doc) {
+        delete doc.parent;
+      });
+
+      db.medic.bulk({
+        docs: docs
+      }, callback);
+    });
   }
 };
