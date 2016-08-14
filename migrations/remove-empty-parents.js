@@ -1,14 +1,12 @@
-var _ = require('underscore'),
-    async = require('async'),
-    db = require('../db');
+var db = require('../db');
 
 var emptyParentsView = function(doc) {
   if (['district_hospital', 'health_center', 'clinic', 'person'].indexOf(doc.type) === -1 ||
       (doc.parent && Object.keys(doc.parent).length)) {
     return;
   }
-  emit(true);
-}
+  emit();
+};
 
 module.exports = {
   name: 'remove-empty-parents',

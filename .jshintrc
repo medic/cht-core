@@ -75,6 +75,7 @@
 
     // Custom Globals
     "globals"       : {         // additional predefined global variables
-        "Promise"   : true
+        "Promise"   : true,
+        "emit"      : true      // used in temporary views
     }
 }
