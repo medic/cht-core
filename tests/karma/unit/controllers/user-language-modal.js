@@ -8,62 +8,47 @@ describe('UserLanguageModalCtrl controller', function() {
       stubUpdateUser,
       spyUibModalInstance;
 
-  beforeEach(function() {
-    module('inboxApp');
 
-    module(function($provide) {
-      dbQuery = sinon.stub();
-      dbQuery.returns(KarmaUtils.mockPromise(
-        { rows: [
-          { value: { code: 'en', name: 'English' } },
-          { value: { code: 'sw', name: 'Swahili' } }
-        ] }
-      ));
-      $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery }));
-      $provide.factory('Session', function() {
-        return { userCtx: function() {
+  beforeEach(module('inboxApp'));
+
+  beforeEach(inject(function(_$rootScope_, $controller) {
+    scope = _$rootScope_.$new();
+    dbQuery = sinon.stub();
+    dbQuery.returns(KarmaUtils.mockPromise(
+      { rows: [
+        { value: { code: 'en', name: 'English' } },
+        { value: { code: 'sw', name: 'Swahili' } }
+      ] }
+    ));
+    stubSetLanguage = sinon.stub();
+    stubSetLanguage.returns(KarmaUtils.mockPromise());
+    spyUibModalInstance = {close: sinon.spy(), dismiss: sinon.spy()};
+    stubUpdateUser = sinon.stub();
+    stubUpdateUser.returns(KarmaUtils.mockPromise());
+
+    createController = function() {
+      return $controller('UserLanguageModalCtrl', {
+        '$scope': scope,
+        'DB': KarmaUtils.mockDB({ query: dbQuery })(),
+        'Session': { userCtx: function() {
           return { name: 'banana' };
-        } };
+        } },
+        'SetLanguage': stubSetLanguage,
+        '$uibModalInstance': spyUibModalInstance,
+        'UpdateUser': stubUpdateUser,
+        '$translate': { use: function() {
+          return 'ab';
+        }}
       });
-      stubSetLanguage = sinon.stub();
-      stubSetLanguage.returns(KarmaUtils.mockPromise());
-      $provide.factory('SetLanguage', function() {
-        return stubSetLanguage;
-      });
-      spyUibModalInstance = {close: sinon.spy(), dismiss: sinon.spy()};
-      $provide.factory('$uibModalInstance', function() {
-        return spyUibModalInstance;
-      });
-      stubUpdateUser = sinon.stub();
-      stubUpdateUser.returns(KarmaUtils.mockPromise());
-      $provide.factory('UpdateUser', function() {
-        return stubUpdateUser;
-      });
-    });
+    };
+  }));
 
-    inject(function($rootScope, $controller) {
-      scope = $rootScope.$new();
-      createController = function() {
-        return $controller('UserLanguageModalCtrl', {
-          '$scope': scope,
-        });
-      };
-    });
-
-    createController();
-  });
-
-  it('displays the enabled languages', function() {
-    setTimeout(function() {
-      scope.$apply(); // needed to resolve the promises
-      chai.expect(scope.enabledLocales).to.equal([
-        { code: 'en', name: 'English' },
-        { code: 'sw', name: 'Swahili' }
-      ]);
-    });
+  afterEach(function() {
+    KarmaUtils.restore(dbQuery, stubSetLanguage, stubUpdateUser, spyUibModalInstance);
   });
 
   it('changes language on user selection', function() {
+    createController();
     var lang = 'aaaaaa';
     scope.changeLanguage(lang);
     chai.assert(stubSetLanguage.called, 'Should set new language');
@@ -71,16 +56,19 @@ describe('UserLanguageModalCtrl controller', function() {
   });
 
   it('dismisses the modal on user cancel', function() {
+    createController();
     scope.cancel();
     chai.assert(spyUibModalInstance.dismiss.called, 'Should dismiss modal');
   });
 
   it('resets the language on user cancel', function() {
+    createController();
     scope.cancel();
     chai.assert(stubSetLanguage.called, 'Should reset language');
   });
 
   it('triggers saving on user submit', function() {
+    createController();
     var selectedLang = 'klingon';
     scope.changeLanguage(selectedLang);
     scope.ok();
@@ -89,6 +77,7 @@ describe('UserLanguageModalCtrl controller', function() {
   });
 
   it('displays the processing mode modal while saving', function(done) {
+    createController();
     chai.assert(!scope.processing, 'Should not be processing before user action');
     chai.assert(!scope.error, 'Should not be displaying error before user action');
 
@@ -105,6 +94,7 @@ describe('UserLanguageModalCtrl controller', function() {
   });
 
   it('displays error when saving error', function(done) {
+    createController();
     stubUpdateUser.reset();
     stubUpdateUser.returns(KarmaUtils.mockPromise({err: 'oh noes language is all wrong'}));
     chai.assert(!scope.error, 'Should not be displaying error before user action');
@@ -123,6 +113,7 @@ describe('UserLanguageModalCtrl controller', function() {
   });
 
   it('resets language when saving error', function(done) {
+    createController();
     stubUpdateUser.reset();
     stubUpdateUser.returns(KarmaUtils.mockPromise({err: 'oh noes language is all wrong'}));
     var initialLang = scope.selectedLanguage;

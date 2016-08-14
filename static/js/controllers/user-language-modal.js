@@ -18,6 +18,7 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
   ) {
 
     'ngInject';
+    'use strict';
 
     DB()
       .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
