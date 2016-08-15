@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    ANC_FORM_CONFIGURATION_PROPERTIES = [ 'registration', 'registrationLmp', 'visit', 'delivery', 'flag' ];
 
 (function () {
 
@@ -7,19 +8,23 @@ var _ = require('underscore');
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('AnalyticsModules',
-    ['$q', 'Settings', 'ScheduledForms',
-    function($q, Settings, ScheduledForms) {
+    function(
+      $log,
+      $q,
+      ScheduledForms,
+      Settings
+    ) {
+
+      'ngInject';
 
       var getAncModule = function(settings) {
         return {
           label: 'Antenatal Care',
           state: 'analytics.anc',
           available: function() {
-            return _.every([
-              'registration', 'registrationLmp', 'visit', 'delivery', 'flag'
-            ], function(prop) {
+            return ANC_FORM_CONFIGURATION_PROPERTIES.every(function(prop) {
               var formCode = settings.anc_forms[prop];
-              return settings.forms && formCode && settings.forms[formCode];
+              return formCode && settings.forms && settings.forms[formCode];
             });
           }
         };
@@ -60,10 +65,12 @@ var _ = require('underscore');
       return function() {
         return $q.all([ Settings(), ScheduledForms() ])
           .then(function(results) {
-            return getModules(results[0], results[1]);
+            var modules = getModules(results[0], results[1]);
+            $log.debug('AnalyticsMobules. Enabled modules: ', _.pluck(modules, 'label'));
+            return modules;
           });
       };
     }
-  ]);
+  );
 
 }());

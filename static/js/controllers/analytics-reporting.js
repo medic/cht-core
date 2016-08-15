@@ -49,6 +49,11 @@ var _ = require('underscore'),
 
       $scope.facilities = [];
 
+      $scope.filters = {
+        time_unit: 'month',
+        quantity: 3
+      };
+
       Settings()
         .then(function(settings) {
           $scope.filters = {
