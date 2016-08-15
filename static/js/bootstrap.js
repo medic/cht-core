@@ -29,38 +29,25 @@ var utils = require('kujua-utils');
     var hostLocation = url.indexOf('/', protocolLocation) + 1;
     var dbNameLocation = url.indexOf('/', hostLocation);
     var dbName = url.slice(hostLocation, dbNameLocation);
-    var remoteDbOptions = {
-      skip_setup: true,
-      ajax: { timeout: 30000 }
-    };
-    var localDbOptions = {
-      auto_compaction: true
-    };
     return {
       name: dbName,
-      local: window.PouchDB(dbName + '-user-' + username, localDbOptions),
-      remote: window.PouchDB(url.slice(0, dbNameLocation), remoteDbOptions)
+      local: dbName + '-user-' + username,
+      remote: url.slice(0, dbNameLocation)
     };
   };
 
-  var initialReplication = function(db, username) {
+  var initialReplication = function(localDb, remoteDb, username) {
     var dbSyncStartTime = Date.now();
     var dbSyncStartData = getDataUsage();
-    return db.local.replicate.from(db.remote, {
+    return localDb.replicate.from(remoteDb, {
       live: false,
       retry: false,
       heartbeat: 10000,
       doc_ids: [ 'org.couchdb.user:' + username ]
     })
-      .then(function(info) {
-        console.log('Initial sync completed successfully', info);
-      })
-      .catch(function(err) {
-        console.error('Initial sync failed - continuing anyway', err);
-      })
       .then(function() {
         var duration = Date.now() - dbSyncStartTime;
-        console.info('Initial sync finished in ' + (duration / 1000) + ' seconds');
+        console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
         if (dbSyncStartData) {
           var dbSyncEndData = getDataUsage();
           var rx = dbSyncEndData.app.rx - dbSyncStartData.app.rx;
@@ -76,15 +63,19 @@ var utils = require('kujua-utils');
   };
 
   module.exports = function(callback) {
-    if (utils.isUserAdmin(getUserCtx())) {
+    var userCtx = getUserCtx();
+    if (utils.isUserAdmin(userCtx)) {
       return callback();
     }
 
-    var userCtx = getUserCtx();
     var username = userCtx && userCtx.name;
-    var db = getDbInfo(username);
+    var dbInfo = getDbInfo(username);
 
-    db.local
+    var localDb = window.PouchDB(dbInfo.local, {
+      auto_compaction: true
+    });
+
+    localDb
       .get('_design/medic-client')
       .then(function() {
         // ddoc found - bootstrap immediately
@@ -92,7 +83,12 @@ var utils = require('kujua-utils');
       })
       .catch(function() {
         // no ddoc found - do replication
-        initialReplication(db, username)
+
+        var remoteDb = window.PouchDB(dbInfo.remote, {
+          skip_setup: true,
+          ajax: { timeout: 30000 }
+        });
+        initialReplication(localDb, remoteDb, username)
           .then(function() {
             // replication complete - bootstrap angular
             callback();
@@ -100,12 +96,10 @@ var utils = require('kujua-utils');
           .catch(function(err) {
             if (err.status === 401) {
               console.warn('User must reauthenticate');
-              window.location.href = '/' + db.name + '/login' +
-              '?redirect=' + encodeURIComponent(window.location.href);
-            } else {
-              $('.bootstrap-layer').html('<div><p>Loading error, please check your connection.</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">Try again</a></div>');
-              console.error('Error fetching ddoc from remote server', err);
+              err.redirect = '/' + dbInfo.name + '/login?redirect=' +
+                encodeURIComponent(window.location.href);
             }
+            callback(err);
           });
       });
 

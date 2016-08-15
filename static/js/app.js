@@ -81,7 +81,16 @@ _.templateSettings = {
     version: '@@APP_CONFIG.version'
   });
 
-  bootstrapper(function() {
+  bootstrapper(function(err) {
+    if (err) {
+      if (err.redirect) {
+        window.location.href = err.redirect;
+      } else {
+        $('.bootstrap-layer').html('<div><p>Loading error, please check your connection.</p><a class="btn btn-primary" href="#" onclick="window.location.reload(false);">Try again</a></div>');
+        console.error('Error fetching ddoc from remote server', err);
+      }
+      return;
+    }
     angular.element(document).ready(function() {
       angular.bootstrap(document, [ 'inboxApp' ], {
         strictDi: true
