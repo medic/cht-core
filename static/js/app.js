@@ -80,8 +80,13 @@ _.templateSettings = {
     name: '@@APP_CONFIG.name',
     version: '@@APP_CONFIG.version'
   });
+  var POUCHDB_OPTIONS = {
+    local: { auto_compaction: true },
+    remote: { skip_setup: true, ajax: { timeout: 30000 }}
+  };
+  app.constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
 
-  bootstrapper(function(err) {
+  bootstrapper(POUCHDB_OPTIONS, function(err) {
     if (err) {
       if (err.redirect) {
         window.location.href = err.redirect;

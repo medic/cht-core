@@ -39,7 +39,7 @@ describe('DB service', function() {
     KarmaUtils.restore(pouchDB, userCtx, isAdmin);
   });
 
-  describe('getRemote function', function() {
+  describe('get remote', function() {
 
     it('sets ajax timeout', function(done) {
       isAdmin.returns(false);
@@ -69,7 +69,7 @@ describe('DB service', function() {
 
   });
 
-  describe('get function', function() {
+  describe('get local', function() {
 
     it('sets ajax timeout', function(done) {
       isAdmin.returns(false);

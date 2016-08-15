@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 (function () {
 
   'use strict';
@@ -9,6 +11,7 @@
       $window,
       Location,
       pouchDB,
+      POUCHDB_OPTIONS,
       Session,
       WebWorker
     ) {
@@ -22,11 +25,7 @@
       $window.PouchDB.adapter('worker', require('worker-pouch/client'));
 
       var getRemote = function() {
-        var options = {
-          skip_setup: true,
-          ajax: { timeout: 30000 }
-        };
-        return getFromCache(Location.url, options);
+        return getFromCache(Location.url, POUCHDB_OPTIONS.remote);
       };
 
       var getLocal = function() {
@@ -39,9 +38,9 @@
           adapter: 'worker',
           worker: function () {
             return pouchWorker;
-          },
-          auto_compaction: true
+          }
         };
+        _.defaults(options, POUCHDB_OPTIONS.local);
         return getFromCache(name, options);
       };
 

@@ -10,7 +10,11 @@ var proxyquire = require('proxyquire').noCallThru(),
     originalDocument,
     originalWindow,
     isAdmin,
-    pouchDb;
+    pouchDb,
+    pouchDbOptions = {
+      local: { auto_compaction: true },
+      remote: { skip_setup: true }
+    };
 
 // ignore "Read Only" jshint error for overwriting `document` and `window`
 // jshint -W020
@@ -52,7 +56,7 @@ exports.tearDown = function(cb) {
 
 exports['does nothing for admins'] = function(test) {
   isAdmin = true;
-  bootstrap(function(err) {
+  bootstrap(pouchDbOptions, function(err) {
     test.equal(null, err);
     test.done();
   });
@@ -62,7 +66,7 @@ exports['returns if local db already has client ddoc'] = function(test) {
   var localGet = sinon.stub();
   pouchDb.returns({ get: localGet });
   localGet.returns(Promise.resolve());
-  bootstrap(function(err) {
+  bootstrap(pouchDbOptions, function(err) {
     test.equal(null, err);
     test.equal(pouchDb.callCount, 1);
     test.equal(pouchDb.args[0][0], 'medic-user-jim');
@@ -83,18 +87,13 @@ exports['performs initial replication'] = function(test) {
   pouchDb.onCall(1).returns({ remote: true });
   localGet.returns(Promise.reject());
   localReplicate.returns(Promise.resolve());
-  bootstrap(function(err) {
+  bootstrap(pouchDbOptions, function(err) {
     test.equal(null, err);
     test.equal(pouchDb.callCount, 2);
     test.equal(pouchDb.args[0][0], 'medic-user-jim');
-    test.deepEqual(pouchDb.args[0][1], {
-      auto_compaction: true
-    });
+    test.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
     test.equal(pouchDb.args[1][0], 'http://localhost:5988/medic');
-    test.deepEqual(pouchDb.args[1][1], {
-      skip_setup: true,
-      ajax: { timeout: 30000 }
-    });
+    test.deepEqual(pouchDb.args[1][1], { skip_setup: true });
     test.equal(localGet.callCount, 1);
     test.equal(localGet.args[0][0], '_design/medic-client');
     test.equal(localReplicate.callCount, 1);
@@ -119,7 +118,7 @@ exports['handles unauthorized initial replication'] = function(test) {
   pouchDb.onCall(1).returns({ remote: true });
   localGet.returns(Promise.reject());
   localReplicate.returns(Promise.reject({ status: 401 }));
-  bootstrap(function(err) {
+  bootstrap(pouchDbOptions, function(err) {
     test.equal(err.status, 401);
     test.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
     test.done();
@@ -136,7 +135,7 @@ exports['handles other errors in initial replication'] = function(test) {
   pouchDb.onCall(1).returns({ remote: true });
   localGet.returns(Promise.reject());
   localReplicate.returns(Promise.reject({ status: 404 }));
-  bootstrap(function(err) {
+  bootstrap(pouchDbOptions, function(err) {
     test.equal(err.status, 404);
     test.equal(err.redirect, null);
     test.done();

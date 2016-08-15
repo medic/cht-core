@@ -62,7 +62,7 @@ var utils = require('kujua-utils');
     }
   };
 
-  module.exports = function(callback) {
+  module.exports = function(POUCHDB_OPTIONS, callback) {
     var userCtx = getUserCtx();
     if (utils.isUserAdmin(userCtx)) {
       return callback();
@@ -71,9 +71,7 @@ var utils = require('kujua-utils');
     var username = userCtx && userCtx.name;
     var dbInfo = getDbInfo(username);
 
-    var localDb = window.PouchDB(dbInfo.local, {
-      auto_compaction: true
-    });
+    var localDb = window.PouchDB(dbInfo.local, POUCHDB_OPTIONS.local);
 
     localDb
       .get('_design/medic-client')
@@ -84,10 +82,7 @@ var utils = require('kujua-utils');
       .catch(function() {
         // no ddoc found - do replication
 
-        var remoteDb = window.PouchDB(dbInfo.remote, {
-          skip_setup: true,
-          ajax: { timeout: 30000 }
-        });
+        var remoteDb = window.PouchDB(dbInfo.remote, POUCHDB_OPTIONS.remote);
         initialReplication(localDb, remoteDb, username)
           .then(function() {
             // replication complete - bootstrap angular
