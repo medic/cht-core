@@ -124,9 +124,22 @@ function initDb(content) {
   dbBackups = {
     audit: db.audit,
     medic: db.medic,
+    request: db.request,
   };
   db.audit = db.use(DB_PREFIX + 'audit');
   db.medic = db.use(DB_PREFIX + 'medic');
+
+  // hijack calls to db.request and make sure that they are made to the correct
+  // database.
+  var realRequest = db.request;
+  db.request = function() {
+    var args = Array.prototype.slice.call(arguments);
+    var targetDb = args[0].db;
+    if(targetDb && targetDb.indexOf(DB_PREFIX) !== 0) {
+      args[0].db = DB_PREFIX + targetDb;
+    }
+    return realRequest.apply(db, args);
+  };
 
   if(Array.isArray(content)) {
     content = {
