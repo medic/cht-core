@@ -3,7 +3,7 @@ var db = require('../db'),
 
 var map = function(doc) {
   if (doc.type === 'person' && doc.date_of_birth && doc.date_of_birth.indexOf(' ') >= 0) {
-    emit(1); // jshint ignore:line
+    emit(1);
   }
 };
 var temporaryView = {
