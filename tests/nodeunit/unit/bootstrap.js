@@ -58,6 +58,7 @@ exports['does nothing for admins'] = function(test) {
   isAdmin = true;
   bootstrap(pouchDbOptions, function(err) {
     test.equal(null, err);
+    test.equal(pouchDb.callCount, 0);
     test.done();
   });
 };
