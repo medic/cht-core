@@ -92,7 +92,22 @@ exports['should not update clinic with wrong phone'] = function(test) {
   var doc = {
     from: 'WRONG'
   };
-  sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {});
+  sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {rows: []});
+  transition.onMatch({
+    doc: doc
+  }, fakedb, fakeaudit, function(err, complete) {
+    test.ok(!complete);
+    test.ok(!doc.contact);
+    test.done();
+  });
+};
+
+exports['handles clinic ref id not found - medic/medic-webapp#2636'] = function(test) {
+  var doc = {
+    from: '+12345',
+    refid: '1000'
+  };
+  sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {rows: []});
   transition.onMatch({
     doc: doc
   }, fakedb, fakeaudit, function(err, complete) {
