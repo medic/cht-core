@@ -2,6 +2,7 @@ var db = require('../db');
 
 var emptyParentsView = function(doc) {
   if (['district_hospital', 'health_center', 'clinic', 'person'].indexOf(doc.type) === -1 ||
+      typeof doc.parent === 'undefined' ||
       (doc.parent && Object.keys(doc.parent).length)) {
     return;
   }
