@@ -12,49 +12,6 @@
     <div class="loader" ng-hide="districts"></div>
   </div>
 
-  <div ng-show="district" class="district-totals">
-    <div class="alert alert-danger" role="alert" ng-show="error" translate>analytics.connection.error</div>
-    <div class="loader" ng-show="loadingTotals"></div>
-    <div class="row" ng-hide="loadingTotals || error">
-      <div class="col-sm-2 col-xs-6">
-        <i class="fa fa-hospital-o"></i>
-        <h4>{{totals.health_centers_size}}</h4>
-        <h3 translate>analytics.reporting.health_centers_size</h3>
-      </div>
-      <div class="col-sm-2 col-xs-6">
-        <i class="fa fa-medkit"></i>
-        <h4>{{totals.clinics_size}}</h4>
-        <h3 translate>analytics.reporting.clinics_size</h3>
-      </div>
-      <div class="col-sm-4 col-xs-12">
-        <div class="large-pie">
-          <nvd3-pie-chart
-            data="chart"
-            width="220"
-            height="220"
-            margin="{left:0,top:20,bottom:0,right:0}"
-            x="xFunction()"
-            y="yFunction()"
-            color="colorFunction()"
-            labelType="percent"
-            showLabels="true">
-            <svg height="220"></svg>
-          </nvd3-pie-chart>
-        </div>
-      </div>
-      <div class="col-sm-2 col-xs-6">
-        <i class="fa fa-file-o"></i>
-        <h4>{{totals.not_submitted}}</h4>
-        <h3 translate>analytics.reporting.not_submitted</h3>
-      </div>
-      <div class="col-sm-2 col-xs-6">
-        <i class="fa fa-exclamation-triangle"></i>
-        <h4>{{totals.incomplete}}</h4>
-        <h3 translate>analytics.reporting.incomplete</h3>
-      </div>
-    </div>
-  </div>
-
   <div class="time-select" ng-show="district">
     <a class="btn btn-link"
       ng-class="{ 'disabled': filters.quantity === 1 }"
@@ -102,6 +59,49 @@
         <li><a ng-click="setTimeUnit('quarter')" translate>quarter</a></li>
         <li><a ng-click="setTimeUnit('year')" translate>year</a></li>
       </ul>
+    </div>
+  </div>
+
+  <div ng-show="district" class="district-totals">
+    <div class="alert alert-danger" role="alert" ng-show="error" translate>analytics.connection.error</div>
+    <div class="loader" ng-show="loadingTotals"></div>
+    <div class="row" ng-hide="loadingTotals || error">
+      <div class="col-sm-2 col-xs-6">
+        <i class="fa fa-hospital-o"></i>
+        <h4>{{totals.health_centers_size}}</h4>
+        <h3 translate>analytics.reporting.health_centers_size</h3>
+      </div>
+      <div class="col-sm-2 col-xs-6">
+        <i class="fa fa-medkit"></i>
+        <h4>{{totals.clinics_size}}</h4>
+        <h3 translate>analytics.reporting.clinics_size</h3>
+      </div>
+      <div class="col-sm-4 col-xs-12">
+        <div class="large-pie">
+          <nvd3-pie-chart
+            data="chart"
+            width="220"
+            height="220"
+            margin="{left:0,top:20,bottom:0,right:0}"
+            x="xFunction()"
+            y="yFunction()"
+            color="colorFunction()"
+            labelType="percent"
+            showLabels="true">
+            <svg height="220"></svg>
+          </nvd3-pie-chart>
+        </div>
+      </div>
+      <div class="col-sm-2 col-xs-6">
+        <i class="fa fa-file-o"></i>
+        <h4>{{totals.not_submitted}}</h4>
+        <h3 translate>analytics.reporting.not_submitted</h3>
+      </div>
+      <div class="col-sm-2 col-xs-6">
+        <i class="fa fa-exclamation-triangle"></i>
+        <h4>{{totals.incomplete}}</h4>
+        <h3 translate>analytics.reporting.incomplete</h3>
+      </div>
     </div>
   </div>
 
