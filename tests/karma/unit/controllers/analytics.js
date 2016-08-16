@@ -7,7 +7,7 @@ describe('AnalyticsCtrl controller', function() {
       $rootScope,
       scope,
       stateGo,
-      stateReload;
+      stateIs;
 
   beforeEach(module('inboxApp'));
 
@@ -15,7 +15,7 @@ describe('AnalyticsCtrl controller', function() {
     $rootScope = _$rootScope_;
     AnalyticsModules = sinon.stub();
     stateGo = sinon.stub();
-    stateReload = sinon.stub();
+    stateIs = sinon.stub();
     scope = $rootScope.$new();
     scope.filterModel = { };
     scope.clearSelected = function() {};
@@ -24,35 +24,31 @@ describe('AnalyticsCtrl controller', function() {
         '$scope': scope,
         '$rootScope': $rootScope,
         '$stateParams': { },
-        '$state': { current: { name: startState }, go: stateGo, reload: stateReload },
+        '$state': {
+          current: { name: startState },
+          go: stateGo,
+          is: stateIs
+        },
         'AnalyticsModules': AnalyticsModules,
-        'Auth': function() {}
+        'Auth': function() {},
+        '$timeout': function(cb) {
+          cb();
+        }
       });
     };
   }));
 
   afterEach(function() {
-    KarmaUtils.restore(AnalyticsModules, stateGo, stateReload);
+    KarmaUtils.restore(AnalyticsModules, stateGo, stateIs);
   });
 
   it('set up controller with no modules', function(done) {
     AnalyticsModules.returns(KarmaUtils.mockPromise(null, []));
+    stateIs.returns(false);
     createController('anc');
     scope.$digest();
     setTimeout(function() {
       chai.expect(scope.selected).to.equal(undefined);
-      done();
-    });
-  });
-
-  it('renders first module', function(done) {
-    AnalyticsModules.returns(KarmaUtils.mockPromise(null, [
-      { state: 'reporting' }
-    ]));
-    createController('anc');
-    scope.$digest();
-    setTimeout(function() {
-      chai.expect(scope.selected.state).to.equal('reporting');
       done();
     });
   });
@@ -62,6 +58,7 @@ describe('AnalyticsCtrl controller', function() {
       { state: 'reporting' },
       { state: 'anc' }
     ]));
+    stateIs.returns(false);
     createController('anc');
     scope.$digest();
     setTimeout(function() {
@@ -74,6 +71,7 @@ describe('AnalyticsCtrl controller', function() {
     AnalyticsModules.returns(KarmaUtils.mockPromise(null, [
       { state: 'anc' }
     ]));
+    stateIs.returns(true);
     createController('analytics');
     scope.$digest();
     setTimeout(function() {
@@ -88,6 +86,7 @@ describe('AnalyticsCtrl controller', function() {
       { state: 'reporting' },
       { state: 'anc' }
     ]));
+    stateIs.returns(true);
     createController('analytics');
     scope.$digest();
     setTimeout(function() {

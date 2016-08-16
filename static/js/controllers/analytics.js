@@ -7,8 +7,17 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('AnalyticsCtrl',
-    ['$scope', '$rootScope', '$state', '$stateParams', 'AnalyticsModules', 'Auth',
-    function ($scope, $rootScope, $state, $stateParams, AnalyticsModules, Auth) {
+    function (
+      $rootScope,
+      $scope,
+      $state,
+      $stateParams,
+      $timeout,
+      AnalyticsModules,
+      Auth
+    ) {
+      'ngInject';
+
       $scope.analyticsModules = [];
 
       $scope.loading = true;
@@ -20,8 +29,24 @@ var _ = require('underscore');
       $scope.clearSelected();
 
       AnalyticsModules().then(function(modules) {
+        if ($state.is('analytics')) {
+          if (modules.length === 1) {
+            // timeout so this transition finishes before starting the next one
+            $timeout(function() {
+              $state.go(modules[0].state, { }, { location: 'replace' });
+            });
+            return;
+          }
+        } else {
+          $scope.setSelectedModule(_.findWhere(modules, {
+            state: $state.current.name
+          }));
+        }
+
         $scope.loading = false;
         $scope.analyticsModules = modules;
+
+        // show tour
         if (_.findWhere(modules, { id: 'anc' })) {
           Auth('can_view_analytics').then(function() {
             $scope.tours.push({
@@ -32,25 +57,10 @@ var _ = require('underscore');
             });
           });
         }
-        $scope.setSelectedModule(findSelectedModule(modules));
         if ($stateParams.tour) {
           $rootScope.$broadcast('TourStart', $stateParams.tour);
         }
-        if (modules.length === 1) {
-          $state.go(modules[0].state);
-        }
       });
-
-      var findSelectedModule = function(modules) {
-        if (!modules.length) {
-          return undefined;
-        }
-        var module = _.findWhere(modules, { state: $state.current.name });
-        if (!module) {
-          module = modules[0];
-        }
-        return module;
-      };
 
       $scope.loadPatient = function(id) {
         $state.go('reports.detail', { query: 'patient_id:' + id });
@@ -60,6 +70,6 @@ var _ = require('underscore');
         $state.go('reports.detail', { query: 'contact:' + id });
       };
     }
-  ]);
+  );
 
 }());
