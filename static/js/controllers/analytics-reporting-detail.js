@@ -72,16 +72,21 @@ var _ = require('underscore'),
         if ($scope.expandedRecord === id) {
           $scope.expandedRecord = null;
         } else {
+          $timeout(function() {
+            $scope.loadingRecord = id;
+          });
           DB()
             .get(id)
             .then(FormatDataRecord)
             .then(function(formatted) {
               $timeout(function() {
+                $scope.loadingRecord = false;
                 $scope.formattedRecord = formatted[0];
                 $scope.expandedRecord = id;
               });
             })
             .catch(function(err) {
+              $scope.loadingRecord = false;
               $log.error('Error getting doc', err);
             });
         }
@@ -113,6 +118,18 @@ var _ = require('underscore'),
         return place;
       };
 
+      var getRows = function(type, facilities, reports, dates) {
+        var rowsFn = type === 'health_center' ? reportingUtils.getRowsHC : reportingUtils.getRows;
+        var rows = rowsFn(facilities, reports, dates);
+        rows.forEach(function(facility) {
+          facility.chart = [
+            { key: 'valid', y: facility.valid_percent },
+            { key: 'missing', y: 100 - facility.valid_percent }
+          ];
+        });
+        return rows;
+      };
+
       var setDistrict = function(placeId) {
         $scope.error = false;
         $scope.loadingTotals = true;
@@ -120,47 +137,36 @@ var _ = require('underscore'),
         DB()
           .get(placeId || $scope.place._id)
           .then(function(place) {
-            $scope.filters.district = findDistrict(place);
-            $scope.place = place;
             return $q.all([
               ChildFacility(place),
               getViewReports(place, dates)
-            ]);
-          })
-          .then(function(results) {
-            var facilities = results[0];
-            var reports = results[1];
+            ])
+              .then(function(results) {
+                var facilities = results[0];
+                var reports = results[1];
 
-            $scope.totals = reportingUtils.getTotals(facilities, reports, dates);
-            if ($scope.place.type === 'health_center') {
-              $scope.clinics = reportingUtils.getRowsHC(facilities, reports, dates);
-              $scope.clinics.forEach(function(clinic) {
-                clinic.chart = [
-                  { key: 'valid', y: clinic.valid_percent },
-                  { key: 'missing', y: 100 - clinic.valid_percent }
+                $scope.totals = reportingUtils.getTotals(facilities, reports, dates);
+                var rows = getRows(place.type, facilities, reports, dates);
+                if (place.type === 'health_center') {
+                  $scope.clinics = rows;
+                } else {
+                  $scope.facilities = rows;
+                }
+                $scope.chart = [
+                  { key: 'valid', y: $scope.totals.complete },
+                  { key: 'missing', y: $scope.totals.not_submitted },
+                  { key: 'invalid', y: $scope.totals.incomplete }
                 ];
+                $scope.xFunction = function(d) {
+                  return d.key;
+                };
+                $scope.yFunction = function(d) {
+                  return d.y;
+                };
+                $scope.filters.district = findDistrict(place);
+                $scope.place = place;
+                $scope.loadingTotals = false;
               });
-            } else {
-              $scope.facilities = reportingUtils.getRows(facilities, reports, dates);
-              $scope.facilities.forEach(function(facility) {
-                facility.chart = [
-                  { key: 'valid', y: facility.valid_percent },
-                  { key: 'missing', y: 100 - facility.valid_percent }
-                ];
-              });
-            }
-            $scope.chart = [
-              { key: 'valid', y: $scope.totals.complete },
-              { key: 'missing', y: $scope.totals.not_submitted },
-              { key: 'invalid', y: $scope.totals.incomplete }
-            ];
-            $scope.xFunction = function(d) {
-              return d.key;
-            };
-            $scope.yFunction = function(d) {
-              return d.y;
-            };
-            $scope.loadingTotals = false;
           })
           .catch(function(err) {
             $log.error('Error setting place.', err);
