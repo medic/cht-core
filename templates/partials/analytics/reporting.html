@@ -1,197 +1,23 @@
 <div class="reporting-rates">
 
   <div class="form-select">
-    <a class="btn btn-link" ng-class="{ 'disabled': filters.form === form.meta.code }" ng-click="setForm(form.meta.code)" ng-repeat="form in forms">{{form.meta.label | translateFrom}}</a>
+    <span ng-repeat="form in forms track by form.meta.code">
+      <a class="btn btn-link" ui-sref="analytics.reporting.detail({ form: form.meta.code, place: filters.district })">
+        {{form.meta.label | translateFrom}}
+      </a>
+    </span>
     <div class="loader" ng-hide="forms"></div>
   </div>
-  
-  <div class="row facility-select" ng-show="filters.form && !district">
-    <div class="col-sm-12 facility" ng-repeat="district in districts | orderBy:'name'" ng-click="setDistrict(district)">
-      {{district.name}}
-    </div>
+
+  <div class="row facility-select">
+    <span ng-repeat="district in districts | orderBy:'name' track by district._id">
+      <a class="btn btn-link" ui-sref="analytics.reporting.detail({ form: filters.form, place: district._id })">
+        {{district.name}}
+      </a>
+    </span>
     <div class="loader" ng-hide="districts"></div>
   </div>
 
-  <div class="time-select" ng-show="district">
-    <a class="btn btn-link"
-      ng-class="{ 'disabled': filters.quantity === 1 }"
-      ng-click="setTimeQuantity(1)"
-      translate="analytics.reporting.last_time_unit"
-      translate-values="{
-        time_unit: '{{ getTranslationKey(filters.time_unit) | translate }}'
-      }"
-    ></a>
-    <a class="btn btn-link"
-      ng-class="{ 'disabled': filters.quantity === 3 }"
-      ng-click="setTimeQuantity(3)"
-      translate="analytics.reporting.last_time_unit"
-      translate-values="{
-        quantity: 3,
-        time_unit: '{{ getTranslationKey(filters.time_unit, true) | translate }}'
-      }"
-    ></a>
-    <a class="btn btn-link"
-      ng-class="{ 'disabled': filters.quantity === 6 }"
-      ng-click="setTimeQuantity(6)"
-      translate="analytics.reporting.last_time_unit"
-      translate-values="{
-        quantity: 6,
-        time_unit: '{{ getTranslationKey(filters.time_unit, true) | translate }}'
-      }"
-    ></a>
-    <a class="btn btn-link"
-      ng-class="{ 'disabled': filters.quantity === 12 }"
-      ng-click="setTimeQuantity(12)"
-      translate="analytics.reporting.last_time_unit"
-      translate-values="{
-        quantity: 12,
-        time_unit: '{{ getTranslationKey(filters.time_unit, true) | translate }}'
-      }"
-    ></a>
-    <div class="btn-group">
-      <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown">
-        <span translate>analytics.reporting.change_time_unit</span> <span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu" role="menu">
-        <li><a ng-show="filters.reporting_freq === 'weekly'"
-          ng-click="setTimeUnit('week')" translate>week</a></li>
-        <li><a ng-click="setTimeUnit('month')" translate>month</a></li>
-        <li><a ng-click="setTimeUnit('quarter')" translate>quarter</a></li>
-        <li><a ng-click="setTimeUnit('year')" translate>year</a></li>
-      </ul>
-    </div>
-  </div>
-
-  <div ng-show="district" class="district-totals">
-    <div class="alert alert-danger" role="alert" ng-show="error" translate>analytics.connection.error</div>
-    <div class="loader" ng-show="loadingTotals"></div>
-    <div class="row" ng-hide="loadingTotals || error">
-      <div class="col-sm-2 col-xs-6">
-        <i class="fa fa-hospital-o"></i>
-        <h4>{{totals.health_centers_size}}</h4>
-        <h3 translate>analytics.reporting.health_centers_size</h3>
-      </div>
-      <div class="col-sm-2 col-xs-6">
-        <i class="fa fa-medkit"></i>
-        <h4>{{totals.clinics_size}}</h4>
-        <h3 translate>analytics.reporting.clinics_size</h3>
-      </div>
-      <div class="col-sm-4 col-xs-12">
-        <div class="large-pie">
-          <nvd3-pie-chart
-            data="chart"
-            width="220"
-            height="220"
-            margin="{left:0,top:20,bottom:0,right:0}"
-            x="xFunction()"
-            y="yFunction()"
-            color="colorFunction()"
-            labelType="percent"
-            showLabels="true">
-            <svg height="220"></svg>
-          </nvd3-pie-chart>
-        </div>
-      </div>
-      <div class="col-sm-2 col-xs-6">
-        <i class="fa fa-file-o"></i>
-        <h4>{{totals.not_submitted}}</h4>
-        <h3 translate>analytics.reporting.not_submitted</h3>
-      </div>
-      <div class="col-sm-2 col-xs-6">
-        <i class="fa fa-exclamation-triangle"></i>
-        <h4>{{totals.incomplete}}</h4>
-        <h3 translate>analytics.reporting.incomplete</h3>
-      </div>
-    </div>
-  </div>
-
-  <div class="facility-select" ng-show="district && district.type === 'district_hospital'">
-    <div class="row title" ng-show="facilities.length">
-      <div class="col-sm-4" translate>analytics.reporting.health_centers_size</div>
-      <div class="col-sm-1" translate>analytics.reporting.reports</div>
-      <div class="col-sm-2" translate>analytics.reporting.reporting_rate</div>
-    </div>
-    <div class="row facility" ng-repeat="facility in facilities" ng-click="setDistrict(facility)">
-      <div class="col-sm-4">
-        {{facility.name}} ({{facility.clinics.length}})
-      </div>
-      <div class="col-sm-1">{{facility.valid}}</div>
-      <div class="col-sm-1">{{facility.valid_percent}}%</div>
-      <div class="col-sm-1">
-        <div class="mini-pie">
-          <nvd3-pie-chart
-            data="facility.chart"
-            width="40"
-            height="40"
-            margin="{left:0,top:0,bottom:0,right:0}"
-            x="xFunction()"
-            y="yFunction()"
-            color="colorFunction()"
-            showLabels="false">
-            <svg height="40"></svg>
-          </nvd3-pie-chart>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="facility-select" ng-show="district && district.clinics">
-    <div class="row title" ng-show="clinics.length">
-      <div class="col-sm-4" translate>analytics.reporting.health_centers_size</div>
-      <div class="col-sm-2" translate>analytics.reporting.reporting_rate</div>
-    </div>
-    <div ng-repeat="clinic in clinics">
-      <div class="row facility" ng-click="expandClinic(clinic.id)">
-        <div class="col-sm-4">
-          <button class="btn btn-primary btn-sm send-message" ng-attr-data-send-to="{{clinic.phone}}"><i class="fa fa-envelope"></i></button>
-          {{clinic.name}}
-        </div>
-        <div class="col-sm-1">{{clinic.valid_percent}}%</div>
-        <div class="col-sm-1">
-          <div class="mini-pie">
-            <nvd3-pie-chart
-              data="clinic.chart"
-              width="40"
-              height="40"
-              margin="{left:0,top:0,bottom:0,right:0}"
-              x="xFunction()"
-              y="yFunction()"
-              color="colorFunction()"
-              showLabels="false">
-              <svg height="40"></svg>
-            </nvd3-pie-chart>
-          </div>
-        </div>
-      </div>
-      <div class="records" ng-show="expandedClinic === clinic.id">
-        <div ng-repeat="record in clinic.records">
-          <div class="row" ng-class="{ 'valid': record.is_valid }" ng-click="expandRecord(record.id)">
-            <div class="col-sm-4">{{record.name}}</div>
-            <div class="col-sm-4">{{record.reporter}}</div>
-          </div>
-          <div class="fields" ng-show="expandedRecord && expandedRecord === record.id">
-            <div class="row">
-              <div class="col-sm-12"><label>Fields</label></div>
-            </div>
-            <div class="row" ng-repeat="field in formattedRecord.fields.data">
-              <div class="col-sm-2">{{field.label}}</div>
-              <div class="col-sm-10">{{field.value}}</div>
-            </div>
-            <div class="row">
-              <div class="col-sm-12"><label>Meta</label></div>
-            </div>
-            <div class="row">
-              <div class="col-sm-2">Reported Date</div>
-              <div class="col-sm-10">{{formattedRecord.reported_date | simpleDateTime}}</div>
-            </div>
-            <div class="row">
-              <div class="col-sm-2">Message</div>
-              <div class="col-sm-10">{{formattedRecord.sms_message.message}}</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <ui-view name="detail"/>
 
 </div>
