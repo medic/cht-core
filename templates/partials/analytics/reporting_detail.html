@@ -164,21 +164,21 @@
         <div class="loader" ng-show="record.id && loadingRecord === record.id"></div>
         <div class="fields" ng-if="expandedRecord && expandedRecord === record.id">
           <div class="row">
-            <div class="col-sm-12"><label>Fields</label></div>
+            <div class="col-sm-12"><label translate>fields</label></div>
           </div>
           <div class="row" ng-repeat="field in formattedRecord.fields.data">
             <div class="col-sm-2">{{field.label}}</div>
             <div class="col-sm-10">{{field.value}}</div>
           </div>
           <div class="row">
-            <div class="col-sm-12"><label>Meta</label></div>
+            <div class="col-sm-12"><label translate>metadata</label></div>
           </div>
           <div class="row">
-            <div class="col-sm-2">Reported Date</div>
+            <div class="col-sm-2" translate>reported_date</div>
             <div class="col-sm-10">{{formattedRecord.reported_date | simpleDateTime}}</div>
           </div>
           <div class="row">
-            <div class="col-sm-2">Message</div>
+            <div class="col-sm-2" translate>tasks.0.messages.0.message</div>
             <div class="col-sm-10">{{formattedRecord.sms_message.message}}</div>
           </div>
         </div>
