@@ -106,6 +106,13 @@ var _ = require('underscore'),
         return colours[d.data.key];
       };
 
+      var findDistrict = function(place) {
+        while(place && place.type !== 'district_hospital') {
+          place = place.parent;
+        }
+        return place;
+      };
+
       var setDistrict = function(placeId) {
         $scope.error = false;
         $scope.loadingTotals = true;
@@ -113,6 +120,7 @@ var _ = require('underscore'),
         DB()
           .get(placeId || $scope.place._id)
           .then(function(place) {
+            $scope.filters.district = findDistrict(place);
             $scope.place = place;
             return $q.all([
               ChildFacility(place),
