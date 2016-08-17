@@ -83,12 +83,10 @@ var _ = require('underscore'),
           })
           .then(function(viewResult) {
             var userCtx = Session.userCtx();
-            var ids = _.pluck(viewResult.rows, 'id');
-            ids.push('org.couchdb.user:' + userCtx && userCtx.name);
-            return ids;
-          })
-          .then(function(ids) {
-            options.doc_ids = ids;
+            options.doc_ids = _.pluck(viewResult.rows, 'id');
+            if (userCtx && userCtx.name) {
+              options.doc_ids.push('org.couchdb.user:' + userCtx.name);
+            }
             return options;
           });
       };

@@ -79,7 +79,7 @@ describe('DBSync service', function() {
       chai.expect(from.callCount).to.equal(1);
       chai.expect(from.args[0][1].live).to.equal(true);
       chai.expect(from.args[0][1].retry).to.equal(true);
-      chai.expect(from.args[0][1].doc_ids).to.deep.equal(['m','e','d','i','c','mobile']);
+      chai.expect(from.args[0][1].doc_ids).to.deep.equal(['m','e','d','i','c','org.couchdb.user:mobile']);
       chai.expect(to.callCount).to.equal(1);
       chai.expect(to.args[0][1].live).to.equal(true);
       chai.expect(to.args[0][1].retry).to.equal(true);
@@ -115,7 +115,7 @@ describe('DBSync service', function() {
       chai.expect(from.callCount).to.equal(1);
       chai.expect(from.args[0][1].live).to.equal(true);
       chai.expect(from.args[0][1].retry).to.equal(true);
-      chai.expect(from.args[0][1].doc_ids).to.deep.equal(['m','e','d','i','c','mobile']);
+      chai.expect(from.args[0][1].doc_ids).to.deep.equal(['m','e','d','i','c','org.couchdb.user:mobile']);
       chai.expect(to.callCount).to.equal(0);
       done();
     });
