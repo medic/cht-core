@@ -13,7 +13,7 @@ angular.module('inboxServices').factory('Select2Search',
     'use strict';
     'ngInject';
 
-    var defaultFormatResult = function(row) {
+    var defaultTemplateResult = function(row) {
       if(!row.doc) {
         return $('<span>' + (row.text || '&nbsp;') + '</span>');
       }
@@ -22,7 +22,7 @@ angular.module('inboxServices').factory('Select2Search',
       return $(format.contact(row.doc));
     };
 
-    var defaultFormatSelection = function(row) {
+    var defaultTemplateSelection = function(row) {
       if(row.doc) {
         return row.doc.name;
       }
@@ -36,8 +36,9 @@ angular.module('inboxServices').factory('Select2Search',
 
       var pageSize = options.pageSize || 20,
           allowNew = options.allowNew || false,
-          formatResult = options.templateResult || defaultFormatResult,
-          formatSelection = options.templateSelection || defaultFormatSelection,
+          templateResult = options.templateResult || defaultTemplateResult,
+          templateSelection = options.templateSelection || defaultTemplateSelection,
+          sendMessageExtras = options.sendMessageExtras || (function(i) {return i;}),
           tags = options.tags || false,
           types = Array.isArray(_types) ? _types : [ _types ];
 
@@ -73,7 +74,7 @@ angular.module('inboxServices').factory('Select2Search',
           .then(function(documents) {
             if (currentQuery === params.data.q) {
               return successCb({
-                results: prepareRows(documents, skip === 0),
+                results: sendMessageExtras(prepareRows(documents, skip === 0)),
                 pagination: {
                   more: documents.length === pageSize
                 }
@@ -94,7 +95,7 @@ angular.module('inboxServices').factory('Select2Search',
         }
         return DB().get(value)
           .then(function(doc) {
-            var text = formatSelection({ doc: doc });
+            var text = templateSelection({ doc: doc });
             selectEl.children('option[value=' + value + ']').text(text);
             return selectEl;
           });
@@ -109,8 +110,8 @@ angular.module('inboxServices').factory('Select2Search',
           allowClear: true,
           placeholder: '',
           tags: tags,
-          templateResult: formatResult,
-          templateSelection: formatSelection,
+          templateResult: templateResult,
+          templateSelection: templateSelection,
           width: '100%',
           minimumInputLength: Session.isAdmin() ? 3 : 0
         });

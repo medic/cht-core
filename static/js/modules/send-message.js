@@ -23,7 +23,6 @@ var _ = require('underscore'),
   };
 
   var validatePhoneNumber = function(data) {
-    // TODO: intergate correct with everyoneAt
     if (data.everyoneAt) {
       return true;
     }
@@ -52,7 +51,7 @@ var _ = require('underscore'),
     });
     if (errors.length > 0) {
       var errorRecipients = _.map(errors, function(error) {
-        return formatSelection(error);
+        return templateSelection(error);
       }).join(', ');
       return {
         valid: false,
@@ -78,55 +77,50 @@ var _ = require('underscore'),
     return result;
   };
 
-  // var formatPlace = function(row) {
-  //   // TODO: we have lost count because it's no longer calculated. This currently
-  //   // comes back as name - All Contacts. This looks OK, but it may be that
-  //   // it's important to know how many people you're sending SMS to. This could
-  //   // be hard to fix since we need to essentially check the DB in a blocking
-  //   // fashion (no promises for us) but it could be achieved
-  //   return translateFn('Everyone at', {
-  //     facility: row.doc.name,
-  //     count: row.descendants && row.descendants.length
-  //   });
-  // };
+  var formatPlace = function(row) {
+    // TODO: we have lost count because it's no longer calculated. This currently
+    // comes back as name - All Contacts. This looks OK, but it may be that
+    // it's important to know how many people you're sending SMS to. This could
+    // be hard to fix since we need to essentially check the DB in a blocking
+    // fashion (no promises for us) but it could be achieved
+    return translateFn('Everyone at', {
+      facility: row.doc.name,
+      count: row.descendants && row.descendants.length
+    });
+  };
 
-  var formatResult = function(row) {
+  var templateResult = function(row) {
     if (row.text) {
+      // Either Select2 detritus such as 'Searching…', or any custom value
+      // you enter, such as a raw phone number
       return row.text;
     }
 
-    var icon, contact;
+    var type = row.doc.type;
+    var icon = CONTACT_SCHEMA[type].icon,
+        contact;
 
-    if (!row.doc) {
-      icon = CONTACT_SCHEMA.person.icon;
-      contact = '<span class="freetext">' + row.id + '</span>';
+    if (row.everyoneAt) {
+      // TODO: maybe with everyone at we want to change the icon to something else?
+      contact = format.sender({
+        name: formatPlace(row),
+        parent: row.doc.place
+      });
     } else {
-      var type = row.doc.type;
-      icon = CONTACT_SCHEMA[type].icon;
-
       contact = format.contact(row.doc);
-      // TODO: detect if this is "everyone at" and display something different maybe?
-      // } else {
-      //   contact = format.sender({
-      //     name: formatPlace(row),
-      //     parent: row.parent
-      //   });
-      // }
     }
 
-    return $('<span class="fa fa-fw ' + icon + '"></span>' +  contact);
+    return $('<span class="fa fa-fw ' + icon + '"></span>' + contact);
   };
 
-  var formatSelection = function(row) {
-    if (row.doc) {
-      // TODO detect if this is "everyone at" and display something different maybe?
-      // if (row.doc.type !== 'person') {
-      //   return formatPlace(row);
-      // } else {
-        return row.doc.name || row.doc.phone;
-      // }
-    } else {
+  var templateSelection = function(row) {
+    if (!row.doc) {
       return row.id;
+    } else if (row.everyoneAt) {
+      return formatPlace(row);
+    } else {
+      // TODO: should this be first_name / last_name as well? How does this work?
+      return row.doc.name || row.doc.phone;
     }
   };
 
@@ -134,12 +128,29 @@ var _ = require('underscore'),
     // TODO reinstate a lost feature whereby entering in freetext is validated
     // and once it's a valid phone number it appears as its own entry in the
     // dropdown with an iuc
-    // TODO consider hooking into this to detect "everyone at" contacts and injecting
-    // that option in
     return Select2Search($phone, CONTACT_TYPES, {
       tags: true,
-      templateResult: formatResult,
-      templateSelection: formatSelection,
+      templateResult: templateResult,
+      templateSelection: templateSelection,
+      sendMessageExtras: function(results) {
+        return _.chain(results)
+          .map(function (result) {
+            if (result.doc.type !== CONTACT_SCHEMA.person.type) {
+              return [
+                result,
+                {
+                  id: 'everyoneAt:'+result.id,
+                  doc: result.doc,
+                  everyoneAt: true
+                }];
+            } else {
+              return result;
+            }
+          })
+          .flatten()
+          .filter(validatePhoneNumber)
+          .value();
+      }
     });
 };
 

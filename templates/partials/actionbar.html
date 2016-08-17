@@ -3,7 +3,7 @@
     <div class="inner">
       <div class="col-sm-4 general-actions left-pane" ng-show="currentTab !== 'reports' || !selectMode">
         <div class="actions dropup" ng-show="currentTab === 'messages' || currentTab === 'reports' || currentTab === 'contacts'">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message" ng-show="currentTab === 'messages'">
+          <a id="messages-send-message" class="mm-icon mm-icon-inverse mm-icon-caption send-message" ng-show="currentTab === 'messages'">
             <span class="fa fa-plus"></span>
             <p translate>Send Message</p>
           </a>
