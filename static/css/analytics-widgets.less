@@ -160,7 +160,7 @@
   }
 
   .records, .fields {
-    margin-left: 2em;
+    padding-left: 2em;
   }
 
   .fields {
@@ -172,6 +172,11 @@
 
   .records .row {
     color: @label-color;
+    .fa-caret-down,
+    .fa-caret-right {
+      width: 10px;
+      margin-left: -10px;
+    }
   }
 
   .fields .row, .records .valid {

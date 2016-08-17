@@ -126,11 +126,13 @@
     <div class="col-sm-4" translate>analytics.reporting.health_centers_size</div>
     <div class="col-sm-2" translate>analytics.reporting.reporting_rate</div>
   </div>
-  <div ng-repeat="clinic in clinics">
+  <div ng-repeat="clinic in clinics | orderBy:'name' track by clinic.id">
     <div class="row facility" ng-click="expandClinic(clinic.id)">
       <div class="col-sm-4">
-        <button class="btn btn-primary btn-sm send-message" ng-attr-data-send-to="{{clinic.phone}}"><i class="fa fa-envelope"></i></button>
+        <i class="fa fa-caret-down" ng-show="expandedClinic === clinic.id"></i>
+        <i class="fa fa-caret-right" ng-show="expandedClinic !== clinic.id"></i>
         {{clinic.name}}
+        <button class="btn btn-link btn-sm send-message" ng-attr-data-send-to="{{clinic.phone}}"><i class="fa fa-envelope"></i></button>
       </div>
       <div class="col-sm-1">{{clinic.valid_percent}}%</div>
       <div class="col-sm-1">
@@ -149,13 +151,15 @@
         </div>
       </div>
     </div>
-    <div class="records" ng-show="expandedClinic === clinic.id">
+    <div class="records" ng-if="expandedClinic === clinic.id">
       <div ng-repeat="record in clinic.records">
         <div class="row" ng-class="{ 'valid': record.is_valid }" ng-click="expandRecord(record.id)">
-          <div class="col-sm-4">{{record.name}}</div>
+          <div class="col-sm-4">
+            <i class="fa fa-caret-down" ng-show="record.id && expandedRecord === record.id"></i><i class="fa fa-caret-right" ng-show="record.id && expandedRecord !== record.id"></i>{{record.name}}
+          </div>
           <div class="col-sm-4">{{record.reporter}}</div>
         </div>
-        <div class="fields" ng-show="expandedRecord && expandedRecord === record.id">
+        <div class="fields" ng-if="expandedRecord && expandedRecord === record.id">
           <div class="row">
             <div class="col-sm-12"><label>Fields</label></div>
           </div>

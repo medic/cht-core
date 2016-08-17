@@ -39,8 +39,8 @@
           $state.go(
             'analytics.reporting.detail',
             {
-              form: forms[0].meta.code,
-              place: districts[0]._id
+              form: $state.params.form || forms[0].meta.code,
+              place: $state.params.place || districts[0]._id
             },
             { location: 'replace' }
           );
