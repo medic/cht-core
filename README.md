@@ -7,16 +7,19 @@ For latest changes and release announcements see our [change log](Changes.md).
 
 Medic Mobile combines messaging, data collection, and analytics for health workers and health systems in hard-to-reach areas with or without internet connectivity.
 
-The `medic-webapp` repository is the core application in the Medic Mobile stack. When health workers submit data — using text messages (SMS), our mobile applications, or our SIM applications — the web app comfirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
+The `medic-webapp` repository is the core tool of the Medic Mobile stack. When health workers submit data — using text messages (SMS), our mobile applications, or our SIM applications — the web app confirms data submission, generates unique IDs, and schedules automated reminder messages based on user-defined configurations. All information submitted by mobile users can be viewed, filtered, verified, and exported using the reports tab in the web application.
 
 The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally, as part of a virtual machine (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
 
 For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
-For going into details of architecture, and of which repos within https://github.com/medic you need, see the [Architecture Overview](architecture.md).
+For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](architecture.md).
 
 ## Development Setup
 
-Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/md/dev/workflow.md).
+Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/md/dev/workflow.md) and the [architecture overview](architecture.md).
+
+The setup described below doesn't use [Medic OS](https://github.com/medic/medic-webapp/blob/master/architecture.md#medic-os), the tools will be run directly on your machine.
+
 
 ### Dependencies
 
@@ -72,6 +75,7 @@ npm install grunt-cli -g
 
 ### Configure Lucene
 
+Lucene powers full-text search on CouchDB.
 Add the following to CouchDB's `httpd_global_handlers` configuration section:
 
 ```
@@ -95,12 +99,9 @@ curl http://localhost:5984/_fti
 {"couchdb-lucene":"Welcome","version":"1.0.2"}
 ```
 
-## Develop
+## Build and run
 
-### Localization
-All text labels in the app are localized. See [here](https://github.com/medic/medic-docs/blob/master/md/dev/translations.md) for more details on how to add new labels or modify existing ones.
-
-### Build
+### Build the webapp
 
 ```
 git clone --recursive https://github.com/medic/medic-webapp
@@ -120,9 +121,10 @@ exports.env = {
 ```
 
 
-### Push the application
+### Push the webapp
 
 `grunt dev` will build and deploy the webapp, then watch for changes and redeploy when necessary.
+
 
 ### Start medic-sentinel
 
@@ -154,6 +156,9 @@ Navigate your browser to:
 http://localhost:5988/medic/login
 ```
 
+
+## Configure
+
 ### App_settings
 
 The app is very customizeable, and that customization lives in the app_settings. Look for the `app_settings`
@@ -176,6 +181,8 @@ Initially your instance will have the [default forms defined inside the default 
 
 You can load new forms either through the webapp's interface (in Configuration), or from command line with the [load_forms.js](https://github.com/medic/medic-webapp/blob/master/scripts/load_forms.js)
 
+
+
 ### Data
 To fill your app with generated data, you can batch-load messages from a CSV file, with the [load_messages.js](https://github.com/medic/medic-webapp/blob/master/scripts/load_messages.js) script.
 
@@ -191,8 +198,11 @@ curl -i -u gateway:123qwe \
     http://localhost:5988/api/v1/records
 ```
 
+### Localization
+All text labels in the app are localized. See [here](https://github.com/medic/medic-docs/blob/master/md/dev/translations.md) for more details on how to add new labels or modify existing ones.
 
-### Tests
+
+## Tests
 
 To run precommit tests:
 
@@ -202,7 +212,17 @@ To run precommit tests:
 
 Some kanso tests are run in-browser; you can run them manually if you browse to `/medic/_design/medic/_rewrite/test`.
 
-### Push the dashboard (optional)
+### Other deployment steps
+
+## Run on Medic OS
+
+[What's Medic OS?](https://github.com/medic/medic-webapp/blob/master/architecture.md#medic-os)
+
+For development, you can find it useful to [run Medic OS on a VM](https://github.com/medic/medic-docs/blob/master/md/index.md) locally, to leverage VM snapshots, for instance to work with different versions.
+
+You can also use Medic-OS for production instances.
+
+## Push the dashboard (optional)
 
 [Garden Dashboard](https://github.com/garden20/dashboard) is used to download the couchapp onto a couchdb server, and later to update it.
 
@@ -236,7 +256,7 @@ Finally install our app in the dashboard.
 Now you've just overwritten your development installation so you probably want to do another `grunt dev` to overwrite it again.
 
 
-### Deploy to Market (optional)
+## Deploy to Market (optional)
 
 For your app to be accessible easily to other server instances, you can push it to an online Market.
 Each instance, through its local Dashboard, will pull the app down.

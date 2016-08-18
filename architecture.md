@@ -4,62 +4,82 @@ This page gives details on the different pieces of a Medic Mobile instance, how 
 
 ## Overview
 
-TODO : diagram of the whole thing
-TODO : which repos are required for a minimum setup?
+![Architecture of a Medic Mobile instance](https://github.com/medic/medic-webapp/blob/master/architecture.svg)
 
-Medic Mobile instances are machines running [MedicOS](#medic-os), on which runs [medic-webapp](#medic-webapp) on a CouchDB server. In front of it there's [medic-api](#medic-api) (node api server) as an interface to the outside world, and nginx in front of that for load balancing.
-
-On the server also runs [medic-sentinel](#medic-sentinel) (deprecated in v2, still there in legacy systems), a background helper.
-
-There are two types of users : admin users (national or local managers, tech admins) which are online and use medic-webapp as a desktop interface, and Community Health Workers (CHWs) who are on mobile.
-
-CHWs on android (v2) use medic-webapp wrapped in the [medic-android](#medic-android) container to look like a native app. Those on non-smart (I did not say dumb) phones (up to v0.4) send data in by SMS, either by typing them in directly, or through the [medic-collect] app, or through the Medic SimApp. In the future instances will allow both types of users.
-
-[medic-reporter](#medic-reporter) is a helper tool for sending in reports without having to use real SMS. Not useful if your users are on android.
-
-[medic-gateway](#medic-gateway) is an android app which serves as an SMS endpoint for sending and receiving messages. There's one per project, and it's hooked up to medic-webapp, which saves the messages coming in and gives it the messages that need to go out.
-
-[Garden Dashboard](https://github.com/garden20/dashboard) is a CouchApp also running on prod instances. It connects to the online Garden Market where we push the new versions of the code, and pulls them from there.
-
-[medic-analytics](#medic-analytics) is the stack for making analytics dashboards. It's on top of postgres (not couchdb) and uses Klipfolio.
+Medic Mobile instances are machines running [MedicOS](#medic-os), on which runs [medic-webapp](#medic-webapp) on a CouchDB server. In front of it there's [medic-api](#medic-api) (node api server) as an interface to the outside world, with nginx in front. [Medic-sentinel](#medic-sentinel) is a background processing helper on the server. [medic-gateway](#medic-gateway) sends and receives SMS messages for the server.
+Users can access the webapp through a browser, or through [medic-android](#medic-android), or use SMS tools like [Medic Collect](#other-tools), SimApp or directly SMS.
 
 
 ## medic-os
+[Repo](https://github.com/medic/medic-os/)
 
 Yes, we have an OS. How cool is that.
 
-MedicOS is a lightweight linux-based OS, that's small enough to download in the remotest places. It ships with all the components to run a Medic Mobile instance.
+MedicOs is an embedded image that's small enough to download in the remotest places. It contains a linux-based operating system, along with startup scripts, service management scripts, and software packages to run the Medic Mobile stack.
 
-If you're developing locally, you can run the components directly on your machine and don't need medic-os, see [Development Setup](https://github.com/medic/medic-webapp/#development-setup). It can be still be useful to [run medic-os on a VM](https://github.com/medic/medic-docs/blob/master/md/index.md) to make snapshots of your database, to work with different versions for instance.
+It powers the production servers, and the [DIY toolkit](http://medicmobile.org/diy).
+
 
 ## medic-webapp
+[Repo](https://github.com/medic/medic-webapp/)
 
-Medic Mobile's brain. It's a [CouchDB](http://couchdb.apache.org/) app (see [Why did Medic Mobile chose CouchDB?]() TODO: link), built with [kanso](https://github.com/kanso/kanso).
+Medic Mobile's brain. It's a [CouchDB](http://couchdb.apache.org/) app, built with [kanso](https://github.com/kanso/kanso).
 
 The server code is a [couchapp](http://couchapp.readthedocs.io/en/latest/intro/what-is-couchapp.html). The client code, served by CouchDB, is in [AngularJS](https://angularjs.org/).
 
-The UI looks like this :
-TODO screenshot
+![Medic Webapp, desktop UI](http://medicmobile.org/img/platform/toolkit-contacts-web-v2.png)
+![Medic Webapp, mobile UI](http://medicmobile.org/img/platform/mobile-app-tasks.jpg)
+
+Most users, whether on desktop or mobile, replicate the couchdb database locally via [PouchDB](https://pouchdb.com/), a JS database in the browser. This allows allows them to work offline and have their DB state automatically synced with the server, using Couch's 2-way replication. A given user only gets the data relevent to them (filtered replication).
+
+Admins, who oversee all data on the webapp and work online, interact directly with CouchDB. They don't replicate data in a local DB to avoid having excessively large quantities of data pulled down.
+
+The webforms are powered by [Enketo](https://enketo.org/).
+We use the [nools](https://github.com/C2FO/nools) rules engine to compute the upcoming tasks and monthly targets of the users.
+
 
 ## medic-api
-A node server, serving as a front end for medic-webapp. It deals with authentication, authorization, and does some processing of requests when needed.
+[Repo](https://github.com/medic/medic-api/)
 
-On prod systems, nginx runs in front of it for load balancing. You don't need nginx for developing locally.
+A node server which deals with authentication, authorization, and does some processing of requests when needed.
+It also runs a more efficient implementation of filtered replication.
+
+On prod systems, nginx runs in front of it for SSL and compression.
+
 
 ## medic-sentinel
-(before v2)
-A node program that runs on the server, listens to changes and edit docs if needed. It's used to generate the schedule of outgoing messages to attach to an incoming report, to attach contact info to incoming reports, ...
+[Repo](https://github.com/medic/medic-sentinel/)
 
-If all your users are on android (which is the case right now for latest code, on 2016/07/12), you don't need sentinel.
+A node program that runs on the server, listens to changes and edit docs if needed. It processes incoming reports (validation, generation of unique patient ids, generation of the schedule of outgoing messages triggered by the report, attach contact info to the report)
+
+
+## medic-gateway
+[Repo](https://github.com/medic/medic-gateway/)
+
+[medic-gateway](#medic-gateway) is an android app for sending and receiving SMS messages. There's one instance running per project. It polls a medic-api endpoint to write incoming SMS into the db and retreive outgoing SMS to send.
+
 
 ## medic-android
-Thin native container for medic-webapp to display on android.
+[Repo](https://github.com/medic/medic-android/)
 
-In that case, the DB will be a local PouchDB, instead of CouchDB on server. The changes made on the user's PouchDB get replicated to the server with the Couch replication protocol.
+Thin native Android app to load medic-webapp in a webview. It makes medic-webapp look like a native android app. Used by Community Health Workers (CHWs) and their local managers.
 
-## medic-collect
-(before v2)
-An android app based on [Open Data Kit](https://opendatakit.org/) to send reports in to medic-webapp over SMS or mobile data.
+
+## Other tools
+[Garden Dashboard](https://github.com/garden20/dashboard) is a CouchApp also running on prod instances. It connects to the online Garden Market where we push the new versions of the code, and pulls them from there.
+
+[medic-couch2pg](https://github.com/medic/medic-couch2pg/) is a process for copying the db data into a postgres database, which can be used for readonly analytics queries.
+
+[Medic Collect](https://github.com/medic/medic-collect) is an android app based on [Open Data Kit](https://opendatakit.org/) to send reports in to medic-webapp over SMS or mobile data.
+
+A SimApp (thin chip inserted under the SIM card) can also be used to provide a basic menu for sending reports over SMS. Or the user can type an SMS directly. See [Tools for Basic Phones](http://medicmobile.org/tools).
+
+[medic-reporter](https://github.com/medic/medic-reporter) is a helper tool for testing the sending and receiving of reports without having to use real SMS. It's a couchapp.
+
+
+
+
+
 
 
 
