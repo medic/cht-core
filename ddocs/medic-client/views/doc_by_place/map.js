@@ -34,7 +34,9 @@ function(doc) {
         // incoming message
         place = doc.contact;
       }
-      emitPlace(place);
+      if (place) {
+        emit([ place._id ]);
+      }
       return;
     case 'form':
     case 'translations':
