@@ -12,6 +12,7 @@
   require('./analytics-reporting');
   require('./analytics-reporting-detail');
   require('./analytics-targets');
+  require('./check-date');
   require('./configuration');
   require('./configuration-export');
   require('./configuration-forms');

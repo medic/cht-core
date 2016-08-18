@@ -100,7 +100,7 @@ var feedback = require('../modules/feedback'),
       });
 
       LiveListConfig($scope);
-      CheckDate($scope);
+      CheckDate();
 
       $scope.loadingContent = false;
       $scope.error = false;
