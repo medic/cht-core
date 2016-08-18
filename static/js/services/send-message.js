@@ -83,8 +83,9 @@ var _ = require('underscore'),
       };
 
       var resolvePhoneNumbers = function(recipients) {
-        //TODO: attempt to resolve phone numbers into existing contacts
-        //      to return an array of either the full doc, or the phone number string
+        //TODO: do we want to attempt to resolve phone numbers into existing contacts?
+        // users will have already got that suggestion in the send-message UI if
+        // it exists in the DB
         return _.pluck(recipients, 'text');
       };
 
@@ -147,7 +148,6 @@ var _ = require('underscore'),
             var explodedRecipients = results[2];
 
             // TODO: clean out parents' contacts etc, how does that go?
-            // ^^^ GARETH ^^^
 
             var doc = createMessageDoc(user);
             return $q.all(explodedRecipients.map(function(recipient) {

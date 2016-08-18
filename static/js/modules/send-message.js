@@ -2,12 +2,6 @@ var _ = require('underscore'),
     libphonenumber = require('libphonenumber/utils'),
     format = require('./format');
 
-// TODO: move this to a controller, see:
-//   - confirm-modal.js
-//   - user-language-modal.js
-// For ideas.
-// TODO: Split out validation logic so that messages-content can get all that
-//       just from the service
 (function () {
 
   'use strict';
@@ -78,11 +72,6 @@ var _ = require('underscore'),
   };
 
   var formatPlace = function(row) {
-    // TODO: we have lost count because it's no longer calculated. This currently
-    // comes back as name - All Contacts. This looks OK, but it may be that
-    // it's important to know how many people you're sending SMS to. This could
-    // be hard to fix since we need to essentially check the DB in a blocking
-    // fashion (no promises for us) but it could be achieved
     return translateFn('Everyone at', {
       facility: row.doc.name,
       count: row.descendants && row.descendants.length
@@ -125,9 +114,6 @@ var _ = require('underscore'),
   };
 
   var initPhoneField = function($phone) {
-    // TODO reinstate a lost feature whereby entering in freetext is validated
-    // and once it's a valid phone number it appears as its own entry in the
-    // dropdown with an iuc
     return Select2Search($phone, CONTACT_TYPES, {
       tags: true,
       templateResult: templateResult,
@@ -223,13 +209,9 @@ var _ = require('underscore'),
   };
 
   var resolveRecipients = function(recipients) {
-    // TODO potentially use DB.allDocs to resolve pure phone numbers into
-    //      real contacts?
     return Promise.resolve(recipients);
   };
 
-  //TODO: this takes data from either a recipient set elsewhere, or from the model
-  // passed in. Refactor so that both are passed in
   var validateRecipients = function($modal) {
     var validated = recipients;
 

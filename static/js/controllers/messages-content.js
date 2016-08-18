@@ -83,7 +83,6 @@ var _ = require('underscore'),
             // the send button in message_content.html, send-message.js:validate
             // which called validateRecipients can use this value instead of what
             // it finds in the modal dialog.
-            // TODO: make this less awful
             sendMessage.setRecipients(findMostRecentFacility(data));
 
             $scope.setLoadingContent(false);
