@@ -1,17 +1,13 @@
-<div id="version-update" class="modal fade" tabindex="-1" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="cancel close" data-dismiss="modal" ng-click="postponeUpdate()">&times;</button>
-        <h3>{{'version.update.title' | translate}}</h3>
-      </div>
-      <div class="modal-body">
-        <p ng-bind-html="'version.update.description' | translate"></p>
-      </div>
-      <div class="modal-footer">
-        <a class="btn cancel" data-dismiss="modal" ng-click="postponeUpdate()">{{'Cancel' | translate}}</a>
-        <a class="btn submit btn-primary" ng-click="reloadWindow()">{{'Update' | translate}}</a>
-      </div>
-    </div>
+<div role="document">
+  <div class="modal-header">
+    <button type="button" class="cancel close" ng-click="cancel()">&times;</button>
+    <h3 translate>version.update.title</h3>
+  </div>
+  <div class="modal-body">
+    <p translate>version.update.description</p>
+  </div>
+  <div class="modal-footer">
+    <a class="btn cancel" ng-click="cancel()" translate>Cancel</a>
+    <a class="btn submit btn-primary" ng-click="ok()" translate>Update</a>
   </div>
 </div>

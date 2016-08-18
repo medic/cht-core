@@ -53,5 +53,6 @@
   require('./theme');
   require('./tour-select');
   require('./user-language-modal');
+  require('./version-update');
 
 }());

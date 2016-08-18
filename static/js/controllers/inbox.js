@@ -662,7 +662,21 @@ var feedback = require('../modules/feedback'),
       setupUserLanguage();
 
       var showUpdateReady = function() {
-        $('#version-update').modal('show');
+        Modal({
+          templateUrl: 'templates/modals/version_update.html',
+          controller: 'VersionUpdateCtrl',
+          args: { processingFunction: null, model: null }
+        })
+        .then(function () {
+          $window.location.reload();
+        })
+        .catch(function() {
+          $log.debug('Delaying update');
+          $timeout(function() {
+            $log.debug('Displaying delayed update ready dialog');
+            showUpdateReady();
+          }, 2 * 60 * 60 * 1000);
+        });
 
         // close select2 dropdowns in the background
         $('select.select2-hidden-accessible').each(function(i, e) {
@@ -670,18 +684,6 @@ var feedback = require('../modules/feedback'),
           // initialised before the update dialog is to be shown
           try { $(e).select2('close'); } catch(e) {}
         });
-      };
-
-      $scope.reloadWindow = function() {
-        $window.location.reload();
-      };
-
-      $scope.postponeUpdate = function() {
-        $log.debug('Delaying update');
-        $timeout(function() {
-          $log.debug('Displaying delayed update ready dialog');
-          showUpdateReady();
-        }, 2 * 60 * 60 * 1000);
       };
 
       Changes({
