@@ -281,10 +281,7 @@ Join our [Google Group](https://groups.google.com/forum/#!forum/medic-developers
 
 Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/medic-webapp).
 
-Develop      | Testing       | Master
------------- | ------------- | ------------
-[![Build Status](https://travis-ci.org/medic/medic-webapp.png?branch=develop)](https://travis-ci.org/medic/medic-webapp/branches) | [![Build Status](https://travis-ci.org/medic/medic-webapp.png?branch=testing)](https://travis-ci.org/medic/medic-webapp/branches) | [![Build Status](https://travis-ci.org/medic/medic-webapp.png?branch=master)](https://travis-ci.org/medic/medic-webapp/branches)
-
+[![Build Status](https://travis-ci.org/medic/medic-webapp.png?branch=master)](https://travis-ci.org/medic/medic-webapp/branches)
 
 ## License & Copyright
 
