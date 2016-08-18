@@ -7,8 +7,11 @@
     <p translate>confirm.delete.user</p>
   </div>
   <div class="modal-footer">
-    <p class="note"></p>
+    <p class="note" ng-show="error" translate>Error deleting document</p>
     <a class="btn cancel" ng-click="cancel()" translate>Cancel</a>
-    <a class="btn submit btn-danger" ng-click="ok()" translate>Delete</a>
+    <a class="btn submit btn-danger" ng-click="ok()">
+      <span ng-show="!processing" translate>Delete</span>
+      <span ng-show="processing" translate>Deleting</span>
+    </a>
   </div>
 </div>

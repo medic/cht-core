@@ -8,7 +8,7 @@
     <p ng-show="model.docs.length !== 1" translate translate-values="{ number: {{model.docs.length}} }">confirm.delete.plural</p>
   </div>
   <div class="modal-footer">
-    <p class="note" ng-show="error" translate>Error deleting document.</p>
+    <p class="note" ng-show="error" translate>Error deleting document</p>
     <a class="btn cancel" ng-click="cancel()" translate>Cancel</a>
     <a class="btn submit btn-danger" ng-class="{disabled: processing}" ng-click="setProcessingMode()" >
       <span ng-show="!processing" translate>Delete</span>
