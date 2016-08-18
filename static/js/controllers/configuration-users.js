@@ -9,7 +9,6 @@ var _ = require('underscore');
   inboxControllers.controller('ConfigurationUsersCtrl',
     function (
       $log,
-      $rootScope,
       $scope,
       DB,
       Modal
@@ -34,8 +33,17 @@ var _ = require('underscore');
 
       $scope.deleteUserPrepare = function(user, $event) {
         $event.stopPropagation();
-        $rootScope.$broadcast('DeleteUserInit', user);
-        $('#delete-user-confirm').modal('show');
+        Modal({
+          templateUrl: 'templates/modals/delete_user_confirm.html',
+          controller: 'DeleteUserCtrl',
+          args: {
+            processingFunction: null,
+            model: user
+          }
+        })
+        .catch(function(err) {
+          $log.debug('User cancelled delete user.', err);
+        });
       };
 
       $scope.editUser = function(user) {

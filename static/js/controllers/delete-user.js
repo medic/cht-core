@@ -1,5 +1,3 @@
-var modal = require('../modules/modal');
-
 (function () {
 
   'use strict';
@@ -8,30 +6,32 @@ var modal = require('../modules/modal');
 
   inboxControllers.controller('DeleteUserCtrl',
     function (
+      $log,
       $rootScope,
       $scope,
       $translate,
-      DeleteUser
+      $uibModalInstance,
+      DeleteUser,
+      model,
+      Snackbar
     ) {
 
       'ngInject';
 
-      $scope.$on('DeleteUserInit', function(e, user) {
-        $scope.deleteUser = user;
-      });
+      $scope.cancel = function() {
+        $uibModalInstance.dismiss('cancel');
+      };
 
-      $scope.deleteUserConfirm = function() {
-        var pane = modal.start($('#delete-user-confirm'));
-        DeleteUser($scope.deleteUser)
+      $scope.ok = function() {
+        DeleteUser(model)
           .then(function() {
-            $scope.deleteUser = null;
             $rootScope.$broadcast('UsersUpdated');
-            pane.done();
+            $uibModalInstance.close('ok');
+            $translate('document.deleted').then(Snackbar);
           })
           .catch(function(err) {
-            $translate('Error deleting document').then(function(message) {
-              pane.done(message, err);
-            });
+            $log.error('Error deleting user', err);
+            $translate('Error deleting document').then(Snackbar);
           });
       };
 
