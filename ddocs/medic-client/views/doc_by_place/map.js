@@ -29,7 +29,7 @@ function(doc) {
                 doc.tasks[0] &&
                 doc.tasks[0].messages &&
                 doc.tasks[0].messages[0] &&
-                doc.tasks[0].messages[0].contact
+                doc.tasks[0].messages[0].contact;
       } else {
         // incoming message
         place = doc.contact;
@@ -49,4 +49,4 @@ function(doc) {
       emitPlace(doc);
       return;
   }
-};
+}
