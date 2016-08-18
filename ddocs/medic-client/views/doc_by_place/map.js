@@ -35,7 +35,11 @@ function(doc) {
         place = doc.contact;
       }
       if (place) {
-        emit([ place._id ]);
+        if (place._id) {
+          emit([ place._id ]);
+        }
+      } else {
+        emit([ '_unassigned' ]);
       }
       return;
     case 'form':
