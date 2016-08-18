@@ -17,7 +17,7 @@ exports.setUp = function(done) {
   done();
 };
 
-exports['migrating nothing should emit nothing'] = function(test) {
+exports['mapping nothing should emit nothing'] = function(test) {
   map({ type:'irrelevant-type' });
 
   test.deepEqual(emitted, []);
