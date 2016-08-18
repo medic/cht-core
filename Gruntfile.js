@@ -87,7 +87,8 @@ module.exports = function(grunt) {
       all: [
         'Gruntfile.js',
         'static/js/**/*.js',
-        'tests/**/*.js'
+        'tests/**/*.js',
+        'ddocs/**/*.js'
       ]
     },
     less: {

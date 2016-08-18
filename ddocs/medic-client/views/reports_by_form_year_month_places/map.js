@@ -37,16 +37,13 @@ function(doc) {
    * @api private
    */
   var getReporterName = function(facilities, phone) {
-
     if (!phone || facilities.length === 0) {
         return;
     }
-    
-    for (var i in facilities) {
-      var f = facilities[i];
-      return f.contact ? f.contact.name : undefined;
-    };
-
+    if (facilities[0] && facilities[0].contact) {
+      return facilities[0].contact.name;
+    }
+    return;
   };
 
   var facilities = getFacilitiesList(doc),
@@ -54,7 +51,7 @@ function(doc) {
       hc = facilities[1],
       cl = facilities[2],
       year = parseInt(doc.fields.year, 10),
-      month = parseInt(doc.fields.month, 10);
+      month = parseInt(doc.fields.month, 10),
       is_valid = (doc.errors && doc.errors.length === 0);
 
   var key = [ doc.form, year, month, dh._id, hc._id, cl._id ];

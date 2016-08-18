@@ -21,13 +21,13 @@ function(doc) {
   };
 
   if (doc.type === 'data_record' && doc.form) {
-    for (var key in doc) {
+    Object.keys(doc).forEach(function(key) {
       emitField(key, doc[key], doc.reported_date);
-    }
+    });
     if (doc.fields) {
-      for (var key in doc.fields) {
+      Object.keys(doc.fields).forEach(function(key) {
         emitField(key, doc.fields[key], doc.reported_date);
-      }
+      });
     }
     if (doc.contact && doc.contact._id) {
       emit([ 'contact:' + doc.contact._id ], doc.reported_date);

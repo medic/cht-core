@@ -41,16 +41,13 @@ function(doc) {
    * @api private
    */
   var getReporterName = function(facilities, phone) {
-
     if (!phone || facilities.length === 0) {
         return;
     }
-    
-    for (var i in facilities) {
-      var f = facilities[i];
-      return f.contact ? f.contact.name : undefined;
-    };
-
+    if (facilities[0] && facilities[0].contact) {
+      return facilities[0].contact.name;
+    }
+    return;
   };
 
   var facilities = getFacilitiesList(doc),

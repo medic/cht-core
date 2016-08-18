@@ -27,9 +27,9 @@ function(doc) {
   var idx = types.indexOf(doc.type);
   if (idx !== -1) {
     var order = idx + ' ' + (doc.name && doc.name.toLowerCase());
-    for (var key in doc) {
+    Object.keys(doc).forEach(function(key) {
       emitField(key, doc[key], order);
-    }
+    });
     var clinic = doc.type === 'person' ? doc.parent : doc;
     if (clinic && clinic._id) {
       emit([ 'clinic:' + clinic._id ], order);
