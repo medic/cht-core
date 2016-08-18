@@ -4,7 +4,7 @@ This page gives details on the different pieces of a Medic Mobile instance, how 
 
 ## Overview
 
-![Architecture of a Medic Mobile instance](https://github.com/medic/medic-webapp/blob/master/architecture.svg)
+![Architecture of a Medic Mobile instance](https://cdn.rawgit.com/medic/medic-webapp/master/architecture.svg)
 
 Medic Mobile instances are machines running [MedicOS](#medic-os), on which runs [medic-webapp](#medic-webapp) on a CouchDB server. In front of it there's [medic-api](#medic-api) (node api server) as an interface to the outside world, with nginx in front. [Medic-sentinel](#medic-sentinel) is a background processing helper on the server. [medic-gateway](#medic-gateway) sends and receives SMS messages for the server.
 Users can access the webapp through a browser, or through [medic-android](#medic-android), or use SMS tools like [Medic Collect](#other-tools), SimApp or directly SMS.
