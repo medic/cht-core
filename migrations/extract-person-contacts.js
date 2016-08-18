@@ -69,14 +69,13 @@ var createPerson = function(id, callback) {
   // Remove old-style contact field from the facility, so that the `person` we will create will not have a
   // loop (`person.parent.contact = person`!).
   var removeContact = function(facility, callback) {
-    var oldContact = facility.contact;
     delete facility.contact;
     db.medic.insert(facility, function(err) {
       if (err) {
         return callback(new Error('Failed to delete contact on facility ' + facility._id +
           JSON.stringify(err, null, 2)));
       }
-      callback(null, oldContact);
+      callback();
     });
   };
 
@@ -90,25 +89,36 @@ var createPerson = function(id, callback) {
       },
       function(err, result) {
         if (err) {
-          // TODO : reset the contact : facility.contact = oldContact.
-          // https://github.com/medic/medic-webapp/issues/2435
-          return callback(new Error('Could not create person. Facility ' + facilityId +
-            ' got its contact deleted, put it back!\n' + oldContact + '\n' +
-            JSON.stringify(err, null, 2)));
+          restoreContact(facilityId, oldContact, function() {
+            callback(new Error('Could not create person for facility ' + facilityId + ': ' + JSON.stringify(err, null, 2)));
+          });
+          return;
         }
         callback(null, result.id);
     });
   };
 
   // Re-set the contact field in the facility : set it to the contents of the newly created `person` doc.
-  var resetContact = function(facilityId, personId, callback) {
+  var resetContact = function(facilityId, oldContact, personId, callback) {
     places.updatePlace(facilityId, { contact: personId },
       function(err) {
         if (err) {
-          return callback(new Error('Failed to update contact on facility ' + facilityId +
-            JSON.stringify(err, null, 2)));
+          restoreContact(facilityId, oldContact, function() {
+            callback(new Error('Failed to update contact on facility ' + facilityId + ': ' + JSON.stringify(err, null, 2)));
+          });
+          return;
         }
         callback();
+    });
+  };
+
+  var restoreContact = function(facilityId, oldContact, callback) {
+    places.updatePlace(facilityId, { contact: oldContact }, function(err) {
+      if (err) {
+        // we tried our best - log the details and exit
+        console.error('Failed to restore contact on facility ' + facilityId + ', contact: ' + JSON.stringify(oldContact));
+      }
+      callback();
     });
   };
 
@@ -120,12 +130,14 @@ var createPerson = function(id, callback) {
       return callback(err);
     }
 
+    var oldContact = facility.contact;
+
     async.waterfall(
       [
         async.apply(checkContact, facility),
         async.apply(removeContact, facility),
-        async.apply(createPerson, facility._id /* oldContact passed from waterfall */),
-        async.apply(resetContact, facility._id /* parentId passed from waterfall */)
+        async.apply(createPerson, facility._id, oldContact),
+        async.apply(resetContact, facility._id, oldContact /* parentId passed from waterfall */)
       ],
       function(err) {
         if (err && !err.skip) {
@@ -194,8 +206,6 @@ var createPerson = function(id, callback) {
  */
 var updateParents = function(id, callback) {
   var checkParent = function(facility, callback) {
-    // Should we remove the empty parents?
-    // https://github.com/medic/medic-webapp/issues/2436
     if (!facility.parent || (Object.keys(facility.parent).length === 0)) {
       return callback({ skip: true });
     }
