@@ -9,6 +9,11 @@ module.exports = {
       method: 'DELETE',
       path: 'native_query_servers/erlang',
     }, function(err) {
+      if (err && err.error === 'not_found') {
+        console.log('Erlang support is already disabled.');
+        callback();
+        return;
+      }
       callback(err);
     });
   }
