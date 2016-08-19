@@ -23,7 +23,7 @@ It powers the production servers, and the [DIY toolkit](http://medicmobile.org/d
 ## medic-webapp
 [Repo](https://github.com/medic/medic-webapp/)
 
-Medic Mobile's brain. It's a [CouchDB](http://couchdb.apache.org/) app, built with [kanso](https://github.com/kanso/kanso).
+Medic Mobile's brain. It's a [CouchDB](http://couchdb.apache.org/) app ([Why did Medic Mobile choose CouchDB?](http://medicmobile.org/blog/why-did-medic-mobile-choose-couchdb)), built with [kanso](https://github.com/kanso/kanso).
 
 The server code is a [couchapp](http://couchapp.readthedocs.io/en/latest/intro/what-is-couchapp.html). The client code, served by CouchDB, is in [AngularJS](https://angularjs.org/).
 
