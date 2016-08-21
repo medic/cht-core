@@ -70,6 +70,7 @@
   require('./user');
   require('./web-worker');
   require('./xml-forms');
+  require('./xml-forms-context-utils');
   require('./xslt');
 
 }());
