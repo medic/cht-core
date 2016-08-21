@@ -6,27 +6,20 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
 
-  /**
-   * Util functions available to a form doc's `.context` function for checking if
-   * a form is relevant to a specific contact.
-   */
-  var CONTEXT_UTILS = {
-    ageInYears: function(c) {
-      if (!c.date_of_birth) {
-        return;
-      }
-      var birthday = new Date(c.date_of_birth),
-          today = new Date();
-      return (today.getFullYear() - birthday.getFullYear()) +
-          (today.getMonth() < birthday.getMonth() ? -1 : 0) +
-          (today.getMonth() === birthday.getMonth() &&
-              today.getDate() < birthday.getDate() ? -1 : 0);
-    },
-  };
+  inboxServices.factory('XmlForms',
+    function(
+      $log,
+      $parse,
+      $q,
+      Auth,
+      Changes,
+      DB,
+      PLACE_TYPES,
+      UserContact,
+      XmlFormsContextUtils
+    ) {
 
-  inboxServices.factory('XmlForms', [
-    '$q', '$parse', '$log', 'DB', 'Changes', 'Auth', 'UserContact', 'PLACE_TYPES',
-    function($q, $parse, $log, DB, Changes, Auth, UserContact, PLACE_TYPES) {
+      'ngInject';
 
       var listeners = {};
 
@@ -47,7 +40,7 @@ var _ = require('underscore');
       var init = getForms();
 
       var evaluateExpression = function(expression, doc, user) {
-        return $parse(expression)(CONTEXT_UTILS, { contact: doc, user: user });
+        return $parse(expression)(XmlFormsContextUtils, { contact: doc, user: user });
       };
 
       var filterAll = function(forms, options, user) {
@@ -164,11 +157,14 @@ var _ = require('underscore');
               })
               .then(function(results) {
                 listener.callback(null, results);
+              })
+              .catch(function(err) {
+                $log.error(err);
               });
           })
           .catch(callback);
       };
     }
-  ]);
+  );
 
 }());

@@ -69,6 +69,7 @@
   require('./watch-design-doc');
   require('./web-worker');
   require('./xml-forms');
+  require('./xml-forms-context-utils');
   require('./xslt');
 
 }());
