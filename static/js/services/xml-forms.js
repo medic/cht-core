@@ -66,6 +66,8 @@ var _ = require('underscore');
             return false;
           }
         }
+
+        // Context filters
         if (options.ignoreContext) {
           return true;
         }
@@ -74,22 +76,25 @@ var _ = require('underscore');
           return true;
         }
 
-        var contactType = options.doc && options.doc.type;
-        if (contactType === 'person' && (
-            (typeof form.context.person !== 'undefined' && !form.context.person) ||
-            (typeof form.context.person === 'undefined' && form.context.place))) {
-          return false;
-        }
-        if (PLACE_TYPES.indexOf(contactType) !== -1 && (
-            (typeof form.context.place !== 'undefined' && !form.context.place) ||
-            (typeof form.context.place === 'undefined' && form.context.person))) {
-          return false;
+        if (options.doc) {
+          var contactType = options.doc.type;
+          if (contactType === 'person' && (
+              (typeof form.context.person !== 'undefined' && !form.context.person) ||
+              (typeof form.context.person === 'undefined' && form.context.place))) {
+            return false;
+          }
+          if (PLACE_TYPES.indexOf(contactType) !== -1 && (
+              (typeof form.context.place !== 'undefined' && !form.context.place) ||
+              (typeof form.context.place === 'undefined' && form.context.person))) {
+            return false;
+          }
+
+          if (form.context.expression &&
+              !evaluateExpression(form.context.expression, options.doc, user)) {
+            return false;
+          }
         }
 
-        if (form.context.expression &&
-            !evaluateExpression(form.context.expression, options.doc, user)) {
-          return false;
-        }
         if (!form.context.permission) {
           return true;
         }
@@ -132,12 +137,20 @@ var _ = require('underscore');
 
       /**
        * @name String to uniquely identify the callback to stop duplicate registration
+       *
        * @options (optional) Object for filtering. Possible values:
-       *   - ignoreContext (boolean) to return all forms
-       *   - contactForms (boolean) to return all contact forms, no contact forms,
-       *     or both
-       *   - doc (Object) the doc to pass to the forms context expression to
-       *     determine if the form is applicable
+       *   - contactForms (boolean) : true will return only contact forms. False will exclude contact forms.
+       *     Undefined will ignore this filter.
+       *   - ignoreContext (boolean) : Each xml form has a context field, which helps specify in which cases
+       * it should be shown or not shown.
+       * E.g. `{person: false, place: true, expression: "!contact || contact.type === 'clinic'", permission: "can_edit_stuff"}`
+       * Using ignoreContext = true will ignore that filter.
+       *   - doc (Object) : when the context filter is on, the doc to pass to the forms context expression to
+       *     determine if the form is applicable.
+       * E.g. for context above, `{type: "district_hospital"}` passes,
+       * but `{type: "district_hospital", contact: {type: "blah"} }` is filtered out.
+       * See tests for more examples.
+       *
        * @callback Invoked when complete and again when results have changed.
        */
       return function(name, options, callback) {
