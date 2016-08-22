@@ -32,6 +32,7 @@
   require('./contacts-content');
   require('./contacts-edit');
   require('./contacts-report');
+  require('./delete-doc-confirm');
   require('./delete-user');
   require('./edit-language');
   require('./edit-report');

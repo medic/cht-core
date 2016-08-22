@@ -485,18 +485,9 @@ var feedback = require('../modules/feedback'),
         }
         Modal({
           templateUrl: 'templates/modals/delete_doc_confirm.html',
-          controller: 'ConfirmModalCtrl',
-          args: {
-            processingFunction: function() {
-              if (!docs || !docs.length) {
-                return $q.reject(new Error('Error deleting document: no doc selected'));
-              }
-              return DeleteDocs(docs);
-            },
-            model: { docs: docs }
-          }
-        })
-        .then(function() {
+          controller: 'DeleteDocConfirm',
+          model: { docs: docs }
+        }).then(function() {
           if ($state.includes('contacts') || $state.includes('reports')) {
             if ($scope.selectMode) {
               $scope.clearSelected();
@@ -504,11 +495,6 @@ var feedback = require('../modules/feedback'),
               $state.go($state.current.name, { id: null });
             }
           }
-          var key = docs.length === 1 ? 'document.deleted' : 'document.deleted.plural';
-          $translate(key, { number: docs.length }).then(Snackbar);
-        })
-        .catch(function(err) {
-          $log.debug('User cancelled deleteDoc.', err);
         });
       };
 
