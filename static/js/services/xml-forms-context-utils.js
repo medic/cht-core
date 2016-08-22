@@ -7,25 +7,36 @@ var ONE_DAY_IN_MS = 1000 * 60 * 60 * 24;
 angular.module('inboxServices').factory('XmlFormsContextUtils', function() {
   'use strict';
 
-  var ageInDays = function(contact) {
+  var getDateOfBirth = function(contact) {
     if (!contact.date_of_birth) {
       return;
     }
-    var birthday = new Date(contact.date_of_birth);
+    var dob = new Date(contact.date_of_birth);
+    dob.setHours(0);
+    dob.setMinutes(0);
+    dob.setSeconds(0);
+    return dob;
+  };
+
+  var ageInDays = function(contact) {
+    var dob = getDateOfBirth(contact);
+    if (!dob) {
+      return;
+    }
     var today = new Date();
-    var difference = today.getTime() - birthday.getTime();
+    var difference = today.getTime() - dob.getTime();
     return Math.floor(difference / ONE_DAY_IN_MS);
   };
 
   var ageInMonths = function(contact) {
-    if (!contact.date_of_birth) {
+    var dob = getDateOfBirth(contact);
+    if (!dob) {
       return;
     }
-    var birthday = new Date(contact.date_of_birth);
     var today = new Date();
-    var years = today.getFullYear() - birthday.getFullYear();
-    var months = today.getMonth() - birthday.getMonth();
-    var dayModifier = today.getDate() < birthday.getDate() ? -1 : 0;
+    var years = today.getFullYear() - dob.getFullYear();
+    var months = today.getMonth() - dob.getMonth();
+    var dayModifier = today.getDate() < dob.getDate() ? -1 : 0;
     return (years * 12) + months + dayModifier;
   };
 

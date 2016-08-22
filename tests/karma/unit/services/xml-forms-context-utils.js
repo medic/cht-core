@@ -21,9 +21,9 @@ describe('XmlFormsContextUtils service', function() {
       chai.expect(actual).to.equal(undefined);
     });
 
-    it('returns 0 when less than 1 day old', function() {
+    it('returns 0 when born today', function() {
       var dob = new Date();
-      dob.setHours(dob.getHours() - 23);
+      dob.setHours(0);
       var actual = service.ageInDays({ date_of_birth: dob });
       chai.expect(actual).to.equal(0);
     });
@@ -40,6 +40,15 @@ describe('XmlFormsContextUtils service', function() {
       dob.setDate(dob.getDate() - 1000);
       var actual = service.ageInDays({ date_of_birth: dob });
       chai.expect(actual).to.equal(1000);
+    });
+
+    it('returns 1 when born yesterday even if less than 24 hours ago', function() {
+      var dob = new Date();
+      dob.setDate(dob.getDate() - 1);
+      dob.setHours(23);
+      dob.setMinutes(59);
+      var actual = service.ageInDays({ date_of_birth: dob });
+      chai.expect(actual).to.equal(1);
     });
 
   });
