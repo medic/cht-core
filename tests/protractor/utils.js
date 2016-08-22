@@ -3,12 +3,17 @@ var http = require('http'),
 
 var originalSettings;
 
-var request = function(options) {
+var request = function(options, debug) {
   var deferred = protractor.promise.defer();
 
   options.hostname = environment.apiHost;
   options.port = environment.apiPort;
   options.auth = environment.user + ':' + environment.pass;
+
+  if (debug) {
+    console.log('REQUEST');
+    console.log(JSON.stringify(options));
+  }
 
   var req = http.request(options, function(res) {
     res.setEncoding('utf8');
@@ -42,9 +47,9 @@ module.exports = {
 
   request: request,
 
-  requestOnTestDb: function(options) {
+  requestOnTestDb: function(options, debug) {
     options.path = '/' + environment.dbName + options.path;
-    return request(options);
+    return request(options, debug);
   },
 
   saveDoc: function(doc) {
@@ -79,6 +84,39 @@ module.exports = {
       .then(function(doc) {
         doc._deleted = true;
         return module.exports.saveDoc(doc);
+      });
+  },
+
+  purgeDoc: function(id) {
+    return module.exports.getDoc(id)
+      .then(function(doc) {
+        var b = {};
+        b[doc._id] = [doc._rev];
+
+        var postData = JSON.stringify(b);
+
+        console.log('POST ME A PICTURE TRAVIS');
+        console.log(doc._id);
+        console.log(doc._rev);
+        console.log(postData);
+
+        return module.exports.requestOnTestDb({
+          method: 'POST',
+          path: '/_purge',
+          body: postData,
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': postData.length
+          },
+        }, true);
+      })
+      .then(function(result) {
+        console.log('Attempted to purge ' + id);
+        console.log(JSON.stringify(result));
+      })
+      .catch(function(err) {
+        console.log('[[[[[[[[[[[[[[');
+        console.log(err);
       });
   },
 

@@ -1,4 +1,5 @@
-var utils = require('../utils');
+var utils = require('../utils'),
+    _ = require('underscore');
 
 describe('Send message', function() {
   'use strict';
@@ -52,8 +53,17 @@ describe('Send message', function() {
   afterAll(function(done) {
     protractor.promise
       .all(savedUuids.map(utils.deleteDoc))
-      .then(done, done);
-      // TODO: delete all created messages somehow
+      .then(function() {
+        return utils.requestOnTestDb({
+          path: '/_design/medic/_view/tasks_messages',
+          method: 'GET'
+        });
+      })
+      .then(function(results) {
+        var ids = _.uniq(_.pluck(results.rows, 'id'));
+        return protractor.promise.all(ids.map(utils.purgeDoc));
+      })
+      .then(done);
   });
 
 
