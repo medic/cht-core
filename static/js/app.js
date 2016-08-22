@@ -25,10 +25,11 @@ require('moment/locale/es');
 require('moment/locale/fr');
 require('moment/locale/ne');
 
-require('./services/index');
-require('./controllers/index');
-require('./filters/index');
-require('./enketo/main.js');
+require('./services');
+require('./controllers');
+require('./filters');
+require('./directives');
+require('./enketo/main');
 
 var bootstrapper = require('./bootstrap');
 var router = require('./router');
@@ -46,6 +47,7 @@ _.templateSettings = {
     'ngRoute',
     'ui.bootstrap',
     'ui.router',
+    'inboxDirectives',
     'inboxFilters',
     'inboxControllers',
     'inboxServices',
