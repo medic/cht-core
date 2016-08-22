@@ -7,11 +7,11 @@ This page gives details on the different pieces of a Medic Mobile instance, how 
 ![Architecture of a Medic Mobile instance](https://cdn.rawgit.com/medic/medic-webapp/master/architecture.svg)
 
 Medic Mobile instances are machines running [MedicOS](#medic-os), on which runs [medic-webapp](#medic-webapp) on a CouchDB server. In front of it there's [medic-api](#medic-api) (node api server) as an interface to the outside world, with nginx in front. [Medic-sentinel](#medic-sentinel) is a background processing helper on the server. [medic-gateway](#medic-gateway) sends and receives SMS messages for the server.
+
 Users can access the webapp through a browser, or through [medic-android](#medic-android), or use SMS tools like [Medic Collect](#other-tools), SimApp or directly SMS.
 
 
-## medic-os
-[Repo](https://github.com/medic/medic-os/)
+## [medic-os](https://github.com/medic/medic-os/)
 
 Yes, we have an OS. How cool is that.
 
@@ -20,8 +20,7 @@ MedicOs is an embedded image that's small enough to download in the remotest pla
 It powers the production servers, and the [DIY toolkit](http://medicmobile.org/diy).
 
 
-## medic-webapp
-[Repo](https://github.com/medic/medic-webapp/)
+## [medic-webapp](https://github.com/medic/medic-webapp/)
 
 Medic Mobile's brain. It's a [CouchDB](http://couchdb.apache.org/) app ([Why did Medic Mobile choose CouchDB?](http://medicmobile.org/blog/why-did-medic-mobile-choose-couchdb)), built with [kanso](https://github.com/kanso/kanso).
 
@@ -38,8 +37,7 @@ The webforms are powered by [Enketo](https://enketo.org/).
 We use the [nools](https://github.com/C2FO/nools) rules engine to compute the upcoming tasks and monthly targets of the users.
 
 
-## medic-api
-[Repo](https://github.com/medic/medic-api/)
+## [medic-api](https://github.com/medic/medic-api/)
 
 A node server which deals with authentication, authorization, and does some processing of requests when needed.
 It also runs a more efficient implementation of filtered replication.
@@ -47,20 +45,17 @@ It also runs a more efficient implementation of filtered replication.
 On prod systems, nginx runs in front of it for SSL and compression.
 
 
-## medic-sentinel
-[Repo](https://github.com/medic/medic-sentinel/)
+## [medic-sentinel](https://github.com/medic/medic-sentinel/)
 
 A node program that runs on the server, listens to changes and edit docs if needed. It processes incoming reports (validation, generation of unique patient ids, generation of the schedule of outgoing messages triggered by the report, attach contact info to the report)
 
 
-## medic-gateway
-[Repo](https://github.com/medic/medic-gateway/)
+## [medic-gateway](https://github.com/medic/medic-gateway/)
 
-[medic-gateway](#medic-gateway) is an android app for sending and receiving SMS messages. There's one instance running per project. It polls a medic-api endpoint to write incoming SMS into the db and retreive outgoing SMS to send.
+Medic Gateway is an android app for sending and receiving SMS messages. There's one instance running per project. It polls a medic-api endpoint to write incoming SMS into the db and retreive outgoing SMS to send.
 
 
-## medic-android
-[Repo](https://github.com/medic/medic-android/)
+## [medic-android](https://github.com/medic/medic-android/)
 
 Thin native Android app to load medic-webapp in a webview. It makes medic-webapp look like a native android app. Used by Community Health Workers (CHWs) and their local managers.
 
