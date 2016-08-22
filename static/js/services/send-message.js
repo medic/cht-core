@@ -57,7 +57,7 @@ var _ = require('underscore'),
           } else if (recipient.contact && recipient.contact.phone) {
             return {
               phone: recipient.contact.phone,
-              contact: recipient.contact
+              contact: recipient
             };
           }
         });
@@ -112,9 +112,13 @@ var _ = require('underscore'),
         );
 
         return $q.all(promises).then(function(recipients) {
-          // re: flatten; hydrate() and resolvePhoneNumbers() are promises with multiple values
-          return mapRecipients(_.flatten(recipients))
-            .filter(function(i) { return !!i;});
+          return _.uniq(
+              // re: flatten; hydrate() and resolvePhoneNumbers() are promises with multiple values
+              // re: !!i, identity function, ie removes any undefined values caused by bad data
+              mapRecipients(_.flatten(recipients)).filter(function(i) { return !!i;}),
+              false, function(recipient) {
+                return recipient.phone;
+              });
         });
       };
 
@@ -130,6 +134,7 @@ var _ = require('underscore'),
           }]
         };
         utils.setTaskState(task, 'pending');
+
         return task;
       };
 
