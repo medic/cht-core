@@ -18,6 +18,10 @@ var _ = require('underscore'),
 
       'ngInject';
 
+      var identity = function(i) {
+        return !!i;
+      };
+
       var createMessageDoc = function(user) {
         var name = user && user.name;
 
@@ -28,7 +32,7 @@ var _ = require('underscore'),
           reported_date: Date.now(),
           tasks: [],
           read: [ name ],
-          //TODO: should we rename this to outgoing_message or something?!
+          //TODO: rename this to outgoing_message: https://github.com/medic/medic-webapp/issues/2656
           kujua_message: true,
           type: 'data_record',
           sent_by: name || 'unknown'
@@ -112,13 +116,15 @@ var _ = require('underscore'),
         );
 
         return $q.all(promises).then(function(recipients) {
-          return _.uniq(
-              // re: flatten; hydrate() and resolvePhoneNumbers() are promises with multiple values
-              // re: !!i, identity function, ie removes any undefined values caused by bad data
-              mapRecipients(_.flatten(recipients)).filter(function(i) { return !!i;}),
-              false, function(recipient) {
-                return recipient.phone;
-              });
+          // hydrate() and resolvePhoneNumbers() are promises with multiple values
+          recipients = _.flatten(recipients);
+
+          // removes any undefined values caused by bad data
+          var validRecipients = mapRecipients(recipients).filter(identity);
+
+          return _.uniq(validRecipients, false, function(recipient) {
+            return recipient.phone;
+          });
         });
       };
 

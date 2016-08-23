@@ -105,12 +105,14 @@ var _ = require('underscore'),
   var templateSelection = function(row) {
     if (!row.doc) {
       return row.id;
-    } else if (row.everyoneAt) {
-      return formatPlace(row);
-    } else {
-      // TODO: should this be first_name / last_name as well? How does this work?
-      return row.doc.name || row.doc.phone;
     }
+
+    if (row.everyoneAt) {
+      return formatPlace(row);
+    }
+
+    // TODO: should this be first_name / last_name as well? How does this work?
+    return row.doc.name || row.doc.phone;
   };
 
   var initPhoneField = function($phone) {

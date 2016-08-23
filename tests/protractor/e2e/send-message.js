@@ -83,10 +83,10 @@ describe('Send message', function() {
 
     var sendMessageModal = element(by.id('send-message'));
 
-    expect(element(by.id('messages-send-message')).isDisplayed()).toBeTruthy();
+    expect(element(by.css('.general-actions .send-message')).isDisplayed()).toBeTruthy();
     expect(sendMessageModal.isDisplayed()).toBeFalsy();
 
-    element(by.id('messages-send-message')).click();
+    element(by.css('.general-actions .send-message')).click();
     browser.sleep(1000);
     expect(sendMessageModal.isDisplayed()).toBeTruthy();
 
@@ -131,10 +131,10 @@ describe('Send message', function() {
 
     var sendMessageModal = element(by.id('send-message'));
 
-    expect(element(by.id('messages-send-message')).isDisplayed()).toBeTruthy();
+    expect(element(by.css('.general-actions .send-message')).isDisplayed()).toBeTruthy();
     expect(sendMessageModal.isDisplayed()).toBeFalsy();
 
-    element(by.id('messages-send-message')).click();
+    element(by.css('.general-actions .send-message')).click();
     browser.sleep(1000);
     expect(sendMessageModal.isDisplayed()).toBeTruthy();
 
@@ -180,10 +180,10 @@ describe('Send message', function() {
 
     var sendMessageModal = element(by.id('send-message'));
 
-    expect(element(by.id('messages-send-message')).isDisplayed()).toBeTruthy();
+    expect(element(by.css('.general-actions .send-message')).isDisplayed()).toBeTruthy();
     expect(sendMessageModal.isDisplayed()).toBeFalsy();
 
-    element(by.id('messages-send-message')).click();
+    element(by.css('.general-actions .send-message')).click();
     browser.sleep(1000);
     expect(sendMessageModal.isDisplayed()).toBeTruthy();
 
