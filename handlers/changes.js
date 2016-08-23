@@ -69,13 +69,10 @@ var defibrillator = function(feed) {
 };
 
 var prepareResponse = function(feed, changes) {
-  var rejected = _.reject(changes.results, function(change) {
+  // filter out records the user isn't allowed to see
+  changes.results = changes.results.filter(function(change) {
     return change.deleted || _.contains(feed.validatedIds, change.id);
   });
-  if (rejected.length) {
-    console.error('User attempting to replicate these docs without permission: ', _.pluck(rejected, 'id'));
-    return feed.res.write(error(403, 'Forbidden'));
-  }
   feed.res.write(JSON.stringify(changes));
 };
 

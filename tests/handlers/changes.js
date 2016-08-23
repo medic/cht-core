@@ -228,8 +228,8 @@ exports['allows unallocated access when it is configured and the user has permis
   handler.request({}, testReq, testRes);
 };
 
-exports['rejects when user requests undeleted docs they are not allowed to see'] = function(test) {
-  test.expect(1);
+exports['filters out undeleted docs they are not allowed to see'] = function(test) {
+  test.expect(2);
 
   var userCtx = { name: 'mobile' };
   var blockedId = 'abc';
@@ -256,6 +256,10 @@ exports['rejects when user requests undeleted docs they are not allowed to see']
       {
         seq: 2,
         id: blockedId
+      },
+      {
+        seq: 4,
+        id: allowedId
       }
     ]
   });
@@ -276,7 +280,9 @@ exports['rejects when user requests undeleted docs they are not allowed to see']
       result += slice;
     },
     end: function() {
-      test.deepEqual(JSON.parse(result), { code: 403, message: 'Forbidden' });
+      result = JSON.parse(result);
+      test.equals(result.results.length, 1);
+      test.equals(result.results[0].id, allowedId);
       test.done();
     }
   };
