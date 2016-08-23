@@ -282,7 +282,8 @@ module.exports = {
         });
       }
     });
-  }
+  },
+  _extractKeysFromDoc: extractKeysFromDoc // used for testing
 };
 
 // used for testing
@@ -294,7 +295,6 @@ if (process.env.UNIT_TEST_ENV) {
     },
     _getFeeds: function() {
       return continuousFeeds;
-    },
-    _extractKeysFromDoc: extractKeysFromDoc
+    }
   });
 }
