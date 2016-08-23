@@ -87,28 +87,38 @@ describe('Send message', function() {
     expect(sendMessageModal.isDisplayed()).toBeFalsy();
 
     element(by.css('.general-actions .send-message')).click();
-    browser.sleep(1000);
-    expect(sendMessageModal.isDisplayed()).toBeTruthy();
 
     var sendMessageSelect = element(by.css('#send-message .select2'));
-
+    browser.wait(function() {
+      return sendMessageSelect.isDisplayed();
+    }, 2000);
     sendMessageSelect.click();
 
-    element(by.css('#send-message input.select2-search__field')).sendKeys(RAW_PH);
-    browser.sleep(1000);
+    browser.wait(element(by.css('#send-message input.select2-search__field')).sendKeys(RAW_PH));
+    browser.wait(function() {
+      return element.all(by.css('.select2-results__option')).first().isDisplayed();
+    }, 2000);
+    browser.sleep(500); // FIXME can't work out exactly what to select above
 
     expect(element.all(by.css('.select2-results__option')).count()).toBe(1);
 
     expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(0);
     element.all(by.css('li.select2-results__option')).first().click();
-    browser.sleep(1000);
+
+    browser.wait(function () {
+      return element(by.css('li.select2-selection__choice')).isDisplayed();
+    }, 2000);
+
     expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
     expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(RAW_PH);
 
-    element(by.css('#send-message textarea')).sendKeys(smsMsg('raw'));
+    browser.wait(element(by.css('#send-message textarea')).sendKeys(smsMsg('raw')));
 
     element(by.css('#send-message a.btn.submit')).click();
-    browser.sleep(1000);
+    browser.wait(function() {
+      return protractor.ExpectedConditions.not(sendMessageSelect.isDisplayed());
+    }, 2000);
+
     browser.driver.navigate().refresh();
     browser.wait(function() {
       return browser.isElementPresent(by.css('#message-list'));
@@ -117,7 +127,9 @@ describe('Send message', function() {
     expect(element.all(by.css(messageInList(RAW_PH))).count()).toBe(1);
 
     element(by.css(messageInList(RAW_PH) + ' a.message-wrapper')).click();
-    browser.sleep(1000);
+    browser.wait(function() {
+      return element.all(by.css('#message-content li')).first().isDisplayed();
+    });
 
     expect(element.all(by.css('#message-content li')).count()).toBe(1);
     expect(element(by.css('#message-content li div.data>p>span')).getText()).toBe(smsMsg('raw'));
@@ -135,28 +147,37 @@ describe('Send message', function() {
     expect(sendMessageModal.isDisplayed()).toBeFalsy();
 
     element(by.css('.general-actions .send-message')).click();
-    browser.sleep(1000);
-    expect(sendMessageModal.isDisplayed()).toBeTruthy();
-
     var sendMessageSelect = element(by.css('#send-message .select2'));
-
+    browser.wait(function() {
+      return sendMessageSelect.isDisplayed();
+    }, 2000);
+    expect(sendMessageModal.isDisplayed()).toBeTruthy();
     sendMessageSelect.click();
 
-    element(by.css('#send-message input.select2-search__field')).sendKeys(ALICE.name);
-    browser.sleep(1000);
+    browser.wait(element(by.css('#send-message input.select2-search__field')).sendKeys(ALICE.name));
+    browser.wait(function() {
+      return element.all(by.css('.select2-results__option')).first().isDisplayed();
+    }, 2000);
+    browser.sleep(1500); // FIXME can't work out exactly what to select above
 
     expect(element.all(by.css('.select2-results__option')).count()).toBe(2); // Raw name; Contact
 
     expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(0);
     element.all(by.css('li.select2-results__option ')).get(1).click();
-    browser.sleep(1000);
+
+    browser.wait(function () {
+      return element(by.css('li.select2-selection__choice')).isDisplayed();
+    }, 2000);
+
     expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
     expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(ALICE.name);
 
-    element(by.css('#send-message textarea')).sendKeys(smsMsg('contact'));
+    browser.wait(element(by.css('#send-message textarea')).sendKeys(smsMsg('contact')));
 
     element(by.css('#send-message a.btn.submit')).click();
-    browser.sleep(1000);
+    browser.wait(function() {
+      return protractor.ExpectedConditions.not(sendMessageSelect.isDisplayed());
+    }, 2000);
     browser.driver.navigate().refresh();
     browser.wait(function() {
       return browser.isElementPresent(by.css('#message-list'));
@@ -184,28 +205,37 @@ describe('Send message', function() {
     expect(sendMessageModal.isDisplayed()).toBeFalsy();
 
     element(by.css('.general-actions .send-message')).click();
-    browser.sleep(1000);
-    expect(sendMessageModal.isDisplayed()).toBeTruthy();
-
     var sendMessageSelect = element(by.css('#send-message .select2'));
-
+    browser.wait(function() {
+      return sendMessageSelect.isDisplayed();
+    }, 2000);
+    expect(sendMessageModal.isDisplayed()).toBeTruthy();
     sendMessageSelect.click();
 
-    element(by.css('#send-message input.select2-search__field')).sendKeys(BOB_PLACE.name);
-    browser.sleep(1000);
+    browser.wait(element(by.css('#send-message input.select2-search__field')).sendKeys(BOB_PLACE.name));
+    browser.wait(function() {
+      return element.all(by.css('.select2-results__option')).first().isDisplayed();
+    }, 2000);
+    browser.sleep(1500); // FIXME can't work out exactly what to select above
 
     expect(element.all(by.css('.select2-results__option')).count()).toBe(3); // Raw name; Contact; Contact under place
 
     expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(0);
     element.all(by.css('li.select2-results__option ')).get(1).click();
-    browser.sleep(1000);
+
+    browser.wait(function () {
+      return element(by.css('li.select2-selection__choice')).isDisplayed();
+    }, 2000);
+
     expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
     expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(BOB_PLACE.name);
 
-    element(by.css('#send-message textarea')).sendKeys(smsMsg('everyoneAt'));
+    browser.wait(element(by.css('#send-message textarea')).sendKeys(smsMsg('everyoneAt')));
 
     element(by.css('#send-message a.btn.submit')).click();
-    browser.sleep(1000);
+    browser.wait(function() {
+      return protractor.ExpectedConditions.not(sendMessageSelect.isDisplayed());
+    }, 2000);
     browser.driver.navigate().refresh();
     browser.wait(function() {
       return browser.isElementPresent(by.css('#message-list'));
