@@ -61,7 +61,7 @@ describe('Send message', function() {
       })
       .then(function(results) {
         var ids = _.uniq(_.pluck(results.rows, 'id'));
-        return protractor.promise.all(ids.map(utils.purgeDoc));
+        return protractor.promise.all(ids.map(utils.deleteDoc));
       })
       .then(done);
   });

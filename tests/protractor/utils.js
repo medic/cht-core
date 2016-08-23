@@ -87,39 +87,6 @@ module.exports = {
       });
   },
 
-  purgeDoc: function(id) {
-    return module.exports.getDoc(id)
-      .then(function(doc) {
-        var b = {};
-        b[doc._id] = [doc._rev];
-
-        var postData = JSON.stringify(b);
-
-        console.log('POST ME A PICTURE TRAVIS');
-        console.log(doc._id);
-        console.log(doc._rev);
-        console.log(postData);
-
-        return module.exports.requestOnTestDb({
-          method: 'POST',
-          path: '/_purge',
-          body: postData,
-          headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': postData.length
-          },
-        }, true);
-      })
-      .then(function(result) {
-        console.log('Attempted to purge ' + id);
-        console.log(JSON.stringify(result));
-      })
-      .catch(function(err) {
-        console.log('[[[[[[[[[[[[[[');
-        console.log(err);
-      });
-  },
-
   updateSettings: function(updates) {
     if (originalSettings) {
       throw new Error('A previous test did not call revertSettings');
