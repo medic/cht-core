@@ -37,17 +37,18 @@ describe('EditUserCtrl controller', function() {
       $provide.factory('processingFunction', function() {
         return null;
       });
-      $provide.factory('model', function() {
-        return model;
-      });
       $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery }));
       $provide.value('UpdateUser', UpdateUser);
       $provide.value('UserSettings', UserSettings);
     });
 
     inject(function($rootScope, $controller) {
-      scope = $rootScope.$new();
       createController = function() {
+        scope = $rootScope.$new();
+        scope.model = model;
+        scope.setProcessing = sinon.stub();
+        scope.setFinished = sinon.stub();
+        scope.setError = sinon.stub();
         return $controller('EditUserCtrl', {
           '$scope': scope,
           '$rootScope': $rootScope,

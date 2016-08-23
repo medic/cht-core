@@ -14,9 +14,9 @@ angular.module('inboxControllers').controller('DeleteDocConfirm',
       var docs = $scope.model.docs;
       DeleteDocs(docs)
         .then(function() {
+          $scope.setFinished();
           var key = docs.length === 1 ? 'document.deleted' : 'document.deleted.plural';
           $translate(key, { number: docs.length }).then(Snackbar);
-          $scope.setFinished();
           $uibModalInstance.close();
         })
         .catch(function(err) {

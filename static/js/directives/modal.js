@@ -10,6 +10,7 @@ angular.module('inboxDirectives').directive('mmModal', function() {
       titleKey: '=',
       submitKey: '=',
       submittingKey: '=',
+      cancelKey: '=',
       onCancel: '&',
       onSubmit: '&'
     }

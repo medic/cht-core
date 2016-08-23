@@ -1,19 +1,15 @@
-var _ = require('underscore'),
-    modal = require('../modules/modal');
+var _ = require('underscore');
 
 (function () {
 
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
-
-  inboxControllers.controller('EditLanguageCtrl',
+  angular.module('inboxControllers').controller('EditLanguageCtrl',
     function (
       $scope,
       $translate,
       $uibModalInstance,
-      DB,
-      model
+      DB
     ) {
 
       'ngInject';
@@ -35,7 +31,7 @@ var _ = require('underscore'),
         return errors;
       };
 
-      $scope.language = _.clone(model) || {
+      $scope.language = _.clone($scope.model) || {
         enabled: true,
         values: {},
         type: 'translations'
@@ -44,25 +40,23 @@ var _ = require('underscore'),
       $scope.submit = function() {
         $scope.errors = validate($scope.language);
         if (!$scope.errors) {
-          var pane = modal.start($('#edit-language'));
+          $scope.setProcessing();
           if (!$scope.language._id) {
             $scope.language._id = 'messages-' + $scope.language.code;
           }
           DB().put($scope.language)
             .then(function() {
-              pane.done();
-              $uibModalInstance.close('ok');
+              $scope.setFinished();
+              $uibModalInstance.close();
             })
             .catch(function(err) {
-              $translate('Error saving settings').then(function(message) {
-                pane.done(message, err);
-              });
+              $scope.setError(err, 'Error saving settings');
             });
         }
       };
 
       $scope.cancel = function() {
-        $uibModalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss();
       };
     }
   );

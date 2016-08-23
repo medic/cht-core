@@ -1,17 +1,10 @@
-<div role="document">
-  <div class="modal-header">
-    <button type="button" class="cancel close" ng-click="cancel()">&times;</button>
-    <h3 translate>Confirm</h3>
-  </div>
-  <div class="modal-body">
-    <p translate>confirm.delete.user</p>
-  </div>
-  <div class="modal-footer">
-    <p class="note" ng-show="error" translate>Error deleting document</p>
-    <a class="btn cancel" ng-click="cancel()" translate>Cancel</a>
-    <a class="btn submit btn-danger" ng-click="ok()">
-      <span ng-show="!processing" translate>Delete</span>
-      <span ng-show="processing" translate>Deleting</span>
-    </a>
-  </div>
-</div>
+<mm-modal
+  danger="true"
+  title-key="'Confirm'"
+  submit-key="'Delete'"
+  submitting-key="'Deleting'"
+  on-cancel="cancel()"
+  on-submit="submit()"
+>
+  <p translate>confirm.delete.user</p>
+</mm-modal>

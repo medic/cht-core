@@ -11,7 +11,7 @@ module.exports = function(config) {
     colors: true,
     browserNoActivityTimeout: 60000,
     preprocessors: {
-      'templates/partials/*.html': ['ng-html2js']
+      'templates/**/*.html': ['ng-html2js']
     },
     ngHtml2JsPreprocessor: {
       moduleName: 'templates'
@@ -26,7 +26,7 @@ module.exports = function(config) {
       // application code
       'static/dist/inbox.js',
       'static/dist/templates.js',
-      'templates/partials/sender.html',
+      'templates/directives/sender.html',
 
       // test-specific code
       'node_modules/chai/chai.js',

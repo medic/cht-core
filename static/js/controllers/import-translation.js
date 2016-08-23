@@ -1,54 +1,48 @@
-var modal = require('../modules/modal');
-
 (function () {
 
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
-
-  inboxControllers.controller('ImportTranslationCtrl',
+  angular.module('inboxControllers').controller('ImportTranslationCtrl',
     function (
       $scope,
       $translate,
       $uibModalInstance,
       FileReader,
-      ImportProperties,
-      model
+      ImportProperties
     ) {
 
       'ngInject';
       
-      $scope.locale = model;
+      $scope.locale = $scope.model;
 
-      $scope.import = function() {
-        var pane = modal.start($('#import-translation'));
+      $scope.submit = function() {
+        $scope.validationError = null;
         var file = $('#import-translation [name="translations"]').prop('files')[0];
         if (!file) {
           $translate('Translation file').then(function(fieldName) {
             $translate('field is required', { field: fieldName })
               .then(function(message) {
-                pane.done(message, true);
+                $scope.validationError = message;
               });
           });
           return;
         }
+        $scope.setProcessing();
         FileReader(file)
           .then(function(result) {
             return ImportProperties(result, $scope.locale);
           })
           .then(function() {
-            pane.done();
-            $uibModalInstance.close('ok');
+            $scope.setFinished();
+            $uibModalInstance.close();
           })
           .catch(function(err) {
-            $translate('Error parsing file').then(function(message) {
-              pane.done(message, err);
-            });
+            $scope.setError(err, 'Error parsing file');
           });
       };
 
       $scope.cancel = function() {
-        $uibModalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss();
       };
 
     }

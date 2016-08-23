@@ -1,19 +1,15 @@
-<div id="edit-translation-messages" role="document">
-  <div class="modal-header">
-    <button type="button" class="cancel close" ng-click="cancel()">&times;</button>
-    <h3 translate>Edit translation</h3>
-  </div>
-  <div class="modal-body">
-    <form action="" method="POST">
-      <div class="form-group" ng-repeat="translation in configuration.translations | orderBy:'locale' track by translation.locale">
-        <label>{{localeNames[translation.locale]}}</label>
-        <textarea class="form-control" ng-model="translation.content"></textarea>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-    <p class="note"></p>
-    <a class="btn cancel" ng-click="cancel()" translate>Cancel</a>
-    <a class="btn submit btn-primary" ng-click="submit()" translate-attr-data-working-label="Submitting" translate>Submit</a>
-  </div>
-</div>
+<mm-modal
+  id="'edit-translation-messages'"
+  title-key="'Edit translation'"
+  submit-key="'Submit'"
+  submitting-key="'Submitting'"
+  on-cancel="cancel()"
+  on-submit="submit()"
+>
+  <form action="" method="POST">
+    <div class="form-group" ng-repeat="translation in configuration.translations | orderBy:'locale' track by translation.locale">
+      <label>{{localeNames[translation.locale]}}</label>
+      <textarea class="form-control" ng-model="translation.content"></textarea>
+    </div>
+  </form>
+</mm-modal>

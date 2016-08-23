@@ -24,11 +24,14 @@ describe('EditTranslationCtrl controller', function() {
     bulkDocs = sinon.stub();
     model = {};
     createController = function() {
+      scope.model = model;
+      scope.setProcessing = sinon.stub();
+      scope.setFinished = sinon.stub();
+      scope.setError = sinon.stub();
       return $controller('EditTranslationCtrl', {
         '$scope': scope,
         '$uibModalInstance': uibModalInstance,
-        'DB': function() { return { bulkDocs: bulkDocs }; },
-        'model': model
+        'DB': function() { return { bulkDocs: bulkDocs }; }
       });
     };
   }));

@@ -13,6 +13,9 @@ describe('UserLanguageModalCtrl controller', function() {
 
   beforeEach(inject(function(_$rootScope_, $controller) {
     scope = _$rootScope_.$new();
+    scope.setProcessing = sinon.stub();
+    scope.setFinished = sinon.stub();
+    scope.setError = sinon.stub();
     dbQuery = sinon.stub();
     dbQuery.returns(KarmaUtils.mockPromise(
       { rows: [
@@ -71,22 +74,21 @@ describe('UserLanguageModalCtrl controller', function() {
     createController();
     var selectedLang = 'klingon';
     scope.changeLanguage(selectedLang);
-    scope.ok();
+    scope.submit();
     chai.assert(stubUpdateUser.called, 'Should call the processing function on user action');
     chai.expect(stubUpdateUser.getCall(0).args[1].language).to.equal(selectedLang);
   });
 
   it('displays the processing mode modal while saving', function(done) {
     createController();
-    chai.assert(!scope.processing, 'Should not be processing before user action');
-    chai.assert(!scope.error, 'Should not be displaying error before user action');
 
-    scope.ok();
-    chai.assert(scope.processing, 'Should be displaying processing after user action');
-    chai.assert(!scope.error, 'Should not be displaying error before processing');
+    scope.submit();
+    chai.assert(scope.setProcessing.called);
 
     setTimeout(function() {
       scope.$apply(); // needed to resolve the promises
+      chai.assert(scope.setFinished.called);
+      chai.assert(!scope.setError.called);
       chai.assert(spyUibModalInstance.close.called, 'Should close modal when processing is done');
       // No testing of display : the modal is closed anyway.
       done();
@@ -97,17 +99,15 @@ describe('UserLanguageModalCtrl controller', function() {
     createController();
     stubUpdateUser.reset();
     stubUpdateUser.returns(KarmaUtils.mockPromise({err: 'oh noes language is all wrong'}));
-    chai.assert(!scope.error, 'Should not be displaying error before user action');
 
-    scope.ok();
-    chai.assert(!scope.error, 'Should not be displaying error before processing');
+    scope.submit();
 
     setTimeout(function() {
       scope.$apply(); // needed to resolve the promises
       chai.assert(!spyUibModalInstance.close.called, 'Should not close modal when processing error');
       chai.assert(!spyUibModalInstance.dismiss.called, 'Should not dismiss modal when processing error');
-      chai.assert(scope.error, 'Should be displaying error when processing error');
-      chai.assert(!scope.processing, 'Should not be processing when processing is done');
+      chai.assert(!scope.setFinished.called);
+      chai.assert(scope.setError.called);
       done();
     });
   });
@@ -117,7 +117,7 @@ describe('UserLanguageModalCtrl controller', function() {
     stubUpdateUser.reset();
     stubUpdateUser.returns(KarmaUtils.mockPromise({err: 'oh noes language is all wrong'}));
     var initialLang = scope.selectedLanguage;
-    scope.ok();
+    scope.submit();
     setTimeout(function() {
       scope.$apply(); // needed to resolve the promises
       chai.assert(stubSetLanguage.called, 'Should reset saved language');

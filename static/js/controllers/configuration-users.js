@@ -36,13 +36,7 @@ var _ = require('underscore');
         Modal({
           templateUrl: 'templates/modals/delete_user_confirm.html',
           controller: 'DeleteUserCtrl',
-          args: {
-            processingFunction: null,
-            model: user
-          }
-        })
-        .catch(function(err) {
-          $log.debug('User cancelled delete user.', err);
+          model: user
         });
       };
 
@@ -50,13 +44,7 @@ var _ = require('underscore');
         Modal({
           templateUrl: 'templates/modals/edit_user.html',
           controller: 'EditUserCtrl',
-          args: {
-            processingFunction: null,
-            model: user
-          }
-        })
-        .catch(function(err) {
-          $log.debug('User cancelled edit user.', err);
+          model: user
         });
       };
 

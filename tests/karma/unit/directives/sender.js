@@ -5,9 +5,9 @@ describe('sender directive', function() {
   var compile,
       scope;
 
-  beforeEach(function (){
+  beforeEach(function() {
     module('inboxApp');
-    module('inboxDirectives');
+    module('templates');
     inject(function(_$compile_, _$rootScope_) {
       compile = _$compile_;
       scope = _$rootScope_;

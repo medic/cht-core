@@ -1,26 +1,21 @@
-var _ = require('underscore'),
-    modal = require('../modules/modal');
+var _ = require('underscore');
 
 (function () {
 
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
-
-  inboxControllers.controller('EditTranslationCtrl',
+  angular.module('inboxControllers').controller('EditTranslationCtrl',
     function (
       $scope,
-      $translate,
       $uibModalInstance,
-      DB,
-      model
+      DB
     ) {
 
       'ngInject';
 
-      $scope.key = model.key;
-      $scope.editing = !!model.key;
-      $scope.locales = _.pluck(model.locales, 'doc');
+      $scope.key = $scope.model.key;
+      $scope.editing = !!$scope.model.key;
+      $scope.locales = _.pluck($scope.model.locales, 'doc');
       $scope.values = {};
 
       $scope.locales.forEach(function(locale) {
@@ -43,27 +38,25 @@ var _ = require('underscore'),
       };
 
       $scope.submit = function() {
-        var pane = modal.start($('#edit-translation'));
+        $scope.setProcessing();
         var updated = getUpdatedLocales();
         if (!updated.length) {
-          pane.done();
-          $uibModalInstance.close('ok');
+          $scope.setFinished();
+          $uibModalInstance.close();
         } else {
           DB().bulkDocs(updated)
             .then(function() {
-              pane.done();
-              $uibModalInstance.close('ok');
+              $scope.setFinished();
+              $uibModalInstance.close();
             })
             .catch(function(err) {
-              $translate('Error updating settings').then(function(message) {
-                pane.done(message, err);
-              });
+              $scope.setError(err, 'Error updating settings');
             });
         }
       };
 
       $scope.cancel = function() {
-        $uibModalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss();
       };
 
     }

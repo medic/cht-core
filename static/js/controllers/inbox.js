@@ -31,7 +31,6 @@ var feedback = require('../modules/feedback'),
       CountMessages,
       DB,
       DBSync,
-      DeleteDocs,
       Enketo,
       FacilityHierarchy,
       JsonForms,
@@ -147,16 +146,12 @@ var feedback = require('../modules/feedback'),
       $scope.navigationCancel = function() {
         Modal({
           templateUrl: 'templates/modals/navigation_confirm.html',
-          controller: 'ConfirmModalCtrl',
-          args: { processingFunction: null, model: null }
+          controller: 'NavigationConfirmCtrl'
         })
-        .then(function () {
+        .then(function() {
           if ($scope.cancelCallback) {
             $scope.cancelCallback();
           }
-        })
-        .catch(function() {
-          $log.debug('User cancelled navigationCancel.');
         });
       };
 
@@ -353,8 +348,8 @@ var feedback = require('../modules/feedback'),
           render: function(callback) {
             Modal({
               templateUrl: 'templates/modals/user_language.html',
-              controller: 'UserLanguageModalCtrl',
-              })
+              controller: 'UserLanguageModalCtrl'
+            })
               .then(function() {
                 callback();
               })
@@ -650,11 +645,7 @@ var feedback = require('../modules/feedback'),
       var showUpdateReady = function() {
         Modal({
           templateUrl: 'templates/modals/version_update.html',
-          controller: 'VersionUpdateCtrl',
-          args: { processingFunction: null, model: null }
-        })
-        .then(function () {
-          $window.location.reload();
+          controller: 'VersionUpdateCtrl'
         })
         .catch(function() {
           $log.debug('Delaying update');
