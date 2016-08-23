@@ -168,7 +168,13 @@ var extractKeysFromDoc = function(doc) {
         // incoming message
         place = doc.contact;
       }
-      emitPlace(place);
+      if (place) {
+        if (place._id) {
+          keys.push([ place._id ]);
+        }
+      } else {
+        keys.push([ UNASSIGNED_KEY ]);
+      }
       break;
     case 'form':
     case 'translations':

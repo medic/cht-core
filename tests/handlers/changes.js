@@ -494,9 +494,9 @@ exports['replicates new docs to relevant feeds'] = function(test) {
           _id: newId,
           type: 'data_record',
           contact: {
-            _id: 'zzz',
+            _id: 'b',
             parent: {
-              _id: 'b'
+              _id: 'zzz'
             }
           }
         }
