@@ -23,9 +23,9 @@ angular.module('inboxServices').factory('Modal',
     'use strict';
     'ngInject';
 
-    var getScope = function(options) {
+    var getScope = function(model) {
       var scope = $rootScope.$new();
-      scope.model = options.model;
+      scope.model = model;
       scope.processing = false;
       scope.error = false;
       scope.setProcessing = function() {
@@ -52,7 +52,7 @@ angular.module('inboxServices').factory('Modal',
         return $q.reject('No controller speficied.');
       }
       return $uibModal.open({
-        scope: getScope(options),
+        scope: getScope(options.model),
         templateUrl: options.templateUrl,
         controller: options.controller
       }).result;

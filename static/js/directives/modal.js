@@ -3,7 +3,7 @@ angular.module('inboxDirectives').directive('mmModal', function() {
   return {
     restrict: 'E',
     transclude: true,
-    templateUrl: 'templates/partials/modal.html',
+    templateUrl: 'templates/directives/modal.html',
     scope: {
       id: '=',
       danger: '=',
