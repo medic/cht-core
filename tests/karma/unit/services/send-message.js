@@ -99,38 +99,6 @@ describe('SendMessage service', function() {
       .catch(done);
   });
 
-  // TODO: when would we have a `doc` that wasn't an actual contact?
-  //       I don't understand this use case, and I don't think it
-  //       exists anymore. Propose that I delete it.
-  it.skip('create doc for non-contact recipient', function(done) {
-
-    id.returns(KarmaUtils.mockPromise(null, 53));
-    post.returns(KarmaUtils.mockPromise());
-    Settings.returns(KarmaUtils.mockPromise(null, {}));
-
-    var recipient = {
-      doc: {
-        contact: {
-          phone: '+5552'
-        }
-      }
-    };
-
-    service(recipient, 'hello')
-      .then(function() {
-        chai.expect(id.callCount).to.equal(1);
-        chai.expect(post.callCount).to.equal(1);
-        assertMessage(post.args[0][0].tasks[0], {
-          from: '+5551',
-          sent_by: 'jack',
-          to: '+5552',
-          uuid: 53,
-        });
-        done();
-      })
-      .catch(done);
-  });
-
   it('create doc for non-contact recipient from select2', function(done) {
 
     id.returns(KarmaUtils.mockPromise(null, 53));

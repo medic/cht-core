@@ -104,7 +104,6 @@ var _ = require('underscore'),
           }
         });
 
-        // TODO: do this better
         splitRecipients.explode = splitRecipients.explode || [];
         splitRecipients.hydrate = splitRecipients.hydrate || [];
         splitRecipients.resolve = splitRecipients.resolve || [];
@@ -157,8 +156,6 @@ var _ = require('underscore'),
             var user = results[0];
             var settings = results[1];
             var explodedRecipients = results[2];
-
-            // TODO: clean out parents' contacts etc, how does that go?
 
             var doc = createMessageDoc(user);
             return $q.all(explodedRecipients.map(function(recipient) {
