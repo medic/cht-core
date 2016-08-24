@@ -2,7 +2,7 @@
 
 ## 2.8.0
 
-### August 10, 2016
+### August 24, 2016
 
 #### Features
 
@@ -10,6 +10,7 @@
 - Add context to target types and goals. Issue: #2409
 - Update default translations
 - Add ageInDays and ageInMonths functions to the XML forms context utilities. Issue: #2650
+- Users can now only access an optionally configured number of hierarchy levels below their facility. Issue: #2648
 
 #### Bug fixes
 
