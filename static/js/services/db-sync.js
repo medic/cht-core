@@ -167,7 +167,7 @@ var _ = require('underscore'),
             return replicate('to', successCallback, {
               filter: function(doc) {
                 // don't try to replicate ddoc back to the server
-                return doc._id !== '_design/medic-client';
+                return doc._id !== '_design/medic';
               }
             });
           })
