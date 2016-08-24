@@ -19,7 +19,27 @@ var bindViewKeys = function(feed, callback) {
     }
     var keys = [ ALL_KEY ];
     if (facilityId) {
-      keys.push([ facilityId ]);
+      if (feed.userCtx.roles && feed.userCtx.roles.length) {
+        var depth = -1;
+        var settings = config.get('replication_depth');
+        if (settings) {
+          feed.userCtx.roles.forEach(function(role) {
+            // find the role with the deepest depth
+            var setting = _.findWhere(settings, { role: role });
+            if (setting && setting.depth > depth) {
+              depth = setting.depth;
+            }
+          });
+        }
+        if (depth === -1) {
+          // no configured depth limit
+          keys.push([ facilityId ]);
+        } else {
+          for (var i = 0; i <= depth; i++) {
+            keys.push([ facilityId, i ]);
+          }
+        }
+      }
     }
     if (config.get('district_admins_access_unallocated_messages') &&
         auth.hasAllPermissions(feed.userCtx, 'can_view_unallocated_data_records')) {
@@ -139,18 +159,15 @@ var hasNewApplicableDoc = function(feed, docs) {
 // WARNING: If updating this function also update the doc_by_place view in lib/views.js
 var extractKeysFromDoc = function(doc, emit) {
 
-  var emitPlace = function(place) {
-    if (!place) {
-      emit([ '_unassigned' ]);
-      return;
-    }
+  var emitPlace = function(place, depth) {
     while (place) {
       if (place._id) {
         emit([ place._id ]);
+        emit([ place._id, depth ]);
       }
+      depth++;
       place = place.parent;
     }
-    return;
   };
 
   if (doc._id === 'resources' || doc._id === 'appcache') {
@@ -172,12 +189,11 @@ var extractKeysFromDoc = function(doc, emit) {
         // incoming message
         place = doc.contact;
       }
-      if (place) {
-        if (place._id) {
-          emit([ place._id ]);
-        }
-      } else {
+
+      if (!place) {
         emit([ '_unassigned' ]);
+      } else {
+        emitPlace(place, 1); // 1 because we treat your reports as your children
       }
       return;
     case 'form':
@@ -188,7 +204,7 @@ var extractKeysFromDoc = function(doc, emit) {
     case 'district_hospital':
     case 'health_center':
     case 'person':
-      emitPlace(doc);
+      emitPlace(doc, 0);
       return;
   }
 };

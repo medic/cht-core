@@ -79,7 +79,7 @@ exports['allows access to replicate medic settings'] = function(test) {
 exports['filters the changes to relevant ones'] = function(test) {
   test.expect(22);
 
-  var userCtx = { name: 'mobile' };
+  var userCtx = { name: 'mobile', roles: [ 'district_admin' ] };
   var deletedId = 'abc';
   var allowedId = 'def';
   var unchangedId = 'klm';
@@ -134,6 +134,8 @@ exports['filters the changes to relevant ones'] = function(test) {
     end: function() {
       setTimeout(function() { // timeout to make sure nothing else tries to respond
         result = JSON.parse(result);
+        console.log(JSON.stringify(result));
+        console.log(db.medic.view.args[0][2].keys);
         test.equals(result.results.length, 2);
         test.equals(result.results[0].seq, 2);
         test.equals(result.results[0].id, deletedId);
@@ -167,7 +169,7 @@ exports['allows unallocated access when it is configured and the user has permis
   test.expect(10);
 
   var testReq = { query: {}, on: function() {} };
-  var userCtx = { name: 'mobile' };
+  var userCtx = { name: 'mobile', roles: [ 'district_admin' ] };
   var deletedId = 'abc';
   var allowedId = 'def';
   var unchangedId = 'klm';
@@ -228,10 +230,72 @@ exports['allows unallocated access when it is configured and the user has permis
   handler.request({}, testReq, testRes);
 };
 
+exports['respects replication depth when it is configured and the user has permission'] = function(test) {
+  test.expect(7);
+
+  var testReq = { query: {}, on: function() {} };
+  var userCtx = { name: 'mobile', roles: [ 'district_admin' ] };
+  var deletedId = 'abc';
+  var allowedId = 'def';
+  var unchangedId = 'klm';
+
+  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
+  var hasAllPermissions = sinon.stub(auth, 'hasAllPermissions');
+  hasAllPermissions.withArgs(userCtx, 'can_access_directly').returns(false);
+  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
+  var get = sinon.stub(config, 'get');
+  get.onCall(0).returns([ { role: 'district_admin', depth: 1 } ]);
+  get.onCall(1).returns(false);
+
+  // change log
+  sinon.stub(db, 'request').callsArgWith(1, null, {
+    results: [
+      {
+        seq: 2,
+        id: deletedId,
+        deleted: true
+      },
+      {
+        seq: 4,
+        id: allowedId
+      }
+    ]
+  });
+
+  // the view returns the list of ids the user is allowed to see
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId },
+      { id: allowedId }
+    ]
+  });
+
+  var result = '';
+
+  var testRes = {
+    type: function() {},
+    writeHead: function() {},
+    write: function(slice) {
+      result += slice;
+    },
+    end: function() {
+      test.equals(get.callCount, 2);
+      test.equals(get.args[0][0], 'replication_depth');
+      test.equals(get.args[1][0], 'district_admins_access_unallocated_messages');
+      test.equals(db.medic.view.args[0][2].keys.length, 3);
+      test.deepEqual(db.medic.view.args[0][2].keys[0], [ '_all' ]);
+      test.deepEqual(db.medic.view.args[0][2].keys[1], [ 'facilityId', 0 ]);
+      test.deepEqual(db.medic.view.args[0][2].keys[2], [ 'facilityId', 1 ]);
+      test.done();
+    }
+  };
+  handler.request({}, testReq, testRes);
+};
+
 exports['filters out undeleted docs they are not allowed to see'] = function(test) {
   test.expect(2);
 
-  var userCtx = { name: 'mobile' };
+  var userCtx = { name: 'mobile', roles: [ 'district_admin' ] };
   var blockedId = 'abc';
   var allowedId = 'xyz';
 
@@ -289,11 +353,10 @@ exports['filters out undeleted docs they are not allowed to see'] = function(tes
   handler.request({}, testReq, testRes);
 };
 
-
 exports['updates the feed when the doc is updated'] = function(test) {
   test.expect(22);
 
-  var userCtx = { name: 'mobile' };
+  var userCtx = { name: 'mobile', roles: [ 'district_admin' ] };
   var deletedId = 'abc';
   var allowedId = 'def';
   var unchangedId = 'klm';
@@ -383,8 +446,8 @@ exports['updates the feed when the doc is updated'] = function(test) {
 exports['replicates new docs to relevant feeds'] = function(test) {
   test.expect(17);
 
-  var userCtx1 = { name: 'jim' };
-  var userCtx2 = { name: 'bob' };
+  var userCtx1 = { name: 'jim', roles: [ 'district_admin' ] };
+  var userCtx2 = { name: 'bob', roles: [ 'district_admin' ] };
   var newId = 'abc';
   var unchangedId = 'klm';
   var userId1 = 'org.couchdb.user:jim';
@@ -512,7 +575,7 @@ exports['cleans up when the client connection is closed - #2476'] = function(tes
 
   test.expect(2);
 
-  var userCtx = { name: 'mobile' };
+  var userCtx = { name: 'mobile', roles: [ 'district_admin' ] };
   var deletedId = 'abc';
   var allowedId = 'def';
   var unchangedId = 'klm';
