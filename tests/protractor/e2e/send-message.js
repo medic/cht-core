@@ -120,47 +120,83 @@ describe('Send message', function() {
     browser.sleep(1000);
   };
 
-  it('can send messages to raw phone numbers', function() {
-    element(by.id('messages-tab')).click();
-    expect(element(by.css(messageInList(RAW_PH))).isPresent()).toBeFalsy();
+  describe('Send message modal', function() {
+    it('can send messages to raw phone numbers', function() {
+      element(by.id('messages-tab')).click();
+      expect(element(by.css(messageInList(RAW_PH))).isPresent()).toBeFalsy();
 
-    openSendMessageModal();
-    enterCheckAndSelect(RAW_PH, 1, 0);
-    sendMessage(smsMsg('raw'));
-    clickLhsEntry(messageInList(RAW_PH));
+      openSendMessageModal();
+      enterCheckAndSelect(RAW_PH, 1, 0);
+      sendMessage(smsMsg('raw'));
+      clickLhsEntry(messageInList(RAW_PH));
 
-    expect(element.all(by.css('#message-content li')).count()).toBe(1);
-    expect(element(by.css('#message-content li div.data>p>span')).getText()).toBe(smsMsg('raw'));
+      expect(element.all(by.css('#message-content li')).count()).toBe(1);
+      expect(element(by.css('#message-content li div.data>p>span')).getText()).toBe(smsMsg('raw'));
+    });
+
+    it('can send messages to contacts with phone numbers', function() {
+      element(by.id('messages-tab')).click();
+
+      expect(element(by.css(messageInList(ALICE._id))).isPresent()).toBeFalsy();
+
+      openSendMessageModal();
+      enterCheckAndSelect(ALICE.name, 2, 1);
+      sendMessage(smsMsg('contact'));
+      clickLhsEntry(messageInList(ALICE._id));
+
+      expect(element.all(by.css('#message-content li')).count()).toBe(1);
+      expect(element(by.css('#message-content li div.data>p>span')).getText()).toBe(smsMsg('contact'));
+    });
+
+    it('can send messages to contacts under everyone at with phone numbers', function() {
+      element(by.id('messages-tab')).click();
+
+      expect(element(by.css(messageInList(CAROL.phone))).isPresent()).toBeFalsy();
+      expect(element(by.css(messageInList(DAVID.phone))).isPresent()).toBeFalsy();
+
+      openSendMessageModal();
+      enterCheckAndSelect(BOB_PLACE.name, 3, 1);
+      sendMessage(smsMsg('everyoneAt'));
+
+      expect(element.all(by.css(messageInList(CAROL._id))).count()).toBe(0);
+      clickLhsEntry(messageInList(DAVID._id));
+
+      expect(element.all(by.css('#message-content li')).count()).toBe(1);
+      expect(element(by.css('#message-content li div.data>p>span')).getText()).toBe(smsMsg('everyoneAt'));
+    });
   });
 
-  it('can send messages to contacts with phone numbers', function() {
-    element(by.id('messages-tab')).click();
+  describe('Sending from message pane', function() {
+    describe('Can send additional messages from message pane', function() {
+      var addAnAdditionalMessage = function(liIdentifier) {
+        element(by.id('messages-tab')).click();
+        // Currently this describe->it relies on the top one
+        expect(element(by.css(liIdentifier)).isPresent()).toBeTruthy();
 
-    expect(element(by.css(messageInList(ALICE._id))).isPresent()).toBeFalsy();
+        clickLhsEntry(liIdentifier);
 
-    openSendMessageModal();
-    enterCheckAndSelect(ALICE.name, 2, 1);
-    sendMessage(smsMsg('contact'));
-    clickLhsEntry(messageInList(ALICE._id));
+        element(by.css('#message-footer textarea')).click();
+        browser.wait(function() {
+          return element(by.css('#message-footer .message-actions .btn-primary')).isDisplayed();
+        });
+        browser.wait(element(by.css('#message-footer textarea')).sendKeys('Additional Message'));
+        element(by.css('#message-footer .message-actions .btn-primary')).click();
+        browser.wait(function() {
+          return element.all(by.css('#message-content li')).count().then(function(c) {
+            return c === 2;
+          });
+        }, 2000);
 
-    expect(element.all(by.css('#message-content li')).count()).toBe(1);
-    expect(element(by.css('#message-content li div.data>p>span')).getText()).toBe(smsMsg('contact'));
-  });
+        expect(element.all(by.css('#message-content li')).count()).toBe(2);
+        expect(element.all(by.css('#message-content li div.data>p>span')).get(1).getText()).toBe('Additional Message');
+      };
 
-  it('can send messages to contacts under everyone at with phone numbers', function() {
-    element(by.id('messages-tab')).click();
-
-    expect(element(by.css(messageInList(CAROL.phone))).isPresent()).toBeFalsy();
-    expect(element(by.css(messageInList(DAVID.phone))).isPresent()).toBeFalsy();
-
-    openSendMessageModal();
-    enterCheckAndSelect(BOB_PLACE.name, 3, 1);
-    sendMessage(smsMsg('everyoneAt'));
-
-    expect(element.all(by.css(messageInList(CAROL._id))).count()).toBe(0);
-    clickLhsEntry(messageInList(DAVID._id));
-
-    expect(element.all(by.css('#message-content li')).count()).toBe(1);
-    expect(element(by.css('#message-content li div.data>p>span')).getText()).toBe(smsMsg('everyoneAt'));
+      it('For raw contacts', function() {
+        addAnAdditionalMessage(messageInList(RAW_PH));
+      });
+      it('For real contacts', function() {
+        addAnAdditionalMessage(messageInList(ALICE._id));
+      });
+    });
   });
 });

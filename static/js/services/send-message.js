@@ -80,7 +80,7 @@ var _ = require('underscore'),
       var hydrate = function(recipients) {
        return DB().allDocs({
         include_docs: true,
-        keys: _.pluck(recipients, 'id')
+        keys: _.pluck(_.pluck(recipients, 'doc'), '_id')
        }).then(function(results) {
         return results.rows;
        });
@@ -90,14 +90,17 @@ var _ = require('underscore'),
         //TODO: do we want to attempt to resolve phone numbers into existing contacts?
         // users will have already got that suggestion in the send-message UI if
         // it exists in the DB
-        return _.pluck(recipients, 'text');
+        return recipients.map(function(recipient) {
+          return recipient.text || // from select2
+                 recipient.doc.contact.phone; // from LHS message bar
+        });
       };
 
       var formatRecipients = function(recipients) {
         var splitRecipients = _.groupBy(recipients, function(recipient) {
           if (recipient.everyoneAt) {
             return 'explode';
-          } else if (recipient.doc){
+          } else if (recipient.doc && recipient.doc._id){
             return 'hydrate';
           } else {
             return 'resolve';
