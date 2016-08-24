@@ -42,9 +42,9 @@ exports['should emit the report and parents with depth'] = function(test) {
 
   test.deepEqual(emitted, [
     ['b'],    // access allowed to users with facility_id=b and aren't depth restricted
-    ['b', 1], // access allowed to users with facility_id=b and have depth <= 1
+    ['b', 0], // access allowed to users with facility_id=b and have depth=0
     ['c'],    // access allowed to users with facility_id=c and aren't depth restricted
-    ['c', 2]  // access allowed to users with facility_id=c and have depth <= 2
+    ['c', 1]  // access allowed to users with facility_id=c and have depth<=1
   ]);
 
   test.done();

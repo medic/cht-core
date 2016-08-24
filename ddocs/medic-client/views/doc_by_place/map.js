@@ -1,7 +1,8 @@
 // WARNING: If updating this view also update the extractKeysFromDoc function in api/handlers/changes.js
 function(doc) {
 
-  var emitPlace = function(place, depth) {
+  var emitPlace = function(place) {
+    var depth = 0;
     while (place) {
       if (place._id) {
         emit([ place._id ]);
@@ -35,7 +36,7 @@ function(doc) {
       if (!place) {
         emit([ '_unassigned' ]);
       } else {
-        emitPlace(place, 1); // 1 because we treat your reports as your children
+        emitPlace(place);
       }
       return;
     case 'form':
@@ -46,7 +47,7 @@ function(doc) {
     case 'district_hospital':
     case 'health_center':
     case 'person':
-      emitPlace(doc, 0);
+      emitPlace(doc);
       return;
   }
 }
