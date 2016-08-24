@@ -167,7 +167,8 @@ describe('sms-gateway api', function() {
       browser.wait(function() {
         return browser.isElementPresent(by.css('#message-content .body li.incoming:first-child .data p:first-child'));
       }, 10000);
-      browser.sleep(100); // without this the elements are found to be detached...
+      browser.sleep(250); // without this the elements are found to be detached...
+
       expect(element(by.css('#message-header .name')).getText()).toBe('+64271234567');
       expect(element(by.css('#message-content .body li.incoming:first-child .data p:first-child')).getText()).toBe('hello');
       expect(element(by.css('#message-content .body li.incoming:first-child .data .state.received')).getText()).toBe('received');

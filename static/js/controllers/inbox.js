@@ -27,7 +27,8 @@ var feedback = require('../modules/feedback'),
       Auth,
       Changes,
       CheckDate,
-      Contact,
+      CONTACT_TYPES,
+      ContactSchema,
       CountMessages,
       DB,
       DBSync,
@@ -45,8 +46,8 @@ var feedback = require('../modules/feedback'),
       Search,
       Select2Search,
       SendMessage,
-      SetLanguageCookie,
       Session,
+      SetLanguageCookie,
       Settings,
       Snackbar,
       TrafficStats,
@@ -293,7 +294,7 @@ var feedback = require('../modules/feedback'),
       });
 
       $scope.setupSendMessage = function() {
-        sendMessage.init($q, Settings, Contact, $translate.instant);
+        sendMessage.init($q, Settings, Select2Search, $translate.instant, CONTACT_TYPES, ContactSchema);
       };
 
       // get the forms for the forms filter

@@ -1,7 +1,6 @@
 var _ = require('underscore');
 
 var CLINIC = {
-  badge: 'fa-group',
   icon: 'fa-group',
   fields: {
     name: {
@@ -25,7 +24,6 @@ var CLINIC = {
 };
 
 var DISTRICT_HOSPITAL = {
-  badge: 'fa-building',
   icon: 'fa-building',
   fields: {
     name: {
@@ -43,7 +41,6 @@ var DISTRICT_HOSPITAL = {
 };
 
 var HEALTH_CENTER = {
-  badge: 'fa-hospital-a',
   icon: 'fa-hospital-o',
   fields: {
     name: {
@@ -65,7 +62,7 @@ var HEALTH_CENTER = {
 };
 
 var PERSON = {
-  badge: 'fa-user',
+  icon: 'fa-user',
   fields: {
     name: {
       type: 'string',
