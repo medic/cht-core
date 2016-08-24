@@ -34,34 +34,73 @@ var _ = require('underscore'),
 
       'ngInject';
 
-      var getViewKeys = function() {
-        var keys = [ ALL_KEY ];
-        return UserDistrict()
-          .then(function(facilityId) {
-            if (facilityId) {
-              keys.push([ facilityId ]);
+      var getUnassignedKeys = function(settings) {
+        if (settings.district_admins_access_unallocated_messages) {
+          return Auth('can_view_unallocated_data_records')
+            .then(function() {
+              return [ UNASSIGNED_KEY ];
+            })
+            .catch(function() {
+              // can't view unallocated - swallow and continue
+              return [];
+            });
+        }
+        return [];
+      };
+
+      var getFacilityKeys = function(settings, userCtx, facilityId) {
+        if (!facilityId) {
+          // no confugured facility
+          return [];
+        }
+        if (!userCtx.roles || !userCtx.roles.length) {
+          // not logged in or no configured role
+          return [];
+        }
+        var depth = -1;
+        if (settings.replication_depth) {
+          userCtx.roles.forEach(function(role) {
+            // find the role with the deepest depth
+            var setting = _.findWhere(settings.replication_depth, { role: role });
+            if (setting && setting.depth > depth) {
+              depth = setting.depth;
             }
-          })
-          .then(Settings)
-          .then(function(settings) {
-            if (settings.district_admins_access_unallocated_messages) {
-              return Auth('can_view_unallocated_data_records')
-                .then(function() {
-                  keys.push(UNASSIGNED_KEY);
-                })
-                .catch(function() {
-                  // can't view unallocated - swallow and continue
-                });
-            }
-          })
-          .then(function() {
-            return keys;
+          });
+        }
+        if (depth === -1) {
+          // no configured depth limit
+          return [[ facilityId ]];
+        }
+        var keys = [];
+        for (var i = 0; i <= depth; i++) {
+          keys.push([ facilityId, i ]);
+        }
+        return keys;
+      };
+
+      var getBaseKeys = function() {
+        return [ ALL_KEY ];
+      };
+
+      var getViewKeys = function(userCtx) {
+        return $q.all([ Settings(), UserDistrict() ])
+          .then(function(results) {
+            var settings = results[0];
+            var facilityId = results[1];
+            return $q.all([
+              getBaseKeys(),
+              getUnassignedKeys(settings),
+              getFacilityKeys(settings, userCtx, facilityId)
+            ])
+              .then(function(keys) {
+                return keys[0].concat(keys[1], keys[2]);
+              });
           })
           .catch(function(err) {
             // allow some replication otherwise the user can get stuck
             // unable to fix their own configuration
             $log.error('Error fetching sync options - using with minimum options', err);
-            return [ ALL_KEY ];
+            return getBaseKeys();
           });
       };
 
@@ -77,12 +116,12 @@ var _ = require('underscore'),
         if (direction === 'to') {
           return $q.resolve(options);
         }
-        return getViewKeys()
+        var userCtx = Session.userCtx();
+        return getViewKeys(userCtx)
           .then(function(keys) {
             return DB().query('medic-client/doc_by_place', { keys: keys });
           })
           .then(function(viewResult) {
-            var userCtx = Session.userCtx();
             options.doc_ids = _.pluck(viewResult.rows, 'id');
             if (userCtx && userCtx.name) {
               options.doc_ids.push('org.couchdb.user:' + userCtx.name);
@@ -122,22 +161,37 @@ var _ = require('underscore'),
 
       };
 
+      var replicateTo = function(successCallback) {
+        return Auth('can_edit')
+          .then(function() {
+            return replicate('to', successCallback, {
+              filter: function(doc) {
+                // don't try to replicate ddoc back to the server
+                return doc._id !== '_design/medic-client';
+              }
+            });
+          })
+          .catch(function() {
+            // not authorized to replicate to server - that's ok
+            return;
+          });
+      };
+
+      var replicateFrom = function(successCallback) {
+        return replicate('from', successCallback);
+      };
+
       return function(successCallback) {
         if (Session.isAdmin()) {
           if (successCallback) {
             successCallback({ disabled: true });
           }
-          return;
+          return $q.resolve();
         }
-        replicate('from', successCallback);
-        Auth('can_edit').then(function() {
-          replicate('to', successCallback, {
-            filter: function(doc) {
-              // don't try to replicate ddoc back to the server
-              return doc._id !== '_design/medic-client';
-            }
-          });
-        });
+        return $q.all([
+          replicateFrom(successCallback),
+          replicateTo(successCallback)
+        ]);
       };
     }
   );
