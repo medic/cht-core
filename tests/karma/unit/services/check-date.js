@@ -49,8 +49,8 @@ describe('CheckDate service', function() {
         chai.expect(Modal.callCount).to.equal(1);
         chai.expect(Modal.args[0][0].templateUrl).to.equal('templates/modals/bad_local_date.html');
         chai.expect(Modal.args[0][0].controller).to.equal('CheckDateCtrl');
-        chai.expect(Modal.args[0][0].args.model.reportedLocalDate.toISOString()).to.equal('1970-01-01T00:00:00.000Z');
-        chai.expect(Modal.args[0][0].args.model.expectedLocalDate).to.equal(undefined);
+        chai.expect(Modal.args[0][0].model.reportedLocalDate.toISOString()).to.equal('1970-01-01T00:00:00.000Z');
+        chai.expect(Modal.args[0][0].model.expectedLocalDate).to.equal(undefined);
         done();
       })
       .catch(done);
@@ -97,8 +97,8 @@ describe('CheckDate service', function() {
         chai.expect(Modal.callCount).to.equal(1);
         chai.expect(Modal.args[0][0].templateUrl).to.equal('templates/modals/bad_local_date.html');
         chai.expect(Modal.args[0][0].controller).to.equal('CheckDateCtrl');
-        chai.expect(Modal.args[0][0].args.model.reportedLocalDate.toISOString()).to.equal('1970-01-01T00:00:00.000Z');
-        chai.expect(Modal.args[0][0].args.model.expectedLocalDate.toISOString()).to.equal(responseDate.toISOString());
+        chai.expect(Modal.args[0][0].model.reportedLocalDate.toISOString()).to.equal('1970-01-01T00:00:00.000Z');
+        chai.expect(Modal.args[0][0].model.expectedLocalDate.toISOString()).to.equal(responseDate.toISOString());
         done();
       })
       .catch(done);

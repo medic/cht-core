@@ -80,16 +80,10 @@ var _ = require('underscore');
         Modal({
           templateUrl: 'templates/modals/edit_translation_messages.html',
           controller: 'EditTranslationMessagesCtrl',
-          args: {
-            processingFunction: null,
-            model: {
-              translation: translation,
-              locales: $scope.locales
-            }
+          model: {
+            translation: translation,
+            locales: $scope.locales
           }
-        })
-        .catch(function() {
-          $log.debug('User cancelled EditLanguage modal.');
         });
       };
     }

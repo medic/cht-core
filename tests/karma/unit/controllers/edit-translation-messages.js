@@ -18,12 +18,15 @@ describe('EditTranslationMessagesCtrl controller', function() {
     UpdateSettings = sinon.stub();
     model = {};
     createController = function() {
+      scope.model = model;
+      scope.setProcessing = sinon.stub();
+      scope.setFinished = sinon.stub();
+      scope.setError = sinon.stub();
       return $controller('EditTranslationMessagesCtrl', {
         '$scope': scope,
         '$uibModalInstance': uibModalInstance,
         'Settings': Settings,
-        'UpdateSettings': UpdateSettings,
-        'model': model
+        'UpdateSettings': UpdateSettings
       });
     };
   }));

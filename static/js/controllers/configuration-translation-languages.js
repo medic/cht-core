@@ -105,10 +105,7 @@ var _ = require('underscore');
         Modal({
           templateUrl: 'templates/modals/edit_language.html',
           controller: 'EditLanguageCtrl',
-          args: { processingFunction: null, model: doc }
-        })
-        .catch(function() {
-          $log.debug('User cancelled EditLanguage modal.');
+          model: doc
         });
       };
       $scope.setLocale = function(locale) {
@@ -139,10 +136,7 @@ var _ = require('underscore');
         Modal({
           templateUrl: 'templates/modals/import_translation.html',
           controller: 'ImportTranslationCtrl',
-          args: { processingFunction: null, model: doc }
-        })
-        .catch(function() {
-          $log.debug('User cancelled ImportTranslation modal.');
+          model: doc
         });
       };
 

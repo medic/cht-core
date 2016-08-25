@@ -1,13 +1,8 @@
-<div role="document">
-  <div class="modal-header">
-    <button type="button" class="cancel close" ng-click="cancel()">&times;</button>
-    <h3 translate>version.update.title</h3>
-  </div>
-  <div class="modal-body">
-    <p translate>version.update.description</p>
-  </div>
-  <div class="modal-footer">
-    <a class="btn cancel" ng-click="cancel()" translate>Cancel</a>
-    <a class="btn submit btn-primary" ng-click="ok()" translate>Update</a>
-  </div>
-</div>
+<mm-modal
+  title-key="'version.update.title'"
+  submit-key="'Update'"
+  on-cancel="cancel()"
+  on-submit="submit()"
+>
+  <p translate>version.update.description</p>
+</mm-modal>

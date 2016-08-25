@@ -8,7 +8,7 @@ describe('auth directive', function() {
 
   beforeEach(function() {
     module('inboxApp');
-    module('templates');
+    module('inboxDirectives');
     Auth = sinon.stub();
     module(function ($provide) {
       $provide.value('Auth', Auth);

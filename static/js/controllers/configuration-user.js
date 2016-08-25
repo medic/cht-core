@@ -1,47 +1,25 @@
-(function () {
+angular.module('inboxControllers').controller('ConfigurationUserCtrl',
+  function (
+    $scope,
+    Modal
+  ) {
 
-  'use strict';
+    'use strict';
+    'ngInject';
 
-  var inboxControllers = angular.module('inboxControllers');
+    $scope.updatePassword = function() {
+      Modal({
+        templateUrl: 'templates/modals/update_password.html',
+        controller: 'EditUserCtrl'
+      });
+    };
 
-  inboxControllers.controller('ConfigurationUserCtrl',
-    function (
-      $log,
-      $scope,
-      Modal
-    ) {
+    $scope.editSettings = function() {
+      Modal({
+        templateUrl: 'templates/modals/edit_user_settings.html',
+        controller: 'EditUserCtrl'
+      });
+    };
 
-      'ngInject';
-
-      $scope.updatePassword = function() {
-        Modal({
-          templateUrl: 'templates/modals/update_password.html',
-          controller: 'EditUserCtrl',
-          args: {
-            processingFunction: null,
-            model: null
-          }
-        })
-        .catch(function(err) {
-          $log.debug('User cancelled update password.', err);
-        });
-      };
-
-      $scope.editSettings = function() {
-        Modal({
-          templateUrl: 'templates/modals/edit_user_settings.html',
-          controller: 'EditUserCtrl',
-          args: {
-            processingFunction: null,
-            model: null
-          }
-        })
-        .catch(function(err) {
-          $log.debug('User cancelled update password.', err);
-        });
-      };
-
-    }
-  );
-
-}());
+  }
+);

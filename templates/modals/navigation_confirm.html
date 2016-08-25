@@ -1,13 +1,10 @@
-<div role="document">
-  <div class="modal-header">
-    <button type="button" class="cancel close" ng-click="cancel()">&times;</button>
-    <h3>{{'Confirm' | translate}}</h3>
-  </div>
-  <div class="modal-body">
-    <p>{{'confirm.destructive.navigation.forms' | translate}}</p>
-  </div>
-  <div class="modal-footer">
-    <a class="btn cancel" ng-click="cancel()">{{'no' | translate}}</a>
-    <a class="btn submit btn-danger" ng-click="ok()">{{'yes' | translate}}</a>
-  </div>
-</div>
+<mm-modal
+  danger="true"
+  title-key="'Confirm'"
+  submit-key="'yes'"
+  cancel-key="'no'"
+  on-cancel="cancel()"
+  on-submit="submit()"
+>
+  <p translate>confirm.destructive.navigation.forms</p>
+</mm-modal>

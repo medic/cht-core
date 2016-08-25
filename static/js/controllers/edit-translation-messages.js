@@ -1,5 +1,4 @@
 var _ = require('underscore'),
-    modal = require('../modules/modal'),
     objectpath = require('views/lib/objectpath');
 
 (function () {
@@ -10,25 +9,22 @@ var _ = require('underscore'),
 
   inboxControllers.controller('EditTranslationMessagesCtrl',
     function (
-      $q,
       $scope,
-      $translate,
       $uibModalInstance,
-      model,
       Settings,
       UpdateSettings
     ) {
 
       'ngInject';
 
-      $scope.configuration = model.translation;
+      $scope.configuration = $scope.model.translation;
       // remove translations with falsey locales
       $scope.configuration.translations = _.filter($scope.configuration.translations, function(translation) {
         return translation.locale;
       });
-      $scope.locales = model.locales;
+      $scope.locales = $scope.model.locales;
       $scope.localeNames = {};
-      model.locales.forEach(function(locale) {
+      $scope.model.locales.forEach(function(locale) {
         // add missing translations
         if (!_.findWhere($scope.configuration.translations, { locale: locale.code })) {
           $scope.configuration.translations.push({
@@ -50,22 +46,20 @@ var _ = require('underscore'),
       };
 
       $scope.submit = function() {
-        var pane = modal.start($('#edit-translation-messages'));
+        $scope.setProcessing();
         return Settings()
           .then(updateTranslation)
           .then(function() {
-            pane.done();
-            $uibModalInstance.close('ok');
+            $scope.setFinished();
+            $uibModalInstance.close();
           })
           .catch(function(err) {
-            $translate('Error updating settings').then(function(message) {
-              pane.done(message, err);
-            });
-        });
+            $scope.setError(err, 'Error updating settings');
+          });
       };
 
       $scope.cancel = function() {
-        $uibModalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss();
       };
 
     }

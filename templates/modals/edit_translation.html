@@ -1,24 +1,19 @@
-<div id="edit-translation" role="document">
-  <div class="modal-header">
-    <button type="button" class="cancel close" ng-click="cancel()">&times;</button>
-    <h3 ng-if="editing" translate>Edit translation</h3>
-    <h3 ng-if="!editing" translate>translation.add</h3>
-  </div>
-  <div class="modal-body">
-    <form action="" method="POST">
-      <div class="form-group">
-        <label translate>translation.key</label>
-        <input class="form-control" ng-model="key" ng-disabled="editing">
-      </div>
-      <div class="form-group" ng-repeat="locale in locales track by locale._id">
-        <label>{{locale.name}}</label>
-        <textarea class="form-control" ng-model="values[locale.code]"></textarea>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-    <p class="note"></p>
-    <a class="btn cancel" ng-click="cancel()" translate>Cancel</a>
-    <a class="btn submit btn-primary" ng-click="submit()" translate-attr-data-working-label="Submitting" translate>Submit</a>
-  </div>
-</div>
+<mm-modal
+  id="'edit-translation'"
+  title-key="editing ? 'Edit translation' : 'translation.add'"
+  submit-key="'Submit'"
+  submitting-key="'Submitting'"
+  on-cancel="cancel()"
+  on-submit="submit()"
+>
+  <form action="" method="POST">
+    <div class="form-group">
+      <label translate>translation.key</label>
+      <input class="form-control" ng-model="key" ng-disabled="editing">
+    </div>
+    <div class="form-group" ng-repeat="locale in locales track by locale._id">
+      <label>{{locale.name}}</label>
+      <textarea class="form-control" ng-model="values[locale.code]"></textarea>
+    </div>
+  </form>
+</mm-modal>

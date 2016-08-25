@@ -1,18 +1,20 @@
 angular.module('inboxControllers').controller('VersionUpdateCtrl',
   function (
     $scope,
-    $uibModalInstance
+    $uibModalInstance,
+    $window
   ) {
 
     'use strict';
     'ngInject';
 
-    $scope.ok = function() {
-      $uibModalInstance.close('ok');
+    $scope.submit = function() {
+      $uibModalInstance.close();
+      $window.location.reload();
     };
 
     $scope.cancel = function() {
-      $uibModalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss();
     };
 
   }

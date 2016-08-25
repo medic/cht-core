@@ -1,24 +1,17 @@
-var modal = require('../modules/modal');
-
 (function () {
 
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
-
-  inboxControllers.controller('EditUserCtrl',
+  angular.module('inboxControllers').controller('EditUserCtrl',
     function (
       $log,
-      $q,
       $rootScope,
       $scope,
       $translate,
       $uibModalInstance,
       $window,
       DB,
-      model,
       PLACE_TYPES,
-      Search,
       Select2Search,
       Session,
       SetLanguage,
@@ -28,7 +21,7 @@ var modal = require('../modules/modal');
       'ngInject';
 
       $scope.cancel = function() {
-        $uibModalInstance.dismiss('cancel');
+        $uibModalInstance.dismiss();
       };
 
       DB()
@@ -60,35 +53,32 @@ var modal = require('../modules/modal');
         }
       };
 
-      if (model) {
+      if ($scope.model) {
         $scope.editUserModel = {
-          id: model._id,
-          name: model.name,
-          fullname: model.fullname,
-          email: model.email,
-          phone: model.phone,
-          facility: model.facility_id,
-          type: getType(model.roles),
-          language: { code: model.language },
-          contact: model.contact_id
+          id: $scope.model._id,
+          name: $scope.model.name,
+          fullname: $scope.model.fullname,
+          email: $scope.model.email,
+          phone: $scope.model.phone,
+          facility: $scope.model.facility_id,
+          type: getType($scope.model.roles),
+          language: { code: $scope.model.language },
+          contact: $scope.model.contact_id
         };
       } else {
+        $scope.editUserModel = {};
         // get the current user
 
         UserSettings()
           .then(function(user) {
-            if (!user) {
-              $scope.editUserModel = {};
-              return;
+            if (user) {
+              $scope.editUserModel.id = user._id;
+              $scope.editUserModel.name = user.name;
+              $scope.editUserModel.fullname = user.fullname;
+              $scope.editUserModel.email = user.email;
+              $scope.editUserModel.phone = user.phone;
+              $scope.editUserModel.language = { code: user.language };
             }
-            $scope.editUserModel = {
-              id: user._id,
-              name: user.name,
-              fullname: user.fullname,
-              email: user.email,
-              phone: user.phone,
-              language: { code: user.language }
-            };
           })
           .catch(function(err) {
             $log.error('Error fetching user settings', err);
@@ -172,37 +162,25 @@ var modal = require('../modules/modal');
         };
       };
 
-      var updateComplete = function(pane, err) {
-        if (err) {
-          pane.done($translate.instant('Error updating user'), err);
-          return;
-        }
-        if ($scope.editUserModel.password) {
-          // reload the page so the user can log in with the new password
-          $window.location.reload(true);
-        }
-        $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
-        $scope.editUserModel = null;
-        $uibModalInstance.close('ok');
-      };
-
       $scope.updatePassword = function() {
         $scope.errors = {};
+        $scope.setProcessing();
         if (validatePassword()) {
-          var pane = modal.start($('#update-password'));
           var updates = { password: $scope.editUserModel.password };
           UpdateUser($scope.editUserModel.id, null, updates)
             .then(function() {
-              updateComplete(pane);
+              $scope.setFinished();
+              $window.location.reload(true);
             })
             .catch(function(err) {
-              updateComplete(pane, err);
+              $scope.setError(err, 'Error updating user');
             });
         }
       };
 
       // #edit-user-settings is the limited set of edits that any user can do to itself.
       $scope.editUserSettings = function() {
+        $scope.setProcessing();
         $scope.errors = {};
         if (validateName()) {
           saveEdit('#edit-user-settings', $scope.editUserModel.id, getSettingsUpdates(true));
@@ -211,6 +189,7 @@ var modal = require('../modules/modal');
 
       // #edit-user-profile is the admin view, which has additional fields.
       $scope.editUser = function() {
+        $scope.setProcessing();
         $scope.errors = {};
         if (validatePassword() && validateName()) {
           saveEdit('#edit-user-profile', $scope.editUserModel.id, getSettingsUpdates(), getUserUpdates());
@@ -218,17 +197,18 @@ var modal = require('../modules/modal');
       };
 
       var saveEdit = function(modalId, userId, settingsUpdates, userUpdates) {
-        var pane = modal.start($(modalId));
         UpdateUser(userId, settingsUpdates, userUpdates)
           .then(function() {
             if (settingsUpdates.language && Session.userCtx().name === settingsUpdates.name) {
               // editing current user, so update language
               SetLanguage(settingsUpdates.language);
             }
-            updateComplete(pane);
+            $scope.setFinished();
+            $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
+            $uibModalInstance.close();
           })
           .catch(function(err) {
-            updateComplete(pane, err);
+            $scope.setError(err, 'Error updating user');
           });
       };
     }

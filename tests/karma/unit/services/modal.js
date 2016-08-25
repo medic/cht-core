@@ -22,10 +22,7 @@ describe('Modal service', function() {
     var options = {
       templateUrl: 'url',
       controller: 'controller',
-      args: {
-        someValue: 123,
-        someFunc: function() { return 'hello'; }
-      }
+      model: 123
     };
     service(options);
 
@@ -33,7 +30,6 @@ describe('Modal service', function() {
     var actual = uibModalStub.getCall(0).args[0];
     chai.expect(actual.templateUrl).to.equal(options.templateUrl);
     chai.expect(actual.controller).to.equal(options.controller);
-    chai.expect(actual.resolve.someValue()).to.equal(options.args.someValue);
-    chai.expect(actual.resolve.someFunc()()).to.equal(options.args.someFunc());
+    chai.expect(actual.scope.model).to.equal(123);
   });
 });

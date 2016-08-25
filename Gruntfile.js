@@ -296,7 +296,11 @@ module.exports = function(grunt) {
     },
     ngtemplates: {
       inboxApp: {
-        src: [ 'templates/modals/**/*.html', 'templates/partials/**/*.html' ],
+        src: [
+          'templates/modals/**/*.html',
+          'templates/partials/**/*.html',
+          'templates/directives/**/*.html'
+        ],
         dest: 'static/dist/templates.js',
         options: {
           htmlmin: {

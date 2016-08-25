@@ -7,7 +7,6 @@ var _ = require('underscore');
  */
 angular.module('inboxControllers').controller('UserLanguageModalCtrl',
   function(
-    $log,
     $scope,
     $translate,
     $uibModalInstance,
@@ -26,8 +25,6 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
         $scope.enabledLocales = _.pluck(result.rows, 'value');
       });
 
-    $scope.processing = false;
-    $scope.error = false;
     var initialLanguageCode = $translate.use();
     $scope.selectedLanguage = initialLanguageCode;
 
@@ -36,33 +33,26 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
       $scope.selectedLanguage = languageCode;
     };
 
-    $scope.ok = function() {
+    $scope.submit = function() {
       var newLanguage = $scope.selectedLanguage;
       var id = 'org.couchdb.user:' + Session.userCtx().name;
-      $scope.processing = true;
-      $scope.error = false;
-
+      $scope.setProcessing();
       return UpdateUser(id, { language: newLanguage })
         .then(function() {
-          return $uibModalInstance.close($scope.selectedLanguage);
+          $scope.setFinished();
+          $uibModalInstance.close();
         })
         .catch(function(err) {
           // Reset to initial language.
           $scope.changeLanguage(initialLanguageCode);
-          setErrorMode(err);
+          $scope.setError(err, 'Error updating user');
         });
-    };
-
-    var setErrorMode = function(err) {
-      $log.error('Error in modal', err);
-      $scope.processing = false;
-      $scope.error = true;
     };
 
     $scope.cancel = function() {
       // Reset to initial language.
       $scope.changeLanguage(initialLanguageCode);
-      $uibModalInstance.dismiss('cancel');
+      $uibModalInstance.dismiss();
     };
   }
 );

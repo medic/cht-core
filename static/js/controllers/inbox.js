@@ -32,7 +32,6 @@ var feedback = require('../modules/feedback'),
       CountMessages,
       DB,
       DBSync,
-      DeleteDocs,
       Enketo,
       FacilityHierarchy,
       JsonForms,
@@ -148,16 +147,12 @@ var feedback = require('../modules/feedback'),
       $scope.navigationCancel = function() {
         Modal({
           templateUrl: 'templates/modals/navigation_confirm.html',
-          controller: 'ConfirmModalCtrl',
-          args: { processingFunction: null, model: null }
+          controller: 'NavigationConfirmCtrl'
         })
-        .then(function () {
+        .then(function() {
           if ($scope.cancelCallback) {
             $scope.cancelCallback();
           }
-        })
-        .catch(function() {
-          $log.debug('User cancelled navigationCancel.');
         });
       };
 
@@ -365,8 +360,8 @@ var feedback = require('../modules/feedback'),
           render: function(callback) {
             Modal({
               templateUrl: 'templates/modals/user_language.html',
-              controller: 'UserLanguageModalCtrl',
-              })
+              controller: 'UserLanguageModalCtrl'
+            })
               .then(function() {
                 callback();
               })
@@ -497,18 +492,9 @@ var feedback = require('../modules/feedback'),
         }
         Modal({
           templateUrl: 'templates/modals/delete_doc_confirm.html',
-          controller: 'ConfirmModalCtrl',
-          args: {
-            processingFunction: function() {
-              if (!docs || !docs.length) {
-                return $q.reject(new Error('Error deleting document: no doc selected'));
-              }
-              return DeleteDocs(docs);
-            },
-            model: { docs: docs }
-          }
-        })
-        .then(function() {
+          controller: 'DeleteDocConfirm',
+          model: { docs: docs }
+        }).then(function() {
           if ($state.includes('contacts') || $state.includes('reports')) {
             if ($scope.selectMode) {
               $scope.clearSelected();
@@ -516,11 +502,6 @@ var feedback = require('../modules/feedback'),
               $state.go($state.current.name, { id: null });
             }
           }
-          var key = docs.length === 1 ? 'document.deleted' : 'document.deleted.plural';
-          $translate(key, { number: docs.length }).then(Snackbar);
-        })
-        .catch(function(err) {
-          $log.debug('User cancelled deleteDoc.', err);
         });
       };
 
@@ -676,11 +657,7 @@ var feedback = require('../modules/feedback'),
       var showUpdateReady = function() {
         Modal({
           templateUrl: 'templates/modals/version_update.html',
-          controller: 'VersionUpdateCtrl',
-          args: { processingFunction: null, model: null }
-        })
-        .then(function () {
-          $window.location.reload();
+          controller: 'VersionUpdateCtrl'
         })
         .catch(function() {
           $log.debug('Delaying update');
