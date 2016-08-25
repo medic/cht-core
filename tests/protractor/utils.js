@@ -1,4 +1,5 @@
-var http = require('http'),
+var _ = require('underscore'),
+    http = require('http'),
     environment = require('./auth')();
 
 var originalSettings;
@@ -92,12 +93,21 @@ module.exports = {
       throw new Error('A previous test did not call revertSettings');
     }
     return request({
-      path: '/' + environment.dbName + '/_design/medic/_rewrite/app_settings/medic',
+      path: '/' + environment.dbName + '/_design/medic/_rewrite/app_settings/medic-client',
       method: 'GET'
-    }).then(function(settings) {
-      originalSettings = settings;
+    }).then(function(result) {
+      originalSettings = result.settings;
+
+      // Make sure all updated fields are present in originalSettings, to enable reverting later.
+      Object.keys(updates).forEach(function(updatedField) {
+        if (!_.has(originalSettings, updatedField)) {
+          originalSettings[updatedField] = null;
+        }
+      });
+      return;
+    }).then(function() {
       return request({
-        path: '/' + environment.dbName + '/_design/medic/_rewrite/update_settings/medic',
+        path: '/' + environment.dbName + '/_design/medic/_rewrite/update_settings/medic-client?replace=1',
         method: 'PUT',
         body: JSON.stringify(updates)
       });
@@ -108,13 +118,13 @@ module.exports = {
     if (!originalSettings) {
       throw new Error('No original settings to revert to');
     }
+
     return request({
-      path: '/' + environment.dbName + '/_design/medic/_rewrite/update_settings/medic',
+      path: '/' + environment.dbName + '/_design/medic/_rewrite/update_settings/medic-client?replace=1',
       method: 'PUT',
       body: JSON.stringify(originalSettings)
     }).then(function() {
       originalSettings = null;
     });
   }
-
 };
