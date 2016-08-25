@@ -1,0 +1,52 @@
+*** node_modules/pouchdb/lib/index-browser.js	2016-04-21 23:54:02.000000000 +1200
+--- node_modules/pouchdb/lib/index-browser-new.js	2016-08-25 11:53:44.350021261 +1200
+***************
+*** 1426,1442 ****
+  }
+  
+  function cacheUpdateRequired(api, cache, designDocName, callback) {
+!   cache.seq = cache.seq || 0;
+!   var changesOpts = {
+!     doc_ids: [ '_design/' + designDocName ],
+      limit: 1,
+!     since: cache.seq
+    };
+!   api.changes(changesOpts).then(function (res) {
+!     var latestSeq = res.results && res.results.length && res.results[0].seq;
+!     if (latestSeq && latestSeq > cache.seq) {
+!       // invalidate the cache
+!       cache.seq = latestSeq;
+        delete cache.promise;
+      }
+      callback();
+--- 1426,1445 ----
+  }
+  
+  function cacheUpdateRequired(api, cache, designDocName, callback) {
+!   var ddocId = '_design/' + designDocName;
+!   var allDocsOpts = {
+      limit: 1,
+!     key: ddocId,
+!     include_docs: false
+    };
+!   api.allDocs(allDocsOpts, function (err, res) {
+!     if (err) {
+!       return err;
+!     }
+!     var result = (res.rows || [])[0];
+!     if (result && result.id === ddocId && result.value.rev != cache.rev) {
+!       // invalidate the cache and update the last-seen rev
+!       cache.rev = result.value.rev;
+        delete cache.promise;
+      }
+      callback();
+***************
+*** 1461,1466 ****
+--- 1464,1470 ----
+            ['views', 'filters'].forEach(function (propertyName) {
+              cache[propertyName] = res.doc[propertyName];
+            });
++           cache.rev = res.doc._rev;
+            resolve(cache);
+          });
+        });

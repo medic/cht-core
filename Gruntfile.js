@@ -228,6 +228,9 @@ module.exports = function(grunt) {
             // patch pouch to not use doc_ids in the replication id calculation
             // https://github.com/medic/medic-webapp/issues/2404
             'patch node_modules/pouchdb/lib/index-browser.js < patches/pouchdb-replication-id-generator.patch',
+
+            // patch pouch to use doc ids query instead of changes when checking for cache invalidation
+            'patch node_modules/pouchdb/lib/index-browser.js < patches/pouchdb-ddoc-cache-by-doc-id.patch',
           ];
           return patches.join(' && ');
         }
