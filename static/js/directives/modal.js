@@ -1,5 +1,5 @@
 /**
- * Directive for wrapping modal bodies with the modal chrome.
+ * Directive for boilerplate for modal dialog boxes.
  *
  * Usage:
  * <mm-modal [attributes]>[modal body]</mm-modal>
