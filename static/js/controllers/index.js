@@ -43,6 +43,7 @@
   require('./home');
   require('./import-contacts');
   require('./import-translation');
+  require('./medic-reporter-modal');
   require('./messages');
   require('./messages-content');
   require('./reports');

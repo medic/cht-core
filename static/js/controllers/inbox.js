@@ -325,8 +325,19 @@ var feedback = require('../modules/feedback'),
           return $log.error('Error fetching form definitions', err);
         }
         Enketo.clearXmlCache();
-        $scope.nonContactForms = xForms;
+        JsonForms()
+          .then(function(jsonForms) {
+            $scope.nonContactForms = xForms.concat(jsonForms);
+          });
       });
+
+      $scope.showMedicReporter = function(jsonformCode) {
+        Modal({
+          templateUrl: 'templates/modals/medic_reporter.html',
+          controller: 'MedicReporterModalCtrl',
+          args: { formCode: jsonformCode }
+        });
+      };
 
       // TODO when all modals are converted to on-demand modals, remove all these setup functions.
       $scope.setupGuidedSetup = function() {

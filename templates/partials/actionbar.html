@@ -13,7 +13,8 @@
           </a>
           <ul class="dropdown-menu" ng-show="nonContactForms.length">
             <li ng-repeat="form in nonContactForms">
-              <a ui-sref="reports.add({ formId: form.internalId })">{{form.title | translateFrom}}</a>
+                <a ng-show="form.title" ui-sref="reports.add({ formId: form.internalId })">{{form.title | translateFrom}}</a>
+                <a ng-show="form.name" ng-click="showMedicReporter(form.code)">{{form.name | translateFrom}}</a>
             </li>
           </ul>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.add()" ng-show="currentTab === 'contacts' && facilities.length">
