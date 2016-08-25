@@ -2,9 +2,9 @@
  * Service to start modals.
  *
  * Modal({
- *  templateUrl: templateUrlVal,
- *   controller: controllerName,
- *   model: {}  // optional
+ *  templateUrl: templateUrlVal, // the template to render
+ *   controller: controllerName, // the controller to invoke
+ *   model: {}  // optional - bound to $scope.model
  * }).then(function() {
  *   // User confirmed!
  *   doHappyThings();
@@ -12,6 +12,16 @@
  *   // User rejected :(
  *   doMessedUpThings();
  * });
+ *
+ * In the modal template use the mm-modal directive to provide
+ * the modal boilerplate.
+ *
+ * The controller is invoked with a scope that contains:
+ * - model: the given model
+ * - setProcessing(): a function to style the modal as processing
+ * - setFinished(): a function to style the modal as finished processing
+ * - setError(err, message): a function to log the err and translate and
+ *       display the message
  */
 angular.module('inboxServices').factory('Modal',
   function(
