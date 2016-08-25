@@ -66,22 +66,19 @@
           contact: $scope.model.contact_id
         };
       } else {
+        $scope.editUserModel = {};
         // get the current user
 
         UserSettings()
           .then(function(user) {
-            if (!user) {
-              $scope.editUserModel = {};
-              return;
+            if (user) {
+              $scope.editUserModel.id = user._id;
+              $scope.editUserModel.name = user.name;
+              $scope.editUserModel.fullname = user.fullname;
+              $scope.editUserModel.email = user.email;
+              $scope.editUserModel.phone = user.phone;
+              $scope.editUserModel.language = { code: user.language };
             }
-            $scope.editUserModel = {
-              id: user._id,
-              name: user.name,
-              fullname: user.fullname,
-              email: user.email,
-              phone: user.phone,
-              language: { code: user.language }
-            };
           })
           .catch(function(err) {
             $log.error('Error fetching user settings', err);
