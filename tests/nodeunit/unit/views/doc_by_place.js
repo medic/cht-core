@@ -25,22 +25,51 @@ exports['mapping nothing should emit nothing'] = function(test) {
   test.done();
 };
 
-exports['should return parent of a report, but not higher in the hierarchy'] = function(test) {
+exports['should emit the report and parents with depth'] = function(test) {
   map({
     type: 'data_record',
-    _id: 'no-1',
+    _id: 'a',
     contact: {
-      _id: 'expected-1',
-      parent: { _id: 'no-3', },
+      _id: 'b',
+      parent: { _id: 'c', },
     },
     parent: {
-      _id: 'no-4',
-      contact: { _id: 'no-5', },
-      parent: { _id: 'no-6', },
+      _id: 'd',
+      contact: { _id: 'e', },
+      parent: { _id: 'f', },
     },
   });
 
-  test.deepEqual(emitted, [ ['expected-1'] ]);
+  test.deepEqual(emitted, [
+    ['b'],    // access allowed to users with facility_id=b and aren't depth restricted
+    ['b', 0], // access allowed to users with facility_id=b and have depth=0
+    ['c'],    // access allowed to users with facility_id=c and aren't depth restricted
+    ['c', 1]  // access allowed to users with facility_id=c and have depth<=1
+  ]);
+
+  test.done();
+};
+
+exports['should emit the person and parents with depth'] = function(test) {
+  map({
+    type: 'person',
+    _id: 'a',
+    parent: {
+      _id: 'b',
+      parent: {
+        _id: 'c'
+      }
+    }
+  });
+
+  test.deepEqual(emitted, [
+    ['a'],    // access allowed to users with facility_id=a and aren't depth restricted
+    ['a', 0], // access allowed to users with facility_id=a and have depth=0
+    ['b'],    // access allowed to users with facility_id=b and aren't depth restricted
+    ['b', 1], // access allowed to users with facility_id=b and have depth<=1
+    ['c'],    // access allowed to users with facility_id=c and aren't depth restricted
+    ['c', 2]  // access allowed to users with facility_id=c and have depth<=2
+  ]);
 
   test.done();
 };

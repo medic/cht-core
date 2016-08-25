@@ -7,7 +7,7 @@ var _ = require('underscore'),
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('MessagesContentCtrl', 
+  inboxControllers.controller('MessagesContentCtrl',
     function (
       $log,
       $scope,
@@ -79,7 +79,12 @@ var _ = require('underscore'),
               // ignore response for previous request
               return;
             }
+            // Done here so that when inbox.js$scope.sendMessage() is called from
+            // the send button in message_content.html, send-message.js:validate
+            // which called validateRecipients can use this value instead of what
+            // it finds in the modal dialog.
             sendMessage.setRecipients(findMostRecentFacility(data));
+
             $scope.setLoadingContent(false);
             $scope.error = false;
             var unread = _.filter(data, function(message) {

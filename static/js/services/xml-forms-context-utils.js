@@ -1,4 +1,4 @@
-var ONE_DAY_IN_MS = 1000 * 60 * 60 * 24;
+var moment = require('moment');
 
 /**
  * Util functions available to a form doc's `.context` function for checking if
@@ -7,47 +7,23 @@ var ONE_DAY_IN_MS = 1000 * 60 * 60 * 24;
 angular.module('inboxServices').factory('XmlFormsContextUtils', function() {
   'use strict';
 
-  var getDateOfBirth = function(contact) {
+  var getDateDiff = function(contact, unit) {
     if (!contact.date_of_birth) {
       return;
     }
-    var dob = new Date(contact.date_of_birth);
-    dob.setHours(0);
-    dob.setMinutes(0);
-    dob.setSeconds(0);
-    return dob;
-  };
-
-  var ageInDays = function(contact) {
-    var dob = getDateOfBirth(contact);
-    if (!dob) {
-      return;
-    }
-    var today = new Date();
-    var difference = today.getTime() - dob.getTime();
-    return Math.floor(difference / ONE_DAY_IN_MS);
-  };
-
-  var ageInMonths = function(contact) {
-    var dob = getDateOfBirth(contact);
-    if (!dob) {
-      return;
-    }
-    var today = new Date();
-    var years = today.getFullYear() - dob.getFullYear();
-    var months = today.getMonth() - dob.getMonth();
-    var dayModifier = today.getDate() < dob.getDate() ? -1 : 0;
-    return (years * 12) + months + dayModifier;
-  };
-
-  var ageInYears = function(contact) {
-    var months = ageInMonths(contact);
-    return months && Math.floor(months / 12);
+    var dob = moment(contact.date_of_birth).startOf('day');
+    return moment().diff(dob, unit);
   };
 
   return {
-    ageInDays: ageInDays,
-    ageInMonths: ageInMonths,
-    ageInYears: ageInYears
+    ageInDays: function(contact) {
+      return getDateDiff(contact, 'days');
+    },
+    ageInMonths: function(contact) {
+      return getDateDiff(contact, 'months');
+    },
+    ageInYears: function(contact) {
+      return getDateDiff(contact, 'years');
+    }
   };
 });

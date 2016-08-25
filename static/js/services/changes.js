@@ -6,7 +6,7 @@
 (function () {
 
   'use strict';
-  
+
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('Changes', [
@@ -26,6 +26,8 @@
         });
       };
 
+      // Longpoll requests like changes hangs protractor testing as it waits
+      // for all requests to finish.
       if (!E2ETESTING) {
         DB()
           .changes({
@@ -45,5 +47,5 @@
     }
 
   ]);
-  
+
 }());

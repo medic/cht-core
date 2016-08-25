@@ -3,12 +3,17 @@ var http = require('http'),
 
 var originalSettings;
 
-var request = function(options) {
+var request = function(options, debug) {
   var deferred = protractor.promise.defer();
 
   options.hostname = environment.apiHost;
   options.port = environment.apiPort;
   options.auth = environment.user + ':' + environment.pass;
+
+  if (debug) {
+    console.log('REQUEST');
+    console.log(JSON.stringify(options));
+  }
 
   var req = http.request(options, function(res) {
     res.setEncoding('utf8');
@@ -42,9 +47,9 @@ module.exports = {
 
   request: request,
 
-  requestOnTestDb: function(options) {
+  requestOnTestDb: function(options, debug) {
     options.path = '/' + environment.dbName + options.path;
-    return request(options);
+    return request(options, debug);
   },
 
   saveDoc: function(doc) {

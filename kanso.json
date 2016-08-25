@@ -299,6 +299,24 @@
                     }
                 }
             },
+            "replication_depth": {
+                "title": "Replication depth",
+                "type": "array",
+                "description": "Defines how many levels of contacts and their reports to replicate to users with the given role. 1 = they can see their reports and children, 2 = they can see their children's reports and children, etc.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "role": {
+                            "title": "Role",
+                            "type": "string"
+                        },
+                        "depth": {
+                            "title": "Depth",
+                            "type": "integer"
+                        }
+                    }
+                }
+            },
             "permissions": {
                 "title": "Permissions",
                 "type": "array",

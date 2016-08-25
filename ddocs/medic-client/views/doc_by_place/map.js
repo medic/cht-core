@@ -2,17 +2,15 @@
 function(doc) {
 
   var emitPlace = function(place) {
-    if (!place) {
-      emit([ '_unassigned' ]);
-      return;
-    }
+    var depth = 0;
     while (place) {
       if (place._id) {
         emit([ place._id ]);
+        emit([ place._id, depth ]);
       }
+      depth++;
       place = place.parent;
     }
-    return;
   };
 
   if (doc._id === 'resources' || doc._id === 'appcache') {
@@ -34,12 +32,11 @@ function(doc) {
         // incoming message
         place = doc.contact;
       }
-      if (place) {
-        if (place._id) {
-          emit([ place._id ]);
-        }
-      } else {
+
+      if (!place) {
         emit([ '_unassigned' ]);
+      } else {
+        emitPlace(place);
       }
       return;
     case 'form':

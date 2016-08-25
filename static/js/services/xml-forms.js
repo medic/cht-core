@@ -159,7 +159,7 @@ var _ = require('underscore');
                 listener.callback(null, results);
               })
               .catch(function(err) {
-                $log.error(err);
+                $log.error('Error fetching user contact', err);
               });
           })
           .catch(callback);

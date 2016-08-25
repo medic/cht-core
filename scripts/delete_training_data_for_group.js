@@ -247,6 +247,7 @@ if (process.argv.length < 8) {
   console.log('Deletes all \'data_record\', \'person\' and \'clinic\' data ' +
     'from a given branch (\'district_hospital\' type) for a group of users, that was created ' +
     'between the two timestamps.');
+  console.log('The usernames (i.e. the user\'s login, e.g. "admin") of the CHWs should be listed, one per line, in a text file (groupFile).');
   console.log('The deleted docs will be written out to json files in the ' +
     'logdir.');
   console.log('The dryrun arg will run the whole process, including writing the files, without actually doing the deletions.\n');
