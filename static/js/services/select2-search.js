@@ -40,6 +40,7 @@ angular.module('inboxServices').factory('Select2Search',
           templateSelection = options.templateSelection || defaultTemplateSelection,
           sendMessageExtras = options.sendMessageExtras || (function(i) {return i;}),
           tags = options.tags || false,
+          initialValues = options.initialValues || [],
           types = Array.isArray(_types) ? _types : [ _types ];
 
       if (allowNew && types.length !== 1) {
@@ -88,16 +89,36 @@ angular.module('inboxServices').factory('Select2Search',
           });
       };
 
-      var resolveInitialValue = function(selectEl) {
+      var resolveInitialValue = function(selectEl, initialValues) {
+        // TODO: add support for multiples values here
+        initialValues = initialValues[0];
+
+        if (initialValues && initialValues.length) {
+          if (!selectEl.children('option[value="' + initialValues + '"]').length) {
+            selectEl.append($('<option value="' + initialValues + '"/>'));
+          }
+          selectEl.val(initialValues);
+        }
+
         var value = selectEl.val();
-        if (!value || value.length === 0) {
+        if (!(value && value.length)) {
           return $q.resolve(selectEl);
         }
+        // TODO: add support for multiples values here
+        value = value[0];
         return DB().get(value)
           .then(function(doc) {
             var text = templateSelection({ doc: doc });
-            selectEl.children('option[value=' + value + ']').text(text);
-            return selectEl;
+            // TODO: add support for multiples values here
+            selectEl.select2('data')[0].doc = doc;
+          })
+          .catch(function() {
+            var text = templateSelection({ text: value });
+            // TODO: add support for multiples values here
+            selectEl.select2('data')[0].text = text;
+          }).then(function() {
+            selectEl.trigger('change');
+            return selectEl
           });
       };
 
@@ -125,7 +146,8 @@ angular.module('inboxServices').factory('Select2Search',
         }
       };
 
-      return resolveInitialValue(selectEl).then(initSelect2);
+      initSelect2(selectEl);
+      return resolveInitialValue(selectEl, initialValues);
     };
   }
 );

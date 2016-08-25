@@ -164,13 +164,14 @@ describe('Send message', function() {
       expect(element.all(by.css('#message-content li')).count()).toBe(1);
       expect(element(by.css('#message-content li div.data>p>span')).getText()).toBe(smsMsg('everyoneAt'));
     });
+
   });
 
+  // Requires that 'Send message modal' describe has been run
   describe('Sending from message pane', function() {
     describe('Can send additional messages from message pane', function() {
       var addAnAdditionalMessage = function(liIdentifier) {
         element(by.id('messages-tab')).click();
-        // Currently this describe->it relies on the top one
         expect(element(by.css(liIdentifier)).isPresent()).toBeTruthy();
 
         clickLhsEntry(liIdentifier);

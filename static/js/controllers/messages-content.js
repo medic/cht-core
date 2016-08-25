@@ -172,8 +172,19 @@ var _ = require('underscore'),
       };
 
       $scope.addRecipients = function(to) {
+        var realTo;
+        if (to.facility) {
+          realTo = to.facility;
+        } else if (to.contact) {
+          if (to.contact._id) {
+            realTo = to.contact;
+          } else if (to.contact.name) {
+            realTo = to.contact.name;
+          }
+        }
+
         sendMessage.showModal({
-          to: to.facility || to.contact,
+          to: realTo,
           message: $('#message-footer [name=message]').val()
         });
       };
