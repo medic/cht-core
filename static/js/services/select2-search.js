@@ -106,9 +106,11 @@ angular.module('inboxServices').factory('Select2Search',
         }
         // TODO: add support for multiples values here
         value = value[0];
+        // TODO: up the chain from this fn determine whether we're being passed
+        //       a raw value or not so we know if we should try to resolve it
         return DB().get(value)
           .then(function(doc) {
-            var text = templateSelection({ doc: doc });
+            // var text = templateSelection({ doc: doc });
             // TODO: add support for multiples values here
             selectEl.select2('data')[0].doc = doc;
           })
@@ -118,7 +120,7 @@ angular.module('inboxServices').factory('Select2Search',
             selectEl.select2('data')[0].text = text;
           }).then(function() {
             selectEl.trigger('change');
-            return selectEl
+            return selectEl;
           });
       };
 
