@@ -4,8 +4,8 @@
     <h3 translate>Send Report</h3>
   </div>
   <div class="modal-body">
-    <div ng-show="loading" class="loader"></div>
-    <div ng-hide="loading" translate>{{error}}</div>
-    <iframe ng-hide="loading" src="{{medicReporterUrl}}"></iframe>
+    <div ng-show="processing" class="loader"></div>
+    <div ng-show="error" translate>{{error}}</div>
+    <iframe ng-hide="processing" src="{{medicReporterUrl}}"></iframe>
   </div>
 </div>

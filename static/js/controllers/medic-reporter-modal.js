@@ -9,13 +9,12 @@
       $scope,
       $timeout,
       $uibModalInstance,
-      formCode,
       Language,
       UserContact
     ) {
       'ngInject';
 
-      $scope.loading = true;
+      $scope.setProcessing();
 
       var getUserPhoneNumber = function() {
         return UserContact()
@@ -29,14 +28,13 @@
       };
 
       var displayError = function(err) {
+        var errorMessage = 'error.general.description';
         if (err.status === 403) {
-          $scope.error = 'error.403.description';
+          errorMessage = 'error.403.description';
         } else if (err.status === 404) {
-          $scope.error = 'error.404.description';
-        } else {
-          $scope.error = 'error.general.description';
+          errorMessage = 'error.404.description';
         }
-        $scope.loading = false;
+        $scope.setError(err, errorMessage);
       };
 
       var medicReporterFullUrl = function(baseUrl, formCode, language, phone) {
@@ -57,9 +55,9 @@
           return $q.all([Language(), getUserPhoneNumber()]);
         })
         .then(function(results) {
-          $scope.loading = false;
+          $scope.setFinished();
           $scope.medicReporterUrl =
-              medicReporterFullUrl(medicReporterBaseUrl, formCode, results[0], results[1]);
+              medicReporterFullUrl(medicReporterBaseUrl, $scope.model.formCode, results[0], results[1]);
         })
         .catch(displayError);
 

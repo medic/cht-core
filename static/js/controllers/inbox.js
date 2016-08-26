@@ -330,7 +330,7 @@ var feedback = require('../modules/feedback'),
         Modal({
           templateUrl: 'templates/modals/medic_reporter.html',
           controller: 'MedicReporterModalCtrl',
-          args: { formCode: jsonformCode }
+          model: { formCode: jsonformCode }
         });
       };
 

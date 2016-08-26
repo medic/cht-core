@@ -39,15 +39,16 @@ describe('MedicReporterModalCtrl', function() {
         language.returns(KarmaUtils.mockPromise(null, userLocale));
         return language;
       });
-
-      formCode = 'AAA';
-      $provide.factory('formCode', function() {
-        return formCode;
-      });
     });
 
     inject(function($rootScope, $controller) {
       scope = $rootScope.$new();
+      formCode = 'AAA';
+      scope.model = { formCode: formCode };
+      scope.setProcessing = sinon.stub();
+      scope.setFinished = sinon.stub();
+      scope.setError = sinon.stub();
+
       createController = function() {
         return $controller('MedicReporterModalCtrl', {
           '$scope': scope,
@@ -57,13 +58,15 @@ describe('MedicReporterModalCtrl', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(spyUibModalInstance, http.head, userContact, language);
+    KarmaUtils.restore(
+      spyUibModalInstance, http.head, userContact, language, scope.setProcessing,
+      scope.setFinished, scope.setError);
   });
 
   it('Sets loading mode while loading', function() {
-    chai.expect(scope.loading).to.equal(undefined);
+    chai.expect(scope.setProcessing.called).to.equal(false);
     createController();
-    chai.expect(scope.loading).to.equal(true);
+    chai.expect(scope.setProcessing.called).to.equal(true);
   });
 
   var runTest = function(done, assertions) {
@@ -79,21 +82,31 @@ describe('MedicReporterModalCtrl', function() {
   };
 
   it('Doesn\'t display medic-reporter if no auth', function(done) {
-    http.head.returns(KarmaUtils.mockPromise({ status: 403 }));
+    var err = { status: 403 };
+    http.head.returns(KarmaUtils.mockPromise(err));
 
     runTest(done, function() {
-      chai.expect(scope.error).to.equal('error.403.description');
-      chai.expect(scope.loading).to.equal(false);
+      chai.expect(scope.setError.called).to.equal(true);
+      chai.expect(scope.setError.getCall(0).args[0]).to.equal(err);
+      chai.expect(scope.setError.getCall(0).args[1]).to.equal('error.403.description');
     });
   });
 
   it('Displays medic-reporter if auth', function(done) {
     runTest(done, function() {
-      chai.expect(scope.error).to.equal(undefined);
-      chai.expect(scope.loading).to.equal(false);
+      chai.expect(scope.setError.called).to.equal(false);
+      chai.expect(scope.setFinished.called).to.equal(true);
       chai.assert(
         scope.medicReporterUrl.startsWith('/medic-reporter/_design/medic-reporter/_rewrite/?_embed_mode=1'),
         'Should put the right url for iframe');
+    });
+  });
+
+  it('Displays appropriate form', function(done) {
+    runTest(done, function() {
+      chai.assert(
+        scope.medicReporterUrl.includes('_show_forms=' + formCode),
+        'Should pass form code in url param');
     });
   });
 
