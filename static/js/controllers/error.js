@@ -19,7 +19,6 @@
     ['$scope', '$stateParams',
     function ($scope, $stateParams) {
       $scope.error = errors[$stateParams.code] || errors['404'];
-      $scope.filterModel.type = 'error';
     }
   ]);
 

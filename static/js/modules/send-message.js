@@ -6,10 +6,6 @@ var _ = require('underscore'),
 
   'use strict';
 
-  var translateFn = function(key) {
-    return key;
-  };
-
   var validateMessage = function(message) {
     return {
       valid: !!message,
@@ -49,7 +45,7 @@ var _ = require('underscore'),
     });
     if (errors.length > 0) {
       var errorRecipients = _.map(errors, function(error) {
-        return formatSelection(error);
+        return templateSelection(error);
       }).join(', ');
       return {
         valid: false,
@@ -75,120 +71,89 @@ var _ = require('underscore'),
     return result;
   };
 
-  var formatEveryoneAt = function(row) {
+  var formatPlace = function(row) {
     return translateFn('Everyone at', {
       facility: row.doc.name,
       count: row.descendants && row.descendants.length
     });
   };
 
-  var formatResult = function(row) {
-    var icon,
-        contact;
+  var templateResult = function(row) {
     if (row.text) {
+      // Either Select2 detritus such as 'Searching…', or any custom value
+      // you enter, such as a raw phone number
       return row.text;
     }
+
+    var type = row.doc.type;
+    var icon = CONTACT_SCHEMA[type].icon,
+        contact;
+
     if (row.everyoneAt) {
-      icon = 'fa-hospital-o';
+      // TODO: maybe with everyone at we want to change the icon to something else?
       contact = format.sender({
-        name: formatEveryoneAt(row),
-        parent: row.parent
+        name: formatPlace(row),
+        parent: row.doc.place
       });
-    } else if (row.freetext) {
-      icon = 'fa-user';
-      contact = '<span class="freetext">' + row.id + '</span>';
     } else {
-      icon = 'fa-user';
       contact = format.contact(row.doc);
     }
+
     return $('<span class="fa fa-fw ' + icon + '"></span>' + contact);
   };
 
-  var formatSelection = function(row) {
+  var templateSelection = function(row) {
+    if (!row.doc) {
+      return row.id;
+    }
+
     if (row.everyoneAt) {
-      return formatEveryoneAt(row);
+      return formatPlace(row);
     }
-    if (row.doc) {
-      return row.doc.name || row.doc.phone;
-    }
-    return row.id;
+
+    // TODO: should this be first_name / last_name as well? How does this work?
+    return row.doc.name || row.doc.phone;
   };
 
-  var createChoiceFromNumber = function(phone) {
-    return {
-      id: phone,
-      freetext: true,
-      phone: phone
-    };
-  };
-
-  var filter = function(options, contacts) {
-    var terms = options.term ?
-      _.map(options.term.toLowerCase().split(/\s+/), function(term) {
-        if (libphonenumber.validate(settings, term)) {
-          return libphonenumber.format(settings, term);
-        }
-        return term;
-      }) : [];
-    var matches = _.filter(contacts, function(val) {
-      var tags = [ val.name, val.phone ];
-      var parent = val.parent;
-      while (parent) {
-        tags.push(parent.name);
-        parent = parent.parent;
+  var initPhoneField = function($phone) {
+    return Select2Search($phone, CONTACT_TYPES, {
+      tags: true,
+      templateResult: templateResult,
+      templateSelection: templateSelection,
+      sendMessageExtras: function(results) {
+        return _.chain(results)
+          .map(function (result) {
+            if (result.doc.type !== CONTACT_SCHEMA.person.type) {
+              return [
+                result,
+                {
+                  id: 'everyoneAt:'+result.id,
+                  doc: result.doc,
+                  everyoneAt: true
+                }];
+            } else {
+              return result;
+            }
+          })
+          .flatten()
+          .filter(validatePhoneNumber)
+          .value();
       }
-      tags = tags.join(' ').toLowerCase();
-      return _.every(terms, function(term) {
-        return tags.indexOf(term) > -1;
-      });
     });
-    matches.sort(function(a, b) {
-      return a.name.toLowerCase().localeCompare(
-             b.name.toLowerCase());
-    });
-    var data = _.map(matches, function(doc) {
-      return { id: doc._id, doc: doc, everyoneAt: doc.everyoneAt };
-    });
-
-    // if a valid phone number is entered, allow it to be selected as a recipient
-    if (libphonenumber.validate(settings, options.term)) {
-      var formatted = libphonenumber.format(settings, options.term);
-      data.unshift(createChoiceFromNumber(formatted));
-    }
-
-    return data;
-  };
-
-  var initPhoneField = function($phone, callback) {
-    if (!$phone) {
-      return;
-    }
-    $phone.parent().show();
-    contact(function(err, data) {
-      if (err) {
-        return callback(err);
-      }
-      data = filter({}, data);
-      $phone.select2({
-        data: data,
-        allowClear: true,
-        tags: true,
-        createSearchChoice: createChoiceFromNumber,
-        dropdownParent: $('#send-message'),
-        templateResult: formatResult,
-        templateSelection: formatSelection,
-        width: '100%',
-      });
-      callback();
-    });
-  };
+};
 
   exports.showModal = function(options) {
+    options = options || {};
+
+
     var $modal = $('#send-message');
     $modal.find('.has-error').removeClass('has-error');
     $modal.find('.help-block').text('');
+
     var val = [],
-        to = options.to;
+        to = options.to,
+        message = options.message || '';
+
     if (to) {
       if (typeof to === 'string') {
         val.push(to);
@@ -196,47 +161,44 @@ var _ = require('underscore'),
         val.push(to._id);
       }
     }
+
     $modal.find('[name=phone]').val(val).trigger('change');
-    $modal.find('[name=message]').val(options.message || '');
+    $modal.find('[name=message]').val(message);
     $modal.find('.count').text('');
     $modal.modal('show');
+
+    // TODO: should we really be doing this multiple times? Every time show
+    //       model is run we re-run the select2 stuff!
+    return initPhoneField($('#send-message [name=phone]'));
   };
 
-  var contact;
   var recipients = [];
   var settings = {};
+  var Promise;
+  var translateFn;
+  var Select2Search;
+  var CONTACT_TYPES;
+  var CONTACT_SCHEMA;
+  var DB;
 
-  exports.init = function(Settings, Contact, _translateFn) {
-    contact = Contact;
+  exports.init = function($q, Settings, _select2Search, _translateFn, _contactTypes, _contactSchema, _db) {
+    Promise = $q;
+    Select2Search = _select2Search;
+    CONTACT_TYPES = _contactTypes;
     translateFn = _translateFn;
+    CONTACT_SCHEMA = _contactSchema.get();
+    DB = _db;
+
     Settings()
       .then(function(_settings) {
         settings = _settings;
-        $('body').on('click', '.send-message', function(e) {
-          initPhoneField($('#send-message [name=phone]'), function(err) {
-            if (err) {
-              return console.error('Error initialising phone search');
-            }
-
-            var target = $(e.target).closest('.send-message');
-            if (target.hasClass('mm-icon-disabled')) {
-              return;
-            }
-            e.preventDefault();
-            var to = target.attr('data-send-to');
-            if (to) {
-              try {
-                to = JSON.parse(to);
-              } catch(e) {}
-            }
-            if (to && to.type === 'data_record') {
-              to = to.contact || to.from;
-            }
-            exports.showModal({
-              to: to,
-              everyoneAt: target.attr('data-everyone-at') === 'true'
-            });
-          });
+        $('body').on('click', '.send-message', function(event) {
+          var target = $(event.target).closest('.send-message');
+          if (target.hasClass('mm-icon-disabled')) {
+            return;
+          }
+          event.preventDefault();
+          exports.showModal();
         });
       })
       .catch(function(err) {
@@ -248,47 +210,31 @@ var _ = require('underscore'),
     recipients = _recipients;
   };
 
-  var resolveRecipients = function(recipients, callback) {
-    contact(function(err, contacts) {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, _.map(recipients, function(recipient) {
-        // see if we can resolve the facility
-        var phone = (recipient.doc && recipient.doc.phone) ||
-                    (recipient.doc && recipient.doc.contact.phone) ||
-                    (recipient.phone) ||
-                    (recipient.contact.phone);
-        var match = _.find(contacts, function(contact) {
-          return contact.phone === phone &&
-                 contact.everyoneAt === recipient.everyoneAt;
-        });
-        return match || recipient;
-      }));
-    });
+  var resolveRecipients = function(recipients) {
+    return Promise.resolve(recipients);
   };
 
-  var validateRecipients = function($modal, callback) {
+  var validateRecipients = function($modal) {
     var validated = recipients;
+
     if ($modal.is('.modal')) {
       var $phoneField = $modal.find('[name=phone]');
       var result = updateValidation(
         validatePhoneNumbers, $phoneField, $phoneField.select2('data')
       );
       if (!result.valid) {
-        return callback(result);
+        return Promise.resolve(result);
       }
       validated = result.value;
     }
-    resolveRecipients(validated, function(err, recipients) {
-      if (err) {
-        return callback(err);
-      }
-      callback(null, {
-        valid: true,
-        value: recipients
+
+    return resolveRecipients(validated)
+      .then(function(recipients) {
+        return {
+          valid: true,
+          value: recipients
+        };
       });
-    });
   };
 
   exports.validate = function(target, callback) {
@@ -305,15 +251,12 @@ var _ = require('underscore'),
       validateMessage, $messageField, $messageField.val().trim()
     );
 
-    validateRecipients($modal, function(err, phone) {
-      if (err) {
-        return;
-      }
-      if (phone.valid && message.valid) {
-        callback(phone.value, message.value);
-      }
-    });
-
+    validateRecipients($modal)
+      .then(function(validatedRecipients) {
+        if (validatedRecipients.valid && message.valid) {
+          callback(validatedRecipients.value, message.value);
+        }
+      });
   };
 
 }());

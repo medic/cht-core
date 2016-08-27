@@ -1,18 +1,10 @@
-<div id="delete-user-confirm" class="modal fade" tabindex="-1" role="dialog" ng-controller="DeleteUserCtrl">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{'Confirm' | translate}}</h3>
-      </div>
-      <div class="modal-body">
-        <p>{{'confirm.delete.user' | translate}}</p>
-      </div>
-      <div class="modal-footer">
-        <p class="note"></p>
-        <a class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
-        <a class="btn submit btn-danger" ng-click="deleteUserConfirm()" ng-attr-data-working-label="{{'Deleting' | translate}}">{{'Delete' | translate}}</a>
-      </div>
-    </div>
-  </div>
-</div>
+<mm-modal
+  danger="true"
+  title-key="'Confirm'"
+  submit-key="'Delete'"
+  submitting-key="'Deleting'"
+  on-cancel="cancel()"
+  on-submit="submit()"
+>
+  <p translate>confirm.delete.user</p>
+</mm-modal>

@@ -1,32 +1,33 @@
-var modal = require('../modules/modal');
+angular.module('inboxControllers').controller('DeleteUserCtrl',
+  function (
+    $rootScope,
+    $scope,
+    $translate,
+    $uibModalInstance,
+    DeleteUser,
+    Snackbar
+  ) {
 
-(function () {
+    'use strict';
+    'ngInject';
 
-  'use strict';
+    $scope.cancel = function() {
+      $uibModalInstance.dismiss();
+    };
 
-  var inboxControllers = angular.module('inboxControllers');
-
-  inboxControllers.controller('DeleteUserCtrl',
-    ['$scope', '$rootScope', 'translateFilter', 'DeleteUser',
-    function ($scope, $rootScope, translateFilter, DeleteUser) {
-
-      $scope.$on('DeleteUserInit', function(e, user) {
-        $scope.deleteUser = user;
-      });
-
-      $scope.deleteUserConfirm = function() {
-        var pane = modal.start($('#delete-user-confirm'));
-        DeleteUser($scope.deleteUser, function(err) {
-          if (err) {
-            return pane.done(translateFilter('Error deleting document'), err);
-          }
-          $scope.deleteUser = null;
+    $scope.submit = function() {
+      $scope.setProcessing();
+      DeleteUser($scope.model)
+        .then(function() {
+          $scope.setFinished();
           $rootScope.$broadcast('UsersUpdated');
-          pane.done();
+          $translate('document.deleted').then(Snackbar);
+          $uibModalInstance.close();
+        })
+        .catch(function(err) {
+          $scope.setError(err, 'Error deleting document');
         });
-      };
+    };
 
-    }
-  ]);
-
-}());
+  }
+);

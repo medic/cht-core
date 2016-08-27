@@ -11,22 +11,20 @@ describe('Changes service', function() {
     changesCount = 0;
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('DB', {
-        get: function() {
-          return {
-            changes: function() {
-              changesCount++;
-              return {
-                on: function(type, callback) {
-                  changesCallback = callback;
-                  return {
-                    on: function() {}
-                  };
-                }
-              };
-            }
-          };
-        }
+      $provide.value('DB', function() {
+        return {
+          changes: function() {
+            changesCount++;
+            return {
+              on: function(type, callback) {
+                changesCallback = callback;
+                return {
+                  on: function() {}
+                };
+              }
+            };
+          }
+        };
       });
     });
     inject(function(_Changes_) {

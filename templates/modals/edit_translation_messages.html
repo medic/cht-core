@@ -1,0 +1,15 @@
+<mm-modal
+  id="'edit-translation-messages'"
+  title-key="'Edit translation'"
+  submit-key="'Submit'"
+  submitting-key="'Submitting'"
+  on-cancel="cancel()"
+  on-submit="submit()"
+>
+  <form action="" method="POST">
+    <div class="form-group" ng-repeat="translation in configuration.translations | orderBy:'locale' track by translation.locale">
+      <label>{{localeNames[translation.locale]}}</label>
+      <textarea class="form-control" ng-model="translation.content"></textarea>
+    </div>
+  </form>
+</mm-modal>

@@ -1,14 +1,25 @@
-(function () {
+angular.module('inboxControllers').controller('ConfigurationUserCtrl',
+  function (
+    $scope,
+    Modal
+  ) {
 
-  'use strict';
+    'use strict';
+    'ngInject';
 
-  var inboxControllers = angular.module('inboxControllers');
+    $scope.updatePassword = function() {
+      Modal({
+        templateUrl: 'templates/modals/update_password.html',
+        controller: 'EditUserCtrl'
+      });
+    };
 
-  inboxControllers.controller('ConfigurationUserCtrl',
-    [
-    function () {
+    $scope.editSettings = function() {
+      Modal({
+        templateUrl: 'templates/modals/edit_user_settings.html',
+        controller: 'EditUserCtrl'
+      });
+    };
 
-    }
-  ]);
-
-}());
+  }
+);

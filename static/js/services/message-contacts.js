@@ -6,22 +6,6 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('MessageContactsRaw', [
-    'DB',
-    function(DB) {
-      return function(params, callback) {
-        DB.get()
-          .query('medic/data_records_by_contact', params)
-          .then(function(res) {
-            callback(null, res.rows);
-          })
-          .catch(function(err) {
-            callback(err);
-          });
-      };
-    }
-  ]);
-
   var generateQuery = function(options) {
     var query = _.clone(options.queryOptions);
     query.startkey = [ ];
@@ -30,32 +14,38 @@ var _ = require('underscore');
       query.startkey.push(options.id);
       query.endkey.push(options.id);
     }
-    (options.queryOptions.descending ? query.startkey : query.endkey).push({});
+    (query.descending ? query.startkey : query.endkey).push({});
     return query;
   };
 
-  var query = function($rootScope, MessageContactsRaw, options, callback) {
-    MessageContactsRaw(generateQuery(options), function(err, results) {
-      callback(err, results);
-      if (!$rootScope.$$phase) {
-        $rootScope.$apply();
-      }
-    });
+  var query = function(DB, options) {
+    var params = generateQuery(options);
+    return DB()
+      .query('medic-client/messages_by_contact_date', params)
+      .then(function(res) {
+        return res.rows;
+      });
   };
-  
-  inboxServices.factory('MessageContact', ['$rootScope', 'MessageContactsRaw',
-    function($rootScope, MessageContactsRaw) {
-      return function(options, callback) {
+
+  inboxServices.factory('MessageContact',
+    function(
+      DB
+    ) {
+      'ngInject';
+      return function(options) {
         options.targetScope = 'messages';
         options.queryOptions = { group_level: 1 };
-        query($rootScope, MessageContactsRaw, options, callback);
+        return query(DB, options);
       };
     }
-  ]);
-  
-  inboxServices.factory('ContactConversation', ['$rootScope', 'MessageContactsRaw',
-    function($rootScope, MessageContactsRaw) {
-      return function(options, callback) {
+  );
+
+  inboxServices.factory('ContactConversation',
+    function(
+      DB
+    ) {
+      'ngInject';
+      return function(options) {
         options.targetScope = 'messages.details';
         options.queryOptions = {
           reduce: false,
@@ -64,9 +54,9 @@ var _ = require('underscore');
           skip: options.skip,
           limit: 50
         };
-        query($rootScope, MessageContactsRaw, options, callback);
+        return query(DB, options);
       };
     }
-  ]);
+  );
 
 }());

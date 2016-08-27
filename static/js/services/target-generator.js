@@ -7,8 +7,17 @@ var moment = require('moment'),
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('TargetGenerator', ['$q', '$log', 'Settings', 'TaskGenerator',
-    function($q, $log, Settings, TaskGenerator) {
+  inboxServices.factory('TargetGenerator',
+    function(
+      $log,
+      $parse,
+      $q,
+      RulesEngine,
+      Settings,
+      UserContact
+    ) {
+
+      'ngInect';
 
       var targets = [];
 
@@ -45,24 +54,44 @@ var moment = require('moment'),
           // unconfigured target type
           return;
         }
-        if (!target.instances) {
-          target.instances = {};
-        }
-        if (isRelevant(instance)) {
+        if (instance.deleted) {
+          delete target.instances[instance._id];
+        } else if (isRelevant(instance)) {
           target.instances[instance._id] = instance;
         }
         target.count = calculateCount(target);
       };
 
-      var init = Settings()
-        .then(function(settings) {
-          targets = settings.tasks.targets.items;
+      var init = $q.all([ Settings(), UserContact() ])
+        .then(function(results) {
+          var items = results[0].tasks &&
+                      results[0].tasks.targets &&
+                      results[0].tasks.targets.items;
+          var userContact = results[1];
+          if (!items) {
+            targets = [];
+            return;
+          }
+          targets = items.map(function(item) {
+            var result = _.clone(item);
+            result.instances = {};
+            return result;
+          }).filter(function(item) {
+            if (item.context) {
+              // Clone the `userContact` object to prevent bad context
+              // expressions from modifying it - this could leak into other
+              // expressions.
+              var clone = JSON.parse(JSON.stringify(userContact));
+              return $parse(item.context)({ user: clone });
+            }
+            return true;
+          });
         });
 
       return function(callback) {
         init
           .then(function() {
-            TaskGenerator.listen('TargetGenerator', 'target', function(err, _targets) {
+            RulesEngine.listen('TargetGenerator', 'target', function(err, _targets) {
               if (!err) {
                 _targets.forEach(mergeTarget);
               }
@@ -72,6 +101,6 @@ var moment = require('moment'),
           .catch(callback);
       };
     }
-  ]);
+  );
 
-}()); 
+}());

@@ -7,8 +7,8 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksCtrl',
-    ['$scope', '$state', '$timeout', 'LiveList', 'ResourceIcons', 'TranslateFrom',
-    function ($scope, $state, $timeout, LiveList, ResourceIcons, TranslateFrom) {
+    function($scope, $state, $timeout, LiveList, RulesEngine, TranslateFrom) {
+      'ngInject';
 
       var setSelectedTask = function(task) {
         LiveList.tasks.setSelected(task._id);
@@ -36,17 +36,13 @@ var _ = require('underscore');
         $scope.selected = null;
       });
 
-      $scope.filterModel.type = 'tasks';
       $timeout(function() {
         LiveList.tasks.refresh();
-        if (!LiveList.tasks.iconsInitialised) {
-          ResourceIcons.updateResources();
-          LiveList.tasks.iconsInitialised = true;
-        }
       });
       $scope.selected = null;
       $scope.error = false;
       $scope.hasTasks = LiveList.tasks.count() > 0;
+      $scope.tasksDisabled = !RulesEngine.enabled;
 
       LiveList.tasks.notifyChange = function(task) {
         $scope.hasTasks = LiveList.tasks.count() > 0;
@@ -61,7 +57,7 @@ var _ = require('underscore');
       };
 
       $scope.$on('query', function() {
-        if ($scope.filterModel.type !== 'tasks') {
+        if ($scope.currentTab !== 'tasks') {
           LiveList.tasks.clearSelected();
           delete LiveList.tasks.notifyChange;
           delete LiveList.tasks.notifyError;
@@ -69,7 +65,14 @@ var _ = require('underscore');
         }
       });
 
+      $scope.$on('$destroy', function() {
+        if (!$state.includes('tasks')) {
+          $scope.setTitle();
+          $scope.clearSelected();
+        }
+      });
+
     }
-  ]);
+  );
 
 }());

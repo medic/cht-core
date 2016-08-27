@@ -7,8 +7,9 @@ var _ = require('underscore');
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('OutgoingMessagesConfiguration',
-    ['translateFilter', 
-    function(translateFilter) {
+    function($translate) {
+
+      'ngInject';
 
       var mapGroupModel = function(translations, path, labelParts) {
         return {
@@ -26,13 +27,13 @@ var _ = require('underscore');
         groupModels.push(mapGroupModel(
           report.messages,
           path + '.messages',
-          labelParts.concat([translateFilter('Messages')])
+          labelParts.concat([$translate.instant('Messages')])
         ));
         if (report.validations) {
           groupModels.push(mapGroupModel(
             report.validations.list,
             path + '.validations.list',
-            labelParts.concat([translateFilter('Validations')])
+            labelParts.concat([$translate.instant('Validations')])
           ));
         }
       };
@@ -59,19 +60,19 @@ var _ = require('underscore');
           groupModels,
           settings,
           'registrations',
-          translateFilter('Registrations')
+          $translate.instant('Registrations')
         );
         createReportsModel(
           groupModels,
           settings,
           'schedules',
-          translateFilter('Schedules')
+          $translate.instant('Schedules')
         );
         createReportsModel(
           groupModels,
           settings,
           'patient_reports',
-          translateFilter('Patient Report')
+          $translate.instant('Patient Report')
         );
 
         // single configurations
@@ -80,7 +81,7 @@ var _ = require('underscore');
             groupModels,
             settings.notifications,
             'notifications',
-            [ translateFilter('Notifications') ]
+            [ $translate.instant('Notifications') ]
           );
         }
 
@@ -88,6 +89,6 @@ var _ = require('underscore');
       };
 
     }
-  ]);
+  );
 
 }()); 

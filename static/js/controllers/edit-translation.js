@@ -1,103 +1,65 @@
-var _ = require('underscore'),
-    modal = require('../modules/modal'),
-    objectpath = require('views/lib/objectpath');
+var _ = require('underscore');
 
 (function () {
 
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
+  angular.module('inboxControllers').controller('EditTranslationCtrl',
+    function (
+      $scope,
+      $uibModalInstance,
+      DB
+    ) {
 
-  var findValue = function(locale, translation) {
-    var result = _.findWhere(translation.translations, { locale: locale.code });
-    return result && result.content;
-  };
+      'ngInject';
 
-  var mapPopulatedValues = function(populatedValues) {
-    return _.map(populatedValues, function(value) {
-      return {
-        locale: value.locale.code,
-        content: value.value
-      };
-    });
-  };
+      $scope.key = $scope.model.key;
+      $scope.editing = !!$scope.model.key;
+      $scope.locales = _.pluck($scope.model.locales, 'doc');
+      $scope.values = {};
 
-  var createTranslationUpdate = function(settings, model, populatedValues) {
-    var updated = _.findWhere(settings.translations, { key: model.key });
-    updated.translations = mapPopulatedValues(populatedValues);
-    return { translations: settings.translations };
-  };
-
-  var createSettingsUpdate = function(settings, model, populatedValues) {
-    var trunk = model.path.split('.')[0].replace(/\[[0-9]*\]/, '');
-    var updated = {};
-    updated[trunk] = settings[trunk];
-    var leaf = objectpath.get(updated, model.path);
-    leaf.message = mapPopulatedValues(populatedValues);
-    return updated;
-  };
-
-  var getUpdateFn = function(model) {
-    if (model.key) {
-      return createTranslationUpdate;
-    }
-    if (model.path) {
-      return createSettingsUpdate;
-    }
-  };
-
-  inboxControllers.controller('EditTranslationCtrl',
-    ['$scope', '$rootScope', '$q', 'translateFilter', 'Settings', 'UpdateSettings',
-    function ($scope, $rootScope, $q, translateFilter, Settings, UpdateSettings) {
-
-      var updateTranslation = function(settings) {
-        var model = $scope.translationModel;
-        var populatedValues = _.filter(model.values, function(value) {
-          return !!value.value;
-        });
-        var updateFn = getUpdateFn(model);
-        if (!updateFn) {
-          return $q.reject(new Error('Invalid translation model'));
-        }
-        return $q(function(resolve, reject) {
-          var update = updateFn(settings, model, populatedValues);
-          UpdateSettings(update, function(err) {
-            if (err) {
-              return reject(err);
-            }
-            resolve(update);
-          });
-        });
-      };
-
-      $scope.$on('EditTranslationInit', function(e, translation, locales) {
-        $scope.translationModel = { 
-          key: translation.key,
-          path: translation.path,
-          default: translation.default
-        };
-        $scope.translationModel.values = _.map(locales, function(locale) {
-          return {
-            locale: locale,
-            value: findValue(locale, translation)
-          };
-        });
+      $scope.locales.forEach(function(locale) {
+        var value = $scope.key ? locale.values[$scope.key] : null;
+        $scope.values[locale.code] = value;
       });
 
-      $scope.saveTranslation = function() {
-        var pane = modal.start($('#edit-translation'));
-        return Settings()
-          .then(updateTranslation)
-          .then(function(update) {
-            $rootScope.$broadcast('TranslationUpdated', update);
-            pane.done();
-          })
-          .catch(function(err) {
-            pane.done(translateFilter('Error updating settings'), err);
-          });
+      var getUpdatedLocales = function() {
+        return _.filter($scope.locales, function(locale) {
+          var newValue = $scope.values[locale.code];
+          if (
+            !$scope.editing ||
+            ($scope.editing && locale.values[$scope.key] !== newValue)
+          ) {
+            locale.values[$scope.key] = newValue;
+            return true;
+          }
+          return false;
+        });
+      };
+
+      $scope.submit = function() {
+        $scope.setProcessing();
+        var updated = getUpdatedLocales();
+        if (!updated.length) {
+          $scope.setFinished();
+          $uibModalInstance.close();
+        } else {
+          DB().bulkDocs(updated)
+            .then(function() {
+              $scope.setFinished();
+              $uibModalInstance.close();
+            })
+            .catch(function(err) {
+              $scope.setError(err, 'Error updating settings');
+            });
+        }
+      };
+
+      $scope.cancel = function() {
+        $uibModalInstance.dismiss();
       };
 
     }
-  ]);
+  );
 
 }());

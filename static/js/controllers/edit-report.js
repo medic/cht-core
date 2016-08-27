@@ -10,8 +10,14 @@ var modal = require('../modules/modal');
   'use strict';
 
   angular.module('inboxControllers').controller('EditReportCtrl',
-    ['$scope', '$state', '$translate', 'DB', 'DbNameService', 'UpdateFacility', 'Enketo',
-    function ($scope, $state, $translate, DB, DbNameService, UpdateFacility, Enketo) {
+    function (
+      $scope,
+      $translate,
+      Enketo,
+      UpdateFacility
+    ) {
+
+      'ngInject';
 
       $(document).on('hidden.bs.modal', '#edit-report', function() {
         $(this).find('.form-wrapper .container').empty();
@@ -34,11 +40,17 @@ var modal = require('../modules/modal');
           return;
         }
         var pane = modal.start($modal);
-        UpdateFacility(docId, facilityId, function(err) {
-          pane.done($translate.instant('Error updating facility'), err);
-        });
+        UpdateFacility(docId, facilityId)
+          .then(function() {
+            pane.done();
+          })
+          .catch(function(err) {
+            $translate('Error updating facility').then(function(msg) {
+              pane.done(msg, err);
+            });
+          });
       };
 
     }
-  ]);
+  );
 }());

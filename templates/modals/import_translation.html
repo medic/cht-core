@@ -1,26 +1,17 @@
-<div class="modal fade import-translation" id="import-translation" role="dialog" ng-controller="ImportTranslationCtrl">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{'Import translations' | translate}}</h3>
-      </div>
-      <div class="modal-body">
-        <form action="" method="POST">
-
-          <div class="form-group">
-            <label>{{'Translation file' | translate}} *</label>
-            <input type="file" name="translations" />
-            <p class="help-block">{{'Translation file help' | translate}}</p>
-          </div>
-
-        </form>
-      </div>
-      <div class="modal-footer">
-        <p class="note"></p>
-        <a class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
-        <a class="btn submit btn-primary" ng-click="import()" ng-attr-data-working-label="{{'Submitting' | translate}}">{{'Submit' | translate}}</a>
-      </div>
+<mm-modal
+  id="'import-translation'"
+  title-key="'Import translations'"
+  submit-key="'Submit'"
+  submitting-key="'Submitting'"
+  on-cancel="cancel()"
+  on-submit="submit()"
+>
+  <form action="" method="POST">
+    <div class="form-group">
+      <label translate>Translation file</label> *
+      <input type="file" name="translations" />
+      <p class="help-block" translate>Translation file help</p>
+      <p class="help-block note">{{validationError}}</p>
     </div>
-  </div>
-</div>
+  </form>
+</mm-modal>

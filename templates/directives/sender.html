@@ -1,0 +1,13 @@
+<div class="sender" ng-if="message">
+  <div>
+    <span class="name"
+    ng-bind="message.contact.name || (!message.form && message.name) || message.from || message.sent_by"></span>
+    <span class="phone"
+    ng-hide="message.name && message.name === message.facility.contact.phone"
+    ng-bind="message.contact.phone || message.phone"></span>
+  </div>
+  <div class="position"
+    ng-if="message.contact.parent || message.place || (!message.form && message.name)"
+    ng-bind-html="message.contact.parent || message.place || (!message.form && message.name) | clinic">
+  </div>
+</div>

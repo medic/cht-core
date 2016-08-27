@@ -5,22 +5,24 @@ describe('UserDistrict service', function() {
   var service,
       user,
       userCtx,
-      get;
+      get,
+      isAdmin;
 
   beforeEach(function() {
     get = sinon.stub();
+    isAdmin = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('UserSettings', function(callback) {
         callback(null, user);
       });
-      $provide.factory('Session', function() {
-        return {
-          userCtx: function() {
-            return userCtx;
-          }
-        };
+      $provide.value('Session', {
+        userCtx: function() {
+          return userCtx;
+        },
+        isAdmin: isAdmin
       });
     });
     inject(function($injector) {
@@ -31,44 +33,45 @@ describe('UserDistrict service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(get);
+    KarmaUtils.restore(get, isAdmin);
   });
 
-  it('returns nothing for db admin', function(done) {
+  it('returns nothing for db admin', function() {
     userCtx = {
       name: 'greg',
       roles: ['_admin']
     };
+    isAdmin.returns(true);
 
-    service(function(err, actual) {
-      chai.expect(err).to.equal(undefined);
-      chai.expect(actual).to.equal(undefined);
-      done();
-    });
+    return service()
+      .then(function(actual) {
+        chai.expect(actual).to.equal(undefined);
+      });
 
   });
 
-  it('returns nothing for national admin', function(done) {
+  it('returns nothing for national admin', function() {
 
     userCtx = {
       name: 'greg',
       roles: ['national_admin']
     };
+    isAdmin.returns(true);
 
-    service(function(err, actual) {
-      chai.expect(err).to.equal(undefined);
-      chai.expect(actual).to.equal(undefined);
-      done();
-    });
+    return service()
+      .then(function(actual) {
+        chai.expect(actual).to.equal(undefined);
+      });
 
   });
 
-  it('returns district for district admin', function(done) {
+  it('returns district for district admin', function() {
 
     userCtx = {
       name: 'jeff',
       roles: ['district_admin']
     };
+    isAdmin.returns(false);
 
     user = {
       name: 'jeff',
@@ -76,38 +79,104 @@ describe('UserDistrict service', function() {
       facility_id: 'x'
     };
 
-    get.onFirstCall().returns(KarmaUtils.mockPromise(null, { type: 'district_hospital' }));
+    get.onCall(0).returns(KarmaUtils.mockPromise(null, user));
+    get.onCall(1).returns(KarmaUtils.mockPromise(null, { type: 'district_hospital' }));
 
-    service(function(err, actual) {
-      chai.expect(err).to.equal(null);
-      chai.expect(actual).to.equal('x');
-      done();
-    });
+    return service()
+      .then(function(actual) {
+        chai.expect(actual).to.equal('x');
+        chai.expect(get.callCount).to.equal(2);
+        chai.expect(get.args[0][0]).to.equal('org.couchdb.user:jeff');
+        chai.expect(get.args[1][0]).to.equal('x');
+      });
 
   });
 
-  it('returns error for non admin', function(done) {
+  it('returns error for district admin without a facility_id', function() {
+
+    userCtx = {
+      name: 'jeff',
+      roles: ['district_admin']
+    };
+    isAdmin.returns(false);
+
+    user = {
+      name: 'jeff',
+      roles: ['district_admin']
+    };
+
+    get.onCall(0).returns(KarmaUtils.mockPromise(null, user));
+
+    return service()
+      .then(function() {
+        throw new Error('Expected error to be thrown');
+      })
+      .catch(function(err) {
+        chai.expect(err.message).to.equal('No district assigned to district admin.');
+      });
+
+  });
+
+  it('returns error for district admin with a facility_id that doesn\'t exist', function() {
+
+    userCtx = {
+      name: 'jeff',
+      roles: ['district_admin']
+    };
+    isAdmin.returns(false);
+
+    user = {
+      name: 'jeff',
+      roles: ['district_admin'],
+      facility_id: 'x'
+    };
+
+    var err404 = {status: 404, name: 'not_found', message: 'missing', error: true, reason: 'missing'};
+
+    get.onCall(0).returns(KarmaUtils.mockPromise(null, user));
+    get.onCall(1).returns(KarmaUtils.mockPromise(err404));
+    get.onCall(2).returns(KarmaUtils.mockPromise(err404));
+
+    return service()
+      .then(function() {
+        throw new Error('Expected error to be thrown');
+      })
+      .catch(function(err) {
+        chai.expect(err.status).to.equal(404);
+      });
+
+  });
+
+  it('returns error for non admin', function() {
 
     userCtx = {
       name: 'jeff',
       roles: ['analytics']
     };
+    isAdmin.returns(false);
 
-    service(function(err) {
-      chai.expect(err.message).to.equal('The administrator needs to give you additional privileges to use this site.');
-      done();
-    });
+    return service()
+      .then(function() {
+        throw new Error('Expected error to be thrown');
+      })
+      .catch(function(err) {
+        chai.expect(err.message).to.equal('The administrator needs to give you additional privileges to use this site.');
+      });
 
   });
 
-  it('returns error for not logged in', function(done) {
+  it('returns error for not logged in', function() {
 
     userCtx = {};
+    isAdmin.returns(false);
 
-    service(function(err) {
-      chai.expect(err.message).to.equal('Not logged in');
-      done();
-    });
+    return service()
+      .then(function() {
+        throw new Error('Expected error to be thrown');
+      })
+      .catch(function(err) {
+        chai.expect(err.message).to.equal('Not logged in');
+      });
 
   });
 

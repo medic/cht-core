@@ -1,6 +1,5 @@
 var _ = require('underscore'),
-    scrollLoader = require('../modules/scroll-loader'),
-    async = require('async');
+    scrollLoader = require('../modules/scroll-loader');
 
 (function () {
 
@@ -9,13 +8,26 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ContactsCtrl',
-    ['$log', '$scope', '$state', '$timeout', 'DB', 'LiveList', 'UserSettings', 'Search', 'CONTACT_TYPES',
-    function ($log, $scope, $state, $timeout, DB, LiveList, UserSettings, Search, CONTACT_TYPES) {
+    function (
+      $log,
+      $q,
+      $scope,
+      $state,
+      $timeout,
+      DB,
+      Export,
+      LiveList,
+      Search,
+      SearchFilters,
+      UserSettings
+    ) {
+
+      'ngInject';
 
       var liveList = LiveList.contacts;
 
-      $scope.filterModel.type = 'contacts';
       $scope.selected = null;
+      $scope.filters = {};
 
       function completeLoad() {
         $scope.loading = false;
@@ -26,12 +38,12 @@ var _ = require('underscore'),
       function _initScroll() {
         scrollLoader.init(function() {
           if (!$scope.loading && $scope.moreItems) {
-            $scope.query({ skip: true });
+            _query({ skip: true });
           }
         });
       }
 
-      $scope.query = function(options) {
+      var _query = function(options) {
         options = options || {};
         options.limit = 50;
 
@@ -45,58 +57,60 @@ var _ = require('underscore'),
           options.skip = liveList.count();
         }
 
-        // curry the Search service so async.parallel can provide the
-        // callback as the final callback argument
-        var contactSearch = _.partial(Search, $scope, options);
-        async.parallel([ contactSearch, UserSettings ], function(err, results) {
-          if (err) {
-            $scope.error = true;
-            return $log.error('Error searching for contacts', err);
-          }
+        $q.all([
+          Search('contacts', $scope.filters, options),
+          UserSettings()
+        ])
+          .then(function(results) {
+            var data = results[0];
+            $scope.moreItems = liveList.moreItems = data.length >= options.limit;
 
-          var data = results[0];
-          $scope.moreItems = liveList.moreItems = data.length >= options.limit;
+            // filter special contacts which should not be displayed
+            var user = results[1];
+            data = _.reject(data, function(contact) {
+              return contact._id === user.facility_id ||
+                     contact._id === user.contact_id;
+            });
 
-          // filter special contacts which should not be displayed
-          var user = results[1];
-          data = _.reject(data, function(contact) {
-            return contact._id === user.facility_id ||
-                contact._id === user.contact_id;
-          });
-
-          if (options.skip) {
-            $timeout(function() {
-              _.each(data, function(contact) {
-                liveList.insert(contact, false);
-              });
-              liveList.refresh();
-              completeLoad();
-            })
-            .then(completeLoad);
-          } else if (options.silent) {
-            _.each(data, liveList.update);
-            completeLoad();
-          } else {
-            $timeout(function() {
-              liveList.set(data);
-              _initScroll();
-
-              if (!data.length) {
-                $scope.clearSelected();
-              } else if (!options.stay &&
-                         !$scope.isMobile() &&
-                         $state.is('contacts.detail') &&
-                         !$state.params.id) {
-                // wait for selected to be set before checking
-                $timeout(function() {
-                  var id = $('.inbox-items li').first().attr('data-record-id');
-                  $state.go('contacts.detail', { id: id }, { location: 'replace' });
+            if (options.skip) {
+              $timeout(function() {
+                _.each(data, function(contact) {
+                  liveList.insert(contact, false);
                 });
-              }
-            })
-            .then(completeLoad);
-          }
-        });
+                liveList.refresh();
+                completeLoad();
+              })
+              .then(completeLoad);
+            } else if (options.silent) {
+              _.each(data, liveList.update);
+              completeLoad();
+            } else {
+              $timeout(function() {
+                liveList.set(data);
+                _initScroll();
+
+                if (!data.length) {
+                  $scope.clearSelected();
+                } else if (!options.stay &&
+                           !$scope.isMobile() &&
+                           $state.is('contacts.detail') &&
+                           !$state.params.id) {
+                  // wait for selected to be set before checking
+                  $timeout(function() {
+                    var id = $('.inbox-items li').first().attr('data-record-id');
+                    $state.go('contacts.detail', { id: id }, { location: 'replace' });
+                  });
+                }
+              })
+              .then(completeLoad);
+            }
+          })
+          .catch(function(err) {
+            $scope.error = true;
+            $scope.loading = false;
+            $scope.appending = false;
+            $log.error('Error searching for contacts', err);
+          });
       };
 
       $scope.setSelected = function(selected) {
@@ -105,44 +119,32 @@ var _ = require('underscore'),
         $scope.setTitle(selected.doc.name);
         $scope.clearCancelTarget();
         $scope.setActionBar({
-          _id: selected.doc._id,
+          selected: [ selected.doc ],
           sendTo: selected.doc,
           disableDelete: (selected.children && selected.children.length) ||
                          (selected.contactFor && selected.contactFor.length)
         });
       };
 
-      $scope.orderByType = function(contact) {
-        return CONTACT_TYPES.indexOf(contact.type);
-      };
-
       $scope.$on('ClearSelected', function() {
         $scope.selected = null;
+        LiveList.contacts.clearSelected();
+        LiveList['contact-search'].clearSelected();
       });
 
-      $scope.$on('query', function() {
-        if ($scope.filterModel.type !== 'contacts') {
-          liveList.clearSelected();
-          LiveList['contact-search'].set([]);
-          return;
-        }
-
+      $scope.search = function() {
         $scope.loading = true;
-
-        if (($scope.filterQuery && $scope.filterQuery.value) ||
-            ($scope.filterModel && (
-              ($scope.filterModel.contactTypes && $scope.filterModel.contactTypes.length) ||
-              $scope.filterModel.facilities.length))) {
+        if ($scope.filters.search ||
+            ($scope.filters.facilities && $scope.filters.facilities.selected && $scope.filters.facilities.selected.length) ||
+            ($scope.filters.types && $scope.filters.types.selected && $scope.filters.types.selected.length)
+           ) {
           $scope.filtered = true;
-
           liveList = LiveList['contact-search'];
           liveList.set([]);
-
-          $scope.query();
+          _query();
         } else {
           $scope.filtered = false;
           liveList = LiveList.contacts;
-
           if (liveList.initialised()) {
             $timeout(function() {
               $scope.loading = false;
@@ -152,12 +154,48 @@ var _ = require('underscore'),
               _initScroll();
             });
           } else {
-            $scope.query();
+            _query();
           }
+        }
+      };
+
+      $scope.setupSearchFreetext = function() {
+        SearchFilters.freetext($scope.search);
+      };
+      $scope.setupSearchFacility = function() {
+        SearchFilters.facility(function(facilities) {
+          $scope.filters.facilities = facilities;
+          $scope.search();
+        });
+      };
+      $scope.setupSearchContactType = function() {
+        SearchFilters.contactType(function(types) {
+          $scope.filters.types = types;
+          $scope.search();
+        });
+      };
+      $scope.resetFilterModel = function() {
+        $scope.filters = {};
+        SearchFilters.reset();
+        $scope.search();
+      };
+
+      $scope.search();
+
+      $scope.$on('export', function() {
+        if ($scope.currentTab === 'contacts') {
+          Export($scope.filters, 'reports');
+        }
+      });
+
+      $scope.$on('$destroy', function() {
+        if (!$state.includes('contacts')) {
+          $scope.setTitle();
+          $scope.clearSelected();
         }
       });
 
     }
-  ]);
+  );
 
 }());

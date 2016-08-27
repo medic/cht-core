@@ -1,3 +1,5 @@
+var moment = require('moment');
+
 (function () {
 
   'use strict';
@@ -5,35 +7,54 @@
   var inboxServices = angular.module('inboxServices');
   var localeCookieKey = 'locale';
 
-  inboxServices.factory('SetLanguageCookie', ['ipCookie',
-    function(ipCookie) {
+  inboxServices.factory('SetLanguageCookie',
+    function(
+      ipCookie
+    ) {
+      'ngInject';
       return function(value) {
         ipCookie(localeCookieKey, value, { expires: 365, path: '/' });
         return value;
       };
     }
-  ]);
+  );
 
-  inboxServices.factory('Language', [
-    '$q', 'ipCookie', 'SetLanguageCookie', 'UserSettings', 'Settings',
-    function($q, ipCookie, SetLanguageCookie, UserSettings, Settings) {
+  inboxServices.factory('SetLanguage',
+    function(
+      $translate,
+      SetLanguageCookie
+    ) {
+      'ngInject';
+      return function(code) {
+        moment.locale([code, 'en']);
+        $translate.use(code);
+        SetLanguageCookie(code);
+      };
+    }
+  );
+
+  inboxServices.factory('Language',
+    function(
+      $q,
+      ipCookie,
+      SetLanguageCookie,
+      Settings,
+      UserSettings
+    ) {
+
+      'ngInject';
 
       var fetchLocale = function() {
-        return $q(function(resolve, reject) {
-          UserSettings(function(err, res) {
-            if (err) {
-              return reject(err);
+        return UserSettings()
+          .then(function(user) {
+            if (user && user.language) {
+              return user.language;
             }
-            if (res && res.language) {
-              return resolve(res.language);
-            }
-            Settings()
+            return Settings()
               .then(function(settings) {
-                resolve(settings.locale || 'en');
-              })
-              .catch(reject);
+                return settings.locale || 'en';
+              });
           });
-        });
       };
 
       return function() {
@@ -44,6 +65,6 @@
         return fetchLocale().then(SetLanguageCookie);
       };
     }
-  ]);
+  );
 
 }());

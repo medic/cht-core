@@ -1,7 +1,6 @@
 var _ = require('underscore');
 
 var CLINIC = {
-  badge: 'fa-group',
   icon: 'fa-group',
   fields: {
     name: {
@@ -15,6 +14,7 @@ var CLINIC = {
     contact: {
       type: 'db:person',
       required: true,
+      parent: 'PARENT'
     },
     location: {
       type: 'geopoint',
@@ -24,7 +24,6 @@ var CLINIC = {
 };
 
 var DISTRICT_HOSPITAL = {
-  badge: 'fa-building',
   icon: 'fa-building',
   fields: {
     name: {
@@ -34,6 +33,7 @@ var DISTRICT_HOSPITAL = {
     contact: {
       type: 'db:person',
       required: true,
+      parent: 'PARENT'
     },
     external_id: 'string',
     notes: 'text',
@@ -41,7 +41,6 @@ var DISTRICT_HOSPITAL = {
 };
 
 var HEALTH_CENTER = {
-  badge: 'fa-hospital-a',
   icon: 'fa-hospital-o',
   fields: {
     name: {
@@ -55,6 +54,7 @@ var HEALTH_CENTER = {
     contact: {
       type: 'db:person',
       required: true,
+      parent: 'PARENT'
     },
     external_id: 'string',
     notes: 'text',
@@ -62,7 +62,7 @@ var HEALTH_CENTER = {
 };
 
 var PERSON = {
-  badge: 'fa-user',
+  icon: 'fa-user',
   fields: {
     name: {
       type: 'string',
@@ -153,7 +153,7 @@ function validateSchema(type, schema) {
   return true;
 }
 
-angular.module('inboxServices').service('ContactSchema', [
+angular.module('inboxServices').service('ContactSchema',
   function() {
     return {
       get: function() {
@@ -204,4 +204,4 @@ angular.module('inboxServices').service('ContactSchema', [
       validate: validateSchema,
     };
   }
-]);
+);

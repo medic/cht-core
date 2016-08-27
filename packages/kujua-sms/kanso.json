@@ -6,6 +6,7 @@
     "load": "kujua-sms/app",
     "dependencies": {
         "modules": null,
+        "moment": null,
         "underscore": null,
         "properties": null,
         "kujua-utils": null

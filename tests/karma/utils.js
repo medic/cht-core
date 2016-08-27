@@ -27,22 +27,13 @@ window.KarmaUtils = {
   // a promise than never resolves or rejects
   nullPromise: function() {
     return function() {
-      return {
-        then: function() {
-          return {
-            catch: function() {}
-          };
-        }
-      };
+      return Q.defer().promise;
     };
   },
-  mockDB: function(db, getRemoteUrl) {
+  mockDB: function(db) {
     return function() {
-      return {
-        get: function() {
-          return db;
-        },
-        getRemoteUrl: getRemoteUrl
+      return function() {
+        return db;
       };
     };
   }
@@ -82,3 +73,5 @@ chai.assert.deepEqual = function() {
     );
   }
 };
+
+window._medicMobileTesting = true;

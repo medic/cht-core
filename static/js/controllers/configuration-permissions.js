@@ -7,8 +7,14 @@ var defaults = require('views/lib/app_settings');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationPermissionsCtrl',
-    ['$scope', '$log', 'Settings', 'UpdateSettings',
-    function ($scope, $log, Settings, UpdateSettings) {
+    function (
+      $scope,
+      $log,
+      Settings,
+      UpdateSettings
+    ) {
+
+      'ngInject';
 
       $scope.loading = true;
       $scope.roles = [
@@ -97,15 +103,16 @@ var defaults = require('views/lib/app_settings');
           permissions: mapUpdatesToSettings($scope.permissions)
         };
         $scope.submitting = true;
-        UpdateSettings(settings, { replace: true }, function(err) {
-          $scope.submitting = false;
-          if (err) {
-            $log.error('Error updating settings', err);
+        UpdateSettings(settings, { replace: true })
+          .catch(function(err) {
             $scope.error = 'Error saving settings';
-          }
-        });
+            $log.error('Error updating settings', err);
+          })
+          .then(function() {
+            $scope.submitting = false;
+          });
       };
     }
-  ]);
+  );
 
 }());

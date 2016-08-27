@@ -9,11 +9,36 @@ function PARSER($parse, scope) {
 
 // medic-webapp specific config for LiveList.
 // This service should be invoked once at startup.
-angular.module('inboxServices').factory('LiveListConfig', [
-  '$log', '$parse', '$templateCache', '$timeout',
-      'Changes', 'DB', 'LiveList', 'TaskGenerator', 'CONTACT_TYPES',
-  function($log, $parse, $templateCache, $timeout,
-      Changes, DB, LiveList, TaskGenerator, CONTACT_TYPES) {
+angular.module('inboxServices').factory('LiveListConfig',
+  function(
+    $log,
+    $parse,
+    $templateCache,
+    $timeout,
+    Changes,
+    CONTACT_TYPES,
+    GetDataRecords,
+    DB,
+    LiveList,
+    RulesEngine
+  ) {
+
+    'ngInject';
+
+    var handleChange = function(change, lists) {
+      if (change.deleted) {
+        lists.forEach(function(list) {
+          list.remove({ _id: change.id });
+        });
+        return;
+      }
+      GetDataRecords(change.id).then(function(doc) {
+        lists.forEach(function(list) {
+          list.update(doc);
+        });
+      });
+    };
+
     // Configure LiveList service
     return function($scope) {
 
@@ -36,13 +61,13 @@ angular.module('inboxServices').factory('LiveListConfig', [
       };
 
       LiveList.$listFor('contacts', {
-        selecter: '#contacts-list ul.unfiltered',
+        selector: '#contacts-list ul.unfiltered',
         orderBy: contacts_config.orderBy,
         listItem: contacts_config.listItem,
       });
 
       LiveList.$listFor('contact-search', {
-        selecter: '#contacts-list ul.filtered',
+        selector: '#contacts-list ul.filtered',
         orderBy: contacts_config.orderBy,
         listItem: contacts_config.listItem,
       });
@@ -50,11 +75,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
       Changes({
         key: 'contacts-list',
         callback: function(change) {
-          if (change.deleted) {
-            LiveList.contacts.remove({ _id: change.id });
-            return;
-          }
-          LiveList.contacts.update(change.doc);
+          handleChange(change, [ LiveList.contacts, LiveList['contact-search'] ]);
         },
         filter: function(change) {
           return CONTACT_TYPES.indexOf(change.doc.type) !== -1;
@@ -76,22 +97,29 @@ angular.module('inboxServices').factory('LiveListConfig', [
           }
           return r2.reported_date - r1.reported_date;
         },
-        listItem: function(report) {
+        listItem: function(report, removedDomElement) {
           var reportHtml = $templateCache.get('templates/partials/reports_list_item.html');
           var scope = $scope.$new();
           scope.report = report;
-          return reportHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
+          var element = reportHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
+          if (removedDomElement &&
+              removedDomElement.find('input[type="checkbox"]').is(':checked')) {
+            // updating an item that was selected in select mode
+            element = $(element);
+            element.find('input[type="checkbox"]').prop('checked', true);
+          }
+          return element;
         },
       };
 
       LiveList.$listFor('reports', {
-        selecter: '#reports-list ul.unfiltered',
+        selector: '#reports-list ul.unfiltered',
         orderBy: reports_config.orderBy,
         listItem: reports_config.listItem,
       });
 
       LiveList.$listFor('report-search', {
-        selecter: '#reports-list ul.filtered',
+        selector: '#reports-list ul.filtered',
         orderBy: reports_config.orderBy,
         listItem: reports_config.listItem,
       });
@@ -99,11 +127,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
       Changes({
         key: 'reports-list',
         callback: function(change) {
-          if (change.deleted) {
-            LiveList.reports.remove({ _id: change.id });
-            return;
-          }
-          LiveList.reports.update(change.doc);
+          handleChange(change, [ LiveList.reports, LiveList['report-search'] ]);
         },
         filter: function(change) {
           return change.doc.form;
@@ -111,7 +135,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
       });
 
       LiveList.$listFor('tasks', {
-        selecter: '#tasks-list ul',
+        selector: '#tasks-list ul',
         orderBy: function(t1, t2) {
           var lhs = t1 && t1.date,
               rhs = t2 && t2.date;
@@ -139,7 +163,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
 
       LiveList.tasks.set([]);
 
-      TaskGenerator.listen('tasks-list', 'task', function(err, tasks) {
+      RulesEngine.listen('tasks-list', 'task', function(err, tasks) {
         if (err) {
           $log.error('Error getting tasks', err);
 
@@ -154,7 +178,7 @@ angular.module('inboxServices').factory('LiveListConfig', [
 
         $timeout(function() {
           tasks.forEach(function(task) {
-            if (task.resolved) {
+            if (task.resolved || task.deleted) {
               LiveList.tasks.remove(task);
             } else {
               LiveList.tasks.update(task);
@@ -170,11 +194,15 @@ angular.module('inboxServices').factory('LiveListConfig', [
 
     };
   }
-]);
+);
 
-angular.module('inboxServices').factory('LiveList', [
-  '$timeout',
-  function($timeout) {
+angular.module('inboxServices').factory('LiveList',
+  function(
+    $timeout,
+    ResourceIcons
+  ) {
+    'ngInject';
+
     var api = {};
     var indexes = {};
 
@@ -199,13 +227,13 @@ angular.module('inboxServices').factory('LiveList', [
       if (!config.orderBy) {
         throw new Error('No `orderBy` set for list.');
       }
-      if (!config.selecter) {
-        throw new Error('No `selecter` set for list.');
+      if (!config.selector) {
+        throw new Error('No `selector` set for list.');
       }
     }
 
-    function listItemFor(idx, doc) {
-      var li = $(idx.listItem(doc));
+    function listItemFor(idx, doc, removedDomElement) {
+      var li = $(idx.listItem(doc, removedDomElement));
       if (doc._id === idx.selected) {
         li.addClass('selected');
       }
@@ -229,12 +257,13 @@ angular.module('inboxServices').factory('LiveList', [
         return;
       }
 
-      var activeDom = $(idx.selecter);
+      var activeDom = $(idx.selector);
       if(activeDom.length) {
         activeDom.empty();
         _.each(idx.dom, function(li) {
           activeDom.append(li);
         });
+        ResourceIcons.replacePlaceholders(activeDom);
       }
     }
 
@@ -260,7 +289,7 @@ angular.module('inboxServices').factory('LiveList', [
         _insert(listName, items[i], true);
       }
 
-      $(idx.selecter)
+      $(idx.selector)
           .empty()
           .append(idx.dom);
     }
@@ -284,14 +313,14 @@ angular.module('inboxServices').factory('LiveList', [
       return false;
     }
 
-    function _insert(listName, newItem, skipDomAppend) {
+    function _insert(listName, newItem, skipDomAppend, removedDomElement) {
       var idx = indexes[listName];
 
       if (!idx.list) {
         return;
       }
 
-      var li = listItemFor(idx, newItem);
+      var li = listItemFor(idx, newItem, removedDomElement);
 
       var newItemIndex = findSortedIndex(idx.list, newItem, idx.orderBy);
       idx.list.splice(newItemIndex, 0, newItem);
@@ -301,7 +330,7 @@ angular.module('inboxServices').factory('LiveList', [
         return;
       }
 
-      var activeDom = $(idx.selecter);
+      var activeDom = $(idx.selector);
       if(activeDom.length) {
         var children = activeDom.children();
         if (!children.length || newItemIndex === children.length) {
@@ -314,8 +343,8 @@ angular.module('inboxServices').factory('LiveList', [
     }
 
     function _update(listName, updatedItem) {
-      _remove(listName, updatedItem);
-      _insert(listName, updatedItem);
+      var removed = _remove(listName, updatedItem);
+      _insert(listName, updatedItem, false, removed);
     }
 
     function _remove(listName, removedItem) {
@@ -334,10 +363,12 @@ angular.module('inboxServices').factory('LiveList', [
       }
       if (removeIndex !== null) {
         idx.list.splice(removeIndex, 1);
-        idx.dom.splice(removeIndex, 1);
+        var removed = idx.dom.splice(removeIndex, 1);
 
-        $(idx.selecter).children().eq(removeIndex)
-            .remove();
+        $(idx.selector).children().eq(removeIndex).remove();
+        if (removed.length) {
+          return removed[0];
+        }
       }
     }
 
@@ -424,7 +455,7 @@ angular.module('inboxServices').factory('LiveList', [
     api.$listFor = function(name, config) {
       checkConfig(config);
 
-      indexes[name] = _.pick(config, 'selecter', 'orderBy', 'listItem');
+      indexes[name] = _.pick(config, 'selector', 'orderBy', 'listItem');
 
       api[name] = {
         insert: _.partial(_insert, name),
@@ -445,4 +476,4 @@ angular.module('inboxServices').factory('LiveList', [
 
     return api;
   }
-]);
+);

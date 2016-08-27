@@ -263,9 +263,15 @@ var add_sms = exports.add_sms = function(doc, request) {
     };
     options = _.extend(req.form, options);
 
-    // if locale was not passed in form data then check query string
-    if (!options.locale) {
-        options.locale = (req.query && req.query.locale) || utils.info.locale;
+    /**
+     * If a locale value was passed in using form or query string then save
+     * that to the sms_message data, otherwise leave locale undefined.  The
+     * sms_message.locale property can be used as an override when supporting
+     * responses in multiple languages based on a gateway configuration or a
+     * special form field `locale`.
+     */
+    if (!options.locale && (req.query && req.query.locale)) {
+        options.locale = req.query.locale;
     }
 
     var def = utils.info.getForm(options.form),
@@ -350,19 +356,20 @@ exports.update_message_task = function(doc, request) {
  * Return task object that matches message uuid or a falsey value if match
  * fails.
  */
-var getTask = function(uuid, doc, type) {
-    type = type || 'message';
-    if (!uuid || !doc || !doc.tasks) {
-        return;
-    }
-    if (type === 'message') {
-        for (var i in doc.tasks) {
-            for (var j in doc.tasks[i].messages) {
-                if (uuid === doc.tasks[i].messages[j].uuid) {
-                    return doc.tasks[i];
-                }
+var getTask = function(uuid, doc) {
+    for (var i in doc.tasks) {
+        for (var j in doc.tasks[i].messages) {
+            if (uuid === doc.tasks[i].messages[j].uuid) {
+                return doc.tasks[i];
             }
-        };
-    }
+        }
+    };
+    for (var i in doc.scheduled_tasks) {
+        for (var j in doc.scheduled_tasks[i].messages) {
+            if (uuid === doc.scheduled_tasks[i].messages[j].uuid) {
+                return doc.scheduled_tasks[i];
+            }
+        }
+    };
     return;
 };

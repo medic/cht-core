@@ -1,5 +1,4 @@
-var kansoJson = require('./kanso.json'),
-    path = require('path');
+var kansoJson = require('./kanso.json');
 
 module.exports = function(grunt) {
 
@@ -21,27 +20,21 @@ module.exports = function(grunt) {
           from: /@@APP_CONFIG.name/g,
           to: kansoJson.name
         }]
-      },
-      monkeypatchdate: {
-        src: [ 'static/dist/inbox.js' ],
-        overwrite: true,
-        replacements: [{
-          from: /clickDate: function \(e\) \{/g,
-          to: 'clickDate: function (e) {\n\n// MONKEY PATCH BY GRUNT: Needed for the mobile version.\nthis.element.trigger(\'mm.dateSelected.daterangepicker\', this);\n'
-        }]
-      },
-      // replace cache busting which breaks appcache, needed until this is fixed:
-      // https://github.com/FortAwesome/Font-Awesome/issues/3286
-      monkeypatchfontawesome: {
-        src: [ 'static/dist/inbox.css' ],
-        overwrite: true,
-        replacements: [{
-          from: /(\/fonts\/fontawesome-webfont[^?]*)[^']*/gi,
-          to: '$1'
-        }]
+      }
+    },
+    'couch-compile': {
+      ddocs: {
+        files: {
+          'ddocs/compiled.json': [ 'ddocs/*', '!ddocs/compiled.json' ]
+        }
       }
     },
     browserify: {
+      options: {
+        browserifyOptions: {
+          debug: true
+        }
+      },
       dist: {
         src: ['static/js/app.js'],
         dest: 'static/dist/inbox.js',
@@ -49,6 +42,7 @@ module.exports = function(grunt) {
           detectGlobals: false
         },
         options: {
+          transform: ['browserify-ngannotate'],
           alias: {
             'db': './packages/db/db',
             'kujua-utils': './packages/kujua-utils/kujua-utils',
@@ -62,8 +56,11 @@ module.exports = function(grunt) {
             './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding',
             'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath',
             'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
-            'libphonenumber/phoneformat': './packages/libphonenumber/libphonenumber/phoneformat',
             'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils',
+            'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber',
+            'worker-pouch/workerified': './node_modules/worker-pouch/lib/workerified/',
+            'pouchdb-generate-replication-id': './static/js/modules/pouchdb-generate-replication-id-patched',
+            'pouchdb-generate-replication-id-original': './node_modules/pouchdb-generate-replication-id'
           },
         },
       }
@@ -82,6 +79,7 @@ module.exports = function(grunt) {
     jshint: {
       options: {
         jshintrc: true,
+        reporter: require('jshint-stylish'),
         ignores: [
           'tests/karma/q.js'
         ]
@@ -89,7 +87,9 @@ module.exports = function(grunt) {
       all: [
         'Gruntfile.js',
         'static/js/**/*.js',
-        'tests/**/*.js'
+        'tests/**/*.js',
+        'ddocs/**/*.js',
+        'lib/**/*.js'
       ]
     },
     less: {
@@ -112,7 +112,10 @@ module.exports = function(grunt) {
     postcss: {
       options: {
         processors: [
-          require('autoprefixer-core')({ browsers: 'last 2 versions' })
+          require('autoprefixer')({ browsers: [
+            'last 2 versions',
+            'Android >= 4.4'
+          ] })
         ]
       },
       dist: {
@@ -125,14 +128,35 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: [
-              'node_modules/font-awesome/fonts/*'
-            ],
+            src: [ 'node_modules/font-awesome/fonts/*' ],
             dest: 'static/fonts'
-          },
+          }
         ]
       },
-      'enketo-xslt': {
+      librariestopatch: {
+        files: [
+          {
+            expand: true,
+            cwd: 'node_modules',
+            src: [
+              'bootstrap-daterangepicker/**',
+              'font-awesome/**'
+            ],
+            dest: 'node_modules_backup'
+          }
+        ]
+      },
+      libphonenumber: {
+        files: [
+          {
+            expand: true,
+            flatten: true,
+            src: [ 'node_modules/google-libphonenumber/dist/browser/libphonenumber.js' ],
+            dest: 'packages/libphonenumber/libphonenumber/'
+          }
+        ]
+      },
+      enketoxslt: {
         files: [
           {
             expand: true,
@@ -141,48 +165,64 @@ module.exports = function(grunt) {
             dest: 'static/dist/xslt/'
           }
         ]
-      },
-      // npm v3 puts nested node_modules at the top level. copy the css resources
-      // so sass compilation still works.
-      'enketo-css': {
-        files: [
-          {
-            src: [
-              'node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker.css',
-              'node_modules/bootstrap-timepicker/css/bootstrap-timepicker.css',
-              'node_modules/bootstrap-slider-basic/sass/_bootstrap-slider.scss'
-            ],
-            dest: 'node_modules/enketo-core/',
-            filter: function (filepath) {
-              // return false if the file exists
-              return !grunt.file.exists(path.join('node_modules/enketo-core/', filepath));
-            },
-          }
-        ]
       }
     },
     exec: {
-      compileddoc: {
-        cmd: function(ddocName) {
-          return 'kanso show "ddocs/'+ddocName+'"> ddocs/compiled/'+ddocName+'.json';
+      deploy: {
+        cmd: 'kanso push $COUCH_URL'
+      },
+      setupAdmin: {
+        cmd: 'curl -X PUT http://localhost:5984/_config/admins/admin -d \'"pass"\'' +
+             ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
+             ' -H "Content-Type: application/json" ' +
+             ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\''
+      },
+      deploytest: {
+        stderr: false,
+        cmd: 'curl -X DELETE http://admin:pass@localhost:5984/medic-test' +
+             ' && curl -X DELETE http://admin:pass@localhost:5984/medic-audit-test' +
+             ' && kanso push http://admin:pass@localhost:5984/medic-test'
+      },
+      test_api_integration_setup: {
+        cmd: 'cd api && npm install',
+      },
+      test_api_integration: {
+        cmd: 'cd api && grunt test_integration',
+      },
+      undopatches: {
+        cmd: function() {
+          var modulesToPatch = [
+            'bootstrap-daterangepicker',
+            'font-awesome'
+          ];
+          return modulesToPatch.map(function(module) {
+            var backupPath = 'node_modules_backup/' + module;
+            var modulePath = 'node_modules/' + module;
+            return '[ -d ' + backupPath + ' ]' +
+                   ' && rm -rf ' + modulePath +
+                   ' && mv ' + backupPath + ' ' + modulePath +
+                   ' && echo "Module restored: ' + module + '"' +
+                   ' || echo "No restore required for: ' + module + '"';
+          }).join(' & ');
         }
       },
-      deploy: {
-        cmd: 'kanso push'
-      },
-      deployci: {
-        cmd: 'kanso push http://localhost:5984/medic'
-      },
-      runapi: {
-        cmd: 'COUCH_URL=http://ci_test:pass@localhost:5984/medic node ./api/server.js > api.out &'
-      },
-      sleep: {
-        cmd: 'sleep 20'
-      },
-      addadmin: {
+      // To monkey patch a library...
+      // 1. copy the file you want to change
+      // 2. make the changes
+      // 3. run `diff -c original modified > patches/my-patch.patch`
+      // 4. update grunt targets: "applypatches", "undopatches", and "librariestopatch"
+      applypatches: {
         cmd: function() {
-          return 'curl -X PUT http://localhost:5984/_config/admins/ci_test -d \'"pass"\' &&' +
-                 'curl -HContent-Type:application/json -vXPUT http://ci_test:pass@localhost:5984/_users/org.couchdb.user:ci_test  --data-binary \'{"_id": "org.couchdb.user:ci_test", "name": "ci_test", "roles": [], "type": "user", "password": "pass", "language": "en", "known": true}\'';
+          var patches = [
+            // patch the daterangepicker for responsiveness
+            // https://github.com/dangrossman/bootstrap-daterangepicker/pull/437
+            'patch node_modules/bootstrap-daterangepicker/daterangepicker.js < patches/bootstrap-daterangepicker.patch',
+
+            // patch font-awesome to remove version attributes so appcache works
+            // https://github.com/FortAwesome/Font-Awesome/issues/3286
+            'patch node_modules/font-awesome/less/path.less < patches/font-awesome-remove-version-attribute.patch',
+          ];
+          return patches.join(' && ');
         }
       }
     },
@@ -192,12 +232,24 @@ module.exports = function(grunt) {
         tasks: ['mmcss', 'appcache', 'deploy']
       },
       js: {
-        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*'],
+        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'packages/libphonenumber/**/*'],
         tasks: ['mmjs', 'appcache', 'deploy']
       },
       other: {
         files: ['lib/**/*'],
         tasks: ['appcache', 'deploy']
+      },
+      compiledddocs: {
+        files: ['ddocs/**/*'],
+        tasks: ['couch-compile', 'deploy']
+      },
+      ddocs: {
+        files: ['kanso.json'],
+        tasks: ['deploy']
+      },
+      translations: {
+        files: ['translations/*'],
+        tasks: ['deploy']
       }
     },
     notify_hooks: {
@@ -244,7 +296,11 @@ module.exports = function(grunt) {
     },
     ngtemplates: {
       inboxApp: {
-        src: [ 'templates/modals/**/*.html', 'templates/partials/**/*.html' ],
+        src: [
+          'templates/modals/**/*.html',
+          'templates/partials/**/*.html',
+          'templates/directives/**/*.html'
+        ],
         dest: 'static/dist/templates.js',
         options: {
           htmlmin: {
@@ -261,24 +317,32 @@ module.exports = function(grunt) {
       }
     },
     appcache: {
-      options: {
-        baseUrl: '../../'
-      },
       inbox: {
         dest: 'static/dist/manifest.appcache',
+        baseUrl: '../../',
+        network: '*',
         cache: {
           patterns: [
+            'static/manifest.json',
             'static/audio/**/*',
             'static/dist/**/*',
             'static/fonts/**/*',
             'static/img/**/*',
             '!static/img/promo/**/*',
           ]
-        },
-        network: '*'
+        }
       }
     },
     sass: {
+      options: {
+        importer: function(url, prev, done) {
+          // fixes relative enketo-core submodule references in npm 3.x.x
+          if (/\/node_modules\//.test(url) && /\/node_modules\/enketo-core\//.test(prev)) {
+            url = '../../' + url;
+          }
+          done({ file: url });
+        }
+      },
       compile: {
         cwd: 'static/css',
         dest: 'build',
@@ -290,28 +354,35 @@ module.exports = function(grunt) {
         extDot: 'last'
       },
     },
+    auto_install: {
+      npm: {
+        bower: false
+      }
+    }
   });
 
   grunt.task.run('notify_hooks');
 
   // Default tasks
+
+  grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [
+    'exec:undopatches',
+    'auto_install:npm',
+    'copy:librariestopatch',
+    'exec:applypatches'
+  ]);
+
   grunt.registerTask('mmjs', 'Build the JS resources', [
+    'copy:libphonenumber',
     'browserify:dist',
     'replace:hardcodeappsettings',
-    'replace:monkeypatchdate',
     'ngtemplates'
   ]);
 
   grunt.registerTask('mmcss', 'Build the CSS resources', [
-    'copy:enketo-css',
     'sass',
     'less',
-    'replace:monkeypatchfontawesome',
     'postcss'
-  ]);
-
-  grunt.registerTask('compileddocs', 'Compile all Ddocs', [
-    'exec:compileddoc:erlang_filters'
   ]);
 
   grunt.registerTask('deploy', 'Deploy the webapp', [
@@ -320,12 +391,13 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('default', 'Build the static resources', [
+    'mmnpm',
     'mmcss',
     'mmjs',
-    'copy:enketo-xslt',
+    'couch-compile',
+    'copy:enketoxslt',
     'copy:inbox',
-    'appcache',
-    'compileddocs'
+    'appcache'
   ]);
 
   grunt.registerTask('minify', 'Minify JS and CSS', [
@@ -339,26 +411,39 @@ module.exports = function(grunt) {
     'minify',
     'karma:unit_ci',
     'nodeunit',
-    'exec:deployci'
+    'exec:setupAdmin',
+    'exec:deploy',
+    'test_api_integration',
+    'e2e'
   ]);
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
-    'npm-install',
     'default',
     'deploy',
     'watch'
   ]);
 
-  grunt.registerTask('test', 'Lint, unit, and integration test', [
+  grunt.registerTask('e2e', 'Deploy app and run e2e tests', [
+    'exec:deploytest',
+    'protractor'
+  ]);
+
+  grunt.registerTask('test', 'Lint, unit, and api_integration test', [
     'jshint',
     'karma:unit',
     'nodeunit',
-    'protractor'
+    'test_api_integration',
+    'e2e'
   ]);
 
   grunt.registerTask('test_continuous', 'Lint, unit test running on a loop', [
     'jshint',
     'karma:unit_continuous'
+  ]);
+
+  grunt.registerTask('test_api_integration', [
+    'exec:test_api_integration_setup',
+    'exec:test_api_integration',
   ]);
 
 };

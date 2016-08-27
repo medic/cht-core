@@ -3,16 +3,18 @@ describe('Facility service', function() {
   'use strict';
 
   var service,
-      DbView;
+      dbQuery;
 
   beforeEach(function() {
     module('inboxApp');
-    DbView = sinon.stub();
+    dbQuery = sinon.stub();
     module(function($provide) {
-      $provide.value('DbView', DbView);
+      $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery }));
       $provide.value('Cache', function(options) {
         return options.get;
       });
+      $provide.value('PLACE_TYPES', [ 'district_hospital', 'health_center', 'clinic' ]);
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject(function($injector) {
       service = $injector.get('Facility');
@@ -20,23 +22,25 @@ describe('Facility service', function() {
   });
 
   it('returns errors from request', function(done) {
-    DbView.returns(KarmaUtils.mockPromise('boom'));
-    service({}, function(err) {
-      chai.expect(err).to.equal('boom');
-      done();
-    });
+    dbQuery.returns(KarmaUtils.mockPromise('boom'));
+    service({})
+      .then(function() {
+        done(new Error('expected error to be thrown'));
+      })
+      .catch(function(err) {
+        chai.expect(err).to.equal('boom');
+        done();
+      });
   });
 
-  it('returns zero when no facilities', function(done) {
-    DbView.returns(KarmaUtils.mockPromise(null, { results: [] }));
-    service({}, function(err, actual) {
-      chai.expect(err).to.equal(null);
+  it('returns zero when no facilities', function() {
+    dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [] }));
+    return service({}).then(function(actual) {
       chai.expect(actual).to.deep.equal([]);
-      done();
     });
   });
 
-  it('returns all clinics when no user district', function(done) {
+  it('returns all clinics when no user district', function() {
 
     var clinicA = {
       _id: '920a7f6a-d01d-5cfe-7c9182fe6551322a',
@@ -121,11 +125,11 @@ describe('Facility service', function() {
       }
     };
 
-    DbView.returns(KarmaUtils.mockPromise(null, { results: [ clinicA, healthCenter, clinicB ] }));
-    service({ types: ['clinic'] }, function(err, actual) {
-      chai.expect(err).to.equal(null);
+    dbQuery.withArgs('medic-client/contacts_by_type', {include_docs: true, key: ['clinic']}).returns(KarmaUtils.mockPromise(null, { rows: [ { doc: clinicA }, { doc: clinicB } ] }));
+    dbQuery.withArgs('medic-client/contacts_by_type', {include_docs: true, key: ['health_center']}).returns(KarmaUtils.mockPromise(null, { rows: [ { doc: healthCenter } ] }));
+
+    return service({ types: ['clinic'] }).then(function(actual) {
       chai.expect(actual).to.deep.equal([ clinicA, clinicB ]);
-      done();
     });
   });
 

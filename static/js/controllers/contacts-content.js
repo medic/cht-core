@@ -6,45 +6,25 @@ var _ = require('underscore');
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('ContactsContentCtrl', 
-    ['$parse', '$scope', '$stateParams', '$q', '$log', 'DB', 'TaskGenerator', 'Search', 'Changes', 'ContactSchema', 'UserDistrict', 'XmlForms',
-    function($parse, $scope, $stateParams, $q, $log, DB, TaskGenerator, Search, Changes, ContactSchema, UserDistrict, XmlForms) {
+  inboxControllers.controller('ContactsContentCtrl',
+    function(
+      $log,
+      $parse,
+      $q,
+      $scope,
+      $stateParams,
+      Changes,
+      ContactSchema,
+      DB,
+      RulesEngine,
+      Search,
+      UserDistrict,
+      XmlForms
+    ) {
+
+      'ngInject';
 
       $scope.showParentLink = false;
-
-      var getReports = function(id) {
-        var scope = {
-          filterModel: { subjectIds: [ id ], type: 'reports' }
-        };
-        return $q(function(resolve, reject) {
-          Search(scope, { }, function(err, data) {
-            if (err) {
-              return reject(err);
-            }
-            $q.all(_.map(data, function(report) {
-              return $q(function(resolve, reject) {
-                DB.get()
-                  .query('medic/forms', { include_docs: true, key: report.form })
-                  .then(function(res) {
-                    if (res.rows.length) {
-                      report.formTitle = res.rows[0].doc.title;
-                    } else {
-                      report.formTitle = report.form;
-                    }
-                    resolve(report);
-                  })
-                  .catch(reject);
-              });
-            }))
-            .then(resolve)
-            .catch(reject);
-          });
-        });
-      };
-
-      var getContact = function(id) {
-        return DB.get().get(id);
-      };
 
       var sortChildren = function(children) {
         children.sort(function(lhs, rhs) {
@@ -78,8 +58,8 @@ var _ = require('underscore');
           endkey: [ id, {} ],
           include_docs: true
         };
-        return DB.get()
-          .query('medic/facility_by_parent', options)
+        return DB()
+          .query('medic-client/contacts_by_parent_name_type', options)
           .then(function(children) {
             sortChildren(children.rows);
             return children;
@@ -91,7 +71,7 @@ var _ = require('underscore');
           key: [ id ],
           include_docs: true
         };
-        return DB.get().query('medic/facilities_by_contact', options);
+        return DB().query('medic-client/places_by_contact', options);
       };
 
       var selectedSchemaVisibleFields = function(selected) {
@@ -106,12 +86,12 @@ var _ = require('underscore');
         return fields;
       };
 
-      var getInitialData = function(id) {
+      var getInitialData = function(contactId) {
         return $q.all([
-          getContact(id),
-          getChildren(id),
-          getContactFor(id),
-          getReports(id)
+          DB().get(contactId),
+          getChildren(contactId),
+          getContactFor(contactId),
+          Search('reports', { subjectIds: [ contactId ] })
         ])
           .then(function(results) {
             var selected = {
@@ -126,15 +106,16 @@ var _ = require('underscore');
       };
 
       var updateParentLink = function() {
-        UserDistrict(function(err, district) {
-          if (err) {
-            return $log.error('Error getting user district', err);
-          }
-          var parentId = $scope.selected.doc &&
-                         $scope.selected.doc.parent &&
-                         $scope.selected.doc.parent._id;
-          $scope.showParentLink = parentId && district !== parentId;
-        });
+        UserDistrict()
+          .then(function(district) {
+            var parentId = $scope.selected.doc &&
+                           $scope.selected.doc.parent &&
+                           $scope.selected.doc.parent._id;
+            $scope.showParentLink = parentId && district !== parentId;
+          })
+          .catch(function(err) {
+            $log.error('Error getting user district', err);
+          });
       };
 
       var mergeTasks = function(tasks) {
@@ -164,7 +145,7 @@ var _ = require('underscore');
           patientIds = _.pluck($scope.selected.children, 'id');
         }
         patientIds.push($scope.selected.doc._id);
-        TaskGenerator.listen('ContactsContentCtrl', 'task', function(err, tasks) {
+        RulesEngine.listen('ContactsContentCtrl', 'task', function(err, tasks) {
           if (err) {
             return $log.error('Error getting tasks', err);
           }
@@ -223,6 +204,6 @@ var _ = require('underscore');
       });
 
     }
-  ]);
+  );
 
 }());

@@ -32,25 +32,16 @@ define( function( require, exports, module ) {
                     // assumption that we have an object type `person` with a
                     // field `phone`.
 
-                    var options = {
-                        params: {
-                            key: [ phoneNumber ]
-                        }
-                    };
-                    var DbView = angularServices.get( 'DbView' );
-                    return DbView( 'person_by_phone', options );
+                    var DB = angularServices.get( 'DB' );
+                    return DB().query('medic-client/people_by_phone', { key: [ phoneNumber ] });
                 } )
                 .then( function( res ) {
-                    var results = res.results;
-                    if ( results.rows.length === 0 ) {
+                    if ( res.rows.length === 0 ) {
                         return true;
                     }
 
-                    // TODO surely there's a nicer way to get this.  We should
-                    // probably include the ID(s) of entities we're editing in
-                    // the enketo model.
-                    var contactBeingEdited = angular.element( $( '.enketo form' ) ).scope().enketo_contact;
-                    if ( !contactBeingEdited || results.rows[ 0 ].id !== contactBeingEdited.docId ) {
+                    var contactBeingEdited = $('#contact-form').attr('data-editing');
+                    if ( res.rows[ 0 ].id !== contactBeingEdited ) {
                         throw new Error( 'phone number not unique: "' + fieldValue + '"' );
                     }
 

@@ -1,9 +1,0 @@
-{
-    "dependencies": {
-        "traditional-couchapp": "~0.1.1"
-    },
-    "description": "Optimised Erlang filters",
-    "name": "_design/erlang_filters",
-    "traditional-couchapp": ".",
-    "version": "0.0.1"
-}

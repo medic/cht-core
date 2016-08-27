@@ -45,13 +45,13 @@ describe('Integration', function() {
   };
 
   var login = function() {
-    var credentials = auth.getAuth();
+    var environment = auth();
     return utils.request({
       method: 'POST',
       path: '/_session',
       body: JSON.stringify({
-        name: credentials.user,
-        password: credentials.pass
+        name: environment.user,
+        password: environment.pass
       })
     });
   };
@@ -89,22 +89,20 @@ describe('Integration', function() {
   });
 
   it('can download messages using basic auth', function() {
-
-    // TODO we need to be logged out to get this to fail!
-    utils.request({
-      path: '/api/v1/messages',
-      method: 'GET'
-    }).then(
-      function(result) {
-        var doc = _.findWhere(result, { _record_id: savedUuid });
-        expect(doc._record_id).toEqual(savedUuid);
-        expect(doc.message).toEqual('hello!');
-      },
-      function(err) {
+    var flow = protractor.promise.controlFlow();
+    flow.execute(function() {
+      return utils.request({
+        path: '/api/v1/messages',
+        method: 'GET'
+      });
+    }).then(function(result) {
+      var doc = _.findWhere(result, { _record_id: savedUuid });
+      expect(doc._record_id).toEqual(savedUuid);
+      expect(doc.message).toEqual('hello!');
+    }, function(err) {
         console.error(err);
         expect(true).toEqual(false);
-      }
-    );
+    });
   });
 });
 

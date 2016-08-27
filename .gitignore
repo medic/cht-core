@@ -4,12 +4,14 @@ sentinel/settings.js
 sentinel/settings-test.js
 sentinel/Procfile
 sentinel_working
+api_working
 npm-debug.log
 node_modules
-bower_components
+node_modules_backup
 static/dist
 static/fonts
-
+packages/libphonenumber/libphonenumber/libphonenumber.js
+ddocs/compiled.json
 logs
 config.js
 /build/

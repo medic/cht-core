@@ -9,9 +9,8 @@
 @import "variables";
 @import "mixins";
 @import "theme";
-@import "packages/kujua-reporting/css/base";
 @import "angular";
-@import "analytics";
+@import "analytics-widgets";
 @import "configuration";
 @import "help";
 @import "material";
@@ -54,7 +53,7 @@ body {
       background-color: @admin-color;
     }
   }
-  &.help {
+  &.about {
     .header .tabs .selected, .filters {
       background-color: @help-color;
     }
@@ -312,7 +311,7 @@ body {
     right: 0;
   }
 
-  .help {
+  .about {
     line-height: 3em;
   }
   
@@ -502,12 +501,29 @@ body {
   }
 }
 
-.reports .inbox-items li {
-  .message-wrapper:hover {
-    border-left-color: @reports-color;
+.reports {
+  .inbox-items li {
+    .message-wrapper:hover {
+      border-left-color: @reports-color;
+    }
+    &.selected {
+      background-color: lighten(@reports-color, 30%);
+    }
+    input[type="checkbox"] {
+      display: none;
+      float: left;
+      height: 2em;
+      position: absolute;
+      left: 5px;
+    }
   }
-  &.selected {
-    background-color: lighten(@reports-color, 30%);
+  &.select-mode {
+    .inbox-items li input[type="checkbox"] {
+      display: inline;
+    }
+    .report-body .summary {
+      cursor: pointer;
+    }
   }
 }
 
@@ -574,6 +590,7 @@ body {
 
     .mm-badge {
       float: left;
+      margin-left: 0;
     }
 
     .message-wrapper {
@@ -624,13 +641,16 @@ body {
   font-weight: bold;
 }
 
-.scheduled-tasks .loader {
-  font-size: 6px;
+.scheduled-tasks {
+  padding: 1em;
+  .loader {
+    font-size: 6px;
+  }
 }
 
 .reports, .contacts {
   .inbox-items .detail {
-    margin-left: 3em;
+    margin-left: 2.5em;
   }
 }
 
@@ -667,6 +687,12 @@ body {
     &.scheduled:before {
       color: @scheduled-state-color;
     }
+    &.delivered:before {
+      color: @delivered-state-color;
+    }
+    &.failed:before {
+      color: @scheduled-state-color;
+    }
   }
 }
 
@@ -693,6 +719,11 @@ body {
   .padding {
     height: 10em;
     clear: left;
+  }
+  .deselect {
+    float: right;
+    clear: right;
+    font-size: 1.2em;
   }
 }
 
@@ -789,30 +820,20 @@ a.fa:hover {
 .reports .item-content,
 .tasks .item-content {
 
-  .meta {
-    padding: 2em;
-    padding-top: 1em;
-  }
-
   .body {
 
-    padding-bottom: 2em;
     background-color: @form-background-color;
     border: 1px solid @seperator-color;
     border-radius: @radius-size;
-    margin: 0 1em 1em 1em;
+    margin: 1em;
 
     p {
       font-weight: bold;
       font-size: 1.4em;
     }
 
-    h2 {
-      text-align: center;
-      margin: 1.25em 0 0.75em 0;
-      font-style: italic;
+    .report-name {
       font-weight: bold;
-      font-size: 1.75em;
     }
 
     h5 {
@@ -820,13 +841,18 @@ a.fa:hover {
       margin-top: -1em;
     }
 
-    > ul > li {
-      border-bottom: 1px solid @seperator-color;
+    > div > ul > li {
+      border-top: 1px solid @seperator-color;
       padding: 1em 3em 1em 2em;
       margin: 0;
-
-      &:last-child {
-        border-bottom: none;
+      &.indent-1 {
+        padding-left: 3em;
+      }
+      &.indent-2 {
+        padding-left: 4em;
+      }
+      &.indent-3 {
+        padding-left: 5em;
       }
     }
 
@@ -841,12 +867,41 @@ a.fa:hover {
     .missing p {
       color: @lightgrey;
     }
+
+    .summary {
+      padding: 1em;
+      .mm-badge {
+        float: left;
+      }
+      .sender,
+      .report-name {
+        padding-left: 3em;
+      }
+    }
   }
+
 
   .task-list > li {
     margin-top: 1em;
   }
 
+}
+
+.item-content,
+.inbox-items {
+  .selection-count {
+    padding: 0.5em 1em;
+    margin: 0;
+    background-color: @label-color;
+    color: #FFFFFF;
+    font-size: 1.1em;
+    font-weight: bold;
+  }
+}
+
+.inbox-items .selection-count,
+.general-actions .delete-all {
+  display: none;
 }
 
 .tasks {
@@ -1230,6 +1285,10 @@ a.fa:hover {
       height: 100px;
     }
   }
+  .inbox-items .selection-count,
+  .general-actions .delete-all {
+    display: block;
+  }
   .filters {
     padding: 0;
     padding-bottom: 1em;
@@ -1354,6 +1413,15 @@ a.fa:hover {
   .reports, .tasks {
     .content .item-content .body > ul > li {
       padding: 1em;
+      &.indent-1 {
+        padding-left: 2em;
+      }
+      &.indent-2 {
+        padding-left: 3em;
+      }
+      &.indent-3 {
+        padding-left: 4em;
+      }
     }
   }
   .messages .content .item-content .body {
@@ -1506,15 +1574,6 @@ a.fa:hover {
     display: initial;
   }
   .desktop-only {
-    display: none;
-  }
-}
-
-#bad-local-date {
-  .full-date {
-    display: inline;
-  }
-  .relative-date-content {
     display: none;
   }
 }

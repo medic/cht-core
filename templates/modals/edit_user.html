@@ -1,90 +1,83 @@
-<div class="modal fade" id="edit-user-profile" role="dialog" ng-controller="EditUserCtrl">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{'Edit User Profile' | translate}}</h3>
-      </div>
-      <div class="modal-body">
-        <form action="" method="POST"> 
+<mm-modal
+  id="'edit-user-profile'"
+  title-key="editUserModel.id ? 'Edit User' : 'Add User'"
+  submit-key="'Submit'"
+  submitting-key="'Submitting'"
+  on-cancel="cancel()"
+  on-submit="editUser()"
+>
+  <form action="" method="POST">
 
-          <div class="form-group" ng-class="{'has-error': errors.name}">
-            <label for="name">{{'User Name' | translate}} *</label>
-            <input id="name" type="text" class="form-control" ng-model="editUserModel.name" ng-disabled="editUserModel.id" />
-            <span class="help-block">{{errors.name}}</span>
-          </div>
-
-          <div class="form-group">
-            <label for="fullname">{{'Full Name' | translate}}</label>
-            <input id="fullname" type="text" class="form-control" ng-model="editUserModel.fullname" />
-          </div>
-
-          <div class="form-group">
-            <label for="email">{{'Email Address' | translate}}</label>
-            <input id="email" type="text" class="form-control" ng-model="editUserModel.email" />
-          </div>
-
-          <div class="form-group">
-            <label for="phone">{{'Phone Number' | translate}}</label>
-            <input id="phone" type="text" class="form-control" ng-model="editUserModel.phone"/>
-          </div>
-
-          <div class="form-group">
-            <label for="language">{{'Language' | translate}}</label>
-            <select id="language" class="form-control" ng-model="editUserModel.language" ng-options="locale.name for locale in enabledLocales track by locale.code"></select>
-          </div>
-
-          <div class="form-group" mm-auth="can_configure">
-            <label for="type">{{'User Type' | translate}}</label>
-            <select id="type" class="form-control" ng-model="editUserModel.type">
-              <option value=""></option>
-              <optgroup ng-attr-label="{{'usertype.people' | translate}}">
-                <option value="national-manager">{{'usertype.national-manager' | translate}}</option>
-                <option value="district-manager">{{'usertype.district-manager' | translate}}</option>
-                <option value="data-entry">{{'usertype.data-entry' | translate}}</option>
-              </optgroup>
-              <optgroup ng-attr-label="{{'usertype.computers' | translate}}">
-                <option value="analytics">{{'usertype.analytics' | translate}}</option>
-                <option value="gateway">{{'usertype.gateway' | translate}}</option>
-              </optgroup>
-            </select>
-          </div>
-
-          <div class="form-group" mm-auth="can_configure">
-            <label for="facility">{{'Facility' | translate}}</label>
-            <select id="facility" class="form-control" ng-model="editUserModel.facility" ng-options="facility.name group by typeName(facility) for facility in facilities | orderBy:['type','name'] track by facility._id">
-              <option value=""></option>
-            </select>
-          </div>
-
-          <div class="form-group" mm-auth="can_configure">
-            <label for="contact">{{'associated.contact' | translate}}</label>
-            <fieldset>
-              <div class="control-group">
-                <select name="contact" autocomplete="off"></select>
-              </div>
-            </fieldset>
-            <span class="help-block">{{'associated.contact.help' | translate}}</span>
-          </div>
-
-          <div class="form-group" ng-class="{'has-error': errors.password}">
-            <label for="password">{{'Password' | translate}} <span ng-hide="editUserModel.id">*</span></label>
-            <input id="password" type="password" class="form-control" ng-model="editUserModel.password" autocomplete="off"/>
-            <span class="help-block">{{errors.password}}</span>
-          </div>
-
-          <div class="form-group">
-            <label for="password-confirm">{{'Confirm Password' | translate}} <span ng-hide="editUserModel.id">*</span></label>
-            <input id="password-confirm" type="password" class="form-control" ng-model="editUserModel.passwordConfirm" autocomplete="off"/>
-          </div>
-
-        </form>
-      </div>
-      <div class="modal-footer">
-        <p class="note"></p>
-        <a class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
-        <a class="btn submit btn-primary" ng-click="editUser()">{{'Submit' | translate}}</a>
-      </div>
+    <div class="form-group" ng-class="{'has-error': errors.name}">
+      <label for="name" translate>User Name</label> *
+      <input id="name" type="text" class="form-control" ng-model="editUserModel.name" ng-disabled="editUserModel.id" />
+      <span class="help-block">{{errors.name}}</span>
     </div>
-  </div>
-</div>
+
+    <div class="form-group">
+      <label for="fullname" translate>Full Name</label>
+      <input id="fullname" type="text" class="form-control" ng-model="editUserModel.fullname" />
+    </div>
+
+    <div class="form-group">
+      <label for="email" translate>Email Address</label>
+      <input id="email" type="text" class="form-control" ng-model="editUserModel.email" />
+    </div>
+
+    <div class="form-group">
+      <label for="phone" translate>Phone Number</label>
+      <input id="phone" type="text" class="form-control" ng-model="editUserModel.phone"/>
+    </div>
+
+    <div class="form-group">
+      <label for="language" translate>Language</label>
+      <select id="language" class="form-control" ng-model="editUserModel.language" ng-options="locale.name for locale in enabledLocales track by locale.code"></select>
+    </div>
+
+    <div class="form-group" mm-auth="can_configure">
+      <label for="type" translate>User Type</label>
+      <input id="name" type="text" class="form-control" ng-model="editUserModel.type" disabled="disabled" ng-if="editUserModel.type === 'admin'" />
+      <select id="type" class="form-control" ng-model="editUserModel.type" ng-if="editUserModel.type !== 'admin'">
+        <option value=""></option>
+        <optgroup ng-attr-label="{{'usertype.people' | translate}}">
+          <option value="national-manager" translate>usertype.national-manager</option>
+          <option value="district-manager" translate>usertype.district-manager</option>
+          <option value="data-entry" translate>usertype.data-entry</option>
+        </optgroup>
+        <optgroup ng-attr-label="{{'usertype.computers' | translate}}">
+          <option value="analytics" translate>usertype.analytics</option>
+          <option value="gateway" translate>usertype.gateway</option>
+        </optgroup>
+      </select>
+    </div>
+
+    <div class="form-group" mm-auth="can_configure">
+      <label for="facility" translate>Facility</label>
+      <select id="facility" name="facility">
+        <option ng-value="editUserModel.facility" ng-if="editUserModel.facility"></option>
+      </select>
+    </div>
+
+    <div class="form-group" mm-auth="can_configure">
+      <label for="contact" translate>associated.contact</label>
+      <select id="contact" name="contact" autocomplete="off">
+        <option ng-value="editUserModel.contact" ng-if="editUserModel.contact"></option>
+      </select>
+      <span class="help-block" translate>associated.contact.help</span>
+    </div>
+
+    <div class="form-group" ng-class="{'has-error': errors.password}">
+      <label for="password" translate>Password</label>
+      <span ng-hide="editUserModel.id">*</span>
+      <input id="password" type="password" class="form-control" ng-model="editUserModel.password" autocomplete="off"/>
+      <span class="help-block">{{errors.password}}</span>
+    </div>
+
+    <div class="form-group">
+      <label for="password-confirm" translate>Confirm Password</label>
+      <span ng-hide="editUserModel.id">*</span>
+      <input id="password-confirm" type="password" class="form-control" ng-model="editUserModel.passwordConfirm" autocomplete="off"/>
+    </div>
+
+  </form>
+</mm-modal>

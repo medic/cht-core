@@ -1,5 +1,4 @@
 var _ = require('underscore'),
-    async = require('async'),
     moment = require('moment');
 
 (function () {
@@ -22,53 +21,51 @@ var _ = require('underscore'),
   var mapFeedback = function(data) {
     var result = {
       page: {
-        number: data.results.length,
-        total: data.meta.total_rows
+        number: data.rows.length,
+        total: data.total_rows
       }
     };
-    result.items = _.map(data.results, function(doc) {
+    result.items = _.map(data.rows, function(row) {
       return {
-        id: doc._id,
-        time: moment(doc.meta.time),
-        info: safeStringify(doc.info)
+        id: row.doc._id,
+        time: moment(row.doc.meta.time),
+        info: safeStringify(row.doc.info)
       };
     });
     return result;
   };
 
   inboxControllers.controller('ConfigurationExportCtrl',
-    ['$scope', 'DownloadUrl', 'DbView',
-    function ($scope, DownloadUrl, DbView) {
+    function (
+      $log,
+      $scope,
+      DB,
+      DownloadUrl
+    ) {
 
-      var options =  { params: { include_docs: true, descending: true, limit: 20 } };
-      DbView('feedback', options)
+      'ngInject';
+
+      DB().query('medic-client/feedback', { include_docs: true, descending: true, limit: 20 })
         .then(function(data) {
           $scope.feedback = mapFeedback(data);
         })
         .catch(function(err) {
-          return console.error('Error fetching feedback', err);
+          return $log.error('Error fetching feedback', err);
         });
 
       $scope.url = {};
-      async.each(
-        [ 'logs', 'audit', 'feedback' ],
-        function(type, callback) {
-          DownloadUrl(null, type, function(err, url) {
-            if (err) {
-              return callback(err);
-            }
+
+      [ 'logs', 'audit', 'feedback' ].forEach(function(type) {
+        DownloadUrl(null, type)
+          .then(function(url) {
             $scope.url[type] = url;
-            callback();
+          })
+          .catch(function(err) {
+            $log.error('Error fetching url', err);
           });
-        },
-        function(err) {
-          if (err) {
-            console.error('Error fetching url', err);
-          }
-        }
-      );
+      });
 
     }
-  ]);
+  );
 
 }());

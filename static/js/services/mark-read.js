@@ -6,8 +6,8 @@ var _ = require('underscore');
 
   var inboxServices = angular.module('inboxServices');
 
-  var updateMessage = function(user, read, message) {
-    var readers = message.read || [];
+  var updateDoc = function(user, read, doc) {
+    var readers = doc.read || [];
     var index = readers.indexOf(user);
     if ((index !== -1) === read) {
       // already in the correct state
@@ -18,37 +18,38 @@ var _ = require('underscore');
     } else {
       readers.splice(index, 1);
     }
-    message.read = readers;
-    return message;
+    doc.read = readers;
+    return doc;
   };
 
-  var updateMessages = function(user, read, messages) {
-    return _.compact(_.map(messages, _.partial(updateMessage, user, read)));
+  var updatDocs = function(user, read, docs) {
+    return _.compact(_.map(docs, _.partial(updateDoc, user, read)));
   };
-  
+
   inboxServices.factory('MarkRead', ['DB', 'Session',
     function(DB, Session) {
-      return function(messageId, read) {
+      return function(docId, read) {
         var user = Session.userCtx().name;
-        return DB.get()
-          .get(messageId)
-          .then(_.partial(updateMessage, user, read))
+        return DB()
+          .get(docId)
+          .then(_.partial(updateDoc, user, read))
           .then(function(doc) {
             if (!doc) {
               return;
             }
-            return DB.get().put(doc);
+            return DB().put(doc);
           });
       };
     }
   ]);
-  
+
   inboxServices.factory('MarkAllRead', ['DB', 'Session',
     function(DB, Session) {
-      return function(messages, read) {
+      return function(docs, read) {
         var user = Session.userCtx().name;
-        var updated = updateMessages(user, read, messages);
-        return DB.get().bulkDocs(updated);
+        var updated = updatDocs(user, read, docs);
+        // Conflicts will fail silently. That's ok.
+        return DB().bulkDocs(updated);
       };
     }
   ]);

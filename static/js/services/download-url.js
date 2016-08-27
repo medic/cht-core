@@ -4,8 +4,8 @@
 
   var inboxServices = angular.module('inboxServices');
 
-  var types = {
-    reports:  { name: 'forms', format: 'xml', lucene: true },
+  var TYPES = {
+    reports:  { name: 'reports', apiName: 'forms', format: 'xml', lucene: true },
     contacts: { name: 'contacts', format: 'json', lucene: true },
     messages: { name: 'messages', format: 'xml' },
     audit:    { name: 'audit', format: 'xml' },
@@ -13,42 +13,43 @@
     logs:     { name: 'logs', format: 'zip' }
   };
 
-  inboxServices.factory('DownloadUrl', ['Language', 'GenerateSearchQuery',
-    function(Language, GenerateSearchQuery) {
+  inboxServices.factory('DownloadUrl',
+    function(
+      $q,
+      GenerateSearchQuery,
+      Language
+    ) {
+      'ngInject';
 
-      var buildUrl = function(type, params) {
-        return '/api/v1/export/' + type.name + '?' + $.param(params);
+      var buildUrl = function(type, language, filters) {
+        var name = type.apiName || type.name;
+        var params = getParams(type, language, filters);
+        return '/api/v1/export/' + name + '?' + $.param(params);
       };
 
-      var getParams = function(type, language, $scope, callback) {
-        var params = { format: type.format, locale: language };
-        if (!type.lucene) {
-          return callback(null, params);
-        }
-        GenerateSearchQuery($scope, function(err, response) {
-          if (err) {
-            return callback(err);
-          }
+      var getParams = function(type, language, filters) {
+        var params = {
+          format: type.format,
+          locale: language
+        };
+        if (type.lucene) {
+          var response = GenerateSearchQuery(type.name, filters);
           params.query = JSON.stringify(response.query);
           params.schema = JSON.stringify(response.schema);
-          return callback(null, params);
-        });
+        }
+        return params;
       };
 
-      return function($scope, typeName, callback) {
-        var type = types[typeName];
+      return function(filters, typeName) {
+        var type = TYPES[typeName];
         if (!type) {
-          return callback(new Error('Unknown download type'));
+          return $q.reject(new Error('Unknown download type'));
         }
-        Language()
-          .then(function(language) {
-            getParams(type, language, $scope, function(err, params) {
-              callback(null, buildUrl(type, params));
-            });
-          })
-          .catch(callback);
+        return Language().then(function(language) {
+          return buildUrl(type, language, filters);
+        });
       };
     }
-  ]);
+  );
 
 }()); 

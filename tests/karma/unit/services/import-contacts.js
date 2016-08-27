@@ -12,9 +12,7 @@ describe('ImportContacts service', function() {
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ put: put }));
-      $provide.value('BaseUrlService', function() {
-        return 'BASEURL';
-      });
+      $provide.value('Location', { path: 'BASEURL' });
     });
     inject(function($injector, _$rootScope_) {
       $rootScope = _$rootScope_;

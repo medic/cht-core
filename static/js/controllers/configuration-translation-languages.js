@@ -7,121 +7,149 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationTranslationLanguagesCtrl',
-    ['$scope', '$rootScope', 'Settings', 'UpdateSettings', 'ExportProperties', 'OutgoingMessagesConfiguration',
-    function ($scope, $rootScope, Settings, UpdateSettings, ExportProperties, OutgoingMessagesConfiguration) {
+    function (
+      $log,
+      $q,
+      $scope,
+      Changes,
+      DB,
+      ExportProperties,
+      Modal,
+      OutgoingMessagesConfiguration,
+      Settings,
+      UpdateSettings
+    ) {
 
-      var countMissingTranslations = function(translations, locale) {
-        var result = 0;
-        _.each(translations, function(translation) {
-          if (!_.findWhere(translation.translations, { locale: locale.code })) {
-            result++;
-          }
+      'ngInject';
+
+      var countMissingOutgoingMessages = function(settings, locale) {
+        var messages = _.flatten(
+          _.pluck(OutgoingMessagesConfiguration(settings), 'translations'),
+          true
+        );
+        var missing =  _.filter(messages, function(message) {
+          return !_.findWhere(message.translations, { locale: locale.code });
         });
-        return result;
+        return missing.length;
       };
 
-      var createLocaleModel = function(settings, locale) {
-
+      var createLocaleModel = function(settings, doc, totalTranslations) {
         var result = {
-          locale: locale
+          doc: doc
         };
 
-        var content = ExportProperties(settings, locale.code);
+        var content = ExportProperties(settings, doc);
         if (content) {
           var blob = new Blob([ content ], { type: 'text/plain' });
           result.export = {
-            name: 'messages-' + locale.code + '.properties',
+            name: doc._id + '.properties',
             url: (window.URL || window.webkitURL).createObjectURL(blob)
           };
         }
 
-        var messages = _.flatten(
-          _.pluck(OutgoingMessagesConfiguration(settings), 'translations'),
-        true);
-        result.missing =
-          countMissingTranslations(settings.translations, locale) +
-          countMissingTranslations(messages, locale);
+        var missingTranslations = totalTranslations - Object.keys(doc.values).length;
+        var missingMessages = countMissingOutgoingMessages(settings, doc);
+        result.missing = missingTranslations + missingMessages;
 
         return result;
       };
 
-      var setLanguageStatus = function(locale, disabled) {
-        Settings()
-          .then(function(res) {
-            var update = _.findWhere(res.locales, { code: locale.code });
-            if (!update) {
-              return console.log('Could not find locale to update');
-            }
-            update.disabled = disabled;
-            UpdateSettings({ locales: res.locales }, function(err) {
-              if (err) {
-                return console.log('Error updating settings', err);
-              }
-              var model = _.findWhere($scope.languagesModel.locales, { code: locale.code });
-              if (model) {
-                model.disabled = disabled;
-              }
-            });
+      var setLanguageStatus = function(doc, enabled) {
+        doc.enabled = enabled;
+        DB().put(doc).catch(function(err) {
+          $log.error('Error updating settings', err);
+        });
+      };
+
+      var countTotalTranslations = function(rows) {
+        var keys = rows.map(function(row) {
+          return row.doc.values ? Object.keys(row.doc.values) : [];
+        });
+        keys = _.uniq(_.flatten(keys));
+        return keys.length;
+      };
+
+      var getLanguages = function() {
+        $scope.loading = true;
+        $q.all([
+          DB().query('medic-client/doc_by_type', {
+            startkey: [ 'translations', false ],
+            endkey: [ 'translations', true ],
+            include_docs: true
+          }),
+          Settings()
+        ])
+          .then(function(results) {
+            var docs = results[0].rows;
+            var settings = results[1];
+            var totalTranslations = countTotalTranslations(docs);
+            $scope.loading = false;
+            $scope.languagesModel = {
+              totalTranslations: totalTranslations,
+              default: {
+                locale: settings.locale,
+                outgoing: settings.locale_outgoing
+              },
+              locales: _.map(docs, function(row) {
+                return createLocaleModel(settings, row.doc, totalTranslations);
+              })
+            };
           })
           .catch(function(err) {
-            console.log('Error loading settings', err);
+            $scope.loading = false;
+            $log.error('Error loading settings', err);
           });
       };
 
-      Settings()
-        .then(function(res) {
-          $scope.languagesModel = {
-            default: {
-              locale: res.locale,
-              outgoing: res.locale_outgoing
-            },
-            locales: _.map(res.locales, function(locale) {
-              return createLocaleModel(res, locale);
-            })
-          };
-        })
-        .catch(function(err) {
-          console.log('Error loading settings', err);
+      $scope.editLanguage = function(doc) {
+        Modal({
+          templateUrl: 'templates/modals/edit_language.html',
+          controller: 'EditLanguageCtrl',
+          model: doc
         });
-
-      $scope.prepareEditLanguage = function(locale) {
-        $rootScope.$broadcast('EditLanguageInit', locale);
-      };
-      $scope.prepareDeleteLanguage = function(locale) {
-        $rootScope.$broadcast('DeleteLanguageInit', locale);
       };
       $scope.setLocale = function(locale) {
-        UpdateSettings({ locale: locale.code }, function(err) {
-          if (err) {
-            return console.log('Error updating settings', err);
-          }
-          $scope.languagesModel.default.locale = locale.code;
-        });
+        UpdateSettings({ locale: locale.code })
+          .then(function() {
+            $scope.languagesModel.default.locale = locale.code;
+          })
+          .catch(function(err) {
+            $log.error('Error updating settings', err);
+          });
       };
       $scope.setLocaleOutgoing = function(locale) {
-        UpdateSettings({ locale_outgoing: locale.code }, function(err) {
-          if (err) {
-            return console.log('Error updating settings', err);
-          }
-          $scope.languagesModel.default.outgoing = locale.code;
+        UpdateSettings({ locale_outgoing: locale.code })
+          .then(function() {
+            $scope.languagesModel.default.outgoing = locale.code;
+          })
+          .catch(function(err) {
+            $log.error('Error updating settings', err);
+          });
+      };
+      $scope.disableLanguage = function(doc) {
+        setLanguageStatus(doc, false);
+      };
+      $scope.enableLanguage = function(doc) {
+        setLanguageStatus(doc, true);
+      };
+      $scope.prepareImport = function(doc) {
+        Modal({
+          templateUrl: 'templates/modals/import_translation.html',
+          controller: 'ImportTranslationCtrl',
+          model: doc
         });
-      };
-      $scope.$on('LanguageUpdated', function(e, data) {
-        $scope.languagesModel.locales = _.map(data.locales, function(locale) {
-          return createLocaleModel(data.settings, locale);
-        });
-      });
-      $scope.disableLanguage = function(locale) {
-        setLanguageStatus(locale, true);
-      };
-      $scope.enableLanguage = function(locale) {
-        setLanguageStatus(locale, false);
-      };
-      $scope.prepareImport = function(locale) {
-        $rootScope.$broadcast('ImportTranslationInit', locale);
       };
 
+      Changes({
+        key: 'configuration-translation-languages',
+        filter: function(change) {
+          return change.doc.type === 'translations';
+        },
+        callback: getLanguages
+      });
+
+      getLanguages();
     }
-  ]);
+  );
 
 }());

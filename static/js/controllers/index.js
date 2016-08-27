@@ -9,8 +9,10 @@
   require('./about');
   require('./analytics');
   require('./analytics-anc');
-  require('./analytics-stock');
+  require('./analytics-reporting');
+  require('./analytics-reporting-detail');
   require('./analytics-targets');
+  require('./check-date');
   require('./configuration');
   require('./configuration-export');
   require('./configuration-forms');
@@ -29,19 +31,22 @@
   require('./contacts-content');
   require('./contacts-edit');
   require('./contacts-report');
-  require('./delete-language');
+  require('./delete-doc-confirm');
   require('./delete-user');
   require('./edit-language');
   require('./edit-report');
   require('./edit-translation');
+  require('./edit-translation-messages');
   require('./edit-user');
   require('./error');
   require('./help');
   require('./home');
   require('./import-contacts');
   require('./import-translation');
+  require('./medic-reporter-modal');
   require('./messages');
   require('./messages-content');
+  require('./navigation-confirm');
   require('./reports');
   require('./reports-add');
   require('./reports-content');
@@ -49,5 +54,7 @@
   require('./tasks-content');
   require('./theme');
   require('./tour-select');
+  require('./user-language-modal');
+  require('./version-update');
 
 }());

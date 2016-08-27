@@ -1,0 +1,288 @@
+@import "variables";
+
+.analytics .inner .row {
+  margin: 0;
+}
+
+.analytics-widget {
+  padding: 0.5em;
+  &.count-only .widget-body {
+    padding-bottom: 1em;
+  }
+  .title {
+    font-weight: bold;
+    text-align: center;
+    padding-top: 1em;
+    .count {
+      margin: 0;
+      line-height: 0.9em;
+      font-size: 3em;
+    }
+    .name {
+      font-size: 1.5em;
+      margin: 0;
+    }
+    .fa {
+      font-size: 0.7em;
+      vertical-align: middle;
+    }
+  }
+  .content {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .approximate:before {
+    content: '~';
+  }
+  .sortable {
+    cursor: pointer;
+    &:after {
+      content: '\f0dd';
+      font-family: FontAwesome;
+      vertical-align: text-bottom;
+      margin-left: 0.2em;
+      color: #FFFFFF;
+      color: rgba(0, 0, 0, 0);
+    }
+  }
+  .sorted:after {
+    color: #000000;
+  }
+  svg {
+    max-width: 300px;
+    margin: 0 auto;
+  }
+  .table {
+    margin-bottom: 0;
+  }
+  .widget-body {
+    box-shadow: 0 0 0.5em #AAA;
+  }
+  .btn-link {
+    padding: 0;
+    line-height: 1em;
+  }
+  .fa-list-alt {
+    padding-top: 1px;
+  }
+  .actions {
+    text-align: right;
+    white-space: nowrap;
+  }
+  .upcoming-edd {
+    color: @birth-color;
+    &:after {
+      content: @upcoming-edd-icon;
+      font-family: FontAwesome;
+      padding-left: 0.25em;
+    }
+  }
+  .high-risk a {
+    color: @high-risk-color;
+    &:after {
+      content: @high-risk-icon;
+      font-family: FontAwesome;
+    }
+  }
+  .no-visits {
+    span {
+      display: none;
+    }
+    &:after {
+      content: '-';
+      font-weight: bold;
+      color: @high-risk-color;
+    }
+  }
+  .loading {
+    padding: 0.5em;
+  }
+  .error {
+    padding: 1em;
+  }
+  .loading, .error {
+    text-align: center;
+    color: @label-color;
+    color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.anc {
+  padding: 0.5em;
+}
+
+.active-pregnancies .title {
+  color: #5A339E;
+}
+
+.upcoming-appointments .title {
+  color: #1D86F0;
+}
+
+.missed-appointments .title {
+  color: @warning-color;
+}
+
+.upcoming-due-dates .title {
+  color: @birth-color;
+  .name:after {
+    content: @upcoming-edd-icon;
+    font-family: FontAwesome;
+    padding-left: 0.25em;
+  }
+}
+
+.high-risk .title {
+  color: @high-risk-color;
+  .name:after {
+    content: @high-risk-icon;
+    font-family: FontAwesome;
+  }
+}
+
+.total-births .title {
+  color: @birth-color;
+}
+
+.missing-delivery-reports .title {
+  color: #1D86F0;
+}
+
+.reporting-rates {
+  padding: 0.5em;
+
+  .filter {
+    margin: 0.5em 0;
+    label {
+      width: 150px;
+    }
+  }
+
+  .row {
+    margin: 0;
+    &.title {
+      font-weight: bold;
+      font-size: 1.2em;
+    }
+  }
+
+  .records, .fields {
+    padding-left: 2em;
+  }
+
+  .fields {
+    line-height: 1.5em;
+    label {
+      margin: 0;
+    }
+  }
+
+  .records .row {
+    color: @label-color;
+    .fa-caret-down,
+    .fa-caret-right {
+      width: 10px;
+      margin-left: -10px;
+    }
+  }
+
+  .fields .row, .records .valid {
+    color: @grayDark;
+  }
+
+  .records .row.valid {
+    cursor: pointer;
+  }
+
+  .facility-select {
+    line-height: 3em;
+    .facility {
+      padding-top: 0.5em;
+      padding-bottom: 0.5em;
+      font-size: 1.1em;
+      cursor: pointer;
+      &:hover {
+        background-color: @highlight-color;
+      }
+    }
+  }
+
+  .mini-pie {
+    line-height: 1em;
+  }
+
+  .mini-pie, .large-pie {
+    svg {
+      display: inline;
+      width: inherit;
+    }
+  }
+
+  .district-totals {
+    > div > div {
+      text-align: center;
+    }
+    h4 {
+      text-align: center;
+      font-size: 4em;
+    }
+    .fa {
+      margin-top: 2em;
+      font-size: 2em;
+      color: @label-color;
+    }
+    .large-pie {
+      margin: 0 auto;
+      text-align: center;
+    }
+  }
+
+}
+
+@media (max-width: 767px) {
+  .analytics-widget {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .table-responsive {
+    border: 0;
+    margin-bottom: 0;
+    overflow: inherit;
+  }
+}
+
+.targets {
+  .target {
+    padding: 15px;
+    h4 {
+      margin: 0;
+    }
+    .icon {
+      margin-right: 0.5em;
+    }
+    .large {
+      font-size: 2em;
+    }
+    .goal {
+      color: @analytics-color;
+    }
+    background-color: @background-color;
+    border: 1px solid @seperator-color;
+    .right-wrapper {
+      overflow: hidden;
+    }
+    .right-column {
+      margin-left: 15px;
+      float: right;
+      text-align: right;
+    }
+    .progress {
+      background-color: white;
+      border: 1px solid @analytics-color;
+      margin-bottom: 0;
+      .progress-bar {
+        background-color: @analytics-color;
+      }
+    }
+  }
+}

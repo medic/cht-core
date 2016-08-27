@@ -1,40 +1,51 @@
-var modal = require('../modules/modal');
-
 (function () {
 
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
+  angular.module('inboxControllers').controller('ImportTranslationCtrl',
+    function (
+      $scope,
+      $translate,
+      $uibModalInstance,
+      FileReader,
+      ImportProperties
+    ) {
 
-  inboxControllers.controller('ImportTranslationCtrl',
-    ['$scope', 'translateFilter', 'ImportProperties', 'FileReader',
-    function ($scope, translateFilter, ImportProperties, FileReader) {
+      'ngInject';
+      
+      $scope.locale = $scope.model;
 
-      $scope.$on('ImportTranslationInit', function(e, locale) {
-        $scope.locale = locale;
-        $scope.translationFile = null;
-      });
-
-      $scope.import = function() {
-        var pane = modal.start($('#import-translation'));
+      $scope.submit = function() {
+        $scope.validationError = null;
         var file = $('#import-translation [name="translations"]').prop('files')[0];
         if (!file) {
-          return pane.done(translateFilter('field is required', {
-            field: translateFilter('Translation file')
-          }), true);
+          $translate('Translation file').then(function(fieldName) {
+            $translate('field is required', { field: fieldName })
+              .then(function(message) {
+                $scope.validationError = message;
+              });
+          });
+          return;
         }
+        $scope.setProcessing();
         FileReader(file)
           .then(function(result) {
-            ImportProperties(result, $scope.locale.code, function(err) {
-              pane.done(translateFilter('Error parsing file'), err);
-            });
+            return ImportProperties(result, $scope.locale);
+          })
+          .then(function() {
+            $scope.setFinished();
+            $uibModalInstance.close();
           })
           .catch(function(err) {
-            pane.done(translateFilter('Error parsing file'), err);
+            $scope.setError(err, 'Error parsing file');
           });
       };
 
+      $scope.cancel = function() {
+        $uibModalInstance.dismiss();
+      };
+
     }
-  ]);
+  );
 
 }());

@@ -3,21 +3,24 @@ describe('DeleteUser service', function() {
   'use strict';
 
   var service,
-      $httpBackend,
-      DeleteDoc,
+      httpBackend,
+      rootScope,
+      DeleteDocs,
+      get,
       cacheRemove;
 
   beforeEach(function() {
     module('inboxApp');
     cacheRemove = sinon.stub();
-    DeleteDoc = sinon.stub();
+    DeleteDocs = sinon.stub();
+    get = sinon.stub();
     module(function ($provide) {
-      $provide.factory('DeleteDoc', function() {
-        return DeleteDoc;
-      });
+      $provide.value('DeleteDocs', DeleteDocs);
+      $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
     });
     inject(function($injector) {
-      $httpBackend = $injector.get('$httpBackend');
+      httpBackend = $injector.get('$httpBackend');
+      rootScope = $injector.get('$rootScope');
       var $cacheFactory = $injector.get('$cacheFactory');
       $cacheFactory.get = function(name) {
         if (name !== '$http') {
@@ -30,21 +33,21 @@ describe('DeleteUser service', function() {
   });
 
   afterEach(function() {
-    $httpBackend.verifyNoOutstandingExpectation();
-    $httpBackend.verifyNoOutstandingRequest();
-    KarmaUtils.restore(cacheRemove, DeleteDoc);
+    httpBackend.verifyNoOutstandingExpectation();
+    httpBackend.verifyNoOutstandingRequest();
+    KarmaUtils.restore(cacheRemove, DeleteDocs, get);
   });
 
   it('returns errors', function(done) {
 
-    $httpBackend
+    httpBackend
       .expect('GET', '/_users/org.couchdb.user%3Agareth')
       .respond({ 
         _id: 'org.couchdb.user:gareth',
         name: 'gareth',
         starsign: 'aries'
       });
-    $httpBackend
+    httpBackend
       .expect('PUT', '/_users/org.couchdb.user%3Agareth', {
         _id: 'org.couchdb.user:gareth',
         name: 'gareth',
@@ -53,25 +56,32 @@ describe('DeleteUser service', function() {
       })
       .respond(404, 'Not found');
 
-    service({ id: 'org.couchdb.user:gareth', name: 'gareth' }, function(err) {
-      chai.expect(err.message).to.equal('Not found');
-      chai.expect(cacheRemove.callCount).to.equal(0);
-      done();
-    });
+    service({ _id: 'org.couchdb.user:gareth', name: 'gareth' })
+      .then(function() {
+        done(new Error('expected error to be thrown'));
+      })
+      .catch(function(err) {
+        chai.expect(err.data).to.equal('Not found');
+        chai.expect(cacheRemove.callCount).to.equal(0);
+        done();
+      });
 
-    $httpBackend.flush();
+    setTimeout(function() {
+      httpBackend.flush();
+      rootScope.$apply(); // needed to resolve the promises
+    });
   });
 
-  it('deletes the user and clears the cache', function(done) {
+  it('deletes the user and clears the cache', function() {
 
-    $httpBackend
+    httpBackend
       .expect('GET', '/_users/org.couchdb.user%3Agareth')
       .respond({ 
         _id: 'org.couchdb.user:gareth',
         name: 'gareth',
         starsign: 'aries'
       });
-    $httpBackend
+    httpBackend
       .expect('PUT', '/_users/org.couchdb.user%3Agareth', {
         _id: 'org.couchdb.user:gareth',
         name: 'gareth',
@@ -80,23 +90,31 @@ describe('DeleteUser service', function() {
       })
       .respond({ success: true });
 
-    DeleteDoc.callsArgWith(1);
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'org.couchdb.user:gareth' }));
+    DeleteDocs.returns(KarmaUtils.mockPromise());
 
-    service({
-      id: 'org.couchdb.user:gareth',
-      name: 'gareth'
-    }, function(err) {
-      chai.expect(err).to.equal(undefined);
-      chai.expect(DeleteDoc.callCount).to.equal(1);
-      chai.expect(DeleteDoc.firstCall.args[0]).to.equal('org.couchdb.user:gareth');
-      chai.expect(cacheRemove.callCount).to.equal(3);
-      chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Agareth');
-      chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
-      chai.expect(cacheRemove.thirdCall.args[0]).to.equal('/_config/admins');
-      done();
+    setTimeout(function() {
+      rootScope.$apply(); // needed to resolve the promises
+      httpBackend.flush();
+      setTimeout(function() {
+        rootScope.$apply();
+        httpBackend.flush();
+      });
     });
 
-    $httpBackend.flush();
+    return service({ _id: 'org.couchdb.user:gareth', name: 'gareth' })
+      .then(function() {
+        chai.expect(get.callCount).to.equal(1);
+        chai.expect(get.args[0][0]).to.equal('org.couchdb.user:gareth');
+
+        chai.expect(DeleteDocs.callCount).to.equal(1);
+        chai.expect(DeleteDocs.args[0][0]._id).to.equal('org.couchdb.user:gareth');
+
+        chai.expect(cacheRemove.callCount).to.equal(3);
+        chai.expect(cacheRemove.args[0][0]).to.equal('/_users/org.couchdb.user%3Agareth');
+        chai.expect(cacheRemove.args[1][0]).to.equal('/_users/_all_docs?include_docs=true');
+        chai.expect(cacheRemove.args[2][0]).to.equal('/_config/admins');
+      });
   });
 
 });

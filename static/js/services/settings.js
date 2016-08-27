@@ -8,24 +8,32 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('Settings',
-    ['$q', 'Cache', 'DB', 'Session',
-    function($q, Cache, DB, Session) {
+    function(
+      $log,
+      $q,
+      Cache,
+      DB,
+      Session
+    ) {
+
+      'ngInject';
 
       var cache = Cache({
         get: function(callback) {
-          DB.get()
-            .get('_design/medic')
+          DB()
+            .get('_design/medic-client')
             .then(function(ddoc) {
               callback(null, _.defaults(ddoc.app_settings, defaults));
-            }).catch(function(err) {
+            })
+            .catch(function(err) {
               if (err && err.status === 401) {
                 Session.navigateToLogin();
               }
               callback(err);
             });
         },
-        filter: function(doc) {
-          return doc._id === '_design/medic';
+        invalidate: function(doc) {
+          return doc._id === '_design/medic-client';
         }
       });
 
@@ -37,7 +45,7 @@ var _ = require('underscore'),
             try {
               callback(data);
             } catch(e) {
-              console.error('Error triggering listener callback.', event, data, callback);
+              $log.error('Error triggering listener callback.', event, data, callback);
             }
           });
         }
@@ -65,6 +73,6 @@ var _ = require('underscore'),
         return deferred;
       };
     }
-  ]);
+  );
 
 }());

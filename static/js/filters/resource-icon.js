@@ -14,7 +14,7 @@
         } else {
           src = '';
         }
-        return '<img class="resource-icon-' + name + '" ' + src + ' />';
+        return '<img class="resource-icon" name="' + name + '" ' + src + ' />';
       };
     }
   ]);

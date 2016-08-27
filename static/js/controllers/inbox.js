@@ -4,9 +4,7 @@ var feedback = require('../modules/feedback'),
     sendMessage = require('../modules/send-message'),
     tour = require('../modules/tour'),
     modal = require('../modules/modal'),
-    format = require('../modules/format'),
-    guidedSetup = require('../modules/guided-setup'),
-    ajaxDownload = require('../modules/ajax-download');
+    guidedSetup = require('../modules/guided-setup');
 
 (function () {
 
@@ -15,25 +13,72 @@ var feedback = require('../modules/feedback'),
   var inboxControllers = angular.module('inboxControllers', []);
 
   inboxControllers.controller('InboxCtrl',
-    ['$window', '$scope', '$translate', '$rootScope', '$state', '$timeout', '$log', '$http', 'translateFilter', 'Facility', 'FacilityHierarchy', 'Form', 'Settings', 'UpdateSettings', 'Contact', 'Language', 'LiveListConfig', 'ReadMessages', 'UpdateUser', 'SendMessage', 'UserDistrict', 'CheckDate', 'DeleteDoc', 'DownloadUrl', 'SetLanguageCookie', 'CountMessages', 'BaseUrlService', 'DBSync', 'Snackbar', 'UserSettings', 'APP_CONFIG', 'DB', 'Session', 'Enketo', 'Changes', 'AnalyticsModules', 'Auth', 'TrafficStats', 'XmlForms', 'TaskGenerator', 'CONTACT_TYPES',
-    function ($window, $scope, $translate, $rootScope, $state, $timeout, $log, $http, translateFilter, Facility, FacilityHierarchy, Form, Settings, UpdateSettings, Contact, Language, LiveListConfig, ReadMessages, UpdateUser, SendMessage, UserDistrict, CheckDate, DeleteDoc, DownloadUrl, SetLanguageCookie, CountMessages, BaseUrlService, DBSync, Snackbar, UserSettings, APP_CONFIG, DB, Session, Enketo, Changes, AnalyticsModules, Auth, TrafficStats, XmlForms, TaskGenerator, CONTACT_TYPES) {
+    function (
+      $log,
+      $q,
+      $rootScope,
+      $scope,
+      $state,
+      $stateParams,
+      $timeout,
+      $translate,
+      $window,
+      APP_CONFIG,
+      Auth,
+      Changes,
+      CheckDate,
+      CONTACT_TYPES,
+      ContactSchema,
+      CountMessages,
+      DB,
+      DBSync,
+      Enketo,
+      FacilityHierarchy,
+      JsonForms,
+      Language,
+      LiveListConfig,
+      Location,
+      Modal,
+      PLACE_TYPES,
+      ReadMessages,
+      RulesEngine,
+      Search,
+      Select2Search,
+      SendMessage,
+      Session,
+      SetLanguageCookie,
+      Settings,
+      Snackbar,
+      TrafficStats,
+      UpdateSettings,
+      UpdateUser,
+      UserSettings,
+      XmlForms
+    ) {
+      'ngInject';
 
       Session.init();
-
       TrafficStats($scope);
 
-      $scope.initialReplication = {
-        status: 'initial.replication.status.in_progress'
+      $scope.replicationStatus = {
+        disabled: false,
+        lastSuccess: { }
       };
-
-      DBSync(function(err, result) {
-        if (err) {
-          $log.debug('Error initializing DB sync. Continuing anyway.', err);
+      DBSync(function(status) {
+        if (status.disabled) {
+          $scope.replicationStatus.disabled = true;
+          // admins have potentially too much data so bypass local pouch
+          $log.debug('You have administrative privileges; not replicating');
+          return;
         }
-        $scope.initialReplication = result;
+        var now = Date.now();
+        var last = $scope.replicationStatus.lastSuccess[status.direction];
+        $scope.replicationStatus.lastSuccess[status.direction] = now;
+        var delay = last ? (now - last) / 1000 : 'unknown';
+        $log.info('Replicate ' + status.direction + ' server successful with ' + delay + ' seconds since the previous successful replication.');
       });
 
-      TaskGenerator.init
+      RulesEngine.init
         .then(function() {
           $scope.dbWarmedUp = true;
         })
@@ -43,7 +88,7 @@ var feedback = require('../modules/feedback'),
 
       feedback.init({
         saveDoc: function(doc, callback) {
-          DB.get().post(doc)
+          DB().post(doc)
             .then(function() {
               callback();
             })
@@ -55,25 +100,21 @@ var feedback = require('../modules/feedback'),
       });
 
       LiveListConfig($scope);
-      CheckDate($scope);
+      CheckDate();
 
       $scope.loadingContent = false;
       $scope.error = false;
       $scope.errorSyntax = false;
       $scope.appending = false;
       $scope.languages = [];
-      $scope.forms = [];
       $scope.facilities = [];
       $scope.people = [];
-      $scope.totalItems = undefined;
       $scope.filterQuery = { value: undefined };
-      $scope.analyticsModules = [];
       $scope.version = APP_CONFIG.version;
       $scope.actionBar = {};
-      $scope.title = undefined;
       $scope.tours = [];
 
-      $scope.baseUrl = BaseUrlService();
+      $scope.baseUrl = Location.path;
 
       if ($window.medicmobile_android) {
         $scope.android_app_version = $window.medicmobile_android.getAppVersion();
@@ -93,148 +134,44 @@ var feedback = require('../modules/feedback'),
         }
       };
 
-      /**
-       * Close the highest-priority dropdown within a particular container.
-       * @return {boolean} `true` if a dropdown was closed; `false` otherwise.
-       */
-      var closeDropdownsIn = function($container) {
-        // If there are any select2 dropdowns open, close them.  The select
-        // boxes are closed while they are checked - this saves us having to
-        // iterate over them twice
-        if(_.chain($container.find('select.select2-hidden-accessible'))
-            .map(function(e) {
-              e = $(e);
-              if(e.select2('isOpen')) {
-                e.select2('close');
-                return true;
-              }
-            })
-            .contains(true)
-            .value()) {
-          return true;
-        }
-
-        // If there is a dropdown menu open, close it
-        var $dropdown = $container.find('.filter.dropdown.open:visible');
-        if ($dropdown.length) {
-          $dropdown.removeClass('open');
-          return true;
-        }
-
-        // On an Enketo form, go to the previous page (if there is one)
-        if ($container.find('.enketo .btn.previous-page:visible:enabled:not(".disabled")').length) {
-          window.history.back();
-          return true;
-        }
-
-        return false;
-      };
-
-      /**
-       * Handle hardware back-button presses when inside the android app.
-       * @return {boolean} `true` if angular handled the back button; otherwise
-       *   the android app will handle it as it sees fit.
-       */
-      $scope.handleAndroidBack = function() {
-        // If there's a modal open, close any dropdowns inside it, or try to
-        // close the modal itself.
-        var $modal = $('.modal:visible');
-        if ($modal.length) {
-          // find the modal with highest z-index, and ignore the rest
-          var $topModal;
-          $modal.each(function(i, next) {
-            if (!$topModal) {
-              $topModal = $(next);
-              return;
-            }
-            var $next = $(next);
-            if ($topModal.css('z-index') <= $next.css('z-index')) {
-              $topModal = $next;
-            }
-          });
-
-          if (!closeDropdownsIn($topModal)) {
-            // Try to close by clicking modal's top-right `X` or `[ Cancel ]`
-            // button.
-            $topModal.find('.btn.cancel:visible:not(:disabled),' +
-                'button.cancel.close:visible:not(:disabled)').click();
-          }
-          return true;
-        }
-
-        // If the hotdog hamburger options menu is open, close it
-        var $optionsMenu = $('.dropdown.options.open');
-        if($optionsMenu.length) {
-          $optionsMenu.removeClass('open');
-          return true;
-        }
-
-        // If there is an actionbar drop-up menu open, close it
-        var $dropup = $('.actions.dropup.open:visible');
-        if ($dropup.length) {
-          $dropup.removeClass('open');
-          return true;
-        }
-
-        if (closeDropdownsIn($('body'))) {
-          return true;
-        }
-
-        // If viewing RHS content, do as the filter-bar X/< button does
-        if ($scope.showContent) {
-          if ($scope.cancelCallback) {
-            $scope.cancel();
-          } else {
-            $scope.closeContentPane();
-          }
-          $scope.$apply();
-          return true;
-        }
-
-        // If we're viewing a help page, return to the about page
-        if ($state.includes('help')) {
-          $state.go('about');
-          return true;
-        }
-
-        // If we're viewing a tab, but not the primary tab, go to primary tab
-        var primaryState = $('#messages-tab:visible').length ? 'messages' : 'tasks';
-        if (!$state.includes(primaryState)) {
-          $state.go(primaryState);
-          return true;
-        }
-
-        return false;
-      };
-
-      $scope.cancel = function() {
-        $('#navigation-confirm').modal('show');
-      };
-
-      $scope.cancelConfirm = function() {
-        $('#navigation-confirm').modal('hide');
+      $scope.$on('HideContent', function() {
         if ($scope.cancelCallback) {
-          $scope.cancelCallback();
+          $scope.navigationCancel();
+        } else {
+          $scope.clearSelected();
         }
-      };
+        $scope.$apply();
+      });
 
-      $scope.closeContentPane = function() {
-        $scope.clearSelected();
-        $state.go($state.current.name, { id: null });
+      // User wants to cancel current flow, or pressed back button, etc.
+      $scope.navigationCancel = function() {
+        Modal({
+          templateUrl: 'templates/modals/navigation_confirm.html',
+          controller: 'NavigationConfirmCtrl'
+        })
+        .then(function() {
+          if ($scope.cancelCallback) {
+            $scope.cancelCallback();
+          }
+        });
       };
 
       $scope.clearSelected = function() {
-        $scope.showContent = false;
-        $scope.loadingContent = false;
-        $scope.showActionBar = false;
-        $scope.setTitle();
-        $scope.$broadcast('ClearSelected');
+        if ($stateParams.id) {
+          $state.go($state.current.name, { id: null });
+        } else {
+          $scope.setShowContent(false);
+          $scope.loadingContent = false;
+          $scope.showActionBar = false;
+          $scope.setTitle();
+          $scope.$broadcast('ClearSelected');
+        }
       };
 
       $scope.settingSelected = function(refreshing) {
         $scope.loadingContent = false;
         $timeout(function() {
-          $scope.showContent = true;
+          $scope.setShowContent(true);
           $scope.showActionBar = true;
           if (!refreshing) {
             $timeout(function() {
@@ -245,6 +182,10 @@ var feedback = require('../modules/feedback'),
       };
 
       $scope.setShowContent = function(showContent) {
+        if (showContent && $scope.selectMode) {
+          // when in select mode we never show the RHS on mobile
+          return;
+        }
         $scope.showContent = showContent;
       };
 
@@ -261,9 +202,9 @@ var feedback = require('../modules/feedback'),
       };
 
       $scope.setLoadingContent = function(id) {
-        $scope.loadingContent = id;
         $timeout(function() {
-          $scope.showContent = true;
+          $scope.loadingContent = id;
+          $scope.setShowContent(true);
         });
       };
 
@@ -273,123 +214,44 @@ var feedback = require('../modules/feedback'),
 
       $scope.readStatus = { forms: 0, messages: 0 };
 
-      $scope.filterModel = {
-        type: 'messages',
-        forms: [],
-        facilities: [],
-        contactTypes: [],
-        valid: undefined,
-        verified: undefined,
-        date: { }
-      };
-
-      $scope.resetFilterModel = function() {
-        $scope.filterQuery.value = '';
-        $scope.filterModel.forms = [];
-        $scope.filterModel.facilities = [];
-        $scope.filterModel.contactTypes = [];
-        $scope.filterModel.valid = undefined;
-        $scope.filterModel.date = {};
-
-        $('.filter.multidropdown').each(function() {
-          $(this).multiDropdown().reset();
-        });
-
-        $scope.$broadcast('query');
-      };
+      $scope.$on('$stateChangeSuccess', function(event, toState) {
+        $scope.currentTab = toState.name.split('.')[0];
+        if (!$state.includes('reports')) {
+          $scope.selectMode = false;
+        }
+      });
 
       $scope.download = function() {
-        DownloadUrl($scope, $scope.filterModel.type, function(err, url) {
-          if (err) {
-            return $log.error(err);
-          }
-          $http.post(url)
-            .then(ajaxDownload.download)
-            .catch(function(err) {
-              $log.error('Error downloading', err);
-            });
-        });
+        $rootScope.$broadcast('export');
       };
 
       var updateAvailableFacilities = function() {
-        FacilityHierarchy(function(err, hierarchy, total) {
-          if (err) {
-            return $log.error('Error loading facilities', err);
-          }
-          $scope.facilities = hierarchy;
-          $scope.facilitiesCount = total;
-        });
-        Facility({ types: [ 'person' ] }, function(err, people) {
-          if (err) {
-            return $log.error('Failed to retrieve people', err);
-          }
-          $scope.people = people;
-          function formatResult(doc) {
-            return doc && format.contact(doc);
-          }
-
-          function $formatResult(data) {
-            if (data.text) {
-              return data.text;
-            }
-            return $(formatResult(data.doc));
-          }
-
-          function formatSelection(data) {
-            return data.text || data.doc.name;
-          }
-
-          $.fn.select2.amd.require(
-          ['select2/data/array', 'select2/utils'],
-          function (ArrayData, Utils) {
-            function CustomData ($element, options) {
-              CustomData.__super__.constructor.call(this, $element, options);
-            }
-
-            Utils.Extend(CustomData, ArrayData);
-
-            function sortResults(results) {
-              results.sort(function(a, b) {
-                var aName = formatResult(a).toLowerCase();
-                var bName = formatResult(b).toLowerCase();
-                return aName.localeCompare(bName);
-              });
-              return results;
-            }
-
-            CustomData.prototype.query = function (params, callback) {
-              var terms = params.term ? params.term.toLowerCase().split(/\s+/) : [];
-
-              var matches = _.filter(people, function(doc) {
-                var contact = doc.contact;
-                var name = contact && contact.name;
-                var phone = contact && contact.phone;
-                var tags = [ doc.name, name, phone ].join(' ').toLowerCase();
-                return _.every(terms, function(term) {
-                  return tags.indexOf(term) > -1;
-                });
-              });
-
-              matches = sortResults(matches);
-              matches = _.map(matches, function(doc) {
-                return { id: doc._id, doc: doc };
-              });
-
-              callback({ results: matches });
-            };
-
-            $('.update-facility [name=facility], #edit-user-profile [name=contact]').select2({
-              dataAdapter: CustomData,
-              templateResult: $formatResult,
-              templateSelection: formatSelection,
-              width: '100%',
-            });
-
+        FacilityHierarchy()
+          .then(function(hierarchy) {
+            $scope.facilities = hierarchy;
+          })
+          .catch(function(err) {
+            $log.error('Error loading facilities', err);
           });
-
-        });
       };
       updateAvailableFacilities();
+
+      var setupSelect2Ajax = function(selector) {
+        $(selector).each(function(idx, el) {
+          Select2Search($(el), 'person', { allowNew: false })
+            .catch(function(err) {
+              $log.error('Error initialising select2', err);
+            });
+        });
+      };
+
+      $scope.setupEditReport = function() {
+        setupSelect2Ajax('.edit-report-dialog [name=facility]');
+      };
+
+      $scope.setupUpdateFacility = function() {
+        setupSelect2Ajax('.update-facility-dialog [name=facility]');
+      };
 
       var findIdInContactHierarchy = function(id, hierarchy) {
         return _.find(hierarchy, function(entry) {
@@ -401,8 +263,11 @@ var feedback = require('../modules/feedback'),
       Changes({
         key: 'inbox-facilities',
         filter: function(change) {
+          var hierarchyTypes = PLACE_TYPES.filter(function(pt) {
+            return pt !== 'clinic';
+          });
           // check if new document is a contact
-          return CONTACT_TYPES.indexOf(change.doc.type) !== -1;
+          return hierarchyTypes.indexOf(change.doc.type) !== -1;
         },
         callback: updateAvailableFacilities
       });
@@ -415,7 +280,6 @@ var feedback = require('../modules/feedback'),
           $scope.readStatus = data;
         });
       };
-      $scope.updateReadStatus();
       Changes({
         key: 'inbox-read-status',
         filter: function(change) {
@@ -425,17 +289,16 @@ var feedback = require('../modules/feedback'),
       });
 
       $scope.setupSendMessage = function() {
-        sendMessage.init(Settings, Contact, translateFilter);
+        sendMessage.init($q, Settings, Select2Search, $translate.instant, CONTACT_TYPES, ContactSchema);
       };
 
-      Form()
+      // get the forms for the forms filter
+      JsonForms()
         .then(function(jsonForms) {
-          XmlForms('InboxCtrl', { contactForms: false }, function(err, xForms) {
+          XmlForms('FormsFilter', { contactForms: false, ignoreContext: true }, function(err, xForms) {
             if (err) {
               return $log.error('Error fetching form definitions', err);
             }
-            Enketo.clearXmlCache();
-            $scope.nonContactForms = xForms;
             var xFormSummaries = xForms.map(function(xForm) {
               return {
                 code: xForm.internalId,
@@ -443,14 +306,37 @@ var feedback = require('../modules/feedback'),
               };
             });
             $scope.forms = xFormSummaries.concat(jsonForms);
+            $rootScope.$broadcast('formLoadingComplete');
           });
         })
         .catch(function(err) {
+          $rootScope.$broadcast('formLoadingComplete');
           $log.error('Failed to retrieve forms', err);
         });
 
+      // get the forms for the Add Report menu
+      XmlForms('AddReportMenu', { contactForms: false }, function(err, xForms) {
+        if (err) {
+          return $log.error('Error fetching form definitions', err);
+        }
+        Enketo.clearXmlCache();
+        JsonForms()
+          .then(function(jsonForms) {
+            $scope.nonContactForms = xForms.concat(jsonForms);
+          });
+      });
+
+      $scope.showMedicReporter = function(jsonformCode) {
+        Modal({
+          templateUrl: 'templates/modals/medic_reporter.html',
+          controller: 'MedicReporterModalCtrl',
+          model: { formCode: jsonformCode }
+        });
+      };
+
+      // TODO when all modals are converted to on-demand modals, remove all these setup functions.
       $scope.setupGuidedSetup = function() {
-        guidedSetup.init(Settings, UpdateSettings, translateFilter);
+        guidedSetup.init(Settings, UpdateSettings, $translate.instant);
         modalsInited.guidedSetup = true;
         showModals();
       };
@@ -460,39 +346,9 @@ var feedback = require('../modules/feedback'),
         showModals();
       };
 
-      $scope.setupUserLanguage = function() {
-        $('#user-language').on('click', '.horizontal-options a', function(e) {
-          e.preventDefault();
-          var elem = $(this);
-          elem.closest('.horizontal-options')
-            .find('.selected')
-            .removeClass('selected');
-          elem.addClass('selected');
-        });
-        $('#user-language .btn-primary').on('click', function(e) {
-          e.preventDefault();
-          var btn = $(this);
-          btn.addClass('disabled');
-          var selected = $(this).closest('.modal-content')
-                                .find('.selected')
-                                .attr('data-value');
-          var id = 'org.couchdb.user:' + Session.userCtx().name;
-          UpdateUser(id, { language: selected }, function(err) {
-            btn.removeClass('disabled');
-            if (err) {
-              return $log.error('Error updating user', err);
-            }
-            $('#user-language').modal('hide');
-          });
-        });
+      var setupUserLanguage = function() {
         modalsInited.userLanguage = true;
         showModals();
-      };
-
-      $scope.changeLanguage = function(code) {
-        moment.locale([code, 'en']);
-        $translate.use(code);
-        SetLanguageCookie(code);
       };
 
       var startupModals = [
@@ -502,8 +358,16 @@ var feedback = require('../modules/feedback'),
             return !user.language;
           },
           render: function(callback) {
-            $('#user-language').modal('show');
-            $('#user-language').on('hide.bs.modal', callback);
+            Modal({
+              templateUrl: 'templates/modals/user_language.html',
+              controller: 'UserLanguageModalCtrl'
+            })
+              .then(function() {
+                callback();
+              })
+              .catch(function() {
+                callback();
+              });
           }
         },
         // welcome screen
@@ -524,11 +388,10 @@ var feedback = require('../modules/feedback'),
           render: function(callback) {
             $('#guided-setup').modal('show');
             $('#guided-setup').on('hide.bs.modal', callback);
-            UpdateSettings({ setup_complete: true }, function(err) {
-              if (err) {
+            UpdateSettings({ setup_complete: true })
+              .catch(function(err) {
                 $log.error('Error marking setup_complete', err);
-              }
-            });
+              });
           }
         },
         // tour
@@ -537,13 +400,13 @@ var feedback = require('../modules/feedback'),
             return !user.known;
           },
           render: function() {
-            tour.start('intro', translateFilter);
+            tour.start('intro', $translate.instant);
             var id = 'org.couchdb.user:' + Session.userCtx().name;
-            UpdateUser(id, { known: true }, function(err) {
-              if (err) {
+
+            UpdateUser(id, { known: true })
+              .catch(function(err) {
                 $log.error('Error updating user', err);
-              }
-            });
+              });
           }
         },
       ];
@@ -566,54 +429,18 @@ var feedback = require('../modules/feedback'),
         }
       };
 
-      var editUserModel = {};
-
-      $scope.editCurrentUserPrepare = function() {
-        $rootScope.$broadcast('EditUserInit', editUserModel);
-      };
-
-      var updateEditUserModel = function(callback) {
-        UserSettings(function(err, user) {
-          if (err) {
-            return $log.error('Error getting user', err);
-          }
-          editUserModel = {
-            id: user._id,
-            rev: user._rev,
-            name: user.name,
-            fullname: user.fullname,
-            email: user.email,
-            phone: user.phone,
-            language: { code: user.language },
-            contact_id: user.contact_id
-          };
-          if (callback) {
-            callback(user);
-          }
+      DB()
+        .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
+        .then(function(result) {
+          $scope.enabledLocales = _.pluck(result.rows, 'value');
         });
-      };
 
-      Changes({
-        key: 'inbox-user',
-        filter: function(change) {
-          return change.id === editUserModel.id;
-        },
-        callback: function() {
-          updateEditUserModel();
-        }
-      });
-
-      Settings()
-        .then(function(settings) {
-          $scope.enabledLocales = _.reject(settings.locales, function(locale) {
-            return !!locale.disabled;
+      $q.all([ Settings(), UserSettings() ])
+        .then(function(results) {
+          filteredModals = _.filter(startupModals, function(modal) {
+            return modal.required(results[0], results[1]);
           });
-          updateEditUserModel(function(user) {
-            filteredModals = _.filter(startupModals, function(modal) {
-              return modal.required(settings, user);
-            });
-            showModals();
-          });
+          showModals();
         })
         .catch(function(err) {
           $log.error('Error fetching settings', err);
@@ -640,7 +467,7 @@ var feedback = require('../modules/feedback'),
               pane.done();
             })
             .catch(function(err) {
-              pane.done(translateFilter('Error sending message'), err);
+              pane.done($translate.instant('Error sending message'), err);
             });
         });
       };
@@ -653,32 +480,35 @@ var feedback = require('../modules/feedback'),
         $rootScope.$broadcast.apply($rootScope, arguments);
       };
 
-      var docToDeleteId;
-
-      $scope.deleteDoc = function(id) {
-        $('#delete-confirm').modal('show');
-        docToDeleteId = id;
+      $scope.deleteDoc = function(docs) {
+        if (!docs) {
+          return;
+        }
+        if (!_.isArray(docs)) {
+          docs = [ docs ];
+        }
+        if (!docs.length) {
+          return;
+        }
+        Modal({
+          templateUrl: 'templates/modals/delete_doc_confirm.html',
+          controller: 'DeleteDocConfirm',
+          model: { docs: docs }
+        }).then(function() {
+          if ($state.includes('contacts') || $state.includes('reports')) {
+            if ($scope.selectMode) {
+              $scope.clearSelected();
+            } else {
+              $state.go($state.current.name, { id: null });
+            }
+          }
+        });
       };
 
-      $scope.deleteDocConfirm = function() {
-        var pane = modal.start($('#delete-confirm'));
-        if (docToDeleteId) {
-          DeleteDoc(docToDeleteId, function(err) {
-            pane.done(translateFilter('Error deleting document'), err);
-            if (!err) {
-              // return to list view for the current state
-              var stateName = $state.current.name,
-                  dotIndex = stateName.indexOf('.');
-              if(dotIndex !== -1) {
-                stateName = stateName.substring(0, dotIndex);
-              }
-              $state.go(stateName);
-              Snackbar(translateFilter('document.deleted'));
-            }
-          });
-        } else {
-          pane.done(translateFilter('Error deleting document'), 'No docToDeleteId set');
-        }
+      $scope.setSelectMode = function(value) {
+        $scope.selectMode = value;
+        $scope.clearSelected();
+        $state.go('reports.detail', { id: null });
       };
 
       $('body').on('mouseenter', '.relative-date, .autoreply', function() {
@@ -707,187 +537,6 @@ var feedback = require('../modules/feedback'),
         }
       });
 
-      // TODO we should eliminate the need for this function as much as possible
-      var angularApply = function(callback) {
-        var scope = angular.element($('body')).scope();
-        if (scope) {
-          scope.$apply(callback);
-        }
-      };
-
-      var getTernaryValue = function(positive, negative) {
-        if (positive && !negative) {
-          return true;
-        }
-        if (!positive && negative) {
-          return false;
-        }
-      };
-
-      $scope.setupFilters = function() {
-
-        $('#search').on('click', function(e) {
-          e.preventDefault();
-          $scope.$broadcast('query');
-        });
-        $('#freetext').on('keypress', function(e) {
-          if (e.which === 13) {
-            e.preventDefault();
-            $scope.$broadcast('query');
-          }
-        });
-
-        var performMobileSearch = function(e) {
-          e.preventDefault();
-          $scope.$broadcast('query');
-          $(e.target).closest('.filter').removeClass('open');
-        };
-        $('#mobile-search-go').on('click', performMobileSearch);
-        $('#mobile-freetext').on('keypress', function(e) {
-          if (e.which === 13) {
-            performMobileSearch(e);
-          }
-        });
-        $('.mobile-freetext-filter').on('shown.bs.dropdown', function() {
-          $('#mobile-freetext').focus();
-        });
-
-        // stop bootstrap closing the search pane on click
-        $('.filters .mobile-freetext-filter .search-pane').on('click', function(e) {
-          e.stopPropagation();
-        });
-
-        $translate.onReady().then(function() {
-          // we have to wait for language to respond before initing the multidropdowns
-          Language().then(function(language) {
-
-            $translate.use(language);
-
-            $('#formTypeDropdown, #facilityDropdown, #contactTypeDropdown').each(function() {
-              $(this).multiDropdown({
-                label: function(state, callback) {
-                  if (state.selected.length === 0 || state.selected.length === state.total.length) {
-                    return callback($translate.instant(state.menu.data('label-no-filter')));
-                  }
-                  if (state.selected.length === 1) {
-                    return callback(state.selected.first().text());
-                  }
-                  callback($translate.instant(
-                    state.menu.data('filter-label'), { number: state.selected.length }
-                  ));
-                },
-                selectAllLabel: $translate.instant('select all'),
-                clearLabel: $translate.instant('clear')
-              });
-            });
-
-            $('#statusDropdown').multiDropdown({
-              label: function(state, callback) {
-                var values = {};
-                state.selected.each(function() {
-                  var elem = $(this);
-                  values[elem.data('value')] = elem.text();
-                });
-                var parts = [];
-                if (values.valid && !values.invalid) {
-                  parts.push(values.valid);
-                } else if (!values.valid && values.invalid) {
-                  parts.push(values.invalid);
-                }
-                if (values.verified && !values.unverified) {
-                  parts.push(values.verified);
-                } else if (!values.verified && values.unverified) {
-                  parts.push(values.unverified);
-                }
-                if (parts.length === 0 || parts.length === state.total.length) {
-                  return callback($translate.instant(state.menu.data('label-no-filter')));
-                }
-                return callback(parts.join(', '));
-              },
-              selectAllLabel: $translate.instant('select all'),
-              clearLabel: $translate.instant('clear')
-            });
-
-            var start = $scope.filterModel.date.from ?
-              moment($scope.filterModel.date.from) : moment().subtract(1, 'months');
-            $('#date-filter').daterangepicker({
-              startDate: start,
-              endDate: moment($scope.filterModel.date.to),
-              maxDate: moment(),
-              opens: 'center',
-              applyClass: 'btn-primary',
-              cancelClass: 'btn-link',
-              locale: {
-                applyLabel: $translate.instant('Apply'),
-                cancelLabel: $translate.instant('Cancel'),
-                fromLabel: $translate.instant('date.from'),
-                toLabel: $translate.instant('date.to'),
-                daysOfWeek: moment.weekdaysMin(),
-                monthNames: moment.monthsShort(),
-                firstDay: moment.localeData()._week.dow
-              }
-            },
-            function(start, end) {
-              var scope = angular.element($('body')).scope();
-              if (scope) {
-                scope.$apply(function() {
-                  scope.filterModel.date.from = start.valueOf();
-                  scope.filterModel.date.to = end.valueOf();
-                });
-              }
-            })
-            .on('mm.dateSelected.daterangepicker', function(e, picker) {
-              if ($scope.isMobile()) {
-                // mobile version - only show one calendar at a time
-                if (picker.container.is('.show-from')) {
-                  picker.container.removeClass('show-from').addClass('show-to');
-                } else {
-                  picker.container.removeClass('show-to').addClass('show-from');
-                  picker.hide();
-                }
-              }
-            });
-            $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
-
-            $('#formTypeDropdown').on('update', function() {
-              var forms = $(this).multiDropdown().val();
-              angularApply(function(scope) {
-                scope.filterModel.forms = forms;
-              });
-            });
-
-            $('#facilityDropdown').on('update', function() {
-              var ids = $(this).multiDropdown().val();
-              angularApply(function(scope) {
-                scope.filterModel.facilities = ids;
-              });
-            });
-
-            $('#contactTypeDropdown').on('update', function() {
-              var ids = $(this).multiDropdown().val();
-              angularApply(function(scope) {
-                scope.filterModel.contactTypes = ids;
-              });
-            });
-
-            $('#statusDropdown').on('update', function() {
-              var values = $(this).multiDropdown().val();
-              angularApply(function(scope) {
-                scope.filterModel.valid = getTernaryValue(
-                  _.contains(values, 'valid'),
-                  _.contains(values, 'invalid')
-                );
-                scope.filterModel.verified = getTernaryValue(
-                  _.contains(values, 'verified'),
-                  _.contains(values, 'unverified')
-                );
-              });
-            });
-          });
-        });
-      };
-
-
       Auth('can_view_messages_tab').then(function() {
         $scope.tours.push({
           order: 1,
@@ -906,31 +555,6 @@ var feedback = require('../modules/feedback'),
         });
       });
 
-      $scope.setSelectedModule = function(module) {
-        $scope.filterModel.module = module;
-      };
-
-      $scope.fetchAnalyticsModules = function() {
-        return AnalyticsModules().then(function(modules) {
-          $scope.analyticsModules = modules;
-          return modules;
-        });
-      };
-
-      $scope.fetchAnalyticsModules()
-        .then(function(modules) {
-          if (_.findWhere(modules, { id: 'anc' })) {
-            Auth('can_view_analytics').then(function() {
-              $scope.tours.push({
-                order: 3,
-                id: 'analytics',
-                icon: 'fa-bar-chart-o',
-                name: 'Analytics'
-              });
-            });
-          }
-        });
-
       $scope.setupTour = function() {
         $('#tour-select').on('click', 'a.tour-option', function() {
           $('#tour-select').modal('hide');
@@ -946,16 +570,16 @@ var feedback = require('../modules/feedback'),
         var message = $('#feedback [name=feedback]').val();
         feedback.submit(message, APP_CONFIG, function(err) {
           if (!err) {
-            Snackbar(translateFilter('feedback.submitted'));
+            $translate('feedback.submitted').then(Snackbar);
           }
-          pane.done(translateFilter('Error saving feedback'), err);
+          pane.done($translate.instant('Error saving feedback'), err);
         });
       };
 
       $scope.configurationPages = [
         {
           state: 'configuration.settings.basic',
-          icon: 'fa-cog',
+          icon: 'fa-wrench',
           name: 'Settings',
           active: function() {
             return $state.includes('configuration.settings');
@@ -1027,39 +651,39 @@ var feedback = require('../modules/feedback'),
         },
       ];
 
-      UserDistrict(function() {
-        $scope.$watch('filterModel', function(curr, prev) {
-          if (prev !== curr) {
-            $scope.$broadcast('query');
-          }
-        }, true);
-        $scope.$broadcast('query');
-      });
-
       CountMessages.init();
+      setupUserLanguage();
 
       var showUpdateReady = function() {
-        $('#version-update').modal('show');
+        Modal({
+          templateUrl: 'templates/modals/version_update.html',
+          controller: 'VersionUpdateCtrl'
+        })
+        .catch(function() {
+          $log.debug('Delaying update');
+          $timeout(function() {
+            $log.debug('Displaying delayed update ready dialog');
+            showUpdateReady();
+          }, 2 * 60 * 60 * 1000);
+        });
 
         // close select2 dropdowns in the background
         $('select.select2-hidden-accessible').each(function(i, e) {
-          // prevent errors being thrown if selecters have not been
+          // prevent errors being thrown if selectors have not been
           // initialised before the update dialog is to be shown
           try { $(e).select2('close'); } catch(e) {}
         });
       };
 
-      $scope.reloadWindow = function() {
-        $window.location.reload();
-      };
-
-      $scope.postponeUpdate = function() {
-        $log.debug('Delaying update');
-        $timeout(function() {
-          $log.debug('Displaying delayed update ready dialog');
-          showUpdateReady();
-        }, 2 * 60 * 60 * 1000);
-      };
+      Changes({
+        key: 'inbox-translations',
+        filter: function(change) {
+          return change.doc.type === 'translations';
+        },
+        callback: function(change) {
+          $translate.refresh(change.doc.code);
+        }
+      });
 
       if (window.applicationCache) {
         window.applicationCache.addEventListener('updateready', showUpdateReady);
@@ -1071,21 +695,29 @@ var feedback = require('../modules/feedback'),
         if (window.applicationCache.status === window.applicationCache.UPDATEREADY) {
           showUpdateReady();
         }
-        DB.watchDesignDoc(function() {
-          // if the manifest hasn't changed, prompt user to reload settings
-          window.applicationCache.addEventListener('noupdate', showUpdateReady);
-          // check if the manifest has changed. if it has, download and prompt
-          try {
-            window.applicationCache.update();
-          } catch(e) {
-            // chrome incognito mode active
-            $log.error('Error updating the appcache.', e);
-            showUpdateReady();
+        Changes({
+          key: 'inbox-ddoc',
+          filter: function(change) {
+            return change.id === '_design/medic' ||
+                   change.id === '_design/medic-client' ||
+                   change.id === 'appcache';
+          },
+          callback: function() {
+            // if the manifest hasn't changed, prompt user to reload settings
+            window.applicationCache.addEventListener('noupdate', showUpdateReady);
+            // check if the manifest has changed. if it has, download and prompt
+            try {
+              window.applicationCache.update();
+            } catch(e) {
+              // chrome incognito mode active
+              $log.error('Error updating the appcache.', e);
+              showUpdateReady();
+            }
           }
         });
       }
 
     }
-  ]);
+  );
 
 }());

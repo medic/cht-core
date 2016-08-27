@@ -5,11 +5,10 @@ var inboxControllers = angular.module('inboxControllers');
 inboxControllers.controller('HelpCtrl',
   ['$scope', '$stateParams', '$q', '$log', 'DB', 'Language', 'Markdown',
   function ($scope, $stateParams, $q, $log, DB, Language, Markdown) {
-    $scope.filterModel.type = 'help';
     $scope.loading = true;
 
     var docId = 'help:' + $stateParams.page;
-    var docGet = DB.get().get(docId);
+    var docGet = DB().get(docId);
 
     $q.all([ docGet, Language() ])
       .then(function(results) {

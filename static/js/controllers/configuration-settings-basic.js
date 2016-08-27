@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    libphonenumber = require('libphonenumber/utils'),
+var libphonenumber = require('libphonenumber/utils'),
     countries = require('../modules/countries');
 
 (function () {
@@ -9,8 +8,16 @@ var _ = require('underscore'),
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationSettingsBasicCtrl',
-    ['$scope', '$timeout', 'translateFilter', 'Settings', 'UpdateSettings',
-    function ($scope, $timeout, translateFilter, Settings, UpdateSettings) {
+    function (
+      $log,
+      $scope,
+      $timeout,
+      Settings,
+      translateFilter,
+      UpdateSettings
+    ) {
+
+      'ngInject';
 
       var validateCountryCode = function() {
         var countryCode = $('#default-country-code').val();
@@ -66,19 +73,19 @@ var _ = require('underscore'),
             gateway_number: $scope.basicSettingsModel.gateway_number,
             default_country_code: $('#default-country-code').val()
           };
-          UpdateSettings(settings, function(err) {
-            if (err) {
-              console.log('Error updating settings', err);
-              $scope.status = { error: true, msg: translateFilter('Error saving settings') };
-            } else {
+          UpdateSettings(settings)
+            .then(function() {
               $scope.status = { success: true, msg: translateFilter('Saved') };
               $timeout(function() {
                 if ($scope.status) {
                   $scope.status.success = false;
                 }
               }, 3000);
-            }
-          });
+            })
+            .catch(function(err) {
+              $log.error('Error updating settings', err);
+              $scope.status = { error: true, msg: translateFilter('Error saving settings') };
+            });
         }
       };
 
@@ -89,17 +96,14 @@ var _ = require('underscore'),
             locale_outgoing: res.locale_outgoing,
             gateway_number: res.gateway_number
           };
-          $scope.enabledLocales = _.reject(res.locales, function(locale) {
-            return !!locale.disabled;
-          });
           $('#default-country-code').select2({ width: '20em', data: countries.list });
-          $('#default-country-code').select2('val', res.default_country_code);
+          $('#default-country-code').val(res.default_country_code).trigger('change');
         })
         .catch(function(err) {
-          console.log('Error loading settings', err);
+          $log.error('Error loading settings', err);
         });
 
     }
-  ]);
+  );
 
 }());

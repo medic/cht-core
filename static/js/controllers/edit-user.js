@@ -1,26 +1,41 @@
-var modal = require('../modules/modal');
-
 (function () {
 
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
+  angular.module('inboxControllers').controller('EditUserCtrl',
+    function (
+      $log,
+      $rootScope,
+      $scope,
+      $translate,
+      $uibModalInstance,
+      $window,
+      DB,
+      PLACE_TYPES,
+      Select2Search,
+      Session,
+      SetLanguage,
+      UpdateUser,
+      UserSettings
+    ) {
+      'ngInject';
 
-  inboxControllers.controller('EditUserCtrl',
-    ['$rootScope', '$scope', 'DB', 'Facility', 'Session', 'UpdateUser', 'translateFilter', 'PLACE_TYPES',
-    function ($rootScope, $scope, DB, Facility, Session, UpdateUser, translateFilter, PLACE_TYPES) {
+      $scope.cancel = function() {
+        $uibModalInstance.dismiss();
+      };
 
-      Facility({ types: PLACE_TYPES }, function(err, facilities) {
-        if (err) {
-          return console.log('Error fetching facilities', err);
-        }
-        $scope.facilities = facilities;
-      });
+      DB()
+        .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
+        .then(function(result) {
+          $scope.enabledLocales = result.rows.map(function(row) {
+            return row.value;
+          });
+        });
 
       var typeMap = {
-        clinic: translateFilter('Clinic'),
-        district_hospital: translateFilter('District Hospital'),
-        health_center: translateFilter('Health Center')
+        clinic: $translate.instant('Clinic'),
+        district_hospital: $translate.instant('District Hospital'),
+        health_center: $translate.instant('Health Center')
       };
 
       var rolesMap = {
@@ -32,44 +47,49 @@ var modal = require('../modules/modal');
         'gateway': ['kujua_gateway']
       };
 
-      var getType = function(type) {
-        return (type === 'admin' || type === 'unknown') ? undefined : type;
+      var getType = function(roles) {
+        if (roles && roles.length) {
+          return roles[0];
+        }
       };
 
-      $scope.$on('EditUserInit', function(e, user) {
-        if (!user) {
-          $scope.editUserModel = {};
-          return;
-        }
+      if ($scope.model) {
         $scope.editUserModel = {
-          id: user.id,
-          name: user.name,
-          fullname: user.fullname,
-          email: user.email,
-          phone: user.phone,
-          facility: user.facility,
-          type: getType(user.type),
-          language: user.language
+          id: $scope.model._id,
+          name: $scope.model.name,
+          fullname: $scope.model.fullname,
+          email: $scope.model.email,
+          phone: $scope.model.phone,
+          facility: $scope.model.facility_id,
+          type: getType($scope.model.roles),
+          language: { code: $scope.model.language },
+          contact: $scope.model.contact_id
         };
-        var $contact = $('#edit-user-profile [name=contact]');
-        if (user.contact_id) {
-          $contact.empty();
-          DB.get().get(user.contact_id)
-            .then(function(contact) {
-              $contact
-                .append($('<option>', {
-                  selected: 'selected',
-                  value: contact._id,
-                  text: contact.name,
-                }))
-                .val(contact._id)
-                .trigger('change');
-            });
-        } else {
-          $contact
-              .val(null)
-              .trigger('change');
-        }
+      } else {
+        $scope.editUserModel = {};
+        // get the current user
+
+        UserSettings()
+          .then(function(user) {
+            if (user) {
+              $scope.editUserModel.id = user._id;
+              $scope.editUserModel.name = user.name;
+              $scope.editUserModel.fullname = user.fullname;
+              $scope.editUserModel.email = user.email;
+              $scope.editUserModel.phone = user.phone;
+              $scope.editUserModel.language = { code: user.language };
+            }
+          })
+          .catch(function(err) {
+            $log.error('Error fetching user settings', err);
+          });
+
+      }
+
+      $uibModalInstance.rendered.then(function() {
+        // only the #edit-user-profile modal has these fields
+        Select2Search($('#edit-user-profile [name=contact]'), 'person');
+        Select2Search($('#edit-user-profile [name=facility]'), PLACE_TYPES);
       });
 
       $scope.typeName = function(facility) {
@@ -77,45 +97,60 @@ var modal = require('../modules/modal');
       };
 
       var validatePassword = function() {
-        $scope.errors = {};
-        if (!$scope.editUserModel.id && !$scope.editUserModel.password) {
-          $scope.errors.password = translateFilter('field is required', {
-            field: translateFilter('Password')
-          });
-        } else if ($scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
-          $scope.errors.password = translateFilter('Passwords must match');
+        var newUser = !$scope.editUserModel.id;
+        if (newUser) {
+          if (!$scope.editUserModel.password) {
+            $scope.errors.password = $translate.instant('field is required', {
+              field: $translate.instant('Password')
+            });
+            return false;
+          }
         }
-        return !Object.keys($scope.errors).length;
+        if ($scope.editUserModel.password &&
+            $scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
+          $scope.errors.password = $translate.instant('Passwords must match');
+          return false;
+        }
+        return true;
       };
 
-      var validate = function() {
-        $scope.errors = {};
-        validatePassword();
+      var validateName = function() {
         if (!$scope.editUserModel.name) {
-          $scope.errors.name = translateFilter('field is required', {
-            field: translateFilter('User Name')
+          $scope.errors.name = $translate.instant('field is required', {
+            field: $translate.instant('User Name')
           });
+          return false;
         }
-        return !Object.keys($scope.errors).length;
+        return true;
       };
 
-      var getRoles = function(type) {
+      var getRoles = function(type, includeAdmin) {
+        if (includeAdmin && type === 'admin') {
+          return ['_admin'];
+        }
+        if (!type || !rolesMap[type]) {
+          return [];
+        }
         // create a new array with the type first, by convention
-        return type ? [type].concat(rolesMap[type]) : [];
+        return [type].concat(rolesMap[type]);
       };
 
-      var getSettingsUpdates = function() {
-        return {
+      var getSettingsUpdates = function(updatingSelf) {
+        var settings = {
           name: $scope.editUserModel.name,
           fullname: $scope.editUserModel.fullname,
           email: $scope.editUserModel.email,
           phone: $scope.editUserModel.phone,
           language: $scope.editUserModel.language &&
-                    $scope.editUserModel.language.code,
-          facility_id: $scope.editUserModel.facility &&
-                       $scope.editUserModel.facility._id,
-          contact_id: $('#edit-user-profile [name=contact]').val()
+                    $scope.editUserModel.language.code
         };
+        if (!updatingSelf) {
+          // users don't have permission to update their own security settings
+          settings.roles = getRoles($scope.editUserModel.type, true);
+          settings.facility_id = $('#edit-user-profile [name=facility]').val();
+          settings.contact_id = $('#edit-user-profile [name=contact]').val();
+        }
+        return settings;
       };
 
       var getUserUpdates = function() {
@@ -123,50 +158,60 @@ var modal = require('../modules/modal');
           name: $scope.editUserModel.name,
           password: $scope.editUserModel.password,
           roles: getRoles($scope.editUserModel.type),
-          facility_id: $scope.editUserModel.facility &&
-                       $scope.editUserModel.facility._id
+          facility_id: $('#edit-user-profile [name=facility]').val()
         };
       };
 
-      var updateComplete = function(pane, err) {
-        if (!err) {
-          if ($scope.editUserModel.password) {
-            // reload the page so the user can log in with the new password
-            document.location.reload(true);
-          }
-          $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
-          $scope.editUserModel = null;
-        }
-        pane.done(translateFilter('Error updating user'), err);
-      };
-
       $scope.updatePassword = function() {
+        $scope.errors = {};
+        $scope.setProcessing();
         if (validatePassword()) {
-          var pane = modal.start($('#update-password'));
           var updates = { password: $scope.editUserModel.password };
-          UpdateUser($scope.editUserModel.id, null, updates, function(err) {
-            updateComplete(pane, err);
-          });
+          UpdateUser($scope.editUserModel.id, null, updates)
+            .then(function() {
+              $scope.setFinished();
+              $window.location.reload(true);
+            })
+            .catch(function(err) {
+              $scope.setError(err, 'Error updating user');
+            });
         }
       };
 
-      $scope.editUser = function(settingsOnly) {
-        if (settingsOnly || validate()) {
-          var modalId = settingsOnly ? '#edit-user-settings' : '#edit-user-profile';
-          var pane = modal.start($(modalId));
-          var settings = getSettingsUpdates();
-          var user = settingsOnly ? null : getUserUpdates();
-          if (settings.language && Session.userCtx().name === $scope.editUserModel.name) {
-            // editing current user's language, so update UI
-            $scope.changeLanguage(settings.language);
-          }
-          UpdateUser($scope.editUserModel.id, settings, user, function(err) {
-            updateComplete(pane, err);
-          });
+      // #edit-user-settings is the limited set of edits that any user can do to itself.
+      $scope.editUserSettings = function() {
+        $scope.setProcessing();
+        $scope.errors = {};
+        if (validateName()) {
+          saveEdit('#edit-user-settings', $scope.editUserModel.id, getSettingsUpdates(true));
         }
       };
 
+      // #edit-user-profile is the admin view, which has additional fields.
+      $scope.editUser = function() {
+        $scope.setProcessing();
+        $scope.errors = {};
+        if (validatePassword() && validateName()) {
+          saveEdit('#edit-user-profile', $scope.editUserModel.id, getSettingsUpdates(), getUserUpdates());
+        }
+      };
+
+      var saveEdit = function(modalId, userId, settingsUpdates, userUpdates) {
+        UpdateUser(userId, settingsUpdates, userUpdates)
+          .then(function() {
+            if (settingsUpdates.language && Session.userCtx().name === settingsUpdates.name) {
+              // editing current user, so update language
+              SetLanguage(settingsUpdates.language);
+            }
+            $scope.setFinished();
+            $rootScope.$broadcast('UsersUpdated', $scope.editUserModel.id);
+            $uibModalInstance.close();
+          })
+          .catch(function(err) {
+            $scope.setError(err, 'Error updating user');
+          });
+      };
     }
-  ]);
+  );
 
 }());

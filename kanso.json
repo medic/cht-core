@@ -1,7 +1,7 @@
 {
     "name": "medic",
     "display_name": "Medic Mobile",
-    "version": "0.6.0",
+    "version": "2.9.0",
     "description": "Medic Mobile combines SMS messaging, data collection, and analytics for health workers and health systems in hard-to-reach areas with or without internet connectivity.",
     "long_description" : "Medic Mobile is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
     "url": "https://github.com/medic/medic-webapp",
@@ -24,12 +24,14 @@
     "load": "lib/app",
     "modules": ["lib"],
     "attachments": [
+        "static/manifest.json",
         "static/audio",
         "static/dist",
         "static/fonts",
         "static/img",
         "templates/inbox.html",
-        "ddocs/compiled"
+        "translations",
+        "ddocs/compiled.json"
     ],
     "changelog": "Changes.md",
     "node_module_folders" : "api,sentinel",
@@ -41,7 +43,6 @@
         "libphonenumber": null,
         "kujua-sms": null,
         "kujua-utils": null,
-        "kujua-reporting": null,
         "cookies": null,
         "kanso-app-settings": null,
         "app-settings": ">=0.0.2",
@@ -84,52 +85,6 @@
         "description": "Medic Mobile Settings",
         "type": "object",
         "properties": {
-            "locales": {
-                "title": "Locales",
-                "description": "A list of available locales with a unique short code (egs: 'en', 'fr') and a human readable name of the locale (egs: 'English', 'French')",
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "code": {
-                            "type": "string",
-                            "title": "Code",
-                            "default": ""
-                        },
-                        "name": {
-                            "type": "string",
-                            "title": "Display Name",
-                            "default": ""
-                        }
-                    }
-                },
-                "default": [
-                    {
-                        "code": "en",
-                        "name": "English"
-                    },
-                    {
-                        "code": "es",
-                        "name": "Español (Spanish)"
-                    },
-                    {
-                        "code": "fr",
-                        "name": "Français (French)"
-                    },
-                    {
-                        "code": "ne",
-                        "name": "नेपाली (Nepali)"
-                    },
-                    {
-                        "code": "sw",
-                        "name": "Kiswahili (Swahili)"
-                    },
-                    {
-                        "code": "hi",
-                        "name": "हिन्दी (Hindi)"
-                    }
-                ]
-            },
             "locale": {
                 "title": "Default Locale For Website",
                 "type": "string",
@@ -145,7 +100,8 @@
             "muvuku_webapp_url": {
                 "type": "string",
                 "title": "Medic Reporter URL",
-                "default": "/medic-reporter/_design/medic-reporter/_rewrite/?_embed_mode=2#/examples.json"
+                "default": "/medic-reporter/_design/medic-reporter/_rewrite/?_embed_mode=2#/examples.json",
+                "description": "URL for Medic Reporter, a tool to send messages into Medic Mobile from a web interface. Use it to simulate SMS, Medic Collect or Simapp reports."
             },
             "date_format": {
                 "type": "string",
@@ -162,17 +118,19 @@
             "forms_only_mode": {
                 "type": "boolean",
                 "title": "Only Expect Forms",
-                "default": false
+                "default": false,
+                "description": "All incoming messages will be parsed as forms. Unstractured messages will be rejected."
             },
             "default_responses": {
                 "title": "Auto-replies",
                 "type": "object",
+                "description": "When an empty message or badly formatted report is received, an error auto-reply message is sent out. When forms_only_mode is off, received messages will trigger a confirmation auto-reply message. All reply messages are generated based on translation and locale settings.",
                 "properties": {
                     "start_date": {
                         "type": "string",
                         "title": "Start Date",
                         "default": "",
-                        "description": "Auto-replies are added to messages received after this date.  If left empty auto-replies are not added.  Use the format YYYY-MM-DD to define the date, for example 2014-03-27.  This setting only applies to unstructured messages, not forms.  Error replies are added when a message is empty or a form is not found and we are in forms only mode.  Otherwise you will get a default reply. All reply messages are generated based on translation and locale settings.",
+                        "description": "Auto-replies are added to messages received after this date.  If left empty auto-replies are not added.  Use the format YYYY-MM-DD to define the date, for example 2014-03-27.",
                         "pattern": "(^[0-9]{4}\\-[0-9]{2}\\-[0-9]{2}\\s*$|^\\s*$)"
                     }
                 }
@@ -181,7 +139,7 @@
                 "type": "boolean",
                 "title": "Allow District Admins To View Unallocated Messages",
                 "default": false,
-                "description": "If ticked, district administrators will be able to view messages with no allocated facility as well as messages from their district."
+                "description": "If checked/true, district administrators will be able to view messages with no allocated facility as well as messages from their district. If unchecked/false, only admins will see unallocated messages."
             },
             "default_country_code": {
                 "type": "integer",
@@ -197,6 +155,7 @@
             "outgoing_phone_replace": {
                 "title": "Outgoing Phone Replacement",
                 "type": "object",
+                "description": "Use this to reformat the numbers for outgoing messages. Medic Mobile uses international format for phone numbers, so if your gateway doesn't support it use this setting. Otherwise leave blank.",
                 "properties": {
                     "match": {
                         "type": "string",
@@ -264,7 +223,7 @@
                 "title": "Patient ID Format",
                 "type": "string",
                 "default": "1111",
-                "description": "Length of generated numerical identifiers. Note, an extra check digit is always used, so the default value (1111) generates a length of 5."
+                "description": "Format of generated numerical identifiers. Note, an extra check digit is always used, so the default value (1111) generates a length of 5, e.g. '92345'."
             },
             "contact_display_short": {
                 "type": "string",
@@ -311,6 +270,7 @@
             "anc_forms": {
                 "title": "ANC Reports",
                 "type": "object",
+                "description": "Define your ANC related form codes here, these forms will be used to generate analytics.",
                 "properties": {
                     "registration": {
                         "type": "string",
@@ -339,20 +299,42 @@
                     }
                 }
             },
+            "replication_depth": {
+                "title": "Replication depth",
+                "type": "array",
+                "description": "Defines how many levels of contacts and their reports to replicate to users with the given role. 1 = they can see their reports and children, 2 = they can see their children's reports and children, etc.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "role": {
+                            "title": "Role",
+                            "type": "string"
+                        },
+                        "depth": {
+                            "title": "Depth",
+                            "type": "integer"
+                        }
+                    }
+                }
+            },
             "permissions": {
                 "title": "Permissions",
                 "type": "array",
+                "description": "Defines which users can access which features of the webapp.",
                 "items": {
                     "type": "object",
                     "properties": {
                         "name": {
                             "type": "string",
-                            "title": "Permission"
+                            "title": "Permission",
+                            "description": "e.g. can_view_data_records @garethbowen Should this be an enum? Can you make up your own permissions?"
+
                         },
                         "roles": {
                             "title": "Roles",
                             "type": "array",
                             "default": [],
+                            "description": "e.g. ['national_admin', district_admin]. You can edit each user's roles in the config pages of Medic Mobile.",
                             "items": {
                                 "type": "string"
                             }
@@ -363,12 +345,14 @@
             "alerts": {
                 "title": "Alerts",
                 "type": "array",
+                "description": "Send alert messages when specific conditions are received through reports. E.g. send email to Roberta when we're running out of medicine X.",
                 "items": {
                     "type": "object",
                     "properties": {
                         "form": {
                             "type": "string",
-                            "title": "Form Code"
+                            "title": "Form Code",
+                            "description": "e.g. STCK"
                         },
                         "condition": {
                             "type": "string",
@@ -399,6 +383,7 @@
             "reminders": {
                 "title": "Scheduled Report Reminders",
                 "type": "array",
+                "description": "Configure this for forms that should be reported on a repetitive schedule.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -435,52 +420,28 @@
                 }
             },
             "registrations": {
-                "title": "Registrations",
+                "title": "Report Actions",
                 "type": "array",
+                "description": "Actions that can be taken when a report comes in. E.g. validate the report fields, send a reply message, assign an id to the registered patient, assign a schedule (see 'Schedules' section)",
                 "items": {
                     "type": "object",
                     "properties": {
                         "form": {
                             "type": "string",
-                            "title": "Registration Form",
-                            "description": "Form code of a registration form. e.g. ANCR"
-                        },
-                        "fields": {
-                            "title": "Fields",
-                            "type": "array",
-                            "description": "Available field names for use in validations",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "field_name": {
-                                        "type": "string",
-                                        "title": "Field Name"
-                                    },
-                                    "title": {
-                                        "type": "string",
-                                        "title": "Display Name"
-                                    }
-                                }
-                            },
-                            "default": []
-                        },
-                        "help": {
-                            "title": "Help",
-                            "type": "string",
-                            "description": "Instructions explaining how to use this form, including description and form submission examples in <a href=\"http://daringfireball.net/projects/markdown/syntax\">Markdown format</a>. e.g. Register for this message workflow by sending an SMS with the following format: `ANCR <patientname>`.\n\nFor example, to register \"Maria Soleil\" you would send: `ANCR Maria Soleil`",
-                            "je:hint": "textarea",
-                            "je:textarea": {
-                                "rows": 4
-                            }
+                            "title": "Form",
+                            "description": "Form code for which to trigger actions. e.g. ANCR"
                         },
                         "events": {
                             "type": "array",
+                            "name": "Triggered actions",
+                            "description": "Trigger specific actions, e.g. a report is created in the system (on_create).",
                             "items": {
                                 "type": "object",
                                 "properties": {
                                     "name": {
                                         "type": "string",
                                         "title": "Event Name",
+                                        "description": "Name of the event.",
                                         "default": "on_create",
                                         "enum": ["on_create"],
                                         "je:hint": "enumlabels",
@@ -490,9 +451,9 @@
                                     },
                                     "trigger": {
                                         "type": "string",
-                                        "title": "Trigger",
+                                        "title": "Triggered action",
                                         "default": "assign_schedule",
-                                        "description": "When form is received trigger actions like enrolling in schedule.",
+                                        "description": "Action triggered when form is received, e.g. enrolling in a schedule.",
                                         "enum": ["assign_schedule", "add_patient_id", "add_expected_date", "add_birth_date"],
                                         "je:hint": "enumlabels",
                                         "je:enumlabels": {
@@ -505,7 +466,7 @@
                                     "params": {
                                         "type": "string",
                                         "title": "Parameters",
-                                        "description": "i.e. if assigning a schedule provide the name."
+                                        "description": "i.e. if assigning a schedule provide the name. It has to match an existing schedule name, see 'Schedules' section."
                                     },
                                     "bool_expr": {
                                         "type": "string",
@@ -518,6 +479,7 @@
                         },
                         "validations": {
                             "type": "object",
+                            "description": "Specify the contraints that form fields should follow (e.g. patient_name should have more that 3 characters), to reject invalid reports.",
                             "properties": {
                                 "join_responses": {
                                     "title": "Join Validation Responses",
@@ -572,6 +534,7 @@
                         "messages": {
                             "type": "array",
                             "title": "Response Messages",
+                            "description": "When a report is valid, Medic Mobile sends a response message. If the report is invalid, see 'validations'.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -613,6 +576,7 @@
             },
             "patient_reports": {
                 "title": "Patient Reports",
+                "description": "To clear reminder schedules define your visit forms here.",
                 "type": "array",
                 "items": {
                     "type": "object",
@@ -772,6 +736,7 @@
                 "default": []
             },
             "schedules": {
+                "description": "Schedules are lists of messages that will be sent out periodically. You can trigger them when specific reports come in, see 'Form Actions'. When a schedule is attached to a report, you will see the list of messages at the bottom of the report in Medic Mobile. Within the schedule, messages are organized in groups. E.g. in a schedule of ANC visit reminders, there is a group of messages for each visit: one message 1 week before, one message on the due date, one message 1 week after. The message groups are cleared by visit reports that are configured in the previous section.",
                 "title": "Schedules",
                 "type": "array",
                 "items": {
@@ -834,7 +799,7 @@
                                         "type": "integer",
                                         "title": "Message Group Number",
                                         "default": 1,
-                                        "description": "You can group reminders together by assigning a group number so they can be cleared in batches. e.g. 1"
+                                        "description": "You can group messages together by assigning a group number, e.g. 1. Messages in the same group will be cleared together."
                                     },
                                     "offset": {
                                         "type": "string",
@@ -880,6 +845,7 @@
             "notifications": {
                 "title": "Notifications",
                 "type": "object",
+                "description": "Define the forms that are used to enable or disable all scheduled messages for a reporter/recipient.",
                 "properties": {
                     "off_form": {
                         "type": "string",
@@ -894,7 +860,7 @@
                     "confirm_deactivation": {
                         "type": "boolean",
                         "title": "Confirm Muting Notifications?",
-                        "description": "Disable stopping of notification based on reports, requires administrator action."
+                        "description": "Disable stopping of notification based on form submission, administrators are notified instead."
                     },
                     "validations": {
                         "type": "object",
@@ -1011,12 +977,13 @@
             },
             "tasks": {
                 "title": "Task Generation",
+                "description": "Starting v2.6.0, Medic Mobile computes tasks and targets for each user. Tasks are actions the user has to do (e.g. go see Marie and remind her the ANC visit is due.). Targets are visualization of how far they are in their monthly goals (e.g. register 5 new patients this month).",
                 "type": "object",
                 "properties": {
                     "rules": {
                         "title": "Rules",
                         "type": "string",
-                        "description": "The <a href='https://github.com/C2FO/nools#dsl' rel='external'>Nools DSL</a> rule definition.",
+                        "description": "Tasks and targets are defined by set a <a href='https://github.com/C2FO/nools#dsl' rel='external'>Nools DSL</a> rules. The rules define the events, and the 'Tasks' and 'Targets' config define when and how the tasks are diplayed.",
                         "je:hint": "textarea",
                         "je:textarea": {
                             "rows": 20
@@ -1045,11 +1012,13 @@
                                             "title": "Type of statistic",
                                             "type": "string",
                                             "default": "count",
-                                            "description": "Either 'count' or 'percent'"
+                                            "description": "'Count' is for targets in absolute numbers, e.g 5 new patients registered. 'Percent' is for percent targets, e.g. 75% of deliveries happened at a facility.",
+                                            "enum": ["count", "percent"]
                                         },
                                         "name": {
                                             "title": "Title",
                                             "type": "array",
+                                            "description": "Title of this target displayed to the user.",
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
@@ -1068,11 +1037,12 @@
                                         "icon": {
                                             "title": "Icon",
                                             "type": "string",
-                                            "description": "The id of the configured icon to use"
+                                            "description": "The id of the icon to show to the user. You can upload icons in Medic Mobile's configuration pages."
                                         },
                                         "goal": {
                                             "title": "Goal value",
-                                            "type": "integer"
+                                            "type": "integer",
+                                            "description": "E.g. for a goal of 5 new patients, enter 5. For 75% of safe deliveries, enter 75."
                                         }
                                     }
                                 }
@@ -1081,6 +1051,7 @@
                     },
                     "schedules": {
                         "title": "Schedules",
+                        "description": "Tasks that are displayed to users (e.g. immunize a baby). They can be resolved by taking certain actions (e.g. immunizing the baby), or expire after a given time (e.g. when the next immunization is due).",
                         "type": "array",
                         "default": [],
                         "items": {
@@ -1124,7 +1095,7 @@
                                             "title": {
                                                 "title": "Title",
                                                 "type": "array",
-                                                "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                                                "description": "User-displayed title of the task. <a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
                                                 "default": [],
                                                 "items": {
                                                     "type": "object",
@@ -1144,7 +1115,7 @@
                                             "description": {
                                                 "title": "Description",
                                                 "type": "array",
-                                                "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                                                "description": "User-displayed description of the task. <a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
                                                 "default": [],
                                                 "items": {
                                                     "type": "object",
@@ -1161,50 +1132,6 @@
                                                     }
                                                 }
                                             }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "translations": {
-                "title": "Translations",
-                "type": "array",
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "key": {
-                            "type": "string",
-                            "title": "Key",
-                            "default": ""
-                        },
-                        "default": {
-                            "type": "string",
-                            "title": "Default",
-                            "default": "",
-                            "je:hint": "textarea",
-                            "je:textarea": {
-                                "rows": 2
-                            }
-                        },
-                        "translations": {
-                            "type": "array",
-                            "title": "",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "locale": {
-                                        "title": "Locale",
-                                        "type": "string"
-                                    },
-                                    "content": {
-                                        "title": "Translation",
-                                        "type": "string",
-                                        "je:hint": "textarea",
-                                        "je:textarea": {
-                                            "rows": 2
                                         }
                                     }
                                 }

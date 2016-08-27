@@ -1,0 +1,11 @@
+<div role="document" id="medic-reporter-modal">
+  <div class="modal-header">
+    <button type="button" class="cancel close" ng-click="cancel()">&times;</button>
+    <h3 translate>Send Report</h3>
+  </div>
+  <div class="modal-body">
+    <div ng-show="processing" class="loader"></div>
+    <div ng-show="error" translate>{{error}}</div>
+    <iframe ng-hide="processing" src="{{medicReporterUrl}}"></iframe>
+  </div>
+</div>

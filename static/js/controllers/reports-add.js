@@ -4,16 +4,26 @@
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('ReportsAddCtrl', 
-    ['$log', '$scope', '$state', '$q', '$translate', 'DB', 'Enketo', 'Snackbar',
-    function ($log, $scope, $state, $q, $translate, DB, Enketo, Snackbar) {
+  inboxControllers.controller('ReportsAddCtrl',
+    function (
+      $log,
+      $q,
+      $scope,
+      $state,
+      $translate,
+      DB,
+      Enketo,
+      Snackbar
+    ) {
+
+      'ngInject';
 
       var getSelected = function() {
         if ($state.params.formId) { // adding
           return $q.resolve({ form: $state.params.formId });
         }
         if ($state.params.reportId) { // editing
-          return DB.get().get($state.params.reportId);
+          return DB().get($state.params.reportId);
         }
         return $q.reject(new Error('Must have either formId or reportId'));
       };
@@ -23,9 +33,7 @@
       $scope.saving = false;
       if ($state.params.reportId || $state.params.formId) {
         $scope.setCancelTarget(function() {
-          if (!$state.params.reportId) {
-            $scope.query();
-          }
+          // Note : if no $state.params.reportId, goes to "No report selected".
           $state.go('reports.detail', { id: $state.params.reportId });
         });
       } else {
@@ -54,8 +62,8 @@
 
       $scope.save = function() {
         $scope.saving = true;
-        // TODO pass doc here
-        Enketo.save($scope.selected.form, $scope.form, $scope.selected._id)
+        var doc = $scope.selected[0].report;
+        Enketo.save(doc.form, $scope.form, doc._id)
           .then(function(doc) {
             $log.debug('saved report', doc);
             $scope.saving = false;
@@ -70,9 +78,11 @@
       };
 
       $scope.$on('$destroy', function() {
-        Enketo.unload($scope.form);
+        if (!$state.includes('reports.add') && !$state.includes('reports.edit')) {
+          Enketo.unload($scope.form);
+        }
       });
     }
-  ]);
+  );
 
 }());

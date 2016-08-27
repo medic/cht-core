@@ -69,14 +69,14 @@ var _ = require('underscore');
   inboxServices.factory('EditGroup', ['DB',
     function(DB) {
       return function(recordId, group) {
-        return DB.get()
+        return DB()
           .get(recordId)
           .then(function(dataRecord) {
             var additions = add(dataRecord, group);
             var mutations = update(dataRecord, group);
             var deletions = remove(dataRecord, group);
             if (additions || mutations || deletions) {
-              return DB.get().put(dataRecord)
+              return DB().put(dataRecord)
                 .then(function() {
                   return dataRecord;
                 });

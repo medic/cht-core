@@ -4,19 +4,28 @@ describe('SendMessage service', function() {
 
   var service,
       Settings,
+      allDocs,
       id,
-      post;
+      post,
+      query;
 
   beforeEach(function () {
+    allDocs = sinon.stub();
     id = sinon.stub();
     post = sinon.stub();
+    query = sinon.stub();
     Settings = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
-      $provide.factory('DB', KarmaUtils.mockDB({ post: post, id: id }));
+      $provide.factory('DB', KarmaUtils.mockDB({
+        allDocs: allDocs,
+        post: post,
+        id: id,
+        query: query
+      }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.value('UserSettings', function(callback) {
-        callback(null, { phone: '+5551', name: 'jack' });
+      $provide.value('UserSettings', function() {
+        return KarmaUtils.mockPromise(null, { phone: '+5551', name: 'jack' });
       });
       $provide.value('Settings', Settings);
     });
@@ -26,7 +35,7 @@ describe('SendMessage service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(id, post);
+    KarmaUtils.restore(allDocs, id, post, query);
   });
 
   function assertMessage(task, expected) {
@@ -37,7 +46,25 @@ describe('SendMessage service', function() {
     chai.expect(msg.sent_by).to.equal(expected.sent_by);
     chai.expect(msg.to).to.equal(expected.to);
     chai.expect(msg.uuid).to.equal(expected.uuid);
-    chai.expect(msg.contact).to.deep.equal(expected.facility);
+    chai.expect(msg.contact).to.deep.equal(expected.contact);
+  }
+
+  function mockAllDocs(docs) {
+    if (!Array.isArray(docs)) {
+      docs = [docs];
+    }
+    return KarmaUtils.mockPromise(null, {
+      rows: docs.map(function(doc) {return {doc: doc};})
+    });
+  }
+
+  function select2Wrap(docs) {
+    if (!Array.isArray(docs)) {
+      docs = [docs];
+    }
+    return docs.map(function(d) {
+      return {doc: d};
+    });
   }
 
   it('create doc for one recipient', function(done) {
@@ -53,6 +80,42 @@ describe('SendMessage service', function() {
       }
     };
 
+    allDocs.returns(mockAllDocs(recipient));
+
+    service(select2Wrap(recipient), 'hello')
+      .then(function() {
+        chai.expect(allDocs.callCount).to.equal(1);
+        chai.expect(id.callCount).to.equal(1);
+        chai.expect(post.callCount).to.equal(1);
+        assertMessage(post.args[0][0].tasks[0], {
+          from: '+5551',
+          sent_by: 'jack',
+          to: '+5552',
+          uuid: 53,
+          contact: recipient
+        });
+        done();
+      })
+      .catch(done);
+  });
+
+  it('create doc for non-contact recipient from select2', function(done) {
+
+    id.returns(KarmaUtils.mockPromise(null, 53));
+    post.returns(KarmaUtils.mockPromise());
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
+
+    var recipient = {
+      selected: false,
+      disabled: false,
+      text: '+5552',
+      id: '+5552',
+      _resultId: 'select2-phone-os-result-ef7y-+447890119334',
+      element: {}
+    };
+
+    allDocs.returns(mockAllDocs(recipient));
+
     service(recipient, 'hello')
       .then(function() {
         chai.expect(id.callCount).to.equal(1);
@@ -62,7 +125,6 @@ describe('SendMessage service', function() {
           sent_by: 'jack',
           to: '+5552',
           uuid: 53,
-          facility: recipient
         });
         done();
       })
@@ -76,12 +138,18 @@ describe('SendMessage service', function() {
     post.returns(KarmaUtils.mockPromise());
 
     var phoneNumber = '700123456';
-    var recipient = { contact: { phone: phoneNumber } };
+    var recipient = {
+      _id: 'def',
+      contact: {
+        phone: phoneNumber
+      }
+    };
+    allDocs.returns(mockAllDocs(recipient));
     Settings.returns(KarmaUtils.mockPromise(null, {
       default_country_code: 254
     }));
 
-    service(recipient, 'hello')
+    service(select2Wrap(recipient), 'hello')
       .then(function() {
         chai.expect(id.callCount).to.equal(1);
         chai.expect(post.callCount).to.equal(1);
@@ -89,10 +157,11 @@ describe('SendMessage service', function() {
           from: '+5551',
           sent_by: 'jack',
           to: '+254' + phoneNumber,
-          uuid: 53
+          uuid: 53,
+          contact: recipient
         });
         done();
-      });
+      }).catch(done);
   });
 
   it('create doc for multiple recipients', function(done) {
@@ -118,7 +187,9 @@ describe('SendMessage service', function() {
       }
     ];
 
-    service(recipients, 'hello')
+    allDocs.returns(mockAllDocs(recipients));
+
+    service(select2Wrap(recipients), 'hello')
       .then(function() {
         chai.expect(id.callCount).to.equal(2);
         chai.expect(post.callCount).to.equal(1);
@@ -128,17 +199,17 @@ describe('SendMessage service', function() {
           sent_by: 'jack',
           to: '+5552',
           uuid: 53,
-          facility: recipients[0]
+          contact: recipients[0]
         });
         assertMessage(post.args[0][0].tasks[1], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5553',
           uuid: 150,
-          facility: recipients[1]
+          contact: recipients[1]
         });
         done();
-      });
+      }).catch(done);
   });
 
   it('create doc for everyoneAt recipients', function(done) {
@@ -152,35 +223,44 @@ describe('SendMessage service', function() {
 
     var recipients = [
       {
-        _id: 'abc',
-        contact: {
-          phone: '+5552'
+        doc: {
+          _id: 'abc',
+          contact: {
+            phone: '+5552'
+          }
         }
-      }, 
+      },
       {
         everyoneAt: true,
-        descendants: [
-          {
-            _id: 'efg',
-            contact: {
-              phone: '+5553'
-            }
-          },
-          {
-            _id: 'hij',
-            contact: {
-              phone: '+5552' // duplicate phone number should be removed
-            }
-          }, 
-          {
-            _id: 'klm',
-            contact: {
-              phone: '+5554'
-            }
-          }
-        ]
+        doc: {
+          _id: 'test'
+        }
       }
     ];
+
+    var descendants = [
+      {
+        _id: 'efg',
+        contact: {
+          phone: '+5553'
+        }
+      },
+      {
+        _id: 'hij',
+        contact: {
+          phone: '+5552' // duplicate phone number should be removed
+        }
+      },
+      {
+        _id: 'klm',
+        contact: {
+          phone: '+5554'
+        }
+      }
+    ];
+
+    allDocs.returns(mockAllDocs(recipients[0].doc));
+    query.returns(mockAllDocs(descendants));
 
     service(recipients, 'hello')
       .then(function() {
@@ -190,26 +270,26 @@ describe('SendMessage service', function() {
         assertMessage(post.args[0][0].tasks[0], {
           from: '+5551',
           sent_by: 'jack',
-          to: '+5552',
+          to: '+5553',
           uuid: 53,
-          facility: recipients[0]
+          contact: descendants[0]
         });
         assertMessage(post.args[0][0].tasks[1], {
           from: '+5551',
           sent_by: 'jack',
-          to: '+5553',
+          to: '+5552',
           uuid: 150,
-          facility: recipients[1].descendants[0]
+          contact: descendants[1]
         });
         assertMessage(post.args[0][0].tasks[2], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5554',
           uuid: 6,
-          facility: recipients[1].descendants[2]
+          contact: descendants[2]
         });
         done();
-      });
+      }).catch(done);
   });
 
   it('returns newUUID errors', function(done) {
@@ -217,14 +297,16 @@ describe('SendMessage service', function() {
     id.returns(KarmaUtils.mockPromise('errcode1'));
     Settings.returns(KarmaUtils.mockPromise(null, {}));
 
-    var recipients = {
+    var recipient = {
       _id: 'abc',
       contact: {
         phone: '+5552'
       }
     };
 
-    service(recipients, 'hello').then(
+    allDocs.returns(mockAllDocs(recipient));
+
+    service(select2Wrap(recipient), 'hello').then(
       function() {
         chai.fail('success', 'error');
       },
@@ -241,14 +323,16 @@ describe('SendMessage service', function() {
     post.returns(KarmaUtils.mockPromise('errcode2'));
     Settings.returns(KarmaUtils.mockPromise(null, {}));
 
-    var recipients = {
+    var recipient = {
       _id: 'abc',
       contact: {
         phone: '+5552'
       }
     };
 
-    service(recipients, 'hello').then(
+    allDocs.returns(mockAllDocs(recipient));
+
+    service(select2Wrap(recipient), 'hello').then(
       function() {
         chai.fail('success', 'error');
       },

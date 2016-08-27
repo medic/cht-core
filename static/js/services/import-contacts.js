@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    etagRegex = /(?:^W\/)|['"]/g;
+var _ = require('underscore');
 
 (function () {
 
@@ -8,8 +7,15 @@ var _ = require('underscore'),
   var inboxServices = angular.module('inboxServices');
 
   inboxServices.factory('ImportContacts',
-    ['$http', '$q', 'DB', 'BaseUrlService',
-    function($http, $q, DB, BaseUrlService) {
+    function(
+      $http,
+      $q,
+      CleanETag,
+      DB,
+      Location
+    ) {
+
+      'ngInject';
 
       var savePerson = function(doc) {
         var person = {
@@ -18,7 +24,7 @@ var _ = require('underscore'),
           phone: doc.contact.phone,
           parent: doc
         };
-        return DB.get()
+        return DB()
           .put(person)
           .then(function(response) {
             doc.contact.type = 'person';
@@ -32,7 +38,7 @@ var _ = require('underscore'),
           // delete _rev since this is a new doc in this database
           delete contact._rev;
         }
-        return DB.get()
+        return DB()
           .put(contact)
           .then(function(response) {
             contact._id = response._id;
@@ -42,7 +48,7 @@ var _ = require('underscore'),
             }
             return savePerson(contact)
               .then(function() {
-                return DB.get().put(contact);
+                return DB().put(contact);
               })
               .then(function(response) {
                 contact._rev = response._rev;
@@ -54,7 +60,7 @@ var _ = require('underscore'),
       var importContact = function(baseUrl, overwrite, contact) {
         return $http.head(baseUrl + contact._id)
           .then(function(response) {
-            var rev = response.headers('ETag').replace(etagRegex, '');
+            var rev = CleanETag(response.headers('ETag'));
             if (!rev || !overwrite) {
               // do nothing
               return $q.resolve();
@@ -72,12 +78,12 @@ var _ = require('underscore'),
       };
 
       return function(contacts, overwrite) {
-        var baseUrl = BaseUrlService() + '/_db/';
+        var baseUrl = Location.path + '/_db/';
         return $q.all(_.map(contacts, function(contact) {
           return importContact(baseUrl, overwrite, contact);
         }));
       };
     }
-  ]);
+  );
 
 }());

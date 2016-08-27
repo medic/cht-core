@@ -168,11 +168,25 @@ module.exports = {
       ]
     },
     {
+      "name": "can_update_people",
+      "roles": []
+    },
+    {
+      "name": "can_update_places",
+      "roles": []
+    },
+    {
       "name": "can_create_records",
       "roles": [
         "national_admin",
         "district_admin",
-        "date_entry",
+        "data_entry",
+        "gateway"
+      ],
+    },
+    {
+      "name": "can_access_gateway_api",
+      "roles": [
         "gateway"
       ]
     },
@@ -184,9 +198,25 @@ module.exports = {
       ]
     },
     {
+      "name": "can_create_people",
+      "roles": []
+    },
+    {
+      "name": "can_create_places",
+      "roles": []
+    },
+    {
+      "name": "can_view_tasks",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
       "name": "can_view_tasks_tab",
       "roles": [
-        "national_admin"
+        "national_admin",
+        "district_admin"
       ]
     },
     {
@@ -196,7 +226,21 @@ module.exports = {
       ]
     },
     {
+      "name": "can_view_messages",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
       "name": "can_view_messages_tab",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_reports",
       "roles": [
         "national_admin",
         "district_admin"
@@ -210,7 +254,21 @@ module.exports = {
       ]
     },
     {
+      "name": "can_view_analytics",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
       "name": "can_view_analytics_tab",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_contacts",
       "roles": [
         "national_admin",
         "district_admin"
@@ -232,6 +290,13 @@ module.exports = {
     },
     {
       "name": "can_delete_reports",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_bulk_delete_reports",
       "roles": [
         "national_admin",
         "district_admin"

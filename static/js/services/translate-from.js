@@ -34,7 +34,7 @@ var _ = require('underscore');
         return label.content;
       }
       if (labels.length) {
-        return label[0].content;
+        return labels[0].content;
       }
       return;
     }

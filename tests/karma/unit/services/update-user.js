@@ -2,22 +2,23 @@ describe('UpdateUser service', function() {
 
   'use strict';
 
-  var service,
+  var scope,
+      service,
       cacheRemove,
       $httpBackend,
       get,
-      put;
+      put,
+      Admins;
 
   beforeEach(function() {
     get = sinon.stub();
     put = sinon.stub();
+    Admins = sinon.stub();
     cacheRemove = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ get: get, put: put }));
-      $provide.value('Admins', function(callback) {
-        callback(null, { gareth: true });
-      });
+      $provide.value('Admins', Admins);
     });
     inject(function($injector) {
       $httpBackend = $injector.get('$httpBackend');
@@ -28,6 +29,7 @@ describe('UpdateUser service', function() {
         }
         return { remove: cacheRemove };
       };
+      scope = $injector.get('$rootScope');
       service = $injector.get('UpdateUser');
     });
   });
@@ -35,7 +37,7 @@ describe('UpdateUser service', function() {
   afterEach(function() {
     $httpBackend.verifyNoOutstandingExpectation();
     $httpBackend.verifyNoOutstandingRequest();
-    KarmaUtils.restore(cacheRemove, get, put);
+    KarmaUtils.restore(cacheRemove, get, put, Admins);
   });
 
   it('creates a user', function(done) {
@@ -72,8 +74,11 @@ describe('UpdateUser service', function() {
 
     put.returns(KarmaUtils.mockPromise());
 
-    service(null, settings, user, function(err) {
-      chai.expect(err).to.equal(undefined);
+    service(null, settings, user);
+
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
+
       chai.expect(cacheRemove.callCount).to.equal(3);
       chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Asally');
       chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
@@ -129,8 +134,10 @@ describe('UpdateUser service', function() {
     }));
     put.returns(KarmaUtils.mockPromise());
 
-    service('org.couchdb.user:jerome', settings, user, function(err) {
-      chai.expect(err).to.equal(undefined);
+    service('org.couchdb.user:jerome', settings, user);
+
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
       chai.expect(cacheRemove.callCount).to.equal(3);
       chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Ajerome');
       chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
@@ -169,54 +176,22 @@ describe('UpdateUser service', function() {
       .expect('PUT', '/_users/org.couchdb.user%3Ajerome', JSON.stringify(expected))
       .respond(201, '');
 
-    service('org.couchdb.user:jerome', null, updates, function(err) {
-      chai.expect(err).to.equal(undefined);
-      chai.expect(cacheRemove.callCount).to.equal(3);
-      chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Ajerome');
-      chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
-      chai.expect(cacheRemove.thirdCall.args[0]).to.equal('/_config/admins');
-      done();
-    });
+    Admins.returns(KarmaUtils.mockPromise(null, { gareth: true }));
 
-    $httpBackend.flush();
-  });
+    service('org.couchdb.user:jerome', null, updates)
+      .then(function() {
+        chai.expect(cacheRemove.callCount).to.equal(3);
+        chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Ajerome');
+        chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
+        chai.expect(cacheRemove.thirdCall.args[0]).to.equal('/_config/admins');
+        done();
+      });
 
-
-  it('updates the admin password', function(done) {
-
-    var updates = {
-      favcolour: 'aqua',
-      starsign: 'libra',
-      password: 'xyz'
-    };
-
-    var expected = {
-      _id: 'org.couchdb.user:gareth',
-      name: 'gareth',
-      favcolour: 'aqua',
-      starsign: 'libra',
-      password: 'xyz'
-    };
-
-    $httpBackend
-      .expect('GET', '/_users/org.couchdb.user%3Agareth')
-      .respond({ _id: 'org.couchdb.user:gareth', name: 'gareth', favcolour: 'turquoise', derived_key: 'abc', salt: 'def' });
-
-    $httpBackend
-      .expect('PUT', '/_users/org.couchdb.user%3Agareth', JSON.stringify(expected))
-      .respond(201, '');
-
-    $httpBackend
-      .expect('PUT', '/_config/admins/gareth', '"xyz"')
-      .respond(201, '');
-
-    service('org.couchdb.user:gareth', null, updates, function(err) {
-      chai.expect(err).to.equal(undefined);
-      chai.expect(cacheRemove.callCount).to.equal(3);
-      chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Agareth');
-      chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
-      chai.expect(cacheRemove.thirdCall.args[0]).to.equal('/_config/admins');
-      done();
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
+      setTimeout(function() {
+        scope.$apply(); // needed to resolve the promises
+      });
     });
 
     $httpBackend.flush();
@@ -233,10 +208,14 @@ describe('UpdateUser service', function() {
       starsign: 'libra'
     };
 
-    service('org.couchdb.user:jerome', null, updates, function(err) {
-      chai.expect(err).to.equal('Server error');
-      chai.expect(cacheRemove.callCount).to.equal(0);
-      done();
+    service('org.couchdb.user:jerome', null, updates)
+      .catch(function(err) {
+        chai.expect(err.data).to.equal('Server error');
+        chai.expect(cacheRemove.callCount).to.equal(0);
+        done();
+      });
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
     });
 
     $httpBackend.flush();
@@ -265,8 +244,9 @@ describe('UpdateUser service', function() {
     }));
     put.returns(KarmaUtils.mockPromise());
 
-    service('org.couchdb.user:jerome', updates, function(err) {
-      chai.expect(err).to.equal(undefined);
+    service('org.couchdb.user:jerome', updates);
+    setTimeout(function() {
+      scope.$apply(); // needed to resolve the promises
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.firstCall.args[0]).to.deep.equal('org.couchdb.user:jerome');
       chai.expect(put.callCount).to.equal(1);

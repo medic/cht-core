@@ -1,0 +1,21 @@
+<span id="formTypeDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All form types" data-filter-label="Number of form types" ng-class="{ 'disabled': selectMode && selected.length }">
+  <span id="form_type" class="mm-button mm-button-nudge-down" data-toggle="dropdown">
+    <span class="mm-button-icon">
+      <span class="fa fa-list-alt"></span>
+    </span>
+    <span class="mm-button-dropdown">
+      <span class="fa fa-chevron-down"></span>
+    </span>
+    <span class="mm-button-text"></span>
+  </span>
+  <span role="menu" aria-labelledby="report" class="dropdown-menu mm-dropdown-menu">
+    <ul>
+      <li role="presentation" ng-repeat="form in forms | orderBy:'name | translateFrom' track by form.code">
+        <a role="menuitem" tabindex="-1" data-value="{{form}}">
+          <span ng-if="form.name">{{form.name | translateFrom}}</span>
+          <span ng-if="!form.name">{{form.code}}</span>
+        </a>
+      </li>
+    </ul>
+  </span>
+</span>

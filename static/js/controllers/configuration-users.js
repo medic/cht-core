@@ -1,3 +1,5 @@
+var _ = require('underscore');
+
 (function () {
 
   'use strict';
@@ -5,29 +7,45 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ConfigurationUsersCtrl',
-    ['$scope', '$rootScope', '$state', 'Users',
-    function ($scope, $rootScope, $state, Users) {
+    function (
+      $log,
+      $scope,
+      DB,
+      Modal
+    ) {
+
+      'ngInject';
 
       $scope.updateList = function() {
         $scope.loading = true;
-        Users(function(err, users) {
-          $scope.loading = false;
-          if (err) {
+        var params = { include_docs: true, key: ['user-settings'] };
+        DB().query('medic-client/doc_by_type', params)
+          .then(function(settings) {
+            $scope.users = _.pluck(settings.rows, 'doc');
+            $scope.loading = false;
+          })
+          .catch(function(err) {
             $scope.error = true;
-            return console.log('Error fetching users', err);
-          }
-          $scope.users = users;
-        });
+            $scope.loading = false;
+            $log.error('Error fetching users', err);
+          });
       };
 
       $scope.deleteUserPrepare = function(user, $event) {
         $event.stopPropagation();
-        $rootScope.$broadcast('DeleteUserInit', user);
-        $('#delete-user-confirm').modal('show');
+        Modal({
+          templateUrl: 'templates/modals/delete_user_confirm.html',
+          controller: 'DeleteUserCtrl',
+          model: user
+        });
       };
 
-      $scope.editUserPrepare = function(user) {
-        $rootScope.$broadcast('EditUserInit', user);
+      $scope.editUser = function(user) {
+        Modal({
+          templateUrl: 'templates/modals/edit_user.html',
+          controller: 'EditUserCtrl',
+          model: user
+        });
       };
 
       $scope.$on('UsersUpdated', function() {
@@ -37,6 +55,6 @@
       $scope.updateList();
 
     }
-  ]);
+  );
 
 }());

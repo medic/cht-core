@@ -1,12 +1,21 @@
+var _ = require('underscore');
+
 (function () {
 
   'use strict';
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('ReportsContentCtrl', 
-    ['$scope', '$stateParams', 'Changes', 'MessageState',
-    function ($scope, $stateParams, Changes, MessageState) {
+  inboxControllers.controller('ReportsContentCtrl',
+    function (
+      $log,
+      $scope,
+      $stateParams,
+      Changes,
+      MessageState
+    ) {
+
+      'ngInject';
 
       $scope.selectReport($stateParams.id);
       $scope.clearCancelTarget();
@@ -26,7 +35,7 @@
         var groupNumber = group.rows[0].group;
         MessageState.set(id, groupNumber, from, to).catch(function(err) {
           group.loading = false;
-          console.log('Error setting message state', err);
+          $log.error('Error setting message state', err);
         });
       };
 
@@ -38,22 +47,53 @@
         setMessageState(group, 'muted', 'scheduled');
       };
 
+      $scope.toggleExpand = function(selection) {
+        if (!$scope.selectMode) {
+          return;
+        }
+        if (selection.report || selection.expanded) {
+          selection.expanded = !selection.expanded;
+        } else {
+          selection.loading = true;
+          $scope.refreshReportSilently(selection._id)
+            .then(function() {
+              selection.loading = false;
+              selection.expanded = true;
+            })
+            .catch(function(err) {
+              selection.loading = false;
+              $log.error('Error fetching doc for expansion', err);
+            });
+        }
+      };
+
+      $scope.deselect = function(report, $event) {
+        if ($scope.selectMode) {
+          $event.stopPropagation();
+          $scope.deselectReport(report);
+        }
+      };
+
       Changes({
         key: 'reports-content',
         filter: function(change) {
-          return $scope.selected && $scope.selected._id === change.id;
+          return $scope.selected &&
+            $scope.selected.length &&
+            _.some($scope.selected, function(item) {
+              return item._id === change.id;
+            });
         },
         callback: function(change) {
           if (change.deleted) {
             $scope.$apply(function() {
-              $scope.selectReport();
+              $scope.handleDeletedReport(change.doc);
             });
           } else {
-            $scope.selectReport(change.id);
+            $scope.refreshReportSilently(change.doc);
           }
         }
       });
     }
-  ]);
+  );
 
 }());

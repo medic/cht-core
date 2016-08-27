@@ -2,37 +2,55 @@ angular.module('inboxServices').factory('ResourceIcons', [
   '$log', 'DB', 'Changes',
   function($log, DB, Changes) {
 
-    var doc;
+    var cache = {
+      doc: undefined,
+      src: {}
+    };
+
+    var getIcon = function(name) {
+      return cache.doc &&
+             cache.doc.resources[name] &&
+             cache.doc._attachments[cache.doc.resources[name]];
+    };
 
     var getSrc = function(name) {
-      if (!doc) {
-        return;
+      if (!cache.src[name]) {
+        var icon = getIcon(name);
+        if (!icon) {
+          return;
+        }
+        cache.src[name] = 'data:' + icon.content_type + ';base64,' + icon.data;
       }
-      var filename = doc.resources[name];
-      var icon = filename && doc._attachments[filename];
-      if (!icon) {
-        return;
-      }
-      return 'data:' + icon.content_type + ';base64,' + icon.data;
+      return cache.src[name];
+    };
+
+    var updateDom = function(elem) {
+      elem = elem || $(document.body);
+      elem.find('.resource-icon').each(function(index, element) {
+        var elem = $(element);
+        var src = getSrc(elem.attr('name'));
+        if (src) {
+          elem.attr('src', src);
+        } else {
+          elem.removeAttr('src');
+        }
+      });
     };
 
     var updateResources = function() {
-      DB.get()
+      return DB()
         .get('resources', { attachments: true })
         .then(function(res) {
-          doc = res;
-          Object.keys(doc.resources).forEach(function(name) {
-            var src = getSrc(name);
-            var elems = $('img.resource-icon-' + name);
-            if (src) {
-              elems.attr('src', src);
-            } else {
-              elems.removeAttr('src');
-            }
-          });
+          cache = {
+            doc: res,
+            src: {}
+          };
+          updateDom();
         })
         .catch(function(err) {
-          $log.error('Error updating icons', err);
+          if (err.status !== 404) {
+            $log.error('Error updating icons', err);
+          }
         });
     };
 
@@ -44,7 +62,7 @@ angular.module('inboxServices').factory('ResourceIcons', [
       callback: updateResources
     });
 
-    updateResources();
+    var init = updateResources();
 
     return {
       getImg: function(name) {
@@ -53,7 +71,11 @@ angular.module('inboxServices').factory('ResourceIcons', [
         }
         return getSrc(name);
       },
-      updateResources: updateResources,
+      replacePlaceholders: function(elem) {
+        init.then(function() {
+          updateDom(elem);
+        });
+      }
     };
 
   }

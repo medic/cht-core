@@ -1,0 +1,12 @@
+<mm-modal
+  id="'delete-confirm'"
+  danger="true"
+  title-key="'Confirm'"
+  submit-key="'Delete'"
+  submitting-key="'Deleting'"
+  on-cancel="cancel()"
+  on-submit="submit()"
+>
+  <p ng-show="model.docs.length === 1" translate>confirm.delete</p>
+  <p ng-show="model.docs.length !== 1" translate translate-values="{ number: {{model.docs.length}} }">confirm.delete.plural</p>
+</mm-modal>

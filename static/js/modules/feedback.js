@@ -29,18 +29,16 @@ var registerConsoleInterceptor = function() {
 var registerUnhandledErrorHandler = function() {
   // listen for unhandled errors
   options.window.onerror = function(message, file, line) {
+    var error = { message: message, file: file, line: line };
     try {
-      module.exports.submit(
-        { message: message, file: file, line: line },
-        {},
-        function(err) {
+      module.exports.submit(error, {}, function(err) {
         if (err) {
           options.console.error('Error saving feedback', err);
         }
       });
     } catch(e) {
       // stop infinite loop of exceptions
-      options.console.error('Error while trying to record error', e);
+      options.console.error('Error while trying to record error', JSON.stringify(error), e.toString(), e);
     }
   };
 };
@@ -77,8 +75,10 @@ module.exports = {
     if (!options.document && typeof document !== 'undefined') {
       options.document = document;
     }
-    registerConsoleInterceptor();
-    registerUnhandledErrorHandler();
+    if (!options.window._medicMobileTesting) {
+      registerConsoleInterceptor();
+      registerUnhandledErrorHandler();
+    }
   },
   submit: function(info, appInfo, callback) {
     create(info, appInfo, function(err, doc) {

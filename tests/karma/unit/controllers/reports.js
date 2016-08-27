@@ -5,7 +5,8 @@ describe('ReportsCtrl controller', function() {
   var createController,
       scope,
       report,
-      DB,
+      get,
+      post,
       LiveList,
       UserDistrict,
       MarkRead,
@@ -17,6 +18,8 @@ describe('ReportsCtrl controller', function() {
   beforeEach(module('inboxApp'));
 
   beforeEach(inject(function($rootScope, $controller) {
+    get = sinon.stub();
+    post = sinon.stub();
     scope = $rootScope.$new();
     scope.filterModel = { date: {} };
     report = { _id: 'x' };
@@ -32,6 +35,7 @@ describe('ReportsCtrl controller', function() {
     scope.isMobile = function() {
       return false;
     };
+    scope.setTitle = function() {};
 
     UserDistrict = function() {
       return { 
@@ -39,9 +43,7 @@ describe('ReportsCtrl controller', function() {
       };
     };
 
-    DB = {};
-
-    LiveList = {};
+    LiveList = { reports: { initialised: function() { return true; } }};
 
     MarkRead = function() {};
 
@@ -56,7 +58,7 @@ describe('ReportsCtrl controller', function() {
       };
     };
 
-    Search = function($scope, options, callback) {
+    Search = function(type, filters, options, callback) {
       callback(null, { });
     };
 
@@ -74,21 +76,41 @@ describe('ReportsCtrl controller', function() {
         'MarkRead': MarkRead,
         'Search': Search,
         'Verified': {},
-        'DeleteDoc': {},
+        'DeleteDocs': {},
         'UpdateFacility': {},
         'MessageState': {},
         'EditGroup': {},
         'FormatDataRecord': FormatDataRecord,
         'Settings': KarmaUtils.nullPromise(),
-        'DB': DB,
-        'LiveList': LiveList
+        'DB': KarmaUtils.mockDB({ get: get, post: post })(),
+        'LiveList': LiveList,
+        'SearchFilters': function() {},
+        'Export': function() {}
       });
     };
   }));
 
   it('set up controller', function() {
     createController();
-    chai.expect(scope.filterModel.type).to.equal('reports');
+  });
+
+  it('verifies the given report', function() {
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'def', name: 'hello' }));
+    post.returns(KarmaUtils.mockPromise());
+    createController();
+    scope.selected[0] = {
+      _id: 'abc',
+      report: { form: 'P' }
+    };
+    scope.$broadcast('VerifyReport', null, true);
+    setTimeout(function() {
+      chai.expect(get.callCount).to.equal(1);
+      chai.expect(get.args[0][0]).to.equal('abc');
+      chai.expect(post.callCount).to.equal(1);
+      chai.expect(post.args[0][0]._id).to.equal('def');
+      chai.expect(post.args[0][0].name).to.equal('hello');
+      chai.expect(post.args[0][0].verified).to.equal(true);
+    });
   });
 
 });

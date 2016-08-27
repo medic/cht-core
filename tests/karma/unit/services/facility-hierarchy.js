@@ -3,63 +3,48 @@ describe('FacilityHierarchy service', function() {
   'use strict';
 
   var service,
-      facilities,
-      error;
+      Facility;
 
   beforeEach(function() {
     module('inboxApp');
+    Facility = sinon.stub();
     module(function ($provide) {
-      $provide.value('Facility', function(options, callback) {
-        if (error) {
-          return callback(error);
-        }
-        callback(null, facilities);
-      });
+      $provide.value('Facility', Facility);
+      $provide.value('PLACE_TYPES', [ 'district_hospital', 'health_center', 'clinic' ]);
     });
     inject(function($injector) {
       service = $injector.get('FacilityHierarchy');
     });
-    facilities = null;
-    error = null;
   });
 
   it('returns errors from FacilityRaw service', function(done) {
-
-    error = 'boom';
-
-    service(function(err) {
-      chai.expect(err).to.equal('boom');
-      done();
-    });
-
+    Facility.returns(KarmaUtils.mockPromise('boom'));
+    service()
+      .then(function() {
+        done(new Error('error expected'));
+      })
+      .catch(function(err) {
+        chai.expect(err).to.equal('boom');
+        done();
+      });
   });
 
-  it('builds empty hierarchy when no facilities', function(done) {
-
-    facilities = [];
-
-    service(function(err, actual, actualTotal) {
-      chai.expect(err).to.equal(null);
+  it('builds empty hierarchy when no facilities', function() {
+    Facility.returns(KarmaUtils.mockPromise(null, []));
+    return service().then(function(actual) {
       chai.expect(actual.length).to.equal(0);
-      chai.expect(actualTotal).to.equal(0);
-      done();
     });
-
   });
 
-  it('builds hierarchy for facilities', function(done) {
-
+  it('builds hierarchy for facilities', function() {
     var a = { _id: 'a', parent: { _id: 'b', parent: { _id: 'c' } } };
     var b = { _id: 'b', parent: { _id: 'c' } };
     var c = { _id: 'c' };
     var d = { _id: 'd', parent: { _id: 'b', parent: { _id: 'c' } } };
     var e = { _id: 'e', parent: { _id: 'x' } }; // unknown parent is ignored
     var f = { _id: 'f' };
-
-    facilities = [ a, b, c, d, e, f ];
-
-    service(function(err, actual, actualTotal) {
-      chai.expect(err).to.equal(null);
+    Facility.returns(KarmaUtils.mockPromise(null, [ a, b, c, d, e, f ]));
+    return service().then(function(actual) {
       chai.expect(actual).to.deep.equal([
         {
           doc: c,
@@ -84,10 +69,7 @@ describe('FacilityHierarchy service', function() {
           children: []
         }
       ]);
-      chai.expect(actualTotal).to.equal(5);
-      done();
     });
-
   });
 
 });

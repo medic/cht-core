@@ -36,6 +36,11 @@
           return $(this).data('value');
         }).get();
       },
+      options: function() {
+        return $element.find('[role=menuitem]').map(function() {
+          return $(this).data('value');
+        }).get();
+      },
       reset: function() {
         $element.find('[role=menuitem].selected').removeClass('selected');
         updateMultipleSelect();
@@ -82,6 +87,12 @@
     };
 
     $element.on('update', updateMultipleSelect);
+    $element.on('click', function(e) {
+      if ($element.is('.disabled')) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    });
     $element.on('click', '[role=menuitem]', selectItem);
     $element.on('hide.bs.dropdown', hideMenu);
 

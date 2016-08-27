@@ -7,12 +7,12 @@ var format = require('../modules/format'),
 
   var module = angular.module('inboxFilters');
 
-  var getFormName = function(TranslateFrom, message, forms) {
-    var form = _.findWhere(forms, { code: message.form });
+  var getFormName = function(TranslateFrom, record, forms) {
+    var form = _.findWhere(forms, { code: record.form });
     if (form) {
       return TranslateFrom(form.name);
     }
-    return message.form;
+    return record.form;
   };
 
   module.filter('summary', ['$translate', 'TranslateFrom',

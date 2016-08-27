@@ -1,5 +1,166 @@
 # Medic Mobile Release Notes
 
+## 2.8.0
+
+### August 24, 2016
+
+#### Features
+
+- Pass user's info to rule to customize Tasks per user type or location. Issue: #2408
+- Add context to target types and goals. Issue: #2409
+- Update default translations
+- Add ageInDays and ageInMonths functions to the XML forms context utilities. Issue: #2650
+- Users can now only access an optionally configured number of hierarchy levels below their facility. Issue: #2648
+
+#### Bug fixes
+
+- Android back button doesn't work as expected. Issue: #2600
+- In date filter for Reports tab, the selected dates are being offset by 1 day. Issue: #2185
+- 'New Contact' option does not appear without a search. Issue: #2516
+- Place contact should be a child of the place. Issue: #1710
+- Geolocation information is not included in submitted form. Issue: #2450
+
+## 2.7.3
+
+### July 18, 2016
+
+#### Bug fixes
+
+- Remove maxSockets limit to allow more concurrent connections. Issue: #2492
+
+## 2.7.2
+
+### July 11, 2016
+
+#### Bug fixes
+
+- Connection refused when trying to load app. Issue: #2476
+
+## 2.7.1
+
+### July 4, 2016
+
+#### Bug fixes
+
+- Creating user via fails due to invalid reported_date. Issue: #2449
+
+#### Performance improvements
+
+- App takes minutes to load a person dropdown. Issue: #2445
+- Cannot load Configuration Users page. Issue: #2444
+
+## 2.7.0
+
+### June 8, 2016
+
+#### Features
+
+- Bulk delete reports. Issue: #1000
+
+#### Bug fixes
+
+- Report list item summaries aren't translated. Issue: #2100
+- Fix form type filter. Issue: #1409
+
+#### Performance improvements
+
+- Replication performance. Issue: #2286
+- Improve search performance. Issue: #2302
+- Don't fetch form titles for each Contact report. Issue: #2300
+- Only fetch relevant data for the Users service. Issue: #2262
+- Remove clinics from the Facility filter dropdown. Issue: #2218
+- Optimize admin bandwidth concerns. Issue: #2211
+- We request facilities from the server over and over again. Issue: #2210
+- Don't audit _local docs. Issue: #2366
+- All requests to CouchDB time out after 10 seconds. Issue: #2325
+- Long delay loading contact dropdowns. Issue: #2326
+
+## 2.6.3
+
+### May 23, 2016
+
+- "console not defined" error when loading page. Issue: #2277
+- Pouch doesn't update seq unless something has changed. Issue: #2288
+- Snackbar showing all the time. Issue: #2306
+- Support external_id property on user-settings docs. Issue: #2310
+
+## 2.6.2
+
+### May 6, 2016
+
+- Update PouchDB to improve replication reliability and performance. Issue: #2134 #2167
+- When editing a CHP Area, previously set values for CHP, Branch, and Supervisor do not show up. Issue: #2223
+- Dropdowns in CHP Area create and edit forms have no blank option. Issue: #2227
+- allow-new appearance in Enketo doesn't make the "New" option appear. Issue: #2251
+- Improve performance of Enketo db-object-widget. Issue: #2161
+- Ensure roles are always available on user-settings. Issue: #2199
+- Form type filter doesn't include all forms. Issue: #1409
+- Added APIs for creating Users, People, and Places. Issue: #2046
+
+## 2.6.1
+
+### Apr 21, 2016
+
+- User's fullname is not showing up in /configuration/users. Issue: #2200
+- Deleted documents cause sentinel log spam. Issue: #1999
+- Disable nools for unrestricted users. Issue: medic-projects#149
+- Update libphonenumber and use strict validation. Issue: #2159 #2196
+- Contacts export response garbled. Issue: #2187
+
+## 2.6.0
+
+### Apr 5, 2016
+
+This release contains breaking changes from 0.x versions. Updating from 0.x versions may result in the application no longer operating as expected.
+
+- The app can now be used offline and synced back to the server later.
+- Added an android app for accessing the webapp from mobile.
+- Added Tasks feature for rich event scheduling.
+- Forms can now be provided in XForm format for rich form UIs.
+- Added a configurable Target analytics module.
+
+## 0.4.12
+
+### Jul 21, 2016
+
+- Fixed bug in reporting rates for weekly time unit. #2429
+- Log warnings in sentinel when ID collisions happen. #1898
+- Support integration with [medic-gateway](https://github.com/medic/medic-gateway) for sending and receiving SMS medic-api#69
+
+## 0.4.11
+
+### Feb 4, 2016
+
+- Security fix for leaking auth info.
+
+## 0.4.10
+
+### Nov 16, 2015
+
+- Added support for Outgoing Deny List, a comma separated list of phone numbers
+  or strings to deny outgoing service to. #750
+
+- Fixed bug in records export. #1273
+
+- Fixed bugs in uniqueWithin validation. medic-sentinel#74
+
+- Added link to Help page in main menu.
+
+## 0.4.9
+
+### Aug 26, 2015
+
+- Fixed bug on node 0.12 in felix-couchdb. #1145
+
+- Improved error handling when notifications (start/stop) configs are
+  misconfigured. #1144
+
+- Fixed bug in `exists` validation where it fails on some unicode characters. #1147
+
+- Fixed Reporting Rates interface that was neglected and broken. #1030
+
+- Fixed bug in exporting data by date, it's now inclusive. #1104
+
 ## 0.4.8
 
 ### Jul 14, 2015

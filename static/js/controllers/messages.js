@@ -7,8 +7,18 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('MessagesCtrl', 
-    ['$scope', '$rootScope', '$state', '$stateParams', '$timeout', 'MessageContact', 'Changes',
-    function ($scope, $rootScope, $state, $stateParams, $timeout, MessageContact, Changes) {
+    function (
+      $log,
+      $rootScope,
+      $scope,
+      $state,
+      $stateParams,
+      $timeout,
+      Changes,
+      Export,
+      MessageContact
+    ) {
+      'ngInject';
 
       var removeDeletedMessages = function(messages) {
         var existingKey;
@@ -51,21 +61,16 @@ var _ = require('underscore');
         }
       };
 
-      var updateConversations = function(options, callback) {
+      var updateConversations = function(options) {
         if (!options.changes) {
           $scope.loading = true;
         }
-        MessageContact({ }, function(err, data) {
-          if (err) {
-            return console.log('Error fetching contact', err);
-          }
-          $scope.loading = false;
-          options.messages = data;
-          setMessages(options);
-          if (callback) {
-            callback();
-          }
-        });
+        return MessageContact({})
+          .then(function(data) {
+            $scope.loading = false;
+            options.messages = data;
+            setMessages(options);
+          });
       };
 
       $scope.setSelected = function(doc) {
@@ -75,19 +80,28 @@ var _ = require('underscore');
       };
 
       $scope.allLoaded = false;
-      $scope.filterModel.type = 'messages';
       $scope.messages = [];
       $scope.selected = null;
       setMessages();
-      updateConversations({ }, function() {
-        if (!$state.params.id &&
-            $scope.messages.length &&
-            !$scope.isMobile() &&
-            $state.is('messages.detail')) {
-          $timeout(function() {
-            var id = $('.inbox-items li').first().attr('data-record-id');
-            $state.go('messages.detail', { id: id }, { location: 'replace' });
-          });
+      updateConversations({ })
+        .then(function() {
+          if (!$state.params.id &&
+              $scope.messages.length &&
+              !$scope.isMobile() &&
+              $state.is('messages.detail')) {
+            $timeout(function() {
+              var id = $('.inbox-items li').first().attr('data-record-id');
+              $state.go('messages.detail', { id: id }, { location: 'replace' });
+            });
+          }
+        })
+        .catch(function(err) {
+          $log.error('Error fetching contact', err);
+        });
+
+      $scope.$on('export', function() {
+        if ($scope.currentTab === 'messages') {
+          Export($scope.filters, 'reports');
         }
       });
 
@@ -101,7 +115,7 @@ var _ = require('underscore');
           updateConversations({ changes: true });
         },
         filter: function(change) {
-          if ($scope.filterModel.type !== 'messages') {
+          if ($scope.currentTab !== 'messages') {
             return false;
           }
           return change.doc.kujua_message ||
@@ -115,6 +129,6 @@ var _ = require('underscore');
       }
 
     }
-  ]);
+  );
 
 }());

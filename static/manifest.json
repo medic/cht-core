@@ -1,0 +1,30 @@
+{
+  "name": "Medic Mobile",
+  "short_name": "Medic Mobile",
+  "start_url": "../",
+  "display": "standalone",
+  "background_color": "#323232",
+  "theme_color": "#323232",
+  "description": "Medic Mobile",
+  "icons": [{
+    "src": "img/ico/icon_48.png",
+    "sizes": "48x48",
+    "type": "image/png"
+  }, {
+    "src": "img/ico/icon_72.png",
+    "sizes": "72x72",
+    "type": "image/png"
+  }, {
+    "src": "img/ico/icon_96.png",
+    "sizes": "96x96",
+    "type": "image/png"
+  }, {
+    "src": "img/ico/icon_144.png",
+    "sizes": "144x144",
+    "type": "image/png"
+  }, {
+    "src": "img/ico/icon_192.png",
+    "sizes": "192x192",
+    "type": "image/png"
+  }]
+}

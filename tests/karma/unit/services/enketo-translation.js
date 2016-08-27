@@ -642,6 +642,12 @@ describe('EnketoTranslation service', function() {
       // given
       var xml =
         '<treatments id="ASDF" version="abc123">' +
+          '<inputs>' +
+            '<meta>' +
+              '<location>' +
+                '<lat>-47.15</lat>' +
+                '<long>-126.72</long>' +
+          '</location></meta></inputs>' +
           '<date>Last Friday</date>' +
           '<district>' +
             '<id>d1</id>' +
@@ -664,6 +670,14 @@ describe('EnketoTranslation service', function() {
 
       // then
       assert.deepEqual(js, {
+        inputs: {
+          meta: {
+            location: {
+              lat: '-47.15',
+              long: '-126.72'
+            }
+          }
+        },
         date: 'Last Friday',
         district: {
           id: 'd1',
@@ -731,7 +745,7 @@ describe('EnketoTranslation service', function() {
             '<instanceID/>' +
           '</meta>' +
         '</data>';
-      var element = $($.parseXML(model));
+      var element = $($.parseXML(model)).children().first();
       var data = {
           district_hospital: {
             name: 'Davesville',
@@ -764,7 +778,7 @@ describe('EnketoTranslation service', function() {
             '<instanceID/>' +
           '</meta>' +
         '</data>';
-      var element = $($.parseXML(model));
+      var element = $($.parseXML(model)).children().first();
       var data = {
           district_hospital: {
             name: 'Davesville',
@@ -805,7 +819,7 @@ describe('EnketoTranslation service', function() {
             '<instanceID/>' +
           '</meta>' +
         '</data>';
-      var element = $($.parseXML(model));
+      var element = $($.parseXML(model)).children().first();
       var data = {
           district_hospital: {
             name: 'Davesville',
@@ -829,6 +843,66 @@ describe('EnketoTranslation service', function() {
 
       assert.equal(element.find('contact > _id').text(), 'abc-123');
       assert.equal(element.find('contact > name').text(), 'Dr. D');
+    });
+
+    it('binds data 1:1 with its representation', function() {
+      var element = $($.parseXML(
+        '<data id="district_hospital" version="1">' +
+          '<district_hospital>' +
+            '<name/>' +
+            '<contact>' +
+              '<_id/>' +
+              '<name/>' +
+            '</contact>' +
+            '<external_id/>' +
+            '<notes/>' +
+          '</district_hospital>' +
+          '<meta>' +
+            '<instanceID/>' +
+          '</meta>' +
+        '</data>'
+      )).children().first();
+      var data = {
+        district_hospital: {
+          name: 'Davesville',
+          contact: {
+            _id: 'abc-123',
+          },
+          external_id: 'THING',
+          notes: 'Some notes',
+          type: 'district_hospital',
+        },
+      };
+
+      service.bindJsonToXml(element, data);
+
+      assert.equal(element.find('contact > name').text(), '',
+        'The contact name should not get the value of the district hospital');
+    });
+
+    it('preferentially binds to more specific data structures', function() {
+      var DEEP_TEST_VALUE = 'deep';
+
+      var element = $($.parseXML('<foo><bar><baz><smang /></baz></bar></foo>')).children().first();
+      var data = {
+        foo: {
+          smang: 'shallow5',
+          baz: {
+            smang: 'shallow6'
+          }
+        },
+        smang: 'shallow1',
+        bar: {
+          baz: {
+            smang: DEEP_TEST_VALUE
+          },
+          smang: 'shallow2'
+        },
+      };
+
+      service.bindJsonToXml(element, data);
+
+      assert.equal(element.find('smang').text(), DEEP_TEST_VALUE);
     });
   });
 

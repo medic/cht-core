@@ -47,9 +47,17 @@ var _ = require('underscore'),
   };
 
   inboxControllers.controller('ConfigurationSettingsAdvancedCtrl',
-    ['$scope', '$timeout', 'translateFilter', 'Settings', 'UpdateSettings',
-    function ($scope, $timeout, translateFilter, Settings, UpdateSettings) {
-      
+    function (
+      $log,
+      $scope,
+      $timeout,
+      Settings,
+      translateFilter,
+      UpdateSettings
+    ) {
+
+      'ngInject';
+
       $scope.submitAdvancedSettings = function() {
         $scope.errors = validate($scope.advancedSettingsModel, translateFilter);
         if ($scope.errors.found) {
@@ -60,19 +68,19 @@ var _ = require('underscore'),
           changes.forms_only_mode = !changes.accept_messages;
           delete changes.accept_messages;
           changes.outgoing_phone_replace.match = $('#outgoing-phone-replace-match').val();
-          UpdateSettings(changes, function(err) {
-            if (err) {
-              console.log('Error updating settings', err);
-              $scope.status = { error: true, msg: translateFilter('Error saving settings') };
-            } else {
+          UpdateSettings(changes)
+            .then(function() {
               $scope.status = { success: true, msg: translateFilter('Saved') };
               $timeout(function() {
                 if ($scope.status) {
                   $scope.status.success = false;
                 }
               }, 3000);
-            }
-          });
+            })
+            .catch(function(err) {
+              $log.error('Error updating settings', err);
+              $scope.status = { error: true, msg: translateFilter('Error saving settings') };
+            });
         }
       };
 
@@ -123,10 +131,10 @@ var _ = require('underscore'),
           }
         })
         .catch(function(err) {
-          console.log('Error loading settings', err);
+          $log.error('Error loading settings', err);
         });
 
     }
-  ]);
+  );
 
 }());

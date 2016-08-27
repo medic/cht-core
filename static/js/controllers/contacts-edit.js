@@ -5,11 +5,23 @@ var _ = require('underscore');
   'use strict';
 
   var inboxControllers = angular.module('inboxControllers');
-  inboxControllers.controller('ContactsEditCtrl', [
-    '$log', '$scope', '$state', '$q', '$translate', 'ContactForm', 'ContactSchema', 'DB', 'Enketo', 'EnketoTranslation', 'UserDistrict', 'Snackbar',
-    function ($log, $scope, $state, $q, $translate, ContactForm, ContactSchema, DB, Enketo, EnketoTranslation, UserDistrict, Snackbar) {
+  inboxControllers.controller('ContactsEditCtrl',
+    function (
+      $log,
+      $q,
+      $scope,
+      $state,
+      $translate,
+      ContactForm,
+      ContactSchema,
+      DB,
+      Enketo,
+      EnketoTranslation,
+      Snackbar,
+      UserDistrict
+    ) {
 
-      DB = DB.get();
+      'ngInject';
 
       $scope.loadingContent = true;
       $scope.loadingTypes = true;
@@ -18,37 +30,26 @@ var _ = require('underscore');
         $state.go('contacts.detail', { id: $state.params.id || $state.params.parent_id });
       });
 
-      $scope.$on('$destroy', function() {
-        if ($scope.enketo_contact && $scope.enketo_contact.formInstance) {
-          Enketo.unload($scope.enketo_contact.formInstance);
-        }
-      });
-
       var getVisibleLevel = function() {
-        return $q(function(resolve, reject) {
-          UserDistrict(function(err, facility_id) {
-            if (err) {
-              return reject(err);
+        return UserDistrict()
+          .then(function(facilityId) {
+            if (!facilityId) {
+              // Admin! Sees everything.
+              return;
             }
-            if (!facility_id) {
-              return resolve();
-            }
-            DB.get(facility_id)
+            return DB().get(facilityId)
               .then(function(doc) {
-                resolve(doc.type);
-              })
-              .catch(function(err) {
-                if (err.status !== 404) {
-                  return reject(err);
-                }
-
-                // TODO it seems like my user can't access its own facility object.
-                // This is likely a local issue, so here's what should happen above.
-                resolve('health_center');
-              })
-              .catch(reject);
+                return doc.type;
+              });
+          })
+          .catch(function(err) {
+            if (err.status === 404) {
+              // TODO it seems like my user can't access its own facility object.
+              // This is likely a local issue, so here's what should happen above.
+              return 'health_center';
+            }
+            throw err;
           });
-        });
       };
 
       var setupSchemas = function() {
@@ -77,7 +78,7 @@ var _ = require('underscore');
             return Enketo.renderFromXmlString($('#contact-form'), form);
           })
           .then(function(form) {
-            $scope.enketo_contact = {
+            $scope.enketoContact = {
               type: type,
               formInstance: form,
               docId: type === $scope.contact.type? $scope.contactId: null,
@@ -111,7 +112,7 @@ var _ = require('underscore');
 
       var getContact = function() {
         if ($state.params.id) {
-          return DB.get($state.params.id);
+          return DB().get($state.params.id);
         }
         return $q.resolve();
       };
@@ -164,7 +165,7 @@ var _ = require('underscore');
         }
         return Enketo.renderFromXmlString(container, form, getFormInstanceData())
           .then(function(form) {
-            $scope.enketo_contact = {
+            $scope.enketoContact = {
               type: $scope.contact.type,
               formInstance: form,
               docId: $scope.contactId,
@@ -186,8 +187,8 @@ var _ = require('underscore');
         });
 
       $scope.save = function() {
-        var form = $scope.enketo_contact.formInstance;
-        var docId = $scope.enketo_contact.docId;
+        var form = $scope.enketoContact.formInstance;
+        var docId = $scope.enketoContact.docId;
         $scope.saving = true;
         $scope.savingError = null;
 
@@ -224,7 +225,7 @@ var _ = require('underscore');
         return $q.resolve()
           .then(function() {
             if(docId) {
-              return DB.get(docId);
+              return DB().get(docId);
             }
             return null;
           })
@@ -238,7 +239,7 @@ var _ = require('underscore');
             if(original) {
               submitted = $.extend({}, original, submitted);
             } else {
-              submitted.type = $scope.enketo_contact.type;
+              submitted.type = $scope.enketoContact.type;
             }
 
             return saveDoc(submitted, original, extras, repeated);
@@ -250,14 +251,14 @@ var _ = require('underscore');
 
         var put;
         if(doc._id) {
-          put = DB.put(doc);
+          put = DB().put(doc);
         } else {
           doc.reported_date = Date.now();
-          put = DB.post(doc);
+          put = DB().post(doc);
         }
         return put
           .then(function(response) {
-            return DB.get(response.id);
+            return DB().get(response.id);
           });
       }
 
@@ -296,8 +297,9 @@ var _ = require('underscore');
                 extra.type = customType[2];
                 extra.reported_date = Date.now();
 
-                var isChild = extra.parent === 'PARENT';
-                if(isChild) {
+                var isChild = extra.parent === 'PARENT' ||
+                              (!extra.parent && conf.parent === 'PARENT');
+                if (isChild) {
                   delete extra.parent;
                 }
 
@@ -316,7 +318,7 @@ var _ = require('underscore');
                 if (typeof docId === 'object') {
                   docId = doc[f]._id;
                 }
-                return DB.get(doc[f])
+                return DB().get(doc[f])
                   .then(function(dbFieldValue) {
                     doc[f] = dbFieldValue;
                     return doc;
@@ -348,7 +350,7 @@ var _ = require('underscore');
             return $q
               .all(_.map(children, function(child) {
                 child.parent = doc;
-                return DB.put(child);
+                return DB().put(child);
               }))
               .then(function() {
                 return doc;
@@ -368,7 +370,16 @@ var _ = require('underscore');
         }
       }
 
+      $scope.$on('$destroy', function() {
+        if (!$state.includes('contacts.add')) {
+          $scope.setTitle();
+          if ($scope.enketoContact && $scope.enketoContact.formInstance) {
+            Enketo.unload($scope.enketoContact.formInstance);
+          }
+        }
+      });
+
     }
-  ]);
+  );
 
 }());

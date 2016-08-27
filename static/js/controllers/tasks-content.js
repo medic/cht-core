@@ -44,7 +44,7 @@
               $scope.loadingForm = false;
             })
             .then(function() {
-              return DB.get().query('medic/forms', { include_docs: true, key: action.form });
+              return DB().query('medic-client/forms', { include_docs: true, key: action.form });
             })
             .then(function(res) {
               if (res.rows[0]) {
@@ -80,7 +80,11 @@
       };
 
       $scope.$on('$destroy', function() {
-        Enketo.unload($scope.form);
+        if (!$state.includes('tasks.detail')) {
+          Enketo.unload($scope.form);
+          $scope.setTitle();
+          $scope.clearSelected();
+        }
       });
 
       // Wait for `selected` to be set during tasks generation and load the

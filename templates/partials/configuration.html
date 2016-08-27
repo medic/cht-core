@@ -1,10 +1,16 @@
+<div class="filters">
+  <div class="inner">
+    <ng-include src="'templates/partials/configuration_filters.html'"></ng-include>
+  </div>
+</div>
+
 <div class="inner" ng-cloak>
   <div class="col-sm-12 page configuration" ui-view="content">
     <ul class="mm-navigation-menu">
       <li ng-repeat="page in configurationPages">
         <a ui-sref="{{page.state}}" mm-auth="can_configure">
           <i class="fa {{page.icon}}"></i>
-          <span translate>{{page.name}}</span>
+          <span translate>{{::page.name}}</span>
         </a>
       </li>
     </ul>

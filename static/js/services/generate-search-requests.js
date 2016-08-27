@@ -1,13 +1,12 @@
 var _ = require('underscore'),
-    moment = require('moment');
+    moment = require('moment'),
+    END_OF_ALPHABET = '\ufff0';
 
 (function () {
 
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
-
-  var endOfAlphabet = '\ufff0';
 
   inboxServices.factory('GenerateSearchRequests', [
     function() {
@@ -18,219 +17,181 @@ var _ = require('underscore'),
         });
       };
 
-      var reportedDate = function($scope, type) {
-        var view = type.views.reportedDate;
-        if (!view) {
+      var getViewForMultidropdown = function(view, filter, mapKeys) {
+        if (!filter || !filter.selected) {
           return;
         }
-        if (!$scope.filterModel.date) {
-          return;
-        }
-        if ($scope.filterModel.date.to || $scope.filterModel.date.from) {
-          // increment end date so it's inclusive
-          var to = moment($scope.filterModel.date.to).add(1, 'days');
-          var from = moment($scope.filterModel.date.from || 0);
+        if (filter.selected.length > 0 &&
+           (!filter.options || filter.selected.length < filter.options.length)) {
+
           return {
             view: view,
             params: {
-              startkey: [ from.valueOf() ],
-              endkey: [ to.valueOf() ]
+              keys: mapKeys(filter.selected)
             }
           };
         }
       };
 
-      var form = function($scope, type) {
-        var view = type.views.form;
-        if (!view) {
+      var getViewForTernarySelect = function(view, value) {
+        if (value === true || value === false) {
+          return {
+            view: view,
+            params: {
+              key: [ value ]
+            }
+          };
+        }
+      };
+
+      var reportedDate = function(filters, view) {
+        var dateRange = filters.date;
+        if (!dateRange || (!dateRange.to && !dateRange.from)) {
           return;
         }
-        var selected = $scope.filterModel.forms;
-        if (!selected) {
-          return;
-        }
-        if (selected.length > 0 && selected.length < $scope.forms.length) {
-          var keys = _.map(selected, function(form) {
+        var to = moment(dateRange.to);
+        var from = moment(dateRange.from || 0);
+        return {
+          view: view,
+          params: {
+            startkey: [ from.valueOf() ],
+            endkey: [ to.valueOf() ]
+          }
+        };
+      };
+
+      var form = function(filters, view) {
+        return getViewForMultidropdown(view, filters.forms, function(forms) {
+          return _.map(forms, function(form) {
             return [ form.code ];
           });
-          return {
-            view: view,
-            params: {
-              keys: keys
+        });
+      };
+
+      var validity = function(filters, view) {
+        return getViewForTernarySelect(view, filters.valid);
+      };
+
+      var verification = function(filters, view) {
+        return getViewForTernarySelect(view, filters.verified);
+      };
+
+      var place = function(filters, view) {
+        return getViewForMultidropdown(view, filters.facilities, getKeysArray);
+      };
+
+      var freetext = function(filters, view) {
+        if (filters.search) {
+          var words = filters.search.toLowerCase().split(/\s+/);
+          return words.map(function(word) {
+            var params = {};
+            if (word.indexOf(':') !== -1) {
+              // use exact match
+              params.key = [ word ];
+            } else {
+              // use starts with
+              params.startkey = [ word ];
+              params.endkey = [ word + END_OF_ALPHABET ];
             }
-          };
+            return {
+              view: view,
+              params: params
+            };
+          });
         }
       };
 
-      var validity = function($scope, type) {
-        var view = type.views.validity;
-        if (!view) {
+      var subject = function(filters, view) {
+        var subjectIds = filters.subjectIds;
+        if (!subjectIds || !subjectIds.length) {
           return;
         }
-        var validity = $scope.filterModel.valid;
-        if (validity === true || validity === false) {
-          return {
-            view: view,
-            params: {
-              key: [ validity ]
-            }
-          };
-        }
-      };
-
-      var verification = function($scope, type) {
-        var view = type.views.verification;
-        if (!view) {
-          return;
-        }
-        var verification = $scope.filterModel.verified;
-        if (verification === true || verification === false) {
-          return {
-            view: view,
-            params: {
-              key: [ verification ]
-            }
-          };
-        }
-      };
-
-      var place = function($scope, type) {
-        var view = type.views.place;
-        if (!view) {
-          return;
-        }
-        var selected = $scope.filterModel.facilities;
-        if (selected &&
-            selected.length > 0 &&
-            selected.length < $scope.facilitiesCount) {
-          return {
-            view: view,
-            params: {
-              keys: getKeysArray(selected)
-            }
-          };
-        }
-      };
-
-      var freetext = function($scope, type) {
-        var view = type.views.freetext;
-        if (!view) {
-          return;
-        }
-        var freetext = $scope.filterQuery && $scope.filterQuery.value;
-        if (freetext) {
-          freetext = freetext.toLowerCase();
-          var params = {};
-          if (freetext.indexOf(':') !== -1) {
-            // use exact match
-            params.keys = _.map(freetext.split(/\s+/), function(word) {
-              return [ word ];
-            });
-          } else {
-            // use starts with
-            params.startkey = [ freetext ];
-            params.endkey = [ freetext + endOfAlphabet ];
+        return {
+          view: view,
+          params: {
+            keys: getKeysArray(subjectIds)
           }
-          return {
-            view: view,
-            params: params
-          };
-        }
+        };
       };
 
-      var subject = function($scope, type) {
-        var view = type.views.subject;
-        if (!view) {
-          return;
-        }
-        var subjectIds = $scope.filterModel.subjectIds;
-        if (subjectIds && subjectIds.length) {
-          return {
-            view: view,
-            params: {
-              keys: getKeysArray(subjectIds)
-            }
-          };
-        }
-      };
-
-      var documentType = function($scope, type) {
-        var view = type.views.documentType;
-        if (!view) {
-          return;
-        }
-        var selected = $scope.filterModel.contactTypes;
-        var numberOfTypes = 4;
-        if (selected &&
-            selected.length > 0 &&
-            selected.length < numberOfTypes) {
-          return {
-            view: type.views.documentType,
-            params: {
-              keys: getKeysArray(selected)
-            }
-          };
-        }
+      var documentType = function(filters, view) {
+        return getViewForMultidropdown(view, filters.types, getKeysArray);
       };
 
       var types = {
-        reports: {
-          getUnfiltered: function() {
-            return {
-              view: 'reports_by_date',
-              params: {
-                include_docs: true,
-                descending: true
-              }
-            };
-          },
-          views: {
-            reportedDate: 'reports_by_date',
-            form: 'reports_by_form',
-            validity: 'reports_by_validity',
-            verification: 'reports_by_verification',
-            place: 'reports_by_place',
-            freetext: 'reports_by_freetext',
-            subject: 'reports_by_subject'
+        reports: function(filters) {
+          var requests = [];
+          requests.push(reportedDate(filters, 'medic-client/reports_by_date'));
+          requests.push(form(filters, 'medic-client/reports_by_form'));
+          requests.push(validity(filters, 'medic-client/reports_by_validity'));
+          requests.push(verification(filters, 'medic-client/reports_by_verification'));
+          requests.push(place(filters, 'medic-client/reports_by_place'));
+          requests.push(freetext(filters, 'medic-client/reports_by_freetext'));
+          requests.push(subject(filters, 'medic-client/reports_by_subject'));
+          requests = _.compact(_.flatten(requests));
+          if (!requests.length) {
+            requests.push({
+              view: 'medic-client/reports_by_date',
+              ordered: true,
+              params: { descending: true }
+            });
           }
+          return requests;
         },
-        contacts: {
-          getUnfiltered: function() {
-            return {
-              view: 'contacts_by_name',
-              params: {
-                include_docs: true
+        contacts: function(filters) {
+          var placeViews = place(filters, 'medic-client/contacts_by_place');
+          var typeViews = documentType(filters, 'medic-client/contacts_by_type');
+          var freetextViews = freetext(filters, 'medic-client/contacts_by_freetext');
+          if (!placeViews &&
+              typeViews && typeViews.params.keys.length &&
+              freetextViews && freetextViews.length) {
+            return freetextViews.map(function(freetextView) {
+              var result = {
+                view: 'medic-client/contacts_by_type_freetext',
+                union: typeViews.params.keys.length > 1
+              };
+              if (result.union) {
+                result.params = [];
               }
-            };
-          },
-          views: {
-            place: 'contacts_by_place',
-            freetext: 'contacts_by_freetext',
-            documentType: 'contacts_by_type'
+              typeViews.params.keys.forEach(function(typeKey) {
+                var type = typeKey[0];
+                var params = {};
+                if (freetextView.key) {
+                  params.key = [ type, freetextView.params.key[0] ];
+                } else {
+                  params.startkey = [ type, freetextView.params.startkey[0] ];
+                  params.endkey = [ type, freetextView.params.endkey[0] ];
+                }
+                if (result.union) {
+                  result.params.push(params);
+                } else {
+                  result.params = params;
+                }
+              });
+              return result;
+            });
           }
+          var requests = [];
+          requests.push(placeViews);
+          requests.push(freetextViews);
+          requests.push(typeViews);
+          requests = _.compact(_.flatten(requests));
+          if (!requests.length) {
+            requests.push({
+              view: 'medic-client/contacts_by_type_index_name',
+              ordered: true
+            });
+          }
+          return requests;
         }
       };
 
-      var getRequests = function($scope, type) {
-        var requests = [];
-        requests.push(reportedDate($scope, type));
-        requests.push(form($scope, type));
-        requests.push(validity($scope, type));
-        requests.push(verification($scope, type));
-        requests.push(place($scope, type));
-        requests.push(freetext($scope, type));
-        requests.push(documentType($scope, type));
-        requests.push(subject($scope, type));
-        requests = _.compact(requests);
-        return requests.length ? requests : [ type.getUnfiltered() ];
-      };
-
-      return function($scope) {
-        var type = types[$scope.filterModel.type];
-        if (!type) {
-          throw new Error('Unknown type: ' + $scope.filterModel.type);
+      return function(type, filters) {
+        var builder = types[type];
+        if (!builder) {
+          throw new Error('Unknown type: ' + type);
         }
-        return getRequests($scope, type);
+        return builder(filters);
       };
     }
   ]);

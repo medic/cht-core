@@ -24,7 +24,9 @@ var smsparser = proxyquire('../../../../packages/kujua-sms/views/lib/smsparser',
     './javarosa_parser': javarosa_parser,
     './textforms_parser': textforms_parser
 });
-var libphonenumber = require('../../../../packages/libphonenumber/libphonenumber/utils');
+var libphonenumber = proxyquire('../../../../packages/libphonenumber/libphonenumber/utils', {
+  'libphonenumber/libphonenumber': require('../../../../packages/libphonenumber/libphonenumber/libphonenumber')
+});
 var updates = proxyquire('../../../../packages/kujua-sms/kujua-sms/updates', {
     'moment': require('../../../../packages/moment/moment'),
     'kujua-utils': kujua_utils,

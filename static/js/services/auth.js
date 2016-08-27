@@ -21,7 +21,7 @@ var _ = require('underscore');
         return _.every(permissions, function(permission) {
           var required = _.findWhere(settings.permissions, { name: permission });
           if (!required) {
-            return false;
+            return !expected;
           }
           var found = _.intersection(userRoles, required.roles).length > 0;
           return expected === found;

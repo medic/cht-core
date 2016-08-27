@@ -8,7 +8,7 @@ describe('auth directive', function() {
 
   beforeEach(function() {
     module('inboxApp');
-    module('templates');
+    module('inboxDirectives');
     Auth = sinon.stub();
     module(function ($provide) {
       $provide.value('Auth', Auth);
@@ -26,7 +26,7 @@ describe('auth directive', function() {
     setTimeout(function() {
       chai.expect(element.hasClass('hidden')).to.equal(false);
       chai.expect(Auth.callCount).to.equal(1);
-      chai.expect(Auth.args[0][0]).to.equal('can_do_stuff');
+      chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff']);
       done();
     });
   });
@@ -38,7 +38,19 @@ describe('auth directive', function() {
     setTimeout(function() {
       chai.expect(element.hasClass('hidden')).to.equal(true);
       chai.expect(Auth.callCount).to.equal(1);
-      chai.expect(Auth.args[0][0]).to.equal('can_do_stuff');
+      chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff']);
+      done();
+    });
+  });
+
+  it('splits comma separated permissions', function(done) {
+    Auth.returns(KarmaUtils.mockPromise());
+    var element = compile('<a mm-auth="can_do_stuff,!can_not_do_stuff">')(scope);
+    scope.$digest();
+    setTimeout(function() {
+      chai.expect(element.hasClass('hidden')).to.equal(false);
+      chai.expect(Auth.callCount).to.equal(1);
+      chai.expect(Auth.args[0][0]).to.deep.equal(['can_do_stuff', '!can_not_do_stuff']);
       done();
     });
   });

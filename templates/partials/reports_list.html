@@ -1,21 +1,19 @@
 <div id="reports-list" class="col-sm-4 inbox-items left-pane">
+  <div class="selection-count" ng-show="selectMode">
+    <span ng-show="selected.length === 1" translate>select.mode.count.singular</span>
+    <span ng-show="selected.length !== 1" translate translate-values="{ number: {{selected.length}} }">select.mode.count.plural</span>
+  </div>
   <ul class="unfiltered" ng-show="(!loading || appending) && !filtered"></ul>
   <ul class="filtered" ng-show="(!loading || appending) && filtered"></ul>
   <p ng-show="error" class="alert alert-danger" role="alert">
     <span ng-show="errorSyntax">
-      {{'invalid.query' | translate}}
-      <a ui-sref="help.search" target="_blank">{{'Help' | translate}}</a>.
+      <span translate>invalid.query</span>
+      <a ui-sref="help.search" target="_blank" translate>Help</a>.
     </span>
-    <span ng-hide="errorSyntax">
-      {{'Error fetching reports' | translate}}
-    </span>
+    <span ng-hide="errorSyntax" translate>Error fetching reports</span>
   </p>
-  <p class="loading-status" ng-show="!error && !loading && !hasReports">
-    {{'No reports found' | translate}}
-  </p>
-  <p class="loading-status" ng-show="!loading && hasReports && !moreItems">
-    {{'No more reports' | translate}}
-  </p>
+  <p class="loading-status" ng-show="!error && !loading && !hasReports" translate>No reports found</p>
+  <p class="loading-status" ng-show="!loading && hasReports && !moreItems" translate>No more reports</p>
   <div class="loader" ng-show="loading"></div>
   <div class="padding"></div>
 </div>

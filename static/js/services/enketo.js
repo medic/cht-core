@@ -1,7 +1,22 @@
 /* globals EnketoForm */
-angular.module('inboxServices').service('Enketo', [
-  '$window', '$log', '$q', 'Auth', 'DB', 'EnketoTranslation', 'EnketoPrepopulationData', 'FileReader', 'UserSettings', 'XSLT', 'Language', 'TranslateFrom',
-  function($window, $log, $q, Auth, DB, EnketoTranslation, EnketoPrepopulationData, FileReader, UserSettings, XSLT, Language, TranslateFrom) {
+angular.module('inboxServices').service('Enketo',
+  function(
+    $log,
+    $q,
+    $window,
+    Auth,
+    DB,
+    EnketoPrepopulationData,
+    EnketoTranslation,
+    FileReader,
+    Language,
+    TranslateFrom,
+    UserSettings,
+    XSLT
+  ) {
+
+    'ngInject';
+
     var objUrls = [];
 
     var replaceJavarosaMediaWithLoaders = function(formInternalId, form) {
@@ -11,7 +26,7 @@ angular.module('inboxServices').service('Enketo', [
         return;
       }
 
-      DB.get().query('medic/forms', { key: formInternalId })
+      DB().query('medic-client/forms', { key: formInternalId })
         .then(function(res) {
           if (!res.rows.length) {
             throw new Error('Requested form not found');
@@ -28,7 +43,7 @@ angular.module('inboxServices').service('Enketo', [
             elem.attr('src', '#' + src);
             elem.css('visibility', 'hidden');
             elem.wrap('<div class="loader">');
-            DB.get()
+            DB()
               .getAttachment(formDoc.id, src.substring(5))
               .then(function(blob) {
                 var objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
@@ -66,14 +81,14 @@ angular.module('inboxServices').service('Enketo', [
 
     var withFormByFormInternalId = function(formInternalId) {
       if (!xmlCache[formInternalId]) {
-        xmlCache[formInternalId] = DB.get()
-          .query('medic/forms', { include_docs: true, key: formInternalId })
+        xmlCache[formInternalId] = DB()
+          .query('medic-client/forms', { include_docs: true, key: formInternalId })
           .then(function(res) {
             if (!res.rows.length) {
               throw new Error('Requested form not found');
             }
             var form = res.rows[0];
-            return DB.get()
+            return DB()
               .getAttachment(form.id, 'xml')
               .then(function(a) {
                 return FileReader(a);
@@ -165,7 +180,7 @@ angular.module('inboxServices').service('Enketo', [
           });
           var loadErrors = form.init();
           if (loadErrors && loadErrors.length) {
-            return $q.reject(loadErrors);
+            return $q.reject(new Error(JSON.stringify(loadErrors)));
           }
           wrapper.show();
 
@@ -243,10 +258,10 @@ angular.module('inboxServices').service('Enketo', [
       // update an existing doc.  For convenience, get the latest version
       // and then modify the content.  This will avoid most concurrent
       // edits, but is not ideal.
-      return DB.get().get(docId).then(function(doc) {
+      return DB().get(docId).then(function(doc) {
         doc.content = record;
         doc.fields = EnketoTranslation.reportRecordToJs(record);
-        return DB.get().put(doc).then(function(res) {
+        return DB().put(doc).then(function(res) {
           doc._rev = res.rev;
           return $q.resolve(doc);
         });
@@ -254,23 +269,19 @@ angular.module('inboxServices').service('Enketo', [
     };
 
     var getContactId = function() {
-      var deferred = $q.defer();
-      UserSettings(function(err, user) {
-        if (err) {
-          return deferred.reject(err);
-        }
-        if (!user || !user.contact_id) {
-          return deferred.reject(new Error('Your user does not have an associated contact. Talk to your administrator to correct this.'));
-        }
-        deferred.resolve(user.contact_id);
-      });
-      return deferred.promise;
+      return UserSettings()
+        .then(function(user) {
+          if (!user || !user.contact_id) {
+            throw new Error('Your user does not have an associated contact. Talk to your administrator to correct this.');
+          }
+          return user.contact_id;
+        });
     };
 
     var create = function(formInternalId, record) {
       return getContactId()
         .then(function(contactId) {
-          return DB.get().get(contactId);
+          return DB().get(contactId);
         })
         .then(function(contact) {
           var doc = {
@@ -284,7 +295,7 @@ angular.module('inboxServices').service('Enketo', [
             from: contact && contact.phone,
             hidden_fields: EnketoTranslation.getHiddenFieldList(record),
           };
-          return DB.get().post(doc).then(function(res) {
+          return DB().post(doc).then(function(res) {
             doc._id = res.id;
             doc._rev = res.rev;
             return $q.resolve(doc);
@@ -323,4 +334,4 @@ angular.module('inboxServices').service('Enketo', [
       xmlCache = {};
     };
   }
-]);
+);

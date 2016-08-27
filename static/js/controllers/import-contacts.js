@@ -7,8 +7,14 @@ var modal = require('../modules/modal');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('ImportContactsCtrl',
-    ['$scope', 'translateFilter', 'ImportContacts', 'FileReader',
-    function ($scope, translateFilter, ImportContacts, FileReader) {
+    function (
+      $scope,
+      $translate,
+      FileReader,
+      ImportContacts
+    ) {
+
+      'ngInject';
 
       $scope.data = null;
       $scope.overwrite = false;
@@ -29,25 +35,34 @@ var modal = require('../modules/modal');
         var pane = modal.start($('#import-contacts'));
         var file = $('#import-contacts [name="contacts"]').prop('files')[0];
         if (!file) {
-          return pane.done(translateFilter('field is required', {
-            field: translateFilter('Contacts')
-          }), true);
+          $translate('Contacts').then(function(fieldName) {
+            $translate('field is required', { field: fieldName })
+              .then(function(message) {
+                pane.done(message, true);
+              });
+          });
+          return;
         }
         read(file, function(err, contacts) {
           if (err) {
-            return pane.done(translateFilter('Error parsing file'), err);
+            $translate('Error parsing file').then(function(message) {
+              pane.done(message, err);
+            });
+            return;
           }
           ImportContacts(contacts, $scope.overwrite)
             .then(function() {
               pane.done();
             })
             .catch(function(err) {
-              pane.done(translateFilter('Error parsing file'), err);
+              $translate('Error parsing file').then(function(message) {
+                pane.done(message, err);
+              });
             });
         });
       };
 
     }
-  ]);
+  );
 
 }());

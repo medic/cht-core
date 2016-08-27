@@ -1,17 +1,10 @@
-<div id="navigation-confirm" class="modal fade" tabindex="-1" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{'Confirm' | translate}}</h3>
-      </div>
-      <div class="modal-body">
-        <p>{{'confirm.destructive.navigation.forms' | translate}}</p>
-      </div>
-      <div class="modal-footer">
-        <a class="btn cancel" data-dismiss="modal">{{'no' | translate}}</a>
-        <a class="btn submit btn-danger" ng-click="cancelConfirm()">{{'yes' | translate}}</a>
-      </div>
-    </div>
-  </div>
-</div>
+<mm-modal
+  danger="true"
+  title-key="'Confirm'"
+  submit-key="'yes'"
+  cancel-key="'no'"
+  on-cancel="cancel()"
+  on-submit="submit()"
+>
+  <p translate>confirm.destructive.navigation.forms</p>
+</mm-modal>

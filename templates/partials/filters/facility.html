@@ -1,0 +1,16 @@
+<span id="facilityDropdown" class="filter dropdown mm-dropdown multidropdown" data-label-no-filter="All facilities" data-filter-label="Number of facilities" ng-show="facilities.length" ng-class="{ 'disabled': selectMode && selected.length }">
+  <span id="facility" class="mm-button" data-toggle="dropdown">
+    <span class="mm-button-icon">
+      <span class="fa fa-hospital-o"></span>
+    </span>
+    <span class="mm-button-dropdown">
+      <span class="fa fa-chevron-down"></span>
+    </span>
+    <span class="mm-button-text"></span>
+  </span>
+  <span role="menu" aria-labelledby="facility" class="dropdown-menu mm-dropdown-menu">
+    <ul>
+      <li role="presentation" ng-repeat="facility in facilities | orderBy:'doc.name'" ng-include="::'templates/partials/filters/facility_items.html'" ng-init="facilityDepth = 0"></li>
+    </ul>
+  </span>
+</span>

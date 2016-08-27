@@ -1,0 +1,6 @@
+{
+  "extends"       : "../.jshintrc",
+  "unused"        : false,
+  "-W025"         : true, // don't worry about unnamed functions
+  "couch"         : true
+}
