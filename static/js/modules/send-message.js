@@ -151,15 +151,15 @@ var _ = require('underscore'),
     $modal.find('.has-error').removeClass('has-error');
     $modal.find('.help-block').text('');
 
-    var val = [],
+    var initialTo,
         to = options.to,
         message = options.message || '';
 
     if (to) {
       if (typeof to === 'string') {
-        val.push(to);
+        initialTo = [to];
       } else if (to) {
-        val.push(to._id);
+        initialTo = [to._id];
       }
     }
 
@@ -170,7 +170,7 @@ var _ = require('underscore'),
 
     // TODO: should we really be doing this multiple times? Every time show
     //       model is run we re-run the select2 stuff!
-    return initPhoneField(phoneField, val);
+    return initPhoneField(phoneField, initialTo);
   };
 
   var recipients = [];

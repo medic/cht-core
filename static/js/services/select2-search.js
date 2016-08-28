@@ -93,15 +93,18 @@ angular.module('inboxServices').factory('Select2Search',
         // TODO: add support for multiples values here
         initialValues = initialValues[0];
 
-        if (initialValues && initialValues.length) {
+        if (initialValues) {
           if (!selectEl.children('option[value="' + initialValues + '"]').length) {
             selectEl.append($('<option value="' + initialValues + '"/>'));
           }
           selectEl.val(initialValues);
+        } else {
+          selectEl.val('');
         }
 
         var value = selectEl.val();
         if (!(value && value.length)) {
+          selectEl.trigger('change'); // fingering my prayer beads
           return $q.resolve(selectEl);
         }
         // TODO: add support for multiples values here

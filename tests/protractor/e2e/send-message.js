@@ -5,6 +5,7 @@ describe('Send message', function() {
   'use strict';
 
   var RAW_PH = '+447765902000';
+  var ANOTHER_RAW_PH = '+557765902000';
 
   var ALICE = {
     _id: 'alice-contact',
@@ -86,7 +87,8 @@ describe('Send message', function() {
     expect(sendMessageModal.isDisplayed()).toBeTruthy();
   };
 
-  var enterCheckAndSelect = function(text, totalResults, resultToClick) {
+  var enterCheckAndSelect = function(text, totalResults, resultToClick, id, existingEntryCount) {
+    existingEntryCount = existingEntryCount || 0;
     var sendMessageSelect = element(by.css('#send-message .select2'));
 
     sendMessageSelect.click();
@@ -96,16 +98,14 @@ describe('Send message', function() {
 
     expect(element.all(by.css('.select2-results__option')).count()).toBe(totalResults);
 
-    expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(0);
+    expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(existingEntryCount);
     element.all(by.css('li.select2-results__option')).get(resultToClick).click();
     browser.sleep(1000);
-    expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
-    expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(text);
+    expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(existingEntryCount + 1);
+    expect(element.all(by.css('#send-message select>option')).last().getAttribute('value')).toBe(id);
   };
 
-  var sendMessage = function(message) {
-    element(by.css('#send-message textarea')).sendKeys(message);
-
+  var sendMessage = function() {
     element(by.css('#send-message a.btn.submit')).click();
     browser.sleep(1000);
     browser.driver.navigate().refresh();
@@ -120,18 +120,23 @@ describe('Send message', function() {
     browser.sleep(1000);
   };
 
+  var lastMessageIs = function(message) {
+    expect(element.all(by.css('#message-content li div.data>p>span')).last().getText()).toBe(message);
+  };
+
   describe('Send message modal', function() {
     it('can send messages to raw phone numbers', function() {
       element(by.id('messages-tab')).click();
       expect(element(by.css(messageInList(RAW_PH))).isPresent()).toBeFalsy();
 
       openSendMessageModal();
-      enterCheckAndSelect(RAW_PH, 1, 0);
-      sendMessage(smsMsg('raw'));
+      enterCheckAndSelect(RAW_PH, 1, 0, RAW_PH);
+      element(by.css('#send-message textarea')).sendKeys(smsMsg('raw'));
+      sendMessage();
       clickLhsEntry(messageInList(RAW_PH));
 
       expect(element.all(by.css('#message-content li')).count()).toBe(1);
-      expect(element(by.css('#message-content li div.data>p>span')).getText()).toBe(smsMsg('raw'));
+      lastMessageIs(smsMsg('raw'));
     });
 
     it('can send messages to contacts with phone numbers', function() {
@@ -140,12 +145,13 @@ describe('Send message', function() {
       expect(element(by.css(messageInList(ALICE._id))).isPresent()).toBeFalsy();
 
       openSendMessageModal();
-      enterCheckAndSelect(ALICE.name, 2, 1);
-      sendMessage(smsMsg('contact'));
+      enterCheckAndSelect(ALICE.name, 2, 1, ALICE._id);
+      element(by.css('#send-message textarea')).sendKeys(smsMsg('contact'));
+      sendMessage();
       clickLhsEntry(messageInList(ALICE._id));
 
       expect(element.all(by.css('#message-content li')).count()).toBe(1);
-      expect(element(by.css('#message-content li div.data>p>span')).getText()).toBe(smsMsg('contact'));
+      lastMessageIs(smsMsg('contact'));
     });
 
     it('can send messages to contacts under everyone at with phone numbers', function() {
@@ -155,32 +161,39 @@ describe('Send message', function() {
       expect(element(by.css(messageInList(DAVID.phone))).isPresent()).toBeFalsy();
 
       openSendMessageModal();
-      enterCheckAndSelect(BOB_PLACE.name, 3, 1);
-      sendMessage(smsMsg('everyoneAt'));
+      enterCheckAndSelect(BOB_PLACE.name, 3, 1, 'everyoneAt:' + BOB_PLACE._id);
+      element(by.css('#send-message textarea')).sendKeys(smsMsg('everyoneAt'));
+      sendMessage();
 
       expect(element.all(by.css(messageInList(CAROL._id))).count()).toBe(0);
       clickLhsEntry(messageInList(DAVID._id));
 
       expect(element.all(by.css('#message-content li')).count()).toBe(1);
-      expect(element(by.css('#message-content li div.data>p>span')).getText()).toBe(smsMsg('everyoneAt'));
+      lastMessageIs(smsMsg('everyoneAt'));
     });
 
   });
 
   // Requires that 'Send message modal' describe has been run
   describe('Sending from message pane', function() {
+    var openMessageContent = function(liIdentifier) {
+      element(by.id('messages-tab')).click();
+      expect(element(by.css(liIdentifier)).isPresent()).toBeTruthy();
+
+      clickLhsEntry(liIdentifier);
+    };
+    var enterMessageText = function(message) {
+      element(by.css('#message-footer textarea')).click();
+      browser.wait(function() {
+        return element(by.css('#message-footer .message-actions .btn-primary')).isDisplayed();
+      });
+      browser.wait(element(by.css('#message-footer textarea')).sendKeys(message));
+    };
     describe('Can send additional messages from message pane', function() {
       var addAnAdditionalMessage = function(liIdentifier) {
-        element(by.id('messages-tab')).click();
-        expect(element(by.css(liIdentifier)).isPresent()).toBeTruthy();
+        openMessageContent(liIdentifier);
+        enterMessageText('Additional Message');
 
-        clickLhsEntry(liIdentifier);
-
-        element(by.css('#message-footer textarea')).click();
-        browser.wait(function() {
-          return element(by.css('#message-footer .message-actions .btn-primary')).isDisplayed();
-        });
-        browser.wait(element(by.css('#message-footer textarea')).sendKeys('Additional Message'));
         element(by.css('#message-footer .message-actions .btn-primary')).click();
         browser.wait(function() {
           return element.all(by.css('#message-content li')).count().then(function(c) {
@@ -189,7 +202,7 @@ describe('Send message', function() {
         }, 2000);
 
         expect(element.all(by.css('#message-content li')).count()).toBe(2);
-        expect(element.all(by.css('#message-content li div.data>p>span')).get(1).getText()).toBe('Additional Message');
+        lastMessageIs('Additional Message');
       };
 
       it('For raw contacts', function() {
@@ -197,6 +210,45 @@ describe('Send message', function() {
       });
       it('For real contacts', function() {
         addAnAdditionalMessage(messageInList(ALICE._id));
+      });
+    });
+    describe('Can add recipients', function() {
+      it('For raw contacts', function() {
+        openMessageContent(messageInList(RAW_PH));
+        enterMessageText('A third message');
+
+        element(by.css('.message-actions .btn.btn-link')).click();
+        browser.sleep(1000);
+        expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
+        expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
+        expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(RAW_PH);
+        enterCheckAndSelect(ANOTHER_RAW_PH, 1, 0, ANOTHER_RAW_PH, 1);
+        sendMessage();
+        openMessageContent(messageInList(RAW_PH));
+        expect(element.all(by.css('#message-content li')).count()).toBe(3);
+
+        lastMessageIs('A third message');
+        openMessageContent(messageInList(ANOTHER_RAW_PH));
+        expect(element.all(by.css('#message-content li')).count()).toBe(1);
+        lastMessageIs('A third message');
+      });
+      it('For existing contacts', function() {
+        openMessageContent(messageInList(ALICE._id));
+        enterMessageText('A third message');
+
+        element(by.css('.message-actions .btn.btn-link')).click();
+        browser.sleep(1000);
+        expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
+        expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
+        expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(ALICE._id);
+        enterCheckAndSelect(DAVID.name, 2, 1, DAVID._id, 1);
+        sendMessage();
+        openMessageContent(messageInList(ALICE._id));
+        expect(element.all(by.css('#message-content li')).count()).toBe(3);
+        expect(element.all(by.css('#message-content li div.data>p>span')).last().getText()).toBe('A third message');
+        openMessageContent(messageInList(DAVID._id));
+        expect(element.all(by.css('#message-content li')).count()).toBe(2);
+        expect(element.all(by.css('#message-content li div.data>p>span')).last().getText()).toBe('A third message');
       });
     });
   });
