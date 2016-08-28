@@ -102,29 +102,31 @@ angular.module('inboxServices').factory('Select2Search',
           selectEl.val('');
         }
 
+        var valueResolved;
         var value = selectEl.val();
         if (!(value && value.length)) {
-          selectEl.trigger('change'); // fingering my prayer beads
-          return $q.resolve(selectEl);
-        }
-        // TODO: add support for multiples values here
-        value = value[0];
-        // TODO: up the chain from this fn determine whether we're being passed
-        //       a raw value or not so we know if we should try to resolve it
-        return DB().get(value)
-          .then(function(doc) {
-            // var text = templateSelection({ doc: doc });
-            // TODO: add support for multiples values here
-            selectEl.select2('data')[0].doc = doc;
-          })
-          .catch(function() {
+          valueResolved = $q.resolve();
+        } else {
+          // TODO: add support for multiples values here
+          value = value[0];
+          if (value.indexOf('+') === 0) {
+            // Raw phone number, don't resolve from DB
             var text = templateSelection({ text: value });
             // TODO: add support for multiples values here
             selectEl.select2('data')[0].text = text;
-          }).then(function() {
-            selectEl.trigger('change');
-            return selectEl;
-          });
+            valueResolved = $q.resolve();
+          } else {
+            valueResolved = DB().get(value).then(function(doc) {
+              // TODO: add support for multiples values here
+              selectEl.select2('data')[0].doc = doc;
+            });
+          }
+        }
+
+        return valueResolved.then(function() {
+          selectEl.trigger('change');
+          return selectEl;
+        });
       };
 
       var initSelect2 = function(selectEl) {
