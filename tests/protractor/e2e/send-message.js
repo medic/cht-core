@@ -83,8 +83,9 @@ describe('Send message', function() {
     expect(sendMessageModal.isDisplayed()).toBeFalsy();
 
     element(by.css('.general-actions .send-message')).click();
-    browser.sleep(1000);
-    expect(sendMessageModal.isDisplayed()).toBeTruthy();
+    browser.wait(function() {
+      return sendMessageModal.isDisplayed();
+    }, 1000);
   };
 
   var enterCheckAndSelect = function(text, totalResults, resultToClick, id, existingEntryCount) {
