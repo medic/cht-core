@@ -2,7 +2,7 @@
 
 ## 2.8.0
 
-### August 24, 2016
+### August 29, 2016
 
 #### Features
 
@@ -19,6 +19,7 @@
 - 'New Contact' option does not appear without a search. Issue: #2516
 - Place contact should be a child of the place. Issue: #1710
 - Geolocation information is not included in submitted form. Issue: #2450
+- Cannot update a contact's phone number without an error. Issue: #2420
 
 ## 2.7.3
 
