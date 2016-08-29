@@ -430,7 +430,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('e2e', 'Deploy app and run e2e tests', [
     'exec:deploytest',
-    'protractor'
+    'protractor:default'
   ]);
 
   grunt.registerTask('e2e-chrome', 'Deploy app and run e2e tests', [
