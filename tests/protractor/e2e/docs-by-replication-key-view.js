@@ -1,7 +1,7 @@
 var utils = require('../utils'),
     async = require('async');
 
-describe('view doc_by_place', function() {
+describe('view docs_by_replication_key', function() {
 
   'use strict';
 
@@ -11,28 +11,19 @@ describe('view doc_by_place', function() {
       type: 'form'
     },
     {
-      _id: 'parent_is_userid',
-      type: 'clinic',
-      parent: {
-        _id: 'testuser'
-      }
+      _id: 'report_about_patient',
+      type: 'data_record',
+      patient_id: 'testpatient'
     },
     {
-      _id: 'parents_parent_is_userid',
-      type: 'district_hospital',
-      parent: {
-        _id: 'who_knows',
-        parent: {
-          _id: 'testuser'
-        }
-      }
+      _id: 'report_about_patient_2',
+      type: 'data_record',
+      fields: { patient_id: 'testpatient' }
     },
     {
-      _id: 'health_center_parent',
-      type: 'health_center',
-      parent: {
-        _id: 'testuser'
-      }
+      _id: 'report_about_place',
+      type: 'data_record',
+      place_id: 'testplace'
     },
     {
       _id: 'testuser',
@@ -55,7 +46,7 @@ describe('view doc_by_place', function() {
       ]
     },
     {
-      _id: 'test_data_record',
+      _id: 'report_with_contact',
       type: 'data_record',
       contact: {
         _id: 'testuser'
@@ -133,7 +124,7 @@ describe('view doc_by_place', function() {
       console.log('Requesting changes, please be patient…');
 
       return utils.requestOnTestDb({
-        path: '/_design/medic-client/_view/doc_by_place?keys=' + JSON.stringify(keys),
+        path: '/_design/medic/_view/docs_by_replication_key?keys=' + JSON.stringify(keys),
         method: 'GET'
       }).then(function(response) {
         console.log('…got changes', response);
@@ -164,11 +155,11 @@ describe('view doc_by_place', function() {
           console.log('…done');
         }
 
-        getChanges([['_all'], ['testuser']])
+        getChanges(['_all', 'testuser', 'testplace', 'testpatient'])
           .then(function(docs) {
             docByPlaceIds = docs;
 
-            getChanges([['_all'], ['_unassigned'], ['testuser']])
+            getChanges(['_all', '_unassigned', 'testuser', 'testplace', 'testpatient'])
               .then(function(docs) {
                 docByPlaceIds_unassigned = docs;
                 done();
@@ -199,15 +190,15 @@ describe('view doc_by_place', function() {
 
   describe('Documents associated with the person id', function() {
     it('Should return clinics if a recursive parent is the user', function() {
-      expect(docByPlaceIds).toContain('parent_is_userid');
+      expect(docByPlaceIds).toContain('report_about_patient');
     });
 
     it('Should return district_hospitals if the recursive parent is the user', function() {
-      expect(docByPlaceIds).toContain('parents_parent_is_userid');
+      expect(docByPlaceIds).toContain('report_about_patient_2');
     });
 
     it('Should return health_centers if the recursive parent is the user', function() {
-      expect(docByPlaceIds).toContain('health_center_parent');
+      expect(docByPlaceIds).toContain('report_about_place');
     });
 
     it('Should check the contact of the first message of the first task in kujua messages', function() {
@@ -216,7 +207,7 @@ describe('view doc_by_place', function() {
     });
 
     it('Should check the contact of data records', function() {
-      expect(docByPlaceIds).toContain('test_data_record');
+      expect(docByPlaceIds).toContain('report_with_contact');
       expect(docByPlaceIds).not.toContain('test_data_record_wrong_user');
     });
   });
