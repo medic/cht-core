@@ -2,7 +2,10 @@ var _ = require('underscore'),
     http = require('http'),
     environment = require('./auth')();
 
-var originalSettings;
+var originalSettings = {};
+
+// The app_settings and update_settings modules are on the main ddoc.
+var mainDdocName = 'medic';
 
 var request = function(options, debug) {
   var deferred = protractor.promise.defer();
@@ -43,6 +46,47 @@ var request = function(options, debug) {
 
   return deferred.promise;
 };
+
+var updateSettingsForDdoc = function(updates, ddocName) {
+    if (originalSettings[ddocName]) {
+      throw new Error('A previous test did not call revertSettings on ' + ddocName);
+    }
+    return request({
+      path: '/' + environment.dbName + '/_design/' + mainDdocName + '/_rewrite/app_settings/' + ddocName,
+      method: 'GET'
+    }).then(function(result) {
+      originalSettings[ddocName] = result.settings;
+
+      // Make sure all updated fields are present in originalSettings[ddocName], to enable reverting later.
+      Object.keys(updates).forEach(function(updatedField) {
+        if (!_.has(originalSettings[ddocName], updatedField)) {
+          originalSettings[ddocName][updatedField] = null;
+        }
+      });
+      return;
+    }).then(function() {
+      return request({
+        path: '/' + environment.dbName + '/_design/' + mainDdocName + '/_rewrite/update_settings/' + ddocName + '?replace=1',
+        method: 'PUT',
+        body: JSON.stringify(updates)
+      });
+    });
+  };
+
+var revertSettingsForDdoc = function(ddocName) {
+    if (!originalSettings[ddocName]) {
+      throw new Error('No original settings to revert to for ' + ddocName);
+    }
+
+    return request({
+      path: '/' + environment.dbName + '/_design/' + mainDdocName + '/_rewrite/update_settings/' + ddocName + '?replace=1',
+      method: 'PUT',
+      body: JSON.stringify(originalSettings[ddocName])
+    }).then(function() {
+      delete originalSettings[ddocName];
+    });
+  };
+
 
 module.exports = {
 
@@ -89,42 +133,20 @@ module.exports = {
   },
 
   updateSettings: function(updates) {
-    if (originalSettings) {
-      throw new Error('A previous test did not call revertSettings');
-    }
-    return request({
-      path: '/' + environment.dbName + '/_design/medic/_rewrite/app_settings/medic-client',
-      method: 'GET'
-    }).then(function(result) {
-      originalSettings = result.settings;
-
-      // Make sure all updated fields are present in originalSettings, to enable reverting later.
-      Object.keys(updates).forEach(function(updatedField) {
-        if (!_.has(originalSettings, updatedField)) {
-          originalSettings[updatedField] = null;
-        }
+    // Update both ddocs, to avoid instability in tests.
+    // Note that API will be copying changes to medic over to medic-client, so change
+    // medic-client first (api does nothing) and medic after (api copies changes over to
+    // medic-client, but the changes are already there.)
+    return updateSettingsForDdoc(updates, 'medic-client')
+      .then(function() {
+        return updateSettingsForDdoc(updates, 'medic');
       });
-      return;
-    }).then(function() {
-      return request({
-        path: '/' + environment.dbName + '/_design/medic/_rewrite/update_settings/medic-client?replace=1',
-        method: 'PUT',
-        body: JSON.stringify(updates)
-      });
-    });
   },
 
   revertSettings: function() {
-    if (!originalSettings) {
-      throw new Error('No original settings to revert to');
-    }
-
-    return request({
-      path: '/' + environment.dbName + '/_design/medic/_rewrite/update_settings/medic-client?replace=1',
-      method: 'PUT',
-      body: JSON.stringify(originalSettings)
-    }).then(function() {
-      originalSettings = null;
-    });
+    return revertSettingsForDdoc('medic-client')
+      .then(function() {
+        return revertSettingsForDdoc('medic');
+      });
   }
 };
