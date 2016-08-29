@@ -395,8 +395,7 @@ module.exports = function(grunt) {
     'notify:deployed'
   ]);
 
-  grunt.registerTask('default', 'Build the static resources', [
-    'mmnpm',
+  grunt.registerTask('build', 'Build the static resources', [
     'mmcss',
     'mmjs',
     'couch-compile',
@@ -412,7 +411,8 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci', 'Build, minify, and test for CI', [
     'jshint',
-    'default',
+    'mmnpm',
+    'build',
     'minify',
     'karma:unit_ci',
     'nodeunit',
@@ -423,7 +423,14 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('dev', 'Build and deploy for dev', [
-    'default',
+    'mmnpm',
+    'build',
+    'deploy',
+    'watch'
+  ]);
+
+  grunt.registerTask('dev-no-npm', 'Build and deploy for dev, without reinstalling dependencies.', [
+    'build',
     'deploy',
     'watch'
   ]);
