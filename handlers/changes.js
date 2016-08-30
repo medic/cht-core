@@ -3,8 +3,8 @@ var _ = require('underscore'),
     config = require('../config'),
     serverUtils = require('../server-utils'),
     db = require('../db'),
-    ALL_KEY = '_all', // key in the doc_by_place view for records everyone can access
-    UNASSIGNED_KEY = '_unassigned', // key in the doc_by_place view for unassigned records
+    ALL_KEY = '_all', // key in the docs_by_replication_key view for records everyone can access
+    UNASSIGNED_KEY = '_unassigned', // key in the docs_by_replication_key view for unassigned records
     CONTACT_TYPES = ['person', 'clinic', 'health_center', 'district_hospital'],
     inited = false,
     continuousFeeds = [];
@@ -79,8 +79,8 @@ var bindSubjectIds = function(feed, callback) {
  * Method to ensure users don't see reports submitted by their boss about the user
  */
 var isSensitive = function(feed, subject, submitter) {
-  if (!subject) {
-    // now sure who it's about - not sensitive
+  if (!subject || !submitter) {
+    // either not sure who it's about, or who submitted it - not sensitive
     return false;
   }
   if (subject !== feed.contactId && subject !== feed.facilityId) {
