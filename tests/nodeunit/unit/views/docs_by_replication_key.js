@@ -6,7 +6,7 @@ var normaliseFunction = function(fn) {
   var SIGNATURE_REGEX = /emit\(([^\(]*)\)/g;
   return fn.toString()
     .replace(WHITESPACE_REGEX, ' ')
-    .replace(SIGNATURE_REGEX, '$1');
+    .replace(SIGNATURE_REGEX, '[ $1 ]');
 };
 
 exports['the view implementation is identical to the handler'] = function(test) {
