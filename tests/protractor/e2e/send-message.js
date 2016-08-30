@@ -111,7 +111,7 @@ describe('Send message', function() {
 
   var sendMessage = function() {
     element(by.css('#send-message a.btn.submit')).click();
-    browser.sleep(1000); // TODO: work out how to tell send-message has fully displayed
+    browser.sleep(1000); // TODO: work out how to tell that the documents etc have beeen saved
     browser.driver.navigate().refresh();
     browser.wait(function() {
       return browser.isElementPresent(by.css('#message-list'));
@@ -232,7 +232,7 @@ describe('Send message', function() {
         enterMessageText('A third message');
 
         element(by.css('.message-actions .btn.btn-link')).click();
-        browser.sleep(1000); // TODO: work out how to tell send-message has fully displayed
+        browser.sleep(1000); // TODO: work out how to tell that the documents etc have beeen saved
         expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
         expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
         expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(RAW_PH);
@@ -251,7 +251,7 @@ describe('Send message', function() {
         enterMessageText('A third message');
 
         element(by.css('.message-actions .btn.btn-link')).click();
-        browser.sleep(1000); // TODO: work out how to tell send-message has fully displayed
+        browser.sleep(1000); // TODO: work out how to tell that the documents etc have beeen saved
         expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
         expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
         expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(ALICE._id);
