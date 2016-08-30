@@ -5,7 +5,9 @@ describe('MedicReporterModalCtrl', function() {
       formCode,
       http,
       language,
+      medicReporterUrl,
       scope,
+      settings,
       spyUibModalInstance,
       userContact,
       userLocale,
@@ -39,6 +41,16 @@ describe('MedicReporterModalCtrl', function() {
         language.returns(KarmaUtils.mockPromise(null, userLocale));
         return language;
       });
+
+      $provide.factory('Location', function() {
+        return { dbName: 'medic-karma' };
+      });
+
+      settings = sinon.stub();
+      medicReporterUrl = '/url/to/medic-reporter/';
+      $provide.factory('Settings', function() {
+        return settings;
+      });
     });
 
     inject(function($rootScope, $controller) {
@@ -64,12 +76,14 @@ describe('MedicReporterModalCtrl', function() {
   });
 
   it('Sets loading mode while loading', function() {
+    settings.returns(KarmaUtils.mockPromise(null, { muvuku_webapp_url: medicReporterUrl }));
     chai.expect(scope.setProcessing.called).to.equal(false);
     createController();
     chai.expect(scope.setProcessing.called).to.equal(true);
   });
 
-  var runTest = function(done, assertions) {
+  var runTest = function(done, reporterUrl, assertions) {
+    settings.returns(KarmaUtils.mockPromise(null, { muvuku_webapp_url: reporterUrl }));
     createController();
     setTimeout(function() {
       scope.$apply(); // needed to resolve the promises
@@ -85,25 +99,52 @@ describe('MedicReporterModalCtrl', function() {
     var err = { status: 403 };
     http.head.returns(KarmaUtils.mockPromise(err));
 
-    runTest(done, function() {
+    runTest(done, medicReporterUrl, function() {
       chai.expect(scope.setError.called).to.equal(true);
       chai.expect(scope.setError.getCall(0).args[0]).to.equal(err);
       chai.expect(scope.setError.getCall(0).args[1]).to.equal('error.403.description');
     });
   });
 
-  it('Displays medic-reporter if auth', function(done) {
-    runTest(done, function() {
+  it('Doesn\'t display medic-reporter if no medic-reporter url', function(done) {
+    runTest(done, '', function() {
+      chai.expect(scope.setError.called).to.equal(true);
+      chai.expect(scope.setError.getCall(0).args[1]).to.equal('error.general.description');
+    });
+  });
+
+  it('Adds trailing slash to medic-reporter url', function(done) {
+    runTest(done, '/url/to/medic-reporter', function() {
       chai.expect(scope.setError.called).to.equal(false);
       chai.expect(scope.setFinished.called).to.equal(true);
       chai.assert(
-        scope.medicReporterUrl.startsWith('/medic-reporter/_design/medic-reporter/_rewrite/?_embed_mode=1'),
+        scope.medicReporterUrl.startsWith('/url/to/medic-reporter/'),
+        'Should add trailing slash to url');
+    });
+  });
+
+  it('Removes query params from medic-reporter url', function(done) {
+    runTest(done, '/url/to/medic-reporter?a=b&c=d', function() {
+      chai.expect(scope.setError.called).to.equal(false);
+      chai.expect(scope.setFinished.called).to.equal(true);
+      chai.assert(
+        scope.medicReporterUrl.startsWith('/url/to/medic-reporter/'),
+        'Should remove params from url');
+    });
+  });
+
+  it('Displays medic-reporter if auth', function(done) {
+    runTest(done, medicReporterUrl, function() {
+      chai.expect(scope.setError.called).to.equal(false);
+      chai.expect(scope.setFinished.called).to.equal(true);
+      chai.assert(
+        scope.medicReporterUrl.startsWith(medicReporterUrl),
         'Should put the right url for iframe');
     });
   });
 
   it('Displays appropriate form', function(done) {
-    runTest(done, function() {
+    runTest(done, medicReporterUrl, function() {
       chai.assert(
         scope.medicReporterUrl.includes('_show_forms=' + formCode),
         'Should pass form code in url param');
@@ -111,7 +152,7 @@ describe('MedicReporterModalCtrl', function() {
   });
 
   it('Uses the user\'s phone number if available', function(done) {
-    runTest(done, function() {
+    runTest(done, medicReporterUrl, function() {
       chai.assert(
         scope.medicReporterUrl.includes('_gateway_num=' + userNumber),
         'Should pass phone in url param');
@@ -119,7 +160,7 @@ describe('MedicReporterModalCtrl', function() {
   });
 
   it('Uses the user\'s locale if available', function(done) {
-    runTest(done, function() {
+    runTest(done, medicReporterUrl, function() {
       chai.assert(
         scope.medicReporterUrl.includes('_locale=' + userLocale),
         'Should pass locale in url param');
@@ -127,6 +168,7 @@ describe('MedicReporterModalCtrl', function() {
   });
 
   it('Dismisses modal on user cancel', function() {
+    settings.returns(KarmaUtils.mockPromise(null, { muvuku_webapp_url: medicReporterUrl }));
     createController();
     scope.cancel();
     chai.assert(spyUibModalInstance.dismiss.called, 'Should dismiss modal on user cancel');

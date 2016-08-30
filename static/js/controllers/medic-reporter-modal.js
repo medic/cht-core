@@ -62,10 +62,12 @@
           if (!settings.muvuku_webapp_url) {
             throw new Error({ status: 500, message: 'no medic-reporter url configured.' });
           } else {
-            medicReporterBaseUrl = settings.muvuku_webapp_url;
-            // TODO needs trailing slash, otherwise breaks!!
+            medicReporterBaseUrl = settings.muvuku_webapp_url.split('?').shift();
+            // Needs trailing slash, otherwise breaks!!
             // https://github.com/medic/medic-reporter/issues/20
-            // TODO strip off extra args for backwards compat, or make auth work with params.
+            if (medicReporterBaseUrl.substr(-1) !== '/') {
+              medicReporterBaseUrl += '/';
+            }
           }
           return medicReporterBaseUrl;
         }).then(checkAuth)
