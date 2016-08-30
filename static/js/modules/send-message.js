@@ -115,12 +115,12 @@ var _ = require('underscore'),
     return row.doc.name || row.doc.phone;
   };
 
-  var initPhoneField = function($phone, initialValues) {
+  var initPhoneField = function($phone, initialValue) {
     return Select2Search($phone, CONTACT_TYPES, {
       tags: true,
       templateResult: templateResult,
       templateSelection: templateSelection,
-      initialValues: initialValues,
+      initialValue: initialValue,
       sendMessageExtras: function(results) {
         return _.chain(results)
           .map(function (result) {
@@ -151,16 +151,11 @@ var _ = require('underscore'),
     $modal.find('.has-error').removeClass('has-error');
     $modal.find('.help-block').text('');
 
-    var initialTo,
-        to = options.to,
+    var to = options.to,
         message = options.message || '';
 
-    if (to) {
-      if (typeof to === 'string') {
-        initialTo = [to];
-      } else if (to) {
-        initialTo = [to._id];
-      }
+    if (to && typeof to !== 'string') {
+      to = to._id;
     }
 
     var phoneField = $modal.find('[name=phone]');
@@ -170,7 +165,7 @@ var _ = require('underscore'),
 
     // TODO: should we really be doing this multiple times? Every time show
     //       model is run we re-run the select2 stuff!
-    return initPhoneField(phoneField, initialTo);
+    return initPhoneField(phoneField, to);
   };
 
   var recipients = [];

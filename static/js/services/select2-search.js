@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    format = require('../modules/format');
+    format = require('../modules/format'),
+    libphonenumber = require('libphonenumber/utils');
 
 angular.module('inboxServices').factory('Select2Search',
   function(
@@ -7,7 +8,8 @@ angular.module('inboxServices').factory('Select2Search',
     $translate,
     DB,
     Search,
-    Session
+    Session,
+    Settings
   ) {
 
     'use strict';
@@ -40,7 +42,7 @@ angular.module('inboxServices').factory('Select2Search',
           templateSelection = options.templateSelection || defaultTemplateSelection,
           sendMessageExtras = options.sendMessageExtras || (function(i) {return i;}),
           tags = options.tags || false,
-          initialValues = options.initialValues || [],
+          initialValue = options.initialValue,
           types = Array.isArray(_types) ? _types : [ _types ];
 
       if (allowNew && types.length !== 1) {
@@ -89,41 +91,39 @@ angular.module('inboxServices').factory('Select2Search',
           });
       };
 
-      var resolveInitialValue = function(selectEl, initialValues) {
-        // TODO: add support for multiples values here
-        initialValues = initialValues[0];
-
-        if (initialValues) {
-          if (!selectEl.children('option[value="' + initialValues + '"]').length) {
-            selectEl.append($('<option value="' + initialValues + '"/>'));
+      var resolveInitialValue = function(selectEl, initialValue) {
+        if (initialValue) {
+          if (!selectEl.children('option[value="' + initialValue + '"]').length) {
+            selectEl.append($('<option value="' + initialValue + '"/>'));
           }
-          selectEl.val(initialValues);
+          selectEl.val(initialValue);
         } else {
           selectEl.val('');
         }
 
-        var valueResolved;
+        var resolution;
         var value = selectEl.val();
         if (!(value && value.length)) {
-          valueResolved = $q.resolve();
+          resolution = $q.resolve();
         } else {
-          // TODO: add support for multiples values here
-          value = value[0];
-          if (value.indexOf('+') === 0) {
+          if (Array.isArray(value)) {
+            // NB: For now we only support resolving one initial value
+            // multiple is not an existing use case for us
+            value = value[0];
+          }
+          if (libphonenumber.validate(Settings, value)) {
             // Raw phone number, don't resolve from DB
             var text = templateSelection({ text: value });
-            // TODO: add support for multiples values here
             selectEl.select2('data')[0].text = text;
-            valueResolved = $q.resolve();
+            resolution = $q.resolve();
           } else {
-            valueResolved = DB().get(value).then(function(doc) {
-              // TODO: add support for multiples values here
+            resolution = DB().get(value).then(function(doc) {
               selectEl.select2('data')[0].doc = doc;
             });
           }
         }
 
-        return valueResolved.then(function() {
+        return resolution.then(function() {
           selectEl.trigger('change');
           return selectEl;
         });
@@ -154,7 +154,7 @@ angular.module('inboxServices').factory('Select2Search',
       };
 
       initSelect2(selectEl);
-      return resolveInitialValue(selectEl, initialValues);
+      return resolveInitialValue(selectEl, initialValue);
     };
   }
 );

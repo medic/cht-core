@@ -179,7 +179,7 @@ var _ = require('underscore'),
           if (to.contact._id) {
             realTo = to.contact;
           } else if (to.contact.name) {
-            realTo = to.contact.name;
+            realTo = to.contact.name; // raw phone number
           }
         }
 
