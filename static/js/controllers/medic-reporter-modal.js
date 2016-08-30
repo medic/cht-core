@@ -10,6 +10,8 @@
       $timeout,
       $uibModalInstance,
       Language,
+      Location,
+      Settings,
       UserContact
     ) {
       'ngInject';
@@ -38,8 +40,13 @@
       };
 
       var medicReporterFullUrl = function(baseUrl, formCode, language, phone) {
+        var formsListPath = '/' + Location.dbName + '/_design/medic/_rewrite/app_settings/medic-client/forms';
+        var syncUrl = '/' + Location.dbName + '/_design/medic/_rewrite/add';
         var url = baseUrl +
-          '?_embed_mode=1' + '&_show_forms=' + formCode;
+          '?_embed_mode=1' +
+          '&_show_forms=' + formCode +
+          '&_forms_list_path=' + encodeURIComponent(formsListPath) +
+          '&_sync_url=' + encodeURIComponent(syncUrl);
         if (language) {
           url += '&_locale=' + language;
         }
@@ -49,8 +56,19 @@
         return url;
       };
 
-      var medicReporterBaseUrl = '/medic-reporter/_design/medic-reporter/_rewrite/';
-      checkAuth(medicReporterBaseUrl)
+      var medicReporterBaseUrl;
+      Settings()
+        .then(function(settings) {
+          if (!settings.muvuku_webapp_url) {
+            throw new Error({ status: 500, message: 'no medic-reporter url configured.' });
+          } else {
+            medicReporterBaseUrl = settings.muvuku_webapp_url;
+            // TODO needs trailing slash, otherwise breaks!!
+            // https://github.com/medic/medic-reporter/issues/20
+            // TODO strip off extra args for backwards compat, or make auth work with params.
+          }
+          return medicReporterBaseUrl;
+        }).then(checkAuth)
         .then(function() {
           return $q.all([Language(), getUserPhoneNumber()]);
         })

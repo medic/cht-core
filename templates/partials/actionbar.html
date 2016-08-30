@@ -7,14 +7,14 @@
             <span class="fa fa-plus"></span>
             <p translate>Send Message</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" ng-show="currentTab === 'reports'" data-toggle="dropdown" ng-class="{'mm-icon-disabled': !nonContactForms.length}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle submit-report" ng-show="currentTab === 'reports'" data-toggle="dropdown" ng-class="{'mm-icon-disabled': !nonContactForms.length}">
             <span class="fa fa-plus"></span>
             <p translate>Submit Report</p>
           </a>
-          <ul class="dropdown-menu" ng-show="nonContactForms.length">
+          <ul class="dropdown-menu submit-report-menu" ng-show="nonContactForms.length">
             <li ng-repeat="form in nonContactForms">
                 <a ng-show="form.title" ui-sref="reports.add({ formId: form.internalId })">{{form.title | translateFrom}}</a>
-                <a ng-show="form.name" ng-click="showMedicReporter(form.code)">{{form.name | translateFrom}}</a>
+                <a class="{{form.code}}" ng-show="form.name" ng-click="showMedicReporter(form.code)">{{form.name | translateFrom}}</a>
             </li>
           </ul>
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.add()" ng-show="currentTab === 'contacts' && facilities.length">

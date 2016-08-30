@@ -179,9 +179,20 @@ module.exports = function(grunt) {
       },
       deploytest: {
         stderr: false,
-        cmd: 'curl -X DELETE http://admin:pass@localhost:5984/medic-test' +
-             ' && curl -X DELETE http://admin:pass@localhost:5984/medic-audit-test' +
-             ' && kanso push http://admin:pass@localhost:5984/medic-test'
+        cmd: 'echo \'Deleting old dbs..\'' +
+             ' && curl -X DELETE http://admin:pass@localhost:5984/medic-test' +
+             ' && curl -X DELETE http://admin:pass@localhost:5984/medic-test-audit' +
+             ' && curl -X DELETE http://admin:pass@localhost:5984/medic-test-reporter' +
+             ' && echo \'Pushing webapp...\'' +
+             ' && kanso push http://admin:pass@localhost:5984/medic-test' +
+             ' && echo \'Cloning medic-reporter...\'' +
+             ' && rm -rf medic-reporter' +
+             ' && git clone https://github.com/medic/medic-reporter' +
+             ' && echo \'Pushing medic-reporter...\'' +
+             ' && cd medic-reporter' +
+             ' && ./erica push http://admin:pass@localhost:5984/medic-test-reporter' +
+             ' && cd ..' +
+             ' && echo \'Done deploytest.\''
       },
       test_api_integration_setup: {
         cmd: 'cd api && npm install',
