@@ -3,8 +3,9 @@ var _ = require('underscore'),
     config = require('../config'),
     serverUtils = require('../server-utils'),
     db = require('../db'),
-    ALL_KEY = [ '_all' ], // key in the doc_by_place view for records everyone can access
-    UNASSIGNED_KEY = [ '_unassigned' ], // key in the doc_by_place view for unassigned records
+    ALL_KEY = '_all', // key in the doc_by_place view for records everyone can access
+    UNASSIGNED_KEY = '_unassigned', // key in the doc_by_place view for unassigned records
+    CONTACT_TYPES = ['person', 'clinic', 'health_center', 'district_hospital'],
     inited = false,
     continuousFeeds = [];
 
@@ -12,53 +13,95 @@ var error = function(code, message) {
   return JSON.stringify({ code: code, message: message });
 };
 
-var bindViewKeys = function(feed, callback) {
+var getDepth = function(userCtx) {
+  if (!userCtx.roles || !userCtx.roles.length) {
+    return null;
+  }
+  var settings = config.get('replication_depth');
+  if (!settings) {
+    return null;
+  }
+  var depth = -1;
+  userCtx.roles.forEach(function(role) {
+    // find the role with the deepest depth
+    var setting = _.findWhere(settings, { role: role });
+    if (setting && setting.depth > depth) {
+      depth = setting.depth;
+    }
+  });
+  return depth >= 0 ? depth : null;
+};
+
+var bindSubjectIds = function(feed, callback) {
   auth.getFacilityId(feed.req, feed.userCtx, function(err, facilityId) {
     if (err) {
       return callback(err);
     }
-    var keys = [ ALL_KEY ];
-    if (facilityId) {
-      if (feed.userCtx.roles && feed.userCtx.roles.length) {
-        var depth = -1;
-        var settings = config.get('replication_depth');
-        if (settings) {
-          feed.userCtx.roles.forEach(function(role) {
-            // find the role with the deepest depth
-            var setting = _.findWhere(settings, { role: role });
-            if (setting && setting.depth > depth) {
-              depth = setting.depth;
-            }
-          });
-        }
-        if (depth === -1) {
-          // no configured depth limit
-          keys.push([ facilityId ]);
-        } else {
-          for (var i = 0; i <= depth; i++) {
-            keys.push([ facilityId, i ]);
-          }
-        }
+    if (!facilityId) {
+      return callback(null, []);
+    }
+    feed.facilityId = facilityId;
+    auth.getContactId(feed.userCtx, function(err, contactId) {
+      if (err) {
+        return callback(err);
       }
-    }
-    if (config.get('district_admins_access_unallocated_messages') &&
-        auth.hasAllPermissions(feed.userCtx, 'can_view_unallocated_data_records')) {
-      keys.push(UNASSIGNED_KEY);
-    }
-    feed.keys = keys;
-    callback();
+      feed.contactId = contactId;
+
+      var keys = [];
+      var depth = getDepth(feed.userCtx);
+      if (depth) {
+        for (var i = 0; i <= depth; i++) {
+          keys.push([ facilityId, i ]);
+        }
+      } else {
+        // no configured depth limit
+        keys.push([ facilityId ]);
+      }
+
+      db.medic.view('medic', 'contacts_by_depth', { keys: keys }, function(err, result) {
+        if (err) {
+          return callback(err);
+        }
+        var subjectIds = _.pluck(result.rows, 'id');
+        subjectIds.push(ALL_KEY);
+        if (config.get('district_admins_access_unallocated_messages') &&
+            auth.hasAllPermissions(feed.userCtx, 'can_view_unallocated_data_records')) {
+          subjectIds.push(UNASSIGNED_KEY);
+        }
+        feed.subjectIds = subjectIds;
+        callback();
+      });
+    });
   });
 };
 
+/**
+ * Method to ensure users don't see reports submitted by their boss about the user
+ */
+var isSensitive = function(feed, subject, submitter) {
+  if (!subject) {
+    // now sure who it's about - not sensitive
+    return false;
+  }
+  if (subject !== feed.contactId && subject !== feed.facilityId) {
+    // must be about a descendant - not sensitive
+    return false;
+  }
+  // submitted by someone the user can't see
+  return feed.subjectIds.indexOf(submitter) === -1;
+};
+
 var bindValidatedDocIds = function(feed, callback) {
-  db.medic.view('medic-client', 'doc_by_place', { keys: feed.keys }, function(err, viewResult) {
+  db.medic.view('medic', 'docs_by_replication_key', { keys: feed.subjectIds }, function(err, viewResult) {
     if (err) {
       return callback(err);
     }
-    var ids = _.pluck(viewResult.rows, 'id');
-    ids.push('org.couchdb.user:' + feed.userCtx.name);
-    ids.push('_design/medic-client');
-    feed.validatedIds = ids;
+    feed.validatedIds = viewResult.rows.reduce(function(ids, row) {
+      if (!isSensitive(feed, row.key, row.value.submitter)) {
+        ids.push(row.id);
+      }
+      return ids;
+    }, [ '_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name ]);
     callback();
   });
 };
@@ -129,105 +172,121 @@ var getChanges = function(feed) {
   });
 };
 
+var bindServerIds = function(feed, callback) {
+  bindSubjectIds(feed, function(err) {
+    if (err) {
+      return callback(err);
+    }
+    bindValidatedDocIds(feed, callback);
+  });
+};
+
 var initFeed = function(feed, callback) {
   bindRequestedIds(feed, function(err) {
     if (err) {
       return callback(err);
     }
-    bindViewKeys(feed, function(err) {
-      if (err) {
-        return callback(err);
-      }
-      bindValidatedDocIds(feed, callback);
-    });
+    bindServerIds(feed, callback);
   });
 };
 
 // returns if it is true that for any document in the feed the user
 // should be able to see it AND they don't already
-var hasNewApplicableDoc = function(feed, docs) {
-  return _.some(docs, function(doc) {
-    return !_.contains(feed.validatedIds, doc.id) &&
-      _.some(doc.keys, function(key) {
-        return !!_.find(feed.keys, function(feedKey) {
-          return feedKey[0] === key[0];
-        });
-      });
+var hasNewApplicableDoc = function(feed, changes) {
+  return _.some(changes, function(change) {
+    if (_.contains(feed.validatedIds, change.id)) {
+      // feed already knows about doc
+      return false;
+    }
+    if (isSensitive(feed, change.subject, change.submitter)) {
+      // don't show sensitive information
+      return false;
+    }
+    if (feed.subjectIds.indexOf(change.subject) !== -1) {
+      // this is relevant to the feed
+      return true;
+    }
+    if (CONTACT_TYPES.indexOf(change.doc.type) === -1) {
+      // only people and places are subjects so we don't need to update
+      // the subject list for non-contact types.
+      return false;
+    }
+    var depth = getDepth(feed.userCtx) || 100;
+    var parent = change.doc.parent;
+    while (depth >= 0 && parent) {
+      if (feed.subjectIds.indexOf(parent._id) !== -1) {
+        // this is relevant to the feed
+        return true;
+      }
+      depth--;
+      parent = parent.parent;
+    }
+    return false;
   });
 };
 
-// WARNING: If updating this function also update the doc_by_place view in lib/views.js
-var extractKeysFromDoc = function(doc, emit) {
-
-  var emitPlace = function(place) {
-    var depth = 0;
-    while (place) {
-      if (place._id) {
-        emit([ place._id ]);
-        emit([ place._id, depth ]);
-      }
-      depth++;
-      place = place.parent;
-    }
-  };
-
-  if (doc._id === 'resources' || doc._id === 'appcache') {
-    emit([ '_all' ]);
-    return;
+// WARNING: If updating this function also update the docs_by_replication_key view in lib/views.js
+var getReplicationKey = function(doc) {
+  if (doc._id === 'resources' ||
+      doc._id === 'appcache' ||
+      doc.type === 'form' ||
+      doc.type === 'translations') {
+    return [ '_all', {} ];
   }
-
   switch (doc.type) {
     case 'data_record':
-      var place;
-      if (doc.kujua_message === true) {
-        // outgoing message
-        place = doc.tasks &&
-                doc.tasks[0] &&
-                doc.tasks[0].messages &&
-                doc.tasks[0].messages[0] &&
-                doc.tasks[0].messages[0].contact;
-      } else {
+      var subject;
+      var submitter;
+      if (doc.form) {
+        // report
+        subject = (doc.patient_id || (doc.fields && doc.fields.patient_id)) ||
+                  (doc.place_id || (doc.fields && doc.fields.place_id)) ||
+                  (doc.contact && doc.contact._id);
+        submitter = doc.contact && doc.contact._id;
+      } else if (doc.sms_message) {
         // incoming message
-        place = doc.contact;
+        subject = doc.contact && doc.contact._id;
+      } else if (doc.kujua_message) {
+        // outgoing message
+        subject = doc.tasks &&
+                  doc.tasks[0] &&
+                  doc.tasks[0].messages &&
+                  doc.tasks[0].messages[0] &&
+                  doc.tasks[0].messages[0].contact &&
+                  doc.tasks[0].messages[0].contact._id;
       }
-
-      if (!place) {
-        emit([ '_unassigned' ]);
-      } else {
-        emitPlace(place);
+      if (subject) {
+        return [ subject, { submitter: submitter } ];
       }
-      return;
-    case 'form':
-    case 'translations':
-      emit([ '_all' ]);
-      return;
+      return [ '_unassigned', {} ];
     case 'clinic':
     case 'district_hospital':
     case 'health_center':
     case 'person':
-      emitPlace(doc);
-      return;
+      return [ doc._id, {} ];
   }
 };
 
 var updateFeeds = function(changes) {
-  var modifiedKeys = changes.results.map(function(change) {
-    var docKeys = [];
-    extractKeysFromDoc(change.doc, function(key) {
-      docKeys.push(key);
-    });
-    return {
+  var modifiedChanges = changes.results.map(function(change) {
+    var result = {
       id: change.id,
-      keys: docKeys
+      doc: change.doc
     };
+    var row = getReplicationKey(change.doc);
+    if (row && row.length) {
+      result.subject = row[0];
+      result.submitter = row[1].submitter;
+    }
+    return result;
   });
   continuousFeeds.forEach(function(feed) {
     // check if new and relevant
-    if (hasNewApplicableDoc(feed, modifiedKeys)) {
+    if (hasNewApplicableDoc(feed, modifiedChanges)) {
       if (feed.changesReq) {
         feed.changesReq.abort();
       }
-      bindValidatedDocIds(feed, function(err) {
+      bindServerIds(feed, function(err) {
         if (err) {
           return serverUtils.error(err, feed.req, feed.res);
         }
@@ -300,7 +359,7 @@ module.exports = {
       }
     });
   },
-  _extractKeysFromDoc: extractKeysFromDoc // used for testing
+  _getReplicationKey: getReplicationKey // used for testing
 };
 
 // used for testing

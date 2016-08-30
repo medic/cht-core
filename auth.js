@@ -92,6 +92,12 @@ module.exports = {
     });
   },
 
+  getContactId: function(userCtx, callback) {
+    db.medic.get('org.couchdb.user:' + userCtx.name, function(err, user) {
+      callback(err, user && user.contact_id);
+    });
+  },
+
   check: function(req, permissions, districtId, callback) {
     module.exports.getUserCtx(req, function(err, userCtx) {
       if (err) {
