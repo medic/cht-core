@@ -12,16 +12,19 @@ describe('view docs_by_replication_key', function() {
     },
     {
       _id: 'report_about_patient',
+      form: 'V',
       type: 'data_record',
       patient_id: 'testpatient'
     },
     {
       _id: 'report_about_patient_2',
+      form: 'V',
       type: 'data_record',
       fields: { patient_id: 'testpatient' }
     },
     {
       _id: 'report_about_place',
+      form: 'V',
       type: 'data_record',
       place_id: 'testplace'
     },
@@ -47,6 +50,7 @@ describe('view docs_by_replication_key', function() {
     },
     {
       _id: 'report_with_contact',
+      form: 'V',
       type: 'data_record',
       contact: {
         _id: 'testuser'
