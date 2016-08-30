@@ -95,20 +95,23 @@ describe('Send message', function() {
     sendMessageSelect.click();
 
     element(by.css('#send-message input.select2-search__field')).sendKeys(text);
-    browser.sleep(1000);
+    browser.sleep(1000); // TODO: work out how to tell that select2 has finished processing the text we've sent (even possible?)
 
     expect(element.all(by.css('.select2-results__option')).count()).toBe(totalResults);
 
     expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(existingEntryCount);
     element.all(by.css('li.select2-results__option')).get(resultToClick).click();
-    browser.sleep(1000);
-    expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(existingEntryCount + 1);
+    browser.wait(function() {
+      return element.all(by.css('li.select2-selection__choice')).count().then(function(c) {
+        return c === (existingEntryCount + 1);
+      });
+    }, 2000);
     expect(element.all(by.css('#send-message select>option')).last().getAttribute('value')).toBe(id);
   };
 
   var sendMessage = function() {
     element(by.css('#send-message a.btn.submit')).click();
-    browser.sleep(1000);
+    browser.sleep(1000); // TODO: work out how to tell send-message has fully displayed
     browser.driver.navigate().refresh();
     browser.wait(function() {
       return browser.isElementPresent(by.css('#message-list'));
@@ -128,7 +131,7 @@ describe('Send message', function() {
           return text === entryName;
         });
       }
-    });
+    }, 2000);
   };
 
   var lastMessageIs = function(message) {
@@ -229,7 +232,7 @@ describe('Send message', function() {
         enterMessageText('A third message');
 
         element(by.css('.message-actions .btn.btn-link')).click();
-        browser.sleep(1000);
+        browser.sleep(1000); // TODO: work out how to tell send-message has fully displayed
         expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
         expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
         expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(RAW_PH);
@@ -248,7 +251,7 @@ describe('Send message', function() {
         enterMessageText('A third message');
 
         element(by.css('.message-actions .btn.btn-link')).click();
-        browser.sleep(1000);
+        browser.sleep(1000); // TODO: work out how to tell send-message has fully displayed
         expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
         expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
         expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(ALICE._id);
