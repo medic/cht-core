@@ -1,6 +1,4 @@
-var _ = require('underscore'),
-    ALL_KEY = [ '_all' ], // key in the doc_by_place view for records everyone can access
-    UNASSIGNED_KEY = [ '_unassigned' ]; // key in the doc_by_place view for unassigned records
+var _ = require('underscore');
 
 (function () {
 
@@ -27,82 +25,10 @@ var _ = require('underscore'),
       $q,
       Auth,
       DB,
-      Session,
-      Settings,
-      UserDistrict
+      Session
     ) {
 
       'ngInject';
-
-      var getUnassignedKeys = function(settings) {
-        if (settings.district_admins_access_unallocated_messages) {
-          return Auth('can_view_unallocated_data_records')
-            .then(function() {
-              return [ UNASSIGNED_KEY ];
-            })
-            .catch(function() {
-              // can't view unallocated - swallow and continue
-              return [];
-            });
-        }
-        return [];
-      };
-
-      var getFacilityKeys = function(settings, userCtx, facilityId) {
-        if (!facilityId) {
-          // no confugured facility
-          return [];
-        }
-        if (!userCtx.roles || !userCtx.roles.length) {
-          // not logged in or no configured role
-          return [];
-        }
-        var depth = -1;
-        if (settings.replication_depth) {
-          userCtx.roles.forEach(function(role) {
-            // find the role with the deepest depth
-            var setting = _.findWhere(settings.replication_depth, { role: role });
-            if (setting && setting.depth > depth) {
-              depth = setting.depth;
-            }
-          });
-        }
-        if (depth === -1) {
-          // no configured depth limit
-          return [[ facilityId ]];
-        }
-        var keys = [];
-        for (var i = 0; i <= depth; i++) {
-          keys.push([ facilityId, i ]);
-        }
-        return keys;
-      };
-
-      var getBaseKeys = function() {
-        return [ ALL_KEY ];
-      };
-
-      var getViewKeys = function(userCtx) {
-        return $q.all([ Settings(), UserDistrict() ])
-          .then(function(results) {
-            var settings = results[0];
-            var facilityId = results[1];
-            return $q.all([
-              getBaseKeys(),
-              getUnassignedKeys(settings),
-              getFacilityKeys(settings, userCtx, facilityId)
-            ])
-              .then(function(keys) {
-                return keys[0].concat(keys[1], keys[2]);
-              });
-          })
-          .catch(function(err) {
-            // allow some replication otherwise the user can get stuck
-            // unable to fix their own configuration
-            $log.error('Error fetching sync options - using with minimum options', err);
-            return getBaseKeys();
-          });
-      };
 
       var getOptions = function(direction, options) {
         options = options || {};
@@ -116,18 +42,10 @@ var _ = require('underscore'),
         if (direction === 'to') {
           return $q.resolve(options);
         }
-        var userCtx = Session.userCtx();
-        return getViewKeys(userCtx)
-          .then(function(keys) {
-            return DB().query('medic-client/doc_by_place', { keys: keys });
-          })
-          .then(function(viewResult) {
-            options.doc_ids = _.pluck(viewResult.rows, 'id');
-            if (userCtx && userCtx.name) {
-              options.doc_ids.push('org.couchdb.user:' + userCtx.name);
-            }
-            return options;
-          });
+        return DB().allDocs().then(function(result) {
+          options.doc_ids = _.pluck(result.rows, 'id');
+          return options;
+        });
       };
 
       var replicate = function(direction, successCallback, options) {
