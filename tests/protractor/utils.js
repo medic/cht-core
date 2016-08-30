@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     http = require('http'),
-    environment = require('./auth')();
+    environment = require('./auth')(),
+    path = require('path');
 
 var originalSettings = {};
 
@@ -52,7 +53,7 @@ var updateSettingsForDdoc = function(updates, ddocName) {
       throw new Error('A previous test did not call revertSettings on ' + ddocName);
     }
     return request({
-      path: '/' + environment.dbName + '/_design/' + mainDdocName + '/_rewrite/app_settings/' + ddocName,
+      path: path.join('/', environment.dbName, '_design', mainDdocName, '_rewrite/app_settings', ddocName),
       method: 'GET'
     }).then(function(result) {
       originalSettings[ddocName] = result.settings;
@@ -66,7 +67,7 @@ var updateSettingsForDdoc = function(updates, ddocName) {
       return;
     }).then(function() {
       return request({
-        path: '/' + environment.dbName + '/_design/' + mainDdocName + '/_rewrite/update_settings/' + ddocName + '?replace=1',
+        path: path.join('/', environment.dbName, '_design', mainDdocName, '_rewrite/update_settings', ddocName, '?replace=1'),
         method: 'PUT',
         body: JSON.stringify(updates)
       });
@@ -79,7 +80,7 @@ var revertSettingsForDdoc = function(ddocName) {
     }
 
     return request({
-      path: '/' + environment.dbName + '/_design/' + mainDdocName + '/_rewrite/update_settings/' + ddocName + '?replace=1',
+      path: path.join('/', environment.dbName, '_design', mainDdocName, '_rewrite/update_settings', ddocName, '?replace=1'),
       method: 'PUT',
       body: JSON.stringify(originalSettings[ddocName])
     }).then(function() {
