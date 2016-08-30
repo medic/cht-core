@@ -83,8 +83,9 @@ describe('Send message', function() {
     expect(sendMessageModal.isDisplayed()).toBeFalsy();
 
     element(by.css('.general-actions .send-message')).click();
-    browser.sleep(1000);
-    expect(sendMessageModal.isDisplayed()).toBeTruthy();
+    browser.wait(function() {
+      return sendMessageModal.isDisplayed();
+    }, 1000);
   };
 
   var enterCheckAndSelect = function(text, totalResults, resultToClick, id, existingEntryCount) {
@@ -94,30 +95,43 @@ describe('Send message', function() {
     sendMessageSelect.click();
 
     element(by.css('#send-message input.select2-search__field')).sendKeys(text);
-    browser.sleep(1000);
+    browser.sleep(1000); // TODO: work out how to tell that select2 has finished processing the text we've sent (even possible?)
 
     expect(element.all(by.css('.select2-results__option')).count()).toBe(totalResults);
 
     expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(existingEntryCount);
     element.all(by.css('li.select2-results__option')).get(resultToClick).click();
-    browser.sleep(1000);
-    expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(existingEntryCount + 1);
+    browser.wait(function() {
+      return element.all(by.css('li.select2-selection__choice')).count().then(function(c) {
+        return c === (existingEntryCount + 1);
+      });
+    }, 2000);
     expect(element.all(by.css('#send-message select>option')).last().getAttribute('value')).toBe(id);
   };
 
   var sendMessage = function() {
     element(by.css('#send-message a.btn.submit')).click();
-    browser.sleep(1000);
+    browser.sleep(1000); // TODO: work out how to tell send-message has fully displayed
     browser.driver.navigate().refresh();
     browser.wait(function() {
       return browser.isElementPresent(by.css('#message-list'));
     }, 10000);
   };
 
-  var clickLhsEntry = function(liIdentifier) {
+  var clickLhsEntry = function(entryId, entryName) {
+    entryName = entryName || entryId;
+    var liIdentifier = messageInList(entryId);
+
     expect(element.all(by.css(liIdentifier)).count()).toBe(1);
     element(by.css(liIdentifier + ' a.message-wrapper')).click();
-    browser.sleep(1000);
+    browser.wait(function() {
+      var el = element(by.css('#message-header .name'));
+      if (el.isPresent()) {
+        return el.getText().then(function(text) {
+          return text === entryName;
+        });
+      }
+    }, 2000);
   };
 
   var lastMessageIs = function(message) {
@@ -133,7 +147,7 @@ describe('Send message', function() {
       enterCheckAndSelect(RAW_PH, 1, 0, RAW_PH);
       element(by.css('#send-message textarea')).sendKeys(smsMsg('raw'));
       sendMessage();
-      clickLhsEntry(messageInList(RAW_PH));
+      clickLhsEntry(RAW_PH);
 
       expect(element.all(by.css('#message-content li')).count()).toBe(1);
       lastMessageIs(smsMsg('raw'));
@@ -148,7 +162,7 @@ describe('Send message', function() {
       enterCheckAndSelect(ALICE.name, 2, 1, ALICE._id);
       element(by.css('#send-message textarea')).sendKeys(smsMsg('contact'));
       sendMessage();
-      clickLhsEntry(messageInList(ALICE._id));
+      clickLhsEntry(ALICE._id, ALICE.name);
 
       expect(element.all(by.css('#message-content li')).count()).toBe(1);
       lastMessageIs(smsMsg('contact'));
@@ -166,7 +180,7 @@ describe('Send message', function() {
       sendMessage();
 
       expect(element.all(by.css(messageInList(CAROL._id))).count()).toBe(0);
-      clickLhsEntry(messageInList(DAVID._id));
+      clickLhsEntry(DAVID._id, DAVID.name);
 
       expect(element.all(by.css('#message-content li')).count()).toBe(1);
       lastMessageIs(smsMsg('everyoneAt'));
@@ -176,11 +190,11 @@ describe('Send message', function() {
 
   // Requires that 'Send message modal' describe has been run
   describe('Sending from message pane', function() {
-    var openMessageContent = function(liIdentifier) {
+    var openMessageContent = function(id, name) {
       element(by.id('messages-tab')).click();
-      expect(element(by.css(liIdentifier)).isPresent()).toBeTruthy();
+      expect(element(by.css(messageInList(id))).isPresent()).toBeTruthy();
 
-      clickLhsEntry(liIdentifier);
+      clickLhsEntry(id, name);
     };
     var enterMessageText = function(message) {
       element(by.css('#message-footer textarea')).click();
@@ -190,8 +204,8 @@ describe('Send message', function() {
       browser.wait(element(by.css('#message-footer textarea')).sendKeys(message));
     };
     describe('Can send additional messages from message pane', function() {
-      var addAnAdditionalMessage = function(liIdentifier) {
-        openMessageContent(liIdentifier);
+      var addAnAdditionalMessage = function(id, name) {
+        openMessageContent(id, name);
         enterMessageText('Additional Message');
 
         element(by.css('#message-footer .message-actions .btn-primary')).click();
@@ -206,47 +220,47 @@ describe('Send message', function() {
       };
 
       it('For raw contacts', function() {
-        addAnAdditionalMessage(messageInList(RAW_PH));
+        addAnAdditionalMessage(RAW_PH);
       });
       it('For real contacts', function() {
-        addAnAdditionalMessage(messageInList(ALICE._id));
+        addAnAdditionalMessage(ALICE._id, ALICE.name);
       });
     });
     describe('Can add recipients', function() {
       it('For raw contacts', function() {
-        openMessageContent(messageInList(RAW_PH));
+        openMessageContent(RAW_PH);
         enterMessageText('A third message');
 
         element(by.css('.message-actions .btn.btn-link')).click();
-        browser.sleep(1000);
+        browser.sleep(1000); // TODO: work out how to tell send-message has fully displayed
         expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
         expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
         expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(RAW_PH);
         enterCheckAndSelect(ANOTHER_RAW_PH, 1, 0, ANOTHER_RAW_PH, 1);
         sendMessage();
-        openMessageContent(messageInList(RAW_PH));
+        openMessageContent(RAW_PH);
         expect(element.all(by.css('#message-content li')).count()).toBe(3);
 
         lastMessageIs('A third message');
-        openMessageContent(messageInList(ANOTHER_RAW_PH));
+        openMessageContent(ANOTHER_RAW_PH);
         expect(element.all(by.css('#message-content li')).count()).toBe(1);
         lastMessageIs('A third message');
       });
       it('For existing contacts', function() {
-        openMessageContent(messageInList(ALICE._id));
+        openMessageContent(ALICE._id, ALICE.name);
         enterMessageText('A third message');
 
         element(by.css('.message-actions .btn.btn-link')).click();
-        browser.sleep(1000);
+        browser.sleep(1000); // TODO: work out how to tell send-message has fully displayed
         expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
         expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
         expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(ALICE._id);
         enterCheckAndSelect(DAVID.name, 2, 1, DAVID._id, 1);
         sendMessage();
-        openMessageContent(messageInList(ALICE._id));
+        openMessageContent(ALICE._id, ALICE.name);
         expect(element.all(by.css('#message-content li')).count()).toBe(3);
         expect(element.all(by.css('#message-content li div.data>p>span')).last().getText()).toBe('A third message');
-        openMessageContent(messageInList(DAVID._id));
+        openMessageContent(DAVID._id, DAVID.name);
         expect(element.all(by.css('#message-content li')).count()).toBe(2);
         expect(element.all(by.css('#message-content li div.data>p>span')).last().getText()).toBe('A third message');
       });
