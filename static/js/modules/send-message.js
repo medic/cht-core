@@ -104,7 +104,7 @@ var _ = require('underscore'),
 
   var templateSelection = function(row) {
     if (!row.doc) {
-      return row.id;
+      return row.text;
     }
 
     if (row.everyoneAt) {
@@ -115,11 +115,12 @@ var _ = require('underscore'),
     return row.doc.name || row.doc.phone;
   };
 
-  var initPhoneField = function($phone) {
+  var initPhoneField = function($phone, initialValue) {
     return Select2Search($phone, CONTACT_TYPES, {
       tags: true,
       templateResult: templateResult,
       templateSelection: templateSelection,
+      initialValue: initialValue,
       sendMessageExtras: function(results) {
         return _.chain(results)
           .map(function (result) {
@@ -150,26 +151,21 @@ var _ = require('underscore'),
     $modal.find('.has-error').removeClass('has-error');
     $modal.find('.help-block').text('');
 
-    var val = [],
-        to = options.to,
+    var to = options.to,
         message = options.message || '';
 
-    if (to) {
-      if (typeof to === 'string') {
-        val.push(to);
-      } else if (to) {
-        val.push(to._id);
-      }
+    if (to && typeof to !== 'string') {
+      to = to._id;
     }
 
-    $modal.find('[name=phone]').val(val).trigger('change');
+    var phoneField = $modal.find('[name=phone]');
     $modal.find('[name=message]').val(message);
     $modal.find('.count').text('');
     $modal.modal('show');
 
     // TODO: should we really be doing this multiple times? Every time show
     //       model is run we re-run the select2 stuff!
-    return initPhoneField($('#send-message [name=phone]'));
+    return initPhoneField(phoneField, to);
   };
 
   var recipients = [];

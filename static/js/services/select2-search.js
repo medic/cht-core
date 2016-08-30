@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    format = require('../modules/format');
+    format = require('../modules/format'),
+    libphonenumber = require('libphonenumber/utils');
 
 angular.module('inboxServices').factory('Select2Search',
   function(
@@ -7,7 +8,8 @@ angular.module('inboxServices').factory('Select2Search',
     $translate,
     DB,
     Search,
-    Session
+    Session,
+    Settings
   ) {
 
     'use strict';
@@ -40,6 +42,7 @@ angular.module('inboxServices').factory('Select2Search',
           templateSelection = options.templateSelection || defaultTemplateSelection,
           sendMessageExtras = options.sendMessageExtras || (function(i) {return i;}),
           tags = options.tags || false,
+          initialValue = options.initialValue,
           types = Array.isArray(_types) ? _types : [ _types ];
 
       if (allowNew && types.length !== 1) {
@@ -88,17 +91,42 @@ angular.module('inboxServices').factory('Select2Search',
           });
       };
 
-      var resolveInitialValue = function(selectEl) {
-        var value = selectEl.val();
-        if (!value || value.length === 0) {
-          return $q.resolve(selectEl);
+      var resolveInitialValue = function(selectEl, initialValue) {
+        if (initialValue) {
+          if (!selectEl.children('option[value="' + initialValue + '"]').length) {
+            selectEl.append($('<option value="' + initialValue + '"/>'));
+          }
+          selectEl.val(initialValue);
+        } else {
+          selectEl.val('');
         }
-        return DB().get(value)
-          .then(function(doc) {
-            var text = templateSelection({ doc: doc });
-            selectEl.children('option[value=' + value + ']').text(text);
-            return selectEl;
-          });
+
+        var resolution;
+        var value = selectEl.val();
+        if (!(value && value.length)) {
+          resolution = $q.resolve();
+        } else {
+          if (Array.isArray(value)) {
+            // NB: For now we only support resolving one initial value
+            // multiple is not an existing use case for us
+            value = value[0];
+          }
+          if (libphonenumber.validate(Settings, value)) {
+            // Raw phone number, don't resolve from DB
+            var text = templateSelection({ text: value });
+            selectEl.select2('data')[0].text = text;
+            resolution = $q.resolve();
+          } else {
+            resolution = DB().get(value).then(function(doc) {
+              selectEl.select2('data')[0].doc = doc;
+            });
+          }
+        }
+
+        return resolution.then(function() {
+          selectEl.trigger('change');
+          return selectEl;
+        });
       };
 
       var initSelect2 = function(selectEl) {
@@ -125,7 +153,8 @@ angular.module('inboxServices').factory('Select2Search',
         }
       };
 
-      return resolveInitialValue(selectEl).then(initSelect2);
+      initSelect2(selectEl);
+      return resolveInitialValue(selectEl, initialValue);
     };
   }
 );
