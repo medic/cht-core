@@ -368,8 +368,7 @@ module.exports = function(grunt) {
 
   grunt.task.run('notify_hooks');
 
-  // Default tasks
-
+  // Build tasks
   grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [
     'exec:undopatches',
     'auto_install:npm',
@@ -390,13 +389,7 @@ module.exports = function(grunt) {
     'postcss'
   ]);
 
-  grunt.registerTask('deploy', 'Deploy the webapp', [
-    'exec:deploy',
-    'notify:deployed'
-  ]);
-
-  grunt.registerTask('default', 'Build the static resources', [
-    'mmnpm',
+  grunt.registerTask('build', 'Build the static resources', [
     'mmcss',
     'mmjs',
     'couch-compile',
@@ -405,14 +398,50 @@ module.exports = function(grunt) {
     'appcache'
   ]);
 
+  grunt.registerTask('deploy', 'Deploy the webapp', [
+    'exec:deploy',
+    'notify:deployed'
+  ]);
+
+  // Test tasks
+  grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
+    'exec:deploytest',
+    'protractor:default'
+  ]);
+
+  grunt.registerTask('e2e-chrome', 'Deploy app for testing and run e2e tests on chrome', [
+    'exec:deploytest',
+    'protractor:chrome'
+  ]);
+
+  grunt.registerTask('unit_continuous', 'Lint, karma unit tests running on a loop', [
+    'jshint',
+    'karma:unit_continuous'
+  ]);
+
+  grunt.registerTask('test_api_integration', 'Integration tests for medic-api', [
+    'exec:test_api_integration_setup',
+    'exec:test_api_integration',
+  ]);
+
+  grunt.registerTask('test', 'Lint, unit tests, api_integration tests and e2e tests', [
+    'jshint',
+    'karma:unit',
+    'nodeunit',
+    'test_api_integration',
+    'e2e'
+  ]);
+
+  // CI tasks
   grunt.registerTask('minify', 'Minify JS and CSS', [
     'uglify',
     'cssmin'
   ]);
 
-  grunt.registerTask('ci', 'Build, minify, and test for CI', [
+  grunt.registerTask('ci', 'Lint, build, minify, deploy and test for CI', [
     'jshint',
-    'default',
+    'mmnpm',
+    'build',
     'minify',
     'karma:unit_ci',
     'nodeunit',
@@ -422,38 +451,19 @@ module.exports = function(grunt) {
     'e2e'
   ]);
 
+  // Dev tasks
   grunt.registerTask('dev', 'Build and deploy for dev', [
-    'default',
+    'mmnpm',
+    'dev-no-npm'
+  ]);
+
+  grunt.registerTask('dev-no-npm', 'Build and deploy for dev, without reinstalling dependencies.', [
+    'build',
     'deploy',
     'watch'
   ]);
 
-  grunt.registerTask('e2e', 'Deploy app and run e2e tests', [
-    'exec:deploytest',
-    'protractor:default'
+  grunt.registerTask('default', 'Build and deploy for dev', [
+    'dev'
   ]);
-
-  grunt.registerTask('e2e-chrome', 'Deploy app and run e2e tests', [
-    'exec:deploytest',
-    'protractor:chrome'
-  ]);
-
-  grunt.registerTask('test', 'Lint, unit, and api_integration test', [
-    'jshint',
-    'karma:unit',
-    'nodeunit',
-    'test_api_integration',
-    'e2e'
-  ]);
-
-  grunt.registerTask('test_continuous', 'Lint, unit test running on a loop', [
-    'jshint',
-    'karma:unit_continuous'
-  ]);
-
-  grunt.registerTask('test_api_integration', [
-    'exec:test_api_integration_setup',
-    'exec:test_api_integration',
-  ]);
-
 };
