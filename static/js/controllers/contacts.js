@@ -30,13 +30,15 @@ var _ = require('underscore'),
       $scope.selected = null;
       $scope.filters = {};
 
-      function setInitialFilterConfiguration() {
-        $scope.filters = {};
+      var defaultTypeFilter = {};
+      function setDefaultTypeFilter() {
         return UserSettings().then(function(u) {
           return u.facility_id && DB().get(u.facility_id).then(function(facility) {
             var targetType = CONTACT_TYPES[CONTACT_TYPES.indexOf(facility.type) + 1];
-            $scope.filters.types = {
-              selected: [targetType]
+            defaultTypeFilter = {
+              types: {
+                selected: [targetType]
+              }
             };
           });
         });
@@ -70,8 +72,10 @@ var _ = require('underscore'),
           options.skip = liveList.count();
         }
 
+        var actualFilter = $scope.filters.search ? $scope.filters : defaultTypeFilter;
+
         $q.all([
-          Search('contacts', $scope.filters, options),
+          Search('contacts', actualFilter, options),
           UserSettings()
         ])
           .then(function(results) {
@@ -154,18 +158,7 @@ var _ = require('underscore'),
           _query();
         } else {
           $scope.filtered = false;
-          liveList = LiveList.contacts;
-          if (liveList.initialised()) {
-            $timeout(function() {
-              $scope.loading = false;
-              $scope.hasContacts = liveList.count() > 0;
-              liveList.refresh();
-              $scope.moreItems = liveList.moreItems;
-              _initScroll();
-            });
-          } else {
-            _query();
-          }
+          _query();
         }
       };
 
@@ -173,13 +166,12 @@ var _ = require('underscore'),
         SearchFilters.freetext($scope.search);
       };
       $scope.resetFilterModel = function() {
-        setInitialFilterConfiguration().then(function() {
-          SearchFilters.reset();
-          $scope.search();
-        });
+        $scope.filters = {};
+        SearchFilters.reset();
+        $scope.search();
       };
 
-      setInitialFilterConfiguration().then(function() {
+      setDefaultTypeFilter().then(function() {
         $scope.search();
       });
 
