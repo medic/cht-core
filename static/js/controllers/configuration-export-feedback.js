@@ -1,19 +1,18 @@
-var _ = require('underscore'),
-    moment = require('moment');
+var moment = require('moment');
 
 angular.module('inboxControllers').controller('ConfigurationExportFeedbackCtrl',
   function (
     $log,
     $scope,
     DB,
-    DownloadUrl
+    Export
   ) {
 
     'use strict';
     'ngInject';
 
     var safeStringify = function(str) {
-      if (_.isString(str)) {
+      if (typeof str === 'string') {
         return str;
       }
       try {
@@ -30,7 +29,7 @@ angular.module('inboxControllers').controller('ConfigurationExportFeedbackCtrl',
           total: data.total_rows
         }
       };
-      result.items = _.map(data.rows, function(row) {
+      result.items = data.rows.map(function(row) {
         return {
           id: row.doc._id,
           time: moment(row.doc.meta.time),
@@ -48,13 +47,12 @@ angular.module('inboxControllers').controller('ConfigurationExportFeedbackCtrl',
         return $log.error('Error fetching feedback', err);
       });
 
-    DownloadUrl(null, 'feedback')
-      .then(function(url) {
-        $scope.url = url;
-      })
-      .catch(function(err) {
-        $log.error('Error fetching url', err);
+    $scope.export = function() {
+      $scope.exporting = true;
+      Export({}, 'feedback').then(function() {
+        $scope.exporting = false;
       });
+    };
 
   }
 );

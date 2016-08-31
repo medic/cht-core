@@ -20,7 +20,6 @@ var _ = require('underscore'),
       $translate,
       DB,
       EditGroup,
-      Export,
       FormatDataRecord,
       LiveList,
       MarkRead,
@@ -546,12 +545,6 @@ var _ = require('underscore'),
       };
 
       $scope.$on('DeselectAll', deselectAll);
-
-      $scope.$on('export', function() {
-        if ($scope.currentTab === 'reports') {
-          Export($scope.filters, 'reports');
-        }
-      });
 
       $scope.$on('$destroy', function() {
         if (!$state.includes('reports')) {

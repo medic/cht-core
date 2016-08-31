@@ -17,6 +17,8 @@
   require('./configuration-export-audit-logs');
   require('./configuration-export-contacts');
   require('./configuration-export-feedback');
+  require('./configuration-export-messages');
+  require('./configuration-export-reports');
   require('./configuration-export-server-logs');
   require('./configuration-forms');
   require('./configuration-icons');

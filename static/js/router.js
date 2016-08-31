@@ -309,6 +309,24 @@
           }
         }
       })
+      .state('configuration.export.messages', {
+        url: '/messages',
+        views: {
+          tab: {
+            controller: 'ConfigurationExportMessagesCtrl',
+            templateUrl: 'templates/partials/configuration_export_messages.html'
+          }
+        }
+      })
+      .state('configuration.export.reports', {
+        url: '/reports',
+        views: {
+          tab: {
+            controller: 'ConfigurationExportReportsCtrl',
+            templateUrl: 'templates/partials/configuration_export_reports.html'
+          }
+        }
+      })
       .state('configuration.export.contacts', {
         url: '/contacts',
         views: {

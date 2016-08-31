@@ -2,19 +2,18 @@ angular.module('inboxControllers').controller('ConfigurationExportAuditLogsCtrl'
   function (
     $log,
     $scope,
-    DownloadUrl
+    Export
   ) {
 
     'use strict';
     'ngInject';
 
-    DownloadUrl(null, 'audit')
-      .then(function(url) {
-        $scope.url = url;
-      })
-      .catch(function(err) {
-        $log.error('Error fetching url', err);
+    $scope.export = function() {
+      $scope.exporting = true;
+      Export({}, 'audit').then(function() {
+        $scope.exporting = false;
       });
+    };
 
   }
 );

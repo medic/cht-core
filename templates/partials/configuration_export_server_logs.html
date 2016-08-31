@@ -1,10 +1,9 @@
 <div class="col-sm-12">
   <div>
-    <p>
-      <a class="btn btn-link" ng-href="{{url}}">
-        <i class="fa fa-arrow-down"></i>
-        <span translate>Export</span>
-      </a>
-    </p>
+    <a class="btn btn-default" ng-click="export()" ng-disabled="exporting">
+      <i class="fa fa-arrow-down"></i>
+      <span translate>Export</span>
+    </a>
+    <span class="loader inline small" ng-show="exporting"></span>
   </div>
 </div>

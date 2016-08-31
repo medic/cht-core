@@ -15,7 +15,6 @@ var _ = require('underscore');
       $stateParams,
       $timeout,
       Changes,
-      Export,
       MessageContact
     ) {
       'ngInject';
@@ -98,12 +97,6 @@ var _ = require('underscore');
         .catch(function(err) {
           $log.error('Error fetching contact', err);
         });
-
-      $scope.$on('export', function() {
-        if ($scope.currentTab === 'messages') {
-          Export($scope.filters, 'reports');
-        }
-      });
 
       $scope.$on('ClearSelected', function() {
         $scope.selected = null;

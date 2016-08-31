@@ -220,10 +220,6 @@ var feedback = require('../modules/feedback'),
         }
       });
 
-      $scope.download = function() {
-        $rootScope.$broadcast('export');
-      };
-
       var updateAvailableFacilities = function() {
         FacilityHierarchy()
           .then(function(hierarchy) {
@@ -601,7 +597,7 @@ var feedback = require('../modules/feedback'),
           }
         },
         {
-          state: 'configuration.export.contacts',
+          state: 'configuration.export.messages',
           icon: 'fa-arrow-circle-o-down',
           name: 'import.export',
           active: function() {

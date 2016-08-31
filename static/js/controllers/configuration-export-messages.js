@@ -1,6 +1,5 @@
-angular.module('inboxControllers').controller('ConfigurationExportServerLogsCtrl',
+angular.module('inboxControllers').controller('ConfigurationExportMessagesCtrl',
   function (
-    $log,
     $scope,
     Export
   ) {
@@ -10,9 +9,10 @@ angular.module('inboxControllers').controller('ConfigurationExportServerLogsCtrl
 
     $scope.export = function() {
       $scope.exporting = true;
-      Export({}, 'logs').then(function() {
+      Export({}, 'messages').then(function() {
         $scope.exporting = false;
       });
     };
+
   }
 );
