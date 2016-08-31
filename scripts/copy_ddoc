@@ -1,0 +1,47 @@
+#!/usr/bin/env node
+
+var serverUrl = process.argv[2],
+    sourceName = process.argv[3],
+    destName = process.argv[4],
+
+    PouchDB = require('pouchdb');
+
+function log(message) {
+  console.log('[copy_ddoc] ' + message);
+}
+
+function createClean(dbUrl) {
+  function create() {
+    return new PouchDB(dbUrl);
+  }
+  return create()
+    .destroy()
+    .then(create)
+    .catch(create);
+}
+
+log('Copying ddocs from ' + sourceName + ' to ' + destName + ' on couchdb server at ' + serverUrl + '...');
+
+var sourceDb = new PouchDB(serverUrl + '/' + sourceName);
+createClean(serverUrl + '/' + destName)
+  .then(function(destDb) {
+
+    log('Fetching ddoc from ' + sourceName + '...');
+    sourceDb.get('_design/medic', { attachments:true })
+      .then(function(ddoc) {
+
+        log('Fetched ddoc: ' + ddoc);
+
+        delete ddoc._rev;
+
+        log('Putting ddoc to ' + destDb + '...');
+        destDb.put(ddoc);
+
+        log('Copying ddocs from ' + sourceDb + ' to ' + destDb +' complete.');
+      })
+      .catch(function(err) {
+        log('Caught error.');
+        console.log(err);
+        process.exit(1);
+      });
+    });

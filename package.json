@@ -33,6 +33,7 @@
     "xmlbuilder": "^8.2.2"
   },
   "devDependencies": {
+    "chai": "^3.5.0",
     "doctoc": "^1.0.0",
     "grunt": "^1.0.0",
     "grunt-contrib-jshint": "^0.11.2",
@@ -42,6 +43,7 @@
     "grunt-mocha-test": "^0.12.7",
     "mocha": "^3.0.2",
     "nodeunit": "latest",
+    "pouchdb": "^6.0.4",
     "sinon": "latest"
   },
   "scripts": {

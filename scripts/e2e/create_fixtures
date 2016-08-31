@@ -1,0 +1,88 @@
+#!/bin/bash -eu
+
+# we assume that the admin user already exists
+
+echo && echo "[$0] creating the PARENT_PLACE..."
+curl -X PUT \
+	--data '{ "_id":"PARENT_PLACE", "type":"district_hospital", "name":"Big Parent Hospital" }' \
+	"$COUCH_URL/PARENT_PLACE"
+
+echo && echo "[$0] creating user: bob..."
+curl -X POST \
+	-H 'Content-Type: application/json' \
+	--data '{
+	  "username":"bob",
+	  "password":"secret",
+	  "place":{
+	     "_id":"fixture:bobville",
+	     "type":"health_center",
+	     "name":"Bobville",
+	     "parent":"PARENT_PLACE"
+	  },
+	  "contact":{
+	    "name":"Bob"
+	  },
+	  "roles":["district-manager", "kujua_user", "data_entry", "district_admin"]
+	}' \
+	"$API_URL/api/v1/users"
+
+echo && echo "[$0] creating user: clare..."
+curl -X POST \
+	-H 'Content-Type: application/json' \
+	--data '{
+	  "username":"clare",
+	  "password":"secret",
+	  "place":{
+	     "_id":"fixture:clareville",
+	     "type":"health_center",
+	     "name":"Clareville",
+	     "parent":"PARENT_PLACE"
+	  },
+	  "contact":{
+	    "name":"Clare"
+	  },
+	  "roles":[]
+	}' \
+	"$API_URL/api/v1/users"
+
+echo && echo "[$0] creating user: chw-boss..."
+curl -X POST \
+	-H 'Content-Type: application/json' \
+	--data '{
+	  "username":"chw-boss",
+	  "password":"secret",
+	  "place":{
+	     "_id":"fixture:chw-bossville",
+	     "type":"health_center",
+	     "name":"CHW Bossville",
+	     "parent":"PARENT_PLACE"
+	  },
+	  "contact":{
+	    "_id":"fixture:user:chw-boss",
+	    "name":"CHW Boss"
+	  },
+	  "roles":[]
+	}' \
+	"$API_URL/api/v1/users"
+
+echo && echo "[$0] creating user: chw..."
+curl -X POST \
+	-H 'Content-Type: application/json' \
+	--data '{
+	  "username":"chw",
+	  "password":"secret",
+	  "place":{
+	     "_id":"fixture:chwville",
+	     "type":"district_hospital",
+	     "name":"Chwville",
+	     "parent":"fixture:chw-bossville"
+	  },
+	  "contact":{
+	    "_id":"fixture:user:chw",
+	    "name":"CHW"
+	  },
+	  "roles":[]
+	}' \
+	"$API_URL/api/v1/users"
+
+echo && echo "[$0] Finished."

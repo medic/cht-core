@@ -6,9 +6,10 @@ module.exports = function(grunt) {
   grunt.initConfig({
     nodeunit: {
       all: [
-        'tests/**/*.js',
-        '!tests/utils.js',
-        '!tests/integration/**/*.js'
+        'tests/unit/**/*.js',
+        '!tests/unit/utils.js',
+        '!tests/unit/integration/**/*.js',
+        '!tests/unit/e2e/**/*.js'
       ]
     },
     jshint: {
@@ -50,6 +51,12 @@ module.exports = function(grunt) {
           timeout: 10000
         }
       },
+      e2e: {
+        src: ['tests/e2e/**/*.js'],
+        options: {
+          timeout: 20000,
+        },
+      },
     },
   });
 
@@ -65,6 +72,7 @@ module.exports = function(grunt) {
     'jshint',
     'test_unit',
     'test_integration',
+    'test_e2e',
   ]);
 
   grunt.registerTask('deploy', [
@@ -86,5 +94,9 @@ module.exports = function(grunt) {
 
   grunt.registerTask('test_integration', [
     'mochaTest:integration',
+  ]);
+
+  grunt.registerTask('test_e2e', [
+    'mochaTest:e2e',
   ]);
 };
