@@ -316,4 +316,23 @@ describe('ContactSchema service', function() {
       assert.notOk(service.getVisibleFields().clinic.fields.hasOwnProperty('location'));
     });
   });
+
+  describe('#getChildPlaceType()', function() {
+    _.each({
+      district_hospital: 'health_center',
+      health_center: 'clinic',
+      clinic: undefined,
+      person: undefined,
+      garbage: undefined
+    }, function(child, parent) {
+      it('should provide child type for ' + parent, function() {
+        // when
+        var actual = service.getChildPlaceType(parent);
+
+        // expect
+        assert.equal(actual, child);
+      });
+    });
+  });
+
 });
