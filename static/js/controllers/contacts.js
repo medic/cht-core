@@ -13,6 +13,7 @@ var scrollLoader = require('../modules/scroll-loader');
       $scope,
       $state,
       $timeout,
+      ContactSchema,
       DB,
       Export,
       LiveList,
@@ -107,8 +108,11 @@ var scrollLoader = require('../modules/scroll-loader');
         $scope.selected = selected;
         $scope.setTitle(selected.doc.name);
         $scope.clearCancelTarget();
+        var selectedDoc = selected.doc;
+        selectedDoc.childType = ContactSchema.getChildPlaceType(selected.doc.type);
+        selectedDoc.childIcon = ContactSchema.get(selectedDoc.childType).icon;
         $scope.setActionBar({
-          selected: [ selected.doc ],
+          selected: [ selectedDoc ],
           sendTo: selected.doc,
           disableDelete: (selected.children && selected.children.length) ||
                          (selected.contactFor && selected.contactFor.length)
