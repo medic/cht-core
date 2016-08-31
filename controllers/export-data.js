@@ -193,8 +193,7 @@ var exportTypes = {
         'User',
         'App Version',
         'URL',
-        'Info',
-        'Log'
+        'Info'
       ], options);
       var model = {
         name: config.translate('Feedback', options.locale),
@@ -207,8 +206,7 @@ var exportTypes = {
           row.doc.meta.user.name,
           row.doc.meta.version,
           row.doc.meta.url,
-          safeStringify(row.doc.info),
-          safeStringify(row.doc.log)
+          safeStringify(row.doc.info)
         ];
       });
       return [ model ];

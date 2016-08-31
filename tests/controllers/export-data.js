@@ -878,9 +878,9 @@ exports['get feedback'] = function(test) {
     ]
   });
 
-  var expected = '{_id:en},{reported_date:en},{User:en},{App Version:en},{URL:en},{Info:en},{Log:en}\n' +
-                 'abc,"02, Jan 1970, 10:17:36 +00:00",gareth,4.3.0,#/messages,"{""description"":""Button doesnt work""}","[{""error"":""undefined is not a function""},{""error"":""error calling function""}]"\n' +
-                 'def,"05, Jan 1970, 21:37:36 +00:00",milan,4.2.0,#/reports,"{""description"":""Filters bar should be orange not yellow""}",';
+  var expected = '{_id:en},{reported_date:en},{User:en},{App Version:en},{URL:en},{Info:en}\n' +
+                 'abc,"02, Jan 1970, 10:17:36 +00:00",gareth,4.3.0,#/messages,"{""description"":""Button doesnt work""}"\n' +
+                 'def,"05, Jan 1970, 21:37:36 +00:00",milan,4.2.0,#/reports,"{""description"":""Filters bar should be orange not yellow""}"';
   controller.get({ type: 'feedback', tz: '0' }, function(err, results) {
     test.equals(results, expected);
     test.equals(getView.callCount, 1);
