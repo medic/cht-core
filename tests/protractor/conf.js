@@ -72,7 +72,7 @@ exports.config = {
   },
   onPrepare: function() {
     var started = startApi();
-    browser.driver.wait(started, 10 * 1000, 'Server should start within 10 seconds');
+    browser.driver.wait(started, 20 * 1000, 'Server should start within 20 seconds');
     browser.driver.sleep(1000);
     browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
     browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');

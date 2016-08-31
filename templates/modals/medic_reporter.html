@@ -6,6 +6,6 @@
   <div class="modal-body">
     <div ng-show="processing" class="loader"></div>
     <div ng-show="error" translate>{{error}}</div>
-    <iframe ng-hide="processing" src="{{medicReporterUrl}}"></iframe>
+    <iframe id="medic-reporter-iframe" ng-hide="processing" src="{{medicReporterUrl}}"></iframe>
   </div>
 </div>
