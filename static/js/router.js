@@ -292,6 +292,15 @@
           }
         }
       })
+      .state('configuration.contacts', {
+        url: '/contacts',
+        views: {
+          content: {
+            controller: 'ConfigurationContactsCtrl',
+            templateUrl: 'templates/partials/configuration_contacts.html'
+          }
+        }
+      })
       .state('configuration.export', {
         url: '/export',
         views: {

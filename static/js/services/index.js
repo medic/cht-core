@@ -30,6 +30,7 @@
   require('./facility-hierarchy');
   require('./file-reader');
   require('./json-forms');
+  require('./json-parse');
   require('./format-data-record');
   require('./format-date');
   require('./generate-search-query');

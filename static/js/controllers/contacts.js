@@ -167,12 +167,6 @@ var _ = require('underscore'),
 
       $scope.search();
 
-      $scope.$on('export', function() {
-        if ($scope.currentTab === 'contacts') {
-          Export($scope.filters, 'reports');
-        }
-      });
-
       $scope.$on('$destroy', function() {
         if (!$state.includes('contacts')) {
           $scope.setTitle();

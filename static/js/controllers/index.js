@@ -14,6 +14,7 @@
   require('./analytics-targets');
   require('./check-date');
   require('./configuration');
+  require('./configuration-contacts');
   require('./configuration-export');
   require('./configuration-forms');
   require('./configuration-icons');
@@ -41,7 +42,6 @@
   require('./error');
   require('./help');
   require('./home');
-  require('./import-contacts');
   require('./import-translation');
   require('./medic-reporter-modal');
   require('./messages');

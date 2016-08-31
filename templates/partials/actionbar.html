@@ -31,14 +31,6 @@
             </span>
             <p translate>action.clinic.add</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'messages' || currentTab === 'reports' || currentTab === 'contacts'" ng-click="download()" mm-auth="can_access_directly">
-            <span class="fa fa-arrow-down"></span>
-            <p translate>Export</p>
-          </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="currentTab === 'contacts'" mm-auth="can_access_directly" data-toggle="modal" data-target="#import-contacts">
-            <span class="fa fa-arrow-up"></span>
-            <p translate>Import</p>
-          </a>
           <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" ng-show="currentTab === 'reports'" mm-auth="can_bulk_delete_reports" ng-click="setSelectMode(true)">
             <span class="fa fa-check-circle"></span>
             <p translate>select.mode.start</p>

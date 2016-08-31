@@ -625,6 +625,14 @@ var feedback = require('../modules/feedback'),
           }
         },
         {
+          state: 'configuration.contacts',
+          icon: 'fa-user',
+          name: 'Contacts',
+          active: function() {
+            return $state.is('configuration.contacts');
+          }
+        },
+        {
           state: 'configuration.icons',
           icon: 'fa-file-image-o',
           name: 'icons',

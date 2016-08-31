@@ -1,0 +1,37 @@
+<div class="col-sm-12">
+  
+  <div>
+    <legend translate>Export</legend>
+    <a class="btn btn-default" ng-click="export()">
+      <i class="fa fa-arrow-down"></i>
+      <span translate>Export</span>
+    </a>
+  </div>
+
+  <div class="section">
+    <form id="import-contacts">
+      <fieldset>
+        <legend translate>Import</legend>
+        <div class="form-group">
+          <label translate>Contacts</label> *
+          <input type="file" name="contacts"/>
+          <p class="help-block" translate>Contacts file help</p>
+        </div>
+        <div class="form-group">
+          <label>
+            <input type="checkbox" ng-model="overwrite"/>
+            <span translate>Overwrite Existing Records</span>
+          </label>
+        </div>
+      </fieldset>
+      <div class="form-footer">
+        <button type="button" class="btn btn-default" ng-click="import()" ng-disabled="importing">
+          <i class="fa fa-arrow-up"></i>
+          <span translate>Import</span>
+        </button>
+        <span class="error" ng-show="error">{{error}}</span>
+      </div>
+    </form>
+  </div>
+
+</div>
