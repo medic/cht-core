@@ -71,16 +71,16 @@ describe('XmlFormsContextUtils service', function() {
       chai.expect(actual).to.equal(0);
     });
 
-    it('returns 11 when exactly 11 months old', function() {
+    it('returns 11 when 11 months old', function() {
       var dob = new Date();
-      dob.setMonth(dob.getMonth() - 11);
+      dob.setMonth(dob.getMonth() - 11, 1);
       var actual = service.ageInMonths({ date_of_birth: dob });
       chai.expect(actual).to.equal(11);
     });
 
-    it('returns 13 when exactly 13 months old', function() {
+    it('returns 13 when 13 months old', function() {
       var dob = new Date();
-      dob.setMonth(dob.getMonth() - 13);
+      dob.setMonth(dob.getMonth() - 13, 1);
       var actual = service.ageInMonths({ date_of_birth: dob });
       chai.expect(actual).to.equal(13);
     });
@@ -100,7 +100,7 @@ describe('XmlFormsContextUtils service', function() {
 
     it('returns 0 when less than 1 year old', function() {
       var dob = new Date();
-      dob.setMonth(dob.getMonth() - 11);
+      dob.setMonth(dob.getMonth() - 11, 1);
       var actual = service.ageInYears({ date_of_birth: dob });
       chai.expect(actual).to.equal(0);
     });
