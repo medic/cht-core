@@ -601,11 +601,11 @@ var feedback = require('../modules/feedback'),
           }
         },
         {
-          state: 'configuration.export',
+          state: 'configuration.export.contacts',
           icon: 'fa-arrow-circle-o-down',
-          name: 'Export',
+          name: 'import.export',
           active: function() {
-            return $state.is('configuration.export');
+            return $state.includes('configuration.export');
           }
         },
         {
@@ -622,14 +622,6 @@ var feedback = require('../modules/feedback'),
           name: 'Users',
           active: function() {
             return $state.is('configuration.users');
-          }
-        },
-        {
-          state: 'configuration.contacts',
-          icon: 'fa-user',
-          name: 'Contacts',
-          active: function() {
-            return $state.is('configuration.contacts');
           }
         },
         {

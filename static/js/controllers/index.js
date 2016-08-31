@@ -14,8 +14,10 @@
   require('./analytics-targets');
   require('./check-date');
   require('./configuration');
-  require('./configuration-contacts');
-  require('./configuration-export');
+  require('./configuration-export-audit-logs');
+  require('./configuration-export-contacts');
+  require('./configuration-export-feedback');
+  require('./configuration-export-server-logs');
   require('./configuration-forms');
   require('./configuration-icons');
   require('./configuration-permissions');

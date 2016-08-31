@@ -9,7 +9,7 @@ angular.module('inboxServices').factory('Export',
     'ngInject';
     'use strict';
     return function(filters, typeName) {
-      DownloadUrl(filters, typeName)
+      return DownloadUrl(filters, typeName)
         .then(function(url) {
           return $http.post(url);
         })

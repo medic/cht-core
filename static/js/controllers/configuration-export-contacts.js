@@ -1,4 +1,4 @@
-angular.module('inboxControllers').controller('ConfigurationContactsCtrl',
+angular.module('inboxControllers').controller('ConfigurationExportContactsCtrl',
   function (
     $log,
     $scope,
@@ -6,7 +6,8 @@ angular.module('inboxControllers').controller('ConfigurationContactsCtrl',
     Export,
     FileReader,
     ImportContacts,
-    JsonParse
+    JsonParse,
+    Snackbar
   ) {
 
     'use strict';
@@ -16,7 +17,10 @@ angular.module('inboxControllers').controller('ConfigurationContactsCtrl',
     $scope.overwrite = false;
 
     $scope.export = function() {
-      Export({}, 'contacts');
+      $scope.exporting = true;
+      Export({}, 'contacts').then(function() {
+        $scope.exporting = false;
+      });
     };
 
     $scope.import = function() {
@@ -36,14 +40,16 @@ angular.module('inboxControllers').controller('ConfigurationContactsCtrl',
         .then(function(contacts) {
           return ImportContacts(contacts, $scope.overwrite);
         })
+        .then(function() {
+          $scope.importing = false;
+          $translate('contacts.imported').then(Snackbar);
+        })
         .catch(function(err) {
+          $scope.importing = false;
           $log.error('Error importing contacts', err);
           $translate('Error parsing file').then(function(message) {
             $scope.error = message;
           });
-        })
-        .then(function() {
-          $scope.importing = false;
         });
     };
 

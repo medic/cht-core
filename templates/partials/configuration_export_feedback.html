@@ -1,0 +1,15 @@
+<div class="col-sm-12">
+  <div>
+    <p>
+      <a class="btn btn-link" ng-href="{{url}}">
+        <i class="fa fa-arrow-down"></i>
+        <span translate>Export</span>
+      </a>
+    </p>
+    <p translate translate-values="feedback.page">Showing number of total</p>
+    <div class="row" ng-attr-data-record-id="item.id" ng-repeat="item in feedback.items">
+      <div class="col-sm-3" ng-bind-html="item.time | simpleDateTime"></div>
+      <div class="col-sm-9">{{item.info}}</div>
+    </div>
+  </div>
+</div>

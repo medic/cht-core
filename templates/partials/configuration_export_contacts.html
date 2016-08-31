@@ -2,10 +2,11 @@
   
   <div>
     <legend translate>Export</legend>
-    <a class="btn btn-default" ng-click="export()">
+    <a class="btn btn-default" ng-click="export()" ng-disabled="exporting">
       <i class="fa fa-arrow-down"></i>
       <span translate>Export</span>
     </a>
+    <span class="loader inline small" ng-show="exporting"></span>
   </div>
 
   <div class="section">
@@ -22,6 +23,7 @@
             <input type="checkbox" ng-model="overwrite"/>
             <span translate>Overwrite Existing Records</span>
           </label>
+          <p class="help-block" translate>overwrite.existing.records.help</p>
         </div>
       </fieldset>
       <div class="form-footer">

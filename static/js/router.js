@@ -305,8 +305,43 @@
         url: '/export',
         views: {
           content: {
-            controller: 'ConfigurationExportCtrl',
             templateUrl: 'templates/partials/configuration_export.html'
+          }
+        }
+      })
+      .state('configuration.export.contacts', {
+        url: '/contacts',
+        views: {
+          tab: {
+            controller: 'ConfigurationExportContactsCtrl',
+            templateUrl: 'templates/partials/configuration_export_contacts.html'
+          }
+        }
+      })
+      .state('configuration.export.feedback', {
+        url: '/feedback',
+        views: {
+          tab: {
+            controller: 'ConfigurationExportFeedbackCtrl',
+            templateUrl: 'templates/partials/configuration_export_feedback.html'
+          }
+        }
+      })
+      .state('configuration.export.serverlogs', {
+        url: '/server-logs',
+        views: {
+          tab: {
+            controller: 'ConfigurationExportServerLogsCtrl',
+            templateUrl: 'templates/partials/configuration_export_server_logs.html'
+          }
+        }
+      })
+      .state('configuration.export.auditlogs', {
+        url: '/audit-logs',
+        views: {
+          tab: {
+            controller: 'ConfigurationExportAuditLogsCtrl',
+            templateUrl: 'templates/partials/configuration_export_audit_logs.html'
           }
         }
       })

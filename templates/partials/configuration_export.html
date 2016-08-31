@@ -1,31 +1,15 @@
-<div class="col-sm-12">
-  <div>
-    <h3>{{'Server Logs' | translate}}</h3>
-    <p>
-      <a class="btn btn-link" ng-href="{{url.logs}}">
-        <i class="fa fa-arrow-down"></i> {{'Export' | translate}}
-      </a>
-    </p>
-  </div>
-  <div>
-    <h3>{{'Audit Logs' | translate}}</h3>
-    <p>
-      <a class="btn btn-link" ng-href="{{url.audit}}">
-        <i class="fa fa-arrow-down"></i> {{'Export' | translate}}
-      </a>
-    </p>
-  </div>
-  <div>
-    <h3>{{'User Feedback' | translate}}</h3>
-    <p>
-      <a class="btn btn-link" ng-href="{{url.feedback}}">
-        <i class="fa fa-arrow-down"></i> {{'Export' | translate}}
-      </a>
-    </p>
-    <p>{{'Showing number of total' | translate:feedback.page}}</p>
-    <div class="row" ng-attr-data-record-id="item.id" ng-repeat="item in feedback.items">
-      <div class="col-sm-3" ng-bind-html="item.time | simpleDateTime"></div>
-      <div class="col-sm-9">{{item.info}}</div>
-    </div>
-  </div>
-</div>
+<ul class="nav nav-tabs">
+  <li role="presentation" ui-sref-active="active">
+    <a ui-sref="configuration.export.contacts" translate>Contacts</a>
+  </li>
+  <li role="presentation" ui-sref-active="active">
+    <a ui-sref="configuration.export.feedback" translate>User Feedback</a>
+  </li>
+  <li role="presentation" ui-sref-active="active">
+    <a ui-sref="configuration.export.serverlogs" translate>Server Logs</a>
+  </li>
+  <li role="presentation" ui-sref-active="active">
+    <a ui-sref="configuration.export.auditlogs" translate>Audit Logs</a>
+  </li>
+</ul>
+<div class="tab-content" ui-view="tab"></div>
