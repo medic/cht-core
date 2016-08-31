@@ -21,6 +21,7 @@ var moment = require('moment'),
       $log,
       $scope,
       FileReader,
+      JsonParse,
       Settings,
       UpdateSettings
     ) {
@@ -48,14 +49,7 @@ var moment = require('moment'),
         }
         var settings = { forms: {} };
         FileReader(files[0])
-          .then(function(result) {
-            try {
-              // expects array of forms
-              return JSON.parse(result);
-            } catch(e) {
-              throw new Error('Error parsing form json');
-            }
-          })
+          .then(JsonParse)
           .then(function(json) {
             json.forEach(function(form) {
               if (form.meta && form.meta.code) {

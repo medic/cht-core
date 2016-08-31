@@ -2,19 +2,18 @@
   <form id="forms-upload-form">
     <div>
       <fieldset>
-        <legend>{{'Upload Forms' | translate}}</legend>
+        <legend translate>Upload Forms</legend>
         <div class="alert alert-danger alert-dismissible" role="alert" ng-show="error">
           <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-          {{'Upload failed' | translate}}
+          <span translate>Upload failed</span>
         </div>
-        <div class="alert alert-success" role="alert" ng-show="success">
-          {{'Upload succeeded' | translate}}
-        </div>
+        <div class="alert alert-success" role="alert" ng-show="success" translate>Upload succeeded</div>
         <button type="button" class="btn btn-default choose" ng-disabled="uploading">
-          <i class="fa fa-arrow-up"></i> {{'Import' | translate}}
+          <i class="fa fa-arrow-up"></i>
+          <span translate>Import</span>
         </button>
         <div class="loader" ng-show="uploading"></div>
-        <span class="help-block">{{'Upload forms help' | translate}}</span>
+        <span class="help-block" translate>Upload forms help</span>
         <div class="hide">
           <input class="uploader" type="file" accept="application/json">
         </div>
@@ -22,26 +21,28 @@
     </div>
   </form>
 
-  <div>
+  <div class="section">
     <fieldset>
-      <legend>{{'Installed Forms' | translate}}</legend>
+      <legend translate>Installed Forms</legend>
       <ul>
         <li ng-repeat="form in forms">{{form.meta.code}} {{form.meta.label | translateFrom}}</li>
       </ul>
       <a class="btn btn-default" ng-attr-download="{{download.name}}" ng-href="{{download.url}}">
-        <i class="fa fa-arrow-down"></i> {{'Download' | translate}}
+        <i class="fa fa-arrow-down"></i>
+        <span translate>Download</span>
       </a>
     </fieldset>
   </div>
 
-  <form>
+  <form class="section">
     <div>
       <fieldset>
         <legend translate>reporter.section.title</legend>
-        <span class="help-block" translate>reporter.section.help</span>
-        <a class="btn btn-default" href="/medic-reporter/_design/medic-reporter/_rewrite" translate>
-          <i class="fa fa-arrow-down"></i> reporter.link
+        <a class="btn btn-default" href="/medic-reporter/_design/medic-reporter/_rewrite">
+          <i class="fa fa-external-link"></i>
+          <span translate>reporter.link</span>
         </a>
+        <span class="help-block" translate>reporter.section.help</span>
       </fieldset>
     </div>
   </form>
