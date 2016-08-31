@@ -139,11 +139,9 @@ var _ = require('underscore'),
           return requests;
         },
         contacts: function(filters) {
-          var placeViews = place(filters, 'medic-client/contacts_by_place');
           var typeViews = documentType(filters, 'medic-client/contacts_by_type');
           var freetextViews = freetext(filters, 'medic-client/contacts_by_freetext');
-          if (!placeViews &&
-              typeViews && typeViews.params.keys.length &&
+          if (typeViews && typeViews.params.keys.length &&
               freetextViews && freetextViews.length) {
             return freetextViews.map(function(freetextView) {
               var result = {
@@ -172,7 +170,6 @@ var _ = require('underscore'),
             });
           }
           var requests = [];
-          requests.push(placeViews);
           requests.push(freetextViews);
           requests.push(typeViews);
           requests = _.compact(_.flatten(requests));

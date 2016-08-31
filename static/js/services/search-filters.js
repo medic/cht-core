@@ -95,15 +95,6 @@ var _ = require('underscore'),
         });
       };
 
-      var initContactType = function(callback) {
-        getMultidropdownOptions().then(function(options) {
-          $('#contactTypeDropdown').multiDropdown(options);
-          $('#contactTypeDropdown').on('update', function() {
-            callback(getMultidropdownResult($(this)));
-          });
-        });
-      };
-
       var getTernaryValue = function(positive, negative) {
         if (positive && !negative) {
           return true;
@@ -214,7 +205,6 @@ var _ = require('underscore'),
         freetext: initFreetext,
         formType: initFormType,
         status: initStatus,
-        contactType: initContactType,
         date: initDate,
         facility: initFacility,
         reset: function() {

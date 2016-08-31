@@ -134,10 +134,7 @@ var _ = require('underscore'),
 
       $scope.search = function() {
         $scope.loading = true;
-        if ($scope.filters.search ||
-            ($scope.filters.facilities && $scope.filters.facilities.selected && $scope.filters.facilities.selected.length) ||
-            ($scope.filters.types && $scope.filters.types.selected && $scope.filters.types.selected.length)
-           ) {
+        if ($scope.filters.search) {
           $scope.filtered = true;
           liveList = LiveList['contact-search'];
           liveList.set([]);
@@ -161,18 +158,6 @@ var _ = require('underscore'),
 
       $scope.setupSearchFreetext = function() {
         SearchFilters.freetext($scope.search);
-      };
-      $scope.setupSearchFacility = function() {
-        SearchFilters.facility(function(facilities) {
-          $scope.filters.facilities = facilities;
-          $scope.search();
-        });
-      };
-      $scope.setupSearchContactType = function() {
-        SearchFilters.contactType(function(types) {
-          $scope.filters.types = types;
-          $scope.search();
-        });
       };
       $scope.resetFilterModel = function() {
         $scope.filters = {};

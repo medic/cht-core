@@ -171,21 +171,6 @@ describe('GenerateSearchRequests service', function() {
     });
   });
 
-  it('creates unfiltered contacts request for places filter', function() {
-    var filters = {
-      facilities: {
-        selected: [ 'a', 'b', 'c' ],
-        options: [ 'a', 'b', 'c', 'd', 'e', 'f' ]
-      }
-    };
-    var result = service('contacts', filters);
-    chai.expect(result.length).to.equal(1);
-    chai.expect(result[0].view).to.equal('medic-client/contacts_by_place');
-    chai.expect(result[0].params).to.deep.equal({
-      keys: [ [ 'a' ], [ 'b' ], [ 'c' ] ]
-    });
-  });
-
   describe('freetext filter', function() {
 
     it('reports with exact matching', function() {
