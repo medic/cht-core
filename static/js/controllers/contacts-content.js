@@ -18,13 +18,23 @@ var _ = require('underscore');
       DB,
       RulesEngine,
       Search,
-      UserDistrict,
+      UserSettings,
       XmlForms
     ) {
 
       'ngInject';
 
       $scope.showParentLink = false;
+
+      var getHomePlaceId = function() {
+        UserSettings()
+          .then(function(user) {
+            return user && user.facility_id;
+          })
+          .catch(function(err) {
+            $log.error('Error fetching user settings', err);
+          });
+      };
 
       var sortChildren = function(children) {
         children.sort(function(lhs, rhs) {
@@ -106,16 +116,10 @@ var _ = require('underscore');
       };
 
       var updateParentLink = function() {
-        UserDistrict()
-          .then(function(district) {
-            var parentId = $scope.selected.doc &&
-                           $scope.selected.doc.parent &&
-                           $scope.selected.doc.parent._id;
-            $scope.showParentLink = parentId && district !== parentId;
-          })
-          .catch(function(err) {
-            $log.error('Error getting user district', err);
-          });
+        getHomePlaceId().then(function(homeId) {
+          var docId = $scope.selected.doc && $scope.selected.doc._id;
+          $scope.showParentLink = docId && homeId !== docId;
+        });
       };
 
       var mergeTasks = function(tasks) {
@@ -187,6 +191,13 @@ var _ = require('underscore');
         selectContact($stateParams.id);
       } else {
         $scope.clearSelected();
+        if (!$scope.isMobile()) {
+          getHomePlaceId().then(function(id) {
+            if (id) {
+              selectContact(id);
+            }
+          });
+        }
       }
 
       Changes({

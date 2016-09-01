@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    scrollLoader = require('../modules/scroll-loader');
+var scrollLoader = require('../modules/scroll-loader');
 
 (function () {
 
@@ -15,6 +14,7 @@ var _ = require('underscore'),
       $state,
       $timeout,
       DB,
+      Export,
       LiveList,
       Search,
       SearchFilters,
@@ -64,16 +64,16 @@ var _ = require('underscore'),
             var data = results[0];
             $scope.moreItems = liveList.moreItems = data.length >= options.limit;
 
-            // filter special contacts which should not be displayed
             var user = results[1];
-            data = _.reject(data, function(contact) {
-              return contact._id === user.facility_id ||
-                     contact._id === user.contact_id;
+            data.forEach(function(contact) {
+              if (contact._id === user.facility_id) {
+                contact.home = true;
+              }
             });
 
             if (options.skip) {
               $timeout(function() {
-                _.each(data, function(contact) {
+                data.forEach(function(contact) {
                   liveList.insert(contact, false);
                 });
                 liveList.refresh();
@@ -81,24 +81,14 @@ var _ = require('underscore'),
               })
               .then(completeLoad);
             } else if (options.silent) {
-              _.each(data, liveList.update);
+              data.forEach(liveList.update);
               completeLoad();
             } else {
               $timeout(function() {
                 liveList.set(data);
                 _initScroll();
-
                 if (!data.length) {
                   $scope.clearSelected();
-                } else if (!options.stay &&
-                           !$scope.isMobile() &&
-                           $state.is('contacts.detail') &&
-                           !$state.params.id) {
-                  // wait for selected to be set before checking
-                  $timeout(function() {
-                    var id = $('.inbox-items li').first().attr('data-record-id');
-                    $state.go('contacts.detail', { id: id }, { location: 'replace' });
-                  });
                 }
               })
               .then(completeLoad);
