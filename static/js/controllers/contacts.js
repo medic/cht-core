@@ -14,6 +14,8 @@ var scrollLoader = require('../modules/scroll-loader');
       $state,
       $timeout,
       ContactSchema,
+      CONTACT_TYPES,
+      DB,
       LiveList,
       Search,
       SearchFilters,
@@ -26,6 +28,20 @@ var scrollLoader = require('../modules/scroll-loader');
 
       $scope.selected = null;
       $scope.filters = {};
+
+      var defaultTypeFilter = {};
+      function setDefaultTypeFilter() {
+        return UserSettings().then(function(u) {
+          return u.facility_id && DB().get(u.facility_id).then(function(facility) {
+            var targetType = CONTACT_TYPES[CONTACT_TYPES.indexOf(facility.type) + 1];
+            defaultTypeFilter = {
+              types: {
+                selected: [targetType]
+              }
+            };
+          });
+        });
+      }
 
       function completeLoad() {
         $scope.loading = false;
@@ -55,8 +71,10 @@ var scrollLoader = require('../modules/scroll-loader');
           options.skip = liveList.count();
         }
 
+        var actualFilter = $scope.filters.search ? $scope.filters : defaultTypeFilter;
+
         $q.all([
-          Search('contacts', $scope.filters, options),
+          Search('contacts', actualFilter, options),
           UserSettings()
         ])
           .then(function(results) {
@@ -132,18 +150,7 @@ var scrollLoader = require('../modules/scroll-loader');
           _query();
         } else {
           $scope.filtered = false;
-          liveList = LiveList.contacts;
-          if (liveList.initialised()) {
-            $timeout(function() {
-              $scope.loading = false;
-              $scope.hasContacts = liveList.count() > 0;
-              liveList.refresh();
-              $scope.moreItems = liveList.moreItems;
-              _initScroll();
-            });
-          } else {
-            _query();
-          }
+          _query();
         }
       };
 
@@ -156,7 +163,9 @@ var scrollLoader = require('../modules/scroll-loader');
         $scope.search();
       };
 
-      $scope.search();
+      setDefaultTypeFilter().then(function() {
+        $scope.search();
+      });
 
       $scope.$on('$destroy', function() {
         if (!$state.includes('contacts')) {
