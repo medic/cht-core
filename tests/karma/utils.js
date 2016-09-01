@@ -11,6 +11,13 @@ window.KarmaUtils = {
       }
     }
   },
+  // A service that returns a promise,
+  // to mock out e.g. UserSettings().then(function(promiseResult) { ... })
+  promiseService: function(err, promiseResult) {
+    return function() {
+      return KarmaUtils.mockPromise(err, promiseResult);
+    };
+  },
   mockPromise: function(err, doc) {
     var result = new Promise(function(resolve, reject) {
       if (err) {

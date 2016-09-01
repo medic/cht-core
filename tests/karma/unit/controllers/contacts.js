@@ -36,10 +36,11 @@ describe('Contacts controller', function() {
         '$state': { includes: sinon.stub() },
         '$timeout': sinon.stub(),
         'ContactSchema': contactSchema,
+        'DB': function() { return { get: KarmaUtils.promiseService(null, district) }; },
         'LiveList': { contacts: { initialised: sinon.stub(), setSelected: sinon.stub() } },
         'Search': sinon.stub(),
         'SearchFilters': { freetext: sinon.stub(), reset: sinon.stub()},
-        'UserSettings': sinon.stub()
+        'UserSettings': KarmaUtils.promiseService(null, { facility_id: district._id })
       });
     };
   }));
