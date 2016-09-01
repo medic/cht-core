@@ -598,7 +598,7 @@ var feedback = require('../modules/feedback'),
         },
         {
           state: 'configuration.export.messages',
-          icon: 'fa-arrow-circle-o-down',
+          icon: 'fa-exchange fa-rotate-90',
           name: 'import.export',
           active: function() {
             return $state.includes('configuration.export');
