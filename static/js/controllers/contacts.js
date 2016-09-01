@@ -113,7 +113,7 @@ var scrollLoader = require('../modules/scroll-loader');
         selectedDoc.childIcon = selectedDoc.childType ? ContactSchema.get(selectedDoc.childType).icon : '';
         $scope.setActionBar({
           selected: [ selectedDoc ],
-          sendTo: selected.doc,
+          sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
           disableDelete: (selected.children && selected.children.length) ||
                          (selected.contactFor && selected.contactFor.length)
         });

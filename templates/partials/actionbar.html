@@ -113,6 +113,21 @@
             <p translate>action.{{actionBar.selected[0].childType}}.add</p>
           </a>
 
+          <div ng-show="actionBar.sendTo">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="tel:{{actionBar.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
+              <span class="fa fa-phone"></span>
+              <p translate>call</p>
+            </a>
+            <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{actionBar.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
+              <span class="fa fa-envelope"></span>
+              <p translate>Send Message</p>
+            </a>
+            <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" data-send-to="{{actionBar.sendTo}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
+              <span class="fa fa-envelope"></span>
+              <p translate>Send Message</p>
+            </a>
+          </div>
+
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.edit({ id: actionBar.selected[0]._id })">
             <span class="fa fa-pencil"></span>
             <p translate>Edit</p>
