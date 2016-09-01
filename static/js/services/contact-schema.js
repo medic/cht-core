@@ -179,12 +179,11 @@ angular.module('inboxServices').service('ContactSchema',
       getChildPlaceType: function(type) {
         var schema = getSchema();
         if (!_.has(schema, type)) {
-          return undefined;
+          return;
         }
-        var child = _.findKey(schema, function(value) {
+        return _.findKey(schema, function(value) {
           return value.fields.parent && (value.fields.parent.type === ('db:' + type));
         });
-        return child;
       },
       getVisibleFields: function() {
         // return a modified schema, missing special fields such as `parent`, and

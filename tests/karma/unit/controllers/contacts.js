@@ -49,7 +49,7 @@ describe('Contacts controller', function() {
   });
 
   describe('sets actionBar', function() {
-    it('swith the selected doc', function() {
+    it('with the selected doc', function() {
       createController();
       scope.setSelected({ doc: district});
       assert(scope.setActionBar.called);
