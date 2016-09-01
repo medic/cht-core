@@ -27,7 +27,7 @@ var _ = require('underscore');
       $scope.showParentLink = false;
 
       var getHomePlaceId = function() {
-        UserSettings()
+        return UserSettings()
           .then(function(user) {
             return user && user.facility_id;
           })
