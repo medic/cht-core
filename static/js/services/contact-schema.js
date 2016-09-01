@@ -176,6 +176,15 @@ angular.module('inboxServices').service('ContactSchema',
         });
         return schema;
       },
+      getChildPlaceType: function(type) {
+        var schema = getSchema();
+        if (!_.has(schema, type)) {
+          return;
+        }
+        return _.findKey(schema, function(value) {
+          return value.fields.parent && (value.fields.parent.type === ('db:' + type));
+        });
+      },
       getVisibleFields: function() {
         // return a modified schema, missing special fields such as `parent`, and
         // anything included in the `name` attribute

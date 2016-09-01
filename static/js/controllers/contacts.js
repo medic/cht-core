@@ -13,9 +13,9 @@ var scrollLoader = require('../modules/scroll-loader');
       $scope,
       $state,
       $timeout,
+      ContactSchema,
       CONTACT_TYPES,
       DB,
-      Export,
       LiveList,
       Search,
       SearchFilters,
@@ -124,9 +124,12 @@ var scrollLoader = require('../modules/scroll-loader');
         $scope.selected = selected;
         $scope.setTitle(selected.doc.name);
         $scope.clearCancelTarget();
+        var selectedDoc = selected.doc;
+        selectedDoc.childType = ContactSchema.getChildPlaceType(selected.doc.type);
+        selectedDoc.childIcon = selectedDoc.childType ? ContactSchema.get(selectedDoc.childType).icon : '';
         $scope.setActionBar({
-          selected: [ selected.doc ],
-          sendTo: selected.doc,
+          selected: [ selectedDoc ],
+          sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
           disableDelete: (selected.children && selected.children.length) ||
                          (selected.contactFor && selected.contactFor.length)
         });

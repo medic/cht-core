@@ -116,37 +116,41 @@
 
       <div class="col-sm-8 detail-actions right-pane" ng-show="currentTab === 'contacts'">
         <div class="actions dropup" ng-show="showActionBar && actionBar.selected && !loadingContent && ('contacts.detail' | isState)">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="tel:{{actionBar.sendTo.phone}}" ng-show="currentTab === 'contacts'" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
-            <span class="fa fa-phone"></span>
-            <p translate>call</p>
+
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.selected[0].childType" ui-sref="contacts.addChild({ type: actionBar.selected[0].childType, parent_id: actionBar.selected[0]._id })">
+            <span class="fa-stack">
+              <i class="fa {{actionBar.selected[0].childIcon}} fa-stack-1x"></i>
+              <i class="fa fa-plus fa-stack-1x"></i>
+            </span>
+            <p translate>action.{{actionBar.selected[0].childType}}.add</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{actionBar.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
-            <span class="fa fa-envelope"></span>
-            <p translate>Send Message</p>
+
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.selected[0].type !== 'person'" ui-sref="contacts.addChild({ type: 'person', parent_id: actionBar.selected[0]._id })">
+            <span class="fa-stack">
+              <i class="fa fa-user fa-stack-1x"></i>
+              <i class="fa fa-plus fa-stack-1x"></i>
+            </span>
+            <p translate>action.person.add</p>
           </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" data-send-to="{{actionBar.sendTo}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}" ng-show="actionBar.sendTo.type !== 'health_center'">
-            <span class="fa fa-envelope"></span>
-            <p translate>Send Message</p>
-          </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption desktop-only dropdown-toggle" ng-show="actionBar.sendTo.type === 'health_center'" data-toggle="dropdown">
-            <span class="fa fa-envelope"></span>
-            <p translate>Send Message</p>
-          </a>
-          <ul class="dropdown-menu">
-            <li>
-              <a class="send-message" data-send-to="{{actionBar.sendTo}}" translate>Send Message</a>
-            </li>
-            <li>
-              <a class="send-message" data-send-to="{{actionBar.sendTo}}" data-everyone-at="true" translate>Message All</a>
-            </li>
-          </ul>
+
+          <div ng-show="actionBar.sendTo">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="tel:{{actionBar.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
+              <span class="fa fa-phone"></span>
+              <p translate>call</p>
+            </a>
+            <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{actionBar.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
+              <span class="fa fa-envelope"></span>
+              <p translate>Send Message</p>
+            </a>
+            <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" data-send-to="{{actionBar.sendTo}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
+              <span class="fa fa-envelope"></span>
+              <p translate>Send Message</p>
+            </a>
+          </div>
+
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.edit({ id: actionBar.selected[0]._id })">
             <span class="fa fa-pencil"></span>
             <p translate>Edit</p>
-          </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="actionBar.disableDelete || deleteDoc(actionBar.selected)" ng-class="{'mm-icon-disabled': actionBar.disableDelete}" mm-auth="can_delete_contacts">
-            <span class="fa fa-trash-o"></span>
-            <p translate>Delete</p>
           </a>
         </div>
       </div>
