@@ -110,7 +110,7 @@ var scrollLoader = require('../modules/scroll-loader');
         $scope.clearCancelTarget();
         var selectedDoc = selected.doc;
         selectedDoc.childType = ContactSchema.getChildPlaceType(selected.doc.type);
-        selectedDoc.childIcon = ContactSchema.get(selectedDoc.childType).icon;
+        selectedDoc.childIcon = selectedDoc.childType ? ContactSchema.get(selectedDoc.childType).icon : '';
         $scope.setActionBar({
           selected: [ selectedDoc ],
           sendTo: selected.doc,
