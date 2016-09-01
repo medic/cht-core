@@ -14,8 +14,6 @@ var scrollLoader = require('../modules/scroll-loader');
       $state,
       $timeout,
       ContactSchema,
-      DB,
-      Export,
       LiveList,
       Search,
       SearchFilters,
