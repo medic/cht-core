@@ -13,6 +13,7 @@ var scrollLoader = require('../modules/scroll-loader');
       $scope,
       $state,
       $timeout,
+      CONTACT_TYPES,
       DB,
       Export,
       LiveList,
@@ -27,6 +28,18 @@ var scrollLoader = require('../modules/scroll-loader');
 
       $scope.selected = null;
       $scope.filters = {};
+
+      function setInitialFilterConfiguration() {
+        $scope.filters = {};
+        return UserSettings().then(function(u) {
+          return u.facility_id && DB().get(u.facility_id).then(function(facility) {
+            var targetType = CONTACT_TYPES[CONTACT_TYPES.indexOf(facility.type) + 1];
+            $scope.filters.types = {
+              selected: [targetType]
+            };
+          });
+        });
+      }
 
       function completeLoad() {
         $scope.loading = false;
@@ -149,12 +162,15 @@ var scrollLoader = require('../modules/scroll-loader');
         SearchFilters.freetext($scope.search);
       };
       $scope.resetFilterModel = function() {
-        $scope.filters = {};
-        SearchFilters.reset();
-        $scope.search();
+        setInitialFilterConfiguration().then(function() {
+          SearchFilters.reset();
+          $scope.search();
+        });
       };
 
-      $scope.search();
+      setInitialFilterConfiguration().then(function() {
+        $scope.search();
+      });
 
       $scope.$on('$destroy', function() {
         if (!$state.includes('contacts')) {
