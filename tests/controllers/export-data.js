@@ -8,6 +8,16 @@ var controller = require('../../controllers/export-data'),
     utils = require('../utils'),
     moment = require('moment');
 
+function readStream(dataHook, callback) {
+  var data = '';
+
+  dataHook(function(chunk) {
+    data += chunk;
+  }, function() {
+    callback(data);
+  });
+}
+
 exports.setUp = function(callback) {
   sinon.stub(config, 'translate', function(key, locale) {
     return '{' + key + ':' + locale + '}';
@@ -186,10 +196,12 @@ exports['get exports messages in xml'] = function(test) {
                     '<Row><Cell><Data ss:Type="String">hij</Data></Cell><Cell><Data ss:Type="String">123456</Data></Cell><Cell><Data ss:Type="String">02, Jan 1970, 10:17:36 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{Task Message:en}</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+123456789</Data></Cell><Cell><Data ss:Type="String">hello</Data></Cell></Row>' +
                     '<Row><Cell><Data ss:Type="String">hij</Data></Cell><Cell><Data ss:Type="String">123456</Data></Cell><Cell><Data ss:Type="String">02, Jan 1970, 10:17:36 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{Task Message:en}</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+123456788</Data></Cell><Cell><Data ss:Type="String">goodbye</Data></Cell></Row><Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">654321</Data></Cell><Cell><Data ss:Type="String">12, Jan 1970, 10:20:54 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{Task Message:en}</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+223456789</Data></Cell><Cell><Data ss:Type="String">hi</Data></Cell></Row><Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">654321</Data></Cell><Cell><Data ss:Type="String">12, Jan 1970, 10:20:54 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{Task Message:en}</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+223456788</Data></Cell><Cell><Data ss:Type="String">bye</Data></Cell></Row><Row><Cell><Data ss:Type="String">klm</Data></Cell><Cell><Data ss:Type="String">654321</Data></Cell><Cell><Data ss:Type="String">12, Jan 1970, 10:20:54 +00:00</Data></Cell><Cell><Data ss:Type="String">+987654321</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">{sms_message.message:en}</Data></Cell><Cell><Data ss:Type="String">received</Data></Cell><Cell><Data ss:Type="String">12, Jan 1970, 10:20:54 +00:00</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">+987654321</Data></Cell><Cell><Data ss:Type="String"/></Cell><Cell><Data ss:Type="String">hi</Data></Cell></Row>' +
                   '</Table></Worksheet></Workbook>';
-  controller.get({ type: 'messages', tz: '0', format: 'xml' }, function(err, results) {
-    test.equals(results, expected);
-    test.equals(getView.callCount, 1);
-    test.done();
+  controller.get({ type: 'messages', tz: '0', format: 'xml' }, function(err, streamFn) {
+    readStream(streamFn, function(results) {
+      test.equals(results, expected);
+      test.equals(getView.callCount, 1);
+      test.done();
+    });
   });
 };
 
@@ -264,11 +276,13 @@ exports['get exports reports in xml with each type on a separate tab'] = functio
                       '<Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">ok</Data></Cell></Row>' +
                     '</Table></Worksheet>' +
                   '</Workbook>';
-  controller.get({ type: 'forms', tz: '0', format: 'xml', columns: '[ "_id" ]' }, function(err, results) {
-    test.equals(results, expected);
-    test.equals(getView.callCount, 1);
-    test.equals(configGet.callCount, 2);
-    test.done();
+  controller.get({ type: 'forms', tz: '0', format: 'xml', columns: '[ "_id" ]' }, function(err, streamFn) {
+    readStream(streamFn, function(results) {
+      test.equals(results, expected);
+      test.equals(getView.callCount, 1);
+      test.equals(configGet.callCount, 2);
+      test.done();
+    });
   });
 };
 
@@ -346,11 +360,13 @@ exports['if form definition not found then cannot add specific columns'] = funct
                       '<Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">ok</Data></Cell></Row>' +
                     '</Table></Worksheet>' +
                   '</Workbook>';
-  controller.get({ type: 'forms', tz: '0', format: 'xml', columns: '[ "_id" ]' }, function(err, results) {
-    test.equals(results, expected);
-    test.equals(getView.callCount, 1);
-    test.equals(configGet.callCount, 3);
-    test.done();
+  controller.get({ type: 'forms', tz: '0', format: 'xml', columns: '[ "_id" ]' }, function(err, streamFn) {
+    readStream(streamFn, function(results) {
+      test.equals(results, expected);
+      test.equals(getView.callCount, 1);
+      test.equals(configGet.callCount, 3);
+      test.done();
+    });
   });
 };
 
@@ -789,7 +805,7 @@ exports['get audit log'] = function(test) {
             user: 'gareth',
             action: 'update'
           },
-          { 
+          {
             doc: { type: 'data_record', number: 2 },
             timestamp: 12345655,
             user: 'milan',
@@ -842,11 +858,13 @@ exports['get audit log handles special characters'] = function(test) {
     ]
   });
   var expected = '<?xml version="1.0" encoding="UTF-8"?><Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:html="http://www.w3.org/TR/REC-html140" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"><?mso-application progid="Excel.Sheet"?><Worksheet ss:Name="{Audit:en}"><Table><Row><Cell><Data ss:Type="String">{_id:en}</Data></Cell><Cell><Data ss:Type="String">{Type:en}</Data></Cell><Cell><Data ss:Type="String">{Timestamp:en}</Data></Cell><Cell><Data ss:Type="String">{Author:en}</Data></Cell><Cell><Data ss:Type="String">{Action:en}</Data></Cell><Cell><Data ss:Type="String">{Document:en}</Data></Cell></Row><Row><Cell><Data ss:Type="String">def</Data></Cell><Cell><Data ss:Type="String">feedback</Data></Cell><Cell><Data ss:Type="String">01, Jan 1970, 03:25:45 +00:00</Data></Cell><Cell><Data ss:Type="String">gareth</Data></Cell><Cell><Data ss:Type="String">create</Data></Cell><Cell><Data ss:Type="String">{"type":"feedback","description":"😎😎😎"}</Data></Cell></Row></Table></Worksheet></Workbook>';
-  controller.get({ type: 'audit', tz: '0', format: 'xml' }, function(err, results) {
-    test.equals(results, expected);
-    test.equals(getView.callCount, 1);
-    test.equals(getView.firstCall.args[1], 'audit_records_by_doc');
-    test.done();
+  controller.get({ type: 'audit', tz: '0', format: 'xml' }, function(err, streamFn) {
+    readStream(streamFn, function(results) {
+      test.equals(results, expected);
+      test.equals(getView.callCount, 1);
+      test.equals(getView.firstCall.args[1], 'audit_records_by_doc');
+      test.done();
+    });
   });
 };
 
