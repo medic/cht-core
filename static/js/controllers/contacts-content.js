@@ -9,7 +9,6 @@ var _ = require('underscore');
   inboxControllers.controller('ContactsContentCtrl',
     function(
       $log,
-      $parse,
       $q,
       $scope,
       $stateParams,
@@ -18,8 +17,7 @@ var _ = require('underscore');
       DB,
       RulesEngine,
       Search,
-      UserSettings,
-      XmlForms
+      UserSettings
     ) {
 
       'ngInject';
@@ -172,13 +170,6 @@ var _ = require('underscore');
             $scope.settingSelected(refreshing);
             getTasks();
             updateParentLink();
-
-            XmlForms('ContactsContentCtrl', { doc: $scope.selected.doc }, function(err, forms) {
-              if (err) {
-                return $log.error('Error fetching relevant forms', err);
-              }
-              $scope.relevantForms = forms;
-            });
 
           })
           .catch(function(err) {

@@ -6,6 +6,7 @@ describe('Contacts controller', function() {
     childType,
     contactSchema,
     createController,
+    forms,
     icon,
     scope,
     $rootScope;
@@ -27,6 +28,9 @@ describe('Contacts controller', function() {
     contactSchema = { get: sinon.stub(), getChildPlaceType: sinon.stub() };
     contactSchema.getChildPlaceType.returns(childType);
     contactSchema.get.returns({ icon: icon});
+    var xmlForms = sinon.stub();
+    forms = 'forms';
+    xmlForms.callsArgWith(2, null, forms); // call the callback
     createController = function() {
       return $controller('ContactsCtrl', {
         '$scope': scope,
@@ -40,7 +44,8 @@ describe('Contacts controller', function() {
         'LiveList': { contacts: { initialised: sinon.stub(), setSelected: sinon.stub() } },
         'Search': sinon.stub(),
         'SearchFilters': { freetext: sinon.stub(), reset: sinon.stub()},
-        'UserSettings': KarmaUtils.promiseService(null, { facility_id: district._id })
+        'UserSettings': KarmaUtils.promiseService(null, { facility_id: district._id }),
+        'XmlForms': xmlForms
       });
     };
   }));
@@ -50,47 +55,51 @@ describe('Contacts controller', function() {
   });
 
   describe('sets actionBar', function() {
-    it('with the selected doc', function() {
+    var testActionBar = function(selectedDoc, assertions) {
       createController();
-      scope.setSelected({ doc: district});
-      assert(scope.setActionBar.called);
+      scope.setSelected({ doc: selectedDoc});
+      assert(scope.setActionBar.called, 'actionBar should be set');
       var actionBarArgs = scope.setActionBar.getCall(0).args[0];
-      assert.deepEqual(actionBarArgs.selected[0], district);
+      assertions(actionBarArgs);
+    };
+
+    it('with the selected doc', function() {
+      testActionBar(district, function(actionBarArgs) {
+        assert.deepEqual(actionBarArgs.selected[0], district);
+      });
     });
 
     it('for the New Place button', function() {
-      createController();
-      scope.setSelected({ doc: district});
-      assert(scope.setActionBar.called);
-      var actionBarArgs = scope.setActionBar.getCall(0).args[0];
-      assert.deepEqual(actionBarArgs.selected[0].childType, childType);
-      assert.deepEqual(actionBarArgs.selected[0].childIcon, icon);
+      testActionBar(district, function(actionBarArgs) {
+        assert.deepEqual(actionBarArgs.selected[0].childType, childType);
+        assert.deepEqual(actionBarArgs.selected[0].childIcon, icon);
+      });
     });
 
     it('no New Place button if no child type', function() {
       contactSchema.getChildPlaceType.returns('');
-      createController();
-      scope.setSelected({ doc: district});
-      assert(scope.setActionBar.called);
-      var actionBarArgs = scope.setActionBar.getCall(0).args[0];
-      assert.deepEqual(actionBarArgs.selected[0].childType, '');
-      assert.deepEqual(actionBarArgs.selected[0].childIcon, '');
+      testActionBar(district, function(actionBarArgs) {
+        assert.deepEqual(actionBarArgs.selected[0].childType, '');
+        assert.deepEqual(actionBarArgs.selected[0].childIcon, '');
+      });
     });
 
     it('for the Message and Call buttons', function() {
-      createController();
-      scope.setSelected({ doc: person});
-      assert(scope.setActionBar.called);
-      var actionBarArgs = scope.setActionBar.getCall(0).args[0];
-      assert.deepEqual(actionBarArgs.sendTo, person);
+      testActionBar(person, function(actionBarArgs) {
+        assert.deepEqual(actionBarArgs.sendTo, person);
+      });
     });
 
     it('no Message and Call buttons if doc is not person', function() {
-      createController();
-      scope.setSelected({ doc: district});
-      assert(scope.setActionBar.called);
-      var actionBarArgs = scope.setActionBar.getCall(0).args[0];
-      assert.deepEqual(actionBarArgs.sendTo, '');
+      testActionBar(district, function(actionBarArgs) {
+        assert.deepEqual(actionBarArgs.sendTo, '');
+      });
+    });
+
+    it('for the New Action button', function() {
+      testActionBar(person, function(actionBarArgs) {
+        assert.deepEqual(actionBarArgs.relevantForms, forms);
+      });
     });
   });
 });

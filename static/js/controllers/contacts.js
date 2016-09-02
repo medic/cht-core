@@ -19,7 +19,8 @@ var scrollLoader = require('../modules/scroll-loader');
       LiveList,
       Search,
       SearchFilters,
-      UserSettings
+      UserSettings,
+      XmlForms
     ) {
 
       'ngInject';
@@ -127,11 +128,17 @@ var scrollLoader = require('../modules/scroll-loader');
         var selectedDoc = selected.doc;
         selectedDoc.childType = ContactSchema.getChildPlaceType(selected.doc.type);
         selectedDoc.childIcon = selectedDoc.childType ? ContactSchema.get(selectedDoc.childType).icon : '';
-        $scope.setActionBar({
-          selected: [ selectedDoc ],
-          sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
-          disableDelete: (selected.children && selected.children.length) ||
-                         (selected.contactFor && selected.contactFor.length)
+        XmlForms('ContactsCtrl', { doc: selectedDoc }, function(err, forms) {
+          if (err) {
+            return $log.error('Error fetching relevant forms', err);
+          }
+          $scope.setActionBar({
+            selected: [ selectedDoc ],
+            relevantForms: forms,
+            sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
+            disableDelete: (selected.children && selected.children.length) ||
+                           (selected.contactFor && selected.contactFor.length)
+          });
         });
       };
 
