@@ -295,7 +295,7 @@ app.all([
 
       if (_.isFunction(exportDataResult)) {
         // wants to stream the result back
-        exportDataResult(res.write, res.end);
+        exportDataResult(res.write.bind(res), res.end.bind(res));
       } else {
         // has already generated result to return
         res.send(exportDataResult);
