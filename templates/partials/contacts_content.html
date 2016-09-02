@@ -73,24 +73,6 @@
                   <div class="subtext" ng-bind-html="child.doc.date_of_birth | age"></div>
                 </a>
               </li>
-              <li class="add" ng-show="selected.doc.type === 'clinic'">
-                <a ui-sref="contacts.addChild({ type: 'person', parent_id: selected.doc._id })">
-                  <i class="fa fa-plus"></i>
-                  <div translate>Add person</div>
-                </a>
-              </li>
-              <li class="add" ng-show="selected.doc.type === 'health_center'">
-                <a ui-sref="contacts.addChild({ type: 'clinic', parent_id: selected.doc._id })">
-                  <i class="fa fa-plus"></i>
-                  <div translate>Add place</div>
-                </a>
-              </li>
-              <li class="add" ng-show="selected.doc.type === 'district_hospital'">
-                <a ui-sref="contacts.addChild({ type: 'health_center', parent_id: selected.doc._id })">
-                  <i class="fa fa-plus"></i>
-                  <div translate>Add place</div>
-                </a>
-              </li>
             </ul>
           </div>
         </div>
