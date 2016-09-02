@@ -42,7 +42,7 @@ angular.module('inboxServices').factory('Select2Search',
           templateSelection = options.templateSelection || defaultTemplateSelection,
           sendMessageExtras = options.sendMessageExtras || (function(i) {return i;}),
           tags = options.tags || false,
-          initialValue = options.initialValue,
+          initialValue = options.initialValue || selectEl.val(),
           types = Array.isArray(_types) ? _types : [ _types ];
 
       if (allowNew && types.length !== 1) {
