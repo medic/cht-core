@@ -44,19 +44,20 @@
 
       <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'contacts'">
         <div class="actions dropup">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.add()" ng-show="facilities.length">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.left.userFacilityId" ui-sref="contacts.addChild({ type: actionBar.left.userChildPlace.type, parent_id: actionBar.left.userFacilityId })">
+            <span class="fa-stack">
+              <i class="fa {{actionBar.left.userChildPlace.icon}} fa-stack-1x"></i>
+              <i class="fa fa-plus fa-stack-1x"></i>
+            </span>
+            <p translate>action.{{actionBar.left.userChildPlace.type}}.add</p>
+          </a>
+
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.add()" ng-show="!actionBar.left.userFacilityId">
             <span class="fa-stack">
               <i class="fa fa-building fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
             <p translate>Add place</p>
-          </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.add()" ng-show="!facilities.length">
-            <span class="fa-stack">
-              <i class="fa fa-group fa-stack-1x"></i>
-              <i class="fa fa-plus fa-stack-1x"></i>
-            </span>
-            <p translate>action.clinic.add</p>
           </a>
         </div>
       </div>
@@ -115,17 +116,17 @@
       </div>
 
       <div class="col-sm-8 detail-actions right-pane" ng-show="currentTab === 'contacts'">
-        <div class="actions dropup" ng-show="showActionBar && actionBar.selected && !loadingContent && ('contacts.detail' | isState)">
+        <div class="actions dropup" ng-show="showActionBar && actionBar.right.selected && !loadingContent && ('contacts.detail' | isState)">
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.selected[0].childType" ui-sref="contacts.addChild({ type: actionBar.selected[0].childType, parent_id: actionBar.selected[0]._id })">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.right.selected[0].child.type" ui-sref="contacts.addChild({ type: actionBar.right.selected[0].child.type, parent_id: actionBar.right.selected[0]._id })">
             <span class="fa-stack">
-              <i class="fa {{actionBar.selected[0].childIcon}} fa-stack-1x"></i>
+              <i class="fa {{actionBar.right.selected[0].child.icon}} fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
-            <p translate>action.{{actionBar.selected[0].childType}}.add</p>
+            <p translate>action.{{actionBar.right.selected[0].child.type}}.add</p>
           </a>
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.selected[0].type !== 'person'" ui-sref="contacts.addChild({ type: 'person', parent_id: actionBar.selected[0]._id })">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.right.selected[0].type !== 'person'" ui-sref="contacts.addChild({ type: 'person', parent_id: actionBar.right.selected[0]._id })">
             <span class="fa-stack">
               <i class="fa fa-user fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
@@ -133,32 +134,32 @@
             <p translate>action.person.add</p>
           </a>
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" ng-class="{'mm-icon-disabled': (!actionBar.relevantForms || !actionBar.relevantForms.length)}">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" ng-class="{'mm-icon-disabled': (!actionBar.right.relevantForms || !actionBar.right.relevantForms.length)}">
             <span class="fa fa-plus"></span>
             <p translate>action.report.add</p>
           </a>
-          <ul class="dropdown-menu" ng-hide="(!actionBar.relevantForms || !actionBar.relevantForms.length)">
-            <li ng-repeat="form in actionBar.relevantForms">
-                <a ui-sref="contacts.report({ id: actionBar.selected[0]._id, formId: form.internalId })" translate>{{form.title}}</a>
+          <ul class="dropdown-menu" ng-hide="(!actionBar.right.relevantForms || !actionBar.right.relevantForms.length)">
+            <li ng-repeat="form in actionBar.right.relevantForms">
+                <a ui-sref="contacts.report({ id: actionBar.right.selected[0]._id, formId: form.internalId })" translate>{{form.title}}</a>
             </li>
           </ul>
 
-          <div ng-show="actionBar.sendTo">
-            <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="tel:{{actionBar.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
+          <div ng-show="actionBar.right.sendTo">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="tel:{{actionBar.right.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.right.sendTo.phone}">
               <span class="fa fa-phone"></span>
               <p translate>call</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{actionBar.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption mobile-only" href="sms:{{actionBar.right.sendTo.phone}}" ng-class="{'mm-icon-disabled': !actionBar.right.sendTo.phone}">
               <span class="fa fa-envelope"></span>
               <p translate>Send Message</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" data-send-to="{{actionBar.sendTo}}" ng-class="{'mm-icon-disabled': !actionBar.sendTo.phone}">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption send-message desktop-only" data-send-to="{{actionBar.right.sendTo}}" ng-class="{'mm-icon-disabled': !actionBar.right.sendTo.phone}">
               <span class="fa fa-envelope"></span>
               <p translate>Send Message</p>
             </a>
           </div>
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.edit({ id: actionBar.selected[0]._id })">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.edit({ id: actionBar.right.selected[0]._id })">
             <span class="fa fa-pencil"></span>
             <p translate>Edit</p>
           </a>

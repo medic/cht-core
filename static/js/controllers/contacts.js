@@ -29,20 +29,21 @@ var scrollLoader = require('../modules/scroll-loader');
 
       $scope.selected = null;
       $scope.filters = {};
-
       var defaultTypeFilter = {};
-      function setDefaultTypeFilter() {
-        return UserSettings().then(function(u) {
-          return u.facility_id && DB().get(u.facility_id).then(function(facility) {
-            var targetType = CONTACT_TYPES[CONTACT_TYPES.indexOf(facility.type) + 1];
-            defaultTypeFilter = {
-              types: {
-                selected: [targetType]
-              }
-            };
+
+      // The type of the children of the user's facility.
+      var getUserFacilityId = function() {
+        return UserSettings()
+          .then(function(u) {
+            return u.facility_id;
           });
-        });
-      }
+      };
+      var getUserChildPlaceType = function(facility_id) {
+        return DB().get(facility_id)
+          .then(function(facility) {
+            return ContactSchema.getChildPlaceType(facility.type);
+          });
+      };
 
       function completeLoad() {
         $scope.loading = false;
@@ -126,13 +127,16 @@ var scrollLoader = require('../modules/scroll-loader');
         $scope.setTitle(selected.doc.name);
         $scope.clearCancelTarget();
         var selectedDoc = selected.doc;
-        selectedDoc.childType = ContactSchema.getChildPlaceType(selected.doc.type);
-        selectedDoc.childIcon = selectedDoc.childType ? ContactSchema.get(selectedDoc.childType).icon : '';
+        var selectedChildPlaceType = ContactSchema.getChildPlaceType(selected.doc.type);
+        selectedDoc.child = {
+          type: selectedChildPlaceType,
+          icon: selectedChildPlaceType ? ContactSchema.get(selectedChildPlaceType).icon : ''
+        };
         XmlForms('ContactsCtrl', { doc: selectedDoc }, function(err, forms) {
           if (err) {
             return $log.error('Error fetching relevant forms', err);
           }
-          $scope.setActionBar({
+          $scope.setRightActionBar({
             selected: [ selectedDoc ],
             relevantForms: forms,
             sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
@@ -170,9 +174,20 @@ var scrollLoader = require('../modules/scroll-loader');
         $scope.search();
       };
 
-      setDefaultTypeFilter().then(function() {
-        $scope.search();
-      });
+      var setupPromise = getUserFacilityId()
+        .then(function(facility_id) {
+          return facility_id && getUserChildPlaceType(facility_id)
+              .then(function(type) {
+                defaultTypeFilter = { types: { selected: [type] }};
+                $scope.setLeftActionBar({
+                  userChildPlace: { type: type, icon: (ContactSchema.get(type) ? ContactSchema.get(type).icon : '') },
+                  userFacilityId: facility_id
+                });
+              });
+        }).then(function() {
+          $scope.search();
+        });
+      this.getSetupPromiseForTesting = function() { return setupPromise; };
 
       $scope.$on('$destroy', function() {
         if (!$state.includes('contacts')) {
