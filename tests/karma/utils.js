@@ -18,24 +18,6 @@ window.KarmaUtils = {
       return KarmaUtils.mockPromise(err, promiseResult);
     };
   },
-  // Promise that resolves synchronously.
-  // Will run either then or catch.
-  syncPromise: function(err, doc) {
-    var returnObj = {};
-    if (err) {
-      returnObj.then = function() { return returnObj; };
-      returnObj.catch = function(catchFunc) {
-          catchFunc(err);
-        };
-      return returnObj;
-    }
-    returnObj.catch = function() { return returnObj; };
-    returnObj.then = function(thenFunc) {
-        thenFunc(doc);
-        return returnObj;
-      };
-    return returnObj;
-  },
   mockPromise: function(err, doc) {
     var result = new Promise(function(resolve, reject) {
       if (err) {
