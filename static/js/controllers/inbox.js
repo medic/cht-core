@@ -467,6 +467,20 @@ var feedback = require('../modules/feedback'),
         });
       };
 
+      $scope.setRightActionBar = function(model) {
+        if (!$scope.actionBar) {
+          $scope.actionBar = {};
+        }
+        $scope.actionBar.right = model;
+      };
+
+      $scope.setLeftActionBar = function(model) {
+        if (!$scope.actionBar) {
+          $scope.actionBar = {};
+        }
+        $scope.actionBar.left = model;
+      };
+
       $scope.setActionBar = function(model) {
         $scope.actionBar = model;
       };

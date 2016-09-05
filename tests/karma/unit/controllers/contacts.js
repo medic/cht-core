@@ -9,6 +9,7 @@ describe('Contacts controller', function() {
     forms,
     icon,
     scope,
+    userSettings,
     $rootScope;
 
   var district = { _id: 'abcde', name: 'My District', type: 'district_hospital'};
@@ -24,13 +25,15 @@ describe('Contacts controller', function() {
     scope.setTitle = sinon.stub();
     scope.clearSelected = sinon.stub();
     scope.clearCancelTarget = sinon.stub();
-    scope.setActionBar = sinon.stub();
+    scope.setRightActionBar = sinon.stub();
+    scope.setLeftActionBar = sinon.stub();
     contactSchema = { get: sinon.stub(), getChildPlaceType: sinon.stub() };
     contactSchema.getChildPlaceType.returns(childType);
     contactSchema.get.returns({ icon: icon});
     var xmlForms = sinon.stub();
     forms = 'forms';
     xmlForms.callsArgWith(2, null, forms); // call the callback
+    userSettings = KarmaUtils.promiseService(null, { facility_id: district._id });
     createController = function() {
       return $controller('ContactsCtrl', {
         '$scope': scope,
@@ -44,7 +47,7 @@ describe('Contacts controller', function() {
         'LiveList': { contacts: { initialised: sinon.stub(), setSelected: sinon.stub() } },
         'Search': sinon.stub(),
         'SearchFilters': { freetext: sinon.stub(), reset: sinon.stub()},
-        'UserSettings': KarmaUtils.promiseService(null, { facility_id: district._id }),
+        'UserSettings': userSettings,
         'XmlForms': xmlForms
       });
     };
@@ -54,52 +57,79 @@ describe('Contacts controller', function() {
     KarmaUtils.restore();
   });
 
-  describe('sets actionBar', function() {
-    var testActionBar = function(selectedDoc, assertions) {
+  describe('sets right actionBar', function() {
+    var testRightActionBar = function(selectedDoc, assertions) {
       createController();
       scope.setSelected({ doc: selectedDoc});
-      assert(scope.setActionBar.called, 'actionBar should be set');
-      var actionBarArgs = scope.setActionBar.getCall(0).args[0];
+      assert(scope.setRightActionBar.called, 'right actionBar should be set');
+      var actionBarArgs = scope.setRightActionBar.getCall(0).args[0];
       assertions(actionBarArgs);
     };
 
     it('with the selected doc', function() {
-      testActionBar(district, function(actionBarArgs) {
+      testRightActionBar(district, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.selected[0], district);
       });
     });
 
     it('for the New Place button', function() {
-      testActionBar(district, function(actionBarArgs) {
-        assert.deepEqual(actionBarArgs.selected[0].childType, childType);
-        assert.deepEqual(actionBarArgs.selected[0].childIcon, icon);
+      testRightActionBar(district, function(actionBarArgs) {
+        assert.deepEqual(actionBarArgs.selected[0].child.type, childType);
+        assert.deepEqual(actionBarArgs.selected[0].child.icon, icon);
       });
     });
 
     it('no New Place button if no child type', function() {
       contactSchema.getChildPlaceType.returns('');
-      testActionBar(district, function(actionBarArgs) {
-        assert.deepEqual(actionBarArgs.selected[0].childType, '');
-        assert.deepEqual(actionBarArgs.selected[0].childIcon, '');
+      testRightActionBar(district, function(actionBarArgs) {
+        assert.deepEqual(actionBarArgs.selected[0].child.type, '');
+        assert.deepEqual(actionBarArgs.selected[0].child.icon, '');
       });
     });
 
     it('for the Message and Call buttons', function() {
-      testActionBar(person, function(actionBarArgs) {
+      testRightActionBar(person, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.sendTo, person);
       });
     });
 
     it('no Message and Call buttons if doc is not person', function() {
-      testActionBar(district, function(actionBarArgs) {
+      testRightActionBar(district, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.sendTo, '');
       });
     });
 
     it('for the New Action button', function() {
-      testActionBar(person, function(actionBarArgs) {
+      testRightActionBar(person, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.relevantForms, forms);
       });
+    });
+  });
+
+  describe('sets left actionBar', function() {
+    it('when user has facility_id', function(done) {
+      createController().getSetupPromiseForTesting()
+        .then(function() {
+          assert(scope.setLeftActionBar.called, 'left actionBar should be set');
+          var actionBarArgs = scope.setLeftActionBar.getCall(0).args[0];
+          assert.deepEqual(
+            actionBarArgs,
+            {
+              userChildPlace: { type: childType, icon: icon },
+              userFacilityId : district._id
+            }
+          );
+          done();
+        }).catch(done);
+    });
+
+    it('when user doesn\'t have facility_id', function(done) {
+      userSettings = KarmaUtils.promiseService(null, {});
+      createController().getSetupPromiseForTesting()
+        .then(function() {
+          assert(!scope.setLeftActionBar.called, 'left actionBar uses defaults');
+          done();
+        }).catch(done);
     });
   });
 });
