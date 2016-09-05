@@ -83,7 +83,7 @@ _.templateSettings = {
     version: '@@APP_CONFIG.version'
   });
   var POUCHDB_OPTIONS = {
-    local: { auto_compaction: true },
+    local: { revs_limit: 1 }, // implicit auto compaction: https://github.com/pouchdb/pouchdb/issues/4372#issuecomment-223001626
     remote: { skip_setup: true, ajax: { timeout: 30000 }}
   };
   app.constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
