@@ -162,7 +162,7 @@ var _ = require('underscore');
 
       var selectContact = function(id) {
         $scope.setLoadingContent(id);
-        getInitialData(id)
+        return getInitialData(id)
           .then(function(selected) {
 
             var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
@@ -178,18 +178,22 @@ var _ = require('underscore');
           });
       };
 
-      if ($stateParams.id) {
-        selectContact($stateParams.id);
-      } else {
-        $scope.clearSelected();
-        if (!$scope.isMobile()) {
-          getHomePlaceId().then(function(id) {
+      var setupPromise = $q.resolve()
+        .then(function() {
+          if ($stateParams.id) {
+            return selectContact($stateParams.id);
+          }
+          $scope.clearSelected();
+          if ($scope.isMobile()) {
+            return;
+          }
+          return getHomePlaceId().then(function(id) {
             if (id) {
-              selectContact(id);
+              return selectContact(id);
             }
           });
-        }
-      }
+        });
+      this.getSetupPromiseForTesting = function() { return setupPromise; };
 
       Changes({
         key: 'contacts-content',
