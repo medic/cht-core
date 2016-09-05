@@ -49,7 +49,7 @@
               <i class="fa {{actionBar.left.userChildPlace.icon}} fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
-            <p translate>action.{{actionBar.left.userChildPlace.type}}.add</p>
+            <p>{{actionBar.left.addPlaceLabel}}</p>
           </a>
 
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.add()" ng-show="!actionBar.left.userFacilityId">
@@ -123,7 +123,7 @@
               <i class="fa {{actionBar.right.selected[0].child.icon}} fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
-            <p translate>action.{{actionBar.right.selected[0].child.type}}.add</p>
+            <p>{{actionBar.right.selected[0].child.addPlaceLabel}}</p>
           </a>
 
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.right.selected[0].type !== 'person'" ui-sref="contacts.addChild({ type: 'person', parent_id: actionBar.right.selected[0]._id })">

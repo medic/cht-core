@@ -76,6 +76,7 @@ describe('Contacts controller', function() {
       testRightActionBar(district, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.selected[0].child.type, childType);
         assert.deepEqual(actionBarArgs.selected[0].child.icon, icon);
+        assert(actionBarArgs.selected[0].child.addPlaceLabel.includes(childType));
       });
     });
 
@@ -112,13 +113,9 @@ describe('Contacts controller', function() {
         .then(function() {
           assert(scope.setLeftActionBar.called, 'left actionBar should be set');
           var actionBarArgs = scope.setLeftActionBar.getCall(0).args[0];
-          assert.deepEqual(
-            actionBarArgs,
-            {
-              userChildPlace: { type: childType, icon: icon },
-              userFacilityId : district._id
-            }
-          );
+          assert.deepEqual(actionBarArgs.userChildPlace, { type: childType, icon: icon });
+          assert.equal(actionBarArgs.userFacilityId, district._id);
+          assert(actionBarArgs.addPlaceLabel.includes(childType));
           done();
         }).catch(done);
     });

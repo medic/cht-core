@@ -13,6 +13,7 @@ var scrollLoader = require('../modules/scroll-loader');
       $scope,
       $state,
       $timeout,
+      $translate,
       ContactSchema,
       CONTACT_TYPES,
       DB,
@@ -130,7 +131,8 @@ var scrollLoader = require('../modules/scroll-loader');
         var selectedChildPlaceType = ContactSchema.getChildPlaceType(selected.doc.type);
         selectedDoc.child = {
           type: selectedChildPlaceType,
-          icon: selectedChildPlaceType ? ContactSchema.get(selectedChildPlaceType).icon : ''
+          icon: selectedChildPlaceType ? ContactSchema.get(selectedChildPlaceType).icon : '',
+          addPlaceLabel: $translate.instant('action.' + selectedChildPlaceType + '.add')
         };
         XmlForms('ContactsCtrl', { doc: selectedDoc }, function(err, forms) {
           if (err) {
@@ -181,7 +183,8 @@ var scrollLoader = require('../modules/scroll-loader');
                 defaultTypeFilter = { types: { selected: [type] }};
                 $scope.setLeftActionBar({
                   userChildPlace: { type: type, icon: (ContactSchema.get(type) ? ContactSchema.get(type).icon : '') },
-                  userFacilityId: facility_id
+                  userFacilityId: facility_id,
+                  addPlaceLabel: $translate.instant('action.' + type + '.add')
                 });
               });
         }).then(function() {
