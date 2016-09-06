@@ -449,38 +449,51 @@ var outputToCsv = function(options, tabs, callback) {
 };
 
 var outputToXml = function(options, tabs, callback) {
+  callback(null, function(write, done) {
+    var workbook = xmlbuilder.begin({ allowSurrogateChars: true, allowEmpty: true }, write)
+      .dec({ encoding: 'UTF-8' })
+      .ele('Workbook')
+      .att('xmlns', 'urn:schemas-microsoft-com:office:spreadsheet')
+      .att('xmlns:o', 'urn:schemas-microsoft-com:office:office')
+      .att('xmlns:x', 'urn:schemas-microsoft-com:office:excel')
+      .att('xmlns:html', 'http://www.w3.org/TR/REC-html140')
+      .att('xmlns:ss','urn:schemas-microsoft-com:office:spreadsheet')
+      .ins('mso-application', 'progid="Excel.Sheet"');
 
-  var workbook = xmlbuilder.create('Workbook', { encoding: 'UTF-8' }, {}, { allowSurrogateChars: true })
-    .ins('mso-application', 'progid="Excel.Sheet"')
-    .att('xmlns', 'urn:schemas-microsoft-com:office:spreadsheet')
-    .att('xmlns:o', 'urn:schemas-microsoft-com:office:office')
-    .att('xmlns:x', 'urn:schemas-microsoft-com:office:excel')
-    .att('xmlns:html', 'http://www.w3.org/TR/REC-html140')
-    .att('xmlns:ss','urn:schemas-microsoft-com:office:spreadsheet');
+    var row;
 
-  var row;
+    tabs.forEach(function(tab) {
+      var table = workbook
+        .ele('Worksheet', { 'ss:Name': tab.name })
+        .ele('Table');
 
-  tabs.forEach(function(tab) {
-    var table = workbook
-      .ele('Worksheet', { 'ss:Name': tab.name })
-      .ele('Table');
+      if (!options.skipHeader) {
+        row = table.ele('Row');
+        tab.columns.forEach(function(column) {
+          row.ele('Cell').ele('Data', {'ss:Type': 'String'}, column.label);
+          row.up().up();
+        });
+        row.up();
+      }
 
-    if (!options.skipHeader) {
-      row = table.ele('Row');
-      tab.columns.forEach(function(column) {
-        row.ele('Cell').ele('Data', {'ss:Type': 'String'}, column.label);
+      tab.data.forEach(function(cells) {
+        row = table.ele('Row');
+        cells.forEach(function(cell) {
+          // passing '' as a value creates an opening and closing element: <Foo></Foo>
+          // passing nothing or undefined create one closed element: <Foo />
+          // Converting empty string to undefined to keep it consistent
+          row.ele('Cell').ele('Data', {'ss:Type': 'String'}, cell !== '' ? cell : undefined);
+          row.up().up();
+        });
+        row.up();
       });
-    }
 
-    tab.data.forEach(function(cells) {
-      row = table.ele('Row');
-      cells.forEach(function(cell) {
-        row.ele('Cell').ele('Data', {'ss:Type': 'String'}, cell);
-      });
+      table.up().up();
     });
-  });
 
-  callback(null, workbook.end());
+    workbook.end();
+    done();
+  });
 };
 
 var getRecordsFti = function(type, params, callback) {

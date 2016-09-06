@@ -280,18 +280,26 @@ app.all([
     req.query.type = req.params.type;
     req.query.form = req.params.form || req.query.form;
     req.query.district = ctx.district;
-    exportData.get(req.query, function(err, obj) {
+    exportData.get(req.query, function(err, exportDataResult) {
       if (err) {
         return serverUtils.serverError(err, req, res);
       }
+
       var format = formats[req.query.format] || formats.csv;
       var filename = req.params.type + '-' +
                      moment().format('YYYYMMDDHHmm') +
                      '.' + format.extension;
       res
         .set('Content-Type', format.contentType)
-        .set('Content-Disposition', 'attachment; filename=' + filename)
-        .send(obj);
+        .set('Content-Disposition', 'attachment; filename=' + filename);
+
+      if (_.isFunction(exportDataResult)) {
+        // wants to stream the result back
+        exportDataResult(res.write.bind(res), res.end.bind(res));
+      } else {
+        // has already generated result to return
+        res.send(exportDataResult);
+      }
     });
   });
 });
@@ -562,7 +570,7 @@ proxy.on('proxyReq', function(proxyReq, req, res) {
     // due to Chrome (including Android WebView) aggressively requesting
     // favicons on every page change and window.history update
     // (https://github.com/medic/medic-webapp/issues/1913 ), we have to stage an
-    // intervention: 
+    // intervention:
     writeHeaders(req, res, [
       [ 'Cache-Control', 'public, max-age=604800' ],
     ]);
