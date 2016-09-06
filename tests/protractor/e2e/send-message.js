@@ -95,7 +95,7 @@ describe('Send message', function() {
     sendMessageSelect.click();
 
     element(by.css('#send-message input.select2-search__field')).sendKeys(text);
-    browser.sleep(1000); // TODO: work out how to tell that select2 has finished processing the text we've sent (even possible?)
+    browser.sleep(3000); // TODO: work out how to tell that select2 has finished processing the text we've sent (even possible?)
 
     expect(element.all(by.css('.select2-results__option')).count()).toBe(totalResults);
 
