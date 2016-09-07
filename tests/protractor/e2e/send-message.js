@@ -93,16 +93,17 @@ describe('Send message', function() {
     existingEntryCount = existingEntryCount || 0;
 
     element(by.css('#send-message input.select2-search__field')).sendKeys(text);
-    browser.sleep(3000); // TODO: work out how to tell that select2 has finished processing the text we've sent (even possible?)
+    browser.wait(function() {
+      return element.all(by.css('.select2-results__option.loading-results')).count().then(utils.countOf(0));
+    }, 3000);
 
     expect(element.all(by.css('.select2-results__option')).count()).toBe(totalResults);
+    expect(element.all(by.css('.select2-results__option.loading-results')).count()).toBe(0);
 
     expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(existingEntryCount);
     element.all(by.css('li.select2-results__option')).get(resultToClick).click();
     browser.wait(function() {
-      return element.all(by.css('li.select2-selection__choice')).count().then(function(c) {
-        return c === (existingEntryCount + 1);
-      });
+      return element.all(by.css('li.select2-selection__choice')).count().then(utils.countOf(existingEntryCount + 1));
     }, 2000);
     expect(element.all(by.css('#send-message select>option')).last().getAttribute('value')).toBe(id);
   };
@@ -208,9 +209,7 @@ describe('Send message', function() {
 
         element(by.css('#message-footer .message-actions .btn-primary')).click();
         browser.wait(function() {
-          return element.all(by.css('#message-content li')).count().then(function(c) {
-            return c === 2;
-          });
+          return element.all(by.css('#message-content li')).count().then(utils.countOf(2));
         }, 2000);
 
         expect(element.all(by.css('#message-content li')).count()).toBe(2);

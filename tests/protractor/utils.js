@@ -153,5 +153,12 @@ module.exports = {
 
   resetBrowser: function() {
     return browser.setLocation('/' + environment.dbName + '/login');
+  },
+
+  countOf: function(count) {
+    return function(c) {
+      // console.log('countOf', count, c);
+      return c === count;
+    };
   }
 };
