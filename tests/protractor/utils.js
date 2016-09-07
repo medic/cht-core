@@ -157,7 +157,6 @@ module.exports = {
 
   countOf: function(count) {
     return function(c) {
-      // console.log('countOf', count, c);
       return c === count;
     };
   }
