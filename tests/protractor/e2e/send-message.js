@@ -64,6 +64,7 @@ describe('Send message', function() {
         var ids = _.uniq(_.pluck(results.rows, 'id'));
         return protractor.promise.all(ids.map(utils.deleteDoc));
       })
+      .then(utils.resetBrowser)
       .then(done);
   });
 
@@ -90,9 +91,6 @@ describe('Send message', function() {
 
   var enterCheckAndSelect = function(text, totalResults, resultToClick, id, existingEntryCount) {
     existingEntryCount = existingEntryCount || 0;
-    var sendMessageSelect = element(by.css('#send-message .select2'));
-
-    sendMessageSelect.click();
 
     element(by.css('#send-message input.select2-search__field')).sendKeys(text);
     browser.sleep(3000); // TODO: work out how to tell that select2 has finished processing the text we've sent (even possible?)

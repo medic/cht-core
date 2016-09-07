@@ -149,5 +149,9 @@ module.exports = {
       .then(function() {
         return revertSettingsForDdoc('medic');
       });
+  },
+
+  resetBrowser: function() {
+    return browser.setLocation('/' + environment.dbName + '/login');
   }
 };
