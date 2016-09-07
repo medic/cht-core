@@ -227,6 +227,12 @@ module.exports = function(grunt) {
       }
     },
     watch: {
+      configFiles: {
+        files: [ 'Gruntfile.js', 'package.json' ],
+        options: {
+          reload: true
+        }
+      },
       css: {
         files: ['static/css/**/*'],
         tasks: ['mmcss', 'appcache', 'deploy']
