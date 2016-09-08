@@ -89,13 +89,22 @@ describe('Send message', function() {
     }, 1000);
   };
 
+  var searchSelect2 = function(text) {
+    element(by.css('#send-message input.select2-search__field')).sendKeys(text);
+    browser.wait(function() {
+      // Select2 is ajaxing away to get results
+      return element.all(by.css('.select2-results__option.loading-results')).count().then(utils.countOf(1));
+    }, 3000);
+    browser.wait(function() {
+      // Select2 has completely ajaxed and is flush with results
+      return element.all(by.css('.select2-results__option.loading-results')).count().then(utils.countOf(0));
+    }, 3000);
+  };
+
   var enterCheckAndSelect = function(text, totalResults, resultToClick, id, existingEntryCount) {
     existingEntryCount = existingEntryCount || 0;
 
-    element(by.css('#send-message input.select2-search__field')).sendKeys(text);
-    browser.wait(function() {
-      return element.all(by.css('.select2-results__option.loading-results')).count().then(utils.countOf(0));
-    }, 3000);
+    searchSelect2(text);
 
     expect(element.all(by.css('.select2-results__option')).count()).toBe(totalResults);
     expect(element.all(by.css('.select2-results__option.loading-results')).count()).toBe(0);
