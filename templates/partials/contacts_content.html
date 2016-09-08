@@ -13,13 +13,13 @@
   <div class="col-sm-8 item-content item-body" ng-show="selected && !loadingContent">
     <div class="material">
       <div class="body meta">
-        <h3>
-          <i class="fa fa-star primary" ng-show="selected.doc._id === selected.doc.parent.contact._id" translate-attr-title="Primary contact"></i>
+        <h3 class="desktop-only">
+          <i class="fa fa-star primary" ng-show="selected.doc._id === selected.doc.parent.contact._id" translate translate-attr-title="Primary contact"></i>
           {{selected.doc.name}}
         </h3>
         <div class="card">
           <div class="row">
-            <div class="col-sm-3">
+            <div class="col-sm-3" ng-show="selected.doc.type === 'person'">
               <div class="cell">
                 <label translate>Phone Number</label>
                 <p ng-if="selected.doc.phone">
@@ -28,19 +28,25 @@
                 </p>
               </div>
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-3" ng-show="selected.doc.type === 'person'">
               <div class="cell">
                 <label translate>patient_id</label>
                 <p>{{selected.doc.patient_id}}</p>
               </div>
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-3" ng-show="selected.doc.type !== 'person'">
+              <div class="cell">
+                <label translate>contact.place.id</label>
+                <p>{{selected.doc.place_id}}</p>
+              </div>
+            </div>
+            <div class="col-sm-3" ng-show="selected.doc.type === 'person'">
               <div class="cell">
                 <label translate>contact.age</label>
                 <p ng-bind-html="selected.doc.date_of_birth | age"></p>
               </div>
             </div>
-            <div class="col-sm-3">
+            <div class="col-sm-3" ng-show="selected.doc.type === 'person'">
               <div class="cell">
                 <label translate>contact.sex</label>
                 <p ng-bind-html="selected.doc.sex"></p>
@@ -79,7 +85,7 @@
             <div class="col-sm-12">
               <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell">
                 <div class="pull-right" ng-bind-html="child.doc.date_of_birth | age"></div>
-                <i class="fa fa-star primary" ng-show="child.doc._id === selected.doc.contact._id" translate-attr-title="Primary contact"></i>
+                <i class="fa fa-star primary" ng-show="child.doc._id === selected.doc.contact._id" translate translate-attr-title="Primary contact"></i>
                 {{child.doc.name}}
               </a>
             </div>
