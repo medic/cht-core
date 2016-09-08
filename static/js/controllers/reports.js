@@ -548,7 +548,7 @@ var _ = require('underscore'),
 
       $scope.$on('$stateChangeStart', function(event, toState) {
         if (toState.name.indexOf('reports') === -1) {
-          $scope.resetSelected();
+          $scope.unsetSelected();
         }
       });
     }

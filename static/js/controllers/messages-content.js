@@ -217,7 +217,7 @@ var _ = require('underscore'),
 
       $scope.$on('$stateChangeStart', function(event, toState) {
         if (toState.name.indexOf('messages.detail') === -1) {
-          $scope.resetSelected();
+          $scope.unsetSelected();
         }
       });
 

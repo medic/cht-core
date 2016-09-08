@@ -155,7 +155,10 @@ var feedback = require('../modules/feedback'),
         });
       };
 
-      $scope.resetSelected = function() {
+      /**
+       * Unset the selected item without navigation
+       */
+      $scope.unsetSelected = function() {
         $scope.setShowContent(false);
         $scope.loadingContent = false;
         $scope.showActionBar = false;
@@ -163,11 +166,14 @@ var feedback = require('../modules/feedback'),
         $scope.$broadcast('ClearSelected');
       };
 
+      /**
+       * Clear the selected item - may update the URL
+       */
       $scope.clearSelected = function() {
         if ($stateParams.id) {
           $state.go($state.current.name, { id: null });
         } else {
-          $scope.resetSelected();
+          $scope.unsetSelected();
         }
       };
 

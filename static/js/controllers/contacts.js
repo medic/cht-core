@@ -217,7 +217,7 @@ var scrollLoader = require('../modules/scroll-loader');
 
       $scope.$on('$stateChangeStart', function(event, toState) {
         if (toState.name.indexOf('contacts') === -1) {
-          $scope.resetSelected();
+          $scope.unsetSelected();
         }
       });
 
