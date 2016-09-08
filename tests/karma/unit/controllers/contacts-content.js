@@ -72,7 +72,7 @@ describe('ContactsContentCtrl', function() {
 
   it('setSelected contact passed in $stateParams', function(done) {
     runTest(done, [childPerson, childPlace], function(selected) {
-      assert.equal(scope.setSelected.getCall(0).args[0].doc._id, doc._id);
+      assert.equal(selected.doc._id, doc._id);
     });
   });
 
