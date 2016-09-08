@@ -3,23 +3,27 @@ describe('Contacts controller', function() {
   'use strict';
 
   var assert = chai.assert,
+    buttonLabel,
+    buttonLabelTranslated,
     childType,
     contactSchema,
     createController,
+    district,
     forms,
     icon,
+    person,
     scope,
     userSettings,
     $rootScope;
 
-  var district = { _id: 'abcde', name: 'My District', type: 'district_hospital'};
-  var person = { _id: 'lkasdfh', name: 'Alon', type: 'person'};
-
   beforeEach(module('inboxApp'));
 
   beforeEach(inject(function(_$rootScope_, $controller) {
+    district = { _id: 'abcde', name: 'My District', type: 'district_hospital'};
+    person = { _id: 'lkasdfh', name: 'Alon', type: 'person'};
     childType = 'childType';
     icon = 'fa-la-la-la-la';
+    buttonLabel = 'ClICK ME!!';
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     scope.setTitle = sinon.stub();
@@ -28,8 +32,8 @@ describe('Contacts controller', function() {
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
     contactSchema = { get: sinon.stub(), getChildPlaceType: sinon.stub() };
+    contactSchema.get.returns({ icon: icon, addButtonLabel : buttonLabel });
     contactSchema.getChildPlaceType.returns(childType);
-    contactSchema.get.returns({ icon: icon});
     var xmlForms = sinon.stub();
     forms = 'forms';
     xmlForms.callsArgWith(2, null, forms); // call the callback
@@ -42,6 +46,7 @@ describe('Contacts controller', function() {
         '$q': Q,
         '$state': { includes: sinon.stub() },
         '$timeout': sinon.stub(),
+        '$translate': KarmaUtils.promiseService(null, buttonLabelTranslated),
         'ContactSchema': contactSchema,
         'DB': function() { return { get: KarmaUtils.promiseService(null, district) }; },
         'LiveList': { contacts: { initialised: sinon.stub(), setSelected: sinon.stub() } },
@@ -58,50 +63,53 @@ describe('Contacts controller', function() {
   });
 
   describe('sets right actionBar', function() {
-    var testRightActionBar = function(selectedDoc, assertions) {
-      createController();
-      scope.setSelected({ doc: selectedDoc});
-      assert(scope.setRightActionBar.called, 'right actionBar should be set');
-      var actionBarArgs = scope.setRightActionBar.getCall(0).args[0];
-      assertions(actionBarArgs);
+    var testRightActionBar = function(done, selectedDoc, assertions) {
+      createController().getSetupPromiseForTesting()
+        .then(function() {
+          return scope.setSelected({ doc: selectedDoc});
+        }).then(function() {
+          assert(scope.setRightActionBar.called, 'right actionBar should be set');
+          var actionBarArgs = scope.setRightActionBar.getCall(0).args[0];
+          assertions(actionBarArgs);
+          done();
+        }).catch(done);
     };
 
-    it('with the selected doc', function() {
-      testRightActionBar(district, function(actionBarArgs) {
+    it('with the selected doc', function(done) {
+      testRightActionBar(done, district, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.selected[0], district);
       });
     });
 
-    it('for the New Place button', function() {
-      testRightActionBar(district, function(actionBarArgs) {
+    it('for the New Place button', function(done) {
+      testRightActionBar(done, district, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.selected[0].child.type, childType);
         assert.deepEqual(actionBarArgs.selected[0].child.icon, icon);
-        assert(actionBarArgs.selected[0].child.addPlaceLabel.includes(childType));
+        assert.equal(actionBarArgs.selected[0].child.addPlaceLabel, buttonLabelTranslated);
       });
     });
 
-    it('no New Place button if no child type', function() {
-      contactSchema.getChildPlaceType.returns('');
-      testRightActionBar(district, function(actionBarArgs) {
-        assert.deepEqual(actionBarArgs.selected[0].child.type, '');
-        assert.deepEqual(actionBarArgs.selected[0].child.icon, '');
+    it('no New Place button if no child type', function(done) {
+      contactSchema.getChildPlaceType.returns(undefined);
+      testRightActionBar(done, district, function(actionBarArgs) {
+        assert.deepEqual(actionBarArgs.selected[0].child, undefined);
       });
     });
 
-    it('for the Message and Call buttons', function() {
-      testRightActionBar(person, function(actionBarArgs) {
+    it('for the Message and Call buttons', function(done) {
+      testRightActionBar(done, person, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.sendTo, person);
       });
     });
 
-    it('no Message and Call buttons if doc is not person', function() {
-      testRightActionBar(district, function(actionBarArgs) {
+    it('no Message and Call buttons if doc is not person', function(done) {
+      testRightActionBar(done, district, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.sendTo, '');
       });
     });
 
-    it('for the New Action button', function() {
-      testRightActionBar(person, function(actionBarArgs) {
+    it('for the New Action button', function(done) {
+      testRightActionBar(done, person, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.relevantForms, forms);
       });
     });
@@ -115,7 +123,7 @@ describe('Contacts controller', function() {
           var actionBarArgs = scope.setLeftActionBar.getCall(0).args[0];
           assert.deepEqual(actionBarArgs.userChildPlace, { type: childType, icon: icon });
           assert.equal(actionBarArgs.userFacilityId, district._id);
-          assert(actionBarArgs.addPlaceLabel.includes(childType));
+          assert.equal(actionBarArgs.addPlaceLabel, buttonLabelTranslated);
           done();
         }).catch(done);
     });

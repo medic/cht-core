@@ -122,30 +122,46 @@ var scrollLoader = require('../modules/scroll-loader');
           });
       };
 
+      var getActionBarDataForChild = function(docType) {
+        var selectedChildPlaceType = ContactSchema.getChildPlaceType(docType);
+        if (!selectedChildPlaceType) {
+          return $q.resolve();
+        }
+        var child = {
+          type: selectedChildPlaceType,
+          icon: selectedChildPlaceType ? ContactSchema.get(selectedChildPlaceType).icon : ''
+        };
+        return $translate(ContactSchema.get(selectedChildPlaceType).addButtonLabel)
+          .then(function(label) {
+            child.addPlaceLabel = label;
+            return child;
+          });
+      };
+
       $scope.setSelected = function(selected) {
         liveList.setSelected(selected.doc._id);
         $scope.selected = selected;
         $scope.setTitle(selected.doc.name);
         $scope.clearCancelTarget();
         var selectedDoc = selected.doc;
-        var selectedChildPlaceType = ContactSchema.getChildPlaceType(selected.doc.type);
-        selectedDoc.child = {
-          type: selectedChildPlaceType,
-          icon: selectedChildPlaceType ? ContactSchema.get(selectedChildPlaceType).icon : '',
-          addPlaceLabel: $translate.instant('action.' + selectedChildPlaceType + '.add')
-        };
-        XmlForms('ContactsCtrl', { doc: selectedDoc }, function(err, forms) {
-          if (err) {
-            return $log.error('Error fetching relevant forms', err);
-          }
-          $scope.setRightActionBar({
-            selected: [ selectedDoc ],
-            relevantForms: forms,
-            sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
-            disableDelete: (selected.children && selected.children.length) ||
-                           (selected.contactFor && selected.contactFor.length)
+        return getActionBarDataForChild(selectedDoc.type)
+          .then(function(data) {
+            if (data) {
+              selectedDoc.child = data;
+            }
+            XmlForms('ContactsCtrl', { doc: selectedDoc }, function(err, forms) {
+              if (err) {
+                return $log.error('Error fetching relevant forms', err);
+              }
+              $scope.setRightActionBar({
+                selected: [ selectedDoc ],
+                relevantForms: forms,
+                sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
+                disableDelete: (selected.children && selected.children.length) ||
+                               (selected.contactFor && selected.contactFor.length)
+              });
+            });
           });
-        });
       };
 
       $scope.$on('ClearSelected', function() {
@@ -178,14 +194,19 @@ var scrollLoader = require('../modules/scroll-loader');
 
       var setupPromise = getUserFacilityId()
         .then(function(facility_id) {
+          var actionBarData = { userFacilityId: facility_id };
           return facility_id && getUserChildPlaceType(facility_id)
               .then(function(type) {
                 defaultTypeFilter = { types: { selected: [type] }};
-                $scope.setLeftActionBar({
-                  userChildPlace: { type: type, icon: (ContactSchema.get(type) ? ContactSchema.get(type).icon : '') },
-                  userFacilityId: facility_id,
-                  addPlaceLabel: $translate.instant('action.' + type + '.add')
-                });
+                actionBarData.userChildPlace =
+                  {
+                    type: type,
+                    icon: (ContactSchema.get(type) ? ContactSchema.get(type).icon : '')
+                  };
+                return $translate(ContactSchema.get(type).addButtonLabel);
+              }).then(function(label) {
+                actionBarData.addPlaceLabel = label;
+                $scope.setLeftActionBar(actionBarData);
               });
         }).then(function() {
           $scope.search();

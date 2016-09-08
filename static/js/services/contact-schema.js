@@ -2,6 +2,7 @@ var _ = require('underscore');
 
 var CLINIC = {
   icon: 'fa-group',
+  addButtonLabel: 'action.clinic.add',
   fields: {
     name: {
       type: 'string',
@@ -25,6 +26,7 @@ var CLINIC = {
 
 var DISTRICT_HOSPITAL = {
   icon: 'fa-building',
+  addButtonLabel: 'action.district_hospital.add',
   fields: {
     name: {
       type: 'string',
@@ -42,6 +44,7 @@ var DISTRICT_HOSPITAL = {
 
 var HEALTH_CENTER = {
   icon: 'fa-hospital-o',
+  addButtonLabel: 'action.health_center.add',
   fields: {
     name: {
       type: 'string',
@@ -63,6 +66,7 @@ var HEALTH_CENTER = {
 
 var PERSON = {
   icon: 'fa-user',
+  addButtonLabel: 'action.person.add',
   fields: {
     name: {
       type: 'string',

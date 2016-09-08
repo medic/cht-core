@@ -36,7 +36,7 @@ module.exports = function(config) {
       'tests/karma/utils.js',
 
       // test files
-      'tests/karma/unit/**/*.js'
+      'tests/karma/unit/controllers/contacts.js'
     ]
   });
 
