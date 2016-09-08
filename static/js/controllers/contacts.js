@@ -149,17 +149,19 @@ var scrollLoader = require('../modules/scroll-loader');
             if (data) {
               selectedDoc.child = data;
             }
+            var actionBarData = {
+              selected: [ selectedDoc ],
+              sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
+              disableDelete: (selected.children && selected.children.length) ||
+                             (selected.contactFor && selected.contactFor.length)
+            };
             XmlForms('ContactsCtrl', { doc: selectedDoc }, function(err, forms) {
               if (err) {
-                return $log.error('Error fetching relevant forms', err);
+                $log.error('Error fetching relevant forms', err);
+              } else {
+                actionBarData.relevantForms = forms;
               }
-              $scope.setRightActionBar({
-                selected: [ selectedDoc ],
-                relevantForms: forms,
-                sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
-                disableDelete: (selected.children && selected.children.length) ||
-                               (selected.contactFor && selected.contactFor.length)
-              });
+              $scope.setRightActionBar(actionBarData);
             });
           });
       };

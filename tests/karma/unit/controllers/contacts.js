@@ -14,6 +14,7 @@ describe('Contacts controller', function() {
     person,
     scope,
     userSettings,
+    xmlForms,
     $rootScope;
 
   beforeEach(module('inboxApp'));
@@ -34,7 +35,7 @@ describe('Contacts controller', function() {
     contactSchema = { get: sinon.stub(), getChildPlaceType: sinon.stub() };
     contactSchema.get.returns({ icon: icon, addButtonLabel : buttonLabel });
     contactSchema.getChildPlaceType.returns(childType);
-    var xmlForms = sinon.stub();
+    xmlForms = sinon.stub();
     forms = 'forms';
     xmlForms.callsArgWith(2, null, forms); // call the callback
     userSettings = KarmaUtils.promiseService(null, { facility_id: district._id });
@@ -42,7 +43,7 @@ describe('Contacts controller', function() {
       return $controller('ContactsCtrl', {
         '$scope': scope,
         '$rootScope': $rootScope,
-        '$log': sinon.stub(),
+        '$log': { error: sinon.stub() },
         '$q': Q,
         '$state': { includes: sinon.stub() },
         '$timeout': sinon.stub(),
@@ -91,8 +92,12 @@ describe('Contacts controller', function() {
 
     it('no New Place button if no child type', function(done) {
       contactSchema.getChildPlaceType.returns(undefined);
-      testRightActionBar(done, district, function(actionBarArgs) {
+      testRightActionBar(done, person, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.selected[0].child, undefined);
+        // But the other buttons are there!
+        assert.deepEqual(actionBarArgs.relevantForms, forms);
+        assert.deepEqual(actionBarArgs.sendTo, person);
+        assert.deepEqual(actionBarArgs.selected[0]._id, person._id);
       });
     });
 
@@ -113,6 +118,19 @@ describe('Contacts controller', function() {
         assert.deepEqual(actionBarArgs.relevantForms, forms);
       });
     });
+
+    it('sets the actionbar partially if it couldn\'t get forms', function(done) {
+      xmlForms.callsArgWith(2, { error: 'no forms brew'}); // call the callback
+      testRightActionBar(done, person, function(actionBarArgs) {
+        assert.deepEqual(actionBarArgs.relevantForms, undefined);
+        assert.deepEqual(actionBarArgs.sendTo, person);
+        assert.deepEqual(actionBarArgs.selected[0]._id, person._id);
+        assert.deepEqual(actionBarArgs.selected[0].child.type, childType);
+        assert.deepEqual(actionBarArgs.selected[0].child.icon, icon);
+        assert.equal(actionBarArgs.selected[0].child.addPlaceLabel, buttonLabelTranslated);
+      });
+    });
+
   });
 
   describe('sets left actionBar', function() {
