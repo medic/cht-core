@@ -77,11 +77,27 @@
         </div>
       </div>
 
-      <div ng-if="selected.doc.type !== 'person'">
+      <div ng-if="selected.children.persons">
+        <h4 translate>People</h4>
+        <div class="card action-list children">
+          <div class="accent"></div>
+          <div class="row" ng-repeat="child in selected.children.persons">
+            <div class="col-sm-12">
+              <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell">
+                <div class="pull-right" ng-bind-html="child.doc.date_of_birth | age"></div>
+                <i class="fa fa-star primary" ng-show="child.doc._id === selected.doc.contact._id" translate translate-attr-title="Primary contact"></i>
+                {{child.doc.name}}
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div ng-if="selected.children.places">
         <h4 translate>{{selected.doc.type + '.field.children'}}</h4>
         <div class="card action-list children">
           <div class="accent"></div>
-          <div class="row" ng-repeat="child in selected.children">
+          <div class="row" ng-repeat="child in selected.children.places">
             <div class="col-sm-12">
               <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell">
                 <div class="pull-right" ng-bind-html="child.doc.date_of_birth | age"></div>
