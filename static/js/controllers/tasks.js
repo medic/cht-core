@@ -65,10 +65,9 @@ var _ = require('underscore');
         }
       });
 
-      $scope.$on('$destroy', function() {
-        if (!$state.includes('tasks')) {
-          $scope.setTitle();
-          $scope.clearSelected();
+      $scope.$on('$stateChangeStart', function(event, toState) {
+        if (toState.name.indexOf('tasks') === -1) {
+          $scope.resetSelected();
         }
       });
 

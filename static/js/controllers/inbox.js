@@ -155,15 +155,19 @@ var feedback = require('../modules/feedback'),
         });
       };
 
+      $scope.resetSelected = function() {
+        $scope.setShowContent(false);
+        $scope.loadingContent = false;
+        $scope.showActionBar = false;
+        $scope.setTitle();
+        $scope.$broadcast('ClearSelected');
+      };
+
       $scope.clearSelected = function() {
         if ($stateParams.id) {
           $state.go($state.current.name, { id: null });
         } else {
-          $scope.setShowContent(false);
-          $scope.loadingContent = false;
-          $scope.showActionBar = false;
-          $scope.setTitle();
-          $scope.$broadcast('ClearSelected');
+          $scope.resetSelected();
         }
       };
 
@@ -201,10 +205,8 @@ var feedback = require('../modules/feedback'),
       };
 
       $scope.setLoadingContent = function(id) {
-        $timeout(function() {
-          $scope.loadingContent = id;
-          $scope.setShowContent(true);
-        });
+        $scope.loadingContent = id;
+        $scope.setShowContent(true);
       };
 
       $scope.isRead = function(message) {

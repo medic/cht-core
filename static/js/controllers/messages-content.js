@@ -215,12 +215,12 @@ var _ = require('underscore'),
           $('#message-footer').removeClass('sending');
         });
 
-      $scope.$on('$destroy', function() {
-        if (!$state.includes('messages.detail')) {
-          $scope.setTitle();
-          $scope.clearSelected();
+      $scope.$on('$stateChangeStart', function(event, toState) {
+        if (toState.name.indexOf('messages.detail') === -1) {
+          $scope.resetSelected();
         }
       });
+
     }
   );
 

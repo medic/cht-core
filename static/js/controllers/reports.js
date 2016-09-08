@@ -546,10 +546,9 @@ var _ = require('underscore'),
 
       $scope.$on('DeselectAll', deselectAll);
 
-      $scope.$on('$destroy', function() {
-        if (!$state.includes('reports')) {
-          $scope.setTitle();
-          $scope.clearSelected();
+      $scope.$on('$stateChangeStart', function(event, toState) {
+        if (toState.name.indexOf('reports') === -1) {
+          $scope.resetSelected();
         }
       });
     }

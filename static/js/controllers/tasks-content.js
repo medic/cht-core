@@ -79,11 +79,10 @@
           });
       };
 
-      $scope.$on('$destroy', function() {
-        if (!$state.includes('tasks.detail')) {
+      $scope.$on('$stateChangeStart', function(event, toState) {
+        if (toState.name.indexOf('tasks.detail') === -1) {
           Enketo.unload($scope.form);
-          $scope.setTitle();
-          $scope.clearSelected();
+          $scope.resetSelected();
         }
       });
 

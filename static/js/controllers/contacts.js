@@ -192,10 +192,9 @@ var scrollLoader = require('../modules/scroll-loader');
         });
       this.getSetupPromiseForTesting = function() { return setupPromise; };
 
-      $scope.$on('$destroy', function() {
-        if (!$state.includes('contacts')) {
-          $scope.setTitle();
-          $scope.clearSelected();
+      $scope.$on('$stateChangeStart', function(event, toState) {
+        if (toState.name.indexOf('contacts') === -1) {
+          $scope.resetSelected();
         }
       });
 
