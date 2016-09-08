@@ -99,14 +99,6 @@ var _ = require('underscore');
           });
       };
 
-      var getContactFor = function(id) {
-        var options = {
-          key: [ id ],
-          include_docs: true
-        };
-        return DB().query('medic-client/places_by_contact', options);
-      };
-
       var selectedSchemaVisibleFields = function(selected) {
         var fields = ContactSchema.getVisibleFields()[selected.doc.type].fields;
         // date of birth is shown already
@@ -119,17 +111,28 @@ var _ = require('underscore');
         return fields;
       };
 
+      var childrenWithContactPersonOnTop = function(children, parent) {
+        var contactPersonId = parent.contact && parent.contact._id;
+        if (!contactPersonId) {
+          return children;
+        }
+        var split = _.partition(children, function(child) {
+          return child.doc._id === contactPersonId;
+        });
+        return split[0].concat(split[1]);
+      };
+
       var getInitialData = function(contactId) {
         return $q.all([
           DB().get(contactId),
-          getChildren(contactId),
-          getContactFor(contactId)
+          getChildren(contactId)
         ])
           .then(function(results) {
+            var children = results[1];
+            children.persons = childrenWithContactPersonOnTop(children.persons, results[0]);
             var selected = {
               doc: results[0],
-              children: results[1],
-              contactFor: results[2].rows,
+              children: children
             };
             if (selected.children.places && selected.children.places.length) {
               selected.children.childPlaceType = selected.children.places[0].doc.type + '.plural';
