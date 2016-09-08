@@ -30,8 +30,18 @@ var _ = require('underscore'),
     var momentDate = moment(date);
     var absolute = getAbsoluteDateString(momentDate, options);
     var relative = getRelativeDateString(momentDate, options);
+    var classes = ['relative-date'];
+    var now = moment();
+    if (options.withoutTime) {
+      now = now.startOf('day');
+    }
+    if (momentDate.isBefore(now)) {
+      classes.push('past');
+    } else {
+      classes.push('future');
+    }
     return options.prefix +
-           '<span class="relative-date" title="' + absolute + '">' +
+           '<span class="' + classes.join(' ') + '" title="' + absolute + '">' +
              '<span class="relative-date-content">' + relative + '</span>' +
            '</span>' +
            options.suffix;

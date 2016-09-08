@@ -12,110 +12,112 @@
 
   <div class="col-sm-8 item-content item-body" ng-show="selected && !loadingContent">
     <div class="material">
-
-      <div class="body col-sm-12">
-        <div class="meta">
-          <h2>{{selected.doc.name}}</h2>
-          <p ng-show="selected.doc.date_of_birth" ng-bind-html="selected.doc.date_of_birth | age"></p>
-          <p ng-show="showParentLink">
-            <a ui-sref="contacts.detail({ id: selected.doc.parent._id })">{{selected.doc.parent.name}}</a>
-          </p>
-        </div>
-        <div id="details" class="panel-group" ng-show="selected.fields.length || selected.contactFor.length">
-          <div class="panel-heading">
-            <span class="panel-title">
-              <a class="collapsed" data-toggle="collapse" data-parent="#details" href="#detailsContent" aria-controls="detailsContent">Details</a>
-            </span>
+      <div class="body meta">
+        <h3>
+          <i class="fa fa-star primary" ng-show="selected.doc._id === selected.doc.parent.contact._id" translate-attr-title="Primary contact"></i>
+          {{selected.doc.name}}
+        </h3>
+        <div class="card">
+          <div class="row">
+            <div class="col-sm-3">
+              <div class="cell">
+                <label translate>Phone Number</label>
+                <p ng-if="selected.doc.phone">
+                  <a href="tel:{{selected.doc.phone}}" class="mobile-only">{{selected.doc.phone}}</a>
+                  <span class="desktop-only">{{selected.doc.phone}}</span>
+                </p>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="cell">
+                <label translate>patient_id</label>
+                <p>{{selected.doc.patient_id}}</p>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="cell">
+                <label translate>contact.age</label>
+                <p ng-bind-html="selected.doc.date_of_birth | age"></p>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="cell">
+                <label translate>contact.sex</label>
+                <p ng-bind-html="selected.doc.sex"></p>
+              </div>
+            </div>
           </div>
-          <div id="detailsContent" class="collapse">
-            <div class="card">
-              <ul class="field-list">
-                <li ng-repeat="(name, conf) in selected.fields" ng-if="selected.doc[name]">
-                  <label>{{selected.doc.type + '.field.' + name | translate}}</label>
-                  <p>
-                    <span ng-if="conf.type === 'tel'">
-                      <a href="tel:{{selected.doc[name]}}" class="mobile-only">{{selected.doc[name]}}</a>
-                      <span class="desktop-only">{{selected.doc[name]}}</span>
-                    </span>
-                    <span ng-if="conf.type === 'date' && name !== 'date_of_birth'" ng-bind-html="selected.doc[name] | fullDate"></span>
-                    <span ng-if="conf.type.indexOf('db:') === 0"><a ui-sref="contacts.detail({ id: selected.doc[name]._id })">{{selected.doc[name].name}}</a></span>
-                    <span ng-if="conf.type !== 'tel' && conf.type !== 'date' && conf.type.indexOf('db:') !== 0">{{selected.doc[name]}} : {{conf.type}}</span>
-                  </p>
-                </li>
-                <li ng-if="selected.contactFor.length">
-                  <label translate>Primary Contact For</label>
-                  <ul>
-                    <li class="row" ng-repeat="place in selected.contactFor">
-                      <div class="col-sm-4">
-                        <a ui-sref="contacts.detail({ id: place.doc._id })">{{place.doc.name}}</a>
-                      </div>
-                      <div class="col-sm-8" ng-bind-html="place.doc.parent | clinic"></div>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="cell">
+                <label translate>contact.parent</label>
+                <p ng-show="showParentLink">
+                  <a ui-sref="contacts.detail({ id: selected.doc.parent._id })">{{selected.doc.parent.name}}</a>
+                </p>
+                <p ng-show="!showParentLink">
+                  {{selected.doc.parent.name}}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="cell">
+                <label translate>Notes</label>
+                <p>{{selected.doc.notes}}</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div>
-        <div class="col-sm-4" ng-if="selected.doc.type !== 'person'">
-          <h3>{{selected.doc.type + '.field.children' | translate}}</h3>
-          <div class="card action-list">
-            <ul>
-              <li ng-repeat="child in selected.children">
-                <a ui-sref="contacts.detail({ id: child.doc._id })">
-                  <div>
-                    <i class="fa fa-star" ng-show="child.doc._id === selected.doc.contact._id" translate-attr-title="Primary contact"></i>
-                    {{child.doc.name}}
-                  </div>
-                  <div class="subtext">{{child.doc.contact.name}}</div>
-                  <div class="subtext" ng-bind-html="child.doc.date_of_birth | age"></div>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="col-sm-4" ng-if="(selected.tasks | filter:{resolved:false}:strict).length">
-          <h3 translate>Tasks</h3>
-          <div class="card action-list">
-            <ul>
-              <li ng-repeat="task in selected.tasks | filter:{resolved:false}:strict | orderBy:'date'">
-                <a ui-sref="tasks.detail({ id: task._id })">
-                  <span ng-bind-html="task.icon | resourceIcon" class="action-icon"></span>
-                  <div>{{task.title | translateFrom:task}}</div>
-                  <div ng-bind-html="task.date | relativeDay" class="subtext"></div>
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="col-sm-4" ng-if="relevantForms.length">
-          <h3 translate>Submit Report</h3>
-          <div class="card action-list">
-            <ul>
-              <li ng-repeat="form in relevantForms">
-                <a ui-sref="contacts.report({ id: selected.doc._id, formId: form.internalId })">
-                  {{form.title | translateFrom}}
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="col-sm-4" ng-if="selected.reports.length">
-          <h3 translate>Reports</h3>
-          <div class="card action-list">
-            <ul>
-              <li ng-repeat="report in selected.reports track by report._id">
-                <a ui-sref="reports.detail({ id: report._id })">
-                  <div>{{report | summary:forms}}</div>
-                  <div ng-bind-html="report.reported_date | relativeDate" class="subtext"></div>
-                </a>
-              </li>
-            </ul>
+
+      <div ng-if="selected.doc.type !== 'person'">
+        <h4 translate>{{selected.doc.type + '.field.children'}}</h4>
+        <div class="card action-list children">
+          <div class="accent"></div>
+          <div class="row" ng-repeat="child in selected.children">
+            <div class="col-sm-12">
+              <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell">
+                <div class="pull-right" ng-bind-html="child.doc.date_of_birth | age"></div>
+                <i class="fa fa-star primary" ng-show="child.doc._id === selected.doc.contact._id" translate-attr-title="Primary contact"></i>
+                {{child.doc.name}}
+              </a>
+            </div>
           </div>
         </div>
       </div>
+
+      <div ng-if="(selected.tasks | filter:{resolved:false}:strict).length">
+        <h4 translate>Tasks</h4>
+        <div class="card action-list tasks">
+          <div class="accent"></div>
+          <div class="row" ng-repeat="task in selected.tasks | filter:{resolved:false}:strict | orderBy:'date'">
+            <div class="col-sm-12">
+              <a ui-sref="tasks.detail({ id: task._id })" class="cell">
+                <div ng-bind-html="task.date | relativeDay" class="pull-right"></div>
+                <span ng-bind-html="task.icon | resourceIcon" class="action-icon"></span>
+                <div>{{task.title | translateFrom:task}}</div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div ng-if="selected.reports.length">
+        <h4 translate>Reports</h4>
+        <div class="card action-list reports">
+          <div class="accent"></div>
+          <div class="row" ng-repeat="report in selected.reports track by report._id">
+            <div class="col-sm-12">
+              <a ui-sref="reports.detail({ id: report._id })" class="cell">
+                <div ng-bind-html="report.reported_date | relativeDate" class="pull-right"></div>
+                <div>{{report | summary:forms}}</div>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="padding"></div>
     </div>
   </div>

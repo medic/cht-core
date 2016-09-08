@@ -528,6 +528,11 @@ body {
 }
 
 .contacts {
+  .fa-star.primary {
+    color: @primary-color;
+    font-size: 12px;
+    vertical-align: middle;
+  }
   .inbox-items li {
     .message-wrapper:hover {
       border-left-color: @contacts-color;
@@ -542,19 +547,39 @@ body {
       margin-top: 0.42em;
     }
   }
-  .item-content {
-    .contact-tasks {
-      vertical-align: middle;
+  .action-list {
+    .accent {
+      border-top: 5px solid transparent;
     }
-    li li {
-      padding-top: 0.5em;
+    .row a {
+      border-left: 5px solid transparent;
     }
-    .meta {
-      padding: 1em 0;
+  }
+  .action-list.children {
+    .accent,
+    .row a:hover {
+      border-color: @contacts-color;
     }
-    h2 {
-      margin-bottom: 0;
+  }
+  .action-list.tasks {
+    .accent,
+    .row a:hover {
+      border-color: @tasks-color;
     }
+    .relative-date.past {
+      color: @error-color;
+    }
+  }
+  .action-list.reports {
+    .accent,
+    .row a:hover {
+      border-color: @reports-color;
+    }
+  }
+  h4 {
+    padding-left: 15px;
+    margin-top: 20px;
+    margin-bottom: 5px;
   }
 }
 
@@ -882,7 +907,6 @@ a.fa:hover {
       }
     }
   }
-
 
   .task-list > li {
     margin-top: 1em;
@@ -1291,6 +1315,9 @@ a.fa:hover {
   .inbox-items .selection-count,
   .general-actions .delete-all {
     display: block;
+  }
+  .contacts h4 {
+    padding-left: 0;
   }
   .filters {
     padding: 0;
