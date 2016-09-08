@@ -4,6 +4,17 @@ var _ = require('underscore');
 
   'use strict';
 
+  exports.contactsubtitle = function(doc) {
+    switch(doc.type) {
+      case 'person':
+        return doc.parent && doc.parent.name || 'unknown';
+      case 'clinic':
+        return '' + (doc.childCount || 0) + ' Family Members';
+      default:
+        return 'Primary contact: ' + (doc.contact && doc.contact.name || 'unknown');
+    }
+  };
+
   exports.clinic = function(entity) {
     var parts;
     if (_.isArray(entity)) {

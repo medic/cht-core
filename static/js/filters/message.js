@@ -59,4 +59,8 @@ var format = require('../modules/format'),
     return format.clinic;
   });
 
+  module.filter('contactsubtitle', function () {
+    return format.contactsubtitle;
+  });
+
 }());

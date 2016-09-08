@@ -1,13 +1,13 @@
 <li class="{{contact.place.length ? '' : 'orphan'}}">
   <a class="message-wrapper" href="#contacts/{{contact._id}}">
-    <span class="mm-badge">
-      <span class="fa {{contact.type === 'person' ? 'fa-user' : ''}} {{contact.type === 'clinic' ? 'fa-group' : ''}} {{contact.type === 'health_center' ? 'fa-hospital-o' : ''}} {{contact.type === 'district_hospital' ? 'fa-building' : ''}}"></span>
-    </span>
+    <img src="../static/img/icon-{{contact.type}}.svg"/>
     <div class="detail">
       <div class="sender">
         <div>
           <span class="name">{{contact.name}}</span>
         </div>
+        <pre style="display:none">{{ contact | json }}</pre>
+        <div class="subtitle">{{ contact | contactsubtitle }}</div>
       </div>
     </div>
   </a>
