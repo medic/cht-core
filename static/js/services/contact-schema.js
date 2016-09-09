@@ -2,8 +2,10 @@ var _ = require('underscore');
 
 var CLINIC = {
   icon: 'fa-group',
-  addButtonLabel: 'action.clinic.add',
+  addButtonLabel: 'contact.type.clinic.new',
   isPlace: true,
+  label: 'contact.type.clinic',
+  pluralLabel: 'contact.type.clinic.plural',
   fields: {
     name: {
       type: 'string',
@@ -27,8 +29,10 @@ var CLINIC = {
 
 var DISTRICT_HOSPITAL = {
   icon: 'fa-building',
-  addButtonLabel: 'action.district_hospital.add',
+  addButtonLabel: 'contact.type.district_hospital.new',
   isPlace: true,
+  label: 'contact.type.district_hospital',
+  pluralLabel: 'contact.type.district_hospital.plural',
   fields: {
     name: {
       type: 'string',
@@ -46,8 +50,10 @@ var DISTRICT_HOSPITAL = {
 
 var HEALTH_CENTER = {
   icon: 'fa-hospital-o',
-  addButtonLabel: 'action.health_center.add',
+  addButtonLabel: 'contact.type.health_center.new',
   isPlace: true,
+  label: 'contact.type.health_center',
+  pluralLabel: 'contact.type.health_center.plural',
   fields: {
     name: {
       type: 'string',
@@ -69,8 +75,10 @@ var HEALTH_CENTER = {
 
 var PERSON = {
   icon: 'fa-user',
-  addButtonLabel: 'action.person.add',
+  addButtonLabel: 'contact.type.person.new',
   isPlace: false,
+  label: 'contact.type.person',
+  pluralLabel: 'contact.type.person.plural',
   fields: {
     name: {
       type: 'string',

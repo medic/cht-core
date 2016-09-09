@@ -12,6 +12,7 @@ var _ = require('underscore');
       $q,
       $scope,
       $stateParams,
+      $translate,
       Changes,
       ContactSchema,
       DB,
@@ -119,28 +120,62 @@ var _ = require('underscore');
         var split = _.partition(children, function(child) {
           return child.doc._id === contactPersonId;
         });
+        if (split[0].length) {
+          split[0][0].doc.isPrimaryContact = true;
+        }
         return split[0].concat(split[1]);
+      };
+
+      var isContactPrimaryContact = function(contactDoc) {
+        if (!contactDoc.parent || !contactDoc.parent._id) {
+          return $q.resolve(false);
+        }
+        // Fetch parent to check if person is primary contact.
+        // We don't rely on contactDoc.parent.contact, because it's a circular dependency so
+        // it'll disappear in data cleanup eventually.
+        return DB().get(contactDoc.parent._id)
+          .then(function(parent) {
+            return parent.contact && parent.contact._id &&
+              (parent.contact._id === contactDoc._id);
+          }).catch(function(err) {
+            $log.error(err);
+            return false;
+          });
       };
 
       var getInitialData = function(contactId) {
         return $q.all([
-          DB().get(contactId),
-          getChildren(contactId),
-          Search('reports', { subjectIds: [ contactId ] })
-        ])
+            DB().get(contactId),
+            Search('reports', { subjectIds: [ contactId ] })
+          ])
           .then(function(results) {
+            var contactDoc = results[0];
             var selected = {
-              doc: results[0],
-              reports: results[2]
+              doc: contactDoc,
+              reports: results[1]
             };
-            var children = results[1];
-            children.persons = childrenWithContactPersonOnTop(children.persons, results[0]);
-            selected.children = children;
-            if (selected.children.places && selected.children.places.length) {
-              selected.children.childPlaceType = selected.children.places[0].doc.type + '.plural';
-            }
+            selected.doc.icon = ContactSchema.get(contactDoc.type).icon;
             selected.fields = selectedSchemaVisibleFields(selected);
-            return selected;
+
+            if (contactDoc.type === 'person') {
+              return isContactPrimaryContact(contactDoc)
+                .then(function(isPrimaryContact) {
+                  selected.doc.isPrimaryContact = isPrimaryContact;
+                  return selected;
+                });
+            }
+
+            return getChildren(contactId)
+              .then(function(children) {
+                children.persons = childrenWithContactPersonOnTop(children.persons, contactDoc);
+                selected.children = children;
+                if (selected.children.places && selected.children.places.length) {
+                  var childPlacesSchema = ContactSchema.get(selected.children.places[0].doc.type);
+                  selected.children.childPlacesLabel = childPlacesSchema.pluralLabel;
+                  selected.children.childPlacesIcon = childPlacesSchema.icon;
+                }
+                return selected;
+              });
           });
       };
 
