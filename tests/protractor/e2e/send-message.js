@@ -96,9 +96,15 @@ describe('Send message', function() {
 
   var findSelect2Entry = function(selector, expectedValue) {
     return element.all(by.css('.select2-results__option'+selector)).filter(function(item) {
-      return item.getText().then(function(text) {
-        return text === expectedValue;
-      });
+      return item.getText()
+        .then(function(text) {
+          return text === expectedValue;
+        })
+        .catch(function(err) {
+          // item may have been detached from the page, so whatever it's invalid
+          // we ignore it. Log the error just for kicks.
+          console.error(err);
+        });
     });
   };
 
