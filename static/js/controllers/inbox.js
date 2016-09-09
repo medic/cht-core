@@ -239,23 +239,6 @@ var feedback = require('../modules/feedback'),
       };
       updateAvailableFacilities();
 
-      var setupSelect2Ajax = function(selector) {
-        $(selector).each(function(idx, el) {
-          Select2Search($(el), 'person', { allowNew: false })
-            .catch(function(err) {
-              $log.error('Error initialising select2', err);
-            });
-        });
-      };
-
-      $scope.setupEditReport = function() {
-        setupSelect2Ajax('.edit-report-dialog [name=facility]');
-      };
-
-      $scope.setupUpdateFacility = function() {
-        setupSelect2Ajax('.update-facility-dialog [name=facility]');
-      };
-
       var findIdInContactHierarchy = function(id, hierarchy) {
         return _.find(hierarchy, function(entry) {
           return entry.doc._id === id ||

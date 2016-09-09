@@ -23,6 +23,7 @@ var _ = require('underscore'),
       FormatDataRecord,
       LiveList,
       MarkRead,
+      Modal,
       Search,
       SearchFilters,
       Settings,
@@ -365,10 +366,11 @@ var _ = require('underscore'),
       });
 
       $scope.$on('EditReport', function() {
-        var val = ($scope.selected[0].report.contact && $scope.selected[0].report.contact._id) || '';
-        $('#edit-report [name=id]').val($scope.selected[0]._id);
-        $('#edit-report [name=facility]').select2('val', val);
-        $('#edit-report').modal('show');
+        Modal({
+          templateUrl: 'templates/modals/edit_report.html',
+          controller: 'EditReportCtrl',
+          model: { report: $scope.selected[0].report }
+        });
       });
 
       var initScroll = function() {
