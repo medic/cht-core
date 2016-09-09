@@ -152,7 +152,11 @@ module.exports = {
   },
 
   resetBrowser: function() {
-    return browser.refresh();
+    browser.driver.navigate().refresh().then(function() {
+      return browser.wait(function() {
+        return browser.isElementPresent(by.css('#message-list'));
+      }, 10000);
+    });
   },
 
   countOf: function(count) {
