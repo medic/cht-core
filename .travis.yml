@@ -11,6 +11,7 @@ services:
   - couchdb
 
 env:
+  global:
   - COUCH_URL=http://admin:pass@localhost:5984/medic
   - API_URL=http://admin:pass@localhost:5988
 
