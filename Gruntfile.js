@@ -425,7 +425,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('api_e2e', 'Deploy app for testing and run e2e tests', [
     'exec:deploytest',
-    'test_api_e2e',
+    'exec:test_api_e2e',
   ]);
 
   grunt.registerTask('unit_continuous', 'Lint, karma unit tests running on a loop', [
