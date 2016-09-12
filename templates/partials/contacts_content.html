@@ -94,10 +94,17 @@
       </div>
 
       <div ng-if="(selected.tasks | filter:{resolved:false}:strict).length">
+        <span class="table-filter">
+          <a ng-click="setTaskWeeksBack(1)" translate>one.week</a>
+          |
+          <a ng-click="setTaskWeeksBack(2)" translate>two.weeks</a>
+          |
+          <a ng-click="setTaskWeeksBack()" translate>view.all</a>
+        </span>
         <h4 translate>Tasks</h4>
         <div class="card action-list tasks">
           <div class="accent"></div>
-          <div class="row" ng-repeat="task in selected.tasks | filter:{resolved:false}:strict | orderBy:'date'">
+          <div class="row" ng-repeat="task in selected.tasks | filter:{resolved:false}:strict | filter:filterTaskWeeksBack | orderBy:'date'">
             <div class="col-sm-12">
               <a ui-sref="tasks.detail({ id: task._id })" class="cell">
                 <div ng-bind-html="task.date | relativeDay" class="pull-right"></div>
@@ -110,10 +117,19 @@
       </div>
 
       <div ng-if="selected.reports.length">
-        <h4 translate>Reports</h4>
+        <div class="action-header">
+        <span class="table-filter">
+          <a ng-click="setReportMonthsBack(3)" translate>three.months</a>
+          |
+          <a ng-click="setReportMonthsBack(6)" translate>six.months</a>
+          |
+          <a ng-click="setReportMonthsBack()" translate>view.all</a>
+        </span>
+          <h4 translate>Reports</h4>
+        </div>
         <div class="card action-list reports">
           <div class="accent"></div>
-          <div class="row" ng-repeat="report in selected.reports track by report._id">
+          <div class="row" ng-repeat="report in selected.reports | filter:filterReportWeeksBack track by report._id">
             <div class="col-sm-12">
               <a ui-sref="reports.detail({ id: report._id })" class="cell">
                 <div ng-bind-html="report.reported_date | relativeDate" class="pull-right"></div>

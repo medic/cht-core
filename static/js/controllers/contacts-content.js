@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    moment = require('moment');
 
 (function () {
 
@@ -23,6 +24,23 @@ var _ = require('underscore');
       'ngInject';
 
       $scope.showParentLink = false;
+
+      $scope.taskWeeksBack = null;
+      $scope.reportMonthsBack = null;
+
+      $scope.filterTaskWeeksBack = function(task) {
+        return !$scope.taskWeeksBack || moment().subtract($scope.taskWeeksBack, 'weeks').isBefore(task.date);
+      };
+      $scope.filterReportWeeksBack = function(report) {
+        return !$scope.reportMonthsBack || moment().subtract($scope.reportMonthsBack, 'months').isBefore(report.reported_date);
+      };
+
+      $scope.setReportMonthsBack = function(i) {
+        $scope.reportMonthsBack = i;
+      };
+      $scope.setTaskWeeksBack = function(i) {
+        $scope.taskWeeksBack = i;
+      };
 
       var getHomePlaceId = function() {
         return UserSettings()
