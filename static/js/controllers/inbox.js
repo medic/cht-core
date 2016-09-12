@@ -561,18 +561,10 @@ var feedback = require('../modules/feedback'),
         });
       };
 
-      $scope.prepareFeedback = function() {
-        $('#feedback [name=feedback]').val('');
-      };
-
-      $scope.submitFeedback = function() {
-        var pane = modal.start($('#feedback'));
-        var message = $('#feedback [name=feedback]').val();
-        feedback.submit(message, APP_CONFIG, function(err) {
-          if (!err) {
-            $translate('feedback.submitted').then(Snackbar);
-          }
-          pane.done($translate.instant('Error saving feedback'), err);
+      $scope.openFeedback = function() {
+        Modal({
+          templateUrl: 'templates/modals/feedback.html',
+          controller: 'FeedbackCtrl'
         });
       };
 

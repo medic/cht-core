@@ -44,6 +44,7 @@
   require('./edit-translation-messages');
   require('./edit-user');
   require('./error');
+  require('./feedback');
   require('./help');
   require('./home');
   require('./import-translation');
