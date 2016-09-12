@@ -149,6 +149,46 @@ var _ = require('underscore');
         });
       };
 
+      var mergeTasks = function(tasks) {
+        var selectedTasks = $scope.selected && $scope.selected.tasks;
+        $log.debug('Updating contact tasks', selectedTasks, tasks);
+        if (selectedTasks) {
+          tasks.forEach(function(task) {
+            for (var i = 0; i < selectedTasks.length; i++) {
+              if (selectedTasks[i]._id === task._id) {
+                selectedTasks[i] = task;
+                return;
+              }
+            }
+            selectedTasks.push(task);
+          });
+        }
+      };
+
+      var getTasks = function() {
+        $scope.selected.tasks = [];
+        if ($scope.selected.doc.type === 'district_hospital' ||
+            $scope.selected.doc.type === 'health_center') {
+          return;
+        }
+        var patientIds = [];
+        if ($scope.selected.doc.type === 'clinic') {
+          patientIds = _.pluck($scope.selected.children, 'id');
+        }
+        patientIds.push($scope.selected.doc._id);
+        RulesEngine.listen('ContactsContentCtrl', 'task', function(err, tasks) {
+          if (err) {
+            return $log.error('Error getting tasks', err);
+          }
+          mergeTasks(_.filter(tasks, function(task) {
+            return task.contact && _.contains(patientIds, task.contact._id);
+          }));
+          if (!$scope.$$phase) {
+            $scope.$apply();
+          }
+        });
+      };
+
       var selectContact = function(id) {
         $scope.setLoadingContent(id);
         return getInitialData(id)
@@ -157,6 +197,7 @@ var _ = require('underscore');
             var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
             $scope.setSelected(selected);
             $scope.settingSelected(refreshing);
+            getTasks();
             updateParentLink();
 
           })
