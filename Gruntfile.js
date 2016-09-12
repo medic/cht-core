@@ -189,6 +189,9 @@ module.exports = function(grunt) {
       test_api_integration: {
         cmd: 'cd api && grunt test_integration',
       },
+      test_api_e2e: {
+        cmd: 'cd api && ./scripts/create_e2e_fixtures && grunt test_e2e',
+      },
       undopatches: {
         cmd: function() {
           var modulesToPatch = [
@@ -420,6 +423,11 @@ module.exports = function(grunt) {
     'protractor:chrome'
   ]);
 
+  grunt.registerTask('api_e2e', 'Deploy app for testing and run e2e tests', [
+    'exec:deploytest',
+    'test_api_e2e',
+  ]);
+
   grunt.registerTask('unit_continuous', 'Lint, karma unit tests running on a loop', [
     'jshint',
     'karma:unit_continuous'
@@ -454,7 +462,8 @@ module.exports = function(grunt) {
     'exec:setupAdmin',
     'exec:deploy',
     'test_api_integration',
-    'e2e'
+    'e2e',
+    'api_e2e',
   ]);
 
   // Dev tasks
