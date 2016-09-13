@@ -92,7 +92,7 @@ exports['filters the changes to relevant ones'] = function(test) {
     query: {
       since: 1,
       heartbeat: 10000,
-      feed: 'longpole',
+      feed: 'longpoll',
       doc_ids: JSON.stringify([ deletedId, unchangedId ])
     }
   };
@@ -156,7 +156,7 @@ exports['filters the changes to relevant ones'] = function(test) {
         test.equals(db.request.args[0][0].method, 'POST');
         test.equals(db.request.args[0][0].qs.since, 1);
         test.equals(db.request.args[0][0].qs.heartbeat, 10000);
-        test.equals(db.request.args[0][0].qs.feed, 'longpole');
+        test.equals(db.request.args[0][0].qs.feed, 'longpoll');
         test.equals(auth.getFacilityId.callCount, 1);
         test.equals(auth.getFacilityId.args[0][0], testReq);
         test.equals(auth.getFacilityId.args[0][1], userCtx);
@@ -404,7 +404,7 @@ exports['filters out undeleted docs they are not allowed to see'] = function(tes
     query: {
       since: 1,
       heartbeat: 10000,
-      feed: 'longpole',
+      feed: 'longpoll',
       doc_ids: JSON.stringify([ blockedId ])
     },
     on: function() {}
@@ -469,7 +469,7 @@ exports['updates the feed when the doc is updated'] = function(test) {
     query: {
       since: 1,
       heartbeat: 10000,
-      feed: 'longpole',
+      feed: 'longpoll',
       doc_ids: JSON.stringify([ deletedId, unchangedId ])
     },
     on: function() {}
@@ -522,7 +522,7 @@ exports['updates the feed when the doc is updated'] = function(test) {
         test.equals(db.request.args[0][0].method, 'POST');
         test.equals(db.request.args[0][0].qs.since, 1);
         test.equals(db.request.args[0][0].qs.heartbeat, 10000);
-        test.equals(db.request.args[0][0].qs.feed, 'longpole');
+        test.equals(db.request.args[0][0].qs.feed, 'longpoll');
         test.equals(auth.getFacilityId.callCount, 1);
         test.equals(auth.getFacilityId.args[0][0], testReq);
         test.equals(auth.getFacilityId.args[0][1], userCtx);
