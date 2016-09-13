@@ -125,15 +125,17 @@ var _ = require('underscore');
       var getInitialData = function(contactId) {
         return $q.all([
           DB().get(contactId),
-          getChildren(contactId)
+          getChildren(contactId),
+          Search('reports', { subjectIds: [ contactId ] })
         ])
           .then(function(results) {
-            var children = results[1];
-            children.persons = childrenWithContactPersonOnTop(children.persons, results[0]);
             var selected = {
               doc: results[0],
-              children: children
+              reports: results[2]
             };
+            var children = results[1];
+            children.persons = childrenWithContactPersonOnTop(children.persons, results[0]);
+            selected.children = children;
             if (selected.children.places && selected.children.places.length) {
               selected.children.childPlaceType = selected.children.places[0].doc.type + '.plural';
             }
