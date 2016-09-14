@@ -8,7 +8,6 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
     $scope,
     $translate,
     $uibModalInstance,
-    CONTACT_TYPES,
     ContactSchema,
     Select2Search,
     SendMessage,
@@ -122,7 +121,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
 
   var initPhoneField = function($phone, initialValue) {
     return Settings().then(function(settings) {
-      return Select2Search($phone, CONTACT_TYPES, {
+      return Select2Search($phone, ContactSchema.getTypes(), {
         tags: true,
         templateResult: templateResult,
         templateSelection: templateSelection,
