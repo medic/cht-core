@@ -1,6 +1,8 @@
 describe('ContactsContentCtrl', function() {
   'use strict';
 
+  var FETCH_CHILDREN_VIEW = 'medic-client/contacts_by_parent_name_type';
+
   var assert = chai.assert,
     childContactPerson,
     childPerson,
@@ -13,7 +15,7 @@ describe('ContactsContentCtrl', function() {
     scope,
     stubGetQuery,
     stubGetVisibleFields,
-    stubViewQuery;
+    stubFetchChildren;
 
   beforeEach(module('inboxApp'));
 
@@ -44,12 +46,12 @@ describe('ContactsContentCtrl', function() {
     stubGetQuery = function(err, doc) {
       db().get.withArgs(doc._id).returns(KarmaUtils.mockPromise(err, doc));
     };
-    stubViewQuery = function(view, docArray) {
-      db().query.withArgs(sinon.match(view), sinon.match.any)
+    stubFetchChildren = function(childrenArray) {
+      db().query.withArgs(sinon.match(FETCH_CHILDREN_VIEW), sinon.match.any)
         .returns(KarmaUtils.mockPromise(
           null,
           {
-            rows: docArray.map(function(doc) { return { doc: doc};})
+            rows: childrenArray.map(function(doc) { return { doc: doc};})
           }));
     };
     var getVisibleFields = sinon.stub();
@@ -79,11 +81,11 @@ describe('ContactsContentCtrl', function() {
   }));
 
   describe('Place', function() {
-    var runPlaceTest = function(done, contactArray, assertions) {
+    var runPlaceTest = function(done, childrenArray, assertions) {
       idStateParam = { id: doc._id };
       stubGetQuery(null, doc);
-      stubViewQuery('medic-client/contacts_by_parent_name_type', contactArray);
       stubGetVisibleFields(doc.type);
+      stubFetchChildren(childrenArray);
       createController().getSetupPromiseForTesting()
         .then(function() {
           assert(scope.setSelected.called, 'setSelected was called');
@@ -150,10 +152,13 @@ describe('ContactsContentCtrl', function() {
 
   describe('Person', function() {
     var runPersonTest = function(done, parentDoc, getParentError, assertions) {
+      // Selected doc is childContactPerson
       idStateParam = { id: childContactPerson._id };
       stubGetQuery(null, childContactPerson);
-      stubGetQuery(getParentError, parentDoc);
       stubGetVisibleFields(childContactPerson.type);
+      // Fetch parent doc
+      stubGetQuery(getParentError, parentDoc);
+
       createController().getSetupPromiseForTesting()
         .then(function() {
           assert(scope.setSelected.called, 'setSelected was called');
@@ -163,22 +168,22 @@ describe('ContactsContentCtrl', function() {
         }).catch(done);
     };
 
-    it('if primary contact, gets isPrimaryContact flag', function(done) {
+    it('if selected doc is primary contact, the isPrimaryContact flag should be true', function(done) {
       runPersonTest(done, doc, null, function(selected) {
-        assert(selected.doc.isPrimaryContact, 'has isPrimaryContact flag');
+        assert(selected.doc.isPrimaryContact, 'isPrimaryContact flag should be true');
       });
     });
 
-    it('if no parent field, no isPrimaryContact flag', function(done) {
+    it('if selected doc has no parent field, the isPrimaryContact flag should be false', function(done) {
       delete childContactPerson.parent;
       runPersonTest(done, doc, null, function(selected) {
-        assert(!selected.doc.isPrimaryContact, 'no isPrimaryContact flag');
+        assert(!selected.doc.isPrimaryContact, 'isPrimaryContact flag should be false');
       });
     });
 
-    it('if no parent doc found, no isPrimaryContact flag', function(done) {
+    it('if selected doc\'s parent is not found, the isPrimaryContact flag should be false', function(done) {
       runPersonTest(done, doc, { status: 404 }, function(selected) {
-        assert(!selected.doc.isPrimaryContact, 'no isPrimaryContact flag');
+        assert(!selected.doc.isPrimaryContact, 'isPrimaryContact flag should be false');
       });
     });
 

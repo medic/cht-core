@@ -135,8 +135,7 @@ var _ = require('underscore');
         // it'll disappear in data cleanup eventually.
         return DB().get(contactDoc.parent._id)
           .then(function(parent) {
-            return parent.contact && parent.contact._id &&
-              (parent.contact._id === contactDoc._id);
+            return parent.contact && (parent.contact._id === contactDoc._id);
           }).catch(function(err) {
             $log.error(err);
             return false;
