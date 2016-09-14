@@ -103,7 +103,7 @@ describe('Send message', function() {
         .catch(function(err) {
           // item may have been detached from the page, so whatever it's invalid
           // we ignore it. Log the error just for kicks.
-          console.error(err);
+          console.log('Caught and ignoring an error trying to getText', err);
         });
     });
   };
@@ -120,7 +120,7 @@ describe('Send message', function() {
           // My kingdom for results.reduce(&&);
           return results[0] && results[1] && results[2];
         });
-    }, 3000);
+    }, 10000);
 
     return findSelect2Entry(entrySelector, entryText).first();
   };
