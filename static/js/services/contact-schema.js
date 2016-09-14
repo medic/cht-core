@@ -3,6 +3,7 @@ var _ = require('underscore');
 var CLINIC = {
   icon: 'fa-group',
   addButtonLabel: 'action.clinic.add',
+  isPlace: true,
   fields: {
     name: {
       type: 'string',
@@ -27,6 +28,7 @@ var CLINIC = {
 var DISTRICT_HOSPITAL = {
   icon: 'fa-building',
   addButtonLabel: 'action.district_hospital.add',
+  isPlace: true,
   fields: {
     name: {
       type: 'string',
@@ -45,6 +47,7 @@ var DISTRICT_HOSPITAL = {
 var HEALTH_CENTER = {
   icon: 'fa-hospital-o',
   addButtonLabel: 'action.health_center.add',
+  isPlace: true,
   fields: {
     name: {
       type: 'string',
@@ -67,6 +70,7 @@ var HEALTH_CENTER = {
 var PERSON = {
   icon: 'fa-user',
   addButtonLabel: 'action.person.add',
+  isPlace: false,
   fields: {
     name: {
       type: 'string',
@@ -110,6 +114,7 @@ function normalise(type, schema) {
 
 function getSchema() {
   return {
+    // KEEP KEYS IN HIERARCHICAL ORDER!
     district_hospital: normalise('district_hospital', DISTRICT_HOSPITAL),
     health_center: normalise('health_center', HEALTH_CENTER),
     clinic: normalise('clinic', CLINIC),
@@ -188,6 +193,17 @@ angular.module('inboxServices').service('ContactSchema',
         return _.findKey(schema, function(value) {
           return value.fields.parent && (value.fields.parent.type === ('db:' + type));
         });
+      },
+      getPlaceTypes: function() {
+        var placeTypes = _.map(getSchema(), function(value, key) {
+          if (value.isPlace) {
+            return key;
+          }
+        });
+        return _.filter(placeTypes, function(val) { return val !== undefined; });
+      },
+      getTypes: function() {
+        return Object.keys(getSchema());
       },
       getVisibleFields: function() {
         // return a modified schema, missing special fields such as `parent`, and

@@ -10,11 +10,22 @@ describe('FacilityHierarchy service', function() {
     Facility = sinon.stub();
     module(function ($provide) {
       $provide.value('Facility', Facility);
-      $provide.value('PLACE_TYPES', [ 'district_hospital', 'health_center', 'clinic' ]);
+      $provide.factory('ContactSchema',
+        function() {
+          return {
+            getTypes: function() { return [ 'district_hospital', 'health_center', 'clinic', 'person' ]; },
+            getPlaceTypes: function() { return [ 'district_hospital', 'health_center', 'clinic' ]; }
+          };
+        }
+      );
     });
     inject(function($injector) {
       service = $injector.get('FacilityHierarchy');
     });
+  });
+
+  afterEach(function() {
+    KarmaUtils.restore(Facility);
   });
 
   it('returns errors from FacilityRaw service', function(done) {

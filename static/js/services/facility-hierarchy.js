@@ -49,11 +49,11 @@ var _ = require('underscore');
 
   inboxServices.factory('FacilityHierarchy',
     function(
-      Facility,
-      PLACE_TYPES
+      ContactSchema,
+      Facility
     ) {
       'ngInject';
-      var hierarchyTypes = PLACE_TYPES.filter(function(pt) {
+      var hierarchyTypes = ContactSchema.getPlaceTypes().filter(function(pt) {
         return pt !== 'clinic';
       });
 

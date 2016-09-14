@@ -14,7 +14,7 @@ var nools = require('nools'),
       $log,
       $q,
       Changes,
-      CONTACT_TYPES,
+      ContactSchema,
       Search,
       Session,
       Settings,
@@ -180,7 +180,7 @@ var nools = require('nools'),
           callback: updateFacts,
           filter: function(change) {
             return change.doc.form ||
-                   CONTACT_TYPES.indexOf(change.doc.type) !== -1;
+                   ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
           }
         });
       };

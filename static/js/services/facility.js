@@ -6,7 +6,7 @@ angular.module('inboxServices').factory('Facility',
     $log,
     $q,
     Cache,
-    CONTACT_TYPES,
+    ContactSchema,
     DB
   ) {
 
@@ -14,7 +14,7 @@ angular.module('inboxServices').factory('Facility',
     'ngInject';
 
     var cacheByType = {};
-    CONTACT_TYPES.forEach(function(type) {
+    ContactSchema.getTypes().forEach(function(type) {
       cacheByType[type] = Cache({
         get: function(callback) {
           DB().query('medic-client/contacts_by_type', { include_docs: true, key: [type] })
@@ -38,7 +38,7 @@ angular.module('inboxServices').factory('Facility',
         console.trace('WARNING: call made to FacilitySrv with the expectation of having person data');
       }
 
-      var relevantCaches = (options.types ? options.types : CONTACT_TYPES).map(function(type) {
+      var relevantCaches = (options.types ? options.types : ContactSchema.getTypes()).map(function(type) {
         return cacheByType[type];
       });
       var deferred = $q.defer();

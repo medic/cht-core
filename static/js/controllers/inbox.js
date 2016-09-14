@@ -27,7 +27,6 @@ var feedback = require('../modules/feedback'),
       Auth,
       Changes,
       CheckDate,
-      CONTACT_TYPES,
       ContactSchema,
       CountMessages,
       DB,
@@ -39,7 +38,6 @@ var feedback = require('../modules/feedback'),
       LiveListConfig,
       Location,
       Modal,
-      PLACE_TYPES,
       ReadMessages,
       RulesEngine,
       Select2Search,
@@ -249,7 +247,7 @@ var feedback = require('../modules/feedback'),
       Changes({
         key: 'inbox-facilities',
         filter: function(change) {
-          var hierarchyTypes = PLACE_TYPES.filter(function(pt) {
+          var hierarchyTypes = ContactSchema.getPlaceTypes().filter(function(pt) {
             return pt !== 'clinic';
           });
           // check if new document is a contact
@@ -275,7 +273,7 @@ var feedback = require('../modules/feedback'),
       });
 
       $scope.setupSendMessage = function() {
-        sendMessage.init($q, Settings, Select2Search, $translate.instant, CONTACT_TYPES, ContactSchema);
+        sendMessage.init($q, Settings, Select2Search, $translate.instant, ContactSchema);
       };
 
       // get the forms for the forms filter

@@ -177,10 +177,10 @@ var _ = require('underscore'),
   var CONTACT_SCHEMA;
   var DB;
 
-  exports.init = function($q, Settings, _select2Search, _translateFn, _contactTypes, _contactSchema, _db) {
+  exports.init = function($q, Settings, _select2Search, _translateFn, _contactSchema, _db) {
     Promise = $q;
     Select2Search = _select2Search;
-    CONTACT_TYPES = _contactTypes;
+    CONTACT_TYPES = _contactSchema.getTypes();
     translateFn = _translateFn;
     CONTACT_SCHEMA = _contactSchema.get();
     DB = _db;

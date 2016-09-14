@@ -163,6 +163,7 @@ describe('ContactSchema service', function() {
           type: 'person',
           addButtonLabel: 'action.person.add',
           icon: 'fa-user',
+          isPlace: false,
           fields: {
             name: {
               type: 'string',
@@ -196,6 +197,7 @@ describe('ContactSchema service', function() {
           type: 'district_hospital',
           addButtonLabel: 'action.district_hospital.add',
           icon: 'fa-building',
+          isPlace: true,
           fields: {
             name: {
               type: 'string',
@@ -223,6 +225,7 @@ describe('ContactSchema service', function() {
           type: 'health_center',
           addButtonLabel: 'action.health_center.add',
           icon: 'fa-hospital-o',
+          isPlace: true,
           fields: {
             name: {
               type: 'string',
@@ -254,6 +257,7 @@ describe('ContactSchema service', function() {
           type: 'clinic',
           addButtonLabel: 'action.clinic.add',
           icon: 'fa-group',
+          isPlace: true,
           fields: {
             name: {
               type: 'string',
@@ -318,6 +322,18 @@ describe('ContactSchema service', function() {
       // expect
       assert.ok   (service.get()             .clinic.fields.hasOwnProperty('location'));
       assert.notOk(service.getVisibleFields().clinic.fields.hasOwnProperty('location'));
+    });
+  });
+
+  describe('#getTypes()', function() {
+    it('should list types in hierarchical order', function() {
+      assert.deepEqual(service.getTypes(), ['district_hospital', 'health_center', 'clinic', 'person']);
+    });
+  });
+
+  describe('#getPlaceTypes()', function() {
+    it('should list place types in hierarchical order', function() {
+      assert.deepEqual(service.getPlaceTypes(), ['district_hospital', 'health_center', 'clinic']);
     });
   });
 

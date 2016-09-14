@@ -15,7 +15,6 @@ var scrollLoader = require('../modules/scroll-loader');
       $timeout,
       $translate,
       ContactSchema,
-      CONTACT_TYPES,
       DB,
       LiveList,
       Search,

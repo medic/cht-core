@@ -10,8 +10,8 @@
       $translate,
       $uibModalInstance,
       $window,
+      ContactSchema,
       DB,
-      PLACE_TYPES,
       Select2Search,
       Session,
       SetLanguage,
@@ -89,7 +89,7 @@
       $uibModalInstance.rendered.then(function() {
         // only the #edit-user-profile modal has these fields
         Select2Search($('#edit-user-profile [name=contact]'), 'person');
-        Select2Search($('#edit-user-profile [name=facility]'), PLACE_TYPES);
+        Select2Search($('#edit-user-profile [name=facility]'), ContactSchema.getPlaceTypes());
       });
 
       $scope.typeName = function(facility) {

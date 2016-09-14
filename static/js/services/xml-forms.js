@@ -13,8 +13,8 @@ var _ = require('underscore');
       $q,
       Auth,
       Changes,
+      ContactSchema,
       DB,
-      PLACE_TYPES,
       UserContact,
       XmlFormsContextUtils
     ) {
@@ -83,7 +83,7 @@ var _ = require('underscore');
               (typeof form.context.person === 'undefined' && form.context.place))) {
             return false;
           }
-          if (PLACE_TYPES.indexOf(contactType) !== -1 && (
+          if (ContactSchema.getPlaceTypes().indexOf(contactType) !== -1 && (
               (typeof form.context.place !== 'undefined' && !form.context.place) ||
               (typeof form.context.place === 'undefined' && form.context.person))) {
             return false;
