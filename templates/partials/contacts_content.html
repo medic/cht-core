@@ -13,9 +13,14 @@
   <div class="col-sm-8 item-content item-body" ng-show="selected && !loadingContent">
     <div class="material">
       <div class="body meta">
-        <h3 class="desktop-only">
-          <i class="fa fa-star primary" ng-show="selected.doc._id === selected.doc.parent.contact._id" translate translate-attr-title="Primary contact"></i>
+        <h3 class="hidden-xs">
+          <i class="fa fa-star primary" ng-show="selected.doc.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
+          <i class="fa {{selected.doc.icon}}"></i>
           {{selected.doc.name}}
+        </h3>
+        <h3 class="visible-xs-block">
+          <i class="fa fa-star primary" ng-show="selected.doc.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
+          <i class="fa {{selected.doc.icon}}"></i>
         </h3>
         <div class="card">
           <div class="row">
@@ -78,15 +83,25 @@
       </div>
 
       <div ng-if="selected.children.persons">
-        <h4 translate>People</h4>
+        <div class="card-title">
+          <div class="col-sm-6"><i class="fa fa-user"></i></div>
+          <div class="col-sm-3 hidden-xs" translate>person.field.title</div>
+          <div class="col-sm-3 hidden-xs" translate>person.field.phone</div>
+        </div>
         <div class="card action-list children">
           <div class="accent"></div>
           <div class="row" ng-repeat="child in selected.children.persons">
             <div class="col-sm-12">
               <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell">
-                <div class="pull-right" ng-bind-html="child.doc.date_of_birth | age"></div>
-                <i class="fa fa-star primary" ng-show="child.doc._id === selected.doc.contact._id" translate translate-attr-title="Primary contact"></i>
-                {{child.doc.name}}
+                <div>
+                  <div class="col-sm-6">
+                    <i class="fa fa-star primary" ng-show="child.doc.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
+                    {{child.doc.name}}
+                  </div>
+                  <div class="col-sm-3" ng-bind-html="child.doc.title"></div>
+                  <div class="col-sm-3" ng-bind-html="child.doc.phone"></div>
+                </div>
+                <div ng-show="child.doc.isPrimaryContact" translate>Primary contact</div>
               </a>
             </div>
           </div>
@@ -94,15 +109,17 @@
       </div>
 
       <div ng-if="selected.children.places">
-        <h4 translate>{{selected.doc.type + '.field.children'}}</h4>
+        <h4>
+          <i class="fa {{selected.children.childPlacesIcon}}"></i>
+          <span translate>{{selected.children.childPlacesLabel}}</span>
+        </h4>
         <div class="card action-list children">
           <div class="accent"></div>
           <div class="row" ng-repeat="child in selected.children.places">
             <div class="col-sm-12">
               <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell">
-                <div class="pull-right" ng-bind-html="child.doc.date_of_birth | age"></div>
-                <i class="fa fa-star primary" ng-show="child.doc._id === selected.doc.contact._id" translate translate-attr-title="Primary contact"></i>
-                {{child.doc.name}}
+                <div>{{child.doc.name}}</div>
+                <div ng-show="child.doc.contact.name"><span translate>Primary contact</span>: {{child.doc.contact.name}}</div>
               </a>
             </div>
           </div>
