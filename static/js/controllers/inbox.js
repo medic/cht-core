@@ -1,9 +1,7 @@
 var feedback = require('../modules/feedback'),
     _ = require('underscore'),
     moment = require('moment'),
-    sendMessage = require('../modules/send-message'),
     tour = require('../modules/tour'),
-    modal = require('../modules/modal'),
     guidedSetup = require('../modules/guided-setup');
 
 (function () {
@@ -272,10 +270,6 @@ var feedback = require('../modules/feedback'),
         callback: $scope.updateReadStatus
       });
 
-      $scope.setupSendMessage = function() {
-        sendMessage.init($q, Settings, Select2Search, $translate.instant, ContactSchema);
-      };
-
       // get the forms for the forms filter
       JsonForms()
         .then(function(jsonForms) {
@@ -441,20 +435,20 @@ var feedback = require('../modules/feedback'),
           $log.error('Error loading language', err);
         });
 
-      $scope.sendMessage = function(event) {
-        sendMessage.validate(event.target, function(recipients, message) {
-          var pane = modal.start($(event.target).closest('.message-form'));
-          SendMessage(recipients, message)
-            .then(function() {
-              $('#message-footer').removeClass('sending');
-              $('#message-footer textarea').val('');
-              pane.done();
-            })
-            .catch(function(err) {
-              pane.done($translate.instant('Error sending message'), err);
-            });
+      $('body').on('click', '.send-message', function(event) {
+        var target = $(event.target).closest('.send-message');
+        if (target.hasClass('mm-icon-disabled')) {
+          return;
+        }
+        event.preventDefault();
+        Modal({
+          templateUrl: 'templates/modals/send_message.html',
+          controller: 'SendMessageCtrl',
+          model: {
+            to: target.attr('data-send-to')
+          }
         });
-      };
+      });
 
       $scope.setRightActionBar = function(model) {
         if (!$scope.actionBar) {

@@ -31,6 +31,10 @@ angular.module('inboxServices').factory('Select2Search',
       return row.text;
     };
 
+    var defaultSendMessageExtras = function(row) {
+      return row;
+    };
+
     return function(selectEl, _types, options) {
 
       options = options || {};
@@ -40,7 +44,7 @@ angular.module('inboxServices').factory('Select2Search',
           allowNew = options.allowNew || false,
           templateResult = options.templateResult || defaultTemplateResult,
           templateSelection = options.templateSelection || defaultTemplateSelection,
-          sendMessageExtras = options.sendMessageExtras || (function(i) {return i;}),
+          sendMessageExtras = options.sendMessageExtras || defaultSendMessageExtras,
           tags = options.tags || false,
           initialValue = options.initialValue || selectEl.val(),
           types = Array.isArray(_types) ? _types : [ _types ];
@@ -76,8 +80,8 @@ angular.module('inboxServices').factory('Select2Search',
         Search('contacts', filters, options)
           .then(function(documents) {
             if (currentQuery === params.data.q) {
-              return successCb({
-                results: sendMessageExtras(prepareRows(documents, skip === 0)),
+              successCb({
+                results: sendMessageExtras(prepareRows(documents)),
                 pagination: {
                   more: documents.length === pageSize
                 }

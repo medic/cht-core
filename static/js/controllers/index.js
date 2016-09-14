@@ -55,6 +55,7 @@
   require('./reports');
   require('./reports-add');
   require('./reports-content');
+  require('./send-message');
   require('./tasks');
   require('./tasks-content');
   require('./theme');

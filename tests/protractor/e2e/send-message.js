@@ -82,15 +82,12 @@ describe('Send message', function() {
   };
 
   var openSendMessageModal = function() {
-    var sendMessageModal = element(by.id('send-message'));
-
     expect(element(by.css('.general-actions .send-message')).isDisplayed()).toBeTruthy();
-    expect(sendMessageModal.isDisplayed()).toBeFalsy();
-
     element(by.css('.general-actions .send-message')).click();
     browser.wait(function() {
-      return sendMessageModal.isDisplayed();
-    }, 1000);
+      var modal = element(by.id('send-message'));
+      return modal.isPresent() && modal.isDisplayed();
+    }, 5000);
   };
 
 

@@ -1,30 +1,21 @@
-<div id="send-message" class="modal fade message-form" tabindex="-1" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{'Send Message' | translate}}</h3>
-      </div>
-      <div class="modal-body">
-        <form action="" method="POST">
-
-          <div class="form-group">
-            <select class="form-control" name="phone" autocomplete="off" data-placeholder="{{'tasks.0.messages.0.to' | translate}}" multiple="multiple"></select>
-            <span class="help-block"></span>
-          </div>
-
-          <div class="form-group">
-            <textarea name="message" class="form-control" placeholder="{{'tasks.0.messages.0.message' | translate}}"></textarea>
-            <span class="help-block"></span>
-          </div>
-
-        </form>
-      </div>
-      <div class="modal-footer">
-        <a href="#" class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
-        <span class="count">{{note}}</span>
-        <a class="btn submit btn-primary" ng-click="sendMessage($event)" ng-attr-data-working-label="{{'Sending' | translate}}">{{'Send' | translate}}</a>
-      </div>
+<mm-modal
+  status="status"
+  id="'send-message'"
+  title-key="'Send Message'"
+  submit-key="'Send'"
+  submitting-key="'Sending'"
+  on-cancel="cancel()"
+  on-submit="submit()"
+>
+  <form action="" method="POST" class="message-form">
+    <div class="form-group" ng-class="{ 'has-error': error.phone }">
+      <select class="form-control" name="phone" autocomplete="off" multiple="multiple"></select>
+      <span class="help-block" ng-show="error.phone">{{error.phone}}</span>
     </div>
-  </div>
-</div>
+    <div class="form-group" ng-class="{ 'has-error': error.message }">
+      <textarea name="message" class="form-control" translate translate-attr-placeholder="tasks.0.messages.0.message" ng-model="model.message"></textarea>
+      <span class="help-block" ng-show="error.message">{{error.message}}</span>
+      <span class="count">{{count}}</span>
+    </div>
+  </form>
+</mm-modal>
