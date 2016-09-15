@@ -124,7 +124,7 @@ var _ = require('underscore'),
           var doc = model.selected[0];
           model.verified = doc.verified;
           model.type = doc.content_type;
-          model.sendTo = doc;
+          model.sendTo = doc.contact;
         }
         $scope.setActionBar(model);
       };
