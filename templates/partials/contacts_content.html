@@ -95,9 +95,9 @@
 
       <div ng-if="(selected.tasks | filter:{resolved:false}:strict).length">
         <span class="table-filter">
-          <a ng-click="setTaskWeeksBack(1)" class="btn btn-link" ng-class="{selected: taskWeeksBack === 1}" translate>one.week</a>
+          <a ng-click="setTaskWeeksBack(1)" class="btn btn-link" ng-class="{selected: taskWeeksBack === 1}" translate translate-values="{WEEK: 1}">n.week</a>
           |
-          <a ng-click="setTaskWeeksBack(2)" class="btn btn-link" ng-class="{selected: taskWeeksBack === 2}" translate>two.weeks</a>
+          <a ng-click="setTaskWeeksBack(2)" class="btn btn-link" ng-class="{selected: taskWeeksBack === 2}" translate translate-values="{WEEK: 1}" translate>n.week</a>
           |
           <a ng-click="setTaskWeeksBack()" class="btn btn-link" ng-class="{selected: !taskWeeksBack}" translate>view.all</a>
         </span>

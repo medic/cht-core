@@ -9,6 +9,7 @@
   "dependencies": {
     "angular": "^1.5.7",
     "angular-cookie": "^4.1.0",
+    "angular-message-format": "^1.5.8",
     "angular-pouchdb": "^4.3.0",
     "angular-resource": "^1.5.7",
     "angular-route": "^1.5.7",
