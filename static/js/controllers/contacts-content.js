@@ -25,21 +25,28 @@ var _ = require('underscore'),
 
       $scope.showParentLink = false;
 
+
       $scope.taskWeeksBack = null;
       $scope.reportMonthsBack = null;
 
+
+      var taskStartDate,
+          reportStartDate;
+
       $scope.filterTaskWeeksBack = function(task) {
-        return !$scope.taskWeeksBack || moment().subtract($scope.taskWeeksBack, 'weeks').isBefore(task.date);
+        return !taskStartDate || taskStartDate.isBefore(task.date);
       };
       $scope.filterReportWeeksBack = function(report) {
-        return !$scope.reportMonthsBack || moment().subtract($scope.reportMonthsBack, 'months').isBefore(report.reported_date);
+        return !reportStartDate || reportStartDate.isBefore(report.reported_date);
       };
 
-      $scope.setReportMonthsBack = function(i) {
-        $scope.reportMonthsBack = i;
+      $scope.setReportMonthsBack = function(months) {
+        $scope.reportMonthsBack = months;
+        reportStartDate = months ? moment().subtract(months, 'months') : null;
       };
-      $scope.setTaskWeeksBack = function(i) {
-        $scope.taskWeeksBack = i;
+      $scope.setTaskWeeksBack = function(weeks) {
+        $scope.taskWeeksBack = weeks;
+        taskStartDate = weeks ? moment().subtract(weeks, 'weeks') : null;
       };
 
       var getHomePlaceId = function() {

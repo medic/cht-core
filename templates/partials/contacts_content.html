@@ -95,11 +95,11 @@
 
       <div ng-if="(selected.tasks | filter:{resolved:false}:strict).length">
         <span class="table-filter">
-          <a ng-click="setTaskWeeksBack(1)" translate>one.week</a>
+          <a ng-click="setTaskWeeksBack(1)" class="btn btn-link" ng-class="{selected: taskWeeksBack === 1}" translate>one.week</a>
           |
-          <a ng-click="setTaskWeeksBack(2)" translate>two.weeks</a>
+          <a ng-click="setTaskWeeksBack(2)" class="btn btn-link" ng-class="{selected: taskWeeksBack === 2}" translate>two.weeks</a>
           |
-          <a ng-click="setTaskWeeksBack()" translate>view.all</a>
+          <a ng-click="setTaskWeeksBack()" class="btn btn-link" ng-class="{selected: !taskWeeksBack}" translate>view.all</a>
         </span>
         <h4 translate>Tasks</h4>
         <div class="card action-list tasks">
@@ -119,11 +119,11 @@
       <div ng-if="selected.reports.length">
         <div class="action-header">
         <span class="table-filter">
-          <a ng-click="setReportMonthsBack(3)" translate>three.months</a>
+          <a ng-click="setReportMonthsBack(3)" class="btn btn-link" ng-class="{selected: reportMonthsBack === 3}" translate>three.months</a>
           |
-          <a ng-click="setReportMonthsBack(6)" translate>six.months</a>
+          <a ng-click="setReportMonthsBack(6)" class="btn btn-link" ng-class="{selected: reportMonthsBack === 6}" translate>six.months</a>
           |
-          <a ng-click="setReportMonthsBack()" translate>view.all</a>
+          <a ng-click="setReportMonthsBack()" class="btn btn-link" ng-class="{selected: !reportMonthsBack}" translate>view.all</a>
         </span>
           <h4 translate>Reports</h4>
         </div>
