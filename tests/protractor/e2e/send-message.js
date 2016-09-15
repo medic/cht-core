@@ -86,10 +86,11 @@ describe('Send message', function() {
     element(by.css('.general-actions .send-message')).click();
     browser.wait(function() {
       var modal = element(by.id('send-message'));
-      return modal.isPresent() && modal.isDisplayed();
+      return modal.isPresent().then(function() {
+        return modal.isDisplayed();
+      });
     }, 5000);
   };
-
 
   var findSelect2Entry = function(selector, expectedValue) {
     return element.all(by.css('.select2-results__option'+selector)).filter(function(item) {
