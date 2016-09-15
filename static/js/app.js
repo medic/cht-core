@@ -11,12 +11,12 @@ require('nvd3');
 
 require('angular');
 require('angular-cookie');
-require('angular-message-format');
 require('angular-pouchdb');
 require('angular-resource');
 require('angular-route');
 require('angular-sanitize');
 require('angular-translate');
+require('../../node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat');
 require('angular-ui-bootstrap');
 require('angular-ui-router');
 require('angularjs-nvd3-directives');
@@ -53,7 +53,6 @@ _.templateSettings = {
     'inboxControllers',
     'inboxServices',
     'pascalprecht.translate',
-    'ngMessageFormat',
     'nvd3ChartDirectives',
     'pouchdb'
   ]);
@@ -70,7 +69,7 @@ _.templateSettings = {
     $urlRouterProvider.when('', '/home');
     $translateProvider.useLoader('TranslationLoader', {});
     $translateProvider.useSanitizeValueStrategy('escape');
-    $translateProvider.useMessageFormatInterpolation();
+    $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
     $translateProvider.preferredLanguage('en');
     $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
     var isDevelopment = window.location.hostname === 'localhost';

@@ -152,9 +152,9 @@
       <div ng-if="selected.reports.length">
         <div class="action-header">
         <span class="table-filter">
-          <a ng-click="setReportMonthsBack(3)" class="btn btn-link" ng-class="{selected: reportMonthsBack === 3}" translate>three.months</a>
+          <a ng-click="setReportMonthsBack(3)" class="btn btn-link" ng-class="{ selected: reportMonthsBack === 3 }" translate translate-values="{ MONTHS: 3 }" translate-interpolation="messageformat">n.month</a>
           |
-          <a ng-click="setReportMonthsBack(6)" class="btn btn-link" ng-class="{selected: reportMonthsBack === 6}" translate>six.months</a>
+          <a ng-click="setReportMonthsBack(6)" class="btn btn-link" ng-class="{ selected: reportMonthsBack === 6 }" translate translate-values="{ MONTHS: 6 }" translate-interpolation="messageformat">n.month</a>
           |
           <a ng-click="setReportMonthsBack()" class="btn btn-link" ng-class="{selected: !reportMonthsBack}" translate>view.all</a>
         </span>

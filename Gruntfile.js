@@ -396,7 +396,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('build', 'Build the static resources', [
-    'mmcss',
+    // 'mmcss',
     'mmjs',
     'couch-compile',
     'copy:enketoxslt',

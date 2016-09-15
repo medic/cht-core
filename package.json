@@ -9,7 +9,6 @@
   "dependencies": {
     "angular": "^1.5.7",
     "angular-cookie": "^4.1.0",
-    "angular-message-format": "^1.5.8",
     "angular-pouchdb": "^4.3.0",
     "angular-resource": "^1.5.7",
     "angular-route": "^1.5.7",
@@ -28,6 +27,7 @@
     "font-awesome": "^4.6.3",
     "google-libphonenumber": "^1.0.24",
     "jquery": "^2.1.4",
+    "messageformat": "^1.0.0",
     "moment": "^2.14.1",
     "nools": "^0.4.1",
     "nvd3": "^1.1.15-beta",
