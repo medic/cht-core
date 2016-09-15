@@ -15,7 +15,6 @@ var scrollLoader = require('../modules/scroll-loader');
       $timeout,
       $translate,
       ContactSchema,
-      CONTACT_TYPES,
       DB,
       LiveList,
       Search,
@@ -217,7 +216,7 @@ var scrollLoader = require('../modules/scroll-loader');
 
       $scope.$on('$stateChangeStart', function(event, toState) {
         if (toState.name.indexOf('contacts') === -1) {
-          $scope.resetSelected();
+          $scope.unsetSelected();
         }
       });
 

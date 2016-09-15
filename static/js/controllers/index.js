@@ -39,11 +39,13 @@
   require('./delete-doc-confirm');
   require('./delete-user');
   require('./edit-language');
+  require('./edit-message-group');
   require('./edit-report');
   require('./edit-translation');
   require('./edit-translation-messages');
   require('./edit-user');
   require('./error');
+  require('./feedback');
   require('./help');
   require('./home');
   require('./import-translation');
@@ -54,6 +56,7 @@
   require('./reports');
   require('./reports-add');
   require('./reports-content');
+  require('./send-message');
   require('./tasks');
   require('./tasks-content');
   require('./theme');

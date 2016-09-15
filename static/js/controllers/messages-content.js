@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    sendMessage = require('../modules/send-message');
+var _ = require('underscore');
 
 (function () {
 
@@ -17,10 +16,16 @@ var _ = require('underscore'),
       Changes,
       ContactConversation,
       MarkAllRead,
+      Modal,
+      SendMessage,
       Session
     ) {
 
       'ngInject';
+
+      $scope.send = {
+        message: ''
+      };
 
       var scrollToUnread = function() {
         var content = $('#message-content');
@@ -79,11 +84,6 @@ var _ = require('underscore'),
               // ignore response for previous request
               return;
             }
-            // Done here so that when inbox.js$scope.sendMessage() is called from
-            // the send button in message_content.html, send-message.js:validate
-            // which called validateRecipients can use this value instead of what
-            // it finds in the modal dialog.
-            sendMessage.setRecipients(findMostRecentFacility(data));
 
             $scope.setLoadingContent(false);
             $scope.error = false;
@@ -171,22 +171,49 @@ var _ = require('underscore'),
         }
       };
 
-      $scope.addRecipients = function(to) {
-        var realTo;
-        if (to.facility) {
-          realTo = to.facility;
-        } else if (to.contact) {
-          if (to.contact._id) {
-            realTo = to.contact;
-          } else if (to.contact.name) {
-            realTo = to.contact.name; // raw phone number
+      $scope.sendMessage = function() {
+        var recipients = findMostRecentFacility($scope.selected.messages);
+        if (recipients.length === 0) {
+          $log.error('Error sending message', new Error('No facility selected'));
+          return;
+        }
+        SendMessage(recipients, $scope.send.message)
+          .then(function() {
+            $scope.send.message = '';
+          })
+          .catch(function(err) {
+            $log.error('Error sending message', err);
+          });
+      };
+
+      $scope.addRecipients = function() {
+        var recipient = $scope.selected &&
+                        $scope.selected.messages &&
+                        $scope.selected.messages.length &&
+                        $scope.selected.messages[0].value;
+
+        if (recipient) {
+          if (recipient.facility) {
+            recipient = recipient.facility._id;
+          } else if (recipient.contact) {
+            if (recipient.contact._id) {
+              recipient = recipient.contact._id;
+            } else if (recipient.contact.name) {
+              recipient = recipient.contact.name; // raw phone number
+            }
           }
         }
 
-        sendMessage.showModal({
-          to: realTo,
-          message: $('#message-footer [name=message]').val()
+        Modal({
+          templateUrl: 'templates/modals/send_message.html',
+          controller: 'SendMessageCtrl',
+          model: {
+            to: recipient,
+            message: $scope.send.message
+          }
         });
+
+        $scope.send.message = '';
       };
 
       Changes({
@@ -217,7 +244,7 @@ var _ = require('underscore'),
 
       $scope.$on('$stateChangeStart', function(event, toState) {
         if (toState.name.indexOf('messages.detail') === -1) {
-          $scope.resetSelected();
+          $scope.unsetSelected();
         }
       });
 

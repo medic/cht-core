@@ -1,9 +1,7 @@
 var feedback = require('../modules/feedback'),
     _ = require('underscore'),
     moment = require('moment'),
-    sendMessage = require('../modules/send-message'),
     tour = require('../modules/tour'),
-    modal = require('../modules/modal'),
     guidedSetup = require('../modules/guided-setup');
 
 (function () {
@@ -27,7 +25,6 @@ var feedback = require('../modules/feedback'),
       Auth,
       Changes,
       CheckDate,
-      CONTACT_TYPES,
       ContactSchema,
       CountMessages,
       DB,
@@ -39,7 +36,6 @@ var feedback = require('../modules/feedback'),
       LiveListConfig,
       Location,
       Modal,
-      PLACE_TYPES,
       ReadMessages,
       RulesEngine,
       Select2Search,
@@ -155,7 +151,10 @@ var feedback = require('../modules/feedback'),
         });
       };
 
-      $scope.resetSelected = function() {
+      /**
+       * Unset the selected item without navigation
+       */
+      $scope.unsetSelected = function() {
         $scope.setShowContent(false);
         $scope.loadingContent = false;
         $scope.showActionBar = false;
@@ -163,11 +162,14 @@ var feedback = require('../modules/feedback'),
         $scope.$broadcast('ClearSelected');
       };
 
+      /**
+       * Clear the selected item - may update the URL
+       */
       $scope.clearSelected = function() {
         if ($stateParams.id) {
           $state.go($state.current.name, { id: null });
         } else {
-          $scope.resetSelected();
+          $scope.unsetSelected();
         }
       };
 
@@ -233,23 +235,6 @@ var feedback = require('../modules/feedback'),
       };
       updateAvailableFacilities();
 
-      var setupSelect2Ajax = function(selector) {
-        $(selector).each(function(idx, el) {
-          Select2Search($(el), 'person', { allowNew: false })
-            .catch(function(err) {
-              $log.error('Error initialising select2', err);
-            });
-        });
-      };
-
-      $scope.setupEditReport = function() {
-        setupSelect2Ajax('.edit-report-dialog [name=facility]');
-      };
-
-      $scope.setupUpdateFacility = function() {
-        setupSelect2Ajax('.update-facility-dialog [name=facility]');
-      };
-
       var findIdInContactHierarchy = function(id, hierarchy) {
         return _.find(hierarchy, function(entry) {
           return entry.doc._id === id ||
@@ -260,7 +245,7 @@ var feedback = require('../modules/feedback'),
       Changes({
         key: 'inbox-facilities',
         filter: function(change) {
-          var hierarchyTypes = PLACE_TYPES.filter(function(pt) {
+          var hierarchyTypes = ContactSchema.getPlaceTypes().filter(function(pt) {
             return pt !== 'clinic';
           });
           // check if new document is a contact
@@ -284,10 +269,6 @@ var feedback = require('../modules/feedback'),
         },
         callback: $scope.updateReadStatus
       });
-
-      $scope.setupSendMessage = function() {
-        sendMessage.init($q, Settings, Select2Search, $translate.instant, CONTACT_TYPES, ContactSchema);
-      };
 
       // get the forms for the forms filter
       JsonForms()
@@ -454,20 +435,20 @@ var feedback = require('../modules/feedback'),
           $log.error('Error loading language', err);
         });
 
-      $scope.sendMessage = function(event) {
-        sendMessage.validate(event.target, function(recipients, message) {
-          var pane = modal.start($(event.target).closest('.message-form'));
-          SendMessage(recipients, message)
-            .then(function() {
-              $('#message-footer').removeClass('sending');
-              $('#message-footer textarea').val('');
-              pane.done();
-            })
-            .catch(function(err) {
-              pane.done($translate.instant('Error sending message'), err);
-            });
+      $('body').on('click', '.send-message', function(event) {
+        var target = $(event.target).closest('.send-message');
+        if (target.hasClass('mm-icon-disabled')) {
+          return;
+        }
+        event.preventDefault();
+        Modal({
+          templateUrl: 'templates/modals/send_message.html',
+          controller: 'SendMessageCtrl',
+          model: {
+            to: target.attr('data-send-to')
+          }
         });
-      };
+      });
 
       $scope.setRightActionBar = function(model) {
         if (!$scope.actionBar) {
@@ -572,18 +553,10 @@ var feedback = require('../modules/feedback'),
         });
       };
 
-      $scope.prepareFeedback = function() {
-        $('#feedback [name=feedback]').val('');
-      };
-
-      $scope.submitFeedback = function() {
-        var pane = modal.start($('#feedback'));
-        var message = $('#feedback [name=feedback]').val();
-        feedback.submit(message, APP_CONFIG, function(err) {
-          if (!err) {
-            $translate('feedback.submitted').then(Snackbar);
-          }
-          pane.done($translate.instant('Error saving feedback'), err);
+      $scope.openFeedback = function() {
+        Modal({
+          templateUrl: 'templates/modals/feedback.html',
+          controller: 'FeedbackCtrl'
         });
       };
 

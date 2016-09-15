@@ -21,61 +21,61 @@
           <li role="presentation" mm-auth="can_view_messages,!can_view_messages_tab">
             <a role="menuitem" tabindex="-1" ui-sref="messages.detail">
               <i class="fa fa-fw fa-envelope"></i>
-              {{'Messages' | translate}}
+              <span translate>Messages</span>
             </a>
           </li>
           <li role="presentation" mm-auth="can_view_tasks,!can_view_tasks_tab">
             <a role="menuitem" tabindex="-1" ui-sref="tasks.detail">
               <i class="fa fa-fw fa-flag"></i>
-              {{'Tasks' | translate}}
+              <span translate>Tasks</span>
             </a>
           </li>
           <li role="presentation" mm-auth="can_view_reports,!can_view_reports_tab">
             <a role="menuitem" tabindex="-1" ui-sref="reports.detail">
               <i class="fa fa-fw fa-list-alt"></i>
-              {{'Reports' | translate}}
+              <span translate>Reports</span>
             </a>
           </li>
           <li role="presentation" mm-auth="can_view_contacts,!can_view_contacts_tab">
             <a role="menuitem" tabindex="-1" ui-sref="contacts.detail">
               <i class="fa fa-fw fa-user"></i>
-              {{'Contacts' | translate}}
+              <span translate>Contacts</span>
             </a>
           </li>
           <li role="presentation" mm-auth="can_view_analytics,!can_view_analytics_tab">
             <a role="menuitem" tabindex="-1" ui-sref="analytics" ui-sref-opts="{reload: true}">
               <i class="fa fa-bar-chart-o"></i>
-              {{'Analytics' | translate}}
+              <span translate>Analytics</span>
             </a>
           </li>
           <li role="presentation" mm-auth="can_configure">
             <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#guided-setup">
               <i class="fa fa-fw fa-list-ol"></i>
-              {{'Easy Setup Wizard' | translate}}
+              <span translate>Easy Setup Wizard</span>
             </a>
           </li>
           <li role="presentation">
             <a id="startTour" role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#tour-select" ng-show="tours.length">
               <i class="fa fa-fw fa-graduation-cap"></i>
-              {{'Guided Tour' | translate}}
+              <span translate>Guided Tour</span>
             </a>
           </li>
           <li role="presentation">
             <a ui-sref="about" role="menuitem" tabindex="-1">
               <i class="fa fa-fw fa-question"></i>
-              {{'about' | translate}}
+              <span translate>about</span>
             </a>
           </li>
           <li role="presentation" mm-auth="can_edit_profile">
             <a role="menuitem" tabindex="-1" ui-sref="configuration.user">
               <i class="fa fa-fw fa-user"></i>
-              {{'edit.user.settings' | translate}}
+              <span translate>edit.user.settings</span>
             </a>
           </li>
           <li role="presentation">
-            <a role="menuitem" tabindex="-1" rel="external" data-toggle="modal" data-target="#feedback" ng-click="prepareFeedback()">
+            <a role="menuitem" tabindex="-1" ng-click="openFeedback()">
               <i class="fa fa-fw fa-bug"></i>
-              {{'Report Bug' | translate}}
+              <span translate>Report Bug</span>
             </a>
           </li>
           <!--
@@ -86,7 +86,7 @@
           <li role="presentation" ng-show="!android_app_version">
             <a role="menuitem" tabindex="-1" rel="external" ng-click="logout()">
               <i class="fa fa-fw fa-power-off"></i>
-              {{'Log Out' | translate}}
+              <span translate>Log Out</span>
             </a>
           </li>
         </ul>
@@ -103,12 +103,12 @@
             <span class="mm-badge mm-badge-red mm-badge-border" ng-show="readStatus.messages >= 100">100+</span>
           </span>
         </div>
-        <div class="button-label">{{'Messages' | translate}}</div>
+        <div class="button-label" translate>Messages</div>
       </a><a ui-sref="tasks.detail" id="tasks-tab" class="tasks-tab" ng-class="{'selected': currentTab === 'tasks'}" mm-auth="can_view_tasks,can_view_tasks_tab">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': currentTab !== 'tasks'}">
           <span class="fa fa-flag"></span>
         </div>
-        <div class="button-label">{{'Tasks' | translate}}</div>
+        <div class="button-label" translate>Tasks</div>
       </a><a ui-sref="reports.detail" id="reports-tab" class="reports-tab" ng-class="{'selected': currentTab === 'reports'}" mm-auth="can_view_reports,can_view_reports_tab">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': currentTab !== 'reports'}">
           <span class="fa fa-list-alt"></span>
@@ -117,22 +117,22 @@
             <span class="mm-badge mm-badge-red mm-badge-border" ng-show="readStatus.forms >= 100">100+</span>
           </span>
         </div>
-        <div class="button-label">{{'Reports' | translate}}</div>
+        <div class="button-label" translate>Reports</div>
       </a><a ui-sref="contacts.detail" id="contacts-tab" class="contacts-tab" ng-class="{'selected': currentTab === 'contacts'}" mm-auth="can_view_contacts,can_view_contacts_tab">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': currentTab !== 'contacts'}">
           <span class="fa fa-user"></span>
         </div>
-        <div class="button-label">{{'Contacts' | translate}}</div>
+        <div class="button-label" translate>Contacts</div>
       </a><a ui-sref="analytics" ui-sref-opts="{reload: true}" id="analytics-tab" class="analytics-tab" ng-class="{'selected': currentTab === 'analytics'}" mm-auth="can_view_analytics,can_view_analytics_tab">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': currentTab !== 'analytics'}">
           <span class="fa fa-bar-chart-o"></span>
         </div>
-        <div class="button-label">{{'Analytics' | translate}}</div>
+        <div class="button-label" translate>Analytics</div>
       </a><a ui-sref="configuration" class="configuration-tab" mm-auth="can_configure" ng-class="{'selected': currentTab === 'configuration'}">
         <div class="mm-icon" ng-class="{'mm-icon-inverse': currentTab !== 'configuration'}">
           <span class="fa fa-cog"></span>
         </div>
-        <div class="button-label">{{'Configuration' | translate}}</div>
+        <div class="button-label" translate>Configuration</div>
       </a>
 
     </div>

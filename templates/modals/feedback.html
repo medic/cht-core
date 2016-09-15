@@ -1,24 +1,17 @@
-<div id="feedback" class="modal fade" tabindex="-1" role="dialog" style="display: none">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{'Report Bug' | translate}}</h3>
-      </div>
-      <div class="modal-body">
-        <form action="" method="POST">
-          <div class="control-group">
-            <div class="controls">
-              <textarea name="feedback" ng-attr-placeholder="{{'Bug description' | translate}}"></textarea>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <p class="note">{{note}}</p>
-        <a href="#" class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
-        <a class="btn submit btn-primary" ng-click="submitFeedback()">{{'Submit' | translate}}</a>
+<mm-modal
+  status="status"
+  id="'feedback'"
+  title-key="'Report Bug'"
+  submit-key="'Submit'"
+  submitting-key="'Submitting'"
+  on-cancel="cancel()"
+  on-submit="submit()"
+>
+  <form action="" method="POST">
+    <div class="control-group">
+      <div class="controls">
+        <textarea ng-model="model.message" translate translate-attr-placeholder="Bug description"></textarea>
       </div>
     </div>
-  </div>
-</div>
+  </form>
+</mm-modal>

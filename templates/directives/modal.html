@@ -5,11 +5,9 @@
   </div>
   <div class="modal-body" ng-transclude></div>
   <div class="modal-footer">
-    <p class="note" ng-show="error" translate>{{error}}</p>
+    <p class="note" ng-show="status.error" translate>{{status.error}}</p>
     <a class="btn cancel" ng-click="onCancel()" translate>{{cancelKey || 'Cancel'}}</a>
-    <a class="btn submit" ng-class="{ disabled: processing, 'btn-primary': !danger, 'btn-danger': danger }" ng-click="onSubmit()" >
-      <span ng-show="!processing || !submittingKey" translate>{{submitKey}}</span>
-      <span ng-show="processing && submittingKey" translate>{{submittingKey}}</span>
-    </a>
+    <a class="btn submit" ng-class="{ 'btn-primary': !danger, 'btn-danger': danger }" ng-click="onSubmit()" ng-show="!status.processing" translate>{{submitKey}}</a>
+    <a class="btn submit disabled" ng-class="{ 'btn-primary': !danger, 'btn-danger': danger }" ng-show="status.processing" translate>{{submittingKey || submitKey}}</a>
   </div>
 </div>

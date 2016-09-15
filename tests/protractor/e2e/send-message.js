@@ -51,6 +51,11 @@ describe('Send message', function() {
       });
   });
 
+  afterEach(function(done) {
+    utils.resetBrowser();
+    done();
+  });
+
   afterAll(function(done) {
     protractor.promise
       .all(savedUuids.map(utils.deleteDoc))
@@ -64,7 +69,6 @@ describe('Send message', function() {
         var ids = _.uniq(_.pluck(results.rows, 'id'));
         return protractor.promise.all(ids.map(utils.deleteDoc));
       })
-      .then(utils.resetBrowser)
       .then(done);
   });
 
@@ -78,52 +82,63 @@ describe('Send message', function() {
   };
 
   var openSendMessageModal = function() {
-    var sendMessageModal = element(by.id('send-message'));
-
     expect(element(by.css('.general-actions .send-message')).isDisplayed()).toBeTruthy();
-    expect(sendMessageModal.isDisplayed()).toBeFalsy();
-
     element(by.css('.general-actions .send-message')).click();
     browser.wait(function() {
-      return sendMessageModal.isDisplayed();
-    }, 1000);
+      var modal = element(by.id('send-message'));
+      return modal.isPresent().then(function() {
+        return modal.isDisplayed();
+      });
+    }, 5000);
   };
 
-  var searchSelect2 = function(text) {
-    element(by.css('#send-message input.select2-search__field')).sendKeys(text);
-    browser.wait(function() {
-      // Select2 is ajaxing away to get results
-      return element.all(by.css('.select2-results__option.loading-results')).count().then(utils.countOf(1));
-    }, 3000);
-    browser.wait(function() {
-      // Select2 has completely ajaxed and is flush with results
-      return element.all(by.css('.select2-results__option.loading-results')).count().then(utils.countOf(0));
-    }, 3000);
+  var findSelect2Entry = function(selector, expectedValue) {
+    return element.all(by.css('.select2-results__option'+selector)).filter(function(item) {
+      return item.getText()
+        .then(function(text) {
+          return text === expectedValue;
+        })
+        .catch(function(err) {
+          // item may have been detached from the page, so whatever it's invalid
+          // we ignore it. Log the error just for kicks.
+          console.log('Caught and ignoring an error trying to getText', err);
+        });
+    });
   };
 
-  var enterCheckAndSelect = function(text, totalResults, resultToClick, id, existingEntryCount) {
+  var searchSelect2 = function(searchText, totalExpectedResults, entrySelector, entryText) {
+    element(by.css('#send-message input.select2-search__field')).sendKeys(searchText);
+
+    browser.wait(function() {
+      return protractor.promise.all([
+          findSelect2Entry(entrySelector, entryText).count().then(utils.countOf(1)),
+          element.all(by.css('.select2-results__option.loading-results')).count().then(utils.countOf(0)),
+          element.all(by.css('.select2-results__option')).count().then(utils.countOf(totalExpectedResults))
+        ]).then(function(results) {
+          // My kingdom for results.reduce(&&);
+          return results[0] && results[1] && results[2];
+        });
+    }, 10000);
+
+    return findSelect2Entry(entrySelector, entryText).first();
+  };
+
+  var enterCheckAndSelect = function(searchText, totalExpectedResults, entrySelector, entryText, existingEntryCount) {
     existingEntryCount = existingEntryCount || 0;
-
-    searchSelect2(text);
-
-    expect(element.all(by.css('.select2-results__option')).count()).toBe(totalResults);
-    expect(element.all(by.css('.select2-results__option.loading-results')).count()).toBe(0);
-
     expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(existingEntryCount);
-    element.all(by.css('li.select2-results__option')).get(resultToClick).click();
+
+    var entry = searchSelect2(searchText, totalExpectedResults, entrySelector, entryText);
+    entry.click();
+
     browser.wait(function() {
       return element.all(by.css('li.select2-selection__choice')).count().then(utils.countOf(existingEntryCount + 1));
     }, 2000);
-    expect(element.all(by.css('#send-message select>option')).last().getAttribute('value')).toBe(id);
   };
 
   var sendMessage = function() {
     element(by.css('#send-message a.btn.submit')).click();
     browser.sleep(1000); // TODO: work out how to tell that the documents etc have beeen saved
-    browser.driver.navigate().refresh();
-    browser.wait(function() {
-      return browser.isElementPresent(by.css('#message-list'));
-    }, 10000);
+    utils.resetBrowser();
   };
 
   var clickLhsEntry = function(entryId, entryName) {
@@ -146,13 +161,18 @@ describe('Send message', function() {
     expect(element.all(by.css('#message-content li div.data>p>span')).last().getText()).toBe(message);
   };
 
+  var contactNameSelector = ' .sender .name';
+  var everyoneAtText = function(name) {
+    return name + ' - all contacts';
+  };
+
   describe('Send message modal', function() {
     it('can send messages to raw phone numbers', function() {
       element(by.id('messages-tab')).click();
       expect(element(by.css(messageInList(RAW_PH))).isPresent()).toBeFalsy();
 
       openSendMessageModal();
-      enterCheckAndSelect(RAW_PH, 1, 0, RAW_PH);
+      enterCheckAndSelect(RAW_PH, 1, '', RAW_PH);
       element(by.css('#send-message textarea')).sendKeys(smsMsg('raw'));
       sendMessage();
       clickLhsEntry(RAW_PH);
@@ -167,7 +187,7 @@ describe('Send message', function() {
       expect(element(by.css(messageInList(ALICE._id))).isPresent()).toBeFalsy();
 
       openSendMessageModal();
-      enterCheckAndSelect(ALICE.name, 2, 1, ALICE._id);
+      enterCheckAndSelect(ALICE.name, 2, contactNameSelector, ALICE.name);
       element(by.css('#send-message textarea')).sendKeys(smsMsg('contact'));
       sendMessage();
       clickLhsEntry(ALICE._id, ALICE.name);
@@ -183,7 +203,7 @@ describe('Send message', function() {
       expect(element(by.css(messageInList(DAVID.phone))).isPresent()).toBeFalsy();
 
       openSendMessageModal();
-      enterCheckAndSelect(BOB_PLACE.name, 3, 1, 'everyoneAt:' + BOB_PLACE._id);
+      enterCheckAndSelect(BOB_PLACE.name, 3, contactNameSelector, everyoneAtText(BOB_PLACE.name));
       element(by.css('#send-message textarea')).sendKeys(smsMsg('everyoneAt'));
       sendMessage();
 
@@ -242,7 +262,7 @@ describe('Send message', function() {
         expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
         expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
         expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(RAW_PH);
-        enterCheckAndSelect(ANOTHER_RAW_PH, 1, 0, ANOTHER_RAW_PH, 1);
+        enterCheckAndSelect(ANOTHER_RAW_PH, 1, '', ANOTHER_RAW_PH, 1);
         sendMessage();
         openMessageContent(RAW_PH);
         expect(element.all(by.css('#message-content li')).count()).toBe(3);
@@ -261,7 +281,7 @@ describe('Send message', function() {
         expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
         expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
         expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(ALICE._id);
-        enterCheckAndSelect(DAVID.name, 2, 1, DAVID._id, 1);
+        enterCheckAndSelect(DAVID.name, 2, contactNameSelector, DAVID.name, 1);
         sendMessage();
         openMessageContent(ALICE._id, ALICE.name);
         expect(element.all(by.css('#message-content li')).count()).toBe(3);

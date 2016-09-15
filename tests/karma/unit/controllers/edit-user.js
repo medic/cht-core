@@ -53,7 +53,7 @@ describe('EditUserCtrl controller', function() {
           '$scope': scope,
           '$rootScope': $rootScope,
           'Language': sinon.stub(),
-          'PLACE_TYPES': [],
+          'ContactSchema': { getPlaceTypes: function() { return []; } },
           'Search': sinon.stub(),
           'Session': {
             userCtx: function() {

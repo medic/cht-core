@@ -1,47 +1,37 @@
-<div class="modal fade" id="edit-message-group" role="dialog">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>
-          {{'Edit' | translate}}
-          {{selectedGroup.group}}
-        </h3>
+<mm-modal
+  status="status"
+  id="'edit-message-group'"
+  title-key="'Edit'"
+  submit-key="'Submit'"
+  submitting-key="'Submitting'"
+  on-cancel="cancel()"
+  on-submit="submit()"
+>
+  <form action="" method="POST">
+
+    <fieldset ng-repeat="task in model.group.rows" ng-hide="task.deleted" ng-disabled="task.state !== 'scheduled' && task.state !== 'muted'" data-index="{{$index}}">
+
+      <div class="form-group">
+        <label>
+          <span translate>tasks.0.messages.0.message</span>
+          <a class="btn btn-link fa fa-trash-o" ng-click="task.deleted = true" ng-hide="task.state !== 'scheduled' && task.state !== 'muted'"></a>
+        </label>
+        <input type="text" class="form-control" ng-repeat="message in task.messages" ng-model="message.message" />
       </div>
-      <div class="modal-body">
-        <form action="" method="POST">
 
-          <fieldset ng-repeat="task in selectedGroup.rows" ng-hide="task.deleted" ng-disabled="task.state !== 'scheduled' && task.state !== 'muted'" data-index="{{$index}}">
-
-            <div class="form-group">
-              <label>
-                {{'tasks.0.messages.0.message' | translate}}
-                <a class="btn btn-link fa fa-trash-o" ng-hide="task.state !== 'scheduled' && task.state !== 'muted'" ng-click="task.deleted = true"></a>
-              </label>
-              <input type="text" class="form-control" ng-repeat="message in task.messages" ng-model="message.message" />
-            </div>
-
-            <div class="form-group">
-              <div class="input-group">
-                <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
-                <input type="text" class="form-control datepicker" ng-value="task.due | simpleDateTime" />
-              </div>
-            </div>
-
-          </fieldset>
-
-          <a class="btn" ng-click="addTask(selectedGroup)">
-            <i class="fa fa-plus"></i>
-            {{'Add Message' | translate}}
-          </a>
-
-        </form>
+      <div class="form-group">
+        <div class="input-group">
+          <span class="input-group-addon"><i class="fa fa-calendar"></i></span>
+          <input type="text" class="form-control datepicker" ng-value="task.due" />
+        </div>
       </div>
-      <div class="modal-footer">
-        <p class="note"></p>
-        <a class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
-        <a class="btn submit btn-primary" ng-click="updateGroup(selectedGroup)">{{'Submit' | translate}}</a>
-      </div>
-    </div>
-  </div>
-</div>
+
+    </fieldset>
+
+    <a class="btn" ng-click="addTask()">
+      <i class="fa fa-plus"></i>
+      <span translate>Add Message</span>
+    </a>
+
+  </form>
+</mm-modal>

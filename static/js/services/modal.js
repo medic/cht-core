@@ -36,20 +36,22 @@ angular.module('inboxServices').factory('Modal',
     var getScope = function(model) {
       var scope = $rootScope.$new();
       scope.model = model;
-      scope.processing = false;
-      scope.error = false;
+      scope.status = {
+        processing: false,
+        error: false
+      };
       scope.setProcessing = function() {
-        scope.processing = true;
-        scope.error = false;
+        scope.status.processing = true;
+        scope.status.error = false;
       };
       scope.setFinished = function() {
-        scope.processing = false;
-        scope.error = false;
+        scope.status.processing = false;
+        scope.status.error = false;
       };
       scope.setError = function(err, message) {
         $log.error('Error submitting modal', err);
-        scope.processing = false;
-        scope.error = message;
+        scope.status.processing = false;
+        scope.status.error = message;
       };
       return scope;
     };

@@ -36,14 +36,19 @@ describe('ReportsCtrl controller', function() {
       return false;
     };
     scope.setTitle = function() {};
+    scope.setActionBar = sinon.stub();
+    scope.settingSelected = function() {};
 
     UserDistrict = function() {
-      return { 
+      return {
         then: function() {}
       };
     };
 
-    LiveList = { reports: { initialised: function() { return true; } }};
+    LiveList = { reports: {
+      initialised: function() { return true; },
+      setSelected: sinon.stub()
+    }};
 
     MarkRead = function() {};
 
@@ -111,6 +116,20 @@ describe('ReportsCtrl controller', function() {
       chai.expect(post.args[0][0].name).to.equal('hello');
       chai.expect(post.args[0][0].verified).to.equal(true);
     });
+  });
+
+  it('when selecting a report, it sets the phone number in the actionbar', function() {
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'def', name: 'hello' }));
+    post.returns(KarmaUtils.mockPromise());
+    createController();
+    var phone = 12345;
+    scope.setSelected({
+      _id: 'abc',
+      form: 'P',
+      contact: { _id: 'def', phone: phone}
+    });
+    chai.assert(scope.setActionBar.called);
+    chai.expect(scope.setActionBar.args[0][0].sendTo.phone).to.equal(phone);
   });
 
 });

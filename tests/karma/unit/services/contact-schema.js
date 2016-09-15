@@ -161,8 +161,11 @@ describe('ContactSchema service', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().person, {
           type: 'person',
-          addButtonLabel: 'action.person.add',
+          label: 'contact.type.person',
+          pluralLabel: 'contact.type.person.plural',
+          addButtonLabel: 'contact.type.person.new',
           icon: 'fa-user',
+          isPlace: false,
           fields: {
             name: {
               type: 'string',
@@ -194,8 +197,11 @@ describe('ContactSchema service', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().district_hospital, {
           type: 'district_hospital',
-          addButtonLabel: 'action.district_hospital.add',
+          label: 'contact.type.district_hospital',
+          pluralLabel: 'contact.type.district_hospital.plural',
+          addButtonLabel: 'contact.type.district_hospital.new',
           icon: 'fa-building',
+          isPlace: true,
           fields: {
             name: {
               type: 'string',
@@ -221,8 +227,11 @@ describe('ContactSchema service', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().health_center, {
           type: 'health_center',
-          addButtonLabel: 'action.health_center.add',
+          label: 'contact.type.health_center',
+          pluralLabel: 'contact.type.health_center.plural',
+          addButtonLabel: 'contact.type.health_center.new',
           icon: 'fa-hospital-o',
+          isPlace: true,
           fields: {
             name: {
               type: 'string',
@@ -252,8 +261,11 @@ describe('ContactSchema service', function() {
       it('has a simple default', function() {
         assert.deepEqual(service.get().clinic, {
           type: 'clinic',
-          addButtonLabel: 'action.clinic.add',
+          label: 'contact.type.clinic',
+          pluralLabel: 'contact.type.clinic.plural',
+          addButtonLabel: 'contact.type.clinic.new',
           icon: 'fa-group',
+          isPlace: true,
           fields: {
             name: {
               type: 'string',
@@ -318,6 +330,18 @@ describe('ContactSchema service', function() {
       // expect
       assert.ok   (service.get()             .clinic.fields.hasOwnProperty('location'));
       assert.notOk(service.getVisibleFields().clinic.fields.hasOwnProperty('location'));
+    });
+  });
+
+  describe('#getTypes()', function() {
+    it('should list types in hierarchical order', function() {
+      assert.deepEqual(service.getTypes(), ['district_hospital', 'health_center', 'clinic', 'person']);
+    });
+  });
+
+  describe('#getPlaceTypes()', function() {
+    it('should list place types in hierarchical order', function() {
+      assert.deepEqual(service.getPlaceTypes(), ['district_hospital', 'health_center', 'clinic']);
     });
   });
 

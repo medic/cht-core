@@ -82,7 +82,7 @@
       $scope.$on('$stateChangeStart', function(event, toState) {
         if (toState.name.indexOf('tasks.detail') === -1) {
           Enketo.unload($scope.form);
-          $scope.resetSelected();
+          $scope.unsetSelected();
         }
       });
 

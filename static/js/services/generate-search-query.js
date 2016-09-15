@@ -9,7 +9,7 @@ var _ = require('underscore'),
 
   inboxServices.factory('GenerateSearchQuery',
     function(
-      CONTACT_TYPES
+      ContactSchema
     ) {
       'ngInject';
 
@@ -48,7 +48,7 @@ var _ = require('underscore'),
       var formatContactsType = function(filters) {
         var selected = getSelected(filters.types);
         return {
-          type: selected || CONTACT_TYPES
+          type: selected || ContactSchema.getTypes()
         };
       };
 

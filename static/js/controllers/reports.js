@@ -1,6 +1,4 @@
 var _ = require('underscore'),
-    moment = require('moment'),
-    modal = require('../modules/modal'),
     scrollLoader = require('../modules/scroll-loader');
 
 (function () {
@@ -17,15 +15,13 @@ var _ = require('underscore'),
       $state,
       $stateParams,
       $timeout,
-      $translate,
       DB,
-      EditGroup,
       FormatDataRecord,
       LiveList,
       MarkRead,
+      Modal,
       Search,
       SearchFilters,
-      Settings,
       TranslateFrom
     ) {
       'ngInject';
@@ -36,29 +32,11 @@ var _ = require('underscore'),
       // report is the db doc, and expanded is whether to how the details
       // or just the summary in the content pane.
       $scope.selected = [];
-      $scope.selectedGroup = null;
       $scope.filters = {
         search: $stateParams.query
       };
 
       var liveList = LiveList.reports;
-
-      var setSelectedGroup = function(group) {
-        $scope.selectedGroup = angular.copy(group);
-      };
-
-      $scope.updateGroup = function(group) {
-        var pane = modal.start($('#edit-message-group'));
-        EditGroup($scope.selected[0]._id, group)
-          .then(function() {
-            pane.done();
-          })
-          .catch(function(err) {
-            $translate('Error updating group').then(function(text) {
-              pane.done(text, err);
-            });
-          });
-      };
 
       var updateLiveList = function(updated) {
         _.each(updated, function(report) {
@@ -146,7 +124,7 @@ var _ = require('underscore'),
           var doc = model.selected[0];
           model.verified = doc.verified;
           model.type = doc.content_type;
-          model.sendTo = doc;
+          model.sendTo = doc.contact;
         }
         $scope.setActionBar(model);
       };
@@ -365,10 +343,11 @@ var _ = require('underscore'),
       });
 
       $scope.$on('EditReport', function() {
-        var val = ($scope.selected[0].report.contact && $scope.selected[0].report.contact._id) || '';
-        $('#edit-report [name=id]').val($scope.selected[0]._id);
-        $('#edit-report [name=facility]').select2('val', val);
-        $('#edit-report').modal('show');
+        Modal({
+          templateUrl: 'templates/modals/edit_report.html',
+          controller: 'EditReportCtrl',
+          model: { report: $scope.selected[0].report }
+        });
       });
 
       var initScroll = function() {
@@ -387,53 +366,15 @@ var _ = require('underscore'),
         $rootScope.$broadcast('TourStart', $stateParams.tour);
       }
 
-      var getNextHalfHour = function() {
-        var time = moment().second(0).millisecond(0);
-        if (time.minute() < 30) {
-          time.minute(30);
-        } else {
-          time.minute(0);
-          time.add(1, 'hours');
-        }
-        return time;
-      };
-
-      var initEditMessageModal = function() {
-        $timeout(function() {
-          Settings()
-            .then(function(settings) {
-              $('#edit-message-group .datepicker').daterangepicker({
-                singleDatePicker: true,
-                timePicker: true,
-                applyClass: 'btn-primary',
-                cancelClass: 'btn-link',
-                parentEl: '#edit-message-group .modal-dialog .modal-content',
-                format: settings.reported_date_format,
-                minDate: getNextHalfHour()
-              },
-              function(date) {
-                var i = this.element.closest('fieldset').attr('data-index');
-                $scope.selectedGroup.rows[i].due = date.toISOString();
-              });
-            });
-        });
-      };
-
       $scope.edit = function(group) {
-        setSelectedGroup(group);
-        $('#edit-message-group').modal('show');
-        initEditMessageModal();
-      };
-
-      $scope.addTask = function(group) {
-        group.rows.push({
-          due: moment(),
-          added: true,
-          group: group.number,
-          state: 'scheduled',
-          messages: [ { message: '' } ]
+        Modal({
+          templateUrl: 'templates/modals/edit_message_group.html',
+          controller: 'EditMessageGroupCtrl',
+          model: {
+            report: $scope.selected[0].report,
+            group: angular.copy(group)
+          }
         });
-        initEditMessageModal();
       };
 
       $scope.setupSearchFreetext = function() {
@@ -548,7 +489,7 @@ var _ = require('underscore'),
 
       $scope.$on('$stateChangeStart', function(event, toState) {
         if (toState.name.indexOf('reports') === -1) {
-          $scope.resetSelected();
+          $scope.unsetSelected();
         }
       });
     }

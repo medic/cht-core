@@ -1,25 +1,17 @@
-<div class="modal fade edit-report-dialog update-facility" id="edit-report" role="dialog" ng-controller="EditReportCtrl">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{'report.edit' | translate}}</h3>
+<mm-modal
+  status="status"
+  id="'edit-report'"
+  title-key="'report.edit'"
+  submit-key="'Submit'"
+  submitting-key="'Submitting'"
+  on-cancel="cancel()"
+  on-submit="saveReport()"
+>
+  <form>
+    <fieldset>
+      <div class="control-group">
+        <select name="facility" autocomplete="off"></select>
       </div>
-      <div class="modal-body">
-        <form>
-          <input type="hidden" name="id" />
-          <fieldset>
-            <div class="control-group">
-              <select name="facility" autocomplete="off"></select>
-            </div>
-          </fieldset>
-        </form>
-      </div>
-      <div class="modal-footer">
-        <p class="note"></p>
-        <a class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
-        <a class="btn submit btn-primary" ng-click="saveReport()">{{'Submit' | translate}}</a>
-      </div>
-    </div>
-  </div>
-</div>
+    </fieldset>
+  </form>
+</mm-modal>

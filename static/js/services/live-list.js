@@ -16,7 +16,7 @@ angular.module('inboxServices').factory('LiveListConfig',
     $templateCache,
     $timeout,
     Changes,
-    CONTACT_TYPES,
+    ContactSchema,
     GetDataRecords,
     DB,
     LiveList,
@@ -48,7 +48,7 @@ angular.module('inboxServices').factory('LiveListConfig',
             return;
           }
           if (c1.type !== c2.type) {
-            return CONTACT_TYPES.indexOf(c1.type) - CONTACT_TYPES.indexOf(c2.type);
+            return ContactSchema.getTypes().indexOf(c1.type) - ContactSchema.getTypes().indexOf(c2.type);
           }
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
@@ -78,7 +78,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           handleChange(change, [ LiveList.contacts, LiveList['contact-search'] ]);
         },
         filter: function(change) {
-          return CONTACT_TYPES.indexOf(change.doc.type) !== -1;
+          return ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
         }
       });
 

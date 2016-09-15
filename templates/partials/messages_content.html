@@ -61,13 +61,13 @@
     <div id="message-footer" class="reply message-form col-sm-8" ng-if="selected.messages[0]">
       <div class="control-group">
         <div class="controls">
-          <textarea name="message" ng-attr-placeholder="{{'Reply to name' | translate:selected.messages[0].value.contact}}"></textarea>
+          <textarea name="message" ng-model="send.message" translate translate-attr-placeholder="Reply to name" translate-values="{ contact: (selected.messages[0].value.contact.name || (!selected.messages[0].value.form && selected.messages[0].value.name) || selected.messages[0].value.from || selected.messages[0].value.sent_by) }"></textarea>
         </div>
       </div>
       <div class="message-actions">
-        <a class="btn btn-link" ng-mousedown="addRecipients(selected.messages[0].value)" translate>Add recipient</a>
+        <a class="btn btn-link" ng-mousedown="addRecipients()" translate>Add recipient</a>
         <span class="count"></span>
-        <a class="btn submit btn-primary" ng-mousedown="sendMessage($event)" translate-attr-data-working-label="Sending" translate>Send</a>
+        <a class="btn submit btn-primary" ng-class="{disabled: send.message.length === 0}" ng-mousedown="sendMessage()" translate>Send</a>
       </div>
     </div>
   </div>

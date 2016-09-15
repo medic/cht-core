@@ -13,7 +13,14 @@ describe('Facility service', function() {
       $provide.value('Cache', function(options) {
         return options.get;
       });
-      $provide.value('PLACE_TYPES', [ 'district_hospital', 'health_center', 'clinic' ]);
+      $provide.factory('ContactSchema',
+        function() {
+          return {
+            getTypes: function() { return [ 'district_hospital', 'health_center', 'clinic', 'person' ]; },
+            getPlaceTypes: function() { return [ 'district_hospital', 'health_center', 'clinic' ]; }
+          };
+        }
+      );
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject(function($injector) {
