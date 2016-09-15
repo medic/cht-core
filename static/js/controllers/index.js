@@ -39,6 +39,7 @@
   require('./delete-doc-confirm');
   require('./delete-user');
   require('./edit-language');
+  require('./edit-message-group');
   require('./edit-report');
   require('./edit-translation');
   require('./edit-translation-messages');
