@@ -84,8 +84,14 @@
 
       <div ng-if="selected.children.persons">
         <div class="card-title">
-          <div class="col-sm-6"><i class="fa fa-user"></i></div>
-          <div class="col-sm-3 hidden-xs" translate>person.field.title</div>
+          <div ng-show="selected.doc.type !== 'clinic'" class="col-sm-6">
+            <h4><i class="fa fa-user"></i><span translate>People</span></h4>
+          </div>
+          <div ng-show="selected.doc.type === 'clinic'" class="col-sm-6">
+            <h4><i class="fa fa-user"></i><span translate>clinic.field.children</span></h4>
+          </div>
+          <div ng-show="selected.doc.type !== 'clinic'" class="col-sm-3 hidden-xs" translate>person.field.title</div>
+          <div ng-show="selected.doc.type === 'clinic'" class="col-sm-3 hidden-xs" translate>contact.age</div>
           <div class="col-sm-3 hidden-xs" translate>person.field.phone</div>
         </div>
         <div class="card action-list children">
@@ -95,13 +101,27 @@
               <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell">
                 <div>
                   <div class="col-sm-6">
-                    <i class="fa fa-star primary" ng-show="child.doc.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
+                    <i class="fa fa-star primary" ng-show="child.doc.isPrimaryContact && selected.doc.type !== 'clinic'" translate translate-attr-title="Primary contact"></i>
+                    <i class="fa fa-star primary" ng-show="child.doc.isPrimaryContact && selected.doc.type === 'clinic'" translate translate-attr-title="clinic.field.contact"></i>
                     {{child.doc.name}}
+                    <span class="visible-xs-inline" ng-show="child.doc.isPrimaryContact">,</span>
+                    <span class="visible-xs-inline" ng-show="selected.doc.type !== 'clinic' && child.doc.isPrimaryContact" translate>Primary contact</span>
+                    <span class="visible-xs-inline" ng-show="selected.doc.type === 'clinic' && child.doc.isPrimaryContact" translate>clinic.field.contact</span>
                   </div>
-                  <div class="col-sm-3" ng-bind-html="child.doc.title"></div>
-                  <div class="col-sm-3" ng-bind-html="child.doc.phone"></div>
+                  <div class="hidden-xs col-sm-3" ng-show="selected.doc.type !== 'clinic'" ng-bind-html="child.doc.title"></div>
+                  <div class="hidden-xs col-sm-3" ng-show="selected.doc.type === 'clinic'" ng-bind-html="child.doc.date_of_birth | age"></div>
+                  <div class="hidden-xs col-sm-3" ng-bind-html="child.doc.phone"></div>
                 </div>
-                <div ng-show="child.doc.isPrimaryContact" translate>Primary contact</div>
+
+                <div class="hidden-xs">
+                  <span ng-show="selected.doc.type !== 'clinic' && child.doc.isPrimaryContact" translate>Primary contact</span>
+                  <span ng-show="selected.doc.type === 'clinic' && child.doc.isPrimaryContact" translate>clinic.field.contact</span>
+                </div>
+                <div class="visible-xs-block">
+                  <span ng-show="selected.doc.type !== 'clinic'" class="col-sm-3" ng-bind-html="child.doc.title"></span>
+                  <span ng-show="selected.doc.type === 'clinic'" class="col-sm-3" ng-bind-html="child.doc.date_of_birth | age"></span>
+                <div>
+
               </a>
             </div>
           </div>
