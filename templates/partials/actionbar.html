@@ -30,7 +30,7 @@
             <p translate>Submit Report</p>
           </a>
           <ul class="dropdown-menu" ng-show="nonContactForms.length">
-            <li ng-repeat="form in nonContactForms">
+            <li ng-repeat="form in nonContactForms | orderBy: 'title | translateFrom' track by (form._id || form.code)">
                 <a ng-show="form.title" ui-sref="reports.add({ formId: form.internalId })">{{form.title | translateFrom}}</a>
                 <a ng-show="form.name" ng-click="showMedicReporter(form.code)">{{form.name | translateFrom}}</a>
             </li>
