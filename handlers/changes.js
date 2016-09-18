@@ -25,11 +25,12 @@ var getDepth = function(userCtx) {
   userCtx.roles.forEach(function(role) {
     // find the role with the deepest depth
     var setting = _.findWhere(settings, { role: role });
-    if (setting && setting.depth > depth) {
-      depth = setting.depth;
+    var settingDepth = setting && parseInt(setting.depth, 10);
+    if (!isNaN(settingDepth) && settingDepth > depth) {
+      depth = settingDepth;
     }
   });
-  return depth >= 0 ? depth : null;
+  return depth;
 };
 
 var bindSubjectIds = function(feed, callback) {
@@ -49,7 +50,7 @@ var bindSubjectIds = function(feed, callback) {
 
       var keys = [];
       var depth = getDepth(feed.userCtx);
-      if (depth) {
+      if (depth >= 0) {
         for (var i = 0; i <= depth; i++) {
           keys.push([ facilityId, i ]);
         }
@@ -211,7 +212,10 @@ var hasNewApplicableDoc = function(feed, changes) {
       // the subject list for non-contact types.
       return false;
     }
-    var depth = getDepth(feed.userCtx) || 100;
+    var depth = getDepth(feed.userCtx);
+    if (depth < 0) {
+      depth = Infinity;
+    }
     var parent = change.doc.parent;
     while (depth >= 0 && parent) {
       if (feed.subjectIds.indexOf(parent._id) !== -1) {
