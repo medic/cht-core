@@ -43,6 +43,7 @@
   require('./markdown');
   require('./live-list');
   require('./mark-read');
+  require('./merge-uri-parameters');
   require('./message-contacts');
   require('./message-state');
   require('./modal');
