@@ -29,13 +29,14 @@ angular.module('inboxServices').factory('MergeUriParameters',
     };
 
     /**
-     * Replace/append http parameters in the given `uri` with values in the
-     * given `params` map. Returns the new uri as a string.
+     * Set http parameters in the given `uri` with the given `defaults`
+     * map. Existing parameters in the uri are not modified. Returns
+     * the new uri as a string.
      */
-    return function(uri, params) {
+    return function(uri, defaults) {
       var location = parse(uri);
       var existing = getParams(location);
-      _.defaults(existing, params);
+      _.defaults(existing, defaults);
       return location.pathname + '?' + $httpParamSerializer(existing);
     };
   }
