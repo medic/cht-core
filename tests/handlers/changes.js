@@ -389,6 +389,138 @@ exports['correctly handles depth of 0'] = function(test) {
   handler.request({}, testReq, testRes);
 };
 
+exports['no configured depth defaults to Ininite depth'] = function(test) {
+  test.expect(2);
+
+  var testReq = { query: {}, on: function() {} };
+  var userCtx = { name: 'mobile', roles: [ 'district_admin' ] };
+  var deletedId = 'abc';
+  var allowedId = 'def';
+  var unchangedId = 'klm';
+  var subjectId = 'zyx';
+
+  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
+  var hasAllPermissions = sinon.stub(auth, 'hasAllPermissions');
+  hasAllPermissions.withArgs(userCtx, 'can_access_directly').returns(false);
+  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
+  sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');
+  var get = sinon.stub(config, 'get');
+  get.onCall(0).returns();
+  get.onCall(1).returns(false);
+
+  // change log
+  sinon.stub(db, 'request').callsArgWith(1, null, {
+    results: [
+      {
+        seq: 2,
+        id: deletedId,
+        deleted: true
+      },
+      {
+        seq: 4,
+        id: allowedId
+      }
+    ]
+  });
+
+  sinon.stub(db.medic, 'view');
+  // returns the list of subjects the user is allowed to see
+  db.medic.view.onCall(0).callsArgWith(3, null, {
+    rows: [
+      { id: subjectId }
+    ]
+  });
+  // returns the list of doc ids the user is allowed to see
+  db.medic.view.onCall(1).callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } },
+      { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
+    ]
+  });
+
+  var result = '';
+
+  var testRes = {
+    type: function() {},
+    writeHead: function() {},
+    write: function(slice) {
+      result += slice;
+    },
+    end: function() {
+      test.equals(db.medic.view.args[0][2].keys.length, 1);
+      test.deepEqual(db.medic.view.args[0][2].keys[0], [ 'facilityId' ]);
+      test.done();
+    }
+  };
+  handler.request({}, testReq, testRes);
+};
+
+exports['no roles (eg: admin) defaults to Ininite depth'] = function(test) {
+  test.expect(2);
+
+  var testReq = { query: {}, on: function() {} };
+  var userCtx = { name: 'mobile' };
+  var deletedId = 'abc';
+  var allowedId = 'def';
+  var unchangedId = 'klm';
+  var subjectId = 'zyx';
+
+  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
+  var hasAllPermissions = sinon.stub(auth, 'hasAllPermissions');
+  hasAllPermissions.withArgs(userCtx, 'can_access_directly').returns(false);
+  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
+  sinon.stub(auth, 'getContactId').callsArgWith(1, null, 'contactId');
+  var get = sinon.stub(config, 'get');
+  get.onCall(0).returns([ { role: 'district_admin', depth: 0 } ]);
+  get.onCall(1).returns(false);
+  // change log
+  sinon.stub(db, 'request').callsArgWith(1, null, {
+    results: [
+      {
+        seq: 2,
+        id: deletedId,
+        deleted: true
+      },
+      {
+        seq: 4,
+        id: allowedId
+      }
+    ]
+  });
+
+  sinon.stub(db.medic, 'view');
+  // returns the list of subjects the user is allowed to see
+  db.medic.view.onCall(0).callsArgWith(3, null, {
+    rows: [
+      { id: subjectId }
+    ]
+  });
+  // returns the list of doc ids the user is allowed to see
+  db.medic.view.onCall(1).callsArgWith(3, null, {
+    rows: [
+      { id: unchangedId, key: 'subjectId', value: { submitter: 'contactId' } },
+      { id: allowedId, key: 'subjectId', value: { submitter: 'contactId' } }
+    ]
+  });
+
+  var result = '';
+
+  var testRes = {
+    type: function() {},
+    writeHead: function() {},
+    write: function(slice) {
+      result += slice;
+    },
+    end: function() {
+      test.equals(db.medic.view.args[0][2].keys.length, 1);
+      test.deepEqual(db.medic.view.args[0][2].keys[0], [ 'facilityId' ]);
+      test.done();
+    }
+  };
+  handler.request({}, testReq, testRes);
+};
+
+
 exports['does not return reports about you or your place by someone above you in the hierarchy'] = function(test) {
   test.expect(2);
 

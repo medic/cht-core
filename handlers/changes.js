@@ -15,11 +15,11 @@ var error = function(code, message) {
 
 var getDepth = function(userCtx) {
   if (!userCtx.roles || !userCtx.roles.length) {
-    return null;
+    return -1;
   }
   var settings = config.get('replication_depth');
   if (!settings) {
-    return null;
+    return -1;
   }
   var depth = -1;
   userCtx.roles.forEach(function(role) {
