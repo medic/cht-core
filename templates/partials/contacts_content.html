@@ -130,16 +130,16 @@
         <div class="action-header">
           <h4 translate>Tasks</h4>
           <span class="table-filter">
-            <a ng-click="setTaskWeeksBack(1)" class="btn btn-link" ng-class="{selected: taskWeeksBack === 1}" translate>one.week</a>
+            <a ng-click="setTaskWeeksFilter(1)" class="btn btn-link" ng-class="{selected: taskWeeksBack === 1}" translate>one.week</a>
             |
-            <a ng-click="setTaskWeeksBack(2)" class="btn btn-link" ng-class="{selected: taskWeeksBack === 2}" translate>two.weeks</a>
+            <a ng-click="setTaskWeeksFilter(2)" class="btn btn-link" ng-class="{selected: taskWeeksBack === 2}" translate>two.weeks</a>
             |
-            <a ng-click="setTaskWeeksBack()" class="btn btn-link" ng-class="{selected: !taskWeeksBack}" translate>view.all</a>
+            <a ng-click="setTaskWeeksFilter()" class="btn btn-link" ng-class="{selected: !taskWeeksBack}" translate>view.all</a>
           </span>
         </div>
         <div class="card action-list tasks">
           <div class="accent"></div>
-          <div class="row" ng-repeat="task in selected.tasks | filter:{resolved:false}:strict | filter:filterTaskWeeksBack | orderBy:'date'">
+          <div class="row" ng-repeat="task in selected.tasks | filter:{resolved:false}:strict | filter:filterTaskWeeksForward | orderBy:'date'">
             <div class="col-sm-12">
               <a ui-sref="tasks.detail({ id: task._id })" class="cell">
                 <div ng-bind-html="task.date | relativeDay" class="pull-right"></div>
@@ -155,11 +155,11 @@
         <div class="action-header">
           <h4 translate>Reports</h4>
           <span class="table-filter">
-            <a ng-click="setReportMonthsBack(3)" class="btn btn-link" ng-class="{selected: reportMonthsBack === 3}" translate>three.months</a>
+            <a ng-click="setReportMonthsFilter(3)" class="btn btn-link" ng-class="{selected: reportMonthsBack === 3}" translate>three.months</a>
             |
-            <a ng-click="setReportMonthsBack(6)" class="btn btn-link" ng-class="{selected: reportMonthsBack === 6}" translate>six.months</a>
+            <a ng-click="setReportMonthsFilter(6)" class="btn btn-link" ng-class="{selected: reportMonthsBack === 6}" translate>six.months</a>
             |
-            <a ng-click="setReportMonthsBack()" class="btn btn-link" ng-class="{selected: !reportMonthsBack}" translate>view.all</a>
+            <a ng-click="setReportMonthsFilter()" class="btn btn-link" ng-class="{selected: !reportMonthsBack}" translate>view.all</a>
           </span>
         </div>
         <div class="card action-list reports">
