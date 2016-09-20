@@ -8,13 +8,12 @@ var _ = require('underscore');
 
   inboxControllers.controller('AnalyticsCtrl',
     function (
-      $rootScope,
       $scope,
       $state,
       $stateParams,
       $timeout,
       AnalyticsModules,
-      Auth
+      Tour
     ) {
       'ngInject';
 
@@ -45,22 +44,11 @@ var _ = require('underscore');
 
         $scope.loading = false;
         $scope.analyticsModules = modules;
-
-        // show tour
-        if (_.findWhere(modules, { id: 'anc' })) {
-          Auth('can_view_analytics').then(function() {
-            $scope.tours.push({
-              order: 3,
-              id: 'analytics',
-              icon: 'fa-bar-chart-o',
-              name: 'Analytics'
-            });
-          });
-        }
-        if ($stateParams.tour) {
-          $rootScope.$broadcast('TourStart', $stateParams.tour);
-        }
       });
+
+      if ($stateParams.tour) {
+        Tour.start($stateParams.tour);
+      }
 
       $scope.loadPatient = function(id) {
         $state.go('reports.detail', { query: 'patient_id:' + id });

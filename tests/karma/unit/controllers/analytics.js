@@ -30,7 +30,7 @@ describe('AnalyticsCtrl controller', function() {
           is: stateIs
         },
         'AnalyticsModules': AnalyticsModules,
-        'Auth': function() {},
+        'Tour': function() {},
         '$timeout': function(cb) {
           cb();
         }

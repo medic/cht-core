@@ -1,7 +1,6 @@
 var feedback = require('../modules/feedback'),
     _ = require('underscore'),
     moment = require('moment'),
-    tour = require('../modules/tour'),
     guidedSetup = require('../modules/guided-setup');
 
 (function () {
@@ -22,7 +21,6 @@ var feedback = require('../modules/feedback'),
       $translate,
       $window,
       APP_CONFIG,
-      Auth,
       Changes,
       CheckDate,
       ContactSchema,
@@ -44,6 +42,7 @@ var feedback = require('../modules/feedback'),
       SetLanguageCookie,
       Settings,
       Snackbar,
+      Tour,
       TrafficStats,
       UpdateSettings,
       UpdateUser,
@@ -108,7 +107,6 @@ var feedback = require('../modules/feedback'),
       $scope.version = APP_CONFIG.version;
       $scope.actionBar = {};
       $scope.tours = [];
-
       $scope.baseUrl = Location.path;
 
       if ($window.medicmobile_android) {
@@ -329,6 +327,17 @@ var feedback = require('../modules/feedback'),
         showModals();
       };
 
+      Tour.getTours().then(function(tours) {
+        $scope.tours = tours;
+      });
+
+      $scope.openTourSelect = function() {
+        Modal({
+          templateUrl: 'templates/modals/tour_select.html',
+          controller: 'TourSelectCtrl'
+        });
+      };
+
       var startupModals = [
         // select language
         {
@@ -378,9 +387,8 @@ var feedback = require('../modules/feedback'),
             return !user.known;
           },
           render: function() {
-            tour.start('intro', $translate.instant);
+            $scope.openTourSelect();
             var id = 'org.couchdb.user:' + Session.userCtx().name;
-
             UpdateUser(id, { known: true })
               .catch(function(err) {
                 $log.error('Error updating user', err);
@@ -528,30 +536,6 @@ var feedback = require('../modules/feedback'),
           elem.addClass('selected');
         }
       });
-
-      Auth('can_view_messages_tab').then(function() {
-        $scope.tours.push({
-          order: 1,
-          id: 'messages',
-          icon: 'fa-envelope',
-          name: 'Messages'
-        });
-      });
-
-      Auth('can_view_reports_tab').then(function() {
-        $scope.tours.push({
-          order: 2,
-          id: 'reports',
-          icon: 'fa-list-alt',
-          name: 'Reports'
-        });
-      });
-
-      $scope.setupTour = function() {
-        $('#tour-select').on('click', 'a.tour-option', function() {
-          $('#tour-select').modal('hide');
-        });
-      };
 
       $scope.openFeedback = function() {
         Modal({

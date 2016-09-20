@@ -1,8 +1,18 @@
 var _ = require('underscore');
 
-(function () {
+angular.module('inboxServices').service('Tour',
+  function(
+    $q,
+    $state,
+    $translate,
+    AnalyticsModules,
+    Auth
+  ) {
 
-  'use strict';
+    'use strict';
+    'ngInject';
+
+    // TODO fix indentation in separate commit
 
   var mmScroll = function(container, elem) {
     container = $(container);
@@ -266,7 +276,7 @@ var _ = require('underscore');
 
   var current;
 
-  var createTemplate = function(translationFn) {
+  var createTemplate = function() {
     return  '<div class="popover tour">' +
               '<div class="arrow"></div>' +
               '<h3 class="popover-title"></h3>' +
@@ -274,14 +284,14 @@ var _ = require('underscore');
               '<div class="popover-navigation">' +
                 '<div class="btn-group">' +
                   '<button class="btn btn-sm btn-default" data-role="prev">' +
-                    '&laquo; ' + translationFn('Previous') +
+                    '&laquo; ' + $translate.instant('Previous') +
                   '</button>' +
                   '<button class="btn btn-sm btn-default" data-role="next">' +
-                    translationFn('Next') + ' &raquo;' +
+                    $translate.instant('Next') + ' &raquo;' +
                   '</button>' +
                 '</div>' +
                 '<button class="btn btn-sm btn-link" data-role="end">' +
-                  translationFn('End tour') +
+                  $translate.instant('End tour') +
                 '</button>' +
               '</div>' +
             '</div>';
@@ -291,18 +301,18 @@ var _ = require('underscore');
     return _.findWhere(tours, { name: name }) || tours[0];
   };
 
-  var getSettings = function(name, translationFn) {
+  var getSettings = function(name) {
 
     var settings = getTour(name);
 
     if (!settings.transmogrified) {
 
-      settings.template = createTemplate(translationFn);
+      settings.template = createTemplate();
 
       var mobile = isMobile();
       _.each(settings.steps, function(step) {
-        step.title = translationFn(step.title);
-        step.content = translationFn(step.content);
+        step.title = $translate.instant(step.title);
+        step.content = $translate.instant(step.content);
         if (mobile) {
         // there's no room to show steps to the left or right on a mobile device
           if (step.mobileElement) {
@@ -318,11 +328,6 @@ var _ = require('underscore');
         }
       });
 
-      settings.steps.push({
-        title: translationFn('tour.end.title'),
-        content: '<a data-role="end" data-toggle="modal" data-target="#tour-select">' + translationFn('tour.end.description') + '</a'
-      });
-
       settings.transmogrified = true;
 
     }
@@ -330,8 +335,8 @@ var _ = require('underscore');
     return settings;
   };
 
-  var createTour = function(name, translationFn) {
-    var settings = getSettings(name, translationFn);
+  var createTour = function(name) {
+    var settings = getSettings(name);
     var tour = new Tour(settings);
     tour._scrollIntoView = function(element, callback) {
       // override scrollIntoView as it doesn't handle scolling containers
@@ -355,25 +360,81 @@ var _ = require('underscore');
     }
   };
 
-  exports.getRoute = function(name) {
-    var tour = getTour(name);
-    return tour && tour.route;
+  var getMessagesTour = function() {
+    return Auth('can_view_messages_tab')
+      .then(function() {
+        return {
+          order: 1,
+          id: 'messages',
+          icon: 'fa-envelope',
+          name: 'Messages'
+        };
+      })
+      .catch(function() {});
   };
 
-  exports.start = function(name, translationFn) {
-    endCurrent();
-    if (name) {
-      if (name === 'intro') {
-        $('#tour-select').modal('show');
-      } else {
-        if (!translationFn) {
-          translationFn = function(key) {
-            return key;
+  var getReportsTour = function() {
+    return Auth('can_view_reports_tab')
+      .then(function() {
+        return {
+          order: 2,
+          id: 'reports',
+          icon: 'fa-list-alt',
+          name: 'Reports'
+        };
+      })
+      .catch(function() {});
+  };
+
+  var getAnalyticsTour = function() {
+    return $q.all([
+      AnalyticsModules(),
+      Auth('can_view_analytics')
+    ])
+      .then(function(results) {
+        if (_.findWhere(results[0], { id: 'anc' })) {
+          return {
+            order: 3,
+            id: 'analytics',
+            icon: 'fa-bar-chart-o',
+            name: 'Analytics'
           };
         }
-        createTour(name, translationFn);
+      })
+      .catch(function() {});
+  };
+
+  var getTours = function() {
+    return $q.all([
+      getMessagesTour(),
+      getReportsTour(),
+      getAnalyticsTour()
+    ])
+      .then(function(results) {
+        return _.compact(results);
+      });
+  };
+
+  return {
+    getTours: getTours,
+    endCurrent: endCurrent,
+    start: function(name) {
+      endCurrent();
+      if (!name) {
+        return;
+      }
+      var tour = getTour(name);
+      var route = tour && tour.route;
+      if ($state.is(route)) {
+        // already on required page - show tour
+        $translate.onReady().then(function() {
+          createTour(name);
+        });
+      } else {
+        // navigate to the correct page
+        $state.go(route, { tour: name });
       }
     }
   };
-
-}());
+  }
+);

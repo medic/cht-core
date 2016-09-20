@@ -9,13 +9,13 @@ var _ = require('underscore');
   inboxControllers.controller('MessagesCtrl', 
     function (
       $log,
-      $rootScope,
       $scope,
       $state,
       $stateParams,
       $timeout,
       Changes,
-      MessageContact
+      MessageContact,
+      Tour
     ) {
       'ngInject';
 
@@ -118,7 +118,7 @@ var _ = require('underscore');
       });
 
       if ($stateParams.tour) {
-        $rootScope.$broadcast('TourStart', $stateParams.tour);
+        Tour.start($stateParams.tour);
       }
 
     }

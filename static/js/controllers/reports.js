@@ -10,7 +10,6 @@ var _ = require('underscore'),
   inboxControllers.controller('ReportsCtrl',
     function (
       $log,
-      $rootScope,
       $scope,
       $state,
       $stateParams,
@@ -22,6 +21,7 @@ var _ = require('underscore'),
       Modal,
       Search,
       SearchFilters,
+      Tour,
       TranslateFrom
     ) {
       'ngInject';
@@ -363,7 +363,7 @@ var _ = require('underscore'),
       }
 
       if ($stateParams.tour) {
-        $rootScope.$broadcast('TourStart', $stateParams.tour);
+        Tour.start($stateParams.tour);
       }
 
       $scope.edit = function(group) {

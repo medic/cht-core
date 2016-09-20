@@ -89,6 +89,7 @@ describe('ReportsCtrl controller', function() {
         'Settings': KarmaUtils.nullPromise(),
         'DB': KarmaUtils.mockDB({ get: get, post: post })(),
         'LiveList': LiveList,
+        'Tour': function() {},
         'SearchFilters': function() {},
         'Export': function() {}
       });
