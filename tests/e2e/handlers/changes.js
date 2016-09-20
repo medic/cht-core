@@ -59,7 +59,6 @@ function requestChanges(username, ids, last_seq) {
 var AppSettings = {
 
   get: function() {
-    // TODO get the current app_settings from the db
     return adminDb.get('_design/medic')
       .then(function(ddoc) {
         AppSettings.original = ddoc.app_settings;
