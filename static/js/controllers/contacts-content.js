@@ -179,6 +179,7 @@ var _ = require('underscore'),
               reports: results[1]
             };
             selected.doc.icon = ContactSchema.get(contactDoc.type).icon;
+            selected.doc.label = ContactSchema.get(contactDoc.type).label;
             selected.fields = selectedSchemaVisibleFields(selected);
 
             if (contactDoc.type === 'person') {
