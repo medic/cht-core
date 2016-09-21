@@ -50,33 +50,6 @@ exports['allows "can_access_directly" users direct access'] = function(test) {
   handler.request(proxy, testReq, testRes);
 };
 
-exports['allows access to replicate medic settings'] = function(test) {
-  test.expect(2);
-
-  var testReq = {
-    query: {
-      filter: '_doc_ids',
-      doc_ids: '["_design/medic"]'
-    }
-  };
-  var testRes = 'fake response';
-  var userCtx = 'fake userCtx';
-
-  sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  sinon.stub(auth, 'hasAllPermissions').returns(false);
-  sinon.stub(auth, 'getFacilityId').callsArgWith(2, null, 'facilityId');
-
-  var proxy = {
-    web: function(req, res) {
-      test.equals(req, testReq);
-      test.equals(res, testRes);
-      test.done();
-    }
-  };
-
-  handler.request(proxy, testReq, testRes);
-};
-
 exports['filters the changes to relevant ones'] = function(test) {
   test.expect(28);
 

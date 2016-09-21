@@ -336,8 +336,7 @@ module.exports = {
         res.setHeader('X-Accel-Buffering', 'no');
       }
 
-      if (auth.hasAllPermissions(userCtx, 'can_access_directly') ||
-          (req.query.filter === '_doc_ids' && req.query.doc_ids === '["_design/medic"]')) {
+      if (auth.hasAllPermissions(userCtx, 'can_access_directly')) {
         proxy.web(req, res);
       } else {
         var feed = {
