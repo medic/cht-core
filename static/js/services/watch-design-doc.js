@@ -80,7 +80,8 @@ var async = require('async');
                 timeout: 1000 * 60 * 60, // one hour
                 live: true,
                 since: 'now',
-                doc_ids: [ '_design/medic' ]
+                doc_ids: [ '_design/medic' ],
+                query_params: { proxy: true }
               })
               .on('change', function(change) {
                 if (Session.isAdmin()) {
