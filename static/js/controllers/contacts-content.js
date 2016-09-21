@@ -167,37 +167,41 @@ var _ = require('underscore'),
       };
 
       var getInitialData = function(contactId) {
-        return $q.all([
-            DB().get(contactId),
-            Search('reports', { subjectIds: [ contactId ] })
-          ])
-          .then(function(results) {
-            var contactDoc = results[0];
-            var selected = {
-              doc: contactDoc,
-              reports: results[1]
-            };
-            selected.doc.icon = ContactSchema.get(contactDoc.type).icon;
-            selected.fields = selectedSchemaVisibleFields(selected);
-
-            if (contactDoc.type === 'person') {
-              return isContactPrimaryContact(contactDoc)
-                .then(function(isPrimaryContact) {
-                  selected.doc.isPrimaryContact = isPrimaryContact;
-                  return selected;
-                });
+        return DB().get(contactId)
+          .then(function(contactDoc) {
+            var subjectIds = [ contactDoc._id ];
+            if (contactDoc.patient_id) {
+              subjectIds.push(contactDoc.patient_id);
             }
+            // TODO parallize this some more!
+            return Search('reports', { subjectIds: subjectIds })
+              .then(function(reports) {
+                var selected = {
+                  doc: contactDoc,
+                  reports: reports
+                };
+                selected.doc.icon = ContactSchema.get(contactDoc.type).icon;
+                selected.fields = selectedSchemaVisibleFields(selected);
 
-            return getChildren(contactId)
-              .then(function(children) {
-                children.persons = childrenWithContactPersonOnTop(children.persons, contactDoc);
-                selected.children = children;
-                if (selected.children.places && selected.children.places.length) {
-                  var childPlacesSchema = ContactSchema.get(selected.children.places[0].doc.type);
-                  selected.children.childPlacesLabel = childPlacesSchema.pluralLabel;
-                  selected.children.childPlacesIcon = childPlacesSchema.icon;
+                if (contactDoc.type === 'person') {
+                  return isContactPrimaryContact(contactDoc)
+                    .then(function(isPrimaryContact) {
+                      selected.doc.isPrimaryContact = isPrimaryContact;
+                      return selected;
+                    });
                 }
-                return selected;
+
+                return getChildren(contactId)
+                  .then(function(children) {
+                    children.persons = childrenWithContactPersonOnTop(children.persons, contactDoc);
+                    selected.children = children;
+                    if (selected.children.places && selected.children.places.length) {
+                      var childPlacesSchema = ContactSchema.get(selected.children.places[0].doc.type);
+                      selected.children.childPlacesLabel = childPlacesSchema.pluralLabel;
+                      selected.children.childPlacesIcon = childPlacesSchema.icon;
+                    }
+                    return selected;
+                  });
               });
           });
       };
