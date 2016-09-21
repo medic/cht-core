@@ -87,14 +87,14 @@
         <div class="card-title action-list-title">
           <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12">
             <div class="col-sm-6 col-xs-12">
-              <h4><i class="fa fa-user"></i><span translate>People</span></h4>
+              <h4><i class="fa fa-fw fa-user"></i><span translate>People</span></h4>
             </div>
             <div class="col-sm-3 hidden-xs" translate>person.field.title</div>
             <div class="col-sm-3 hidden-xs" translate>person.field.phone</div>
           </div>
           <div ng-show="selected.doc.type === 'clinic'" class="col-xs-10">
             <div class="col-sm-6 col-xs-12">
-              <h4><i class="fa fa-user"></i><span translate>clinic.field.children</span></h4>
+              <h4><i class="fa fa-fw fa-user"></i><span translate>clinic.field.children</span></h4>
             </div>
             <div class="col-sm-3 hidden-xs" translate>contact.age</div>
             <div class="col-sm-3 hidden-xs" translate>person.field.phone</div>
@@ -107,7 +107,7 @@
             <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell">
               <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12">
                 <div>
-                  <div class="col-sm-6 col-xs-12">
+                  <div class="col-sm-6 col-xs-12 cell-label">
                     <i class="fa fa-star primary" ng-show="child.doc.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
                     {{child.doc.name}}
                     <span class="visible-xs-inline" ng-show="child.doc.isPrimaryContact">,</span>
@@ -128,7 +128,7 @@
 
               <div ng-show="selected.doc.type === 'clinic'" class="col-xs-10">
                 <div>
-                  <div class="col-sm-6 col-xs-12">
+                  <div class="col-sm-6 col-xs-12 cell-label">
                     <i class="fa fa-star primary" ng-show="child.doc.isPrimaryContact" translate translate-attr-title="clinic.field.contact"></i>
                     {{child.doc.name}}
                     <span class="visible-xs-inline" ng-show="child.doc.isPrimaryContact">,</span>
@@ -164,7 +164,7 @@
           <div class="row" ng-repeat="child in selected.children.places">
             <div class="col-sm-12">
               <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell">
-                <div>{{child.doc.name}}</div>
+                <div class="cell-label">{{child.doc.name}}</div>
                 <div ng-show="child.doc.contact.name"><span translate>Primary contact</span>: {{child.doc.contact.name}}</div>
               </a>
             </div>
