@@ -92,14 +92,14 @@
             <div class="col-sm-3 hidden-xs" translate>person.field.title</div>
             <div class="col-sm-3 hidden-xs" translate>person.field.phone</div>
           </div>
-          <div ng-show="selected.doc.type === 'clinic'" class="col-xs-10">
+          <div ng-show="selected.doc.type === 'clinic'" class="col-xs-11">
             <div class="col-sm-6 col-xs-12">
               <h4><i class="fa fa-fw fa-user"></i><span translate>clinic.field.children</span></h4>
             </div>
             <div class="col-sm-3 hidden-xs" translate>contact.age</div>
             <div class="col-sm-3 hidden-xs" translate>person.field.phone</div>
           </div>
-          <div ng-show="selected.doc.type === 'clinic'" class="col-xs-2" translate>Tasks</div>
+          <div ng-show="selected.doc.type === 'clinic'" class="col-xs-1 tasks-count" translate>Tasks</div>
         </div>
         <div class="card action-list children">
           <div class="accent"></div>
@@ -126,7 +126,7 @@
                 </div>
               </div>
 
-              <div ng-show="selected.doc.type === 'clinic'" class="col-xs-10">
+              <div ng-show="selected.doc.type === 'clinic'" class="col-xs-11">
                 <div>
                   <div class="col-sm-6 col-xs-12 cell-label">
                     <i class="fa fa-star primary" ng-show="child.doc.isPrimaryContact" translate translate-attr-title="clinic.field.contact"></i>
@@ -146,7 +146,7 @@
                   </div>
                 </div>
               </div>
-              <div ng-show="selected.doc.type === 'clinic'" class="col-xs-2">
+              <div ng-show="selected.doc.type === 'clinic'" class="col-xs-1 tasks-count">
                 <span class="badge">{{ child.doc.tasks.length || 0 }}</span>
               </div>
             </a>
