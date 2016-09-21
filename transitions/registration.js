@@ -234,6 +234,16 @@ module.exports = {
                 }
             });
             cb();
+        },
+        add_patient: function(db, doc, cb) {
+            if (typeof cb !== 'function') {
+                return;
+            }
+            if (!doc.patient_id) {
+                // must have a patient id so we can find them later
+                return cb();
+            }
+            module.exports.addPatient({db: db, doc: doc}, cb);
         }
     },
     addMessages: function(config, doc) {
@@ -271,6 +281,44 @@ module.exports = {
                 doc.patient_id = id;
                 callback();
             }
+        });
+    },
+    addPatient: function(options, callback) {
+        var doc = options.doc,
+            db = db || options.db,
+            id = doc.patient_id;
+        
+        utils.getRegistrations({
+            db: db,
+            id: id
+        }, function(err, registrations) {
+            if (err) {
+                return callback(err);
+            }
+            if (registrations.length) {
+                // patient already registered, no action required
+                return callback();
+            }
+            db.medic.view('medic-client', 'people_by_phone', {
+                key: [ doc.from ],
+                include_docs: true
+            }, function(err, result) {
+                if (err) {
+                    return callback(err);
+                }
+                console.log(JSON.stringify(doc, null, 2));
+                console.log(JSON.stringify(result, null, 2));
+                var contact = _.result(_.first(result.rows), 'doc');
+                // create a new patient with this patient_id
+                var patient = {
+                    name: doc.fields.patient_name, // TODO configurable?
+                    parent: contact.parent,
+                    reported_date: doc.reported_date,
+                    type: 'person',
+                    patient_id: id
+                };
+                db.medic.insert(patient, callback);
+            });
         });
     }
 };
