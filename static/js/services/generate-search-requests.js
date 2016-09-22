@@ -82,7 +82,7 @@ var _ = require('underscore'),
 
       var freetext = function(filters, view) {
         if (filters.search) {
-          var words = filters.search.toLowerCase().split(/\s+/);
+          var words = filters.search.trim().toLowerCase().split(/\s+/);
           return words.map(function(word) {
             var params = {};
             if (word.indexOf(':') !== -1) {
