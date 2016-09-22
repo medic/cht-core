@@ -1,4 +1,7 @@
+var path = require('path');
 var DEFAULT_BASE_URI = '/medic-reporter/_design/medic-reporter/_rewrite/';
+var DEFAULT_FORMS_LIST_PATH = /* '/dbname' + */ '/_design/medic/_rewrite/app_settings/medic-client/forms';
+var DEFAULT_SYNC_URL =  /* '/dbname' + */ '/_design/medic/_rewrite/add';
 
 (function() {
 
@@ -11,6 +14,7 @@ var DEFAULT_BASE_URI = '/medic-reporter/_design/medic-reporter/_rewrite/';
       $scope,
       $uibModalInstance,
       Language,
+      Location,
       MergeUriParameters,
       Settings,
       UserContact
@@ -32,6 +36,11 @@ var DEFAULT_BASE_URI = '/medic-reporter/_design/medic-reporter/_rewrite/';
       var getTestUri = function(uri) {
         // for testing we don't care about the specific parameters, just the path
         var minimalUri = uri.split('?')[0];
+        // Needs trailing slash, otherwise breaks!!
+        // https://github.com/medic/medic-reporter/issues/20
+        if (minimalUri.substr(-1) !== '/') {
+          minimalUri += '/';
+        }
         return encodeURIComponent(minimalUri);
       };
 
@@ -61,7 +70,9 @@ var DEFAULT_BASE_URI = '/medic-reporter/_design/medic-reporter/_rewrite/';
               _embed_mode: 1,
               _show_forms: $scope.model.formCode,
               _locale: results[0],
-              _gateway_num: results[1]
+              _gateway_num: results[1],
+              _forms_list_path: path.join('/', Location.dbName, DEFAULT_FORMS_LIST_PATH),
+              _sync_url: path.join('/', Location.dbName, DEFAULT_SYNC_URL)
             });
           });
       };

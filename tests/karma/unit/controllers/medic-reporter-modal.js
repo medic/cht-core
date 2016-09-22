@@ -2,6 +2,7 @@ describe('MedicReporterModalCtrl', function() {
   'use strict';
 
   var createController,
+      dbName,
       formCode,
       http,
       language,
@@ -13,13 +14,13 @@ describe('MedicReporterModalCtrl', function() {
       settings,
       settingsUri,
       merge,
-      mergeUri;
+      mergedUri;
 
   beforeEach(function() {
     module('inboxApp');
 
     settingsUri = '';
-    mergeUri = '';
+    mergedUri = '';
 
     module(function($provide) {
       $provide.factory('$uibModalInstance', function() {
@@ -47,6 +48,11 @@ describe('MedicReporterModalCtrl', function() {
         return language;
       });
 
+      dbName = 'bestdbever';
+      $provide.factory('Location', function() {
+        return { dbName: dbName };
+      });
+
       $provide.factory('Settings', function() {
         settings = sinon.stub();
         settings.returns(KarmaUtils.mockPromise(null, { muvuku_webapp_url: settingsUri }));
@@ -55,7 +61,7 @@ describe('MedicReporterModalCtrl', function() {
 
       $provide.factory('MergeUriParameters', function() {
         merge = sinon.stub();
-        merge.returns(KarmaUtils.mockPromise(null, mergeUri));
+        merge.returns(KarmaUtils.mockPromise(null, mergedUri));
         return merge;
       });
 
@@ -79,7 +85,7 @@ describe('MedicReporterModalCtrl', function() {
 
   afterEach(function() {
     KarmaUtils.restore(
-      spyUibModalInstance, http.head, userContact, language, settings, 
+      spyUibModalInstance, http.head, userContact, language, settings,
       scope.setProcessing, scope.setFinished, scope.setError
     );
   });
@@ -111,12 +117,20 @@ describe('MedicReporterModalCtrl', function() {
   });
 
   it('Displays medic-reporter if auth', function(done) {
-    mergeUri = 'some-uri';
+    mergedUri = 'some-uri';
     runTest(done, function() {
       chai.expect(scope.setError.called).to.equal(false);
-      chai.expect(scope.medicReporterUrl).to.equal(mergeUri);
+      chai.expect(scope.medicReporterUrl).to.equal(mergedUri);
       chai.expect(merge.callCount).to.equal(1);
       chai.expect(merge.args[0][0]).to.equal('/medic-reporter/_design/medic-reporter/_rewrite/');
+    });
+  });
+
+  it('Adds trailing slash to auth url if needed', function(done) {
+    settingsUri = '/report-sender';
+    runTest(done, function() {
+      chai.expect(http.head.called);
+      chai.expect(http.head.args[0][0].substr(-3)).to.equal('%2F');
     });
   });
 
@@ -124,7 +138,7 @@ describe('MedicReporterModalCtrl', function() {
     settingsUri = '/report-sender';
     runTest(done, function() {
       chai.expect(scope.setError.called).to.equal(false);
-      chai.expect(scope.medicReporterUrl).to.equal(mergeUri);
+      chai.expect(scope.medicReporterUrl).to.equal(mergedUri);
       chai.expect(merge.callCount).to.equal(1);
       chai.expect(merge.args[0][0]).to.equal('/report-sender');
     });
@@ -145,6 +159,18 @@ describe('MedicReporterModalCtrl', function() {
   it('Uses the user\'s locale if available', function(done) {
     runTest(done, function() {
       chai.expect(merge.args[0][1]._locale).to.equal(userLocale);
+    });
+  });
+
+  it('Uses the current db\'s _forms_list_path', function(done) {
+    runTest(done, function() {
+      chai.expect(merge.args[0][1]._forms_list_path).to.equal('/' + dbName + '/_design/medic/_rewrite/app_settings/medic-client/forms');
+    });
+  });
+
+  it('Uses the current db\'s _sync_url', function(done) {
+    runTest(done, function() {
+      chai.expect(merge.args[0][1]._sync_url).to.equal('/' + dbName + '/_design/medic/_rewrite/add');
     });
   });
 
