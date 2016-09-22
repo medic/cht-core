@@ -55,7 +55,7 @@ var moment = require('moment'),
 
       var init = Settings()
         .then(function(settings) {
-          UserContact()
+          return UserContact()
             .then(function(user) {
               targets = settings.tasks.targets.items.map(function(item) {
                 var result = _.clone(item);
