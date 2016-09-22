@@ -6,7 +6,9 @@ describe('ContactsContentCtrl', function() {
   var assert = chai.assert,
     childContactPerson,
     childPerson,
+    childPerson2,
     childPlace,
+    childPlace2,
     childPlaceIcon,
     childPlacePluralLabel,
     createController,
@@ -30,8 +32,10 @@ describe('ContactsContentCtrl', function() {
     var parentId = 'districtsdistrict';
     var contactId = 'mario';
     childContactPerson = { _id: contactId, type: 'person', parent: { _id: parentId } };
-    childPerson = { _id: 'peach', type: 'person' };
-    childPlace = { _id: 'happyplace', type: 'mushroom' };
+    childPerson = { _id: 'peach', type: 'person', name: 'Peach', date_of_birth: '1986-01-01' };
+    childPerson2 = { _id: 'zelda', type: 'person', name: 'Zelda', date_of_birth: '1985-01-01' };
+    childPlace = { _id: 'happyplace', type: 'mushroom', name: 'Happy Place' };
+    childPlace2 = { _id: 'happyplace2', type: 'mushroom', name: 'Happy Place 2' };
     childPlacePluralLabel = 'mushroompodes';
     childPlaceIcon = 'fa-mushroom';
     doc = { _id: parentId, type: 'star', contact: { _id: contactId} };
@@ -146,6 +150,36 @@ describe('ContactsContentCtrl', function() {
     it('if no contact person in children, persons still get displayed', function(done) {
       runPlaceTest(done, [childPerson], function(selected) {
         assert.equal(selected.children.persons.length, 1);
+      });
+    });
+
+    it('child places are sorted in alphabetical order', function(done) {
+      runPlaceTest(done, [childPlace2, childPlace], function(selected) {
+        assert.equal(selected.children.places[0].doc._id, childPlace._id);
+        assert.equal(selected.children.places[1].doc._id, childPlace2._id);
+      });
+    });
+
+    it('child persons are sorted in alphabetical order', function(done) {
+      runPlaceTest(done, [childPerson2, childPerson], function(selected) {
+        assert.equal(selected.children.persons[0].doc._id, childPerson._id);
+        assert.equal(selected.children.persons[1].doc._id, childPerson2._id);
+      });
+    });
+
+    it('when selected doc is a clinic, child places are sorted in alphabetical order (like for other places)', function(done) {
+      doc.type = 'clinic';
+      runPlaceTest(done, [childPlace2, childPlace], function(selected) {
+        assert.equal(selected.children.places[0].doc._id, childPlace._id);
+        assert.equal(selected.children.places[1].doc._id, childPlace2._id);
+      });
+    });
+
+    it('when selected doc is a clinic, child persons are sorted by age', function(done) {
+      doc.type = 'clinic';
+      runPlaceTest(done, [childPerson2, childPerson], function(selected) {
+        assert.equal(selected.children.persons[0].doc._id, childPerson2._id);
+        assert.equal(selected.children.persons[1].doc._id, childPerson._id);
       });
     });
   });

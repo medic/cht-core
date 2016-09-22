@@ -81,7 +81,7 @@ var _ = require('underscore'),
         return lhs.doc.name.localeCompare(rhs.doc.name);
       };
 
-      var sortPersons = function(persons) {
+      var sortFamilyMembers = function(persons) {
         if (!persons) {
           return;
         }
@@ -101,25 +101,25 @@ var _ = require('underscore'),
         });
       };
 
-      var sortPlaces = function(places) {
+      var sortContacts = function(places) {
         if (!places) {
           return;
         }
         places.sort(genericSort);
       };
 
-      var getChildren = function(id) {
+      var getChildren = function(parentId) {
         var options = {
-          startkey: [ id ],
-          endkey: [ id, {} ],
+          startkey: [ parentId ],
+          endkey: [ parentId, {} ],
           include_docs: true
         };
         return DB()
           .query('medic-client/contacts_by_parent_name_type', options)
           .then(function(children) {
             var groups = splitChildren(children.rows);
-            sortPlaces(groups.places);
-            sortPersons(groups.persons);
+            sortContacts(groups.places);
+            sortContacts(groups.persons);
             return groups;
           });
       };
@@ -178,6 +178,7 @@ var _ = require('underscore'),
               reports: results[1]
             };
             selected.doc.icon = ContactSchema.get(contactDoc.type).icon;
+            selected.doc.label = ContactSchema.get(contactDoc.type).label;
             selected.fields = selectedSchemaVisibleFields(selected);
 
             if (contactDoc.type === 'person') {
@@ -190,6 +191,9 @@ var _ = require('underscore'),
 
             return getChildren(contactId)
               .then(function(children) {
+                if (selected.doc.type === 'clinic') {
+                  sortFamilyMembers(children.persons);
+                }
                 children.persons = childrenWithContactPersonOnTop(children.persons, contactDoc);
                 selected.children = children;
                 if (selected.children.places && selected.children.places.length) {
