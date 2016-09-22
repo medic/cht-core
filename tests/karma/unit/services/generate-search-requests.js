@@ -312,5 +312,21 @@ describe('GenerateSearchRequests service', function() {
         }
       ]);
     });
+
+    it('ignores whitespace - #2769', function() {
+      var result = service('contacts', { search: '\t  some     thing    ' });
+      chai.expect(result.length).to.equal(2);
+      chai.expect(result[0].view).to.equal('medic-client/contacts_by_freetext');
+      chai.expect(result[0].params).to.deep.equal({
+        startkey: [ 'some' ],
+        endkey: [ 'some\ufff0' ],
+      });
+      chai.expect(result[1].view).to.equal('medic-client/contacts_by_freetext');
+      chai.expect(result[1].params).to.deep.equal({
+        startkey: [ 'thing' ],
+        endkey: [ 'thing\ufff0' ],
+      });
+    });
+
   });
 });
