@@ -313,7 +313,7 @@ describe('GenerateSearchRequests service', function() {
       ]);
     });
 
-    it('ignores whitespace - #2769', function() {
+    it('trim whitespace from search query - #2769', function() {
       var result = service('contacts', { search: '\t  some     thing    ' });
       chai.expect(result.length).to.equal(2);
       chai.expect(result[0].view).to.equal('medic-client/contacts_by_freetext');
