@@ -36,17 +36,23 @@ var DEFAULT_SYNC_URL =  /* '/dbname' + */ '/_design/medic/_rewrite/add';
       var getTestUri = function(uri) {
         // for testing we don't care about the specific parameters, just the path
         var minimalUri = uri.split('?')[0];
-        // Needs trailing slash, otherwise breaks!!
-        // https://github.com/medic/medic-reporter/issues/20
-        if (minimalUri.substr(-1) !== '/') {
-          minimalUri += '/';
-        }
         return encodeURIComponent(minimalUri);
+      };
+
+      var addTrailingSlash = function(uri) {
+        var uriPieces = uri.split('?');
+        if (uriPieces[0].substr(-1) !== '/') {
+          uriPieces[0] += '/';
+        }
+        return uriPieces.join('?');
       };
 
       var getBaseUri = function() {
         return Settings().then(function(settings) {
           var uri = settings.muvuku_webapp_url || DEFAULT_BASE_URI;
+          // Needs trailing slash, otherwise breaks!!
+          // https://github.com/medic/medic-reporter/issues/20
+          uri = addTrailingSlash(uri);
           return $http.head('/api/auth/' + getTestUri(uri))
             .then(function() {
               return uri;

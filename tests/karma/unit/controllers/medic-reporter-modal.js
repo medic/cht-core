@@ -131,6 +131,17 @@ describe('MedicReporterModalCtrl', function() {
     runTest(done, function() {
       chai.expect(http.head.called);
       chai.expect(http.head.args[0][0].substr(-3)).to.equal('%2F');
+      chai.expect(merge.callCount).to.equal(1);
+      chai.expect(merge.args[0][0]).to.equal('/report-sender/');
+    });
+  });
+
+  it('Adds trailing slash to auth url if needed, and keeps url params', function(done) {
+    settingsUri = '/report-sender?aaa=bbb';
+    runTest(done, function() {
+      chai.expect(http.head.called);
+      chai.expect(http.head.args[0][0].substr(-3)).to.equal('%2F');
+      chai.expect(merge.args[0][0]).to.equal('/report-sender/?aaa=bbb');
     });
   });
 
@@ -140,7 +151,7 @@ describe('MedicReporterModalCtrl', function() {
       chai.expect(scope.setError.called).to.equal(false);
       chai.expect(scope.medicReporterUrl).to.equal(mergedUri);
       chai.expect(merge.callCount).to.equal(1);
-      chai.expect(merge.args[0][0]).to.equal('/report-sender');
+      chai.expect(merge.args[0][0]).to.equal('/report-sender/');
     });
   });
 
