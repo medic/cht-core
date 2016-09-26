@@ -103,11 +103,11 @@ describe('ContactsContentCtrl', function() {
 
     it('child places and persons get displayed separately', function(done) {
       runPlaceTest(done, [childContactPerson, childPlace], function(selected) {
-          assert.equal(selected.children.persons.length, 1);
-          assert.deepEqual(selected.children.persons[0].doc, childContactPerson);
-          assert.equal(selected.children.places.length, 1);
-          assert.deepEqual(selected.children.places[0].doc, childPlace);
-          assert.deepEqual(selected.children.childPlacesLabel, childPlacePluralLabel);
+        assert.equal(selected.children.persons.length, 1);
+        assert.deepEqual(selected.children.persons[0].doc, childContactPerson);
+        assert.equal(selected.children.places.length, 1);
+        assert.deepEqual(selected.children.places[0].doc, childPlace);
+        assert.deepEqual(selected.children.childPlacesLabel, childPlacePluralLabel);
         assert.deepEqual(selected.children.childPlacesIcon, childPlaceIcon);
       });
     });
