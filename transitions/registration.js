@@ -154,17 +154,17 @@ module.exports = {
                     return;
                 }
                 if (event.name === 'on_create') {
-                    var args = [db, doc];
-                    if (event.params) {
-                        // params setting get sent as array
-                        args.push(event.params.split(','));
-                    }
                     var obj = _.defaults({}, doc, doc.fields);
                     if (self.isBoolExprFalse(obj, event.bool_expr)) {
                         return;
                     }
+                    var options = { db: db, audit: audit, doc: doc };
+                    if (event.params) {
+                        // params setting get sent as array
+                        options.params = event.params.split(',');
+                    }
                     series.push(function(cb) {
-                        trigger.apply(null, args.concat(cb));
+                        trigger.apply(null, [ options, cb ]);
                     });
                 }
             });
@@ -181,69 +181,39 @@ module.exports = {
         });
     },
     triggers: {
-        add_patient_id: function(db, doc, cb) {
-            var args = Array.prototype.slice.call(arguments),
-                self = module.exports;
-            cb = args.pop();
-            if (typeof cb !== 'function') {
-                return;
-            }
+        add_patient_id: function(options, cb) {
             // if we already have a patient id then return
-            if (doc.patient_id) {
+            if (options.doc.patient_id) {
                 return;
             }
-            self.setId({db: db, doc: doc}, cb);
+            module.exports.setId(options, cb);
         },
-        add_expected_date: function(db, doc, cb) {
-            var args = Array.prototype.slice.call(arguments),
-                self = module.exports;
-            cb = args.pop();
-            if (typeof cb !== 'function') {
-                return;
-            }
-            self.setExpectedBirthDate(doc);
+        add_expected_date: function(options, cb) {
+            module.exports.setExpectedBirthDate(options.doc);
             cb();
         },
-        add_birth_date: function(db, doc, cb) {
-            var args = Array.prototype.slice.call(arguments),
-                self = module.exports;
-            cb = args.pop();
-            if (typeof cb !== 'function') {
-                return;
-            }
-            self.setBirthDate(doc);
+        add_birth_date: function(options, cb) {
+            module.exports.setBirthDate(options.doc);
             cb();
         },
-        assign_schedule: function(db, doc, cb) {
-            var args = Array.prototype.slice.call(arguments);
-            if (args.length < 4) {
-                cb('Please specify schedule name in settings.');
+        assign_schedule: function(options, cb) {
+            if (!options.params) {
+                return cb('Please specify schedule name in settings.');
             }
-            cb = args.pop();
-            if (typeof cb !== 'function') {
-                return;
-            }
-            _.each(args.pop(), function(name) {
-                var bool = schedules.assignSchedule(
-                    doc, schedules.getScheduleConfig(name)
-                );
+            _.each(options.params, function(name) {
+                var bool = schedules.assignSchedule(options.doc, schedules.getScheduleConfig(name));
                 if (!bool) {
-                    logger.error(
-                        'Failed to add schedule please verify settings.'
-                    );
+                    logger.error('Failed to add schedule please verify settings.');
                 }
             });
             cb();
         },
-        add_patient: function(db, doc, cb) {
-            if (typeof cb !== 'function') {
-                return;
-            }
-            if (!doc.patient_id) {
+        add_patient: function(options, cb) {
+            if (!options.doc.patient_id) {
                 // must have a patient id so we can find them later
                 return cb();
             }
-            module.exports.addPatient({db: db, doc: doc}, cb);
+            module.exports.addPatient(options, cb);
         }
     },
     addMessages: function(config, doc) {
@@ -285,9 +255,11 @@ module.exports = {
     },
     addPatient: function(options, callback) {
         var doc = options.doc,
-            db = db || options.db,
-            id = doc.patient_id;
-        
+            db = options.db,
+            audit = options.audit,
+            id = doc.patient_id,
+            patientNameField = (options.params && options.params.length && options.params[0]) || 'patient_name';
+
         utils.getRegistrations({
             db: db,
             id: id
@@ -306,18 +278,16 @@ module.exports = {
                 if (err) {
                     return callback(err);
                 }
-                console.log(JSON.stringify(doc, null, 2));
-                console.log(JSON.stringify(result, null, 2));
                 var contact = _.result(_.first(result.rows), 'doc');
                 // create a new patient with this patient_id
                 var patient = {
-                    name: doc.fields.patient_name, // TODO configurable?
-                    parent: contact.parent,
+                    name: doc.fields[patientNameField],
+                    parent: contact && contact.parent,
                     reported_date: doc.reported_date,
                     type: 'person',
                     patient_id: id
                 };
-                db.medic.insert(patient, callback);
+                audit.saveDoc(patient, callback);
             });
         });
     }
