@@ -103,6 +103,7 @@ exports['performs initial replication'] = function(test) {
       live: false,
       retry: false,
       heartbeat: 10000,
+      timeout: 600000,
       doc_ids: [ 'org.couchdb.user:jim' ]
     });
     test.done();
