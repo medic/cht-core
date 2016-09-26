@@ -81,7 +81,7 @@ var _ = require('underscore'),
         return lhs.doc.name.localeCompare(rhs.doc.name);
       };
 
-      var sortPersons = function(persons) {
+      var sortFamilyMembers = function(persons) {
         if (!persons) {
           return;
         }
@@ -101,7 +101,7 @@ var _ = require('underscore'),
         });
       };
 
-      var sortPlaces = function(places) {
+      var sortContacts = function(places) {
         if (!places) {
           return;
         }
@@ -121,8 +121,8 @@ var _ = require('underscore'),
           .query('medic-client/contacts_by_parent_name_type', options)
           .then(function(children) {
             var groups = splitChildren(children.rows);
-            sortPlaces(groups.places);
-            sortPersons(groups.persons);
+            sortContacts(groups.places);
+            sortContacts(groups.persons);
             return groups;
           });
       };
@@ -200,9 +200,13 @@ var _ = require('underscore'),
                   reports: reports
                 };
                 selected.doc.icon = ContactSchema.get(contactDoc.type).icon;
+                selected.doc.label = ContactSchema.get(contactDoc.type).label;
                 selected.doc.isPrimaryContact = isPrimaryContact;
                 selected.fields = selectedSchemaVisibleFields(selected);
                 if (children) {
+                  if (selected.doc.type === 'clinic') {
+                    sortFamilyMembers(children.persons);
+                  }
                   children.persons = childrenWithContactPersonOnTop(children.persons, contactDoc);
                   selected.children = children;
                   if (selected.children.places && selected.children.places.length) {
