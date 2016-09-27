@@ -114,7 +114,10 @@ module.exports = {
         }
     },
     setBirthDate: function(doc) {
-        doc.birth_date = module.exports.getDOB(doc).toISOString();
+        var dob = module.exports.getDOB(doc);
+        if (dob) {
+            doc.birth_date = dob.toISOString();
+        }
     },
     getConfig: function() {
         return _.extend({}, config.get('registrations'));

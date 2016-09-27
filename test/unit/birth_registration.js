@@ -88,6 +88,13 @@ exports['setBirthDate sets birth_date correctly for age_in_days: 10'] = function
     test.done();
 };
 
+exports['setBirthDate does not set birthdate if no fields given'] = function(test) {
+    var doc = { };
+    transition.setBirthDate(doc);
+    test.equals(doc.birth_date, undefined);
+    test.done();
+};
+
 exports['valid form adds patient_id and expected_date'] = function(test) {
 
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
