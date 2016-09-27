@@ -113,7 +113,7 @@ describe('DB service', function() {
       chai.expect(actual.id).to.equal(expected.id);
       chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny');
       chai.expect(pouchDB.args[0][1].adapter).to.equal('worker');
-      chai.expect(pouchDB.args[0][1].revs_limit).to.equal(1);
+      chai.expect(pouchDB.args[0][1].auto_compaction).to.equal(true);
       chai.expect(expected.viewCleanup.callCount).to.equal(1);
 
       done();
