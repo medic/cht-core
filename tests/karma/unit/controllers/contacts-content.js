@@ -199,6 +199,7 @@ describe('ContactsContentCtrl', function() {
     });
 
     it('child persons are sorted in alphabetical order', function(done) {
+      doc.type = 'star';
       runPlaceTest(done, [childPerson2, childPerson], function(selected) {
         assert.equal(selected.children.persons[0].doc._id, childPerson._id);
         assert.equal(selected.children.persons[1].doc._id, childPerson2._id);
