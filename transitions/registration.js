@@ -257,12 +257,12 @@ module.exports = {
         var doc = options.doc,
             db = options.db,
             audit = options.audit,
-            id = doc.patient_id,
-            patientNameField = (options.params && options.params.length && options.params[0]) || 'patient_name';
+            patientId = doc.patient_id,
+            patientNameField = _.first(options.params) || 'patient_name';
 
         utils.getRegistrations({
             db: db,
-            id: id
+            id: patientId
         }, function(err, registrations) {
             if (err) {
                 return callback(err);
@@ -285,7 +285,7 @@ module.exports = {
                     parent: contact && contact.parent,
                     reported_date: doc.reported_date,
                     type: 'person',
-                    patient_id: id
+                    patient_id: patientId
                 };
                 audit.saveDoc(patient, callback);
             });

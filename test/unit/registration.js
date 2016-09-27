@@ -67,14 +67,19 @@ exports['bool expr is ignored (returns true) if not a string or empty'] = functi
 };
 
 exports['add_patient trigger creates a new patient'] = function(test) {
+    var patientName = 'jack';
+    var submitterId = 'papa';
+    var patientId = '05649';
+    var senderPhoneNumber = '+555123';
     var change = { doc: {
         form: 'R',
-        patient_id: '05649',
+        patient_id: patientId,
         reported_date: 53,
-        from: '+555123',
-        fields: { patient_name: 'jack' }
+        from: senderPhoneNumber,
+        fields: { patient_name: patientName }
     } };
-    var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: 'papa' } } } ] });
+    // return expected view results when searching for people_by_phone
+    var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: submitterId } } } ] });
     var db = { medic: { view: view } };
     var saveDoc = sinon.stub().callsArgWith(1);
     var audit = { saveDoc: saveDoc };
@@ -87,27 +92,27 @@ exports['add_patient trigger creates a new patient'] = function(test) {
     var getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     transition.onMatch(change, db, audit, function() {
         test.equals(getRegistrations.callCount, 1);
-        test.equals(getRegistrations.args[0][0].id, '05649');
+        test.equals(getRegistrations.args[0][0].id, patientId);
         test.equals(view.callCount, 1);
         test.equals(view.args[0][0], 'medic-client');
         test.equals(view.args[0][1], 'people_by_phone');
-        test.deepEqual(view.args[0][2].key, [ '+555123' ]);
+        test.deepEqual(view.args[0][2].key, [ senderPhoneNumber ]);
         test.equals(view.args[0][2].include_docs, true);
-        test.equals(view.args[0][0], 'medic-client');
         test.equals(saveDoc.callCount, 1);
-        test.equals(saveDoc.args[0][0].name, 'jack');
-        test.equals(saveDoc.args[0][0].parent._id, 'papa');
+        test.equals(saveDoc.args[0][0].name, patientName);
+        test.equals(saveDoc.args[0][0].parent._id, submitterId);
         test.equals(saveDoc.args[0][0].reported_date, 53);
         test.equals(saveDoc.args[0][0].type, 'person');
-        test.equals(saveDoc.args[0][0].patient_id, '05649');
+        test.equals(saveDoc.args[0][0].patient_id, patientId);
         test.done();
     });
 };
 
 exports['add_patient does nothing when patient already added'] = function(test) {
+    var patientId = '05649';
     var change = { doc: {
         form: 'R',
-        patient_id: '05649',
+        patient_id: patientId,
         reported_date: 53,
         from: '+555123',
         fields: { patient_name: 'jack' }
@@ -125,19 +130,20 @@ exports['add_patient does nothing when patient already added'] = function(test) 
     var getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, [ { _id: 'xyz' } ]);
     transition.onMatch(change, db, audit, function() {
         test.equals(getRegistrations.callCount, 1);
-        test.equals(getRegistrations.args[0][0].id, '05649');
+        test.equals(getRegistrations.args[0][0].id, patientId);
         test.equals(saveDoc.callCount, 0);
         test.done();
     });
 };
 
-exports['add_patient uses given arg as patient name field name'] = function(test) {
+exports['add_patient event parameter overwrites the default property for the name of the patient'] = function(test) {
+    var patientName = 'jim';
     var change = { doc: {
         form: 'R',
         patient_id: '05649',
         reported_date: 53,
         from: '+555123',
-        fields: { name: 'jim' }
+        fields: { name: patientName }
     } };
     var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: 'papa' } } } ] });
     var db = { medic: { view: view } };
@@ -152,7 +158,7 @@ exports['add_patient uses given arg as patient name field name'] = function(test
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, [ ]);
     transition.onMatch(change, db, audit, function() {
         test.equals(saveDoc.callCount, 1);
-        test.equals(saveDoc.args[0][0].name, 'jim');
+        test.equals(saveDoc.args[0][0].name, patientName);
         test.done();
     });
 };
