@@ -6,6 +6,7 @@ angular.module('inboxServices').service('XSLT',
     Location
   ) {
 
+    'use strict';
     'ngInject';
 
     var staticRoot = Location.path + '/static/dist/xslt/';

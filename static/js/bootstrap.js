@@ -43,6 +43,7 @@ var utils = require('kujua-utils');
       live: false,
       retry: false,
       heartbeat: 10000,
+      timeout: 1000 * 60 * 10, // try for ten minutes then give up
       doc_ids: [ 'org.couchdb.user:' + username ]
     })
       .then(function() {

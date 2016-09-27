@@ -30,7 +30,8 @@ describe('MessagesCtrl controller', function() {
         'MarkAllRead': {},
         'ContactConversation': KarmaUtils.nullPromise(),
         'MessageContact': KarmaUtils.nullPromise(),
-        'Export': function() {}
+        'Export': function() {},
+        'Tour': function() {}
       });
     };
   }));

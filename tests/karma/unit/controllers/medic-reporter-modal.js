@@ -2,6 +2,7 @@ describe('MedicReporterModalCtrl', function() {
   'use strict';
 
   var createController,
+      dbName,
       formCode,
       http,
       language,
@@ -9,10 +10,17 @@ describe('MedicReporterModalCtrl', function() {
       spyUibModalInstance,
       userContact,
       userLocale,
-      userNumber;
+      userNumber,
+      settings,
+      settingsUri,
+      merge,
+      mergedUri;
 
   beforeEach(function() {
     module('inboxApp');
+
+    settingsUri = '';
+    mergedUri = '';
 
     module(function($provide) {
       $provide.factory('$uibModalInstance', function() {
@@ -39,6 +47,24 @@ describe('MedicReporterModalCtrl', function() {
         language.returns(KarmaUtils.mockPromise(null, userLocale));
         return language;
       });
+
+      dbName = 'bestdbever';
+      $provide.factory('Location', function() {
+        return { dbName: dbName };
+      });
+
+      $provide.factory('Settings', function() {
+        settings = sinon.stub();
+        settings.returns(KarmaUtils.mockPromise(null, { muvuku_webapp_url: settingsUri }));
+        return settings;
+      });
+
+      $provide.factory('MergeUriParameters', function() {
+        merge = sinon.stub();
+        merge.returns(KarmaUtils.mockPromise(null, mergedUri));
+        return merge;
+      });
+
     });
 
     inject(function($rootScope, $controller) {
@@ -59,14 +85,9 @@ describe('MedicReporterModalCtrl', function() {
 
   afterEach(function() {
     KarmaUtils.restore(
-      spyUibModalInstance, http.head, userContact, language, scope.setProcessing,
-      scope.setFinished, scope.setError);
-  });
-
-  it('Sets loading mode while loading', function() {
-    chai.expect(scope.setProcessing.called).to.equal(false);
-    createController();
-    chai.expect(scope.setProcessing.called).to.equal(true);
+      spyUibModalInstance, http.head, userContact, language, settings,
+      scope.setProcessing, scope.setFinished, scope.setError
+    );
   });
 
   var runTest = function(done, assertions) {
@@ -75,13 +96,16 @@ describe('MedicReporterModalCtrl', function() {
       scope.$apply(); // needed to resolve the promises
       setTimeout(function() {
         scope.$apply(); // resolve the promises, second round.
-        assertions();
-        done();
+        setTimeout(function() {
+          scope.$apply(); // resolve the promises, third round.
+          assertions();
+          done();
+        });
       });
     });
   };
 
-  it('Doesn\'t display medic-reporter if no auth', function(done) {
+  it('Does not display medic-reporter if no auth', function(done) {
     var err = { status: 403 };
     http.head.returns(KarmaUtils.mockPromise(err));
 
@@ -93,36 +117,71 @@ describe('MedicReporterModalCtrl', function() {
   });
 
   it('Displays medic-reporter if auth', function(done) {
+    mergedUri = 'some-uri';
     runTest(done, function() {
       chai.expect(scope.setError.called).to.equal(false);
-      chai.expect(scope.setFinished.called).to.equal(true);
-      chai.assert(
-        scope.medicReporterUrl.startsWith('/medic-reporter/_design/medic-reporter/_rewrite/?_embed_mode=1'),
-        'Should put the right url for iframe');
+      chai.expect(scope.medicReporterUrl).to.equal(mergedUri);
+      chai.expect(merge.callCount).to.equal(1);
+      chai.expect(merge.args[0][0]).to.equal('/medic-reporter/_design/medic-reporter/_rewrite/');
+    });
+  });
+
+  it('Adds trailing slash to auth url if needed', function(done) {
+    settingsUri = '/report-sender';
+    runTest(done, function() {
+      chai.expect(http.head.called);
+      chai.expect(http.head.args[0][0].substr(-3)).to.equal('%2F');
+      chai.expect(merge.callCount).to.equal(1);
+      chai.expect(merge.args[0][0]).to.equal('/report-sender/');
+    });
+  });
+
+  it('Adds trailing slash to auth url if needed, and keeps url params', function(done) {
+    settingsUri = '/report-sender?aaa=bbb';
+    runTest(done, function() {
+      chai.expect(http.head.called);
+      chai.expect(http.head.args[0][0].substr(-3)).to.equal('%2F');
+      chai.expect(merge.args[0][0]).to.equal('/report-sender/?aaa=bbb');
+    });
+  });
+
+  it('Uses base url configured in settings', function(done) {
+    settingsUri = '/report-sender';
+    runTest(done, function() {
+      chai.expect(scope.setError.called).to.equal(false);
+      chai.expect(scope.medicReporterUrl).to.equal(mergedUri);
+      chai.expect(merge.callCount).to.equal(1);
+      chai.expect(merge.args[0][0]).to.equal('/report-sender/');
     });
   });
 
   it('Displays appropriate form', function(done) {
     runTest(done, function() {
-      chai.assert(
-        scope.medicReporterUrl.includes('_show_forms=' + formCode),
-        'Should pass form code in url param');
+      chai.expect(merge.args[0][1]._show_forms).to.equal(formCode);
     });
   });
 
   it('Uses the user\'s phone number if available', function(done) {
     runTest(done, function() {
-      chai.assert(
-        scope.medicReporterUrl.includes('_gateway_num=' + userNumber),
-        'Should pass phone in url param');
+      chai.expect(merge.args[0][1]._gateway_num).to.equal(userNumber);
     });
   });
 
   it('Uses the user\'s locale if available', function(done) {
     runTest(done, function() {
-      chai.assert(
-        scope.medicReporterUrl.includes('_locale=' + userLocale),
-        'Should pass locale in url param');
+      chai.expect(merge.args[0][1]._locale).to.equal(userLocale);
+    });
+  });
+
+  it('Uses the current db\'s _forms_list_path', function(done) {
+    runTest(done, function() {
+      chai.expect(merge.args[0][1]._forms_list_path).to.equal('/' + dbName + '/_design/medic/_rewrite/app_settings/medic-client/forms');
+    });
+  });
+
+  it('Uses the current db\'s _sync_url', function(done) {
+    runTest(done, function() {
+      chai.expect(merge.args[0][1]._sync_url).to.equal('/' + dbName + '/_design/medic/_rewrite/add');
     });
   });
 
@@ -131,4 +190,5 @@ describe('MedicReporterModalCtrl', function() {
     scope.cancel();
     chai.assert(spyUibModalInstance.dismiss.called, 'Should dismiss modal on user cancel');
   });
+
 });

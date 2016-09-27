@@ -43,6 +43,7 @@
   require('./markdown');
   require('./live-list');
   require('./mark-read');
+  require('./merge-uri-parameters');
   require('./message-contacts');
   require('./message-state');
   require('./modal');
@@ -61,6 +62,7 @@
   require('./settings');
   require('./snackbar');
   require('./target-generator');
+  require('./tour');
   require('./traffic-stats');
   require('./translate-from');
   require('./translation-loader');

@@ -583,17 +583,30 @@ body {
     margin-top: 20px;
     margin-bottom: 5px;
   }
-  .table-filter {
-    float: right;
-    a {
-      font-size: 12px;
-      padding-left: 6px;
-      padding-right: 6px;
-      color: @grey;
+  .action-header {
+    overflow: auto;
+
+    h4 {
+      float: left;
     }
-    a.selected {
-      color: #000;
-      font-weight: bold;
+
+    .table-filter {
+      float: right;
+
+      padding-top: 15px;
+
+      a {
+        padding-left: 6px;
+        padding-right: 6px;
+        font-size: 90%;
+
+        color: @grey;
+
+        &.selected {
+          color: #000;
+          font-weight: bold;
+        }
+      }
     }
   }
 }
@@ -1303,6 +1316,15 @@ a.fa:hover {
 
 .mobile-only, #mobile-detection {
   display: none;
+}
+
+#medic-reporter-modal .modal-body {
+  padding: 0;
+  iframe {
+    height: 470px;
+    border: 0;
+    width: 100%
+  }
 }
 
 @media (max-width: 767px) {

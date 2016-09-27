@@ -1,20 +1,16 @@
-<div id="tour-select" class="tour-select modal fade" tabindex="-1" role="dialog" ng-controller="TourSelectCtrl">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{'tour.select' | translate}}</h3>
-      </div>
-      <div class="modal-body">
-        <p>{{'tour.select.description' | translate}}</p>
-        <a ng-repeat="tour in tours | orderBy:'order'" class="btn tour-option" ng-click="start(tour.id)" ng-class="'tour-option-' + tour.id">
-          <div class="fa" ng-class="tour.icon"></div>
-          <div class="button-label">{{tour.name | translate}}</div>
-        </a>
-      </div>
-      <div class="modal-footer">
-        <a href="#" class="btn cancel" data-dismiss="modal">{{'Cancel' | translate}}</a>
-      </div>
-    </div>
+<div role="document" class="tour-select">
+  <div class="modal-header">
+    <button type="button" class="cancel close" ng-click="cancel()">&times;</button>
+    <h3 translate>tour.select</h3>
+  </div>
+  <div class="modal-body">
+    <p translate>tour.select.description</p>
+    <a ng-repeat="tour in tours | orderBy:'order' track by tour.id" class="btn tour-option" ng-click="start(tour.id)" ng-class="'tour-option-' + tour.id">
+      <div class="fa" ng-class="tour.icon"></div>
+      <div class="button-label" translate="{{tour.name}}"></div>
+    </a>
+  </div>
+  <div class="modal-footer">
+    <a class="btn cancel" ng-click="cancel()" translate>Cancel</a>
   </div>
 </div>
