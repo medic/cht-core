@@ -109,9 +109,7 @@
                 <div>
                   <div class="col-sm-6 col-xs-12 cell-label">
                     <i class="fa fa-star primary" ng-show="child.doc.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
-                    <!-- Leave the two spans below on the same line, otherwise ugly whitespace. -->
-                    <span>{{child.doc.name}}</span><span class="visible-xs-inline" ng-show="child.doc.isPrimaryContact">,</span>
-                    <span class="visible-xs-inline" ng-show="child.doc.isPrimaryContact" translate>Primary contact</span>
+                    <span>{{child.doc.name}}</span>
                   </div>
                   <div class="hidden-xs col-sm-3" ng-bind-html="child.doc.title"></div>
                   <div class="hidden-xs col-sm-3" ng-bind-html="child.doc.phone"></div>
@@ -130,9 +128,7 @@
                 <div>
                   <div class="col-sm-6 col-xs-12 cell-label">
                     <i class="fa fa-star primary" ng-show="child.doc.isPrimaryContact" translate translate-attr-title="clinic.field.contact"></i>
-                    <!-- Leave the two spans below on the same line, otherwise ugly whitespace. -->
-                    <span>{{child.doc.name}}</span><span class="visible-xs-inline" ng-show="child.doc.isPrimaryContact">,</span>
-                    <span class="visible-xs-inline" ng-show="child.doc.isPrimaryContact" translate>clinic.field.contact</span>
+                    <span>{{child.doc.name}}</span>
                   </div>
                   <div class="hidden-xs col-sm-3" ng-bind-html="child.doc.date_of_birth | age"></div>
                   <div class="hidden-xs col-sm-3" ng-bind-html="child.doc.phone"></div>
