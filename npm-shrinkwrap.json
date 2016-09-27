@@ -645,6 +645,11 @@
       "from": "fruitdown@1.0.2",
       "resolved": "http://registry.npmjs.org/fruitdown/-/fruitdown-1.0.2.tgz"
     },
+    "fs.realpath": {
+      "version": "1.0.0",
+      "from": "fs.realpath@>=1.0.0 <2.0.0",
+      "resolved": "http://registry.npmjs.org/fs.realpath/-/fs.realpath-1.0.0.tgz"
+    },
     "fstream": {
       "version": "1.0.8",
       "from": "fstream@>=1.0.0 <2.0.0",
@@ -1100,6 +1105,11 @@
       "from": "ltgt@>=2.1.1 <2.2.0",
       "resolved": "http://registry.npmjs.org/ltgt/-/ltgt-2.1.2.tgz"
     },
+    "make-plural": {
+      "version": "3.0.6",
+      "from": "make-plural@>=3.0.6 <3.1.0",
+      "resolved": "http://registry.npmjs.org/make-plural/-/make-plural-3.0.6.tgz"
+    },
     "memdown": {
       "version": "1.1.2",
       "from": "memdown@1.1.2",
@@ -1126,6 +1136,28 @@
       "version": "1.1.0",
       "from": "mergexml@1.1.0",
       "resolved": "http://registry.npmjs.org/mergexml/-/mergexml-1.1.0.tgz"
+    },
+    "messageformat": {
+      "version": "1.0.2",
+      "from": "messageformat@>=1.0.0 <2.0.0",
+      "resolved": "http://registry.npmjs.org/messageformat/-/messageformat-1.0.2.tgz",
+      "dependencies": {
+        "glob": {
+          "version": "7.0.6",
+          "from": "glob@>=7.0.6 <7.1.0",
+          "resolved": "https://registry.npmjs.org/glob/-/glob-7.0.6.tgz"
+        },
+        "minimatch": {
+          "version": "3.0.3",
+          "from": "minimatch@>=3.0.2 <4.0.0",
+          "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-3.0.3.tgz"
+        }
+      }
+    },
+    "messageformat-parser": {
+      "version": "1.0.0",
+      "from": "messageformat-parser@>=1.0.0 <2.0.0",
+      "resolved": "http://registry.npmjs.org/messageformat-parser/-/messageformat-parser-1.0.0.tgz"
     },
     "mime-db": {
       "version": "1.22.0",
@@ -1678,6 +1710,11 @@
           "resolved": "http://registry.npmjs.org/readable-stream/-/readable-stream-2.0.6.tgz"
         }
       }
+    },
+    "reserved-words": {
+      "version": "0.1.1",
+      "from": "reserved-words@>=0.1.1 <0.2.0",
+      "resolved": "http://registry.npmjs.org/reserved-words/-/reserved-words-0.1.1.tgz"
     },
     "rimraf": {
       "version": "2.5.2",
