@@ -297,7 +297,7 @@ describe('ContactsContentCtrl', function() {
       });
     });
 
-    it.only('sorts reports by reported_date, not by parent vs. child', function(done) {
+    it('sorts reports by reported_date, not by parent vs. child', function(done) {
       var expectedReports = [ { _id: 'aa', reported_date: 123 }, { _id: 'bb', reported_date: 345 } ];
       stubSearch(null, [ expectedReports[0] ], 0);
       stubSearch(null, [ expectedReports[1] ], 1);
