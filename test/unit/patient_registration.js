@@ -1,7 +1,8 @@
 var _ = require('underscore'),
     transition = require('../../transitions/registration'),
     sinon = require('sinon'),
-    utils = require('../../lib/utils');
+    utils = require('../../lib/utils'),
+    date = require('../../date');
 
 function getMessage(doc, idx) {
     if (!doc || !doc.tasks) {
@@ -75,6 +76,18 @@ exports.tearDown = function(callback) {
         transition.getConfig.restore();
     }
 
+    if (transition.getWeeksSinceDOB.restore) {
+        transition.getWeeksSinceDOB.restore();
+    }
+
+    if (transition.getDaysSinceDOB.restore) {
+        transition.getDaysSinceDOB.restore();
+    }
+
+    if (date.getDate.restore) {
+        date.getDate.restore();
+    }
+
     callback();
 };
 
@@ -93,13 +106,6 @@ exports['getWeeksSinceLMP always returns number'] = function(test) {
     test.done();
 };
 
-exports['getWeeksSinceDOB always returns string'] = function(test) {
-    test.equals(typeof transition.getWeeksSinceDOB({ fields: {  dob: '4' } }), 'string');
-    test.equals(typeof transition.getWeeksSinceDOB({ fields: {  dob: '0' } }), 'string');
-    test.equals(typeof transition.getWeeksSinceDOB({ fields: {  dob: 0 } }), 'string');
-    test.done();
-};
-
 exports['getWeeksSinceLMP supports three property names'] = function(test) {
     test.equals(transition.getWeeksSinceLMP({ fields: { lmp: '12' } }), 12);
     test.equals(transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: '12' } }), 12);
@@ -112,6 +118,36 @@ exports['getWeeksSinceDOB supports four property names'] = function(test) {
     test.equals(transition.getWeeksSinceDOB({ fields: { weeks_since_dob: '12' } }), 12);
     test.equals(transition.getWeeksSinceDOB({ fields: { weeks_since_birth: '12' } }), 12);
     test.equals(transition.getWeeksSinceDOB({ fields: { age_in_weeks: '12' } }), 12);
+    test.done();
+};
+
+exports['getDaysSinceDOB supports three property names'] = function(test) {
+    test.equals(transition.getDaysSinceDOB({ fields: { days_since_dob: '12' } }), 12);
+    test.equals(transition.getDaysSinceDOB({ fields: { days_since_birth: '12' } }), 12);
+    test.equals(transition.getDaysSinceDOB({ fields: { age_in_days: '12' } }), 12);
+    test.done();
+};
+
+exports['getDOB uses weeks since dob if available'] = function(test) {
+    sinon.stub(date, 'getDate').returns(1474942416907);
+    sinon.stub(transition, 'getWeeksSinceDOB').returns('5');
+    test.equals(transition.getDOB({ fields: {} }).valueOf(), 1471694400000);
+    test.done();
+};
+
+exports['getDOB uses days since dob if available'] = function(test) {
+    sinon.stub(date, 'getDate').returns(1474942416907);
+    sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
+    sinon.stub(transition, 'getDaysSinceDOB').returns('5');
+    test.equals(transition.getDOB({ fields: {} }).valueOf(), 1474459200000);
+    test.done();
+};
+
+exports['getDOB falls back to today if necessary'] = function(test) {
+    sinon.stub(date, 'getDate').returns(1474942416907);
+    sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
+    sinon.stub(transition, 'getDaysSinceDOB').returns(undefined);
+    test.equals(transition.getDOB({ fields: {} }).valueOf(), 1474887600000);
     test.done();
 };
 

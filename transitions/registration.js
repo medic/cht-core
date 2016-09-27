@@ -11,6 +11,13 @@ var vm = require('vm'),
     config = require('../config'),
     date = require('../date');
 
+var findFirstDefinedValue = function(doc, fields) {
+    var definedField = _.find(fields, function(field) {
+        return !_.isUndefined(doc.fields[field]) && !_.isNull(doc.fields[field]);
+    });
+    return definedField && doc.fields[definedField];
+};
+
 module.exports = {
     filter: function(doc) {
         var self = module.exports,
@@ -29,16 +36,29 @@ module.exports = {
             doc.transitions.registration
         );
     },
-    getWeeksSinceDOB: function(doc) {
+    getDOB: function(doc) {
         if (!doc || !doc.fields) {
             return '';
         }
-        return String(
-            doc.fields.weeks_since_dob ||
-            doc.fields.dob ||
-            doc.fields.weeks_since_birth ||
-            doc.fields.age_in_weeks
-        );
+        var today = moment(date.getDate()).startOf('day');
+        var weeks = parseInt(module.exports.getWeeksSinceDOB(doc), 10);
+        if (!_.isNaN(weeks)) {
+            return today.startOf('week').subtract(weeks, 'weeks');
+        }
+        var days = parseInt(module.exports.getDaysSinceDOB(doc), 10);
+        if (!_.isNaN(days)) {
+            return today.subtract(days, 'days');
+        }
+        // no given date of birth - return today as it's the best we can do
+        return today;
+    },
+    getWeeksSinceDOB: function(doc) {
+        var fields = [ 'weeks_since_dob', 'dob', 'weeks_since_birth', 'age_in_weeks' ];
+        return findFirstDefinedValue(doc, fields);
+    },
+    getDaysSinceDOB: function(doc) {
+        var fields = [ 'days_since_dob', 'days_since_birth', 'age_in_days' ];
+        return findFirstDefinedValue(doc, fields);
     },
     /*
      * Given a doc get the LMP value as a number, including 0.  Supports three
@@ -94,10 +114,7 @@ module.exports = {
         }
     },
     setBirthDate: function(doc) {
-        var weeks_since = module.exports.getWeeksSinceDOB(doc),
-            start = moment(date.getDate()).startOf('week');
-        start.subtract(Number(weeks_since), 'weeks');
-        doc.birth_date = start.toISOString();
+        doc.birth_date = module.exports.getDOB(doc).toISOString();
     },
     getConfig: function() {
         return _.extend({}, config.get('registrations'));
