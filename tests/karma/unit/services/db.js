@@ -2,7 +2,7 @@ describe('DB service', function() {
 
   'use strict';
 
-  var service,
+  var getService,
       Location,
       userCtx,
       pouchDB,
@@ -30,8 +30,11 @@ describe('DB service', function() {
       } );
       $provide.value('Location', Location);
     });
-    inject(function(_DB_) {
-      service = _DB_;
+    inject(function($injector) {
+      getService = function() {
+        // delay initialisation of the db service
+        return $injector.get('DB');
+      };
     });
   });
 
@@ -43,27 +46,44 @@ describe('DB service', function() {
 
     it('sets ajax timeout', function(done) {
       isAdmin.returns(false);
+      Location.dbName = 'medicdb';
       Location.url = 'ftp//myhost:21/medicdb';
-      var expected = 'hello';
+      userCtx.returns({ name: 'johnny' });
+      var expected = { id: 'hello', viewCleanup: sinon.stub() };
       pouchDB.returns(expected);
+      var service = getService();
+      chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny');
       var actual = service({ remote: true });
-      chai.expect(actual).to.equal(expected);
-      chai.expect(pouchDB.callCount).to.equal(1);
-      chai.expect(pouchDB.args[0][0]).to.equal('ftp//myhost:21/medicdb');
-      chai.expect(pouchDB.args[0][1]).to.deep.equal({ skip_setup: true, ajax: { timeout: 30000 } });
+      chai.expect(actual.id).to.equal(expected.id);
+      chai.expect(pouchDB.callCount).to.equal(2);
+      chai.expect(pouchDB.args[1][0]).to.equal('ftp//myhost:21/medicdb');
+      chai.expect(pouchDB.args[1][1]).to.deep.equal({ skip_setup: true, ajax: { timeout: 30000 } });
       done();
     });
 
     it('caches pouchdb instances', function(done) {
       isAdmin.returns(false);
+      Location.dbName = 'medicdb';
       Location.url = 'ftp//myhost:21/medicdb';
-      var expected = 'hello';
+      userCtx.returns({ name: 'johnny' });
+      var expected = { id: 'hello', viewCleanup: sinon.stub() };
       pouchDB.returns(expected);
-      var actual1 = service({ remote: true });
-      var actual2 = service({ remote: true });
-      chai.expect(actual1).to.equal(expected);
-      chai.expect(actual2).to.equal(expected);
+
+      // init
+      var service = getService();
       chai.expect(pouchDB.callCount).to.equal(1);
+      chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny');
+
+      // get remote
+      var actual1 = service({ remote: true });
+      chai.expect(actual1.id).to.equal(expected.id);
+      chai.expect(pouchDB.callCount).to.equal(2);
+
+      // get remote again
+      var actual2 = service({ remote: true });
+      chai.expect(actual2.id).to.equal(expected.id);
+      chai.expect(pouchDB.callCount).to.equal(2);
+
       done();
     });
 
@@ -75,14 +95,20 @@ describe('DB service', function() {
       isAdmin.returns(false);
       Location.dbName = 'medicdb';
       userCtx.returns({ name: 'johnny' });
-      var expected = 'hello';
+      var expected = { id: 'hello', viewCleanup: sinon.stub() };
       pouchDB.returns(expected);
-      var actual = service();
-      chai.expect(actual).to.equal(expected);
+
+      var service = getService();
       chai.expect(pouchDB.callCount).to.equal(1);
+      chai.expect(expected.viewCleanup.callCount).to.equal(1);
+
+      var actual = service();
+      chai.expect(pouchDB.callCount).to.equal(1);
+      chai.expect(actual.id).to.equal(expected.id);
       chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny');
       chai.expect(pouchDB.args[0][1].adapter).to.equal('worker');
       chai.expect(pouchDB.args[0][1].auto_compaction).to.equal(true);
+      chai.expect(expected.viewCleanup.callCount).to.equal(1);
       done();
     });
 
@@ -90,15 +116,23 @@ describe('DB service', function() {
       isAdmin.returns(false);
       Location.dbName = 'medicdb';
       userCtx.returns({ name: 'johnny' });
-      var expected = 'hello';
+      var expected = { id: 'hello', viewCleanup: sinon.stub() };
       pouchDB.returns(expected);
-      var actual1 = service();
-      var actual2 = service();
-      chai.expect(actual1).to.equal(expected);
-      chai.expect(actual2).to.equal(expected);
-      chai.expect(isAdmin.callCount).to.equal(2);
-      chai.expect(userCtx.callCount).to.equal(2);
+      var service = getService();
       chai.expect(pouchDB.callCount).to.equal(1);
+
+      // get local
+      var actual1 = service();
+      chai.expect(pouchDB.callCount).to.equal(1);
+      chai.expect(actual1.id).to.equal(expected.id);
+
+      // get local again
+      var actual2 = service();
+      chai.expect(pouchDB.callCount).to.equal(1);
+      chai.expect(actual2.id).to.equal(expected.id);
+      chai.expect(isAdmin.callCount).to.equal(3);
+      chai.expect(userCtx.callCount).to.equal(3);
+
       done();
     });
 

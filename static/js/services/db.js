@@ -52,6 +52,10 @@
         return cache[name];
       };
 
+      if (!Session.isAdmin()) {
+        getLocal().viewCleanup();
+      }
+
       return function(options) {
         if ((options && options.remote) || Session.isAdmin()) {
           return getRemote();
