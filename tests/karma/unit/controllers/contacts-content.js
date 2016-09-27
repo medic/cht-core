@@ -111,12 +111,13 @@ describe('ContactsContentCtrl', function() {
       stubFetchChildren(childrenArray);
       createController().getSetupPromiseForTesting()
         .then(function() {
+          assert(scope.selected, 'selected should be set on the scope')
           assertions(scope.selected);
           done();
         }).catch(done);
     };
 
-    it('setSelected contact passed in $stateParams', function(done) {
+    it('contact passed in $stateParams is selected', function(done) {
       runPlaceTest(done, [childContactPerson, childPlace], function(selected) {
         assert.equal(selected.doc._id, doc._id);
       });
@@ -212,27 +213,40 @@ describe('ContactsContentCtrl', function() {
 
       createController().getSetupPromiseForTesting()
         .then(function() {
+          assert(scope.selected, 'selected should be set on the scope')
           assertions(scope.selected);
           done();
         }).catch(done);
     };
 
-    it('if selected doc is primary contact, the isPrimaryContact flag should be true', function(done) {
-      runPersonTest(done, doc, null, function(selected) {
-        assert(selected.doc.isPrimaryContact, 'isPrimaryContact flag should be true');
+    describe('isPrimaryContact flag', function() {
+
+      it('if selected doc is primary contact, the isPrimaryContact flag should be true', function(done) {
+        runPersonTest(done, doc, null, function(selected) {
+          assert(selected.doc.isPrimaryContact, 'isPrimaryContact flag should be true');
+        });
       });
+
+      it('if selected doc has no parent field, the isPrimaryContact flag should be false', function(done) {
+        delete childContactPerson.parent;
+        runPersonTest(done, doc, null, function(selected) {
+          assert(!selected.doc.isPrimaryContact, 'isPrimaryContact flag should be false');
+        });
+      });
+
+      it('if selected doc\'s parent is not found, the isPrimaryContact flag should be false', function(done) {
+        runPersonTest(done, doc, { status: 404 }, function(selected) {
+          assert(!selected.doc.isPrimaryContact, 'isPrimaryContact flag should be false');
+        });
+      });
+
     });
 
-    it('if selected doc has no parent field, the isPrimaryContact flag should be false', function(done) {
-      delete childContactPerson.parent;
+    it('sets the returned reports as selected', function(done) {
+      stubSearch(null, [ { _id: 'ab' } ]);
       runPersonTest(done, doc, null, function(selected) {
-        assert(!selected.doc.isPrimaryContact, 'isPrimaryContact flag should be false');
-      });
-    });
-
-    it('if selected doc\'s parent is not found, the isPrimaryContact flag should be false', function(done) {
-      runPersonTest(done, doc, { status: 404 }, function(selected) {
-        assert(!selected.doc.isPrimaryContact, 'isPrimaryContact flag should be false');
+        chai.expect(selected.reports.length).to.equal(1);
+        chai.expect(selected.reports[0]._id).to.equal('ab');
       });
     });
 
@@ -241,8 +255,6 @@ describe('ContactsContentCtrl', function() {
       childContactPerson.place_id = 'ef';
       stubSearch(null, [ { _id: 'ab' } ]);
       runPersonTest(done, doc, null, function(selected) {
-        chai.expect(selected.reports.length).to.equal(1);
-        chai.expect(selected.reports[0]._id).to.equal('ab');
         chai.expect(search.callCount).to.equal(1);
         chai.expect(search.args[0][0]).to.equal('reports');
         chai.expect(search.args[0][1].subjectIds.length).to.equal(3);
