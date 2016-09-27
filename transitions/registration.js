@@ -42,11 +42,11 @@ module.exports = {
         }
         var today = moment(date.getDate()).startOf('day');
         var weeks = parseInt(module.exports.getWeeksSinceDOB(doc), 10);
-        if (!_.isNaN(weeks)) {
+        if (!isNaN(weeks)) {
             return today.startOf('week').subtract(weeks, 'weeks');
         }
         var days = parseInt(module.exports.getDaysSinceDOB(doc), 10);
-        if (!_.isNaN(days)) {
+        if (!isNaN(days)) {
             return today.subtract(days, 'days');
         }
         // no given date of birth - return today as it's the best we can do
