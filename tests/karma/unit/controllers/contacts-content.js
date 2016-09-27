@@ -13,11 +13,13 @@ describe('ContactsContentCtrl', function() {
     childPlacePluralLabel,
     createController,
     doc,
+    search,
     idStateParam,
     scope,
     stubGetQuery,
     stubGetVisibleFields,
-    stubFetchChildren;
+    stubFetchChildren,
+    stubSearch;
 
   beforeEach(module('inboxApp'));
 
@@ -25,8 +27,11 @@ describe('ContactsContentCtrl', function() {
     var $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     scope.setLoadingContent = sinon.stub();
-    scope.setSelected = sinon.stub();
+    scope.setSelected = function(selected) {
+      scope.selected = selected;
+    };
     scope.clearSelected = sinon.stub();
+    scope.settingSelected = sinon.stub();
     var log = { error: console.error, debug: console.info };
 
     var parentId = 'districtsdistrict';
@@ -38,26 +43,35 @@ describe('ContactsContentCtrl', function() {
     childPlace2 = { _id: 'happyplace2', type: 'mushroom', name: 'Happy Place 2' };
     childPlacePluralLabel = 'mushroompodes';
     childPlaceIcon = 'fa-mushroom';
-    doc = { _id: parentId, type: 'star', contact: { _id: contactId} };
+    doc = {
+      _id: parentId,
+      type: 'star',
+      contact: { _id: contactId }
+    };
     var dbGet = sinon.stub();
     var dbQuery = sinon.stub();
     var db = function() {
       return {
-          get: dbGet,
-          query: dbQuery
-         };
+        get: dbGet,
+        query: dbQuery
+      };
     };
     stubGetQuery = function(err, doc) {
       db().get.withArgs(doc._id).returns(KarmaUtils.mockPromise(err, doc));
     };
     stubFetchChildren = function(childrenArray) {
+      var rows = childrenArray.map(function(doc) {
+        return { doc: doc };
+      });
       db().query.withArgs(sinon.match(FETCH_CHILDREN_VIEW), sinon.match.any)
-        .returns(KarmaUtils.mockPromise(
-          null,
-          {
-            rows: childrenArray.map(function(doc) { return { doc: doc};})
-          }));
+        .returns(KarmaUtils.mockPromise(null, { rows: rows }));
     };
+    search = sinon.stub();
+    search.returns(KarmaUtils.mockPromise(null, []));
+    stubSearch = function(err, reports) {
+      search.returns(KarmaUtils.mockPromise(err, reports));
+    };
+
     var getVisibleFields = sinon.stub();
     stubGetVisibleFields = function(type) {
       var fields = {};
@@ -74,11 +88,16 @@ describe('ContactsContentCtrl', function() {
         'Changes': sinon.stub(),
         'ContactSchema': {
           getVisibleFields: getVisibleFields,
-          get: function() { return { pluralLabel: childPlacePluralLabel, icon: childPlaceIcon }; }
+          get: function() {
+            return {
+              pluralLabel: childPlacePluralLabel,
+              icon: childPlaceIcon
+            };
+          }
         },
         'DB': db,
-        'RulesEngine': {listen: function() {} },
-        'Search': KarmaUtils.promiseService(null, []),
+        'RulesEngine': { listen: function() {} },
+        'Search': search,
         'UserSettings': KarmaUtils.promiseService(null, '')
       });
     };
@@ -92,14 +111,13 @@ describe('ContactsContentCtrl', function() {
       stubFetchChildren(childrenArray);
       createController().getSetupPromiseForTesting()
         .then(function() {
-          assert(scope.setSelected.called, 'setSelected was called');
-          var selected = scope.setSelected.getCall(0).args[0];
-          assertions(selected);
+          assert(scope.selected, 'selected should be set on the scope');
+          assertions(scope.selected);
           done();
         }).catch(done);
     };
 
-    it('setSelected contact passed in $stateParams', function(done) {
+    it('contact passed in $stateParams is selected', function(done) {
       runPlaceTest(done, [childContactPerson, childPlace], function(selected) {
         assert.equal(selected.doc._id, doc._id);
       });
@@ -107,11 +125,11 @@ describe('ContactsContentCtrl', function() {
 
     it('child places and persons get displayed separately', function(done) {
       runPlaceTest(done, [childContactPerson, childPlace], function(selected) {
-          assert.equal(selected.children.persons.length, 1);
-          assert.deepEqual(selected.children.persons[0].doc, childContactPerson);
-          assert.equal(selected.children.places.length, 1);
-          assert.deepEqual(selected.children.places[0].doc, childPlace);
-          assert.deepEqual(selected.children.childPlacesLabel, childPlacePluralLabel);
+        assert.equal(selected.children.persons.length, 1);
+        assert.deepEqual(selected.children.persons[0].doc, childContactPerson);
+        assert.equal(selected.children.places.length, 1);
+        assert.deepEqual(selected.children.places[0].doc, childPlace);
+        assert.deepEqual(selected.children.childPlacesLabel, childPlacePluralLabel);
         assert.deepEqual(selected.children.childPlacesIcon, childPlaceIcon);
       });
     });
@@ -195,29 +213,54 @@ describe('ContactsContentCtrl', function() {
 
       createController().getSetupPromiseForTesting()
         .then(function() {
-          assert(scope.setSelected.called, 'setSelected was called');
-          var selected = scope.setSelected.getCall(0).args[0];
-          assertions(selected);
+          assert(scope.selected, 'selected should be set on the scope');
+          assertions(scope.selected);
           done();
         }).catch(done);
     };
 
-    it('if selected doc is primary contact, the isPrimaryContact flag should be true', function(done) {
+    describe('isPrimaryContact flag', function() {
+
+      it('if selected doc is primary contact, the isPrimaryContact flag should be true', function(done) {
+        runPersonTest(done, doc, null, function(selected) {
+          assert(selected.doc.isPrimaryContact, 'isPrimaryContact flag should be true');
+        });
+      });
+
+      it('if selected doc has no parent field, the isPrimaryContact flag should be false', function(done) {
+        delete childContactPerson.parent;
+        runPersonTest(done, doc, null, function(selected) {
+          assert(!selected.doc.isPrimaryContact, 'isPrimaryContact flag should be false');
+        });
+      });
+
+      it('if selected doc\'s parent is not found, the isPrimaryContact flag should be false', function(done) {
+        runPersonTest(done, doc, { status: 404 }, function(selected) {
+          assert(!selected.doc.isPrimaryContact, 'isPrimaryContact flag should be false');
+        });
+      });
+
+    });
+
+    it('sets the returned reports as selected', function(done) {
+      stubSearch(null, [ { _id: 'ab' } ]);
       runPersonTest(done, doc, null, function(selected) {
-        assert(selected.doc.isPrimaryContact, 'isPrimaryContact flag should be true');
+        chai.expect(selected.reports.length).to.equal(1);
+        chai.expect(selected.reports[0]._id).to.equal('ab');
       });
     });
 
-    it('if selected doc has no parent field, the isPrimaryContact flag should be false', function(done) {
-      delete childContactPerson.parent;
-      runPersonTest(done, doc, null, function(selected) {
-        assert(!selected.doc.isPrimaryContact, 'isPrimaryContact flag should be false');
-      });
-    });
-
-    it('if selected doc\'s parent is not found, the isPrimaryContact flag should be false', function(done) {
-      runPersonTest(done, doc, { status: 404 }, function(selected) {
-        assert(!selected.doc.isPrimaryContact, 'isPrimaryContact flag should be false');
+    it('includes subjectIds in reports search so JSON reports are found', function(done) {
+      childContactPerson.patient_id = 'cd';
+      childContactPerson.place_id = 'ef';
+      stubSearch(null, [ { _id: 'ab' } ]);
+      runPersonTest(done, doc, null, function() {
+        chai.expect(search.callCount).to.equal(1);
+        chai.expect(search.args[0][0]).to.equal('reports');
+        chai.expect(search.args[0][1].subjectIds.length).to.equal(3);
+        chai.expect(search.args[0][1].subjectIds).to.include(childContactPerson._id);
+        chai.expect(search.args[0][1].subjectIds).to.include('cd');
+        chai.expect(search.args[0][1].subjectIds).to.include('ef');
       });
     });
 
