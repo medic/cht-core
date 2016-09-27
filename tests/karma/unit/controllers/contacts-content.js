@@ -12,13 +12,18 @@ describe('ContactsContentCtrl', function() {
     childPlaceIcon,
     childPlacePluralLabel,
     createController,
+    dbGet,
+    dbQuery,
     doc,
-    search,
+    getVisibleFields,
     idStateParam,
+    rulesEngineListen,
     scope,
+    search,
     stubGetQuery,
     stubGetVisibleFields,
     stubFetchChildren,
+    stubRulesEngine,
     stubSearch;
 
   beforeEach(module('inboxApp'));
@@ -45,11 +50,11 @@ describe('ContactsContentCtrl', function() {
     childPlaceIcon = 'fa-mushroom';
     doc = {
       _id: parentId,
-      type: 'star',
+      type: 'clinic',
       contact: { _id: contactId }
     };
-    var dbGet = sinon.stub();
-    var dbQuery = sinon.stub();
+    dbGet = sinon.stub();
+    dbQuery = sinon.stub();
     var db = function() {
       return {
         get: dbGet,
@@ -61,7 +66,7 @@ describe('ContactsContentCtrl', function() {
     };
     stubFetchChildren = function(childrenArray) {
       var rows = childrenArray.map(function(doc) {
-        return { doc: doc };
+        return { doc: doc, id: doc._id };
       });
       db().query.withArgs(sinon.match(FETCH_CHILDREN_VIEW), sinon.match.any)
         .returns(KarmaUtils.mockPromise(null, { rows: rows }));
@@ -77,12 +82,18 @@ describe('ContactsContentCtrl', function() {
     };
     stubSearch(null, []);
 
-    var getVisibleFields = sinon.stub();
+    getVisibleFields = sinon.stub();
     stubGetVisibleFields = function(type) {
       var fields = {};
       fields[type] = { fields: [] };
       getVisibleFields.returns(fields);
     };
+
+    rulesEngineListen = sinon.stub();
+    stubRulesEngine = function(err, tasks) {
+      rulesEngineListen.callsArgWith(2, err, tasks);
+    };
+
     createController = function() {
       return $controller('ContactsContentCtrl', {
         '$scope': scope,
@@ -101,12 +112,16 @@ describe('ContactsContentCtrl', function() {
           }
         },
         'DB': db,
-        'RulesEngine': { listen: function() {} },
+        'RulesEngine': { listen: rulesEngineListen },
         'Search': search,
         'UserSettings': KarmaUtils.promiseService(null, '')
       });
     };
   }));
+
+  afterEach(function() {
+    KarmaUtils.restore(rulesEngineListen, dbGet, dbQuery, getVisibleFields, search);
+  });
 
   describe('Place', function() {
     var runPlaceTest = function(done, childrenArray, assertions) {
@@ -324,6 +339,102 @@ describe('ContactsContentCtrl', function() {
         chai.expect(search.args[0][1].subjectIds).to.include(doc._id);
         chai.expect(search.args[0][1].subjectIds).to.include('cd');
         chai.expect(search.args[0][1].subjectIds).to.include('ef');
+      });
+    });
+  });
+
+  describe('Tasks', function() {
+    var runTasksTest = function(done, childrenArray, assertions) {
+      idStateParam = { id: doc._id };
+      stubGetQuery(null, doc);
+      stubGetVisibleFields(doc.type);
+      stubFetchChildren(childrenArray);
+      createController().getSetupPromiseForTesting()
+        .then(function() {
+          assert(scope.selected, 'selected should be set on the scope');
+          assertions(scope.selected);
+          done();
+        }).catch(done);
+    };
+
+    it('displays tasks for selected contact', function(done) {
+      var task = { _id: 'aa', contact: { _id: doc._id } };
+      stubRulesEngine(null, [task]);
+      runTasksTest(done, [], function(selected) {
+        chai.assert.sameMembers(selected.tasks, [ task ]);
+      });
+    });
+
+    it('displays tasks for selected place and child persons', function(done) {
+      var tasks = [
+        {
+          _id: 'taskForParent',
+          date: 'Wed Oct 19 2016 13:50:16 GMT+0200 (CEST)',
+          contact: { _id: doc._id }
+        },
+        {
+          _id: 'taskForChild',
+          date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
+          contact: { _id: childPerson._id }
+        }
+      ];
+      stubRulesEngine(null, tasks);
+      runTasksTest(done, [ childPerson ], function(selected) {
+        chai.assert.sameMembers(selected.tasks, tasks);
+      });
+    });
+
+    it('does not display tasks other contacts than selected place and child persons', function(done) {
+      var tasks = [
+        {
+          _id: 'taskForParent',
+          date: 'Wed Oct 19 2016 13:50:16 GMT+0200 (CEST)',
+          contact: { _id: 'yadayada' }
+        }
+      ];
+      stubRulesEngine(null, tasks);
+      runTasksTest(done, [ childPerson ], function(selected) {
+        chai.assert.sameMembers(selected.tasks, []);
+      });
+    });
+
+    it('displays tasks in order of date', function(done) {
+      var tasks = [
+        {
+          _id: 'taskForLater',
+          date: 'Wed Oct 19 2016 13:50:16 GMT+0200 (CEST)',
+          contact: { _id: doc._id }
+        },
+        {
+          _id: 'urgentTask',
+          date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
+          contact: { _id: doc._id }
+        }
+      ];
+      stubRulesEngine(null, tasks);
+      runTasksTest(done, [], function(selected) {
+        chai.assert.deepEqual(selected.tasks, [tasks[1], tasks[0]]);
+      });
+    });
+
+    it('displays only unresolved tasks', function(done) {
+      var tasks = [
+        {
+          _id: 'resolvedTask',
+          date: 'Wed Oct 19 2016 13:50:16 GMT+0200 (CEST)',
+          contact: { _id: doc._id },
+          resolved: true
+        },
+        {
+          _id: 'unresolvedTask',
+          date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
+          contact: { _id: doc._id },
+          resolved: false
+        }
+      ];
+      stubRulesEngine(null, tasks);
+      runTasksTest(done, [], function(selected) {
+        chai.assert.sameMembers(selected.tasks, [tasks[1]]);
       });
     });
   });

@@ -176,7 +176,7 @@
         </div>
       </div>
 
-      <div ng-if="(selected.tasks | filter:{resolved:false}:strict).length">
+      <div ng-if="selected.tasks.length">
         <div class="action-header">
           <h4 translate>Tasks</h4>
           <span class="table-filter">
@@ -189,7 +189,7 @@
         </div>
         <div class="card action-list tasks">
           <div class="accent"></div>
-          <div class="row" ng-repeat="task in selected.tasks | filter:{resolved:false}:strict | filter:filterTaskWeeksForward | orderBy:'date'">
+          <div class="row" ng-repeat="task in selected.tasks | filter:filterTaskWeeksForward">
             <div class="col-sm-12">
               <a ui-sref="tasks.detail({ id: task._id })" class="cell">
                 <div ng-bind-html="task.date | relativeDay" class="pull-right"></div>
