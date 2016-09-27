@@ -111,7 +111,7 @@ describe('ContactsContentCtrl', function() {
       stubFetchChildren(childrenArray);
       createController().getSetupPromiseForTesting()
         .then(function() {
-          assert(scope.selected, 'selected should be set on the scope')
+          assert(scope.selected, 'selected should be set on the scope');
           assertions(scope.selected);
           done();
         }).catch(done);
@@ -213,7 +213,7 @@ describe('ContactsContentCtrl', function() {
 
       createController().getSetupPromiseForTesting()
         .then(function() {
-          assert(scope.selected, 'selected should be set on the scope')
+          assert(scope.selected, 'selected should be set on the scope');
           assertions(scope.selected);
           done();
         }).catch(done);
@@ -254,7 +254,7 @@ describe('ContactsContentCtrl', function() {
       childContactPerson.patient_id = 'cd';
       childContactPerson.place_id = 'ef';
       stubSearch(null, [ { _id: 'ab' } ]);
-      runPersonTest(done, doc, null, function(selected) {
+      runPersonTest(done, doc, null, function() {
         chai.expect(search.callCount).to.equal(1);
         chai.expect(search.args[0][0]).to.equal('reports');
         chai.expect(search.args[0][1].subjectIds.length).to.equal(3);
