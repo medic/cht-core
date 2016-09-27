@@ -13,16 +13,24 @@
   <div class="col-sm-8 item-content item-body" ng-show="selected && !loadingContent">
     <div class="material">
       <div class="body meta">
-        <h3 class="hidden-xs">
+        <div class="hidden-xs card-title">
+          <h3>
+            <i class="fa {{selected.doc.icon}}"></i>
+            <span>{{selected.doc.name}}</span>
+          </h3>
           <i class="fa fa-star primary" ng-show="selected.doc.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
-          <i class="fa {{selected.doc.icon}}"></i>
-          {{selected.doc.name}}
-        </h3>
-        <h3 class="visible-xs-block">
+          <span ng-show="selected.doc.isPrimaryContact && selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
+          <span ng-show="selected.doc.isPrimaryContact && selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
+        </div>
+        <div class="visible-xs-block card-title">
+          <h3>
+            <i class="fa {{selected.doc.icon}}"></i>
+          </h3>
+          <span ng-show="!selected.doc.isPrimaryContact" translate>contact.profile</span>
           <i class="fa fa-star primary" ng-show="selected.doc.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
-          <i class="fa {{selected.doc.icon}}"></i>
-          <span translate>{{selected.doc.label}}</span>
-        </h3>
+          <span ng-show="selected.doc.isPrimaryContact && selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
+          <span ng-show="selected.doc.isPrimaryContact && selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
+        </div>
         <div class="card">
           <div class="row">
             <div class="col-sm-3" ng-show="selected.doc.type === 'person'">
