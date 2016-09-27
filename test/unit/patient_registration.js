@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    moment = require('moment'),
     transition = require('../../transitions/registration'),
     sinon = require('sinon'),
     utils = require('../../lib/utils'),
@@ -129,25 +130,31 @@ exports['getDaysSinceDOB supports three property names'] = function(test) {
 };
 
 exports['getDOB uses weeks since dob if available'] = function(test) {
-    sinon.stub(date, 'getDate').returns(1474942416907);
+    var today = 1474942416907,
+        expected = moment(today).startOf('week').subtract(5, 'weeks').valueOf();
+    sinon.stub(date, 'getDate').returns(today);
     sinon.stub(transition, 'getWeeksSinceDOB').returns('5');
-    test.equals(transition.getDOB({ fields: {} }).valueOf(), 1471694400000);
+    test.equals(transition.getDOB({ fields: {} }).valueOf(), expected);
     test.done();
 };
 
 exports['getDOB uses days since dob if available'] = function(test) {
-    sinon.stub(date, 'getDate').returns(1474942416907);
+    var today = 1474942416907,
+        expected = moment(today).startOf('day').subtract(5, 'days').valueOf();
+    sinon.stub(date, 'getDate').returns(today);
     sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
     sinon.stub(transition, 'getDaysSinceDOB').returns('5');
-    test.equals(transition.getDOB({ fields: {} }).valueOf(), 1474459200000);
+    test.equals(transition.getDOB({ fields: {} }).valueOf(), expected);
     test.done();
 };
 
 exports['getDOB falls back to today if necessary'] = function(test) {
-    sinon.stub(date, 'getDate').returns(1474942416907);
+    var today = 1474942416907,
+        expected = moment(today).startOf('day').valueOf();
+    sinon.stub(date, 'getDate').returns();
     sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
     sinon.stub(transition, 'getDaysSinceDOB').returns(undefined);
-    test.equals(transition.getDOB({ fields: {} }).valueOf(), 1474887600000);
+    test.equals(transition.getDOB({ fields: {} }).valueOf(), expected);
     test.done();
 };
 
