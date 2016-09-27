@@ -172,22 +172,37 @@ var _ = require('underscore'),
           });
       };
 
-      var getReports = function(contactDoc) {
-        var subjectIds = [ contactDoc._id ];
-        if (contactDoc.patient_id) {
-          subjectIds.push(contactDoc.patient_id);
-        }
-        if (contactDoc.place_id) {
-          subjectIds.push(contactDoc.place_id);
-        }
+      var getReports = function(contactDocsArray) {
+        var subjectIds = [];
+        contactDocsArray.forEach(function(contactDoc) {
+          subjectIds.push(contactDoc._id);
+          if (contactDoc.patient_id) {
+            subjectIds.push(contactDoc.patient_id);
+          }
+          if (contactDoc.place_id) {
+            subjectIds.push(contactDoc.place_id);
+          }
+        });
         return Search('reports', { subjectIds: subjectIds });
+      };
+
+      var sortReports = function(reports) {
+        return reports.sort(function(a, b) {
+          if (a.reported_date > b.reported_date) {
+            return -1;
+          }
+          if (a.reported_date < b.reported_date) {
+            return 1;
+          }
+          return 0;
+        });
       };
 
       var getInitialData = function(contactId) {
         return DB().get(contactId)
           .then(function(contactDoc) {
             return $q.all([
-              getReports(contactDoc),
+              getReports([contactDoc]),
               isPersonAndPrimaryContact(contactDoc),
               getChildren(contactDoc)
             ])
@@ -203,19 +218,26 @@ var _ = require('underscore'),
                 selected.doc.label = ContactSchema.get(contactDoc.type).label;
                 selected.doc.isPrimaryContact = isPrimaryContact;
                 selected.fields = selectedSchemaVisibleFields(selected);
-                if (children) {
-                  if (selected.doc.type === 'clinic') {
-                    sortFamilyMembers(children.persons);
-                  }
-                  children.persons = childrenWithContactPersonOnTop(children.persons, contactDoc);
-                  selected.children = children;
-                  if (selected.children.places && selected.children.places.length) {
-                    var childPlacesSchema = ContactSchema.get(selected.children.places[0].doc.type);
-                    selected.children.childPlacesLabel = childPlacesSchema.pluralLabel;
-                    selected.children.childPlacesIcon = childPlacesSchema.icon;
-                  }
+                if (!children || (!children.places && !children.persons)) {
+                  selected.reports = sortReports(selected.reports);
+                  return selected;
                 }
-                return selected;
+
+                if (selected.doc.type === 'clinic') {
+                  sortFamilyMembers(children.persons);
+                }
+                children.persons = childrenWithContactPersonOnTop(children.persons, contactDoc);
+                selected.children = children;
+                if (selected.children.places && selected.children.places.length) {
+                  var childPlacesSchema = ContactSchema.get(selected.children.places[0].doc.type);
+                  selected.children.childPlacesLabel = childPlacesSchema.pluralLabel;
+                  selected.children.childPlacesIcon = childPlacesSchema.icon;
+                }
+                return getReports(children.persons.map(function(child) { return child.doc; }))
+                  .then(function(childrenReports) {
+                    selected.reports = sortReports(selected.reports.concat(childrenReports));
+                    return selected;
+                  });
               });
           });
       };

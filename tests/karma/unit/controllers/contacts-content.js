@@ -67,10 +67,15 @@ describe('ContactsContentCtrl', function() {
         .returns(KarmaUtils.mockPromise(null, { rows: rows }));
     };
     search = sinon.stub();
-    search.returns(KarmaUtils.mockPromise(null, []));
-    stubSearch = function(err, reports) {
-      search.returns(KarmaUtils.mockPromise(err, reports));
+    stubSearch = function(err, reports, callNumber) {
+      if (callNumber) {
+        search.onCall(callNumber).returns(KarmaUtils.mockPromise(err, reports));
+      }
+      else {
+        search.returns(KarmaUtils.mockPromise(err, reports));
+      }
     };
+    stubSearch(null, []);
 
     var getVisibleFields = sinon.stub();
     stubGetVisibleFields = function(type) {
@@ -241,28 +246,86 @@ describe('ContactsContentCtrl', function() {
       });
 
     });
+  });
+
+  describe('Reports', function() {
+    var runReportsTest = function(done, childrenArray, assertions) {
+      idStateParam = { id: doc._id };
+      stubGetQuery(null, doc);
+      stubGetVisibleFields(doc.type);
+      stubFetchChildren(childrenArray);
+      createController().getSetupPromiseForTesting()
+        .then(function() {
+          assert(scope.selected, 'selected should be set on the scope');
+          assertions(scope.selected);
+          done();
+        }).catch(done);
+    };
 
     it('sets the returned reports as selected', function(done) {
       stubSearch(null, [ { _id: 'ab' } ]);
-      runPersonTest(done, doc, null, function(selected) {
+      runReportsTest(done, [], function(selected) {
         chai.expect(selected.reports.length).to.equal(1);
         chai.expect(selected.reports[0]._id).to.equal('ab');
       });
     });
 
-    it('includes subjectIds in reports search so JSON reports are found', function(done) {
-      childContactPerson.patient_id = 'cd';
-      childContactPerson.place_id = 'ef';
+    it('sorts reports by reported_date', function(done) {
+      var report1 = { _id: 'ab', reported_date: 123 };
+      var report2 = { _id: 'cd', reported_date: 456 };
+      stubSearch(null, [ report1, report2]);
+      runReportsTest(done, [], function(selected) {
+        chai.expect(selected.reports.length).to.equal(2);
+        chai.expect(selected.reports[0]._id).to.equal(report2._id);
+        chai.expect(selected.reports[1]._id).to.equal(report1._id);
+      });
+    });
+
+    it('includes reports from child places', function(done) {
       stubSearch(null, [ { _id: 'ab' } ]);
-      runPersonTest(done, doc, null, function() {
+      runReportsTest(done, [childPerson, childPerson2], function(selected) {
+        chai.expect(search.callCount).to.equal(2);
+
+        var parentSearchArgs = search.args[0][1].subjectIds;
+        chai.assert.sameMembers(parentSearchArgs, [ doc._id ]);
+        var childSearchArgs = search.args[1][1].subjectIds;
+        chai.assert.sameMembers(childSearchArgs, [ childPerson._id, childPerson2._id ]);
+
+        chai.expect(selected.reports.length).to.equal(2);
+        chai.expect(selected.reports[0]._id).to.equal('ab');
+        chai.expect(selected.reports[1]._id).to.equal('ab');
+      });
+    });
+
+    it.only('sorts reports by reported_date, not by parent vs. child', function(done) {
+      var expectedReports = [ { _id: 'aa', reported_date: 123 }, { _id: 'bb', reported_date: 345 } ];
+      stubSearch(null, [ expectedReports[0] ], 0);
+      stubSearch(null, [ expectedReports[1] ], 1);
+      runReportsTest(done, [childPerson, childPerson2], function(selected) {
+        chai.expect(search.callCount).to.equal(2);
+
+        var parentSearchArgs = search.args[0][1].subjectIds;
+        chai.assert.sameMembers(parentSearchArgs, [ doc._id ]);
+        var childSearchArgs = search.args[1][1].subjectIds;
+        chai.assert.sameMembers(childSearchArgs, [ childPerson._id, childPerson2._id ]);
+
+        chai.assert.deepEqual(selected.reports, [ expectedReports[1], expectedReports[0]]);
+      });
+    });
+
+    it('includes subjectIds in reports search so JSON reports are found', function(done) {
+      doc.patient_id = 'cd';
+      doc.place_id = 'ef';
+      stubSearch(null, [ { _id: 'ab' } ]);
+      runReportsTest(done, [], function() {
         chai.expect(search.callCount).to.equal(1);
         chai.expect(search.args[0][0]).to.equal('reports');
         chai.expect(search.args[0][1].subjectIds.length).to.equal(3);
-        chai.expect(search.args[0][1].subjectIds).to.include(childContactPerson._id);
+        chai.expect(search.args[0][1].subjectIds).to.include(doc._id);
         chai.expect(search.args[0][1].subjectIds).to.include('cd');
         chai.expect(search.args[0][1].subjectIds).to.include('ef');
       });
     });
-
   });
+
 });
