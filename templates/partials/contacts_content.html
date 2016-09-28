@@ -15,21 +15,21 @@
       <div class="body meta">
         <div class="hidden-xs card-title">
           <h3>
-            <i class="fa {{selected.icon}}"></i>
+            <i class="fa {{selected.doc.icon}}"></i>
             <span>{{selected.doc.name}}</span>
           </h3>
-          <i class="fa fa-star primary" ng-show="selected.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
-          <span ng-show="selected.isPrimaryContact && selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
-          <span ng-show="selected.isPrimaryContact && selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
+          <i class="fa fa-star primary" ng-show="selected.doc.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
+          <span ng-show="selected.doc.isPrimaryContact && selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
+          <span ng-show="selected.doc.isPrimaryContact && selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
         </div>
         <div class="visible-xs-block card-title">
           <h3>
-            <i class="fa {{selected.icon}}"></i>
+            <i class="fa {{selected.doc.icon}}"></i>
           </h3>
-          <span ng-show="!selected.isPrimaryContact" translate>contact.profile</span>
-          <i class="fa fa-star primary" ng-show="selected.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
-          <span ng-show="selected.isPrimaryContact && selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
-          <span ng-show="selected.isPrimaryContact && selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
+          <span ng-show="!selected.doc.isPrimaryContact" translate>contact.profile</span>
+          <i class="fa fa-star primary" ng-show="selected.doc.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
+          <span ng-show="selected.doc.isPrimaryContact && selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
+          <span ng-show="selected.doc.isPrimaryContact && selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
         </div>
         <div class="card">
           <div class="row">
@@ -116,7 +116,7 @@
               <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12">
                 <div>
                   <div class="col-sm-6 col-xs-12 cell-label">
-                    <i class="fa fa-star primary" ng-show="child.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
+                    <i class="fa fa-star primary" ng-show="child.doc.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
                     <span>{{child.doc.name}}</span>
                   </div>
                   <div class="hidden-xs col-sm-3" ng-bind-html="child.doc.title"></div>
@@ -124,7 +124,7 @@
                 </div>
                 <div>
                   <div class="hidden-xs col-sm-12">
-                    <span ng-show="child.isPrimaryContact" translate>Primary contact</span>
+                    <span ng-show="child.doc.isPrimaryContact" translate>Primary contact</span>
                   </div>
                   <div class="visible-xs-block col-xs-12">
                     <span class="col-sm-3" ng-bind-html="child.doc.title"></span>
@@ -135,7 +135,7 @@
               <div ng-show="selected.doc.type === 'clinic'" class="col-xs-11">
                 <div>
                   <div class="col-sm-6 col-xs-12 cell-label">
-                    <i class="fa fa-star primary" ng-show="child.isPrimaryContact" translate translate-attr-title="clinic.field.contact"></i>
+                    <i class="fa fa-star primary" ng-show="child.doc.isPrimaryContact" translate translate-attr-title="clinic.field.contact"></i>
                     <span>{{child.doc.name}}</span>
                   </div>
                   <div class="hidden-xs col-sm-3" ng-bind-html="child.doc.date_of_birth | age"></div>
@@ -143,7 +143,7 @@
                 </div>
                 <div>
                   <div class="hidden-xs col-sm-12">
-                    <span ng-show="child.isPrimaryContact" translate>clinic.field.contact</span>
+                    <span ng-show="child.doc.isPrimaryContact" translate>clinic.field.contact</span>
                   </div>
                   <div class="visible-xs-block col-xs-12">
                     <span class="col-sm-3" ng-bind-html="child.doc.date_of_birth | age"></span>
