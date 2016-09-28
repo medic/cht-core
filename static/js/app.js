@@ -11,14 +11,15 @@ require('nvd3');
 
 require('angular');
 require('angular-cookie');
+require('angular-pouchdb');
+require('angular-resource');
 require('angular-route');
+require('angular-sanitize');
+require('angular-translate');
+require('angular-translate-interpolation-messageformat');
 require('angular-ui-bootstrap');
 require('angular-ui-router');
-require('angular-translate');
 require('angularjs-nvd3-directives');
-require('angular-pouchdb');
-require('angular-sanitize');
-require('angular-resource');
 
 require('moment');
 require('moment/locale/es');
@@ -68,6 +69,7 @@ _.templateSettings = {
     $urlRouterProvider.when('', '/home');
     $translateProvider.useLoader('TranslationLoader', {});
     $translateProvider.useSanitizeValueStrategy('escape');
+    $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
     $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
     var isDevelopment = window.location.hostname === 'localhost';
     $compileProvider.debugInfoEnabled(isDevelopment);

@@ -27,6 +27,7 @@
     "font-awesome": "^4.6.3",
     "google-libphonenumber": "^1.0.24",
     "jquery": "^2.1.4",
+    "messageformat": "^1.0.0",
     "moment": "^2.14.1",
     "nools": "^0.4.1",
     "nvd3": "^1.1.15-beta",
