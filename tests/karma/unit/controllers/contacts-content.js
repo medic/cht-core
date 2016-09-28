@@ -17,14 +17,14 @@ describe('ContactsContentCtrl', function() {
     doc,
     getVisibleFields,
     idStateParam,
-    rulesEngineListen,
     scope,
     search,
     stubGetQuery,
     stubGetVisibleFields,
     stubFetchChildren,
-    stubRulesEngine,
-    stubSearch;
+    stubSearch,
+    stubTasksForContact,
+    tasksForContact;
 
   beforeEach(module('inboxApp'));
 
@@ -89,9 +89,9 @@ describe('ContactsContentCtrl', function() {
       getVisibleFields.returns(fields);
     };
 
-    rulesEngineListen = sinon.stub();
-    stubRulesEngine = function(err, tasks) {
-      rulesEngineListen.callsArgWith(2, err, tasks);
+    tasksForContact = sinon.stub();
+    stubTasksForContact = function(tasks) {
+      tasksForContact.callsArgWith(4, tasks);
     };
 
     createController = function() {
@@ -112,15 +112,15 @@ describe('ContactsContentCtrl', function() {
           }
         },
         'DB': db,
-        'RulesEngine': { listen: rulesEngineListen },
         'Search': search,
+        'TasksForContact': tasksForContact,
         'UserSettings': KarmaUtils.promiseService(null, '')
       });
     };
   }));
 
   afterEach(function() {
-    KarmaUtils.restore(rulesEngineListen, dbGet, dbQuery, getVisibleFields, search);
+    KarmaUtils.restore(dbGet, dbQuery, getVisibleFields, search);
   });
 
   describe('Place', function() {
@@ -360,8 +360,12 @@ describe('ContactsContentCtrl', function() {
 
     it('displays tasks for selected contact', function(done) {
       var task = { _id: 'aa', contact: { _id: doc._id } };
-      stubRulesEngine(null, [task]);
+      stubTasksForContact([task]);
       runTasksTest(done, [], function(selected) {
+        chai.assert.equal(tasksForContact.callCount, 1);
+        chai.assert.equal(tasksForContact.args[0][0], doc._id);
+        chai.assert.equal(tasksForContact.args[0][1], doc.type);
+        chai.assert.equal(tasksForContact.args[0][2], undefined);
         chai.assert.sameMembers(selected.tasks, [ task ]);
       });
     });
@@ -379,63 +383,13 @@ describe('ContactsContentCtrl', function() {
           contact: { _id: childPerson._id }
         }
       ];
-      stubRulesEngine(null, tasks);
+      stubTasksForContact(tasks);
       runTasksTest(done, [ childPerson ], function(selected) {
+        chai.assert.equal(tasksForContact.callCount, 1);
+        chai.assert.equal(tasksForContact.args[0][0], doc._id);
+        chai.assert.equal(tasksForContact.args[0][1], doc.type);
+        chai.assert.sameMembers(tasksForContact.args[0][2], [ childPerson._id ]);
         chai.assert.sameMembers(selected.tasks, tasks);
-      });
-    });
-
-    it('does not display tasks other contacts than selected place and child persons', function(done) {
-      var tasks = [
-        {
-          _id: 'taskForParent',
-          date: 'Wed Oct 19 2016 13:50:16 GMT+0200 (CEST)',
-          contact: { _id: 'yadayada' }
-        }
-      ];
-      stubRulesEngine(null, tasks);
-      runTasksTest(done, [ childPerson ], function(selected) {
-        chai.assert.sameMembers(selected.tasks, []);
-      });
-    });
-
-    it('displays tasks in order of date', function(done) {
-      var tasks = [
-        {
-          _id: 'taskForLater',
-          date: 'Wed Oct 19 2016 13:50:16 GMT+0200 (CEST)',
-          contact: { _id: doc._id }
-        },
-        {
-          _id: 'urgentTask',
-          date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
-          contact: { _id: doc._id }
-        }
-      ];
-      stubRulesEngine(null, tasks);
-      runTasksTest(done, [], function(selected) {
-        chai.assert.deepEqual(selected.tasks, [tasks[1], tasks[0]]);
-      });
-    });
-
-    it('displays only unresolved tasks', function(done) {
-      var tasks = [
-        {
-          _id: 'resolvedTask',
-          date: 'Wed Oct 19 2016 13:50:16 GMT+0200 (CEST)',
-          contact: { _id: doc._id },
-          resolved: true
-        },
-        {
-          _id: 'unresolvedTask',
-          date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
-          contact: { _id: doc._id },
-          resolved: false
-        }
-      ];
-      stubRulesEngine(null, tasks);
-      runTasksTest(done, [], function(selected) {
-        chai.assert.sameMembers(selected.tasks, [tasks[1]]);
       });
     });
   });

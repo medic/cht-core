@@ -17,8 +17,8 @@ var _ = require('underscore'),
       Changes,
       ContactSchema,
       DB,
-      RulesEngine,
       Search,
+      TasksForContact,
       UserSettings
     ) {
 
@@ -249,54 +249,21 @@ var _ = require('underscore'),
         });
       };
 
-      var mergeTasks = function(existingTasks, newTasks) {
-        $log.debug('Updating contact tasks', existingTasks, newTasks);
-        if (existingTasks) {
-          newTasks.forEach(function(task) {
-            for (var i = 0; i < existingTasks.length; i++) {
-              if (existingTasks[i]._id === task._id) {
-                existingTasks[i] = task;
-                return;
-              }
-            }
-            existingTasks.push(task);
-          });
-        }
-      };
-
-      var sortTasks = function(tasks) {
-        tasks.sort(function(a, b) {
-          var dateA = new Date(a.date).getTime();
-          var dateB = new Date(b.date).getTime();
-          return dateA - dateB;
-        });
-      };
-
       var getTasks = function() {
         $scope.selected.tasks = [];
-        if ($scope.selected.doc.type === 'district_hospital' ||
-            $scope.selected.doc.type === 'health_center') {
-          return;
-        }
-        var patientIds = [];
-        if ($scope.selected.doc.type === 'clinic' &&
-          $scope.selected.children && $scope.selected.children.persons) {
-          patientIds = _.pluck($scope.selected.children.persons, 'id');
-        }
-        patientIds.push($scope.selected.doc._id);
-        RulesEngine.listen('ContactsContentCtrl', 'task', function(err, tasks) {
-          if (err) {
-            return $log.error('Error getting tasks', err);
-          }
-          var newTasks = _.filter(tasks, function(task) {
-            return !task.resolved && task.contact && _.contains(patientIds, task.contact._id);
+        var childrenPersonIds = $scope.selected.children && $scope.selected.children.persons &&
+          _.pluck($scope.selected.children.persons, 'id');
+        TasksForContact(
+          $scope.selected.doc._id,
+          $scope.selected.doc.type,
+          childrenPersonIds,
+          'ContactsContentCtrl',
+          function(tasks) {
+            $scope.selected.tasks = tasks;
+            if (!$scope.$$phase) {
+              $scope.$apply();
+            }
           });
-          mergeTasks($scope.selected.tasks, newTasks);
-          sortTasks($scope.selected.tasks);
-          if (!$scope.$$phase) {
-            $scope.$apply();
-          }
-        });
       };
 
       var selectContact = function(id) {
