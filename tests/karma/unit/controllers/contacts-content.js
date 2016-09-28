@@ -91,7 +91,7 @@ describe('ContactsContentCtrl', function() {
 
     tasksForContact = sinon.stub();
     stubTasksForContact = function(tasks) {
-      tasksForContact.callsArgWith(4, tasks);
+      tasksForContact.callsArgWith(4, true, tasks);
     };
 
     createController = function() {
@@ -367,6 +367,7 @@ describe('ContactsContentCtrl', function() {
         chai.assert.equal(tasksForContact.args[0][1], doc.type);
         chai.assert.equal(tasksForContact.args[0][2], undefined);
         chai.assert.sameMembers(selected.tasks, [ task ]);
+        chai.assert(selected.areTasksEnabled);
       });
     });
 
@@ -390,6 +391,7 @@ describe('ContactsContentCtrl', function() {
         chai.assert.equal(tasksForContact.args[0][1], doc.type);
         chai.assert.sameMembers(tasksForContact.args[0][2], [ childPerson._id ]);
         chai.assert.sameMembers(selected.tasks, tasks);
+        chai.assert(selected.areTasksEnabled);
       });
     });
   });

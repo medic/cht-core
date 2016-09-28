@@ -282,7 +282,8 @@ var _ = require('underscore'),
           $scope.selected.doc.type,
           childrenPersonIds,
           'ContactsContentCtrl',
-          function(tasks) {
+          function(areTasksEnabled, tasks) {
+            $scope.selected.areTasksEnabled = areTasksEnabled;
             $scope.selected.tasks = tasks;
             if (!$scope.$$phase) {
               $scope.$apply();
