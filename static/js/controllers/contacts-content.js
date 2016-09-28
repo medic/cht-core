@@ -268,13 +268,7 @@ var _ = require('underscore'),
         tasks.sort(function(a, b) {
           var dateA = new Date(a.date).getTime();
           var dateB = new Date(b.date).getTime();
-          if (dateA < dateB) {
-            return -1;
-          }
-          if (dateA > dateB) {
-            return 1;
-          }
-          return 0;
+          return dateA - dateB;
         });
       };
 
