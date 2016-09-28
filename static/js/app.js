@@ -17,6 +17,7 @@ require('angular-route');
 require('angular-sanitize');
 require('angular-translate');
 require('angular-translate-interpolation-messageformat');
+require('angular-translate-handler-log');
 require('angular-ui-bootstrap');
 require('angular-ui-router');
 require('angularjs-nvd3-directives');
@@ -70,6 +71,7 @@ _.templateSettings = {
     $translateProvider.useLoader('TranslationLoader', {});
     $translateProvider.useSanitizeValueStrategy('escape');
     $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
+    $translateProvider.useMissingTranslationHandlerLog();
     $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
     var isDevelopment = window.location.hostname === 'localhost';
     $compileProvider.debugInfoEnabled(isDevelopment);

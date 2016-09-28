@@ -1,12 +1,12 @@
 <div class="right-pane navigation">
   <span ng-show="cancelCallback" class="filter-bar-back">
     <a ng-click="navigationCancel()">
-      <span class="fa fa-times" title="{{'Back' | translate}}"></span>
+      <span class="fa fa-times" translate translate-attr-title="close"></span>
     </a>
   </span>
   <span ng-hide="cancelCallback" class="filter-bar-back">
     <a ng-click="clearSelected()">
-      <span class="fa fa-chevron-left" title="{{'Close' | translate}}"></span>
+      <span class="fa fa-chevron-left" translate translate-attr-title="Back"></span>
     </a>
   </span>
   <h2>{{title}}</h2>
