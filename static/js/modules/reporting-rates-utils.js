@@ -66,7 +66,7 @@ var _ = require('underscore'),
 
     // take a moment or date object and return the week number
     var getWeek = function(date) {
-        return moment(date).week();
+        return moment(date).isoWeek();
     };
 
     // take a moment or date object and return the month number
@@ -186,10 +186,10 @@ var _ = require('underscore'),
 
         switch(selected_time_unit) {
             case 'week':
+                date = now.clone().subtract(1, 'weeks'); // get last week
                 weeks = (q.quantity ? parseInt(q.quantity, 10) : 3);
-                startweek = q.startweek || dateToWeekStr(now);
+                startweek = q.startweek || dateToWeekStr(date);
                 range = _.range(weeks);
-                date = now;
 
                 _.each(range, function() {
                     list.push(moment(date));
