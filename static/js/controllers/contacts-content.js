@@ -32,7 +32,7 @@ var _ = require('underscore'),
       $scope.filterTaskWeeksForward = function(task) {
         return !taskEndDate || taskEndDate.isAfter(task.date);
       };
-      $scope.filterReportWeeksBack = function(report) {
+      $scope.filterReportMonthsBack = function(report) {
         return !reportStartDate || reportStartDate.isBefore(report.reported_date);
       };
 
