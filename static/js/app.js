@@ -70,7 +70,6 @@ _.templateSettings = {
     $translateProvider.useLoader('TranslationLoader', {});
     $translateProvider.useSanitizeValueStrategy('escape');
     $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
-    $translateProvider.preferredLanguage('en');
     $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
     var isDevelopment = window.location.hostname === 'localhost';
     $compileProvider.debugInfoEnabled(isDevelopment);
