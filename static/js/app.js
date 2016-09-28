@@ -16,7 +16,7 @@ require('angular-resource');
 require('angular-route');
 require('angular-sanitize');
 require('angular-translate');
-require('../../node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat');
+require('angular-translate-interpolation-messageformat');
 require('angular-ui-bootstrap');
 require('angular-ui-router');
 require('angularjs-nvd3-directives');

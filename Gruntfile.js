@@ -60,7 +60,8 @@ module.exports = function(grunt) {
             'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber',
             'worker-pouch/workerified': './node_modules/worker-pouch/lib/workerified/',
             'pouchdb-generate-replication-id': './static/js/modules/pouchdb-generate-replication-id-patched',
-            'pouchdb-generate-replication-id-original': './node_modules/pouchdb-generate-replication-id'
+            'pouchdb-generate-replication-id-original': './node_modules/pouchdb-generate-replication-id',
+            'angular-translate-interpolation-messageformat': './node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat'
           },
         },
       }
