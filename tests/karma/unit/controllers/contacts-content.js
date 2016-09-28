@@ -174,7 +174,7 @@ describe('ContactsContentCtrl', function() {
     it('contact person gets displayed on top', function(done) {
       runPlaceTest(done, [childPerson, childContactPerson], function(selected) {
         assert.deepEqual(selected.children.persons[0].doc, childContactPerson);
-        assert(selected.children.persons[0].doc.isPrimaryContact, 'has isPrimaryContact flag');
+        assert(selected.children.persons[0].isPrimaryContact, 'has isPrimaryContact flag');
       });
     });
 
@@ -244,20 +244,20 @@ describe('ContactsContentCtrl', function() {
 
       it('if selected doc is primary contact, the isPrimaryContact flag should be true', function(done) {
         runPersonTest(done, doc, null, function(selected) {
-          assert(selected.doc.isPrimaryContact, 'isPrimaryContact flag should be true');
+          assert(selected.isPrimaryContact, 'isPrimaryContact flag should be true');
         });
       });
 
       it('if selected doc has no parent field, the isPrimaryContact flag should be false', function(done) {
         delete childContactPerson.parent;
         runPersonTest(done, doc, null, function(selected) {
-          assert(!selected.doc.isPrimaryContact, 'isPrimaryContact flag should be false');
+          assert(!selected.isPrimaryContact, 'isPrimaryContact flag should be false');
         });
       });
 
       it('if selected doc\'s parent is not found, the isPrimaryContact flag should be false', function(done) {
         runPersonTest(done, doc, { status: 404 }, function(selected) {
-          assert(!selected.doc.isPrimaryContact, 'isPrimaryContact flag should be false');
+          assert(!selected.isPrimaryContact, 'isPrimaryContact flag should be false');
         });
       });
 

@@ -148,7 +148,7 @@ var _ = require('underscore'),
           return child.doc._id === contactPersonId;
         });
         if (split[0].length) {
-          split[0][0].doc.isPrimaryContact = true;
+          split[0][0].isPrimaryContact = true;
         }
         return split[0].concat(split[1]);
       };
@@ -214,9 +214,9 @@ var _ = require('underscore'),
                   doc: contactDoc,
                   reports: reports
                 };
-                selected.doc.icon = ContactSchema.get(contactDoc.type).icon;
-                selected.doc.label = ContactSchema.get(contactDoc.type).label;
-                selected.doc.isPrimaryContact = isPrimaryContact;
+                selected.icon = ContactSchema.get(contactDoc.type).icon;
+                selected.label = ContactSchema.get(contactDoc.type).label;
+                selected.isPrimaryContact = isPrimaryContact;
                 selected.fields = selectedSchemaVisibleFields(selected);
                 if (!children || (!children.places && !children.persons)) {
                   selected.reports = sortReports(selected.reports);
