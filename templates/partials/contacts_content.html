@@ -200,8 +200,8 @@
           </div>
           <div class="row" ng-show="!filteredTasks.length">
             <div class="cell">
-              <span ng-show="!taskWeeksBack" translate>tasks.notasks</span>
-              <span ng-show="taskWeeksBack" translate translate-values="{WEEKS: taskWeeksBack}" translate-interpolation="messageformat">tasks.notasks.n.weeks</span>
+              <span ng-show="!taskWeeksBack" translate>tasks.none</span>
+              <span ng-show="taskWeeksBack" translate translate-values="{WEEKS: taskWeeksBack}" translate-interpolation="messageformat">tasks.none.n.weeks</span>
             </div>
           </div>
         </div>
@@ -229,8 +229,8 @@
         </div>
         <div class="row" ng-show="!filteredReports.length">
           <div class="cell">
-            <span ng-show="!reportMonthsBack" translate>reports.noreports</span>
-            <span ng-show="reportMonthsBack" translate translate-values="{MONTHS: reportMonthsBack}" translate-interpolation="messageformat">reports.noreports.n.months</span>
+            <span ng-show="!reportMonthsBack" translate>reports.none</span>
+            <span ng-show="reportMonthsBack" translate translate-values="{MONTHS: reportMonthsBack}" translate-interpolation="messageformat">reports.none.n.months</span>
           </div>
         </div>
       </div>
