@@ -189,10 +189,10 @@
         </div>
         <div class="card action-list tasks">
           <div class="accent"></div>
-          <div class="row" ng-show="!selected.tasks || !selected.tasks.length">
+          <div class="row" ng-show="!(selected.tasks | filter:filterTaskWeeksForward).length">
             <div class="cell">
               <span ng-show="!taskWeeksBack" translate>tasks.notasks</span>
-              <span ng-show="taskWeeksBack" translate translate-values="{WEEKS: {{taskWeeksBack}}}" translate-interpolation="messageformat">tasks.notasks.n.weeks</span>
+              <span ng-show="taskWeeksBack" translate translate-values="{WEEKS: taskWeeksBack}" translate-interpolation="messageformat">tasks.notasks.n.weeks</span>
             </div>
           </div>
           <div class="row" ng-repeat="task in selected.tasks | filter:filterTaskWeeksForward">
@@ -222,7 +222,7 @@
         <div class="row" ng-show="!(selected.reports | filter:filterReportMonthsBack).length">
           <div class="cell">
             <span ng-show="!reportMonthsBack" translate>reports.noreports</span>
-            <span ng-show="reportMonthsBack" translate translate-values="{MONTHS: {{reportMonthsBack}}}" translate-interpolation="messageformat">reports.noreports.n.months</span>
+            <span ng-show="reportMonthsBack" translate translate-values="{MONTHS: reportMonthsBack}" translate-interpolation="messageformat">reports.noreports.n.months</span>
           </div>
         </div>
         <div class="row" ng-repeat="report in selected.reports | filter:filterReportMonthsBack track by report._id">
