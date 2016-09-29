@@ -1,7 +1,8 @@
 /* jshint node: true */
 'use strict';
 
-var _ = require('underscore');
+var _ = require('underscore'),
+  moment = require('moment');
 var inboxServices = angular.module('inboxServices');
 
 /**
@@ -37,6 +38,14 @@ inboxServices.factory('TasksForContact',
       });
     };
 
+    var addLateStatus = function(tasks) {
+      tasks.forEach(function(task) {
+        var momentDate = moment(task.date);
+        var now = moment();
+        task.isLate = momentDate.isBefore(now);
+      });
+    };
+
     var areTasksEnabled = function(docType) {
       return RulesEngine.enabled && (docType === 'clinic' || docType === 'person');
     };
@@ -58,6 +67,7 @@ inboxServices.factory('TasksForContact',
         var newTasks = _.filter(tasks, function(task) {
           return !task.resolved && task.contact && _.contains(contactIds, task.contact._id);
         });
+        addLateStatus(newTasks);
         mergeTasks(taskList, newTasks);
         sortTasks(taskList);
         listener(true, taskList);

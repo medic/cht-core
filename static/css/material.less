@@ -42,7 +42,7 @@
   .tasks-count {
     text-align: right;
   }
-  .action-list.reports {
+  .action-list.reports, .action-list.tasks {
     a.cell {
       font-weight: bold;
       .cell-label {
@@ -50,10 +50,12 @@
         font-size: 1.429em;
       }
       .action-icon {
-        font-size: 3em;
         padding-right: 15px;
       }
     }
+  }
+  .action-list.reports a.cell .action-icon {
+    font-size: 3em;
   }
   .action-list {
     border-bottom: 0;
