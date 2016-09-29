@@ -190,7 +190,13 @@ var _ = require('underscore'),
             subjectIds.push(contactDoc.place_id);
           }
         });
-        return Search('reports', { subjectIds: subjectIds });
+        return Search('reports', { subjectIds: subjectIds }, { include_docs: true })
+          .then(function(reports) {
+            reports.forEach(function(report) {
+              report.valid = !report.errors || !report.errors.length;
+            });
+            return reports;
+          });
       };
 
       var sortReports = function(reports) {

@@ -220,12 +220,7 @@
       <div class="card action-list reports">
         <div class="accent"></div>
         <div class="row" ng-repeat="report in selected.reports | filter:filterReport as filteredReports track by report._id">
-          <div class="col-sm-12">
-            <a ui-sref="reports.detail({ id: report._id })" class="cell">
-              <div ng-bind-html="report.reported_date | relativeDate" class="pull-right"></div>
-              <div>{{report | summary:forms}}</div>
-            </a>
-          </div>
+            <ng-include src="'templates/partials/contacts_content_report.html'"></ng-include>
         </div>
         <div class="row" ng-show="!filteredReports.length">
           <div class="cell">
