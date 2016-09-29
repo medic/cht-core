@@ -76,7 +76,8 @@ module.exports = {
         return Boolean(
             doc &&
             doc.form &&
-            doc.patient_id &&
+            doc.fields &&
+            doc.fields.patient_id &&
             !hasRun(doc) &&
             utils.getClinicPhone(doc)
         );
@@ -103,7 +104,7 @@ module.exports = {
     onMatch: function(change, db, audit, callback) {
         var self = module.exports,
             doc = change.doc,
-            patient_id = doc.patient_id,
+            patient_id = doc.fields && doc.fields.patient_id,
             config = module.exports.getConfig(),
             eventType = getEventType(config, doc);
 

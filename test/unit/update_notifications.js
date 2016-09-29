@@ -39,7 +39,7 @@ exports['filter empty doc does not match'] = function(test) {
 
 exports['filter missing form does not match'] = function(test) {
     test.ok(!transition.filter({
-        patient_id: 'x',
+        fields: { patient_id: 'x' }
     }));
     test.done();
 };
@@ -48,7 +48,7 @@ exports['filter missing clinic phone does not match'] = function(test) {
     sinon.stub(utils, 'getClinicPhone').returns(null);
     test.ok(!transition.filter({
         form: 'x',
-        patient_id: 'x'
+        fields: { patient_id: 'x' }
     }));
     test.done();
 };
@@ -57,7 +57,7 @@ exports['filter already run does not match'] = function(test) {
     sinon.stub(utils, 'getClinicPhone').returns('+555');
     test.ok(!transition.filter({
         form: 'x',
-        patient_id: 'x',
+        fields: { patient_id: 'x' },
         transitions: {
             update_notifications: { last_rev: 9, seq: 1854, ok: true }
         }
@@ -69,7 +69,7 @@ exports['filter match'] = function(test) {
     sinon.stub(utils, 'getClinicPhone').returns('+555');
     test.ok(transition.filter({
         form: 'x',
-        patient_id: 'x'
+        fields: { patient_id: 'x' }
     }));
     test.done();
 };
@@ -95,7 +95,7 @@ exports['no configured on or off form returns false'] = function(test) {
     transition.onMatch({
         doc: {
             form: 'on',
-            patient_id: 'x'
+            fields: { patient_id: 'x' }
         }
     }, {}, {}, function(err, complete) {
         test.equals(err, null);
@@ -195,7 +195,7 @@ exports['no configured on or off message returns false'] = function(test) {
     transition.onMatch({
         doc: {
             form: 'off',
-            patient_id: 'x'
+            fields: { patient_id: 'x' }
         }
     }, {}, {}, function(err, complete) {
         test.equals(err, null);
@@ -207,7 +207,7 @@ exports['no configured on or off message returns false'] = function(test) {
 exports['registration not found adds error and response'] = function(test) {
     var doc = {
         form: 'on',
-        patient_id: 'x',
+        fields: { patient_id: 'x' },
         contact: { phone: 'x' }
     };
 
@@ -248,7 +248,7 @@ exports['validation failure adds error and response'] = function(test) {
 
     var doc = {
         form: 'on',
-        patient_id: 'x',
+        fields: { patient_id: 'x' },
         contact: { phone: 'x' }
     };
 
@@ -299,7 +299,7 @@ exports['mute responds correctly'] = function(test) {
 
     var doc = {
         form: 'off',
-        patient_id: '123',
+        fields: { patient_id: '123' },
         contact: {
             phone: '+1234',
             name: 'woot'
@@ -319,7 +319,7 @@ exports['mute responds correctly'] = function(test) {
         messages: [{
             event_type: 'on_mute',
             message: [{
-                content: 'Thank you {{contact.name}}, no further notifications regarding {{fields.patient_name}} will be sent until you submit START {{patient_id}}.',
+                content: 'Thank you {{contact.name}}, no further notifications regarding {{patient_name}} will be sent until you submit START {{patient_id}}.',
                 locale: 'en'
             }]
         }],
