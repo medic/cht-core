@@ -151,7 +151,7 @@ exports['getDOB uses days since dob if available'] = function(test) {
 exports['getDOB falls back to today if necessary'] = function(test) {
     var today = 1474942416907,
         expected = moment(today).startOf('day').valueOf();
-    sinon.stub(date, 'getDate').returns();
+    sinon.stub(date, 'getDate').returns(today);
     sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
     sinon.stub(transition, 'getDaysSinceDOB').returns(undefined);
     test.equals(transition.getDOB({ fields: {} }).valueOf(), expected);
