@@ -75,7 +75,7 @@ var getName = exports.getName = function(doc) {
 
 // take a moment or date object and return the week number
 var getWeek = function(date) {
-    return moment(date).week();
+    return moment(date).isoWeek();
 };
 
 // take a moment or date object and return the month number
@@ -250,8 +250,8 @@ exports.getDates = function (q, reporting_freq) {
     switch(selected_time_unit) {
         case 'week':
             var weeks = (q.quantity ? parseInt(q.quantity, 10) : 3),
-                startweek = q.startweek || exports.dateToWeekStr(now),
-                date = now,
+                date = now.clone().subtract(1, 'weeks'), // start from last week
+                startweek = q.startweek || exports.dateToWeekStr(date),
                 range = _.range(weeks);
 
             _.each(range, function() {
