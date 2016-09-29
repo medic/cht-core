@@ -744,7 +744,7 @@ exports['reporting.getRowsHC - rows are 1-indexed weeks'] = function (test) {
     test.equals(row.records.length, 13);
     test.same(row.records[0].week_number, 9);
     test.same(row.records[8].week_number, 1);
-    test.same(row.records[9].week_number, 53);
+    test.same(row.records[9].week_number, 52);
     test.done();
 };
 
