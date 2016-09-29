@@ -73,7 +73,7 @@ var _ = require('underscore'),
     // to be used with getWeek()
     var getWeekYear = function(date) {
         return moment(date).isoWeekYear();
-    }
+    };
 
     // take a moment or date object and return the month number
     var getMonth = function(date) {
