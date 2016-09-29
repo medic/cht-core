@@ -189,19 +189,19 @@
         </div>
         <div class="card action-list tasks">
           <div class="accent"></div>
-          <div class="row" ng-show="!(selected.tasks | filter:filterTaskWeeksForward).length">
-            <div class="cell">
-              <span ng-show="!taskWeeksBack" translate>tasks.notasks</span>
-              <span ng-show="taskWeeksBack" translate translate-values="{WEEKS: taskWeeksBack}" translate-interpolation="messageformat">tasks.notasks.n.weeks</span>
-            </div>
-          </div>
-          <div class="row" ng-repeat="task in selected.tasks | filter:filterTaskWeeksForward">
+          <div class="row" ng-repeat="task in selected.tasks | filter:filterTaskWeeksForward as filteredTasks">
             <div class="col-sm-12">
               <a ui-sref="tasks.detail({ id: task._id })" class="cell">
                 <div ng-bind-html="task.date | relativeDay" class="pull-right"></div>
                 <span ng-bind-html="task.icon | resourceIcon" class="action-icon"></span>
                 <div>{{task.title | translateFrom:task}}</div>
               </a>
+            </div>
+          </div>
+          <div class="row" ng-show="!filteredTasks.length">
+            <div class="cell">
+              <span ng-show="!taskWeeksBack" translate>tasks.notasks</span>
+              <span ng-show="taskWeeksBack" translate translate-values="{WEEKS: taskWeeksBack}" translate-interpolation="messageformat">tasks.notasks.n.weeks</span>
             </div>
           </div>
         </div>
@@ -219,18 +219,18 @@
       </div>
       <div class="card action-list reports">
         <div class="accent"></div>
-        <div class="row" ng-show="!(selected.reports | filter:filterReportMonthsBack).length">
-          <div class="cell">
-            <span ng-show="!reportMonthsBack" translate>reports.noreports</span>
-            <span ng-show="reportMonthsBack" translate translate-values="{MONTHS: reportMonthsBack}" translate-interpolation="messageformat">reports.noreports.n.months</span>
-          </div>
-        </div>
-        <div class="row" ng-repeat="report in selected.reports | filter:filterReportMonthsBack track by report._id">
+        <div class="row" ng-repeat="report in selected.reports | filter:filterReportMonthsBack as filteredReports track by report._id">
           <div class="col-sm-12">
             <a ui-sref="reports.detail({ id: report._id })" class="cell">
               <div ng-bind-html="report.reported_date | relativeDate" class="pull-right"></div>
               <div>{{report | summary:forms}}</div>
             </a>
+          </div>
+        </div>
+        <div class="row" ng-show="!filteredReports.length">
+          <div class="cell">
+            <span ng-show="!reportMonthsBack" translate>reports.noreports</span>
+            <span ng-show="reportMonthsBack" translate translate-values="{MONTHS: reportMonthsBack}" translate-interpolation="messageformat">reports.noreports.n.months</span>
           </div>
         </div>
       </div>
