@@ -68,7 +68,7 @@ var _ = require('underscore'),
         });
       };
 
-      var genericSort = function(lhs, rhs) {
+      var genericSortFn = function(lhs, rhs) {
         if (!lhs.doc.name && !rhs.doc.name) {
           return 0;
         }
@@ -97,7 +97,7 @@ var _ = require('underscore'),
           if (!lhs.doc.date_of_birth && rhs.doc.date_of_birth) {
             return -1;
           }
-          return genericSort(lhs, rhs);
+          return genericSortFn(lhs, rhs);
         });
       };
 
@@ -105,12 +105,12 @@ var _ = require('underscore'),
         if (!places) {
           return;
         }
-        places.sort(genericSort);
+        places.sort(genericSortFn);
       };
 
       var getChildren = function(contactDoc) {
         if (contactDoc.type === 'person') {
-          return $q.resolve();
+          return $q.resolve({ persons: undefined, places: undefined });
         }
         var options = {
           startkey: [ contactDoc._id ],
@@ -139,23 +139,29 @@ var _ = require('underscore'),
         return fields;
       };
 
-      var childrenWithContactPersonOnTop = function(children, parent) {
+      var shiftAndMarkContactPerson = function(children, parent) {
+        if (!children || !children.length) {
+          return;
+        }
         var contactPersonId = parent.contact && parent.contact._id;
         if (!contactPersonId) {
-          return children;
+          return;
         }
-        var split = _.partition(children, function(child) {
+        var primaryContactIdx = children.findIndex(function(child) {
           return child.doc._id === contactPersonId;
         });
-        if (split[0].length) {
-          split[0][0].isPrimaryContact = true;
+        if (primaryContactIdx < 0) {
+          return;
         }
-        return split[0].concat(split[1]);
+        var primaryContact = children[primaryContactIdx];
+        primaryContact.isPrimaryContact = true;
+        children.splice(primaryContactIdx, 1);
+        children.unshift(primaryContact);
       };
 
       var isPersonAndPrimaryContact = function(contactDoc) {
         if (contactDoc.type !== 'person') {
-          return $q.resolve();
+          return $q.resolve(false);
         }
         if (!contactDoc.parent || !contactDoc.parent._id) {
           return $q.resolve(false);
@@ -187,7 +193,7 @@ var _ = require('underscore'),
       };
 
       var sortReports = function(reports) {
-        return reports.sort(function(a, b) {
+        reports.sort(function(a, b) {
           if (a.reported_date > b.reported_date) {
             return -1;
           }
@@ -196,6 +202,22 @@ var _ = require('underscore'),
           }
           return 0;
         });
+      };
+
+      var sortChildPersons = function(persons, contactDoc) {
+        if (persons && persons.length) {
+          if (contactDoc.type === 'clinic') {
+            sortFamilyMembers(persons);
+          }
+          shiftAndMarkContactPerson(persons, contactDoc);
+        }
+      };
+
+      var getPersonReports = function(persons) {
+        if (persons && persons.length) {
+          return getReports(persons.map(function(child) { return child.doc; }));
+        }
+        return $q.resolve([]);
       };
 
       var getInitialData = function(contactId) {
@@ -218,26 +240,28 @@ var _ = require('underscore'),
                 selected.label = ContactSchema.get(contactDoc.type).label;
                 selected.isPrimaryContact = isPrimaryContact;
                 selected.fields = selectedSchemaVisibleFields(selected);
-                if (!children || (!children.places && !children.persons)) {
-                  selected.reports = sortReports(selected.reports);
-                  return selected;
+
+                sortChildPersons(children.persons, contactDoc);
+
+                if (children.places && children.places.length) {
+                  var childPlacesSchema = ContactSchema.get(children.places[0].doc.type);
+                  children.childPlacesLabel = childPlacesSchema.pluralLabel;
+                  children.childPlacesIcon = childPlacesSchema.icon;
                 }
 
-                if (selected.doc.type === 'clinic') {
-                  sortFamilyMembers(children.persons);
-                }
-                children.persons = childrenWithContactPersonOnTop(children.persons, contactDoc);
                 selected.children = children;
-                if (selected.children.places && selected.children.places.length) {
-                  var childPlacesSchema = ContactSchema.get(selected.children.places[0].doc.type);
-                  selected.children.childPlacesLabel = childPlacesSchema.pluralLabel;
-                  selected.children.childPlacesIcon = childPlacesSchema.icon;
-                }
-                return getReports(children.persons.map(function(child) { return child.doc; }))
+
+                return getPersonReports(children.persons)
                   .then(function(childrenReports) {
-                    selected.reports = sortReports(selected.reports.concat(childrenReports));
+                    if (childrenReports) {
+                      selected.reports = childrenReports.concat(selected.reports);
+                    }
                     return selected;
                   });
+              })
+              .then(function(selected) {
+                sortReports(selected.reports);
+                return selected;
               });
           });
       };
@@ -278,7 +302,7 @@ var _ = require('underscore'),
           })
           .catch(function(err) {
             $scope.clearSelected();
-            $log.error('Error fetching doc', err);
+            $log.error('Error setting up ContactsContentCtrl', err);
           });
       };
 

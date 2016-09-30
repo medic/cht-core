@@ -37,22 +37,26 @@ inboxServices.factory('TasksForContact',
       });
     };
 
-    var getTasks = function(docId, docType, childrenPersonIds, listenerName, listener) {
-      var taskList = [];
-      if (docType !== 'clinic' &&
-          docType !== 'person') {
-        return listener([]);
-      }
-      var patientIds = [docId];
+    var areTasksEnabled = function(docType) {
+      return docType === 'clinic' || docType === 'person';
+    };
+
+    var getIdsForTasks = function(docId, docType, childrenPersonIds) {
+      var contactIds = [docId];
       if (docType === 'clinic' && childrenPersonIds && childrenPersonIds.length) {
-        patientIds = patientIds.concat(childrenPersonIds);
+        contactIds = contactIds.concat(childrenPersonIds);
       }
+      return contactIds;
+    };
+
+    var getTasks = function(contactIds, listenerName, listener) {
+      var taskList = [];
       RulesEngine.listen(listenerName, 'task', function(err, tasks) {
         if (err) {
           return $log.error('Error getting tasks', err);
         }
         var newTasks = _.filter(tasks, function(task) {
-          return !task.resolved && task.contact && _.contains(patientIds, task.contact._id);
+          return !task.resolved && task.contact && _.contains(contactIds, task.contact._id);
         });
         mergeTasks(taskList, newTasks);
         sortTasks(taskList);
@@ -60,6 +64,12 @@ inboxServices.factory('TasksForContact',
       });
     };
 
-    return getTasks;
+    return function(docId, docType, childrenPersonIds, listenerName, listener) {
+      if (!areTasksEnabled(docType)) {
+        return listener([]);
+      }
+      var contactIds = getIdsForTasks(docId, docType, childrenPersonIds);
+      getTasks(contactIds, listenerName, listener);
+    };
 
   });

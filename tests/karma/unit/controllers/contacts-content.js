@@ -163,7 +163,7 @@ describe('ContactsContentCtrl', function() {
 
     it('if no child persons, child places get displayed', function(done) {
       runPlaceTest(done, [childPlace], function(selected) {
-        assert.equal(selected.children.persons.length, 0);
+        assert.equal(selected.children.persons, undefined);
         assert.equal(selected.children.places.length, 1);
         assert.deepEqual(selected.children.places[0].doc, childPlace);
         assert.deepEqual(selected.children.childPlacesLabel, childPlacePluralLabel);
