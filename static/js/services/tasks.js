@@ -38,7 +38,7 @@ inboxServices.factory('TasksForContact',
     };
 
     var areTasksEnabled = function(docType) {
-      return docType === 'clinic' || docType === 'person';
+      return RulesEngine.enabled && (docType === 'clinic' || docType === 'person');
     };
 
     var getIdsForTasks = function(docId, docType, childrenPersonIds) {
@@ -60,13 +60,14 @@ inboxServices.factory('TasksForContact',
         });
         mergeTasks(taskList, newTasks);
         sortTasks(taskList);
-        listener(taskList);
+        listener(true, taskList);
       });
     };
 
+    /** Listener format : function(areTasksEnabled, newTasks) */
     return function(docId, docType, childrenPersonIds, listenerName, listener) {
       if (!areTasksEnabled(docType)) {
-        return listener([]);
+        return listener(false, []);
       }
       var contactIds = getIdsForTasks(docId, docType, childrenPersonIds);
       getTasks(contactIds, listenerName, listener);

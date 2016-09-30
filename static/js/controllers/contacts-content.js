@@ -29,25 +29,26 @@ var _ = require('underscore'),
       var taskEndDate,
           reportStartDate;
 
-      $scope.filterTaskWeeksForward = function(task) {
+
+      $scope.filterTasks = function(task) {
         return !taskEndDate || taskEndDate.isAfter(task.date);
       };
-      $scope.filterReportWeeksBack = function(report) {
+      $scope.filterReports = function(report) {
         return !reportStartDate || reportStartDate.isBefore(report.reported_date);
       };
 
-      $scope.setReportMonthsFilter = function(months) {
-        $scope.reportMonthsBack = months;
+      $scope.setReportsTimeWindowMonths = function(months) {
+        $scope.reportsTimeWindowMonths = months;
         reportStartDate = months ? moment().subtract(months, 'months') : null;
       };
 
-      $scope.setTaskWeeksFilter = function(weeks) {
-        $scope.taskWeeksBack = weeks;
+      $scope.setTasksTimeWindowWeeks = function(weeks) {
+        $scope.tasksTimeWindowWeeks = weeks;
         taskEndDate = weeks ? moment().add(weeks, 'weeks') : null;
       };
 
-      $scope.setTaskWeeksFilter(1);
-      $scope.setReportMonthsFilter(3);
+      $scope.setTasksTimeWindowWeeks(1);
+      $scope.setReportsTimeWindowMonths(3);
 
       var getHomePlaceId = function() {
         return UserSettings()
@@ -282,7 +283,8 @@ var _ = require('underscore'),
           $scope.selected.doc.type,
           childrenPersonIds,
           'ContactsContentCtrl',
-          function(tasks) {
+          function(areTasksEnabled, tasks) {
+            $scope.selected.areTasksEnabled = areTasksEnabled;
             $scope.selected.tasks = tasks;
             if (!$scope.$$phase) {
               $scope.$apply();

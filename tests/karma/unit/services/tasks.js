@@ -4,10 +4,10 @@ describe('Tasks service', function() {
   var childPersonId,
     childPersonId2,
     docId,
+    rulesEngine,
     rulesEngineListen,
     service,
-    stubRulesEngine,
-    $rootScope;
+    stubRulesEngine;
 
   beforeEach(function() {
     module('inboxApp');
@@ -26,12 +26,12 @@ describe('Tasks service', function() {
       rulesEngineListen.callsArgWith(2, err, tasks);
     };
     module(function($provide) {
-      $provide.value('RulesEngine', { listen: rulesEngineListen });
+      $provide.value('RulesEngine', { listen: rulesEngineListen, enabled: true });
     });
 
-    inject(function(_$rootScope_, _TasksForContact_) {
-      $rootScope = _$rootScope_;
+    inject(function(_TasksForContact_, _RulesEngine_) {
       service = _TasksForContact_;
+      rulesEngine = _RulesEngine_;
     });
   });
 
@@ -39,13 +39,28 @@ describe('Tasks service', function() {
     KarmaUtils.restore(rulesEngineListen);
   });
 
+  it('does not return tasks if RulesEngine is disabled.', function(done) {
+    rulesEngine.enabled = false;
+    var task = { _id: 'aa', contact: { _id: docId } };
+    stubRulesEngine(null, [task]);
+
+    service(docId, 'person', [], 'listenerName',
+      function(areTasksEnabled, tasks) {
+        chai.assert.equal(rulesEngineListen.callCount, 0);
+        chai.assert(!areTasksEnabled);
+        chai.assert.sameMembers(tasks, []);
+        done();
+      });
+  });
+
   it('displays tasks for selected contact person', function(done) {
     var task = { _id: 'aa', contact: { _id: docId } };
     stubRulesEngine(null, [task]);
 
     service(docId, 'person', [], 'listenerName',
-      function(tasks) {
+      function(areTasksEnabled, tasks) {
         chai.assert.equal(rulesEngineListen.callCount, 1);
+        chai.assert(areTasksEnabled);
         chai.assert.sameMembers(tasks, [ task ]);
         done();
       });
@@ -56,8 +71,9 @@ describe('Tasks service', function() {
     stubRulesEngine(null, [task]);
 
     service(docId, 'clinic', [], 'listenerName',
-      function(tasks) {
+      function(areTasksEnabled, tasks) {
         chai.assert.equal(rulesEngineListen.callCount, 1);
+        chai.assert(areTasksEnabled);
         chai.assert.sameMembers(tasks, [ task ]);
         done();
       });
@@ -68,7 +84,8 @@ describe('Tasks service', function() {
     stubRulesEngine(null, [task]);
 
     service(docId, 'health_center', [], 'listenerName',
-      function(tasks) {
+      function(areTasksEnabled, tasks) {
+        chai.assert(!areTasksEnabled);
         chai.assert.sameMembers(tasks, []);
         done();
       });
@@ -89,8 +106,9 @@ describe('Tasks service', function() {
     ];
     stubRulesEngine(null, tasks);
     service(docId, 'clinic', [childPersonId], 'listenerName',
-      function(newTasks) {
+      function(areTasksEnabled, newTasks) {
         chai.assert.equal(rulesEngineListen.callCount, 1);
+        chai.assert(areTasksEnabled);
         chai.assert.sameMembers(newTasks, tasks);
         done();
       });
@@ -111,8 +129,9 @@ describe('Tasks service', function() {
     ];
     stubRulesEngine(null, tasks);
     service(docId, 'person', [childPersonId], 'listenerName',
-      function(newTasks) {
+      function(areTasksEnabled, newTasks) {
         chai.assert.equal(rulesEngineListen.callCount, 1);
+        chai.assert(areTasksEnabled);
         chai.assert.sameMembers(newTasks, [tasks[0]]);
         done();
       });
@@ -128,8 +147,9 @@ describe('Tasks service', function() {
     ];
     stubRulesEngine(null, tasks);
     service(docId, 'clinic', [childPersonId], 'listenerName',
-      function(newTasks) {
+      function(areTasksEnabled, newTasks) {
         chai.assert.sameMembers(newTasks, []);
+        chai.assert(areTasksEnabled);
         done();
       });
   });
@@ -149,8 +169,9 @@ describe('Tasks service', function() {
     ];
     stubRulesEngine(null, tasks);
     service(docId, 'clinic', [], 'listenerName',
-      function(newTasks) {
+      function(areTasksEnabled, newTasks) {
         chai.assert.deepEqual(newTasks, [tasks[1], tasks[0]]);
+        chai.assert(areTasksEnabled);
         done();
       });
   });
@@ -172,8 +193,9 @@ describe('Tasks service', function() {
     ];
     stubRulesEngine(null, tasks);
     service(docId, 'clinic', [], 'listenerName',
-      function(newTasks) {
+      function(areTasksEnabled, newTasks) {
         chai.assert.deepEqual(newTasks, [tasks[1]]);
+        chai.assert(areTasksEnabled);
         done();
       });
   });

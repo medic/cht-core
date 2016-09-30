@@ -176,20 +176,20 @@
         </div>
       </div>
 
-      <div ng-if="selected.tasks.length">
+      <div ng-if="selected.areTasksEnabled">
         <div class="action-header">
           <h4 translate>Tasks</h4>
           <span class="table-filter">
-            <a ng-click="setTaskWeeksFilter(1)" class="btn btn-link" ng-class="{selected: taskWeeksBack === 1}" translate translate-values="{WEEKS: 1}" translate-interpolation="messageformat">n.week</a>
+            <a ng-click="setTasksTimeWindowWeeks(1)" class="btn btn-link" ng-class="{selected: tasksTimeWindowWeeks === 1}" translate translate-values="{WEEKS: 1}" translate-interpolation="messageformat">n.week</a>
             |
-            <a ng-click="setTaskWeeksFilter(2)" class="btn btn-link" ng-class="{selected: taskWeeksBack === 2}" translate translate-values="{WEEKS: 2}" translate-interpolation="messageformat">n.week</a>
+            <a ng-click="setTasksTimeWindowWeeks(2)" class="btn btn-link" ng-class="{selected: tasksTimeWindowWeeks === 2}" translate translate-values="{WEEKS: 2}" translate-interpolation="messageformat">n.week</a>
             |
-            <a ng-click="setTaskWeeksFilter()" class="btn btn-link" ng-class="{selected: !taskWeeksBack}" translate>view.all</a>
+            <a ng-click="setTasksTimeWindowWeeks()" class="btn btn-link" ng-class="{selected: !tasksTimeWindowWeeks}" translate>view.all</a>
           </span>
         </div>
         <div class="card action-list tasks">
           <div class="accent"></div>
-          <div class="row" ng-repeat="task in selected.tasks | filter:filterTaskWeeksForward">
+          <div class="row" ng-repeat="task in selected.tasks | filter:filterTasks as filteredTasks">
             <div class="col-sm-12">
               <a ui-sref="tasks.detail({ id: task._id })" class="cell">
                 <div ng-bind-html="task.date | relativeDay" class="pull-right"></div>
@@ -198,29 +198,39 @@
               </a>
             </div>
           </div>
+          <div class="row" ng-show="!filteredTasks.length">
+            <div class="cell">
+              <span ng-show="!tasksTimeWindowWeeks" translate>tasks.none</span>
+              <span ng-show="tasksTimeWindowWeeks" translate translate-values="{WEEKS: tasksTimeWindowWeeks}" translate-interpolation="messageformat">tasks.none.n.weeks</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div ng-if="selected.reports.length">
-        <div class="action-header">
-          <h4 translate>Reports</h4>
-          <span class="table-filter">
-            <a ng-click="setReportMonthsFilter(3)" class="btn btn-link" ng-class="{selected: reportMonthsBack === 3}"  translate translate-values="{ MONTHS: 3 }" translate-interpolation="messageformat">n.month</a>
-            |
-            <a ng-click="setReportMonthsFilter(6)" class="btn btn-link" ng-class="{selected: reportMonthsBack === 6}"  translate translate-values="{ MONTHS: 6 }" translate-interpolation="messageformat">n.month</a>
-            |
-            <a ng-click="setReportMonthsFilter()" class="btn btn-link" ng-class="{selected: !reportMonthsBack}" translate>view.all</a>
-          </span>
+      <div class="action-header">
+        <h4 translate>Reports</h4>
+        <span class="table-filter">
+          <a ng-click="setReportsTimeWindowMonths(3)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 3}"  translate translate-values="{ MONTHS: 3 }" translate-interpolation="messageformat">n.month</a>
+          |
+          <a ng-click="setReportsTimeWindowMonths(6)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 6}"  translate translate-values="{ MONTHS: 6 }" translate-interpolation="messageformat">n.month</a>
+          |
+          <a ng-click="setReportsTimeWindowMonths()" class="btn btn-link" ng-class="{selected: !reportsTimeWindowMonths}" translate>view.all</a>
+        </span>
+      </div>
+      <div class="card action-list reports">
+        <div class="accent"></div>
+        <div class="row" ng-repeat="report in selected.reports | filter:filterReport as filteredReports track by report._id">
+          <div class="col-sm-12">
+            <a ui-sref="reports.detail({ id: report._id })" class="cell">
+              <div ng-bind-html="report.reported_date | relativeDate" class="pull-right"></div>
+              <div>{{report | summary:forms}}</div>
+            </a>
+          </div>
         </div>
-        <div class="card action-list reports">
-          <div class="accent"></div>
-          <div class="row" ng-repeat="report in selected.reports | filter:filterReportWeeksBack track by report._id">
-            <div class="col-sm-12">
-              <a ui-sref="reports.detail({ id: report._id })" class="cell">
-                <div ng-bind-html="report.reported_date | relativeDate" class="pull-right"></div>
-                <div>{{report | summary:forms}}</div>
-              </a>
-            </div>
+        <div class="row" ng-show="!filteredReports.length">
+          <div class="cell">
+            <span ng-show="!reportsTimeWindowMonths" translate>reports.none</span>
+            <span ng-show="reportsTimeWindowMonths" translate translate-values="{MONTHS: reportsTimeWindowMonths}" translate-interpolation="messageformat">reports.none.n.months</span>
           </div>
         </div>
       </div>
