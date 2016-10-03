@@ -137,7 +137,18 @@ describe('Send message', function() {
 
   var sendMessage = function() {
     element(by.css('#send-message a.btn.submit')).click();
-    browser.sleep(1000); // TODO: work out how to tell that the documents etc have beeen saved
+
+    browser.wait(function() {
+      return element(by.css('#send-message')).isDisplayed()
+        .then(function(isDisplayed) {
+          return !isDisplayed;
+        })
+        .catch(function() {
+          // It's been detached, so it's gone
+          return true;
+        });
+    }, 2000);
+
     utils.resetBrowser();
   };
 
