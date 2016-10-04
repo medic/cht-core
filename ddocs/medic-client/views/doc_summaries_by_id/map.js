@@ -42,7 +42,7 @@ function(doc) {
       phone: phone,
       type: doc.type,
       primaryContactName: doc.contact && doc.contact.name,
-      place: getPlaceHierarchy(doc) // TODO: work out if this value is used
+      place: getPlaceHierarchy(doc)
     });
   }
 }

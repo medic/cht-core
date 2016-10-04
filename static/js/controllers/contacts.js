@@ -30,6 +30,7 @@ var scrollLoader = require('../modules/scroll-loader');
       $scope.selected = null;
       $scope.filters = {};
       var defaultTypeFilter = {};
+      var usersHomePlace;
 
       // The type of the children of the user's facility.
       var getUserFacilityId = function() {
@@ -38,11 +39,17 @@ var scrollLoader = require('../modules/scroll-loader');
             return u.facility_id;
           });
       };
-      var getUserChildPlaceType = function(facility_id) {
-        return DB().get(facility_id)
-          .then(function(facility) {
-            return ContactSchema.getChildPlaceType(facility.type);
+      var getUserHomePlaceSummary = function() {
+        return getUserFacilityId().then(function(facilityId) {
+          return facilityId && DB().query('medic-client/doc_summaries_by_id', {
+            key: facilityId
+          }).then(function(results) {
+              return results &&
+                     results.rows &&
+                     results.rows.length &&
+                     results.rows[0];
           });
+        });
       };
 
       function completeLoad() {
@@ -80,11 +87,16 @@ var scrollLoader = require('../modules/scroll-loader');
           UserSettings()
         ])
           .then(function(results) {
-            var data = results[0];
-            $scope.moreItems = liveList.moreItems = data.length >= options.limit;
+            // If you have a home place make sure its at the top
+            var contacts = usersHomePlace && !$scope.appending ?
+              [usersHomePlace].concat(results[0].filter(function(contact) {
+                return contact._id !== usersHomePlace._id;
+              })) : results[0];
+
+            $scope.moreItems = liveList.moreItems = contacts.length >= options.limit;
 
             var user = results[1];
-            data.forEach(function(contact) {
+            contacts.forEach(function(contact) {
               if (contact._id === user.facility_id) {
                 contact.home = true;
               }
@@ -92,7 +104,7 @@ var scrollLoader = require('../modules/scroll-loader');
 
             if (options.skip) {
               $timeout(function() {
-                data.forEach(function(contact) {
+                contacts.forEach(function(contact) {
                   liveList.insert(contact, false);
                 });
                 liveList.refresh();
@@ -100,13 +112,13 @@ var scrollLoader = require('../modules/scroll-loader');
               })
               .then(completeLoad);
             } else if (options.silent) {
-              data.forEach(liveList.update);
+              contacts.forEach(liveList.update);
               completeLoad();
             } else {
               $timeout(function() {
-                liveList.set(data);
+                liveList.set(contacts);
                 _initScroll();
-                if (!data.length) {
+                if (!contacts.length) {
                   $scope.clearSelected();
                 }
               })
@@ -193,25 +205,32 @@ var scrollLoader = require('../modules/scroll-loader');
         $scope.search();
       };
 
-      var setupPromise = getUserFacilityId()
-        .then(function(facility_id) {
-          var actionBarData = { userFacilityId: facility_id };
-          return facility_id && getUserChildPlaceType(facility_id)
-              .then(function(type) {
-                defaultTypeFilter = { types: { selected: [type] }};
-                actionBarData.userChildPlace =
-                  {
-                    type: type,
-                    icon: (ContactSchema.get(type) ? ContactSchema.get(type).icon : '')
-                  };
-                return $translate(ContactSchema.get(type).addButtonLabel);
-              }).then(function(label) {
+      var setupPromise = getUserHomePlaceSummary()
+        .then(function(summary) {
+          if (summary) {
+            var type = ContactSchema.getChildPlaceType(summary.type);
+
+            usersHomePlace = summary;
+            defaultTypeFilter = { types: { selected: [type] }};
+
+            var actionBarData = {
+              userFacilityId: summary._id,
+              userChildPlace: {
+                type: type,
+                icon: (ContactSchema.get(type) ? ContactSchema.get(type).icon : '')
+              }
+            };
+
+            return $translate(ContactSchema.get(type).addButtonLabel)
+              .then(function(label) {
                 actionBarData.addPlaceLabel = label;
                 $scope.setLeftActionBar(actionBarData);
               });
+          }
         }).then(function() {
           $scope.search();
         });
+
       this.getSetupPromiseForTesting = function() { return setupPromise; };
 
       $scope.$on('$stateChangeStart', function(event, toState) {
@@ -219,8 +238,6 @@ var scrollLoader = require('../modules/scroll-loader');
           $scope.unsetSelected();
         }
       });
-
     }
   );
-
 }());
