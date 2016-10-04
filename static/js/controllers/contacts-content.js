@@ -148,7 +148,7 @@ var _ = require('underscore'),
         if (!contactPersonId) {
           return;
         }
-        var primaryContactIdx = children.findIndex(function(child) {
+        var primaryContactIdx = _.findIndex(children, function(child) {
           return child.doc._id === contactPersonId;
         });
         if (primaryContactIdx < 0) {
