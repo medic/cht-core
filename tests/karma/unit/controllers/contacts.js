@@ -14,6 +14,7 @@ describe('Contacts controller', function() {
     person,
     scope,
     userSettings,
+    userFaciltyQuery,
     xmlForms,
     $rootScope;
 
@@ -39,6 +40,7 @@ describe('Contacts controller', function() {
     forms = 'forms';
     xmlForms.callsArgWith(2, null, forms); // call the callback
     userSettings = KarmaUtils.promiseService(null, { facility_id: district._id });
+    userFaciltyQuery = KarmaUtils.promiseService(null, { rows: [district] });
     createController = function() {
       return $controller('ContactsCtrl', {
         '$scope': scope,
@@ -49,7 +51,10 @@ describe('Contacts controller', function() {
         '$timeout': sinon.stub(),
         '$translate': KarmaUtils.promiseService(null, buttonLabelTranslated),
         'ContactSchema': contactSchema,
-        'DB': function() { return { get: KarmaUtils.promiseService(null, district) }; },
+        'DB': function() { return {
+          get: KarmaUtils.promiseService(null, district),
+          query: userFaciltyQuery
+        }; },
         'LiveList': { contacts: { initialised: sinon.stub(), setSelected: sinon.stub() } },
         'Search': sinon.stub(),
         'SearchFilters': { freetext: sinon.stub(), reset: sinon.stub()},
@@ -147,7 +152,7 @@ describe('Contacts controller', function() {
     });
 
     it('when user doesn\'t have facility_id', function(done) {
-      userSettings = KarmaUtils.promiseService(null, {});
+      userSettings = userFaciltyQuery = KarmaUtils.promiseService(null, {});
       createController().getSetupPromiseForTesting()
         .then(function() {
           assert(!scope.setLeftActionBar.called, 'left actionBar uses defaults');
