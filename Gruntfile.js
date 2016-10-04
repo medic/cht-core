@@ -260,7 +260,7 @@ module.exports = function(grunt) {
       },
       translations: {
         files: ['translations/*'],
-        tasks: ['deploy']
+        tasks: ['appcache', 'deploy']
       }
     },
     notify_hooks: {
