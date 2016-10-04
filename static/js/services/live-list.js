@@ -54,8 +54,11 @@ angular.module('inboxServices').factory('LiveListConfig',
         },
         listItem: function(contact) {
           var contactHtml = $templateCache.get('templates/partials/contacts_list_item.html');
+
           var scope = $scope.$new();
           scope.contact = contact;
+          scope.primaryContactName = { name: contact.primaryContactName };
+
           return contactHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },
       };
