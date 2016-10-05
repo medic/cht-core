@@ -42,12 +42,18 @@ var scrollLoader = require('../modules/scroll-loader');
       var getUserHomePlaceSummary = function() {
         return getUserFacilityId().then(function(facilityId) {
           return facilityId && DB().query('medic-client/doc_summaries_by_id', {
-            key: facilityId
+            key: [facilityId]
           }).then(function(results) {
-              return results &&
-                     results.rows &&
-                     results.rows.length &&
-                     results.rows[0];
+              var summary = results &&
+                            results.rows &&
+                            results.rows.length &&
+                            results.rows[0].value;
+
+              if (summary) {
+                summary._id = facilityId;
+                summary.home = true;
+                return summary;
+              }
           });
         });
       };
@@ -82,25 +88,14 @@ var scrollLoader = require('../modules/scroll-loader');
 
         var actualFilter = $scope.filters.search ? $scope.filters : defaultTypeFilter;
 
-        $q.all([
-          Search('contacts', actualFilter, options),
-          UserSettings()
-        ])
-          .then(function(results) {
+          Search('contacts', actualFilter, options).then(function(searchResults) {
             // If you have a home place make sure its at the top
             var contacts = usersHomePlace && !$scope.appending ?
-              [usersHomePlace].concat(results[0].filter(function(contact) {
+              [usersHomePlace].concat(searchResults.filter(function(contact) {
                 return contact._id !== usersHomePlace._id;
-              })) : results[0];
+              })) : searchResults;
 
             $scope.moreItems = liveList.moreItems = contacts.length >= options.limit;
-
-            var user = results[1];
-            contacts.forEach(function(contact) {
-              if (contact._id === user.facility_id) {
-                contact.home = true;
-              }
-            });
 
             if (options.skip) {
               $timeout(function() {
