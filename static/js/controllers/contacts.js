@@ -19,6 +19,7 @@ var scrollLoader = require('../modules/scroll-loader');
       LiveList,
       Search,
       SearchFilters,
+      Session,
       UserSettings,
       XmlForms
     ) {
@@ -221,6 +222,10 @@ var scrollLoader = require('../modules/scroll-loader');
                 actionBarData.addPlaceLabel = label;
                 $scope.setLeftActionBar(actionBarData);
               });
+          } else {
+            if (Session.isAdmin()) {
+              defaultTypeFilter = { types: { selected: ['district_hospital'] }};
+            }
           }
         }).then(function() {
           $scope.search();

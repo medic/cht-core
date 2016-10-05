@@ -58,6 +58,9 @@ describe('Contacts controller', function() {
         'LiveList': { contacts: { initialised: sinon.stub(), setSelected: sinon.stub() } },
         'Search': KarmaUtils.promiseService(null, sinon.stub()),
         'SearchFilters': { freetext: sinon.stub(), reset: sinon.stub()},
+        'Session': {
+          isAdmin: function() { return false; }
+        },
         'UserSettings': userSettings,
         'XmlForms': xmlForms
       });
