@@ -88,44 +88,44 @@ var scrollLoader = require('../modules/scroll-loader');
 
         var actualFilter = $scope.filters.search ? $scope.filters : defaultTypeFilter;
 
-          Search('contacts', actualFilter, options).then(function(searchResults) {
-            // If you have a home place make sure its at the top
-            var contacts = usersHomePlace && !$scope.appending ?
-              [usersHomePlace].concat(searchResults.filter(function(contact) {
-                return contact._id !== usersHomePlace._id;
-              })) : searchResults;
+        Search('contacts', actualFilter, options).then(function(searchResults) {
+          // If you have a home place make sure its at the top
+          var contacts = usersHomePlace && !$scope.appending ?
+            [usersHomePlace].concat(searchResults.filter(function(contact) {
+              return contact._id !== usersHomePlace._id;
+            })) : searchResults;
 
-            $scope.moreItems = liveList.moreItems = contacts.length >= options.limit;
+          $scope.moreItems = liveList.moreItems = contacts.length >= options.limit;
 
-            if (options.skip) {
-              $timeout(function() {
-                contacts.forEach(function(contact) {
-                  liveList.insert(contact, false);
-                });
-                liveList.refresh();
-                completeLoad();
-              })
-              .then(completeLoad);
-            } else if (options.silent) {
-              contacts.forEach(liveList.update);
+          if (options.skip) {
+            $timeout(function() {
+              contacts.forEach(function(contact) {
+                liveList.insert(contact, false);
+              });
+              liveList.refresh();
               completeLoad();
-            } else {
-              $timeout(function() {
-                liveList.set(contacts);
-                _initScroll();
-                if (!contacts.length) {
-                  $scope.clearSelected();
-                }
-              })
-              .then(completeLoad);
-            }
-          })
-          .catch(function(err) {
-            $scope.error = true;
-            $scope.loading = false;
-            $scope.appending = false;
-            $log.error('Error searching for contacts', err);
-          });
+            })
+            .then(completeLoad);
+          } else if (options.silent) {
+            contacts.forEach(liveList.update);
+            completeLoad();
+          } else {
+            $timeout(function() {
+              liveList.set(contacts);
+              _initScroll();
+              if (!contacts.length) {
+                $scope.clearSelected();
+              }
+            })
+            .then(completeLoad);
+          }
+        })
+        .catch(function(err) {
+          $scope.error = true;
+          $scope.loading = false;
+          $scope.appending = false;
+          $log.error('Error searching for contacts', err);
+        });
       };
 
       var getActionBarDataForChild = function(docType) {

@@ -40,7 +40,7 @@ describe('Contacts controller', function() {
     forms = 'forms';
     xmlForms.callsArgWith(2, null, forms); // call the callback
     userSettings = KarmaUtils.promiseService(null, { facility_id: district._id });
-    userFaciltyQuery = KarmaUtils.promiseService(null, { rows: [district] });
+    userFaciltyQuery = KarmaUtils.promiseService(null, { rows: [{value: district}] });
     createController = function() {
       return $controller('ContactsCtrl', {
         '$scope': scope,
@@ -56,7 +56,7 @@ describe('Contacts controller', function() {
           query: userFaciltyQuery
         }; },
         'LiveList': { contacts: { initialised: sinon.stub(), setSelected: sinon.stub() } },
-        'Search': sinon.stub(),
+        'Search': KarmaUtils.promiseService(null, sinon.stub()),
         'SearchFilters': { freetext: sinon.stub(), reset: sinon.stub()},
         'UserSettings': userSettings,
         'XmlForms': xmlForms
