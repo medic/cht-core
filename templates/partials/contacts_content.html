@@ -26,11 +26,18 @@
           <h3>
             <i class="fa {{selected.icon}}"></i>
           </h3>
-          <span ng-show="!selected.isPrimaryContact" translate>contact.profile</span>
-          <i class="fa fa-star primary" ng-show="selected.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
-          <span ng-show="selected.isPrimaryContact && selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
-          <span ng-show="selected.isPrimaryContact && selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
+          <div class="text">
+            <div>
+              <i class="fa fa-star primary" ng-show="selected.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
+              <span>{{selected.doc.name}}</span>
+            </div>
+            <div>
+              <span ng-show="selected.isPrimaryContact && selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
+              <span ng-show="selected.isPrimaryContact && selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
+            </div>
+          </div>
         </div>
+
         <div class="card">
           <div class="row">
             <div class="col-sm-3" ng-show="selected.doc.type === 'person'">
