@@ -127,7 +127,7 @@ var _ = require('underscore'),
           model.type = doc.content_type;
           model.sendTo = doc.contact;
         }
-        $scope.setActionBar(model);
+        Layout.setActionBar($scope, model);
       };
 
       $scope.setSelected = function(doc) {

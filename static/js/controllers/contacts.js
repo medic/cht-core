@@ -169,7 +169,7 @@ var scrollLoader = require('../modules/scroll-loader');
               } else {
                 actionBarData.relevantForms = forms;
               }
-              $scope.setRightActionBar(actionBarData);
+              Layout.setRightActionBar($scope, actionBarData);
             });
           });
       };
@@ -221,7 +221,7 @@ var scrollLoader = require('../modules/scroll-loader');
             return $translate(ContactSchema.get(type).addButtonLabel)
               .then(function(label) {
                 actionBarData.addPlaceLabel = label;
-                $scope.setLeftActionBar(actionBarData);
+                Layout.setLeftActionBar($scope, actionBarData);
               });
           } else {
             if (Session.isAdmin()) {
