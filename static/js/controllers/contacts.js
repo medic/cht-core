@@ -16,6 +16,7 @@ var scrollLoader = require('../modules/scroll-loader');
       $translate,
       ContactSchema,
       DB,
+      Layout,
       LiveList,
       Search,
       SearchFilters,
@@ -148,7 +149,7 @@ var scrollLoader = require('../modules/scroll-loader');
       $scope.setSelected = function(selected) {
         liveList.setSelected(selected.doc._id);
         $scope.selected = selected;
-        $scope.setTitle(selected.doc.name);
+        Layout.setTitle($scope, selected.doc.name);
         $scope.clearCancelTarget();
         var selectedDoc = selected.doc;
         return getActionBarDataForChild(selectedDoc.type)

@@ -31,6 +31,7 @@ var feedback = require('../modules/feedback'),
       FacilityHierarchy,
       JsonForms,
       Language,
+      Layout,
       LiveListConfig,
       Location,
       Modal,
@@ -156,7 +157,7 @@ var feedback = require('../modules/feedback'),
         $scope.setShowContent(false);
         $scope.loadingContent = false;
         $scope.showActionBar = false;
-        $scope.setTitle();
+        Layout.setTitle($scope);
         $scope.$broadcast('ClearSelected');
       };
 
@@ -198,10 +199,6 @@ var feedback = require('../modules/feedback'),
 
       $scope.setCancelTarget = function(callback) {
         $scope.cancelCallback = callback;
-      };
-
-      $scope.setTitle = function(title) {
-        $scope.title = title;
       };
 
       $scope.setLoadingContent = function(id) {

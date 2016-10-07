@@ -16,6 +16,7 @@ var _ = require('underscore'),
       $timeout,
       DB,
       FormatDataRecord,
+      Layout,
       LiveList,
       MarkRead,
       Modal,
@@ -70,7 +71,7 @@ var _ = require('underscore'),
         if (form) {
           name = form.name || form.title;
         }
-        $scope.setTitle(TranslateFrom(name));
+        Layout.setTitle($scope, TranslateFrom(name));
       };
 
       var getFields = function(results, values, labelPrefix, depth) {

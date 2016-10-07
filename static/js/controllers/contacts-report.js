@@ -4,9 +4,9 @@
 
   var inboxControllers = angular.module('inboxControllers');
 
-  inboxControllers.controller('ContactsReportCtrl', 
-    ['$scope', '$state', '$log', '$translate', 'DB', 'Enketo', 'TranslateFrom', 'Snackbar',
-    function ($scope, $state, $log, $translate, DB, Enketo, TranslateFrom, Snackbar) {
+  inboxControllers.controller('ContactsReportCtrl',
+    function ($scope, $state, $log, $translate, DB, Enketo, Layout, TranslateFrom, Snackbar) {
+      'ngInject';
 
       var render = function(doc) {
         $scope.setSelected({ doc: doc });
@@ -55,7 +55,7 @@
         })
         .then(function(res) {
           if (res.rows[0]) {
-            $scope.setTitle(TranslateFrom(res.rows[0].doc.title));
+            Layout.setTitle($scope, TranslateFrom(res.rows[0].doc.title));
           }
         })
         .catch(function(err) {
@@ -66,11 +66,11 @@
 
       $scope.$on('$destroy', function() {
         if (!$state.includes('contacts.report')) {
-          $scope.setTitle();
+          Layout.setTitle($scope);
           Enketo.unload($scope.form);
         }
       });
     }
-  ]);
+  );
 
 }());
