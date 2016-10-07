@@ -16,9 +16,9 @@
         <div class="hidden-xs card-title">
           <h3>
             <i class="fa {{selected.icon}}"></i>
+            <i class="fa fa-star primary" ng-show="selected.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
             <span>{{selected.doc.name}}</span>
           </h3>
-          <i class="fa fa-star primary" ng-show="selected.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
           <span ng-show="selected.isPrimaryContact && selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
           <span ng-show="selected.isPrimaryContact && selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
         </div>
