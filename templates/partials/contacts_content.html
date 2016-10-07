@@ -103,7 +103,7 @@
           </div>
           <div ng-show="selected.doc.type === 'clinic'" class="col-xs-1 tasks-count" translate>Tasks</div>
         </div>
-        <div class="card action-list children">
+        <div class="card action-list children persons">
           <div class="accent"></div>
           <div class="row" ng-repeat="child in selected.children.persons">
             <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell col-xs-12">
