@@ -2,7 +2,7 @@
 'use strict';
 
 var _ = require('underscore'),
-  moment = require('moment');
+    moment = require('moment');
 var inboxServices = angular.module('inboxServices');
 
 /**
