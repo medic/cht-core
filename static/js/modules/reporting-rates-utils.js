@@ -90,7 +90,7 @@ var _ = require('underscore'),
 
     /**
      * Converts a moment object to a year-week string, as used in request parameters
-     * and human readable.  eg, Date(2011, 2, 1) -> "2011-6"
+     * and human readable.  eg, Date(2011, 2, 1) -> "2011-5"
      */
     var dateToWeekStr = function (date) {
         return getWeekYear(date) + '-' + getWeek(date);
