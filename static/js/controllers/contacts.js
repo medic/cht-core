@@ -224,7 +224,7 @@ var scrollLoader = require('../modules/scroll-loader');
               });
           } else {
             if (Session.isAdmin()) {
-              defaultTypeFilter = { types: { selected: ['district_hospital'] }};
+              defaultTypeFilter = { types: { selected: [ContactSchema.getPlaceTypes()[0]] }};
             }
           }
         }).then(function() {
