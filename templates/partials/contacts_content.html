@@ -187,7 +187,7 @@
       </div>
       <div class="card action-list reports">
         <div class="accent"></div>
-        <div class="row" ng-repeat="report in selected.reports | filter:filterReport as filteredReports track by report._id">
+        <div class="row" ng-repeat="report in selected.reports | filter:filterReports as filteredReports track by report._id">
             <ng-include src="'templates/partials/contacts_content_report.html'"></ng-include>
         </div>
         <div class="row" ng-show="!filteredReports.length">
