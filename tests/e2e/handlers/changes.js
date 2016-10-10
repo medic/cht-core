@@ -315,7 +315,7 @@ describe('changes handler', function() {
         .then(function() {
 
           // and a contact exists outside the replication depth
-          return adminDb.put({ _id:'should-be-hidden', type:'person', parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } } });
+          return adminDb.put({ _id:'should-be-hidden', reported_date: 1, type:'person', parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } } });
 
         })
         .then(function() {
@@ -369,7 +369,7 @@ describe('changes handler', function() {
         .then(function() {
 
           // and a contact exists outside the replication depth
-          return adminDb.put({ _id:'should-be-visible-too', type:'person', parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } } });
+          return adminDb.put({ _id:'should-be-visible-too', reported_date: 1, type:'person', parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } } });
 
         })
         .then(function() {
@@ -415,7 +415,7 @@ describe('changes handler', function() {
         .then(function() {
 
           // and a contact exists within replication depth 2
-          return adminDb.put({ _id:'should-also-be-visible', type:'person', parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } } });
+          return adminDb.put({ _id:'should-also-be-visible', reported_date: 1, type:'person', parent: { _id:'should-be-visible', parent:{ _id:'fixture:chwville' } } });
 
         })
         .then(function() {
