@@ -5,19 +5,38 @@ describe('Contacts controller', function() {
   var assert = chai.assert,
     buttonLabel,
     buttonLabelTranslated,
+    contactsLiveList,
     childType,
     contactSchema,
     createController,
     district,
     forms,
     icon,
+    isAdmin = false,
     person,
     scope,
     userSettings,
+    userFaciltyQuery,
+    searchResults,
+    searchService,
     xmlForms,
     $rootScope;
 
   beforeEach(module('inboxApp'));
+
+  var deadList = function() {
+    var elements = [];
+
+    return  {
+      getList: function() { return elements;},
+      initialised: sinon.stub(),
+      setSelected: sinon.stub(),
+      refresh: sinon.stub(),
+      count: function() { return elements.length; },
+      insert: function(e) { elements.push(e); },
+      set: function(es) { elements = es; },
+    };
+  };
 
   beforeEach(inject(function(_$rootScope_, $controller) {
     district = { _id: 'abcde', name: 'My District', type: 'district_hospital'};
@@ -32,27 +51,41 @@ describe('Contacts controller', function() {
     scope.clearCancelTarget = sinon.stub();
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
-    contactSchema = { get: sinon.stub(), getChildPlaceType: sinon.stub() };
+    contactSchema = { get: sinon.stub(), getChildPlaceType: sinon.stub(), getPlaceTypes: sinon.stub()};
     contactSchema.get.returns({ icon: icon, addButtonLabel : buttonLabel });
     contactSchema.getChildPlaceType.returns(childType);
+    contactSchema.getPlaceTypes.returns(['district_hospital']);
     xmlForms = sinon.stub();
     forms = 'forms';
     xmlForms.callsArgWith(2, null, forms); // call the callback
     userSettings = KarmaUtils.promiseService(null, { facility_id: district._id });
+    userFaciltyQuery = KarmaUtils.promiseService(null, { rows: [{value: district}] });
+    contactsLiveList = deadList();
+    searchResults = [];
+
     createController = function() {
+      searchService = sinon.stub();
+      searchService.returns(KarmaUtils.mockPromise(null, searchResults));
+
       return $controller('ContactsCtrl', {
         '$scope': scope,
         '$rootScope': $rootScope,
         '$log': { error: sinon.stub() },
         '$q': Q,
         '$state': { includes: sinon.stub() },
-        '$timeout': sinon.stub(),
+        '$timeout': function(work) { work(); },
         '$translate': KarmaUtils.promiseService(null, buttonLabelTranslated),
         'ContactSchema': contactSchema,
-        'DB': function() { return { get: KarmaUtils.promiseService(null, district) }; },
-        'LiveList': { contacts: { initialised: sinon.stub(), setSelected: sinon.stub() } },
-        'Search': sinon.stub(),
+        'DB': function() { return {
+          get: KarmaUtils.promiseService(null, district),
+          query: userFaciltyQuery
+        }; },
+        'LiveList': { contacts: contactsLiveList },
+        'Search': searchService,
         'SearchFilters': { freetext: sinon.stub(), reset: sinon.stub()},
+        'Session': {
+          isAdmin: function() { return isAdmin; }
+        },
         'UserSettings': userSettings,
         'XmlForms': xmlForms
       });
@@ -147,10 +180,69 @@ describe('Contacts controller', function() {
     });
 
     it('when user doesn\'t have facility_id', function(done) {
-      userSettings = KarmaUtils.promiseService(null, {});
+      userSettings = userFaciltyQuery = KarmaUtils.promiseService(null, {});
       createController().getSetupPromiseForTesting()
         .then(function() {
           assert(!scope.setLeftActionBar.called, 'left actionBar uses defaults');
+          done();
+        }).catch(done);
+    });
+  });
+
+  describe('Search', function() {
+    it('Puts the user\'s home place at the top of the list', function(done) {
+      searchResults = [
+        {
+          _id: 'search-result'
+        }
+      ];
+
+      createController().getSetupPromiseForTesting()
+        .then(function() {
+          var lhs = contactsLiveList.getList();
+          assert.equal(lhs.length, 2, 'both home place and search results are shown');
+          assert.deepEqual(lhs[0], district, 'first item is home place');
+          assert.deepEqual(lhs[1], searchResults[0], 'second item is search result');
+
+          done();
+        }).catch(done);
+    });
+    it('Only displays the user\'s home place once', function(done) {
+      searchResults = [
+        {
+          _id: 'search-result'
+        },
+        {
+          _id: district._id
+        }
+      ];
+
+      createController().getSetupPromiseForTesting()
+        .then(function() {
+          var lhs = contactsLiveList.getList();
+          assert.equal(lhs.length, 2, 'both home place and search results are shown');
+          assert.deepEqual(lhs[0], district, 'first item is home place');
+          assert.deepEqual(lhs[1], searchResults[0], 'second item is search result');
+
+          done();
+        }).catch(done);
+    });
+    it('Only searches for top-level places as an admin', function(done) {
+      isAdmin = true;
+      userSettings = KarmaUtils.promiseService(null, { facility_id: undefined });
+      searchResults = [
+        {
+          _id: 'search-result'
+        }
+      ];
+
+      createController().getSetupPromiseForTesting()
+        .then(function() {
+          assert.deepEqual(searchService.args[0][1], {types: { selected: ['district_hospital']}});
+
+          var lhs = contactsLiveList.getList();
+          assert.equal(lhs.length, 1, 'both home place and search results are shown');
+
           done();
         }).catch(done);
     });

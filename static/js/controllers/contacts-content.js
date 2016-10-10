@@ -17,8 +17,8 @@ var _ = require('underscore'),
       Changes,
       ContactSchema,
       DB,
-      RulesEngine,
       Search,
+      TasksForContact,
       UserSettings
     ) {
 
@@ -29,25 +29,26 @@ var _ = require('underscore'),
       var taskEndDate,
           reportStartDate;
 
-      $scope.filterTaskWeeksForward = function(task) {
+
+      $scope.filterTasks = function(task) {
         return !taskEndDate || taskEndDate.isAfter(task.date);
       };
-      $scope.filterReportWeeksBack = function(report) {
+      $scope.filterReports = function(report) {
         return !reportStartDate || reportStartDate.isBefore(report.reported_date);
       };
 
-      $scope.setReportMonthsFilter = function(months) {
-        $scope.reportMonthsBack = months;
+      $scope.setReportsTimeWindowMonths = function(months) {
+        $scope.reportsTimeWindowMonths = months;
         reportStartDate = months ? moment().subtract(months, 'months') : null;
       };
 
-      $scope.setTaskWeeksFilter = function(weeks) {
-        $scope.taskWeeksBack = weeks;
+      $scope.setTasksTimeWindowWeeks = function(weeks) {
+        $scope.tasksTimeWindowWeeks = weeks;
         taskEndDate = weeks ? moment().add(weeks, 'weeks') : null;
       };
 
-      $scope.setTaskWeeksFilter(1);
-      $scope.setReportMonthsFilter(3);
+      $scope.setTasksTimeWindowWeeks(1);
+      $scope.setReportsTimeWindowMonths(3);
 
       var getHomePlaceId = function() {
         return UserSettings()
@@ -68,7 +69,7 @@ var _ = require('underscore'),
         });
       };
 
-      var genericSort = function(lhs, rhs) {
+      var genericSortFn = function(lhs, rhs) {
         if (!lhs.doc.name && !rhs.doc.name) {
           return 0;
         }
@@ -81,7 +82,7 @@ var _ = require('underscore'),
         return lhs.doc.name.localeCompare(rhs.doc.name);
       };
 
-      var sortPersons = function(persons) {
+      var sortFamilyMembers = function(persons) {
         if (!persons) {
           return;
         }
@@ -97,29 +98,32 @@ var _ = require('underscore'),
           if (!lhs.doc.date_of_birth && rhs.doc.date_of_birth) {
             return -1;
           }
-          return genericSort(lhs, rhs);
+          return genericSortFn(lhs, rhs);
         });
       };
 
-      var sortPlaces = function(places) {
+      var sortContacts = function(places) {
         if (!places) {
           return;
         }
-        places.sort(genericSort);
+        places.sort(genericSortFn);
       };
 
-      var getChildren = function(id) {
+      var getChildren = function(contactDoc) {
+        if (contactDoc.type === 'person') {
+          return $q.resolve({ persons: undefined, places: undefined });
+        }
         var options = {
-          startkey: [ id ],
-          endkey: [ id, {} ],
+          startkey: [ contactDoc._id ],
+          endkey: [ contactDoc._id, {} ],
           include_docs: true
         };
         return DB()
           .query('medic-client/contacts_by_parent_name_type', options)
           .then(function(children) {
             var groups = splitChildren(children.rows);
-            sortPlaces(groups.places);
-            sortPersons(groups.persons);
+            sortContacts(groups.places);
+            sortContacts(groups.persons);
             return groups;
           });
       };
@@ -136,21 +140,30 @@ var _ = require('underscore'),
         return fields;
       };
 
-      var childrenWithContactPersonOnTop = function(children, parent) {
+      var shiftAndMarkContactPerson = function(children, parent) {
+        if (!children || !children.length) {
+          return;
+        }
         var contactPersonId = parent.contact && parent.contact._id;
         if (!contactPersonId) {
-          return children;
+          return;
         }
-        var split = _.partition(children, function(child) {
+        var primaryContactIdx = _.findIndex(children, function(child) {
           return child.doc._id === contactPersonId;
         });
-        if (split[0].length) {
-          split[0][0].doc.isPrimaryContact = true;
+        if (primaryContactIdx < 0) {
+          return;
         }
-        return split[0].concat(split[1]);
+        var primaryContact = children[primaryContactIdx];
+        primaryContact.isPrimaryContact = true;
+        children.splice(primaryContactIdx, 1);
+        children.unshift(primaryContact);
       };
 
-      var isContactPrimaryContact = function(contactDoc) {
+      var isPersonAndPrimaryContact = function(contactDoc) {
+        if (contactDoc.type !== 'person') {
+          return $q.resolve(false);
+        }
         if (!contactDoc.parent || !contactDoc.parent._id) {
           return $q.resolve(false);
         }
@@ -166,37 +179,95 @@ var _ = require('underscore'),
           });
       };
 
+      var getReports = function(contactDocsArray) {
+        var subjectIds = [];
+        contactDocsArray.forEach(function(contactDoc) {
+          subjectIds.push(contactDoc._id);
+          if (contactDoc.patient_id) {
+            subjectIds.push(contactDoc.patient_id);
+          }
+          if (contactDoc.place_id) {
+            subjectIds.push(contactDoc.place_id);
+          }
+        });
+        return Search('reports', { subjectIds: subjectIds }, { include_docs: true })
+          .then(function(reports) {
+            reports.forEach(function(report) {
+              report.valid = !report.errors || !report.errors.length;
+            });
+            return reports;
+          });
+      };
+
+      var sortReports = function(reports) {
+        reports.sort(function(a, b) {
+          if (a.reported_date > b.reported_date) {
+            return -1;
+          }
+          if (a.reported_date < b.reported_date) {
+            return 1;
+          }
+          return 0;
+        });
+      };
+
+      var sortChildPersons = function(persons, contactDoc) {
+        if (persons && persons.length) {
+          if (contactDoc.type === 'clinic') {
+            sortFamilyMembers(persons);
+          }
+          shiftAndMarkContactPerson(persons, contactDoc);
+        }
+      };
+
+      var getPersonReports = function(persons) {
+        if (persons && persons.length) {
+          return getReports(persons.map(function(child) { return child.doc; }));
+        }
+        return $q.resolve([]);
+      };
+
       var getInitialData = function(contactId) {
-        return $q.all([
-            DB().get(contactId),
-            Search('reports', { subjectIds: [ contactId ] })
-          ])
-          .then(function(results) {
-            var contactDoc = results[0];
-            var selected = {
-              doc: contactDoc,
-              reports: results[1]
-            };
-            selected.doc.icon = ContactSchema.get(contactDoc.type).icon;
-            selected.fields = selectedSchemaVisibleFields(selected);
+        return DB().get(contactId)
+          .then(function(contactDoc) {
+            return $q.all([
+              getReports([contactDoc]),
+              isPersonAndPrimaryContact(contactDoc),
+              getChildren(contactDoc)
+            ])
+              .then(function(results) {
+                var reports = results[0];
+                var isPrimaryContact = results[1];
+                var children = results[2];
+                var selected = {
+                  doc: contactDoc,
+                  reports: reports
+                };
+                selected.icon = ContactSchema.get(contactDoc.type).icon;
+                selected.label = ContactSchema.get(contactDoc.type).label;
+                selected.isPrimaryContact = isPrimaryContact;
+                selected.fields = selectedSchemaVisibleFields(selected);
 
-            if (contactDoc.type === 'person') {
-              return isContactPrimaryContact(contactDoc)
-                .then(function(isPrimaryContact) {
-                  selected.doc.isPrimaryContact = isPrimaryContact;
-                  return selected;
-                });
-            }
+                sortChildPersons(children.persons, contactDoc);
 
-            return getChildren(contactId)
-              .then(function(children) {
-                children.persons = childrenWithContactPersonOnTop(children.persons, contactDoc);
-                selected.children = children;
-                if (selected.children.places && selected.children.places.length) {
-                  var childPlacesSchema = ContactSchema.get(selected.children.places[0].doc.type);
-                  selected.children.childPlacesLabel = childPlacesSchema.pluralLabel;
-                  selected.children.childPlacesIcon = childPlacesSchema.icon;
+                if (children.places && children.places.length) {
+                  var childPlacesSchema = ContactSchema.get(children.places[0].doc.type);
+                  children.childPlacesLabel = childPlacesSchema.pluralLabel;
+                  children.childPlacesIcon = childPlacesSchema.icon;
                 }
+
+                selected.children = children;
+
+                return getPersonReports(children.persons)
+                  .then(function(childrenReports) {
+                    if (childrenReports) {
+                      selected.reports = childrenReports.concat(selected.reports);
+                    }
+                    return selected;
+                  });
+              })
+              .then(function(selected) {
+                sortReports(selected.reports);
                 return selected;
               });
           });
@@ -209,61 +280,37 @@ var _ = require('underscore'),
         });
       };
 
-      var mergeTasks = function(tasks) {
-        var selectedTasks = $scope.selected && $scope.selected.tasks;
-        $log.debug('Updating contact tasks', selectedTasks, tasks);
-        if (selectedTasks) {
-          tasks.forEach(function(task) {
-            for (var i = 0; i < selectedTasks.length; i++) {
-              if (selectedTasks[i]._id === task._id) {
-                selectedTasks[i] = task;
-                return;
-              }
-            }
-            selectedTasks.push(task);
-          });
-        }
-      };
-
       var getTasks = function() {
         $scope.selected.tasks = [];
-        if ($scope.selected.doc.type === 'district_hospital' ||
-            $scope.selected.doc.type === 'health_center') {
-          return;
-        }
-        var patientIds = [];
-        if ($scope.selected.doc.type === 'clinic') {
-          patientIds = _.pluck($scope.selected.children, 'id');
-        }
-        patientIds.push($scope.selected.doc._id);
-        RulesEngine.listen('ContactsContentCtrl', 'task', function(err, tasks) {
-          if (err) {
-            return $log.error('Error getting tasks', err);
-          }
-          mergeTasks(_.filter(tasks, function(task) {
-            return task.contact && _.contains(patientIds, task.contact._id);
-          }));
-          if (!$scope.$$phase) {
-            $scope.$apply();
-          }
-        });
+        var childrenPersonIds = $scope.selected.children && $scope.selected.children.persons &&
+          _.pluck($scope.selected.children.persons, 'id');
+        TasksForContact(
+          $scope.selected.doc._id,
+          $scope.selected.doc.type,
+          childrenPersonIds,
+          'ContactsContentCtrl',
+          function(areTasksEnabled, tasks) {
+            $scope.selected.areTasksEnabled = areTasksEnabled;
+            $scope.selected.tasks = tasks;
+            if (!$scope.$$phase) {
+              $scope.$apply();
+            }
+          });
       };
 
       var selectContact = function(id) {
         $scope.setLoadingContent(id);
         return getInitialData(id)
           .then(function(selected) {
-
             var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
             $scope.setSelected(selected);
             $scope.settingSelected(refreshing);
             getTasks();
             updateParentLink();
-
           })
           .catch(function(err) {
             $scope.clearSelected();
-            $log.error('Error fetching doc', err);
+            $log.error('Error setting up ContactsContentCtrl', err);
           });
       };
 

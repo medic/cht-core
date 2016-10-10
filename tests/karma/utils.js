@@ -18,12 +18,12 @@ window.KarmaUtils = {
       return KarmaUtils.mockPromise(err, promiseResult);
     };
   },
-  mockPromise: function(err, doc) {
+  mockPromise: function(err, payload) {
     var result = new Promise(function(resolve, reject) {
       if (err) {
         reject(err);
       } else {
-        resolve(doc);
+        resolve(payload);
       }
     });
     result.on = function() {

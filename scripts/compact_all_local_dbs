@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/sh -eu
 
 echo "[$0] Preparing to compact all local ddocs..."
 

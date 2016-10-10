@@ -64,19 +64,20 @@ var _ = require('underscore'),
     };
 
 
-    // take a moment or date object and return the week number
+    // take a moment or date object and return the iso week number
     var getWeek = function(date) {
-        return moment(date).week();
+        return moment(date).isoWeek();
+    };
+
+    // take a moment or date object and return the iso week year
+    // to be used with getWeek()
+    var getWeekYear = function(date) {
+        return moment(date).isoWeekYear();
     };
 
     // take a moment or date object and return the month number
     var getMonth = function(date) {
         return moment(date).month();
-    };
-
-    // take a moment or date object and return the full year number
-    var getYear = function(date) {
-        return moment(date).year();
     };
 
     /**
@@ -89,10 +90,10 @@ var _ = require('underscore'),
 
     /**
      * Converts a moment object to a year-week string, as used in request parameters
-     * and human readable.  eg, Date(2011, 2, 1) -> "2011-6"
+     * and human readable.  eg, Date(2011, 2, 1) -> "2011-5"
      */
     var dateToWeekStr = function (date) {
-        return moment(date).year() + '-' + getWeek(date);
+        return getWeekYear(date) + '-' + getWeek(date);
     };
 
     /**
@@ -186,10 +187,10 @@ var _ = require('underscore'),
 
         switch(selected_time_unit) {
             case 'week':
+                date = now.clone().subtract(1, 'weeks'); // get last week
                 weeks = (q.quantity ? parseInt(q.quantity, 10) : 3);
-                startweek = q.startweek || dateToWeekStr(now);
+                startweek = q.startweek || dateToWeekStr(date);
                 range = _.range(weeks);
-                date = now;
 
                 _.each(range, function() {
                     list.push(moment(date));
@@ -329,18 +330,18 @@ var _ = require('underscore'),
         var startdate = _.first(dates.list),
             enddate = _.last(dates.list),
             startkey = [dates.form],
-            endkey = [dates.form, enddate.year()];
+            endkey = [dates.form];
 
         if (dates.reporting_freq === 'week') {
-            startkey.push(startdate.year());
+            startkey.push(getWeekYear(startdate));
             startkey.push(getWeek(startdate));
-
+            endkey.push(getWeekYear(enddate));
             endkey.push(getWeek(enddate));
         } else {
             startdate = nextMonth(startdate);
             startkey.push(startdate.year());
             startkey.push(startdate.month() + 1);
-
+            endkey.push(enddate.year());
             endkey.push(enddate.month() + 1);
         }
         startkey.push({});
@@ -552,20 +553,25 @@ var _ = require('underscore'),
             while (date >= enddate) {
 
                 var extra = {},
-                    val = weekly_reports ? getWeek(date) : getMonth(date)+1;
-
-                var empty_report = {
-                    year: getYear(date),
-                    not_submitted: true
-                };
+                    val,
+                    year;
 
                 if (weekly_reports) {
+                    val = getWeek(date);
+                    year = getWeekYear(date);
                     extra.week_number = val;
                 } else {
+                    val = getMonth(date) + 1;
+                    year = date.year();
                     extra.month = val;
                 }
 
-                if (!_.contains(recorded_time_frames, getYear(date) + '' + pat(val))) {
+                var empty_report = {
+                    year: year,
+                    not_submitted: true
+                };
+
+                if (!_.contains(recorded_time_frames, year + '' + pat(val))) {
                     _.extend(empty_report, extra);
                     empty_report.name = getName(empty_report);
                     row.records.push(empty_report);

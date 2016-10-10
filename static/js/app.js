@@ -11,14 +11,16 @@ require('nvd3');
 
 require('angular');
 require('angular-cookie');
+require('angular-pouchdb');
+require('angular-resource');
 require('angular-route');
+require('angular-sanitize');
+require('angular-translate');
+require('angular-translate-interpolation-messageformat');
+require('angular-translate-handler-log');
 require('angular-ui-bootstrap');
 require('angular-ui-router');
-require('angular-translate');
 require('angularjs-nvd3-directives');
-require('angular-pouchdb');
-require('angular-sanitize');
-require('angular-resource');
 
 require('moment');
 require('moment/locale/es');
@@ -68,6 +70,8 @@ _.templateSettings = {
     $urlRouterProvider.when('', '/home');
     $translateProvider.useLoader('TranslationLoader', {});
     $translateProvider.useSanitizeValueStrategy('escape');
+    $translateProvider.addInterpolation('$translateMessageFormatInterpolation');
+    $translateProvider.useMissingTranslationHandlerLog();
     $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto|tel|sms|file|blob):/);
     var isDevelopment = window.location.hostname === 'localhost';
     $compileProvider.debugInfoEnabled(isDevelopment);
@@ -81,7 +85,7 @@ _.templateSettings = {
     version: '@@APP_CONFIG.version'
   });
   var POUCHDB_OPTIONS = {
-    local: { revs_limit: 1 }, // implicit auto compaction: https://github.com/pouchdb/pouchdb/issues/4372#issuecomment-223001626
+    local: { auto_compaction: true },
     remote: { skip_setup: true, ajax: { timeout: 30000 }}
   };
   app.constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);

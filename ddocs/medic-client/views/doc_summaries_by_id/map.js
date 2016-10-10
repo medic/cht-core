@@ -34,13 +34,6 @@ function(doc) {
       doc.type === 'health_center' ||
       doc.type === 'person') { // contact
     var place = doc.parent;
-    var parts = [];
-    while (place) {
-      if (place.name) {
-        parts.push(place.name);
-      }
-      place = place.parent;
-    }
     var phone = doc.phone || (doc.contact && doc.contact.phone);
     var name = doc.name || phone;
     emit([ doc._id ], {
@@ -48,6 +41,7 @@ function(doc) {
       name: name,
       phone: phone,
       type: doc.type,
+      primaryContactName: doc.contact && doc.contact.name,
       place: getPlaceHierarchy(doc)
     });
   }

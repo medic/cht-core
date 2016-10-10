@@ -207,17 +207,11 @@ module.exports = {
     },
     {
       "name": "can_view_tasks",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
+      "roles": []
     },
     {
       "name": "can_view_tasks_tab",
-      "roles": [
-        "national_admin",
-        "district_admin"
-      ]
+      "roles": []
     },
     {
       "name": "can_configure",
