@@ -106,3 +106,14 @@ exports['validateUserSettings roles must exist'] = function(test) {
   });
   test.done();
 };
+
+exports['validate person requires reported_date'] = function(test) {
+  var userCtx = {
+    name: 'a',
+    roles: ['_admin']
+  };
+  test.throws(function() {
+    lib.validate_doc_update({ type: 'person' }, {}, userCtx, {});
+  });
+  test.done();
+};
