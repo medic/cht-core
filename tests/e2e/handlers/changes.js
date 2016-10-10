@@ -111,20 +111,6 @@ describe('changes handler', function() {
       .catch(done);
   });
 
-  it('should allow access to replicate medic ddoc', function() {
-    // given user 'bob' is set up in fixtures
-    // and ddoc exists
-
-    // when
-    // request is made for changes to _design/medic
-    return requestChanges('bob', ['_design/medic'])
-      .then(function(changes) {
-
-        // then
-        return assertChangeIds(changes, '_design/medic');
-      });
-  });
-
   it('should filter the changes to relevant ones', function() {
     // given
     // a normal user (bob, from fixtures)
