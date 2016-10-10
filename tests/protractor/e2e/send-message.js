@@ -9,23 +9,27 @@ describe('Send message', function() {
 
   var ALICE = {
     _id: 'alice-contact',
+    reported_date: 1,
     type: 'person',
     name: 'Alice Alison',
     phone: '+447765902001'
   };
   var BOB_PLACE = {
     _id: 'bob-contact',
+    reported_date: 1,
     type: 'clinic',
     name: 'Bob Place'
   };
   var CAROL = {
     _id: 'carol-contact',
+    reported_date: 1,
     type: 'person',
     name: 'Carol Carolina',
     parent: BOB_PLACE
   };
   var DAVID = {
     _id: 'david-contact',
+    reported_date: 1,
     type: 'person',
     name: 'David Davidson',
     phone: '+447765902002',
