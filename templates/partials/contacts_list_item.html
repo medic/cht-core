@@ -8,7 +8,7 @@
         <div>
           <span class="name">{{contact.name}}</span>
         </div>
-        <div class="position">{{'contact.primary_contact_name' | translate:primaryContactName}}</div>
+        <div class="position">{{primaryContactName.name ? ('contact.primary_contact_name' | translate:primaryContactName) : ''}}</div>
     </div>
   </a>
 </li>
