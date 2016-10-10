@@ -101,7 +101,7 @@
               <h4><i class="fa fa-fw fa-user"></i><span translate>clinic.field.children</span></h4>
             </div>
           </div>
-          <div ng-show="selected.doc.type === 'clinic'" class="col-xs-1 tasks-count" translate>Tasks</div>
+          <div ng-show="selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-1 tasks-count" translate>Tasks</div>
         </div>
         <div class="card action-list children persons">
           <div class="accent"></div>
@@ -124,7 +124,7 @@
                   <span ng-bind-html="child.doc.date_of_birth | age"></span>
                 </div>
               </div>
-              <div ng-show="selected.doc.type === 'clinic'" class="col-xs-1 tasks-count">
+              <div ng-show="selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-1 tasks-count">
                 <span class="badge">{{ child.doc.tasks.length || 0 }}</span>
               </div>
             </a>
@@ -150,7 +150,7 @@
         </div>
       </div>
 
-      <div ng-if="selected.areTasksEnabled">
+      <div ng-if="selected.areTasksEnabled" mm-auth="can_view_tasks">
         <div class="action-header">
           <h4 translate>Tasks</h4>
           <span class="table-filter">
@@ -175,7 +175,7 @@
         </div>
       </div>
 
-      <div class="action-header">
+      <div class="action-header" mm-auth="can_view_reports">
         <h4 translate>Reports</h4>
         <span class="table-filter">
           <a ng-click="setReportsTimeWindowMonths(3)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 3}"  translate translate-values="{ MONTHS: 3 }" translate-interpolation="messageformat">n.month</a>
