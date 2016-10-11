@@ -8,22 +8,25 @@
       border-bottom: 1px solid @seperator-color;
       margin: 0;
       .cell {
-        padding: 15px;
+        padding: 5px 15px;
       }
     }
   }
   .card-title {
     margin-bottom: 5px;
     margin-top: 20px;
-    overflow: auto;
     padding-right: 15px;
     padding-left: 15px;
-    h3, h4 {
+    h3,
+    h4 {
       padding-left: 0;
       margin-top: 0;
       margin-bottom: 0;
       padding-right: 10px;
       display: inline;
+    }
+    .tasks-count {
+      text-align: center;
     }
   }
   h2 {
@@ -39,34 +42,11 @@
       margin-bottom: 1em;
     }
   }
-  .tasks-count {
-    text-align: right;
-  }
-  .action-list.persons {
-    .cell {
-      display: flex;
-      align-items: center;
-    }
-  }
-  .action-list.reports, .action-list.tasks {
-    a.cell {
-      font-weight: bold;
-      .cell-label {
-        font-weight: normal;
-        font-size: 1.429em;
-      }
-      .action-icon {
-        padding-right: 15px;
-      }
-    }
-  }
-  .action-list.reports a.cell .action-icon {
-    font-size: 3em;
-  }
   .action-list {
     border-bottom: 0;
     padding-top: 0;
     padding-bottom: 0;
+    clear: both;
     a.cell {
       display: inline-block;
       width: 100%;
@@ -78,8 +58,7 @@
         border-left-color: @contacts-color;
       }
       .cell-label {
-        font-weight: bold;
-        font-size: 1.286em;
+        font-size: 1.3em;
       }
     }
     .add {
@@ -96,6 +75,24 @@
     }
     .action-icon {
       float: left;
+    }
+    &.persons .cell {
+      display: flex;
+    }
+    &.reports,
+    &.tasks {
+      a.cell .action-icon {
+        padding-right: 15px;
+        font-size: 3em;
+      }
+    }
+    .tasks-count {
+      border-left: 2px solid @seperator-color;
+      display: flex;
+      align-items: center;
+      .badge {
+        margin: 0 auto;
+      }
     }
   }
   .col-xs-1,

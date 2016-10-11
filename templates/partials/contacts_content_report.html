@@ -4,7 +4,7 @@
     <div class="pull-right">
       <div ng-bind-html="report.reported_date | relativeDate"></div>
       <div class="pull-right">
-        <span ng-show="report.verified">Verified</span>
+        <span ng-show="report.verified" translate>Verified</span>
         <i ng-show="report.valid && !report.verified" class="fa fa-circle green-dot"></i>
         <i ng-show="!report.valid && !report.verified" class="fa fa-circle red-dot"></i>
         <i ng-show="report.valid && report.verified" class="fa fa-check-circle green-dot"></i>
@@ -13,7 +13,7 @@
     </div>
 
     <div>
-      <div>{{report.fields.place_name}}{{report.fields.patient_name}}</div>
+      <div ng-hide="selected.doc._id === report.fields.patient_id || selected.doc._id === report.fields.place_id">{{report.fields.place_name}}{{report.fields.patient_name}}</div>
       <div class="cell-label">{{report | summary:forms}}</div>
     </div>
 
