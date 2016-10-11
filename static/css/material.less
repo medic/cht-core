@@ -25,9 +25,9 @@
       padding-right: 10px;
       display: inline;
     }
-    .tasks-count {
-      text-align: center;
-    }
+  }
+  .tasks-count {
+    text-align: right;
   }
   h2 {
     margin-top: 0;
@@ -78,20 +78,13 @@
     }
     &.persons .cell {
       display: flex;
+      align-items: center;
     }
     &.reports,
     &.tasks {
       a.cell .action-icon {
         padding-right: 15px;
         font-size: 3em;
-      }
-    }
-    .tasks-count {
-      border-left: 2px solid @seperator-color;
-      display: flex;
-      align-items: center;
-      .badge {
-        margin: 0 auto;
       }
     }
   }
