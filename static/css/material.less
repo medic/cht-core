@@ -152,9 +152,17 @@
 
 @media (max-width: 767px) {
   .material {
-    .action-list, .action-list-title {
+    .action-list,
+    .action-list-title {
       margin-left: -15px;
       margin-right: -15px;
+    }
+    .meta .card .row {
+      border-bottom: 0;
+      .col-sm-3,
+      .col-sm-12 {
+        border-bottom: 1px solid @seperator-color;
+      }
     }
   }
   #snackbar .snackbar-content {
