@@ -109,6 +109,7 @@ exports['registration sets up schedule'] = function(test) {
     var doc = {
         reported_date: moment().toISOString(),
         form: 'PATR',
+        from: contact.phone,
         contact: contact
     };
 
@@ -201,6 +202,7 @@ exports['registration sets up schedule using bool_expr'] = function(test) {
     var doc = {
         reported_date: moment().toISOString(),
         form: 'PATR',
+        from: contact.phone,
         contact: contact,
         foo: 'baz'
     };

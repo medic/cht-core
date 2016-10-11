@@ -390,3 +390,81 @@ exports['resolve the recipient if required'] = function(test) {
         test.done();
     });
 };
+
+exports['resolve the reporting_unit from the from field'] = function(test) {
+    var phone = '+123456789000';
+    sinon.stub(transition, '_getConfig').returns({
+        '0': {
+            form: 'STCK',
+            condition: 'true',
+            message: 'alarm',
+            recipient: 'reporting_unit'
+        }
+    });
+    var messageFn = sinon.spy(messages, 'addMessage');
+    test.expect(4);
+    var doc = {
+        _id: '0b65f52b9c8ad5775f169cd5e07980fb',
+        _rev: '9-38b241baf39b9d21203628281f5c2b2e',
+        type: 'data_record',
+        from: phone,
+        form: 'STCK',
+        errors: [],
+        tasks: [
+            {
+                messages: [
+                    {
+                        to: 'reporting_unit',
+                        message: 'Test of SMS Alert for Stockout.',
+                        uuid: 'a611f595-671d-4997-9600-fdf1fd3d7a4e'
+                    }
+                ],
+                state: 'failed',
+                state_history: [
+                    {
+                        state: 'pending',
+                        timestamp: '2016-09-22T20:59:10.605Z'
+                    },
+                    {
+                        state: 'scheduled',
+                        timestamp: '2016-09-22T20:59:40.584Z'
+                    },
+                    {
+                        state: 'failed',
+                        state_details: {
+                            reason: 'destination.invalid'
+                        },
+                        timestamp: '2016-09-22T21:00:10.823Z'
+                    }
+                ],
+                state_details: {
+                    reason: 'destination.invalid'
+                }
+            }
+        ],
+        fields: {
+            year: '2015',
+            month: 2,
+            item_a: 7
+        },
+        reported_date: 1474577950459,
+        sms_message: {
+            message: 'STCK 3 2 7',
+            from: '+14168340434',
+            gateway_ref: '43a8b7c7-a216-46b1-b7f4-da450f2c3a75',
+            type: 'sms_message',
+            form: 'STCK'
+        }
+    };
+    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
+        test.ok(messageFn.calledOnce);
+        test.ok(messageFn.calledWith({
+            doc: doc,
+            phone: phone,
+            message: 'alarm'
+        }));
+        test.equals(err, null);
+        test.equals(changed, true);
+        test.done();
+    });
+};
