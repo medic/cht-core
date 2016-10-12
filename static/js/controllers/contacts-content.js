@@ -24,11 +24,8 @@ var _ = require('underscore'),
 
       'ngInject';
 
-      $scope.showParentLink = false;
-
       var taskEndDate,
           reportStartDate;
-
 
       $scope.filterTasks = function(task) {
         return !taskEndDate || taskEndDate.isAfter(task.date);
@@ -237,25 +234,52 @@ var _ = require('underscore'),
         return $q.resolve([]);
       };
 
+      var getParents = function(contactDoc) {
+        return getHomePlaceId().then(function(home) {
+          var parents = [];
+          var link = contactDoc._id !== home;
+          var current = contactDoc.parent;
+          while (current) {
+            parents.push({
+              _id: current._id,
+              name: current.name,
+              link: link
+            });
+            if (current._id === home) {
+              // don't link to any places above the users home place
+              link = false;
+            }
+            current = current.parent;
+          }
+          return parents;
+        });
+      };
+
       var getInitialData = function(contactId) {
         return DB().get(contactId)
           .then(function(contactDoc) {
             return $q.all([
               getReports([contactDoc]),
               isPersonAndPrimaryContact(contactDoc),
-              getChildren(contactDoc)
+              getChildren(contactDoc),
+              getParents(contactDoc)
             ])
               .then(function(results) {
                 var reports = results[0];
                 var isPrimaryContact = results[1];
                 var children = results[2];
+                var parents = results[3];
+                var schema = ContactSchema.get(contactDoc.type);
+
                 var selected = {
                   doc: contactDoc,
-                  reports: reports
+                  reports: reports,
+                  parents: parents,
+                  icon: schema.icon,
+                  label: schema.label,
+                  isPrimaryContact: isPrimaryContact
                 };
-                selected.icon = ContactSchema.get(contactDoc.type).icon;
-                selected.label = ContactSchema.get(contactDoc.type).label;
-                selected.isPrimaryContact = isPrimaryContact;
+
                 selected.fields = selectedSchemaVisibleFields(selected);
 
                 sortChildPersons(children.persons, contactDoc);
@@ -268,26 +292,18 @@ var _ = require('underscore'),
 
                 selected.children = children;
 
-                return getPersonReports(children.persons)
-                  .then(function(childrenReports) {
-                    if (childrenReports) {
-                      selected.reports = childrenReports.concat(selected.reports);
-                    }
-                    return selected;
-                  });
+                return getPersonReports(children.persons).then(function(childrenReports) {
+                  if (childrenReports) {
+                    selected.reports = childrenReports.concat(selected.reports);
+                  }
+                  return selected;
+                });
               })
               .then(function(selected) {
                 sortReports(selected.reports);
                 return selected;
               });
           });
-      };
-
-      var updateParentLink = function() {
-        getHomePlaceId().then(function(homeId) {
-          var docId = $scope.selected.doc && $scope.selected.doc._id;
-          $scope.showParentLink = docId && homeId !== docId;
-        });
       };
 
       var getTasks = function() {
@@ -316,7 +332,6 @@ var _ = require('underscore'),
             $scope.setSelected(selected);
             $scope.settingSelected(refreshing);
             getTasks();
-            updateParentLink();
           })
           .catch(function(err) {
             $scope.clearSelected();
