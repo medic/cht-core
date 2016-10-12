@@ -9,7 +9,7 @@ angular.module('inboxFilters').filter('resourceIcon',
       } else {
         src = '';
       }
-      return '<img class="resource-icon" name="' + name + '" ' + src + ' />';
+      return '<img class="resource-icon" title="' + name + '" ' + src + ' />';
     };
   }
 );
