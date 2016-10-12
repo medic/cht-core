@@ -231,6 +231,10 @@ module.exports = function(grunt) {
 
             // patch pouch to use doc ids query instead of changes when checking for cache invalidation
             'patch node_modules/pouchdb/lib/index-browser.js < patches/pouchdb-ddoc-cache-by-doc-id.patch',
+
+            // patch pouch to improve safari checks
+            // https://github.com/medic/medic-webapp/issues/2797
+            'patch node_modules/pouchdb/lib/index-browser.js < patches/pouchdb-ignore-safari-check.patch',
           ];
           return patches.join(' && ');
         }
