@@ -64,6 +64,8 @@ describe('sender directive', function() {
     scope.$digest();
     chai.expect(element.find('div .name').text()).to.equal('Clark');
     chai.expect(element.find('div .phone').text()).to.equal('+123');
-    chai.expect(element.find('div .position').text()).to.equal('Clarks House • Smallville • Metropolis');
+    chai.expect(element.find('div .position .lineage li:nth-child(1)').text()).to.equal('Clarks House');
+    chai.expect(element.find('div .position .lineage li:nth-child(2)').text()).to.equal('Smallville');
+    chai.expect(element.find('div .position .lineage li:nth-child(3)').text()).to.equal('Metropolis');
   });
 });

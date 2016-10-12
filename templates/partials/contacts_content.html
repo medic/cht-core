@@ -71,12 +71,9 @@
             <div class="col-sm-12">
               <div class="cell">
                 <label translate>contact.parent</label>
-                <p ng-show="showParentLink">
-                  <a ui-sref="contacts.detail({ id: selected.doc.parent._id })">{{selected.doc.parent.name}}</a>
-                </p>
-                <p ng-show="!showParentLink">
-                  {{selected.doc.parent.name}}
-                </p>
+                <ol class="horizontal lineage">
+                  <li ng-repeat="parent in selected.parents track by parent._id"><span ng-show="parent.link"><a ui-sref="contacts.detail({ id: parent._id })">{{parent.name}}</a></span><span ng-show="!parent.link">{{parent.name}}</span></li>
+                </ol>
               </div>
             </div>
           </div>

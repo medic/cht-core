@@ -19,7 +19,10 @@ var _ = require('underscore');
         entity = entity.parent;
       }
     }
-    return _.map(parts, _.escape).join(' • ');
+    var items = parts.map(function(part) {
+      return '<li>' + part + '</li>';
+    });
+    return '<ol class="horizontal lineage">' + items.join('') + '</ol>';
   };
 
   exports.sender = function(options) {

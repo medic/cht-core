@@ -629,31 +629,30 @@ body {
 
   ul {
     margin-bottom: 0;
-  }
+    > li {
+      border-bottom: 1px solid @seperator-color;
+      cursor: pointer;
+      white-space: nowrap;
+      overflow: hidden;
 
-  li {
-    border-bottom: 1px solid @seperator-color;
-    cursor: pointer;
-    white-space: nowrap;
-    overflow: hidden;
+      span {
+        white-space: normal;
+      }
 
-    span {
-      white-space: normal;
-    }
+      .mm-badge {
+        float: left;
+        margin-left: 0;
+      }
 
-    .mm-badge {
-      float: left;
-      margin-left: 0;
-    }
-
-    .message-wrapper {
-      padding: 1em;
-      border-left: 5px solid transparent;
-      min-height: 4em;
-      display: block;
-      text-decoration: none;
-      color: inherit;
-      outline: 0;
+      .message-wrapper {
+        padding: 1em;
+        border-left: 5px solid transparent;
+        min-height: 4em;
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        outline: 0;
+      }
     }
   }
 
@@ -1322,6 +1321,16 @@ a.fa:hover {
     border: 0;
     width: 100%
   }
+}
+
+.lineage li:after {
+  content: "•";
+  padding: 0 5px;
+}
+
+.lineage li:last-child:after {
+  content: "";
+  padding: 0;
 }
 
 @media (max-width: 767px) {
