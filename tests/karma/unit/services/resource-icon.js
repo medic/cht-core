@@ -90,15 +90,15 @@ describe('ResourceIcons service', function() {
       };
       get.returns(KarmaUtils.mockPromise(null, resources));
       var dom = $('<ul>' +
-                  '<li><img class="resource-icon" name="child"/></li>' +
-                  '<li><img class="resource-icon" name="adult"/></li>' +
+                  '<li><img class="resource-icon" title="child"/></li>' +
+                  '<li><img class="resource-icon" title="adult"/></li>' +
                 '</ul>');
       var service = injector.get('ResourceIcons');
       service.replacePlaceholders(dom);
       setTimeout(function() {
-        chai.expect(dom.find('.resource-icon[name="child"]').attr('src'))
+        chai.expect(dom.find('.resource-icon[title="child"]').attr('src'))
           .to.equal('data:image/png;base64,kiddlywinks');
-        chai.expect(dom.find('.resource-icon[name="adult"]').attr('src'))
+        chai.expect(dom.find('.resource-icon[title="adult"]').attr('src'))
           .to.equal(undefined);
         done();
       });
@@ -136,23 +136,23 @@ describe('ResourceIcons service', function() {
         .onFirstCall().returns(KarmaUtils.mockPromise(null, resources1))
         .onSecondCall().returns(KarmaUtils.mockPromise(null, resources2));
       var dom = $('<ul>' +
-                  '<li><img class="resource-icon" name="child"/></li>' +
-                  '<li><img class="resource-icon" name="adult"/></li>' +
+                  '<li><img class="resource-icon" title="child"/></li>' +
+                  '<li><img class="resource-icon" title="adult"/></li>' +
                 '</ul>');
       var service = injector.get('ResourceIcons');
       service.replacePlaceholders(dom);
       setTimeout(function() {
-        chai.expect(dom.find('.resource-icon[name="child"]').attr('src'))
+        chai.expect(dom.find('.resource-icon[title="child"]').attr('src'))
           .to.equal('data:image/png;base64,kiddlywinks');
-        chai.expect(dom.find('.resource-icon[name="adult"]').attr('src'))
+        chai.expect(dom.find('.resource-icon[title="adult"]').attr('src'))
           .to.equal(undefined);
 
         Changes.args[0][0].callback(); // invoke the changes listener
         service.replacePlaceholders(dom);
         setTimeout(function() {
-          chai.expect(dom.find('.resource-icon[name="child"]').attr('src'))
+          chai.expect(dom.find('.resource-icon[title="child"]').attr('src'))
             .to.equal('data:image/png;base64,kiddlywinks');
-          chai.expect(dom.find('.resource-icon[name="adult"]').attr('src'))
+          chai.expect(dom.find('.resource-icon[title="adult"]').attr('src'))
             .to.equal('data:image/png;base64,coffinstuffer');
           chai.expect(get.callCount).to.equal(2);
           done();

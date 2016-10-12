@@ -28,7 +28,7 @@ angular.module('inboxServices').factory('ResourceIcons', [
       elem = elem || $(document.body);
       elem.find('.resource-icon').each(function(index, element) {
         var elem = $(element);
-        var src = getSrc(elem.attr('name'));
+        var src = getSrc(elem.attr('title'));
         if (src) {
           elem.attr('src', src);
         } else {
