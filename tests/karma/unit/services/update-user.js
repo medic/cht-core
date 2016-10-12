@@ -221,7 +221,7 @@ describe('UpdateUser service', function() {
     $httpBackend.flush();
   });
 
-  it('can update settings only', function(done) {
+  it('can update settings only', function() {
 
     var updates = {
       favcolour: 'aqua',
@@ -244,14 +244,18 @@ describe('UpdateUser service', function() {
     }));
     put.returns(KarmaUtils.mockPromise());
 
-    service('org.couchdb.user:jerome', updates);
     setTimeout(function() {
       scope.$apply(); // needed to resolve the promises
+      setTimeout(function() {
+        scope.$apply(); // needed to resolve the promises
+      });
+    });
+
+    return service('org.couchdb.user:jerome', updates).then(function() {
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.firstCall.args[0]).to.deep.equal('org.couchdb.user:jerome');
       chai.expect(put.callCount).to.equal(1);
       chai.expect(put.firstCall.args[0]).to.deep.equal(expectedSettings);
-      done();
     });
   });
 
