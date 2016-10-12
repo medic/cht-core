@@ -125,7 +125,7 @@
                 </div>
               </div>
               <div ng-show="selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-1 tasks-count">
-                <span class="badge">{{ child.doc.tasks.length || 0 }}</span>
+                <span class="badge">{{(selected.tasks | filter:filterTasksByChild(child)).length}}</span>
               </div>
             </a>
           </div>

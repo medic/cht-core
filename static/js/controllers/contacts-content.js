@@ -47,6 +47,16 @@ var _ = require('underscore'),
         taskEndDate = weeks ? moment().add(weeks, 'weeks') : null;
       };
 
+      $scope.filterTasksByChild = function(child) {
+        return function(task) {
+          return task &&
+                 task.doc &&
+                 task.doc.contact &&
+                 task.doc.contact._id === child.doc._id;
+        };
+      };
+
+
       $scope.setTasksTimeWindowWeeks(1);
       $scope.setReportsTimeWindowMonths(3);
 
