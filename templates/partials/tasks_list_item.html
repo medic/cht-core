@@ -2,7 +2,7 @@
   <a class="message-wrapper" href="#tasks/{{task._id}}">
     <span class="mm-badge">{{task.icon | resourceIcon}}</span>
     <div class="detail">
-      <span class="time">{{task.date | relativeDay}}</span>
+      <span class="meta">{{task.date | relativeDay}}</span>
       <div class="description title">{{task.title | translateFrom:task}}</div>
       <div class="description priority-label">
         <span class="priority">

@@ -518,6 +518,10 @@ body {
       position: absolute;
       left: 5px;
     }
+    .report-icon {
+      padding-right: 0.5em;
+      float: left;
+    }
   }
   &.select-mode {
     .inbox-items li input[type="checkbox"] {
@@ -646,12 +650,19 @@ body {
 
       .message-wrapper {
         padding: 1em;
+        padding-left: 0.5em;
         border-left: 5px solid transparent;
         min-height: 4em;
         display: block;
         text-decoration: none;
         color: inherit;
         outline: 0;
+
+        .meta {
+          float: right;
+          text-align: right;
+          clear: right;
+        }
       }
     }
   }
@@ -700,9 +711,10 @@ body {
   }
 }
 
-.reports, .contacts {
+.reports,
+.contacts {
   .inbox-items .detail {
-    margin-left: 2.5em;
+    overflow: hidden;
   }
 }
 
@@ -776,6 +788,9 @@ body {
     float: right;
     clear: right;
     font-size: 1.2em;
+  }
+  .action-icon {
+    float: left;
   }
 }
 
@@ -927,7 +942,7 @@ a.fa:hover {
       }
       .sender,
       .report-name {
-        padding-left: 3em;
+        padding-left: 4em;
       }
     }
   }
@@ -995,12 +1010,8 @@ a.fa:hover {
   }
 }
 
-.time {
-  float: right;
-  text-align: right;
-}
-
 .item-content .time {
+  text-align: right;
   .relative-date-content {
     font-weight: bold;
   }
@@ -1014,6 +1025,7 @@ a.fa:hover {
   .position {
     color: @label-color;
     font-size: 0.8em;
+    white-space: normal;
   }
   .name {
     font-weight: bold;
@@ -1320,9 +1332,12 @@ a.fa:hover {
   }
 }
 
-.lineage li:after {
-  content: "•";
-  padding: 0 5px;
+.lineage {
+  margin-bottom: 0;
+  li:after {
+    content: "•";
+    padding: 0 5px;
+  }
 }
 
 .lineage li:last-child:after {
