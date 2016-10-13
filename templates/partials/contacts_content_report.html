@@ -13,6 +13,7 @@
     </div>
 
     <div>
+      <span class="action-icon" ng-bind-html="report | formIcon:forms"></span>
       <div ng-hide="selected.doc._id === report.fields.patient_id || selected.doc._id === report.fields.place_id">{{report.fields.place_name}}{{report.fields.patient_name}}</div>
       <div class="cell-label">{{report | summary:forms}}</div>
     </div>

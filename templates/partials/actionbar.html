@@ -31,8 +31,14 @@
           </a>
           <ul class="dropdown-menu" ng-show="nonContactForms.length">
             <li ng-repeat="form in nonContactForms | orderBy: 'title | translateFrom' track by (form._id || form.code)">
-              <a ng-show="form.title" ui-sref="reports.add({ formId: form.internalId })">{{form.title | translateFrom}}</a>
-              <a ng-show="form.name" ng-click="showMedicReporter(form.code)">{{form.name | translateFrom}}</a>
+              <a ng-show="form.title" ui-sref="reports.add({ formId: form.internalId })">
+                <span ng-bind-html="form.icon | resourceIcon"></span>
+                {{form.title | translateFrom}}
+              </a>
+              <a ng-show="form.name" ng-click="showMedicReporter(form.code)">
+                <span ng-bind-html="form.icon | resourceIcon"></span>
+                {{form.name | translateFrom}}
+              </a>
             </li>
           </ul>
           <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-start" mm-auth="can_bulk_delete_reports" ng-click="setSelectMode(true)">

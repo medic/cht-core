@@ -4,14 +4,14 @@
   padding: 1em 0;
 }
 
-.permissions .row {
+.permissions .row .col-xs-1 {
+  width: 12%; /* we need col-xs-1.5 */
+  text-align: center;
+}
+
+.page.configuration .row {
   padding: 1em 0;
   border-bottom: 1px solid @seperator-color;
-
-  .col-xs-1 {
-    width: 12%; /* we need col-xs-1.5 */
-    text-align: center;
-  }
 }
 
 .row.selection-heading {
@@ -24,8 +24,6 @@
   font-weight: bold;
 }
 .row.selection {
-  padding: 1em 0;
-  border-bottom: 1px solid @seperator-color;
   cursor: pointer;
   &:hover {
     background-color: @highlight-color;
@@ -46,8 +44,6 @@
 }
 
 .row.translation {
-  padding: 1em 0;
-  border-bottom: 1px solid @seperator-color;
   cursor: pointer;
   > div {
     overflow: hidden;

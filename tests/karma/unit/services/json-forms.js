@@ -31,18 +31,18 @@ describe('JsonForms service', function() {
 
   it('returns forms with old style labels', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, { forms: {
-      A: { meta: { code: 'A', label: 'First'  } },
-      B: { meta: { code: 'B', label: 'Second' } },
-      C: { meta: { code: 'C', label: 'Third'  } },
-      D: { meta: { code: 'D', label: 'Fourth' } }
+      A: { meta: { code: 'A', label: 'First',  icon: 'a' } },
+      B: { meta: { code: 'B', label: 'Second', icon: 'b' } },
+      C: { meta: { code: 'C', label: 'Third',  icon: 'c' } },
+      D: { meta: { code: 'D', label: 'Fourth', icon: 'd' } }
     } }));
     service()
       .then(function(actual) {
         chai.expect(actual).to.deep.equal([
-          { code: 'A', name: 'First'  },
-          { code: 'B', name: 'Second' },
-          { code: 'C', name: 'Third'  },
-          { code: 'D', name: 'Fourth' }
+          { code: 'A', name: 'First',  icon: 'a' },
+          { code: 'B', name: 'Second', icon: 'b' },
+          { code: 'C', name: 'Third',  icon: 'c' },
+          { code: 'D', name: 'Fourth', icon: 'd' }
         ]);
         done();
       })
@@ -52,17 +52,17 @@ describe('JsonForms service', function() {
   it('handles forms with no label', function(done) {
     Settings.returns(KarmaUtils.mockPromise(null, { forms: {
       A: { meta: { code: 'A' } },
-      B: { meta: { code: 'B' } },
+      B: { meta: { code: 'B', icon: 'b' } },
       C: { meta: { code: 'C', label: 'Third' } },
       D: { meta: { code: 'D' } }
     } }));
     service()
       .then(function(actual) {
         chai.expect(actual).to.deep.equal([
-          { code: 'A', name: undefined },
-          { code: 'B', name: undefined },
-          { code: 'C', name: 'Third' },
-          { code: 'D', name: undefined }
+          { code: 'A', name: undefined, icon: undefined },
+          { code: 'B', name: undefined, icon: 'b' },
+          { code: 'C', name: 'Third',   icon: undefined },
+          { code: 'D', name: undefined, icon: undefined }
         ]);
         done();
       })

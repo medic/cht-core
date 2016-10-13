@@ -25,7 +25,11 @@
     <fieldset>
       <legend translate>Installed Forms</legend>
       <ul>
-        <li ng-repeat="form in forms">{{form.meta.code}} {{form.meta.label | translateFrom}}</li>
+        <li ng-repeat="form in forms" class="row">
+          <div class="col-sm-1" ng-bind-html="form.meta.icon | resourceIcon"></div>
+          <div class="col-sm-1">{{form.meta.code}}</div>
+          <div class="col-sm-10">{{form.meta.label | translateFrom}}</div>
+        </li>
       </ul>
       <a class="btn btn-default" ng-attr-download="{{download.name}}" ng-href="{{download.url}}">
         <i class="fa fa-arrow-down"></i>

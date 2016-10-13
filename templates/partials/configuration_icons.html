@@ -32,10 +32,10 @@
   <div>
     <legend translate>icons</legend>
     <div class="loader" ng-show="loading"></div>
-    <ul class="resources-list">
+    <ul>
       <li ng-repeat="icon in icons" class="row">
-        <div class="col-sm-2">{{icon.name}}</div>
-        <div class="col-sm-10" ng-bind-html="icon.name | resourceIcon"></div>
+        <div class="col-sm-1" ng-bind-html="icon.name | resourceIcon"></div>
+        <div class="col-sm-11">{{icon.name}}</div>
       </li>
     </ul>
   </div>
