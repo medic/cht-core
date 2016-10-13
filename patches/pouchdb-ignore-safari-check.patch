@@ -1,0 +1,12 @@
+*** ./pouchdb-adapter-idb/src/index.js	2016-06-16 15:55:47.000000000 +0100
+--- index-patched.js	2016-10-12 13:09:39.000000000 +0100
+***************
+*** 980,985 ****
+--- 980,986 ----
+    var isSafari = typeof openDatabase !== 'undefined' &&
+      /(Safari|iPhone|iPad|iPod)/.test(navigator.userAgent) &&
+      !/Chrome/.test(navigator.userAgent) &&
++     !/TECNO/.test(navigator.userAgent) &&
+      !/BlackBerry/.test(navigator.platform);
+  
+    // some outdated implementations of IDB that appear on Samsung
