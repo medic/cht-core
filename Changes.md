@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 2.8.2
+
+### October 13, 2016
+
+### Bug fixes
+
+- Ensure PouchDB doesn't mis-label TECNO phones as devices running Safari. Issue: #2797
+
 ## 2.8.1
 
 ### October 10, 2016
