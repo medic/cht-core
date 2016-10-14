@@ -1,4 +1,4 @@
-describe('ContactSchema service', function() {
+describe.only('ContactSchema service', function() {
   'use strict';
 
   var service,
@@ -165,7 +165,6 @@ describe('ContactSchema service', function() {
           pluralLabel: 'contact.type.person.plural',
           addButtonLabel: 'contact.type.person.new',
           icon: 'fa-user',
-          isPlace: false,
           fields: {
             name: {
               type: 'string',
@@ -201,7 +200,6 @@ describe('ContactSchema service', function() {
           pluralLabel: 'contact.type.district_hospital.plural',
           addButtonLabel: 'contact.type.district_hospital.new',
           icon: 'fa-building',
-          isPlace: true,
           fields: {
             name: {
               type: 'string',
@@ -231,7 +229,6 @@ describe('ContactSchema service', function() {
           pluralLabel: 'contact.type.health_center.plural',
           addButtonLabel: 'contact.type.health_center.new',
           icon: 'fa-hospital-o',
-          isPlace: true,
           fields: {
             name: {
               type: 'string',
@@ -265,7 +262,6 @@ describe('ContactSchema service', function() {
           pluralLabel: 'contact.type.clinic.plural',
           addButtonLabel: 'contact.type.clinic.new',
           icon: 'fa-group',
-          isPlace: true,
           fields: {
             name: {
               type: 'string',
