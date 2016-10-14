@@ -139,11 +139,11 @@ function normalise(type, schema) {
 }
 
 function getSchema() {
-  var normalizedSchema = {};
+  var normalisedSchema = {};
   rawSchema.forEach(function(elem) {
-    normalizedSchema[elem.type] = normalise(elem.type, elem.schema);
+    normalisedSchema[elem.type] = normalise(elem.type, elem.schema);
   });
-  return normalizedSchema;
+  return normalisedSchema;
 }
 
 function getTypesInOrder() {
