@@ -1,10 +1,12 @@
 var _ = require('underscore');
 
 /**
- * Schema used for Enketo contact forms.
+ * Service to prepare the schema used for Enketo contact forms.
  * Also contains helper functions to access the type hierarchy.
  */
-var rawSchema = [
+
+// Keep this array in hierarchical order.
+var RAW_SCHEMAS = [
   {
     type: 'district_hospital',
     isPlace: true,
@@ -140,14 +142,14 @@ function normalise(type, schema) {
 
 function getSchema() {
   var normalisedSchema = {};
-  rawSchema.forEach(function(elem) {
+  RAW_SCHEMAS.forEach(function(elem) {
     normalisedSchema[elem.type] = normalise(elem.type, elem.schema);
   });
   return normalisedSchema;
 }
 
 function getTypesInOrder() {
-  return rawSchema.map(function(elem) {
+  return RAW_SCHEMAS.map(function(elem) {
     return elem.type;
   });
 }
@@ -225,7 +227,7 @@ angular.module('inboxServices').service('ContactSchema',
         });
       },
       getPlaceTypes: function() {
-        var placeTypes = rawSchema.map(function(elem) {
+        var placeTypes = RAW_SCHEMAS.map(function(elem) {
           if (elem.isPlace) {
             return elem.type;
           }
