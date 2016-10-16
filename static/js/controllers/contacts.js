@@ -28,6 +28,7 @@ var scrollLoader = require('../modules/scroll-loader');
 
       var liveList = LiveList.contacts;
 
+      $scope.loading = true;
       $scope.selected = null;
       $scope.filters = {};
       var defaultTypeFilter = {};
