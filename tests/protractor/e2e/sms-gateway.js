@@ -213,7 +213,7 @@ describe('sms-gateway api', function() {
       }, 10000);
       element(by.css('#reports-list li:first-child .description')).click();
       browser.wait(function() {
-        return browser.isElementPresent(by.css('#reports-content .body .summary .mm-badge'));
+        return browser.isElementPresent(by.css('#reports-content .body .item-summary .icon'));
       }, 10000);
 
       browser.sleep(100); // without this the elements are found to be detached...
@@ -268,7 +268,7 @@ describe('sms-gateway api', function() {
       }, 10000);
       element(by.css('#reports-list li:first-child .description')).click();
       browser.wait(function() {
-        return browser.isElementPresent(by.css('#reports-content .body .summary .mm-badge'));
+        return browser.isElementPresent(by.css('#reports-content .body .item-summary .icon'));
       }, 10000);
 
       browser.sleep(100); // without this the elements are found to be detached...
