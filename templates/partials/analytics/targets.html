@@ -1,7 +1,7 @@
 <div class="targets">
   <div class="col-xs-12 col-md-6 col-lg-4 target" ng-repeat="target in targets">
     <div class="contents">
-      <div class="row">
+      <div>
         <div class="pull-left icon" ng-bind-html="target.icon | resourceIcon"></div>
         <div class="right-wrapper">
           <div class="right-column">
@@ -11,7 +11,7 @@
           <h4>{{target.name | translateFrom}}</h4>
         </div>
       </div>
-      <div class="row">
+      <div>
         <div class="progress">
           <div class="progress-bar" role="progressbar" aria-valuenow="{{target.count}}" aria-valuemin="0" aria-valuemax="{{target.goal}}"
           style="width:{{target.displayProgress}}%"></div>
