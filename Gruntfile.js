@@ -142,7 +142,8 @@ module.exports = function(grunt) {
             cwd: 'node_modules',
             src: [
               'bootstrap-daterangepicker/**',
-              'font-awesome/**'
+              'font-awesome/**',
+              'pouchdb-adapter-idb/**',
             ],
             dest: 'node_modules_backup'
           }
@@ -198,7 +199,8 @@ module.exports = function(grunt) {
         cmd: function() {
           var modulesToPatch = [
             'bootstrap-daterangepicker',
-            'font-awesome'
+            'font-awesome',
+            'pouchdb-adapter-idb',
           ];
           return modulesToPatch.map(function(module) {
             var backupPath = 'node_modules_backup/' + module;
@@ -226,6 +228,10 @@ module.exports = function(grunt) {
             // patch font-awesome to remove version attributes so appcache works
             // https://github.com/FortAwesome/Font-Awesome/issues/3286
             'patch node_modules/font-awesome/less/path.less < patches/font-awesome-remove-version-attribute.patch',
+
+            // patch pouch to improve safari checks
+            // https://github.com/medic/medic-webapp/issues/2797
+            'patch node_modules/pouchdb-adapter-idb/src/index.js < patches/pouchdb-ignore-safari-check.patch',
           ];
           return patches.join(' && ');
         }

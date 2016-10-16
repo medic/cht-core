@@ -1,17 +1,14 @@
 /**
  * Service to start modals.
  *
- * Modal({
- *  templateUrl: templateUrlVal, // the template to render
- *   controller: controllerName, // the controller to invoke
- *   model: {}  // optional - bound to $scope.model
- * }).then(function() {
- *   // User confirmed!
- *   doHappyThings();
- * }).catch(function() {
- *   // User rejected :(
- *   doMessedUpThings();
- * });
+ * Takes an object as a parameter with the properties:
+ * - templateUrl    (String) The URL of the template to render
+ * - controller     (String) The name of the controller to invoke
+ * - model          (Object) (optional) The object to bind to the $scope
+ * - singleton      (boolean) (optional) Pass true if only one of this type
+ *                  of modal should be shown at a time. This will close the
+ *                  previous modal so don't use it on modals that allow user
+ *                  input. Defaults to false.
  *
  * In the modal template use the mm-modal directive to provide
  * the modal boilerplate.
@@ -32,6 +29,8 @@ angular.module('inboxServices').factory('Modal',
   ) {
     'use strict';
     'ngInject';
+
+    var instanceCache = {};
 
     var getScope = function(model) {
       var scope = $rootScope.$new();
@@ -63,11 +62,18 @@ angular.module('inboxServices').factory('Modal',
       if (!options.controller) {
         return $q.reject('No controller speficied.');
       }
-      return $uibModal.open({
+      var instance = $uibModal.open({
         scope: getScope(options.model),
         templateUrl: options.templateUrl,
         controller: options.controller
-      }).result;
+      });
+      if (options.singleton) {
+        if (instanceCache[options.templateUrl]) {
+          instanceCache[options.templateUrl].close();
+        }
+        instanceCache[options.templateUrl] = instance;
+      }
+      return instance.result;
     };
   }
 );

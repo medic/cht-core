@@ -1,102 +1,122 @@
 var _ = require('underscore');
 
-var CLINIC = {
-  icon: 'fa-group',
-  addButtonLabel: 'contact.type.clinic.new',
-  isPlace: true,
-  label: 'contact.type.clinic',
-  pluralLabel: 'contact.type.clinic.plural',
-  fields: {
-    name: {
-      type: 'string',
-      required: true,
-    },
-    parent: {
-      type: 'db:health_center',
-      required: true,
-    },
-    contact: {
-      type: 'db:person',
-      required: true,
-      parent: 'PARENT'
-    },
-    location: {
-      type: 'geopoint',
-      hide_in_view: true,
-    },
-  },
-};
+/**
+ * Service to prepare the schema used for Enketo contact forms.
+ * Also contains helper functions to access the type hierarchy.
+ */
 
-var DISTRICT_HOSPITAL = {
-  icon: 'fa-building',
-  addButtonLabel: 'contact.type.district_hospital.new',
-  isPlace: true,
-  label: 'contact.type.district_hospital',
-  pluralLabel: 'contact.type.district_hospital.plural',
-  fields: {
-    name: {
-      type: 'string',
-      required: true,
-    },
-    contact: {
-      type: 'db:person',
-      required: true,
-      parent: 'PARENT'
-    },
-    external_id: 'string',
-    notes: 'text',
+// Keep this array in hierarchical order.
+var RAW_SCHEMAS = [
+  {
+    type: 'district_hospital',
+    isPlace: true,
+    schema: {
+      icon: 'fa-building',
+      addButtonLabel: 'contact.type.district_hospital.new',
+      label: 'contact.type.district_hospital',
+      pluralLabel: 'contact.type.district_hospital.plural',
+      fields: {
+        name: {
+          type: 'string',
+          required: true,
+        },
+        contact: {
+          type: 'db:person',
+          required: true,
+          parent: 'PARENT'
+        },
+        external_id: 'string',
+        notes: 'text',
+      },
+    }
   },
-};
 
-var HEALTH_CENTER = {
-  icon: 'fa-hospital-o',
-  addButtonLabel: 'contact.type.health_center.new',
-  isPlace: true,
-  label: 'contact.type.health_center',
-  pluralLabel: 'contact.type.health_center.plural',
-  fields: {
-    name: {
-      type: 'string',
-      required: true,
-    },
-    parent: {
-      type: 'db:district_hospital',
-      required: true,
-    },
-    contact: {
-      type: 'db:person',
-      required: true,
-      parent: 'PARENT'
-    },
-    external_id: 'string',
-    notes: 'text',
+  {
+    type: 'health_center',
+    isPlace: true,
+    schema: {
+      icon: 'fa-hospital-o',
+      addButtonLabel: 'contact.type.health_center.new',
+      label: 'contact.type.health_center',
+      pluralLabel: 'contact.type.health_center.plural',
+      fields: {
+        name: {
+          type: 'string',
+          required: true,
+        },
+        parent: {
+          type: 'db:district_hospital',
+          required: true,
+        },
+        contact: {
+          type: 'db:person',
+          required: true,
+          parent: 'PARENT'
+        },
+        external_id: 'string',
+        notes: 'text',
+      },
+    }
   },
-};
 
-var PERSON = {
-  icon: 'fa-user',
-  addButtonLabel: 'contact.type.person.new',
-  isPlace: false,
-  label: 'contact.type.person',
-  pluralLabel: 'contact.type.person.plural',
-  fields: {
-    name: {
-      type: 'string',
-      required: true,
-    },
-    date_of_birth: 'date',
-    phone: {
-      type: 'tel',
-      required: true,
-    },
-    alternate_phone: 'tel',
-    notes: 'text',
-    parent: {
-      type: 'custom:medic-place',
-      hide_in_form: true,
-    },
+  {
+    type: 'clinic',
+    isPlace: true,
+    schema: {
+      icon: 'fa-group',
+      addButtonLabel: 'contact.type.clinic.new',
+      label: 'contact.type.clinic',
+      pluralLabel: 'contact.type.clinic.plural',
+      fields: {
+        name: {
+          type: 'string',
+          required: true,
+        },
+        parent: {
+          type: 'db:health_center',
+          required: true,
+        },
+        contact: {
+          type: 'db:person',
+          required: true,
+          parent: 'PARENT'
+        },
+        location: {
+          type: 'geopoint',
+          hide_in_view: true,
+        },
+      },
+    }
   },
-};
+
+  {
+    type: 'person',
+    isPlace: false,
+    schema: {
+      icon: 'fa-user',
+      addButtonLabel: 'contact.type.person.new',
+      label: 'contact.type.person',
+      pluralLabel: 'contact.type.person.plural',
+      fields: {
+        name: {
+          type: 'string',
+          required: true,
+        },
+        date_of_birth: 'date',
+        phone: {
+          type: 'tel',
+          required: true,
+        },
+        alternate_phone: 'tel',
+        notes: 'text',
+        parent: {
+          type: 'custom:medic-place',
+          hide_in_form: true,
+        },
+      },
+    }
+  }
+];
 
 /**
  * Normalise the schema.
@@ -121,13 +141,17 @@ function normalise(type, schema) {
 }
 
 function getSchema() {
-  return {
-    // KEEP KEYS IN HIERARCHICAL ORDER!
-    district_hospital: normalise('district_hospital', DISTRICT_HOSPITAL),
-    health_center: normalise('health_center', HEALTH_CENTER),
-    clinic: normalise('clinic', CLINIC),
-    person: normalise('person', PERSON),
-  };
+  var normalisedSchema = {};
+  RAW_SCHEMAS.forEach(function(elem) {
+    normalisedSchema[elem.type] = normalise(elem.type, elem.schema);
+  });
+  return normalisedSchema;
+}
+
+function getTypesInOrder() {
+  return RAW_SCHEMAS.map(function(elem) {
+    return elem.type;
+  });
 }
 
 var RESERVED_FIELD_NAMES = [
@@ -183,7 +207,7 @@ angular.module('inboxServices').service('ContactSchema',
       getBelow: function(limit) {
         var schema = getSchema();
         var deleting;
-        _.each(Object.keys(schema).reverse(), function(key) {
+        _.each(getTypesInOrder().reverse(), function(key) {
           if (key === limit) {
             deleting = true;
           }
@@ -203,16 +227,14 @@ angular.module('inboxServices').service('ContactSchema',
         });
       },
       getPlaceTypes: function() {
-        var placeTypes = _.map(getSchema(), function(value, key) {
-          if (value.isPlace) {
-            return key;
+        var placeTypes = RAW_SCHEMAS.map(function(elem) {
+          if (elem.isPlace) {
+            return elem.type;
           }
         });
         return _.filter(placeTypes, function(val) { return val !== undefined; });
       },
-      getTypes: function() {
-        return Object.keys(getSchema());
-      },
+      getTypes: getTypesInOrder,
       getVisibleFields: function() {
         // return a modified schema, missing special fields such as `parent`, and
         // anything included in the `name` attribute
@@ -238,6 +260,7 @@ angular.module('inboxServices').service('ContactSchema',
         });
         return schema;
       },
+      // Used by Enketo.
       validate: validateSchema,
     };
   }

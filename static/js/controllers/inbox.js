@@ -140,7 +140,8 @@ var feedback = require('../modules/feedback'),
       $scope.navigationCancel = function() {
         Modal({
           templateUrl: 'templates/modals/navigation_confirm.html',
-          controller: 'NavigationConfirmCtrl'
+          controller: 'NavigationConfirmCtrl',
+          singleton: true
         })
         .then(function() {
           if ($scope.cancelCallback) {
@@ -335,7 +336,8 @@ var feedback = require('../modules/feedback'),
       $scope.openTourSelect = function() {
         Modal({
           templateUrl: 'templates/modals/tour_select.html',
-          controller: 'TourSelectCtrl'
+          controller: 'TourSelectCtrl',
+          singleton: true
         });
       };
 
@@ -626,7 +628,8 @@ var feedback = require('../modules/feedback'),
       var showUpdateReady = function() {
         Modal({
           templateUrl: 'templates/modals/version_update.html',
-          controller: 'VersionUpdateCtrl'
+          controller: 'VersionUpdateCtrl',
+          singleton: true
         })
         .catch(function() {
           $log.debug('Delaying update');
