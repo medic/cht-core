@@ -103,19 +103,19 @@
         <div class="card action-list children persons">
           <div class="accent"></div>
           <div class="row" ng-repeat="child in selected.children.persons">
-            <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell col-xs-12">
-              <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12">
+            <a ui-sref="contacts.detail({ id: child.doc._id })" class=" item-summary cell col-xs-12">
+              <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12 detail">
                 <div class="cell-label">
                   <i class="fa fa-star primary" ng-show="child.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
-                  <span>{{child.doc.name}}</span>
+                  <span class="name">{{child.doc.name}}</span>
                 </div>
                 <div class="col-sm-3" ng-bind-html="child.doc.title"></div>
               </div>
 
-              <div ng-show="selected.doc.type === 'clinic'" class="col-xs-11">
+              <div ng-show="selected.doc.type === 'clinic'" class="col-xs-11 detail">
                 <div class="cell-label">
                   <i class="fa fa-star primary" ng-show="child.isPrimaryContact" translate translate-attr-title="clinic.field.contact"></i>
-                  <span>{{child.doc.name}}</span>
+                  <span class="name">{{child.doc.name}}</span>
                 </div>
                 <div>
                   <span ng-bind-html="child.doc.date_of_birth | age"></span>
@@ -138,9 +138,11 @@
           <div class="accent"></div>
           <div class="row" ng-repeat="child in selected.children.places">
             <div class="col-sm-12">
-              <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell">
-                <div class="cell-label">{{child.doc.name}}</div>
-                <div ng-show="child.doc.contact.name"><span translate>Primary contact</span>: {{child.doc.contact.name}}</div>
+              <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell item-summary">
+                <div class="detail">
+                  <div class="name">{{child.doc.name}}</div>
+                  <div ng-show="child.doc.contact.name"><span translate>Primary contact</span>: {{child.doc.contact.name}}</div>
+                </div>
               </a>
             </div>
           </div>

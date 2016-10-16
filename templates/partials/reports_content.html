@@ -19,24 +19,23 @@
 
     <div ng-repeat="selection in selected track by selection._id" ng-init="summary = selection.report || selection.summary; valid = (selection.summary && selection.summary.valid) || (selection.report && !selection.report.errors.length)" class="body report-body">
 
-      <div class="summary" ng-click="toggleExpand(selection)">
-        <!-- TODO extract this common component -->
-        <div class="pull-right">
+      <div class="item-summary" ng-click="toggleExpand(selection)">
+        <span class="icon" ng-bind-html="summary | formIcon:forms"></span>
+        <a class="deselect" ng-show="selectMode" ng-click="deselect(summary, $event)">
+          <i class="fa fa-minus-circle"></i>
+        </a>
+        <div class="detail">
           <div class="time" ng-bind-html="summary.reported_date | fullDate"></div>
-          <div class="pull-right">
+          <div class="status">
             <i ng-show="valid && !summary.verified" class="fa fa-circle green-dot"></i>
             <i ng-show="!valid && !summary.verified" class="fa fa-circle red-dot"></i>
             <i ng-show="valid && summary.verified" class="fa fa-check-circle green-dot"></i>
             <i ng-show="!valid && summary.verified" class="fa fa-check-circle red-dot"></i>
           </div>
-        </div>
-        <span class="action-icon" ng-bind-html="summary | formIcon:forms"></span>
 
-        <a class="deselect" ng-show="selectMode" ng-click="deselect(summary, $event)">
-          <i class="fa fa-minus-circle"></i>
-        </a>
-        <mm-sender message="summary"></mm-sender>
-        <div class="report-name">{{summary | title:forms}}</div>
+          <mm-sender message="summary"></mm-sender>
+          <div>{{summary | title:forms}}</div>
+        </div>
       </div>
 
       <div ng-show="selection.loading">

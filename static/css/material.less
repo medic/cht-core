@@ -4,12 +4,12 @@
     border: 1px solid @seperator-color;
     border-bottom: 0;
     background-color: white;
-    .row {
-      border-bottom: 1px solid @seperator-color;
-      margin: 0;
-      .cell {
-        padding: 10px 15px;
-      }
+  }
+  .row {
+    border-bottom: 1px solid @seperator-color;
+    margin: 0;
+    .cell {
+      padding: 10px 15px;
     }
   }
   .card-title {
@@ -55,23 +55,6 @@
       color: inherit;
       &:hover {
         text-decoration: none;
-        border-left-color: @contacts-color;
-      }
-      .cell-label {
-        font-size: 1.3em;
-        font-weight: bold;
-      }
-    }
-    .add {
-      .fa {
-        float: right;
-        line-height: 1.5em;
-      }
-      a:hover {
-        border-left-color: @ok-color;
-        .fa {
-          color: @ok-color;
-        }
       }
     }
     .action-icon {
@@ -80,13 +63,6 @@
     &.persons .cell {
       display: flex;
       align-items: center;
-    }
-    &.reports,
-    &.tasks {
-      a.cell .action-icon {
-        padding-right: 15px;
-        font-size: 3em;
-      }
     }
   }
   .col-xs-1,

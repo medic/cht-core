@@ -1,12 +1,10 @@
 <li class="{{isRead(report) ? 'read' : ''}}" data-record-id="{{report._id}}">
-  <a class="message-wrapper" href="#reports/{{report._id}}">
+  <a class="item-summary message-wrapper" href="#reports/{{report._id}}">
     <input type="checkbox">
-    <span class="report-icon">{{report | formIcon:forms}}</span>
+    <span class="icon">{{report | formIcon:forms}}</span>
     <div class="detail">
-      <div class="meta">
-        <div class="time">{{report.reported_date | relativeDay}}</div>
-      </div>
-      <div class="meta">
+      <div class="time">{{report.reported_date | relativeDay}}</div>
+      <div class="status">
         <i class="fa {{report.valid ? 'green-dot' : 'red-dot'}} {{report.verified ? 'fa-check-circle' : 'fa-circle'}}"></i>
       </div>
       <div class="sender">

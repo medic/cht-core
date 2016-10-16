@@ -515,12 +515,8 @@ body {
       display: none;
       float: left;
       height: 2em;
-      position: absolute;
-      left: 5px;
-    }
-    .report-icon {
-      padding-right: 0.5em;
-      float: left;
+      margin-left: -5px;
+      margin-right: 5px;
     }
   }
   &.select-mode {
@@ -553,13 +549,8 @@ body {
       margin-top: 0.42em;
     }
   }
-  .action-list {
-    .accent {
-      border-top: 5px solid transparent;
-    }
-    .row a {
-      border-left: 5px solid transparent;
-    }
+  .action-list .accent {
+    border-top: 5px solid transparent;
   }
   .action-list.children {
     .accent,
@@ -643,13 +634,7 @@ body {
         white-space: normal;
       }
 
-      .mm-badge {
-        float: left;
-        margin-left: 0;
-      }
-
       .message-wrapper {
-        padding: 1em;
         padding-left: 0.5em;
         border-left: 5px solid transparent;
         min-height: 4em;
@@ -657,12 +642,6 @@ body {
         text-decoration: none;
         color: inherit;
         outline: 0;
-
-        .meta {
-          float: right;
-          text-align: right;
-          clear: right;
-        }
       }
     }
   }
@@ -688,10 +667,6 @@ body {
     margin: 1em;
   }
 
-  .time {
-    margin-left: 1em;
-  }
-
   .padding {
     height: 150px;
   }
@@ -711,19 +686,8 @@ body {
   }
 }
 
-.reports,
-.contacts {
-  .inbox-items .detail {
-    overflow: hidden;
-  }
-}
-
-.messages .inbox-items .detail {
-  padding-right: 0.5em;
-}
-
 .task-state {
-  color: #AAAAAA;
+  color: @label-color;
   .state {
     font-weight: bold;
     &:before {
@@ -764,12 +728,6 @@ body {
   padding: 0;
   border: 1px solid @seperator-color;
   border-width: 0 1px;
-  .status {
-    clear: both;
-    font-size: 1.5em;
-    text-align: center;
-    margin-bottom: -1.3em;
-  }
   .body p {
     word-wrap: break-word;
     margin: 0;
@@ -788,6 +746,8 @@ body {
     float: right;
     clear: right;
     font-size: 1.2em;
+    margin-right: -10px;
+    margin-top: -14px;
   }
   .action-icon {
     float: left;
@@ -899,10 +859,6 @@ a.fa:hover {
       font-size: 1.4em;
     }
 
-    .report-name {
-      font-weight: bold;
-    }
-
     h5 {
       text-align: center;
       margin-top: -1em;
@@ -935,16 +891,6 @@ a.fa:hover {
       color: @lightgrey;
     }
 
-    .summary {
-      padding: 1em;
-      .mm-badge {
-        float: left;
-      }
-      .sender,
-      .report-name {
-        padding-left: 4em;
-      }
-    }
   }
 
   .task-list > li {
@@ -972,9 +918,6 @@ a.fa:hover {
 
 .tasks {
   .inbox-items {
-    .mm-badge {
-      background-color: inherit;
-    }
     .message-wrapper:after {
       visibility: hidden;
       display: block;
@@ -983,13 +926,12 @@ a.fa:hover {
       clear: both;
       height: 0;
     }
-    .priority {
-      float: right;
-      margin-top: 0.2em;
-    }
   }
   .priority .fa {
     display: none;
+  }
+  .priority-label {
+    overflow: initial;
   }
   .high-priority {
     .priority,
@@ -1007,17 +949,6 @@ a.fa:hover {
     .medium-priority-icon {
       display: inherit;
     }
-  }
-}
-
-.item-content .time {
-  text-align: right;
-  .relative-date-content {
-    font-weight: bold;
-  }
-  .full-date {
-    color: @label-color;
-    font-size: 0.8em;
   }
 }
 
