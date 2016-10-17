@@ -88,11 +88,11 @@ var _ = require('underscore');
               (typeof form.context.place === 'undefined' && form.context.person))) {
             return false;
           }
+        }
 
-          if (form.context.expression &&
-              !evaluateExpression(form.context.expression, options.doc, user)) {
-            return false;
-          }
+        if (form.context.expression &&
+            !evaluateExpression(form.context.expression, options.doc, user)) {
+          return false;
         }
 
         if (!form.context.permission) {

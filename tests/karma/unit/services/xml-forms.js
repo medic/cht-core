@@ -635,4 +635,45 @@ describe('XmlForms service', function() {
       }
     });
   });
+
+  it('can filter out when no contact selected', function(done) {
+    var given = [
+      {
+        id: 'visit',
+        doc: {
+          _id: 'visit',
+          internalId: 'visit',
+          _attachments: { xml: { something: true } },
+          context: {
+            expression: '!!contact'
+          },
+        },
+      },
+      {
+        id: 'registration',
+        doc: {
+          _id: 'visit',
+          internalId: 'visit',
+          _attachments: { xml: { something: true } },
+          context: {
+            expression: '!contact'
+          },
+        },
+      }
+    ];
+    dbQuery.returns(KarmaUtils.mockPromise(null, { rows: given }));
+    UserContact.returns(KarmaUtils.mockPromise());
+    var service = $injector.get('XmlForms');
+    service('test', {}, function(err, actual) {
+      try {
+        chai.expect(err).to.equal(null);
+        chai.expect(actual.length).to.equal(1);
+        chai.expect(actual[0]).to.deep.equal(given[1].doc);
+        done();
+      } catch(e) {
+        // don't let assertion errors bubble up to the service again
+        done(e);
+      }
+    });
+  });
 });
