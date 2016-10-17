@@ -7,30 +7,13 @@ var format = require('../modules/format'),
 
   var module = angular.module('inboxFilters');
 
-  var getForm = function(record, forms) {
-    return _.findWhere(forms, { code: record.form });
-  };
-
   var getFormName = function(TranslateFrom, record, forms) {
-    var form = getForm(record, forms);
+    var form = _.findWhere(forms, { code: record.form });
     if (form) {
       return TranslateFrom(form.name);
     }
     return record.form;
   };
-
-  module.filter('formIcon', function(
-    resourceIconFilter
-  ) {
-    'ngInject';
-    return function(record, forms) {
-      if (!record || !forms || !record.form) {
-        return '';
-      }
-      var form = getForm(record, forms);
-      return resourceIconFilter(form && form.icon);
-    };
-  });
 
   module.filter('summary', function(
     $translate,
