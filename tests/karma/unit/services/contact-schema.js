@@ -1,4 +1,4 @@
-describe.only('ContactSchema service', function() {
+describe('ContactSchema service', function() {
   'use strict';
 
   var service,
