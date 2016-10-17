@@ -16,6 +16,7 @@ var scrollLoader = require('../modules/scroll-loader');
       $translate,
       ContactSchema,
       DB,
+      Layout,
       LiveList,
       Search,
       SearchFilters,
@@ -149,7 +150,7 @@ var scrollLoader = require('../modules/scroll-loader');
       $scope.setSelected = function(selected) {
         liveList.setSelected(selected.doc._id);
         $scope.selected = selected;
-        $scope.setTitle(selected.doc.name);
+        Layout.setTitle($scope, selected.doc.name);
         $scope.clearCancelTarget();
         var selectedDoc = selected.doc;
         return getActionBarDataForChild(selectedDoc.type)
@@ -169,7 +170,7 @@ var scrollLoader = require('../modules/scroll-loader');
               } else {
                 actionBarData.relevantForms = forms;
               }
-              $scope.setRightActionBar(actionBarData);
+              Layout.setRightActionBar($scope, actionBarData);
             });
           });
       };
@@ -221,7 +222,7 @@ var scrollLoader = require('../modules/scroll-loader');
             return $translate(ContactSchema.get(type).addButtonLabel)
               .then(function(label) {
                 actionBarData.addPlaceLabel = label;
-                $scope.setLeftActionBar(actionBarData);
+                Layout.setLeftActionBar($scope, actionBarData);
               });
           } else {
             if (Session.isAdmin()) {

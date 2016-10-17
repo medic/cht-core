@@ -15,6 +15,7 @@ var _ = require('underscore');
       $timeout,
       Changes,
       ContactConversation,
+      Layout,
       MarkAllRead,
       Modal,
       SendMessage,
@@ -110,7 +111,7 @@ var _ = require('underscore');
           (!message.form && message.name) ||
           message.from ||
           message.sent_by;
-        $scope.setTitle(title);
+        Layout.setTitle($scope, title);
       };
 
       var updateConversation = function(options) {

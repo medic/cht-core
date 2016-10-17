@@ -17,6 +17,7 @@ var _ = require('underscore');
       DB,
       Enketo,
       EnketoTranslation,
+      Layout,
       Snackbar,
       UserDistrict
     ) {
@@ -98,7 +99,7 @@ var _ = require('underscore');
           $scope.category,
           ($scope.contactId ? 'edit' : 'new')
         ].join('.');
-        $translate(key).then($scope.setTitle);
+        $translate(key).then(_.partial(Layout.setTitle, $scope, _));
       };
 
       var getFormInstanceData = function() {
@@ -372,7 +373,7 @@ var _ = require('underscore');
 
       $scope.$on('$destroy', function() {
         if (!$state.includes('contacts.add')) {
-          $scope.setTitle();
+          Layout.setTitle($scope);
           if ($scope.enketoContact && $scope.enketoContact.formInstance) {
             Enketo.unload($scope.enketoContact.formInstance);
           }

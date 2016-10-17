@@ -39,9 +39,10 @@
   require('./import-contacts');
   require('./kanso-packages');
   require('./language');
+  require('./layout');
   require('./location');
-  require('./markdown');
   require('./live-list');
+  require('./markdown');
   require('./mark-read');
   require('./merge-uri-parameters');
   require('./message-contacts');

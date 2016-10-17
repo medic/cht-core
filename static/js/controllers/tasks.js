@@ -7,13 +7,13 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksCtrl',
-    function($scope, $state, $timeout, LiveList, RulesEngine, TranslateFrom) {
+    function($scope, $state, $timeout, Layout, LiveList, RulesEngine, TranslateFrom) {
       'ngInject';
 
       var setSelectedTask = function(task) {
         LiveList.tasks.setSelected(task._id);
         $scope.selected = task;
-        $scope.setTitle(TranslateFrom(task.title, task));
+        Layout.setTitle($scope, TranslateFrom(task.title, task));
         $scope.setShowContent(true);
       };
 

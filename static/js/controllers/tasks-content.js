@@ -5,8 +5,8 @@
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksContentCtrl',
-    ['$log', '$scope', '$state', '$translate', 'DB', 'Enketo', 'TranslateFrom', 'Snackbar',
-    function ($log, $scope, $state, $translate, DB, Enketo, TranslateFrom, Snackbar) {
+    function ($log, $scope, $state, $translate, DB, Enketo, Layout, TranslateFrom, Snackbar) {
+      'ngInject';
 
       var hasOneFormAndNoFields = function(task) {
         return Boolean(
@@ -48,7 +48,7 @@
             })
             .then(function(res) {
               if (res.rows[0]) {
-                $scope.setTitle(TranslateFrom(res.rows[0].doc.title));
+                Layout.setTitle($scope, TranslateFrom(res.rows[0].doc.title));
               }
             })
             .catch(function(err) {
@@ -98,6 +98,6 @@
       $scope.formId = null;
       $scope.setSelected($state.params.id);
     }
-  ]);
+  );
 
 }());

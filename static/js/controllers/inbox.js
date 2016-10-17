@@ -31,6 +31,7 @@ var feedback = require('../modules/feedback'),
       FacilityHierarchy,
       JsonForms,
       Language,
+      Layout,
       LiveListConfig,
       Location,
       Modal,
@@ -157,7 +158,7 @@ var feedback = require('../modules/feedback'),
         $scope.setShowContent(false);
         $scope.loadingContent = false;
         $scope.showActionBar = false;
-        $scope.setTitle();
+        Layout.setTitle($scope);
         $scope.$broadcast('ClearSelected');
       };
 
@@ -199,10 +200,6 @@ var feedback = require('../modules/feedback'),
 
       $scope.setCancelTarget = function(callback) {
         $scope.cancelCallback = callback;
-      };
-
-      $scope.setTitle = function(title) {
-        $scope.title = title;
       };
 
       $scope.setLoadingContent = function(id) {
@@ -459,24 +456,6 @@ var feedback = require('../modules/feedback'),
           }
         });
       });
-
-      $scope.setRightActionBar = function(model) {
-        if (!$scope.actionBar) {
-          $scope.actionBar = {};
-        }
-        $scope.actionBar.right = model;
-      };
-
-      $scope.setLeftActionBar = function(model) {
-        if (!$scope.actionBar) {
-          $scope.actionBar = {};
-        }
-        $scope.actionBar.left = model;
-      };
-
-      $scope.setActionBar = function(model) {
-        $scope.actionBar = model;
-      };
 
       $scope.emit = function() {
         $rootScope.$broadcast.apply($rootScope, arguments);
