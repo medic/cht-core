@@ -137,3 +137,28 @@ ul {
     display: inline-block;
   }
 }
+
+.item-summary {
+  padding: 1em;
+  .icon {
+    padding-right: 0.5em;
+    float: left;
+  }
+  .detail {
+    overflow: hidden;
+    .time,
+    .status {
+      float: right;
+      text-align: right;
+      clear: right;
+      margin-left: 1em;
+    }
+    .time .full-date {
+      color: @label-color;
+      font-size: 0.8em;
+    }
+    .name {
+      font-weight: bold;
+    }
+  }
+}

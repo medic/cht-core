@@ -279,7 +279,8 @@ var feedback = require('../modules/feedback'),
             var xFormSummaries = xForms.map(function(xForm) {
               return {
                 code: xForm.internalId,
-                name: xForm.title
+                name: xForm.title,
+                icon: xForm.icon
               };
             });
             $scope.forms = xFormSummaries.concat(jsonForms);

@@ -1,16 +1,16 @@
 <li class="{{task.priority === 'high' ? 'high-priority' : ''}} {{task.priority === 'medium' ? 'medium-priority' : ''}}">
-  <a class="message-wrapper" href="#tasks/{{task._id}}">
-    <span class="mm-badge">{{task.icon | resourceIcon}}</span>
+  <a class="item-summary message-wrapper" href="#tasks/{{task._id}}">
+    <span class="icon">{{task.icon | resourceIcon}}</span>
     <div class="detail">
       <span class="time">{{task.date | relativeDay}}</span>
-      <div class="description title">{{task.title | translateFrom:task}}</div>
-      <div class="description priority-label">
+      <div class="status description priority-label">
         <span class="priority">
           <i class="fa fa-exclamation-triangle high-priority-icon"></i>
           <i class="fa fa-info-circle medium-priority-icon"></i>
         </span>
         {{task.priorityLabel | translateFrom:task}}
       </div>
+      <div class="description name">{{task.title | translateFrom:task}}</div>
     </div>
   </a>
 </li>

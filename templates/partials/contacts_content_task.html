@@ -1,21 +1,17 @@
 <div class="col-xs-12">
-  <a ui-sref="tasks.detail({ id: task._id })" class="cell">
-
-    <div class="pull-right">
-      <div ng-bind-html="task.date | relativeDay"></div>
-      <div class="pull-right">
+  <a ui-sref="tasks.detail({ id: task._id })" class="item-summary cell">
+    <span class="icon" ng-bind-html="task.icon | resourceIcon"></span>
+    <div class="detail">
+      <div class="time" ng-bind-html="task.date | relativeDay"></div>
+      <div class="status">
         <span ng-show="task.isLate" translate>task.overdue</span>
         <i ng-show="!task.isLate" class="fa fa-circle green-dot"></i>
         <i ng-show="task.isLate" class="fa fa-circle red-dot"></i>
       </div>
+      <div>
+        <div ng-hide="task.contact._id === selected.doc._id">{{task.contact.name}}</div>
+        <div class="name">{{task.title | translateFrom:task}}</div>
+      </div>
     </div>
-
-    <span ng-bind-html="task.icon | resourceIcon" class="action-icon"></span>
-
-    <div>
-      <div ng-hide="task.contact._id === selected.doc._id">{{task.contact.name}}</div>
-      <div class="cell-label">{{task.title | translateFrom:task}}</div>
-    </div>
-
   </a>
 </div>

@@ -1,6 +1,12 @@
-angular.module('inboxServices').factory('ResourceIcons', [
-  '$log', 'DB', 'Changes',
-  function($log, DB, Changes) {
+angular.module('inboxServices').factory('ResourceIcons',
+  function(
+    $log,
+    Changes,
+    DB
+  ) {
+
+    'use strict';
+    'ngInject';
 
     var cache = {
       doc: undefined,
@@ -26,8 +32,8 @@ angular.module('inboxServices').factory('ResourceIcons', [
 
     var updateDom = function(elem) {
       elem = elem || $(document.body);
-      elem.find('.resource-icon').each(function(index, element) {
-        var elem = $(element);
+      elem.find('.resource-icon').each(function() {
+        var elem = $(this);
         var src = getSrc(elem.attr('title'));
         if (src) {
           elem.attr('src', src);
@@ -79,4 +85,4 @@ angular.module('inboxServices').factory('ResourceIcons', [
     };
 
   }
-]);
+);

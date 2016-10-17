@@ -1,18 +1,19 @@
 <div class="col-sm-12">
 
   <form id="icon-upload">
-    <legend>{{'upload.icon' | translate}}</legend>
+    <legend translate>upload.icon</legend>
 
     <div class="form-group">
-      <label for="name">{{'Name' | translate}} *</label>
+      <label for="name" translate>Name</label> *
       <input id="name" name="name" class="form-control small" ng-model="name">
     </div>
 
     <div class="form-group">
-      <label>{{'icon' | translate}} *</label>
+      <label translate>icon</label> *
       <div>
         <button type="button" class="btn btn-default choose" ng-disabled="uploading">
-          <i class="fa fa-arrow-up"></i> {{'Choose file' | translate}}
+          <i class="fa fa-arrow-up"></i>
+          <span translate>Choose file</span>
         </button>
         <div class="loader" ng-show="uploading"></div>
         <div class="hide">
@@ -22,19 +23,19 @@
     </div>
 
     <div class="form-actions">
-      <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting">{{'Submit' | translate}}</button>
+      <button type="submit" class="btn btn-primary" ng-click="submit()" ng-disabled="submitting" translate>Submit</button>
       <div class="loader inline small" ng-show="submitting"></div>
       <p class="error">{{error}}</p>
     </div>
   </form>
   
   <div>
-    <legend>{{'Icons' | translate}}</legend>
+    <legend translate>icons</legend>
     <div class="loader" ng-show="loading"></div>
-    <ul class="resources-list">
+    <ul>
       <li ng-repeat="icon in icons" class="row">
-        <div class="col-sm-2">{{icon.name}}</div>
-        <div class="col-sm-10"><img data-ng-src="data:{{icon.type}};base64,{{icon.data}}"/></div>
+        <div class="col-sm-1" ng-bind-html="icon.name | resourceIcon"></div>
+        <div class="col-sm-11">{{icon.name}}</div>
       </li>
     </ul>
   </div>

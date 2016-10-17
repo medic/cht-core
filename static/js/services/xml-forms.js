@@ -55,7 +55,7 @@ var _ = require('underscore');
                 forms.splice(i, 1);
               }
             }
-            return $q.resolve(forms);
+            return forms;
           });
       };
 

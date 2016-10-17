@@ -113,15 +113,15 @@ describe('Bulk delete reports', function() {
     element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).click();
     expect(element(by.css('#reports-content .selection-count > span:first-child')).isDisplayed()).toBeTruthy();
     expect(element.all(by.css('#reports-content .report-body')).count()).toBe(1);
-    expect(element(by.css('#reports-content .report-body .summary .sender .name')).getText()).toBe('Sharon');
+    expect(element(by.css('#reports-content .report-body .item-summary .sender .name')).getText()).toBe('Sharon');
     expect(element(by.css('#reports-content .report-body .details')).isDisplayed()).toBeFalsy();
 
     // expand selection
-    element(by.css('#reports-content .report-body .summary')).click();
+    element(by.css('#reports-content .report-body .item-summary')).click();
     expect(element(by.css('#reports-content .report-body .details')).isDisplayed()).toBeTruthy();
 
     // collapse selection
-    element(by.css('#reports-content .report-body .summary')).click();
+    element(by.css('#reports-content .report-body .item-summary')).click();
     expect(element(by.css('#reports-content .report-body .details')).isDisplayed()).toBeFalsy();
     
     // deselect
