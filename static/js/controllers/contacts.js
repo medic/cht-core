@@ -149,10 +149,20 @@ var scrollLoader = require('../modules/scroll-loader');
       $scope.setSelected = function(selected) {
         liveList.setSelected(selected.doc._id);
         $scope.selected = selected;
-        $scope.setTitle(selected.doc.name);
         $scope.clearCancelTarget();
         var selectedDoc = selected.doc;
-        return getActionBarDataForChild(selectedDoc.type)
+        var title = '';
+        if (selected.doc.type === 'person') {
+          title = 'contact.profile';
+        } else {
+          title = ContactSchema.get(selected.doc.type).label;
+        }
+        return $translate(title)
+          .then(function(translatedTitle) {
+            $scope.setTitle(translatedTitle);
+
+            return getActionBarDataForChild(selectedDoc.type);
+          })
           .then(function(data) {
             if (data) {
               selectedDoc.child = data;

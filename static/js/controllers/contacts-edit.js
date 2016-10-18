@@ -93,11 +93,20 @@ var _ = require('underscore');
       };
 
       var setTitle = function() {
-        var key = [
-          'contact.type',
-          $scope.category,
-          ($scope.contactId ? 'edit' : 'new')
-        ].join('.');
+        var key = '';
+        if ($scope.category === 'person') {
+          if ($scope.contactId) {
+            key = 'contact.type.person.edit';
+          } else {
+            key = 'contact.type.person.new';
+          }
+        } else {
+          if ($scope.contactId) {
+            key = 'contact.type.place.edit';
+          } else {
+            key = 'contact.type.place.new';
+          }
+        }
         $translate(key).then($scope.setTitle);
       };
 
@@ -117,13 +126,17 @@ var _ = require('underscore');
         return $q.resolve();
       };
 
+      var getCategory = function(type) {
+        return type === 'person' ? 'person' : 'place';
+      };
+
       var getForm = function(contact) {
         $scope.primaryContact = {};
         $scope.original = contact;
         if (contact) {
           $scope.contact = contact;
           $scope.contactId = contact._id;
-          $scope.category = contact.type === 'person' ? 'person' : 'place';
+          $scope.category = getCategory(contact.type);
           setTitle();
           return ContactForm.forEdit(contact.type);
         }
@@ -143,7 +156,7 @@ var _ = require('underscore');
           $scope.contact.parent = $state.params.parent_id;
         }
 
-        $scope.category = $scope.contact.type === 'person' ? 'person' : 'place';
+        $scope.category = getCategory($scope.contact.type);
         $scope.contactId = null;
         setTitle();
 

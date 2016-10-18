@@ -13,24 +13,22 @@
   <div class="col-sm-8 item-content item-body" ng-show="selected && !loadingContent">
     <div class="material">
       <div class="body meta">
-        <div class="hidden-xs card-title">
-          <h3>
-            <i class="fa {{selected.icon}}"></i>
-            <i class="fa fa-star primary" ng-show="selected.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
-            <span>{{selected.doc.name}}</span>
-          </h3>
-          <span ng-show="selected.isPrimaryContact && selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
-          <span ng-show="selected.isPrimaryContact && selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
+        <div class="card-title">
+          <div>
+            <i class="fa fa-fw {{selected.icon}}"></i>
+          </div>
+          <div>
+            <h3 class="xs-block">
+              <i class="fa fa-star primary" ng-show="selected.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
+              <span>{{selected.doc.name}}</span>
+            </h3>
+            <div class="xs-block" ng-show="selected.isPrimaryContact">
+              <span ng-show="selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
+              <span ng-show="selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
+            </div>
+          </div>
         </div>
-        <div class="visible-xs-block card-title">
-          <h3>
-            <i class="fa {{selected.icon}}"></i>
-          </h3>
-          <span ng-show="!selected.isPrimaryContact" translate>contact.profile</span>
-          <i class="fa fa-star primary" ng-show="selected.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
-          <span ng-show="selected.isPrimaryContact && selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
-          <span ng-show="selected.isPrimaryContact && selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
-        </div>
+
         <div class="card">
           <div class="row">
             <div class="col-sm-3" ng-show="selected.doc.type === 'person'">
@@ -89,17 +87,13 @@
       </div>
 
       <div ng-if="selected.children.persons">
-        <div class="card-title action-list-title">
-          <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12">
-            <h4><i class="fa fa-fw fa-user"></i><span translate>People</span></h4>
-          </div>
-          <div ng-show="selected.doc.type === 'clinic'" class="col-xs-11">
-            <div class="col-xs-12">
-              <h4><i class="fa fa-fw fa-user"></i><span translate>clinic.field.children</span></h4>
-            </div>
-          </div>
-          <div ng-show="selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-1 tasks-count" translate>Tasks</div>
+        <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12">
+          <h4><i class="fa fa-fw fa-user"></i><span translate>People</span></h4>
         </div>
+        <div ng-show="selected.doc.type === 'clinic'" class="col-xs-11">
+          <h4><i class="fa fa-fw fa-user"></i><span translate>clinic.field.children</span></h4>
+        </div>
+        <div ng-show="selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-1 tasks-title" translate>Tasks</div>
         <div class="card action-list children persons">
           <div class="accent"></div>
           <div class="row" ng-repeat="child in selected.children.persons">
@@ -131,7 +125,7 @@
 
       <div ng-if="selected.children.places">
         <h4>
-          <i class="fa {{selected.children.childPlacesIcon}}"></i>
+          <i class="fa fa-fw {{selected.children.childPlacesIcon}}"></i>
           <span translate>{{selected.children.childPlacesLabel}}</span>
         </h4>
         <div class="card action-list children">

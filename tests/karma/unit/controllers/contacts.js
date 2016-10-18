@@ -4,7 +4,6 @@ describe('Contacts controller', function() {
 
   var assert = chai.assert,
     buttonLabel,
-    buttonLabelTranslated,
     contactsLiveList,
     childType,
     contactSchema,
@@ -19,6 +18,7 @@ describe('Contacts controller', function() {
     userFaciltyQuery,
     searchResults,
     searchService,
+    typeLabel,
     xmlForms,
     $rootScope;
 
@@ -44,6 +44,7 @@ describe('Contacts controller', function() {
     childType = 'childType';
     icon = 'fa-la-la-la-la';
     buttonLabel = 'ClICK ME!!';
+    typeLabel = 'District';
     $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     scope.setTitle = sinon.stub();
@@ -52,7 +53,7 @@ describe('Contacts controller', function() {
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
     contactSchema = { get: sinon.stub(), getChildPlaceType: sinon.stub(), getPlaceTypes: sinon.stub()};
-    contactSchema.get.returns({ icon: icon, addButtonLabel : buttonLabel });
+    contactSchema.get.returns({ icon: icon, addButtonLabel : buttonLabel, label: typeLabel });
     contactSchema.getChildPlaceType.returns(childType);
     contactSchema.getPlaceTypes.returns(['district_hospital']);
     xmlForms = sinon.stub();
@@ -74,7 +75,7 @@ describe('Contacts controller', function() {
         '$q': Q,
         '$state': { includes: sinon.stub() },
         '$timeout': function(work) { work(); },
-        '$translate': KarmaUtils.promiseService(null, buttonLabelTranslated),
+        '$translate': function(key) { return KarmaUtils.mockPromise(null, key + 'translated'); },
         'ContactSchema': contactSchema,
         'DB': function() { return {
           get: KarmaUtils.promiseService(null, district),
@@ -94,6 +95,17 @@ describe('Contacts controller', function() {
 
   afterEach(function() {
     KarmaUtils.restore();
+  });
+
+  it('sets title', function(done) {
+    createController().getSetupPromiseForTesting()
+      .then(function() {
+        return scope.setSelected({ doc: district });
+      }).then(function() {
+        assert(scope.setTitle.called, 'title should be set');
+        assert.equal(scope.setTitle.getCall(0).args[0], typeLabel + 'translated');
+        done();
+      }).catch(done);
   });
 
   describe('sets right actionBar', function() {
@@ -119,7 +131,7 @@ describe('Contacts controller', function() {
       testRightActionBar(done, district, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.selected[0].child.type, childType);
         assert.deepEqual(actionBarArgs.selected[0].child.icon, icon);
-        assert.equal(actionBarArgs.selected[0].child.addPlaceLabel, buttonLabelTranslated);
+        assert.equal(actionBarArgs.selected[0].child.addPlaceLabel, buttonLabel + 'translated');
       });
     });
 
@@ -160,7 +172,7 @@ describe('Contacts controller', function() {
         assert.deepEqual(actionBarArgs.selected[0]._id, person._id);
         assert.deepEqual(actionBarArgs.selected[0].child.type, childType);
         assert.deepEqual(actionBarArgs.selected[0].child.icon, icon);
-        assert.equal(actionBarArgs.selected[0].child.addPlaceLabel, buttonLabelTranslated);
+        assert.equal(actionBarArgs.selected[0].child.addPlaceLabel, buttonLabel + 'translated');
       });
     });
 
@@ -174,7 +186,7 @@ describe('Contacts controller', function() {
           var actionBarArgs = scope.setLeftActionBar.getCall(0).args[0];
           assert.deepEqual(actionBarArgs.userChildPlace, { type: childType, icon: icon });
           assert.equal(actionBarArgs.userFacilityId, district._id);
-          assert.equal(actionBarArgs.addPlaceLabel, buttonLabelTranslated);
+          assert.equal(actionBarArgs.addPlaceLabel, buttonLabel + 'translated');
           done();
         }).catch(done);
     });

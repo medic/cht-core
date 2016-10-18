@@ -14,19 +14,31 @@
   }
   .card-title {
     margin-bottom: 5px;
-    margin-top: 20px;
+    margin-top: 10px;
     padding-right: 15px;
     padding-left: 15px;
+    div, h3 {
+      display: inline-block;
+    }
+    i {
+      font-size: 2.1em;
+    }
     h3,
     h4 {
       padding-left: 0;
       margin-top: 0;
       margin-bottom: 0;
       padding-right: 10px;
-      display: inline;
+    }
+    h3 {
+      font-size: 1.4em
     }
   }
-  .tasks-count {
+  .tasks-title {
+    margin-top: 20px;
+    margin-bottom: 5px;
+  }
+  .tasks-count, .tasks-title {
     text-align: right;
   }
   h2 {
@@ -55,6 +67,9 @@
       color: inherit;
       &:hover {
         text-decoration: none;
+      }
+      .cell-label {
+        font-size: 1.3em;
       }
     }
     .action-icon {
@@ -129,10 +144,12 @@
 
 @media (max-width: 767px) {
   .material {
-    .action-list,
-    .action-list-title {
+    .action-list {
       margin-left: -15px;
       margin-right: -15px;
+    }
+    .card-title .xs-block {
+      display: block;
     }
     .meta .card .row {
       border-bottom: 0;
