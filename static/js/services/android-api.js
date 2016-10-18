@@ -1,6 +1,6 @@
 /**
  * An API to provide integration with the medic-android app.
- * 
+ *
  * This service must maintain backwards compatibility as we cannot
  * guarantee the all clients will be on a recent version of the app.
  */
@@ -47,12 +47,6 @@ angular.module('inboxServices').factory('AndroidApi',
       var $dropdown = $container.find('.filter.dropdown.open:visible');
       if ($dropdown.length) {
         $dropdown.removeClass('open');
-        return true;
-      }
-
-      // On an Enketo form, go to the previous page (if there is one)
-      if ($container.find('.enketo .btn.previous-page:visible:enabled:not(".disabled")').length) {
-        window.history.back();
         return true;
       }
 
@@ -121,12 +115,17 @@ angular.module('inboxServices').factory('AndroidApi',
             return true;
           }
 
-          if (closeDropdownsIn($('body'))) {
+          var body = $('body');
+
+          if (closeDropdownsIn(body)) {
             return true;
           }
 
-          // If viewing RHS content, do as the filter-bar X/< button does
-          if ($('body').is('.show-content')) {
+          // If at the beginnig of an enketo form, close the content
+          if (body.is('.show-content') &&
+              body.find('.enketo') &&
+              !body.find('.enketo .btn.previous-page:visible:enabled:not(".disablied")').length) {
+
             $rootScope.$broadcast('HideContent');
             return true;
           }
@@ -137,14 +136,21 @@ angular.module('inboxServices').factory('AndroidApi',
             return true;
           }
 
-          // If we're viewing a tab, but not the primary tab, go to primary tab
+          // If we're viewing a tab...
           var primaryTab = $('.header .tabs').find('> a:visible:first');
-          if (!primaryTab.is('.selected')) {
-            $state.go(primaryTab.attr('ui-sref'));
-            return true;
+          if (primaryTab.length) {
+            // …but not the primary tab, go to primary tab
+            if (!primaryTab.is('.selected')) {
+              $state.go(primaryTab.attr('ui-sref'));
+              return true;
+            }
+            // …and it's the primary tab, then hand it over to Android
+            return false;
           }
 
-          return false;
+          // Otherwise, just act like a webapp
+          window.history.back();
+          return true;
         }
       }
     };
