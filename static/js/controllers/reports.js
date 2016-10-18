@@ -241,7 +241,7 @@ var _ = require('underscore'),
           $scope.error = false;
           $scope.errorSyntax = false;
           $scope.loading = true;
-          if ($scope.isMobile()) {
+          if ($scope.selected.length && $scope.isMobile()) {
             $scope.selectReport();
           }
         }
