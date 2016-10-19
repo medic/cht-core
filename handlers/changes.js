@@ -39,7 +39,8 @@ var bindSubjectIds = function(feed, callback) {
       return callback(err);
     }
     if (!facilityId) {
-      return callback(null, []);
+      feed.subjectIds = [];
+      return callback();
     }
     feed.facilityId = facilityId;
     auth.getContactId(feed.userCtx, function(err, contactId) {
