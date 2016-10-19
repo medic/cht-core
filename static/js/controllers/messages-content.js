@@ -94,8 +94,10 @@ var _ = require('underscore');
               return message.doc.reported_date;
             });
             $scope.selected.messages = data;
-            setTitle(data[0].value);
-            markAllRead();
+            if (data.length) {
+              setTitle(data.length && data[0].value);
+              markAllRead();
+            }
             $timeout(scrollToUnread);
           })
           .catch(function(err) {
