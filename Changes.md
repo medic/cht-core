@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 0.4.13
+
+### Oct 21, 2016
+
+- Option to set birthdate using days old instead of weeks. Issue: #2756
+- The week/month is off by 2 in the Reporting Rates analytics dashboard. Issue: #2781
+- Remove socket limit in medic-api. Issue: #2632
+
 ## 0.4.12
 
 ### Jul 21, 2016
