@@ -100,7 +100,7 @@ describe('ReportsCtrl controller', function() {
     createController();
   });
 
-  it('verifies the given report', function() {
+  it('verifies the given report', function(done) {
     get.returns(KarmaUtils.mockPromise(null, { _id: 'def', name: 'hello' }));
     post.returns(KarmaUtils.mockPromise());
     createController();
@@ -108,7 +108,7 @@ describe('ReportsCtrl controller', function() {
       _id: 'abc',
       report: { form: 'P' }
     };
-    scope.$broadcast('VerifyReport', null, true);
+    scope.$broadcast('VerifyReport', true);
     setTimeout(function() {
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.args[0][0]).to.equal('abc');
@@ -116,6 +116,7 @@ describe('ReportsCtrl controller', function() {
       chai.expect(post.args[0][0]._id).to.equal('def');
       chai.expect(post.args[0][0].name).to.equal('hello');
       chai.expect(post.args[0][0].verified).to.equal(true);
+      done();
     });
   });
 

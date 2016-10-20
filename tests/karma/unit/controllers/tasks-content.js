@@ -36,7 +36,7 @@ describe('TasksContentCtrl', function() {
     KarmaUtils.restore(render);
   });
 
-  it('loads form when task has one action and no fields', function() {
+  it('loads form when task has one action and no fields', function(done) {
     task = {
       actions: [{
         type: 'report',
@@ -49,9 +49,10 @@ describe('TasksContentCtrl', function() {
     chai.expect($scope.loadingForm).to.equal(true);
     chai.expect(render.callCount).to.equal(1);
     chai.expect(render.getCall(0).args.length).to.equal(3);
+    done();
   });
 
-  it('does not load form when task has more than one action', function() {
+  it('does not load form when task has more than one action', function(done) {
     task = {
       actions: [{}, {}] // two forms
     };
@@ -59,9 +60,10 @@ describe('TasksContentCtrl', function() {
     chai.expect($scope.formId).to.equal(null);
     chai.expect($scope.loadingForm).to.equal(undefined);
     chai.expect(render.callCount).to.equal(0);
+    done();
   });
 
-  it('does not load form when task has fields (e.g. description)', function() {
+  it('does not load form when task has fields (e.g. description)', function(done) {
     task = {
       actions: [{
         type: 'report',
@@ -82,6 +84,7 @@ describe('TasksContentCtrl', function() {
     chai.expect($scope.formId).to.equal(null);
     chai.expect($scope.loadingForm).to.equal(undefined);
     chai.expect(render.callCount).to.equal(0);
+    done();
   });
 
 });
