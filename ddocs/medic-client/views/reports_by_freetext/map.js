@@ -1,5 +1,16 @@
 function(doc) {
-  var skip = [ '_id', '_rev', 'type', 'refid' ];
+  var skip = [ '_id', '_rev', 'type', 'refid', 'content' ];
+
+  var usedKeys = [];
+  var emitMaybe = function(key, value) {
+    if (usedKeys.indexOf(key) === -1 && // Not already used
+        !key[0].match(/(^$)|(^[^A-Za-z0-9+])/) && // Not empty or starting with bad symbol
+        key[0].length > 2 // Not too short
+    ) {
+      usedKeys.push(key);
+      emit(key, value);
+    }
+  };
 
   var emitField = function(key, value, reportedDate) {
     if (!key || !value) {
@@ -12,11 +23,11 @@ function(doc) {
     if (typeof value === 'string') {
       value = value.toLowerCase();
       value.split(/\s+/).forEach(function(word) {
-        emit([ word ], reportedDate);
+        emitMaybe([ word ], reportedDate);
       });
     }
     if (typeof value === 'number' || typeof value === 'string') {
-      emit([ key + ':' + value ], reportedDate);
+      emitMaybe([ key + ':' + value ], reportedDate);
     }
   };
 
@@ -30,7 +41,7 @@ function(doc) {
       });
     }
     if (doc.contact && doc.contact._id) {
-      emit([ 'contact:' + doc.contact._id ], doc.reported_date);
+      emitMaybe([ 'contact:' + doc.contact._id ], doc.reported_date);
     }
   }
 }

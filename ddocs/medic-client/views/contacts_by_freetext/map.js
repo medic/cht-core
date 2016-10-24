@@ -1,5 +1,16 @@
 function(doc) {
-  var skip = [ '_id', '_rev', 'type', 'refid' ];
+  var skip = [ '_id', '_rev', 'type', 'refid', 'geolocation' ];
+
+  var usedKeys = [];
+  var emitMaybe = function(key, value) {
+    if (usedKeys.indexOf(key) === -1 && // Not already used
+        !key[0].match(/(^$)|(^[^A-Za-z0-9+])/) && // Not empty or starting with bad symbol
+        key[0].length > 2 // Not too short
+    ) {
+      usedKeys.push(key);
+      emit(key, value);
+    }
+  };
 
   var emitField = function(key, value, order) {
     if (!key || !value) {
@@ -15,11 +26,11 @@ function(doc) {
     if (typeof value === 'string') {
       value = value.toLowerCase();
       value.split(/\s+/).forEach(function(word) {
-        emit([ word ], order);
+        emitMaybe([ word ], order);
       });
     }
     if (typeof value === 'number' || typeof value === 'string') {
-      emit([ key + ':' + value ], order);
+      emitMaybe([ key + ':' + value ], order);
     }
   };
 
@@ -32,7 +43,7 @@ function(doc) {
     });
     var clinic = doc.type === 'person' ? doc.parent : doc;
     if (clinic && clinic._id) {
-      emit([ 'clinic:' + clinic._id ], order);
+      emitMaybe([ 'clinic:' + clinic._id ], order);
     }
   }
 }
