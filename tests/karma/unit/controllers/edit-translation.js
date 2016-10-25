@@ -45,13 +45,13 @@ describe('EditTranslationCtrl controller', function() {
       ]
     };
     createController();
-    chai.expect(scope.key).to.equal('title.key');
+    chai.expect(scope.model.key).to.equal('title.key');
     chai.expect(scope.editing).to.equal(true);
-    chai.expect(scope.locales).to.deep.equal([
+    chai.expect(scope.model.locales).to.deep.equal([
       { code: 'en', values: { 'title.key': 'Welcome', 'bye': 'Goodbye' } },
       { code: 'fr', values: { 'title.key': 'Bonjour', 'bye': 'Au revoir' } }
     ]);
-    chai.expect(scope.values).to.deep.equal({ en: 'Welcome', fr: 'Bonjour' });
+    chai.expect(scope.model.values).to.deep.equal({ en: 'Welcome', fr: 'Bonjour' });
   });
 
   it('render new', function() {
@@ -62,13 +62,13 @@ describe('EditTranslationCtrl controller', function() {
       ]
     };
     createController();
-    chai.expect(scope.key).to.equal(undefined);
+    chai.expect(scope.model.key).to.equal(undefined);
     chai.expect(scope.editing).to.equal(false);
-    chai.expect(scope.locales).to.deep.equal([
+    chai.expect(scope.model.locales).to.deep.equal([
       { code: 'en', values: { 'title.key': 'Welcome', 'bye': 'Goodbye' } },
       { code: 'fr', values: { 'title.key': 'Bonjour', 'bye': 'Au revoir' } }
     ]);
-    chai.expect(scope.values).to.deep.equal({ en: null, fr: null });
+    chai.expect(scope.model.values).to.deep.equal({ en: null, fr: null });
   });
 
   it('save', function(done) {
@@ -82,8 +82,8 @@ describe('EditTranslationCtrl controller', function() {
     };
     bulkDocs.returns(KarmaUtils.mockPromise());
     createController();
-    scope.values.en = 'Hello';
-    scope.values.fr = 'Bienvenue';
+    scope.model.values.en = 'Hello';
+    scope.model.values.fr = 'Bienvenue';
     scope.submit();
     setTimeout(function() {
       rootScope.$digest();
@@ -109,9 +109,9 @@ describe('EditTranslationCtrl controller', function() {
     };
     bulkDocs.returns(KarmaUtils.mockPromise());
     createController();
-    scope.key = 'somethingelse';
-    scope.values.en = 'a';
-    scope.values.fr = 'b';
+    scope.model.key = 'somethingelse';
+    scope.model.values.en = 'a';
+    scope.model.values.fr = 'b';
     scope.submit();
     setTimeout(function() {
       rootScope.$digest();
