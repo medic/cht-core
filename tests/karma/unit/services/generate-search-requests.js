@@ -145,15 +145,6 @@ describe('GenerateSearchRequests service', function() {
     chai.expect(result[0].params.endkey[0]).to.equal(1371038399999);
   });
 
-  it('creates unfiltered contacts request for no filter', function() {
-    var result = service('contacts', {});
-    chai.expect(result.length).to.equal(1);
-    chai.expect(result[0]).to.deep.equal({
-      ordered: true,
-      view: 'medic-client/contacts_by_type_index_name'
-    });
-  });
-
   it('creates unfiltered contacts request for type filter', function() {
     var filters = {
       types: {
@@ -235,83 +226,6 @@ describe('GenerateSearchRequests service', function() {
       });
     });
 
-    /*
-      this is a very common use case so we have a custom view for handling it
-    */
-    it('contacts freetext with a single document type - #2445', function() {
-      var filters = {
-        search: 'someth',
-        types: {
-          selected: [ 'clinic' ],
-          options: [ 'person', 'clinic', 'district_hospital' ]
-        }
-      };
-      var result = service('contacts', filters);
-      chai.expect(result.length).to.equal(1);
-      chai.expect(result[0].view).to.equal('medic-client/contacts_by_type_freetext');
-      chai.expect(result[0].params).to.deep.equal({
-        startkey: [ 'clinic', 'someth' ],
-        endkey: [ 'clinic', 'someth\ufff0' ],
-      });
-    });
-
-    it('contacts multiple word freetext with a single document type', function() {
-      var filters = {
-        search: 'some thing',
-        types: {
-          selected: [ 'clinic' ],
-          options: [ 'person', 'clinic', 'district_hospital' ]
-        }
-      };
-      var result = service('contacts', filters);
-      chai.expect(result.length).to.equal(2);
-      chai.expect(result[0].view).to.equal('medic-client/contacts_by_type_freetext');
-      chai.expect(result[0].params).to.deep.equal({
-        startkey: [ 'clinic', 'some' ],
-        endkey: [ 'clinic', 'some\ufff0' ],
-      });
-      chai.expect(result[1].view).to.equal('medic-client/contacts_by_type_freetext');
-      chai.expect(result[1].params).to.deep.equal({
-        startkey: [ 'clinic', 'thing' ],
-        endkey: [ 'clinic', 'thing\ufff0' ],
-      });
-    });
-
-    it('contacts multiple word freetext with multiple document types', function() {
-      var filters = {
-        search: 'some thing',
-        types: {
-          selected: [ 'clinic', 'district_hospital' ],
-          options: [ 'person', 'clinic', 'district_hospital' ]
-        }
-      };
-      var result = service('contacts', filters);
-      chai.expect(result.length).to.equal(2);
-      chai.expect(result[0].view).to.equal('medic-client/contacts_by_type_freetext');
-      chai.expect(result[0].union).to.equal(true);
-      chai.expect(result[0].params).to.deep.equal([
-        {
-          startkey: [ 'clinic', 'some' ],
-          endkey: [ 'clinic', 'some\ufff0' ],
-        },
-        {
-          startkey: [ 'district_hospital', 'some' ],
-          endkey: [ 'district_hospital', 'some\ufff0' ],
-        }
-      ]);
-      chai.expect(result[1].view).to.equal('medic-client/contacts_by_type_freetext');
-      chai.expect(result[1].union).to.equal(true);
-      chai.expect(result[1].params).to.deep.equal([
-        {
-          startkey: [ 'clinic', 'thing' ],
-          endkey: [ 'clinic', 'thing\ufff0' ],
-        },
-        {
-          startkey: [ 'district_hospital', 'thing' ],
-          endkey: [ 'district_hospital', 'thing\ufff0' ],
-        }
-      ]);
-    });
 
     it('trim whitespace from search query - #2769', function() {
       var result = service('contacts', { search: '\t  some     thing    ' });
