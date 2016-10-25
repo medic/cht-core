@@ -141,44 +141,10 @@ var _ = require('underscore'),
         contacts: function(filters) {
           var typeViews = documentType(filters, 'medic-client/contacts_by_type');
           var freetextViews = freetext(filters, 'medic-client/contacts_by_freetext');
-          if (typeViews && typeViews.params.keys.length &&
-              freetextViews && freetextViews.length) {
-            return freetextViews.map(function(freetextView) {
-              var result = {
-                view: 'medic-client/contacts_by_type_freetext',
-                union: typeViews.params.keys.length > 1
-              };
-              if (result.union) {
-                result.params = [];
-              }
-              typeViews.params.keys.forEach(function(typeKey) {
-                var type = typeKey[0];
-                var params = {};
-                if (freetextView.key) {
-                  params.key = [ type, freetextView.params.key[0] ];
-                } else {
-                  params.startkey = [ type, freetextView.params.startkey[0] ];
-                  params.endkey = [ type, freetextView.params.endkey[0] ];
-                }
-                if (result.union) {
-                  result.params.push(params);
-                } else {
-                  result.params = params;
-                }
-              });
-              return result;
-            });
-          }
           var requests = [];
           requests.push(freetextViews);
           requests.push(typeViews);
           requests = _.compact(_.flatten(requests));
-          if (!requests.length) {
-            requests.push({
-              view: 'medic-client/contacts_by_type_index_name',
-              ordered: true
-            });
-          }
           return requests;
         }
       };
