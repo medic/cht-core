@@ -316,10 +316,12 @@ var _ = require('underscore'),
           childrenPersonIds,
           'ContactsContentCtrl',
           function(areTasksEnabled, tasks) {
-            $scope.selected.areTasksEnabled = areTasksEnabled;
-            $scope.selected.tasks = tasks;
-            if (!$scope.$$phase) {
-              $scope.$apply();
+            if ($scope.selected) {
+              $scope.selected.areTasksEnabled = areTasksEnabled;
+              $scope.selected.tasks = tasks;
+              if (!$scope.$$phase) {
+                $scope.$apply();
+              }
             }
           });
       };
