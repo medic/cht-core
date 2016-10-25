@@ -9,7 +9,8 @@ var vm = require('vm'),
     ids = require('../lib/ids'),
     moment = require('moment'),
     config = require('../config'),
-    date = require('../date');
+    date = require('../date'),
+    XFORM_CONTENT_TYPE = 'xml';
 
 var findFirstDefinedValue = function(doc, fields) {
     var definedField = _.find(fields, function(field) {
@@ -30,10 +31,13 @@ module.exports = {
         var self = module.exports,
             form = utils.getForm(doc && doc.form);
         return Boolean(
-            form &&
             self.getRegistrationConfig(self.getConfig(), doc.form) &&
-            (utils.getClinicPhone(doc) || (form && form.public_form)) &&
-            !self._hasRun(doc)
+            !self._hasRun(doc) &&
+            (
+                (doc && doc.content_type === XFORM_CONTENT_TYPE) || // xform submission
+                (form && utils.getClinicPhone(doc)) || // json submission by known submitter
+                (form && form.public_form) // json submission to public form
+            )
         );
     },
     _hasRun: function(doc) {
