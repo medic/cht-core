@@ -60,6 +60,26 @@ exports['scheduleMessage supports template variables on doc'] = function(test) {
     test.done();
 };
 
+exports['scheduleMessage adds registration details to message context'] = function(test) {
+    var doc = {
+        form: 'x',
+        reported_date: '2050-03-13T13:06:22.002Z',
+        governor: 'arnold'
+    };
+    var msg = {
+        message: 'Dear {{patient_name}}, Governor {{governor}} wants to speak to you.',
+        due: moment().toISOString()
+    };
+    var registrations = [ { doc: { fields: { patient_name: 'Marc' } } } ];
+    messages.scheduleMessage(doc, msg, '+13125551212', registrations);
+    test.equals(doc.scheduled_tasks.length, 1);
+    test.equals(
+        doc.scheduled_tasks[0].messages[0].message,
+        'Dear Marc, Governor arnold wants to speak to you.'
+    );
+    test.done();
+};
+
 exports['addMessage supports template variables on doc'] = function(test) {
     var doc = {
         form: 'x',

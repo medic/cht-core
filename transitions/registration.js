@@ -18,6 +18,13 @@ var findFirstDefinedValue = function(doc, fields) {
     return definedField && doc.fields[definedField];
 };
 
+var getRegistrations = function(db, patientId, callback) {
+    if (!patientId) {
+        return callback();
+    }
+    utils.getRegistrations({ db: db, id: patientId }, callback);
+};
+
 module.exports = {
     filter: function(doc) {
         var self = module.exports,
@@ -195,8 +202,9 @@ module.exports = {
                 }
                 // add messages is done last so data on doc can be used in
                 // messages
-                self.addMessages(config, doc);
-                callback(null, true);
+                self.addMessages(db, config, doc, function() {
+                    callback(null, true);
+                });
             });
         });
     },
@@ -220,13 +228,7 @@ module.exports = {
             if (!options.params) {
                 return cb('Please specify schedule name in settings.');
             }
-            _.each(options.params, function(name) {
-                var bool = schedules.assignSchedule(options.doc, schedules.getScheduleConfig(name));
-                if (!bool) {
-                    logger.error('Failed to add schedule please verify settings.');
-                }
-            });
-            cb();
+            module.exports.assignSchedule(options, cb);
         },
         add_patient: function(options, cb) {
             if (!options.doc.patient_id) {
@@ -236,21 +238,49 @@ module.exports = {
             module.exports.addPatient(options, cb);
         }
     },
-    addMessages: function(config, doc) {
+    addMessages: function(db, config, doc, callback) {
         // send response if configured
         var locale = utils.getLocale(doc),
             now = moment(date.getDate()),
-            extra = {next_msg: schedules.getNextTimes(doc, now)};
-        if (config.messages) {
-            _.each(config.messages, function(msg) {
+            extra = {next_msg: schedules.getNextTimes(doc, now)},
+            patientId = doc.fields && doc.fields.patient_id;
+        if (!config.messages || !config.messages.length) {
+            return callback();
+        }
+        getRegistrations(db, patientId, function(err, registrations) {
+            if (err) {
+                return callback(err);
+            }
+            config.messages.forEach(function(msg) {
                 messages.addMessage({
                     doc: doc,
                     phone: messages.getRecipientPhone(doc, msg.recipient),
                     message: messages.getMessage(msg.message, locale),
-                    options: extra
+                    options: extra,
+                    registrations: registrations
                 });
             });
-        }
+            callback();
+        });
+    },
+    assignSchedule: function(options, callback) {
+        getRegistrations(
+            options.db,
+            options.doc.fields && options.doc.fields.patient_id,
+            function(err, registrations) {
+                if (err) {
+                    return callback(err);
+                }
+                options.params.forEach(function(name) {
+                    var schedule = schedules.getScheduleConfig(name);
+                    var bool = schedules.assignSchedule(options.doc, schedule, registrations);
+                    if (!bool) {
+                        logger.error('Failed to add schedule please verify settings.');
+                    }
+                });
+                callback();
+            }
+        );
     },
     setId: function(options, callback) {
         var doc = options.doc,

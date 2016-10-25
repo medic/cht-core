@@ -4,7 +4,7 @@ var _ = require('underscore'),
 
 exports['function signature'] = function(test) {
     test.ok(_.isFunction(schedules.assignSchedule));
-    test.equals(schedules.assignSchedule.length, 2);
+    test.equals(schedules.assignSchedule.length, 3);
     test.done();
 };
 

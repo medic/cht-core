@@ -1,6 +1,7 @@
 var sinon = require('sinon'),
     transition = require('../../transitions/registration'),
     utils = require('../../lib/utils'),
+    schedules = require('../../lib/schedules'),
     config = require('../../config');
 
 exports.tearDown = function(callback) {
@@ -12,6 +13,12 @@ exports.tearDown = function(callback) {
     }
     if (utils.getRegistrations.restore) {
         utils.getRegistrations.restore();
+    }
+    if (schedules.getScheduleConfig.restore) {
+        schedules.getScheduleConfig.restore();
+    }
+    if (schedules.assignSchedule.restore) {
+        schedules.assignSchedule.restore();
     }
     callback();
 };
@@ -159,6 +166,35 @@ exports['add_patient event parameter overwrites the default property for the nam
     transition.onMatch(change, db, audit, function() {
         test.equals(saveDoc.callCount, 1);
         test.equals(saveDoc.args[0][0].name, patientName);
+        test.done();
+    });
+};
+
+exports['assign_schedule event creates the named schedule'] = function(test) {
+    var change = { doc: {
+        form: 'R',
+        reported_date: 53,
+        from: '+555123',
+        fields: { patient_id: '05649' }
+    } };
+    var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: 'papa' } } } ] });
+    var db = { medic: { view: view } };
+    var saveDoc = sinon.stub().callsArgWith(1);
+    var audit = { saveDoc: saveDoc };
+    var eventConfig = {
+        form: 'R',
+        events: [ { name: 'on_create', trigger: 'assign_schedule', params: 'myschedule' } ]
+    };
+    sinon.stub(config, 'get').returns([ eventConfig ]);
+    sinon.stub(transition, 'validate').callsArgWith(2);
+    var getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, [ { _id: 'xyz' } ]);
+    sinon.stub(schedules, 'getScheduleConfig').returns('someschedule');
+    var assignSchedule = sinon.stub(schedules, 'assignSchedule').returns(true);
+    transition.onMatch(change, db, audit, function() {
+        test.equals(assignSchedule.callCount, 1);
+        test.equals(assignSchedule.args[0][1], 'someschedule');
+        test.equals(assignSchedule.args[0][2][0]._id, 'xyz');
+        test.equals(getRegistrations.callCount, 1);
         test.done();
     });
 };
