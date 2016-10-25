@@ -97,6 +97,10 @@ app.all(pathPrefix + '_local/*', function(req, res) {
   // don't audit the _local docs
   proxy.web(req, res);
 });
+app.all(pathPrefix + '_bulk_get/*', function(req, res) {
+  // don't audit the _bulk_get request
+  proxy.web(req, res);
+});
 
 app.get('/setup/poll', function(req, res) {
   var p = require('./package.json');
