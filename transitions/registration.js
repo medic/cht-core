@@ -273,8 +273,8 @@ module.exports = {
                 }
                 options.params.forEach(function(name) {
                     var schedule = schedules.getScheduleConfig(name);
-                    var bool = schedules.assignSchedule(options.doc, schedule, registrations);
-                    if (!bool) {
+                    var assigned = schedules.assignSchedule(options.doc, schedule, registrations);
+                    if (!assigned) {
                         logger.error('Failed to add schedule please verify settings.');
                     }
                 });
