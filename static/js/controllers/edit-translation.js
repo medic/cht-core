@@ -13,24 +13,23 @@ var _ = require('underscore');
 
       'ngInject';
 
-      $scope.key = $scope.model.key;
       $scope.editing = !!$scope.model.key;
-      $scope.locales = _.pluck($scope.model.locales, 'doc');
-      $scope.values = {};
+      $scope.model.locales = _.pluck($scope.model.locales, 'doc');
+      $scope.model.values = {};
 
-      $scope.locales.forEach(function(locale) {
-        var value = $scope.key ? locale.values[$scope.key] : null;
-        $scope.values[locale.code] = value;
+      $scope.model.locales.forEach(function(locale) {
+        var value = $scope.model.key ? locale.values[$scope.model.key] : null;
+        $scope.model.values[locale.code] = value;
       });
 
       var getUpdatedLocales = function() {
-        return _.filter($scope.locales, function(locale) {
-          var newValue = $scope.values[locale.code];
+        return _.filter($scope.model.locales, function(locale) {
+          var newValue = $scope.model.values[locale.code];
           if (
             !$scope.editing ||
-            ($scope.editing && locale.values[$scope.key] !== newValue)
+            ($scope.editing && locale.values[$scope.model.key] !== newValue)
           ) {
-            locale.values[$scope.key] = newValue;
+            locale.values[$scope.model.key] = newValue;
             return true;
           }
           return false;

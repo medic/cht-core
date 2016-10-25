@@ -10,11 +10,11 @@
   <form action="" method="POST">
     <div class="form-group">
       <label translate>translation.key</label>
-      <input class="form-control" ng-model="key" ng-disabled="editing">
+      <input class="form-control" ng-model="model.key" ng-disabled="editing">
     </div>
-    <div class="form-group" ng-repeat="locale in locales track by locale._id">
+    <div class="form-group" ng-repeat="locale in model.locales track by locale._id">
       <label>{{locale.name}}</label>
-      <textarea class="form-control" ng-model="values[locale.code]"></textarea>
+      <textarea class="form-control" ng-model="model.values[locale.code]"></textarea>
     </div>
   </form>
 </mm-modal>
