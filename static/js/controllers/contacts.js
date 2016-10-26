@@ -1,4 +1,5 @@
-var scrollLoader = require('../modules/scroll-loader');
+var _ = require('underscore'),
+    scrollLoader = require('../modules/scroll-loader');
 
 (function () {
 
@@ -60,19 +61,19 @@ var scrollLoader = require('../modules/scroll-loader');
         });
       };
 
-      function completeLoad() {
+      var completeLoad = function() {
         $scope.loading = false;
         $scope.appending = false;
         $scope.hasContacts = liveList.count() > 0;
-      }
+      };
 
-      function _initScroll() {
+      var _initScroll = function() {
         scrollLoader.init(function() {
           if (!$scope.loading && $scope.moreItems) {
             _query({ skip: true });
           }
         });
-      }
+      };
 
       var _query = function(options) {
         options = options || {};
@@ -90,12 +91,20 @@ var scrollLoader = require('../modules/scroll-loader');
 
         var actualFilter = $scope.filters.search ? $scope.filters : defaultTypeFilter;
 
-        Search('contacts', actualFilter, options).then(function(searchResults) {
+        Search('contacts', actualFilter, options).then(function(contacts) {
           // If you have a home place make sure its at the top
-          var contacts = usersHomePlace && !$scope.appending ?
-            [usersHomePlace].concat(searchResults.filter(function(contact) {
-              return contact._id !== usersHomePlace._id;
-            })) : searchResults;
+          if (usersHomePlace && !$scope.appending) {
+            var homeIndex = _.findIndex(contacts, function(contact) {
+              return contact._id === usersHomePlace._id;
+            });
+            if (homeIndex !== -1) {
+              // move it to the top
+              contacts.splice(homeIndex, 1);
+              contacts.unshift(usersHomePlace);
+            } else if (!$scope.filters.search) {
+              contacts.unshift(usersHomePlace);
+            }
+          }
 
           $scope.moreItems = liveList.moreItems = contacts.length >= options.limit;
 
