@@ -15,6 +15,7 @@ var _ = require('underscore'),
       $state,
       $timeout,
       $translate,
+      Changes,
       ContactSchema,
       DB,
       LiveList,
@@ -77,7 +78,7 @@ var _ = require('underscore'),
 
       var _query = function(options) {
         options = options || {};
-        options.limit = 50;
+        options.limit = options.limit || 50;
 
         if (!options.silent) {
           $scope.loading = true;
@@ -256,6 +257,16 @@ var _ = require('underscore'),
       $scope.$on('$stateChangeStart', function(event, toState) {
         if (toState.name.indexOf('contacts') === -1) {
           $scope.unsetSelected();
+        }
+      });
+
+      Changes({
+        key: 'contacts-list',
+        callback: function() {
+          _query({ limit: liveList.count(), silent: true });
+        },
+        filter: function(change) {
+          return ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
         }
       });
     }
