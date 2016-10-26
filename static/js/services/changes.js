@@ -3,49 +3,46 @@
  * listener with this module will replace the previously registered
  * listener with the same key.
  */
-(function () {
+angular.module('inboxServices').factory('Changes',
+  function(
+    $log,
+    DB,
+    E2ETESTING
+  ) {
 
-  'use strict';
+    'use strict';
+    'ngInject';
 
-  var inboxServices = angular.module('inboxServices');
+    var callbacks = {};
 
-  inboxServices.factory('Changes', [
-    '$log', 'E2ETESTING', 'DB',
+    var notifyAll = function(change) {
+      $log.debug('Change notification firing', change);
+      Object.keys(callbacks).forEach(function(key) {
+        var options = callbacks[key];
+        if (!options.filter || options.filter(change)) {
+          options.callback(change);
+        }
+      });
+    };
 
-    function($log, E2ETESTING, DB) {
-
-      var callbacks = {};
-
-      var notifyAll = function(change) {
-        $log.debug('Change notification firing', change);
-        Object.keys(callbacks).forEach(function(key) {
-          var options = callbacks[key];
-          if (!options.filter || options.filter(change)) {
-            options.callback(change);
-          }
+    // Longpoll requests like changes hangs protractor testing as it waits
+    // for all requests to finish.
+    if (!E2ETESTING) {
+      DB()
+        .changes({
+          live: true,
+          since: 'now',
+          timeout: false,
+          include_docs: true
+        })
+        .on('change', notifyAll)
+        .on('error', function(err) {
+          $log.error('Error watching for db changes', err);
         });
-      };
-
-      // Longpoll requests like changes hangs protractor testing as it waits
-      // for all requests to finish.
-      if (!E2ETESTING) {
-        DB()
-          .changes({
-            live: true,
-            since: 'now',
-            timeout: false,
-            include_docs: true
-          })
-          .on('change', notifyAll)
-          .on('error', function(err) {
-            $log.error('Error watching for db changes', err);
-          });
-      }
-      return function(options) {
-        callbacks[options.key] = options;
-      };
     }
+    return function(options) {
+      callbacks[options.key] = options;
+    };
+  }
 
-  ]);
-
-}());
+);
