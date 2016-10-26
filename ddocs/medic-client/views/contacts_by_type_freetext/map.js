@@ -1,7 +1,18 @@
 function(doc) {
-  var skip = [ '_id', '_rev', 'type', 'refid' ];
+  var skip = [ '_id', '_rev', 'type', 'refid', 'geolocation' ];
 
-  var emitField = function(key, value, type, order) {
+  var usedKeys = [];
+  var emitMaybe = function(key, value) {
+    if (usedKeys.indexOf(key) === -1 && // Not already used
+        !key.match(/(^$)|(^[^A-Za-z0-9+])/) && // Not empty or starting with bad symbol
+        key.length > 2 // Not too short
+    ) {
+      usedKeys.push(key);
+      emit([doc.type, key], value);
+    }
+  };
+
+  var emitField = function(key, value, order) {
     if (!key || !value) {
       return;
     }
@@ -15,11 +26,11 @@ function(doc) {
     if (typeof value === 'string') {
       value = value.toLowerCase();
       value.split(/\s+/).forEach(function(word) {
-        emit([ type, word ], order);
+        emitMaybe(word, order);
       });
     }
     if (typeof value === 'number' || typeof value === 'string') {
-      emit([ type, key + ':' + value ], order);
+      emitMaybe(key + ':' + value, order);
     }
   };
 
@@ -28,11 +39,11 @@ function(doc) {
   if (idx !== -1) {
     var order = idx + ' ' + (doc.name && doc.name.toLowerCase());
     Object.keys(doc).forEach(function(key) {
-      emitField(key, doc[key], doc.type, order);
+      emitField(key, doc[key], order);
     });
     var clinic = doc.type === 'person' ? doc.parent : doc;
     if (clinic && clinic._id) {
-      emit([ doc.type, 'clinic:' + clinic._id ], order);
+      emitMaybe('clinic:' + clinic._id, order);
     }
   }
 }
