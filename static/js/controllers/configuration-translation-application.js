@@ -87,6 +87,10 @@ var _ = require('underscore');
         });
       };
 
+      $scope.$on('$destroy', function() {
+        Changes({ key: 'configuration-translation-application' });
+      });
+
       Changes({
         key: 'configuration-translation-application',
         filter: function(change) {

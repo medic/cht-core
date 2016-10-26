@@ -494,6 +494,10 @@ var _ = require('underscore'),
         }
       });
 
+      $scope.$on('$destroy', function() {
+        Changes({ key: 'reports-list' });
+      });
+
       Changes({
         key: 'reports-list',
         callback: function() {

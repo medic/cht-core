@@ -74,6 +74,10 @@ var _ = require('underscore');
         }
       };
 
+      $scope.$on('$destroy', function() {
+        Changes({ key: 'reports-content' });
+      });
+
       Changes({
         key: 'reports-content',
         filter: function(change) {

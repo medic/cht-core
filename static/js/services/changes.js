@@ -41,7 +41,11 @@ angular.module('inboxServices').factory('Changes',
         });
     }
     return function(options) {
-      callbacks[options.key] = options;
+      if (options.callback) {
+        callbacks[options.key] = options;
+      } else {
+        delete callbacks[options.key];
+      }
     };
   }
 

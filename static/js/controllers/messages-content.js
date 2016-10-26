@@ -218,6 +218,10 @@ var _ = require('underscore');
         $scope.send.message = '';
       };
 
+      $scope.$on('$destroy', function() {
+        Changes({ key: 'messages-content' });
+      });
+
       Changes({
         key: 'messages-content',
         callback: function() {

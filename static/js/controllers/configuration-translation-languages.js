@@ -140,6 +140,10 @@ var _ = require('underscore');
         });
       };
 
+      $scope.$on('$destroy', function() {
+        Changes({ key: 'configuration-translation-languages' });
+      });
+
       Changes({
         key: 'configuration-translation-languages',
         filter: function(change) {

@@ -358,6 +358,10 @@ var _ = require('underscore'),
         });
       this.getSetupPromiseForTesting = function() { return setupPromise; };
 
+      $scope.$on('$destroy', function() {
+        Changes({ key: 'contacts-content' });
+      });
+
       Changes({
         key: 'contacts-content',
         filter: function(change) {

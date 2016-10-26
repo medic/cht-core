@@ -260,6 +260,10 @@ var _ = require('underscore'),
         }
       });
 
+      $scope.$on('$destroy', function() {
+        Changes({ key: 'contacts-list' });
+      });
+
       Changes({
         key: 'contacts-list',
         callback: function() {

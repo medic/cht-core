@@ -102,6 +102,10 @@ var _ = require('underscore');
         $scope.selected = null;
       });
 
+      $scope.$on('$destroy', function() {
+        Changes({ key: 'messages-list' });
+      });
+
       Changes({
         key: 'messages-list',
         callback: function() {
