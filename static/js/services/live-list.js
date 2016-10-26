@@ -15,29 +15,12 @@ angular.module('inboxServices').factory('LiveListConfig',
     $parse,
     $templateCache,
     $timeout,
-    Changes,
     ContactSchema,
-    GetDataRecords,
-    DB,
     LiveList,
     RulesEngine
   ) {
 
     'ngInject';
-
-    var handleChange = function(change, lists) {
-      if (change.deleted) {
-        lists.forEach(function(list) {
-          list.remove({ _id: change.id });
-        });
-        return;
-      }
-      GetDataRecords(change.id).then(function(doc) {
-        lists.forEach(function(list) {
-          list.update(doc);
-        });
-      });
-    };
 
     // Configure LiveList service
     return function($scope) {
@@ -73,16 +56,6 @@ angular.module('inboxServices').factory('LiveListConfig',
         selector: '#contacts-list ul.filtered',
         orderBy: contacts_config.orderBy,
         listItem: contacts_config.listItem,
-      });
-
-      Changes({
-        key: 'contacts-list',
-        callback: function(change) {
-          handleChange(change, [ LiveList.contacts, LiveList['contact-search'] ]);
-        },
-        filter: function(change) {
-          return ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
-        }
       });
 
       var reports_config = {
@@ -125,16 +98,6 @@ angular.module('inboxServices').factory('LiveListConfig',
         selector: '#reports-list ul.filtered',
         orderBy: reports_config.orderBy,
         listItem: reports_config.listItem,
-      });
-
-      Changes({
-        key: 'reports-list',
-        callback: function(change) {
-          handleChange(change, [ LiveList.reports, LiveList['report-search'] ]);
-        },
-        filter: function(change) {
-          return change.doc.form;
-        }
       });
 
       LiveList.$listFor('tasks', {

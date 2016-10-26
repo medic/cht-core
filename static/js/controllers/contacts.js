@@ -14,6 +14,7 @@ var scrollLoader = require('../modules/scroll-loader');
       $state,
       $timeout,
       $translate,
+      Changes,
       ContactSchema,
       DB,
       LiveList,
@@ -76,7 +77,7 @@ var scrollLoader = require('../modules/scroll-loader');
 
       var _query = function(options) {
         options = options || {};
-        options.limit = 50;
+        options.limit = options.limit || 50;
 
         if (!options.silent) {
           $scope.loading = true;
@@ -247,6 +248,16 @@ var scrollLoader = require('../modules/scroll-loader');
       $scope.$on('$stateChangeStart', function(event, toState) {
         if (toState.name.indexOf('contacts') === -1) {
           $scope.unsetSelected();
+        }
+      });
+
+      Changes({
+        key: 'contacts-list',
+        callback: function() {
+          _query({ limit: liveList.count(), silent: true });
+        },
+        filter: function(change) {
+          return ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
         }
       });
     }

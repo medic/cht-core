@@ -88,7 +88,8 @@ describe('Contacts controller', function() {
           isAdmin: function() { return isAdmin; }
         },
         'UserSettings': userSettings,
-        'XmlForms': xmlForms
+        'XmlForms': xmlForms,
+        'Changes': function() {}
       });
     };
   }));

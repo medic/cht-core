@@ -14,6 +14,7 @@ var _ = require('underscore'),
       $state,
       $stateParams,
       $timeout,
+      Changes,
       DB,
       FormatDataRecord,
       LiveList,
@@ -236,7 +237,7 @@ var _ = require('underscore'),
 
       var query = function(options) {
         options = options || {};
-        options.limit = 50;
+        options.limit = options.limit || 50;
         if (!options.silent) {
           $scope.error = false;
           $scope.errorSyntax = false;
@@ -490,6 +491,16 @@ var _ = require('underscore'),
       $scope.$on('$stateChangeStart', function(event, toState) {
         if (toState.name.indexOf('reports') === -1) {
           $scope.unsetSelected();
+        }
+      });
+
+      Changes({
+        key: 'reports-list',
+        callback: function() {
+          query({ silent: true, limit: liveList.count() });
+        },
+        filter: function(change) {
+          return change.doc.form;
         }
       });
     }
