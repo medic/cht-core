@@ -213,8 +213,8 @@ describe('Contacts controller', function() {
         .then(function() {
           var lhs = contactsLiveList.getList();
           assert.equal(lhs.length, 2, 'both home place and search results are shown');
-          assert.deepEqual(lhs[0], district, 'first item is home place');
-          assert.deepEqual(lhs[1], searchResults[0], 'second item is search result');
+          assert.equal(lhs[0]._id, district._id, 'first item is home place');
+          assert.equal(lhs[1]._id, 'search-result', 'second item is search result');
 
           done();
         }).catch(done);
@@ -233,8 +233,8 @@ describe('Contacts controller', function() {
         .then(function() {
           var lhs = contactsLiveList.getList();
           assert.equal(lhs.length, 2, 'both home place and search results are shown');
-          assert.deepEqual(lhs[0], district, 'first item is home place');
-          assert.deepEqual(lhs[1], searchResults[0], 'second item is search result');
+          assert.equal(lhs[0]._id, district._id, 'first item is home place');
+          assert.equal(lhs[1]._id, 'search-result', 'second item is search result');
 
           done();
         }).catch(done);
