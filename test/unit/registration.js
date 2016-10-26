@@ -14,6 +14,12 @@ exports.tearDown = function(callback) {
     if (utils.getRegistrations.restore) {
         utils.getRegistrations.restore();
     }
+    if (utils.getForm.restore) {
+        utils.getForm.restore();
+    }
+    if (utils.getClinicPhone.restore) {
+        utils.getClinicPhone.restore();
+    }
     if (schedules.getScheduleConfig.restore) {
         schedules.getScheduleConfig.restore();
     }
@@ -197,4 +203,85 @@ exports['assign_schedule event creates the named schedule'] = function(test) {
         test.equals(getRegistrations.callCount, 1);
         test.done();
     });
+};
+
+exports['filter returns false for reports for unknown json form'] = function(test) {
+    var doc = { form: 'R' };
+    var getForm = sinon.stub(utils, 'getForm').returns(null);
+    var actual = transition.filter(doc);
+    test.equals(getForm.callCount, 1);
+    test.equals(getForm.args[0][0], 'R');
+    test.equals(actual, false);
+    test.done();
+};
+
+exports['filter returns false for reports with no registration configured'] = function(test) {
+    var doc = { form: 'R' };
+    var getForm = sinon.stub(utils, 'getForm').returns({ public_form: false });
+    var configGet = sinon.stub(config, 'get').returns([{ form: 'XYZ' }]);
+    var actual = transition.filter(doc);
+    test.equals(getForm.callCount, 1);
+    test.equals(getForm.args[0][0], 'R');
+    test.equals(configGet.callCount, 1);
+    test.equals(configGet.args[0][0], 'registrations');
+    test.equals(actual, false);
+    test.done();
+};
+
+exports['filter returns true for reports from known clinic'] = function(test) {
+    var doc = { form: 'R' };
+    var getForm = sinon.stub(utils, 'getForm').returns({ public_form: false });
+    var configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
+    var getClinicPhone = sinon.stub(utils, 'getClinicPhone').returns('+55555555');
+    var actual = transition.filter(doc);
+    test.equals(getForm.callCount, 1);
+    test.equals(getForm.args[0][0], 'R');
+    test.equals(configGet.callCount, 1);
+    test.equals(configGet.args[0][0], 'registrations');
+    test.equals(getClinicPhone.callCount, 1);
+    test.equals(actual, true);
+    test.done();
+};
+
+exports['filter returns false for reports from unknown clinic'] = function(test) {
+    var doc = { form: 'R' };
+    var getForm = sinon.stub(utils, 'getForm').returns({ public_form: false });
+    var configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
+    var getClinicPhone = sinon.stub(utils, 'getClinicPhone').returns(null);
+    var actual = transition.filter(doc);
+    test.equals(getForm.callCount, 1);
+    test.equals(getForm.args[0][0], 'R');
+    test.equals(configGet.callCount, 1);
+    test.equals(configGet.args[0][0], 'registrations');
+    test.equals(getClinicPhone.callCount, 1);
+    test.equals(actual, false);
+    test.done();
+};
+
+exports['filter returns true for reports for public forms from unknown clinic'] = function(test) {
+    var doc = { form: 'R' };
+    var getForm = sinon.stub(utils, 'getForm').returns({ public_form: true });
+    var configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
+    var getClinicPhone = sinon.stub(utils, 'getClinicPhone').returns(null);
+    var actual = transition.filter(doc);
+    test.equals(getForm.callCount, 1);
+    test.equals(getForm.args[0][0], 'R');
+    test.equals(configGet.callCount, 1);
+    test.equals(configGet.args[0][0], 'registrations');
+    test.equals(getClinicPhone.callCount, 1);
+    test.equals(actual, true);
+    test.done();
+};
+
+exports['filter returns true for xforms reports'] = function(test) {
+    var doc = { form: 'R', content_type: 'xml' };
+    var getForm = sinon.stub(utils, 'getForm').returns(null);
+    var configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
+    var actual = transition.filter(doc);
+    test.equals(getForm.callCount, 1);
+    test.equals(getForm.args[0][0], 'R');
+    test.equals(configGet.callCount, 1);
+    test.equals(configGet.args[0][0], 'registrations');
+    test.equals(actual, true);
+    test.done();
 };
