@@ -4,8 +4,7 @@ var _ = require('underscore');
 
   'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
-  inboxControllers.controller('ContactsEditCtrl',
+  angular.module('inboxControllers').controller('ContactsEditCtrl',
     function (
       $log,
       $q,
@@ -17,63 +16,22 @@ var _ = require('underscore');
       DB,
       Enketo,
       EnketoTranslation,
-      Snackbar,
-      UserDistrict
+      Snackbar
     ) {
 
       'ngInject';
 
       $scope.loadingContent = true;
-      $scope.loadingTypes = true;
       $scope.setShowContent(true);
       $scope.setCancelTarget(function() {
         $state.go('contacts.detail', { id: $state.params.id || $state.params.parent_id });
       });
 
-      var getVisibleLevel = function() {
-        return UserDistrict()
-          .then(function(facilityId) {
-            if (!facilityId) {
-              // Admin! Sees everything.
-              return;
-            }
-            return DB().get(facilityId)
-              .then(function(doc) {
-                return doc.type;
-              });
-          })
-          .catch(function(err) {
-            if (err.status === 404) {
-              // TODO it seems like my user can't access its own facility object.
-              // This is likely a local issue, so here's what should happen above.
-              return 'health_center';
-            }
-            throw err;
-          });
-      };
-
-      var setupSchemas = function() {
-        return getVisibleLevel()
-          .then(function(limit) {
-            $scope.unmodifiedSchema = ContactSchema.get();
-            $scope.contactTypes = Object.keys($scope.unmodifiedSchema);
-
-            $scope.placeSchemas = limit ? ContactSchema.getBelow(limit) : ContactSchema.get();
-            $scope.dependentPersonSchema = $scope.placeSchemas.person;
-            delete $scope.dependentPersonSchema.fields.parent;
-            delete $scope.placeSchemas.person;
-
-            // one schema for person, and at least two place types
-            $scope.canCreateDifferentPlaceTypes = Object.keys($scope.placeSchemas).length > 2;
-            $scope.loadingTypes = false;
-          });
-      };
-
       $scope.setContactType = function(type) {
         $scope.loadingContent = true;
         $scope.contact.type = type;
 
-        ContactForm.forCreate(type, { contact:$scope.dependentPersonSchema })
+        ContactForm.forCreate(type, { contact: $scope.dependentPersonSchema })
           .then(function(form) {
             return Enketo.renderFromXmlString($('#contact-form'), form);
           })
@@ -141,20 +99,10 @@ var _ = require('underscore');
           return ContactForm.forEdit(contact.type);
         }
 
-        $scope.contact = {};
-
-        if ($state.params.type) {
-          $scope.contact.type = $state.params.type;
-        } else {
-          var placeTypes = Object.keys($scope.placeSchemas);
-          if (placeTypes.length === 1) {
-            $scope.contact.type = placeTypes[0];
-          }
-        }
-
-        if ($state.params.parent_id) {
-          $scope.contact.parent = $state.params.parent_id;
-        }
+        $scope.contact = {
+          type: $state.params.type,
+          parent: $state.params.parent_id
+        };
 
         $scope.category = getCategory($scope.contact.type);
         $scope.contactId = null;
@@ -186,8 +134,11 @@ var _ = require('underscore');
           });
       };
 
-      setupSchemas()
-        .then(getContact)
+      $scope.unmodifiedSchema = ContactSchema.get();
+      $scope.dependentPersonSchema = ContactSchema.get('person');
+      delete $scope.dependentPersonSchema.fields.parent;
+
+      getContact()
         .then(getForm)
         .then(renderForm)
         .then(function() {
@@ -376,7 +327,7 @@ var _ = require('underscore');
           return;
         }
         var nameFormat = $scope.unmodifiedSchema[doc.type].name;
-        if(nameFormat) {
+        if (nameFormat) {
           doc.name = nameFormat.replace(/\{\{([^}]+)\}\}/g, function(all, name) {
             return doc[name];
           });

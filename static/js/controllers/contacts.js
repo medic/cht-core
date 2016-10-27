@@ -222,35 +222,33 @@ var _ = require('underscore'),
         $scope.search();
       };
 
-      var setupPromise = getUserHomePlaceSummary()
-        .then(function(summary) {
-          if (summary) {
-            var type = ContactSchema.getChildPlaceType(summary.type);
-
-            usersHomePlace = summary;
-            defaultTypeFilter = { types: { selected: [type] }};
-
-            var actionBarData = {
-              userFacilityId: summary._id,
+      var setActionBarData = function(home) {
+        var type;
+        if (home) {
+          usersHomePlace = home;
+          type = ContactSchema.getChildPlaceType(home.type);
+        } else if (Session.isAdmin()) {
+          type = ContactSchema.getPlaceTypes()[0];
+        } else {
+          return;
+        }
+        defaultTypeFilter = { types: { selected: [ type ] }};
+        return $translate(ContactSchema.get(type).addButtonLabel)
+          .then(function(label) {
+            $scope.setLeftActionBar({
+              addPlaceLabel: label,
+              userFacilityId: home && home._id,
               userChildPlace: {
                 type: type,
-                icon: (ContactSchema.get(type) ? ContactSchema.get(type).icon : '')
+                icon: ContactSchema.get(type) ? ContactSchema.get(type).icon : ''
               }
-            };
+            });
+          });
+      };
 
-            return $translate(ContactSchema.get(type).addButtonLabel)
-              .then(function(label) {
-                actionBarData.addPlaceLabel = label;
-                $scope.setLeftActionBar(actionBarData);
-              });
-          } else {
-            if (Session.isAdmin()) {
-              defaultTypeFilter = { types: { selected: [ContactSchema.getPlaceTypes()[0]] }};
-            }
-          }
-        }).then(function() {
-          $scope.search();
-        });
+      var setupPromise = getUserHomePlaceSummary()
+        .then(setActionBarData)
+        .then($scope.search);
 
       this.getSetupPromiseForTesting = function() { return setupPromise; };
 

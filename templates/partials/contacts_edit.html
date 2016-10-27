@@ -5,34 +5,18 @@
     </div>
   </div>
   <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && contentError">
-    <div>{{'error.loading.form' | translate}}</div>
+    <div translate>error.loading.form</div>
   </div>
   <div class="col-sm-8 item-content" ng-show="!loadingContent && !contentError">
     <div id="contact-form" class="enketo" data-editing="{{ enketoContact.docId }}">
-
-      <div class="form-group" ng-show="category === 'place' && !contactId && canCreateDifferentPlaceTypes">
-        <label class="question">
-          <span class="question-label active">{{'Contact type' | translate}}</span>
-          <span class="required">*</span>
-          <p class="horizontal-options">
-            <a class="icon" ng-class="{'selected': contact.type === t}" ng-click="setContactType(t)" ng-repeat="(t, props) in placeSchemas">
-              <span class="rectangle">
-                <span class="fa" ng-class="props.icon"></span>{{'contact.type.' + props.type | translate}}
-              </span>
-            </a>
-          </p>
-        </label>
-      </div>
-
       <div class="container pages"></div>
       <div class="form-footer">
-        <button class="btn btn-default previous-page">&lt; {{'Previous' | translate}}</button>
-        <button class="btn btn-primary next-page">{{'Next' | translate}} &gt;</button>
-        <a class="btn submit btn-primary" ng-click="save()" ng-disabled="saving">{{'Submit' | translate}}</a>
+        <button class="btn btn-default previous-page">&lt; <span translate>Previous</span></button>
+        <button class="btn btn-primary next-page"><span translate>Next</span> &gt;</button>
+        <a class="btn submit btn-primary" ng-click="save()" ng-disabled="saving" translate>Submit</a>
         <div class="loader inline small" ng-show="saving"></div>
         <div class="error">{{savingError}}</div>
       </div>
-
     </div>
   </div>
 </div>
