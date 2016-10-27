@@ -89,7 +89,9 @@ describe('Contacts controller', function() {
         },
         'UserSettings': userSettings,
         'XmlForms': xmlForms,
-        'Changes': function() {}
+        'Changes': function() {
+          return { unsubscribe: function() {} };
+        }
       });
     };
   }));

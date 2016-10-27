@@ -26,7 +26,9 @@ describe('MessagesCtrl controller', function() {
     createController = function() {
       return $controller('MessagesCtrl', {
         '$scope': scope,
-        'Changes': function() {},
+        'Changes': function() {
+          return { unsubscribe: function() {} };
+        },
         'MarkAllRead': {},
         'ContactConversation': KarmaUtils.nullPromise(),
         'MessageContact': KarmaUtils.nullPromise(),

@@ -150,17 +150,17 @@ describe('Changes service', function() {
     done();
   });
 
-  it('removes the listener when no callback given', function(done) {
+  it('removes the listener when unsubscribe called', function(done) {
     // register callback
-    service({
+    var listener = service({
       key: 'yek',
       callback: function() {
         throw new Error('Callback should have been deregistered');
       }
     });
 
-    // deregister callback
-    service({ key: 'yek' });
+    // unsubscribe callback
+    listener.unsubscribe();
 
     changesCallback({ id: 'x', changes: [ { rev: '2-abc' } ] });
 
@@ -173,17 +173,17 @@ describe('Changes service', function() {
     var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
 
     // register callback
-    service({
+    var listener = service({
       key: 'yek',
       callback: function() {
         throw new Error('Callback should have been deregistered');
       }
     });
 
-    // deregister callback
-    service({ key: 'yek' });
+    // unsubscribe callback
+    listener.unsubscribe();
 
-    // re-register callback
+    // re-subscribe callback
     service({
       key: 'yek',
       callback: function(actual) {

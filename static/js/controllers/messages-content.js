@@ -218,11 +218,7 @@ var _ = require('underscore');
         $scope.send.message = '';
       };
 
-      $scope.$on('$destroy', function() {
-        Changes({ key: 'messages-content' });
-      });
-
-      Changes({
+      var changeListener = Changes({
         key: 'messages-content',
         callback: function() {
           updateConversation({ changes: true });
@@ -233,6 +229,8 @@ var _ = require('underscore');
             _.findWhere($scope.selected.messages, { id: change.id });
         }
       });
+
+      $scope.$on('$destroy', changeListener.unsubscribe);
 
       $('.tooltip').remove();
       selectContact($stateParams.id);

@@ -69,6 +69,7 @@ describe('ReportsCtrl controller', function() {
 
     Changes = function(options) {
       changesCallback = options.callback;
+      return { unsubscribe: function() {} };
     };
 
     changesCallback = undefined;

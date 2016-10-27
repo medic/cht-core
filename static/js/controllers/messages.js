@@ -102,11 +102,7 @@ var _ = require('underscore');
         $scope.selected = null;
       });
 
-      $scope.$on('$destroy', function() {
-        Changes({ key: 'messages-list' });
-      });
-
-      Changes({
+      var changeListener = Changes({
         key: 'messages-list',
         callback: function() {
           updateConversations({ changes: true });
@@ -120,6 +116,8 @@ var _ = require('underscore');
                  change.deleted;
         }
       });
+
+      $scope.$on('$destroy', changeListener.unsubscribe);
 
       if ($stateParams.tour) {
         Tour.start($stateParams.tour);

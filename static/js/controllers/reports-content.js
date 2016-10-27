@@ -74,11 +74,7 @@ var _ = require('underscore');
         }
       };
 
-      $scope.$on('$destroy', function() {
-        Changes({ key: 'reports-content' });
-      });
-
-      Changes({
+      var changeListener = Changes({
         key: 'reports-content',
         filter: function(change) {
           return $scope.selected &&
@@ -97,6 +93,8 @@ var _ = require('underscore');
           }
         }
       });
+
+      $scope.$on('$destroy', changeListener.unsubscribe);
     }
   );
 

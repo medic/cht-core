@@ -260,11 +260,7 @@ var _ = require('underscore'),
         }
       });
 
-      $scope.$on('$destroy', function() {
-        Changes({ key: 'contacts-list' });
-      });
-
-      Changes({
+      var changeListener = Changes({
         key: 'contacts-list',
         callback: function() {
           _query({ limit: liveList.count(), silent: true });
@@ -273,6 +269,8 @@ var _ = require('underscore'),
           return ContactSchema.getTypes().indexOf(change.doc.type) !== -1;
         }
       });
+
+      $scope.$on('$destroy', changeListener.unsubscribe);
     }
   );
 }());
