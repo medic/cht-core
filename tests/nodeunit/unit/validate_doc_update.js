@@ -1,17 +1,7 @@
 var proxyquire = require('proxyquire').noCallThru();
-
-var kujuaUtils = {
-  isUserAdmin: function() {
-    return false;
-  },
-  isUserDistrictAdmin: function() {
-    return false;
-  },
-  hasRole: function() {
-    return false;
-  }
-};
-
+var kujuaUtils = proxyquire('../../../packages/kujua-utils/kujua-utils', {
+  'cookies': {}
+});
 var lib = proxyquire('../../../lib/validate_doc_update', {
   'kujua-utils': kujuaUtils
 });
@@ -29,22 +19,64 @@ exports.setUp = function(cb) {
   cb();
 };
 
+var testAllowed = function(roles, newDoc, oldDoc) {
+  oldDoc = oldDoc || newDoc;
+  var userCtx = { name: 'a-user', roles: roles };
+  return lib._allowed(newDoc, oldDoc, userCtx, {}).allowed;
+};
+
+exports['only db and national admins are allowed change ddocs'] = function(test) {
+  var doc = { _id: '_design/something' };
+  test.equal(testAllowed([ '_admin' ], doc), true);
+  test.equal(testAllowed([ 'national_admin' ], doc), true);
+  test.equal(testAllowed([ ], doc), false);
+  test.done();
+};
+
+exports['only db and national admins are allowed change forms'] = function(test) {
+  var doc = { type: 'form' };
+  test.equal(testAllowed([ '_admin' ], doc), true);
+  test.equal(testAllowed([ 'national_admin' ], doc), true);
+  test.equal(testAllowed([ ], doc), false);
+  test.done();
+};
+
+exports['only db and national admins are allowed change translations'] = function(test) {
+  var doc = { type: 'form' };
+  test.equal(testAllowed([ '_admin' ], doc), true);
+  test.equal(testAllowed([ 'national_admin' ], doc), true);
+  test.equal(testAllowed([ ], doc), false);
+  test.done();
+};
+
+exports['only db and national admins are allowed change resources'] = function(test) {
+  var doc = { type: 'form' };
+  test.equal(testAllowed([ '_admin' ], doc), true);
+  test.equal(testAllowed([ 'national_admin' ], doc), true);
+  test.equal(testAllowed([ ], doc), false);
+  test.done();
+};
+
+exports['only db and national admins are allowed change appcache doc'] = function(test) {
+  var doc = { type: 'form' };
+  test.equal(testAllowed([ '_admin' ], doc), true);
+  test.equal(testAllowed([ 'national_admin' ], doc), true);
+  test.equal(testAllowed([ ], doc), false);
+  test.done();
+};
+
 exports['allowed returns false on empty userCtx'] = function(test) {
-  test.equal(lib._allowed({}, {}, {}).allowed, false);
+  test.equal(testAllowed([], {}), false);
   test.done();
 };
 
 exports['allowed returns false on userCtx with null name'] = function(test) {
-  test.equal(lib._allowed({}, {}, {name: null}).allowed, false);
+  test.equal(lib._allowed({}, {}, { name: null }).allowed, false);
   test.done();
 };
 
-exports['allowed returns truen when userCtx has _admin role'] = function(test) {
-  var userCtx = {
-    name: 'a',
-    roles: ['_admin']
-  };
-  test.equal(lib._allowed({}, {}, userCtx).allowed, true);
+exports['allowed returns true when userCtx has _admin role'] = function(test) {
+  test.equal(testAllowed([ '_admin' ], {}), true);
   test.done();
 };
 
