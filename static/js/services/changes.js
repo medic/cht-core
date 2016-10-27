@@ -51,11 +51,9 @@ angular.module('inboxServices').factory('Changes',
     }
 
     return function(options) {
-      console.log('SUBSCRIBING', options.key);
       callbacks[options.key] = options;
       return {
         unsubscribe: function() {
-          console.log('UNSUBSCRIBING', options.key);
           delete callbacks[options.key];
         }
       };
