@@ -35,7 +35,7 @@ var _ = require('underscore');
     }
     var position = exports.clinic(options.parent);
     if (position) {
-      parts.push('<span class="position">' + position + '</span>');
+      parts.push('<div class="position">' + position + '</div>');
     }
     return '<span class="sender">' + parts.join('') + '</span>';
   };
