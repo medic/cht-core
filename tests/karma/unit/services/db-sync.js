@@ -105,4 +105,52 @@ describe('DBSync service', function() {
     });
   });
 
+  describe('replicateTo filter', function() {
+
+    var filterFunction;
+
+    before(function() {
+      isAdmin.returns(false);
+      to.returns(KarmaUtils.mockPromise());
+      from.returns(KarmaUtils.mockPromise());
+      Auth.returns(KarmaUtils.mockPromise());
+      userCtx.returns({ name: 'mobile', roles: [ 'district-manager' ] });
+      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [] }));
+      return service().then(function() {
+        chai.expect(to.callCount).to.equal(1);
+        filterFunction = to.args[0][1].filter;
+      });
+    });
+
+    it('does not replicate the ddoc', function() {
+      var actual = filterFunction({ _id: '_design/medic-client' });
+      chai.expect(actual).to.equal(false);
+    });
+
+    it('does not replicate the resources doc', function() {
+      var actual = filterFunction({ _id: 'resources' });
+      chai.expect(actual).to.equal(false);
+    });
+
+    it('does not replicate the appcache doc', function() {
+      var actual = filterFunction({ _id: 'appcache' });
+      chai.expect(actual).to.equal(false);
+    });
+
+    it('does not replicate forms', function() {
+      var actual = filterFunction({ type: 'form' });
+      chai.expect(actual).to.equal(false);
+    });
+
+    it('does not replicate translations', function() {
+      var actual = filterFunction({ type: 'translations' });
+      chai.expect(actual).to.equal(false);
+    });
+
+    it('does replicate reports', function() {
+      var actual = filterFunction({ type: 'data_record' });
+      chai.expect(actual).to.equal(true);
+    });
+  });
+
 });

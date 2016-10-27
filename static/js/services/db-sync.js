@@ -1,4 +1,6 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    READ_ONLY_TYPES = [ 'form', 'translations' ],
+    READ_ONLY_IDS = [ '_design/medic-client', 'resources', 'appcache' ];
 
 (function () {
 
@@ -84,8 +86,9 @@ var _ = require('underscore');
           .then(function() {
             return replicate('to', successCallback, {
               filter: function(doc) {
-                // don't try to replicate ddoc back to the server
-                return doc._id !== '_design/medic-client';
+                // don't try to replicate read only docs back to the server
+                return READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
+                       READ_ONLY_IDS.indexOf(doc._id) === -1;
               }
             });
           })
