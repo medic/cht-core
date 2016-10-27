@@ -50,20 +50,12 @@
 
       <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'contacts'">
         <div class="actions dropup">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.left.userFacilityId" ui-sref="contacts.addChild({ type: actionBar.left.userChildPlace.type, parent_id: actionBar.left.userFacilityId })">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.left.userChildPlace.type" ui-sref="contacts.addChild({ type: actionBar.left.userChildPlace.type, parent_id: actionBar.left.userFacilityId })">
             <span class="fa-stack">
               <i class="fa {{actionBar.left.userChildPlace.icon}} fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
             <p>{{actionBar.left.addPlaceLabel}}</p>
-          </a>
-
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.add()" ng-show="!actionBar.left.userFacilityId">
-            <span class="fa-stack">
-              <i class="fa fa-building fa-stack-1x"></i>
-              <i class="fa fa-plus fa-stack-1x"></i>
-            </span>
-            <p translate>Add place</p>
           </a>
         </div>
       </div>
