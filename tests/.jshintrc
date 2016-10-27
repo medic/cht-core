@@ -6,6 +6,8 @@
         "_"         : true,
         "beforeEach": true,
         "afterEach" : true,
+        "before"    : true,
+        "after"     : true,
         "beforeAll" : true,
         "afterAll"  : true,
         "it"        : true,
