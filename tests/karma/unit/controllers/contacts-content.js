@@ -101,7 +101,9 @@ describe('ContactsContentCtrl', function() {
         '$log': log,
         '$q': Q,
         '$stateParams': idStateParam,
-        'Changes': sinon.stub(),
+        'Changes': function() {
+          return { unsubscribe: function() {} };
+        },
         'ContactSchema': {
           getVisibleFields: getVisibleFields,
           get: function() {

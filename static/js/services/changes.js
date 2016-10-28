@@ -1,7 +1,16 @@
 /**
- * Module to ensure changes listeners are singletons. Registering a
- * listener with this module will replace the previously registered
- * listener with the same key.
+ * Module to listen for database changes.
+ *
+ * @param (Object) options
+ *   - id (String): Some unique id to stop duplicate registrations
+ *   - callback (function): The function to invoke when a change is detected.
+ *        The function is given the pouchdb change object as a parameter
+ *        including the changed doc.
+ *   - filter (function) (optional): A function to invoke to determine if the
+ *        callback should be called on the given change object.
+ * @returns (Object)
+ *   - unsubscribe (function): Invoke this function to stop being notified of
+ *        any further changes.
  */
 angular.module('inboxServices').factory('Changes',
   function(
@@ -40,8 +49,14 @@ angular.module('inboxServices').factory('Changes',
           $log.error('Error watching for db changes', err);
         });
     }
+
     return function(options) {
       callbacks[options.key] = options;
+      return {
+        unsubscribe: function() {
+          delete callbacks[options.key];
+        }
+      };
     };
   }
 

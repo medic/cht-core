@@ -140,13 +140,15 @@ var _ = require('underscore');
         });
       };
 
-      Changes({
+      var changeListener = Changes({
         key: 'configuration-translation-languages',
         filter: function(change) {
           return change.doc.type === 'translations';
         },
         callback: getLanguages
       });
+
+      $scope.$on('$destroy', changeListener.unsubscribe);
 
       getLanguages();
     }

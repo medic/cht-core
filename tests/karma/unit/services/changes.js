@@ -150,4 +150,49 @@ describe('Changes service', function() {
     done();
   });
 
+  it('removes the listener when unsubscribe called', function(done) {
+    // register callback
+    var listener = service({
+      key: 'yek',
+      callback: function() {
+        throw new Error('Callback should have been deregistered');
+      }
+    });
+
+    // unsubscribe callback
+    listener.unsubscribe();
+
+    changesCallback({ id: 'x', changes: [ { rev: '2-abc' } ] });
+
+    chai.expect(changesCount).to.equal(1);
+
+    done();
+  });
+
+  it('reregisters the callback next time', function(done) {
+    var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
+
+    // register callback
+    var listener = service({
+      key: 'yek',
+      callback: function() {
+        throw new Error('Callback should have been deregistered');
+      }
+    });
+
+    // unsubscribe callback
+    listener.unsubscribe();
+
+    // re-subscribe callback
+    service({
+      key: 'yek',
+      callback: function(actual) {
+        chai.expect(actual).to.equal(expected);
+        chai.expect(changesCount).to.equal(1);
+        done();
+      }
+    });
+
+    done();
+  });
 });

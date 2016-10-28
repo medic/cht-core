@@ -358,7 +358,7 @@ var _ = require('underscore'),
         });
       this.getSetupPromiseForTesting = function() { return setupPromise; };
 
-      Changes({
+      var changeListener = Changes({
         key: 'contacts-content',
         filter: function(change) {
           return $scope.selected && $scope.selected.doc._id === change.id;
@@ -371,6 +371,8 @@ var _ = require('underscore'),
           }
         }
       });
+
+      $scope.$on('$destroy', changeListener.unsubscribe);
 
     }
   );

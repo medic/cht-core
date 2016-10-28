@@ -87,7 +87,7 @@ var _ = require('underscore');
         });
       };
 
-      Changes({
+      var changeListener = Changes({
         key: 'configuration-translation-application',
         filter: function(change) {
           return change.doc.type === 'translations';
@@ -96,6 +96,8 @@ var _ = require('underscore');
           updateTranslations().then(updateTranslationModels);
         }
       });
+
+      $scope.$on('$destroy', changeListener.unsubscribe);
 
     }
   );

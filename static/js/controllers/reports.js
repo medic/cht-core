@@ -494,7 +494,7 @@ var _ = require('underscore'),
         }
       });
 
-      Changes({
+      var changeListener = Changes({
         key: 'reports-list',
         callback: function() {
           query({ silent: true, limit: liveList.count() });
@@ -503,6 +503,8 @@ var _ = require('underscore'),
           return change.doc.form;
         }
       });
+
+      $scope.$on('$destroy', changeListener.unsubscribe);
     }
   );
 
