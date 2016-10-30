@@ -3,11 +3,15 @@
 SELF=$(basename $0)
 
 USE_CONTEXT_FILE=false
+USE_META_FILE=false
 FORCE=false
-while getopts "c:f" opt; do
+DRY_RUN=false
+while getopts "c:m:df" opt; do
     case $opt in
         c) USE_CONTEXT_FILE=true ; CONTEXT_FILE="$OPTARG" ;;
+        m) USE_META_FILE=true ; META_FILE="$OPTARG" ;;
         f) FORCE=true ;;
+        d) DRY_RUN=true ;;
     esac
     shift $((OPTIND-1))
 done
@@ -23,6 +27,10 @@ Options:
       force-overwrite of existing doc
   -c <json-file>
       set the context(s) for which this form will be available
+  -m <json-file>
+      set the metadata for the form including context and icon. overrides -c option.
+  -d
+      dry run: process the files and display result to output but don't perform the upload
 
 Examples:
   COUCH_URL=http://localhost:8000/medic $SELF registration /home/henry/forms/RegisterPregnancy.xml
@@ -30,7 +38,7 @@ EOF
 }
 
 error() {
-  echo "[$0] Error: $1"; exit 1
+    echo "[$0] Error: $1"; exit 1
 }
 
 if [[ $# < 2 ]]; then
@@ -81,14 +89,19 @@ else
     formContext='{ "person":'"$contextPatient"', "place":'"$contextPlace"' }'
 fi
 
-docUrl="${DB}/form:${ID}"
-
 fullJson='{
     "type": "form",
     "title": "'"${formTitle}"'",
     "internalId": "'"${formInternalId}"'",
     "context": '"${formContext}"'
 }'
+
+if $USE_META_FILE; then
+    meta="$(cat "${META_FILE}")"
+    fullJson="[$SELF] $(echo $fullJson | jq '. * '"$meta"'')"
+fi
+
+docUrl="${DB}/form:${ID}"
 
 cat <<EOF
 [$SELF] -----
@@ -103,6 +116,11 @@ cat <<EOF
 [$SELF]   full JSON: $fullJson
 [$SELF] -----
 EOF
+
+if $DRY_RUN; then
+    echo "[$SELF] DRY RUN COMPLETE: Execute without -d to upload the form"
+    exit 0;
+fi
 
 check_rev() {
     # exit if we don't see a rev property
