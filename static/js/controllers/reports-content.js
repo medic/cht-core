@@ -29,9 +29,9 @@ var _ = require('underscore');
        return MessageState.any(group, 'muted');
       };
 
-      var setMessageState = function(group, from, to) {
+      var setMessageState = function(report, group, from, to) {
         group.loading = true;
-        var id = $scope.selected._id;
+        var id = report._id;
         var groupNumber = group.rows[0].group;
         MessageState.set(id, groupNumber, from, to).catch(function(err) {
           group.loading = false;
@@ -39,12 +39,12 @@ var _ = require('underscore');
         });
       };
 
-      $scope.mute = function(group) {
-        setMessageState(group, 'scheduled', 'muted');
+      $scope.mute = function(report, group) {
+        setMessageState(report, group, 'scheduled', 'muted');
       };
 
-      $scope.schedule = function(group) {
-        setMessageState(group, 'muted', 'scheduled');
+      $scope.schedule = function(report, group) {
+        setMessageState(report, group, 'muted', 'scheduled');
       };
 
       $scope.toggleExpand = function(selection) {
