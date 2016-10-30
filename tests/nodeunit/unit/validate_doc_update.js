@@ -33,6 +33,22 @@ exports['only db and national admins are allowed change ddocs'] = function(test)
   test.done();
 };
 
+exports['only db and national admins are allowed change the resources doc'] = function(test) {
+  var doc = { _id: 'resources' };
+  test.equal(testAllowed([ '_admin' ], doc), true);
+  test.equal(testAllowed([ 'national_admin' ], doc), true);
+  test.equal(testAllowed([ ], doc), false);
+  test.done();
+};
+
+exports['only db and national admins are allowed change appcache doc'] = function(test) {
+  var doc = { _id: 'appcache' };
+  test.equal(testAllowed([ '_admin' ], doc), true);
+  test.equal(testAllowed([ 'national_admin' ], doc), true);
+  test.equal(testAllowed([ ], doc), false);
+  test.done();
+};
+
 exports['only db and national admins are allowed change forms'] = function(test) {
   var doc = { type: 'form' };
   test.equal(testAllowed([ '_admin' ], doc), true);
@@ -42,23 +58,7 @@ exports['only db and national admins are allowed change forms'] = function(test)
 };
 
 exports['only db and national admins are allowed change translations'] = function(test) {
-  var doc = { type: 'form' };
-  test.equal(testAllowed([ '_admin' ], doc), true);
-  test.equal(testAllowed([ 'national_admin' ], doc), true);
-  test.equal(testAllowed([ ], doc), false);
-  test.done();
-};
-
-exports['only db and national admins are allowed change resources'] = function(test) {
-  var doc = { type: 'form' };
-  test.equal(testAllowed([ '_admin' ], doc), true);
-  test.equal(testAllowed([ 'national_admin' ], doc), true);
-  test.equal(testAllowed([ ], doc), false);
-  test.done();
-};
-
-exports['only db and national admins are allowed change appcache doc'] = function(test) {
-  var doc = { type: 'form' };
+  var doc = { type: 'translations' };
   test.equal(testAllowed([ '_admin' ], doc), true);
   test.equal(testAllowed([ 'national_admin' ], doc), true);
   test.equal(testAllowed([ ], doc), false);
