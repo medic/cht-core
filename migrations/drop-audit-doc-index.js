@@ -103,7 +103,7 @@ var changeDocIds = function(callback) {
 
 module.exports = {
   name: 'drop-audit-doc-index',
-  created: new Date(2016, 1, 11),
+  created: new Date(2016, 11, 1),
   run: function(callback) {
     dropView(function(err) {
       if (err) {
