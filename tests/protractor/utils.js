@@ -120,7 +120,7 @@ module.exports = {
 
   getAuditDoc: function(id) {
     return request({
-      path: '/' + environment.dbName + '-audit/_design/medic/_view/audit_records_by_doc?include_docs=true&key=["' + id + '"]',
+      path: '/' + environment.dbName + '-audit/' + id + '-audit',
       method: 'GET'
     });
   },
