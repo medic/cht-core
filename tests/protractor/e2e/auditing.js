@@ -113,8 +113,7 @@ describe('Auditing', function() {
     // check the audit doc is updated
     flow.execute(function() {
       return utils.getAuditDoc(savedUuid);
-    }).then(function(viewResult) {
-      var doc = viewResult.rows[0].doc;
+    }).then(function(doc) {
       expect(doc.history.length).toEqual(2);
       expect(doc.history[1].action).toEqual('delete');
       expect(doc.history[1].user).toEqual(environment.user);
