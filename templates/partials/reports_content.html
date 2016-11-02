@@ -90,9 +90,9 @@
               <p>
                 {{group.group}}
                 <span ng-hide="group.loading">
-                  <a class="btn btn-link" ng-click="edit(group)" translate>Edit</a>
-                  <a class="btn btn-link" ng-click="mute(group)" ng-show="canMute(group)" translate>Mute</a>
-                  <a class="btn btn-link" ng-click="schedule(group)" ng-show="canSchedule(group)" translate>Schedule</a>
+                  <a class="btn btn-link" ng-click="edit(selection, group)" translate>Edit</a>
+                  <a class="btn btn-link" ng-click="mute(selection, group)" ng-show="canMute(group)" translate>Mute</a>
+                  <a class="btn btn-link" ng-click="schedule(selection, group)" ng-show="canSchedule(group)" translate>Schedule</a>
                 </span>
                 <span class="inline loader" ng-show="group.loading"></span>
               </p>

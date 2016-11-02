@@ -367,12 +367,12 @@ var _ = require('underscore'),
         Tour.start($stateParams.tour);
       }
 
-      $scope.edit = function(group) {
+      $scope.edit = function(report, group) {
         Modal({
           templateUrl: 'templates/modals/edit_message_group.html',
           controller: 'EditMessageGroupCtrl',
           model: {
-            report: $scope.selected[0].report,
+            report: report,
             group: angular.copy(group)
           }
         });
