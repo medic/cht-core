@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "dependencies": {
     "async": "^1.4.0",
-    "couchdb-audit": "^0.3.0",
+    "couchdb-audit": "^1.0.0",
     "epi-week": "^0.0.1",
     "follow": "^0.12.1",
     "google-libphonenumber": "^1.0.24",
