@@ -2,6 +2,7 @@ var DB_PREFIX = 'medic_api_integration_tests__';
 
 var dbBackups;
 var _ = require('underscore'),
+    async = require('async'),
     db = require('../../../db');
 
 function byId(a, b) {
@@ -43,42 +44,54 @@ function matches(expected, actual) {
   }
 }
 
-function assertDb(expectedContent) {
+function assertDb(expectedContents) {
+  if(Array.isArray(expectedContents)) {
+    expectedContents = {
+      medic: expectedContents,
+    };
+  }
   return new Promise(function(resolve, reject) {
-    db.request({
-      path: DB_PREFIX + 'medic/_all_docs',
-      method: 'GET',
-      qs: { include_docs: true },
-    }, function(err, result) {
-      if(err) {
-        return reject(err);
+    async.map(
+      Object.keys(expectedContents),
+      function(dbName, callback) {
+        db.request({
+          path: DB_PREFIX + dbName + '/_all_docs',
+          method: 'GET',
+          qs: { include_docs: true },
+        }, callback);
+      },
+      function(err, results) {
+        if(err) {
+          return reject(err);
+        }
+
+        Object.keys(expectedContents).forEach(function(key, i) {
+          var expectedContent = expectedContents[key];
+          var actualContent = results[i].rows.map(function(row) {
+            return _.omit(row.doc, ['_rev']);
+          });
+          expectedContent.sort(byId);
+          actualContent.sort(byId);
+
+          // remove standard ddocs from actualContent
+          if (key === 'medic') {
+            actualContent = actualContent.filter(function(doc) {
+              return doc._id !== '_design/medic' &&
+                  doc._id !== '_design/medic-client';
+            });
+          }
+
+          matchDbs(expectedContent, actualContent);
+        });
+
+        resolve();
       }
-
-      var actualContent = _.pluck(result.rows, 'doc').map(function(doc) {
-        return _.omit(doc, ['_rev']);
-      });
-
-      expectedContent.sort(byId);
-      actualContent.sort(byId);
-
-      // remove standard ddocs from actualContent
-      actualContent = actualContent.filter(function(doc) {
-        return doc._id !== '_design/medic' &&
-            doc._id !== '_design/medic-client';
-      });
-
-      matchDbs(expectedContent, actualContent);
-
-      resolve();
-    });
+    );
   });
 }
 
 function matchDbs(expected, actual) {
   var errors = [];
-
-  // remove revs
-  actual = actual.map(_.partial(_.omit, _, ['_rev']));
 
   // split expected data into docs with an ID and those without
   var withId = expected.filter(function(doc) { return doc._id; });
@@ -86,13 +99,20 @@ function matchDbs(expected, actual) {
 
   // check for docs with a specific ID
   withId.forEach(function(expectedDoc) {
-    var found = actual.find(function(actualDoc) {
-      return actualDoc._id === expectedDoc._id && matches(expectedDoc, actualDoc);
+    var actualDoc = actual.find(function(actualDoc) {
+      return actualDoc._id === expectedDoc._id;
     });
-    if(found) {
-      actual = _.without(actual, found);
-    } else {
+    if(!actualDoc) {
       errors.push('Expected doc not found in the db: ' + JSON.stringify(expectedDoc));
+      return;
+    }
+    actual = _.without(actual, actualDoc);
+    if (!matches(expectedDoc, actualDoc)) {
+      errors.push(
+        'Expected doc did not match actual: ' +
+        '\n            Expected: ' + JSON.stringify(expectedDoc) +
+        '\n            Actual:   ' + JSON.stringify(actualDoc)
+      );
     }
   });
 

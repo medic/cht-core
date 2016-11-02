@@ -29,7 +29,7 @@ exports.tearDown = function(callback) {
   utils.restore(
     fti.get,
     db.medic.view,
-    db.audit.view,
+    db.audit.list,
     config.translate,
     config.get,
     childProcess.spawn
@@ -792,8 +792,8 @@ exports['get reports with query calls fti'] = function(test) {
 };
 
 exports['get audit log'] = function(test) {
-  test.expect(3);
-  var getView = sinon.stub(db.audit, 'view').callsArgWith(3, null, {
+  test.expect(2);
+  var list = sinon.stub(db.audit, 'list').callsArgWith(1, null, {
     rows: [
       { doc: {
         _id: 'abc',
@@ -833,15 +833,14 @@ exports['get audit log'] = function(test) {
                  'def,feedback,"01, Jan 1970, 03:25:45 +00:00",gareth,create,"{""type"":""feedback"",""description"":""broken""}"';
   controller.get({ type: 'audit', tz: '0' }, function(err, results) {
     test.equals(results, expected);
-    test.equals(getView.callCount, 1);
-    test.equals(getView.firstCall.args[1], 'audit_records_by_doc');
+    test.equals(list.callCount, 1);
     test.done();
   });
 };
 
 exports['get audit log handles special characters'] = function(test) {
-  test.expect(3);
-  var getView = sinon.stub(db.audit, 'view').callsArgWith(3, null, {
+  test.expect(2);
+  var list = sinon.stub(db.audit, 'list').callsArgWith(1, null, {
     rows: [
       { doc: {
         _id: 'def',
@@ -861,8 +860,7 @@ exports['get audit log handles special characters'] = function(test) {
   controller.get({ type: 'audit', tz: '0', format: 'xml' }, function(err, streamFn) {
     readStream(streamFn, function(results) {
       test.equals(results, expected);
-      test.equals(getView.callCount, 1);
-      test.equals(getView.firstCall.args[1], 'audit_records_by_doc');
+      test.equals(list.callCount, 1);
       test.done();
     });
   });

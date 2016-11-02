@@ -150,8 +150,12 @@ var exportTypes = {
     }
   },
   audit: {
-    view: 'audit_records_by_doc',
-    db: db.audit,
+    getRecords: function(callback) {
+      db.audit.list({
+        limit: 1000,
+        include_docs: true
+      }, callback);
+    },
     generate: function(rows, options) {
       if (!options.columns) {
         options.columns = createColumnModels([
@@ -538,6 +542,9 @@ var getRecordsView = function(type, params, callback) {
 };
 
 var getRecords = function(type, params, callback) {
+  if (_.isFunction(type.getRecords)) {
+    return type.getRecords(callback);
+  }
   if (params.query) {
     if (!type.index) {
       return callback(new Error('This export cannot handle "query" param'));
@@ -548,6 +555,41 @@ var getRecords = function(type, params, callback) {
     return callback(new Error('This export must have a "query" param'));
   }
   getRecordsView(type, params, callback);
+};
+
+var getOptions = function(params) {
+  var options = {
+    timezone: params.tz,
+    locale: params.locale || 'en',
+    form: params.form,
+    format: params.format,
+    skipHeader: params.skip_header_row
+  };
+  if (params.filter_state) {
+    options.filterState = { state: params.filter_state };
+    if (params.filter_state_from) {
+      options.filterState.from = moment()
+        .add(params.filter_state_from, 'days')
+        .startOf('day');
+    }
+    if (params.filter_state_to) {
+      options.filterState.to = moment()
+        .add(params.filter_state_to, 'days')
+        .endOf('day');
+    }
+  }
+
+  if (params.columns) {
+    var parsedColumns;
+    try {
+      parsedColumns = JSON.parse(params.columns);
+    } catch(e) {
+      parsedColumns = [];
+    }
+    options.columns = createColumnModels(parsedColumns, options);
+  }
+
+  return options;
 };
 
 module.exports = {
@@ -562,42 +604,13 @@ module.exports = {
     if (type.lowlevel) {
       return type.generate(callback);
     }
-    var options = {
-      timezone: params.tz,
-      locale: params.locale || 'en',
-      form: params.form,
-      format: params.format,
-      skipHeader: params.skip_header_row
-    };
+
     getRecords(type, params, function(err, response) {
       if (err) {
         return callback(err);
       }
 
-      if (params.filter_state) {
-        options.filterState = { state: params.filter_state };
-        if (params.filter_state_from) {
-          options.filterState.from = moment()
-            .add(params.filter_state_from, 'days')
-            .startOf('day');
-        }
-        if (params.filter_state_to) {
-          options.filterState.to = moment()
-            .add(params.filter_state_to, 'days')
-            .endOf('day');
-        }
-      }
-
-      if (params.columns) {
-        var parsedColumns;
-        try {
-          parsedColumns = JSON.parse(params.columns);
-        } catch(e) {
-          return callback(e);
-        }
-        options.columns = createColumnModels(parsedColumns, options);
-      }
-
+      var options = getOptions(params);
       var tabs = type.generate(response.rows, options);
 
       if (params.format === 'xml') {

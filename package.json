@@ -10,7 +10,7 @@
   "dependencies": {
     "async": "^1.4.0",
     "body-parser": "^1.13.3",
-    "couchdb-audit": "0.3.0",
+    "couchdb-audit": "^1.0.0",
     "cron": "^1.0.9",
     "express": "^4.13.3",
     "fast-csv": "^2.0.1",
