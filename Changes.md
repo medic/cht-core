@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 2.8.3
+
+### November 2, 2016
+
+### Bug fixes
+
+- Improve auditing performance by dropping the audit view. Issue: #2879
+
 ## 2.8.2
 
 ### October 13, 2016
