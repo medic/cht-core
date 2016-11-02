@@ -4,7 +4,7 @@
 
 ### November 2, 2016
 
-### Bug fixes
+#### Bug fixes
 
 - Improve auditing performance by dropping the audit view. Issue: #2879
 
@@ -12,7 +12,7 @@
 
 ### October 13, 2016
 
-### Bug fixes
+#### Bug fixes
 
 - Ensure PouchDB doesn't mis-label TECNO phones as devices running Safari. Issue: #2797
 
