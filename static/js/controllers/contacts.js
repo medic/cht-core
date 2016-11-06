@@ -145,15 +145,14 @@ var _ = require('underscore'),
         if (!selectedChildPlaceType) {
           return $q.resolve();
         }
-        var child = {
-          type: selectedChildPlaceType,
-          icon: selectedChildPlaceType ? ContactSchema.get(selectedChildPlaceType).icon : ''
-        };
-        return $translate(ContactSchema.get(selectedChildPlaceType).addButtonLabel)
-          .then(function(label) {
-            child.addPlaceLabel = label;
-            return child;
-          });
+        var schema = ContactSchema.get(selectedChildPlaceType);
+        return $translate(schema.addButtonLabel).then(function(label) {
+          return {
+            addPlaceLabel: label,
+            type: selectedChildPlaceType,
+            icon: schema ? schema.icon : ''
+          };
+        });
       };
 
       $scope.setSelected = function(selected) {
@@ -232,18 +231,18 @@ var _ = require('underscore'),
         } else {
           return;
         }
+        var schema = ContactSchema.get(type);
         defaultTypeFilter = { types: { selected: [ type ] }};
-        return $translate(ContactSchema.get(type).addButtonLabel)
-          .then(function(label) {
-            $scope.setLeftActionBar({
-              addPlaceLabel: label,
-              userFacilityId: home && home._id,
-              userChildPlace: {
-                type: type,
-                icon: ContactSchema.get(type) ? ContactSchema.get(type).icon : ''
-              }
-            });
+        return $translate(schema.addButtonLabel).then(function(label) {
+          $scope.setLeftActionBar({
+            addPlaceLabel: label,
+            userFacilityId: home && home._id,
+            userChildPlace: {
+              type: type,
+              icon: schema ? schema.icon : ''
+            }
           });
+        });
       };
 
       var setupPromise = getUserHomePlaceSummary()
