@@ -96,7 +96,7 @@ var _ = require('underscore');
           $scope.contactId = contact._id;
           $scope.category = getCategory(contact.type);
           setTitle();
-          return ContactForm.forEdit(contact.type);
+          return ContactForm.forEdit(contact.type, { contact: $scope.dependentPersonSchema });
         }
 
         $scope.contact = {
