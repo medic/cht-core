@@ -112,9 +112,6 @@ describe('InboxCtrl controller', function() {
       $provide.factory('$timeout', function() {
         return sinon.stub();
       });
-      $provide.factory('TrafficStats', function() {
-        return sinon.stub();
-      });
       $provide.factory('UpdateUser', function() {
         return sinon.stub();
       });
