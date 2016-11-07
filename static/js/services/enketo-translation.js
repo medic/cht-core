@@ -129,7 +129,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
       return node;
     }
 
-    function generateXformWithOptions(principle, extras) {
+    self.generateXform = function(principle, extras) {
       var root = new N('h:html', {
         xmlns: 'http://www.w3.org/2002/xforms',
         'xmlns:ev': 'http://www.w3.org/2001/xml-events',
@@ -235,7 +235,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
       root.append(body);
 
       return root.xml();
-    }
+    };
 
     self.getHiddenFieldList = function(model) {
       model = $.parseXML(model).firstChild;
@@ -248,12 +248,6 @@ angular.module('inboxServices').service('EnketoTranslation', [
           return n.nodeName;
         })
         .value();
-    };
-
-    self.generateXform = function(schema, options) {
-      if(options || true) {
-        return generateXformWithOptions(schema, options);
-      }
     };
 
     var nodesToJs = function(data) {
