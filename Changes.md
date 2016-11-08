@@ -2,17 +2,17 @@
 
 ## 2.8.3
 
-### November 2, 2016
+### November 9, 2016
 
-### Bug fixes
+#### Performance improvements
 
-- Improve auditing performance by dropping the audit view. Issue: #2879
+- Remove traffic statistics collection. Issue: #2886
 
 ## 2.8.2
 
 ### October 13, 2016
 
-### Bug fixes
+#### Bug fixes
 
 - Ensure PouchDB doesn't mis-label TECNO phones as devices running Safari. Issue: #2797
 
