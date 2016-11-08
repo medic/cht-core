@@ -303,13 +303,17 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
+    var trimXml = function(xml) {
+      return xml.replace(/>\s+</g, '><');
+    };
+
     this.save = function(formInternalId, form, docId) {
       return $q.when(form.validate())
         .then(function(valid) {
           if (!valid) {
             throw new Error('Form is invalid');
           }
-          var record = form.getDataStr();
+          var record = trimXml(form.getDataStr());
           if (docId) {
             return update(formInternalId, record, docId);
           } else {

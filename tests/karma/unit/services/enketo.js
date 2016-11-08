@@ -167,7 +167,7 @@ describe('Enketo service', function() {
         });
     });
 
-    it('return form when everything works', function(done) {
+    it('return form when everything works', function() {
       Auth.returns(KarmaUtils.mockPromise());
       UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
       dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
@@ -177,7 +177,7 @@ describe('Enketo service', function() {
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
         .onSecondCall().returns(KarmaUtils.mockPromise(null, visitForm));
-      service
+      return service
         .render($('<div></div>'), 'ok')
         .then(function() {
           chai.expect(Auth.callCount).to.equal(1);
@@ -188,12 +188,10 @@ describe('Enketo service', function() {
           chai.expect(FileReader.callCount).to.equal(1);
           chai.expect(FileReader.args[0][0]).to.equal('xmlblob');
           chai.expect(enketoInit.callCount).to.equal(1);
-          done();
-        })
-        .catch(done);
+        });
     });
 
-    it('replaces img src with obj urls', function(done) {
+    it('replaces img src with obj urls', function() {
       Auth.returns(KarmaUtils.mockPromise());
       UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
       dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
@@ -207,7 +205,7 @@ describe('Enketo service', function() {
       enketoInit.returns([]);
       FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
       var wrapper = $('<div><div class="container"></div><form></form></div>');
-      service
+      return service
         .render(wrapper, 'ok')
         .then(function() {
           setTimeout(function() {
@@ -222,13 +220,11 @@ describe('Enketo service', function() {
             chai.expect(enketoInit.callCount).to.equal(1);
             chai.expect(createObjectURL.callCount).to.equal(1);
             chai.expect(createObjectURL.args[0][0]).to.equal('myobjblob');
-            done();
           });
-        })
-        .catch(done);
+        });
     });
 
-    it('leaves img wrapped if failed to load', function(done) {
+    it('leaves img wrapped if failed to load', function() {
       Auth.returns(KarmaUtils.mockPromise());
       UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
       dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
@@ -241,7 +237,7 @@ describe('Enketo service', function() {
       enketoInit.returns([]);
       FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
       var wrapper = $('<div><div class="container"></div><form></form></div>');
-      service
+      return service
         .render(wrapper, 'ok')
         .then(function() {
           var img = wrapper.find('img').first();
@@ -251,12 +247,10 @@ describe('Enketo service', function() {
           chai.expect(transform.callCount).to.equal(2);
           chai.expect(enketoInit.callCount).to.equal(1);
           chai.expect(createObjectURL.callCount).to.equal(0);
-          done();
-        })
-        .catch(done);
+        });
     });
 
-    it('passes xml instance data through to Enketo', function(done) {
+    it('passes xml instance data through to Enketo', function() {
       Auth.returns(KarmaUtils.mockPromise());
       UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
       dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
@@ -267,18 +261,16 @@ describe('Enketo service', function() {
         .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
         .onSecondCall().returns(KarmaUtils.mockPromise(null, 'my model'));
       var data = '<data><patient_id>123</patient_id></data>';
-      service
+      return service
         .render($('<div></div>'), 'ok', data)
         .then(function() {
           chai.expect(EnketoForm.callCount).to.equal(1);
           chai.expect(EnketoForm.args[0][1].modelStr).to.equal('my model');
           chai.expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
-          done();
-        })
-        .catch(done);
+        });
     });
 
-    it('passes json instance data through to Enketo', function(done) {
+    it('passes json instance data through to Enketo', function() {
       Auth.returns(KarmaUtils.mockPromise());
       UserSettings.returns(KarmaUtils.mockPromise(null, {
         _id: '456',
@@ -292,15 +284,13 @@ describe('Enketo service', function() {
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
         .onSecondCall().returns(KarmaUtils.mockPromise(null, visitForm));
-      service
+      return service
         .render($('<div></div>'), 'ok', { inputs: { patient_id: 123, name: 'sharon' } })
         .then(function() {
           chai.expect(EnketoForm.callCount).to.equal(1);
           chai.expect(EnketoForm.args[0][1].modelStr).to.equal(visitForm);
           chai.expect(EnketoForm.args[0][1].instanceStr).to.equal('<data xmlns="http://www.w3.org/2002/xforms" id="V" version="2015-06-05">          <patient_id tag="id"/>          <name tag="name"/>          <inputs>            <patient_id tag="n">123</patient_id>            <user>              <_id tag="ui">456</_id>              <facility_id tag="ufi">789</facility_id>            </user>          </inputs>        </data>');
-          done();
-        })
-        .catch(done);
+        });
     });
   });
 
@@ -316,37 +306,48 @@ describe('Enketo service', function() {
         });
     });
 
-    it('creates report', function(done) {
+    it('creates report', function() {
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
       form.getDataStr.returns(content);
       dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
       UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
       dbGet.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' } ));
-      service.save('V', form)
-        .then(function(actual) {
-          chai.expect(form.validate.callCount).to.equal(1);
-          chai.expect(form.getDataStr.callCount).to.equal(1);
-          chai.expect(dbPost.callCount).to.equal(1);
-          chai.expect(UserSettings.callCount).to.equal(1);
-          chai.expect(dbGet.callCount).to.equal(1);
-          chai.expect(dbGet.args[0][0]).to.equal('123');
-          chai.expect(actual._id).to.equal('5');
-          chai.expect(actual._rev).to.equal('1-abc');
-          chai.expect(actual.content).to.equal(content);
-          chai.expect(actual.fields.name).to.equal('Sally');
-          chai.expect(actual.fields.lmp).to.equal('10');
-          chai.expect(actual.form).to.equal('V');
-          chai.expect(actual.type).to.equal('data_record');
-          chai.expect(actual.content_type).to.equal('xml');
-          chai.expect(actual.contact._id).to.equal('123');
-          chai.expect(actual.from).to.equal('555');
-          done();
-        })
-        .catch(done);
+      return service.save('V', form).then(function(actual) {
+        chai.expect(form.validate.callCount).to.equal(1);
+        chai.expect(form.getDataStr.callCount).to.equal(1);
+        chai.expect(dbPost.callCount).to.equal(1);
+        chai.expect(UserSettings.callCount).to.equal(1);
+        chai.expect(dbGet.callCount).to.equal(1);
+        chai.expect(dbGet.args[0][0]).to.equal('123');
+        chai.expect(actual._id).to.equal('5');
+        chai.expect(actual._rev).to.equal('1-abc');
+        chai.expect(actual.content).to.equal(content);
+        chai.expect(actual.fields.name).to.equal('Sally');
+        chai.expect(actual.fields.lmp).to.equal('10');
+        chai.expect(actual.form).to.equal('V');
+        chai.expect(actual.type).to.equal('data_record');
+        chai.expect(actual.content_type).to.equal('xml');
+        chai.expect(actual.contact._id).to.equal('123');
+        chai.expect(actual.from).to.equal('555');
+      });
     });
 
-    it('creates report with hidden fields', function(done) {
+    it('trims whitespace from xml - #2882', function() {
+      form.validate.returns(KarmaUtils.mockPromise(null, true));
+      var content = '<doc>\n\t  <name>Sally  \n\t Jones</name>            </doc>';
+      var expectedContent = '<doc><name>Sally  \n\t Jones</name></doc>';
+      form.getDataStr.returns(content);
+      dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
+      UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
+      dbGet.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' } ));
+      return service.save('V', form).then(function(actual) {
+        chai.expect(actual.content).to.equal(expectedContent);
+        chai.expect(actual.fields.name).to.equal('Sally  \n\t Jones');
+      });
+    });
+
+    it('creates report with hidden fields', function() {
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content =
         '<doc>' +
@@ -358,32 +359,29 @@ describe('Enketo service', function() {
       dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
       UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
       dbGet.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' } ));
-      service.save('V', form)
-        .then(function(actual) {
-          chai.expect(form.validate.callCount).to.equal(1);
-          chai.expect(form.getDataStr.callCount).to.equal(1);
-          chai.expect(dbPost.callCount).to.equal(1);
-          chai.expect(UserSettings.callCount).to.equal(1);
-          chai.expect(dbGet.callCount).to.equal(1);
-          chai.expect(dbGet.args[0][0]).to.equal('123');
-          chai.expect(actual._id).to.equal('5');
-          chai.expect(actual._rev).to.equal('1-abc');
-          chai.expect(actual.content).to.equal(content);
-          chai.expect(actual.fields.name).to.equal('Sally');
-          chai.expect(actual.fields.lmp).to.equal('10');
-          chai.expect(actual.fields.secret_code_name).to.equal('S4L');
-          chai.expect(actual.form).to.equal('V');
-          chai.expect(actual.type).to.equal('data_record');
-          chai.expect(actual.content_type).to.equal('xml');
-          chai.expect(actual.contact._id).to.equal('123');
-          chai.expect(actual.from).to.equal('555');
-          chai.expect(actual.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
-          done();
-        })
-        .catch(done);
+      return service.save('V', form).then(function(actual) {
+        chai.expect(form.validate.callCount).to.equal(1);
+        chai.expect(form.getDataStr.callCount).to.equal(1);
+        chai.expect(dbPost.callCount).to.equal(1);
+        chai.expect(UserSettings.callCount).to.equal(1);
+        chai.expect(dbGet.callCount).to.equal(1);
+        chai.expect(dbGet.args[0][0]).to.equal('123');
+        chai.expect(actual._id).to.equal('5');
+        chai.expect(actual._rev).to.equal('1-abc');
+        chai.expect(actual.content).to.equal(content);
+        chai.expect(actual.fields.name).to.equal('Sally');
+        chai.expect(actual.fields.lmp).to.equal('10');
+        chai.expect(actual.fields.secret_code_name).to.equal('S4L');
+        chai.expect(actual.form).to.equal('V');
+        chai.expect(actual.type).to.equal('data_record');
+        chai.expect(actual.content_type).to.equal('xml');
+        chai.expect(actual.contact._id).to.equal('123');
+        chai.expect(actual.from).to.equal('555');
+        chai.expect(actual.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+      });
     });
 
-    it('updates report', function(done) {
+    it('updates report', function() {
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
       form.getDataStr.returns(content);
@@ -398,25 +396,22 @@ describe('Enketo service', function() {
         reported_date: 500,
       }));
       dbPut.returns(KarmaUtils.mockPromise(null, { id: '6', rev: '2-abc' }));
-      service.save('V', form, '6')
-        .then(function(actual) {
-          chai.expect(form.validate.callCount).to.equal(1);
-          chai.expect(form.getDataStr.callCount).to.equal(1);
-          chai.expect(dbGet.callCount).to.equal(1);
-          chai.expect(dbGet.args[0][0]).to.equal('6');
-          chai.expect(dbPut.callCount).to.equal(1);
-          chai.expect(actual._id).to.equal('6');
-          chai.expect(actual._rev).to.equal('2-abc');
-          chai.expect(actual.content).to.equal(content);
-          chai.expect(actual.fields.name).to.equal('Sally');
-          chai.expect(actual.fields.lmp).to.equal('10');
-          chai.expect(actual.form).to.equal('V');
-          chai.expect(actual.type).to.equal('data_record');
-          chai.expect(actual.reported_date).to.equal(500);
-          chai.expect(actual.content_type).to.equal('xml');
-          done();
-        })
-        .catch(done);
+      return service.save('V', form, '6').then(function(actual) {
+        chai.expect(form.validate.callCount).to.equal(1);
+        chai.expect(form.getDataStr.callCount).to.equal(1);
+        chai.expect(dbGet.callCount).to.equal(1);
+        chai.expect(dbGet.args[0][0]).to.equal('6');
+        chai.expect(dbPut.callCount).to.equal(1);
+        chai.expect(actual._id).to.equal('6');
+        chai.expect(actual._rev).to.equal('2-abc');
+        chai.expect(actual.content).to.equal(content);
+        chai.expect(actual.fields.name).to.equal('Sally');
+        chai.expect(actual.fields.lmp).to.equal('10');
+        chai.expect(actual.form).to.equal('V');
+        chai.expect(actual.type).to.equal('data_record');
+        chai.expect(actual.reported_date).to.equal(500);
+        chai.expect(actual.content_type).to.equal('xml');
+      });
     });
 
   });
