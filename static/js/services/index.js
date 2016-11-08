@@ -58,7 +58,6 @@
   require('./settings');
   require('./snackbar');
   require('./target-generator');
-  require('./traffic-stats');
   require('./translate-from');
   require('./update-contact');
   require('./update-facility');
