@@ -43,7 +43,6 @@ var feedback = require('../modules/feedback'),
       Settings,
       Snackbar,
       Tour,
-      TrafficStats,
       UpdateSettings,
       UpdateUser,
       UserSettings,
@@ -52,7 +51,6 @@ var feedback = require('../modules/feedback'),
       'ngInject';
 
       Session.init();
-      TrafficStats($scope);
 
       $scope.replicationStatus = {
         disabled: false,
