@@ -1,8 +1,9 @@
 var db = require('../db'),
-    async = require('async');
-
-var DDOC_ID = '_design/medic';
-var BATCH_SIZE = 1000;
+    async = require('async'),
+    _ = require('underscore'),
+    DDOC_ID = '_design/medic',
+    BATCH_SIZE = 200,
+    AUDIT_ID_SUFFIX = '-audit';
 
 var dropView = function(callback) {
   db.audit.get(DDOC_ID, function(err, ddoc) {
@@ -19,15 +20,62 @@ var needsUpdate = function(row) {
          row.doc.record_id;                 // has old property
 };
 
-var createNewDocs = function(oldDocs, callback) {
-  var newDocs = oldDocs.map(function(doc) {
-    return {
-      _id: doc.record_id + '-audit',
-      type: 'audit_record',
-      history: doc.history
-    };
+var getAuditId = function(doc) {
+  return doc.record_id + AUDIT_ID_SUFFIX;
+};
+
+var getRecordId = function(doc) {
+  return doc._id.slice(0, -AUDIT_ID_SUFFIX.length);
+};
+
+var mergeHistory = function(docs) {
+  var result;
+  docs.forEach(function(doc) {
+    if (!result) {
+      result = doc;
+    } else {
+      result.history = result.history.concat(doc.history);
+    }
   });
-  db.audit.bulk({ docs: newDocs }, callback);
+  result.history = _.sortBy(result.history, 'timestamp');
+  return result;
+};
+
+var mergeDupes = function(oldDocs) {
+  var grouped = _.groupBy(oldDocs, 'record_id');
+  return _.values(grouped).map(function(group) {
+    if (group.length === 1) {
+      return group[0];
+    }
+    return mergeHistory(group);
+  });
+};
+
+var createNewDocs = function(oldDocs, callback) {
+  var merged = mergeDupes(oldDocs);
+  var ids = merged.map(getAuditId);
+  db.audit.list({ keys: ids, include_docs: true }, function(err, results) {
+    if (err) {
+      return callback(err);
+    }
+    var found = results.rows.filter(function(row) {
+      return row.doc;
+    });
+    found.forEach(function(row) {
+      var dupe = _.findWhere(merged, { record_id: getRecordId(row.doc) });
+      dupe.history = mergeHistory([ dupe, row.doc ]).history;
+      dupe.auditRev = row.doc._rev;
+    });
+    var newDocs = merged.map(function(doc) {
+      return {
+        _id: getAuditId(doc),
+        _rev: doc.auditRev,
+        type: 'audit_record',
+        history: doc.history
+      };
+    });
+    db.audit.bulk({ docs: newDocs }, callback);
+  });
 };
 
 var deleteOldDocs = function(oldDocs, callback) {
@@ -51,7 +99,7 @@ var changeDocIdsBatch = function(skip, callback) {
       // we've reached the end of the database!
       return callback(null, null, false);
     }
-    console.log('        Processed ' + skip + ' docs of ' + result.total_rows + ' total');
+    console.log('        Processing ' + skip + ' to ' + (skip + BATCH_SIZE) + ' docs of ' + result.total_rows + ' total');
     var oldDocs = result.rows.filter(needsUpdate).map(function(row) {
       return row.doc;
     });
