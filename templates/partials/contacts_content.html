@@ -135,7 +135,7 @@
               <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell item-summary">
                 <div class="detail">
                   <div class="name">{{child.doc.name}}</div>
-                  <div ng-show="child.doc.contact.name"><span translate>Primary contact</span>: {{child.doc.contact.name}}</div>
+                  <div translate translate-values="child.doc.contact">contact.primary_contact_name</div>
                 </div>
               </a>
             </div>
