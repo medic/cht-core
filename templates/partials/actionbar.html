@@ -155,7 +155,7 @@
             <p translate>Send Message</p>
           </a>
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.edit({ id: actionBar.right.selected[0]._id })">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.edit({ id: actionBar.right.selected[0]._id })" ng-class="{'mm-icon-disabled': !actionBar.right.canEdit}">
             <span class="fa fa-pencil"></span>
             <p translate>Edit</p>
           </a>
