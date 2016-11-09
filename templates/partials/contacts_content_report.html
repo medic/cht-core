@@ -10,7 +10,7 @@
         <i ng-show="report.valid && report.verified" class="fa fa-check-circle green-dot"></i>
         <i ng-show="!report.valid && report.verified" class="fa fa-check-circle red-dot"></i>
       </div>
-      <div ng-hide="selected.doc._id === report.fields.patient_id || selected.doc._id === report.fields.place_id">{{report.fields.place_name}}{{report.fields.patient_name}}</div>
+      <div>{{report.fields.place_name}}{{report.fields.patient_name}}</div>
       <div class="name">{{report | summary:forms}}</div>
     </div>
 
