@@ -144,7 +144,7 @@ function initDb(content) {
   dbBackups = {
     audit: db.audit,
     medic: db.medic,
-    request: db.request,
+    request: db.request
   };
   db.audit = db.use(DB_PREFIX + 'audit');
   db.medic = db.use(DB_PREFIX + 'medic');
@@ -224,9 +224,13 @@ function initDb(content) {
         dbBackups = {
           audit: db.audit,
           medic: db.medic,
+          getPath: db.getPath
         };
         db.audit = db.use(DB_PREFIX + 'audit');
         db.medic = db.use(DB_PREFIX + 'medic');
+        db.getPath = function() {
+          return DB_PREFIX + 'medic/_design/medic/_rewrite';
+        };
       })
       .then(function() {
         return new Promise(function(resolve, reject) {
@@ -247,8 +251,8 @@ function initDb(content) {
       });
     })
     .then(function() {
-      return Promise.all(_.map(content, function(content, dbName) {
-        return Promise.all(content.map(function(doc) {
+      return Promise.all(_.map(content, function(dbContent, dbName) {
+        return Promise.all(dbContent.map(function(doc) {
           return new Promise(function(resolve, reject) {
             db[dbName].insert(doc, function(err) {
               if(err) { return reject(err); }
@@ -278,6 +282,7 @@ function _resetDb() {
 function tearDown() {
   db.audit = dbBackups.audit;
   db.medic = dbBackups.medic;
+  db.getPath = dbBackups.getPath;
 }
 
 function runMigration(migration) {
