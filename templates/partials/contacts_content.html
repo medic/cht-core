@@ -96,7 +96,7 @@
         <div ng-show="selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-1 tasks-title" translate>Tasks</div>
         <div class="card action-list children persons">
           <div class="accent"></div>
-          <div class="row" ng-repeat="child in selected.children.persons">
+          <div class="row" ng-repeat="child in selected.children.persons" ng-init="taskCount = (selected.tasks | filter:filterTasksByChild(child)).length">
             <a ui-sref="contacts.detail({ id: child.doc._id })" class=" item-summary cell col-xs-12">
               <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12 detail">
                 <div class="cell-label">
@@ -115,8 +115,8 @@
                   <span ng-bind-html="child.doc.date_of_birth | age"></span>
                 </div>
               </div>
-              <div ng-show="selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-1 tasks-count">
-                <span class="badge">{{(selected.tasks | filter:filterTasksByChild(child)).length}}</span>
+              <div ng-show="selected.doc.type === 'clinic' && taskCount > 0" mm-auth="can_view_tasks" class="col-xs-1 tasks-count">
+                <span class="badge">{{taskCount}}</span>
               </div>
             </a>
           </div>
