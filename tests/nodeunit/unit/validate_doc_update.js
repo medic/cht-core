@@ -65,6 +65,14 @@ exports['only db and national admins are allowed change translations'] = functio
   test.done();
 };
 
+exports['only db and national admins are allowed change their own place'] = function(test) {
+  var doc = { _id: 'abc', type: 'clinic' };
+  test.equal(lib._allowed(doc, doc, { name: 'a-user', roles: [ '_admin' ], facility_id: 'abc' }, {}).allowed, true);
+  test.equal(lib._allowed(doc, doc, { name: 'a-user', roles: [ 'national_admin' ], facility_id: 'abc' }, {}).allowed, true);
+  test.equal(lib._allowed(doc, doc, { name: 'a-user', roles: [ 'district_admin' ], facility_id: 'abc' }, {}).allowed, false);
+  test.done();
+};
+
 exports['allowed returns false on empty userCtx'] = function(test) {
   test.equal(testAllowed([], {}), false);
   test.done();

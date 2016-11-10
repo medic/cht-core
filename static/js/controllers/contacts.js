@@ -155,6 +155,17 @@ var _ = require('underscore'),
         });
       };
 
+      // only admins can edit their own place
+      var getCanEdit = function(selectedDoc) {
+        return setupPromise
+          .then(function() {
+            return Session.isAdmin() || (usersHomePlace._id !== selectedDoc._id);
+          })
+          .catch(function() {
+            return false;
+          });
+      };
+
       $scope.setSelected = function(selected) {
         liveList.setSelected(selected.doc._id);
         $scope.selected = selected;
@@ -166,29 +177,27 @@ var _ = require('underscore'),
         } else {
           title = ContactSchema.get(selected.doc.type).label;
         }
-        return $translate(title)
-          .then(function(translatedTitle) {
-            $scope.setTitle(translatedTitle);
-
-            return getActionBarDataForChild(selectedDoc.type);
-          })
-          .then(function(data) {
-            if (data) {
-              selectedDoc.child = data;
+        return $q.all([
+          $translate(title),
+          getActionBarDataForChild(selectedDoc.type),
+          getCanEdit(selectedDoc)
+        ])
+          .then(function(results) {
+            $scope.setTitle(results[0]);
+            if (results[1]) {
+              selectedDoc.child = results[1];
             }
-            var actionBarData = {
-              selected: [ selectedDoc ],
-              sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
-              disableDelete: (selected.children && selected.children.length) ||
-                             (selected.contactFor && selected.contactFor.length)
-            };
+            var canEdit = results[2];
             XmlForms('ContactsCtrl', { doc: selectedDoc }, function(err, forms) {
               if (err) {
                 $log.error('Error fetching relevant forms', err);
-              } else {
-                actionBarData.relevantForms = forms;
               }
-              $scope.setRightActionBar(actionBarData);
+              $scope.setRightActionBar({
+                selected: [ selectedDoc ],
+                relevantForms: forms,
+                sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
+                canEdit: canEdit
+              });
             });
           });
       };

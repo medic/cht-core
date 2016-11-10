@@ -179,6 +179,17 @@ describe('Contacts controller', function() {
       });
     });
 
+    it('disables editing for own place', function(done) {
+      testRightActionBar(done, district, function(actionBarArgs) {
+        assert.equal(actionBarArgs.canEdit, false);
+      });
+    });
+
+    it('enables editing for not own place', function(done) {
+      testRightActionBar(done, person, function(actionBarArgs) {
+        assert.equal(actionBarArgs.canEdit, true);
+      });
+    });
   });
 
   describe('sets left actionBar', function() {
