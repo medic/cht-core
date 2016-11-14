@@ -1,13 +1,9 @@
 <div class="right-pane navigation">
-  <span ng-show="cancelCallback" class="filter-bar-back">
-    <a ng-click="navigationCancel()">
-      <span class="fa fa-times" translate translate-attr-title="close"></span>
-    </a>
-  </span>
-  <span ng-hide="cancelCallback" class="filter-bar-back">
-    <a ng-click="clearSelected()">
-      <span class="fa fa-chevron-left" translate translate-attr-title="Back"></span>
-    </a>
-  </span>
+  <a ng-show="cancelCallback" ng-click="navigationCancel()" class="filter-bar-back">
+    <span class="fa fa-times" translate translate-attr-title="close"></span>
+  </a>
+  <a ng-hide="cancelCallback" ng-click="clearSelected()" class="filter-bar-back">
+    <span class="fa fa-chevron-left" translate translate-attr-title="Back"></span>
+  </a>
   <h2>{{title}}</h2>
 </div>
