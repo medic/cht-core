@@ -2,6 +2,7 @@
   "name": "medic",
   "version": "2.9.0",
   "private": true,
+  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/medic/medic-webapp.git"
