@@ -258,18 +258,27 @@ body {
   margin-top: 1.9em;
 }
 
-.filters .navigation a {
-  display: inline-block;
-  text-align: center;
-  color: @grayDark;
-  font-size: 2em;
-}
-
 .filters {
   height: 4.2em;
   font-size: 0.95em;
   white-space: nowrap;
   padding: 0.4em 0;
+
+  .navigation {
+    display: none;
+    float: left;
+    text-align: center;
+    padding-right: 6em;
+    a {
+      display: inline-block;
+      text-align: center;
+      color: @grayDark;
+      font-size: 2em;
+      float: left;
+      width: 3em;
+      line-height: 38px;
+    }
+  }
 
   .inner {
     position: relative;
@@ -300,7 +309,8 @@ body {
     width: 100%;
   }
 
-  .basic-filters, .navigation {
+  .basic-filters,
+  .navigation {
     padding-top: 0.2em;
   }
 
@@ -332,18 +342,13 @@ body {
     }
   }
 
-  .navigation span, .reset-filter {
-    line-height: 38px;
-    > a {
-      width: 3em;
-    }
-  }
-
   .reset-filter {
+    line-height: 38px;
     > a {
       color: @grayDark;
       display: inline-block;
       text-align: center;
+      width: 3em;
 
       &.disabled {
         cursor: default;
@@ -963,10 +968,6 @@ a.fa:hover {
   }
 }
 
-.filters .navigation {
-  display: none;
-}
-
 .action-container {
   overflow: visible;
   position: fixed;
@@ -1311,7 +1312,6 @@ a.fa:hover {
     font-size: 0.77em;
     .navigation {
       display: inline-block;
-      float: left;
     }
     .right-pane {
       position: absolute;
@@ -1325,7 +1325,8 @@ a.fa:hover {
     h2 {
       display: initial;
     }
-    .dropdown, .navigation .mm-button {
+    .dropdown,
+    .navigation .mm-button {
       vertical-align: top;
     }
     .dropdown {
