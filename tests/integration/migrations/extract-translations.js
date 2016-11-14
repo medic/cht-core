@@ -57,6 +57,11 @@ describe('extract-translations', function() {
               locale: 'es',
               content: 'Enviar', // same as default so change
               default: 'Enviar'
+            },
+            { // test special characters
+              locale: 'hi',
+              content: 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !',
+              default: 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !'
             }
           ]
         }
@@ -66,6 +71,16 @@ describe('extract-translations', function() {
         { code: 'es', disabled: true },
         { code: 'fr', disabled: true }
       ];
+      ddoc.app_settings.schedules = [{
+        name: 'ANC Reminders LMP',
+        messages: [{
+          message: [{
+            content: 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !',
+            locale: 'hi'
+          }]
+        }]
+      }];
+      ddoc.app_settings.test = 'unchanged';
       
       return new Promise(function(resolve, reject) {
         db.medic.insert(ddoc, function(err) {
@@ -126,6 +141,15 @@ describe('extract-translations', function() {
       }
       if (ddoc.app_settings.locales) {
         throw new Error('`locales` should be empty');
+      }
+      if (ddoc.app_settings._id) {
+        throw new Error('`_id` should be empty');
+      }
+      if (ddoc.app_settings.test !== 'unchanged') {
+        throw new Error('Migration changed unexpected property');
+      }
+      if (ddoc.app_settings.schedules[0].messages[0].message[0].content !== 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !') {
+        throw new Error('message content got corrupted');
       }
     });
   });
