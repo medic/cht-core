@@ -483,12 +483,14 @@ var feedback = require('../modules/feedback'),
 
       $scope.deleteDoc = function(docs) {
         if (!docs) {
+          $log.warn('Trying to delete empty object', docs);
           return;
         }
         if (!_.isArray(docs)) {
           docs = [ docs ];
         }
         if (!docs.length) {
+          $log.warn('Trying to delete empty array', docs);
           return;
         }
         Modal({
