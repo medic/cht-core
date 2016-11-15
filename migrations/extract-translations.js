@@ -13,6 +13,9 @@ var getDocs = function(callback) {
 };
 
 var mergeEnabled = function(settings, docs) {
+  if (!settings) {
+    return;
+  }
   settings.forEach(function(locale) {
     if (locale.disabled) {
       var doc = _.findWhere(docs, { code: locale.code });
@@ -24,6 +27,9 @@ var mergeEnabled = function(settings, docs) {
 };
 
 var mergeTranslations = function(settings, docs) {
+  if (!settings) {
+    return;
+  }
   settings.forEach(function(setting) {
     setting.translations.forEach(function(translation) {
       var doc = _.findWhere(docs, { code: translation.locale });
