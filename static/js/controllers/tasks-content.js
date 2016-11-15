@@ -62,6 +62,11 @@
       };
 
       $scope.save = function() {
+        if ($scope.saving) {
+          $log.debug('Attempted to call tasks-content:$scope.save more than once');
+          return;
+        }
+
         $scope.saving = true;
         Enketo.save($scope.formId, $scope.form)
           .then(function(doc) {

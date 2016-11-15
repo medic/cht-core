@@ -61,6 +61,11 @@
         });
 
       $scope.save = function() {
+        if ($scope.saving) {
+          $log.debug('Attempted to call reports-add:$scope.save more than once');
+          return;
+        }
+
         $scope.saving = true;
         var doc = $scope.selected[0].report;
         Enketo.save(doc.form, $scope.form, doc._id)
