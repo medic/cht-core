@@ -187,6 +187,11 @@ var _ = require('underscore');
         });
 
       $scope.save = function() {
+        if ($scope.saving) {
+          $log.debug('Attempted to call contacts-edit:$scope.save more than once');
+          return;
+        }
+
         var form = $scope.enketoContact.formInstance;
         var docId = $scope.enketoContact.docId;
         $scope.saving = true;

@@ -26,6 +26,11 @@
       };
 
       $scope.save = function() {
+        if ($scope.saving) {
+          $log.debug('Attempted to call contacts-report:$scope.save more than once');
+          return;
+        }
+
         $scope.saving = true;
         Enketo.save($state.params.formId, $scope.form)
           .then(function(doc) {
