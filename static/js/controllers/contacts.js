@@ -192,11 +192,16 @@ var _ = require('underscore'),
               if (err) {
                 $log.error('Error fetching relevant forms', err);
               }
+              var canDelete = !selected.children || (
+                                (!selected.children.places  || selected.children.places.length === 0) &&
+                                (!selected.children.persons || selected.children.persons.length === 0)
+                              );
               $scope.setRightActionBar({
                 selected: [ selectedDoc ],
                 relevantForms: forms,
                 sendTo: selectedDoc.type === 'person' ? selectedDoc : '',
-                canEdit: canEdit
+                canEdit: canEdit,
+                canDelete: canDelete
               });
             });
           });

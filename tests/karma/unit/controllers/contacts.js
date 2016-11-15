@@ -39,8 +39,8 @@ describe('Contacts controller', function() {
   };
 
   beforeEach(inject(function(_$rootScope_, $controller) {
-    district = { _id: 'abcde', name: 'My District', type: 'district_hospital'};
-    person = { _id: 'lkasdfh', name: 'Alon', type: 'person'};
+    district = { _id: 'abcde', name: 'My District', type: 'district_hospital' };
+    person = { _id: 'lkasdfh', name: 'Alon', type: 'person' };
     childType = 'childType';
     icon = 'fa-la-la-la-la';
     buttonLabel = 'ClICK ME!!';
@@ -77,10 +77,12 @@ describe('Contacts controller', function() {
         '$timeout': function(work) { work(); },
         '$translate': function(key) { return KarmaUtils.mockPromise(null, key + 'translated'); },
         'ContactSchema': contactSchema,
-        'DB': function() { return {
-          get: KarmaUtils.promiseService(null, district),
-          query: userFaciltyQuery
-        }; },
+        'DB': function() {
+          return {
+            get: KarmaUtils.promiseService(null, district),
+            query: userFaciltyQuery
+          };
+        },
         'LiveList': { contacts: contactsLiveList },
         'Search': searchService,
         'SearchFilters': { freetext: sinon.stub(), reset: sinon.stub()},
@@ -112,10 +114,10 @@ describe('Contacts controller', function() {
   });
 
   describe('sets right actionBar', function() {
-    var testRightActionBar = function(done, selectedDoc, assertions) {
+    var testRightActionBar = function(done, selected, assertions) {
       createController().getSetupPromiseForTesting()
         .then(function() {
-          return scope.setSelected({ doc: selectedDoc});
+          return scope.setSelected(selected);
         }).then(function() {
           assert(scope.setRightActionBar.called, 'right actionBar should be set');
           var actionBarArgs = scope.setRightActionBar.getCall(0).args[0];
@@ -125,13 +127,13 @@ describe('Contacts controller', function() {
     };
 
     it('with the selected doc', function(done) {
-      testRightActionBar(done, district, function(actionBarArgs) {
+      testRightActionBar(done, { doc: district }, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.selected[0], district);
       });
     });
 
     it('for the New Place button', function(done) {
-      testRightActionBar(done, district, function(actionBarArgs) {
+      testRightActionBar(done, { doc: district }, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.selected[0].child.type, childType);
         assert.deepEqual(actionBarArgs.selected[0].child.icon, icon);
         assert.equal(actionBarArgs.selected[0].child.addPlaceLabel, buttonLabel + 'translated');
@@ -140,7 +142,7 @@ describe('Contacts controller', function() {
 
     it('no New Place button if no child type', function(done) {
       contactSchema.getChildPlaceType.returns(undefined);
-      testRightActionBar(done, person, function(actionBarArgs) {
+      testRightActionBar(done, { doc: person }, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.selected[0].child, undefined);
         // But the other buttons are there!
         assert.deepEqual(actionBarArgs.relevantForms, forms);
@@ -150,26 +152,26 @@ describe('Contacts controller', function() {
     });
 
     it('for the Message and Call buttons', function(done) {
-      testRightActionBar(done, person, function(actionBarArgs) {
+      testRightActionBar(done, { doc: person }, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.sendTo, person);
       });
     });
 
     it('no Message and Call buttons if doc is not person', function(done) {
-      testRightActionBar(done, district, function(actionBarArgs) {
+      testRightActionBar(done, { doc: district }, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.sendTo, '');
       });
     });
 
     it('for the New Action button', function(done) {
-      testRightActionBar(done, person, function(actionBarArgs) {
+      testRightActionBar(done, { doc: person }, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.relevantForms, forms);
       });
     });
 
     it('sets the actionbar partially if it couldn\'t get forms', function(done) {
       xmlForms.callsArgWith(2, { error: 'no forms brew'}); // call the callback
-      testRightActionBar(done, person, function(actionBarArgs) {
+      testRightActionBar(done, { doc: person }, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.relevantForms, undefined);
         assert.deepEqual(actionBarArgs.sendTo, person);
         assert.deepEqual(actionBarArgs.selected[0]._id, person._id);
@@ -180,14 +182,32 @@ describe('Contacts controller', function() {
     });
 
     it('disables editing for own place', function(done) {
-      testRightActionBar(done, district, function(actionBarArgs) {
+      testRightActionBar(done, { doc: district }, function(actionBarArgs) {
         assert.equal(actionBarArgs.canEdit, false);
       });
     });
 
     it('enables editing for not own place', function(done) {
-      testRightActionBar(done, person, function(actionBarArgs) {
+      testRightActionBar(done, { doc: person }, function(actionBarArgs) {
         assert.equal(actionBarArgs.canEdit, true);
+      });
+    });
+
+    it('disables deleting for places with child places', function(done) {
+      testRightActionBar(done, { doc: district, children: { places: [ district ] } }, function(actionBarArgs) {
+        assert.equal(actionBarArgs.canDelete, false);
+      });
+    });
+
+    it('disables deleting for places with child people', function(done) {
+      testRightActionBar(done, { doc: district, children: { persons: [ person ] } }, function(actionBarArgs) {
+        assert.equal(actionBarArgs.canDelete, false);
+      });
+    });
+
+    it('enables deleting for leaf nodes', function(done) {
+      testRightActionBar(done, { doc: district, children: { persons: [], places: [] } }, function(actionBarArgs) {
+        assert.equal(actionBarArgs.canDelete, true);
       });
     });
   });

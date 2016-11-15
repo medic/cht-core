@@ -82,7 +82,7 @@ Add the following to CouchDB's `httpd_global_handlers` configuration section:
 _fti = {couch_httpd_proxy, handle_proxy_req, <<"http://127.0.0.1:5985">>}
 ```
 
-Update `$lucene_home/conf/couchdb-lucene.ini` so the URL has credentials, e.g.:
+Update `$lucene_home/conf/couchdb-lucene.ini` (if you installed with homebrew, `$lucene_home` is something like `/usr/local/Cellar/couchdb-lucene/1.0.2/libexec/`) so the URL has credentials, e.g.:
 
 ```
 url=http://admin:pass@localhost:5984/
@@ -95,7 +95,7 @@ You should now see an identical welcome message at two different URLs:
 ```
 curl http://localhost:5985
 {"couchdb-lucene":"Welcome","version":"1.0.2"}
-curl http://localhost:5984/_fti
+curl http://admin:pass@localhost:5984/_fti
 {"couchdb-lucene":"Welcome","version":"1.0.2"}
 ```
 

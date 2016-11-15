@@ -53,23 +53,23 @@ define( function( require, exports, module ) {
 
         var dbObjectType = $textInput.attr('data-type-xml');
 
+        if (!$question.hasClass('or-appearance-bind-id-only')) {
+            $textInput.on('change', function() {
+                var selected = $textInput.select2('data');
+                var doc = selected && selected[0] && selected[0].doc;
+                if (doc) {
+                    var form = $question.closest('form.or');
+                    var field = $question.find('select[name]').attr('name');
+                    var objectRoot = field.substring(0, field.lastIndexOf('/'));
+                    updateFields(form, doc, objectRoot, field);
+                }
+            });
+        }
         Select2Search($textInput, dbObjectType, {
             allowNew: $question.hasClass('or-appearance-allow-new')
         }).then(function() {
             // select2 doesn't understand readonly
             $textInput.prop('disabled', disabled);
-            if (!$question.hasClass('or-appearance-bind-id-only')) {
-                $textInput.on('change', function() {
-                    var selected = $textInput.select2('data');
-                    var doc = selected && selected[0] && selected[0].doc;
-                    if (doc) {
-                        var form = $question.closest('form.or');
-                        var field = $question.find('select[name]').attr('name');
-                        var objectRoot = field.substring(0, field.lastIndexOf('/'));
-                        updateFields(form, doc, objectRoot, field);
-                    }
-                });
-            }
         });
     };
 
