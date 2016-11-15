@@ -105,7 +105,7 @@
               <span class="fa fa-pencil"></span>
               <p translate>Edit</p>
             </a>
-            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="actionBar.disableDelete || deleteDoc(actionBar.selected)" ng-class="{'mm-icon-disabled': actionBar.disableDelete}" mm-auth="can_delete_reports">
+            <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="deleteDoc(actionBar.selected)" ng-class="{'mm-icon-disabled': actionBar.disableDelete}" mm-auth="can_delete_reports">
               <span class="fa fa-trash-o"></span>
               <p translate>Delete</p>
             </a>
@@ -158,6 +158,11 @@
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ui-sref="contacts.edit({ id: actionBar.right.selected[0]._id })" ng-class="{'mm-icon-disabled': !actionBar.right.canEdit}">
             <span class="fa fa-pencil"></span>
             <p translate>Edit</p>
+          </a>
+
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-click="deleteDoc(actionBar.right.selected)" ng-class="{'mm-icon-disabled': !actionBar.right.canDelete}" mm-auth="can_delete_contacts">
+            <span class="fa fa-trash-o"></span>
+            <p translate>Delete</p>
           </a>
         </div>
       </div>
