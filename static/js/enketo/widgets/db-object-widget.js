@@ -43,6 +43,7 @@ define( function( require, exports, module ) {
 
         var $textInput = $question.find('input');
         var value = $textInput.val();
+        var disabled = $textInput.prop('readonly');
         $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
         $textInput = $question.find('select');
         var preSelectedOption = $('<option></option>')
@@ -55,6 +56,8 @@ define( function( require, exports, module ) {
         Select2Search($textInput, dbObjectType, {
             allowNew: $question.hasClass('or-appearance-allow-new')
         }).then(function() {
+            // select2 doesn't understand readonly
+            $textInput.prop('disabled', disabled);
             if (!$question.hasClass('or-appearance-bind-id-only')) {
                 $textInput.on('change', function() {
                     var selected = $textInput.select2('data');
