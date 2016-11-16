@@ -15,6 +15,7 @@
 angular.module('inboxServices').factory('Changes',
   function(
     $log,
+    $timeout,
     DB,
     E2ETESTING
   ) {
@@ -34,9 +35,9 @@ angular.module('inboxServices').factory('Changes',
       });
     };
 
-    // Longpoll requests like changes hangs protractor testing as it waits
-    // for all requests to finish.
-    if (!E2ETESTING) {
+
+    var watchChanges = function() {
+      $log.info('Initiating changes watch');
       DB()
         .changes({
           live: true,
@@ -47,7 +48,15 @@ angular.module('inboxServices').factory('Changes',
         .on('change', notifyAll)
         .on('error', function(err) {
           $log.error('Error watching for db changes', err);
+          $log.error('Attempting changes reconnection in 5 seconds');
+          $timeout(watchChanges, 5000);
         });
+    };
+
+    // Longpoll requests like changes hangs protractor testing as it waits
+    // for all requests to finish.
+    if (!E2ETESTING) {
+      watchChanges();
     }
 
     return function(options) {
