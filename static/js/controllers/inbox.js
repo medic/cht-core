@@ -625,6 +625,19 @@ var feedback = require('../modules/feedback'),
       CountMessages.init();
       setupUserLanguage();
 
+      // close select2 dropdowns in the background
+      var closeDropdowns = function() {
+        $('select.select2-hidden-accessible').each(function() {
+          // prevent errors being thrown if selectors have not been
+          // initialised yet
+          try { $(this).select2('close'); } catch(e) {}
+        });
+      };
+
+      // close all select2 menus on navigation
+      // https://github.com/medic/medic-webapp/issues/2927
+      $rootScope.$on('$stateChangeStart', closeDropdowns);
+
       var showUpdateReady = function() {
         Modal({
           templateUrl: 'templates/modals/version_update.html',
@@ -638,13 +651,7 @@ var feedback = require('../modules/feedback'),
             showUpdateReady();
           }, 2 * 60 * 60 * 1000);
         });
-
-        // close select2 dropdowns in the background
-        $('select.select2-hidden-accessible').each(function(i, e) {
-          // prevent errors being thrown if selectors have not been
-          // initialised before the update dialog is to be shown
-          try { $(e).select2('close'); } catch(e) {}
-        });
+        closeDropdowns();
       };
 
       Changes({
