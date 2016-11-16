@@ -7,10 +7,11 @@ var _ = require('underscore');
  */
 angular.module('inboxControllers').controller('UserLanguageModalCtrl',
   function(
+    $log,
     $scope,
-    $translate,
     $uibModalInstance,
     DB,
+    Language,
     Session,
     SetLanguage,
     UpdateUser
@@ -19,22 +20,37 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
     'ngInject';
     'use strict';
 
+    var initialLanguageCode;
+
     DB()
       .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
       .then(function(result) {
         $scope.enabledLocales = _.pluck(result.rows, 'value');
       });
 
-    var initialLanguageCode = $translate.use();
-    $scope.selectedLanguage = initialLanguageCode;
+    Language()
+      .then(function(language) {
+        initialLanguageCode = language;
+        if (!$scope.selectedLanguage) {
+          $scope.selectedLanguage = language;
+        }
+      })
+      .catch(function(err) {
+        $log.error('Error loading language', err);
+      });
 
     $scope.changeLanguage = function(languageCode) {
-      SetLanguage(languageCode);
-      $scope.selectedLanguage = languageCode;
+      if (languageCode) {
+        SetLanguage(languageCode);
+        $scope.selectedLanguage = languageCode;
+      }
     };
 
     $scope.submit = function() {
       var newLanguage = $scope.selectedLanguage;
+      if (!newLanguage) {
+        return $uibModalInstance.close();
+      }
       var id = 'org.couchdb.user:' + Session.userCtx().name;
       $scope.setProcessing();
       return UpdateUser(id, { language: newLanguage })

@@ -5,6 +5,7 @@ describe('UserLanguageModalCtrl controller', function() {
       scope,
       dbQuery,
       stubSetLanguage,
+      stubLanguage,
       stubUpdateUser,
       spyUibModalInstance;
 
@@ -25,6 +26,8 @@ describe('UserLanguageModalCtrl controller', function() {
     ));
     stubSetLanguage = sinon.stub();
     stubSetLanguage.returns(KarmaUtils.mockPromise());
+    stubLanguage = sinon.stub();
+    stubLanguage.returns(KarmaUtils.mockPromise(null, 'ab'));
     spyUibModalInstance = {close: sinon.spy(), dismiss: sinon.spy()};
     stubUpdateUser = sinon.stub();
     stubUpdateUser.returns(KarmaUtils.mockPromise());
@@ -39,15 +42,13 @@ describe('UserLanguageModalCtrl controller', function() {
         'SetLanguage': stubSetLanguage,
         '$uibModalInstance': spyUibModalInstance,
         'UpdateUser': stubUpdateUser,
-        '$translate': { use: function() {
-          return 'ab';
-        }}
+        'Language': stubLanguage
       });
     };
   }));
 
   afterEach(function() {
-    KarmaUtils.restore(dbQuery, stubSetLanguage, stubUpdateUser, spyUibModalInstance);
+    KarmaUtils.restore(dbQuery, stubSetLanguage, stubLanguage, stubUpdateUser, spyUibModalInstance);
   });
 
   it('changes language on user selection', function() {
@@ -64,10 +65,13 @@ describe('UserLanguageModalCtrl controller', function() {
     chai.assert(spyUibModalInstance.dismiss.called, 'Should dismiss modal');
   });
 
-  it('resets the language on user cancel', function() {
+  it('resets the language on user cancel', function(done) {
     createController();
-    scope.cancel();
-    chai.assert(stubSetLanguage.called, 'Should reset language');
+    setTimeout(function() {
+      scope.cancel();
+      chai.assert(stubSetLanguage.called, 'Should reset language');
+      done();
+    });
   });
 
   it('triggers saving on user submit', function() {
@@ -82,16 +86,18 @@ describe('UserLanguageModalCtrl controller', function() {
   it('displays the processing mode modal while saving', function(done) {
     createController();
 
-    scope.submit();
-    chai.assert(scope.setProcessing.called);
-
     setTimeout(function() {
-      scope.$apply(); // needed to resolve the promises
-      chai.assert(scope.setFinished.called);
-      chai.assert(!scope.setError.called);
-      chai.assert(spyUibModalInstance.close.called, 'Should close modal when processing is done');
-      // No testing of display : the modal is closed anyway.
-      done();
+      scope.submit();
+      chai.assert(scope.setProcessing.called);
+
+      setTimeout(function() {
+        scope.$apply(); // needed to resolve the promises
+        chai.assert(scope.setFinished.called);
+        chai.assert(!scope.setError.called);
+        chai.assert(spyUibModalInstance.close.called, 'Should close modal when processing is done');
+        // No testing of display : the modal is closed anyway.
+        done();
+      });
     });
   });
 
@@ -100,15 +106,17 @@ describe('UserLanguageModalCtrl controller', function() {
     stubUpdateUser.reset();
     stubUpdateUser.returns(KarmaUtils.mockPromise({err: 'oh noes language is all wrong'}));
 
-    scope.submit();
-
     setTimeout(function() {
-      scope.$apply(); // needed to resolve the promises
-      chai.assert(!spyUibModalInstance.close.called, 'Should not close modal when processing error');
-      chai.assert(!spyUibModalInstance.dismiss.called, 'Should not dismiss modal when processing error');
-      chai.assert(!scope.setFinished.called);
-      chai.assert(scope.setError.called);
-      done();
+      scope.submit();
+
+      setTimeout(function() {
+        scope.$apply(); // needed to resolve the promises
+        chai.assert(!spyUibModalInstance.close.called, 'Should not close modal when processing error');
+        chai.assert(!spyUibModalInstance.dismiss.called, 'Should not dismiss modal when processing error');
+        chai.assert(!scope.setFinished.called);
+        chai.assert(scope.setError.called);
+        done();
+      });
     });
   });
 
@@ -116,13 +124,15 @@ describe('UserLanguageModalCtrl controller', function() {
     createController();
     stubUpdateUser.reset();
     stubUpdateUser.returns(KarmaUtils.mockPromise({err: 'oh noes language is all wrong'}));
-    var initialLang = scope.selectedLanguage;
-    scope.submit();
     setTimeout(function() {
-      scope.$apply(); // needed to resolve the promises
-      chai.assert(stubSetLanguage.called, 'Should reset saved language');
-      chai.expect(scope.selectedLanguage).to.equal(initialLang);
-      done();
+      var initialLang = scope.selectedLanguage;
+      scope.submit();
+      setTimeout(function() {
+        scope.$apply(); // needed to resolve the promises
+        chai.assert(stubSetLanguage.called, 'Should reset saved language');
+        chai.expect(scope.selectedLanguage).to.equal(initialLang);
+        done();
+      });
     });
   });
 });
