@@ -234,6 +234,7 @@ var hasNewApplicableDoc = function(feed, changes) {
 var getReplicationKey = function(doc) {
   if (doc._id === 'resources' ||
       doc._id === 'appcache' ||
+      doc._id === 'zscore-charts' ||
       doc.type === 'form' ||
       doc.type === 'translations') {
     return [ '_all', {} ];
