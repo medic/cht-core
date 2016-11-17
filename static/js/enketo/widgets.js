@@ -19,6 +19,7 @@ define( function( require, exports, module ) {
         require( './widgets/phone-widget' ),
         require( './widgets/unselectable-radios' ),
         require( './widgets/android-datepicker' ),
+        require( './widgets/z-score' ),
     ];
 
     module.exports = widgets;

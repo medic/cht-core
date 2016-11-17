@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     READ_ONLY_TYPES = [ 'form', 'translations' ],
-    READ_ONLY_IDS = [ '_design/medic-client', 'resources', 'appcache' ];
+    READ_ONLY_IDS = [ '_design/medic-client', 'resources', 'appcache', 'zscore-charts' ];
 
 (function () {
 
