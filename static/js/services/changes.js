@@ -37,6 +37,8 @@ angular.module('inboxServices').factory('Changes',
 
 
     var watchChanges = function() {
+      var RETRY_MILLIS = 5000;
+
       $log.info('Initiating changes watch');
       DB()
         .changes({
@@ -49,7 +51,7 @@ angular.module('inboxServices').factory('Changes',
         .on('error', function(err) {
           $log.error('Error watching for db changes', err);
           $log.error('Attempting changes reconnection in 5 seconds');
-          $timeout(watchChanges, 5000);
+          $timeout(watchChanges, RETRY_MILLIS);
         });
     };
 
