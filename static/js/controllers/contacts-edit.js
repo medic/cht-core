@@ -139,6 +139,13 @@ var _ = require('underscore');
       delete $scope.dependentPersonSchema.fields.parent;
 
       getContact()
+        .then(function(contact) {
+          if (!contact) {
+            $scope.clearSelected();
+          }
+
+          return contact;
+        })
         .then(getForm)
         .then(renderForm)
         .then(function() {
