@@ -42,7 +42,8 @@ describe('UserLanguageModalCtrl controller', function() {
         'SetLanguage': stubSetLanguage,
         '$uibModalInstance': spyUibModalInstance,
         'UpdateUser': stubUpdateUser,
-        'Language': stubLanguage
+        'Language': stubLanguage,
+        '$q': Q
       });
     };
   }));
@@ -87,11 +88,8 @@ describe('UserLanguageModalCtrl controller', function() {
     createController();
 
     setTimeout(function() {
-      scope.submit();
-      chai.assert(scope.setProcessing.called);
-
-      setTimeout(function() {
-        scope.$apply(); // needed to resolve the promises
+      scope.submit().then(function() {
+        chai.assert(scope.setProcessing.called);
         chai.assert(scope.setFinished.called);
         chai.assert(!scope.setError.called);
         chai.assert(spyUibModalInstance.close.called, 'Should close modal when processing is done');
@@ -107,10 +105,7 @@ describe('UserLanguageModalCtrl controller', function() {
     stubUpdateUser.returns(KarmaUtils.mockPromise({err: 'oh noes language is all wrong'}));
 
     setTimeout(function() {
-      scope.submit();
-
-      setTimeout(function() {
-        scope.$apply(); // needed to resolve the promises
+      scope.submit().then(function() {
         chai.assert(!spyUibModalInstance.close.called, 'Should not close modal when processing error');
         chai.assert(!spyUibModalInstance.dismiss.called, 'Should not dismiss modal when processing error');
         chai.assert(!scope.setFinished.called);
@@ -126,13 +121,27 @@ describe('UserLanguageModalCtrl controller', function() {
     stubUpdateUser.returns(KarmaUtils.mockPromise({err: 'oh noes language is all wrong'}));
     setTimeout(function() {
       var initialLang = scope.selectedLanguage;
-      scope.submit();
-      setTimeout(function() {
-        scope.$apply(); // needed to resolve the promises
+      scope.submit().then(function() {
         chai.assert(stubSetLanguage.called, 'Should reset saved language');
         chai.expect(scope.selectedLanguage).to.equal(initialLang);
         done();
       });
+    });
+  });
+
+  it.only('does nothing when no language selected', function(done) {
+    stubUpdateUser.reset();
+    stubLanguage.returns(KarmaUtils.mockPromise());
+    createController();
+    setTimeout(function() {
+      scope.submit()
+        .then(function() {
+          done('submit should reject');
+        })
+        .catch(function() {
+          chai.assert(!stubUpdateUser.called, 'Should not update user when no lang selected');
+          done();
+        });
     });
   });
 });

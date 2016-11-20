@@ -7,7 +7,7 @@
   <div class="modal-footer">
     <p class="note" ng-if="status.error" translate>{{status.error}}</p>
     <a class="btn cancel" ng-click="onCancel()" translate>{{cancelKey || 'Cancel'}}</a>
-    <a class="btn submit" ng-class="{ 'btn-primary': !danger, 'btn-danger': danger }" ng-click="onSubmit()" ng-show="!status.processing" translate>{{submitKey}}</a>
+    <a class="btn submit" ng-class="{ 'btn-primary': !danger, 'btn-danger': danger, 'disabled': disableSubmit }" ng-click="onSubmit()" ng-show="!status.processing" translate>{{submitKey}}</a>
     <a class="btn submit disabled" ng-class="{ 'btn-primary': !danger, 'btn-danger': danger }" ng-show="status.processing" translate>{{submittingKey || submitKey}}</a>
   </div>
 </div>

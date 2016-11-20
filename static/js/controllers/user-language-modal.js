@@ -8,6 +8,7 @@ var _ = require('underscore');
 angular.module('inboxControllers').controller('UserLanguageModalCtrl',
   function(
     $log,
+    $q,
     $scope,
     $uibModalInstance,
     DB,
@@ -47,13 +48,14 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
     };
 
     $scope.submit = function() {
-      var newLanguage = $scope.selectedLanguage;
-      if (!newLanguage) {
-        return $uibModalInstance.close();
+      if (!$scope.selectedLanguage) {
+        var err = new Error('No language selected');
+        $log.error(err);
+        return $q.reject(err);
       }
       var id = 'org.couchdb.user:' + Session.userCtx().name;
       $scope.setProcessing();
-      return UpdateUser(id, { language: newLanguage })
+      return UpdateUser(id, { language: $scope.selectedLanguage })
         .then(function() {
           $scope.setFinished();
           $uibModalInstance.close();
