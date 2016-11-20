@@ -129,7 +129,7 @@ describe('UserLanguageModalCtrl controller', function() {
     });
   });
 
-  it.only('does nothing when no language selected', function(done) {
+  it('does nothing when no language selected', function(done) {
     stubUpdateUser.reset();
     stubLanguage.returns(KarmaUtils.mockPromise());
     createController();
