@@ -36,7 +36,10 @@ angular.module('inboxDirectives').directive('mmModal', function() {
       onCancel: '&',
 
       // function: to be called when submitting the modal
-      onSubmit: '&'
+      onSubmit: '&',
+
+      // string: (optional) the expression which, if true, will disable the submit button
+      disableSubmit: '='
     }
   };
 });
