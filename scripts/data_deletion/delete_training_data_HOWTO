@@ -11,8 +11,8 @@ Notes :
  - You can practice with the `dryrun` option. That will show you what data would be deleted, without deleting.
 
  - Timeouts and reindexing : since you are making changes on the db, that will trigger reindexing, which can slow down the db, and make the script fail with timeouts (and other current users of the db too!). Wait around a bit and try again. (You can also see the indexing start and stop in the logs, to know when it's done). You can also extend the os_process_timeout if that helps (set it back when you're done):
-`curl <serverUrl>/_config/couchdb/os_process_timeout`
-`curl -X PUT  <serverUrl>/_config/couchdb/os_process_timeout -d '"100000"'`
+`curl <serverUrl>/_node/<nodeName>/_config/couchdb/os_process_timeout`
+`curl -X PUT  <serverUrl>/_node/<nodeName>/_config/couchdb/os_process_timeout -d '"100000"'`
 
  - There is a batchSize, which is set to 200 initially. That is because you want to do small reindexings, to get small timeouts (or none at all!), to not mess up your users. (If your instance is offline then go for it!). You can change batchSize in the script if you're not getting enough records any more.
 

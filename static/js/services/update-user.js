@@ -10,12 +10,28 @@ var _ = require('underscore');
     return '/_users/' + encodeURIComponent(id);
   };
 
-  var removeCacheEntry = function($cacheFactory, id) {
-    var cache = $cacheFactory.get('$http');
-    cache.remove(getUserUrl(id));
-    cache.remove('/_users/_all_docs?include_docs=true');
-    cache.remove('/_config/admins');
+  var getAllConfigAdminEndpoints = function($http) {
+    console.log('Gonna get dem endpoints');
+    return $http.get('/_membership').then(function(results) {
+      console.log('Gotta', results);
+      return results.data.all_nodes.map(function(node) {
+        return '/_node/' + node + '/_config/admins';
+      });
+    });
   };
+
+  var removeCacheEntry = function(id, $cacheFactory, $http) {
+    return getAllConfigAdminEndpoints($http).then(function(configEndpoints) {
+      var cache = $cacheFactory.get('$http');
+      cache.remove(getUserUrl(id));
+      cache.remove('/_users/_all_docs?include_docs=true');
+
+      configEndpoints.forEach(function(endpoint) {
+        cache.remove(endpoint);
+      });
+    });
+  };
+
 
   inboxServices.factory('UpdateUser',
     function(
@@ -95,12 +111,18 @@ var _ = require('underscore');
                 return updateAdminPassword(updated);
               })
               .then(function() {
-                removeCacheEntry($cacheFactory, user._id);
+                return removeCacheEntry(user._id, $cacheFactory, $http);
+              })
+              .then(function() {
                 return updated;
               })
               .catch(function(err) {
-                removeCacheEntry($cacheFactory, user._id);
-                throw err;
+                return removeCacheEntry(user._id, $cacheFactory, $http).then(function() {
+                  throw err;
+                })
+                .catch(function(innerErr) {
+                  throw innerErr;
+                });
               });
           });
       };
@@ -160,7 +182,7 @@ var _ = require('underscore');
             return deleteMedicUser(user._id);
           })
           .then(function() {
-            removeCacheEntry($cacheFactory, user._id);
+            return removeCacheEntry(user._id, $cacheFactory, $http);
           });
       };
     }

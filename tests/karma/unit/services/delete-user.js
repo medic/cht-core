@@ -1,4 +1,4 @@
-describe('DeleteUser service', function() {
+describe.only('DeleteUser service', function() {
 
   'use strict';
 
@@ -16,6 +16,7 @@ describe('DeleteUser service', function() {
     get = sinon.stub();
     module(function ($provide) {
       $provide.value('DeleteDocs', DeleteDocs);
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
     });
     inject(function($injector) {
@@ -42,7 +43,7 @@ describe('DeleteUser service', function() {
 
     httpBackend
       .expect('GET', '/_users/org.couchdb.user%3Agareth')
-      .respond({ 
+      .respond({
         _id: 'org.couchdb.user:gareth',
         name: 'gareth',
         starsign: 'aries'
@@ -76,7 +77,7 @@ describe('DeleteUser service', function() {
 
     httpBackend
       .expect('GET', '/_users/org.couchdb.user%3Agareth')
-      .respond({ 
+      .respond({
         _id: 'org.couchdb.user:gareth',
         name: 'gareth',
         starsign: 'aries'
@@ -89,6 +90,12 @@ describe('DeleteUser service', function() {
         _deleted: true
       })
       .respond({ success: true });
+    httpBackend
+      .expect('GET', '/_membership')
+      .respond({
+        all_nodes: ['couchdb@localhost'],
+        cluster_nodes: ['couchdb@localhost']
+      });
 
     get.returns(KarmaUtils.mockPromise(null, { _id: 'org.couchdb.user:gareth' }));
     DeleteDocs.returns(KarmaUtils.mockPromise());
@@ -99,6 +106,10 @@ describe('DeleteUser service', function() {
       setTimeout(function() {
         rootScope.$apply();
         httpBackend.flush();
+        setTimeout(function() {
+          rootScope.$apply();
+          httpBackend.flush();
+        });
       });
     });
 
@@ -113,7 +124,7 @@ describe('DeleteUser service', function() {
         chai.expect(cacheRemove.callCount).to.equal(3);
         chai.expect(cacheRemove.args[0][0]).to.equal('/_users/org.couchdb.user%3Agareth');
         chai.expect(cacheRemove.args[1][0]).to.equal('/_users/_all_docs?include_docs=true');
-        chai.expect(cacheRemove.args[2][0]).to.equal('/_config/admins');
+        chai.expect(cacheRemove.args[2][0]).to.equal('/_node/couchdb@localhost/_config/admins');
       });
   });
 
