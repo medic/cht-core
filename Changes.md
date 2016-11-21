@@ -2,40 +2,40 @@
 
 ## 2.8.3
 
-### November 9, 2016
+_November 9, 2016_
 
-#### Performance improvements
+### Performance improvements
 
 - Remove traffic statistics collection. Issue: #2886
 
 ## 2.8.2
 
-### October 13, 2016
+_October 13, 2016_
 
-#### Bug fixes
+### Bug fixes
 
 - Ensure PouchDB doesn't mis-label TECNO phones as devices running Safari. Issue: #2797
 
 ## 2.8.1
 
-### October 10, 2016
+_October 10, 2016_
 
-#### Bug fixes
+### Bug fixes
 
 - If initial sync fails without syncing anything subsequent syncs get no results. Issue: #2770
 - Initial sync fails if server doesn't respond within 30 seconds. Issue: #2771
 - Targets tab is blank on first access. Issue: #2739
 
-#### Performance improvements
+### Performance improvements
 
 - Adding a space to a contact search term performs poorly. Issue: #2769
 - Local DB grows without limit. Issue: #2434
 
 ## 2.8.0
 
-### August 29, 2016
+_August 29, 2016_
 
-#### Features
+### Features
 
 - Pass user's info to rule to customize Tasks per user type or location. Issue: #2408
 - Add context to target types and goals. Issue: #2409
@@ -43,7 +43,7 @@
 - Add ageInDays and ageInMonths functions to the XML forms context utilities. Issue: #2650
 - Users can now only access an optionally configured number of hierarchy levels below their facility. Issue: #2648
 
-#### Bug fixes
+### Bug fixes
 
 - Android back button doesn't work as expected. Issue: #2600
 - In date filter for Reports tab, the selected dates are being offset by 1 day. Issue: #2185
@@ -54,47 +54,47 @@
 
 ## 2.7.3
 
-### July 18, 2016
+_July 18, 2016_
 
-#### Bug fixes
+### Bug fixes
 
 - Remove maxSockets limit to allow more concurrent connections. Issue: #2492
 
 ## 2.7.2
 
-### July 11, 2016
+_July 11, 2016_
 
-#### Bug fixes
+### Bug fixes
 
 - Connection refused when trying to load app. Issue: #2476
 
 ## 2.7.1
 
-### July 4, 2016
+_July 4, 2016_
 
-#### Bug fixes
+### Bug fixes
 
 - Creating user via fails due to invalid reported_date. Issue: #2449
 
-#### Performance improvements
+### Performance improvements
 
 - App takes minutes to load a person dropdown. Issue: #2445
 - Cannot load Configuration Users page. Issue: #2444
 
 ## 2.7.0
 
-### June 8, 2016
+_June 8, 2016_
 
-#### Features
+### Features
 
 - Bulk delete reports. Issue: #1000
 
-#### Bug fixes
+### Bug fixes
 
 - Report list item summaries aren't translated. Issue: #2100
 - Fix form type filter. Issue: #1409
 
-#### Performance improvements
+### Performance improvements
 
 - Replication performance. Issue: #2286
 - Improve search performance. Issue: #2302
@@ -109,7 +109,7 @@
 
 ## 2.6.3
 
-### May 23, 2016
+_May 23, 2016_
 
 - "console not defined" error when loading page. Issue: #2277
 - Pouch doesn't update seq unless something has changed. Issue: #2288
@@ -118,7 +118,7 @@
 
 ## 2.6.2
 
-### May 6, 2016
+_May 6, 2016_
 
 - Update PouchDB to improve replication reliability and performance. Issue: #2134 #2167
 - When editing a CHP Area, previously set values for CHP, Branch, and Supervisor do not show up. Issue: #2223
@@ -131,7 +131,7 @@
 
 ## 2.6.1
 
-### Apr 21, 2016
+_April 21, 2016_
 
 - User's fullname is not showing up in /configuration/users. Issue: #2200
 - Deleted documents cause sentinel log spam. Issue: #1999
@@ -141,7 +141,7 @@
 
 ## 2.6.0
 
-### Apr 5, 2016
+_April 5, 2016_
 
 This release contains breaking changes from 0.x versions. Updating from 0.x versions may result in the application no longer operating as expected.
 
@@ -153,7 +153,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.4.13
 
-### Oct 21, 2016
+_October 21, 2016_
 
 - Option to set birthdate using days old instead of weeks. Issue: #2756
 - The week/month is off by 2 in the Reporting Rates analytics dashboard. Issue: #2781
@@ -161,7 +161,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.4.12
 
-### Jul 21, 2016
+_July 21, 2016_
 
 - Fixed bug in reporting rates for weekly time unit. #2429
 - Log warnings in sentinel when ID collisions happen. #1898
@@ -169,13 +169,13 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.4.11
 
-### Feb 4, 2016
+_February 4, 2016_
 
 - Security fix for leaking auth info.
 
 ## 0.4.10
 
-### Nov 16, 2015
+_Nov 16, 2015_
 
 - Added support for Outgoing Deny List, a comma separated list of phone numbers
   or strings to deny outgoing service to. #750
@@ -188,7 +188,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.4.9
 
-### Aug 26, 2015
+_Aug 26, 2015_
 
 - Fixed bug on node 0.12 in felix-couchdb. #1145
 
@@ -203,7 +203,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.4.8
 
-### Jul 14, 2015
+_July 14, 2015_
 
 - Added SMS parser fixes from dev branch:
    
@@ -218,7 +218,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.4.7
 
-### Jun 16, 2015
+_June 16, 2015_
 
 - Fixed ODK forms list bug when the list is empty. Issue #886
 
@@ -234,13 +234,13 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.4.6
 
-### Jun 4, 2015
+_June 4, 2015_
 
 - Improved boolean expression evaluation in registration configuration.
 
 ## 0.4.5
 
-### May 28, 2015
+_May 28, 2015_
 
 - Fixed bug in schedules editor for LMP (last menstrual period) based
   schedules. #973
@@ -250,16 +250,16 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.4.4
 
-### May 21, 2015
+_May 21, 2015_
 
 - Added support for a new messages parser we're calling Javarosa prefixed with
   the `J1` format code. 
 
 ## 0.4.3
 
-### Feb 26, 2015
+_February 26, 2015_
 
-#### Features
+### Features
 
 - Major UI enhancements #370
 
@@ -289,7 +289,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
   and has no way of changing facility, form, or file format. The latter is
   functionally equivalent to 0.4.2.
 
-#### Upgrade Notes
+### Upgrade Notes
 
 - CouchDB Lucene >= 1.0.2
 
@@ -300,13 +300,13 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.4.2
 
-### Sep 4, 2014
+_September 4, 2014_
 
 - Fixed bug: When searching for a patient identifier using the free-text search feature, results were not returned properly. Index the field appropriately.
 
 ## 0.4.1
 
-### Jul 31, 2014
+_July 31, 2014_
 
 - Minor UI clean up.
 
@@ -316,9 +316,9 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.4.0
 
-### Jul 10, 2014
+_July 10, 2014_
 
-#### New Features
+### New Features
 
 - User interface for common settings and translations #484
 
@@ -356,7 +356,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 - Allow range searches on number fields in lucene. #481
 
-#### Bug fixes
+### Bug fixes
 
 - Fixed bug stopping district admins from being able to delete documents. #509
 
@@ -368,7 +368,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 - Render facilities controls on all facilities tabs. #338
 
-#### Deprecated and Backwards Incompatible changes
+### Deprecated and Backwards Incompatible changes
 
 - deprecated `exclude_cols` parameter for export integrations. Migrate 
   applications to use the `columns` parameter instead.
@@ -379,7 +379,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.3.11
 
-### Jun 19, 2014
+_June 19, 2014_
 
 - Fixed bug where scheduled messages were out of order on Chrome #527
 
@@ -407,21 +407,21 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.3.10
 
-### Jun 12, 2014
+_June 12, 2014_
 
 - updated intrahealth-senegal forms
 
 
 ## 0.3.9
 
-### May 22, 2014
+_May 22, 2014_
 
 - fixed a bug in settings parser, to conform to the latest app-settings
   changes, otherwise configs never get triggered.
 
 ## 0.3.8
 
-### May 22, 2014
+_May 22, 2014_
 
 - fixed bug in messages export filters to include all data records,
   unstructured messages were being ignored. #502
@@ -434,21 +434,21 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.3.7
 
-### May 13, 2014
+_May 13, 2014_
 
 - Modified KEMRI form fields to be ordered the same as KEMR form.
 
 
 ## 0.3.6
 
-### Apr 28, 2014
+_April 28, 2014_
 
 - Fixed bug in updating duplicate scheduled reports #483
 
 
 ## 0.3.5
 
-### Apr 16, 2014
+_April 16, 2014_
 
 - Major bug fix that was introduced in 0.3.3 where visit reports do not get processed.
 
@@ -464,7 +464,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.3.4
 
-### Apr 14, 2014
+_April 14, 2014_
 
 - translate strings on user mgmt facilities select list #474
 
@@ -477,7 +477,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.3.3
 
-### Apr 10, 2014
+_April 10, 2014_
 
 - Fixed spreadsheet keyboard navigation. #448
 
@@ -555,7 +555,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.3.2
 
-### Mar 11, 2014 
+_March 11, 2014 _
 
 - fixed facilities spreadsheet bug #451 in Chrome
     
@@ -564,7 +564,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.3.1
 
-### Mar 3, 2014 
+_March 3, 2014 _
 
 - Fixed a bug where the facilities spreadsheet was holding focus so sending a message doesn't work. #440
 
@@ -627,7 +627,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
     
 ## 0.3.0-beta.39 (bugfix)
 
-### Feb 25, 2014
+_February 25, 2014_
 
 - Fixed textforms whitespace parser bug when using form list field types. #431
 
@@ -643,14 +643,14 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.3.0-beta.38 (debug) 
 
-### Feb 13, 2014
+_February 13, 2014_
  
 - added logging calls to help debug and identify whitespace parsing bug #431
 
 
 ## 0.3.0-beta.37 
 
-### Jan 21, 2014
+_January 21, 2014_
 
 - Fixes to user roles (@marc)
  
@@ -750,7 +750,3 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
     Outgoing Messages
     Scheduled Tasks
 ```
-
-
-    
-    
