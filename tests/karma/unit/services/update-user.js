@@ -7,18 +7,15 @@ describe('UpdateUser service', function() {
       cacheRemove,
       $httpBackend,
       get,
-      put,
-      Admins;
+      put;
 
   beforeEach(function() {
     get = sinon.stub();
     put = sinon.stub();
-    Admins = sinon.stub();
     cacheRemove = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({ get: get, put: put }));
-      $provide.value('Admins', Admins);
     });
     inject(function($injector) {
       $httpBackend = $injector.get('$httpBackend');
@@ -37,7 +34,7 @@ describe('UpdateUser service', function() {
   afterEach(function() {
     $httpBackend.verifyNoOutstandingExpectation();
     $httpBackend.verifyNoOutstandingRequest();
-    KarmaUtils.restore(cacheRemove, get, put, Admins);
+    KarmaUtils.restore(cacheRemove, get, put);
   });
 
   it('creates a user', function(done) {
@@ -79,10 +76,9 @@ describe('UpdateUser service', function() {
     setTimeout(function() {
       scope.$apply(); // needed to resolve the promises
 
-      chai.expect(cacheRemove.callCount).to.equal(3);
+      chai.expect(cacheRemove.callCount).to.equal(2);
       chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Asally');
       chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
-      chai.expect(cacheRemove.thirdCall.args[0]).to.equal('/_config/admins');
       chai.expect(put.callCount).to.equal(1);
       chai.expect(put.firstCall.args[0]).to.deep.equal(expectedSettings);
       done();
@@ -138,10 +134,9 @@ describe('UpdateUser service', function() {
 
     setTimeout(function() {
       scope.$apply(); // needed to resolve the promises
-      chai.expect(cacheRemove.callCount).to.equal(3);
+      chai.expect(cacheRemove.callCount).to.equal(2);
       chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Ajerome');
       chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
-      chai.expect(cacheRemove.thirdCall.args[0]).to.equal('/_config/admins');
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.firstCall.args[0]).to.deep.equal('org.couchdb.user:jerome');
       chai.expect(put.callCount).to.equal(1);
@@ -176,14 +171,11 @@ describe('UpdateUser service', function() {
       .expect('PUT', '/_users/org.couchdb.user%3Ajerome', JSON.stringify(expected))
       .respond(201, '');
 
-    Admins.returns(KarmaUtils.mockPromise(null, { gareth: true }));
-
     service('org.couchdb.user:jerome', null, updates)
       .then(function() {
-        chai.expect(cacheRemove.callCount).to.equal(3);
+        chai.expect(cacheRemove.callCount).to.equal(2);
         chai.expect(cacheRemove.firstCall.args[0]).to.equal('/_users/org.couchdb.user%3Ajerome');
         chai.expect(cacheRemove.secondCall.args[0]).to.equal('/_users/_all_docs?include_docs=true');
-        chai.expect(cacheRemove.thirdCall.args[0]).to.equal('/_config/admins');
         done();
       });
 
@@ -258,5 +250,4 @@ describe('UpdateUser service', function() {
       chai.expect(put.firstCall.args[0]).to.deep.equal(expectedSettings);
     });
   });
-
 });

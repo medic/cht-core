@@ -174,6 +174,8 @@ module.exports = function(grunt) {
         cmd: 'kanso push $COUCH_URL'
       },
       setupAdmin: {
+        // TODO: change this to `/_node/couchdb@localhost/_config` once we get couchdb2.0
+        //       support on Travis: https://github.com/medic/medic-webapp/issues/2933
         cmd: 'curl -X PUT http://localhost:5984/_config/admins/admin -d \'"pass"\'' +
              ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
              ' -H "Content-Type: application/json" ' +
