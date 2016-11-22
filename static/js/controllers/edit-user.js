@@ -125,7 +125,7 @@
       };
 
       var getRoles = function(type, includeAdmin) {
-        if (includeAdmin && type === 'admin') {
+        if (includeAdmin && type === '_admin') {
           return ['_admin'];
         }
         if (!type || !rolesMap[type]) {
