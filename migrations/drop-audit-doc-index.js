@@ -2,7 +2,7 @@ var db = require('../db'),
     async = require('async'),
     _ = require('underscore'),
     DDOC_ID = '_design/medic',
-    BATCH_SIZE = 200,
+    BATCH_SIZE = 100,
     AUDIT_ID_SUFFIX = '-audit';
 
 var dropView = function(callback) {
