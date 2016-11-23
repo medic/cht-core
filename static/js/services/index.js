@@ -70,6 +70,7 @@
   require('./update-settings');
   require('./update-user');
   require('./user');
+  require('./user-contact');
   require('./web-worker');
   require('./xml-forms');
   require('./xml-forms-context-utils');
