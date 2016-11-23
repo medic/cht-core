@@ -9,12 +9,8 @@ require('bootstrap-daterangepicker');
 require('bootstrap-tour');
 require('nvd3');
 
-require('angular');
 require('angular-cookie');
 require('angular-pouchdb');
-require('angular-resource');
-require('angular-route');
-require('angular-sanitize');
 require('angular-translate');
 require('angular-translate-interpolation-messageformat');
 require('angular-translate-handler-log');

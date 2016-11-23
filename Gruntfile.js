@@ -30,11 +30,6 @@ module.exports = function(grunt) {
       }
     },
     browserify: {
-      options: {
-        browserifyOptions: {
-          debug: true
-        }
-      },
       dist: {
         src: ['static/js/app.js'],
         dest: 'static/dist/inbox.js',
@@ -43,26 +38,27 @@ module.exports = function(grunt) {
         },
         options: {
           transform: ['browserify-ngannotate'],
+          plugin: ['tsify'],
           alias: {
-            'db': './packages/db/db',
-            'kujua-utils': './packages/kujua-utils/kujua-utils',
-            'cookies': './packages/cookies/cookies',
-            'session': './packages/session/session',
-            'kujua-sms/utils': './packages/kujua-sms/kujua-sms/utils',
-            'views/lib/objectpath': './packages/kujua-sms/views/lib/objectpath',
-            'views/lib/app_settings': './packages/kujua-sms/views/lib/app_settings',
+            'db': './packages/db/db.js',
+            'kujua-utils': './packages/kujua-utils/kujua-utils.js',
+            'cookies': './packages/cookies/cookies.js',
+            'session': './packages/session/session.js',
+            'kujua-sms/utils': './packages/kujua-sms/kujua-sms/utils.js',
+            'views/lib/objectpath': './packages/kujua-sms/views/lib/objectpath.js',
+            'views/lib/app_settings': './packages/kujua-sms/views/lib/app_settings.js',
             'text!enketo-config': './static/js/enketo/config.json',
-            'widgets': './static/js/enketo/widgets',
-            './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding',
-            'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath',
-            'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
-            'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils',
-            'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber',
+            'widgets': './static/js/enketo/widgets.js',
+            './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding.js',
+            'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath.js',
+            'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions.js',
+            'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils.js',
+            'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber.js',
             'worker-pouch/workerified': './node_modules/worker-pouch/lib/workerified/',
-            'pouchdb-generate-replication-id': './static/js/modules/pouchdb-generate-replication-id-patched',
+            'pouchdb-generate-replication-id': './static/js/modules/pouchdb-generate-replication-id-patched.js',
             'pouchdb-generate-replication-id-original': './node_modules/pouchdb-generate-replication-id',
-            'angular-translate-interpolation-messageformat': './node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat',
-            'angular-translate-handler-log':  './node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log',
+            'angular-translate-interpolation-messageformat': './node_modules/angular-translate/dist/angular-translate-interpolation-messageformat/angular-translate-interpolation-messageformat.js',
+            'angular-translate-handler-log':  './node_modules/angular-translate/dist/angular-translate-handler-log/angular-translate-handler-log.js',
           },
         },
       }
