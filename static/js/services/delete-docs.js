@@ -8,6 +8,7 @@ var _ = require('underscore');
 
   inboxServices.factory('DeleteDocs',
     function(
+      $log,
       $q,
       DB
     ) {
@@ -45,9 +46,8 @@ var _ = require('underscore');
           dedup.push(doc._id);
         });
         if (errors.length) {
-          var error = new Error('Deletion error');
-          error.errors = errors;
-          throw error;
+          $log.error('Deletion errors', errors);
+          throw new Error('Deletion error');
         }
       };
 
@@ -88,9 +88,8 @@ var _ = require('underscore');
               }
             });
             if (errors.length) {
-              var error = new Error('Deletion error');
-              error.errors = errors;
-              throw error;
+              $log.error('Deletion errors', errors);
+              throw new Error('Deletion error');
             }
           });
       };
