@@ -77,7 +77,7 @@
             $state.go('reports.detail', { id: doc._id });
           })
           .catch(function(err) {
-            $scope.$apply('saving = false');
+            $scope.saving = false;
             $log.error('Error submitting form data: ', err);
           });
       };
