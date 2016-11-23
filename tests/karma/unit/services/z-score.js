@@ -260,4 +260,53 @@ describe('ZScore service', function() {
     });
   });
 
+  describe('cic test cases', function() {
+
+    var CONFIG_DOC = {
+      charts: [{
+        id: 'height-for-age',
+        data: {
+          male: [
+            { key: 1071, points: [ 80.872, 84.541, 88.21, 91.879, 95.548, 99.217, 102.886, 106.555, 110.224 ] },
+            { key: 1072, points: [ 80.886, 84.557, 88.228, 91.899, 95.57, 99.24, 102.911, 106.582, 110.253 ] },
+            { key: 1073, points: [ 80.901, 84.573, 88.246, 91.919, 95.591, 99.264, 102.937, 106.609, 110.282 ] }
+          ]
+        }
+      }, {
+        id: 'weight-for-age',
+        data: {
+          male: [
+            { key: 1071, points: [ 8.683, 9.931, 11.179, 12.596, 14.205, 16.036, 18.12, 20.495, 22.87 ] },
+            { key: 1072, points: [ 8.686, 9.935, 11.183, 12.601, 14.211, 16.042, 18.127, 20.504, 22.88 ] },
+            { key: 1073, points: [ 8.689, 9.938, 11.187, 12.605, 14.216, 16.049, 18.135, 20.513, 22.891 ] }
+          ]
+        }
+      }, {
+        id: 'weight-for-height',
+        data: {
+          male: [
+            { key: 82.9, points: [ 7.997, 8.692, 9.387, 10.159, 11.02, 11.982, 13.061, 14.277, 15.492 ] },
+            { key: 83, points: [ 8.014, 8.71, 9.406, 10.179, 11.042, 12.005, 13.086, 14.303, 15.52 ] },
+            { key: 83.1, points: [ 8.03, 8.728, 9.425, 10.2, 11.063, 12.029, 13.111, 14.33, 15.549 ] }
+          ]
+        }
+      }]
+    };
+
+    it('#563', function() {
+      var options = {
+        sex: 'male',
+        age: 1072,
+        height: 83,
+        weight: 11.704545
+      };
+      dbGet.returns(KarmaUtils.mockPromise(null, CONFIG_DOC));
+      return service(options).then(function(scores) {
+        chai.expect(scores.heightForAge).to.equal(-3.424135113048216);
+        chai.expect(scores.weightForAge).to.equal(-1.6321967559943587);
+        chai.expect(scores.weightForHeight).to.equal(0.6880010384215982);
+      });
+    });
+  });
+
 });

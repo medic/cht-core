@@ -64,13 +64,13 @@ angular.module('inboxServices').factory('ZScore',
     };
 
     var findZScore = function(data, key) {
-      var lowerIndex;
+      var lowerIndex = -1;
       data.forEach(function(datum, i) {
         if (datum <= key) {
           lowerIndex = i;
         }
       });
-      if (!lowerIndex) {
+      if (lowerIndex === -1) {
         // given key is less than the minimum standard deviation
         return MINIMUM_Z_SCORE;
       }
