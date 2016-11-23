@@ -72,21 +72,6 @@ var utils = require('kujua-utils');
     }
   );
 
-  inboxServices.factory('UserContact',
-    function(
-      DB,
-      UserSettings
-    ) {
-      'ngInject';
-      return function() {
-        return UserSettings()
-          .then(function(user) {
-            return user.contact_id && DB().get(user.contact_id);
-          });
-      };
-    }
-  );
-
   inboxServices.factory('Admins',
     function(
       $http
