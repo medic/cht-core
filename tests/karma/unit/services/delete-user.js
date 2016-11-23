@@ -42,7 +42,7 @@ describe('DeleteUser service', function() {
 
     httpBackend
       .expect('GET', '/_users/org.couchdb.user%3Agareth')
-      .respond({ 
+      .respond({
         _id: 'org.couchdb.user:gareth',
         name: 'gareth',
         starsign: 'aries'
@@ -76,7 +76,7 @@ describe('DeleteUser service', function() {
 
     httpBackend
       .expect('GET', '/_users/org.couchdb.user%3Agareth')
-      .respond({ 
+      .respond({
         _id: 'org.couchdb.user:gareth',
         name: 'gareth',
         starsign: 'aries'
@@ -110,10 +110,9 @@ describe('DeleteUser service', function() {
         chai.expect(DeleteDocs.callCount).to.equal(1);
         chai.expect(DeleteDocs.args[0][0]._id).to.equal('org.couchdb.user:gareth');
 
-        chai.expect(cacheRemove.callCount).to.equal(3);
+        chai.expect(cacheRemove.callCount).to.equal(2);
         chai.expect(cacheRemove.args[0][0]).to.equal('/_users/org.couchdb.user%3Agareth');
         chai.expect(cacheRemove.args[1][0]).to.equal('/_users/_all_docs?include_docs=true');
-        chai.expect(cacheRemove.args[2][0]).to.equal('/_config/admins');
       });
   });
 

@@ -14,7 +14,6 @@ var _ = require('underscore');
     var cache = $cacheFactory.get('$http');
     cache.remove(getUserUrl(id));
     cache.remove('/_users/_all_docs?include_docs=true');
-    cache.remove('/_config/admins');
   };
 
   inboxServices.factory('UpdateUser',
@@ -23,7 +22,6 @@ var _ = require('underscore');
       $http,
       $q,
       $log,
-      Admins,
       DB
     ) {
 
@@ -54,29 +52,6 @@ var _ = require('underscore');
         });
       };
 
-      var updateAdminPassword = function(updated) {
-        if (!updated.password) {
-          // password not changed, do nothing
-          return $q.when();
-        }
-        return Admins()
-          .then(function(admins) {
-            if (admins[updated.name]) {
-              // an admin so admin password change required
-              return $http.put(
-                '/_config/admins/' + updated.name,
-                '"' + updated.password + '"'
-              );
-            }
-          })
-          .catch(function(err) {
-            if (err.status !== 401) {
-              throw err;
-            }
-            // else unauthorized - not an admin
-          });
-      };
-
       var updateUser = function(id, updates) {
         if (!updates) {
           // only updating settings
@@ -91,9 +66,6 @@ var _ = require('underscore');
               updated.salt = undefined;
             }
             return $http.put(getUserUrl(user._id), updated)
-              .then(function() {
-                return updateAdminPassword(updated);
-              })
               .then(function() {
                 removeCacheEntry($cacheFactory, user._id);
                 return updated;

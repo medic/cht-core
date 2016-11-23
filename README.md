@@ -35,12 +35,12 @@ You will need to install the following:
 
 Setup admin access:
 ```
-curl -X PUT http://localhost:5984/_config/admins/admin -d '"pass"'
+curl -X PUT http://localhost:5984/_node/couchdb@localhost/_config/admins/admin -d '"pass"'
 ```
 
 Reconfigure CouchDB to require authentication:
 ```
-curl -X PUT http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user \
+curl -X PUT http://admin:pass@localhost:5984/_node/couchdb@localhost/_config/couch_httpd_auth/require_valid_user \
   -d '"true"' -H "Content-Type: application/json"
 ```
 
@@ -234,7 +234,7 @@ To install Dashboard, first change the CouchDB's `secure_rewrites` configuration
 parameter to false:
 
 ```
-curl -X PUT http://admin:pass@localhost:5984/_config/httpd/secure_rewrites \
+curl -X PUT http://admin:pass@localhost:5984/_node/couchdb@localhost/_config/httpd/secure_rewrites \
   -d '"false"' -H "Content-Type: application/json"
 ```
 
