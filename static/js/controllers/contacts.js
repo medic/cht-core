@@ -62,12 +62,6 @@ var _ = require('underscore'),
         });
       };
 
-      var completeLoad = function() {
-        $scope.loading = false;
-        $scope.appending = false;
-        $scope.hasContacts = liveList.count() > 0;
-      };
-
       var _initScroll = function() {
         scrollLoader.init(function() {
           if (!$scope.loading && $scope.moreItems) {
@@ -82,12 +76,14 @@ var _ = require('underscore'),
 
         if (!options.silent) {
           $scope.loading = true;
-          $scope.appending = options.skip;
           $scope.error = false;
         }
 
         if (options.skip) {
+          $scope.appending = true;
           options.skip = liveList.count();
+        } else if (!options.silent) {
+          liveList.set([]);
         }
 
         var actualFilter = $scope.filters.search ? $scope.filters : defaultTypeFilter;
@@ -109,28 +105,12 @@ var _ = require('underscore'),
 
           $scope.moreItems = liveList.moreItems = contacts.length >= options.limit;
 
-          if (options.skip) {
-            $timeout(function() {
-              contacts.forEach(function(contact) {
-                liveList.insert(contact, false);
-              });
-              liveList.refresh();
-              completeLoad();
-            })
-            .then(completeLoad);
-          } else if (options.silent) {
-            contacts.forEach(liveList.update);
-            completeLoad();
-          } else {
-            $timeout(function() {
-              liveList.set(contacts);
-              _initScroll();
-              if (!contacts.length) {
-                $scope.clearSelected();
-              }
-            })
-            .then(completeLoad);
-          }
+          contacts.forEach(liveList.update);
+          liveList.refresh();
+          _initScroll();
+          $scope.loading = false;
+          $scope.appending = false;
+          $scope.hasContacts = liveList.count() > 0;
         })
         .catch(function(err) {
           $scope.error = true;

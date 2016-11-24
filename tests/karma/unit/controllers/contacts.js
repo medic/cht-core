@@ -35,6 +35,7 @@ describe('Contacts controller', function() {
       count: function() { return elements.length; },
       insert: function(e) { elements.push(e); },
       set: function(es) { elements = es; },
+      update: function(e) { elements.push(e); }
     };
   };
 
