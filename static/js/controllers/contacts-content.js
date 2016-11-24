@@ -365,8 +365,19 @@ var _ = require('underscore'),
         },
         callback: function(change) {
           if (change.deleted) {
-            $scope.clearSelected();
+            var parentId = $scope.selected &&
+                           $scope.selected.doc &&
+                           $scope.selected.doc.parent &&
+                           $scope.selected.doc.parent._id;
+            if (parentId) {
+              // select the parent
+              selectContact(parentId);
+            } else {
+              // top level contact deleted - clear selection
+              $scope.clearSelected();
+            }
           } else {
+            // refresh the updated contact
             selectContact(change.id);
           }
         }
