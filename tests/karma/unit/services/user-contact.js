@@ -3,7 +3,6 @@ describe('UserContact service', function() {
   'use strict';
 
   var service,
-      $rootScope,
       UserSettings,
       get;
 
@@ -15,70 +14,65 @@ describe('UserContact service', function() {
       $provide.factory('DB', KarmaUtils.mockDB({ get: get }));
       $provide.value('UserSettings', UserSettings);
     });
-    inject(function($injector, _$rootScope_) {
+    inject(function($injector) {
       service = $injector.get('UserContact');
-      $rootScope = _$rootScope_;
     });
   });
 
   it('returns error from user settings', function(done) {
-    UserSettings.returns(KarmaUtils.mockPromise('boom'));
+    UserSettings.returns(KarmaUtils.mockPromise(new Error('boom')));
     service()
       .then(function() {
-        done(new Error('Expected error to be thrown'));
+        done('Expected error to be thrown');
       })
       .catch(function(err) {
-        chai.expect(err).to.equal('boom');
+        chai.expect(err.message).to.equal('boom');
         done();
       });
-    $rootScope.$digest();
   });
 
-  it('returns null when no configured contact', function(done) {
+  it('returns null when no configured contact', function() {
     UserSettings.returns(KarmaUtils.mockPromise(null, {}));
-    service()
-      .then(function(contact) {
-        chai.expect(contact).to.equal(undefined);
-        done();
-      })
-      .catch(done);
-    setTimeout(function() {
-      $rootScope.$digest();
+    return service().then(function(contact) {
+      chai.expect(contact).to.equal(undefined);
+    });
+  });
+
+  it('returns null when configured contact not in the database', function() {
+    UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: 'not-found' }));
+    var err = new Error('not_found');
+    err.reason = 'missing';
+    err.message = 'missing';
+    err.status = 404;
+    get.returns(KarmaUtils.mockPromise(err));
+    return service().then(function(contact) {
+      chai.expect(contact).to.equal(undefined);
     });
   });
 
   it('returns error from getting contact', function(done) {
     UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: 'nobody' }));
-    get.returns(KarmaUtils.mockPromise('boom'));
+    get.returns(KarmaUtils.mockPromise(new Error('boom')));
     service()
       .then(function() {
-        done(new Error('Expected error to be thrown'));
+        done('Expected error to be thrown');
       })
       .catch(function(err) {
-        chai.expect(err).to.equal('boom');
+        chai.expect(err.message).to.equal('boom');
         chai.expect(get.callCount).to.equal(1);
         chai.expect(get.args[0][0]).to.equal('nobody');
         done();
       });
-    setTimeout(function() {
-      $rootScope.$digest();
-    });
   });
 
-  it('returns contact', function(done) {
+  it('returns contact', function() {
     var expected = { _id: 'somebody', name: 'Some Body' };
     UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: 'somebody' }));
     get.returns(KarmaUtils.mockPromise(null, expected));
-    service()
-      .then(function(contact) {
-        chai.expect(contact).to.deep.equal(expected);
-        chai.expect(get.callCount).to.equal(1);
-        chai.expect(get.args[0][0]).to.equal('somebody');
-        done();
-      })
-      .catch(done);
-    setTimeout(function() {
-      $rootScope.$digest();
+    return service().then(function(contact) {
+      chai.expect(contact).to.deep.equal(expected);
+      chai.expect(get.callCount).to.equal(1);
+      chai.expect(get.args[0][0]).to.equal('somebody');
     });
   });
 

@@ -11,7 +11,7 @@ angular.module('inboxServices').service('Enketo',
     FileReader,
     Language,
     TranslateFrom,
-    UserSettings,
+    UserContact,
     XSLT
   ) {
 
@@ -110,7 +110,7 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var checkPermissions = function() {
-      return Auth('can_create_records').then(getContactId);
+      return Auth('can_create_records').then(getUserContact);
     };
 
     var handleKeypressOnInputField = function(e) {
@@ -268,39 +268,34 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var getContactId = function() {
-      return UserSettings()
-        .then(function(user) {
-          if (!user || !user.contact_id) {
-            throw new Error('Your user does not have an associated contact. Talk to your administrator to correct this.');
-          }
-          return user.contact_id;
-        });
+    var getUserContact = function() {
+      return UserContact().then(function(contact) {
+        if (!contact) {
+          throw new Error('Your user does not have an associated contact. Talk to your administrator to correct this.');
+        }
+        return contact;
+      });
     };
 
     var create = function(formInternalId, record) {
-      return getContactId()
-        .then(function(contactId) {
-          return DB().get(contactId);
-        })
-        .then(function(contact) {
-          var doc = {
-            content: record,
-            fields: EnketoTranslation.reportRecordToJs(record),
-            form: formInternalId,
-            type: 'data_record',
-            content_type: 'xml',
-            reported_date: Date.now(),
-            contact: contact,
-            from: contact && contact.phone,
-            hidden_fields: EnketoTranslation.getHiddenFieldList(record),
-          };
-          return DB().post(doc).then(function(res) {
-            doc._id = res.id;
-            doc._rev = res.rev;
-            return $q.resolve(doc);
-          });
+      return getUserContact().then(function(contact) {
+        var doc = {
+          content: record,
+          fields: EnketoTranslation.reportRecordToJs(record),
+          form: formInternalId,
+          type: 'data_record',
+          content_type: 'xml',
+          reported_date: Date.now(),
+          contact: contact,
+          from: contact && contact.phone,
+          hidden_fields: EnketoTranslation.getHiddenFieldList(record),
+        };
+        return DB().post(doc).then(function(res) {
+          doc._id = res.id;
+          doc._rev = res.rev;
+          return $q.resolve(doc);
         });
+      });
     };
 
     this.save = function(formInternalId, form, docId) {

@@ -7,7 +7,15 @@ angular.module('inboxServices').factory('UserContact',
     'ngInject';
     return function() {
       return UserSettings().then(function(user) {
-        return user.contact_id && DB().get(user.contact_id);
+        if (!user.contact_id) {
+          return;
+        }
+        return DB().get(user.contact_id).catch(function(err) {
+          if (err.status === 404) {
+            return;
+          }
+          throw err;
+        });
       });
     };
   }
