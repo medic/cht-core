@@ -55,7 +55,7 @@
               <i class="fa {{actionBar.left.userChildPlace.icon}} fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
-            <p>{{actionBar.left.addPlaceLabel}}</p>
+            <p translate>{{actionBar.left.addPlaceLabel}}</p>
           </a>
         </div>
       </div>
@@ -121,7 +121,7 @@
               <i class="fa {{actionBar.right.selected[0].child.icon}} fa-stack-1x"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
             </span>
-            <p>{{actionBar.right.selected[0].child.addPlaceLabel}}</p>
+            <p translate>{{actionBar.right.selected[0].child.addPlaceLabel}}</p>
           </a>
 
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.right.selected[0].type !== 'person'" ui-sref="contacts.addChild({ type: 'person', parent_id: actionBar.right.selected[0]._id })">

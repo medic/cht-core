@@ -146,13 +146,11 @@ var _ = require('underscore'),
           return $q.resolve();
         }
         var schema = ContactSchema.get(selectedChildPlaceType);
-        return $translate(schema.addButtonLabel).then(function(label) {
-          return {
-            addPlaceLabel: label,
-            type: selectedChildPlaceType,
-            icon: schema ? schema.icon : ''
-          };
-        });
+        return {
+          addPlaceLabel: schema.addButtonLabel,
+          type: selectedChildPlaceType,
+          icon: schema ? schema.icon : ''
+        };
       };
 
       // only admins can edit their own place
@@ -235,11 +233,10 @@ var _ = require('underscore'),
         $scope.search();
       };
 
-      var setActionBarData = function(home) {
+      var setActionBarData = function() {
         var type;
-        if (home) {
-          usersHomePlace = home;
-          type = ContactSchema.getChildPlaceType(home.type);
+        if (usersHomePlace) {
+          type = ContactSchema.getChildPlaceType(usersHomePlace.type);
         } else if (Session.isAdmin()) {
           type = ContactSchema.getPlaceTypes()[0];
         } else {
@@ -247,21 +244,21 @@ var _ = require('underscore'),
         }
         var schema = ContactSchema.get(type);
         defaultTypeFilter = { types: { selected: [ type ] }};
-        return $translate(schema.addButtonLabel).then(function(label) {
-          $scope.setLeftActionBar({
-            addPlaceLabel: label,
-            userFacilityId: home && home._id,
-            userChildPlace: {
-              type: type,
-              icon: schema ? schema.icon : ''
-            }
-          });
+        $scope.setLeftActionBar({
+          addPlaceLabel: schema.addButtonLabel,
+          userFacilityId: usersHomePlace && usersHomePlace._id,
+          userChildPlace: {
+            type: type,
+            icon: schema ? schema.icon : ''
+          }
         });
       };
 
-      var setupPromise = getUserHomePlaceSummary()
-        .then(setActionBarData)
-        .then($scope.search);
+      var setupPromise = getUserHomePlaceSummary().then(function(home) {
+        usersHomePlace = home;
+        setActionBarData();
+        return $scope.search();
+      });
 
       this.getSetupPromiseForTesting = function() { return setupPromise; };
 
