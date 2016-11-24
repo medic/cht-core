@@ -378,6 +378,7 @@ angular.module('inboxServices').factory('LiveList',
           idx.dom[i].removeClass('selected');
         }
       }
+      delete idx.selected;
     }
 
     function refreshAll() {
