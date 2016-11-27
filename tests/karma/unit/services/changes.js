@@ -3,28 +3,34 @@ describe('Changes service', function() {
   'use strict';
 
   var service,
-      changesCallback,
+      changesCallbacks,
       changesCount;
 
+  var onProvider = function() {
+    return {
+      on: function(type, callback) {
+        changesCallbacks[type] = callback;
+        return onProvider();
+      }
+    };
+  };
+
   beforeEach(function () {
-    changesCallback = undefined;
+    changesCallbacks = {};
     changesCount = 0;
     module('inboxApp');
     module(function ($provide) {
       $provide.value('DB', function() {
+        console.log('Someone invoked DB();');
         return {
           changes: function() {
             changesCount++;
-            return {
-              on: function(type, callback) {
-                changesCallback = callback;
-                return {
-                  on: function() {}
-                };
-              }
-            };
+            return onProvider();
           }
         };
+      });
+      $provide.value('$timeout', function(fn) {
+        return fn();
       });
     });
     inject(function(_Changes_) {
@@ -48,7 +54,7 @@ describe('Changes service', function() {
       }
     });
 
-    changesCallback(expected);
+    changesCallbacks.change(expected);
   });
 
   it('calls the most recent callback only', function(done) {
@@ -77,7 +83,7 @@ describe('Changes service', function() {
       }
     });
 
-    changesCallback(expected);
+    changesCallbacks.change(expected);
   });
 
   it('calls all registered callbacks', function(done) {
@@ -105,7 +111,7 @@ describe('Changes service', function() {
       }
     });
 
-    changesCallback(expected);
+    changesCallbacks.change(expected);
 
     chai.expect(results.key1.length).to.equal(1);
     chai.expect(results.key2.length).to.equal(1);
@@ -140,7 +146,7 @@ describe('Changes service', function() {
       }
     });
 
-    changesCallback(expected);
+    changesCallbacks.change(expected);
 
     chai.expect(results.key1.length).to.equal(0);
     chai.expect(results.key2.length).to.equal(1);
@@ -162,7 +168,7 @@ describe('Changes service', function() {
     // unsubscribe callback
     listener.unsubscribe();
 
-    changesCallback({ id: 'x', changes: [ { rev: '2-abc' } ] });
+    changesCallbacks.change({ id: 'x', changes: [ { rev: '2-abc' } ] });
 
     chai.expect(changesCount).to.equal(1);
 
@@ -194,5 +200,23 @@ describe('Changes service', function() {
     });
 
     done();
+  });
+
+  it('re-attaches if it loses connection', function(done) {
+    var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
+
+    service({
+      key: 'test',
+      filter: function() {
+        return true;
+      },
+      callback: function() {
+        chai.expect(changesCount).to.equal(2);
+        done();
+      }
+    });
+
+    changesCallbacks.error(new Error('Test error'));
+    changesCallbacks.change(expected);
   });
 });
