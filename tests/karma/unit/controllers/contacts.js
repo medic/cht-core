@@ -137,7 +137,7 @@ describe('Contacts controller', function() {
       testRightActionBar(done, { doc: district }, function(actionBarArgs) {
         assert.deepEqual(actionBarArgs.selected[0].child.type, childType);
         assert.deepEqual(actionBarArgs.selected[0].child.icon, icon);
-        assert.equal(actionBarArgs.selected[0].child.addPlaceLabel, buttonLabel + 'translated');
+        assert.equal(actionBarArgs.selected[0].child.addPlaceLabel, buttonLabel);
       });
     });
 
@@ -178,7 +178,7 @@ describe('Contacts controller', function() {
         assert.deepEqual(actionBarArgs.selected[0]._id, person._id);
         assert.deepEqual(actionBarArgs.selected[0].child.type, childType);
         assert.deepEqual(actionBarArgs.selected[0].child.icon, icon);
-        assert.equal(actionBarArgs.selected[0].child.addPlaceLabel, buttonLabel + 'translated');
+        assert.equal(actionBarArgs.selected[0].child.addPlaceLabel, buttonLabel);
       });
     });
 
@@ -221,7 +221,7 @@ describe('Contacts controller', function() {
           var actionBarArgs = scope.setLeftActionBar.getCall(0).args[0];
           assert.deepEqual(actionBarArgs.userChildPlace, { type: childType, icon: icon });
           assert.equal(actionBarArgs.userFacilityId, district._id);
-          assert.equal(actionBarArgs.addPlaceLabel, buttonLabel + 'translated');
+          assert.equal(actionBarArgs.addPlaceLabel, buttonLabel);
           done();
         }).catch(done);
     });
