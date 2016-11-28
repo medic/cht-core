@@ -31,7 +31,7 @@ module.exports = function(grunt) {
     },
     browserify: {
       dist: {
-        src: ['static/js/app.js'],
+        src: ['static/js/app.ts'],
         dest: 'static/dist/inbox.js',
         browserifyOptions: {
           detectGlobals: false
