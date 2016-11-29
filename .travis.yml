@@ -1,21 +1,40 @@
-language: node_js
+# Setting up as a java project allows us to ensure that the JRE/JDK version used
+# is actually compatible with webdriver-manager.
+language: java
 sudo: false
-node_js:
-  - "6.3"
-  - "5.6"
+jdk:
+  - oraclejdk7
 
 addons:
   firefox: latest-esr
 
 services:
-  - couchdb
+  # docker is used for couchdb 2.0 (not currently available as a travis service)
+  - docker
 
 env:
+  matrix:
+  - NODE_VERSION=6.3
+  - NODE_VERSION=5.6
   global:
   - COUCH_URL=http://admin:pass@localhost:5984/medic
   - API_URL=http://admin:pass@localhost:5988
+  - COUCH_NODE_NAME=nonode@nohost
+
+before_install:
+  # start couchdb 2.0 docker instance
+  - docker run -d -p 5984:5984 --name couch klaemo/couchdb:2.0.0
+  # wait for couchdb to start
+  - until nc -z localhost 5984; do sleep 1; done
+
+install:
+  nvm install $NODE_VERSION
 
 before_script:
+  - nvm use $NODE_VERSION
+  - npm install
+  # Create couchdb system tables (this has to be done manually on couchdb 2.0)
+  - curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - curl -X PUT localhost:5984/medic
@@ -25,7 +44,7 @@ before_script:
   - npm --prefix api install
   - ./node_modules/.bin/webdriver-manager update
   - nohup bash -c "./node_modules/.bin/webdriver-manager start 2>&1 &"
-  - sleep 3
+  - until nc -z localhost 4444; do sleep 1; done
 
 script:
   - node --stack_size=10000 `which grunt` ci
@@ -43,6 +62,11 @@ after_success:
           echo "Some jobs failed. Not publishing."
         fi
       fi
+
+after_failure:
+  # show the couchdb logs from the docker instance when there was a problem
+  - docker ps -a
+  - docker logs couch
 
 notifications:
   webhooks:
