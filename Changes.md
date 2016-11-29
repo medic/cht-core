@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 2.8.4
+
+### November 30, 2016
+
+#### Bug fixes
+
+- Debounce form submissions to stop duplicate submissions. Issue: #2909
+
 ## 2.8.3
 
 ### November 9, 2016
