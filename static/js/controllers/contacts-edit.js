@@ -27,29 +27,6 @@ var _ = require('underscore');
         $state.go('contacts.detail', { id: $state.params.id || $state.params.parent_id });
       });
 
-      $scope.setContactType = function(type) {
-        $scope.loadingContent = true;
-        $scope.contact.type = type;
-
-        ContactForm.forCreate(type, { contact: $scope.dependentPersonSchema })
-          .then(function(form) {
-            return Enketo.renderFromXmlString($('#contact-form'), form);
-          })
-          .then(function(form) {
-            $scope.enketoContact = {
-              type: type,
-              formInstance: form,
-              docId: type === $scope.contact.type? $scope.contactId: null,
-            };
-            $scope.loadingContent = false;
-          })
-          .catch(function(err) {
-            $scope.loadingContent = false;
-            $scope.contentError = true;
-            $log.error('Error loading contact form.', err);
-          });
-      };
-
       var setTitle = function() {
         var key = '';
         if ($scope.category === 'person') {
@@ -141,7 +118,9 @@ var _ = require('underscore');
       getContact()
         .then(function(contact) {
           if (!contact) {
+            // adding a new contact, deselect the old one
             $scope.clearSelected();
+            $scope.settingSelected();
           }
 
           return contact;
