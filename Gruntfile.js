@@ -175,7 +175,7 @@ module.exports = function(grunt) {
         cmd: 'kanso push $COUCH_URL'
       },
       setupAdmin: {
-        cmd: 'curl -X PUT http://localhost:5984/_config/admins/admin -d \'"pass"\'' +
+        cmd: 'curl -X PUT http://localhost:5984/_node/nonode@nohost/_config/admins/admin -d \'"pass"\'' +
              ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
              ' -H "Content-Type: application/json" ' +
              ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\''
