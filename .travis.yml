@@ -8,14 +8,22 @@ addons:
   firefox: latest-esr
 
 services:
-  - couchdb
+  # docker is used for couchdb 2.0 (not currently available as a travis service)
+  - docker
 
 env:
   global:
   - COUCH_URL=http://admin:pass@localhost:5984/medic
   - API_URL=http://admin:pass@localhost:5988
+  - COUCH_NODE_NAME=nonode@nohost
+
+before_install:
+  # start couchdb 2.0 docker instance
+  - docker run -d -p 5984:5984 --name couch klaemo/couchdb:2.0.0
 
 before_script:
+  # Create couchdb system tables (this has to be done manually on couchdb 2.0)
+  - curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - curl -X PUT localhost:5984/medic
@@ -43,6 +51,11 @@ after_success:
           echo "Some jobs failed. Not publishing."
         fi
       fi
+
+after_failure:
+  # show the couchdb logs from the docker instance when there was a problem
+  - docker ps -a
+  - docker logs couch
 
 notifications:
   webhooks:
