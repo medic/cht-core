@@ -4,7 +4,6 @@ var proxyquire = require('proxyquire').noCallThru(),
 
 var info = proxyquire('../../../../packages/kujua-sms/views/lib/appinfo', {
     'cookies': {},
-    'views/lib/app_settings': require('../../../../packages/kujua-sms/views/lib/app_settings'),
     'duality/utils': { getBaseURL: function() { return 'BASEURL'; } },
     'underscore': require('underscore')
 });

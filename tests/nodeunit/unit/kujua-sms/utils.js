@@ -4,7 +4,6 @@ var _ = require('underscore'),
 
 var info = proxyquire('../../../../packages/kujua-sms/views/lib/appinfo', {
     'cookies': {},
-    'views/lib/app_settings': require('../../../../packages/kujua-sms/views/lib/app_settings'),
     'duality/utils': { getBaseURL: function() {} },
     'underscore': _
 });
@@ -370,12 +369,6 @@ exports['function fieldsToHtml'] = function(test) {
 
     var out = utils.fieldsToHtml(keys, labels, example_doc);
     test.same(expected, out);
-    test.done();
-};
-
-exports['app_settings has defaults'] = function(test) {
-    test.expect(1);
-    test.same(Object.keys(utils.info).length > 10, true);
     test.done();
 };
 
