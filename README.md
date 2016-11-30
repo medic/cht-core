@@ -28,20 +28,22 @@ You will need to install the following:
 
 [Node.js](http://nodejs.org) latest
 
-[CouchDB](http://couchdb.apache.org) v1.6.1
+[CouchDB](http://couchdb.apache.org) v2.0.x
 
-[couchdb-lucene](https://github.com/rnewson/couchdb-lucene) v1.0.2 or greater
+[couchdb-lucene](https://github.com/rnewson/couchdb-lucene) that supports CouchDB 2.0. Currently this is just directly from `master`.
 
-### Setup CouchDB
+### Setup CouchDB on a single node
 
-Setup admin access:
+NB: multiple CouchDB nodes will be more complicated, but the general pattern outlined below will be the same.
+
+Setup admin access (note 5986 for single-node access):
 ```
-curl -X PUT http://localhost:5984/_node/couchdb@localhost/_config/admins/admin -d '"pass"'
+curl -X PUT http://localhost:5986/_config/admins/admin -d '"pass"'
 ```
 
 Reconfigure CouchDB to require authentication:
 ```
-curl -X PUT http://admin:pass@localhost:5984/_node/couchdb@localhost/_config/couch_httpd_auth/require_valid_user \
+curl -X PUT http://admin:pass@localhost:5986/_config/couch_httpd_auth/require_valid_user \
   -d '"true"' -H "Content-Type: application/json"
 ```
 
@@ -96,7 +98,7 @@ You should now see an identical welcome message at two different URLs:
 ```
 curl http://localhost:5985
 {"couchdb-lucene":"Welcome","version":"1.0.2"}
-curl http://admin:pass@localhost:5984/_fti
+curl http://admin:pass@localhost:5986/_fti
 {"couchdb-lucene":"Welcome","version":"1.0.2"}
 ```
 
@@ -258,7 +260,7 @@ To install Dashboard, first change the CouchDB's `secure_rewrites` configuration
 parameter to false:
 
 ```
-curl -X PUT http://admin:pass@localhost:5984/_node/couchdb@localhost/_config/httpd/secure_rewrites \
+curl -X PUT http://admin:pass@localhost:5986/_config/httpd/secure_rewrites \
   -d '"false"' -H "Content-Type: application/json"
 ```
 
