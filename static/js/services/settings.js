@@ -1,6 +1,3 @@
-var _ = require('underscore'),
-    defaults = require('views/lib/app_settings');
-
 (function () {
 
   'use strict';
@@ -23,7 +20,7 @@ var _ = require('underscore'),
           DB()
             .get('_design/medic-client')
             .then(function(ddoc) {
-              callback(null, _.defaults(ddoc.app_settings, defaults));
+              callback(null, ddoc.app_settings);
             })
             .catch(function(err) {
               if (err && err.status === 401) {
@@ -41,13 +38,15 @@ var _ = require('underscore'),
         var listeners = {};
 
         function emit(event, data) {
-          _.each(listeners[event], function(callback) {
-            try {
-              callback(data);
-            } catch(e) {
-              $log.error('Error triggering listener callback.', event, data, callback);
-            }
-          });
+          if (listeners[event]) {
+            listeners[event].forEach(function(callback) {
+              try {
+                callback(data);
+              } catch(e) {
+                $log.error('Error triggering listener callback.', event, data, callback);
+              }
+            });
+          }
         }
 
         var deferred = $q(function(resolve, reject) {
