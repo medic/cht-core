@@ -6,7 +6,6 @@ exports.getAppInfo = function() {
     var _ = _ || require('underscore'),
         url = url || require('url'),
         cookies = cookies || require('cookies'),
-        defaults = require('views/lib/app_settings'),
         app_settings = getSettings.call(this);
 
     // use mustache syntax
@@ -45,15 +44,6 @@ exports.getAppInfo = function() {
                     async: false //synchronous request
                 }).responseText
             ).settings;
-        }
-
-        // add defaults to settings if needed
-        for (var k in defaults) {
-            if (typeof defaults[k] !== 'undefined') {
-                if (typeof settings[k] === 'undefined') {
-                    settings[k] = defaults[k];
-                }
-            }
         }
 
         return settings;
@@ -178,15 +168,18 @@ exports.getAppInfo = function() {
         }
     }
 
-    var muvuku = url.parse(app_settings.muvuku_webapp_url, true);
-    muvuku.search = null;
-    muvuku.query._sync_url = require('duality/utils').getBaseURL() + '/add';
+    if (app_settings.muvuku_webapp_url) {
+        var muvuku = url.parse(app_settings.muvuku_webapp_url, true);
+        muvuku.search = null;
+        muvuku.query._sync_url = require('duality/utils').getBaseURL() + '/add';
 
-    if (app_settings.gateway_number) {
-        muvuku.query._gateway_num = app_settings.gateway_number;
+        if (app_settings.gateway_number) {
+            muvuku.query._gateway_num = app_settings.gateway_number;
+        }
+
+        app_settings.muvuku_webapp_url = url.format(muvuku);
     }
 
-    app_settings.muvuku_webapp_url = url.format(muvuku);
     app_settings.sha = this.kanso && this.kanso.git && this.kanso.git.commit;
     app_settings.translations = app_settings.translations || [];
     app_settings.translate = _.partial(translate, app_settings.translations);
