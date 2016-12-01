@@ -1,5 +1,3 @@
-var defaults = require('views/lib/app_settings');
-
 (function () {
 
   'use strict';
@@ -59,19 +57,6 @@ var defaults = require('views/lib/app_settings');
               name: permission.name,
               roles: makeRoleModel(permission)
             };
-          });
-
-          // add any missing permissions we know about
-          defaults.permissions.forEach(function(def) {
-            var configured = $scope.permissions.find(function(p) {
-              return p.name === def.name;
-            });
-            if (!configured) {
-              $scope.permissions.push({
-                name: def.name,
-                roles: makeRoleModel({ roles: [] })
-              });
-            }
           });
         })
         .catch(function(err) {
