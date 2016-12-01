@@ -1,0 +1,310 @@
+{
+  "locales": [
+    {
+      "code": "en",
+      "name": "English"
+    },
+    {
+      "code": "es",
+      "name": "Español (Spanish)"
+    },
+    {
+      "code": "fr",
+      "name": "Français (French)"
+    },
+    {
+      "code": "ne",
+      "name": "नेपाली (Nepali)"
+    },
+    {
+      "code": "sw",
+      "name": "Kiswahili (Swahili)"
+    }
+  ],
+  "locale": "en",
+  "locale_outgoing": "en",
+  "muvuku_webapp_url": "/medic-reporter/_design/medic-reporter/_rewrite/?_embed_mode=2",
+  "date_format": "DD-MMM-YYYY",
+  "reported_date_format": "DD-MMM-YYYY HH:mm:ss",
+  "forms_only_mode": false,
+  "default_responses": {
+    "start_date": ""
+  },
+  "district_admins_access_unallocated_messages": false,
+  "public_access": false,
+  "default_country_code": 1,
+  "gateway_number": "+13125551212",
+  "kujua-reporting": [
+    {
+      "code": "VPD",
+      "reporting_freq": "weekly"
+    }
+  ],
+  "anc_forms": {
+    "registration": "R",
+    "registrationLmp": "P",
+    "visit": "V",
+    "delivery": "D",
+    "flag": "F"
+  },
+  "schedule_morning_hours": 0,
+  "schedule_morning_minutes": 0,
+  "schedule_evening_hours": 23,
+  "schedule_evening_minutes": 0,
+  "synthetic_date": "",
+  "contact_display_short": "clinic.name",
+  "permissions": [
+    {
+      "name": "can_export_messages",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "analytics"
+      ]
+    },
+    {
+      "name": "can_export_forms",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "analytics"
+      ]
+    },
+    {
+      "name": "can_export_contacts",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_export_audit",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_export_feedback",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_export_server_logs",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_access_directly",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_view_analytics",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "analytics"
+      ]
+    },
+    {
+      "name": "can_view_data_records",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "analytics",
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_view_unallocated_data_records",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_view_users",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_edit",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_update_messages",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_update_users",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_update_people",
+      "roles": []
+    },
+    {
+      "name": "can_update_places",
+      "roles": []
+    },
+    {
+      "name": "can_create_records",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "data_entry",
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_access_gateway_api",
+      "roles": [
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_create_users",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_create_people",
+      "roles": []
+    },
+    {
+      "name": "can_create_places",
+      "roles": []
+    },
+    {
+      "name": "can_view_tasks",
+      "roles": []
+    },
+    {
+      "name": "can_view_tasks_tab",
+      "roles": []
+    },
+    {
+      "name": "can_configure",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_view_messages",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_messages_tab",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_reports",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_reports_tab",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_analytics",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_analytics_tab",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_contacts",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_contacts_tab",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_edit_profile",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_delete_reports",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_bulk_delete_reports",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_delete_contacts",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_delete_messages",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_delete_users",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    }
+  ]
+}

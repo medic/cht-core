@@ -3,18 +3,9 @@ var _ = require('underscore'),
     db = require('./db'),
     ddocExtraction = require('./ddoc-extraction'),
     translations = require('./translations'),
+    defaults = require('./config.default.json'),
     settings = {},
     translationCache = {};
-
-var defaults = {
-  anc_forms: {
-    registration: 'R',
-    registrationLmp: 'P',
-    visit: 'V',
-    delivery: 'D',
-    flag: 'F'
-  }
-};
 
 var getMessage = function(value, locale) {
 
@@ -71,8 +62,21 @@ var loadSettings = function(callback) {
       return callback(err);
     }
     settings = ddoc.app_settings;
+    var original = JSON.stringify(settings);
     _.defaults(settings, defaults);
-    callback();
+    // add any missing permissions
+    defaults.permissions.forEach(function(def) {
+      var configured = _.findWhere(settings.permissions, { name: def.name });
+      if (!configured) {
+        settings.permissions.push(def);
+      }
+    });
+    var changed = JSON.stringify(settings) !== original;
+    if (!changed) {
+      return callback();
+    }
+    console.log('Updating settings with new defaults');
+    db.updateSettings(settings, callback);
   });
 };
 
