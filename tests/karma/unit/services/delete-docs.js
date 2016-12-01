@@ -63,7 +63,7 @@ describe('DeleteDocs service', function() {
         { id: clinic._id }
       ]
     ));
-    return service(person)
+    service(person)
       .then(function() {
         done('expected error to be thrown');
       })
@@ -81,7 +81,7 @@ describe('DeleteDocs service', function() {
         phone: '+555'
       }
     };
-    return service([ clinic, clinic ])
+    service([ clinic, clinic ])
       .then(function() {
         done(new Error('expected error to be thrown'));
       })
@@ -108,7 +108,7 @@ describe('DeleteDocs service', function() {
       }
     };
     get.returns(KarmaUtils.mockPromise(null, clinic));
-    return service([ person, clinic ])
+    service([ person, clinic ])
       .then(function() {
         done(new Error('expected error to be thrown'));
       })

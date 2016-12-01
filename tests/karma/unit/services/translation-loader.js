@@ -28,7 +28,7 @@ describe('TranslationLoader service', function() {
     var options = { key: 'err' };
     var expected = { status: 503 };
     DBGet.returns(KarmaUtils.mockPromise(expected));
-    return service(options)
+    service(options)
       .then(function() {
         done(new Error('expected error to be thrown'));
       })
