@@ -28,7 +28,7 @@ describe('UserSettings service', function() {
 
   it('errors when no user ctx', function(done) {
     userCtx.returns();
-    return service()
+    service()
       .then(function() {
         done(new Error('expected error to be thrown'));
       })
@@ -70,7 +70,7 @@ describe('UserSettings service', function() {
     get
       .onCall(0).returns(KarmaUtils.mockPromise({ code: 404 }))
       .onCall(1).returns(KarmaUtils.mockPromise({ code: 503, message: 'nope' }));
-    return service()
+    service()
       .then(function() {
         done(new Error('expected error to be thrown'));
       })
