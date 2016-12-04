@@ -242,7 +242,9 @@ var exportTypes = {
             'Log export exited with non-zero status ' + code
           ));
         }
-        callback(null, createLogZip(rv));
+        createLogZip(rv).then(function(content) {
+          callback(null, content);
+        });
       });
       child.stdout.on('data', function(buffer) {
         rv.push(buffer);
@@ -256,7 +258,7 @@ var createLogZip = function(rv) {
   var filename = 'server-logs-' + moment().format('YYYYMMDD') + '.md';
   return new JSZip()
     .file(filename, Buffer.concat(rv))
-    .generate({ type: 'nodebuffer', compression: 'deflate' });
+    .generateAsync({ type: 'nodebuffer', compression: 'deflate' });
 };
 
 var normalizeResponse = function(doc, options) {

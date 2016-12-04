@@ -974,12 +974,15 @@ exports['get logs returns zip file'] = function(test) {
     test.equals(spawn.firstCall.args[1][0], '/boot/print-logs');
     test.equals(spawn.firstCall.args[2].stdio, 'pipe');
     test.equals(err, null);
-    var result = new JSZip()
-      .load(results)
-      .file('server-logs-' + moment().format('YYYYMMDD') + '.md')
-      .asText();
-    test.equals(result, 'helloworld');
-    test.done();
+    new JSZip()
+      .loadAsync(results)
+      .then(function(zip) {
+        return zip.file('server-logs-' + moment().format('YYYYMMDD') + '.md').async('string');
+      })
+      .then(function(result) {
+        test.equals(result, 'helloworld');
+        test.done();
+      });
   });
 
   child.stdout.on.firstCall.args[1](new Buffer('hello', 'utf-8'));
