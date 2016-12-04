@@ -50,7 +50,6 @@ module.exports = function(grunt) {
             'session': './packages/session/session',
             'kujua-sms/utils': './packages/kujua-sms/kujua-sms/utils',
             'views/lib/objectpath': './packages/kujua-sms/views/lib/objectpath',
-            'views/lib/app_settings': './packages/kujua-sms/views/lib/app_settings',
             'text!enketo-config': './static/js/enketo/config.json',
             'widgets': './static/js/enketo/widgets',
             './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding',
