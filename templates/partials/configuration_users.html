@@ -12,22 +12,22 @@
   <p ng-show="error" class="alert alert-danger" role="alert" translate>Error fetching users</p>
 
   <div class="row selection-heading" ng-hide="error">
-    <div class="col-xs-2" translate>User Name</div>
+    <div class="col-xs-1" translate>User Name</div>
     <div class="col-xs-2" translate>Full Name</div>
     <div class="col-xs-2" translate>User Type</div>
     <div class="col-xs-2" translate>Email Address</div>
-    <div class="col-xs-1" translate>Phone Number</div>
+    <div class="col-xs-2" translate>Phone Number</div>
     <div class="col-xs-1" translate>Facility</div>
     <div class="col-xs-1" translate>Contact</div>
     <div class="col-xs-1"></div>
   </div>
 
   <div class="row selection" ng-repeat="user in users" ng-click="editUser(user)">
-    <div class="col-xs-2">{{user.name}}</div>
+    <div class="col-xs-1">{{user.name}}</div>
     <div class="col-xs-2">{{user.fullname}}</div>
     <div class="col-xs-2"><span ng-if="user.roles[0]">{{'usertype.' + user.roles[0] | translate}}</span></div>
     <div class="col-xs-2">{{user.email}}</div>
-    <div class="col-xs-1">{{user.phone}}</div>
+    <div class="col-xs-2">{{user.phone}}</div>
     <div class="col-xs-1"><i class="fa fa-check" ng-if="user.facility_id"></i></div>
     <div class="col-xs-1"><i class="fa fa-check" ng-if="user.contact_id"></i></div>
     <div class="col-xs-1 delete">
