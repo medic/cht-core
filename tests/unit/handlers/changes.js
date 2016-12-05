@@ -51,13 +51,14 @@ exports['allows "can_access_directly" users direct access'] = function(test) {
 };
 
 exports['filters the changes to relevant ones'] = function(test) {
-  test.expect(28);
+  test.expect(29);
 
   var userCtx = { name: 'mobile', roles: [ 'district_admin' ] };
   var deletedId = 'abc';
   var allowedId = 'def';
   var unchangedId = 'klm';
   var subjectId = 'zyx';
+  var patientId = '59945';
   var userId = 'org.couchdb.user:mobile';
 
   var testReq = {
@@ -95,7 +96,7 @@ exports['filters the changes to relevant ones'] = function(test) {
   // returns the list of subjects the user is allowed to see
   db.medic.view.onCall(0).callsArgWith(3, null, {
     rows: [
-      { id: subjectId }
+      { id: subjectId, value: patientId }
     ]
   });
   // returns the list of doc ids the user is allowed to see
@@ -142,9 +143,10 @@ exports['filters the changes to relevant ones'] = function(test) {
         test.equals(db.medic.view.args[0][2].keys[0][0], 'facilityId');
         test.equals(db.medic.view.args[1][0], 'medic');
         test.equals(db.medic.view.args[1][1], 'docs_by_replication_key');
-        test.equals(db.medic.view.args[1][2].keys.length, 2);
+        test.equals(db.medic.view.args[1][2].keys.length, 3);
         test.equals(db.medic.view.args[1][2].keys[0], subjectId);
-        test.equals(db.medic.view.args[1][2].keys[1], '_all');
+        test.equals(db.medic.view.args[1][2].keys[1], patientId);
+        test.equals(db.medic.view.args[1][2].keys[2], '_all');
         test.done();
       });
     }

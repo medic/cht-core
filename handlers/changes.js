@@ -64,7 +64,13 @@ var bindSubjectIds = function(feed, callback) {
         if (err) {
           return callback(err);
         }
-        var subjectIds = _.pluck(result.rows, 'id');
+        var subjectIds = [];
+        result.rows.forEach(function(row) {
+          subjectIds.push(row.id);
+          if (row.value) {
+            subjectIds.push(row.value);
+          }
+        });
         subjectIds.push(ALL_KEY);
         if (config.get('district_admins_access_unallocated_messages') &&
             auth.hasAllPermissions(feed.userCtx, 'can_view_unallocated_data_records')) {
