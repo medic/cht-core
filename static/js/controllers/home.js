@@ -1,46 +1,50 @@
-var async = require('async');
+var filter = require('async/filter');
+var TABS = [
+  { state: 'messages.detail', perm: 'can_view_messages_tab'  },
+  { state: 'tasks.detail',    perm: 'can_view_tasks_tab'     },
+  { state: 'reports.detail',  perm: 'can_view_reports_tab'   },
+  { state: 'analytics',       perm: 'can_view_analytics_tab' },
+  { state: 'contacts.detail', perm: 'can_view_contacts_tab'  },
+  { state: 'configuration',   perm: 'can_configure'          }
+];
 
-(function () {
+angular.module('inboxControllers').controller('HomeCtrl',
+  function (
+    $log,
+    $state,
+    Auth
+  ) {
 
-  'use strict';
+    'use strict';
+    'ngInject';
 
-  var inboxControllers = angular.module('inboxControllers');
-
-  var tabs = [
-    { state: 'messages.detail', perm: 'can_view_messages_tab'  },
-    { state: 'tasks.detail',    perm: 'can_view_tasks_tab'     },
-    { state: 'reports.detail',  perm: 'can_view_reports_tab'   },
-    { state: 'analytics',       perm: 'can_view_analytics_tab' },
-    { state: 'contacts.detail', perm: 'can_view_contacts_tab'  },
-    { state: 'configuration',   perm: 'can_configure'          }
-  ];
-
-  inboxControllers.controller('HomeCtrl', 
-    ['$state', 'Auth',
-    function ($state, Auth) {
-
-      var findFirstAuthorizedTab = function(callback) {
-        async.filter(tabs, function(tab, callback) {
-          Auth(tab.perm)
-            .then(function() {
-              callback(true);
-            })
-            .catch(function() {
-              callback(false);
-            });
-        }, function(results) {
-          if (!results.length) {
-            return callback('error');
-          }
-          callback(results[0].state);
-        });
-      };
-
-      findFirstAuthorizedTab(function(state) {
-        $state.go(state, { }, { location: 'replace' });
+    var findFirstAuthorizedTab = function(callback) {
+      filter(TABS, function(tab, callback) {
+        Auth(tab.perm)
+          .then(function() {
+            callback(null, true);
+          })
+          .catch(function() {
+            callback(null, false);
+          });
+      }, function(err, results) {
+        if (err) {
+          return callback(err);
+        }
+        if (!results.length) {
+          return callback(new Error('No tabs available'));
+        }
+        callback(null, results[0].state);
       });
+    };
 
-    }
-  ]);
+    findFirstAuthorizedTab(function(err, state) {
+      if (err) {
+        $log.error(err);
+        state = 'error';
+      }
+      $state.go(state, { }, { location: 'replace' });
+    });
 
-}());
+  }
+);
