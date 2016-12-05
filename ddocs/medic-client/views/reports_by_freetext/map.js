@@ -8,7 +8,7 @@ function(doc) {
         key.length > 2 // Not too short
     ) {
       usedKeys.push(key);
-      emit(key, value);
+      emit([key], value);
     }
   };
 
@@ -41,7 +41,7 @@ function(doc) {
       });
     }
     if (doc.contact && doc.contact._id) {
-      emitMaybe('contact:' + doc.contact._id, doc.reported_date);
+      emitMaybe('contact:' + doc.contact._id.toLowerCase(), doc.reported_date);
     }
   }
 }

@@ -42,7 +42,7 @@
               <span>{{appointment.visits}}</span>
             </td>
             <td class="actions">
-              <a href="#" class="btn btn-link send-message" data-send-to="{{appointment.contact}}" ng-attr-title="{{'Send Message' | translate}}" ng-class="{'disabled': !appointment.contact.phone}"><i class="fa fa-envelope"></i></a>
+              <a href="#" class="btn btn-link send-message" data-send-to="{{appointment.contact._id}}" ng-attr-title="{{'Send Message' | translate}}" ng-class="{'disabled': !appointment.contact.phone}"><i class="fa fa-envelope"></i></a>
             </td>
           </tr>
         </tbody>
