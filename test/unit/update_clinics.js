@@ -50,10 +50,10 @@ exports['should update clinic by phone'] = function(test) {
     _rev: '6-e447d8801d7bed36614af92449586851',
     type: 'clinic',
     name: 'Clinic',
+    place_id: '1000',
     contact: {
       name: 'CCN',
-      phone: '+34567890123',
-      rc_code: '1000'
+      phone: '+34567890123'
     },
     parent: {
       _id: '9ed7d9c6095cc0e37e4d3e94d33866f1',
@@ -127,10 +127,10 @@ exports['should update clinic by refid and fix number'] = function(test) {
     _rev: '6-e447d8801d7bed36614af92449586851',
     type: 'clinic',
     name: 'Clinic',
+    place_id: '1000',
     contact: {
       name: 'CCN',
-      phone: '+34567890123',
-      rc_code: '1000'
+      phone: '+34567890123'
     },
     parent: {
       _id: '9ed7d9c6095cc0e37e4d3e94d33866f1',
