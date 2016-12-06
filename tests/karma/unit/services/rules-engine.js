@@ -376,6 +376,87 @@ describe('RulesEngine service', function() {
     });
   });
 
+  it('generates tasks using patient_id - #2986', function(done) {
+    var calculateDate = function(registration, days) {
+      var lmpWeeks = registration.form === 'P' ? registration.fields.last_menstrual_period : 4;
+      return moment(registration.reported_date)
+        .subtract(lmpWeeks, 'weeks')
+        .add(days, 'days')
+        .toISOString();
+    };
+
+    var dataRecord = {
+      _id: 1,
+      form: 'P',
+      reported_date: 1437618272360,
+      fields: {
+        patient_id: '12345',
+        last_menstrual_period: 10
+      }
+    };
+    var contact = {
+      _id: 2,
+      name: 'Jenny',
+      patient_id: '12345'
+    };
+    Search.onFirstCall().returns(KarmaUtils.mockPromise(null, [ dataRecord ]));
+    Search.onSecondCall().returns(KarmaUtils.mockPromise(null, [ contact ]));
+    Settings.returns(KarmaUtils.mockPromise(null, {
+      tasks: {
+        rules: rules,
+        schedules: schedules
+      }
+    }));
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+
+    var expectations = {
+      '1-visit-1': {
+        registration: dataRecord,
+        schedule: schedules[0].events[0],
+        reports: [ dataRecord ],
+        resolved: false
+      },
+      '1-visit-2': {
+        registration: dataRecord,
+        schedule: schedules[0].events[1],
+        reports: [ dataRecord ],
+        resolved: false
+      }
+    };
+
+    var service = getService();
+    var compile = sinon.spy(service._nools, 'compile');
+    var callbackCount = 0;
+
+    service.listen('test', 'task', function(err, actuals) {
+      actuals.forEach(function(actual) {
+        var expected = expectations[actual._id];
+        chai.expect(actual.type).to.equal(expected.schedule.type);
+        chai.expect(actual.date).to.equal(calculateDate(expected.registration, expected.schedule.days));
+        chai.expect(actual.title).to.deep.equal(expected.schedule.title);
+        chai.expect(actual.fields[0].label).to.deep.equal([{ content: 'Description', locale: 'en' }]);
+        chai.expect(actual.fields[0].value).to.deep.equal(expected.schedule.description);
+        chai.expect(actual.doc._id).to.equal(expected.registration._id);
+        chai.expect(actual.resolved).to.equal(expected.resolved);
+        chai.expect(actual.reports).to.deep.equal(expected.reports);
+        chai.expect(actual.contact).to.deep.equal(contact);
+        callbackCount++;
+        if (callbackCount === 2) {
+          chai.expect(Search.callCount).to.equal(2);
+          chai.expect(Settings.callCount).to.equal(1);
+          chai.expect(UserContact.callCount).to.equal(1);
+          chai.expect(compile.callCount).to.equal(1);
+          chai.expect(compile.args[0][0]).to.deep.equal(rules);
+          chai.expect(compile.args[0][1].name).to.equal('medic');
+          chai.expect(compile.args[0][1].scope).to.have.property('Utils');
+          chai.expect(compile.args[0][1].scope.user.name).to.equal('Jim');
+          compile.restore();
+          done();
+        }
+      });
+    });
+  });
+
   it('caches tasks', function(done) {
 
     Search.onFirstCall().returns(KarmaUtils.mockPromise(null, dataRecords));
