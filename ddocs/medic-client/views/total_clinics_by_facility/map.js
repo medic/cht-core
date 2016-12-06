@@ -6,16 +6,17 @@ function(doc) {
         hc_id = doc.parent && doc.parent._id,
         hc_name = doc.parent && doc.parent.name,
         cl_name = doc.name,
-        phone = doc.contact && doc.contact.phone;
+        phone = doc.contact && doc.contact.phone,
+        placeId = doc.place_id || (doc.contact && doc.contact.rc_code);
 
     if (!cl_name && doc.contact) {
       if (doc.contact.name) {
         cl_name = doc.contact.name;
-        if (doc.contact.rc_code) {
-          cl_name += ' ' + doc.contact.rc_code;
+        if (placeId) {
+          cl_name += ' ' + placeId;
         }
       } else {
-        cl_name = doc.contact.rc_code;
+        cl_name = placeId;
       }
     }
 
