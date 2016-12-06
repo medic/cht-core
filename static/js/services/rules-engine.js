@@ -55,7 +55,11 @@ var nools = require('nools'),
         dataRecords.forEach(function(report) {
           var factId = getContactId(report);
           var fact = _.find(facts, function(fact) {
-            return fact.contact && fact.contact._id === factId;
+            return fact.contact && (
+              fact.contact._id === factId ||
+              fact.contact.patient_id === factId ||
+              fact.contact.place_id === factId
+            );
           });
           if (!fact) {
             fact = new Contact({ reports: [] });
