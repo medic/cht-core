@@ -298,8 +298,7 @@ var incomingReport = {
         _rev: '11-2a4c176bca6f6729dbdeabdc7e391ba4',
         type: 'person',
         name: '_Gareth',
-        phone: '+64274622666',
-        rc_code: '123'
+        phone: '+64274622666'
       },
       parent: {
         _id: 'eeb17d6d-5dde-c2c0-48d80e8c2049f0f3',
@@ -324,6 +323,101 @@ var incomingReport = {
             phone: '+64274622664',
             _id: '6ff3ddbfce1cea75213bd6ff2d04fe3e',
             _rev: '1-1ad9c9c81c54507e2788724169c11a93'
+          },
+          parent: null
+        }
+      }
+    }
+  },
+  errors: [],
+  tasks: [
+    {
+      messages: [
+        {
+          to: '+64274622666',
+          message: 'Thank you _Gareth, record for archie (19446) has been reactivated. Notifications regarding this patient will resume.',
+          uuid: '944f8526-d0fc-471f-a7f8-bb12f72f09c3'
+        }
+      ],
+      state: 'pending',
+      state_history: [
+        {
+          state: 'pending',
+          timestamp: '2015-04-21T23:38:49.103Z'
+        }
+      ]
+    }
+  ],
+  reported_date: 1429659528565,
+  sms_message: {
+    message_id: '55849',
+    sent_timestamp: '1429659528565',
+    message: '1!ON!19446#on',
+    from: '+64274622666',
+    type: 'sms_message',
+    form: 'ON',
+    locale: 'en'
+  },
+  patient_id: '19446',
+  notes: 'on',
+  transitions: {
+    default_responses: {
+      last_rev: 2,
+      seq: 1832,
+      ok: true
+    },
+    update_sent_by: {
+      last_rev: 2,
+      seq: 1832,
+      ok: true
+    },
+    update_clinics: {
+      last_rev: 2,
+      seq: 1832,
+      ok: true
+    },
+    update_notifications: {
+      last_rev: 9,
+      seq: 1854,
+      ok: true
+    }
+  },
+  sent_by: '_Gareth'
+};
+
+var incomingReportWithoutContactId = {
+  _id: 'cafb2761e5a44ecc9d4559f73f6a9994',
+  _rev: '10-20935d2ab5e1509b0fe658d59b5bef59',
+  type: 'data_record',
+  from: '+64274622666',
+  form: 'ON',
+  related_entities: {
+    clinic: {
+      _id: clinic._id,
+      _rev: '15-23cbff19fc822b8c171064ee639c99f9',
+      type: 'clinic',
+      name: 'Aelhedge',
+      contact: {
+        name: '_Gareth',
+        phone: '+64274622666'
+      },
+      parent: {
+        _id: 'eeb17d6d-5dde-c2c0-48d80e8c2049f0f3',
+        _rev: '3-6f2ec37b5d16959d1d66db19290ad099',
+        type: 'health_center',
+        name: 'Irondeer',
+        contact: {
+          name: 'Stefani Shisler',
+          phone: '+2825898434',
+        },
+        parent: {
+          _id: 'eeb17d6d-5dde-c2c0-183a1e2943958f44',
+          _rev: '3-86259bebde3347499894527a05053d6e',
+          type: 'district_hospital',
+          name: 'District 3',
+          contact: {
+            type: 'person',
+            name: 'Joan Rivers',
           },
           parent: null
         }
@@ -531,7 +625,7 @@ exports['run migrates incoming message'] = function(test) {
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
   var getDoc = sinon.stub(db.medic, 'get');
   getDoc.onCall(0).callsArgWith(1, null, clone(incomingMessage));
-  getDoc.onCall(1).callsArgWith(1, null, contact);
+  getDoc.onCall(1).callsArgWith(1, null, clone(contact));
   var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
   migration.run(function(err) {
     test.equals(err, undefined);
@@ -551,7 +645,7 @@ exports['run migrates incoming report'] = function(test) {
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
   var getDoc = sinon.stub(db.medic, 'get');
   getDoc.onCall(0).callsArgWith(1, null, clone(incomingReport));
-  getDoc.onCall(1).callsArgWith(1, null, contact);
+  getDoc.onCall(1).callsArgWith(1, null, clone(contact));
   var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
   migration.run(function(err) {
     test.equals(err, undefined);
@@ -562,6 +656,28 @@ exports['run migrates incoming report'] = function(test) {
     test.equals(saveDoc.callCount, 1);
     test.equals(saveDoc.args[0][0].related_entities, null);
     test.deepEqual(saveDoc.args[0][0].contact, contact);
+    test.done();
+  });
+};
+
+exports['run migrates incoming report with no contact id - #2970'] = function(test) {
+  test.expect(10);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
+  var getDoc = sinon.stub(db.medic, 'get');
+  getDoc.onCall(0).callsArgWith(1, null, clone(incomingReportWithoutContactId));
+  getDoc.onCall(1).callsArgWith(1, null, clone(clinic));
+  var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
+  migration.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(getView.callCount, 1);
+    test.equals(getDoc.callCount, 2);
+    test.equals(getDoc.args[0][0], 'a');
+    test.equals(getDoc.args[1][0], clinic._id);
+    test.equals(saveDoc.callCount, 1);
+    test.equals(saveDoc.args[0][0].related_entities, null);
+    test.equals(saveDoc.args[0][0].contact.phone, clinic.contact.phone);
+    test.equals(saveDoc.args[0][0].contact.name, clinic.contact.name);
+    test.deepEqual(saveDoc.args[0][0].contact.parent, clinic);
     test.done();
   });
 };

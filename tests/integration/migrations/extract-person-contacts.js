@@ -64,6 +64,67 @@ describe('extract-person-contacts migration', function() {
     });
   });
 
+  it('should retain the rc code - #2970', function() {
+    // given
+    return utils.initDb([
+      {
+        _id: 'abc',
+        type: 'district_hospital',
+        name: 'myfacility',
+        contact: {
+          name: 'Alice',
+          phone: '+123',
+          rc_code: 'rc1'
+        },
+      },
+    ])
+    .then(function() {
+
+      // when
+      return utils.runMigration('extract-person-contacts');
+
+    })
+    .then(function() {
+
+      // expect
+      return utils.assertDb([
+        {
+          _id: 'abc',
+          type: 'district_hospital',
+          name: 'myfacility',
+          place_id: 'rc1',
+          contact: {
+            _id: ANY_STRING,
+            _rev: ANY_STRING,
+            type: 'person',
+            name: 'Alice',
+            phone: '+123',
+            reported_date: ANY_NUMBER,
+            parent: {
+              _id: 'abc',
+              _rev: ANY_STRING,
+              type: 'district_hospital',
+              name: 'myfacility',
+            },
+          },
+        },
+        {
+          name: 'Alice',
+          type: 'person',
+          phone: '+123',
+          reported_date: ANY_NUMBER,
+          parent: {
+            _id: 'abc',
+            _rev: ANY_STRING,
+            type: 'district_hospital',
+            name: 'myfacility',
+          },
+        },
+      ]);
+
+    });
+  });
+
   it('should not break if parent of contact not found', function() {
     // given
     return utils.initDb([

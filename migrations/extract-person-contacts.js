@@ -81,34 +81,36 @@ var createPerson = function(id, callback) {
 
   // Create a new person doc to represent the contact.
   var createPerson = function(facilityId, oldContact, callback) {
-    people.createPerson(
-      {
-        name: oldContact.name,
-        phone: oldContact.phone,
-        place: facilityId
-      },
-      function(err, result) {
-        if (err) {
-          restoreContact(facilityId, oldContact, function() {
-            callback(new Error('Could not create person for facility ' + facilityId + ': ' + JSON.stringify(err, null, 2)));
-          });
-          return;
-        }
-        callback(null, result.id);
+    var person = {
+      name: oldContact.name,
+      phone: oldContact.phone,
+      place: facilityId
+    };
+    people.createPerson(person, function(err, result) {
+      if (err) {
+        restoreContact(facilityId, oldContact, function() {
+          callback(new Error('Could not create person for facility ' + facilityId + ': ' + JSON.stringify(err, null, 2)));
+        });
+        return;
+      }
+      callback(null, result.id);
     });
   };
 
   // Re-set the contact field in the facility : set it to the contents of the newly created `person` doc.
   var resetContact = function(facilityId, oldContact, personId, callback) {
-    places.updatePlace(facilityId, { contact: personId },
-      function(err) {
-        if (err) {
-          restoreContact(facilityId, oldContact, function() {
-            callback(new Error('Failed to update contact on facility ' + facilityId + ': ' + JSON.stringify(err, null, 2)));
-          });
-          return;
-        }
-        callback();
+    var updates = { contact: personId };
+    if (oldContact.rc_code) {
+      updates.place_id = oldContact.rc_code;
+    }
+    places.updatePlace(facilityId, updates, function(err) {
+      if (err) {
+        restoreContact(facilityId, oldContact, function() {
+          callback(new Error('Failed to update contact on facility ' + facilityId + ': ' + JSON.stringify(err, null, 2)));
+        });
+        return;
+      }
+      callback();
     });
   };
 

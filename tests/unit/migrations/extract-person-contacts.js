@@ -188,10 +188,10 @@ exports['run updates contact and parent'] = function(test) {
 
   // Get doc for parent update
   getDoc.onCall(0).callsArgWith(1, null, {
-      _id: 'a',
-      contact: { name: 'name', 'phone': 'phone'},
-      parent: {_id: 'b', contact: { name: 'name1', 'phone': 'phone1' }}
-    });
+    _id: 'a',
+    contact: { name: 'name', 'phone': 'phone'},
+    parent: {_id: 'b', contact: { name: 'name1', 'phone': 'phone1' }}
+  });
   // Get parent doc
   getDoc.onCall(1).callsArgWith(1, null, { _id: 'b', contact: {}, newKey: 'newValue' });
   getDoc.onCall(2).callsArgWith(1, null, { _id: 'b', contact: {}, newKey: 'newValue' });
@@ -200,12 +200,11 @@ exports['run updates contact and parent'] = function(test) {
   // Update doc : update the parent field
   updatePlace.onCall(0).callsArgWith(2, null);
   // Get doc for contact update
-  getDoc.onCall(3).callsArgWith(1, null,
-    {
-      _id: 'a',
-      contact: { name: 'name', 'phone': 'phone'},
-      parent: { _id: 'b', contact: {_id: 'f'}}
-    });
+  getDoc.onCall(3).callsArgWith(1, null, {
+    _id: 'a',
+    contact: { name: 'name', phone: 'phone', rc_code: 'oldRcCode' },
+    parent: { _id: 'b', contact: {_id: 'f'}}
+  });
   // Update doc : deleted contact
   insertDoc.onCall(1).callsArgWith(1, null);
   // Create person doc
@@ -227,29 +226,30 @@ exports['run updates contact and parent'] = function(test) {
     test.equals(insertDoc.callCount, 2);
     test.equals(updatePlace.callCount, 2);
     // Parent was deleted, then reset.
-    test.deepEqual(insertDoc.firstCall.args[0],
-      {
-        _id: 'a',
-        contact: { name: 'name', phone: 'phone'},
-      });
+    test.deepEqual(insertDoc.firstCall.args[0], {
+      _id: 'a',
+      contact: { name: 'name', phone: 'phone'},
+    });
     test.equals(updatePlace.firstCall.args[0], 'a');
     test.deepEqual(updatePlace.firstCall.args[1], { parent: 'b'});
 
     // Contact was deleted, then reset.
-    test.deepEqual(insertDoc.secondCall.args[0],
-      {
-        _id: 'a',
-        parent: { _id: 'b', contact: {_id: 'f'}}
-      });
+    test.deepEqual(insertDoc.secondCall.args[0], {
+      _id: 'a',
+      parent: { _id: 'b', contact: {_id: 'f'}}
+    });
     test.equals(updatePlace.secondCall.args[0], 'a');
-    test.deepEqual(updatePlace.secondCall.args[1], { contact: 'c'});
+    test.deepEqual(updatePlace.secondCall.args[1], {
+      contact: 'c',
+      place_id: 'oldRcCode'
+    });
     // Contact created.
     test.equals(createPerson.callCount, 1);
     test.deepEqual(createPerson.firstCall.args[0], {
-        name: 'name',
-        phone: 'phone',
-        place: 'a'
-      });
+      name: 'name',
+      phone: 'phone',
+      place: 'a'
+    });
 
     test.done();
   });

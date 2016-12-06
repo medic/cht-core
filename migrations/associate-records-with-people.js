@@ -79,16 +79,12 @@ var migrateIncoming = function(doc, callback) {
     // already migrated
     return callback();
   }
-  var contactId = doc.related_entities &&
-      doc.related_entities.clinic &&
-      doc.related_entities.clinic.contact &&
-      doc.related_entities.clinic.contact._id;
-  if (!contactId) {
-    // no resolved entity
+  var clinic = doc.related_entities && doc.related_entities.clinic;
+  if (!clinic) {
     return callback();
   }
-  var clinicId = doc.related_entities.clinic._id;
-  getContact(contactId, clinicId, function(err, contact) {
+  var contactId = clinic.contact && clinic.contact._id;
+  getContact(contactId, clinic._id, function(err, contact) {
     if (err) {
       return callback(err);
     }

@@ -5,7 +5,7 @@ var people = require('./people'),
     utils = require('./utils'),
     db = require('../db');
 
-var PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact'];
+var PLACE_EDITABLE_FIELDS = ['name', 'parent', 'contact', 'place_id'];
 
 var getPlace = function(id, callback) {
   db.medic.get(id, function(err, doc) {
@@ -152,7 +152,7 @@ var createPlaces = function(place, callback) {
  */
 var updateFields = function(place, data) {
   var ignore = [];
-  _.forEach(PLACE_EDITABLE_FIELDS , function(key) {
+  _.forEach(PLACE_EDITABLE_FIELDS, function(key) {
     if (!_.isUndefined(data[key]) && ignore.indexOf(key) === -1) {
       place[key] = data[key];
     }
