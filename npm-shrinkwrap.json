@@ -282,9 +282,9 @@
       "resolved": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cd1788f38fa5d9ea846d9de1168322ec25002040"
     },
     "enketo-core": {
-      "version": "4.16.0",
-      "from": "enketo-core@>=4.16.0 <5.0.0",
-      "resolved": "http://registry.npmjs.org/enketo-core/-/enketo-core-4.16.0.tgz"
+      "version": "4.5.5",
+      "from": "enketo-core@>=4.5.5 <5.0.0",
+      "resolved": "http://registry.npmjs.org/enketo-core/-/enketo-core-4.5.5.tgz"
     },
     "enketo-xpathjs": {
       "version": "1.3.3",
@@ -471,9 +471,9 @@
       "resolved": "http://registry.npmjs.org/jodid25519/-/jodid25519-1.0.2.tgz"
     },
     "jquery": {
-      "version": "3.1.1",
-      "from": "jquery@>=3.1.1 <4.0.0",
-      "resolved": "http://registry.npmjs.org/jquery/-/jquery-3.1.1.tgz"
+      "version": "2.1.4",
+      "from": "jquery@>=2.1.4 <4.0.0",
+      "resolved": "http://registry.npmjs.org/jquery/-/jquery-2.1.4.tgz"
     },
     "jquery-mousewheel": {
       "version": "3.1.13",
