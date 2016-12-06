@@ -2,11 +2,12 @@
 
 ## 2.9.0
 
-_December 2016_
+_December 9, 2016_
 
 ### Features
 
 - Redesign of People tab to introduce patient centric workflows.
+- Create Task and Target based on reports using short `patient_id` format. Issue: #2986
 - Calculate Z-Score within app workflow form. Issue: #2915
 - Transitions do not run for XForms. Issue: #2864
 - CHWs should not be able to edit their own area. Issue: #2844
@@ -21,8 +22,27 @@ _December 2016_
 - Initial replication feedback. Issue: #2279
 - Make it easy to add translation keys. Issue: #1333
 
+### UI/UX improvements
+
+- Show parent place after deleting a place/person. Issue: #2936
+- Clean up labels and translations. Issue: #2888
+- First load: briefly displays "No people found" on the people and places tab even if you have contacts. Issue: #2835
+- Add icons to forms. Issue: #2794
+- Forms in Submit Report menu aren't sorted. Issue: #2760
+- Reported Date is show in ms since epoch. Issue: #2699
+- Add basic sync status to about page. Issue: #2415
+- Display 'your place' card upon login. Issue: #2342
+- Only show places you directly manage in LHS unless searching. Issue: #2339
+- Lock 'Your Place' at top of left pane. Issue: #2337
+- Remove all filters in Contacts. Issue: #2336
+- Display "disabled for admins" message in tasks and targets page. Issue: #2292
+
 ### Bug fixes
 
+- Allow replication of JSON reports. Issue: #2979
+- On upgrade existing reports are not associated to person/place. Issue: #2970
+- Queries from ANC Analytics do not work. Issue: #2975
+- Set new permissions to the application default when updating. Issue: #2951
 - `db-object` fields show as editable when `readonly="true()"`. Issue: #2910
 - Calling the `doc_summaries_by_id` view results in an audit record being created. Issue: #2895
 - Can't create new person as primary contact to existing place. Issue: #2884
@@ -130,21 +150,6 @@ _December 2016_
 - Verify/Unverify button falls out of sync with left pane after being clicked. Issue: #1939
 - Place contact should be a child of the place. Issue: #1710
 - Default "New Person" form doesn't allow editing the parent place. Issue: #2704
-
-### UI/UX improvements
-
-- Show parent place after deleting a place/person. Issue: #2936
-- Clean up labels and translations. Issue: #2888
-- First load: briefly displays "No people found" on the people and places tab even if you have contacts. Issue: #2835
-- Add icons to forms. Issue: #2794
-- Forms in Submit Report menu aren't sorted. Issue: #2760
-- Reported Date is show in ms since epoch. Issue: #2699
-- Add basic sync status to about page. Issue: #2415
-- Display 'your place' card upon login. Issue: #2342
-- Only show places you directly manage in LHS unless searching. Issue: #2339
-- Lock 'Your Place' at top of left pane. Issue: #2337
-- Remove all filters in Contacts. Issue: #2336
-- Display "disabled for admins" message in tasks and targets page. Issue: #2292
 
 ### Performance improvements
 
