@@ -48,7 +48,7 @@ exports.parse = function(def, doc) {
             return;
         }
         var label = sms_utils.info.getMessage(field.labels.tiny);
-        for (var i = 0; i < labels.length; i++) {
+        for (var i = 0; i < labels.length && i < vals.length; i++) {
             if (labels[i].match(new RegExp('^' + label + '$', 'i'))) {
                 obj[key] = vals[i].replace(/\\#/g, '#');
             }
