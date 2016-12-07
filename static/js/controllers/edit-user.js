@@ -32,12 +32,6 @@
           });
         });
 
-      var typeMap = {
-        clinic: $translate.instant('Clinic'),
-        district_hospital: $translate.instant('District Hospital'),
-        health_center: $translate.instant('Health Center')
-      };
-
       var rolesMap = {
         'national-manager': ['kujua_user', 'data_entry', 'national_admin'],
         'district-manager': ['kujua_user', 'data_entry', 'district_admin'],
@@ -91,10 +85,6 @@
         Select2Search($('#edit-user-profile [name=contact]'), 'person');
         Select2Search($('#edit-user-profile [name=facility]'), ContactSchema.getPlaceTypes());
       });
-
-      $scope.typeName = function(facility) {
-        return typeMap[facility.type];
-      };
 
       var validatePassword = function() {
         var newUser = !$scope.editUserModel.id;
@@ -175,6 +165,8 @@
             .catch(function(err) {
               $scope.setError(err, 'Error updating user');
             });
+        } else {
+          $scope.setError();
         }
       };
 
@@ -184,6 +176,8 @@
         $scope.errors = {};
         if (validateName()) {
           saveEdit('#edit-user-settings', $scope.editUserModel.id, getSettingsUpdates(true));
+        } else {
+          $scope.setError();
         }
       };
 
@@ -193,6 +187,8 @@
         $scope.errors = {};
         if (validatePassword() && validateName()) {
           saveEdit('#edit-user-profile', $scope.editUserModel.id, getSettingsUpdates(), getUserUpdates());
+        } else {
+          $scope.setError();
         }
       };
 
