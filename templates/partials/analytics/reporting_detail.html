@@ -134,7 +134,7 @@
         <i class="fa fa-caret-down" ng-show="expandedClinic === clinic.id"></i>
         <i class="fa fa-caret-right" ng-show="expandedClinic !== clinic.id"></i>
         {{clinic.name}}
-        <button class="btn btn-link btn-sm send-message" ng-attr-data-send-to="{{clinic.phone}}"><i class="fa fa-envelope"></i></button>
+        <button class="btn btn-link btn-sm send-message" ng-attr-data-send-to="{{clinic.id}}" ng-if="clinic.phone"><i class="fa fa-envelope"></i></button>
       </div>
       <div class="col-sm-1">{{clinic.valid_percent}}%</div>
       <div class="col-sm-1">
