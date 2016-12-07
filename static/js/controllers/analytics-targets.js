@@ -1,33 +1,32 @@
-(function () {
+angular.module('inboxControllers').controller('AnalyticsTargetsCtrl',
+  function (
+    $log,
+    $scope,
+    $timeout,
+    TargetGenerator
+  ) {
 
-  'use strict';
+    'use strict';
+    'ngInject';
 
-  var inboxControllers = angular.module('inboxControllers');
+    $scope.targets = [];
 
-  inboxControllers.controller('AnalyticsTargetsCtrl',
-    ['$scope', '$log', '$timeout', 'TargetGenerator',
-    function ($scope, $log, $timeout, TargetGenerator) {
-
-      $scope.targets = [];
-
-      TargetGenerator(function(err, targets) {
-        if (err) {
-          return $log.error('Error fetching targets', err);
+    TargetGenerator(function(err, targets) {
+      if (err) {
+        return $log.error('Error fetching targets', err);
+      }
+      targets.forEach(function(target) {
+        if (!target.count) {
+          target.count = 0;
         }
-        targets.forEach(function(target) {
-          if (!target.count) {
-            target.count = 0;
-          }
-          // Width of the progress bar to display.
-          target.displayProgress = Math.round(target.count * 100 / target.goal);
-        });
-        // timeout to force digest
-        $timeout(function() {
-          $scope.targets = targets;
-        });
+        // Width of the progress bar to display.
+        target.displayProgress = Math.round(target.count * 100 / target.goal);
       });
+      // timeout to force digest
+      $timeout(function() {
+        $scope.targets = targets;
+      });
+    });
 
-    }
-  ]);
-
-}());
+  }
+);
