@@ -222,7 +222,7 @@ exports['when recent form condition is true send message'] = function(test) {
 };
 
 exports['handle missing condition reference gracefully'] = function(test) {
-        
+
     sinon.stub(transition, '_getConfig').returns({
         '0': {
             form: 'STCK',
@@ -243,7 +243,7 @@ exports['handle missing condition reference gracefully'] = function(test) {
     };
     test.expect(2);
     transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
-        test.equals(err, 'Cannot read property \'s1_avail\' of undefined');
+        test.ok(err.match(/Cannot read property 's1_avail' of undefined/));
         test.equals(changed, false);
         test.done();
     });

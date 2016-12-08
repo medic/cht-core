@@ -85,8 +85,7 @@ exports['applyTransition creates transitions property'] = function(test) {
     });
 };
 
-exports['applyTransition handles errors'] = function(test) {
-    test.expect(5);
+exports['applyTransition adds errors to doc but does not return errors'] = function(test) {
     var doc = {
         _rev: '1'
     };
@@ -108,11 +107,9 @@ exports['applyTransition handles errors'] = function(test) {
         transition: transition,
         audit: audit
     }, function(err, changed) {
-        test.equals(err.message, 'oops');
-        test.equals(changed, undefined);
-        // ok is set to false
-        test.ok(doc.transitions.x.ok === false);
-        // one error is created on doc
+        test.ok(!err);
+        test.ok(!changed);
+        test.ok(_.isUndefined(doc.transitions)); // don't save the transition or it won't run next time
         test.ok(doc.errors.length === 1);
         // error message contains error
         test.ok(doc.errors[0].message.match(/oops/));
