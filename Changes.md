@@ -39,6 +39,7 @@ _December 9, 2016_
 
 ### Bug fixes
 
+- Rerun transitions on change if the previous run failed. Issue: #2978
 - Allow replication of JSON reports. Issue: #2979
 - On upgrade existing reports are not associated to person/place. Issue: #2970
 - Queries from ANC Analytics do not work. Issue: #2975
