@@ -1043,7 +1043,7 @@
                                         "goal": {
                                             "title": "Goal value",
                                             "type": "integer",
-                                            "description": "E.g. for a goal of 5 new patients, enter 5. For 75% of safe deliveries, enter 75."
+                                            "description": "E.g. for a goal of 5 new patients, enter 5. For 75% of safe deliveries, enter 75. To have no goal, enter -1."
                                         }
                                     }
                                 }
