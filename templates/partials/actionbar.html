@@ -29,7 +29,7 @@
             <span class="fa fa-plus"></span>
             <p translate>Submit Report</p>
           </a>
-          <ul class="dropdown-menu" ng-show="nonContactForms.length">
+          <ul class="dropdown-menu mm-dropdown-menu" ng-show="nonContactForms.length">
             <li ng-repeat="form in nonContactForms | orderBy: 'title | translateFrom' track by (form._id || form.code)">
               <a ng-show="form.title" ui-sref="reports.add({ formId: form.internalId })">
                 <span ng-bind-html="form.icon | resourceIcon"></span>
@@ -120,9 +120,13 @@
             <span class="fa fa-plus"></span>
             <p translate>action.report.add</p>
           </a>
-          <ul class="dropdown-menu" ng-hide="(!actionBar.right.relevantForms || !actionBar.right.relevantForms.length)">
+          <ul class="dropdown-menu mm-dropdown-menu" ng-hide="(!actionBar.right.relevantForms || !actionBar.right.relevantForms.length)">
             <li ng-repeat="form in actionBar.right.relevantForms">
-              <a ui-sref="contacts.report({ id: actionBar.right.selected[0]._id, formId: form.internalId })">{{form.title | translateFrom}}</a>
+              <a ui-sref="contacts.report({ id: actionBar.right.selected[0]._id, formId: form.internalId })">
+                <span ng-bind-html="form.icon | resourceIcon"></span>
+                {{form.title | translateFrom}}
+                <span class="pull-right fa fa-chevron-right"></span>
+              </a>
             </li>
           </ul>
           
