@@ -1,5 +1,11 @@
 # Medic Mobile Release Notes
 
+## 2.8.5
+
+### December 15, 2016
+
+- No changes, only a bump in version number to trigger a new release.
+
 ## 2.8.4
 
 ### November 30, 2016
