@@ -1,17 +1,5 @@
 # Medic Mobile Release Notes
 
-## 0.4.14
-
-### Dec 16, 2016
-
-- Bug fix for medic-gateway sending scheduled messages. Issue: #2535
-
-## 2.8.5
-
-### December 15, 2016
-
-- No changes, only a bump in version number to trigger a new release.
-
 ## 2.9.0
 
 _December 9, 2016_
@@ -184,6 +172,12 @@ _December 9, 2016_
 - Store translations in a separate doc. Issue: #1706
 - Remove empty parents migration scalability. Issue: #2629
 
+## 2.8.5
+
+_December 15, 2016_
+
+- No changes, only a bump in version number to trigger a new release.
+
 ## 2.8.4
 
 _November 30, 2016_
@@ -342,6 +336,12 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 - Added Tasks feature for rich event scheduling.
 - Forms can now be provided in XForm format for rich form UIs.
 - Added a configurable Target analytics module.
+
+## 0.4.14
+
+_December 16, 2016_
+
+- Bug fix for medic-gateway sending scheduled messages. Issue: #2535
 
 ## 0.4.13
 
