@@ -1,5 +1,17 @@
 # Medic Mobile Release Notes
 
+## 0.4.14
+
+### Dec 16, 2016
+
+- Bug fix for medic-gateway sending scheduled messages. Issue: #2535
+
+## 2.8.5
+
+### December 15, 2016
+
+- No changes, only a bump in version number to trigger a new release.
+
 ## 2.9.0
 
 _December 9, 2016_
