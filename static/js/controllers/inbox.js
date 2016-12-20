@@ -296,10 +296,7 @@ var feedback = require('../modules/feedback'),
           return $log.error('Error fetching form definitions', err);
         }
         Enketo.clearXmlCache();
-        JsonForms()
-          .then(function(jsonForms) {
-            $scope.nonContactForms = xForms.concat(jsonForms);
-          });
+        $scope.nonContactForms = xForms;
       });
 
       $scope.showMedicReporter = function(jsonformCode) {
