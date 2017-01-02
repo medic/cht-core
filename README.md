@@ -203,16 +203,29 @@ All text labels in the app are localized. See [here](https://github.com/medic/me
 
 
 ## Tests
+Check out the [Gruntfile](blob/master/Gruntfile.js) for all the tests you can run.
 
-To run precommit tests:
+### Unit tests 
+They live in [/tests/karma](tree/master/tests/karma). Run them with grunt : `grunt unit_continuous`
+
+### End to End tests
+They live in [tests/protractor](tree/master/tests/protractor). To run them:
 
 1. Update Webdriver: `./node_modules/.bin/webdriver-manager update`
 2. Start Webdriver: `./node_modules/.bin/webdriver-manager start`
-3. Run tests: `grunt test`
+3. Run tests: `grunt e2e-chrome`
 
+### Api integration tests
+`grunt api_e2e`
+
+### Kanso tests
 Some kanso tests are run in-browser; you can run them manually if you browse to `/medic/_design/medic/_rewrite/test`.
 
-### Other deployment steps
+### Integration tests
+[Travis](https://travis-ci.org/medic/medic-webapp) runs `grunt ci` every time some new code is pushed to github.
+
+
+# Other deployment steps
 
 ## Run on Medic OS
 
