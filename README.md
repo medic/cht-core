@@ -203,13 +203,13 @@ All text labels in the app are localized. See [here](https://github.com/medic/me
 
 
 ## Tests
-Check out the [Gruntfile](blob/master/Gruntfile.js) for all the tests you can run.
+Check out the [Gruntfile](Gruntfile.js) for all the tests you can run.
 
 ### Unit tests 
-They live in [/tests/karma](tree/master/tests/karma). Run them with grunt : `grunt unit_continuous`
+They live in [/tests/karma](tests/karma). Run them with grunt : `grunt unit_continuous`
 
 ### End to End tests
-They live in [tests/protractor](tree/master/tests/protractor). To run them:
+They live in [tests/protractor](tests/protractor). To run them:
 
 1. Update Webdriver: `./node_modules/.bin/webdriver-manager update`
 2. Start Webdriver: `./node_modules/.bin/webdriver-manager start`
