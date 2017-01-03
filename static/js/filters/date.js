@@ -48,11 +48,14 @@ var _ = require('underscore'),
   };
 
   var getTaskDate = function(task) {
-    if (task.state === 'scheduled') {
-      return task.due;
-    }
-    if (task.state_history && task.state_history.length) {
-      return task.state_history[task.state_history.length - 1].timestamp;
+    var current = task.state_history &&
+                  task.state_history.length &&
+                  task.state_history[task.state_history.length - 1];
+    if (current) {
+      if (current.state === 'scheduled') {
+        return task.due;
+      }
+      return current.timestamp;
     }
     return task.due || task.reported_date;
   };
