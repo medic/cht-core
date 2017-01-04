@@ -31,13 +31,9 @@
           </a>
           <ul class="dropdown-menu mm-dropdown-menu" ng-show="nonContactForms.length">
             <li ng-repeat="form in nonContactForms | orderBy: 'title | translateFrom' track by (form._id || form.code)">
-              <a ng-show="form.title" ui-sref="reports.add({ formId: form.internalId })">
+              <a ui-sref="reports.add({ formId: form.internalId })">
                 <span ng-bind-html="form.icon | resourceIcon"></span>
                 {{form.title | translateFrom}}
-              </a>
-              <a ng-show="form.name" ng-click="showMedicReporter(form.code)">
-                <span ng-bind-html="form.icon | resourceIcon"></span>
-                {{form.name | translateFrom}}
               </a>
             </li>
           </ul>
@@ -129,7 +125,7 @@
               </a>
             </li>
           </ul>
-          
+
           <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.right.selected[0].child.type" ui-sref="contacts.addChild({ type: actionBar.right.selected[0].child.type, parent_id: actionBar.right.selected[0]._id })">
             <span class="fa-stack">
               <i class="fa {{actionBar.right.selected[0].child.icon}} fa-stack-1x"></i>
