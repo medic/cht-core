@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    moment = require('moment');
+    moment = require('moment'),
+    d3 = require('d3');
 
 /*
  * This module is used for displaying ANC statistics. The page contains
@@ -35,6 +36,91 @@ var _ = require('underscore'),
 
       'ngInject';
 
+      var VISIT_COLORS = ['#E33030', '#DB9A9A', '#9DC49D', '#49A349'];
+      var DELIVERY_COLORS = {
+        F: { label: 'Institutional Delivery', color: '#49A349' },
+        S: { label: 'At home with SBA', color: '#D19D2E' },
+        NS: { label: 'At home without SBA', color: '#E33030' }
+      };
+      var PIE_CHART_OPTIONS = {
+        chart: {
+          type: 'pieChart',
+          height: 250,
+          x: function(elem) {
+            return $translate.instant(DELIVERY_COLORS[elem.key].label);
+          },
+          y: function(elem) {
+            return elem.value;
+          },
+          valueFormat: function(d){
+            return d3.format(',.0f')(d);
+          },
+          showLabels: true,
+          showLegend: true,
+          labelType: 'value',
+          color: function(elem) {
+            // coloring the legend => elem
+            // coloring the chart  => elem.data
+            var data = elem.data || elem;
+            return DELIVERY_COLORS[data.key].color;
+          }
+        }
+      };
+      var BAR_CHART_OPTIONS = {
+        chart: {
+          type: 'discreteBarChart',
+          height: 250,
+          width: 300,
+          x: function(d){ return d.label; },
+          y: function(d){ return d.value; },
+          showValues: true,
+          showYAxis: false,
+          valueFormat: function(d) {
+            return d;
+          },
+          color: VISIT_COLORS
+        }
+      };
+      var LINE_CHART_OPTIONS = {
+        chart: {
+          type: 'lineChart',
+          height: 250,
+          width: 300,
+          x: function(d, i) {
+            return i;
+          },
+          y: function(d) {
+            return d.count;
+          },
+          valueFormat: function(d){
+            return d3.format(',.0f')(d);
+          },
+          interpolate: 'monotone',
+          showLegend: false,
+          xAxis: {
+            tickFormat: function(d) {
+              return moment()
+                .subtract(12 - d, 'months')
+                .format('MMM YYYY');
+            }
+          },
+          yAxis: {
+            tickFormat: function(d) {
+              return d3.format(',.0f')(d);
+            }
+          },
+          tooltip: {
+            contentGenerator: function (e) {
+              var content = $translate.instant('Number in month', {
+                count: e.series[0].value,
+                month: e.point.month
+              });
+              return  '<p>' + content + '</p>';
+            }
+          }
+        }
+      };
+
       var request = function(url, district, callback) {
         $http.get(url, { params: { district: district, cache: true } })
           .success(function(data) {
@@ -53,10 +139,10 @@ var _ = require('underscore'),
       $scope.highRisk = { loading: true };
       $scope.totalBirths = { loading: true };
       $scope.missingDeliveryReports = { loading: true };
-      $scope.deliveryLocation = { loading: true };
-      $scope.visitsCompleted = { loading: true };
-      $scope.monthlyRegistrations = { loading: true };
-      $scope.monthlyDeliveries = { loading: true };
+      $scope.deliveryLocation = { loading: true, options: PIE_CHART_OPTIONS };
+      $scope.visitsCompleted = { loading: true, options: BAR_CHART_OPTIONS };
+      $scope.monthlyRegistrations = { loading: true, options: LINE_CHART_OPTIONS };
+      $scope.monthlyDeliveries = { loading: true, options: LINE_CHART_OPTIONS };
 
       UserDistrict()
         .then(function(district) {
@@ -88,114 +174,42 @@ var _ = require('underscore'),
             $scope.missingDeliveryReports = { error: err, data: data, order: 'edd.date' };
           });
 
-          var deliveryCodeMap = {
-            F: {
-              label: 'Institutional Delivery',
-              color: '#49A349'
-            },
-            S: {
-              label: 'At home with SBA',
-              color: '#D19D2E'
-            },
-            NS: {
-              label: 'At home without SBA',
-              color: '#E33030'
-            }
-          };
-          $scope.deliveryCodeChartLabelKey = function() {
-            return function(elem) {
-              return $translate.instant(deliveryCodeMap[elem.key].label);
-            };
-          };
-          $scope.deliveryCodeChartLabelValue = function() {
-            return function(elem) {
-              return elem.value;
-            };
-          };
-          $scope.deliveryCodeChartColors = function() {
-            return function(elem) {
-              // coloring the legend => elem
-              // coloring the chart  => elem.data
-              var data = elem.data || elem;
-              return deliveryCodeMap[data.key].color;
-            };
-          };
           request('/api/delivery-location', district, function(err, data) {
-            $scope.deliveryLocation = { error: err, data: data };
+            $scope.deliveryLocation.loading = false;
+            $scope.deliveryLocation.error = err;
+            $scope.deliveryLocation.data = data;
           });
-
-          $scope.visitsChartLabelKey = function() {
-            return function(d) {
-              return $translate.instant('Number of visits', { number: d + 1 });
-            };
-          };
-          $scope.visitsChartLabelValue = function() {
-            return function(d) {
-              return d;
-            };
-          };
-          var visitsMap = ['#E33030', '#DB9A9A', '#9DC49D', '#49A349'];
-          $scope.visitsChartColors = function() {
-            return function(d, i) {
-              return visitsMap[i];
-            };
-          };
 
           request('/api/visits-completed', district, function(err, data) {
-            $scope.visitsCompleted = {
-              error: err,
-              data: [{
-                key: 'item',
-                values: _.map(data, function(d, i) {
-                  return [i, d];
-                })
-              }]
-            };
+            $scope.visitsCompleted.loading = false;
+            $scope.visitsCompleted.err = err;
+            $scope.visitsCompleted.data = [{
+              key: 'item',
+              values: _.map(data, function(d, i) {
+                return {
+                  label: $translate.instant('Number of visits', { number: i + 1 }),
+                  value: d
+                };
+              })
+            }];
           });
 
-          $scope.monthlyChartLabelKey = function() {
-            return function(d) {
-              return moment()
-                .subtract(12 - d, 'months')
-                .format('MMM YYYY');
-            };
-          };
-          $scope.monthlyChartX = function() {
-            return function(d, i) {
-              return i;
-            };
-          };
-          $scope.monthlyChartY = function() {
-            return function(d) {
-              return d.count;
-            };
-          };
-          $scope.monthlyChartToolTip = function() {
-            return function(key, x, y) {
-              return  '<p>' +
-                        $translate.instant('Number in month', { count: y, month: x }) +
-                      '</p>';
-            };
-          };
-
           request('/api/monthly-registrations', district, function(err, data) {
-            $scope.monthlyRegistrations = {
-              error: err,
-              data: [{
-                key: 'item',
-                values: data
-              }]
-            };
+            $scope.monthlyRegistrations.loading = false;
+            $scope.monthlyRegistrations.error = err;
+            $scope.monthlyRegistrations.data = [{
+              key: 'item',
+              values: data
+            }];
           });
 
           request('/api/monthly-deliveries', district, function(err, data) {
-            $scope.monthlyDeliveries = {
-              error: err,
-              data: [{
-                key: 'item',
-                values: data
-              }]
-            };
+            $scope.monthlyDeliveries.loading = false;
+            $scope.monthlyDeliveries.error = err;
+            $scope.monthlyDeliveries.data = [{
+              key: 'item',
+              values: data
+            }];
           });
         })
         .catch(function(err) {

@@ -69,11 +69,6 @@
       "from": "angular-ui-router@>=0.3.2 <0.4.0",
       "resolved": "http://registry.npmjs.org/angular-ui-router/-/angular-ui-router-0.3.2.tgz"
     },
-    "angularjs-nvd3-directives": {
-      "version": "0.0.8",
-      "from": "angularjs-nvd3-directives@>=0.0.8 <0.0.9",
-      "resolved": "http://registry.npmjs.org/angularjs-nvd3-directives/-/angularjs-nvd3-directives-0.0.8.tgz"
-    },
     "ansi-regex": {
       "version": "2.0.0",
       "from": "ansi-regex@>=2.0.0 <3.0.0",
@@ -228,11 +223,6 @@
       "version": "2.0.5",
       "from": "cryptiles@>=2.0.0 <3.0.0",
       "resolved": "http://registry.npmjs.org/cryptiles/-/cryptiles-2.0.5.tgz"
-    },
-    "d3": {
-      "version": "3.5.17",
-      "from": "d3@>=3.5.16 <4.0.0",
-      "resolved": "http://registry.npmjs.org/d3/-/d3-3.5.17.tgz"
     },
     "dashdash": {
       "version": "1.14.1",
@@ -609,11 +599,6 @@
       "version": "3.0.6",
       "from": "nopt@>=3.0.6 <3.1.0",
       "resolved": "http://registry.npmjs.org/nopt/-/nopt-3.0.6.tgz"
-    },
-    "nvd3": {
-      "version": "1.1.15",
-      "from": "nvd3@1.1.15",
-      "resolved": "http://registry.npmjs.org/nvd3/-/nvd3-1.1.15.tgz"
     },
     "oauth-sign": {
       "version": "0.8.2",

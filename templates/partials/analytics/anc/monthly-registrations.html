@@ -1,30 +1,14 @@
 <div class="col-xs-12 col-md-6 analytics-widget monthly-registrations">
-  <div class="widget-body error" ng-show="monthlyRegistrations.error">
-    {{'analytics.connection.error' | translate}}
-  </div>
+  <div class="widget-body error" ng-show="monthlyRegistrations.error" translate>analytics.connection.error</div>
   <div class="widget-body loading" ng-hide="!monthlyRegistrations.loading">
     <div class="loader"></div>
   </div>
   <div class="widget-body" ng-if="!monthlyRegistrations.loading && !monthlyRegistrations.error">
     <div class="title">
-      <p class="name">{{'analytics.anc.monthly-registrations' | translate}}</p>
+      <p class="name" translate>analytics.anc.monthly-registrations</p>
     </div>
     <div class="content">
-      <nvd3-line-chart
-        data="monthlyRegistrations.data"
-        width="300"
-        height="250"
-        showXAxis="true"
-        showYAxis="true"
-        xAxisTickFormat="monthlyChartLabelKey()"
-        x="monthlyChartX()"
-        y="monthlyChartY()"
-        interpolate="monotone"
-        interactive="true"
-        tooltips="true"
-        tooltipcontent="monthlyChartToolTip()">
-          <svg></svg>
-      </nvd3-line-chart>
+      <nvd3 options="monthlyRegistrations.options" data="monthlyRegistrations.data"></nvd3>
     </div>
   </div>
 </div>

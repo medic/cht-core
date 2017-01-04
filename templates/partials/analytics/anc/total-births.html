@@ -1,14 +1,12 @@
 <div class="col-xs-12 analytics-widget count-only total-births">
-  <div class="widget-body error" ng-show="totalBirths.error">
-    {{'analytics.connection.error' | translate}}
-  </div>
+  <div class="widget-body error" ng-show="totalBirths.error" translate>analytics.connection.error</div>
   <div class="widget-body loading" ng-hide="!totalBirths.loading">
     <div class="loader"></div>
   </div>
   <div class="widget-body" ng-if="!totalBirths.loading && !totalBirths.error">
     <div class="title">
       <p class="count">{{totalBirths.data.count || 0}}</p>
-      <p class="name">{{'analytics.anc.total-births' | translate}}</p>
+      <p class="name" translate>analytics.anc.total-births</p>
     </div>
   </div>
 </div>

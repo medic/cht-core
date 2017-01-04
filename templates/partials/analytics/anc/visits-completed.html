@@ -1,27 +1,15 @@
 <div class="col-xs-12 col-md-6 analytics-widget visits-completed">
-  <div class="widget-body error" ng-show="visitsCompleted.error">
-    {{'analytics.connection.error' | translate}}
-  </div>
+  <div class="widget-body error" ng-show="visitsCompleted.error" translate>analytics.connection.error</div>
   <div class="widget-body loading" ng-hide="!visitsCompleted.loading">
     <div class="loader"></div>
   </div>
   <div class="widget-body" ng-if="!visitsCompleted.loading && !visitsCompleted.error">
     <div class="title">
-      <p class="name">{{'analytics.anc.visits-completed' | translate}}</p>
-      <p class="description">{{'analytics.anc.visits-completed.description' | translate}}</p>
+      <p class="name" translate>analytics.anc.visits-completed</p>
+      <p class="description" translate>analytics.anc.visits-completed.description</p>
     </div>
     <div class="content">
-      <nvd3-discrete-bar-chart
-        data="visitsCompleted.data"
-        width="300"
-        height="250"
-        showXAxis="true"
-        showValues="true"
-        color="visitsChartColors()"
-        xAxisTickFormat="visitsChartLabelKey()"
-        valueFormat="visitsChartLabelValue()">
-          <svg></svg>
-      </nvd3-discrete-bar-chart>
+      <nvd3 options="visitsCompleted.options" data="visitsCompleted.data"></nvd3>
     </div>
   </div>
 </div>
