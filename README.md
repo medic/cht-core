@@ -308,7 +308,7 @@ kanso push https://staging.dev.medicmobile.org/markets-alpha/upload
 
 ## Help
 
-Join our [Google Group](https://groups.google.com/forum/#!forum/medic-developers) or file an issue on Github.
+Join our [Google Group](https://groups.google.com/forum/#!forum/medic-developers) or file an issue on Github. You can also post questions, and look for answers, on our [AnswerHub site](http://medicmobile.cloud.answerhub.com/).
 
 ## Build Status
 
