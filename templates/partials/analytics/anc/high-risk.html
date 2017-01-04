@@ -1,40 +1,34 @@
 <div class="col-xs-12 col-md-6 analytics-widget high-risk table-responsive">
-  <div class="widget-body error" ng-show="highRisk.error">
-    {{'analytics.connection.error' | translate}}
-  </div>
+  <div class="widget-body error" ng-show="highRisk.error" translate>analytics.connection.error</div>
   <div class="widget-body loading" ng-hide="!highRisk.loading">
     <div class="loader"></div>
   </div>
   <div class="widget-body" ng-if="!highRisk.loading && !highRisk.error">
     <div class="title">
-      <p class="count">
-        {{highRisk.data.length || 0}}
-      </p>
-      <p class="name">
-        {{'analytics.anc.high-risk' | translate}}
-      </p>
+      <p class="count">{{highRisk.data.length || 0}}</p>
+      <p class="name" translate>analytics.anc.high-risk</p>
     </div>
     <div class="content" ng-if="highRisk.data">
       <table class="table">
         <thead>
           <tr>
-            <th class="sortable" ng-class="{'sorted':highRisk.order==='patient_name'}" ng-click="highRisk.order='patient_name'">{{'Patient Name' | translate}}</th>
-            <th class="sortable" ng-class="{'sorted':highRisk.order==='-weeks.number'}" ng-click="highRisk.order='-weeks.number'">{{'Weeks Pregnant' | translate}}</th>
-            <th class="sortable" ng-class="{'sorted':highRisk.order==='contact.name'}" ng-click="highRisk.order='contact.name'">{{'contact.short' | translate}}</th>
-            <th class="sortable" ng-class="{'sorted':highRisk.order==='visits'}" ng-click="highRisk.order='visits'">{{'Visits' | translate}}</th>
+            <th class="sortable" ng-class="{'sorted':highRisk.order==='patient_name'}" ng-click="highRisk.order='patient_name'" translate>Patient Name</th>
+            <th class="sortable" ng-class="{'sorted':highRisk.order==='-weeks.number'}" ng-click="highRisk.order='-weeks.number'" translate>Weeks Pregnant</th>
+            <th class="sortable" ng-class="{'sorted':highRisk.order==='contact.name'}" ng-click="highRisk.order='contact.name'" translate>contact.short</th>
+            <th class="sortable" ng-class="{'sorted':highRisk.order==='visits'}" ng-click="highRisk.order='visits'" translate>Visits</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="pregnancy in highRisk.data | orderBy:highRisk.order">
             <td ng-class="{'high-risk': pregnancy.high_risk}">
-              <a ng-click="loadPatient(pregnancy.patient_id)" ng-attr-title="{{'Patient History' | translate}}">
+              <a ng-click="loadPatient(pregnancy.patient_id)" translate-attr="{ title: 'Patient History' }">
                 {{pregnancy.patient_name}}
               </a>
             </td>
             <td ng-bind-html="pregnancy.weeks | weeksPregnant"></td>
             <td>
-              <a ng-click="loadContact(pregnancy.contact._id)" ng-attr-title="{{'contact.history' | translate}}">
+              <a ng-click="loadContact(pregnancy.contact._id)" translate-attr="{ title: 'contact.history' }">
                 {{pregnancy.contact.name}}
               </a>
             </td>
@@ -42,7 +36,7 @@
               <span>{{pregnancy.visits}}</span>
             </td>
             <td class="actions">
-              <a href="#" class="btn btn-link send-message" data-send-to="{{pregnancy.contact._id}}" ng-attr-title="{{'Send Message' | translate}}" ng-class="{'disabled': !pregnancy.contact.phone}"><i class="fa fa-envelope"></i></a>
+              <a href="#" class="btn btn-link send-message" data-send-to="{{pregnancy.contact._id}}" translate-attr="{ title: 'Send Message' }" ng-class="{'disabled': !pregnancy.contact.phone}"><i class="fa fa-envelope"></i></a>
             </td>
           </tr>
         </tbody>

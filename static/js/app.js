@@ -11,6 +11,7 @@ require('nvd3');
 
 require('angular');
 require('angular-cookie');
+require('angular-nvd3');
 require('angular-pouchdb');
 require('angular-resource');
 require('angular-route');
@@ -20,7 +21,6 @@ require('angular-translate-interpolation-messageformat');
 require('angular-translate-handler-log');
 require('angular-ui-bootstrap');
 require('angular-ui-router');
-require('angularjs-nvd3-directives');
 
 require('moment');
 require('moment/locale/es');
@@ -54,7 +54,7 @@ _.templateSettings = {
     'inboxControllers',
     'inboxServices',
     'pascalprecht.translate',
-    'nvd3ChartDirectives',
+    'nvd3',
     'pouchdb'
   ]);
 

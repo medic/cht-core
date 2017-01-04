@@ -1,39 +1,35 @@
 <div class="col-xs-12 col-md-6 analytics-widget upcoming-appointments table-responsive">
-  <div class="widget-body error" ng-show="upcomingAppointments.error">
-    {{'analytics.connection.error' | translate}}
-  </div>
+  <div class="widget-body error" ng-show="upcomingAppointments.error" translate>analytics.connection.error</div>
   <div class="widget-body loading" ng-hide="!upcomingAppointments.loading">
     <div class="loader"></div>
   </div>
   <div class="widget-body" ng-if="!upcomingAppointments.loading && !upcomingAppointments.error">
     <div class="title">
-      <p class="count">
-        {{upcomingAppointments.data.length || 0}}
-      </p>
-      <p class="name">{{'analytics.anc.upcoming-appointments' | translate}}</p>
+      <p class="count">{{upcomingAppointments.data.length || 0}}</p>
+      <p class="name" translate>analytics.anc.upcoming-appointments</p>
     </div>
     <div class="content" ng-if="upcomingAppointments.data">
       <table class="table">
         <thead>
           <tr>
-            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='patient_name'}" ng-click="upcomingAppointments.order='patient_name'">{{'Patient Name' | translate}}</th>
-            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='-weeks.number'}" ng-click="upcomingAppointments.order='-weeks.number'">{{'Weeks Pregnant' | translate}}</th>
-            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='contact.name'}" ng-click="upcomingAppointments.order='contact.name'">{{'contact.short' | translate}}</th>
-            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='date'}" ng-click="upcomingAppointments.order='date'">{{'Appointment Date' | translate}}</th>
-            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='visits'}" ng-click="upcomingAppointments.order='visits'">{{'Visits' | translate}}</th>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='patient_name'}" ng-click="upcomingAppointments.order='patient_name'" translate>Patient Name</th>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='-weeks.number'}" ng-click="upcomingAppointments.order='-weeks.number'" translate>Weeks Pregnant</th>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='contact.name'}" ng-click="upcomingAppointments.order='contact.name'" translate>contact.short</th>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='date'}" ng-click="upcomingAppointments.order='date'" translate>Appointment Date</th>
+            <th class="sortable" ng-class="{'sorted':upcomingAppointments.order==='visits'}" ng-click="upcomingAppointments.order='visits'" translate>Visits</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="appointment in upcomingAppointments.data | orderBy:upcomingAppointments.order">
             <td ng-class="{'high-risk': appointment.high_risk}">
-              <a ng-click="loadPatient(appointment.patient_id)" ng-attr-title="{{'Patient History' | translate}}">
+              <a ng-click="loadPatient(appointment.patient_id)" translate-attr="{ title: 'Patient History' }">
                 {{appointment.patient_name}}
               </a>
             </td>
             <td ng-bind-html="appointment.weeks | weeksPregnant"></td>
             <td>
-              <a ng-click="loadContact(appointment.contact._id)" ng-attr-title="{{'contact.history' | translate}}">
+              <a ng-click="loadContact(appointment.contact._id)" translate-attr="{ title: 'contact.history' }">
                 {{appointment.contact.name}}
               </a>
             </td>
@@ -42,7 +38,7 @@
               <span>{{appointment.visits}}</span>
             </td>
             <td class="actions">
-              <a href="#" class="btn btn-link send-message" data-send-to="{{appointment.contact._id}}" ng-attr-title="{{'Send Message' | translate}}" ng-class="{'disabled': !appointment.contact.phone}"><i class="fa fa-envelope"></i></a>
+              <a href="#" class="btn btn-link send-message" data-send-to="{{appointment.contact._id}}" translate-attr="{ title: 'Send Message' }" ng-class="{'disabled': !appointment.contact.phone}"><i class="fa fa-envelope"></i></a>
             </td>
           </tr>
         </tbody>

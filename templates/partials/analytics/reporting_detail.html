@@ -66,18 +66,7 @@
     </div>
     <div class="col-sm-4 col-xs-12">
       <div class="large-pie">
-        <nvd3-pie-chart
-          data="chart"
-          width="220"
-          height="220"
-          margin="{left:0,top:20,bottom:0,right:0}"
-          x="xFunction"
-          y="yFunction"
-          color="colorFunction"
-          labelType="percent"
-          showLabels="true">
-          <svg height="220"></svg>
-        </nvd3-pie-chart>
+        <nvd3 options="pieChartOptions" data="chart"></nvd3>
       </div>
     </div>
     <div class="col-sm-2 col-xs-6">
@@ -107,17 +96,7 @@
     <div class="col-sm-1">{{facility.valid_percent}}%</div>
     <div class="col-sm-1">
       <div class="mini-pie">
-        <nvd3-pie-chart
-          data="facility.chart"
-          width="40"
-          height="40"
-          margin="{left:0,top:0,bottom:0,right:0}"
-          x="xFunction"
-          y="yFunction"
-          color="colorFunction"
-          showLabels="false">
-          <svg height="40"></svg>
-        </nvd3-pie-chart>
+        <nvd3 options="miniPieChartOptions" data="facility.chart"></nvd3>
       </div>
     </div>
   </div>
@@ -139,17 +118,7 @@
       <div class="col-sm-1">{{clinic.valid_percent}}%</div>
       <div class="col-sm-1">
         <div class="mini-pie">
-          <nvd3-pie-chart
-            data="clinic.chart"
-            width="40"
-            height="40"
-            margin="{left:0,top:0,bottom:0,right:0}"
-            x="xFunction"
-            y="yFunction"
-            color="colorFunction"
-            showLabels="false">
-            <svg height="40"></svg>
-          </nvd3-pie-chart>
+          <nvd3 options="miniPieChartOptions" data="clinic.chart"></nvd3>
         </div>
       </div>
     </div>

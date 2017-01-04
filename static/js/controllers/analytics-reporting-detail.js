@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    d3 = require('d3'),
     reportingUtils = require('../modules/reporting-rates-utils');
 
 (function () {
@@ -102,15 +103,6 @@ var _ = require('underscore'),
         setDistrict();
       };
 
-      var colours = {
-        valid: '#009900',
-        invalid: '#990000',
-        missing: '#999999'
-      };
-      $scope.colorFunction = function(d) {
-        return colours[d.data.key];
-      };
-
       var findDistrict = function(place) {
         while(place && place.type !== 'district_hospital') {
           place = place.parent;
@@ -128,6 +120,66 @@ var _ = require('underscore'),
           ];
         });
         return rows;
+      };
+
+      var colours = {
+        valid: '#009900',
+        invalid: '#990000',
+        missing: '#999999'
+      };
+      var colorFunction = function(d) {
+        return colours[d.key];
+      };
+      var xFunction = function(d) {
+        return d.key;
+      };
+      var yFunction = function(d) {
+        return d.y;
+      };
+
+      $scope.pieChartOptions = {
+        chart: {
+          type: 'pieChart',
+          height: 220,
+          width: 220,
+          x: xFunction,
+          y: yFunction,
+          valueFormat: function(d){
+            return d3.format(',.0f')(d);
+          },
+          margin: {
+            left: 0,
+            top: 20,
+            bottom: 0,
+            right: 0
+          },
+          showLabels: true,
+          showLegend: false,
+          labelType: 'percent',
+          color: colorFunction
+        }
+      };
+
+      $scope.miniPieChartOptions = {
+        chart: {
+          type: 'pieChart',
+          height: 40,
+          width: 40,
+          x: xFunction,
+          y: yFunction,
+          valueFormat: function(d){
+            return d3.format(',.0f')(d);
+          },
+          margin: {
+            left: 0,
+            top: 0,
+            bottom: 0,
+            right: 0
+          },
+          showLabels: false,
+          showLegend: false,
+          color: colorFunction
+        }
       };
 
       var setDistrict = function(placeId) {
@@ -157,12 +209,6 @@ var _ = require('underscore'),
                   { key: 'missing', y: $scope.totals.not_submitted },
                   { key: 'invalid', y: $scope.totals.incomplete }
                 ];
-                $scope.xFunction = function(d) {
-                  return d.key;
-                };
-                $scope.yFunction = function(d) {
-                  return d.y;
-                };
                 $scope.filters.district = findDistrict(place);
                 $scope.place = place;
                 $scope.loadingTotals = false;

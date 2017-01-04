@@ -1,28 +1,14 @@
 <div class="col-xs-12 col-md-6 analytics-widget delivery-location">
-  <div class="widget-body error" ng-show="deliveryLocation.error">
-    {{'analytics.connection.error' | translate}}
-  </div>
+  <div class="widget-body error" ng-show="deliveryLocation.error" translate>analytics.connection.error</div>
   <div class="widget-body loading" ng-hide="!deliveryLocation.loading">
     <div class="loader"></div>
   </div>
   <div class="widget-body" ng-if="!deliveryLocation.loading && !deliveryLocation.error">
     <div class="title">
-      <p class="name">{{'analytics.anc.delivery-locations' | translate}}</p>
+      <p class="name" translate>analytics.anc.delivery-locations</p>
     </div>
     <div class="content">
-      <nvd3-pie-chart
-        data="deliveryLocation.data"
-        width="300"
-        height="250"
-        x="deliveryCodeChartLabelKey()"
-        y="deliveryCodeChartLabelValue()"
-        color="deliveryCodeChartColors()"
-        legendcolor="deliveryCodeChartColors()"
-        showLegend="true"
-        showLabels="true"
-        labelType="value">
-          <svg></svg>
-      </nvd3-pie-chart>
+      <nvd3 options="deliveryLocation.options" data="deliveryLocation.data"></nvd3>
     </div>
   </div>
 </div>
