@@ -9,11 +9,11 @@ describe('state filter', function() {
     module('inboxApp');
     module(function ($provide) {
       $provide.value('FormatDate', {
-        datetime: function() {
-          return 'day 0';
+        datetime: function(date) {
+          return 'datetime: ' + date.valueOf();
         },
-        relative: function() {
-          return 'sometime';
+        relative: function(date) {
+          return 'relative: ' + date.valueOf();
         }
       });
       $provide.value('translateFilter', function(key, params) {
@@ -26,51 +26,96 @@ describe('state filter', function() {
     });
   });
 
-  it('should render received when no task', function() {
-    scope.task = {};
+  describe('renders state', function() {
 
-    var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
-    scope.$digest();
-    chai.expect(element.find('.state').text()).to.equal('state.received|{}');
+    it('when no task', function() {
+      scope.task = {};
+
+      var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
+      scope.$digest();
+      chai.expect(element.find('.state').text()).to.equal('state.received|{}');
+    });
+
+    it('when task', function() {
+      scope.task = {
+        state: 'pending'
+      };
+
+      var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
+      scope.$digest();
+      chai.expect(element.find('.state').text()).to.equal('state.pending|{}');
+    });
+
   });
 
-  it('should render state', function() {
-    scope.task = {
-      state: 'pending'
-    };
+  describe('renders dates', function() {
 
-    var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
-    scope.$digest();
-    chai.expect(element.find('.state').text()).to.equal('state.pending|{}');
-    chai.expect(element.find('.relative-date').length).to.equal(0);
+    it('when no state history', function() {
+      scope.task = {
+        state: 'unknown',
+        due: 1
+      };
+
+      var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
+      scope.$digest();
+      chai.expect(element.find('.relative-date-content').text()).to.equal('relative: 1');
+      chai.expect(element.find('.relative-date').attr('title')).to.equal('datetime: 1');
+    });
+
+    it('when scheduled', function() {
+      scope.task = {
+        state: 'scheduled',
+        due: 1
+      };
+
+      var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
+      scope.$digest();
+      chai.expect(element.find('.relative-date-content').text()).to.equal('relative: 1');
+      chai.expect(element.find('.relative-date').attr('title')).to.equal('datetime: 1');
+    });
+
+    it('when scheduled with history', function() {
+      scope.task = {
+        state: 'scheduled',
+        state_history: [ { state: 'scheduled', timestamp: 2 } ],
+        due: 1
+      };
+
+      var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
+      scope.$digest();
+      chai.expect(element.find('.relative-date-content').text()).to.equal('relative: 1');
+      chai.expect(element.find('.relative-date').attr('title')).to.equal('datetime: 1');
+    });
+
+    it('when state history', function() {
+      scope.task = {
+        state: 'unknown',
+        state_history: [ { timestamp: 2 } ],
+        due: 1
+      };
+
+      var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
+      scope.$digest();
+      chai.expect(element.find('.relative-date-content').text()).to.equal('relative: 2');
+      chai.expect(element.find('.relative-date').attr('title')).to.equal('datetime: 2');
+    });
+
   });
 
-  it('should render due date', function() {
-    scope.task = {
-      state: 'scheduled',
-      due: moment().valueOf()
-    };
+  describe('renders recipients', function() {
 
-    var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
-    scope.$digest();
-    chai.expect(element.find('.state').text()).to.equal('state.scheduled|{}');
-    chai.expect(element.find('.relative-date-content').text()).to.equal('sometime');
-    chai.expect(element.find('.relative-date').attr('title')).to.equal('day 0');
-  });
+    it('when to', function() {
+      scope.task = {
+        state: 'scheduled',
+        due: 1,
+        messages: [ { to: '+64123555555' } ]
+      };
 
-  it('should render the recipient', function() {
-    scope.task = {
-      state: 'scheduled',
-      due: moment().valueOf(),
-      messages: [ { to: '+64123555555' } ]
-    };
+      var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
+      scope.$digest();
+      chai.expect(element.find('.recipient').text()).to.equal(' to recipient|{"recipient":"+64123555555"}');
+    });
 
-    var element = compile('<span class="task-state" ng-bind-html="task | state"></span>')(scope);
-    scope.$digest();
-    chai.expect(element.find('.state').text()).to.equal('state.scheduled|{}');
-    chai.expect(element.find('.relative-date-content').text()).to.equal('sometime');
-    chai.expect(element.find('.relative-date').attr('title')).to.equal('day 0');
-    chai.expect(element.find('.recipient').text()).to.equal(' to recipient|{"recipient":"+64123555555"}');
   });
 
 });
