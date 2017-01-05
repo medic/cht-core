@@ -12,13 +12,13 @@ The `medic-webapp` repository is the core tool of the Medic Mobile stack. When h
 The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally, as part of a virtual machine (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
 
 For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
-For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](architecture.md).
+For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](doc/architecture.md).
 
 ## Development Setup
 
-Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/md/dev/workflow.md) and the [architecture overview](architecture.md).
+Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/md/dev/workflow.md) and the [architecture overview](doc/architecture.md).
 
-The setup described below doesn't use [Medic OS](https://github.com/medic/medic-webapp/blob/master/architecture.md#medic-os), the tools will be run directly on your machine.
+The setup described below doesn't use [Medic OS](doc/architecture.md#medic-os), the tools will be run directly on your machine.
 
 
 ### Dependencies
@@ -159,10 +159,15 @@ http://localhost:5988/medic/login
 
 ## Configure
 
+## Configure
+The app is very customizeable, and can end up looking very different depending on configuration.
+
 ### App_settings
 
-The app is very customizeable, and that customization lives in the app_settings. Look for the `app_settings`
-field in the `medic` design doc.
+Much of the customization lives in the app_settings. Look for the `app_settings`
+field in the design doc for `medic` db.
+
+![App Settings in Futon](https://cdn.rawgit.com/medic/medic-webapp/master/doc/app_settings.png)
 
 At first that `app_settings` field will be empty and you will have the default settings:
 https://github.com/medic/medic-webapp/blob/master/packages/kujua-sms/views/lib/app_settings.js
@@ -179,8 +184,13 @@ Forms define information flows. Users fill in forms by SMS, or through SIMapps, 
 
 Initially your instance will have the [default forms defined inside the default settings](https://github.com/medic/medic-webapp/blob/master/packages/kujua-sms/views/lib/app_settings.js#L327).
 
-You can load new forms either through the webapp's interface (in Configuration), or from command line with the [load_forms.js](https://github.com/medic/medic-webapp/blob/master/scripts/load_forms.js)
+There are two types of forms : JSON forms, used for SMS interfaces, and XML forms, used for the android app, Medic Collect and the SimApps.
 
+You can view the list of JSON forms and load new ones through the webapp's interface (in Configuration).
+
+You can view the XML forms from Futon (check out the `forms` view). You can upload new forms from command line with the [load_forms.js](https://github.com/medic/medic-webapp/blob/master/scripts/load_forms.js) script. XML forms with ids starting with `forms:contact` will customize the edit/create page for the given contact (person or place) type.
+
+![XML forms](https://cdn.rawgit.com/medic/medic-webapp/master/doc/xml_forms.png)
 
 
 ### Data
@@ -205,7 +215,7 @@ All text labels in the app are localized. See [here](https://github.com/medic/me
 ## Tests
 Check out the [Gruntfile](Gruntfile.js) for all the tests you can run.
 
-### Unit tests 
+### Unit tests
 They live in [/tests/karma](tests/karma). Run them with grunt : `grunt unit_continuous`
 
 ### End to End tests
@@ -229,7 +239,7 @@ Some kanso tests are run in-browser; you can run them manually if you browse to 
 
 ## Run on Medic OS
 
-[What's Medic OS?](https://github.com/medic/medic-webapp/blob/master/architecture.md#medic-os)
+[What's Medic OS?](doc/architecture.md#medic-os)
 
 For development, you can find it useful to [run Medic OS on a VM](https://github.com/medic/medic-docs/blob/master/md/index.md) locally, to leverage VM snapshots, for instance to work with different versions.
 
