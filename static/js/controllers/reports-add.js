@@ -52,7 +52,7 @@
           var content = doc.content || (
             doc._attachments &&
             doc._attachments.content &&
-            atob(doc._attachments.content.data))
+            atob(doc._attachments.content.data));
           Enketo.render($('#report-form'), doc.form, content)
             .then(function(form) {
               $scope.form = form;

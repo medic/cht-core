@@ -259,8 +259,8 @@ angular.module('inboxServices').service('Enketo',
       doc._attachments.content = {
         content_type: 'application/xml',
         data: btoa(content)
-      }
-    }
+      };
+    };
 
     var update = function(formInternalId, record, docId) {
       // update an existing doc.  For convenience, get the latest version
