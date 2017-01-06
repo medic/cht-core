@@ -340,7 +340,7 @@ describe('Enketo service', function() {
           chai.expect(UserContact.callCount).to.equal(1);
           chai.expect(actual._id).to.equal('5');
           chai.expect(actual._rev).to.equal('1-abc');
-          chai.expect(actual.content).to.equal(content);
+          chai.expect(atob(actual._attachments.content.data)).to.equal(content);
           chai.expect(actual.fields.name).to.equal('Sally');
           chai.expect(actual.fields.lmp).to.equal('10');
           chai.expect(actual.form).to.equal('V');
@@ -372,7 +372,7 @@ describe('Enketo service', function() {
           chai.expect(UserContact.callCount).to.equal(1);
           chai.expect(actual._id).to.equal('5');
           chai.expect(actual._rev).to.equal('1-abc');
-          chai.expect(actual.content).to.equal(content);
+          chai.expect(atob(actual._attachments.content.data)).to.equal(content);
           chai.expect(actual.fields.name).to.equal('Sally');
           chai.expect(actual.fields.lmp).to.equal('10');
           chai.expect(actual.fields.secret_code_name).to.equal('S4L');
@@ -411,7 +411,7 @@ describe('Enketo service', function() {
           chai.expect(dbPut.callCount).to.equal(1);
           chai.expect(actual._id).to.equal('6');
           chai.expect(actual._rev).to.equal('2-abc');
-          chai.expect(actual.content).to.equal(content);
+          chai.expect(atob(actual._attachments.content.data)).to.equal(content);
           chai.expect(actual.fields.name).to.equal('Sally');
           chai.expect(actual.fields.lmp).to.equal('10');
           chai.expect(actual.form).to.equal('V');
