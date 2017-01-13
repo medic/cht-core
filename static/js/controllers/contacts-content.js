@@ -147,24 +147,17 @@ var _ = require('underscore'),
         return fields;
       };
 
-      var shiftAndMarkContactPerson = function(children, parent) {
-        if (!children || !children.length) {
-          return;
+      var getPrimaryContact = function(doc) {
+        if (!doc || !doc.contact || !doc.contact._id) {
+          return $q.resolve();
         }
-        var contactPersonId = parent.contact && parent.contact._id;
-        if (!contactPersonId) {
-          return;
-        }
-        var primaryContactIdx = _.findIndex(children, function(child) {
-          return child.doc._id === contactPersonId;
-        });
-        if (primaryContactIdx < 0) {
-          return;
-        }
-        var primaryContact = children[primaryContactIdx];
-        primaryContact.isPrimaryContact = true;
-        children.splice(primaryContactIdx, 1);
-        children.unshift(primaryContact);
+        // Fetch the contact person from db instead of using the contents of the contact field.
+        // Because in 2017 we stop copying stuff in docs.
+        return DB().get(doc.contact._id)
+          .catch(function(err) {
+            $log.error(err);
+            return;
+          });
       };
 
       var isPersonAndPrimaryContact = function(contactDoc) {
@@ -218,12 +211,28 @@ var _ = require('underscore'),
         });
       };
 
-      var sortChildPersons = function(persons, contactDoc) {
-        if (persons && persons.length) {
+      var removePrimaryContact = function(children, primaryContactDoc) {
+        if (!children || children.length === 0 || !primaryContactDoc) {
+          return;
+        }
+        var primaryContactIdx = _.findIndex(children, function(child) {
+          return child.doc._id === primaryContactDoc._id;
+        });
+        if (primaryContactIdx < 0) {
+          return;
+        }
+        children.splice(primaryContactIdx, 1);
+      };
+
+      var sortChildPersons = function(persons, contactDoc, primaryContactDoc) {
+        if (persons.length) {
           if (contactDoc.type === 'clinic') {
             sortFamilyMembers(persons);
           }
-          shiftAndMarkContactPerson(persons, contactDoc);
+        }
+        if (primaryContactDoc) {
+          removePrimaryContact(persons, primaryContactDoc);
+          persons.unshift({ id: primaryContactDoc._id, doc: primaryContactDoc, isPrimaryContact: true });
         }
       };
 
@@ -262,13 +271,15 @@ var _ = require('underscore'),
               getReports([contactDoc]),
               isPersonAndPrimaryContact(contactDoc),
               getChildren(contactDoc),
-              getParents(contactDoc)
+              getParents(contactDoc),
+              getPrimaryContact(contactDoc)
             ])
               .then(function(results) {
                 var reports = results[0];
                 var isPrimaryContact = results[1];
                 var children = results[2];
                 var parents = results[3];
+                var primaryContact = results[4];
                 var schema = ContactSchema.get(contactDoc.type);
 
                 var selected = {
@@ -282,7 +293,10 @@ var _ = require('underscore'),
 
                 selected.fields = selectedSchemaVisibleFields(selected);
 
-                sortChildPersons(children.persons, contactDoc);
+                if (!children.persons) {
+                  children.persons = [];
+                }
+                sortChildPersons(children.persons, contactDoc, primaryContact);
 
                 if (children.places && children.places.length) {
                   var childPlacesSchema = ContactSchema.get(children.places[0].doc.type);
