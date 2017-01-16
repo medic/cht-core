@@ -254,12 +254,25 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
+    var attachContent = function(doc, content) {
+      doc._attachments = doc._attachments || {};
+      doc._attachments.content = {
+        content_type: 'application/xml',
+        data: btoa(content)
+      };
+    };
+
     var update = function(formInternalId, record, docId) {
       // update an existing doc.  For convenience, get the latest version
       // and then modify the content.  This will avoid most concurrent
       // edits, but is not ideal.
       return DB().get(docId).then(function(doc) {
-        doc.content = record;
+        // previously XML was stored in the content property
+        // TODO delete this and other "legacy" code support commited against
+        //      the same git commit at some point in the future?
+        delete doc.content;
+
+        attachContent(doc, record);
         doc.fields = EnketoTranslation.reportRecordToJs(record);
         return DB().put(doc).then(function(res) {
           doc._rev = res.rev;
@@ -280,7 +293,6 @@ angular.module('inboxServices').service('Enketo',
     var create = function(formInternalId, record) {
       return getUserContact().then(function(contact) {
         var doc = {
-          content: record,
           fields: EnketoTranslation.reportRecordToJs(record),
           form: formInternalId,
           type: 'data_record',
@@ -290,6 +302,7 @@ angular.module('inboxServices').service('Enketo',
           from: contact && contact.phone,
           hidden_fields: EnketoTranslation.getHiddenFieldList(record),
         };
+        attachContent(doc, record);
         return DB().post(doc).then(function(res) {
           doc._id = res.id;
           doc._rev = res.rev;

@@ -23,7 +23,9 @@
           return $q.resolve({ form: $state.params.formId });
         }
         if ($state.params.reportId) { // editing
-          return DB().get($state.params.reportId);
+          return DB().get($state.params.reportId, {
+            attachments: true
+          });
         }
         return $q.reject(new Error('Must have either formId or reportId'));
       };
@@ -44,7 +46,14 @@
         .then(function(doc) {
           $log.debug('setting selected', doc);
           $scope.setSelected(doc);
-          Enketo.render($('#report-form'), doc.form, doc.content)
+          // TODO: check doc.content as this is where legacy documents stored
+          //       their XML. Consider removing this check at some point in the
+          //       future.
+          var content = doc.content || (
+            doc._attachments &&
+            doc._attachments.content &&
+            atob(doc._attachments.content.data));
+          Enketo.render($('#report-form'), doc.form, content)
             .then(function(form) {
               $scope.form = form;
               $scope.loadingContent = false;
