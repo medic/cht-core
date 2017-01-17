@@ -315,6 +315,23 @@ Market](https://staging.dev.medicmobile.org/markets-alpha/):
 kanso push https://staging.dev.medicmobile.org/markets-alpha/upload
 ```
 
+## Automated Deployment on Travis
+
+Code is automatically deployed via [Travis CI](https://travis-ci.org/medic/medic-webapp) to the [Garden 2.0
+Markets](https://github.com/garden20/garden-market) hosted at 
+[staging.dev](https://staging.dev.medicmobile.org/).  We maintain several markets
+there for ease of testing and development, you can set your Garden Dashboard to
+use any one of them.  
+
+The deployment is based on the following git tags and branches:
+
+Market  | Branch/Tag
+------------- | -------------
+Alpha | master
+Beta | tagged `n.n.n-beta.n`
+RC | tagged `n.n.n-rc.n`
+Release | tagged `0.n.n`
+Release v2 | tagged `2.n.n`
 
 ## Help
 
