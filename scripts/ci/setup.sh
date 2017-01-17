@@ -6,7 +6,7 @@ ARGS+='this.dependencies_included = true;'
 # Process append to the version string if pre-release
 if [ "$TRAVIS_BRANCH" == "master" ]; then
     ARGS+="this.version += \"-alpha.$TRAVIS_BUILD_NUMBER\";"
-elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
+elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-(rc|beta)\.[0-9]+$ ]]; then
     ARGS+="this.version = \"$TRAVIS_TAG\";"
 fi
 
