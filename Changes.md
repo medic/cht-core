@@ -1,5 +1,11 @@
 # Medic Mobile Release Notes
 
+## 0.4.15
+
+### TBD
+
+- Added migration for adding UUIDs to messages. Issue: #3015
+
 ## 0.4.14
 
 ### Dec 16, 2016
