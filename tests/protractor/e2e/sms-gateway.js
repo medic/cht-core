@@ -274,7 +274,7 @@ describe('sms-gateway api', function() {
       browser.sleep(100); // without this the elements are found to be detached...
 
       // tasks
-      expect(element(by.css('#reports-content .details > ul .task-list .task-state .state')).getText()).toBe('scheduled');
+      expect(element(by.css('#reports-content .details > ul .task-list .task-state .state')).getText()).toBe('forwarded to gateway');
 
     });
   });
