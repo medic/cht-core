@@ -83,7 +83,8 @@ exports['post() should provide WO messages in response'] = function(test) {
     { id:'2', to:'+2', message:'two' },
     { id:'3', to:'+3', message:'three' },
   ]);
-  sinon.stub(messageUtils, 'updateMessage').callsArgWith(2);
+  var updateMessage = sinon.stub(messageUtils, 'updateMessage');
+  updateMessage.callsArgWith(2);
 
   var req = { body: {} };
 
@@ -98,6 +99,10 @@ exports['post() should provide WO messages in response'] = function(test) {
         { id:'3', to:'+3', content:'three' },
       ],
     });
+    test.equals(updateMessage.callCount, 3);
+    test.equals(updateMessage.withArgs('1', { state:'forwarded-to-gateway' }).callCount, 1);
+    test.equals(updateMessage.withArgs('2', { state:'forwarded-to-gateway' }).callCount, 1);
+    test.equals(updateMessage.withArgs('3', { state:'forwarded-to-gateway' }).callCount, 1);
     test.done();
   });
 };
