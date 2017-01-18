@@ -48,7 +48,7 @@ function markMessagesScheduled(messages, callback) {
   async.eachSeries(
     messages,
     function(message, callback) {
-      updateState(message.id, 'scheduled', null, callback);
+      updateState(message.id, 'forwarded-to-gateway', null, callback);
     },
     function(err) {
       if (err) {
