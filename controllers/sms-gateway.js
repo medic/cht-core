@@ -7,6 +7,7 @@ var async = require('async'),
     messageUtils = require('./message-utils'),
     recordUtils = require('./record-utils'),
     STATUS_MAP = {
+      UNSENT: 'received-by-gateway',
       SENT: 'sent',
       DELIVERED: 'delivered',
       FAILED: 'failed'

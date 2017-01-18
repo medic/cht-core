@@ -60,7 +60,8 @@ exports['post() should update statuses supplied in request'] = function(test) {
     updates: [
       { id:'1', status:'SENT' },
       { id:'2', status:'DELIVERED' },
-      { id:'3', status:'FAILED', reason:'bad' },
+      { id:'3', status:'UNSENT' },
+      { id:'4', status:'FAILED', reason:'bad' },
     ],
   } };
 
@@ -68,10 +69,11 @@ exports['post() should update statuses supplied in request'] = function(test) {
   controller.post(req, function(err) {
     // then
     test.equals(err, null);
-    test.equals(updateMessage.callCount, 3);
+    test.equals(updateMessage.callCount, 4);
     test.equals(updateMessage.withArgs('1', { state:'sent' }).callCount, 1);
     test.equals(updateMessage.withArgs('2', { state:'delivered' }).callCount, 1);
-    test.equals(updateMessage.withArgs('3', { state:'failed', details:{ reason:'bad' } }).callCount, 1);
+    test.equals(updateMessage.withArgs('3', { state:'received-by-gateway' }).callCount, 1);
+    test.equals(updateMessage.withArgs('4', { state:'failed', details:{ reason:'bad' } }).callCount, 1);
     test.done();
   });
 };
