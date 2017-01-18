@@ -44,7 +44,7 @@ function updateState(messageId, newState, reason, callback) {
   messageUtils.updateMessage(messageId, updateBody, callback);
 }
 
-function markMessagesScheduled(messages, callback) {
+function markMessagesForwarded(messages, callback) {
   async.eachSeries(
     messages,
     function(message, callback) {
@@ -72,7 +72,7 @@ function getOutgoing(callback) {
         content: message.message,
       };
     });
-    markMessagesScheduled(messages, function() {
+    markMessagesForwarded(messages, function() {
       callback(null, messages);
     });
   });
