@@ -36,7 +36,7 @@ Admins, who oversee all data on the webapp and work online, interact directly wi
 The webforms are powered by [Enketo](https://enketo.org/).
 We use the [nools](https://github.com/C2FO/nools) rules engine to compute the upcoming tasks and monthly targets of the users.
 
-For more information about the format of docs in the database, see [Database Schema](doc/db_schema.md).
+For more information about the format of docs in the database, see [Database Schema](db_schema.md).
 
 
 ## [medic-api](https://github.com/medic/medic-api/)
