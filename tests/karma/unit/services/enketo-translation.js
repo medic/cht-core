@@ -4,19 +4,6 @@ describe('EnketoTranslation service', function() {
   var service,
       assert = chai.assert;
 
-  // TODO this definition is leaked to other tests.  It's quite useful, so it
-  // should be moved to a common place
-  var equal = assert.equal;
-  assert.equal = function() {
-    try {
-      equal.apply(this, arguments);
-    } catch(e) {
-      throw new Error(e +
-          '\nA: ' + arguments[0] +
-          '\nB: ' + arguments[1]);
-    }
-  };
-
   beforeEach(function() {
     module('inboxApp');
     inject(function(_EnketoTranslation_) {

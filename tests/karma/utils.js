@@ -1,3 +1,15 @@
+// Override chai.assert.equal to pretty print.
+var equal = chai.assert.equal;
+chai.assert.equal = function() {
+  try {
+    equal.apply(this, arguments);
+  } catch(e) {
+    throw new Error(e +
+        '\nA: ' + JSON.stringify(arguments[0], null, 2) +
+        '\nB: ' + JSON.stringify(arguments[1], null, 2));
+  }
+};
+
 window.KarmaUtils = {
   restore: function() {
     for (var i = 0; i < arguments.length; i++) {
