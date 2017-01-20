@@ -4,7 +4,7 @@ This page gives details on the different pieces of a Medic Mobile instance, how 
 
 ## Overview
 
-![Architecture of a Medic Mobile instance](https://cdn.rawgit.com/medic/medic-webapp/master/architecture.svg)
+![Architecture of a Medic Mobile instance](https://cdn.rawgit.com/medic/medic-webapp/master/doc/architecture.svg)
 
 Medic Mobile instances are machines running [MedicOS](#medic-os), on which runs [medic-webapp](#medic-webapp) on a CouchDB server. In front of it there's [medic-api](#medic-api) (node api server) as an interface to the outside world, with nginx in front. [Medic-sentinel](#medic-sentinel) is a background processing helper on the server. [medic-gateway](#medic-gateway) sends and receives SMS messages for the server.
 
@@ -35,6 +35,8 @@ Admins, who oversee all data on the webapp and work online, interact directly wi
 
 The webforms are powered by [Enketo](https://enketo.org/).
 We use the [nools](https://github.com/C2FO/nools) rules engine to compute the upcoming tasks and monthly targets of the users.
+
+For more information about the format of docs in the database, see [Database Schema](doc/db_schema.md).
 
 
 ## [medic-api](https://github.com/medic/medic-api/)

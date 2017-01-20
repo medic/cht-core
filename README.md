@@ -13,6 +13,7 @@ The web app is fully responsive with a mobile-first design, and supports localiz
 
 For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
 For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](doc/architecture.md).
+For more information about the format of docs in the database, see [Database Schema](doc/db_schema.md).
 
 ## Development Setup
 
@@ -318,10 +319,10 @@ kanso push https://staging.dev.medicmobile.org/markets-alpha/upload
 ## Automated Deployment on Travis
 
 Code is automatically deployed via [Travis CI](https://travis-ci.org/medic/medic-webapp) to the [Garden 2.0
-Markets](https://github.com/garden20/garden-market) hosted at 
+Markets](https://github.com/garden20/garden-market) hosted at
 [staging.dev](https://staging.dev.medicmobile.org/).  We maintain several markets
 there for ease of testing and development, you can set your Garden Dashboard to
-use any one of them.  
+use any one of them.
 
 The deployment is based on the following git tags and branches:
 
