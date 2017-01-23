@@ -155,8 +155,10 @@ var _ = require('underscore'),
         // Because in 2017 we stop copying stuff in docs.
         return DB().get(doc.contact._id)
           .catch(function(err) {
-            $log.error(err);
-            return;
+            if (err.status === 404 || err.error === 'not_found') {
+              return;
+            }
+            throw err;
           });
       };
 
@@ -211,29 +213,37 @@ var _ = require('underscore'),
         });
       };
 
-      var removePrimaryContact = function(children, primaryContactDoc) {
-        if (!children || children.length === 0 || !primaryContactDoc) {
-          return;
-        }
-        var primaryContactIdx = _.findIndex(children, function(child) {
-          return child.doc._id === primaryContactDoc._id;
-        });
-        if (primaryContactIdx < 0) {
-          return;
-        }
-        children.splice(primaryContactIdx, 1);
-      };
-
-      var sortChildPersons = function(persons, contactDoc, primaryContactDoc) {
-        if (persons.length) {
-          if (contactDoc.type === 'clinic') {
-            sortFamilyMembers(persons);
+      var placePrimaryContactOnTop = function(primaryContactDoc, persons) {
+        var removePrimaryContact = function(children, primaryContactDoc) {
+          if (!children || children.length === 0 || !primaryContactDoc) {
+            return;
           }
-        }
+          var primaryContactIdx = _.findIndex(children, function(child) {
+            return child.doc._id === primaryContactDoc._id;
+          });
+          if (primaryContactIdx < 0) {
+            return;
+          }
+          children.splice(primaryContactIdx, 1);
+        };
+
         if (primaryContactDoc) {
           removePrimaryContact(persons, primaryContactDoc);
           persons.unshift({ id: primaryContactDoc._id, doc: primaryContactDoc, isPrimaryContact: true });
         }
+      };
+
+
+      var sortChildPersons = function(children, contactDoc, primaryContactDoc) {
+        if (!children.persons) {
+          children.persons = [];
+        }
+        if (children.persons.length) {
+          if (contactDoc.type === 'clinic') {
+            sortFamilyMembers(children.persons);
+          }
+        }
+        placePrimaryContactOnTop(primaryContactDoc, children.persons);
       };
 
       var getPersonReports = function(persons) {
@@ -293,10 +303,7 @@ var _ = require('underscore'),
 
                 selected.fields = selectedSchemaVisibleFields(selected);
 
-                if (!children.persons) {
-                  children.persons = [];
-                }
-                sortChildPersons(children.persons, contactDoc, primaryContact);
+                sortChildPersons(children, contactDoc, primaryContact);
 
                 if (children.places && children.places.length) {
                   var childPlacesSchema = ContactSchema.get(children.places[0].doc.type);
