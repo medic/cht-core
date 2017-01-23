@@ -1,4 +1,4 @@
-describe('ContactsContentCtrl', function() {
+describe.only('ContactsContentCtrl', function() {
   'use strict';
 
   var FETCH_CHILDREN_VIEW = 'medic-client/contacts_by_parent_name_type';
@@ -192,7 +192,7 @@ describe('ContactsContentCtrl', function() {
     it('if no contact person in children, persons still get displayed', function(done) {
       idStateParam = { id: doc._id };
       stubGetQuery(null, doc);
-      stubGetQuery({ err: 404 }, childContactPerson);
+      stubGetQuery({ status: 404 }, childContactPerson);
       stubGetVisibleFields(doc.type);
       stubFetchChildren([childPerson]);
       createController().getSetupPromiseForTesting()
@@ -293,7 +293,7 @@ describe('ContactsContentCtrl', function() {
       idStateParam = { id: doc._id };
       stubGetQuery(null, doc);
       // No contact person.
-      stubGetQuery({ err: 404 }, childContactPerson);
+      stubGetQuery({ status: 404 }, childContactPerson);
       stubGetVisibleFields(doc.type);
       stubFetchChildren(childrenArray);
       createController().getSetupPromiseForTesting()
@@ -376,7 +376,7 @@ describe('ContactsContentCtrl', function() {
       idStateParam = { id: doc._id };
       stubGetQuery(null, doc);
       // No contact person.
-      stubGetQuery({ err: 404 }, childContactPerson);
+      stubGetQuery({ status: 404 }, childContactPerson);
       stubGetVisibleFields(doc.type);
       stubFetchChildren(childrenArray);
       createController().getSetupPromiseForTesting()
