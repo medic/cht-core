@@ -49,7 +49,9 @@ On prod systems, nginx runs in front of it for SSL and compression.
 
 ## [medic-sentinel](https://github.com/medic/medic-sentinel/)
 
-A node program that runs on the server, listens to changes and edit docs if needed. It processes incoming reports (validation, generation of unique patient ids, generation of the schedule of outgoing messages triggered by the report, attach contact info to the report)
+A node program that runs on the server, listens to changes and edit docs if needed. It processes incoming SMS reports : validation, generation of unique patient ids, generation of the schedule of outgoing messages triggered by the report, attach contact info to the report. 
+
+Instances that only have android users (no SMS) do not use sentinel ([all transitions are disabled](https://github.com/medic/medic-sentinel#transitions-configuration-examples)).
 
 
 ## [medic-gateway](https://github.com/medic/medic-gateway/)
