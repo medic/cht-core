@@ -42,7 +42,9 @@ var _ = require('underscore');
             key = 'contact.type.place.new';
           }
         }
-        $translate(key).then($scope.setTitle);
+        $translate.onReady().then(function() {
+          return $translate(key);
+        }).then($scope.setTitle);
       };
 
       var getFormInstanceData = function() {
