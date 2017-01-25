@@ -643,6 +643,9 @@ Content-Type: application/json; charset=utf-8
 
 Todo: should updating the state value of a message require the doc's revision?
 
+## POST /api/sms
+
+Endpoint used by medic-gateway to send sms messages. More documentation in [the medic-gateway repo](https://github.com/medic/medic-gateway/blob/master/README.md).
 
 # People
 
