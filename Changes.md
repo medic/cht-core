@@ -2,9 +2,10 @@
 
 ## 0.4.15
 
-### TBD
+### Jan 27, 2017
 
-- Added migration for adding UUIDs to messages. Issue: #3015
+- Fixed potential race condition with medic-gateway. Issue: medic-projects/issues/1243
+- Bumped libphonenumber to make phone number validation more up to date. Issue: medic-projects/issues/1005
 
 ## 0.4.14
 
