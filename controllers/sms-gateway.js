@@ -6,6 +6,8 @@
 var async = require('async'),
     messageUtils = require('./message-utils'),
     recordUtils = require('./record-utils'),
+
+    // map from the medic-gateway state to the medic-webapp state
     STATUS_MAP = {
       UNSENT: 'received-by-gateway',
       PENDING: 'forwarded-by-gateway',
