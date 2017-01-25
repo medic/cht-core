@@ -38,6 +38,7 @@ audit history where required.
   - [GET /api/v1/messages](#get-apiv1messages)
   - [GET /api/v1/messages/{{id}}](#get-apiv1messagesid)
   - [PUT /api/v1/messages/state/{{id}}](#put-apiv1messagesstateid)
+  - [POST /api/sms](#post-apisms)
 - [People](#people)
   - [Supported Properties](#supported-properties)
   - [POST /api/v1/people](#post-apiv1people)
