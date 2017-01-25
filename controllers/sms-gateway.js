@@ -8,9 +8,10 @@ var async = require('async'),
     recordUtils = require('./record-utils'),
     STATUS_MAP = {
       UNSENT: 'received-by-gateway',
+      PENDING: 'forwarded-by-gateway',
       SENT: 'sent',
       DELIVERED: 'delivered',
-      FAILED: 'failed'
+      FAILED: 'failed',
     };
 
 function warn() {
@@ -28,37 +29,43 @@ function saveToDb(message, callback) {
 }
 
 function updateStateFor(update, callback) {
-  var newState = STATUS_MAP[update.status];
-  if (!newState) {
-    return callback(new Error('Could not work out new state for update: ' + JSON.stringify(update)));
+  var details,
+      newState = STATUS_MAP[update.status];
+  if (newState) {
+    if(update.reason) {
+      details = { reason: update.reason };
+    }
+  } else {
+    newState = 'unrecognised';
+    details = { gateway_status: update.status };
   }
-  updateState(update.id, newState, update.reason, callback);
+  updateState(update.id, newState, details, callback);
 }
 
-function updateState(messageId, newState, reason, callback) {
+function updateState(messageId, newState, details, callback) {
   var updateBody = {
     state: newState,
   };
-  if (reason) {
-    updateBody.details = { reason: reason };
+  if(details) {
+    updateBody.details = details;
   }
   messageUtils.updateMessage(messageId, updateBody, callback);
 }
 
-function markMessagesForwarded(messages, callback) {
-  async.eachSeries(
-    messages,
-    function(message, callback) {
-      updateState(message.id, 'forwarded-to-gateway', null, callback);
-    },
-    function(err) {
-      if (err) {
-        warn(err);
-      }
-      return callback();
-    }
-  );
-}
+// function markMessagesForwarded(messages, callback) {
+//   async.eachSeries(
+//     messages,
+//     function(message, callback) {
+//       updateState(message.id, 'forwarded-to-gateway', null, callback);
+//     },
+//     function(err) {
+//       if (err) {
+//         warn(err);
+//       }
+//       return callback();
+//     }
+//   );
+// }
 
 function getOutgoing(callback) {
   messageUtils.getMessages({ state: 'pending' }, function(err, pendingMessages) {
@@ -73,9 +80,11 @@ function getOutgoing(callback) {
         content: message.message,
       };
     });
-    markMessagesForwarded(messages, function() {
+    // TODO add this back in once this function also queries for
+    // messages in state: 'forwarded-to-gateway'
+    // markMessagesForwarded(messages, function() {
       callback(null, messages);
-    });
+    // });
   });
 }
 
