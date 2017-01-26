@@ -1,5 +1,3 @@
-var _ = require('underscore');
-
 /**
  * Note : this modal is really a full-fledged page, it does more than UI stuff (does the language changing).
  * It should eventually be a page.
@@ -11,8 +9,8 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
     $q,
     $scope,
     $uibModalInstance,
-    DB,
     Language,
+    Languages,
     Session,
     SetLanguage,
     UpdateUser
@@ -23,11 +21,9 @@ angular.module('inboxControllers').controller('UserLanguageModalCtrl',
 
     var initialLanguageCode;
 
-    DB()
-      .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
-      .then(function(result) {
-        $scope.enabledLocales = _.pluck(result.rows, 'value');
-      });
+    Languages().then(function(languages) {
+      $scope.enabledLocales = languages;
+    });
 
     Language()
       .then(function(language) {

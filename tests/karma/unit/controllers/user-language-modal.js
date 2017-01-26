@@ -3,9 +3,9 @@ describe('UserLanguageModalCtrl controller', function() {
 
   var createController,
       scope,
-      dbQuery,
       stubSetLanguage,
       stubLanguage,
+      stubLanguages,
       stubUpdateUser,
       spyUibModalInstance;
 
@@ -17,17 +17,15 @@ describe('UserLanguageModalCtrl controller', function() {
     scope.setProcessing = sinon.stub();
     scope.setFinished = sinon.stub();
     scope.setError = sinon.stub();
-    dbQuery = sinon.stub();
-    dbQuery.returns(KarmaUtils.mockPromise(
-      { rows: [
-        { value: { code: 'en', name: 'English' } },
-        { value: { code: 'sw', name: 'Swahili' } }
-      ] }
-    ));
     stubSetLanguage = sinon.stub();
     stubSetLanguage.returns(KarmaUtils.mockPromise());
     stubLanguage = sinon.stub();
     stubLanguage.returns(KarmaUtils.mockPromise(null, 'ab'));
+    stubLanguages = sinon.stub();
+    stubLanguages.returns(KarmaUtils.mockPromise(null, [
+      { code: 'en', name: 'English' },
+      { code: 'sw', name: 'Swahili' }
+    ]));
     spyUibModalInstance = {close: sinon.spy(), dismiss: sinon.spy()};
     stubUpdateUser = sinon.stub();
     stubUpdateUser.returns(KarmaUtils.mockPromise());
@@ -35,7 +33,6 @@ describe('UserLanguageModalCtrl controller', function() {
     createController = function() {
       return $controller('UserLanguageModalCtrl', {
         '$scope': scope,
-        'DB': KarmaUtils.mockDB({ query: dbQuery })(),
         'Session': { userCtx: function() {
           return { name: 'banana' };
         } },
@@ -43,13 +40,14 @@ describe('UserLanguageModalCtrl controller', function() {
         '$uibModalInstance': spyUibModalInstance,
         'UpdateUser': stubUpdateUser,
         'Language': stubLanguage,
+        'Languages': stubLanguages,
         '$q': Q
       });
     };
   }));
 
   afterEach(function() {
-    KarmaUtils.restore(dbQuery, stubSetLanguage, stubLanguage, stubUpdateUser, spyUibModalInstance);
+    KarmaUtils.restore(stubSetLanguage, stubLanguage, stubLanguages, stubUpdateUser, spyUibModalInstance);
   });
 
   it('changes language on user selection', function() {

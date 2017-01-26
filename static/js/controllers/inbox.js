@@ -1,7 +1,6 @@
 var feedback = require('../modules/feedback'),
     _ = require('underscore'),
-    moment = require('moment'),
-    guidedSetup = require('../modules/guided-setup');
+    moment = require('moment');
 
 (function () {
 
@@ -31,6 +30,7 @@ var feedback = require('../modules/feedback'),
       FacilityHierarchy,
       JsonForms,
       Language,
+      Languages,
       LiveListConfig,
       Location,
       Modal,
@@ -307,13 +307,6 @@ var feedback = require('../modules/feedback'),
         });
       };
 
-      // TODO when all modals are converted to on-demand modals, remove all these setup functions.
-      $scope.setupGuidedSetup = function() {
-        guidedSetup.init(Settings, UpdateSettings, $translate.instant);
-        modalsInited.guidedSetup = true;
-        showModals();
-      };
-
       Tour.getTours().then(function(tours) {
         $scope.tours = tours;
       });
@@ -323,6 +316,14 @@ var feedback = require('../modules/feedback'),
           templateUrl: 'templates/modals/tour_select.html',
           controller: 'TourSelectCtrl',
           singleton: true
+        });
+      };
+
+      $scope.openGuidedSetup = function() {
+        return Modal({
+          templateUrl: 'templates/modals/guided_setup.html',
+          controller: 'GuidedSetupModalCtrl',
+          size: 'lg'
         });
       };
 
@@ -362,12 +363,15 @@ var feedback = require('../modules/feedback'),
             return !settings.setup_complete;
           },
           render: function(callback) {
-            $('#guided-setup').modal('show');
-            $('#guided-setup').on('hide.bs.modal', callback);
-            UpdateSettings({ setup_complete: true })
+            $scope.openGuidedSetup()
+              .catch(function() {}) // modal was cancelled - continue
+              .then(function() {
+                return UpdateSettings({ setup_complete: true });
+              })
               .catch(function(err) {
                 $log.error('Error marking setup_complete', err);
-              });
+              })
+              .then(callback);
           }
         },
         // tour
@@ -378,43 +382,30 @@ var feedback = require('../modules/feedback'),
           render: function() {
             $scope.openTourSelect();
             var id = 'org.couchdb.user:' + Session.userCtx().name;
-            UpdateUser(id, { known: true })
-              .catch(function(err) {
-                $log.error('Error updating user', err);
-              });
+            UpdateUser(id, { known: true }).catch(function(err) {
+              $log.error('Error updating user', err);
+            });
           }
         },
       ];
 
-      var filteredModals;
-      var modalsInited = {
-        guidedSetup: false,
-        welcome: true,
-        userLanguage: true
-      };
-
-      var showModals = function() {
-        if (filteredModals && _.every(_.values(modalsInited))) {
-          // render the first modal and recursively show the rest
-          if (filteredModals.length) {
-            filteredModals.shift().render(function() {
-              showModals(filteredModals);
-            });
-          }
-        }
-      };
-
-      DB()
-        .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
-        .then(function(result) {
-          $scope.enabledLocales = _.pluck(result.rows, 'value');
-        });
+      Languages().then(function(languages) {
+        $scope.enabledLocales = languages;
+      });
 
       $q.all([ Settings(), UserSettings() ])
         .then(function(results) {
-          filteredModals = _.filter(startupModals, function(modal) {
+          var filteredModals = _.filter(startupModals, function(modal) {
             return modal.required(results[0], results[1]);
           });
+          var showModals = function() {
+            if (filteredModals && filteredModals.length) {
+              // render the first modal and recursively show the rest
+              filteredModals.shift().render(function() {
+                showModals();
+              });
+            }
+          };
           showModals();
         })
         .catch(function(err) {
