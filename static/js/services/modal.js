@@ -62,11 +62,8 @@ angular.module('inboxServices').factory('Modal',
       if (!options.controller) {
         return $q.reject('No controller speficied.');
       }
-      var instance = $uibModal.open({
-        scope: getScope(options.model),
-        templateUrl: options.templateUrl,
-        controller: options.controller
-      });
+      options.scope = getScope(options.model);
+      var instance = $uibModal.open(options);
       if (options.singleton) {
         if (instanceCache[options.templateUrl]) {
           instanceCache[options.templateUrl].close();

@@ -314,16 +314,6 @@ var feedback = require('../modules/feedback'),
         showModals();
       };
 
-      $scope.setupWelcome = function() {
-        modalsInited.welcome = true;
-        showModals();
-      };
-
-      var setupUserLanguage = function() {
-        modalsInited.userLanguage = true;
-        showModals();
-      };
-
       Tour.getTours().then(function(tours) {
         $scope.tours = tours;
       });
@@ -347,12 +337,8 @@ var feedback = require('../modules/feedback'),
               templateUrl: 'templates/modals/user_language.html',
               controller: 'UserLanguageModalCtrl'
             })
-              .then(function() {
-                callback();
-              })
-              .catch(function() {
-                callback();
-              });
+              .then(callback)
+              .catch(callback);
           }
         },
         // welcome screen
@@ -361,8 +347,13 @@ var feedback = require('../modules/feedback'),
             return !settings.setup_complete;
           },
           render: function(callback) {
-            $('#welcome').modal('show');
-            $('#welcome').on('hide.bs.modal', callback);
+            Modal({
+              templateUrl: 'templates/modals/welcome.html',
+              controller: 'WelcomeModalCtrl',
+              size: 'lg'
+            })
+              .then(callback)
+              .catch(callback);
           }
         },
         // guided setup
@@ -398,8 +389,8 @@ var feedback = require('../modules/feedback'),
       var filteredModals;
       var modalsInited = {
         guidedSetup: false,
-        welcome: false,
-        userLanguage: false
+        welcome: true,
+        userLanguage: true
       };
 
       var showModals = function() {
@@ -620,7 +611,6 @@ var feedback = require('../modules/feedback'),
       ];
 
       CountMessages.init();
-      setupUserLanguage();
 
       // close select2 dropdowns in the background
       var closeDropdowns = function() {
