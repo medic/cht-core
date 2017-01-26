@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 var querystring = require('querystring'),
-    http = require('http'),
+    https = require('https'),
     url = require('url'),
     csv = require('csv'),
     fs = require('fs'),
@@ -22,7 +22,7 @@ var usage = "\nUsage: load_messages.js <path> <url>\n\n"
     + "                      will be creation time.\n"
     + "url     URL to medic database.\n\n"
     + "Examples:\n\n"
-    + "node scripts/load_messages.js ~/data.csv http://admin:pass@localhost/medic\n\n"
+    + "node scripts/load_messages.js ~/data.csv https://admin:pass@localhost/medic\n\n"
     + "data.csv contents:\n\n"
     + "message,from,sent timestamp,locale\n"
     + "ANCR name Samantha,+3125551212 \n"
@@ -99,7 +99,7 @@ function postMessage(data) {
     options.headers["Content-Type"] = "application/x-www-form-urlencoded";
     options.method = 'POST';
 
-    var req = http.request(options, function(res) {
+    var req = https.request(options, function(res) {
       res.setEncoding('utf8');
       res.on('data', function (chunk) {
         console.log(chunk);
