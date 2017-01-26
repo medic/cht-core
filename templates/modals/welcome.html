@@ -1,28 +1,21 @@
-<div id="welcome" class="welcome modal fade" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="cancel close" data-dismiss="modal">&times;</button>
-        <h3>{{'welcome' | translate}}</h3>
-      </div>
-      <div class="modal-body">
-        <div class="row">
-          <div class="col-sm-6">
-            <h4>{{'welcome.setup.title' | translate}}</h4>
-            <p>{{'welcome.setup.description' | translate}}</p>
-          </div>
-          <div class="col-sm-6">
-            <h4>{{'welcome.tour.title' | translate}}</h4>
-            <p>{{'welcome.tour.description' | translate}}</p>
-          </div>
-        </div>
-        <div class="screenshot">
-          <img src="static/img/setup-wizard-demo.png" width="614" height="262" />
-        </div>
-      </div>
-      <div class="modal-footer">
-        <a class="btn btn-primary" data-dismiss="modal">{{'Start' | translate}}</a>
-      </div>
+<mm-modal
+  status="status"
+  title-key="'welcome'"
+  submit-key="'Start'"
+  on-cancel="start()"
+  on-submit="start()"
+>
+  <div class="row">
+    <div class="col-sm-6">
+      <h4 translate>welcome.setup.title</h4>
+      <p translate>welcome.setup.description</p>
+    </div>
+    <div class="col-sm-6">
+      <h4 translate>welcome.tour.title</h4>
+      <p translate>welcome.tour.description</p>
     </div>
   </div>
-</div>
+  <div class="screenshot">
+    <img src="static/img/setup-wizard-demo.png" width="614" height="262" />
+  </div>
+</mm-modal>
