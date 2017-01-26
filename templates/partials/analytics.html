@@ -6,12 +6,15 @@
 
 <div class="inner" data-page="reporting_rates" ng-cloak>
   <div class="page reporting" ui-view="content">
-    <ul class="mm-navigation-menu">
+    <ul class="mm-navigation-menu" ng-show="analyticsModules.length">
       <li ng-repeat="module in analyticsModules">
         <a ui-sref="{{module.state}}">
           <span>{{module.label | translate}}</span>
         </a>
       </li>
+    </ul>
+    <div class="item-content empty-selection" ng-show="!analyticsModules.length">
+      <div translate>analytics.unconfigured</div>
     </div>
   </div>
 </div>
