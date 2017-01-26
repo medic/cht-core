@@ -337,12 +337,8 @@ var feedback = require('../modules/feedback'),
               templateUrl: 'templates/modals/user_language.html',
               controller: 'UserLanguageModalCtrl'
             })
-              .then(function() {
-                callback();
-              })
-              .catch(function() {
-                callback();
-              });
+              .then(callback)
+              .catch(callback);
           }
         },
         // welcome screen
@@ -356,12 +352,8 @@ var feedback = require('../modules/feedback'),
               controller: 'WelcomeModalCtrl',
               size: 'lg'
             })
-              .then(function() {
-                callback();
-              })
-              .catch(function() {
-                callback();
-              });
+              .then(callback)
+              .catch(callback);
           }
         },
         // guided setup
