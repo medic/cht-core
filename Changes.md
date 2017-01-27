@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 2.9.1
+
+_January 27, 2017_
+
+### Bug fixes
+
+- Added a migration to fix scheduled messages so they can be sent by medic-gateway. Issue: #3015
+
 ## 2.9.0
 
 _December 9, 2016_
