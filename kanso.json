@@ -500,12 +500,12 @@
                                             "rule": {
                                                 "type": "string",
                                                 "title": "Validation Rule",
-                                                "description": "The <a href='/medic/_design/medic/_rewrite/#/help/validation' rel='external'>validation rule</a>. Backslashes must be double escaped. e.g. lenMin(5) && lenMax(50)"
+                                                "description": "The validation rule. Backslashes must be double escaped. e.g. lenMin(5) && lenMax(50)"
                                             },
                                             "message": {
                                                 "type": "array",
                                                 "title": "Response Message",
-                                                "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported.",
+                                                "description": "The response when validation fails. Mustache templating is supported.",
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
@@ -542,7 +542,7 @@
                                     "message": {
                                         "type": "array",
                                         "title": "Message",
-                                        "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                                        "description": "Mustache templating is supported",
                                         "items": {
                                             "type": "object",
                                             "properties": {
@@ -645,12 +645,12 @@
                                             "rule": {
                                                 "type": "string",
                                                 "title": "Validation Rule",
-                                                "description": "The <a href='/medic/_design/medic/_rewrite/#/help/validation' rel='external'>validation rule</a>. Backslashes must be double escaped. e.g. regex('[0-9]{5}')"
+                                                "description": "The validation rule. Backslashes must be double escaped. e.g. regex('[0-9]{5}')"
                                             },
                                             "message": {
                                                 "title": "Response Message",
                                                 "type": "array",
-                                                "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported.",
+                                                "description": "The response when validation fails. Mustache templating is supported.",
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
@@ -686,7 +686,7 @@
                                     "message": {
 										"type": "array",
                                         "title": "Message Text",
-                                        "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                                        "description": "Mustache templating is supported",
                                         "items": {
                                             "type": "object",
                                             "properties": {
@@ -770,7 +770,7 @@
                         "messages": {
                             "type": "array",
                             "title": "Messages",
-                            "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                            "description": "Mustache templating is supported",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -884,12 +884,12 @@
                                         "rule": {
                                             "type": "string",
                                             "title": "Validation Rule",
-                                            "description": "The <a href='/medic/_design/medic/_rewrite/#/help/validation' rel='external'>validation rule</a>. Backslashes must be double escaped. e.g. regex('[0-9]{5}')"
+                                            "description": "The validation rule. Backslashes must be double escaped. e.g. regex('[0-9]{5}')"
                                         },
                                         "message": {
                                             "title": "Response Message",
                                             "type": "array",
-                                            "description": "The response when validation fails. <a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported.",
+                                            "description": "The response when validation fails. Mustache templating is supported.",
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
@@ -925,7 +925,7 @@
                                 "message": {
                                     "type": "array",
                                     "title": "Message",
-                                    "description": "<a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                                    "description": "Mustache templating is supported",
                                     "items": {
                                         "type": "object",
                                         "properties": {
@@ -1096,7 +1096,7 @@
                                             "title": {
                                                 "title": "Title",
                                                 "type": "array",
-                                                "description": "User-displayed title of the task. <a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                                                "description": "User-displayed title of the task. Mustache templating is supported",
                                                 "default": [],
                                                 "items": {
                                                     "type": "object",
@@ -1116,7 +1116,7 @@
                                             "description": {
                                                 "title": "Description",
                                                 "type": "array",
-                                                "description": "User-displayed description of the task. <a href='/medic/_design/medic/_rewrite/#/help/messages' rel='external'>Mustache</a> templating is supported",
+                                                "description": "User-displayed description of the task. Mustache templating is supported",
                                                 "default": [],
                                                 "items": {
                                                     "type": "object",
