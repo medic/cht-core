@@ -1,109 +1,107 @@
 var libphonenumber = require('libphonenumber/utils'),
     countries = require('../modules/countries');
 
-(function () {
+angular.module('inboxControllers').controller('ConfigurationSettingsBasicCtrl',
+  function (
+    $log,
+    $scope,
+    $timeout,
+    $translate,
+    Settings,
+    Languages,
+    UpdateSettings
+  ) {
 
-  'use strict';
+    'use strict';
+    'ngInject';
 
-  var inboxControllers = angular.module('inboxControllers');
+    var validateCountryCode = function() {
+      var countryCode = $('#default-country-code').val();
 
-  inboxControllers.controller('ConfigurationSettingsBasicCtrl',
-    function (
-      $log,
-      $scope,
-      $timeout,
-      Settings,
-      translateFilter,
-      UpdateSettings
-    ) {
+      // required field
+      if (!countryCode) {
+        var countryCodeField = $translate.instant('Default country code');
+        $scope.basicSettingsModel.error.default_country_code = $translate.instant(
+          'field is required', { field: countryCodeField }
+        );
+        return false;
+      }
 
-      'ngInject';
+      return true;
+    };
 
-      var validateCountryCode = function() {
-        var countryCode = $('#default-country-code').val();
+    var validateGatewayNumber = function() {
+      var gatewayNumber = $scope.basicSettingsModel.gateway_number;
 
-        // required field
-        if (!countryCode) {
-          var countryCodeField = translateFilter('Default country code');
-          $scope.basicSettingsModel.error.default_country_code = translateFilter(
-            'field is required', { field: countryCodeField }
-          );
-          return false;
-        }
+      // required field
+      if (!gatewayNumber) {
+        var gatewayNumberField = $translate.instant('Gateway number');
+        $scope.basicSettingsModel.error.gateway_number = $translate.instant(
+          'field is required', { field: gatewayNumberField }
+        );
+        return false;
+      }
 
-        return true;
-      };
+      // must be a valid phone number
+      var info = { default_country_code: $('#default-country-code').val() };
+      if (!libphonenumber.validate(info, gatewayNumber)) {
+        $scope.basicSettingsModel.error.gateway_number = $translate.instant('Phone number not valid');
+        return false;
+      }
 
-      var validateGatewayNumber = function() {
-        var gatewayNumber = $scope.basicSettingsModel.gateway_number;
+      // normalise value
+      $scope.basicSettingsModel.gateway_number = libphonenumber.format(info, gatewayNumber);
 
-        // required field
-        if (!gatewayNumber) {
-          var gatewayNumberField = translateFilter('Gateway number');
-          $scope.basicSettingsModel.error.gateway_number = translateFilter(
-            'field is required', { field: gatewayNumberField }
-          );
-          return false;
-        }
+      return true;
+    };
 
-        // must be a valid phone number
-        var info = { default_country_code: $('#default-country-code').val() };
-        if (!libphonenumber.validate(info, gatewayNumber)) {
-          $scope.basicSettingsModel.error.gateway_number = translateFilter('Phone number not valid');
-          return false;
-        }
+    var validate = function() {
+      return validateCountryCode() && validateGatewayNumber();
+    };
 
-        // normalise value
-        $scope.basicSettingsModel.gateway_number = libphonenumber.format(info, gatewayNumber);
+    $scope.submitBasicSettings = function() {
+      $scope.basicSettingsModel.error = {};
+      if (validate()) {
+        $scope.status = { loading: true };
+        var settings = {
+          locale: $scope.basicSettingsModel.locale,
+          locale_outgoing: $scope.basicSettingsModel.locale_outgoing,
+          gateway_number: $scope.basicSettingsModel.gateway_number,
+          default_country_code: $('#default-country-code').val()
+        };
+        UpdateSettings(settings)
+          .then(function() {
+            $scope.status = { success: true, msg: $translate.instant('Saved') };
+            $timeout(function() {
+              if ($scope.status) {
+                $scope.status.success = false;
+              }
+            }, 3000);
+          })
+          .catch(function(err) {
+            $log.error('Error updating settings', err);
+            $scope.status = { error: true, msg: $translate.instant('Error saving settings') };
+          });
+      }
+    };
 
-        return true;
-      };
+    Languages().then(function(languages) {
+      $scope.enabledLocales = languages;
+    });
 
-      var validate = function() {
-        return validateCountryCode() && validateGatewayNumber();
-      };
-      
-      $scope.submitBasicSettings = function() {
-        $scope.basicSettingsModel.error = {};
-        if (validate()) {
-          $scope.status = { loading: true };
-          var settings = {
-            locale: $scope.basicSettingsModel.locale,
-            locale_outgoing: $scope.basicSettingsModel.locale_outgoing,
-            gateway_number: $scope.basicSettingsModel.gateway_number,
-            default_country_code: $('#default-country-code').val()
-          };
-          UpdateSettings(settings)
-            .then(function() {
-              $scope.status = { success: true, msg: translateFilter('Saved') };
-              $timeout(function() {
-                if ($scope.status) {
-                  $scope.status.success = false;
-                }
-              }, 3000);
-            })
-            .catch(function(err) {
-              $log.error('Error updating settings', err);
-              $scope.status = { error: true, msg: translateFilter('Error saving settings') };
-            });
-        }
-      };
+    Settings()
+      .then(function(res) {
+        $scope.basicSettingsModel = {
+          locale: res.locale,
+          locale_outgoing: res.locale_outgoing,
+          gateway_number: res.gateway_number
+        };
+        $('#default-country-code').select2({ width: '20em', data: countries.list });
+        $('#default-country-code').val(res.default_country_code).trigger('change');
+      })
+      .catch(function(err) {
+        $log.error('Error loading settings', err);
+      });
 
-      Settings()
-        .then(function(res) {
-          $scope.basicSettingsModel = {
-            locale: res.locale,
-            locale_outgoing: res.locale_outgoing,
-            gateway_number: res.gateway_number
-          };
-          $('#default-country-code').select2({ width: '20em', data: countries.list });
-          $('#default-country-code').val(res.default_country_code).trigger('change');
-        })
-        .catch(function(err) {
-          $log.error('Error loading settings', err);
-        });
-
-    }
-  );
-
-}());
+  }
+);

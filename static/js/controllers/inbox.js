@@ -30,7 +30,6 @@ var feedback = require('../modules/feedback'),
       FacilityHierarchy,
       JsonForms,
       Language,
-      Languages,
       LiveListConfig,
       Location,
       Modal,
@@ -98,7 +97,6 @@ var feedback = require('../modules/feedback'),
       $scope.error = false;
       $scope.errorSyntax = false;
       $scope.appending = false;
-      $scope.languages = [];
       $scope.facilities = [];
       $scope.people = [];
       $scope.filterQuery = { value: undefined };
@@ -312,11 +310,11 @@ var feedback = require('../modules/feedback'),
       });
 
       $scope.openTourSelect = function() {
-        Modal({
+        return Modal({
           templateUrl: 'templates/modals/tour_select.html',
           controller: 'TourSelectCtrl',
           singleton: true
-        });
+        }).catch(function() {}); // modal dismissed is ok
       };
 
       $scope.openGuidedSetup = function() {
@@ -324,7 +322,7 @@ var feedback = require('../modules/feedback'),
           templateUrl: 'templates/modals/guided_setup.html',
           controller: 'GuidedSetupModalCtrl',
           size: 'lg'
-        });
+        }).catch(function() {}); // modal dismissed is ok
       };
 
       var startupModals = [
@@ -333,13 +331,11 @@ var feedback = require('../modules/feedback'),
           required: function(settings, user) {
             return !user.language;
           },
-          render: function(callback) {
-            Modal({
+          render: function() {
+            return Modal({
               templateUrl: 'templates/modals/user_language.html',
               controller: 'UserLanguageModalCtrl'
-            })
-              .then(callback)
-              .catch(callback);
+            }).catch(function() {});
           }
         },
         // welcome screen
@@ -347,14 +343,12 @@ var feedback = require('../modules/feedback'),
           required: function(settings) {
             return !settings.setup_complete;
           },
-          render: function(callback) {
-            Modal({
+          render: function() {
+            return Modal({
               templateUrl: 'templates/modals/welcome.html',
               controller: 'WelcomeModalCtrl',
               size: 'lg'
-            })
-              .then(callback)
-              .catch(callback);
+            }).catch(function() {});
           }
         },
         // guided setup
@@ -362,16 +356,14 @@ var feedback = require('../modules/feedback'),
           required: function(settings) {
             return !settings.setup_complete;
           },
-          render: function(callback) {
-            $scope.openGuidedSetup()
-              .catch(function() {}) // modal was cancelled - continue
+          render: function() {
+            return $scope.openGuidedSetup()
               .then(function() {
                 return UpdateSettings({ setup_complete: true });
               })
               .catch(function(err) {
                 $log.error('Error marking setup_complete', err);
-              })
-              .then(callback);
+              });
           }
         },
         // tour
@@ -380,18 +372,17 @@ var feedback = require('../modules/feedback'),
             return !user.known;
           },
           render: function() {
-            $scope.openTourSelect();
-            var id = 'org.couchdb.user:' + Session.userCtx().name;
-            UpdateUser(id, { known: true }).catch(function(err) {
-              $log.error('Error updating user', err);
-            });
+            return $scope.openTourSelect()
+              .then(function() {
+                var id = 'org.couchdb.user:' + Session.userCtx().name;
+                return UpdateUser(id, { known: true });
+              })
+              .catch(function(err) {
+                $log.error('Error updating user', err);
+              });
           }
         },
       ];
-
-      Languages().then(function(languages) {
-        $scope.enabledLocales = languages;
-      });
 
       $q.all([ Settings(), UserSettings() ])
         .then(function(results) {
@@ -401,9 +392,7 @@ var feedback = require('../modules/feedback'),
           var showModals = function() {
             if (filteredModals && filteredModals.length) {
               // render the first modal and recursively show the rest
-              filteredModals.shift().render(function() {
-                showModals();
-              });
+              filteredModals.shift().render().then(showModals);
             }
           };
           showModals();
