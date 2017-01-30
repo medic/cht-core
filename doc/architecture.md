@@ -29,7 +29,7 @@ The server code is a [couchapp](http://couchapp.readthedocs.io/en/latest/intro/w
 ![Medic Webapp, desktop UI](http://medicmobile.org/img/platform/toolkit-contacts-web-v2.png)
 ![Medic Webapp, mobile UI](http://medicmobile.org/img/platform/mobile-app-tasks.jpg)
 
-Most users, whether on desktop or mobile, replicate the couchdb database locally via [PouchDB](https://pouchdb.com/), a JS database in the browser. This allows allows them to work offline and have their DB state automatically synced with the server, using Couch's 2-way replication. A given user only gets the data relevent to them (filtered replication).
+Most users, whether on desktop or mobile, replicate the couchdb database locally via [PouchDB](https://pouchdb.com/), a JS database in the browser. This allows them to work offline and have their DB state automatically synced with the server, using Couch's 2-way replication. A given user only gets the data relevant to them (filtered replication).
 
 Admins, who oversee all data on the webapp and work online, interact directly with CouchDB. They don't replicate data in a local DB to avoid having excessively large quantities of data pulled down.
 
