@@ -13,6 +13,8 @@ var _ = require('underscore');
       FileReader
     ) {
 
+      'ngInject';
+
       var withAvailableForms = DB().query('medic-client/forms')
         .then(function(res) {
           return _.pluck(res.rows, 'id');
