@@ -46,6 +46,7 @@
   require('./edit-user');
   require('./error');
   require('./feedback');
+  require('./guided-setup-modal');
   require('./help');
   require('./home');
   require('./import-translation');

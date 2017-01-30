@@ -1,7 +1,6 @@
 var feedback = require('../modules/feedback'),
     _ = require('underscore'),
-    moment = require('moment'),
-    guidedSetup = require('../modules/guided-setup');
+    moment = require('moment');
 
 (function () {
 
@@ -98,7 +97,6 @@ var feedback = require('../modules/feedback'),
       $scope.error = false;
       $scope.errorSyntax = false;
       $scope.appending = false;
-      $scope.languages = [];
       $scope.facilities = [];
       $scope.people = [];
       $scope.filterQuery = { value: undefined };
@@ -307,23 +305,24 @@ var feedback = require('../modules/feedback'),
         });
       };
 
-      // TODO when all modals are converted to on-demand modals, remove all these setup functions.
-      $scope.setupGuidedSetup = function() {
-        guidedSetup.init(Settings, UpdateSettings, $translate.instant);
-        modalsInited.guidedSetup = true;
-        showModals();
-      };
-
       Tour.getTours().then(function(tours) {
         $scope.tours = tours;
       });
 
       $scope.openTourSelect = function() {
-        Modal({
+        return Modal({
           templateUrl: 'templates/modals/tour_select.html',
           controller: 'TourSelectCtrl',
           singleton: true
-        });
+        }).catch(function() {}); // modal dismissed is ok
+      };
+
+      $scope.openGuidedSetup = function() {
+        return Modal({
+          templateUrl: 'templates/modals/guided_setup.html',
+          controller: 'GuidedSetupModalCtrl',
+          size: 'lg'
+        }).catch(function() {}); // modal dismissed is ok
       };
 
       var startupModals = [
@@ -332,13 +331,11 @@ var feedback = require('../modules/feedback'),
           required: function(settings, user) {
             return !user.language;
           },
-          render: function(callback) {
-            Modal({
+          render: function() {
+            return Modal({
               templateUrl: 'templates/modals/user_language.html',
               controller: 'UserLanguageModalCtrl'
-            })
-              .then(callback)
-              .catch(callback);
+            }).catch(function() {});
           }
         },
         // welcome screen
@@ -346,14 +343,12 @@ var feedback = require('../modules/feedback'),
           required: function(settings) {
             return !settings.setup_complete;
           },
-          render: function(callback) {
-            Modal({
+          render: function() {
+            return Modal({
               templateUrl: 'templates/modals/welcome.html',
               controller: 'WelcomeModalCtrl',
               size: 'lg'
-            })
-              .then(callback)
-              .catch(callback);
+            }).catch(function() {});
           }
         },
         // guided setup
@@ -361,10 +356,11 @@ var feedback = require('../modules/feedback'),
           required: function(settings) {
             return !settings.setup_complete;
           },
-          render: function(callback) {
-            $('#guided-setup').modal('show');
-            $('#guided-setup').on('hide.bs.modal', callback);
-            UpdateSettings({ setup_complete: true })
+          render: function() {
+            return $scope.openGuidedSetup()
+              .then(function() {
+                return UpdateSettings({ setup_complete: true });
+              })
               .catch(function(err) {
                 $log.error('Error marking setup_complete', err);
               });
@@ -376,9 +372,11 @@ var feedback = require('../modules/feedback'),
             return !user.known;
           },
           render: function() {
-            $scope.openTourSelect();
-            var id = 'org.couchdb.user:' + Session.userCtx().name;
-            UpdateUser(id, { known: true })
+            return $scope.openTourSelect()
+              .then(function() {
+                var id = 'org.couchdb.user:' + Session.userCtx().name;
+                return UpdateUser(id, { known: true });
+              })
               .catch(function(err) {
                 $log.error('Error updating user', err);
               });
@@ -386,35 +384,17 @@ var feedback = require('../modules/feedback'),
         },
       ];
 
-      var filteredModals;
-      var modalsInited = {
-        guidedSetup: false,
-        welcome: true,
-        userLanguage: true
-      };
-
-      var showModals = function() {
-        if (filteredModals && _.every(_.values(modalsInited))) {
-          // render the first modal and recursively show the rest
-          if (filteredModals.length) {
-            filteredModals.shift().render(function() {
-              showModals(filteredModals);
-            });
-          }
-        }
-      };
-
-      DB()
-        .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
-        .then(function(result) {
-          $scope.enabledLocales = _.pluck(result.rows, 'value');
-        });
-
       $q.all([ Settings(), UserSettings() ])
         .then(function(results) {
-          filteredModals = _.filter(startupModals, function(modal) {
+          var filteredModals = _.filter(startupModals, function(modal) {
             return modal.required(results[0], results[1]);
           });
+          var showModals = function() {
+            if (filteredModals && filteredModals.length) {
+              // render the first modal and recursively show the rest
+              filteredModals.shift().render().then(showModals);
+            }
+          };
           showModals();
         })
         .catch(function(err) {

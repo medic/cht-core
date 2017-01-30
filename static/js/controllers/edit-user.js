@@ -11,7 +11,7 @@
       $uibModalInstance,
       $window,
       ContactSchema,
-      DB,
+      Languages,
       Select2Search,
       Session,
       SetLanguage,
@@ -24,13 +24,9 @@
         $uibModalInstance.dismiss();
       };
 
-      DB()
-        .query('medic-client/doc_by_type', { key: [ 'translations', true ] })
-        .then(function(result) {
-          $scope.enabledLocales = result.rows.map(function(row) {
-            return row.value;
-          });
-        });
+      Languages().then(function(languages) {
+        $scope.enabledLocales = languages;
+      });
 
       var rolesMap = {
         'national-manager': ['kujua_user', 'data_entry', 'national_admin'],

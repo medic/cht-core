@@ -39,6 +39,7 @@
   require('./import-contacts');
   require('./kanso-packages');
   require('./language');
+  require('./languages');
   require('./location');
   require('./markdown');
   require('./live-list');
