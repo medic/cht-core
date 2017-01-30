@@ -3,6 +3,7 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl',
     $log,
     $scope,
     $timeout,
+    RulesEngine,
     TargetGenerator
   ) {
 
@@ -10,6 +11,7 @@ angular.module('inboxControllers').controller('AnalyticsTargetsCtrl',
     'ngInject';
 
     $scope.targets = [];
+    $scope.targetsDisabled = !RulesEngine.enabled;
 
     TargetGenerator(function(err, targets) {
       if (err) {
