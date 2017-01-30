@@ -6,20 +6,20 @@ Usage:
 	$0 <testScript>
 
 Example:
-	$0 ../medic-projects/lg-uganda/tasks/tests.js
+	$0 ../../../medic-projects/lg-uganda/tasks/tests.js
 EOF
 	exit 1
 fi
 
 testScript="$1"
+scriptDir="$(dirname $0)"
 
 # Force node_modules resolution relative to the current working directory.
 # This allows test scripts to pick up the dependency versions supplied by webapp
 # instead of having to define their own.
-export NODE_PATH="$(pwd)/node_modules"
+export NODE_PATH="$scriptDir/../../node_modules"
 
-scriptDir="$(dirname $0)"
-"$scriptDir/../node_modules/mocha/bin/mocha" \
+"$NODE_PATH/mocha/bin/mocha" \
 	--require "$scriptDir/rules-testing/nools-test" \
 	--globals NoolsTest \
 	"$testScript"
