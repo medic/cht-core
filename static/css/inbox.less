@@ -705,26 +705,25 @@ body {
       content: '';
       margin-right: 0;
     }
-    &.pending:before {
-      color: @pending-state-color;
-    }
-    &.muted:before {
-      color: @muted-state-color;
-    }
-    &.cleared:before {
-      color: @cleared-state-color;
-    }
-    &.sent:before {
-      color: @sent-state-color;
-    }
     &.scheduled:before {
       color: @scheduled-state-color;
     }
+    &.pending:before,
+    &.forwarded-to-gateway:before,
+    &.received-by-gateway:before {
+      color: @pending-state-color;
+    }
+    &.sent:before,
     &.delivered:before {
-      color: @delivered-state-color;
+      color: @sent-state-color;
+    }
+    &.muted:before,
+    &.failed:before,
+    &.denied:before {
+      color: @muted-state-color;
     }
     &.failed:before {
-      color: @scheduled-state-color;
+      color: @failed-state-color;
     }
   }
 }
