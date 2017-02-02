@@ -1223,6 +1223,45 @@ exports['valid javarosa message with space in label parses right'] = function (t
     test.done();
 };
 
+exports['handles unmatched labels'] = function (test) {
+    var getForm = sinon.stub(utils.info, 'getForm').returns({
+        meta: {
+          code: 'T',
+          label: 'Test'
+        },
+        fields: {
+          one: {
+            labels: {
+              short: 'one',
+              tiny: 'one'
+            }
+          },
+          odd: {
+            labels: {
+              short: 'odd',
+              tiny: 'odd'
+            }
+          }
+        }
+    });
+    var def = utils.info.getForm('T');
+    var doc = {
+        sent_timestamp: '12-11-11 15:00',
+        from: '+15551212',
+        message: 'J1!T!one#two#odd'
+    };
+
+    var obj = smsparser.parse(def, doc);
+
+    test.ok(getForm.alwaysCalledWith('T'));
+    test.same(obj, {
+        one: 'two',
+        odd: undefined
+    });
+
+    test.done();
+};
+
 exports['junk example data'] = function (test) {
 
     var doc = {
