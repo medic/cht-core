@@ -84,12 +84,14 @@ exports['add_patient trigger creates a new patient'] = function(test) {
     var submitterId = 'papa';
     var patientId = '05649';
     var senderPhoneNumber = '+555123';
+    var dob = '2017-03-31T01:15:09.000Z';
     var change = { doc: {
         form: 'R',
         patient_id: patientId,
         reported_date: 53,
         from: senderPhoneNumber,
-        fields: { patient_name: patientName }
+        fields: { patient_name: patientName },
+        birth_date: dob
     } };
     // return expected view results when searching for people_by_phone
     var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: submitterId } } } ] });
@@ -117,6 +119,7 @@ exports['add_patient trigger creates a new patient'] = function(test) {
         test.equals(saveDoc.args[0][0].reported_date, 53);
         test.equals(saveDoc.args[0][0].type, 'person');
         test.equals(saveDoc.args[0][0].patient_id, patientId);
+        test.equals(saveDoc.args[0][0].date_of_birth, dob);
         test.done();
     });
 };

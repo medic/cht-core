@@ -341,6 +341,10 @@ module.exports = {
                     type: 'person',
                     patient_id: patientId
                 };
+                // include the DOB if it was generated on report
+                if (doc.birth_date) {
+                  patient.date_of_birth = doc.birth_date;
+                }
                 audit.saveDoc(patient, callback);
             });
         });
