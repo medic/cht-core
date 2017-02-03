@@ -1,3 +1,25 @@
+/**
+Transitions are actions that will be taken for relevant db changes, and that can edit the
+changed doc (and other docs).
+By default all transitions are disabled. Transitions can be enabled in configuration.
+Configuration will be fetched from settings_path (see default.js).
+
+Transitions are expected to have :
+ - a `function filter(doc)`, taking the changed `doc` as argument, and returning `true`
+ if the transition should be run on the change
+  - a `function onMatch(change, db, auditDb, callback)` than will run on changes that
+pass the filter.
+
+Transitions are run in series, not in parallel :
+ - For a given change, you can expect one transition to be finished before the next runs.
+ - You can expected one change to be fully processed before the next starts being processed.
+
+This file :
+ - Loads transitions using `require` on files in `transitions` dir
+ - checks each transition is enabled
+ - listens to the changes feed
+ - sets up the queue that processes the changes.
+*/
 var _ = require('underscore'),
     follow = require('follow'),
     async = require('async'),
