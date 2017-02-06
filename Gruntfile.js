@@ -379,6 +379,12 @@ module.exports = function(grunt) {
       npm: {
         bower: false
       }
+    },
+    'regex-check': {
+      files: 'tests/**/*.js',
+      options: {
+        pattern : /.only\(/g
+      }
     }
   });
 
@@ -460,6 +466,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci', 'Lint, build, minify, deploy and test for CI', [
+    'regex-check',
     'jshint',
     'mmnpm',
     'build',

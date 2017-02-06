@@ -1,4 +1,4 @@
-describe.only('ContactsContentCtrl', function() {
+describe('ContactsContentCtrl', function() {
   'use strict';
 
   var FETCH_CHILDREN_VIEW = 'medic-client/contacts_by_parent_name_type';
