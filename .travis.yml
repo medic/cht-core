@@ -30,7 +30,7 @@ before_script:
 
 script:
   - node --stack_size=10000 `which grunt` ci
-  - cat nohup.out
+  - if [ -f nohup.out ]; then cat nohup.out; fi
 
 after_success:
   - python ./scripts/ci/travis_after_all.py
