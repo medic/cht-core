@@ -1,25 +1,8 @@
-/**
-Transitions are actions that will be taken for relevant db changes, and that can edit the
-changed doc (and other docs).
-By default all transitions are disabled. Transitions can be enabled in configuration.
-Configuration will be fetched from settings_path (see default.js).
+/*
+ * Transitions runner.  Set up the changes listener and apply each transition
+ * serially to a change.
+ */
 
-Transitions are expected to have :
- - a `function filter(doc)`, taking the changed `doc` as argument, and returning `true`
- if the transition should be run on the change
-  - a `function onMatch(change, db, auditDb, callback)` than will run on changes that
-pass the filter.
-
-Transitions are run in series, not in parallel :
- - For a given change, you can expect one transition to be finished before the next runs.
- - You can expected one change to be fully processed before the next starts being processed.
-
-This file :
- - Loads transitions using `require` on files in `transitions` dir
- - checks each transition is enabled
- - listens to the changes feed
- - sets up the queue that processes the changes.
-*/
 var _ = require('underscore'),
     follow = require('follow'),
     async = require('async'),
@@ -100,6 +83,11 @@ var processChange = function(change, callback) {
     });
 };
 
+/*
+ * Load transitions using `require` based on what is in AVAILABLE_TRANSITIONS
+ * constant and what is enabled in the `transitions` property in the settings
+ * data.  Log warnings on failure.
+ */
 var loadTransitions = function() {
   var self = module.exports;
   _.each(config.get('transitions'), function(conf, key) {
@@ -214,7 +202,11 @@ var finalize = function(options, callback) {
 
 /*
  * All transitions reference the same change.doc and work in series to
- * apply changes to it.
+ * apply changes to it.  A transition is free to make async calls but the next
+ * transition will only run after the previous transitions's callback is
+ * called.  This is a performance optimization that allows us to apply N
+ * transitions (updates) to a document with the cost of a single database
+ * change/write.
  */
 var applyTransition = function(options, callback) {
 
@@ -352,9 +344,10 @@ var updateMetaData = function(seq, callback) {
     });
 };
 
+/*
+ *  Setup changes feed listener.
+ */
 var attach = function() {
-
-
 
     // tell everyone we're here
     logger.info('transitions: processing enabled');
