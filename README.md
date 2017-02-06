@@ -84,10 +84,15 @@ Builds brought to you courtesy of [Travis CI](https://travis-ci.org/medic/medic-
 
 # Migrations
 
-Migrations are scripts located in the `/migrations` directory, and are automatically run before api starts up. Migrations are only run once, and are run in the order they were created, based on their `created` date.
+Migrations are scripts located in the `/migrations` directory, and are automatically by medic-api run before the webserver starts up.
+
+Typically, migrations are used to run a specific edit on all docs in the database (e.g. add a field to all docs of type X), but you can do whatever you like in a migration.
+
+Migrations are only run once, and are run in the order they were created, based on their `created` date. Only one migration is run at a time.
+
+Migrations that error will cause medic-api to stop on an error, and will be attempted again the next time you start medic-api.
 
 ## Migration script api
-
 Your migration script should have an export that looks like this:
 ```js
 module.exports = {
@@ -102,7 +107,8 @@ module.exports = {
 }
 ```
 
-You can do whatever you like in a migration. Only one migration is run at a time. Migrations that error will cause api to not start up, and will be attempted again the next time you start api.
+Place your script in the `/migrations` folder and it will get picked up by medic-api at the next restart.
+
 
 ## Implementation, re-running migrations by hand
 
