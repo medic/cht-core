@@ -21,6 +21,7 @@ var _ = require('underscore'),
  */
 var AVAILABLE_TRANSITIONS = [
     'accept_patient_reports',
+    'add_info_document',
     'conditional_alerts',
     'default_responses',
     'update_sent_by',
@@ -78,18 +79,26 @@ var processChange = function(change, callback) {
  * data.  Log warnings on failure.
  */
 var loadTransitions = function() {
-  var self = module.exports;
-  _.each(config.get('transitions'), function(conf, key) {
-      if (!conf || conf.disable) {
-          logger.warn('transition %s is disabled', key);
-          return;
-      }
-      if (AVAILABLE_TRANSITIONS.indexOf(key) === -1) {
-          logger.warn('transition %s not available.', key);
-          return;
-      }
-      self._loadTransition(key);
-  });
+    var self = module.exports;
+    var configuredTransitions = config.get('transitions');
+    _.each(configuredTransitions, function(conf, key) {
+        if (!conf || conf.disable) {
+            logger.warn('transition %s is disabled', key);
+            return;
+        }
+        if (AVAILABLE_TRANSITIONS.indexOf(key) === -1) {
+            logger.warn('transition %s not available.', key);
+            return;
+        }
+        self._loadTransition(key);
+    });
+
+    var confedKeys = Object.keys(configuredTransitions);
+    _.each(AVAILABLE_TRANSITIONS, function(key) {
+        if (confedKeys.indexOf(key) === -1) {
+            logger.warn('transition %s is disabled due to lack of config', key);
+        }
+    });
 };
 
 var loadTransition = function(key) {

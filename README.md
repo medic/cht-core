@@ -29,7 +29,7 @@ manages scheduled tasks like message schedules.
 Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 
 ```bash
-export COUCH_URL='http://root:123qwe@localhost:5984/medic'
+export COUCH_URL='http://admin:pass@localhost:5984/medic'
 ```
 
 Throughout this document we will be refering to `ddoc`. Here we mean the
@@ -125,10 +125,14 @@ Transitions obey the following rules:
 * a `onMatch(change, db, auditDb, callback)` function than will run on changes
   that pass the filter.
 
-* accepts a document as a reference and makes changes using that reference,
-  copying is discouraged.
+* has an `onChange(change, db, audit, callback)` function that makes changes to
+  the `change.doc` reference (copying is discouraged). `db` and `audit` are
+  handles to let you query those DBs. More about `callback` below.
+
+* takes responsibility for saving the document and re-attaching the newly saved
+  document (with new seq etc) at `change.doc`
   
-* does not have side effects outside of the document passed in.  This might be
+* does not have side effects outside of `change.doc`.  This might be
   extended in the future to manage changes to multiple documents, but for now
   the transition is responsible for these types of changes.
 
