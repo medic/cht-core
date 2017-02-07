@@ -4,6 +4,7 @@ var _ = require('underscore'),
 
 angular.module('inboxServices').factory('Select2Search',
   function(
+    $log,
     $q,
     $translate,
     DB,
@@ -165,11 +166,15 @@ angular.module('inboxServices').factory('Select2Search',
                         e.params.data.id;
 
             if (docId) {
-              DB().get(docId).then(function(doc) {
-                selectEl.select2('data')[0].doc = doc;
+              DB().get(docId)
+                .then(function(doc) {
+                  selectEl.select2('data')[0].doc = doc;
 
-                selectEl.trigger('change');
-              });
+                  selectEl.trigger('change');
+                })
+                .catch(function(err) {
+                  $log.error('Unable to hydrate select2 selection', err);
+                });
             }
           });
         }
