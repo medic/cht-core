@@ -173,8 +173,13 @@ var getChanges = function(feed) {
     if (err) {
       feed.res.write(error(503, 'Error processing your changes'));
     } else if (!changes || !changes.results) {
-      feed.res.write(error(503, 'No _changes error, but malformed response: ' +
-        JSON.stringify(changes)));
+      // See: https://github.com/medic/medic-webapp/issues/3099
+      // This should never happen, but apparently it does sometimes.
+      // Attempting to log out the response usefully to see what's occuring
+      var malformedChangesError = 'No _changes error, but malformed response: ';
+      var printableChanges = JSON.stringify(changes);
+      console.error(malformedChangesError, printableChanges);
+      feed.res.write(error(503, malformedChangesError + printableChanges));
     } else {
       prepareResponse(feed, changes);
     }
