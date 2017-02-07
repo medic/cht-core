@@ -16,7 +16,9 @@ angular.module('inboxControllers').controller('EditReportCtrl',
     $uibModalInstance.rendered.then(function() {
       Select2Search($('#edit-report [name=facility]'), 'person', {
         allowNew: false,
-        initialValue: $scope.model.report.contact._id
+        initialValue: ($scope.model.report.contact &&
+                       $scope.model.report.contact._id) ||
+                      $scope.model.report.from
       }).catch(function(err) {
         $log.error('Error initialising select2', err);
       });
@@ -31,21 +33,23 @@ angular.module('inboxControllers').controller('EditReportCtrl',
       var facilityId = $('#edit-report [name=facility]').val();
       if (!docId) {
         $scope.setError(new Error('Validation error'), 'Error updating facility');
-        return;
-      }
-      if (!facilityId) {
+      } else if (!facilityId) {
         $scope.setError(new Error('Validation error'), 'Please select a facility');
-        return;
+      } else if (facilityId === $scope.model.report.from) {
+        // Still showing the default phone number because there is no attached
+        // contact so no save required
+        $uibModalInstance.close();
+      } else {
+        $scope.setProcessing();
+        UpdateFacility(docId, facilityId)
+          .then(function() {
+            $scope.setFinished();
+            $uibModalInstance.close();
+          })
+          .catch(function(err) {
+            $scope.setError(err, 'Error updating facility');
+          });
       }
-      $scope.setProcessing();
-      UpdateFacility(docId, facilityId)
-        .then(function() {
-          $scope.setFinished();
-          $uibModalInstance.close();
-        })
-        .catch(function(err) {
-          $scope.setError(err, 'Error updating facility');
-        });
     };
   }
 );
