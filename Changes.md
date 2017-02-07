@@ -347,7 +347,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 
 ## 0.4.15
 
-_January 27, 2017_
+_TBD_
  
 - Fixed potential race condition with medic-gateway. Issue: medic-projects/issues/1243
 - Bumped libphonenumber to make phone number validation more up to date. Issue: medic-projects/issues/1005
