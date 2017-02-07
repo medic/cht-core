@@ -155,7 +155,26 @@ angular.module('inboxServices').factory('Select2Search',
             });
           selectEl.after(button);
         }
+
+        // Hydrate and re-set real doc on change
+        // !tags -> only support single values, until there is a use-case
+        if (!tags) {
+          selectEl.on('select2:select', function(e) {
+            var docId = e.params &&
+                        e.params.data &&
+                        e.params.data.id;
+
+            if (docId) {
+              DB().get(docId).then(function(doc) {
+                selectEl.select2('data')[0].doc = doc;
+
+                selectEl.trigger('change');
+              });
+            }
+          });
+        }
       };
+
 
       initSelect2(selectEl);
       return resolveInitialValue(selectEl, initialValue);
