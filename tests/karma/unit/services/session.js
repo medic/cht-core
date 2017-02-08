@@ -36,6 +36,7 @@ describe('Session service', function() {
       $provide.value('Location', Location);
       $provide.factory('$window', function() {
         return {
+          angular: { callbacks: [] },
           location: location,
           applicationCache: appCache
         };

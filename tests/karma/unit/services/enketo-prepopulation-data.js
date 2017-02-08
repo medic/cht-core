@@ -136,7 +136,7 @@ describe('EnketoPrepopulationData service', function() {
   '</h:head></h:html>';
 
   beforeEach(function() {
-    $window = {};
+    $window = { angular: { callbacks: [] } };
     module('inboxApp');
     module(function($provide) {
       $provide.value('$window', $window);
