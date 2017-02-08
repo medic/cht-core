@@ -65,7 +65,8 @@ Get node deps with  `npm install`.
 
 Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 
-```export COUCH_URL='http://admin:pass@localhost:5984/medic'
+```
+export COUCH_URL='http://admin:pass@localhost:5984/medic'
 ```
 
 ## Run
