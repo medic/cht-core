@@ -264,6 +264,24 @@ var _ = require('underscore'),
         });
       };
 
+      var addAdditionalDetails = function(reports, children) {
+        // Add missing patient name
+        reports.filter(function(report) {
+          return report.fields && !report.fields.patient_name;
+        }).forEach(function(report) {
+          var patientId = report.fields.patient_id ||
+                          report.patient_id;
+
+          var patient = children.find(function(child) {
+            return child.doc.patient_id === patientId;
+          });
+
+          if (patient) {
+            report.fields.patient_name = patient.doc.name;
+          }
+        });
+      };
+
       var getInitialData = function(contactId) {
         return DB().get(contactId)
           .then(function(contactDoc) {
@@ -304,7 +322,8 @@ var _ = require('underscore'),
                 selected.children = children;
 
                 return getPersonReports(children.persons).then(function(childrenReports) {
-                  if (childrenReports) {
+                  if (childrenReports.length) {
+                    addAdditionalDetails(childrenReports, children.persons);
                     selected.reports = childrenReports.concat(selected.reports);
                   }
                   return selected;
