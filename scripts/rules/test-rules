@@ -14,7 +14,7 @@ fi
 testScript="$1"
 scriptDir="$(dirname $0)"
 
-# Force node_modules resolution relative to the current working directory.
+# Force node_modules resolution relative to this script's directory.
 # This allows test scripts to pick up the dependency versions supplied by webapp
 # instead of having to define their own.
 export NODE_PATH="$scriptDir/../../node_modules"
