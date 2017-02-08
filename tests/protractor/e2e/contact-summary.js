@@ -7,9 +7,9 @@ describe('Contact summary info', function() {
   var SCRIPT =
     'var cards = [];' +
     'var context = {};' +
-    'var info = [];' +
+    'var fields = [];' +
     'if (contact.type === "person") {' +
-    '  info = [' +
+    '  fields = [' +
     '    { label: "test.pid", value: contact.patient_id, width: 3 },' +
     '    { label: "test.sex", value: contact.sex, width: 3 }' +
     '  ];' +
@@ -31,7 +31,7 @@ describe('Contact summary info', function() {
     '        pregnancyDate = report.reported_date;' +
     '        pregnancy = {' +
     '          label: "test.pregnancy",' +
-    '          values: [' +
+    '          fields: [' +
     '            { label: "test.visits", value: subsequentVisits.length }' +
     '          ]' +
     '        };' +
@@ -43,7 +43,7 @@ describe('Contact summary info', function() {
     '  }' +
     '}' +
     'var result = {' +
-    '  values: info,' +
+    '  fields: fields,' +
     '  cards: cards,' +
     '  context: context' +
     '};' +

@@ -16,14 +16,14 @@ var settings = {
   default_country_code: COUNTRY_CODES.new_zealand
 };
 
-exports['normalize does nothing when already normalizeted'] = function(test) {
+exports['normalize does nothing when already normalized'] = function(test) {
   var number = NZ_INTERNATIONAL_VALID;
   var actual = phonenumber.normalize(settings, number);
   test.equal(actual, number);
   test.done();
 };
 
-exports['normalize does nothing when already normalizeted, conflicting contry code in settings'] = function(test) {
+exports['normalize does nothing when already normalized, conflicting contry code in settings'] = function(test) {
   // Settings has NZ country code, number is US/Canada number.
   var number = US_INTERNATIONAL_VALID;
   var actual = phonenumber.normalize(settings, number);
@@ -220,7 +220,7 @@ exports['validate returns false when funky punctuation in number'] = function(te
   test.done();
 };
 
-exports['validate returns true when extra zeros in international normalize'] = function(test) {
+exports['validate returns true when extra zeros in international format'] = function(test) {
   // Note : that's for NZ normalize. Would be nice to test specific normalizeting issues for target countries.
   var actual = phonenumber.validate(settings, '+640275552636'); // Unnecessary leading 0 from domestic normalize
   test.strictEqual(actual, true);

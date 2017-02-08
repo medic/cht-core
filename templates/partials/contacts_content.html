@@ -31,12 +31,12 @@
 
         <div class="card">
           <div class="row flex">
-            <div class="col col-sm-{{value.width || 12}}" ng-repeat="value in selected.summary.values">
+            <div class="col col-sm-{{field.width || 12}}" ng-repeat="field in selected.summary.fields">
               <div class="cell">
-                <label translate>{{value.label}}</label>
-                <p ng-if="value.translate" translate translate-values="{{value.context}}">{{value.value}}</p>
-                <p ng-if="!value.translate && value.filter" ng-bind-html="value.value"></p>
-                <p ng-if="!value.translate && !value.filter">{{value.value}}</p>
+                <label translate>{{field.label}}</label>
+                <p ng-if="field.translate" translate translate-values="{{field.context}}">{{field.value}}</p>
+                <p ng-if="!field.translate && field.filter" ng-bind-html="field.value"></p>
+                <p ng-if="!field.translate && !field.filter">{{field.value}}</p>
               </div>
             </div>
           </div>
@@ -49,12 +49,12 @@
           <div class="card action-list">
             <div class="accent"></div>
             <div class="row">
-              <div class="col col-sm-{{value.width || 12}}" ng-repeat="value in card.values">
+              <div class="col col-sm-{{field.width || 12}}" ng-repeat="field in card.fields">
                 <div class="cell">
-                  <label translate>{{value.label}}</label>
-                  <p ng-if="value.translate" translate translate-values="{{value.context}}">{{value.value}}</p>
-                  <p ng-if="!value.translate && value.filter" ng-bind-html="value.value"></p>
-                  <p ng-if="!value.translate && !value.filter">{{value.value}}</p>
+                  <label translate>{{field.label}}</label>
+                  <p ng-if="field.translate" translate translate-values="{{field.context}}">{{field.value}}</p>
+                  <p ng-if="!field.translate && field.filter" ng-bind-html="field.value"></p>
+                  <p ng-if="!field.translate && !field.filter">{{field.value}}</p>
                 </div>
               </div>
             </div>

@@ -17,7 +17,6 @@ describe('ContactSummary service', function() {
           return value.split('').reverse().join('');
         };
       });
-      // $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject(function(_ContactSummary_) {
       service = _ContactSummary_;
@@ -33,13 +32,13 @@ describe('ContactSummary service', function() {
     var contact = {};
     var reports = [];
     return service(contact, reports).then(function(actual) {
-      chai.expect(actual.values.length).to.equal(0);
+      chai.expect(actual.fields.length).to.equal(0);
       chai.expect(actual.cards.length).to.equal(0);
     });
   });
 
   it('evals expression with `reports` and `contact` in scope', function() {
-    var expression = 'var result = { values: [ ' +
+    var expression = 'var result = { fields: [ ' +
                        '{ label: "Notes", value: "Hello " + contact.name },' +
                        '{ label: "Num reports", value: reports.length }' +
                       '] };' +
@@ -48,17 +47,17 @@ describe('ContactSummary service', function() {
     var contact = { name: 'jack' };
     var reports = [ { _id: 1 }, { _id: 2} ];
     return service(contact, reports).then(function(actual) {
-      chai.expect(actual.values.length).to.equal(2);
-      chai.expect(actual.values[0].label).to.equal('Notes');
-      chai.expect(actual.values[0].value).to.equal('Hello jack');
-      chai.expect(actual.values[1].label).to.equal('Num reports');
-      chai.expect(actual.values[1].value).to.equal(2);
+      chai.expect(actual.fields.length).to.equal(2);
+      chai.expect(actual.fields[0].label).to.equal('Notes');
+      chai.expect(actual.fields[0].value).to.equal('Hello jack');
+      chai.expect(actual.fields[1].label).to.equal('Num reports');
+      chai.expect(actual.fields[1].value).to.equal(2);
       chai.expect(actual.cards.length).to.equal(0);
     });
   });
 
   it('applies filters to values', function() {
-    var expression = 'var result = { values: [ ' +
+    var expression = 'var result = { fields: [ ' +
                        '{ label: "Notes", value: "Hello", filter: "reversify" }' +
                       '] };' +
                       'result;';
@@ -66,9 +65,9 @@ describe('ContactSummary service', function() {
     var contact = {};
     var reports = [];
     return service(contact, reports).then(function(actual) {
-      chai.expect(actual.values.length).to.equal(1);
-      chai.expect(actual.values[0].label).to.equal('Notes');
-      chai.expect(actual.values[0].value).to.equal('olleH');
+      chai.expect(actual.fields.length).to.equal(1);
+      chai.expect(actual.fields[0].label).to.equal('Notes');
+      chai.expect(actual.fields[0].value).to.equal('olleH');
       chai.expect(actual.cards.length).to.equal(0);
     });
   });

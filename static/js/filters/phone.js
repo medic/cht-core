@@ -15,7 +15,9 @@ angular.module('inboxFilters').filter('phone',
 
     var format = function(phone) {
       if (settings) {
-        return libphonenumber.format(settings, phone);
+        // if valid return the formatted number,
+        // if invalid return the given string
+        return libphonenumber.format(settings, phone) || phone;
       }
       return phone; // unformatted placeholder
     };

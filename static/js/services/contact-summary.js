@@ -1,5 +1,10 @@
 var SETTING_NAME = 'contact_summary';
 
+/**
+ * Service for generating summary information based on a given
+ * contact and reports about them.
+ * Documentation: https://github.com/medic/medic-docs/blob/master/md/config/contact-summary.md
+ */
 angular.module('inboxServices').service('ContactSummary',
   function(
     $filter,
@@ -18,12 +23,12 @@ angular.module('inboxServices').service('ContactSummary',
       });
     };
 
-    var applyFilter = function(value) {
-      if (value.filter) {
+    var applyFilter = function(field) {
+      if (field.filter) {
         try {
-          value.value = $filter(value.filter)(value.value);
+          field.value = $filter(field.filter)(field.value);
         } catch(e) {
-          throw new Error('Unknown filter: ' + value.filter + '. Check your configuration.', e);
+          throw new Error('Unknown filter: ' + field.filter + '. Check your configuration.', e);
         }
       }
     };
@@ -32,12 +37,12 @@ angular.module('inboxServices').service('ContactSummary',
       $log.debug('contact summary eval result', summary);
       
       summary = summary || {};
-      summary.values = summary.values || [];
+      summary.fields = summary.fields || [];
       summary.cards = summary.cards || [];
 
-      summary.values.forEach(applyFilter);
+      summary.fields.forEach(applyFilter);
       summary.cards.forEach(function(card) {
-        card.values.forEach(applyFilter);
+        card.fields.forEach(applyFilter);
       });
       return summary;
     };
