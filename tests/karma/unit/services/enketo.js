@@ -80,7 +80,10 @@ describe('Enketo service', function() {
         put: dbPut
       }));
       $provide.value('XSLT', { transform: transform });
-      $provide.value('$window', { URL: { createObjectURL: createObjectURL } });
+      $provide.value('$window', {
+        angular: { callbacks: [] },
+        URL: { createObjectURL: createObjectURL }
+      });
       $provide.value('FileReader', FileReader);
       $provide.value('UserContact', UserContact);
       $provide.value('Auth', Auth);

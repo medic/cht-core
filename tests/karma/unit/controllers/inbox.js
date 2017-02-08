@@ -122,9 +122,6 @@ describe('InboxCtrl controller', function() {
         return sinon.stub();
       });
       $provide.value('RulesEngine', { init: KarmaUtils.nullPromise()() });
-      $provide.factory('$window', function() {
-        return sinon.stub();
-      });
       $provide.constant('APP_CONFIG', {
         name: 'name',
         version: 'version'

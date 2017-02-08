@@ -17,6 +17,7 @@ describe('DB service', function() {
     module(function ($provide) {
       $provide.factory('$window', function() {
         return {
+          angular: { callbacks: [] },
           // stub for pouch registering the worker adapter
           PouchDB: { adapter: function(){} }
         };
