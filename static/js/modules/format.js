@@ -4,17 +4,25 @@ var _ = require('underscore');
 
   'use strict';
 
-  exports.clinic = function(entity) {
+  exports.clinic = function(entity, $state) {
     var parts;
     if (_.isArray(entity)) {
       parts = entity;
     } else {
       parts = [];
       while (entity) {
+        var part;
         if (entity.name) {
-          parts.push(entity.name);
+          part = entity.name;
         } else if (entity.contact && entity.contact.phone) {
-          parts.push(entity.contact.phone);
+          part = entity.contact.phone;
+        }
+        if (part) {
+          if (entity._id && $state) {
+            var url = $state.href('contacts.detail', { id: entity._id });
+            part = '<a href="' + url + '">' + part + '</a>';
+          }
+          parts.push(part);
         }
         entity = entity.parent;
       }

@@ -330,13 +330,15 @@ var _ = require('underscore'),
             if ($scope.selected) {
               $scope.selected.areTasksEnabled = areTasksEnabled;
               $scope.selected.tasks = tasks;
-              $scope.selected.children.persons.forEach(function(child) {
-                child.taskCount = tasks.filter(function(task) {
-                  return task.doc &&
-                         task.doc.contact &&
-                         task.doc.contact._id === child.doc._id;
-                }).length;
-              });
+              if ($scope.selected.children.persons) {
+                $scope.selected.children.persons.forEach(function(child) {
+                  child.taskCount = tasks.filter(function(task) {
+                    return task.doc &&
+                           task.doc.contact &&
+                           task.doc.contact._id === child.doc._id;
+                  }).length;
+                });
+              }
               if (!$scope.$$phase) {
                 $scope.$apply();
               }

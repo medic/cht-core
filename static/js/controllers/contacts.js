@@ -17,6 +17,7 @@ var _ = require('underscore'),
       $translate,
       Changes,
       ContactSchema,
+      ContactSummary,
       DB,
       LiveList,
       Search,
@@ -158,7 +159,8 @@ var _ = require('underscore'),
         return $q.all([
           $translate(title),
           getActionBarDataForChild(selectedDoc.type),
-          getCanEdit(selectedDoc)
+          getCanEdit(selectedDoc),
+          ContactSummary(selected.doc, selected.reports || [])
         ])
           .then(function(results) {
             $scope.setTitle(results[0]);
@@ -166,7 +168,10 @@ var _ = require('underscore'),
               selectedDoc.child = results[1];
             }
             var canEdit = results[2];
-            XmlForms('ContactsCtrl', { doc: selectedDoc }, function(err, forms) {
+            var summary = results[3];
+            $scope.selected.summary = summary;
+            var options = { doc: selectedDoc, contactSummary: summary.context };
+            XmlForms('ContactsCtrl', options, function(err, forms) {
               if (err) {
                 $log.error('Error fetching relevant forms', err);
               }
