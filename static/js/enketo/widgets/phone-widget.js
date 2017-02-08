@@ -25,7 +25,7 @@ define( function( require, exports, module ) {
                     if ( !libphonenumber.validate( settings, fieldValue ) ) {
                         throw new Error( 'invalid phone number: "' + fieldValue + '"' );
                     }
-                    return libphonenumber.format( settings, fieldValue );
+                    return libphonenumber.normalize( settings, fieldValue );
                 } )
                 .then( function( phoneNumber ) {
                     // Check the phone number is unique.  N.B. this makes the
@@ -105,12 +105,9 @@ define( function( require, exports, module ) {
     }
 
     function getFormattedValue( settings, value ) {
-        if ( libphonenumber.validate( settings, value ) ) {
-            return libphonenumber.format( settings, value );
-        } else {
-            // Return the non-formatted value, so that the "invalid value" error can display.
-            return value;
-        }
+        // If invalid, return the non-formatted value,
+        // so that the "invalid value" error can display.
+        return libphonenumber.normalize( settings, value ) || value;
     }
 
     PhoneWidget.prototype.destroy = function( /* element */) {};

@@ -92,6 +92,9 @@ describe('Contacts controller', function() {
         },
         'UserSettings': userSettings,
         'XmlForms': xmlForms,
+        'ContactSummary': function() {
+          return KarmaUtils.mockPromise(null, {});
+        },
         'Changes': function() {
           return { unsubscribe: function() {} };
         }

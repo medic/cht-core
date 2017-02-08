@@ -15,6 +15,7 @@
   require('./clean-etag');
   require('./contact-form');
   require('./contact-schema');
+  require('./contact-summary');
   require('./count-messages');
   require('./db');
   require('./db-sync');

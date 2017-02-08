@@ -16,69 +16,69 @@ var settings = {
   default_country_code: COUNTRY_CODES.new_zealand
 };
 
-exports['format does nothing when already formatted'] = function(test) {
+exports['normalize does nothing when already normalized'] = function(test) {
   var number = NZ_INTERNATIONAL_VALID;
-  var actual = phonenumber.format(settings, number);
+  var actual = phonenumber.normalize(settings, number);
   test.equal(actual, number);
   test.done();
 };
 
-exports['format does nothing when already formatted, conflicting contry code in settings'] = function(test) {
+exports['normalize does nothing when already normalized, conflicting contry code in settings'] = function(test) {
   // Settings has NZ country code, number is US/Canada number.
   var number = US_INTERNATIONAL_VALID;
-  var actual = phonenumber.format(settings, number);
+  var actual = phonenumber.normalize(settings, number);
   test.equal(actual, number);
   test.done();
 };
 
-exports['format does not require country code in settings when number has international format'] = function(test) {
+exports['normalize does not require country code in settings when number has international normalize'] = function(test) {
   var number = NZ_INTERNATIONAL_VALID;
-  var actual = phonenumber.format({}, number);
+  var actual = phonenumber.normalize({}, number);
   test.equal(actual, number);
   test.done();
 };
 
-exports['format adds country code when missing'] = function(test) {
-  var actual = phonenumber.format(settings, NZ_DOMESTIC_VALID);
+exports['normalize adds country code when missing'] = function(test) {
+  var actual = phonenumber.normalize(settings, NZ_DOMESTIC_VALID);
   test.equal(actual, NZ_INTERNATIONAL_VALID);
   test.done();
 };
 
-exports['format returns false when domestic number and no country code in settings'] = function(test) {
-  var actual = phonenumber.format({}, NZ_DOMESTIC_VALID);
+exports['normalize returns false when domestic number and no country code in settings'] = function(test) {
+  var actual = phonenumber.normalize({}, NZ_DOMESTIC_VALID);
   test.strictEqual(actual, false);
   test.done();
 };
 
-exports['format returns false for empty number'] = function(test) {
-  var actual = phonenumber.format(settings, '');
+exports['normalize returns false for empty number'] = function(test) {
+  var actual = phonenumber.normalize(settings, '');
   test.strictEqual(actual, false);
   test.done();
 };
 
-exports['format returns false for invalid number'] = function(test) {
-  var actual = phonenumber.format(settings, NZ_DOMESTIC_INVALID);
+exports['normalize returns false for invalid number'] = function(test) {
+  var actual = phonenumber.normalize(settings, NZ_DOMESTIC_INVALID);
   test.strictEqual(actual, false);
   test.done();
 };
 
-exports['format returns false for invalid number - replaced 1 letter <-> 1 digit'] = function(test) {
+exports['normalize returns false for invalid number - replaced 1 letter <-> 1 digit'] = function(test) {
   // Invalid number for NZ
-  var actual = phonenumber.format(settings, '02755K2636');
+  var actual = phonenumber.normalize(settings, '02755K2636');
   test.strictEqual(actual, false);
   test.done();
 };
 
-exports['format returns false for invalid number - alpha number'] = function(test) {
+exports['normalize returns false for invalid number - alpha number'] = function(test) {
   // Note : 3 letters or more can be considered an alpha number (e.g. 1-(800)-MICROSOFT). We don't allow it.
-  var actual = phonenumber.format(settings, '0275HHH636');
+  var actual = phonenumber.normalize(settings, '0275HHH636');
   test.strictEqual(actual, false);
   test.done();
 };
 
-exports['format returns false for invalid number - 3 extra letters'] = function(test) {
+exports['normalize returns false for invalid number - 3 extra letters'] = function(test) {
   // Insert letters within valid number : they shouldn't be ignored.
-  var actual = phonenumber.format(settings, '0275552kkk636');
+  var actual = phonenumber.normalize(settings, '0275552kkk636');
   test.strictEqual(actual, false);
   test.done();
 };
@@ -86,44 +86,44 @@ exports['format returns false for invalid number - 3 extra letters'] = function(
 // Correct for libphonenumber weirdness : 
 // For some reason, '<validnumber>a' or '<validnumber>aa' is valid for libphonenumber.
 // Issue : https://github.com/googlei18n/libphonenumber/issues/328
-exports['format returns false for invalid number - two extra letters - trailing'] = function(test) {
+exports['normalize returns false for invalid number - two extra letters - trailing'] = function(test) {
   // Insert letters within valid number : they shouldn't be ignored.
-  var actual = phonenumber.format(settings, NZ_DOMESTIC_VALID + 'ff');
+  var actual = phonenumber.normalize(settings, NZ_DOMESTIC_VALID + 'ff');
   test.strictEqual(actual, false);
   test.done();
 };
 
-exports['format returns false for invalid number - two extra letters - inside'] = function(test) {
+exports['normalize returns false for invalid number - two extra letters - inside'] = function(test) {
   // Insert letters within valid number : they shouldn't be ignored.
-  var actual = phonenumber.format(settings, '02755526ff36');
+  var actual = phonenumber.normalize(settings, '02755526ff36');
   test.strictEqual(actual, false);
   test.done();
 };
 
-exports['format returns false for invalid number - invalid punctuation'] = function(test) {
-  var actual = phonenumber.format(settings, '0275552<636>');
+exports['normalize returns false for invalid number - invalid punctuation'] = function(test) {
+  var actual = phonenumber.normalize(settings, '0275552<636>');
   test.strictEqual(actual, false);
   test.done();
 };
 
-exports['format removes spaces, brackets and dots'] = function(test) {
+exports['normalize removes spaces, brackets and dots'] = function(test) {
   var expected = NZ_INTERNATIONAL_VALID;
-  var actual = phonenumber.format(settings, '+ 6 4 - 02 7.-.5.(55((2636.');
+  var actual = phonenumber.normalize(settings, '+ 6 4 - 02 7.-.5.(55((2636.');
   test.strictEqual(actual, expected);
   test.done();
 };
 
-exports['format removes spaces, brackets and dots, and adds country code'] = function(test) {
+exports['normalize removes spaces, brackets and dots, and adds country code'] = function(test) {
   var expected = NZ_INTERNATIONAL_VALID;
-  var actual = phonenumber.format(settings, ' 0  2 7-..5.(55((26 36.');
+  var actual = phonenumber.normalize(settings, ' 0  2 7-..5.(55((26 36.');
   test.strictEqual(actual, expected);
   test.done();
 };
 
-exports['format removes extra zeros in international format'] = function(test) {
-  // Note : that's for NZ format. Would be nice to test specific formatting issues for target countries.
+exports['normalize removes extra zeros in international normalize'] = function(test) {
+  // Note : that's for NZ normalize. Would be nice to test specific normalizeting issues for target countries.
   var expected = NZ_INTERNATIONAL_VALID;
-  var actual = phonenumber.format(settings, '+640275552636'); // Remove leading 0 from domestic format
+  var actual = phonenumber.normalize(settings, '+640275552636'); // Remove leading 0 from domestic normalize
   test.strictEqual(actual, expected);
   test.done();
 };
@@ -221,8 +221,8 @@ exports['validate returns false when funky punctuation in number'] = function(te
 };
 
 exports['validate returns true when extra zeros in international format'] = function(test) {
-  // Note : that's for NZ format. Would be nice to test specific formatting issues for target countries.
-  var actual = phonenumber.validate(settings, '+640275552636'); // Unnecessary leading 0 from domestic format
+  // Note : that's for NZ normalize. Would be nice to test specific normalizeting issues for target countries.
+  var actual = phonenumber.validate(settings, '+640275552636'); // Unnecessary leading 0 from domestic normalize
   test.strictEqual(actual, true);
   test.done();
 };

@@ -49,7 +49,7 @@ var getDataRecord = function(options, form_data) {
     var record = {
         _id: req.uuid,
         type: 'data_record',
-        from: libphonenumber.format(utils.info, options.from) || options.from,
+        from: libphonenumber.normalize(utils.info, options.from) || options.from,
         form: form,
         errors: [],
         tasks: [],

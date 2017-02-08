@@ -21,7 +21,6 @@ describe('Changes service', function() {
     module('inboxApp');
     module(function ($provide) {
       $provide.value('DB', function() {
-        console.log('Someone invoked DB();');
         return {
           changes: function() {
             changesCount++;

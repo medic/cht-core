@@ -39,8 +39,13 @@ var _ = require('underscore');
 
       var init = getForms();
 
-      var evaluateExpression = function(expression, doc, user) {
-        return $parse(expression)(XmlFormsContextUtils, { contact: doc, user: user });
+      var evaluateExpression = function(expression, doc, user, contactSummary) {
+        var context = {
+          contact: doc,
+          user: user,
+          summary: contactSummary
+        };
+        return $parse(expression)(XmlFormsContextUtils, context);
       };
 
       var filterAll = function(forms, options, user) {
@@ -91,7 +96,7 @@ var _ = require('underscore');
         }
 
         if (form.context.expression &&
-            !evaluateExpression(form.context.expression, options.doc, user)) {
+            !evaluateExpression(form.context.expression, options.doc, user, options.contactSummary)) {
           return false;
         }
 

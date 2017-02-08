@@ -59,8 +59,13 @@ var format = require('../modules/format'),
     };
   });
 
-  module.filter('clinic', function() {
-    return format.clinic;
+  module.filter('clinic', function(
+    $state
+  ) {
+    'ngInject';
+    return function(entity) {
+      return format.clinic(entity, $state);
+    };
   });
 
 }());

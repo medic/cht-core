@@ -135,7 +135,7 @@ var _ = require('underscore'),
           messages: [{
             from: user && user.phone,
             sent_by: user && user.name || 'unknown',
-            to: libphonenumber.format(settings, recipient.phone) || recipient.phone,
+            to: libphonenumber.normalize(settings, recipient.phone) || recipient.phone,
             contact: recipient.contact,
             message: message,
             uuid: uuid

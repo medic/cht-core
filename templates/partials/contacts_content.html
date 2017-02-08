@@ -30,56 +30,32 @@
         </div>
 
         <div class="card">
-          <div class="row">
-            <div class="col-sm-3" ng-show="selected.doc.type === 'person'">
+          <div class="row flex">
+            <div class="col col-sm-{{field.width || 12}}" ng-repeat="field in selected.summary.fields">
               <div class="cell">
-                <label translate>Phone Number</label>
-                <p ng-if="selected.doc.phone">
-                  <a href="tel:{{selected.doc.phone}}" class="mobile-only">{{selected.doc.phone}}</a>
-                  <span class="desktop-only">{{selected.doc.phone}}</span>
-                </p>
-              </div>
-            </div>
-            <div class="col-sm-3" ng-show="selected.doc.type === 'person'">
-              <div class="cell">
-                <label translate>patient_id</label>
-                <p>{{selected.doc.patient_id}}</p>
-              </div>
-            </div>
-            <div class="col-sm-3" ng-show="selected.doc.type !== 'person'">
-              <div class="cell">
-                <label translate>contact.place.id</label>
-                <p>{{selected.doc.place_id}}</p>
-              </div>
-            </div>
-            <div class="col-sm-3" ng-show="selected.doc.type === 'person'">
-              <div class="cell">
-                <label translate>contact.age</label>
-                <p ng-bind-html="selected.doc.date_of_birth | age"></p>
-              </div>
-            </div>
-            <div class="col-sm-3" ng-show="selected.doc.type === 'person'">
-              <div class="cell">
-                <label translate>contact.sex</label>
-                <p ng-bind-html="selected.doc.sex"></p>
+                <label translate>{{field.label}}</label>
+                <p ng-if="field.translate" translate translate-values="{{field.context}}">{{field.value}}</p>
+                <p ng-if="!field.translate && field.filter" ng-bind-html="field.value"></p>
+                <p ng-if="!field.translate && !field.filter">{{field.value}}</p>
               </div>
             </div>
           </div>
-          <div class="row">
-            <div class="col-sm-12">
-              <div class="cell">
-                <label translate>contact.parent</label>
-                <ol class="horizontal lineage">
-                  <li ng-repeat="parent in selected.parents track by parent._id"><span ng-show="parent.link"><a ui-sref="contacts.detail({ id: parent._id })">{{parent.name}}</a></span><span ng-show="!parent.link">{{parent.name}}</span></li>
-                </ol>
-              </div>
-            </div>
+        </div>
+
+        <div ng-repeat="card in selected.summary.cards">
+          <div class="action-header">
+            <h4 translate>{{card.label}}</h4>
           </div>
-          <div class="row">
-            <div class="col-sm-12">
-              <div class="cell">
-                <label translate>Notes</label>
-                <p>{{selected.doc.notes}}</p>
+          <div class="card action-list">
+            <div class="accent"></div>
+            <div class="row">
+              <div class="col col-sm-{{field.width || 12}}" ng-repeat="field in card.fields">
+                <div class="cell">
+                  <label translate>{{field.label}}</label>
+                  <p ng-if="field.translate" translate translate-values="{{field.context}}">{{field.value}}</p>
+                  <p ng-if="!field.translate && field.filter" ng-bind-html="field.value"></p>
+                  <p ng-if="!field.translate && !field.filter">{{field.value}}</p>
+                </div>
               </div>
             </div>
           </div>

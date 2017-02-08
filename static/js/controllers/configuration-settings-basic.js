@@ -50,7 +50,7 @@ angular.module('inboxControllers').controller('ConfigurationSettingsBasicCtrl',
       }
 
       // normalise value
-      $scope.basicSettingsModel.gateway_number = libphonenumber.format(info, gatewayNumber);
+      $scope.basicSettingsModel.gateway_number = libphonenumber.normalize(info, gatewayNumber);
 
       return true;
     };
