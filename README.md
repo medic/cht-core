@@ -19,9 +19,10 @@ Debug mode:
 
 ## Overview
 
-Sentinel uses the changes feed on a CouchDB database and runs a set of
-transitions on a document.  It also manages some scheduled tasks like message
-schedules.
+Sentinel listens to the CouchDB changes feed and runs a set of
+[transitions](#transitions-api)  on on a given database change.  It also
+manages scheduled tasks like message schedules.
+
 
 ## Settings
 
@@ -31,10 +32,12 @@ Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 export COUCH_URL='http://root:123qwe@localhost:5984/medic'
 ```
 
-Throughout this document we will be refering to `ddoc`. Here we mean the currently deployed `_design/medic` ddoc from medic-webapp.
+Throughout this document we will be refering to `ddoc`. Here we mean the
+currently deployed `_design/medic` ddoc from medic-webapp.
 
 Default settings values are in `defaults.js`.  On initial start, and when there
-are changes to the ddoc, sentinel reads `ddoc.app_settings` to determine configuration.
+are changes to the ddoc, sentinel reads `ddoc.app_settings` to determine
+configuration.
 
 By default all transitions are disabled, to enable a transition modify the
 `transitions` property on `ddoc.app_settings`.
@@ -43,7 +46,8 @@ By default all transitions are disabled, to enable a transition modify the
 
 #### Enabled
 
-A transition is enabled if the value associated with its name is [truthy](https://developer.mozilla.org/en-US/docs/Glossary/Truthy).
+A transition is enabled if the value associated with its name is
+[truthy](https://developer.mozilla.org/en-US/docs/Glossary/Truthy).
 
 In both of these examples all three transitions are enabled:
 
@@ -101,11 +105,25 @@ In all three examples below the `registrations` transition is disabled.
 
 ## Transitions API
 
-A transition does async processing of a document once per rev/change, and obeys
-the following rules:
+A transition is javascript code that runs when a document is changed.  A
+transition can edit the changed doc or do anything server side code can do for
+that matter.
 
-* has a `filter` function that determines if it needs to run/be applied to a
-  document.
+Transitions are run in series, not in parallel:
+
+* For a given change, you can expect one transition to be finished before the
+  next runs.
+
+* You can expected one change to be fully processed by all transitions before
+  the next starts being processed.
+
+Transitions obey the following rules:
+
+* has a `filter(doc)` function that accepts the changed document as an argument and
+  returns `true` if it needs to run/be applied.
+
+* a `onMatch(change, db, auditDb, callback)` function than will run on changes
+  that pass the filter.
 
 * accepts a document as a reference and makes changes using that reference,
   copying is discouraged.
@@ -116,7 +134,12 @@ the following rules:
 
 * guarantees the consistency of a document. 
 
-* runs serially in any order.
+* runs serially and in any order.  A transition is free to make async calls but
+  the next transition will only run after the previous transitions's callback
+  is called. If your transition is dependent on another transition then it will
+  run on the next change.  Code your transition to support two changes rather
+  than require a specific ordering.  You can optimize your ordering but don't
+  require it.  This keeps configuration simpler.
 
 * is repeatable, it can run multiple times on the same document without
   negative effect.  You can use the `transitions` property on a document to
