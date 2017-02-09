@@ -137,9 +137,8 @@ module.exports = {
      * Given a form code and config array, return config for that form.
      * */
     getRegistrationConfig: function(config, form_code) {
-        var regex = new RegExp('^\W*' + form_code + '\\W*$','i');
         return _.find(config, function(conf) {
-            return regex.test(conf.form);
+            return utils.isFormCodeSame(form_code, conf.form);
         });
     },
     validate: function(config, doc, callback) {
@@ -335,6 +334,7 @@ module.exports = {
                 var contact = _.result(_.first(result.rows), 'doc');
                 // create a new patient with this patient_id
                 var patient = {
+                    _id: 'patient-' + patientId,
                     name: doc.fields[patientNameField],
                     parent: contact && contact.parent,
                     reported_date: doc.reported_date,
