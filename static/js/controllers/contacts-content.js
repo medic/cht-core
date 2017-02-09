@@ -264,8 +264,7 @@ var _ = require('underscore'),
         });
       };
 
-      var addAdditionalDetails = function(reports, children) {
-        // Add missing patient name
+      var addPatientName = function(reports, children) {
         reports.filter(function(report) {
           return report.fields && !report.fields.patient_name;
         }).forEach(function(report) {
@@ -323,7 +322,7 @@ var _ = require('underscore'),
 
                 return getPersonReports(children.persons).then(function(childrenReports) {
                   if (childrenReports.length) {
-                    addAdditionalDetails(childrenReports, children.persons);
+                    addPatientName(childrenReports, children.persons);
                     selected.reports = childrenReports.concat(selected.reports);
                   }
                   return selected;
