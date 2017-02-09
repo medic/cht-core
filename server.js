@@ -4,7 +4,7 @@ var config = require('./config'),
 
 if (arg === 'debug') {
     logger.info('setting loglevel to %s.', arg);
-    logger.transports.console.level = arg;
+    logger.transports.Console.level = arg;
 }
 
 if (process.env.TEST_ENV) {
@@ -20,8 +20,8 @@ config.init(function(err) {
     }
     logger.info('loaded config.');
     if (!arg) {
-        logger.transports.console.level = config.get('loglevel');
-        logger.debug('loglevel is %s.', logger.transports.console.level);
+        logger.transports.Console.level = config.get('loglevel');
+        logger.debug('loglevel is %s.', logger.transports.Console.level);
     }
     logger.info('attaching transitions...');
     require('./transitions').attach();
