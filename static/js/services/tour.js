@@ -4,6 +4,7 @@ angular.module('inboxServices').service('Tour',
   function(
     $q,
     $state,
+    $timeout,
     $translate,
     AnalyticsModules,
     Auth
@@ -27,27 +28,43 @@ angular.module('inboxServices').service('Tour',
     };
 
     var mmShowMessageList = function() {
-      mmShow('#message-list', true);
-    };
-
-    var mmShowMessageContent = function() {
       mmShow('#message-list', false);
     };
 
-    var mmShowReportList = function() {
-      mmShow('#reports-list', true);
+    var mmShowMessageContent = function() {
+      mmShow('#message-list', true);
     };
 
-    var mmShowReportContent = function() {
+    var mmShowTaskList = function() {
+      mmShow('#tasks-list', false);
+    };
+
+    var mmShowTaskContent = function() {
+      mmShow('#tasks-list', true);
+    };
+
+    var mmShowReportList = function() {
       mmShow('#reports-list', false);
     };
 
-    var mmShow = function(list, show) {
-      var showing = !$('body').is('.show-content');
-      if (isMobile() && show !== showing) {
-        if (!show) {
+    var mmShowReportContent = function() {
+      mmShow('#reports-list', true);
+    };
+
+    var mmShowContactList = function() {
+      mmShow('#contacts-list', false);
+    };
+
+    var mmShowContactContent = function() {
+      mmShow('#contacts-list', true);
+    };
+
+    var mmShow = function(list, showContent) {
+      var showingContent = $('body').is('.show-content');
+      if (showContent !== showingContent) {
+        if (showContent) {
           $(list).find('li').filter(':first').find('a').trigger('click');
-        } else {
+        } else if (isMobile()) {
           $('.navigation .filter-bar-back a').trigger('click');
         }
       }
@@ -124,6 +141,61 @@ angular.module('inboxServices').service('Tour',
             title: 'tour.messages.send.title',
             content: 'tour.messages.send.description',
             onShow: mmShowMessageContent
+          }
+        ]
+      },
+      {
+        name: 'tasks',
+        route: 'tasks.detail',
+        orphan: true,
+        debug: true,
+        steps: [
+          {
+            element: '#tasks-tab',
+            placement: 'bottom',
+            title: 'tour.tasks.overview.title',
+            content: 'tour.tasks.overview.description',
+            onShow: mmShowTaskList
+          },
+          {
+            element: '#tasks-list',
+            placement: 'right',
+            mobilePlacement: 'orphan',
+            title: 'tour.tasks.list.title',
+            content: 'tour.tasks.list.description',
+            onShow: mmShowTaskList
+          },
+          {
+            element: '.right-pane',
+            placement: 'left',
+            mobilePlacement: 'orphan',
+            title: 'tour.tasks.details.title',
+            content: 'tour.tasks.details.description',
+            onShow: mmShowTaskContent
+          },
+          {
+            element: '.right-pane .next-page',
+            placement: 'top',
+            mobilePlacement: 'top',
+            title: 'tour.tasks.next.title',
+            content: 'tour.tasks.next.description',
+            onShow: mmShowTaskContent
+          },
+          {
+            element: '.right-pane .form-footer',
+            placement: 'top',
+            mobilePlacement: 'top',
+            title: 'tour.tasks.submit.title',
+            content: 'tour.tasks.submit.description',
+            onShow: mmShowTaskContent
+          },
+          {
+            element: '#tasks-list',
+            placement: 'right',
+            mobilePlacement: 'orphan',
+            title: 'tour.tasks.cleared.title',
+            content: 'tour.tasks.cleared.description',
+            onShow: mmShowTaskContent
           }
         ]
       },
@@ -216,7 +288,7 @@ angular.module('inboxServices').service('Tour',
             onShow: mmShowReportList
           },
           {
-            element: '#reports-list li:first-child .mm-badge',
+            element: '#reports-list li:first-child .status',
             placement: 'right',
             mobilePlacement: 'bottom',
             title: 'tour.reports.status.title',
@@ -254,6 +326,21 @@ angular.module('inboxServices').service('Tour',
             content: 'tour.reports.actions.description',
             onShow: mmShowReportContent
           }
+        ]
+      },
+      {
+        name: 'contacts',
+        route: 'contacts.detail',
+        orphan: true,
+        debug: true,
+        steps: [
+          {
+            element: '#contacts-tab',
+            placement: 'bottom',
+            title: 'tour.contacts.overview.title',
+            content: 'tour.contacts.overview.description',
+            onShow: mmShowContactList
+          },
         ]
       },
       {
@@ -362,10 +449,23 @@ angular.module('inboxServices').service('Tour',
       return Auth('can_view_messages_tab')
         .then(function() {
           return {
-            order: 1,
+            order: 0,
             id: 'messages',
             icon: 'fa-envelope',
             name: 'Messages'
+          };
+        })
+        .catch(function() {});
+    };
+
+    var getTasksTour = function() {
+      return Auth('can_view_tasks_tab')
+        .then(function() {
+          return {
+            order: 1,
+            id: 'tasks',
+            icon: 'fa-flag',
+            name: 'Tasks'
           };
         })
         .catch(function() {});
@@ -384,6 +484,19 @@ angular.module('inboxServices').service('Tour',
         .catch(function() {});
     };
 
+    var getContactsTour = function() {
+      return Auth('can_view_contacts_tab')
+        .then(function() {
+          return {
+            order: 3,
+            id: 'contacts',
+            icon: 'fa-user',
+            name: 'People'
+          };
+        })
+        .catch(function() {});
+    };
+
     var getAnalyticsTour = function() {
       return $q.all([
         AnalyticsModules(),
@@ -392,7 +505,7 @@ angular.module('inboxServices').service('Tour',
         .then(function(results) {
           if (_.findWhere(results[0], { id: 'anc' })) {
             return {
-              order: 3,
+              order: 4,
               id: 'analytics',
               icon: 'fa-bar-chart-o',
               name: 'Analytics'
@@ -405,7 +518,9 @@ angular.module('inboxServices').service('Tour',
     var getTours = function() {
       return $q.all([
         getMessagesTour(),
+        getTasksTour(),
         getReportsTour(),
+        getContactsTour(),
         getAnalyticsTour()
       ])
         .then(function(results) {
@@ -423,15 +538,17 @@ angular.module('inboxServices').service('Tour',
         }
         var tour = getTour(name);
         var route = tour && tour.route;
-        if ($state.is(route)) {
-          // already on required page - show tour
-          $translate.onReady().then(function() {
-            createTour(name);
-          });
-        } else {
-          // navigate to the correct page
-          $state.go(route, { tour: name });
-        }
+        $timeout(function() {
+          if ($state.is(route)) {
+            // already on required page - show tour
+            $translate.onReady().then(function() {
+              createTour(name);
+            });
+          } else {
+            // navigate to the correct page
+            $state.go(route, { tour: name });
+          }
+        });
       }
     };
   }

@@ -124,12 +124,13 @@ var feedback = require('../modules/feedback'),
       };
 
       $scope.$on('HideContent', function() {
-        if ($scope.cancelCallback) {
-          $scope.navigationCancel();
-        } else {
-          $scope.clearSelected();
-        }
-        $scope.$apply();
+        $timeout(function() {
+          if ($scope.cancelCallback) {
+            $scope.navigationCancel();
+          } else {
+            $scope.clearSelected();
+          }
+        });
       });
 
       // User wants to cancel current flow, or pressed back button, etc.
