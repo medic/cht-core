@@ -213,6 +213,12 @@
                 "type": "integer",
                 "default": 0
             },
+            "multipart_sms_limit": {
+                "title": "Multipart SMS limit",
+                "description": "Maximum number of SMS parts to send per message. If the message is longer than this limit it will be truncated.",
+                "type": "integer",
+                "default": 10
+            },
             "synthetic_date" : {
                 "title": "Synthetic date",
                 "description": "Only use this if you are testing message scheduling and want to simulate a specific date. e.g. 201304121200",
