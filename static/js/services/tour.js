@@ -304,7 +304,7 @@ angular.module('inboxServices').service('Tour',
             onShow: mmShowReportContent
           },
           {
-            element: '#reports-content .meta',
+            element: '#reports-content .item-summary',
             placement: 'left',
             mobilePlacement: 'bottom',
             title: 'tour.reports.information.title',
@@ -320,7 +320,7 @@ angular.module('inboxServices').service('Tour',
             onShow: mmShowReportContent
           },
           {
-            element: '.action-container .actions',
+            element: '.detail-actions:not(.ng-hide)',
             placement: 'top',
             title: 'tour.reports.actions.title',
             content: 'tour.reports.actions.description',
@@ -341,6 +341,47 @@ angular.module('inboxServices').service('Tour',
             content: 'tour.contacts.overview.description',
             onShow: mmShowContactList
           },
+          {
+            element: '#freetext',
+            mobileElement: '#mobile-search',
+            placement: 'bottom',
+            mobilePlacement: 'bottom',
+            title: 'tour.contacts.search.title',
+            content: 'tour.contacts.search.description',
+            onShow: mmShowContactList
+          },
+          {
+            element: '.general-actions:not(.ng-hide)',
+            placement: 'top',
+            mobilePlacement: 'top',
+            title: 'tour.contacts.add.title',
+            content: 'tour.contacts.add.description',
+            onShow: mmShowContactList
+          },
+          {
+            element: '#contacts-list',
+            placement: 'right',
+            mobilePlacement: 'orphan',
+            title: 'tour.contacts.list.title',
+            content: 'tour.contacts.list.description',
+            onShow: mmShowContactList
+          },
+          {
+            element: '.item-content .meta',
+            placement: 'left',
+            mobilePlacement: 'orphan',
+            title: 'tour.contacts.details.title',
+            content: 'tour.contacts.details.description',
+            onShow: mmShowContactContent
+          },
+          {
+            element: '.detail-actions:not(.ng-hide)',
+            placement: 'top',
+            mobilePlacement: 'top',
+            title: 'tour.contacts.actions.title',
+            content: 'tour.contacts.actions.description',
+            onShow: mmShowContactContent
+          }
         ]
       },
       {
@@ -503,7 +544,7 @@ angular.module('inboxServices').service('Tour',
         Auth('can_view_analytics')
       ])
         .then(function(results) {
-          if (_.findWhere(results[0], { id: 'anc' })) {
+          if (results.length) {
             return {
               order: 4,
               id: 'analytics',
