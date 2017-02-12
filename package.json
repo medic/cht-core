@@ -25,7 +25,7 @@
     "enketo-client-side-transformer": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cd1788f38fa5d9ea846d9de1168322ec25002040",
     "enketo-core": "^4.5.5",
     "font-awesome": "^4.7.0",
-    "google-libphonenumber": "^2.0.8",
+    "google-libphonenumber": "^2.0.9",
     "jquery": "^2.1.4",
     "messageformat": "^1.0.0",
     "moment": "^2.17.0",
