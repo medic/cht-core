@@ -97,7 +97,8 @@ describe('Contacts controller', function() {
         },
         'Changes': function() {
           return { unsubscribe: function() {} };
-        }
+        },
+        'Tour': function() {}
       });
     };
   }));
