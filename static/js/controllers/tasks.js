@@ -7,7 +7,16 @@ var _ = require('underscore');
   var inboxControllers = angular.module('inboxControllers');
 
   inboxControllers.controller('TasksCtrl',
-    function($scope, $state, $timeout, LiveList, RulesEngine, TranslateFrom) {
+    function(
+      $scope,
+      $state,
+      $stateParams,
+      $timeout,
+      LiveList,
+      RulesEngine,
+      Tour,
+      TranslateFrom
+    ) {
       'ngInject';
 
       var setSelectedTask = function(task) {
@@ -71,6 +80,9 @@ var _ = require('underscore');
         }
       });
 
+      if ($stateParams.tour) {
+        Tour.start($stateParams.tour);
+      }
     }
   );
 

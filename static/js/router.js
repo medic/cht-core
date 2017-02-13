@@ -114,7 +114,7 @@
 
       // contacts
       .state('contacts', {
-        url: '/contacts',
+        url: '/contacts?tour',
         controller: 'ContactsCtrl',
         templateUrl: 'templates/partials/contacts.html'
       })
@@ -166,7 +166,7 @@
 
       // tasks
       .state('tasks', {
-        url: '/tasks',
+        url: '/tasks?tour',
         controller: 'TasksCtrl',
         templateUrl: 'templates/partials/tasks.html'
       })

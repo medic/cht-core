@@ -13,6 +13,7 @@ var _ = require('underscore'),
       $q,
       $scope,
       $state,
+      $stateParams,
       $timeout,
       $translate,
       Changes,
@@ -23,6 +24,7 @@ var _ = require('underscore'),
       Search,
       SearchFilters,
       Session,
+      Tour,
       UserSettings,
       XmlForms
     ) {
@@ -264,6 +266,10 @@ var _ = require('underscore'),
       });
 
       $scope.$on('$destroy', changeListener.unsubscribe);
+
+      if ($stateParams.tour) {
+        Tour.start($stateParams.tour);
+      }
     }
   );
 }());
