@@ -413,3 +413,76 @@ exports['describe _isMessageFromGateway'] = function(test) {
     });
     test.done();
 };
+
+var generateMessage = function(length, unicode) {
+    var result = [];
+    for (var i = 0; i < length; i++) {
+        result[i] = unicode ? '☃' : 'o';
+    }
+    return result.join('');
+};
+
+var MAX_GSM_LENGTH = 160;
+var MAX_UNICODE_LENGTH = 70;
+
+exports['addMessage does not truncate short sms'] = function(test) {
+    var doc = {};
+    var sms = generateMessage(MAX_GSM_LENGTH);
+    sinon.stub(config, 'get').withArgs('multipart_sms_limit').returns(10);
+
+    utils.addMessage(doc, { phone: '+1234', message: sms });
+
+    test.ok(doc.tasks);
+    var task = _.first(doc.tasks);
+    var message = _.first(task.messages);
+    test.equals(message.message, sms);
+    test.equals(message.original_message, undefined);
+    test.done();
+};
+
+exports['addMessage does not truncate short unicode sms'] = function(test) {
+    var doc = {};
+    var sms = generateMessage(MAX_UNICODE_LENGTH, true);
+    sinon.stub(config, 'get').withArgs('multipart_sms_limit').returns(10);
+
+    utils.addMessage(doc, { phone: '+1234', message: sms });
+
+    test.ok(doc.tasks);
+    var task = _.first(doc.tasks);
+    var message = _.first(task.messages);
+    test.equals(message.message, sms);
+    test.equals(message.original_message, undefined);
+    test.done();
+};
+
+exports['addMessage truncates long sms'] = function(test) {
+    var doc = {};
+    var sms = generateMessage(1000);
+    var expected = sms.substr(0, 150) + '...';
+    sinon.stub(config, 'get').withArgs('multipart_sms_limit').returns(1);
+
+    utils.addMessage(doc, { phone: '+1234', message: sms });
+
+    test.ok(doc.tasks);
+    var task = _.first(doc.tasks);
+    var message = _.first(task.messages);
+    test.equals(message.message, expected);
+    test.equals(message.original_message, sms);
+    test.done();
+};
+
+exports['addMessage truncates long unicode sms'] = function(test) {
+    var doc = {};
+    var sms = generateMessage(1000, true);
+    var expected = sms.substr(0, 64) + '...';
+    sinon.stub(config, 'get').withArgs('multipart_sms_limit').returns(1);
+
+    utils.addMessage(doc, { phone: '+1234', message: sms });
+
+    test.ok(doc.tasks);
+    var task = _.first(doc.tasks);
+    var message = _.first(task.messages);
+    test.equals(message.message, expected);
+    test.equals(message.original_message, sms);
+    test.done();
+};
