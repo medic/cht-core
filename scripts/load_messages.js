@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 var querystring = require('querystring'),
-    http = require('http'),
     url = require('url'),
     csv = require('csv'),
     fs = require('fs'),
