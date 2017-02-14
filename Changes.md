@@ -1,5 +1,54 @@
 # Medic Mobile Release Notes
 
+## 2.10.0
+
+_TBD_
+
+### Features
+
+- Add date of birth to person created by SMS. Issue: #3100
+- Configure the max number of SMS in multipart SMS. Issue: #3095
+- Load messages script fails to use https. Issue: #3081
+- Cannot access all fields for contact in select2. Issue: #3069
+- Configurable contact summary cards. Issue: #3037
+- Display additional information in contact profile. Issue: #2914
+- Support additional context for hiding/showing actions. Issue: #2913
+- Update Tour. Issue: #2212
+
+### Bug fixes
+
+- Family Members section header shows on person's profile. Issue: #3108
+- Uncaught exception triggers 500 response for subsequent requests. Issue: #3099
+- Broken links in app settings. Issue: #3088
+- Edit function not working for reports sent by unknown number. Issue: #3087
+- SMS reports do not show name in summary. Issue: #3084
+- Auto replies and Scheduled SMS are truncated to fit in single SMS. Issue: #3083
+- Bubble task count not showing on browser refresh. Issue: #3028
+- Scheduled messages not showing accurate date. Issue: #3012
+- SMS API sets messages to `scheduled` on POST. Issue: #3011
+- Scheduled messages not being sent. Issue: #3010
+- JavaRosa Parser should give a better error message when form definition on the web app is mismatched with the submitted message using medic collect. Issue: #2638
+- Contact `person`s don't show up in their places. Issue: #2385
+- `setup_complete` is set too fast, so setup wizard is likely to be skipped. Issue: #2376
+- Submitting a family survey doesn't clear the task. Issue: #2265
+- Ages of children showing up strangely. Issue: #2191
+- Forms and icons fail to replicate on slow connections. Issue: #2113
+
+### UI/UX improvements
+
+- Clickable portion of action is smaller than item. Issue: #3104
+- "Targets" tab blank for admin users. Issue: #3029
+- Action button items get lost in RHS. Issue: #3005
+- Action button should always be left-most button in FAB. Issue: #3004
+- "Up" button at bottom of place/person pages. Issue: #2894
+- Status icon for `delivered` is orange instead of green. Issue: #2752
+- Display format for phone numbers. Issue: #1930
+
+### Performance improvements
+
+- medic-api migration to remove couchmark. Issue: #3068
+- Extract XML forms into attachments. Issue: #3009
+
 ## 2.9.1
 
 _January 27, 2017_
