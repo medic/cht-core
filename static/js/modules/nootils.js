@@ -6,8 +6,10 @@ module.exports = function(settings) {
   return {
     isTimely: function(date, event) {
       var due = new Date(date);
-      var start = this.addDate(null, event.start);
-      var end = this.addDate(null, (event.end + 1) * -1);
+      var start = new Date();
+      start.setUTCDate(start.getUTCDate() + event.start);
+      var end = new Date();
+      end.setUTCDate(end.getUTCDate() - event.end - 1);
       return due.getTime() < start.getTime() && due.getTime() > end.getTime();
     },
     addDate: function(date, days) {
@@ -17,7 +19,8 @@ module.exports = function(settings) {
       } else {
         result = new Date();
       }
-      result.setDate(result.getDate() + days);
+      result.setUTCDate(result.getUTCDate() + days);
+      result.setUTCHours(0, 0, 0, 0);
       return result;
     },
     getLmpDate: function(doc) {
