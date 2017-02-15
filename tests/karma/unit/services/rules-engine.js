@@ -186,6 +186,18 @@ describe('RulesEngine service', function() {
     }
   ];
 
+  var calculateDate = function(registration, days) {
+    var lmpWeeks = registration.form === 'P' ? registration.fields.last_menstrual_period : 4;
+    return moment.utc(registration.reported_date)
+      .subtract(lmpWeeks, 'weeks')
+      .add(days, 'days')
+      .hours(0)
+      .minutes(0)
+      .seconds(0)
+      .milliseconds(0)
+      .toISOString();
+  };
+
   beforeEach(function() {
     Search = sinon.stub();
     Settings = sinon.stub();
@@ -263,13 +275,6 @@ describe('RulesEngine service', function() {
   });
 
   it('generates tasks when given registrations', function(done) {
-    var calculateDate = function(registration, days) {
-      var lmpWeeks = registration.form === 'P' ? registration.fields.last_menstrual_period : 4;
-      return moment(registration.reported_date)
-        .subtract(lmpWeeks, 'weeks')
-        .add(days, 'days')
-        .toISOString();
-    };
 
     Search.onFirstCall().returns(KarmaUtils.mockPromise(null, dataRecords));
     Search.onSecondCall().returns(KarmaUtils.mockPromise(null, contacts));
@@ -377,13 +382,6 @@ describe('RulesEngine service', function() {
   });
 
   it('generates tasks using patient_id - #2986', function(done) {
-    var calculateDate = function(registration, days) {
-      var lmpWeeks = registration.form === 'P' ? registration.fields.last_menstrual_period : 4;
-      return moment(registration.reported_date)
-        .subtract(lmpWeeks, 'weeks')
-        .add(days, 'days')
-        .toISOString();
-    };
 
     var dataRecord = {
       _id: 1,
