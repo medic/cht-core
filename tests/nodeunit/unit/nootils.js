@@ -9,7 +9,7 @@ exports['addDate adds days to the date'] = function(test) {
 
 exports['addDate date defaults to now'] = function(test) {
   var actual = nootils.addDate(null, 2);
-  var expected = (new Date().getDate()) + 2;
+  var expected = (new Date().getUTCDate()) + 2;
   test.equal(actual.getDate(), expected);
   test.done();
 };
@@ -55,37 +55,37 @@ exports['getLmpDate returns the start of the day'] = function(test) {
 };
 
 exports['isTimely returns false if too early'] = function(test) {
-  var yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() + 1);
+  var date = new Date();
+  date.setDate(date.getDate() + 1);
   var event = {
     start: 0,
     end: 2
   };
-  var actual = nootils.isTimely(yesterday, event);
+  var actual = nootils.isTimely(date, event);
   test.equal(actual, false);
   test.done();
 };
 
 exports['isTimely returns false if too late'] = function(test) {
-  var yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 3);
+  var date = new Date();
+  date.setDate(date.getDate() - 3);
   var event = {
     start: 0,
     end: 2
   };
-  var actual = nootils.isTimely(yesterday, event);
+  var actual = nootils.isTimely(date, event);
   test.equal(actual, false);
   test.done();
 };
 
 exports['isTimely returns true if just right'] = function(test) {
-  var yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
+  var date = new Date();
+  date.setDate(date.getDate() - 1);
   var event = {
     start: 0,
     end: 2
   };
-  var actual = nootils.isTimely(yesterday, event);
+  var actual = nootils.isTimely(date, event);
   test.equal(actual, true);
   test.done();
 };
