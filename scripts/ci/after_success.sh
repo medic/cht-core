@@ -16,14 +16,16 @@ fi
 cd sentinel && npm install && cd .. && \
 cd api && npm install && cd ..
 
-function tagSubmodules {
-    cd api
-    git tag $TRAVIS_TAG
-    git push --tags
-    cd ../sentinel
+function tagSubmodule {
+    cd $1
     git tag $TRAVIS_TAG
     git push --tags
     cd ..
+}
+
+function tagSubmodules {
+    tagSubmodule 'api'
+    tagSubmodule 'sentinel'
 }
 
 # Try pushing up to $MAX times.
