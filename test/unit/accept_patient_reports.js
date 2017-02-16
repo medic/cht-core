@@ -152,15 +152,20 @@ exports['adding silence_type to matchRegistrations calls silenceReminders'] = fu
     sinon.stub(transition, 'silenceReminders').callsArgWithAsync(1, null);
 
     transition.matchRegistrations({
-        doc: {},
-        registrations: [ {}, {}, {}],
+        doc: { _id: 'a' },
+        registrations: [
+            { _id: 'a' }, // should not be silenced as it's the doc being processed
+            { _id: 'b' }, // should be silenced
+            { _id: 'c' }  // should be silenced
+        ],
         report: {
             silence_type: 'x'
         }
     }, function(err, complete) {
         test.equals(complete, true);
-        test.equals(transition.silenceReminders.callCount, 3);
-
+        test.equals(transition.silenceReminders.callCount, 2);
+        test.equals(transition.silenceReminders.args[0][0].registration._id, 'b');
+        test.equals(transition.silenceReminders.args[1][0].registration._id, 'c');
         test.done();
     });
 };

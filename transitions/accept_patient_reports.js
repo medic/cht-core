@@ -35,26 +35,33 @@ module.exports = {
     getAcceptedReports: function() {
         return config.get('patient_reports') || [];
     },
-    silenceRegistrations: function(options, callback) {
-        var report = options.report,
-            registrations = options.registrations;
-
-        if (report.silence_type) {
-            async.forEach(registrations, function(registration, callback) {
-                module.exports.silenceReminders({
-                    db: options.db,
-                    audit: options.audit,
-                    reported_date: options.reported_date,
-                    registration: registration,
-                    silence_for: report.silence_for,
-                    type: report.silence_type
-                }, callback);
-            }, function(err) {
-                callback(err, true);
-            });
-        } else {
-            callback(null, true);
+    silenceRegistration: function(options, registration, callback) {
+        if (options.doc._id === registration._id) {
+            // don't silence the registration you're processing
+            return callback();
         }
+        module.exports.silenceReminders({
+            db: options.db,
+            audit: options.audit,
+            reported_date: options.doc.reported_date,
+            registration: registration,
+            silence_for: options.report.silence_for,
+            type: options.report.silence_type
+        }, callback);
+    },
+    silenceRegistrations: function(options, callback) {
+        if (!options.report.silence_type) {
+            return callback(null, true);
+        }
+        async.forEach(
+            options.registrations,
+            function(registration, callback) {
+                module.exports.silenceRegistration(options, registration, callback);
+            },
+            function(err) {
+                callback(err, true);
+            }
+        );
     },
     /* try to match a recipient return undefined otherwise */
     matchRegistrations: function(options, callback) {
@@ -78,7 +85,7 @@ module.exports = {
                 db: options.db,
                 audit: options.audit,
                 report: report,
-                reported_date: doc.reported_date,
+                doc: doc,
                 registrations: registrations
             }, callback);
         }
@@ -150,24 +157,17 @@ module.exports = {
         });
     },
     silenceReminders: function(options, callback) {
-        var registration = options.registration.doc,
-            toClear,
-            audit = options.audit;
-
         // filter scheduled message by group
-        toClear = module.exports.findToClear(options);
-
-        if (toClear.length) {
-            // captured all to clear; now "clear" them
-            _.each(toClear, function(task) {
-                if (task.state === 'scheduled') {
-                    utils.setTaskState(task, 'cleared');
-                }
-            });
-            audit.saveDoc(registration, callback);
-        } else {
-            callback();
+        var toClear = module.exports.findToClear(options);
+        if (!toClear.length) {
+            return callback();
         }
+        toClear.forEach(function(task) {
+            if (task.state === 'scheduled') {
+                utils.setTaskState(task, 'cleared');
+            }
+        });
+        options.audit.saveDoc(options.registration.doc, callback);
     },
     validate: function(config, doc, callback) {
         var validations = config.validations && config.validations.list;
