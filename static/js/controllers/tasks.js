@@ -59,6 +59,7 @@ var _ = require('underscore');
       });
 
       LiveList.tasks.notifyChange = function(task) {
+        $scope.loading = false;
         $scope.hasTasks = LiveList.tasks.count() > 0;
         if ($scope.selected && task._id === $scope.selected._id ||
             (!$scope.selected && task._id === $state.params.id)) {
