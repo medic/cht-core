@@ -4,6 +4,7 @@
     <span translate>Error fetching tasks.</span>
     <a ng-click="refreshTaskList()" translate>Try again.</a>
   </p>
-  <p class="loading-status" ng-show="!error && !hasTasks && !tasksDisabled" translate>No tasks found</p>
+  <p class="loading-status" ng-show="!loading && !error && !hasTasks && !tasksDisabled" translate>No tasks found</p>
   <p class="loading-status" ng-show="tasksDisabled" translate>tasks.disabled</p>
+  <div class="loader" ng-show="loading && !tasksDisabled"></div>
 </div>
