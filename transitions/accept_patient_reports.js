@@ -36,7 +36,7 @@ module.exports = {
         return config.get('patient_reports') || [];
     },
     silenceRegistration: function(options, registration, callback) {
-        if (options.doc._id === registration._id) {
+        if (options.doc._id === registration.id) {
             // don't silence the registration you're processing
             return callback();
         }
