@@ -509,6 +509,7 @@
                                     "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
                                 },
                                 "list": {
+                                    "title": "Response Messages",
                                     "type": "array",
                                     "items": {
                                         "type": "object",
@@ -523,10 +524,15 @@
                                                 "title": "Validation Rule",
                                                 "description": "The validation rule. Backslashes must be double escaped. e.g. lenMin(5) && lenMax(50)"
                                             },
+                                            "translation_key": {
+                                                "type": "string",
+                                                "title": "Translation key",
+                                                "description": "The key to look up in the translation files. The translation value supports mustache templating."
+                                            },
                                             "message": {
                                                 "type": "array",
-                                                "title": "Response Message",
-                                                "description": "The response when validation fails. Mustache templating is supported.",
+                                                "title": "Message (deprecated)",
+                                                "description": "The response when validation fails. Mustache templating is supported. Using the Translation Key above is the preferred way to do this.",
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
@@ -560,10 +566,15 @@
                             "items": {
                                 "type": "object",
                                 "properties": {
+                                    "translation_key": {
+                                        "type": "string",
+                                        "title": "Translation key",
+                                        "description": "The key to look up in the translation files. The translation value supports mustache templating."
+                                    },
                                     "message": {
                                         "type": "array",
-                                        "title": "Message",
-                                        "description": "Mustache templating is supported",
+                                        "title": "Message (deprecated)",
+                                        "description": "Mustache templating is supported. Using the Translation Key above is the preferred way to do this.",
                                         "items": {
                                             "type": "object",
                                             "properties": {
@@ -654,6 +665,7 @@
                                     "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
                                 },
                                 "list": {
+                                    "title": "Response Messages",
                                     "type": "array",
                                     "items": {
                                         "type": "object",
@@ -668,10 +680,15 @@
                                                 "title": "Validation Rule",
                                                 "description": "The validation rule. Backslashes must be double escaped. e.g. regex('[0-9]{5}')"
                                             },
+                                            "translation_key": {
+                                                "type": "string",
+                                                "title": "Translation key",
+                                                "description": "The key to look up in the translation files. The translation value supports mustache templating."
+                                            },
                                             "message": {
-                                                "title": "Response Message",
+                                                "title": "Message (deprecated)",
+                                                "description": "The response when validation fails. Mustache templating is supported. Using the Translation Key above is the preferred way to do this.",
                                                 "type": "array",
-                                                "description": "The response when validation fails. Mustache templating is supported.",
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
@@ -704,10 +721,15 @@
                             "items": {
                                 "type": "object",
                                 "properties": {
+                                    "translation_key": {
+                                        "type": "string",
+                                        "title": "Translation key",
+                                        "description": "The key to look up in the translation files. The translation value supports mustache templating."
+                                    },
                                     "message": {
 										"type": "array",
-                                        "title": "Message Text",
-                                        "description": "Mustache templating is supported",
+                                        "title": "Message (deprecated)",
+                                        "description": "Mustache templating is supported. Using the Translation Key above is the preferred way to do this.",
                                         "items": {
                                             "type": "object",
                                             "properties": {
@@ -795,7 +817,14 @@
                             "items": {
                                 "type": "object",
                                 "properties": {
+                                    "translation_key": {
+                                        "type": "string",
+                                        "title": "Translation key",
+                                        "description": "The key to look up in the translation files. The translation value supports mustache templating."
+                                    },
                                     "message": {
+                                        "title": "Message (deprecated)",
+                                        "description": "Using the Translation Key above is the preferred way to do this.",
                                         "type": "array",
                                         "items": {
                                             "type": "object",
@@ -893,6 +922,7 @@
                                 "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
                             },
                             "list": {
+                                "title": "Response Messages",
                                 "type": "array",
                                 "items": {
                                     "type": "object",
@@ -907,10 +937,15 @@
                                             "title": "Validation Rule",
                                             "description": "The validation rule. Backslashes must be double escaped. e.g. regex('[0-9]{5}')"
                                         },
+                                        "translation_key": {
+                                            "type": "string",
+                                            "title": "Translation key",
+                                            "description": "The key to look up in the translation files. The translation value supports mustache templating."
+                                        },
                                         "message": {
-                                            "title": "Response Message",
+                                            "title": "Message (deprecated)",
+                                            "description": "The response when validation fails. Mustache templating is supported. Using the Translation Key above is the preferred way to do this.",
                                             "type": "array",
-                                            "description": "The response when validation fails. Mustache templating is supported.",
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
@@ -943,10 +978,15 @@
                         "items": {
                             "type": "object",
                             "properties": {
+                                "translation_key": {
+                                    "type": "string",
+                                    "title": "Translation key",
+                                    "description": "The key to look up in the translation files. The translation value supports mustache templating."
+                                },
                                 "message": {
                                     "type": "array",
-                                    "title": "Message",
-                                    "description": "Mustache templating is supported",
+                                    "title": "Message (deprecated)",
+                                    "description": "Mustache templating is supported. Using the Translation Key above is the preferred way to do this.",
                                     "items": {
                                         "type": "object",
                                         "properties": {
