@@ -16,12 +16,19 @@ function userUrl(name) {
 }
 
 function assertChangeIds(changes) {
+  var DEFAULT_EXPECTED = ['appcache',
+    'resources',
+    '_design/medic-client'];
+
   changes = changes.results;
 
-  // filter out deleted entries - we never delete in our production code, but
+  // * filter out deleted entries - we never delete in our production code, but
   // some docs are deleted in the test setup/teardown
+  //  * also filter out translation documents and other expected documents
   changes = _.reject(changes, function(change) {
-    return change.deleted;
+    return change.deleted ||
+           change.id.startsWith('messages-') ||
+           DEFAULT_EXPECTED.indexOf(change.id) !== 0;
   });
 
   var expectedIds = Array.prototype.slice.call(arguments, 1);
@@ -141,15 +148,6 @@ describe('changes handler', function() {
         // then
         // only change listed is for the relevant doc
         return assertChangeIds(changes,
-            'appcache',
-            'messages-sw',
-            'messages-ne',
-            'messages-hi',
-            'messages-fr',
-            'messages-es',
-            'messages-en',
-            'resources',
-            '_design/medic-client',
             'org.couchdb.user:bob',
             'fixture:bobville',
             'very-relevant');
@@ -190,15 +188,6 @@ describe('changes handler', function() {
             // then
             // it should contain the unassigned data_record
             return assertChangeIds(changes,
-              'appcache',
-              'messages-sw',
-              'messages-ne',
-              'messages-hi',
-              'messages-fr',
-              'messages-es',
-              'messages-en',
-              'resources',
-              '_design/medic-client',
               'org.couchdb.user:bob',
               'fixture:bobville',
               'unallocated_report');
@@ -229,15 +218,6 @@ describe('changes handler', function() {
             // then
             // it should contain the unassigned data_record
             return assertChangeIds(changes,
-              'appcache',
-              'messages-sw',
-              'messages-ne',
-              'messages-hi',
-              'messages-fr',
-              'messages-es',
-              'messages-en',
-              'resources',
-              '_design/medic-client',
               'org.couchdb.user:bob',
               'fixture:bobville');
 
@@ -262,15 +242,6 @@ describe('changes handler', function() {
           // then
           // it should contain the unassigned data_record
           return assertChangeIds(changes,
-            'appcache',
-            'messages-sw',
-            'messages-ne',
-            'messages-hi',
-            'messages-fr',
-            'messages-es',
-            'messages-en',
-            'resources',
-            '_design/medic-client',
             'org.couchdb.user:clare',
             'fixture:clareville');
 
@@ -316,15 +287,6 @@ describe('changes handler', function() {
           // then
           // changes feed only contains the contact within the configured depth
           return assertChangeIds(changes,
-              'appcache',
-              'messages-sw',
-              'messages-ne',
-              'messages-hi',
-              'messages-fr',
-              'messages-es',
-              'messages-en',
-              'resources',
-              '_design/medic-client',
               'org.couchdb.user:chw',
               'fixture:user:chw',
               'fixture:chwville',
@@ -370,15 +332,6 @@ describe('changes handler', function() {
           // then
           // changes feed contains both contacts
           return assertChangeIds(changes,
-              'appcache',
-              'messages-sw',
-              'messages-ne',
-              'messages-hi',
-              'messages-fr',
-              'messages-es',
-              'messages-en',
-              'resources',
-              '_design/medic-client',
               'org.couchdb.user:chw',
               'fixture:user:chw',
               'fixture:chwville',
@@ -416,15 +369,6 @@ describe('changes handler', function() {
           // then
           // the changes feed contains both the shallow and the deep contacts
           return assertChangeIds(changes,
-              'appcache',
-              'messages-sw',
-              'messages-ne',
-              'messages-hi',
-              'messages-fr',
-              'messages-es',
-              'messages-en',
-              'resources',
-              '_design/medic-client',
               'org.couchdb.user:chw',
               'fixture:user:chw',
               'fixture:chwville',
@@ -462,15 +406,6 @@ describe('changes handler', function() {
         // then
         // the changes feed only includes the report from the CHW
         return assertChangeIds(changes,
-            'appcache',
-            'messages-sw',
-            'messages-ne',
-            'messages-hi',
-            'messages-fr',
-            'messages-es',
-            'messages-en',
-            'resources',
-            '_design/medic-client',
             'org.couchdb.user:chw',
             'fixture:chwville',
             'fixture:user:chw',
