@@ -364,9 +364,9 @@
       "resolved": "https://registry.npmjs.org/glob/-/glob-7.0.6.tgz"
     },
     "google-libphonenumber": {
-      "version": "2.0.9",
-      "from": "google-libphonenumber@>=2.0.9 <3.0.0",
-      "resolved": "http://registry.npmjs.org/google-libphonenumber/-/google-libphonenumber-2.0.9.tgz"
+      "version": "2.0.10",
+      "from": "google-libphonenumber@2.0.10",
+      "resolved": "https://registry.npmjs.org/google-libphonenumber/-/google-libphonenumber-2.0.10.tgz"
     },
     "graceful-readlink": {
       "version": "1.0.1",
