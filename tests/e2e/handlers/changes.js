@@ -28,7 +28,7 @@ function assertChangeIds(changes) {
   changes = _.reject(changes, function(change) {
     return change.deleted ||
            change.id.startsWith('messages-') ||
-           DEFAULT_EXPECTED.indexOf(change.id) !== 0;
+           DEFAULT_EXPECTED.indexOf(change.id) !== -1;
   });
 
   var expectedIds = Array.prototype.slice.call(arguments, 1);
