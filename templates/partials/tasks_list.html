@@ -6,5 +6,5 @@
   </p>
   <p class="loading-status" ng-show="!loading && !error && !hasTasks && !tasksDisabled" translate>No tasks found</p>
   <p class="loading-status" ng-show="tasksDisabled" translate>tasks.disabled</p>
-  <div class="loader" ng-show="loading && !tasksDisabled"></div>
+  <div class="loader" ng-show="loading && !tasksDisabled && !error"></div>
 </div>
