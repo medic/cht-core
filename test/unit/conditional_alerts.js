@@ -2,18 +2,11 @@ var _ = require('underscore'),
     sinon = require('sinon'),
     messages = require('../../lib/messages'),
     utils = require('../../lib/utils'),
+    testUtils = require('../test_utils'),
     transition = require('../../transitions/conditional_alerts');
 
-var restore = function(objs) {
-    _.each(objs, function(obj) {
-        if (obj.restore) {
-            obj.restore();
-        }
-    });
-};
-
 exports.tearDown = function(callback) {
-    restore([
+    testUtils.restore([
         transition._getConfig,
         messages.addMessage,
         utils.getRecentForm
@@ -80,7 +73,7 @@ exports['when alert matches document send message'] = function(test) {
             condition: 'true',
             message: 'hello world',
             recipient: '+5555555'
-        }, 
+        },
         '1': {
             form: 'XXXX',
             condition: 'true',
@@ -113,7 +106,7 @@ exports['when alert matches multiple documents send message multiple times'] = f
             condition: 'true',
             message: 'hello world',
             recipient: '+5555555'
-        }, 
+        },
         '1': {
             form: 'STCK',
             condition: 'true',
@@ -151,7 +144,7 @@ exports['when alert matches document and condition is true send message'] = func
             condition: 'true',
             message: 'hello world',
             recipient: '+5555555'
-        }, 
+        },
         '1': {
             form: 'STCK',
             condition: 'false',
@@ -178,14 +171,14 @@ exports['when alert matches document and condition is true send message'] = func
 };
 
 exports['when recent form condition is true send message'] = function(test) {
-        
+
     sinon.stub(transition, '_getConfig').returns({
         '0': {
             form: 'STCK',
             condition: 'STCK(0).s1_avail == 0',
             message: 'out of units',
             recipient: '+5555555'
-        }, 
+        },
         '1': {
             form: 'STCK',
             condition: 'STCK(0).s1_avail == 1',
@@ -250,7 +243,7 @@ exports['handle missing condition reference gracefully'] = function(test) {
 };
 
 exports['when complex condition is true send message'] = function(test) {
-        
+
     sinon.stub(transition, '_getConfig').returns({
         '0': {
             form: 'STCK',
@@ -301,7 +294,7 @@ exports['when complex condition is true send message'] = function(test) {
 };
 
 exports['database records are sorted before condition evaluation'] = function(test) {
-        
+
     sinon.stub(transition, '_getConfig').returns({
         '0': {
             form: 'STCK',

@@ -1,6 +1,7 @@
 var transitions = require('../../transitions/index'),
     sinon = require('sinon'),
     config = require('../../config'),
+    testUtils = require('../test_utils'),
     configGet;
 
 exports.setUp = function(callback) {
@@ -9,9 +10,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-  if (config.get.restore) {
-    config.get.restore();
-  }
+  testUtils.restore([config.get]);
   callback();
 };
 

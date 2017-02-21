@@ -4,27 +4,17 @@ var _ = require('underscore'),
     audit = require('couchdb-audit'),
     config = require('../../config'),
     db = require('../../db'),
+    testUtils = require('../test_utils'),
     transitions = require('../../transitions');
 
 exports.tearDown = function(callback) {
-    if (config.get.restore) {
-        config.get.restore();
-    }
-    if (db.medic.get.restore) {
-        db.medic.get.restore();
-    }
-    if (db.medic.insert.restore) {
-        db.medic.insert.restore();
-    }
-    if (transitions.applyTransitions.restore) {
-        transitions.applyTransitions.restore();
-    }
-    if (follow.Feed.restore) {
-        follow.Feed.restore();
-    }
-    if (audit.withNano.restore) {
-        audit.withNano.restore();
-    }
+    testUtils.restore([
+        config.get,
+        db.medic.get,
+        db.medic.insert,
+        transitions.applyTransitions,
+        follow.Feed,
+        audit.withNano]);
     transitions._changeQueue.kill();
     callback();
 };

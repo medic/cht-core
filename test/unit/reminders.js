@@ -2,6 +2,7 @@ var _ = require('underscore'),
     moment = require('moment'),
     sinon = require('sinon'),
     config = require('../../config'),
+    testUtils = require('../test_utils'),
     reminders = require('../../schedule/reminders');
 
 exports.setUp = function(callback) {
@@ -10,17 +11,8 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-    // call any restore/sinon overloaded functions on tear down
-    _.each(reminders, function(key) {
-        if(_.isFunction(reminders[key])) {
-            if(_.isFunction(reminders[key].restore)) {
-                reminders[key].restore();
-            }
-        }
-    });
-    if (config.get.restore) {
-        config.get.restore();
-    }
+    testUtils.restoreAll(reminders);
+    testUtils.restore([config.get]);
     callback();
 };
 
@@ -85,8 +77,8 @@ exports['runReminder does not create document when no match'] = function(test) {
 };
 
 exports['matches reminder with moment if in last hour'] = function(test) {
-    var window = sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour')),
-        ts = moment().startOf('hour');
+    var ts = moment().startOf('hour');
+    sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour'));
 
     reminders.matchReminder({
         reminder: {
@@ -96,7 +88,6 @@ exports['matches reminder with moment if in last hour'] = function(test) {
         test.equals(err, null);
         test.ok(matches);
         test.equals(matches.valueOf(), ts.valueOf());
-        window.restore();
         test.done();
     });
 };
@@ -124,7 +115,7 @@ exports['does not match reminder if in next minute'] = function(test) {
     var past = moment().subtract(1, 'hour'),
         now = moment();
 
-    var window = sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, past);
+    sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, past);
 
     reminders.matchReminder({
         reminder: {
@@ -133,15 +124,14 @@ exports['does not match reminder if in next minute'] = function(test) {
         }
     }, function(err, matches) {
         test.equals(err, null);
-        window.restore();
         test.equals(matches, false);
         test.done();
     });
 };
 
 exports['does not match if previous to reminder'] = function(test) {
-    var window = sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour')),
-        now = moment().subtract(2, 'hours');
+    var now = moment().subtract(2, 'hours');
+    sinon.stub(reminders, 'getReminderWindow').callsArgWithAsync(1, null, moment().subtract(1, 'hour'));
 
     reminders.matchReminder({
         reminder: {
@@ -149,7 +139,6 @@ exports['does not match if previous to reminder'] = function(test) {
         }
     }, function(err, matches) {
         test.equals(err, null);
-        window.restore();
         test.equals(matches, false);
         test.done();
     });
@@ -284,17 +273,13 @@ exports['sendReminders calls sendReminder for each clinic'] = function(test) {
 };
 
 exports['sendReminder saves doc with added task to clinic'] = function(test) {
-    var db,
+    var db = {
+            medic: {
+                insert: function() {}
+            }
+        },
         now = moment(),
-        saveDoc;
-
-    db = {
-        medic: {
-            insert: function() {}
-        }
-    };
-
-    saveDoc = sinon.stub(db.medic, 'insert').callsArgWithAsync(1, null);
+        saveDoc = sinon.stub(db.medic, 'insert').callsArgWithAsync(1, null);
 
     reminders.sendReminder({
         clinic: {
@@ -327,7 +312,6 @@ exports['sendReminder saves doc with added task to clinic'] = function(test) {
         test.equals(task.form, 'XXX');
         test.equals(task.ts, now.toISOString());
 
-        saveDoc.restore();
         test.done();
     });
 };

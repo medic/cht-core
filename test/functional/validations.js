@@ -1,4 +1,5 @@
 var sinon = require('sinon'),
+    testUtils = require('../test_utils'),
     transition = require('../../transitions/accept_patient_reports');
 
 /*
@@ -7,9 +8,7 @@ var sinon = require('sinon'),
  * */
 
 exports.tearDown = function(callback) {
-    if (transition.getAcceptedReports.restore) {
-        transition.getAcceptedReports.restore();
-    }
+    testUtils.restore([transition.getAcceptedReports]);
     callback();
 };
 

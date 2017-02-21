@@ -1,13 +1,11 @@
 var _ = require('underscore'),
+    testUtils = require('../test_utils'),
     config = require('../../config');
 
 exports.tearDown = function(callback) {
-    if (config._initFeed.restore) {
-        config._initFeed.restore();
-    }
-    if (config._initConfig.restore) {
-        config._initConfig.restore();
-    }
+    testUtils.restore([
+        config._initFeed,
+        config._initConfig]);
     callback();
 };
 

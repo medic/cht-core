@@ -4,19 +4,12 @@ var _ = require('underscore'),
     db = require('../../db'),
     sinon = require('sinon'),
     utils = require('../../lib/utils'),
+    testUtils = require('../test_utils'),
     uuid = require('uuid'),
     config = require('../../config');
 
-var restore = function(objs) {
-    _.each(objs, function(obj) {
-        if (obj.restore) {
-            obj.restore();
-        }
-    });
-};
-
 exports.tearDown = function(callback) {
-    restore([
+    testUtils.restore([
         db.medic.view,
         config.getTranslations,
         config.get,

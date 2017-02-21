@@ -1,20 +1,17 @@
 var moment = require('moment'),
     validation = require('../../lib/validation'),
     utils = require('../../lib/utils'),
+    testUtils = require('../test_utils'),
     db = require('../../db'),
     sinon = require('sinon'),
     clock;
 
 exports.tearDown = function(callback) {
-    if (utils.getRegistrations.restore) {
-        utils.getRegistrations.restore();
-    }
-    if (db.fti.restore) {
-        db.fti.restore();
-    }
-    if (clock && clock.restore) {
-        clock.restore();
-    }
+    testUtils.restore([
+        utils.getRegistrations,
+        db.fti,
+        clock
+    ]);
     callback();
 };
 
@@ -88,7 +85,7 @@ exports['pass unique validation when doc is the same'] = function(test) {
     var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
         rows: [{
             id: 'same',
-            doc: { errors: [] } 
+            doc: { errors: [] }
         }]
     });
     var validations = [{
@@ -115,7 +112,7 @@ exports['pass unique validation when doc has errors'] = function(test) {
     var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
         rows: [{
             id: 'different',
-            doc: { errors: [{foo: 'bar'}] } 
+            doc: { errors: [{foo: 'bar'}] }
         }]
     });
     var validations = [{
@@ -142,7 +139,7 @@ exports['fail unique validation on doc with no errors'] = function(test) {
     var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
         rows: [{
             id: 'different',
-            doc: { errors: [] } 
+            doc: { errors: [] }
         }]
     });
     var validations = [{
@@ -176,7 +173,7 @@ exports['fail multiple field unique validation on doc with no errors'] = functio
     var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
         rows: [{
             id: 'different',
-            doc: { errors: [] } 
+            doc: { errors: [] }
         }]
     });
     var validations = [{
@@ -212,7 +209,7 @@ exports['pass uniqueWithin validation on old doc'] = function(test) {
     var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
         rows: [{
             id: 'different',
-            doc: { errors: [] } 
+            doc: { errors: [] }
         }]
     });
     var validations = [{
@@ -285,7 +282,7 @@ exports['pass exists validation when matching document'] = function(test) {
     var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
         rows: [{
             id: 'different',
-            doc: { errors: [] } 
+            doc: { errors: [] }
         }]
     });
     var validations = [{
@@ -308,7 +305,7 @@ exports['pass exists validation when matching document'] = function(test) {
 
         test.deepEqual(errors, []);
         test.done();
-        
+
     });
 };
 
@@ -341,7 +338,7 @@ exports['fail exists validation when no matching document'] = function(test) {
             message: 'Unknown patient {{parent_id}}.'
         }]);
         test.done();
-        
+
     });
 };
 
@@ -351,7 +348,7 @@ exports['fail exists validation when matching document is same as this'] = funct
     var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
         rows: [{
             id: 'same',
-            doc: { errors: [] } 
+            doc: { errors: [] }
         }]
     });
     var validations = [{
@@ -377,6 +374,6 @@ exports['fail exists validation when matching document is same as this'] = funct
             message: 'Unknown patient {{parent_id}}.'
         }]);
         test.done();
-        
+
     });
 };

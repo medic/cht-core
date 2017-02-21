@@ -2,6 +2,7 @@ var sinon = require('sinon'),
     fakedb = require('../fake-db'),
     fakeaudit = require('../fake-audit'),
     transition = require('../../transitions/update_clinics'),
+    testUtils = require('../test_utils'),
     phone = '+34567890123';
 
 exports.setUp = function(callback) {
@@ -10,12 +11,10 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-  if (fakedb.medic.view.restore) {
-    fakedb.medic.view.restore();
-  }
-  if (fakedb.medic.get.restore) {
-    fakedb.medic.get.restore();
-  }
+  testUtils.restore([
+    fakedb.medic.view,
+    fakedb.medic.get
+  ]);
   callback();
 };
 

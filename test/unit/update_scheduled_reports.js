@@ -1,12 +1,11 @@
 var _ = require('underscore'),
     sinon = require('sinon'),
     transition = require('../../transitions/update_scheduled_reports'),
+    testUtils = require('../test_utils'),
     utils = require('../../lib/utils');
 
 exports.tearDown = function(callback) {
-    if (utils.getRegistrations.restore) {
-        utils.getRegistrations.restore();
-    }
+    testUtils.restore([utils.getRegistrations]);
     callback();
 };
 

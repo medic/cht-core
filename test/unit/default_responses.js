@@ -2,16 +2,9 @@ var _ = require('underscore'),
     sinon = require('sinon'),
     config = require('../../config'),
     utils = require('../../lib/utils'),
+    testUtils = require('../test_utils'),
     messages = require('../../lib/messages'),
     transition = require('../../transitions/default_responses');
-
-var restore = function(objs) {
-    _.each(objs, function(obj) {
-        if (obj.restore) {
-            obj.restore();
-        }
-    });
-};
 
 exports.setUp = function(callback) {
     sinon.stub(transition, '_isReportedAfterStartDate').returns(true);
@@ -19,7 +12,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-    restore([
+    testUtils.restore([
         transition.filter,
         transition._isMessageEmpty,
         transition._isFormNotFound,
@@ -118,7 +111,7 @@ exports['pass filter when message is not from gateway'] = function(test) {
 };
 
 exports['do nothing if reported date is not after config start date'] = function(test) {
-    transition._isReportedAfterStartDate.restore();
+    testUtils.restore([transition._isReportedAfterStartDate]);
     sinon.stub(transition, '_isReportedAfterStartDate').returns(false);
     test.equals(transition.filter({
         from: '+222',
@@ -155,14 +148,14 @@ exports['when doc has no errors, form is not found returns false'] = function(te
 
 
 exports['isReportedAfterStartDate returns false if config start date is whitespace'] = function(test) {
-    transition._isReportedAfterStartDate.restore();
+    testUtils.restore([transition._isReportedAfterStartDate]);
     sinon.stub(transition, '_getConfig').withArgs('default_responses').returns({ start_date: ' ' });
     test.equals(transition._isReportedAfterStartDate({}), false);
     test.done();
 };
 
 exports['isReportedAfterStartDate returns true when reported date is after start date'] = function(test) {
-    transition._isReportedAfterStartDate.restore();
+    testUtils.restore([transition._isReportedAfterStartDate]);
     sinon.stub(transition, '_getConfig').withArgs('default_responses').returns({ start_date: '2014-01-01' });
     test.equals(transition._isReportedAfterStartDate({
         reported_date: 1412641215000
@@ -171,7 +164,7 @@ exports['isReportedAfterStartDate returns true when reported date is after start
 };
 
 exports['isReportedAfterStartDate returns false when reported date is before start date'] = function(test) {
-    transition._isReportedAfterStartDate.restore();
+    testUtils.restore([transition._isReportedAfterStartDate]);
     sinon.stub(transition, '_getConfig').withArgs('default_responses').returns({ start_date: '2014-12-01' });
     test.equals(transition._isReportedAfterStartDate({
         reported_date: 1412641215000

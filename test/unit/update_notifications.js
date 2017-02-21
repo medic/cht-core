@@ -1,18 +1,11 @@
 var _ = require('underscore'),
     sinon = require('sinon'),
     transition = require('../../transitions/update_notifications'),
+    testUtils = require('../test_utils'),
     utils = require('../../lib/utils');
 
-var restore = function(objs) {
-    _.each(objs, function(obj) {
-        if (obj.restore) {
-            obj.restore();
-        }
-    });
-};
-
 exports.tearDown = function(callback) {
-    restore([
+    testUtils.restore([
         transition.getConfig,
         utils.getRegistrations,
         utils.getClinicPhone

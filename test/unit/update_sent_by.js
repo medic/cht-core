@@ -1,6 +1,7 @@
 var sinon = require('sinon'),
     fakedb = require('../fake-db'),
     fakeaudit = require('../fake-audit'),
+    testUtils = require('../test_utils'),
     transition = require('../../transitions/update_sent_by');
 
 exports.setUp = function(callback) {
@@ -9,9 +10,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-    if (fakedb.medic.view.restore) {
-        fakedb.medic.view.restore();
-    }
+    testUtils.restore([fakedb.medic.view]);
     callback();
 };
 

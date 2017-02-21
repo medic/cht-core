@@ -4,6 +4,7 @@ var _ = require('underscore'),
     sinon = require('sinon'),
     moment = require('moment'),
     utils = require('../../lib/utils'),
+    testUtils = require('../test_utils'),
     uuid = require('uuid'),
     contact = {
         phone: '+1234',
@@ -47,18 +48,11 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-    if (utils.getRegistrations.restore) {
-        utils.getRegistrations.restore();
-    }
-    if (transition.getConfig.restore) {
-        transition.getConfig.restore();
-    }
-    if (schedules.getScheduleConfig.restore) {
-        schedules.getScheduleConfig.restore();
-    }
-    if (uuid.v4.restore) {
-        uuid.v4.restore();
-    }
+    testUtils.restore([
+        utils.getRegistrations,
+        transition.getConfig,
+        schedules.getScheduleConfig,
+        uuid.v4]);
     callback();
 };
 
