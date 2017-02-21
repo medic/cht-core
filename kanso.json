@@ -107,13 +107,13 @@
                 "type": "string",
                 "title": "Date Format",
                 "default": "DD-MMM-YYYY",
-                "description": "Format used to display dates."
+                "description": "Format used to display dates using <a href='http://momentjs.com/docs/#/displaying/format/'>Moment.js format</a>."
             },
             "reported_date_format": {
                 "type": "string",
                 "title": "DateTime Format",
                 "default": "DD-MMM-YYYY HH:mm:ss",
-                "description": "Format used to display dates and times."
+                "description": "Format used to display dates and times using <a href='http://momentjs.com/docs/#/displaying/format/'>Moment.js format</a>."
             },
             "forms_only_mode": {
                 "type": "boolean",
@@ -279,9 +279,9 @@
                 "default": []
             },
             "anc_forms": {
-                "title": "ANC Reports",
+                "title": "ANC Forms",
                 "type": "object",
-                "description": "Define your ANC related form codes here, these forms will be used to generate analytics.",
+                "description": "Specified forms can be used in the built-in ANC Analytics.",
                 "properties": {
                     "registration": {
                         "type": "string",
