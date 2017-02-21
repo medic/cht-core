@@ -5,6 +5,7 @@ var _ = require('underscore'),
     moment = require('moment'),
     validation = require('../lib/validation'),
     utils = require('../lib/utils'),
+    transitionUtils = require('./utils'),
     date = require('../date');
 
 module.exports = {
@@ -90,28 +91,7 @@ module.exports = {
             }, callback);
         }
 
-        var not_found_msg,
-            default_msg = {
-                doc: doc,
-                message: 'sys.registration_not_found',
-                phone: messages.getRecipientPhone(doc, 'from')
-            };
-        _.each(report.messages, function(msg) {
-            if (msg.event_type === 'registration_not_found') {
-                not_found_msg = {
-                    doc: doc,
-                    message: messages.getMessage(msg.message, locale),
-                    phone: messages.getRecipientPhone(doc, msg.recipient)
-                };
-            }
-        });
-        if (not_found_msg) {
-            messages.addMessage(not_found_msg);
-            messages.addError(not_found_msg.doc, not_found_msg.message);
-        } else {
-            messages.addMessage(default_msg);
-            messages.addError(default_msg.doc, default_msg.message);
-        }
+        transitionUtils.addRegistrationNotFoundMessage(doc, report);
         callback(null, true);
     },
     // find the messages to clear
@@ -223,12 +203,23 @@ module.exports = {
                 return callback(null, true);
             }
 
-            module.exports.handleReport({
-                db: _db,
-                audit: _audit,
-                doc: doc,
-                report: report
-            }, callback);
+            utils.getPatientContactUuid(_db, doc.fields.patient_id, function(err) {
+                if (err) {
+                    if (err.statusCode === 404) {
+                        transitionUtils.addRegistrationNotFoundMessage(doc, report);
+                        return callback(null, true);
+                    }
+
+                    return callback(err);
+                }
+
+                module.exports.handleReport({
+                    db: _db,
+                    audit: _audit,
+                    doc: doc,
+                    report: report
+                }, callback);
+            });
         });
     }
 };

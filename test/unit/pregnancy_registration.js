@@ -2,6 +2,7 @@ var _ = require('underscore'),
     transition = require('../../transitions/registration'),
     sinon = require('sinon'),
     moment = require('moment'),
+    testUtils = require('../test_utils'),
     utils = require('../../lib/utils');
 
 function getMessage(doc) {
@@ -13,44 +14,6 @@ function getMessage(doc) {
 
 exports.setUp = function(callback) {
     sinon.stub(transition, 'getConfig').returns([{
-        form: 'y',
-        type: 'pregnancy',
-        events: [
-           {
-               name: 'on_create',
-               trigger: 'add_patient_id',
-               params: '',
-               bool_expr: ''
-           },
-           {
-               name: 'on_create',
-               trigger: 'add_expected_date',
-               params: '',
-               bool_expr: 'typeof doc.getid === "undefined"'
-           }
-        ],
-        validations: {
-            join_responses: true,
-            list: [
-                {
-                    property: 'lmp',
-                    rule: 'min(0) && max(40)',
-                    message: [{
-                        content: 'Invalid LMP; must be between 0-40 weeks.',
-                        locale: 'en'
-                    }]
-                },
-                {
-                    property: 'patient_name',
-                    rule: 'lenMin(1) && lenMax(100)',
-                    message: [{
-                        content: 'Invalid patient name.',
-                        locale: 'en'
-                    }]
-                }
-            ]
-        }
-    },{
         form: 'p',
         type: 'pregnancy',
         events: [
@@ -88,21 +51,59 @@ exports.setUp = function(callback) {
                 }
             ]
         }
+    },{
+        // Pregnancy for existing patient
+        form: 'ep',
+        type: 'pregnancy',
+        events: [
+           // See, no patient id creation!
+           // {
+           //     name: 'on_create',
+           //     trigger: 'add_patient_id',
+           //     params: '',
+           //     bool_expr: ''
+           // },
+           {
+               name: 'on_create',
+               trigger: 'add_expected_date',
+               params: '',
+               bool_expr: 'typeof doc.getid === "undefined"'
+           }
+        ],
+        validations: {
+            join_responses: true,
+            list: [
+                {
+                    property: 'lmp',
+                    rule: 'min(0) && max(40)',
+                    message: [{
+                        content: 'Invalid LMP; must be between 0-40 weeks.',
+                        locale: 'en'
+                    }]
+                },
+                {
+                    property: 'patient_id',
+                    rule: 'len(5)',
+                    message: [{
+                        content: 'Invalid patient Id.',
+                        locale: 'en'
+                    }]
+                }
+            ]
+        }
     }]);
     callback();
 };
 
 exports.tearDown = function(callback) {
-    _.each([
+    testUtils.restore([
         utils.getRegistrations,
+        utils.getPatientContactUuid,
         utils.getClinicPhone,
         transition.getConfig,
         utils.getForm
-    ], function(o) {
-        if (o.restore) {
-            o.restore();
-        }
-    });
+    ]);
+
     callback();
 };
 
@@ -118,7 +119,7 @@ exports['filter fails with empty doc'] = function(test) {
 };
 
 exports['filter fails with no clinic phone and private form'] = function(test) {
-    var doc = { form: 'y' };
+    var doc = { form: 'p' };
     sinon.stub(utils, 'getClinicPhone').returns(null);
     sinon.stub(utils, 'getForm').returns({ public_form: false });
     test.ok(!transition.filter(doc));
@@ -126,7 +127,7 @@ exports['filter fails with no clinic phone and private form'] = function(test) {
 };
 
 exports['filter does not fail if doc has errors'] = function(test) {
-    var doc = { form: 'y', errors: [ 'some error ' ] };
+    var doc = { form: 'p', errors: [ 'some error ' ] };
     sinon.stub(utils, 'getClinicPhone').returns('somephone');
     sinon.stub(utils, 'getForm').returns({ public_form: true });
     test.ok(transition.filter(doc));
@@ -149,7 +150,7 @@ exports['filter succeeds with no clinic phone if public form'] = function(test) 
 };
 
 exports['filter succeeds with populated doc'] = function(test) {
-    var doc = { form: 'y' };
+    var doc = { form: 'p' };
     sinon.stub(utils, 'getClinicPhone').returns('somephone');
     sinon.stub(utils, 'getForm').returns({});
     test.ok(transition.filter(doc));
@@ -196,10 +197,11 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
     var doc,
         start = moment().startOf('week').subtract(5, 'weeks');
 
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
     doc = {
-        form: 'y',
+        form: 'p',
         fields: {
             patient_name: 'abc',
             lmp: 5
@@ -218,14 +220,61 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
     });
 };
 
+exports['pregnancies on existing patients fail without valid patient id'] = function(test) {
+    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, {statusCode: 404});
+
+    var doc = {
+        form: 'ep',
+        fields: {
+            patient_id: '12345',
+            lmp: 5
+        }
+    };
+
+    transition.onMatch({
+        doc: doc
+    }, {}, {}, function(err, changed) {
+        test.equals(err, null);
+        test.equals(changed, true);
+        test.equals(doc.errors.length, 1);
+        test.equals(doc.errors[0].message, 'sys.registration_not_found');
+        test.done();
+    });
+};
+
+exports['pregnancies on existing patients succeeds with a valid patient id'] = function(test) {
+    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+
+    var doc = {
+        form: 'ep',
+        fields: {
+            patient_id: '12345',
+            lmp: 5
+        }
+    };
+
+    transition.onMatch({
+        doc: doc
+    }, {}, {}, function(err, changed) {
+        test.equals(err, null);
+        test.equals(changed, true);
+        test.ok(!doc.errors);
+        test.done();
+    });
+};
+
+
 exports['zero lmp value only registers patient'] = function(test) {
 
     test.expect(5);
 
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
     var doc = {
-        form: 'y',
+        form: 'p',
         fields: {
             patient_name: 'abc',
             lmp: 0
@@ -247,10 +296,11 @@ exports['zero lmp value only registers patient'] = function(test) {
 exports['id only logic with valid name'] = function(test) {
     var doc;
 
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
     doc = {
-        form: 'y',
+        form: 'p',
         fields: {
             patient_name: 'abc',
             lmp: 5
@@ -274,10 +324,11 @@ exports['id only logic with invalid name'] = function(test) {
     test.expect(5);
     var doc;
 
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
     doc = {
-        form: 'y',
+        form: 'p',
         from: '+12345',
         fields: {
             patient_name: '',
@@ -304,7 +355,7 @@ exports['invalid name valid LMP logic'] = function(test) {
     var doc;
 
     doc = {
-        form: 'y',
+        form: 'p',
         from: '+1234',
         fields: {
             patient_name: '',
@@ -328,7 +379,7 @@ exports['valid name invalid LMP logic'] = function(test) {
     var doc;
 
     doc = {
-        form: 'y',
+        form: 'p',
         from: '+1234',
         fields: {
             patient_name: 'hi',
@@ -352,7 +403,7 @@ exports['invalid name invalid LMP logic'] = function(test) {
     var doc;
 
     doc = {
-        form: 'y',
+        form: 'p',
         from: '+123',
         fields: {
             patient_name: '',
@@ -386,7 +437,7 @@ exports['mismatched form returns false'] = function(test) {
 exports['missing all fields returns validation errors'] = function(test) {
     test.expect(2);
     var doc = {
-        form: 'y',
+        form: 'p',
         from: '+123'
     };
     transition.onMatch({

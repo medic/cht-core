@@ -2,6 +2,7 @@ var vm = require('vm'),
     _ = require('underscore'),
     async = require('async'),
     utils = require('../lib/utils'),
+    transitionUtils = require('./utils'),
     logger = require('../lib/logger'),
     messages = require('../lib/messages'),
     validation = require('../lib/validation'),
@@ -177,47 +178,82 @@ module.exports = {
                 return callback(null, true);
             }
 
-            var series = [];
-            _.each(config.events, function(event) {
-                var trigger = self.triggers[event.trigger];
-                if (!trigger) {
+            if (doc.fields && doc.fields.patient_id) {
+                // We're attaching this registration to an existing patient, let's
+                // make sure it's valid
+                // NB: if in the future we allow partners to configure the add_patient
+                //     trigger to support passing in their own patient shortcodes
+                //     we're going to have to change this logic:
+                //     https://github.com/medic/medic-webapp/issues/3000
+                return utils.getPatientContactUuid(db, doc.fields.patient_id, function(err) {
+                    if (err) {
+                        if (err.statusCode === 404) {
+                            transitionUtils.addRegistrationNotFoundMessage(doc, config);
+                            return callback(null, true);
+                        }
+
+                        return callback(err);
+                    } else {
+                        return self.fireConfiguredTriggers(db, audit, config, doc, callback);
+                    }
+                });
+            }
+
+            return self.fireConfiguredTriggers(db, audit, config, doc, callback);
+        });
+    },
+    fireConfiguredTriggers: function(db, audit, registrationConfig, doc, callback) {
+        var self = module.exports,
+            series = [];
+
+        _.each(registrationConfig.events, function(event) {
+            var trigger = self.triggers[event.trigger];
+            if (!trigger) {
+                return;
+            }
+            if (event.name === 'on_create') {
+                var obj = _.defaults({}, doc, doc.fields);
+                if (self.isBoolExprFalse(obj, event.bool_expr)) {
                     return;
                 }
-                if (event.name === 'on_create') {
-                    var obj = _.defaults({}, doc, doc.fields);
-                    if (self.isBoolExprFalse(obj, event.bool_expr)) {
-                        return;
-                    }
-                    var options = { db: db, audit: audit, doc: doc };
-                    if (event.params) {
-                        // params setting get sent as array
-                        options.params = event.params.split(',');
-                    }
-                    series.push(function(cb) {
-                        trigger.apply(null, [ options, cb ]);
-                    });
+                var options = { db: db, audit: audit, doc: doc };
+                if (event.params) {
+                    // params setting get sent as array
+                    options.params = event.params.split(',');
                 }
-            });
-
-            async.series(series, function(err) {
-                if (err) {
-                    return callback(err);
-                }
-                // add messages is done last so data on doc can be used in
-                // messages
-                self.addMessages(db, config, doc, function() {
-                    callback(null, true);
+                series.push(function(cb) {
+                    trigger.apply(null, [ options, cb ]);
                 });
+            }
+        });
+
+        async.series(series, function(err) {
+            if (err) {
+                return callback(err);
+            }
+            // add messages is done last so data on doc can be used in
+            // messages
+            self.addMessages(db, registrationConfig, doc, function() {
+                callback(null, true);
             });
         });
     },
     triggers: {
-        add_patient_id: function(options, cb) {
+        add_patient: function(options, cb) {
             // if we already have a patient id then return
             if (options.doc.patient_id) {
-                return;
+                return cb();
             }
-            module.exports.setId(options, cb);
+
+            async.series([
+                _.partial(module.exports.setId, options),
+                _.partial(module.exports.addPatient, options)
+            ], cb);
+        },
+        add_patient_id: function(options, cb) {
+            // Deprecated name for add_patient
+            console.warn('Use of add_patient_id trigger. This is deprecated in favour of add_patient.');
+            module.exports.triggers.add_patient(options, cb);
         },
         add_expected_date: function(options, cb) {
             module.exports.setExpectedBirthDate(options.doc);
@@ -232,13 +268,6 @@ module.exports = {
                 return cb('Please specify schedule name in settings.');
             }
             module.exports.assignSchedule(options, cb);
-        },
-        add_patient: function(options, cb) {
-            if (!options.doc.patient_id) {
-                // must have a patient id so we can find them later
-                return cb();
-            }
-            module.exports.addPatient(options, cb);
         }
     },
     addMessages: function(db, config, doc, callback) {
@@ -288,7 +317,7 @@ module.exports = {
     setId: function(options, callback) {
         var doc = options.doc,
             db = db || options.db,
-            id = ids.generate(doc.id),
+            id = ids.generate(doc._id),
             self = module.exports;
 
         utils.getRegistrations({
@@ -310,20 +339,18 @@ module.exports = {
         var doc = options.doc,
             db = options.db,
             audit = options.audit,
-            patientId = doc.patient_id,
+            patientShortcode = doc.patient_id,
             patientNameField = _.first(options.params) || 'patient_name';
 
-        utils.getRegistrations({
-            db: db,
-            id: patientId
-        }, function(err, registrations) {
-            if (err) {
+        utils.getPatientContactUuid(db, patientShortcode, function(err, patientUuid) {
+            if (err && err.statusCode !== 404) {
                 return callback(err);
             }
-            if (registrations.length) {
-                // patient already registered, no action required
+
+            if (patientUuid) {
                 return callback();
             }
+
             db.medic.view('medic-client', 'people_by_phone', {
                 key: [ doc.from ],
                 include_docs: true
@@ -334,12 +361,11 @@ module.exports = {
                 var contact = _.result(_.first(result.rows), 'doc');
                 // create a new patient with this patient_id
                 var patient = {
-                    _id: 'patient-' + patientId,
                     name: doc.fields[patientNameField],
                     parent: contact && contact.parent,
                     reported_date: doc.reported_date,
                     type: 'person',
-                    patient_id: patientId
+                    patient_id: patientShortcode
                 };
                 // include the DOB if it was generated on report
                 if (doc.birth_date) {

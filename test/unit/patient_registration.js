@@ -3,6 +3,7 @@ var _ = require('underscore'),
     transition = require('../../transitions/registration'),
     sinon = require('sinon'),
     utils = require('../../lib/utils'),
+    testUtils = require('../test_utils'),
     date = require('../../date');
 
 function getMessage(doc, idx) {
@@ -69,63 +70,50 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-    if (utils.getRegistrations.restore) {
-        utils.getRegistrations.restore();
-    }
-
-    if (transition.getConfig.restore) {
-        transition.getConfig.restore();
-    }
-
-    if (transition.getWeeksSinceDOB.restore) {
-        transition.getWeeksSinceDOB.restore();
-    }
-
-    if (transition.getDaysSinceDOB.restore) {
-        transition.getDaysSinceDOB.restore();
-    }
-
-    if (date.getDate.restore) {
-        date.getDate.restore();
-    }
-
+    testUtils.restore([
+        utils.getRegistrations,
+        utils.getPatientContactUuid,
+        transition.getConfig,
+        transition.getWeeksSinceDOB,
+        transition.getDaysSinceDOB,
+        date.getDate]);
     callback();
 };
 
 exports['getWeeksSinceLMP returns 0 not NaN or null'] = function(test) {
-    test.equals(transition.getWeeksSinceLMP({ fields: { lmp: 0 } }), 0);
-    test.equals(typeof transition.getWeeksSinceLMP({ fields: { lmp: 0 } }), 'number');
-    test.equals(transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: 0 } }), 0);
-    test.equals(typeof transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: 0 } }), 'number');
-    test.equals(transition.getWeeksSinceLMP({ fields: { last_menstrual_period: 0 } }), 0);
-    test.equals(typeof transition.getWeeksSinceLMP({ fields: { last_menstrual_period: 0 } }), 'number');
+    test.equal(transition.getWeeksSinceLMP({ fields: { lmp: 0 } }), 0);
+    test.equal(typeof transition.getWeeksSinceLMP({ fields: { lmp: 0 } }), 'number');
+    test.equal(transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: 0 } }), 0);
+    test.equal(typeof transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: 0 } }), 'number');
+    test.equal(transition.getWeeksSinceLMP({ fields: { last_menstrual_period: 0 } }), 0);
+    test.equal(typeof transition.getWeeksSinceLMP({ fields: { last_menstrual_period: 0 } }), 'number');
     test.done();
 };
 
 exports['getWeeksSinceLMP always returns number'] = function(test) {
-    test.equals(transition.getWeeksSinceLMP({ fields: { lmp: '12' } }), 12);
+    test.equal(transition.getWeeksSinceLMP({ fields: { lmp: '12' } }), 12);
     test.done();
 };
 
 exports['getWeeksSinceLMP supports three property names'] = function(test) {
-    test.equals(transition.getWeeksSinceLMP({ fields: { lmp: '12' } }), 12);
-    test.equals(transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: '12' } }), 12);
-    test.equals(transition.getWeeksSinceLMP({ fields: { last_menstrual_period: '12' } }), 12);
+    test.equal(transition.getWeeksSinceLMP({ fields: { lmp: '12' } }), 12);
+    test.equal(transition.getWeeksSinceLMP({ fields: { weeks_since_lmp: '12' } }), 12);
+    test.equal(transition.getWeeksSinceLMP({ fields: { last_menstrual_period: '12' } }), 12);
     test.done();
 };
 
 exports['getWeeksSinceDOB supports four property names'] = function(test) {
-    test.equals(transition.getWeeksSinceDOB({ fields: { dob: '12' } }), 12);
-    test.equals(transition.getWeeksSinceDOB({ fields: { weeks_since_dob: '12' } }), 12);
-    test.equals(transition.getWeeksSinceDOB({ fields: { weeks_since_birth: '12' } }), 12);
-    test.equals(transition.getWeeksSinceDOB({ fields: { age_in_weeks: '12' } }), 12);
+    test.equal(transition.getWeeksSinceDOB({ fields: { dob: '12' } }), 12);
+    test.equal(transition.getWeeksSinceDOB({ fields: { weeks_since_dob: '12' } }), 12);
+    test.equal(transition.getWeeksSinceDOB({ fields: { weeks_since_birth: '12' } }), 12);
+    test.equal(transition.getWeeksSinceDOB({ fields: { age_in_weeks: '12' } }), 12);
     test.done();
 };
 
 exports['getDaysSinceDOB supports three property names'] = function(test) {
-    test.equals(transition.getDaysSinceDOB({ fields: { days_since_dob: '12' } }), 12);
-    test.equals(transition.getDaysSinceDOB({ fields: { days_since_birth: '12' } }), 12);
-    test.equals(transition.getDaysSinceDOB({ fields: { age_in_days: '12' } }), 12);
+    test.equal(transition.getDaysSinceDOB({ fields: { days_since_dob: '12' } }), 12);
+    test.equal(transition.getDaysSinceDOB({ fields: { days_since_birth: '12' } }), 12);
+    test.equal(transition.getDaysSinceDOB({ fields: { age_in_days: '12' } }), 12);
     test.done();
 };
 
@@ -134,7 +122,7 @@ exports['getDOB uses weeks since dob if available'] = function(test) {
         expected = moment(today).startOf('week').subtract(5, 'weeks').valueOf();
     sinon.stub(date, 'getDate').returns(today);
     sinon.stub(transition, 'getWeeksSinceDOB').returns('5');
-    test.equals(transition.getDOB({ fields: {} }).valueOf(), expected);
+    test.equal(transition.getDOB({ fields: {} }).valueOf(), expected);
     test.done();
 };
 
@@ -144,7 +132,7 @@ exports['getDOB uses days since dob if available'] = function(test) {
     sinon.stub(date, 'getDate').returns(today);
     sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
     sinon.stub(transition, 'getDaysSinceDOB').returns('5');
-    test.equals(transition.getDOB({ fields: {} }).valueOf(), expected);
+    test.equal(transition.getDOB({ fields: {} }).valueOf(), expected);
     test.done();
 };
 
@@ -154,7 +142,7 @@ exports['getDOB falls back to today if necessary'] = function(test) {
     sinon.stub(date, 'getDate').returns(today);
     sinon.stub(transition, 'getWeeksSinceDOB').returns(undefined);
     sinon.stub(transition, 'getDaysSinceDOB').returns(undefined);
-    test.equals(transition.getDOB({ fields: {} }).valueOf(), expected);
+    test.equal(transition.getDOB({ fields: {} }).valueOf(), expected);
     test.done();
 };
 
@@ -164,36 +152,69 @@ exports['isBoolExprFalse returns false/true based on regex'] = function(test) {
         doc = {
             foo: '533884'
         };
-    test.equals(transition.isBoolExprFalse(doc, regex1), false);
-    test.equals(transition.isBoolExprFalse(doc, regex2), true);
+    test.equal(transition.isBoolExprFalse(doc, regex1), false);
+    test.equal(transition.isBoolExprFalse(doc, regex2), true);
     // undefined expr always returns true
-    test.equals(transition.isBoolExprFalse(doc), false);
+    test.equal(transition.isBoolExprFalse(doc), false);
     test.done();
 };
 
-exports['valid form adds patient_id'] = function(test) {
+exports['valid form adds patient_id and patient document'] = function(test) {
 
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, {statusCode: 404});
 
     var doc = {
         form: 'PATR',
-        fields: { patient_name: 'abc' }
+        fields: { patient_name: 'abc' },
+        reported_date: 'now'
+    };
+
+    var db = {
+        medic: {
+            view: sinon.stub().callsArgWith(3, null, {rows: [
+                {
+                    doc: {
+                        parent: {
+                            _id: 'the-parent'
+                        }
+                    }
+                }
+            ]})
+        }
+    };
+
+    var auditDb = {
+        saveDoc: sinon.stub().callsArgWith(1)
     };
 
     transition.onMatch({
         doc: doc
-    }, {}, {}, function(err, complete) {
-        test.equals(err, null);
-        test.equals(complete, true);
+    }, db, auditDb, function(err, complete) {
+        test.equal(err, null);
+        test.equal(complete, true);
         test.ok(doc.patient_id);
-        test.equals(doc.tasks, undefined);
+        test.ok(auditDb.saveDoc.called);
+
+        test.deepEqual(auditDb.saveDoc.args[0][0],
+            {
+                name: 'abc',
+                parent: {
+                    _id: 'the-parent'
+                },
+                reported_date: 'now',
+                type: 'person',
+                patient_id: doc.patient_id
+            });
+        test.equal(doc.tasks, undefined);
         test.done();
     });
 };
 
 exports['registration sets up responses'] = function(test) {
 
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
     var doc = {
         form: 'PATR',
@@ -213,10 +234,10 @@ exports['registration sets up responses'] = function(test) {
     transition.onMatch({
         doc: doc
     }, {}, {}, function(err, complete) {
-        test.equals(err, null);
-        test.equals(complete, true);
+        test.equal(err, null);
+        test.equal(complete, true);
         test.ok(doc.tasks);
-        test.equals(doc.tasks && doc.tasks.length, 2);
+        test.equal(doc.tasks && doc.tasks.length, 2);
 
         var msg0 = getMessage(doc, 0);
         test.ok(msg0);
@@ -253,7 +274,8 @@ exports['registration sets up responses'] = function(test) {
 
 exports['registration responses support locale'] = function(test) {
 
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
     var doc = {
         form: 'PATR',
@@ -278,10 +300,10 @@ exports['registration responses support locale'] = function(test) {
     transition.onMatch({
         doc: doc
     }, {}, {}, function(err, complete) {
-        test.equals(err, null);
-        test.equals(complete, true);
+        test.equal(err, null);
+        test.equal(complete, true);
         test.ok(doc.tasks);
-        test.equals(doc.tasks && doc.tasks.length, 2);
+        test.equal(doc.tasks && doc.tasks.length, 2);
 
         var msg0 = getMessage(doc, 0);
         test.ok(msg0);
