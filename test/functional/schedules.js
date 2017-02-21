@@ -43,16 +43,14 @@ function getScheduledMessage(doc, idx) {
     return _.first(_.first(doc.scheduled_tasks).messages);
 }
 
-exports.setUp = function(callback) {
-    callback();
-};
-
 exports.tearDown = function(callback) {
     testUtils.restore([
         utils.getRegistrations,
         transition.getConfig,
         schedules.getScheduleConfig,
-        uuid.v4]);
+        uuid.v4,
+        utils.translate
+    ]);
     callback();
 };
 
@@ -98,6 +96,90 @@ exports['registration sets up schedule'] = function(test) {
             }
         ]
     });
+    sinon.stub(uuid, 'v4').returns('test-uuid');
+
+    var doc = {
+        reported_date: moment().toISOString(),
+        form: 'PATR',
+        from: contact.phone,
+        contact: contact
+    };
+
+    transition.onMatch({
+        doc: doc
+    }, {}, {}, function(err, complete) {
+        test.equals(err, null);
+        test.equals(complete, true);
+        test.ok(doc.tasks);
+        test.equals(doc.tasks && doc.tasks.length, 1);
+        test.ok(doc.scheduled_tasks);
+        test.equals(doc.scheduled_tasks && doc.scheduled_tasks.length, 1);
+
+        var msg0 = getMessage(doc, 0);
+        test.ok(msg0);
+        test.ok(msg0.uuid);
+        test.ok(msg0.to);
+        test.ok(msg0.message);
+        if (msg0) {
+            delete msg0.uuid;
+            test.deepEqual(msg0, {
+                to: '+1234',
+                message: 'thanks Julie'
+            });
+        }
+
+        /*
+         * Also checks that recipient using doc property value is resolved
+         * correctly.
+         * */
+        var msg1 = getScheduledMessage(doc, 0);
+        test.ok(msg1);
+        test.ok(msg1.to);
+        test.ok(msg1.message);
+        if (msg1) {
+            test.deepEqual(msg1, {
+                to: '+1234',
+                message: 'Mustaches.  Overrated or underrated?',
+                uuid: 'test-uuid'
+            });
+        }
+        test.done();
+    });
+};
+
+exports['registration sets up schedule using translation_key'] = function(test) {
+
+    test.expect(15);
+    sinon.stub(transition, 'getConfig').returns([{
+        form: 'PATR',
+        events: [{
+           name: 'on_create',
+           trigger: 'assign_schedule',
+           params: 'group1',
+           bool_expr: ''
+       }],
+        validations: [],
+        messages: [{
+            translation_key: 'thanks',
+            recipient: 'reporting_unit'
+        }]
+    }]);
+    sinon.stub(schedules, 'getScheduleConfig').returns({
+        name: 'group1',
+        start_from: 'reported_date',
+        registration_response: '',
+        messages: [{
+            translation_key: 'facial.hair',
+            group: 1,
+            offset: '12 weeks',
+            send_time: '',
+            recipient: 'reporting_unit'
+        }]
+    });
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'translate')
+        .withArgs('thanks', 'en').returns('thanks {{contact.name}}')
+        .withArgs('facial.hair', 'en').returns('Mustaches.  Overrated or underrated?');
     sinon.stub(uuid, 'v4').returns('test-uuid');
 
     var doc = {

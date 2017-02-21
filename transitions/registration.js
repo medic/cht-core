@@ -287,7 +287,7 @@ module.exports = {
                 messages.addMessage({
                     doc: doc,
                     phone: messages.getRecipientPhone(doc, msg.recipient),
-                    message: messages.getMessage(msg.message, locale),
+                    message: messages.getMessage(msg, locale),
                     options: extra,
                     registrations: registrations
                 });

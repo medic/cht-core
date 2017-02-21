@@ -1,5 +1,14 @@
 var messages = require('../../lib/messages'),
-    moment = require('moment');
+    moment = require('moment'),
+    utils = require('../../lib/utils'),
+    sinon = require('sinon');
+
+exports.tearDown = function(callback) {
+    if (utils.translate.restore) {
+        utils.translate.restore();
+    }
+    callback();
+};
 
 exports['extractDetails supports template variables on doc'] = function(test) {
     var doc = {
@@ -277,27 +286,27 @@ exports['getRecipientPhone defaults to given default'] = function(test) {
 };
 
 exports['getMessage returns empty string on empty config'] = function(test) {
-    var config = [{
+    var config = { messages: [{
         content: '',
         locale: 'en'
-    }];
+    }]};
     test.equals('', messages.getMessage(config, 'en'));
     test.equals('', messages.getMessage(config));
     test.done();
 };
 
 exports['getMessage returns empty string on bad config'] = function(test) {
-    var config = [{
+    var config = { messages: [{
         itchy: '',
         scratchy: 'en'
-    }];
+    }]};
     test.equals('', messages.getMessage(config, 'en'));
     test.equals('', messages.getMessage(config));
     test.done();
 };
 
 exports['getMessage returns first message when locale match fails'] = function(test) {
-    var config = [
+    var config = { messages: [
         {
           content: 'Merci',
           locale: 'fr'
@@ -306,7 +315,7 @@ exports['getMessage returns first message when locale match fails'] = function(t
           content: 'Gracias',
           locale: 'es'
         }
-    ];
+    ]};
     test.equals('Merci', messages.getMessage(config, 'en'));
     test.equals('Merci', messages.getMessage(config));
     test.done();
@@ -319,7 +328,7 @@ exports['getMessage returns empty string if passed empty array'] = function(test
 };
 
 exports['getMessage returns locale when matched'] = function(test) {
-    var config = [
+    var config = { messages: [
         {
           content: 'Merci',
           locale: 'fr'
@@ -328,8 +337,42 @@ exports['getMessage returns locale when matched'] = function(test) {
           content: 'Gracias',
           locale: 'es'
         }
-    ];
+    ]};
     test.equals('Gracias', messages.getMessage(config, 'es'));
     test.equals('Merci', messages.getMessage(config, 'fr'));
+    test.done();
+};
+
+exports['getMessage uses translation_key'] = function(test) {
+    var config = { translation_key: 'some.key' };
+    var expected = 'Gracias';
+    var translate = sinon.stub(utils, 'translate').returns(expected);
+    test.equal(expected, messages.getMessage(config, 'es'));
+    test.equal(translate.callCount, 1);
+    test.equal(translate.args[0][0], 'some.key');
+    test.equal(translate.args[0][1], 'es');
+    test.done();
+};
+
+exports['getMessage uses translation_key instead of messages'] = function(test) {
+    var config = {
+        translation_key: 'some.key',
+        messages: [
+            {
+              content: 'Merci',
+              locale: 'fr'
+            },
+            {
+              content: 'Gracias',
+              locale: 'es'
+            }
+        ]
+    };
+    var expected = 'Gracias';
+    var translate = sinon.stub(utils, 'translate').returns(expected);
+    test.equal(expected, messages.getMessage(config, 'es'));
+    test.equal(translate.callCount, 1);
+    test.equal(translate.args[0][0], 'some.key');
+    test.equal(translate.args[0][1], 'es');
     test.done();
 };

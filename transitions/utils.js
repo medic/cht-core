@@ -14,7 +14,7 @@ module.exports = {
       if (msg.event_type === 'registration_not_found') {
         not_found_msg = {
           doc: document,
-          message: messages.getMessage(msg.message, utils.getLocale(document)),
+          message: messages.getMessage(msg, utils.getLocale(document)),
           phone: messages.getRecipientPhone(document, msg.recipient)
         };
       }

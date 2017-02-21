@@ -76,7 +76,7 @@ module.exports = {
                 if (msg.event_type === 'report_accepted') {
                     messages.addMessage({
                         doc: doc,
-                        message: messages.getMessage(msg.message, locale),
+                        message: messages.getMessage(msg, locale),
                         phone: messages.getRecipientPhone(doc, msg.recipient),
                         registrations: registrations
                     });

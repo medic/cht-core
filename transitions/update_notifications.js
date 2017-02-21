@@ -48,7 +48,7 @@ module.exports = {
             evConf = _.findWhere(config.messages, {
                 event_type: event_type
             });
-        var msg = messages.getMessage(evConf && evConf.message, locale);
+        var msg = messages.getMessage(evConf, locale);
         if (msg) {
             messages.addError(doc, msg);
         } else {
@@ -60,7 +60,7 @@ module.exports = {
             evConf = _.findWhere(config.messages, {
                 event_type: event_type
             });
-        var msg = messages.getMessage(evConf && evConf.message, locale);
+        var msg = messages.getMessage(evConf, locale);
         if (msg) {
             messages.addMessage({
                 doc: doc,
