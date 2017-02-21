@@ -1,53 +1,58 @@
 <form role="form">
 
   <div class="form-group">
-    <label for="accept-messages">{{'Accept plain-text messages' | translate}}</label>
+    <label for="accept-messages" translate>Accept plain-text messages</label>
     <div class="checkbox">
       <label>
         <input type="checkbox" id="accept-messages" ng-model="advancedSettingsModel.accept_messages"/>
-        {{'Accept plain-text messages help' | translate}}
+        <span translate>Accept plain-text messages help</span>
       </label>
     </div>
   </div>
 
   <div class="form-group">
-    <label for="date-display-format">{{'Date display format' | translate}}</label>
+    <label for="date-display-format" translate>Date display format</label>
     <select id="date-display-format" class="form-control small" ng-model="advancedSettingsModel.date_format" ng-options="format for format in date_formats" ng-change="updateDateFormatExample()">
     </select>
     <p class="help-block">
-      {{'For example' | translate}}
+
+    </p>
+    <p class="help-block">
+      <a href="http://momentjs.com/docs/#/displaying/format/" translate>configuration.date.format.help</a>.
+      <span translate>For example</span>
       {{dateFormatExample}}
     </p>
   </div>
 
   <div class="form-group">
-    <label for="datetime-display-format">{{'Datetime display format' | translate}}</label>
+    <label for="datetime-display-format" translate>Datetime display format</label>
     <select id="datetime-display-format" class="form-control medium" ng-model="advancedSettingsModel.reported_date_format" ng-options="format for format in datetime_formats" ng-change="updateDatetimeFormatExample()">
     </select>
     <p class="help-block">
-      {{'For example' | translate}}
+      <a href="http://momentjs.com/docs/#/displaying/format/" translate>configuration.date.format.help</a>.
+      <span translate>For example</span>
       {{datetimeFormatExample}}
     </p>
   </div>
 
   <div class="form-group">
-    <label>{{'Phone number conversion' | translate}}</label>
+    <label translate>Phone number conversion</label>
     <p>
-      {{'Replace country code for' | translate}}
+      <span translate>Replace country code for</span>
       <select id="outgoing-phone-replace-match"></select>
-      {{'with' | translate}}
+      <span translate>with</span>
       <input type="text" class="form-control tiny inline" ng-model="advancedSettingsModel.outgoing_phone_replace.replace">
     </p>
   </div>
 
   <div class="form-group" ng-class="{ 'has-error': errors.fields.messagingWindow }">
-    <label>{{'Messaging window' | translate}}</label>
+    <label translate>Messaging window</label>
     <p>
-      {{'Send scheduled messages between' | translate}}
+      <span translate>Send scheduled messages between</span>
       <select class="form-control tiny inline" ng-model="advancedSettingsModel.schedule_morning_hours" ng-options="hour.value as hour.name for hour in hours"></select>
       :
       <select class="form-control tiny inline" ng-model="advancedSettingsModel.schedule_morning_minutes" ng-options="minute.value as minute.name for minute in minutes"></select>
-      {{'and' | translate}}
+      <span translate>and</span>
       <select class="form-control tiny inline" ng-model="advancedSettingsModel.schedule_evening_hours" ng-options="hour.value as hour.name for hour in hours"></select>
       :
       <select class="form-control tiny inline" ng-model="advancedSettingsModel.schedule_evening_minutes" ng-options="minute.value as minute.name for minute in minutes"></select>
@@ -56,7 +61,7 @@
   </div>
 
   <div class="form-actions">
-    <button type="submit" class="btn btn-primary" ng-click="submitAdvancedSettings()" ng-disabled="status.loading">{{'Submit' | translate}}</button>
+    <button type="submit" class="btn btn-primary" ng-click="submitAdvancedSettings()" ng-disabled="status.loading" translate>Submit</button>
     <div class="loader inline" ng-show="status.loading"></div>
     <span ng-show="status.error" class="error">{{status.msg}}</span>
     <span ng-show="status.success" class="success">{{status.msg}}</span>
@@ -65,7 +70,7 @@
 </form>
 
 <p class="section">
-  {{'Advanced settings intro' | translate}}
-  <a href="/dashboard/_design/dashboard/_rewrite/settings#/apps">{{'Dashboard settings page' | translate}}</a>.
-  {{'Advanced settings outro' | translate}}
+  <span translate>Advanced settings intro</span>
+  <a href="/dashboard/_design/dashboard/_rewrite/settings#/apps" translate>Dashboard settings page</a>.
+  <span translate>Advanced settings outro</span>
 </p>
