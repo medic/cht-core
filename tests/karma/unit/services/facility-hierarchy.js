@@ -28,7 +28,7 @@ describe('FacilityHierarchy service', function() {
     KarmaUtils.restore(AllContacts);
   });
 
-  it('returns errors from FacilityRaw service', function(done) {
+  it('returns errors from AllContacts service', function(done) {
     AllContacts.returns(KarmaUtils.mockPromise('boom'));
     service()
       .then(function() {
