@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     async = require('async');
 
-angular.module('inboxServices').factory('Facility',
+angular.module('inboxServices').factory('AllContacts',
   function(
     $log,
     $q,
@@ -29,13 +29,22 @@ angular.module('inboxServices').factory('Facility',
       });
     });
 
+    /**
+    * Fetches all contacts for specified types (see ContactSchema.getTypes()).
+    * If no types are specified, fetches for all contact types.
+    * Watch out, that could be a lot of data.
+    *
+    * options {
+    *   types: ['district_hospital', 'person']
+    * }
+    */
     return function(options) {
       options = options || {};
 
       if (!options.types || options.types.indexOf('person') !== -1) {
         // We want to remove as many of these as possible, because for admins
         // it involves downloading a _huge_ amount of data.
-        console.trace('WARNING: call made to FacilitySrv with the expectation of having person data');
+        console.trace('WARNING: call made to AllContacts with the expectation of having person data');
       }
 
       var relevantCaches = (options.types ? options.types : ContactSchema.getTypes()).map(function(type) {

@@ -56,7 +56,7 @@ describe('InboxCtrl controller', function() {
       $provide.factory('XmlForms', function() {
         return sinon.stub();
       });
-      $provide.factory('Facility', function() {
+      $provide.factory('AllContacts', function() {
         return sinon.stub();
       });
       $provide.factory('FacilityHierarchy', function() {

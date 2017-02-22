@@ -3,13 +3,13 @@ describe('FacilityHierarchy service', function() {
   'use strict';
 
   var service,
-      Facility;
+      AllContacts;
 
   beforeEach(function() {
     module('inboxApp');
-    Facility = sinon.stub();
+    AllContacts = sinon.stub();
     module(function ($provide) {
-      $provide.value('Facility', Facility);
+      $provide.value('AllContacts', AllContacts);
       $provide.factory('ContactSchema',
         function() {
           return {
@@ -25,11 +25,11 @@ describe('FacilityHierarchy service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(Facility);
+    KarmaUtils.restore(AllContacts);
   });
 
   it('returns errors from FacilityRaw service', function(done) {
-    Facility.returns(KarmaUtils.mockPromise('boom'));
+    AllContacts.returns(KarmaUtils.mockPromise('boom'));
     service()
       .then(function() {
         done(new Error('error expected'));
@@ -41,7 +41,7 @@ describe('FacilityHierarchy service', function() {
   });
 
   it('builds empty hierarchy when no facilities', function() {
-    Facility.returns(KarmaUtils.mockPromise(null, []));
+    AllContacts.returns(KarmaUtils.mockPromise(null, []));
     return service().then(function(actual) {
       chai.expect(actual.length).to.equal(0);
     });
@@ -54,7 +54,7 @@ describe('FacilityHierarchy service', function() {
     var d = { _id: 'd', parent: { _id: 'b', parent: { _id: 'c' } } };
     var e = { _id: 'e', parent: { _id: 'x' } }; // unknown parent is ignored
     var f = { _id: 'f' };
-    Facility.returns(KarmaUtils.mockPromise(null, [ a, b, c, d, e, f ]));
+    AllContacts.returns(KarmaUtils.mockPromise(null, [ a, b, c, d, e, f ]));
     return service().then(function(actual) {
       chai.expect(actual).to.deep.equal([
         {

@@ -1,4 +1,4 @@
-describe('Facility service', function() {
+describe('AllContacts service', function() {
 
   'use strict';
 
@@ -24,7 +24,7 @@ describe('Facility service', function() {
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject(function($injector) {
-      service = $injector.get('Facility');
+      service = $injector.get('AllContacts');
     });
   });
 

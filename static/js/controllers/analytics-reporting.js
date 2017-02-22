@@ -10,7 +10,7 @@
       $q,
       $scope,
       $state,
-      Facility,
+      AllContacts,
       ScheduledForms
     ) {
 
@@ -23,7 +23,7 @@
 
       $q.all([
         ScheduledForms(),
-        Facility({ types: [ 'district_hospital' ] })
+        AllContacts({ types: [ 'district_hospital' ] })
       ])
         .then(function(results) {
           var forms = results[0];

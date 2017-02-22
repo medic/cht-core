@@ -25,9 +25,9 @@ var _ = require('underscore');
     return path;
   };
 
-  var buildHierarchy = function(facilities) {
+  var buildHierarchy = function(contacts) {
     var results = [];
-    facilities.forEach(function(row) {
+    contacts.forEach(function(row) {
       var result = results;
       getIdPath(row).forEach(function(id) {
         var found = _.find(result, function(r) {
@@ -50,7 +50,7 @@ var _ = require('underscore');
   inboxServices.factory('FacilityHierarchy',
     function(
       ContactSchema,
-      Facility
+      AllContacts
     ) {
       'ngInject';
       var hierarchyTypes = ContactSchema.getPlaceTypes().filter(function(pt) {
@@ -58,9 +58,9 @@ var _ = require('underscore');
       });
 
       return function() {
-        return Facility({ types: hierarchyTypes })
-          .then(function(facilities) {
-            return buildHierarchy(facilities);
+        return AllContacts({ types: hierarchyTypes })
+          .then(function(contacts) {
+            return buildHierarchy(contacts);
           });
       };
     }

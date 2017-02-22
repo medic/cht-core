@@ -4,6 +4,7 @@
 
   angular.module('inboxServices', ['ngResource']);
 
+  require('./all-contacts');
   require('./analytics-modules');
   require('./android-api');
   require('./app-info');
@@ -27,7 +28,6 @@
   require('./enketo-prepopulation-data');
   require('./enketo-translation');
   require('./export');
-  require('./facility');
   require('./facility-hierarchy');
   require('./file-reader');
   require('./json-forms');
