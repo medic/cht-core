@@ -1,4 +1,4 @@
-describe('FacilityHierarchy service', function() {
+describe('PlaceHierarchy service', function() {
 
   'use strict';
 
@@ -20,7 +20,7 @@ describe('FacilityHierarchy service', function() {
       );
     });
     inject(function($injector) {
-      service = $injector.get('FacilityHierarchy');
+      service = $injector.get('PlaceHierarchy');
     });
   });
 

@@ -59,7 +59,15 @@ var _ = require('underscore');
     return hierarchy;
   };
 
-  inboxServices.factory('FacilityHierarchy',
+  /**
+    Returns all places except clinics, in a hierarchy tree.
+    E.g.
+    [
+        { doc: c, children: [{ doc: b, children: [] }] },
+        { doc: f, children: [] }
+      ]
+  */
+  inboxServices.factory('PlaceHierarchy',
     function(
       ContactSchema,
       AllContacts
