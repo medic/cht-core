@@ -26,7 +26,7 @@ The setup described below doesn't use [Medic OS](doc/architecture.md#medic-os), 
 
 You will need to install the following:
 
-[Node.js](http://nodejs.org) v0.12.x
+[Node.js](http://nodejs.org) latest
 
 [CouchDB](http://couchdb.apache.org) v1.6.1
 
