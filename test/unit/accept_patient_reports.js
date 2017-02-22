@@ -50,7 +50,7 @@ exports['onMatch with matching form calls getRegistrations and then matchRegistr
     sinon.stub(transition, 'getAcceptedReports').returns([ { form: 'x' }, { form: 'z' } ]);
 
     var getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []),
-        getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2),
+        getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'}),
         matchRegistrations = sinon.stub(transition, 'matchRegistrations').callsArgWith(1, null, true);
 
     transition.onMatch({
@@ -74,7 +74,7 @@ exports['onMatch with matching form calls getRegistrations and then matchRegistr
 exports['onMatch with no patient id adds error msg and response'] = function(test) {
     sinon.stub(transition, 'getAcceptedReports').returns([ { form: 'x' }, { form: 'z' } ]);
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, {statusCode: 404});
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
     sinon.stub(transition, 'matchRegistrations').callsArgWith(1, null, true);
 
     var doc = {

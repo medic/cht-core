@@ -203,14 +203,14 @@ module.exports = {
                 return callback(null, true);
             }
 
-            utils.getPatientContactUuid(_db, doc.fields.patient_id, function(err) {
+            utils.getPatientContactUuid(_db, doc.fields.patient_id, function(err, patientContactId) {
                 if (err) {
-                    if (err.statusCode === 404) {
-                        transitionUtils.addRegistrationNotFoundMessage(doc, report);
-                        return callback(null, true);
-                    }
-
                     return callback(err);
+                }
+
+                if (!patientContactId) {
+                    transitionUtils.addRegistrationNotFoundMessage(doc, report);
+                    return callback(null, true);
                 }
 
                 module.exports.handleReport({

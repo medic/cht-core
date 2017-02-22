@@ -185,17 +185,17 @@ module.exports = {
                 //     trigger to support passing in their own patient shortcodes
                 //     we're going to have to change this logic:
                 //     https://github.com/medic/medic-webapp/issues/3000
-                return utils.getPatientContactUuid(db, doc.fields.patient_id, function(err) {
+                return utils.getPatientContactUuid(db, doc.fields.patient_id, function(err, patientContactId) {
                     if (err) {
-                        if (err.statusCode === 404) {
-                            transitionUtils.addRegistrationNotFoundMessage(doc, config);
-                            return callback(null, true);
-                        }
-
                         return callback(err);
-                    } else {
-                        return self.fireConfiguredTriggers(db, audit, config, doc, callback);
                     }
+
+                    if (!patientContactId) {
+                        transitionUtils.addRegistrationNotFoundMessage(doc, config);
+                        return callback(null, true);
+                    }
+
+                    return self.fireConfiguredTriggers(db, audit, config, doc, callback);
                 });
             }
 
@@ -342,12 +342,12 @@ module.exports = {
             patientShortcode = doc.patient_id,
             patientNameField = _.first(options.params) || 'patient_name';
 
-        utils.getPatientContactUuid(db, patientShortcode, function(err, patientUuid) {
-            if (err && err.statusCode !== 404) {
+        utils.getPatientContactUuid(db, patientShortcode, function(err, patientContactId) {
+            if (err) {
                 return callback(err);
             }
 
-            if (patientUuid) {
+            if (patientContactId) {
                 return callback();
             }
 

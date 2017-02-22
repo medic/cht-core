@@ -369,7 +369,7 @@ exports['two phase registration sets up schedule using bool_expr'] = function(te
     });
     sinon.stub(uuid, 'v4').returns('test-uuid');
 
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null);
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
     var doc = {
         reported_date: moment().toISOString(),
         form: 'PATR',

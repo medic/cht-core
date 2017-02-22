@@ -162,7 +162,7 @@ exports['isBoolExprFalse returns false/true based on regex'] = function(test) {
 exports['valid form adds patient_id and patient document'] = function(test) {
 
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, {statusCode: 404});
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
 
     var doc = {
         form: 'PATR',

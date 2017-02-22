@@ -86,7 +86,7 @@ exports['add_patient trigger creates a new patient'] = function(test) {
     } };
     // return expected view results when searching for people_by_phone
     var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: submitterId } } } ] });
-    var getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, {statusCode: 404});
+    var getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
     var db = { medic: { view: view } };
     var saveDoc = sinon.stub().callsArgWith(1);
     var audit = { saveDoc: saveDoc };
@@ -157,7 +157,7 @@ exports['add_patient event parameter overwrites the default property for the nam
     } };
     // return expected view results when searching for people_by_phone
     var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: submitterId } } } ] });
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, {statusCode: 404});
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
     var db = { medic: { view: view } };
     var saveDoc = sinon.stub().callsArgWith(1);
     var audit = { saveDoc: saveDoc };
@@ -176,6 +176,46 @@ exports['add_patient event parameter overwrites the default property for the nam
         test.done();
     });
 };
+
+exports['add_patient and add_patient_id triggers are idempotent'] = function(test) {
+    var patientName = 'jack';
+    var submitterId = 'papa';
+    var patientId = '05649';
+    var senderPhoneNumber = '+555123';
+    var dob = '2017-03-31T01:15:09.000Z';
+    var change = { doc: {
+        form: 'R',
+        reported_date: 53,
+        from: senderPhoneNumber,
+        fields: { name: patientName },
+        birth_date: dob
+    } };
+    // return expected view results when searching for people_by_phone
+    var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: submitterId } } } ] });
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
+    var db = { medic: { view: view } };
+    var saveDoc = sinon.stub().callsArgWith(1);
+    var audit = { saveDoc: saveDoc };
+    var eventConfig = {
+        form: 'R',
+        events: [
+            { name: 'on_create', trigger: 'add_patient', params: 'name' },
+            { name: 'on_create', trigger: 'add_patient_id', params: 'name' }
+        ]
+    };
+    sinon.stub(config, 'get').returns([ eventConfig ]);
+    sinon.stub(transition, 'validate').callsArgWith(2);
+    var idsGenerate = sinon.stub(ids, 'generate').returns(patientId);
+    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+
+    transition.onMatch(change, db, audit, function() {
+        test.equals(saveDoc.callCount, 1);
+        test.equals(saveDoc.args[0][0].name, patientName);
+        test.equal(idsGenerate.callCount, 1);
+        test.done();
+    });
+};
+
 
 exports['assign_schedule event creates the named schedule'] = function(test) {
     var change = { doc: {
@@ -196,7 +236,7 @@ exports['assign_schedule event creates the named schedule'] = function(test) {
     sinon.stub(transition, 'validate').callsArgWith(2);
     var getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, [ { _id: 'xyz' } ]);
     sinon.stub(schedules, 'getScheduleConfig').returns('someschedule');
-    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null);
+    sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
     var assignSchedule = sinon.stub(schedules, 'assignSchedule').returns(true);
     transition.onMatch(change, db, audit, function() {
         test.equals(assignSchedule.callCount, 1);
