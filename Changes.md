@@ -6,6 +6,7 @@ _TBD_
 
 ### Features
 
+- Use reference to translation keys in app_settings. Issue: #3127
 - Add date of birth to person created by SMS. Issue: #3100
 - Configure the max number of SMS in multipart SMS. Issue: #3095
 - Load messages script fails to use https. Issue: #3081
@@ -17,6 +18,13 @@ _TBD_
 
 ### Bug fixes
 
+- Getting 502s after submitting task; Tasks not cleared until refresh. Issue: #3111
+- Do not know if patient ID is valid when processing Registrations/Report Actions. Issue: #3082
+- Patient contact creation should happen if a patient contact doesn't already exist. Issue: #3115
+- Task schedules created using the `reported_date` of a report do not show/hide at the expected time. Issue: #3097
+- Patients reports accepted even if no person has the `patient_id`. Issue: #3075
+- Registrations that clear previous registrations also clear themselves. Issue: #3074
+- Ensure useful commands is on medic-os $PATH by default. Issue: #2750
 - Family Members section header shows on person's profile. Issue: #3108
 - Uncaught exception triggers 500 response for subsequent requests. Issue: #3099
 - Broken links in app settings. Issue: #3088
