@@ -170,6 +170,12 @@ var getChanges = function(feed) {
     body: { doc_ids: _.union(feed.requestedIds, feed.validatedIds) },
     method: 'POST'
   }, function(err, changes) {
+    if (feed.res.finished) {
+      // Don't write to the response if it has already ended. The change
+      // will be picked up in the subsequent changes request.
+      return;
+    }
+    cleanUp(feed);
     if (err) {
       feed.res.write(error(503, 'Error processing your changes'));
     } else if (!changes || !changes.results) {
@@ -184,7 +190,6 @@ var getChanges = function(feed) {
       prepareResponse(feed, changes);
     }
     feed.res.end();
-    cleanUp(feed);
   });
 };
 
