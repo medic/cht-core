@@ -7,6 +7,7 @@ var vm = require('vm'),
     messages = require('../lib/messages'),
     validation = require('../lib/validation'),
     schedules = require('../lib/schedules'),
+    acceptPatientReports = require('./accept_patient_reports'),
     ids = require('../lib/ids'),
     moment = require('moment'),
     config = require('../config'),
@@ -268,6 +269,18 @@ module.exports = {
                 return cb('Please specify schedule name in settings.');
             }
             module.exports.assignSchedule(options, cb);
+        },
+        clear_schedule: function(options, cb) {
+            if (!options.params) {
+                return cb('Please specify at least one schedule name in settings.');
+            }
+            // Registration forms that clear schedules do so fully
+            // silence_type will be split again later, so join them back
+            options.report = {
+              silence_type: options.params.join(','),
+              silence_for: null
+            };
+            acceptPatientReports.handleReport(options, cb);
         }
     },
     addMessages: function(db, config, doc, callback) {
@@ -284,13 +297,15 @@ module.exports = {
                 return callback(err);
             }
             config.messages.forEach(function(msg) {
-                messages.addMessage({
-                    doc: doc,
-                    phone: messages.getRecipientPhone(doc, msg.recipient),
-                    message: messages.getMessage(msg, locale),
-                    options: extra,
-                    registrations: registrations
-                });
+                if (!msg.event_type || msg.event_type === 'report_accepted') {
+                    messages.addMessage({
+                        doc: doc,
+                        phone: messages.getRecipientPhone(doc, msg.recipient),
+                        message: messages.getMessage(msg, locale),
+                        options: extra,
+                        registrations: registrations
+                    });
+                }
             });
             callback();
         });
