@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     async = require('async');
 
-angular.module('inboxServices').factory('AllContacts',
+angular.module('inboxServices').factory('Contacts',
   function(
     $log,
     $q,
@@ -44,7 +44,7 @@ angular.module('inboxServices').factory('AllContacts',
       if (!options.types || options.types.indexOf('person') !== -1) {
         // We want to remove as many of these as possible, because for admins
         // it involves downloading a _huge_ amount of data.
-        console.trace('WARNING: call made to AllContacts with the expectation of having person data');
+        console.trace('WARNING: call made to Contacts with the expectation of having person data');
       }
 
       var relevantCaches = (options.types ? options.types : ContactSchema.getTypes()).map(function(type) {

@@ -70,7 +70,7 @@ var _ = require('underscore');
   inboxServices.factory('PlaceHierarchy',
     function(
       ContactSchema,
-      AllContacts
+      Contacts
     ) {
       'ngInject';
       var hierarchyTypes = ContactSchema.getPlaceTypes().filter(function(pt) {
@@ -78,7 +78,7 @@ var _ = require('underscore');
       });
 
       return function() {
-        return AllContacts({ types: hierarchyTypes })
+        return Contacts({ types: hierarchyTypes })
           .then(function(places) {
             return buildHierarchy(places);
           });

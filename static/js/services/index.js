@@ -4,7 +4,6 @@
 
   angular.module('inboxServices', ['ngResource']);
 
-  require('./all-contacts');
   require('./analytics-modules');
   require('./android-api');
   require('./app-info');
@@ -17,6 +16,7 @@
   require('./contact-form');
   require('./contact-schema');
   require('./contact-summary');
+  require('./contacts');
   require('./count-messages');
   require('./db');
   require('./db-sync');
