@@ -18,6 +18,7 @@ _TBD_
 
 ### Bug fixes
 
+- Labels not translated for generated report fields. Issue: #3154
 - Getting 502s after submitting task; Tasks not cleared until refresh. Issue: #3111
 - Do not know if patient ID is valid when processing Registrations/Report Actions. Issue: #3082
 - Patient contact creation should happen if a patient contact doesn't already exist. Issue: #3115
