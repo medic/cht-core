@@ -16,6 +16,7 @@
   require('./contact-form');
   require('./contact-schema');
   require('./contact-summary');
+  require('./contacts');
   require('./count-messages');
   require('./db');
   require('./db-sync');
@@ -27,8 +28,6 @@
   require('./enketo-prepopulation-data');
   require('./enketo-translation');
   require('./export');
-  require('./facility');
-  require('./facility-hierarchy');
   require('./file-reader');
   require('./json-forms');
   require('./json-parse');
@@ -41,9 +40,9 @@
   require('./kanso-packages');
   require('./language');
   require('./languages');
+  require('./live-list');
   require('./location');
   require('./markdown');
-  require('./live-list');
   require('./mark-read');
   require('./merge-uri-parameters');
   require('./message-contacts');
@@ -51,6 +50,7 @@
   require('./modal');
   require('./moment-locale-data');
   require('./outgoing-messages-configuration');
+  require('./place-hierarchy');
   require('./properties');
   require('./read-messages');
   require('./resource-icons');

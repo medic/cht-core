@@ -56,10 +56,10 @@ describe('InboxCtrl controller', function() {
       $provide.factory('XmlForms', function() {
         return sinon.stub();
       });
-      $provide.factory('Facility', function() {
+      $provide.factory('Contacts', function() {
         return sinon.stub();
       });
-      $provide.factory('FacilityHierarchy', function() {
+      $provide.factory('PlaceHierarchy', function() {
         return KarmaUtils.nullPromise();
       });
       $provide.factory('JsonForms', function() {
