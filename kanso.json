@@ -475,10 +475,11 @@
                                         "title": "Triggered action",
                                         "default": "assign_schedule",
                                         "description": "Action triggered when form is received, e.g. enrolling in a schedule.",
-                                        "enum": ["assign_schedule", "add_patient_id", "add_expected_date", "add_birth_date", "add_patient"],
+                                        "enum": ["assign_schedule", "clear_schedule", "add_patient_id", "add_expected_date", "add_birth_date", "add_patient"],
                                         "je:hint": "enumlabels",
                                         "je:enumlabels": {
                                             "assign_schedule": "Assign a schedule",
+                                            "clear_schedule": "Clear schedules",
                                             "add_patient_id": "Add patient ID",
                                             "add_expected_date": "Add expected date",
                                             "add_birth_date": "Add birth date",
