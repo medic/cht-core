@@ -34,7 +34,7 @@ function push {
     local market="$1"
     local maxify=$2
     if [ $COUNT -le $MAX ]; then
-        echo node --stack_size=10000 `which kanso` push \
+        node --stack_size=10000 `which kanso` push \
             `[[ $maxify != true ]] && echo --minify` \
             "${UPLOAD_URL}/markets-$market/upload" && exit 0
         push $market
