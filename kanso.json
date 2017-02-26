@@ -107,13 +107,13 @@
                 "type": "string",
                 "title": "Date Format",
                 "default": "DD-MMM-YYYY",
-                "description": "Format used to display dates."
+                "description": "Format used to display dates using <a href='http://momentjs.com/docs/#/displaying/format/'>Moment.js format</a>."
             },
             "reported_date_format": {
                 "type": "string",
                 "title": "DateTime Format",
                 "default": "DD-MMM-YYYY HH:mm:ss",
-                "description": "Format used to display dates and times."
+                "description": "Format used to display dates and times using <a href='http://momentjs.com/docs/#/displaying/format/'>Moment.js format</a>."
             },
             "forms_only_mode": {
                 "type": "boolean",
@@ -279,9 +279,9 @@
                 "default": []
             },
             "anc_forms": {
-                "title": "ANC Reports",
+                "title": "ANC Forms",
                 "type": "object",
-                "description": "Define your ANC related form codes here, these forms will be used to generate analytics.",
+                "description": "Specified forms can be used in the built-in ANC Analytics.",
                 "properties": {
                     "registration": {
                         "type": "string",
@@ -475,10 +475,11 @@
                                         "title": "Triggered action",
                                         "default": "assign_schedule",
                                         "description": "Action triggered when form is received, e.g. enrolling in a schedule.",
-                                        "enum": ["assign_schedule", "add_patient_id", "add_expected_date", "add_birth_date", "add_patient"],
+                                        "enum": ["assign_schedule", "clear_schedule", "add_patient_id", "add_expected_date", "add_birth_date", "add_patient"],
                                         "je:hint": "enumlabels",
                                         "je:enumlabels": {
                                             "assign_schedule": "Assign a schedule",
+                                            "clear_schedule": "Clear schedules",
                                             "add_patient_id": "Add patient ID",
                                             "add_expected_date": "Add expected date",
                                             "add_birth_date": "Add birth date",
@@ -509,6 +510,7 @@
                                     "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
                                 },
                                 "list": {
+                                    "title": "Response Messages",
                                     "type": "array",
                                     "items": {
                                         "type": "object",
@@ -523,10 +525,15 @@
                                                 "title": "Validation Rule",
                                                 "description": "The validation rule. Backslashes must be double escaped. e.g. lenMin(5) && lenMax(50)"
                                             },
+                                            "translation_key": {
+                                                "type": "string",
+                                                "title": "Translation key",
+                                                "description": "The key to look up in the translation files. The translation value supports mustache templating."
+                                            },
                                             "message": {
                                                 "type": "array",
-                                                "title": "Response Message",
-                                                "description": "The response when validation fails. Mustache templating is supported.",
+                                                "title": "Message (deprecated)",
+                                                "description": "The response when validation fails. Mustache templating is supported. Using the Translation Key above is the preferred way to do this.",
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
@@ -560,10 +567,15 @@
                             "items": {
                                 "type": "object",
                                 "properties": {
+                                    "translation_key": {
+                                        "type": "string",
+                                        "title": "Translation key",
+                                        "description": "The key to look up in the translation files. The translation value supports mustache templating."
+                                    },
                                     "message": {
                                         "type": "array",
-                                        "title": "Message",
-                                        "description": "Mustache templating is supported",
+                                        "title": "Message (deprecated)",
+                                        "description": "Mustache templating is supported. Using the Translation Key above is the preferred way to do this.",
                                         "items": {
                                             "type": "object",
                                             "properties": {
@@ -654,6 +666,7 @@
                                     "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
                                 },
                                 "list": {
+                                    "title": "Response Messages",
                                     "type": "array",
                                     "items": {
                                         "type": "object",
@@ -668,10 +681,15 @@
                                                 "title": "Validation Rule",
                                                 "description": "The validation rule. Backslashes must be double escaped. e.g. regex('[0-9]{5}')"
                                             },
+                                            "translation_key": {
+                                                "type": "string",
+                                                "title": "Translation key",
+                                                "description": "The key to look up in the translation files. The translation value supports mustache templating."
+                                            },
                                             "message": {
-                                                "title": "Response Message",
+                                                "title": "Message (deprecated)",
+                                                "description": "The response when validation fails. Mustache templating is supported. Using the Translation Key above is the preferred way to do this.",
                                                 "type": "array",
-                                                "description": "The response when validation fails. Mustache templating is supported.",
                                                 "items": {
                                                     "type": "object",
                                                     "properties": {
@@ -704,10 +722,15 @@
                             "items": {
                                 "type": "object",
                                 "properties": {
+                                    "translation_key": {
+                                        "type": "string",
+                                        "title": "Translation key",
+                                        "description": "The key to look up in the translation files. The translation value supports mustache templating."
+                                    },
                                     "message": {
 										"type": "array",
-                                        "title": "Message Text",
-                                        "description": "Mustache templating is supported",
+                                        "title": "Message (deprecated)",
+                                        "description": "Mustache templating is supported. Using the Translation Key above is the preferred way to do this.",
                                         "items": {
                                             "type": "object",
                                             "properties": {
@@ -795,7 +818,14 @@
                             "items": {
                                 "type": "object",
                                 "properties": {
+                                    "translation_key": {
+                                        "type": "string",
+                                        "title": "Translation key",
+                                        "description": "The key to look up in the translation files. The translation value supports mustache templating."
+                                    },
                                     "message": {
+                                        "title": "Message (deprecated)",
+                                        "description": "Using the Translation Key above is the preferred way to do this.",
                                         "type": "array",
                                         "items": {
                                             "type": "object",
@@ -893,6 +923,7 @@
                                 "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
                             },
                             "list": {
+                                "title": "Response Messages",
                                 "type": "array",
                                 "items": {
                                     "type": "object",
@@ -907,10 +938,15 @@
                                             "title": "Validation Rule",
                                             "description": "The validation rule. Backslashes must be double escaped. e.g. regex('[0-9]{5}')"
                                         },
+                                        "translation_key": {
+                                            "type": "string",
+                                            "title": "Translation key",
+                                            "description": "The key to look up in the translation files. The translation value supports mustache templating."
+                                        },
                                         "message": {
-                                            "title": "Response Message",
+                                            "title": "Message (deprecated)",
+                                            "description": "The response when validation fails. Mustache templating is supported. Using the Translation Key above is the preferred way to do this.",
                                             "type": "array",
-                                            "description": "The response when validation fails. Mustache templating is supported.",
                                             "items": {
                                                 "type": "object",
                                                 "properties": {
@@ -943,10 +979,15 @@
                         "items": {
                             "type": "object",
                             "properties": {
+                                "translation_key": {
+                                    "type": "string",
+                                    "title": "Translation key",
+                                    "description": "The key to look up in the translation files. The translation value supports mustache templating."
+                                },
                                 "message": {
                                     "type": "array",
-                                    "title": "Message",
-                                    "description": "Mustache templating is supported",
+                                    "title": "Message (deprecated)",
+                                    "description": "Mustache templating is supported. Using the Translation Key above is the preferred way to do this.",
                                     "items": {
                                         "type": "object",
                                         "properties": {

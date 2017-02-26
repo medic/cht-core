@@ -27,7 +27,7 @@ var feedback = require('../modules/feedback'),
       DB,
       DBSync,
       Enketo,
-      FacilityHierarchy,
+      PlaceHierarchy,
       JsonForms,
       Language,
       LiveListConfig,
@@ -221,7 +221,7 @@ var feedback = require('../modules/feedback'),
       });
 
       var updateAvailableFacilities = function() {
-        FacilityHierarchy()
+        PlaceHierarchy()
           .then(function(hierarchy) {
             $scope.facilities = hierarchy;
           })

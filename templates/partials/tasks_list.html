@@ -1,8 +1,8 @@
 <div id="tasks-list" class="col-sm-4 inbox-items left-pane">
   <ul ng-show="!error && hasTasks"></ul>
   <p ng-show="error" class="alert alert-danger" role="alert">
-    <span translate>Error fetching tasks.</span>
-    <a ng-click="refreshTaskList()" translate>Try again.</a>
+    <span translate>Error fetching tasks</span>
+    <a class="btn btn-link" ng-click="refreshTaskList()" translate>Reload</a>
   </p>
   <p class="loading-status" ng-show="!loading && !error && !hasTasks && !tasksDisabled" translate>No tasks found</p>
   <p class="loading-status" ng-show="tasksDisabled" translate>tasks.disabled</p>

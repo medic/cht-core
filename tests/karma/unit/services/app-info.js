@@ -4,7 +4,8 @@ describe('AppInfo service', function() {
 
   var service,
       Settings,
-      $rootScope;
+      $rootScope,
+      $translate;
 
   beforeEach(function() {
     Settings = sinon.stub();
@@ -12,9 +13,10 @@ describe('AppInfo service', function() {
     module(function ($provide) {
       $provide.value('Settings', Settings);
     });
-    inject(function(_$rootScope_, _AppInfo_) {
+    inject(function(_$rootScope_, _AppInfo_, _$translate_) {
       $rootScope = _$rootScope_;
       service = _AppInfo_;
+      $translate = _$translate_;
     });
   });
 
@@ -73,48 +75,15 @@ describe('AppInfo service', function() {
   });
 
   it('translates the key', function(done) {
-    Settings.returns(KarmaUtils.mockPromise(null, {
-      translations: [
-        { 
-          key: 'welcome', 
-          translations: [{ locale: 'en', content: 'hi' }, { locale: 'en_NZ', content: 'kia ora' }]
-        },
-        { 
-          key: 'bye', 
-          translations: [{ locale: 'en', content: 'bye' }]
-        }
-      ]
-    }));
+    var expected = 'kia ora';
+    Settings.returns(KarmaUtils.mockPromise(null, {}));
+    var translate = sinon.stub($translate, 'instant').returns(expected);
     service()
       .then(function(appinfo) {
         var actual = appinfo.translate('welcome', 'en_NZ');
-        chai.expect(actual).to.equal('kia ora');
-        done();
-      })
-      .catch(function(err) {
-        done(err);
-      });
-    $rootScope.$digest();
-  });
-
-  it('translates the key to the default locale if none provided', function(done) {
-    Settings.returns(KarmaUtils.mockPromise(null, {
-      locale: 'en',
-      translations: [
-        { 
-          key: 'welcome', 
-          translations: [{ locale: 'en', content: 'hi' }, { locale: 'en_NZ', content: 'kia ora' }]
-        },
-        { 
-          key: 'bye', 
-          translations: [{ locale: 'en', content: 'bye' }]
-        }
-      ]
-    }));
-    service()
-      .then(function(appinfo) {
-        var actual = appinfo.translate('welcome');
-        chai.expect(actual).to.equal('hi');
+        chai.expect(actual).to.equal(expected);
+        chai.expect(translate.callCount).to.equal(1);
+        chai.expect(translate.args[0][0]).to.equal('welcome');
         done();
       })
       .catch(function(err) {

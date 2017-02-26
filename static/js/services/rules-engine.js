@@ -54,6 +54,14 @@ var nools = require('nools'),
           (doc.fields && (doc.fields.patient_id || doc.fields.place_id));
       };
 
+      var contactHasId = function(contact, id) {
+        return contact && (
+          contact._id === id ||
+          contact.patient_id === id ||
+          contact.place_id === id
+        );
+      };
+
       var deriveFacts = function(dataRecords, contacts) {
         var facts = _.map(contacts, function(contact) {
           return new Contact({ contact: contact, reports: [] });
@@ -61,11 +69,7 @@ var nools = require('nools'),
         dataRecords.forEach(function(report) {
           var factId = getContactId(report);
           var fact = _.find(facts, function(fact) {
-            return fact.contact && (
-              fact.contact._id === factId ||
-              fact.contact.patient_id === factId ||
-              fact.contact.place_id === factId
-            );
+            return contactHasId(fact.contact, factId);
           });
           if (!fact) {
             fact = new Contact({ reports: [] });
@@ -116,7 +120,7 @@ var nools = require('nools'),
 
       var findFact = function(id) {
         return _.find(facts, function(fact) {
-          return fact.contact && fact.contact._id === id ||
+          return contactHasId(fact.contact, id) ||
                  _.findWhere(fact.reports, { _id: id });
         });
       };

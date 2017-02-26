@@ -700,6 +700,63 @@ describe('RulesEngine service', function() {
     });
   });
 
+  it('updates when a report is added matching the contact patient_id - #3111', function(done) {
+
+    var dataRecords = [
+      {
+        _id: 2,
+        form: 'P',
+        reported_date: 1437618272360,
+        fields: {
+          patient_id: 1
+        },
+        last_menstrual_period: 10
+      }
+    ];
+
+    var newReport = {
+      _id: 3,
+      form: 'P',
+      reported_date: 1437618272360,
+      fields: {
+        patient_id: 1,
+        last_menstrual_period: 10
+      }
+    };
+
+    var contacts = [
+      { _id: 'some_uuid', name: 'Jenny', patient_id: 1 }
+    ];
+
+    Search.onFirstCall().returns(KarmaUtils.mockPromise(null, dataRecords));
+    Search.onSecondCall().returns(KarmaUtils.mockPromise(null, contacts));
+    Settings.returns(KarmaUtils.mockPromise(null, {
+      tasks: {
+        rules: rules,
+        schedules: schedules
+      }
+    }));
+    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+
+    var callbackCount = 0;
+    var service = getService();
+    service.listen('test', 'task', function(err, actual) {
+      if (err) {
+        return done(err);
+      }
+      callbackCount++;
+      if (callbackCount === 4) {
+        Changes.args[0][0].callback({
+          id: newReport._id,
+          doc: newReport
+        });
+      } else if (callbackCount === 5) {
+        chai.expect(actual[0].reports.length).to.equal(2);
+        done();
+      }
+    });
+  });
+
   it('updates when a contact is updated', function(done) {
 
     var dataRecords = [

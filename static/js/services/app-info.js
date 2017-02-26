@@ -1,115 +1,102 @@
 var _ = require('underscore'),
     moment = require('moment');
 
-(function () {
+angular.module('inboxServices').factory('AppInfo',
+  function(
+    $translate,
+    Settings
+  ) {
+    'ngInject';
+    'use strict';
+    return function() {
 
-  'use strict';
+      return Settings().then(function(settings) {
 
-  var inboxServices = angular.module('inboxServices');
-  
-  var settings;
+        var getForm = function(code) {
+          return settings.forms && settings.forms[code];
+        };
 
-  inboxServices.factory('AppInfo', ['Settings',
-    function(Settings) {
-      return function() {
-        return Settings().then(function(res) {
-          settings = res;
-          return {
-            getForm: getForm,
-            getMessage: getMessage,
-            translate: translate,
-            formatDate: formatDate
-          };
-        });
-      };
-    }
-  ]);
+        var getMessage = function(value, locale) {
+          function _findTranslation(value, locale) {
+            if (value.translations) {
+              var translation = _.findWhere(
+                value.translations, { locale: locale }
+              );
+              return translation && translation.content;
+            } else {
+              // fallback to old translation definition to support
+              // backwards compatibility with existing forms
+              return value[locale];
+            }
+          }
 
-  var getForm = function(code) {
-    return settings.forms && settings.forms[code];
-  };
+          if (!_.isObject(value)) {
+            return value;
+          }
 
-  var getMessage = function(value, locale) {
-    function _findTranslation(value, locale) {
-      if (value.translations) {
-        var translation = _.findWhere(
-          value.translations, { locale: locale }
-        );
-        return translation && translation.content;
-      } else {
-        // fallback to old translation definition to support
-        // backwards compatibility with existing forms
-        return value[locale];
-      }
-    }
+          var test = false;
+          if (locale === 'test') {
+            test = true;
+            locale = 'en';
+          }
 
-    if (!_.isObject(value)) {
-      return value;
-    }
+          var result =
 
-    var test = false;
-    if (locale === 'test') {
-      test = true;
-      locale = 'en';
-    }
+            // 1) Look for the requested locale
+            _findTranslation(value, locale) ||
 
-    var result =
+            // 2) Look for the default
+            value.default ||
 
-      // 1) Look for the requested locale
-      _findTranslation(value, locale) ||
+            // 3) Look for the English value
+            _findTranslation(value, 'en') ||
 
-      // 2) Look for the default
-      value.default ||
+            // 4) Look for the first translation
+            (value.translations && value.translations[0] &&
+                value.translations[0].content) ||
 
-      // 3) Look for the English value
-      _findTranslation(value, 'en') ||
+            // 5) Look for the first value
+            value[_.first(_.keys(value))];
 
-      // 4) Look for the first translation
-      (value.translations && value.translations[0] &&
-          value.translations[0].content) ||
+          if (test) {
+            result = '-' + result + '-';
+          }
 
-      // 5) Look for the first value
-      value[_.first(_.keys(value))];
+          return result;
+        };
 
-    if (test) {
-      result = '-' + result + '-';
-    }
+        var translate = function(key, locale, ctx) {
+          if (_.isObject(locale)) {
+            ctx = locale;
+            locale = settings.locale;
+          } else {
+            ctx = ctx || {};
+            locale = locale || settings.locale;
+          }
 
-    return result;
-  };
+          if (_.isObject(key)) {
+            return getMessage(key, locale) || key;
+          }
 
-  var translate = function(key, locale, ctx) {
-    if (_.isObject(locale)) {
-      ctx = locale;
-      locale = settings.locale;
-    } else {
-      ctx = ctx || {};
-      locale = locale || settings.locale;
-    }
+          return $translate.instant(key, ctx);
+        };
 
-    if (_.isObject(key)) {
-      return getMessage(key, locale) || key;
-    }
+        var formatDate = function(date) {
+          if (!date) {
+              return;
+          }
+          var m = moment(date);
+          return m.format(settings.date_format) +
+            ' (' + m.fromNow() + ')';
+        };
 
-    var translated = _.findWhere(settings.translations, { key: key });
-    var value = getMessage(translated, locale) || key;
-
-    // underscore templates will return ReferenceError if all variables in
-    // template are not defined.
-    try {
-      return _.template(value)(ctx);
-    } catch(e) {
-      return value;
-    }
-  };
-
-  var formatDate = function(date) {
-    if (!date) {
-        return;
-    }
-    var m = moment(date);
-    return m.format(settings.date_format) + 
-      ' (' + m.fromNow() + ')';
-  };
-
-}());
+        return {
+          getForm: getForm,
+          getMessage: getMessage,
+          translate: translate,
+          formatDate: formatDate
+        };
+      });
+    };
+  }
+);
