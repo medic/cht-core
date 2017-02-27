@@ -1,7 +1,9 @@
 var nools = require('nools'),
     _ = require('underscore'),
+    nootils = require('../modules/nootils'),
+    FIRST_RUN_COMPLETE_TYPE = '_complete',
     // number of weeks before reported date to assume for start of pregnancy
-    KNOWN_TYPES = ['task', 'target'];
+    KNOWN_TYPES = [ FIRST_RUN_COMPLETE_TYPE, 'task', 'target' ];
 
 (function () {
 
@@ -32,15 +34,19 @@ var nools = require('nools'),
         };
       }
 
+      var complete = $q.defer();
       var callbacks = {};
+      callbacks[FIRST_RUN_COMPLETE_TYPE] = {
+        rulesengine: function() {
+          complete.resolve();
+        }
+      };
       var emissions = {};
       var facts = [];
       var session;
       var err;
       var flow;
       var Contact;
-
-      var nootils = require('../modules/nootils');
 
       var getContactId = function(doc) {
         // get the associated patient or place id to group reports by
@@ -211,6 +217,7 @@ var nools = require('nools'),
           var user = results[1];
           if (!settings.tasks || !settings.tasks.rules) {
             // no rules configured
+            complete.resolve();
             return $q.resolve();
           }
           if (!flow) {
@@ -235,6 +242,7 @@ var nools = require('nools'),
       return {
         enabled: true,
         init: init,
+        complete: complete.promise,
         listen: function(name, type, callback) {
           if (!callbacks[type]) {
             callbacks[type] = {};

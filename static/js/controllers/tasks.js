@@ -52,6 +52,13 @@ var _ = require('underscore');
       $scope.error = false;
       $scope.hasTasks = LiveList.tasks.count() > 0;
       $scope.tasksDisabled = !RulesEngine.enabled;
+      $scope.loading = true;
+
+      RulesEngine.complete.then(function() {
+        $timeout(function() {
+          $scope.loading = false;
+        });
+      });
 
       LiveList.tasks.notifyChange = function(task) {
         $scope.hasTasks = LiveList.tasks.count() > 0;
