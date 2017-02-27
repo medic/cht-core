@@ -203,14 +203,8 @@ var _ = require('underscore'),
       };
 
       $scope.handleDeletedReport = function(report) {
-        if ($scope.selectMode) {
-          // remove just this one item
-          liveList.remove(report);
-          $scope.deselectReport(report);
-        } else {
-          // clear all
-          $scope.selectReport();
-        }
+        liveList.remove(report);
+        $scope.deselectReport(report);
       };
 
       $scope.selectReport = function(report) {
@@ -435,7 +429,7 @@ var _ = require('underscore'),
         if ($scope.selectMode) {
           e.preventDefault();
           e.stopPropagation();
-          var target = $(e.target).closest('li');
+          var target = $(e.target).closest('li[data-record-id]');
           var reportId = target.attr('data-record-id');
           var checkbox = target.find('input[type="checkbox"]');
           var alreadySelected = _.findWhere($scope.selected, { _id: reportId });
@@ -500,7 +494,8 @@ var _ = require('underscore'),
           query({ silent: true, limit: liveList.count() });
         },
         filter: function(change) {
-          return change.doc.form;
+          // deleted is handled by $scope.handleDeletedReport
+          return !change.deleted && change.doc.form;
         }
       });
 
