@@ -47,7 +47,7 @@
 
       $scope.form = null;
       $scope.loadingForm = true;
-      $scope.setActionBar();
+      $scope.setRightActionBar();
       $scope.setShowContent(true);
       $scope.setCancelTarget(function() {
         $state.go('contacts.detail', { id: $state.params.id });
