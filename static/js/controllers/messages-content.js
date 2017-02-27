@@ -220,8 +220,13 @@ var _ = require('underscore');
 
       var changeListener = Changes({
         key: 'messages-content',
-        callback: function() {
-          updateConversation({ changes: true });
+        callback: function(change) {
+          if (change.deleted) {
+            var index = _.findIndex($scope.selected.messages, { id: change.id });
+            $scope.selected.messages.splice(index, 1);
+          } else {
+            updateConversation({ changes: true });
+          }
         },
         filter: function(change) {
           return $scope.currentTab === 'messages' &&
