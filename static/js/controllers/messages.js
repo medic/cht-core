@@ -45,7 +45,7 @@ var _ = require('underscore');
             $scope.messages.push(updated);
           }
           if ($scope.selected && $scope.selected.id === updated.key[0]) {
-            $scope.$broadcast('UpdateContactConversation', { silent: true});
+            $scope.$broadcast('UpdateContactConversation', { silent: true });
           }
         });
       };
