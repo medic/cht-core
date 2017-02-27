@@ -335,10 +335,14 @@ var _ = require('underscore'),
           });
       };
 
+      var getChildrenPersons = function() {
+        var children = $scope.selected.children;
+        return (children && children.persons) || [];
+      };
+
       var getTasks = function() {
         $scope.selected.tasks = [];
-        var childrenPersonIds = $scope.selected.children && $scope.selected.children.persons &&
-          _.pluck($scope.selected.children.persons, 'id');
+        var childrenPersonIds = _.pluck(getChildrenPersons(), 'id');
         TasksForContact(
           $scope.selected.doc._id,
           $scope.selected.doc.type,
@@ -348,15 +352,13 @@ var _ = require('underscore'),
             if ($scope.selected) {
               $scope.selected.areTasksEnabled = areTasksEnabled;
               $scope.selected.tasks = tasks;
-              if ($scope.selected.children.persons) {
-                $scope.selected.children.persons.forEach(function(child) {
-                  child.taskCount = tasks.filter(function(task) {
-                    return task.doc &&
-                           task.doc.contact &&
-                           task.doc.contact._id === child.doc._id;
-                  }).length;
-                });
-              }
+              getChildrenPersons().forEach(function(child) {
+                child.taskCount = tasks.filter(function(task) {
+                  return task.doc &&
+                         task.doc.contact &&
+                         task.doc.contact._id === child.doc._id;
+                }).length;
+              });
               if (!$scope.$$phase) {
                 $scope.$apply();
               }
