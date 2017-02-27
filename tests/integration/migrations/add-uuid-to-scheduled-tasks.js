@@ -1,25 +1,6 @@
 var moment = require('moment'),
-    _ = require('underscore'),
     utils = require('./utils'),
-    db = require('../../../db'),
     UUID_REGEX = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
-
-var updateSettings = function(settings) {
-  return new Promise(function(resolve, reject) {
-    db.medic.get('_design/medic', function(err, ddoc) {
-      if (err) {
-        return reject(err);
-      }
-      _.extend(ddoc.app_settings, settings);
-      db.medic.insert(ddoc, function(err) {
-        if (err) {
-          return reject(err);
-        }
-        resolve();
-      });
-    });
-  });
-};
 
 describe('add-uuid-to-scheduled-tasks migration', function() {
   afterEach(function() {
@@ -67,7 +48,7 @@ describe('add-uuid-to-scheduled-tasks migration', function() {
       }
     ])
     .then(function() {
-      return updateSettings({
+      return utils.initSettings({
         schedules: [{ // this is the default config
           name: 'some schedule',
           summary: '',
@@ -157,7 +138,7 @@ describe('add-uuid-to-scheduled-tasks migration', function() {
       }
     ])
     .then(function() {
-      return updateSettings({
+      return utils.initSettings({
         schedules: [{ // this is the default config
           name: '',
           summary: '',

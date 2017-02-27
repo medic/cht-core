@@ -1,9 +1,8 @@
-var DB_PREFIX = 'medic_api_integration_tests__';
-
-var dbBackups;
 var _ = require('underscore'),
     async = require('async'),
-    db = require('../../../db');
+    db = require('../../../db'),
+    DB_PREFIX = 'medic_api_integration_tests__',
+    dbBackups;
 
 function byId(a, b) {
   if(a._id === b._id) {
@@ -306,9 +305,40 @@ function runMigration(migration) {
   }
 }
 
+function initSettings(settings) {
+  return getDdoc()
+    .then(function(ddoc) {
+      _.extend(ddoc.app_settings, settings);
+      return ddoc;
+    })
+    .then(function(ddoc) {
+      return new Promise(function(resolve, reject) {
+        db.medic.insert(ddoc, function(err) {
+          if (err) {
+            return reject(err);
+          }
+          resolve();
+        });
+      });
+    });
+}
+
+function getDdoc() {
+  return new Promise(function(resolve, reject) {
+    db.medic.get('_design/medic', function(err, ddoc) {
+      if (err) {
+        return reject(err);
+      }
+      resolve(ddoc);
+    });
+  });
+}
+
 module.exports = {
   assertDb: assertDb,
   initDb: initDb,
+  initSettings: initSettings,
+  getDdoc: getDdoc,
   runMigration: runMigration,
   tearDown: tearDown,
 };

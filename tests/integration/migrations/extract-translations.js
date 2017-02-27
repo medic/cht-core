@@ -1,5 +1,4 @@
-var utils = require('./utils'),
-    db = require('../../../db');
+var utils = require('./utils');
 
 describe('extract-translations', function() {
   afterEach(function() {
@@ -34,61 +33,44 @@ describe('extract-translations', function() {
       }
     ])
     .then(function() {
-      return new Promise(function(resolve, reject) {
-        db.medic.get('_design/medic', function(err, ddoc) {
-          if (err) {
-            return reject(err);
+      return utils.initSettings({
+        translations: [
+          {
+            key: 'Submit',
+            translations: [
+              {
+                locale: 'en',
+                content: 'Send', // different from default so leave
+                default: 'Submit'
+              },
+              {
+                locale: 'es',
+                content: 'Enviar', // same as default so change
+                default: 'Enviar'
+              },
+              { // test special characters
+                locale: 'hi',
+                content: 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !',
+                default: 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !'
+              }
+            ]
           }
-          resolve(ddoc);
-        });
-      });
-    })
-    .then(function(ddoc) {
-      ddoc.app_settings.translations = [
-        {
-          key: 'Submit',
-          translations: [
-            {
-              locale: 'en',
-              content: 'Send', // different from default so leave
-              default: 'Submit'
-            },
-            {
-              locale: 'es',
-              content: 'Enviar', // same as default so change
-              default: 'Enviar'
-            },
-            { // test special characters
-              locale: 'hi',
+        ],
+        locales: [
+          { code: 'en' },
+          { code: 'es', disabled: true },
+          { code: 'fr', disabled: true }
+        ],
+        schedules: [{
+          name: 'ANC Reminders LMP',
+          messages: [{
+            message: [{
               content: 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !',
-              default: 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !'
-            }
-          ]
-        }
-      ];
-      ddoc.app_settings.locales = [
-        { code: 'en' },
-        { code: 'es', disabled: true },
-        { code: 'fr', disabled: true }
-      ];
-      ddoc.app_settings.schedules = [{
-        name: 'ANC Reminders LMP',
-        messages: [{
-          message: [{
-            content: 'कृपया {{patient_name}} ({{patient_id}}) को याद दिलाएँ कि इस हफ्ते, वह स्वास्थ्य सुविधा जाएं स्वास्थ्य की जांच के लिए | स्वास्थ्य की जांच के बाद, हमें बताइए \'V {{patient_id}}\' से जवाब भेजकर | धन्यवाद !',
-            locale: 'hi'
+              locale: 'hi'
+            }]
           }]
-        }]
-      }];
-      ddoc.app_settings.test = 'unchanged';
-      
-      return new Promise(function(resolve, reject) {
-        db.medic.insert(ddoc, function(err) {
-          if (err) {
-            return reject(err);
-          }
-          resolve();
-        });
+        }],
+        test: 'unchanged'
       });
     })
     .then(function() {
@@ -126,14 +108,7 @@ describe('extract-translations', function() {
 
     })
     .then(function() {
-      return new Promise(function(resolve, reject) {
-        db.medic.get('_design/medic', function(err, ddoc) {
-          if (err) {
-            return reject(err);
-          }
-          resolve(ddoc);
-        });
-      });
+      return utils.getDdoc();
     })
     .then(function(ddoc) {
       if (ddoc.app_settings.translations) {
