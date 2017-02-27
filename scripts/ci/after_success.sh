@@ -32,10 +32,8 @@ function tagSubmodules {
 function push {
     ((COUNT++))
     local market="$1"
-    local maxify=$2
     if [ $COUNT -le $MAX ]; then
-        node --stack_size=10000 `which kanso` push \
-            `[[ $maxify != true ]] && echo --minify` \
+        node --stack_size=10000 `which kanso` push --minify \
             "${UPLOAD_URL}/markets-$market/upload" && exit 0
         push $market
     else
@@ -46,7 +44,7 @@ function push {
 
 # every master build gets pushed to alpha market
 if [ "$TRAVIS_BRANCH" == "master" ]; then
-    push 'alpha' true
+    push 'alpha'
 
 # match tags of the form "0.n.n"
 elif [[ "$TRAVIS_TAG" =~ ^0\.[0-9]+\.[0-9]+$ ]]; then
@@ -60,7 +58,7 @@ elif [[ "$TRAVIS_TAG" =~ ^2\.[0-9]+\.[0-9]+$ ]]; then
 
 # match tags of the form "n.n.n-beta.n"
 elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-beta\.[0-9]+$ ]]; then
-    push 'beta' true
+    push 'beta'
 
 # match tags of the form "n.n.n-rc.n"
 elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
