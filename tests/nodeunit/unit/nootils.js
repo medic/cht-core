@@ -9,8 +9,9 @@ exports['addDate adds days to the date'] = function(test) {
 
 exports['addDate date defaults to now'] = function(test) {
   var actual = nootils.addDate(null, 2);
-  var expected = (new Date().getUTCDate()) + 2;
-  test.equal(actual.getDate(), expected);
+  var expected = new Date();
+  expected.setDate(expected.getDate() + 2);
+  test.equal(actual.getDate(), expected.getUTCDate());
   test.done();
 };
 
