@@ -18,6 +18,10 @@ _TBD_
 
 ### Bug fixes
 
+- Error after submitting form. Issue: #3157
+- Deleted message persists until refresh. Issue: #3003
+- Single delete and bulk delete does not immediately remove items from LHS in Reports tab. Issue: #3001
+- Tasks list says "no tasks found" before it's loaded. Issue: #1935
 - Labels not translated for generated report fields. Issue: #3154
 - Getting 502s after submitting task; Tasks not cleared until refresh. Issue: #3111
 - Do not know if patient ID is valid when processing Registrations/Report Actions. Issue: #3082
