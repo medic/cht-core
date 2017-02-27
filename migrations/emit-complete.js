@@ -1,5 +1,7 @@
 var path = require('path'),
-    db = require('../db');
+    db = require('../db'),
+    SETTINGS_REGEX = /(.*)(\}[ \n\t]*\}[ \n\t]*)$/,
+    COMPLETE_EVENT_CONFIG = 'emit("_complete", { _id: true });';
 
 module.exports = {
   name: 'emit-complete',
@@ -20,7 +22,9 @@ module.exports = {
         return callback();
       }
 
-      rules = rules.replace(/(.*)\}[ \n\t]*\}[ \n\t]*$/, '$1 emit("_complete", { _id: true });}}');
+      // find the last two braces in the app settings and insert the
+      // configuration to emit the _complete event
+      rules = rules.replace(SETTINGS_REGEX, '$1 ' + COMPLETE_EVENT_CONFIG + '$2');
       var opts = {
         path: path.join(db.getPath(), 'update_settings', db.settings.ddoc),
         method: 'put',
