@@ -467,12 +467,9 @@ var feedback = require('../modules/feedback'),
           controller: 'DeleteDocConfirm',
           model: { docs: docs }
         }).then(function() {
-          if ($state.includes('contacts') || $state.includes('reports')) {
-            if ($scope.selectMode) {
-              $scope.clearSelected();
-            } else {
-              $state.go($state.current.name, { id: null });
-            }
+          if (!$scope.selectMode &&
+              ($state.includes('contacts') || $state.includes('reports'))) {
+            $state.go($state.current.name, { id: null });
           }
         });
       };
