@@ -30,6 +30,7 @@ var nools = require('nools'),
         return {
           enabled: false,
           init: $q.resolve(),
+          complete: $q.resolve(),
           listen: function() {}
         };
       }
