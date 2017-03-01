@@ -18,6 +18,8 @@ _TBD_
 
 ### Bug fixes
 
+- When navigating to the targets tab, I see a flash of the "no analytics modules configured" message. Issue: #3177
+- Update reports when loading the tab. Issue: #3178
 - Error after submitting form. Issue: #3157
 - Deleted message persists until refresh. Issue: #3003
 - Single delete and bulk delete does not immediately remove items from LHS in Reports tab. Issue: #3001
