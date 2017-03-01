@@ -297,23 +297,11 @@ var _ = require('underscore'),
            ) {
           $scope.filtered = true;
           liveList = LiveList['report-search'];
-          liveList.set([]);
-          query();
         } else {
           $scope.filtered = false;
           liveList = LiveList.reports;
-          if (liveList.initialised()) {
-            $timeout(function() {
-              $scope.loading = false;
-              liveList.refresh();
-              $scope.hasReports = liveList.count() > 0;
-              $scope.moreItems = liveList.moreItems;
-              initScroll();
-            });
-          } else {
-            query();
-          }
         }
+        query();
       };
 
       $scope.$on('ClearSelected', function() {
