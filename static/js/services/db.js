@@ -23,6 +23,7 @@ var _ = require('underscore');
       var pouchWorker = WebWorker(require('worker-pouch/workerified'));
 
       $window.PouchDB.adapter('worker', require('worker-pouch/client'));
+      $window.PouchDB.plugin(require('pouchdb-validation'));
 
       var getRemote = function() {
         return getFromCache(Location.url, POUCHDB_OPTIONS.remote);
@@ -46,7 +47,11 @@ var _ = require('underscore');
 
       var getFromCache = function(name, options) {
         if (!cache[name]) {
-          cache[name] = pouchDB(name, options);
+          var db = pouchDB(name, options);
+          // NB: This is a no-op when PouchDB runs against a remote DB, this
+          //     only runs validations client-side for client-side PouchDB.
+          db.installValidationMethods();
+          cache[name] = db;
         }
         return cache[name];
       };
