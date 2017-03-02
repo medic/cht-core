@@ -202,11 +202,6 @@ var _ = require('underscore'),
         $scope.settingSelected(true);
       };
 
-      $scope.handleDeletedReport = function(report) {
-        liveList.remove(report);
-        $scope.deselectReport(report);
-      };
-
       $scope.selectReport = function(report) {
         if (!report) {
           $scope.clearSelected();
@@ -478,12 +473,16 @@ var _ = require('underscore'),
 
       var changeListener = Changes({
         key: 'reports-list',
-        callback: function() {
-          query({ silent: true, limit: liveList.count() });
+        callback: function(change) {
+          if (change.deleted) {
+            liveList.remove(change.doc);
+            $scope.hasReports = liveList.count() > 0;
+          } else {
+            query({ silent: true, limit: liveList.count() });
+          }
         },
         filter: function(change) {
-          // deleted is handled by $scope.handleDeletedReport
-          return !change.deleted && change.doc.form;
+          return change.doc.form;
         }
       });
 
