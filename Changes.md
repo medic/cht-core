@@ -2,7 +2,7 @@
 
 ## 0.4.15
 
-### Jan 27, 2017
+### Mar 2, 2017
 
 - Fixed potential race condition with medic-gateway. Issue: medic-projects/issues/1243
 - Bumped libphonenumber to make phone number validation more up to date. Issue: medic-projects/issues/1005
