@@ -51,8 +51,11 @@ var nools = require('nools'),
 
       var getContactId = function(doc) {
         // get the associated patient or place id to group reports by
-        return doc.patient_id || doc.place_id ||
-          (doc.fields && (doc.fields.patient_id || doc.fields.place_id));
+        return doc && (
+          doc.patient_id ||
+          doc.place_id ||
+          (doc.fields && (doc.fields.patient_id || doc.fields.place_id))
+        );
       };
 
       var contactHasId = function(contact, id) {
@@ -143,7 +146,7 @@ var nools = require('nools'),
         if (change.deleted) {
           fact = findFact(change.id);
           if (fact) {
-            if (fact.contact._id === change.id) {
+            if (fact.contact && fact.contact._id === change.id) {
               // deleted contact
               fact.contact.deleted = true;
             } else {
