@@ -86,7 +86,7 @@ var _ = require('underscore');
         callback: function(change) {
           if (change.deleted) {
             $scope.$apply(function() {
-              $scope.handleDeletedReport(change.doc);
+              $scope.deselectReport(change.doc);
             });
           } else {
             $scope.refreshReportSilently(change.doc);
