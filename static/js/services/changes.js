@@ -30,11 +30,14 @@ angular.module('inboxServices').factory('Changes',
       Object.keys(callbacks).forEach(function(key) {
         var options = callbacks[key];
         if (!options.filter || options.filter(change)) {
-          options.callback(change);
+          try {
+            options.callback(change);
+          } catch(e) {
+            $log.error(new Error('Error executing changes callback: ' + key), e);
+          }
         }
       });
     };
-
 
     var watchChanges = function() {
       var RETRY_MILLIS = 5000;
