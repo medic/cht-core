@@ -79,11 +79,6 @@ npm install grunt-cli -g
 ### Configure Lucene
 
 Lucene powers full-text search on CouchDB.
-Add the following to CouchDB's `httpd_global_handlers` configuration section:
-
-```
-_fti = {couch_httpd_proxy, handle_proxy_req, <<"http://127.0.0.1:5985">>}
-```
 
 Update `$lucene_home/conf/couchdb-lucene.ini` (if you installed with homebrew, `$lucene_home` is something like `/usr/local/Cellar/couchdb-lucene/1.0.2/libexec/`) so the URL has credentials, e.g.:
 
@@ -97,8 +92,6 @@ You should now see an identical welcome message at two different URLs:
 
 ```
 curl http://localhost:5985
-{"couchdb-lucene":"Welcome","version":"1.0.2"}
-curl http://admin:pass@localhost:5986/_fti
 {"couchdb-lucene":"Welcome","version":"1.0.2"}
 ```
 
