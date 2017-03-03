@@ -495,7 +495,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('ci2', 'Lint, build, minify, deploy and test for CI [CouchDB 2.x]', [
     'ci_before',
-    'exec:setupAdmin1',
+    'exec:setupAdmin2',
     'ci_after'
   ])
 
