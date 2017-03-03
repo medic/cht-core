@@ -32,7 +32,7 @@ before_install:
       # start couchdb 2.x docker instance
       echo "Starting CouchDB 2.0"
       docker run -d -p 5984:5984 --name couch klaemo/couchdb:2.0.0
-    else if [ "$COUCH_VERSION" = 1 ]; then
+    elif [ "$COUCH_VERSION" = 1 ]; then
       # because we're on a java project we don't get CouchDB1.0 for free
       sudo apt-get -qq update
       sudo apt-get install -y couchdb
