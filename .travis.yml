@@ -14,11 +14,11 @@ services:
 
 env:
   matrix:
-  # - NODE_VERSION=7.2 COUCH_VERSION=2
-  # - NODE_VERSION=6.3 COUCH_VERSION=2
-  # - NODE_VERSION=5.6 COUCH_VERSION=2
-  # - NODE_VERSION=7.2 COUCH_VERSION=1
-  # - NODE_VERSION=6.3 COUCH_VERSION=1
+  - NODE_VERSION=7.2 COUCH_VERSION=2
+  - NODE_VERSION=6.3 COUCH_VERSION=2
+  - NODE_VERSION=5.6 COUCH_VERSION=2
+  - NODE_VERSION=7.2 COUCH_VERSION=1
+  - NODE_VERSION=6.3 COUCH_VERSION=1
   - NODE_VERSION=5.6 COUCH_VERSION=1
   global:
   - COUCH_URL=http://admin:pass@localhost:5984/medic
@@ -92,12 +92,12 @@ after_failure:
       docker logs couch
     fi
 
-# notifications:
-#   webhooks:
-#     urls:
-#       - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
-#     on_success: change
-#     on_failure: always
-#   email:
-#     recipients:
-#       - dev@medicmobile.org
+notifications:
+  webhooks:
+    urls:
+      - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
+    on_success: change
+    on_failure: always
+  email:
+    recipients:
+      - dev@medicmobile.org
