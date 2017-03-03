@@ -29,17 +29,18 @@ env:
 before_install:
   - |
     if [ "$COUCH_VERSION" = 2 ]; then
-      # stop couchdb 1.x
-      echo "Stopping CouchDB 1.0"
-      sudo /etc/init.d/couchdb stop
-      # wait for couchdb to stop
-      while nc -z localhost 5984; do sleep 1; done
       # start couchdb 2.x docker instance
       echo "Starting CouchDB 2.0"
       docker run -d -p 5984:5984 --name couch klaemo/couchdb:2.0.0
-      # wait for couchdb to start
-      until nc -z localhost 5984; do sleep 1; done
+    else if [ "$COUCH_VERSION" = 1 ]; then
+      # because we're on a java project we don't get CouchDB1.0 for free
+      sudo apt-get -qq update
+      sudo apt-get install -y couchdb
+      echo "Starting CouchDB 1.x"
+      sudo /etc/init.d/couchdb start
     fi
+  # wait for couchdb to start
+  - until nc -z localhost 5984; do sleep 1; done
 
 install:
   nvm install $NODE_VERSION
