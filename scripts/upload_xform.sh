@@ -98,7 +98,7 @@ fullJson='{
 
 if $USE_META_FILE; then
     meta="$(cat "${META_FILE}")"
-    fullJson="[$SELF] $(echo $fullJson | jq '. * '"$meta"'')"
+    fullJson="$(echo $fullJson | jq '. * '"$meta"'')"
 fi
 
 docUrl="${DB}/form:${ID}"
@@ -112,7 +112,6 @@ cat <<EOF
 [$SELF]   form internal ID: $formInternalId
 [$SELF]   force override: $FORCE
 [$SELF]   uploading to: $docUrl
-[$SELF]   form context: $formContext
 [$SELF]   full JSON: $fullJson
 [$SELF] -----
 EOF
