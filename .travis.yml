@@ -30,21 +30,15 @@ before_install:
     if [ "$COUCH_VERSION" = 2 ]; then
       # start couchdb 2.x docker instance
       docker run -d -p 5984:5984 --name couch klaemo/couchdb:2.0.0
-      until nc -z localhost 5984; do sleep 1; done
-      echo "CouchDB 2.0 started"
+      echo "Starting CouchDB 2.0"
     elif [ "$COUCH_VERSION" = 1 ]; then
       # because we're on a java project we don't get CouchDB1.0 for free
       sudo apt-get install -y couchdb
       until nc -z localhost 5984; do sleep 1; done
-      echo "CouchDB 1.x started"
-      # Do I need to do this? Why don't I need to do this in master?
-      curl -X PUT http://localhost:5984/_config/admins/admin -d '"pass"'
-      curl -X PUT http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user \
-        -d '"true"' -H "Content-Type: application/json"
-      curl -X POST http://admin:pass@localhost:5984/_users \
-        -H "Content-Type: application/json" \
-        -d '{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}'
+      echo "Starting CouchDB 1.x started"
     fi
+    until nc -z localhost 5984; do sleep 1; done
+    echo "CouchDB Started"
 
 install:
   nvm install $NODE_VERSION
@@ -69,7 +63,12 @@ before_script:
   - until nc -z localhost 4444; do sleep 1; done
 
 script:
-  - node --stack_size=10000 `which grunt` ci
+  - |
+    if [ "$COUCH_VERSION" = 2 ]; then
+      node --stack_size=10000 `which grunt` ci2
+    elif [ "$COUCH_VERSION" = 1 ]; then
+      node --stack_size=10000 `which grunt` ci1
+    fi
   - cat nohup.out || true
 
 after_success:
