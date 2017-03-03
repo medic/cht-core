@@ -36,8 +36,8 @@ before_install:
       # because we're on a java project we don't get CouchDB1.0 for free
       sudo apt-get -qq update
       sudo apt-get install -y couchdb
-      echo "Starting CouchDB 1.x"
-      sudo /etc/init.d/couchdb start
+      # starts by default after it's installed
+      echo "CouchDB 1.x started"
     fi
   # wait for couchdb to start
   - until nc -z localhost 5984; do sleep 1; done
