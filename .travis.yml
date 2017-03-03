@@ -29,14 +29,13 @@ before_install:
   - |
     if [ "$COUCH_VERSION" = 2 ]; then
       # start couchdb 2.x docker instance
-      echo "Starting CouchDB 2.0"
       docker run -d -p 5984:5984 --name couch klaemo/couchdb:2.0.0
+      until nc -z localhost 5984; do sleep 1; done
+      echo "CouchDB 2.0 started"
     elif [ "$COUCH_VERSION" = 1 ]; then
       # because we're on a java project we don't get CouchDB1.0 for free
-      sudo apt-get -qq update
       sudo apt-get install -y couchdb
       until nc -z localhost 5984; do sleep 1; done
-      # starts by default after it's installed
       echo "CouchDB 1.x started"
       # Do I need to do this? Why don't I need to do this in master?
       curl -X PUT http://localhost:5984/_config/admins/admin -d '"pass"'
@@ -46,8 +45,6 @@ before_install:
         -H "Content-Type: application/json" \
         -d '{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}'
     fi
-  # wait for couchdb to start
-  - until nc -z localhost 5984; do sleep 1; done
 
 install:
   nvm install $NODE_VERSION
