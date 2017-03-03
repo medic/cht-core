@@ -35,6 +35,7 @@ before_install:
       # because we're on a java project we don't get CouchDB1.0 for free
       sudo apt-get -qq update
       sudo apt-get install -y couchdb
+      until nc -z localhost 5984; do sleep 1; done
       # starts by default after it's installed
       echo "CouchDB 1.x started"
       # Do I need to do this? Why don't I need to do this in master?
