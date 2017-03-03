@@ -9,17 +9,16 @@ addons:
   firefox: latest-esr
 
 services:
-  - couchdb
   # docker is used for couchdb 2.0 (not currently available as a travis service)
   - docker
 
 env:
   matrix:
-  - NODE_VERSION=7.2 COUCH_VERSION=2
-  - NODE_VERSION=6.3 COUCH_VERSION=2
-  - NODE_VERSION=5.6 COUCH_VERSION=2
-  - NODE_VERSION=7.2 COUCH_VERSION=1
-  - NODE_VERSION=6.3 COUCH_VERSION=1
+  # - NODE_VERSION=7.2 COUCH_VERSION=2
+  # - NODE_VERSION=6.3 COUCH_VERSION=2
+  # - NODE_VERSION=5.6 COUCH_VERSION=2
+  # - NODE_VERSION=7.2 COUCH_VERSION=1
+  # - NODE_VERSION=6.3 COUCH_VERSION=1
   - NODE_VERSION=5.6 COUCH_VERSION=1
   global:
   - COUCH_URL=http://admin:pass@localhost:5984/medic
@@ -38,6 +37,13 @@ before_install:
       sudo apt-get install -y couchdb
       # starts by default after it's installed
       echo "CouchDB 1.x started"
+      # Do I need to do this? Why don't I need to do this in master?
+      curl -X PUT http://localhost:5984/_config/admins/admin -d '"pass"'
+      curl -X PUT http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user \
+        -d '"true"' -H "Content-Type: application/json"
+      curl -X POST http://admin:pass@localhost:5984/_users \
+        -H "Content-Type: application/json" \
+        -d '{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}'
     fi
   # wait for couchdb to start
   - until nc -z localhost 5984; do sleep 1; done
