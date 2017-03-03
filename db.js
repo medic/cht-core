@@ -31,9 +31,6 @@ if (couchUrl) {
         var uri = path.join('/_fti/local', module.exports.settings.db, '_design', module.exports.settings.ddoc, index);
         module.exports.request({ path: uri, qs: data }, cb);
     };
-    module.exports.config = function(cb) {
-        module.exports.request({ path: '/_config' }, cb);
-    };
 } else if (process.env.TEST_ENV) {
     // Running tests only
     module.exports = {
