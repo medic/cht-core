@@ -47,7 +47,7 @@ before_script:
   - npm install
   # Create couchdb system tables (this has to be done manually on couchdb 2.0)
   - |
-    if [ "$COUCH_VERSION" = 2]; then
+    if [ "$COUCH_VERSION" = 2 ]; then
       curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
     fi
   - export DISPLAY=:99.0
@@ -79,16 +79,19 @@ after_success:
       fi
 
 after_failure:
-  # show the couchdb logs from the docker instance when there was a problem
-  - docker ps -a
-  - docker logs couch
+  - |
+    if [ "COUCH_VERSION" = 2 ]; then
+      # show the couchdb logs from the docker instance when there was a problem
+      docker ps -a
+      docker logs couch
+    fi
 
-notifications:
-  webhooks:
-    urls:
-      - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
-    on_success: change
-    on_failure: always
-  email:
-    recipients:
-      - dev@medicmobile.org
+# notifications:
+#   webhooks:
+#     urls:
+#       - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
+#     on_success: change
+#     on_failure: always
+#   email:
+#     recipients:
+#       - dev@medicmobile.org
