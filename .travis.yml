@@ -1,7 +1,7 @@
 # Setting up as a java project allows us to ensure that the JRE/JDK version used
 # is actually compatible with webdriver-manager.
 language: java
-sudo: false
+sudo: true
 jdk:
   - oraclejdk7
 
@@ -11,22 +11,33 @@ addons:
 services:
   # docker is used for couchdb 2.0 (not currently available as a travis service)
   - docker
+  - couchdb
 
 env:
   matrix:
-  - NODE_VERSION=7.2
-  - NODE_VERSION=6.3
-  - NODE_VERSION=5.6
+  - NODE_VERSION=7.2 COUCH_VERSION=2
+  - NODE_VERSION=6.3 COUCH_VERSION=2
+  - NODE_VERSION=5.6 COUCH_VERSION=2
+  - NODE_VERSION=7.2 COUCH_VERSION=1
+  - NODE_VERSION=6.3 COUCH_VERSION=1
+  - NODE_VERSION=5.6 COUCH_VERSION=1
   global:
   - COUCH_URL=http://admin:pass@localhost:5984/medic
   - API_URL=http://admin:pass@localhost:5988
   - COUCH_NODE_NAME=nonode@nohost
 
 before_install:
-  # start couchdb 2.0 docker instance
-  - docker run -d -p 5984:5984 --name couch klaemo/couchdb:2.0.0
-  # wait for couchdb to start
-  - until nc -z localhost 5984; do sleep 1; done
+  - |
+    if [ "$COUCH_VERSION" = 2 ]; then
+      # stop couchdb 1.x
+      sudo /etc/init.d/couchdb stop
+      # wait for couchdb to stop
+      while nc -z localhost 5984; do sleep 1; done
+      # start couchdb 2.x docker instance
+      docker run -d -p 5984:5984 --name couch klaemo/couchdb:2.0.0
+      # wait for couchdb to start
+      until nc -z localhost 5984; do sleep 1; done
+    fi
 
 install:
   nvm install $NODE_VERSION
@@ -35,7 +46,10 @@ before_script:
   - nvm use $NODE_VERSION
   - npm install
   # Create couchdb system tables (this has to be done manually on couchdb 2.0)
-  - curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
+  - |
+    if [ "$COUCH_VERSION" = 2]; then
+      curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
+    fi
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - curl -X PUT localhost:5984/medic
