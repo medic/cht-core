@@ -491,13 +491,13 @@ module.exports = function(grunt) {
     'ci_before',
     'exec:setupAdmin1',
     'ci_after'
-  ])
+  ]);
 
   grunt.registerTask('ci2', 'Lint, build, minify, deploy and test for CI [CouchDB 2.x]', [
     'ci_before',
     'exec:setupAdmin2',
     'ci_after'
-  ])
+  ]);
 
   // Dev tasks
   grunt.registerTask('dev', 'Build and deploy for dev', [
