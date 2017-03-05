@@ -38,6 +38,7 @@ module.exports = function(settings) {
       var result = null;
       reports.forEach(function(report) {
         if (report.form === form &&
+           !report.deleted &&
            (!result || report.reported_date > result.reported_date)) {
           result = report;
         }

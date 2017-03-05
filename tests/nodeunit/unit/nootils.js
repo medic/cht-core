@@ -90,3 +90,49 @@ exports['isTimely returns true if just right'] = function(test) {
   test.equal(actual, true);
   test.done();
 };
+
+exports['getMostRecentReport returns null on no reports'] = function(test) {
+  var actual = nootils.getMostRecentReport([], 'V');
+  test.equal(actual, null);
+  test.done();
+};
+
+exports['getMostRecentReport returns null on no matching report'] = function(test) {
+  var reports = [
+    { form: 'H', reported_date: 1 }
+  ];
+  var actual = nootils.getMostRecentReport(reports, 'V');
+  test.equal(actual, null);
+  test.done();
+};
+
+exports['getMostRecentReport returns report when only one match'] = function(test) {
+  var reports = [
+    { _id: 1, form: 'H', reported_date: 1 },
+    { _id: 2, form: 'V', reported_date: 2 }
+  ];
+  var actual = nootils.getMostRecentReport(reports, 'V');
+  test.equal(actual._id, 2);
+  test.done();
+};
+
+exports['getMostRecentReport returns most recent matching report'] = function(test) {
+  var reports = [
+    { _id: 1, form: 'H', reported_date: 1 },
+    { _id: 2, form: 'V', reported_date: 2 },
+    { _id: 3, form: 'V', reported_date: 3 }
+  ];
+  var actual = nootils.getMostRecentReport(reports, 'V');
+  test.equal(actual._id, 3);
+  test.done();
+};
+
+exports['getMostRecentReport ignores deleted reports'] = function(test) {
+  var reports = [
+    { _id: 1, form: 'H', reported_date: 1 },
+    { _id: 2, form: 'V', reported_date: 2, deleted: true }
+  ];
+  var actual = nootils.getMostRecentReport(reports, 'V');
+  test.equal(actual, null);
+  test.done();
+};
