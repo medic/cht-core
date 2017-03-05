@@ -33,6 +33,7 @@ module.exports = {
         var self = module.exports,
             form = utils.getForm(doc && doc.form);
         return Boolean(
+            doc.type === 'data_record' &&
             self.getRegistrationConfig(self.getConfig(), doc.form) &&
             !self._hasRun(doc) &&
             (

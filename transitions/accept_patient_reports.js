@@ -13,6 +13,7 @@ module.exports = {
         var self = module.exports;
         return Boolean(
             doc &&
+            doc.type === 'data_record' &&
             doc.form &&
             doc.reported_date &&
             !self._hasRun(doc) &&

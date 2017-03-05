@@ -20,6 +20,7 @@ exports.tearDown = function(callback) {
 
 exports['filter includes docs with no clinic'] = function(test) {
   var doc = {
+    type: 'data_record',
     from: phone
   };
   test.ok(transition.filter(doc));
@@ -29,6 +30,7 @@ exports['filter includes docs with no clinic'] = function(test) {
 exports['filter out docs which already have a clinic'] = function(test) {
   var doc = {
     from: phone,
+    type: 'data_record',
     contact: {
       parent: { name: 'some clinic' }
     }
@@ -40,6 +42,7 @@ exports['filter out docs which already have a clinic'] = function(test) {
 exports['should update clinic by phone'] = function(test) {
   var doc = {
     from: phone,
+    type: 'data_record',
     contact: {
       parent: null
     }
@@ -89,6 +92,7 @@ exports['should update clinic by phone'] = function(test) {
 
 exports['should not update clinic with wrong phone'] = function(test) {
   var doc = {
+    type: 'data_record',
     from: 'WRONG'
   };
   sinon.stub(fakedb.medic, 'view').callsArgWith(3, null, {rows: []});
@@ -103,6 +107,7 @@ exports['should not update clinic with wrong phone'] = function(test) {
 
 exports['handles clinic ref id not found - medic/medic-webapp#2636'] = function(test) {
   var doc = {
+    type: 'data_record',
     from: '+12345',
     refid: '1000'
   };
@@ -118,6 +123,7 @@ exports['handles clinic ref id not found - medic/medic-webapp#2636'] = function(
 
 exports['should update clinic by refid and fix number'] = function(test) {
   var doc = {
+    type: 'data_record',
     from: '+12345',
     refid: '1000'
   };
@@ -167,7 +173,8 @@ exports['should update clinic by refid and fix number'] = function(test) {
 exports['should update clinic by refid and get latest contact'] = function(test) {
   var doc = {
     from: '+12345',
-    refid: '1000'
+    refid: '1000',
+    type: 'data_record'
   };
   var clinic = {
     _id: '9ed7d9c6095cc0e37e4d3e94d3387ed9',
@@ -228,7 +235,8 @@ exports['refid field is cast to a string in view query'] = function(test) {
   test.expect(1);
   var change = {
     doc: {
-      refid: 123
+      refid: 123,
+      type: 'data_record'
     }
   };
   var db = {
@@ -246,7 +254,8 @@ exports['from field is cast to string in view query'] = function(test) {
   test.expect(1);
   var change = {
     doc: {
-      from: 123
+      from: 123,
+      type: 'data_record'
     }
   };
   var db = {

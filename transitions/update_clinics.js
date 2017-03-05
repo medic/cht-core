@@ -43,6 +43,7 @@ module.exports = {
         var self = module.exports;
         return Boolean(
             doc &&
+            doc.type === 'data_record' &&
             !doc.contact &&
             !self._hasRun(doc)
         );

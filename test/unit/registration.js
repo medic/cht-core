@@ -78,6 +78,7 @@ exports['add_patient trigger creates a new patient'] = function(test) {
     var senderPhoneNumber = '+555123';
     var dob = '2017-03-31T01:15:09.000Z';
     var change = { doc: {
+        type: 'data_record',
         form: 'R',
         reported_date: 53,
         from: senderPhoneNumber,
@@ -120,6 +121,7 @@ exports['add_patient trigger creates a new patient'] = function(test) {
 exports['add_patient does nothing when patient already added'] = function(test) {
     var patientId = '05649';
     var change = { doc: {
+        type: 'data_record',
         form: 'R',
         patient_id: patientId,
         reported_date: 53,
@@ -149,6 +151,7 @@ exports['add_patient event parameter overwrites the default property for the nam
     var senderPhoneNumber = '+555123';
     var dob = '2017-03-31T01:15:09.000Z';
     var change = { doc: {
+        type: 'data_record',
         form: 'R',
         reported_date: 53,
         from: senderPhoneNumber,
@@ -184,6 +187,7 @@ exports['add_patient and add_patient_id triggers are idempotent'] = function(tes
     var senderPhoneNumber = '+555123';
     var dob = '2017-03-31T01:15:09.000Z';
     var change = { doc: {
+        type: 'data_record',
         form: 'R',
         reported_date: 53,
         from: senderPhoneNumber,
@@ -219,6 +223,7 @@ exports['add_patient and add_patient_id triggers are idempotent'] = function(tes
 
 exports['assign_schedule event creates the named schedule'] = function(test) {
     var change = { doc: {
+        type: 'data_record',
         form: 'R',
         reported_date: 53,
         from: '+555123',
@@ -248,7 +253,7 @@ exports['assign_schedule event creates the named schedule'] = function(test) {
 };
 
 exports['filter returns false for reports for unknown json form'] = function(test) {
-    var doc = { form: 'R' };
+    var doc = { form: 'R', type: 'data_record'};
     var getForm = sinon.stub(utils, 'getForm').returns(null);
     var actual = transition.filter(doc);
     test.equals(getForm.callCount, 1);
@@ -258,7 +263,7 @@ exports['filter returns false for reports for unknown json form'] = function(tes
 };
 
 exports['filter returns false for reports with no registration configured'] = function(test) {
-    var doc = { form: 'R' };
+    var doc = { form: 'R', type: 'data_record' };
     var getForm = sinon.stub(utils, 'getForm').returns({ public_form: false });
     var configGet = sinon.stub(config, 'get').returns([{ form: 'XYZ' }]);
     var actual = transition.filter(doc);
@@ -271,7 +276,7 @@ exports['filter returns false for reports with no registration configured'] = fu
 };
 
 exports['filter returns true for reports from known clinic'] = function(test) {
-    var doc = { form: 'R' };
+    var doc = { form: 'R', type: 'data_record'};
     var getForm = sinon.stub(utils, 'getForm').returns({ public_form: false });
     var configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
     var getClinicPhone = sinon.stub(utils, 'getClinicPhone').returns('+55555555');
@@ -286,7 +291,7 @@ exports['filter returns true for reports from known clinic'] = function(test) {
 };
 
 exports['filter returns false for reports from unknown clinic'] = function(test) {
-    var doc = { form: 'R' };
+    var doc = { form: 'R', type: 'data_record'};
     var getForm = sinon.stub(utils, 'getForm').returns({ public_form: false });
     var configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
     var getClinicPhone = sinon.stub(utils, 'getClinicPhone').returns(null);
@@ -301,7 +306,7 @@ exports['filter returns false for reports from unknown clinic'] = function(test)
 };
 
 exports['filter returns true for reports for public forms from unknown clinic'] = function(test) {
-    var doc = { form: 'R' };
+    var doc = { form: 'R', type: 'data_record'};
     var getForm = sinon.stub(utils, 'getForm').returns({ public_form: true });
     var configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
     var getClinicPhone = sinon.stub(utils, 'getClinicPhone').returns(null);
@@ -316,7 +321,7 @@ exports['filter returns true for reports for public forms from unknown clinic'] 
 };
 
 exports['filter returns true for xforms reports'] = function(test) {
-    var doc = { form: 'R', content_type: 'xml' };
+    var doc = { form: 'R', content_type: 'xml', type: 'data_record' };
     var getForm = sinon.stub(utils, 'getForm').returns(null);
     var configGet = sinon.stub(config, 'get').returns([{ form: 'R' }]);
     var actual = transition.filter(doc);

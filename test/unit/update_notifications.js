@@ -62,7 +62,8 @@ exports['filter match'] = function(test) {
     sinon.stub(utils, 'getClinicPhone').returns('+555');
     test.ok(transition.filter({
         form: 'x',
-        fields: { patient_id: 'x' }
+        fields: { patient_id: 'x' },
+        type: 'data_record'
     }));
     test.done();
 };
@@ -75,7 +76,8 @@ exports['returns false if not on or off form'] = function(test) {
 
     transition.onMatch({
         doc: {
-            form: 'z'
+            form: 'z',
+            type: 'data_record'
         }
     }, {}, {}, function(err, complete) {
         test.equals(complete, false);
@@ -88,6 +90,7 @@ exports['no configured on or off form returns false'] = function(test) {
     transition.onMatch({
         doc: {
             form: 'on',
+            type: 'data_record',
             fields: { patient_id: 'x' }
         }
     }, {}, {}, function(err, complete) {
@@ -188,6 +191,7 @@ exports['no configured on or off message returns false'] = function(test) {
     transition.onMatch({
         doc: {
             form: 'off',
+            type: 'data_record',
             fields: { patient_id: 'x' }
         }
     }, {}, {}, function(err, complete) {
@@ -200,6 +204,7 @@ exports['no configured on or off message returns false'] = function(test) {
 exports['registration not found adds error and response'] = function(test) {
     var doc = {
         form: 'on',
+        type: 'data_record',
         fields: { patient_id: 'x' },
         contact: { phone: 'x' }
     };
@@ -241,6 +246,7 @@ exports['validation failure adds error and response'] = function(test) {
 
     var doc = {
         form: 'on',
+        type: 'data_record',
         fields: { patient_id: 'x' },
         contact: { phone: 'x' }
     };
@@ -292,6 +298,7 @@ exports['mute responds correctly'] = function(test) {
 
     var doc = {
         form: 'off',
+        type: 'data_record',
         fields: { patient_id: '123' },
         contact: {
             phone: '+1234',

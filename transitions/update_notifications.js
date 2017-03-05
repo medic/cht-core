@@ -76,6 +76,7 @@ module.exports = {
         return Boolean(
             doc &&
             doc.form &&
+            doc.type === 'data_record' &&
             doc.fields &&
             doc.fields.patient_id &&
             !hasRun(doc) &&

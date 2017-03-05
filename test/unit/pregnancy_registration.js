@@ -119,7 +119,7 @@ exports['filter fails with empty doc'] = function(test) {
 };
 
 exports['filter fails with no clinic phone and private form'] = function(test) {
-    var doc = { form: 'p' };
+    var doc = { form: 'p', type: 'data_record'};
     sinon.stub(utils, 'getClinicPhone').returns(null);
     sinon.stub(utils, 'getForm').returns({ public_form: false });
     test.ok(!transition.filter(doc));
@@ -127,7 +127,7 @@ exports['filter fails with no clinic phone and private form'] = function(test) {
 };
 
 exports['filter does not fail if doc has errors'] = function(test) {
-    var doc = { form: 'p', errors: [ 'some error ' ] };
+    var doc = { form: 'p', type: 'data_record', errors: [ 'some error ' ] };
     sinon.stub(utils, 'getClinicPhone').returns('somephone');
     sinon.stub(utils, 'getForm').returns({ public_form: true });
     test.ok(transition.filter(doc));
@@ -135,14 +135,14 @@ exports['filter does not fail if doc has errors'] = function(test) {
 };
 
 exports['filter fails if form is unknown'] = function(test) {
-    var doc = { form: 'x' };
+    var doc = { form: 'x' , type: 'data_record'};
     sinon.stub(utils, 'getClinicPhone').returns('somephone');
     test.ok(!transition.filter(doc));
     test.done();
 };
 
 exports['filter succeeds with no clinic phone if public form'] = function(test) {
-    var doc = { form: 'p' };
+    var doc = { form: 'p' , type: 'data_record'};
     sinon.stub(utils, 'getClinicPhone').returns(null);
     sinon.stub(utils, 'getForm').returns({ public_form: true });
     test.ok(transition.filter(doc));
@@ -150,7 +150,7 @@ exports['filter succeeds with no clinic phone if public form'] = function(test) 
 };
 
 exports['filter succeeds with populated doc'] = function(test) {
-    var doc = { form: 'p' };
+    var doc = { form: 'p' , type: 'data_record'};
     sinon.stub(utils, 'getClinicPhone').returns('somephone');
     sinon.stub(utils, 'getForm').returns({});
     test.ok(transition.filter(doc));
@@ -172,7 +172,7 @@ exports['is id only'] = function(test) {
 };
 
 exports['setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0'] = function(test) {
-    var doc = { fields: { lmp: 0 } };
+    var doc = { fields: { lmp: 0 }, type: 'data_record' };
     transition.setExpectedBirthDate(doc);
     test.equals(doc.lmp_date, null);
     test.equals(doc.expected_date, null);
@@ -180,7 +180,7 @@ exports['setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0
 };
 
 exports['setExpectedBirthDate sets lmp_date and expected_date correctly for lmp: 10'] = function(test) {
-    var doc = { fields: { lmp: '10' } },
+    var doc = { fields: { lmp: '10', type: 'data_record'} },
         start = moment().startOf('week');
 
     transition.setExpectedBirthDate(doc);
@@ -202,6 +202,7 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
 
     doc = {
         form: 'p',
+        type: 'data_record',
         fields: {
             patient_name: 'abc',
             lmp: 5
@@ -226,6 +227,7 @@ exports['pregnancies on existing patients fail without valid patient id'] = func
 
     var doc = {
         form: 'ep',
+        type: 'data_record',
         fields: {
             patient_id: '12345',
             lmp: 5
@@ -249,6 +251,7 @@ exports['pregnancies on existing patients succeeds with a valid patient id'] = f
 
     var doc = {
         form: 'ep',
+        type: 'data_record',
         fields: {
             patient_id: '12345',
             lmp: 5
@@ -275,6 +278,7 @@ exports['zero lmp value only registers patient'] = function(test) {
 
     var doc = {
         form: 'p',
+        type: 'data_record',
         fields: {
             patient_name: 'abc',
             lmp: 0
@@ -301,6 +305,7 @@ exports['id only logic with valid name'] = function(test) {
 
     doc = {
         form: 'p',
+        type: 'data_record',
         fields: {
             patient_name: 'abc',
             lmp: 5
@@ -330,6 +335,7 @@ exports['id only logic with invalid name'] = function(test) {
     doc = {
         form: 'p',
         from: '+12345',
+        type: 'data_record',
         fields: {
             patient_name: '',
             lmp: 5
@@ -357,6 +363,7 @@ exports['invalid name valid LMP logic'] = function(test) {
     doc = {
         form: 'p',
         from: '+1234',
+        type: 'data_record',
         fields: {
             patient_name: '',
             lmp: 5
@@ -381,6 +388,7 @@ exports['valid name invalid LMP logic'] = function(test) {
     doc = {
         form: 'p',
         from: '+1234',
+        type: 'data_record',
         fields: {
             patient_name: 'hi',
             lmp: 45
@@ -405,6 +413,7 @@ exports['invalid name invalid LMP logic'] = function(test) {
     doc = {
         form: 'p',
         from: '+123',
+        type: 'data_record',
         fields: {
             patient_name: '',
             lmp: 45
@@ -426,7 +435,8 @@ exports['invalid name invalid LMP logic'] = function(test) {
 exports['mismatched form returns false'] = function(test) {
     transition.onMatch({
         doc: {
-            form: 'x'
+            form: 'x',
+            type: 'data_record'
         }
     }, {}, {}, function(err, changed) {
         test.equals(changed, undefined);
@@ -438,7 +448,8 @@ exports['missing all fields returns validation errors'] = function(test) {
     test.expect(2);
     var doc = {
         form: 'p',
-        from: '+123'
+        from: '+123',
+        type: 'data_record'
     };
     transition.onMatch({
         doc: doc

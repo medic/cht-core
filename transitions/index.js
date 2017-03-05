@@ -33,16 +33,6 @@ var AVAILABLE_TRANSITIONS = [
     'update_sent_forms'
 ];
 
-/*
- * The list of doc types which transitions expect
- */
-var KNOWN_DOC_TYPES = [
-    'data_record',
-    'clinic',
-    'health_center',
-    'district'
-];
-
 var processed = 0;
 
 var changeQueue = async.queue(function(task, callback) {
@@ -61,10 +51,7 @@ var processChange = function(change, callback) {
             logger.error('transitions: fetch failed for %s (%s)', id, err);
             return callback();
         }
-        if (KNOWN_DOC_TYPES.indexOf(doc.type) === -1) {
-            // not a doc we know how to transition - ignore
-            return callback();
-        }
+
         if (processed > 0 && (processed % PROGRESS_REPORT_INTERVAL) === 0) {
             logger.info('transitions: %d items processed', processed);
         }

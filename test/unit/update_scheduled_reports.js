@@ -64,6 +64,7 @@ exports['filter passes when'] = function(test) {
     // month, year property
     test.equals(transition.filter({
         form: 'x',
+        type: 'data_record',
         fields: {
           month: 'x',
           year: 'x'
@@ -73,6 +74,7 @@ exports['filter passes when'] = function(test) {
     // month, year property and empty errors
     test.equals(transition.filter({
         form: 'x',
+        type: 'data_record',
         fields: {
           month: 'x',
           year: 'x'
@@ -83,6 +85,7 @@ exports['filter passes when'] = function(test) {
     // month_num, year property
     test.equals(transition.filter({
         form: 'x',
+        type: 'data_record',
         fields: {
           month_num: 'x',
           year: 'x'
@@ -92,6 +95,7 @@ exports['filter passes when'] = function(test) {
     // week, year property
     test.equals(transition.filter({
         form: 'x',
+        type: 'data_record',
         fields: {
           week: 'x',
           year: 'x'
@@ -101,6 +105,7 @@ exports['filter passes when'] = function(test) {
     // week_number, year property
     test.equals(transition.filter({
         form: 'x',
+        type: 'data_record',
         fields: {
           week_number: 'x',
           year: 'x'
