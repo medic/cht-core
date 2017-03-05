@@ -1,4 +1,4 @@
-describe('Tasks service', function() {
+describe('TasksForContact service', function() {
   'use strict';
 
   var childPersonId,

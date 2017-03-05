@@ -1,18 +1,16 @@
-/* jshint node: true */
-'use strict';
-
 var _ = require('underscore'),
     moment = require('moment');
-var inboxServices = angular.module('inboxServices');
 
 /**
  * Get the tasks, in order, for a given contact.
  * Pass in a listener to get a refreshed list after db changes.
  */
-inboxServices.factory('TasksForContact',
+angular.module('inboxServices').factory('TasksForContact',
   function(
     $log,
-    RulesEngine) {
+    RulesEngine
+  ) {
+    'use strict';
     'ngInject';
 
     var mergeTasks = function(existingTasks, newTasks) {
@@ -83,4 +81,5 @@ inboxServices.factory('TasksForContact',
       getTasks(contactIds, listenerName, listener);
     };
 
-  });
+  }
+);

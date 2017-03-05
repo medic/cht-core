@@ -64,7 +64,7 @@
   require('./settings');
   require('./snackbar');
   require('./target-generator');
-  require('./tasks');
+  require('./tasks-for-contact');
   require('./tour');
   require('./translate-from');
   require('./translation-loader');
