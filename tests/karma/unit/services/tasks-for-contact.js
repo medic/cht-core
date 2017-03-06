@@ -114,7 +114,7 @@ describe('TasksForContact service', function() {
       });
   });
 
-  it('does not displays tasks for child persons if selected doc is a person', function(done) {
+  it('does not display tasks for child persons if selected doc is a person', function(done) {
     var tasks = [
       {
         _id: 'taskForParent',
@@ -137,7 +137,7 @@ describe('TasksForContact service', function() {
       });
   });
 
-  it('does only displays tasks selected place and child persons', function(done) {
+  it('only displays tasks selected place and child persons', function(done) {
     var tasks = [
       {
         _id: 'taskForParent',
@@ -199,4 +199,57 @@ describe('TasksForContact service', function() {
         done();
       });
   });
+
+  it('listens for changes from the rules engine', function(done) {
+    var tasks = [
+      {
+        _id: 1,
+        date: 'Wed Sep 14 2016 13:40:16 GMT+0200 (CEST)',
+        contact: { _id: docId }
+      },
+      {
+        _id: 2,
+        date: 'Wed Sep 21 2016 13:40:16 GMT+0200 (CEST)',
+        contact: { _id: docId }
+      },
+      {
+        _id: 3,
+        date: 'Wed Sep 28 2016 13:40:16 GMT+0200 (CEST)',
+        contact: { _id: docId }
+      }
+    ];
+    stubRulesEngine(null, tasks);
+    var callCount = 0;
+    service(docId, 'clinic', [], 'listenerName', function(areTasksEnabled, newTasks) {
+      if (callCount === 0) {
+        chai.assert.deepEqual(newTasks, tasks);
+      } else if (callCount === 1) {
+        chai.assert.deepEqual(newTasks, [ tasks[0], tasks[2] ]);
+      } else if (callCount === 2) {
+        chai.assert.deepEqual(newTasks, [ tasks[0] ]);
+        done();
+      } else {
+        done('callback called too many times!');
+      }
+      callCount++;
+    });
+    var changesCallback = rulesEngineListen.args[0][2];
+
+    // mark #2 resolved
+    changesCallback(null, [{
+      _id: 2,
+      resolved: true,
+      date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
+      contact: { _id: docId }
+    }]);
+
+    // mark #3 deleted
+    changesCallback(null, [{
+      _id: 3,
+      deleted: true,
+      date: 'Wed Sep 28 2016 13:50:16 GMT+0200 (CEST)',
+      contact: { _id: docId }
+    }]);
+  });
+
 });
