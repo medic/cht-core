@@ -44,7 +44,7 @@ var submit = function(e) {
   setState('loading');
   var url = document.getElementById('form').action;
   var payload = JSON.stringify({
-    user: document.getElementById('user').value.toLowerCase(),
+    user: document.getElementById('user').value.toLowerCase().trim(),
     password: document.getElementById('password').value
   });
   post(url, payload, handleResponse);
