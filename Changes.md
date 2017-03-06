@@ -18,6 +18,7 @@ _TBD_
 
 ### Bug fixes
 
+- Task issues for restricted user when a report is deleted on the server. Issue: #3189
 - When navigating to the targets tab, I see a flash of the "no analytics modules configured" message. Issue: #3177
 - Update reports when loading the tab. Issue: #3178
 - Error after submitting form. Issue: #3157
