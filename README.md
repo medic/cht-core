@@ -28,9 +28,9 @@ You will need to install the following:
 
 [Node.js](http://nodejs.org) latest
 
-[CouchDB](http://couchdb.apache.org) v2.0.x
+[CouchDB](http://couchdb.apache.org) v2.x
 
-[couchdb-lucene](https://github.com/rnewson/couchdb-lucene) that supports CouchDB 2.0. Currently this is just directly from `master`.
+[couchdb-lucene](https://github.com/rnewson/couchdb-lucene) v2.x
 
 ### Setup CouchDB on a single node
 
