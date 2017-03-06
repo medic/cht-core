@@ -19,13 +19,20 @@ inboxServices.factory('TasksForContact',
       $log.debug('Updating contact tasks', existingTasks, newTasks);
       if (existingTasks) {
         newTasks.forEach(function(task) {
+          var toRemove = task.resolved || task.deleted;
           for (var i = 0; i < existingTasks.length; i++) {
             if (existingTasks[i]._id === task._id) {
-              existingTasks[i] = task;
+              if (toRemove) {
+                existingTasks.splice(i, 1);
+              } else {
+                existingTasks[i] = task;
+              }
               return;
             }
           }
-          existingTasks.push(task);
+          if (!toRemove) {
+            existingTasks.push(task);
+          }
         });
       }
     };
@@ -65,7 +72,7 @@ inboxServices.factory('TasksForContact',
           return $log.error('Error getting tasks', err);
         }
         var newTasks = _.filter(tasks, function(task) {
-          return !task.resolved && task.contact && _.contains(contactIds, task.contact._id);
+          return task.contact && _.contains(contactIds, task.contact._id);
         });
         addLateStatus(newTasks);
         mergeTasks(taskList, newTasks);
