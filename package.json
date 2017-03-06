@@ -15,7 +15,7 @@
     "angular-resource": "^1.5.9",
     "angular-route": "^1.5.9",
     "angular-sanitize": "^1.5.9",
-    "angular-translate": "^2.13.0",
+    "angular-translate": "^2.15.1",
     "angular-ui-bootstrap": "^2.3.0",
     "angular-ui-router": "^0.3.2",
     "async": "^2.1.4",
