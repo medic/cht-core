@@ -55,9 +55,9 @@
       "resolved": "http://registry.npmjs.org/angular-sanitize/-/angular-sanitize-1.5.9.tgz"
     },
     "angular-translate": {
-      "version": "2.13.0",
-      "from": "angular-translate@>=2.13.0 <3.0.0",
-      "resolved": "http://registry.npmjs.org/angular-translate/-/angular-translate-2.13.0.tgz"
+      "version": "2.15.1",
+      "from": "angular-translate@>=2.15.1 <3.0.0",
+      "resolved": "http://registry.npmjs.org/angular-translate/-/angular-translate-2.15.1.tgz"
     },
     "angular-ui-bootstrap": {
       "version": "2.3.0",
