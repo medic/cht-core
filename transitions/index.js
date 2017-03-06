@@ -26,7 +26,6 @@ var AVAILABLE_TRANSITIONS = [
     'update_sent_by',
     'resolve_pending',
     'registration',
-    'twilio_message',
     'update_clinics',
     'update_notifications',
     'update_scheduled_reports',
