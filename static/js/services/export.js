@@ -11,10 +11,7 @@ angular.module('inboxServices').factory('Export',
     return function(filters, typeName) {
       return DownloadUrl(filters, typeName)
         .then(function(url) {
-          return $http.post(url);
-        })
-        .then(function(res) {
-          ajaxDownload.download(res);
+          ajaxDownload.download(url);
         })
         .catch(function(err) {
           $log.error('Error exporting ' + typeName, err);
