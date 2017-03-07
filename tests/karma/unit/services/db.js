@@ -6,20 +6,32 @@ describe('DB service', function() {
       Location,
       userCtx,
       pouchDB,
+      expected,
       isAdmin;
 
   beforeEach(function() {
     Location = {};
     userCtx = sinon.stub();
     pouchDB = sinon.stub();
+    expected = {
+      id: 'hello',
+      viewCleanup: sinon.stub(),
+      installValidationMethods: sinon.stub(),
+    };
+    pouchDB.returns(expected);
+
     isAdmin = sinon.stub();
     module('inboxApp');
     module(function ($provide) {
       $provide.factory('$window', function() {
         return {
           angular: { callbacks: [] },
-          // stub for pouch registering the worker adapter
-          PouchDB: { adapter: function(){} }
+          PouchDB: {
+            // stub for pouch registering the worker adapter
+            adapter: function(){},
+            // stub for registering validation plugin
+            plugin: function() {}
+          }
         };
       });
       $provide.factory('pouchDB', function() {
@@ -50,8 +62,6 @@ describe('DB service', function() {
       Location.dbName = 'medicdb';
       Location.url = 'ftp//myhost:21/medicdb';
       userCtx.returns({ name: 'johnny' });
-      var expected = { id: 'hello', viewCleanup: sinon.stub() };
-      pouchDB.returns(expected);
 
       // init
       var service = getService();
@@ -72,8 +82,6 @@ describe('DB service', function() {
       Location.dbName = 'medicdb';
       Location.url = 'ftp//myhost:21/medicdb';
       userCtx.returns({ name: 'johnny' });
-      var expected = { id: 'hello', viewCleanup: sinon.stub() };
-      pouchDB.returns(expected);
 
       // init
       var service = getService();
@@ -92,6 +100,16 @@ describe('DB service', function() {
       done();
     });
 
+    it('installs validation functions', function() {
+      isAdmin.returns(false);
+      Location.dbName = 'medicdb';
+      Location.url = 'ftp//myhost:21/medicdb';
+      userCtx.returns({ name: 'johnny' });
+
+      // init
+      getService();
+      chai.expect(expected.installValidationMethods.callCount).to.equal(1);
+    });
   });
 
   describe('get local', function() {
@@ -100,8 +118,6 @@ describe('DB service', function() {
       isAdmin.returns(false);
       Location.dbName = 'medicdb';
       userCtx.returns({ name: 'johnny' });
-      var expected = { id: 'hello', viewCleanup: sinon.stub() };
-      pouchDB.returns(expected);
 
       // init
       var service = getService();
@@ -124,8 +140,6 @@ describe('DB service', function() {
       isAdmin.returns(false);
       Location.dbName = 'medicdb';
       userCtx.returns({ name: 'johnny' });
-      var expected = { id: 'hello', viewCleanup: sinon.stub() };
-      pouchDB.returns(expected);
 
       // init
       var service = getService();
@@ -149,8 +163,6 @@ describe('DB service', function() {
     it('returns remote for admin user', function(done) {
       isAdmin.returns(true);
       Location.url = 'ftp//myhost:21/medicdb';
-      var expected = { id: 'hello', viewCleanup: sinon.stub() };
-      pouchDB.returns(expected);
 
       // init
       var service = getService();
@@ -166,6 +178,17 @@ describe('DB service', function() {
       chai.expect(expected.viewCleanup.callCount).to.equal(0);
 
       done();
+    });
+
+    it('installs validation functions', function() {
+      isAdmin.returns(false);
+      Location.dbName = 'medicdb';
+      Location.url = 'ftp//myhost:21/medicdb';
+      userCtx.returns({ name: 'johnny' });
+
+      // init
+      getService();
+      chai.expect(expected.installValidationMethods.callCount).to.equal(1);
     });
 
   });
