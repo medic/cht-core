@@ -23,7 +23,10 @@ var moment = require('moment'),
 
       var isRelevant = function(instance) {
         if (!instance.date) {
-          $log.info('Ignoring emitted target with no date - fix your configuration');
+          $log.warn('Ignoring emitted target with no date - fix your configuration');
+          return false;
+        }
+        if (instance.deleted) {
           return false;
         }
         var start = moment().startOf('month');
@@ -54,10 +57,12 @@ var moment = require('moment'),
           // unconfigured target type
           return;
         }
-        if (instance.deleted) {
-          delete target.instances[instance._id];
-        } else if (isRelevant(instance)) {
+        if (isRelevant(instance)) {
+          // added or updated - insert into cache
           target.instances[instance._id] = instance;
+        } else {
+          // deleted or not for this month - remove from the cache
+          delete target.instances[instance._id];
         }
         target.count = calculateCount(target);
       };
