@@ -54,10 +54,12 @@ var moment = require('moment'),
           // unconfigured target type
           return;
         }
-        if (instance.deleted) {
-          delete target.instances[instance._id];
-        } else if (isRelevant(instance)) {
+        if (isRelevant(instance) && !instance.deleted) {
+          // added or updated - insert into cache
           target.instances[instance._id] = instance;
+        } else {
+          // deleted or no longer relevant - remove from the cache
+          delete target.instances[instance._id];
         }
         target.count = calculateCount(target);
       };
