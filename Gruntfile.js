@@ -451,6 +451,12 @@ module.exports = function(grunt) {
     'exec:test_api_integration',
   ]);
 
+  grunt.registerTask('unit', 'All "Unit" tests', [
+    'jshint',
+    'karma:unit',
+    'nodeunit',
+  ]);
+
   grunt.registerTask('test', 'Lint, unit tests, api_integration tests and e2e tests', [
     'jshint',
     'karma:unit',
