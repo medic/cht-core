@@ -1,9 +1,15 @@
 var nootils = require('../../../static/js/modules/nootils')({});
 
+var format = function(date) {
+  var result = date.toString();
+  // strip off the TZ info at the end so tests will pass wherever they're run
+  return result.substr(0, 24);
+};
+
 exports['addDate adds days to the date'] = function(test) {
   var date = new Date('2017-01-01');
   var actual = nootils.addDate(date, 2);
-  test.equal(actual.toISOString(), '2017-01-03T00:00:00.000Z');
+  test.equal(format(actual), 'Tue Jan 03 2017 00:00:00');
   test.done();
 };
 
@@ -11,24 +17,14 @@ exports['addDate date defaults to now'] = function(test) {
   var actual = nootils.addDate(null, 2);
   var expected = new Date();
   expected.setDate(expected.getDate() + 2);
-  test.equal(actual.getDate(), expected.getUTCDate());
+  test.equal(actual.getDate(), expected.getDate());
   test.done();
 };
 
 exports['addDate returns the start of the day'] = function(test) {
-  var date = new Date('2017-01-01T16:32:12.555');
+  var date = new Date(2017, 0, 1, 16, 32, 12, 555);
   var actual = nootils.addDate(date, 4);
-  test.equal(actual.toISOString(), '2017-01-05T00:00:00.000Z');
-  test.done();
-};
-
-exports['addDate sets date to midnight local'] = function(test) {
-  var now = new Date();
-  var result = nootils.addDate(now, 4);
-
-  test.equal(result.getHours(), 0);
-  test.equal(result.getMinutes(), 0);
-  test.equal(result.getSeconds(), 0);
+  test.equal(format(actual), 'Thu Jan 05 2017 00:00:00');
   test.done();
 };
 
@@ -39,7 +35,7 @@ exports['getLmpDate subtracts given weeks off reported date'] = function(test) {
     fields: { last_menstrual_period: 3 }
   };
   var actual = nootils.getLmpDate(doc);
-  test.equal(actual.toISOString(), '2017-01-09T00:00:00.000Z');
+  test.equal(format(actual), 'Mon Jan 09 2017 00:00:00');
   test.done();
 };
 
@@ -50,18 +46,18 @@ exports['getLmpDate defaults to 4 weeks'] = function(test) {
     fields: { }
   };
   var actual = nootils.getLmpDate(doc);
-  test.equal(actual.toISOString(), '2017-01-02T00:00:00.000Z');
+  test.equal(format(actual), 'Mon Jan 02 2017 00:00:00');
   test.done();
 };
 
 exports['getLmpDate returns the start of the day'] = function(test) {
-  var date = new Date('2017-01-30T16:32:12.555');
+  var date = new Date(2017, 0, 30, 16, 32, 12, 555);
   var doc = {
     reported_date: date.valueOf(),
     fields: { last_menstrual_period: 3 }
   };
   var actual = nootils.getLmpDate(doc);
-  test.equal(actual.toISOString(), '2017-01-09T00:00:00.000Z');
+  test.equal(format(actual), 'Mon Jan 09 2017 00:00:00');
   test.done();
 };
 
