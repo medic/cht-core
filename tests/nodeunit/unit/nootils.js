@@ -22,6 +22,16 @@ exports['addDate returns the start of the day'] = function(test) {
   test.done();
 };
 
+exports['addDate sets date to midnight local'] = function(test) {
+  var now = new Date();
+  var result = nootils.addDate(now, 4);
+
+  test.equal(result.getHours(), 0);
+  test.equal(result.getMinutes(), 0);
+  test.equal(result.getSeconds(), 0);
+  test.done();
+};
+
 exports['getLmpDate subtracts given weeks off reported date'] = function(test) {
   var date = new Date('2017-01-30');
   var doc = {
