@@ -338,4 +338,41 @@ describe('TargetGenerator service', function() {
     });
   });
 
+  it('updates targets that are no longer relevant - #3207', function(done) {
+    Settings.returns(KarmaUtils.mockPromise(null, { tasks: { targets: { items: [
+      { id: 'report', type: 'count' }
+    ] } } }));
+    UserContact.returns(KarmaUtils.mockPromise());
+    var callbackCount = 0;
+    injector.get('TargetGenerator')(function(err, actual) {
+      if (callbackCount === 0) {
+        chai.expect(actual.length).to.equal(1);
+        chai.expect(actual[0].id).to.equal('report');
+        chai.expect(actual[0].type).to.equal('count');
+        chai.expect(actual[0].count).to.equal(1);
+      } else if (callbackCount === 1) {
+        chai.expect(actual.length).to.equal(1);
+        chai.expect(actual[0].id).to.equal('report');
+        chai.expect(actual[0].type).to.equal('count');
+        chai.expect(actual[0].count).to.equal(undefined);
+        done();
+      } else {
+        done('callback called too many times');
+      }
+      callbackCount++;
+    });
+
+    // first result from the RulesEngine
+    RulesEngine.listen.callsArgWith(2, null, [
+      { _id: '1', type: 'report', pass: true, date: now }
+    ]);
+    getListener(function(listener) {
+      // some time later... second result from the RulesEngine updates
+      // the date to no longer be relevant this month
+      listener(null, [
+        { _id: '1', type: 'report', pass: true, date: 1000 }
+      ]);
+    });
+  });
+
 });
