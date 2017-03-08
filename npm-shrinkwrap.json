@@ -23,9 +23,9 @@
       "resolved": "http://registry.npmjs.org/amdefine/-/amdefine-1.0.1.tgz"
     },
     "angular": {
-      "version": "1.6.2",
-      "from": "angular@>=1.6.2 <2.0.0",
-      "resolved": "http://registry.npmjs.org/angular/-/angular-1.6.2.tgz"
+      "version": "1.6.3",
+      "from": "angular@>=1.6.3 <2.0.0",
+      "resolved": "http://registry.npmjs.org/angular/-/angular-1.6.3.tgz"
     },
     "angular-cookie": {
       "version": "4.1.0",
@@ -50,19 +50,19 @@
       }
     },
     "angular-resource": {
-      "version": "1.6.2",
-      "from": "angular-resource@>=1.6.2 <2.0.0",
-      "resolved": "http://registry.npmjs.org/angular-resource/-/angular-resource-1.6.2.tgz"
+      "version": "1.6.3",
+      "from": "angular-resource@>=1.6.3 <2.0.0",
+      "resolved": "http://registry.npmjs.org/angular-resource/-/angular-resource-1.6.3.tgz"
     },
     "angular-route": {
-      "version": "1.6.2",
-      "from": "angular-route@>=1.6.2 <2.0.0",
-      "resolved": "http://registry.npmjs.org/angular-route/-/angular-route-1.6.2.tgz"
+      "version": "1.6.3",
+      "from": "angular-route@>=1.6.3 <2.0.0",
+      "resolved": "http://registry.npmjs.org/angular-route/-/angular-route-1.6.3.tgz"
     },
     "angular-sanitize": {
-      "version": "1.6.2",
-      "from": "angular-sanitize@>=1.6.2 <2.0.0",
-      "resolved": "http://registry.npmjs.org/angular-sanitize/-/angular-sanitize-1.6.2.tgz"
+      "version": "1.6.3",
+      "from": "angular-sanitize@>=1.6.3 <2.0.0",
+      "resolved": "http://registry.npmjs.org/angular-sanitize/-/angular-sanitize-1.6.3.tgz"
     },
     "angular-translate": {
       "version": "2.15.1",
