@@ -123,12 +123,12 @@ var _ = require('underscore'),
 
       var request = function(url, district, callback) {
         $http.get(url, { params: { district: district, cache: true } })
-          .success(function(data) {
-            callback(null, data);
+          .then(function(response) {
+            callback(null, response.data);
           })
-          .error(function(data) {
-            $log.error('Error requesting module', data);
-            callback(data);
+          .catch(function(response) {
+            $log.error('Error requesting module', response.data);
+            callback(response.data);
           });
       };
 
