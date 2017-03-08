@@ -26,7 +26,6 @@ exports.tearDown = function (callback) {
     controller._createPlace,
     controller._createUser,
     controller._createUserSettings,
-    controller._getAdmins,
     controller._getAllUsers,
     controller._getAllUserSettings,
     controller._getFacilities,
@@ -34,7 +33,6 @@ exports.tearDown = function (callback) {
     controller._validateUser,
     controller._validateUserSettings,
     controller._hasParent,
-    controller._updateAdminPassword,
     controller._updatePlace,
     controller._updateUser,
     controller._updateUserSettings,
@@ -61,9 +59,6 @@ exports.setUp = function(callback) {
     contact: { 'parent': 'x' }
   };
 
-  //sinon.stub(controller, '_getAdmins').callsArgWith(0, null, {
-  //  gareth: 'abc'
-  //});
   callback();
 };
 
@@ -143,18 +138,6 @@ exports['getType returns unknown when roles is empty'] = function(test) {
   test.done();
 };
 
-exports['getType returns admin when user is in admins list and roles is empty'] = function(test) {
-  var user = {
-    name: 'sam',
-    roles: []
-  };
-  var admins = {
-    'sam': 'x'
-  };
-  test.equal(controller._getType(user, admins), 'admin');
-  test.done();
-};
-
 exports['describe hasParent'] = function(test) {
   var facility = {
     _id: 'foo',
@@ -218,7 +201,6 @@ exports['getType returns role when user is in admins list and has role'] = funct
 };
 
 exports['getList collects user infos'] = function(test) {
-  sinon.stub(controller, '_getAdmins').callsArg(0);
   sinon.stub(controller, '_getAllUsers').callsArgWith(0, null, [
     {
       id: 'org.couchdb.user:x',
@@ -280,7 +262,6 @@ exports['getList collects user infos'] = function(test) {
 
 exports['getList filters out non-users'] = function(test) {
   test.expect(9);
-  sinon.stub(controller, '_getAdmins').callsArg(0);
   sinon.stub(controller, '_getAllUsers').callsArgWith(0, null, [
     {
       id: 'x',
@@ -339,9 +320,6 @@ exports['getList filters out non-users'] = function(test) {
 
 exports['getList handles minimal users'] = function(test) {
   test.expect(9);
-  sinon.stub(controller, '_getAdmins').callsArgWith(0, null, {
-    gareth: 'abc'
-  });
   sinon.stub(controller, '_getAllUsers').callsArgWith(0, null, [
     {
       id: 'org.couchdb.user:x',
@@ -362,57 +340,6 @@ exports['getList handles minimal users'] = function(test) {
     test.equal(lucas.phone, undefined);
     test.equal(lucas.facility, undefined);
     test.equal(lucas.type, 'unknown');
-    test.done();
-  });
-};
-
-exports['getList replaces admins type'] = function(test) {
-  test.expect(5);
-  sinon.stub(controller, '_getAdmins').callsArgWith(0, null, {
-    gareth: 'abc'
-  });
-  sinon.stub(controller, '_getAllUsers').callsArgWith(0, null, [
-    {
-      id: 'org.couchdb.user:gareth',
-      doc: {
-        name: 'gareth'
-      }
-    }
-  ]);
-  sinon.stub(controller, '_getAllUserSettings').callsArgWith(0, null, []);
-  controller.getList(function(err, data) {
-    test.equal(err, null);
-    test.equal(data.length, 1);
-    var gareth = data[0];
-    test.equal(gareth.id, 'org.couchdb.user:gareth');
-    test.equal(gareth.username, 'gareth');
-    test.equal(gareth.type, 'admin');
-    test.done();
-  });
-};
-
-exports['getList does not replace admins type if roles exists'] = function(test) {
-  test.expect(5);
-  sinon.stub(controller, '_getAdmins').callsArgWith(0, null, {
-    gareth: 'abc'
-  });
-  sinon.stub(controller, '_getAllUsers').callsArgWith(0, null, [
-    {
-      id: 'org.couchdb.user:gareth',
-      doc: {
-        name: 'gareth',
-        roles: ['national-admin']
-      }
-    }
-  ]);
-  sinon.stub(controller, '_getAllUserSettings').callsArgWith(0, null, []);
-  controller.getList(function(err, data) {
-    test.equal(err, null);
-    test.equal(data.length, 1);
-    var gareth = data[0];
-    test.equal(gareth.id, 'org.couchdb.user:gareth');
-    test.equal(gareth.username, 'gareth');
-    test.equal(gareth.type, 'national-admin');
     test.done();
   });
 };
@@ -457,40 +384,6 @@ exports['getList returns errors from facilities service'] = function(test) {
   sinon.stub(controller, '_getFacilities').callsArgWith(0, 'BOOM');
   controller.getList(function(err) {
     test.equal(err, 'BOOM');
-    test.done();
-  });
-};
-
-exports['getList returns errors from admins service'] = function(test) {
-  test.expect(1);
-  sinon.stub(controller, '_getAllUsers').callsArgWith(0, null, [
-    {
-      id: 'org.couchdb.user:x',
-      doc: {
-        name: 'lucas',
-        facility_id: 'c',
-        fullname: 'Lucas M',
-        email: 'l@m.com',
-        phone: '123456789',
-        roles: [ 'national-admin', 'data-entry' ]
-      }
-    },
-    {
-      id: 'org.couchdb.user:y',
-      doc: {
-        name: 'milan',
-        facility_id: 'b',
-        fullname: 'Milan A',
-        email: 'm@a.com',
-        phone: '987654321',
-        roles: [ 'district-admin' ]
-      }
-    }
-  ]);
-  sinon.stub(controller, '_getAllUserSettings').callsArgWith(0, null, []);
-  sinon.stub(controller, '_getAdmins').callsArgWith(0, 'POW');
-  controller.getList(function(err) {
-    test.equal(err, 'POW');
     test.done();
   });
 };
@@ -1026,7 +919,6 @@ exports['updateUser succeeds if password is defined'] = function(test) {
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArg(1);
-  sinon.stub(controller, '_updateAdminPassword').callsArg(2);
   var update = sinon.stub(controller, '_updateUser').callsArg(2);
   var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
   controller.updateUser('paul', data, function(err) {
@@ -1085,32 +977,10 @@ exports['updateUser updates password on user doc'] = function(test) {
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   sinon.stub(places, 'getPlace').callsArg(1);
-  sinon.stub(controller, '_updateAdminPassword').callsArg(2);
   var update = sinon.stub(controller, '_updateUser', function(id, data, callback) {
     test.equal(data.password, 'whachamacallit');
     callback();
   });
-  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
-  controller.updateUser('paul', data, function(err) {
-    test.ok(!err);
-    test.same(update.callCount, 1);
-    test.same(updateSettings.callCount, 1);
-    test.done();
-  });
-};
-
-exports['updateUser updates couchdb admin passwords also'] = function(test) {
-  test.expect(4);
-  var data = {
-    password: 'whachamacallit'
-  };
-  sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
-  sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
-  sinon.stub(controller, '_updateAdminPassword', function(username, pw, cb) {
-    test.equal(pw, 'whachamacallit');
-    cb();
-  });
-  var update = sinon.stub(controller, '_updateUser').callsArg(2);
   var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
   controller.updateUser('paul', data, function(err) {
     test.ok(!err);
@@ -1148,8 +1018,8 @@ exports['updateUser updates facility_id on user and user settings'] = function(t
   });
 };
 
-exports['updateUser updates user, user settings doc and couchdb admins'] = function(test) {
-  test.expect(14);
+exports['updateUser updates user and user settings doc'] = function(test) {
+  test.expect(12);
   var data = {
     place: 'el paso',
     type: 'rambler',
@@ -1166,11 +1036,6 @@ exports['updateUser updates user, user settings doc and couchdb admins'] = funct
     known: false
   });
   sinon.stub(places, 'getPlace').callsArg(1);
-  sinon.stub(controller, '_updateAdminPassword', function(user, pw, cb) {
-    test.equal(user, 'paul');
-    test.equal(pw, '*.*');
-    cb();
-  });
   var update = sinon.stub(controller, '_updateUser', function(id, user, cb) {
     test.equal(user.facility_id, 'el paso');
     test.deepEqual(user.roles, ['rambler', undefined]);

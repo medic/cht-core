@@ -29,20 +29,30 @@ var filterResults = function(rows) {
 };
 
 var getAdmins = function(callback) {
-  request.get({
-    url: url.format({
-      protocol: db.settings.protocol,
-      hostname: db.settings.host,
-      port: db.settings.port,
-      pathname: '_config/admins'
-    }),
-    auth: {
-      user: db.settings.username,
-      pass: db.settings.password
-    },
-    json: true
-  }, function(err, res) {
-    callback(err, res && res.body);
+  db.getCouchDbVersion(function(err, version) {
+    if (err) {
+      return callback(err);
+    }
+
+    var v1 = version.major === '1';
+
+    request.get({
+      url: url.format({
+        protocol: db.settings.protocol,
+        hostname: db.settings.host,
+        port: db.settings.port,
+        pathname: v1 ?
+          '_config/admins' :
+          '_node/' + process.env.COUCH_NODE_NAME + '/_config/admins',
+      }),
+      auth: {
+        user: db.settings.username,
+        pass: db.settings.password
+      },
+      json: true
+    }, function(err, res) {
+      callback(err, res && res.body);
+    });
   });
 };
 

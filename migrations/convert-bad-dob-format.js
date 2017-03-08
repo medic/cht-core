@@ -10,30 +10,67 @@ var temporaryView = {
   'map': map.toString()
 };
 
+var convertBadDobFormat = function(docs, callback) {
+  docs.forEach(function(doc) {
+    doc.date_of_birth = moment(doc.date_of_birth, 'MMM Do, YYYY').format('YYYY-MM-DD');
+  });
+
+  db.medic.bulk({
+    docs: docs
+  }, callback);
+};
+
 module.exports = {
   name: 'convert-bad-dob-format',
   created: new Date(2016, 4, 20),
   run: function(callback) {
-    db.request({
-      db: 'medic',
-      method: 'POST',
-      path: '_temp_view',
-      body: temporaryView,
-      qs: {
-        include_docs: true,
+    db.getCouchDbVersion(function(err, version) {
+      if (err) {
+        callback(err);
       }
-    }, function(err, result) {
-      var docs = result.rows.map(function(row) {
-        return row.doc;
-      });
 
-      docs.forEach(function(doc) {
-        doc.date_of_birth = moment(doc.date_of_birth, 'MMM Do, YYYY').format('YYYY-MM-DD');
-      });
+      if (version.major === '1') {
+        db.request({
+          db: 'medic',
+          method: 'POST',
+          path: '_temp_view',
+          body: temporaryView,
+          qs: {
+            include_docs: true,
+          }
+        }, function(err, result) {
+          if (err) {
+            return callback(err);
+          }
 
-      db.medic.bulk({
-        docs: docs
-      }, callback);
+          var docs = result.rows.map(function(row) {
+            return row.doc;
+          });
+
+          convertBadDobFormat(docs, callback);
+        });
+      } else {
+        db.request({
+          db: 'medic',
+          method: 'POST',
+          path: '_find',
+          body: {
+            selector: {
+              type: 'person',
+              date_of_birth: {
+                $regex: ' '
+              }
+            }
+          }
+        }, function(err, result) {
+          if (err) {
+            return callback(err);
+          }
+
+          convertBadDobFormat(result.docs, callback);
+        });
+      }
     });
+
   }
 };

@@ -9,34 +9,79 @@ var emptyParentsView = function(doc) {
   emit();
 };
 
+var removeEmptyParents = function(docs, callback) {
+  docs.forEach(function(doc) {
+    delete doc.parent;
+  });
+
+  db.medic.bulk({
+    docs: docs
+  }, callback);
+};
+
 module.exports = {
   name: 'remove-empty-parents',
   created: new Date(2016, 7, 10, 13, 37, 0, 0),
   run: function(callback) {
-    db.request({
-      db: 'medic',
-      method: 'POST',
-      path: '_temp_view',
-      body: { map: emptyParentsView.toString() },
-      qs: {
-        include_docs: true,
-      }
-    }, function(err, result) {
+    db.getCouchDbVersion(function(err, version) {
       if (err) {
         return callback(err);
       }
 
-      var docs = result.rows.map(function(row) {
-        return row.doc;
-      });
+      if (version.major === '1') {
+        db.request({
+          db: 'medic',
+          method: 'POST',
+          path: '_temp_view',
+          body: { map: emptyParentsView.toString() },
+          qs: {
+            include_docs: true,
+          }
+        }, function(err, result) {
+          if (err) {
+            return callback(err);
+          }
 
-      docs.forEach(function(doc) {
-        delete doc.parent;
-      });
+          var docs = result.rows.map(function(row) {
+            return row.doc;
+          });
 
-      db.medic.bulk({
-        docs: docs
-      }, callback);
+          removeEmptyParents(docs, callback);
+        });
+      } else {
+        db.request({
+          db: 'medic',
+          method: 'POST',
+          path: '_find',
+          body: {
+            selector: {
+              type: {
+                $in: ['district_hospital', 'health_center', 'clinic', 'person']
+              },
+              $or: [
+              {
+                parent: {
+                  $eq: null
+                }
+              },
+              {
+                parent: {
+                  $exists: true,
+                  _id: {
+                    $exists: false
+                  }
+                }
+              }]
+            }
+          }
+        }, function(err, result) {
+          if (err) {
+            return callback(err);
+          }
+
+          removeEmptyParents(result.docs, callback);
+        });
+      }
     });
   }
 };

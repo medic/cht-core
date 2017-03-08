@@ -172,7 +172,7 @@ function initDb(content) {
       var nonTestDb = db.use('medic');
       return new Promise(function(resolve, reject) {
         nonTestDb.get('_design/medic', function(err, medicDdoc) {
-          if(err) { return reject(err); }
+          if(err) { return reject(new Error('Error getting _design/medic: ' + err.message)); }
           resolve(medicDdoc);
         });
       })
@@ -181,7 +181,7 @@ function initDb(content) {
         delete medicDdoc._attachments;
         return new Promise(function(resolve, reject) {
           db.medic.insert(medicDdoc, function(err) {
-            if(err) { return reject(err); }
+            if(err) { return reject(new Error('Error inserting _design/medic: ' + err.message)); }
             resolve();
           });
         });
@@ -205,7 +205,7 @@ function initDb(content) {
             // Assume that if the doc already exists, then it's properly set up
             // This may be risky, but hopefully it was done as part of a
             // previous test, or has been set up correctly on a local machine.
-            if(err && err.error !== 'conflict') { return reject(err); }
+            if(err && err.error !== 'conflict') { return reject(new Error('Error inserting admin user: ' + err.message)); }
             resolve();
           });
         });
@@ -213,7 +213,7 @@ function initDb(content) {
       .then(function() {
         return new Promise(function(resolve, reject) {
           require('../../../ddoc-extraction').run(function(err) {
-            if(err) { return reject(err); }
+            if(err) { return reject(new Error('Error running ddoc-extraction: ' + err.message)); }
             resolve();
           });
         });
@@ -234,7 +234,7 @@ function initDb(content) {
       .then(function() {
         return new Promise(function(resolve, reject) {
           nonTestDb.get('_design/medic-client', function(err, medicClientDdoc) {
-            if(err) { return reject(err); }
+            if(err) { return reject(new Error('Error getting _design/medic-client: ' + err.message)); }
             resolve(medicClientDdoc);
           });
         });
@@ -243,7 +243,7 @@ function initDb(content) {
         delete medicClientDdoc._rev;
         return new Promise(function(resolve, reject) {
           db.medic.insert(medicClientDdoc, function(err) {
-            if(err) { return reject(err); }
+            if(err) { return reject(new Error('Error inserting _design/medic-client: ' + err.message)); }
             resolve();
           });
         });
@@ -254,7 +254,7 @@ function initDb(content) {
         return Promise.all(dbContent.map(function(doc) {
           return new Promise(function(resolve, reject) {
             db[dbName].insert(doc, function(err) {
-              if(err) { return reject(err); }
+              if(err) { return reject(new Error('Error inserting ' + doc._id + ': ' + err.message)); }
               resolve();
             });
           });
@@ -267,11 +267,27 @@ function _resetDb() {
   return Promise.all([DB_PREFIX + 'audit', DB_PREFIX + 'medic'].map(function(dbName) {
     return new Promise(function(resolve, reject) {
       db.db.destroy(dbName, function(err) {
-        if(err && err.statusCode !== 404) { return reject(err); }
+        if(err && err.statusCode !== 404) {
+          return reject(new Error('Error deleting ' + dbName + ': ' + err.message));
+        }
 
         db.db.create(dbName, function(err) {
-          if(err) { return reject(err); }
-          resolve();
+          if(err) {
+            console.log('Could not create' , dbName , 'directly after deleting, pausing and trying again');
+
+            return setTimeout(function() {
+              db.db.create(dbName, function(err) {
+                if(err) {
+                  return reject(new Error('Error creating ' + dbName + ': ' + err.message));
+                }
+
+                console.log('After a struggle, at', new Date(), 'Re-created ' + dbName);
+                resolve();
+              });
+            }, 3000);
+          } else {
+            resolve();
+          }
         });
       });
     });

@@ -85,7 +85,7 @@ describe('drop-audit-doc-index migration', function() {
       },
       { // design doc
         _id: '_design/medic',
-        views: [ { audit_records_by_doc: { map: 'something' } } ]
+        views: { audit_records_by_doc: { map: function() {} } }
       }
     ]})
     .then(function() {

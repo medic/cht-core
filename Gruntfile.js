@@ -42,7 +42,11 @@ module.exports = function(grunt) {
     exec: {
       deploy: {
         cmd: 'node server.js'
-      }
+      },
+      check_env_vars:
+        'if [ -z $COUCH_URL ] || [ -z $API_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
+            'echo "Missing required env var.  Check that all are set: ' +
+            'COUCH_URL, API_URL, COUCH_NODE_NAME" && exit 1; fi',
     },
     mochaTest: {
       integration: {
@@ -93,10 +97,12 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('test_integration', [
+    'exec:check_env_vars',
     'mochaTest:integration',
   ]);
 
   grunt.registerTask('test_e2e', [
+    'exec:check_env_vars',
     'mochaTest:e2e',
   ]);
 };
