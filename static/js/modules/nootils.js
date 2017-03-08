@@ -19,8 +19,8 @@ module.exports = function(settings) {
       } else {
         result = new Date();
       }
-      result.setUTCDate(result.getUTCDate() + days);
-      result.setUTCHours(0, 0, 0, 0);
+      result.setDate(result.getDate() + days);
+      result.setHours(0, 0, 0, 0);
       return result;
     },
     getLmpDate: function(doc) {
