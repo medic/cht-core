@@ -230,7 +230,7 @@ module.exports = function(grunt) {
 
             // patch pouch to improve safari checks
             // https://github.com/medic/medic-webapp/issues/2797
-            'patch node_modules/pouchdb-adapter-idb/src/index.js < patches/pouchdb-ignore-safari-check.patch',
+            'patch node_modules/pouchdb-adapter-idb/lib/index.js < patches/pouchdb-ignore-safari-check.patch',
           ];
           return patches.join(' && ');
         }
