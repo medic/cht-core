@@ -72,15 +72,4 @@ var utils = require('kujua-utils');
     }
   );
 
-  inboxServices.factory('Admins',
-    function(
-      $http
-    ) {
-      'ngInject';
-      return function() {
-        return $http.get('/_config/admins', { cache: true });
-      };
-    }
-  );
-
 }());
