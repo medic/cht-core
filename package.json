@@ -56,7 +56,7 @@
     "grunt-contrib-uglify": "^2.0.0",
     "grunt-contrib-watch": "git://github.com/scdf/grunt-contrib-watch.git#fix_dirs_firing",
     "grunt-couch": "^1.5.1",
-    "grunt-exec": "^2.0.0",
+    "grunt-exec": "1.0.1",
     "grunt-karma": "^2.0.0",
     "grunt-notify": "^0.4.5",
     "grunt-postcss": "^0.8.0",
