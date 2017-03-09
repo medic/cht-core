@@ -29,6 +29,7 @@ var startApi = function() {
       env: {
         API_PORT: environment.apiPort,
         COUCH_URL: couchUrlTemplate(environment),
+        COUCH_NODE_NAME: process.env.COUCH_NODE_NAME,
         PATH: process.env.PATH
       }
     });

@@ -60,11 +60,13 @@ _.templateSettings = {
 
   app.config(function(
     $compileProvider,
+    $locationProvider,
     $stateProvider,
     $translateProvider,
     $urlRouterProvider
   ) {
     'ngInject';
+    $locationProvider.hashPrefix('');
     $urlRouterProvider.otherwise('/error/404');
     router($stateProvider);
     $urlRouterProvider.when('', '/home');

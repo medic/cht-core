@@ -1,8 +1,8 @@
-*** ./pouchdb-adapter-idb/src/index.js	2016-06-16 15:55:47.000000000 +0100
---- index-patched.js	2016-10-12 13:09:39.000000000 +0100
+*** ./pouchdb-adapter-idb/src/index.js	2017-03-08 16:25:19.192137941 +1300
+--- index-patched.js	2017-03-08 16:25:44.819510389 +1300
 ***************
-*** 980,985 ****
---- 980,986 ----
+*** 1924,1929 ****
+--- 1924,1930 ----
     var isSafari = typeof openDatabase !== 'undefined' &&
       /(Safari|iPhone|iPad|iPod)/.test(navigator.userAgent) &&
       !/Chrome/.test(navigator.userAgent) &&

@@ -173,8 +173,14 @@ module.exports = function(grunt) {
       deploy: {
         cmd: 'kanso push $COUCH_URL'
       },
-      setupAdmin: {
+      setupAdmin1: {
         cmd: 'curl -X PUT http://localhost:5984/_config/admins/admin -d \'"pass"\'' +
+             ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
+             ' -H "Content-Type: application/json" ' +
+             ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\''
+      },
+      setupAdmin2: {
+        cmd: 'curl -X PUT http://localhost:5984/_node/${COUCH_NODE_NAME}/_config/admins/admin -d \'"pass"\'' +
              ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
              ' -H "Content-Type: application/json" ' +
              ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\''
@@ -230,7 +236,7 @@ module.exports = function(grunt) {
 
             // patch pouch to improve safari checks
             // https://github.com/medic/medic-webapp/issues/2797
-            'patch node_modules/pouchdb-adapter-idb/src/index.js < patches/pouchdb-ignore-safari-check.patch',
+            'patch node_modules/pouchdb-adapter-idb/lib/index.js < patches/pouchdb-ignore-safari-check.patch',
           ];
           return patches.join(' && ');
         }
@@ -471,7 +477,7 @@ module.exports = function(grunt) {
     'cssmin'
   ]);
 
-  grunt.registerTask('ci', 'Lint, build, minify, deploy and test for CI', [
+  grunt.registerTask('ci_before', '', [
     'regex-check',
     'jshint',
     'mmnpm',
@@ -479,11 +485,24 @@ module.exports = function(grunt) {
     'minify',
     'karma:unit_ci',
     'nodeunit',
-    'exec:setupAdmin',
+  ]);
+  grunt.registerTask('ci_after', '', [
     'exec:deploy',
     'test_api_integration',
     'e2e',
     'api_e2e',
+  ]);
+
+  grunt.registerTask('ci1', 'Lint, build, minify, deploy and test for CI [CouchDB 1.x]', [
+    'ci_before',
+    'exec:setupAdmin1',
+    'ci_after'
+  ]);
+
+  grunt.registerTask('ci2', 'Lint, build, minify, deploy and test for CI [CouchDB 2.x]', [
+    'ci_before',
+    'exec:setupAdmin2',
+    'ci_after'
   ]);
 
   // Dev tasks

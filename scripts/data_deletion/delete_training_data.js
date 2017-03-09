@@ -6,7 +6,7 @@
  * halfway through the script. You can either wait for indexing to be done
  * (couch logs will say `Index update finished for db: medic idx: _design/medic`)
  * or extend the `os_process_timeout` (or both).
- * curl -X PUT  <serverUrl>/_config/couchdb/os_process_timeout -d '"100000"'
+ * curl -X PUT  <serverUrl>/_node/<nodeName>/_config/couchdb/os_process_timeout -d '"100000"'
  *
  * Postmortem (2016-04-27) : after stopping couchdb, it would not start up
  * again.

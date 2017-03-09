@@ -1,22 +1,56 @@
-language: node_js
-sudo: false
-node_js:
-  - "7.2"
-  - "6.3"
-  - "5.6"
+# Setting up as a java project allows us to ensure that the JRE/JDK version used
+# is actually compatible with webdriver-manager.
+language: java
+sudo: true
+jdk:
+  - oraclejdk7
 
 addons:
   firefox: latest-esr
 
 services:
-  - couchdb
+  # docker is used for couchdb 2.0 (not currently available as a travis service)
+  - docker
 
 env:
+  matrix:
+  - NODE_VERSION=7.2 COUCH_VERSION=2
+  - NODE_VERSION=6.3 COUCH_VERSION=2
+  - NODE_VERSION=5.6 COUCH_VERSION=2
+  - NODE_VERSION=7.2 COUCH_VERSION=1
+  - NODE_VERSION=6.3 COUCH_VERSION=1
+  - NODE_VERSION=5.6 COUCH_VERSION=1
   global:
   - COUCH_URL=http://admin:pass@localhost:5984/medic
   - API_URL=http://admin:pass@localhost:5988
+  - COUCH_NODE_NAME=nonode@nohost
+
+before_install:
+  - |
+    if [ "$COUCH_VERSION" = 2 ]; then
+      # start couchdb 2.x docker instance
+      docker run -d -p 5984:5984 --name couch klaemo/couchdb:2.0.0
+      echo "Starting CouchDB 2.0"
+    elif [ "$COUCH_VERSION" = 1 ]; then
+      # because we're on a java project we don't get CouchDB1.0 for free
+      sudo apt-get install -y couchdb
+      until nc -z localhost 5984; do sleep 1; done
+      echo "Starting CouchDB 1.x started"
+    fi
+    until nc -z localhost 5984; do sleep 1; done
+    echo "CouchDB Started"
+
+install:
+  nvm install $NODE_VERSION
 
 before_script:
+  - nvm use $NODE_VERSION
+  - npm install
+  # Create couchdb system tables (this has to be done manually on couchdb 2.0)
+  - |
+    if [ "$COUCH_VERSION" = 2 ]; then
+      curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
+    fi
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - curl -X PUT localhost:5984/medic
@@ -26,10 +60,15 @@ before_script:
   - npm --prefix api install
   - ./node_modules/.bin/webdriver-manager update
   - nohup bash -c "./node_modules/.bin/webdriver-manager start 2>&1 &"
-  - sleep 3
+  - until nc -z localhost 4444; do sleep 1; done
 
 script:
-  - node --stack_size=10000 `which grunt` ci
+  - |
+    if [ "$COUCH_VERSION" = 2 ]; then
+      node --stack_size=10000 `which grunt` ci2
+    elif [ "$COUCH_VERSION" = 1 ]; then
+      node --stack_size=10000 `which grunt` ci1
+    fi
   - cat nohup.out || true
 
 after_success:
@@ -44,6 +83,14 @@ after_success:
           echo "Some jobs failed. Not publishing."
         fi
       fi
+
+after_failure:
+  - |
+    if [ "COUCH_VERSION" = 2 ]; then
+      # show the couchdb logs from the docker instance when there was a problem
+      docker ps -a
+      docker logs couch
+    fi
 
 notifications:
   webhooks:
