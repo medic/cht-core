@@ -170,6 +170,9 @@ module.exports = function(grunt) {
       }
     },
     exec: {
+      dedupe_jquery: {
+        cmd: 'rm -rf node_modules/enketo-core/node_modules/jquery'
+      },
       deploy: {
         cmd: 'kanso push $COUCH_URL'
       },
@@ -400,6 +403,7 @@ module.exports = function(grunt) {
   grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [
     'exec:undopatches',
     'auto_install:npm',
+    'exec:dedupe_jquery',
     'copy:librariestopatch',
     'exec:applypatches'
   ]);
