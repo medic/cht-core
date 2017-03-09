@@ -2,7 +2,7 @@
 
 ## 2.10.0
 
-_TBD_
+_March 10, 2017_
 
 ### Features
 
