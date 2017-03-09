@@ -78,9 +78,6 @@ function(newDoc, oldDoc, userCtx, secObj) {
   if (newDoc.type === 'user-settings') {
     validateUserSettings(newDoc);
   }
-  if (newDoc.type === 'a-bad-doc') {
-    _err('oh nooooo');
-  }
 
   log('medic-client validate_doc_update passed for User "' + userCtx.name + '" changing document "' +  newDoc._id + '"');
 }
