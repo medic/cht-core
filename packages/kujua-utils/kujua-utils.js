@@ -1,7 +1,6 @@
-var _ = require('underscore'),
-    cookies = require('cookies');
+var _ = require('underscore');
 
-var logger = exports.logger = {
+exports.logger = {
     levels: {silent:0, error:1, warn:2, info:3, debug:4},
     log: function(obj) {
         if (typeof(console) !== 'undefined') {
