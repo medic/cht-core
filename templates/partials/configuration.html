@@ -8,7 +8,7 @@
   <div class="col-sm-12 page configuration" ui-view="content">
     <ul class="mm-navigation-menu">
       <li ng-repeat="page in configurationPages">
-        <a ui-sref="{{page.state}}" mm-auth="can_configure">
+        <a ui-sref="{{page.state}}" id="{{page.idAttr}}" mm-auth="can_configure">
           <i class="fa {{page.icon}}"></i>
           <span translate>{{::page.name}}</span>
         </a>
