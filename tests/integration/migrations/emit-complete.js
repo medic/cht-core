@@ -26,7 +26,7 @@ describe('emit-complete', function() {
   });
 
   it('should do nothing when _complete emit exists', function() {
-    var rules = 'define Target {  _id: null,  deleted: null,  type: null,  pass: null,  date: null}define Contact {  contact: null,  reports: null}define Task {  _id: null,  deleted: null,  doc: null,  contact: null,  icon: null,  date: null,  title: null,  fields: null,  resolved: null,  priority: null,  priorityLabel: null,  reports: null,  actions: null}rule GenerateEvents {  when {    c: Contact  }  then {    emit("_complete", { _id: true });  }}';
+    var rules = 'define Target {  _id: null,  deleted: null,  type: null,  pass: null,  date: null}define Contact {  contact: null,  reports: null}define Task {  _id: null,  deleted: null,  doc: null,  contact: null,  icon: null,  date: null,  title: null,  fields: null,  resolved: null,  priority: null,  priorityLabel: null,  reports: null,  actions: null}rule GenerateEvents {  when {    c: Contact  }  then {    emit(\'_complete\', { _id: true });  }}';
     
     return utils.initSettings({ tasks: { rules: rules } })
 
@@ -48,7 +48,7 @@ describe('emit-complete', function() {
 
   it('should append emit to task configuration', function() {
     var rules = 'define Target {  _id: null,  deleted: null,  type: null,  pass: null,  date: null}define Contact {  contact: null,  reports: null}define Task {  _id: null,  deleted: null,  doc: null,  contact: null,  icon: null,  date: null,  title: null,  fields: null,  resolved: null,  priority: null,  priorityLabel: null,  reports: null,  actions: null}rule GenerateEvents {  when {    c: Contact  }  then {    emit("task", { _id: 1 });  }}';
-    var expected = 'define Target {  _id: null,  deleted: null,  type: null,  pass: null,  date: null}define Contact {  contact: null,  reports: null}define Task {  _id: null,  deleted: null,  doc: null,  contact: null,  icon: null,  date: null,  title: null,  fields: null,  resolved: null,  priority: null,  priorityLabel: null,  reports: null,  actions: null}rule GenerateEvents {  when {    c: Contact  }  then {    emit("task", { _id: 1 });   emit("_complete", { _id: true });}}';
+    var expected = 'define Target {  _id: null,  deleted: null,  type: null,  pass: null,  date: null}define Contact {  contact: null,  reports: null}define Task {  _id: null,  deleted: null,  doc: null,  contact: null,  icon: null,  date: null,  title: null,  fields: null,  resolved: null,  priority: null,  priorityLabel: null,  reports: null,  actions: null}rule GenerateEvents {  when {    c: Contact  }  then {    emit("task", { _id: 1 });   emit(\'_complete\', { _id: true });}}';
 
     return utils.initSettings({ tasks: { rules: rules } })
 

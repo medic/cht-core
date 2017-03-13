@@ -1,7 +1,7 @@
 var path = require('path'),
     db = require('../db'),
     SETTINGS_REGEX = /(.*)(\}[ \n\t]*\}[ \n\t]*)$/,
-    COMPLETE_EVENT_CONFIG = 'emit("_complete", { _id: true });';
+    COMPLETE_EVENT_CONFIG = 'emit(\'_complete\', { _id: true });';
 
 module.exports = {
   name: 'emit-complete',
