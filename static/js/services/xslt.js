@@ -15,7 +15,7 @@ angular.module('inboxServices').service('XSLT',
 
     var getProcessor = function(name) {
       if (processors[name]) {
-        return $q.when(processors[name]);
+        return $q.resolve(processors[name]);
       }
       return $http
         .get(staticRoot + name, { responseType: 'document' })
@@ -29,14 +29,10 @@ angular.module('inboxServices').service('XSLT',
 
     return {
       transform: function(name, doc) {
-        return $q(function(resolve, reject) {
-          getProcessor(name)
-            .then(function(processor) {
-              var transformedDoc = processor.transformToDocument(doc);
-              var rootElement = transformedDoc.documentElement.firstElementChild;
-              resolve(xmlSerializer.serializeToString(rootElement));
-            })
-            .catch(reject);
+        return getProcessor(name).then(function(processor) {
+          var transformedDoc = processor.transformToDocument(doc);
+          var rootElement = transformedDoc.documentElement.firstElementChild;
+          return xmlSerializer.serializeToString(rootElement);
         });
       }
     };
