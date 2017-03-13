@@ -188,7 +188,7 @@ describe('RulesEngine service', function() {
 
   var calculateDate = function(registration, days) {
     var lmpWeeks = registration.form === 'P' ? registration.fields.last_menstrual_period : 4;
-    return moment.utc(registration.reported_date)
+    return moment(registration.reported_date)
       .subtract(lmpWeeks, 'weeks')
       .add(days, 'days')
       .hours(0)
