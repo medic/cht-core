@@ -163,7 +163,7 @@ module.exports = function(grunt) {
           {
             expand: true,
             flatten: true,
-            src: [ 'node_modules/enketo-client-side-transformer/xslt/client-side/*.xsl' ],
+            src: [ 'node_modules/medic-enketo-xslt/xsl/*.xsl' ],
             dest: 'static/dist/xslt/'
           }
         ]

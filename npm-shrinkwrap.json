@@ -364,10 +364,10 @@
       "resolved": "http://registry.npmjs.org/ecc-jsbn/-/ecc-jsbn-0.1.1.tgz",
       "optional": true
     },
-    "enketo-client-side-transformer": {
-      "version": "0.1.0",
-      "from": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cd1788f38fa5d9ea846d9de1168322ec25002040",
-      "resolved": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cd1788f38fa5d9ea846d9de1168322ec25002040"
+    "medic-enketo-xslt": {
+      "version": "1.0.0",
+      "from": "medic-enketo-xslt@>=1.0.0 <2.0.0",
+      "resolved": "https://registry.npmjs.org/medic-enketo-xslt/-/medic-enketo-xslt-1.0.0.tgz"
     },
     "enketo-core": {
       "version": "4.5.5",
