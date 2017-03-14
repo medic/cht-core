@@ -36,7 +36,8 @@ describe('ReportsCtrl controller', function() {
       return false;
     };
     scope.setTitle = function() {};
-    scope.setActionBar = sinon.stub();
+    scope.setRightActionBar = sinon.stub();
+    scope.setLeftActionBar = sinon.stub();
     scope.settingSelected = function() {};
 
     UserDistrict = function() {
@@ -131,8 +132,8 @@ describe('ReportsCtrl controller', function() {
       form: 'P',
       contact: { _id: 'def', phone: phone}
     });
-    chai.assert(scope.setActionBar.called);
-    chai.expect(scope.setActionBar.args[0][0].sendTo.phone).to.equal(phone);
+    chai.assert(scope.setRightActionBar.called);
+    chai.expect(scope.setRightActionBar.args[0][0].sendTo.phone).to.equal(phone);
   });
 
 });

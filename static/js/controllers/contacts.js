@@ -20,6 +20,7 @@ var _ = require('underscore'),
       ContactSchema,
       ContactSummary,
       DB,
+      Export,
       LiveList,
       Search,
       SearchFilters,
@@ -221,24 +222,28 @@ var _ = require('underscore'),
       };
 
       var setActionBarData = function() {
+        var data = {
+          userFacilityId: usersHomePlace && usersHomePlace._id,
+          exportFn: function() {
+            Export($scope.filters, 'contacts');
+          }
+        };
         var type;
         if (usersHomePlace) {
           type = ContactSchema.getChildPlaceType(usersHomePlace.type);
         } else if (Session.isAdmin()) {
           type = ContactSchema.getPlaceTypes()[0];
-        } else {
-          return;
         }
-        var schema = ContactSchema.get(type);
-        defaultTypeFilter = { types: { selected: [ type ] }};
-        $scope.setLeftActionBar({
-          addPlaceLabel: schema.addButtonLabel,
-          userFacilityId: usersHomePlace && usersHomePlace._id,
-          userChildPlace: {
+        if (type) {
+          defaultTypeFilter = { types: { selected: [ type ] }};
+          var schema = ContactSchema.get(type);
+          data.addPlaceLabel = schema.addButtonLabel;
+          data.userChildPlace = {
             type: type,
             icon: schema ? schema.icon : ''
-          }
-        });
+          };
+        }
+        $scope.setLeftActionBar(data);
       };
 
       var setupPromise = getUserHomePlaceSummary().then(function(home) {

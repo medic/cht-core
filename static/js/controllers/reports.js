@@ -16,6 +16,7 @@ var _ = require('underscore'),
       $timeout,
       Changes,
       DB,
+      Export,
       FormatDataRecord,
       LiveList,
       MarkRead,
@@ -127,7 +128,7 @@ var _ = require('underscore'),
           model.type = doc.content_type;
           model.sendTo = doc.contact;
         }
-        $scope.setActionBar(model);
+        $scope.setRightActionBar(model);
       };
 
       $scope.setSelected = function(doc) {
@@ -462,6 +463,12 @@ var _ = require('underscore'),
         setActionBar();
         $('#reports-list input[type="checkbox"]').prop('checked', false);
       };
+
+      $scope.setLeftActionBar({
+        exportFn: function() {
+          Export($scope.filters, 'reports');
+        }
+      });
 
       $scope.$on('DeselectAll', deselectAll);
 

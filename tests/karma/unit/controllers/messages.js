@@ -18,6 +18,7 @@ describe('MessagesCtrl controller', function() {
       scope.selected = obj;
     };
     scope.setLoadingContent = function() {};
+    scope.setLeftActionBar = sinon.stub();
 
     UserDistrict = function(callback) {
       callback();
