@@ -145,7 +145,7 @@ describe('Enketo service', function() {
           done(new Error('Should throw error'));
         })
         .catch(function(actual) {
-          chai.expect(actual.message).to.equal('Requested form not found');
+          chai.expect(actual.message).to.equal('Requested form not found: not-defined');
           done();
         });
     });
