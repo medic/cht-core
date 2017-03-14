@@ -8,7 +8,6 @@ var vm = require('vm'),
     validation = require('../lib/validation'),
     schedules = require('../lib/schedules'),
     acceptPatientReports = require('./accept_patient_reports'),
-    ids = require('../lib/ids'),
     moment = require('moment'),
     config = require('../config'),
     date = require('../date'),
@@ -332,24 +331,9 @@ module.exports = {
     },
     setId: function(options, callback) {
         var doc = options.doc,
-            db = db || options.db,
-            id = ids.generate(doc._id),
-            self = module.exports;
+            db = db || options.db;
 
-        utils.getRegistrations({
-            db: db,
-            id: id
-        }, function(err, registrations) {
-            if (err) {
-                callback(err);
-            } else if (registrations.length) { // id collision, retry
-                logger.warn('Registration ID ' + id + ' is not unique, retrying...');
-                self.setId({db:db, doc:doc}, callback);
-            } else {
-                doc.patient_id = id;
-                callback();
-            }
-        });
+        transitionUtils.addUniqueId(db, doc, callback);
     },
     addPatient: function(options, callback) {
         var doc = options.doc,

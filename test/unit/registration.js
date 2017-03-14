@@ -215,7 +215,7 @@ exports['add_patient and add_patient_id triggers are idempotent'] = function(tes
     transition.onMatch(change, db, audit, function() {
         test.equals(saveDoc.callCount, 1);
         test.equals(saveDoc.args[0][0].name, patientName);
-        test.equal(idsGenerate.callCount, 1);
+        test.equal(idsGenerate.callCount, 5);
         test.done();
     });
 };

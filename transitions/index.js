@@ -29,7 +29,8 @@ var AVAILABLE_TRANSITIONS = [
     'update_clinics',
     'update_notifications',
     'update_scheduled_reports',
-    'update_sent_forms'
+    'update_sent_forms',
+    'generate_patient_id_on_patients'
 ];
 
 var processed = 0;

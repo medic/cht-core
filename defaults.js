@@ -5,7 +5,6 @@
 
 var defaults = {
     settings_path: '_design/medic/_rewrite/app_settings/medic',
-    id_format: '111111',
     schedule_morning_hours: 0,
     schedule_morning_minutes: 0,
     schedule_evening_hours: 23,
