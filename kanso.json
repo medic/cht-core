@@ -230,12 +230,6 @@
                 "type": "string",
                 "pattern": "(^[0-9]{12}$|^$)"
             },
-            "id_format": {
-                "title": "Patient ID Format",
-                "type": "string",
-                "default": "1111",
-                "description": "Format of generated numerical identifiers. Note, an extra check digit is always used, so the default value (1111) generates a length of 5, e.g. '92345'."
-            },
             "contact_display_short": {
                 "type": "string",
                 "title": "Short Contact Display",
