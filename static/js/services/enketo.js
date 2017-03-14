@@ -82,7 +82,8 @@ angular.module('inboxServices').service('Enketo',
       var $xml = $(xml);
       // set the user's language as default so it'll be used for itext translations
       $xml.find('model itext translation[lang="' + language + '"]').attr('default', '');
-      // manually translate the title as itext doesn't seem to work
+      // manually translate the title as enketo-core doesn't have any way to do this
+      // https://github.com/enketo/enketo-core/issues/405
       $xml.find('h\\:title,title').text(TranslateFrom(title));
       return xml;
     };
