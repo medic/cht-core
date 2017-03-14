@@ -18,6 +18,8 @@ angular.module('inboxServices').service('Enketo',
     'ngInject';
 
     var objUrls = [];
+    var xmlCache = {};
+    var FORM_ATTACHMENT_NAME = 'xml';
 
     var replaceJavarosaMediaWithLoaders = function(formInternalId, form) {
       var mediaElements = form.find('img,video,audio');
@@ -63,50 +65,55 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var transformXml = function(doc) {
-      return $q
-        .all([
-          XSLT.transform('openrosa2html5form.xsl', doc),
-          XSLT.transform('openrosa2xmlmodel.xsl', doc),
-        ])
-        .then(function(results) {
-          var result = {
-            html: $(results[0]),
-            model: results[1]
-          };
-          return result;
+      return $q.all([
+        XSLT.transform('openrosa2html5form.xsl', doc),
+        XSLT.transform('openrosa2xmlmodel.xsl', doc),
+      ])
+      .then(function(results) {
+        return {
+          html: $(results[0]),
+          model: results[1]
+        };
+      });
+    };
+
+    var translateXml = function(text, title, language) {
+      var xml = $.parseXML(text);
+      var $xml = $(xml);
+      // set the user's language as default so it'll be used for itext translations
+      $xml.find('model itext translation[lang="' + language + '"]').attr('default', '');
+      // manually translate the title as itext doesn't seem to work
+      $xml.find('h\\:title,title').text(TranslateFrom(title));
+      return xml;
+    };
+
+    var getFormXml = function(form, language) {
+      return DB().getAttachment(form.id, FORM_ATTACHMENT_NAME)
+        .then(FileReader)
+        .then(function(text) {
+          return translateXml(text, form.doc.title, language);
         });
     };
 
-    var xmlCache = {};
-
-    var withFormByFormInternalId = function(formInternalId) {
+    var withFormByFormInternalId = function(formInternalId, language) {
       if (!xmlCache[formInternalId]) {
-        xmlCache[formInternalId] = DB()
+        xmlCache[formInternalId] = {};
+      }
+      if (!xmlCache[formInternalId][language]) {
+        xmlCache[formInternalId][language] = DB()
           .query('medic-client/forms', { include_docs: true, key: formInternalId })
           .then(function(res) {
             if (!res.rows.length) {
-              throw new Error('Requested form not found');
+              throw new Error('Requested form not found: ' + formInternalId);
             }
-            var form = res.rows[0];
-            return DB()
-              .getAttachment(form.id, 'xml')
-              .then(function(a) {
-                return FileReader(a);
-              })
-              .then(function(text) {
-                return Language().then(function(language) {
-                  var xml = $.parseXML(text);
-                  var $xml = $(xml);
-                  // set the user's language as default so it'll be used for itext translations
-                  $xml.find('model itext translation[lang="' + language + '"]').attr('default', '');
-                  // manually translate the title as itext doesn't seem to work
-                  $xml.find('h\\:title,title').text(TranslateFrom(form.doc.title));
-                  return transformXml(xml);
-                });
-              });
-          });
+            return res.rows[0];
+          })
+          .then(function(form) {
+            return getFormXml(form, language);
+          })
+          .then(transformXml);
       }
-      return xmlCache[formInternalId];
+      return xmlCache[formInternalId][language];
     };
 
     var checkPermissions = function() {
@@ -233,8 +240,9 @@ angular.module('inboxServices').service('Enketo',
 
     this.render = function(wrapper, formInternalId, instanceData) {
       return checkPermissions()
-        .then(function() {
-          return withFormByFormInternalId(formInternalId);
+        .then(Language)
+        .then(function(language) {
+          return withFormByFormInternalId(formInternalId, language);
         })
         .then(function(doc) {
           // clone doc to avoid leaking of data between instances of a form
