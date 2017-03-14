@@ -30,7 +30,7 @@
     "messageformat": "^1.0.0",
     "moment": "^2.17.0",
     "nools": "^0.4.4",
-    "openrosa-xpath-evaluator": "^1.0.0",
+    "openrosa-xpath-evaluator": "^1.1.0",
     "pouchdb-browser": "^6.0.7",
     "properties": "^1.2.1",
     "select2": "^4.0.3",
