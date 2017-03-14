@@ -11,8 +11,7 @@ module.exports = function() {
         return evaluator.createNSResolver.apply( evaluator, arguments );
     };
     this.xml.jsEvaluate = function(e, contextPath, namespaceResolver, resultType, result) {
-        var val, evaluator;
-        evaluator = new ExtendedXpathEvaluator(
+        var evaluator = new ExtendedXpathEvaluator(
                 function wrappedXpathEvaluator(v) {
                     var doc = contextPath.ownerDocument;
                     return doc.evaluate(v, contextPath, namespaceResolver,
@@ -28,8 +27,7 @@ module.exports = function() {
                             //resultType, result);
                 },
                 openrosa_xpath_extensions);
-        val = evaluator.evaluate(e);
-        return val;
+        return evaluator.evaluate(e, contextPath, namespaceResolver, resultType, result);
     };
     window.JsXPathException =
             window.JsXPathExpression =
