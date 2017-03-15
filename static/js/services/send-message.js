@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    uuid = require('uuid'),
+    uuid = require('uuid/v4'),
     utils = require('kujua-utils'),
     libphonenumber = require('libphonenumber/utils');
 
@@ -139,7 +139,7 @@ var _ = require('underscore'),
             to: libphonenumber.normalize(settings, recipient.phone) || recipient.phone,
             contact: recipient.contact,
             message: message,
-            uuid: uuid.v4()
+            uuid: uuid()
           }]
         };
         utils.setTaskState(task, 'pending');
