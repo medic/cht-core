@@ -42,7 +42,7 @@ describe('SendMessage service', function() {
     chai.expect(msg.from).to.equal(expected.from);
     chai.expect(msg.sent_by).to.equal(expected.sent_by);
     chai.expect(msg.to).to.equal(expected.to);
-    chai.expect(msg.uuid).to.be.defined;
+    chai.expect(msg.uuid).to.be.defined; // jshint ignore:line
     chai.expect(msg.contact).to.deep.equal(expected.contact);
   }
 
