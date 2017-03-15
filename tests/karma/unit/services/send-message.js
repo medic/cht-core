@@ -5,13 +5,11 @@ describe('SendMessage service', function() {
   var service,
       Settings,
       allDocs,
-      id,
       post,
       query;
 
   beforeEach(function () {
     allDocs = sinon.stub();
-    id = sinon.stub();
     post = sinon.stub();
     query = sinon.stub();
     Settings = sinon.stub();
@@ -20,7 +18,6 @@ describe('SendMessage service', function() {
       $provide.factory('DB', KarmaUtils.mockDB({
         allDocs: allDocs,
         post: post,
-        id: id,
         query: query
       }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
@@ -35,7 +32,7 @@ describe('SendMessage service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(allDocs, id, post, query);
+    KarmaUtils.restore(allDocs, post, query);
   });
 
   function assertMessage(task, expected) {
@@ -45,7 +42,7 @@ describe('SendMessage service', function() {
     chai.expect(msg.from).to.equal(expected.from);
     chai.expect(msg.sent_by).to.equal(expected.sent_by);
     chai.expect(msg.to).to.equal(expected.to);
-    chai.expect(msg.uuid).to.equal(expected.uuid);
+    chai.expect(msg.uuid).to.be.defined; // jshint ignore:line
     chai.expect(msg.contact).to.deep.equal(expected.contact);
   }
 
@@ -69,7 +66,6 @@ describe('SendMessage service', function() {
 
   it('create doc for one recipient', function(done) {
 
-    id.returns(KarmaUtils.mockPromise(null, 53));
     post.returns(KarmaUtils.mockPromise());
     Settings.returns(KarmaUtils.mockPromise(null, {}));
 
@@ -85,13 +81,11 @@ describe('SendMessage service', function() {
     service(select2Wrap(recipient), 'hello')
       .then(function() {
         chai.expect(allDocs.callCount).to.equal(1);
-        chai.expect(id.callCount).to.equal(1);
         chai.expect(post.callCount).to.equal(1);
         assertMessage(post.args[0][0].tasks[0], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5552',
-          uuid: 53,
           contact: recipient
         });
         done();
@@ -101,7 +95,6 @@ describe('SendMessage service', function() {
 
   it('create doc for non-contact recipient from select2', function(done) {
 
-    id.returns(KarmaUtils.mockPromise(null, 53));
     post.returns(KarmaUtils.mockPromise());
     Settings.returns(KarmaUtils.mockPromise(null, {}));
 
@@ -118,13 +111,11 @@ describe('SendMessage service', function() {
 
     service(recipient, 'hello')
       .then(function() {
-        chai.expect(id.callCount).to.equal(1);
         chai.expect(post.callCount).to.equal(1);
         assertMessage(post.args[0][0].tasks[0], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5552',
-          uuid: 53,
         });
         done();
       })
@@ -134,7 +125,6 @@ describe('SendMessage service', function() {
   it('normalizes phone numbers', function(done) {
     // Note : only valid phone numbers can be normalized.
 
-    id.returns(KarmaUtils.mockPromise(null, 53));
     post.returns(KarmaUtils.mockPromise());
 
     var phoneNumber = '700123456';
@@ -151,13 +141,11 @@ describe('SendMessage service', function() {
 
     service(select2Wrap(recipient), 'hello')
       .then(function() {
-        chai.expect(id.callCount).to.equal(1);
         chai.expect(post.callCount).to.equal(1);
         assertMessage(post.args[0][0].tasks[0], {
           from: '+5551',
           sent_by: 'jack',
           to: '+254' + phoneNumber,
-          uuid: 53,
           contact: recipient
         });
         done();
@@ -166,9 +154,6 @@ describe('SendMessage service', function() {
 
   it('create doc for multiple recipients', function(done) {
 
-    id
-      .onFirstCall().returns(KarmaUtils.mockPromise(null, 53))
-      .onSecondCall().returns(KarmaUtils.mockPromise(null, 150));
     post.returns(KarmaUtils.mockPromise());
     Settings.returns(KarmaUtils.mockPromise(null, {}));
 
@@ -191,33 +176,28 @@ describe('SendMessage service', function() {
 
     service(select2Wrap(recipients), 'hello')
       .then(function() {
-        chai.expect(id.callCount).to.equal(2);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0][0].tasks.length).to.equal(2);
         assertMessage(post.args[0][0].tasks[0], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5552',
-          uuid: 53,
           contact: recipients[0]
         });
         assertMessage(post.args[0][0].tasks[1], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5553',
-          uuid: 150,
           contact: recipients[1]
         });
+        chai.expect    (post.args[0][0].tasks[0].messages[0].uuid)
+          .to.not.equal(post.args[0][0].tasks[1].messages[0].uuid);
         done();
       }).catch(done);
   });
 
   it('create doc for everyoneAt recipients', function(done) {
 
-    id
-      .onFirstCall().returns(KarmaUtils.mockPromise(null, 53))
-      .onSecondCall().returns(KarmaUtils.mockPromise(null, 150))
-      .onThirdCall().returns(KarmaUtils.mockPromise(null, 6));
     post.returns(KarmaUtils.mockPromise());
     Settings.returns(KarmaUtils.mockPromise(null, {}));
 
@@ -264,62 +244,33 @@ describe('SendMessage service', function() {
 
     service(recipients, 'hello')
       .then(function() {
-        chai.expect(id.callCount).to.equal(3);
         chai.expect(post.callCount).to.equal(1);
         chai.expect(post.args[0][0].tasks.length).to.equal(3);
         assertMessage(post.args[0][0].tasks[0], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5553',
-          uuid: 53,
           contact: descendants[0]
         });
         assertMessage(post.args[0][0].tasks[1], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5552',
-          uuid: 150,
           contact: descendants[1]
         });
         assertMessage(post.args[0][0].tasks[2], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5554',
-          uuid: 6,
           contact: descendants[2]
         });
         done();
       }).catch(done);
   });
 
-  it('returns newUUID errors', function(done) {
-
-    id.returns(KarmaUtils.mockPromise('errcode1'));
-    Settings.returns(KarmaUtils.mockPromise(null, {}));
-
-    var recipient = {
-      _id: 'abc',
-      contact: {
-        phone: '+5552'
-      }
-    };
-
-    allDocs.returns(mockAllDocs(recipient));
-
-    service(select2Wrap(recipient), 'hello').then(
-      function() {
-        chai.fail('success', 'error');
-      },
-      function(err) {
-        chai.expect(err).to.equal('errcode1');
-        done();
-      }
-    );
-  });
 
   it('returns post errors', function(done) {
 
-    id.returns(KarmaUtils.mockPromise(null, 3333));
     post.returns(KarmaUtils.mockPromise('errcode2'));
     Settings.returns(KarmaUtils.mockPromise(null, {}));
 
