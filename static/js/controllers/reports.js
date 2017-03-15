@@ -115,7 +115,7 @@ var _ = require('underscore'),
         });
       };
 
-      var setActionBar = function() {
+      var setRightActionBar = function() {
         var model = {};
         model.selected = $scope.selected.map(function(s) {
           return s.report || s.summary;
@@ -162,7 +162,7 @@ var _ = require('underscore'),
           } ];
           setTitle(doc);
         }
-        setActionBar();
+        setRightActionBar();
         $scope.settingSelected(refreshing);
       };
 
@@ -192,7 +192,7 @@ var _ = require('underscore'),
         });
         if (index !== -1) {
           $scope.selected.splice(index, 1);
-          setActionBar();
+          setRightActionBar();
         }
       };
 
@@ -450,7 +450,7 @@ var _ = require('underscore'),
               };
             });
             $scope.settingSelected(true);
-            setActionBar();
+            setRightActionBar();
             $('#reports-list input[type="checkbox"]').prop('checked', true);
           })
           .catch(function(err) {
@@ -460,7 +460,7 @@ var _ = require('underscore'),
 
       var deselectAll = function() {
         $scope.selected = [];
-        setActionBar();
+        setRightActionBar();
         $('#reports-list input[type="checkbox"]').prop('checked', false);
       };
 

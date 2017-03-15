@@ -86,6 +86,7 @@ angular.module('inboxServices').factory('GenerateSearchQuery',
 
     var formatFreetext = function(filters) {
       var freetext = filters.search;
+      // if not searching a specific field, change the search to startswith
       if (freetext && freetext.indexOf(':') === -1) {
         freetext += '*';
       }
