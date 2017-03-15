@@ -1,5 +1,6 @@
 var _ = require('underscore'),
     utils = require('kujua-utils'),
+    uuid = require('uuid/v4'),
     libphonenumber = require('libphonenumber/utils');
 
 (function () {
@@ -162,7 +163,7 @@ var _ = require('underscore'),
 
             var doc = createMessageDoc(user);
             return $q.all(explodedRecipients.map(function(recipient) {
-              return DB().id().then(function(id) {
+              return uuid().then(function(id) {
                 return createTask(settings, recipient, message, user, id);
               });
             }))

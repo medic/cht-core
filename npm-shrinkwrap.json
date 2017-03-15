@@ -1127,7 +1127,7 @@
     },
     "uuid": {
       "version": "3.0.1",
-      "from": "uuid@>=3.0.0 <4.0.0",
+      "from": "uuid@>=3.0.1 <4.0.0",
       "resolved": "http://registry.npmjs.org/uuid/-/uuid-3.0.1.tgz"
     },
     "validate.io-undefined": {
