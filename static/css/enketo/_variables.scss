@@ -12,3 +12,5 @@ $radiocheck-checked-color: lighten($brand-primary-color, 10%) !default;
 $note-bg: white !default;
 $note-border: 1px solid #e1e1e1 !default;
 $note-border-radius: 0 !default;
+$input-border-focus: #66afe9 !default;
+$input-border-focus-shadow: rgba(red($input-border-focus), green($input-border-focus), blue($input-border-focus), 0.6) !default;

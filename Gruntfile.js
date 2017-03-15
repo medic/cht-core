@@ -364,15 +364,6 @@ module.exports = function(grunt) {
       }
     },
     sass: {
-      options: {
-        importer: function(url, prev, done) {
-          // fixes relative enketo-core submodule references in npm 3.x.x
-          if (/\/node_modules\//.test(url) && /\/node_modules\/enketo-core\//.test(prev)) {
-            url = '../../' + url;
-          }
-          done({ file: url });
-        }
-      },
       compile: {
         cwd: 'static/css',
         dest: 'build',
@@ -392,7 +383,7 @@ module.exports = function(grunt) {
     'regex-check': {
       files: 'tests/**/*.js',
       options: {
-        pattern : /.only\(/g
+        pattern: /.only\(/g
       }
     }
   });
