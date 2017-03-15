@@ -98,7 +98,8 @@ describe('Contacts controller', function() {
         'Changes': function() {
           return { unsubscribe: function() {} };
         },
-        'Tour': function() {}
+        'Tour': function() {},
+        'Export': function() {}
       });
     };
   }));
@@ -234,7 +235,7 @@ describe('Contacts controller', function() {
       userSettings = userFaciltyQuery = KarmaUtils.promiseService(null, {});
       createController().getSetupPromiseForTesting()
         .then(function() {
-          assert(!scope.setLeftActionBar.called, 'left actionBar uses defaults');
+          assert(scope.setLeftActionBar.called);
           done();
         }).catch(done);
     });

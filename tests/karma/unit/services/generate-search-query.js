@@ -241,24 +241,13 @@ describe('GenerateSearchQuery service', function() {
     done();
   });
 
-  it('creates query for contacts with filters', function(done) {
-    var filters = {
-      types: {
-        selected: [ 'clinic', 'health_center' ],
-        options: [ 'district_hospital', 'health_center', 'clinic', 'person' ]
-      },
-      facilities: {
-        selected: [ 'c', 'a', 'b' ],
-        options: [ 'c', 'a', 'b', 'd' ]
-      },
-      search: 'newp'
-    };
+  it('creates query for contacts with freetext search', function(done) {
+    var filters = { search: 'newp' };
     var actual = service('contacts', filters);
     chai.expect(actual.query).to.deep.equal(
       {$operands:[
         'newp*',
-        {type:['clinic','health_center']},
-        {clinic:['c','a','b']}
+        { type: [ 'district_hospital', 'health_center', 'clinic', 'person' ] }
       ]}
     );
     done();

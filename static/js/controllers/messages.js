@@ -14,6 +14,7 @@ var _ = require('underscore');
       $stateParams,
       $timeout,
       Changes,
+      Export,
       MessageContact,
       Tour
     ) {
@@ -114,6 +115,12 @@ var _ = require('underscore');
           return change.doc.kujua_message ||
                  change.doc.sms_message ||
                  change.deleted;
+        }
+      });
+
+      $scope.setLeftActionBar({
+        exportFn: function() {
+          Export($scope.filters, 'messages');
         }
       });
 
