@@ -35,6 +35,7 @@
     "properties": "^1.2.1",
     "select2": "^4.0.3",
     "underscore": "^1.8.3",
+    "uuid": "^3.0.1",
     "worker-pouch": "^2.0.0"
   },
   "devDependencies": {
