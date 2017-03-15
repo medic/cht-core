@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    uuid = require('uuid'),
     utils = require('kujua-utils'),
     libphonenumber = require('libphonenumber/utils');
 
@@ -130,7 +131,7 @@ var _ = require('underscore'),
         });
       };
 
-      var createTask = function(settings, recipient, message, user, uuid) {
+      var createTask = function(settings, recipient, message, user) {
         var task = {
           messages: [{
             from: user && user.phone,
@@ -138,7 +139,7 @@ var _ = require('underscore'),
             to: libphonenumber.normalize(settings, recipient.phone) || recipient.phone,
             contact: recipient.contact,
             message: message,
-            uuid: uuid
+            uuid: uuid.v4()
           }]
         };
         utils.setTaskState(task, 'pending');
@@ -159,17 +160,11 @@ var _ = require('underscore'),
             var user = results[0];
             var settings = results[1];
             var explodedRecipients = results[2];
-
             var doc = createMessageDoc(user);
-            return $q.all(explodedRecipients.map(function(recipient) {
-              return DB().id().then(function(id) {
-                return createTask(settings, recipient, message, user, id);
-              });
-            }))
-              .then(function(tasks) {
-                doc.tasks = tasks;
-                return doc;
-              });
+            doc.tasks = explodedRecipients.map(function(recipient) {
+              return createTask(settings, recipient, message, user);
+            });
+            return doc;
           })
           .then(function(doc) {
             return DB().post(doc);

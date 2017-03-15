@@ -22,11 +22,11 @@
     "bootstrap": "^3.3.7",
     "bootstrap-daterangepicker": "^2.1.24",
     "bootstrap-tour": "^0.10.3",
-    "medic-enketo-xslt": "^1.0.0",
     "enketo-core": "https://github.com/medic/enketo-core.git#node-iteration-support",
     "font-awesome": "^4.7.0",
     "google-libphonenumber": "^2.0.11",
     "jquery": "^2.1.4",
+    "medic-enketo-xslt": "^1.0.0",
     "messageformat": "^1.0.0",
     "moment": "^2.17.1",
     "nools": "^0.4.4",
@@ -36,6 +36,7 @@
     "properties": "^1.2.1",
     "select2": "^4.0.3",
     "underscore": "^1.8.3",
+    "uuid": "^3.0.1",
     "worker-pouch": "^2.0.0"
   },
   "devDependencies": {
