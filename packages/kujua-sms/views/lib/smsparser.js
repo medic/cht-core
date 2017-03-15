@@ -13,7 +13,7 @@ var digitReplacer = function(c) {
     return T_TABLE[c];
 }
 var standardiseDigits = function(original) {
-    return original.replace(/[०-९]/g, digitReplacer);
+    return original && original.toString().replace(/[०-९]/g, digitReplacer);
 };
 
 /**
@@ -114,10 +114,11 @@ var parseNum = function (raw) {
     if (raw === void 0) {
         return undefined;
     }
-    if (!isFinite(raw) || raw === "") {
+    var std = standardiseDigits(raw);
+    if (!isFinite(std) || std === "") {
         return null;
     }
-    return Number(raw);
+    return Number(std);
 };
 
 var lower = function(str) {
@@ -209,11 +210,6 @@ exports.parse = function (def, doc) {
     if (!parser) {
         utils.logger.error('Failed to find message parser.');
         return {};
-    }
-
-    doc.raw_message = doc.message;
-    if(doc.message) {
-        doc.message = standardiseDigits(doc.message);
     }
 
     if (isMuvukuFormat(doc.message)) {

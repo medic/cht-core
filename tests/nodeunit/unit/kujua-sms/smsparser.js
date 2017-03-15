@@ -334,7 +334,7 @@ exports['textforms bang delimited keyval'] = function(test) {
 };
 
 exports['Nepali digits transliterated into Western Arabic'] = function(test) {
-    test.expect(4);
+    test.expect(3);
 
     var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
     var doc = { message: 'YYYY#HFI!foobar#ZDT!९९९#RPY!!२०१२' },
@@ -349,8 +349,7 @@ exports['Nepali digits transliterated into Western Arabic'] = function(test) {
             zinc: 999
         }
     });
-    test.same(doc.message, 'YYYY#HFI!foobar#ZDT!999#RPY!!2012');
-    test.same(doc.raw_message, 'YYYY#HFI!foobar#ZDT!९९९#RPY!!२०१२');
+    test.same(doc.message, 'YYYY#HFI!foobar#ZDT!९९९#RPY!!२०१२');
 
     test.done();
 };
