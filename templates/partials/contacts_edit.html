@@ -8,15 +8,6 @@
     <div translate>error.loading.form</div>
   </div>
   <div class="col-sm-8 item-content" ng-show="!loadingContent && !contentError">
-    <div id="contact-form" class="enketo" data-editing="{{ enketoContact.docId }}">
-      <div class="container pages"></div>
-      <div class="form-footer">
-        <button class="btn btn-default previous-page">&lt; <span translate>Previous</span></button>
-        <button class="btn btn-primary next-page"><span translate>Next</span> &gt;</button>
-        <a class="btn submit btn-primary" ng-click="save()" ng-disabled="saving" translate>Submit</a>
-        <div class="loader inline small" ng-show="saving"></div>
-        <div class="error">{{savingError}}</div>
-      </div>
-    </div>
+    <mm-enketo id="'contact-form'" editing="enketoContact.docId" status="saveStatus" on-submit="save()" on-cancel="navigationCancel()" />
   </div>
 </div>
