@@ -46,23 +46,27 @@ angular.module('inboxServices').factory('Auth',
       return permissions;
     };
 
+    var authFail = function(reason) {
+      return $q.reject(new Error('Auth failed: ' + reason));
+    };
+
     return function(permissions) {
       if (!_.isArray(permissions)) {
         permissions = [ permissions ];
       }
       var userCtx = Session.userCtx();
       if (!userCtx) {
-        return $q.reject(new Error('Not logged in'));
+        return authFail('not logged in');
       }
       var roles = userCtx.roles;
       if (!roles || roles.length === 0) {
-        return $q.reject();
+        return authFail('user has no roles');
       }
       var requiredPermissions = getRequired(permissions);
       var disallowedPermissions = getDisallowed(permissions);
       if (_.contains(roles, '_admin')) {
         if (disallowedPermissions.length > 0) {
-          return $q.reject();
+          return authFail('disallowed permission(s) found');
         }
         return $q.resolve();
       }
@@ -71,7 +75,7 @@ angular.module('inboxServices').factory('Auth',
             check(disallowedPermissions, roles, settings, false)) {
           return $q.resolve();
         }
-        return $q.reject();
+        return authFail('missing required permission(s)');
       });
     };
 
