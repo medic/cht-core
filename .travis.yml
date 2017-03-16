@@ -3,7 +3,7 @@
 language: java
 sudo: true
 jdk:
-  - oraclejdk7
+  - oraclejdk8
 
 addons:
   firefox: latest-esr
