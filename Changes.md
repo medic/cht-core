@@ -2,6 +2,12 @@
 
 ## 0.4.15
 
+### Mar 16, 2017
+
+- Fixed update_message_task does not update scheduled_tasks.  Issue: https://github.com/medic/medic-webapp/issues/3246
+
+## 0.4.15
+
 ### Mar 2, 2017
 
 - Fixed potential race condition with medic-gateway. Issue: medic-projects/issues/1243
