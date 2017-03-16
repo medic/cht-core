@@ -33,7 +33,7 @@ describe('Auth service', function() {
     userCtx.returns(null);
     service()
       .catch(function(err) {
-        chai.expect(err.message).to.equal('Not logged in');
+        chai.expect(err.message).to.equal('Auth failed: not logged in');
         done();
       });
     $rootScope.$digest();
@@ -43,7 +43,7 @@ describe('Auth service', function() {
     userCtx.returns({});
     service()
       .catch(function(err) {
-        chai.expect(err).to.equal(undefined);
+        chai.expect(err.message).to.equal('Auth failed: user has no roles');
         done();
       });
     $rootScope.$digest();
@@ -74,7 +74,7 @@ describe('Auth service', function() {
     ] }));
     service([ '' ])
       .catch(function(err) {
-        chai.expect(err).to.equal(undefined);
+        chai.expect(err.message).to.equal('Auth failed: missing required permission(s)');
         done();
       });
     setTimeout(function() {
@@ -95,7 +95,7 @@ describe('Auth service', function() {
       ] }));
       service([ 'xyz' ])
         .catch(function(err) {
-          chai.expect(err).to.equal(undefined);
+          chai.expect(err.message).to.equal('Auth failed: missing required permission(s)');
           done();
         });
       setTimeout(function() {
@@ -125,7 +125,7 @@ describe('Auth service', function() {
     ] }));
     service('can_backup_facilities')
       .catch(function(err) {
-        chai.expect(err).to.equal(undefined);
+        chai.expect(err.message).to.equal('Auth failed: missing required permission(s)');
         done();
       });
     setTimeout(function() {
@@ -141,7 +141,7 @@ describe('Auth service', function() {
     ] }));
     service([ 'can_backup_facilities', 'can_export_messages' ])
       .catch(function(err) {
-        chai.expect(err).to.equal(undefined);
+        chai.expect(err.message).to.equal('Auth failed: missing required permission(s)');
         done();
       });
     setTimeout(function() {
@@ -165,7 +165,7 @@ describe('Auth service', function() {
     userCtx.returns({ roles: [ '_admin' ] });
     service([ '!can_backup_facilities' ])
       .catch(function(err) {
-        chai.expect(err).to.equal(undefined);
+        chai.expect(err.message).to.equal('Auth failed: disallowed permission(s) found');
         done();
       });
     setTimeout(function() {
@@ -181,7 +181,7 @@ describe('Auth service', function() {
     ] }));
     service([ '!can_backup_facilities', '!can_export_messages' ])
       .catch(function(err) {
-        chai.expect(err).to.equal(undefined);
+        chai.expect(err.message).to.equal('Auth failed: missing required permission(s)');
         done();
       });
     setTimeout(function() {
