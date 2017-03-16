@@ -333,6 +333,27 @@ exports['textforms bang delimited keyval'] = function(test) {
     test.done();
 };
 
+exports['Nepali digits transliterated into Western Arabic'] = function(test) {
+    test.expect(3);
+
+    var getForm = sinon.stub(utils.info, 'getForm').returns(definitions.forms.YYYY);
+    var doc = { message: 'YYYY#HFI!foobar#ZDT!९९९#RPY!!२०१२' },
+        def = utils.info.getForm('YYYY'),
+        data = smsparser.parse(def, doc);
+
+    test.ok(getForm.alwaysCalledWith('YYYY'));
+    test.same(data, {
+        facility_id: 'foobar',
+        year: 2012,
+        quantity_dispensed: {
+            zinc: 999
+        }
+    });
+    test.same(doc.message, 'YYYY#HFI!foobar#ZDT!९९९#RPY!!२०१२');
+
+    test.done();
+};
+
 exports['textforms dash delimited keyval'] = function(test) {
     test.expect(2);
 

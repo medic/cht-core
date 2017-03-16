@@ -6,6 +6,16 @@ var utils = require('kujua-utils'),
 
 var MUVUKU_REGEX = /^\s*([A-Za-z]?\d)!.+!.+/;
 
+var T_TABLE = {
+    /* Devanagari */ '०':'0', '१':'1', '२':'2', '३':'3', '४':'4', '५':'5', '६':'6', '७':'7', '८':'8', '९':'9',
+};
+var digitReplacer = function(c) {
+    return T_TABLE[c];
+}
+var standardiseDigits = function(original) {
+    return original && original.toString().replace(/[०-९]/g, digitReplacer);
+};
+
 /**
  * Determine if a message is using the Muvuku format.
  *
@@ -104,10 +114,11 @@ var parseNum = function (raw) {
     if (raw === void 0) {
         return undefined;
     }
-    if (!isFinite(raw) || raw === "") {
+    var std = standardiseDigits(raw);
+    if (!isFinite(std) || std === "") {
         return null;
     }
-    return Number(raw);
+    return Number(std);
 };
 
 var lower = function(str) {
