@@ -55,7 +55,7 @@ before_script:
   - npm install grunt-cli -g
   - npm --prefix api install
   - ./node_modules/.bin/webdriver-manager update
-  - nohup bash -c "./node_modules/.bin/webdriver-manager start 2>&1 &"
+  - ./node_modules/.bin/webdriver-manager start
   - until nc -z localhost 4444; do sleep 1; done
 
 script:
