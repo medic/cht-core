@@ -69,7 +69,8 @@ exports.config = {
   framework: 'jasmine2',
   capabilities: {
     // browserName: 'chrome'
-    browserName: 'firefox'
+    browserName: 'firefox',
+    marionette: true
   },
   onPrepare: function() {
     var started = startApi();
