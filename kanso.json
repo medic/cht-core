@@ -501,7 +501,7 @@
                                 "join_responses": {
                                     "title": "Join Validation Responses",
                                     "type": "boolean",
-                                    "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
+                                    "description": "By default we send only the first validation response.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
                                 },
                                 "list": {
                                     "title": "Response Messages",
