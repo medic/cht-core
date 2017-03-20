@@ -3,12 +3,11 @@ var helper = require('../../helper'),
 var AddUserPage = function() {
 
 
-    //title and texts of notifications/error messages
     this.pageTitle = 'Medic Mobile';
     //this.incorrectCredentialsText = 'Incorrect user name or password. Please try again.';
    // this.passwordBlankText = "Can't be blank.";
 
-    //sign in form elements selected by id
+    //form elements
     this.usernameField = element(by.id('name'));
     this.fullNameField = element(by.id('fullname'));
     this.emailField = element(by.id('emmail'));
