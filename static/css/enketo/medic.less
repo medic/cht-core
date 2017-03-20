@@ -10,24 +10,43 @@
 .enketo {
   background-color: #FFFFFF;
   padding-bottom: 2em;
-  h2, h3, h4 {
+  h2,
+  h3,
+  h4 {
     text-align: left;
   }
-  .or h2, .or h3, .or h4 {
-    padding: 0 15px;
+  .or {
+    h2,
+    h3,
+    h4 {
+      padding: 0 15px;
+    }
   }
   .form-footer {
     margin: 0;
     margin-bottom: 1em;
     padding: 0 15px;
-    .previous-page {
+    text-align: right;
+    .previous-page::before {
+      content: "< ";
+    }
+    .next-page::after {
+      content: " >";
+    }
+    .btn.cancel {
+      display: inline-block;
       float: left;
     }
-    .next-page, .submit, .loader {
-      float: right;
-    }
   }
-  label, .question, .note {
+  .note {
+    border: 0;
+    display: block;
+    padding: 7px 12px;
+    margin: 15px 0;
+  }
+  label,
+  .question,
+  .note {
     padding-left: 15px;
     padding-right: 15px;
   }
@@ -37,7 +56,8 @@
   .container {
     padding: 0;
   }
-  .container, .form-footer {
+  .container,
+  .form-footer {
     width: 100%;
   }
   .or-appearance-hidden {
@@ -74,13 +94,15 @@
     /* inherit all standard TEXT input styles */
     &:extend(.enketo input[type="text"]);
   }
-  .invalid-constraint, .invalid-required {
+  .invalid-constraint,
+  .invalid-required {
     margin: 0;
     padding-left: 15px;
     padding-right: 15px;
     border-radius: 0;
   }
-  .or-required-msg.active, .or-constraint-msg.active {
+  .or-required-msg.active,
+  .or-constraint-msg.active {
     padding-top: 0;
   }
 
@@ -104,7 +126,8 @@
     border-radius: 4px;
   }
   button[disabled] {
-    .icon-plus, .icon-minus {
+    .icon-plus,
+    .icon-minus {
       opacity: 0.2;
     }
   }
@@ -255,6 +278,14 @@
     }
     input[data-mm-android-dp]:hover {
       background-color: #ffa500;
+    }
+    .form-footer {
+      .btn.btn-link.cancel {
+        display: none;
+      }
+      .previous-page {
+        float: left;
+      }
     }
   }
 }

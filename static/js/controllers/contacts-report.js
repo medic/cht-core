@@ -30,23 +30,29 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
         });
     };
 
+    $scope.saveStatus = {};
+
     $scope.save = function() {
-      if ($scope.saving) {
+      if ($scope.saveStatus.saving) {
         $log.debug('Attempted to call contacts-report:$scope.save more than once');
         return;
       }
 
-      $scope.saving = true;
+      $scope.saveStatus.saving = true;
+      $scope.saveStatus.error = null;
       Enketo.save($state.params.formId, $scope.form)
         .then(function(doc) {
           $log.debug('saved report', doc);
-          $scope.saving = false;
+          $scope.saveStatus.saving = false;
           $translate('report.created').then(Snackbar);
           $state.go('contacts.detail', { id: $state.params.id });
         })
         .catch(function(err) {
-          $scope.saving = false;
+          $scope.saveStatus.saving = false;
           $log.error('Error submitting form data: ', err);
+          $translate('error.report.save').then(function(msg) {
+            $scope.saveStatus.error = msg;
+          });
         });
     };
 
