@@ -94,6 +94,7 @@ describe('Export data', function() {
   };
 
   it('exports messages', function() {
+    browser.pause(); // is the profile actually set?
     element(by.id('configuration-tab')).click();
     element(by.id('configuration-import-export-button')).click();
     element(by.id('configuration-export-messages-button')).click();
@@ -105,6 +106,7 @@ describe('Export data', function() {
       var fileContents = fs.readFileSync(downloadDir + '/' + foundFile, { encoding: 'utf8' });
       // 3 rows : 1 header, 2 messages.
       expect(numRows(fileContents)).toEqual(3);
+      browser.pause();
     });
   });
 });
