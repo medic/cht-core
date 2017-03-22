@@ -254,12 +254,8 @@ describe('registration transition', () => {
     };
 
     it('shows content', () => {
-      browser.driver.navigate().refresh();
-      browser.wait(() => browser.isElementPresent(by.id('reports-tab')), 10000);
+      refresh();
       element(by.id('reports-tab')).click();
-
-      // refresh - live list only updates on changes but changes are disabled for e2e
-      browser.driver.navigate().refresh();
 
       // wait for sentinel to do its thing
       browser.wait(() => browser.isElementPresent(by.cssContainingText('#reports-list .unfiltered li:first-child .name', CAROL.name)), 10000);

@@ -1,48 +1,46 @@
-const _ = require('underscore'),
-      utils = require('./utils'),
+const utils = require('./utils'),
       spawn = require('child_process').spawn,
       environment = require('./auth')(),
       modules = [];
 
-_.templateSettings = {
-  interpolate: /\{\{(.+?)\}\}/g
+const getLoginUrl = () => {
+  const redirectUrl = encodeURIComponent(`/${environment.dbName}/_design/medic/_rewrite/#/messages?e2eTesting=true`);
+  return `http://${environment.apiHost}:${environment.apiPort}/${environment.dbName}/login?redirect=${redirectUrl}`;
 };
 
+const getCouchUrl = () =>
+  `http://${environment.user}:${environment.pass}@${environment.couchHost}:${environment.couchPort}/${environment.dbName}`;
+
 const login = browser => {
-  const loginUrlTemplate = _.template('http://{{apiHost}}:{{apiPort}}/{{dbName}}/login?redirect=');
-  const redirectUrl = encodeURIComponent('/' + environment.dbName  + '/_design/medic/_rewrite/#/messages?e2eTesting=true');
-  browser.driver.get(loginUrlTemplate(environment) + redirectUrl);
+  browser.driver.get(getLoginUrl());
   browser.driver.findElement(by.name('user')).sendKeys(environment.user);
   browser.driver.findElement(by.name('password')).sendKeys(environment.pass);
   browser.driver.findElement(by.id('login')).click();
   // Login takes some time, so wait until it's done.
-  return browser.driver.wait(() => {
-    return browser.driver.isElementPresent(by.css('body.bootstrapped'));
-  }, 20 * 1000, 'Login should be complete within 20 seconds');
+  const bootstrappedCheck = () => browser.driver.isElementPresent(by.css('body.bootstrapped'));
+  return browser.driver.wait(bootstrappedCheck, 20 * 1000, 'Login should be complete within 20 seconds');
 };
 
 const startNodeModule = (dir, startOutput) => {
   return new Promise(resolve => {
-    const couchUrlTemplate = _.template('http://{{user}}:{{pass}}@{{couchHost}}:{{couchPort}}/{{dbName}}');
     const module = spawn('node', ['server.js'], {
       cwd: dir,
       env: {
         API_PORT: environment.apiPort,
-        COUCH_URL: couchUrlTemplate(environment),
+        COUCH_URL: getCouchUrl(),
         COUCH_NODE_NAME: process.env.COUCH_NODE_NAME,
         PATH: process.env.PATH
       }
     });
-    const prefix = '[' + dir + '] ';
     let started = false;
     module.stdout.on('data', data => {
-      if (!started && data.toString().indexOf(startOutput) >= 0) {
+      if (!started && data.toString().includes(startOutput)) {
         started = true;
         resolve();
       }
-      console.log(prefix + data);
+      console.log(`[${dir}] ${data}`);
     });
-    module.stderr.on('data', data => console.error(prefix + data));
+    module.stderr.on('data', data => console.error(`[${dir}] ${data}`));
     modules.push(module);
   });
 };
@@ -56,7 +54,7 @@ const startModules = () => startApi().then(startSentinel);
 
 const setupSettings = () => {
   return utils.request({
-    path: '/' + environment.dbName  + '/_design/medic/_rewrite/update_settings/medic',
+    path: `/${environment.dbName}/_design/medic/_rewrite/update_settings/medic`,
     method: 'PUT',
     body: JSON.stringify({ setup_complete: true })
   });
