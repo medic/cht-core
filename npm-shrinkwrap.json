@@ -705,9 +705,9 @@
       "resolved": "http://registry.npmjs.org/once/-/once-1.4.0.tgz"
     },
     "openrosa-xpath-evaluator": {
-      "version": "1.2.1",
-      "from": "openrosa-xpath-evaluator@>=1.2.1 <2.0.0",
-      "resolved": "https://registry.npmjs.org/openrosa-xpath-evaluator/-/openrosa-xpath-evaluator-1.2.1.tgz"
+      "version": "1.2.2",
+      "from": "openrosa-xpath-evaluator@>=1.2.2 <2.0.0",
+      "resolved": "https://registry.npmjs.org/openrosa-xpath-evaluator/-/openrosa-xpath-evaluator-1.2.2.tgz"
     },
     "path-is-absolute": {
       "version": "1.0.1",
