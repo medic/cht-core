@@ -178,7 +178,7 @@ exports['describe loadTransitions'] = function(test) {
     tests.forEach(function(t) {
         sinon.stub(config, 'get').returns(t[0]);
         var stub = sinon.stub(transitions, '_loadTransition');
-        transitions._loadTransitions();
+        transitions.loadTransitions();
         test.equal(stub.called, t[1]);
         stub.restore();
         config.get.restore();

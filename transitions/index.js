@@ -362,8 +362,8 @@ var attach = function() {
 
 module.exports = {
     _loadTransition: loadTransition,
-    _loadTransitions: loadTransitions,
     _changeQueue: changeQueue,
+    loadTransitions: loadTransitions,
     canRun: canRun,
     attach: attach,
     finalize: finalize,
