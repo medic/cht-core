@@ -21,7 +21,10 @@ audit history where required.
   - [Run](#run)
   - [Test](#test)
   - [Build Status](#build-status)
-- [Overview](#overview)
+- [Migrations](#migrations)
+  - [Migration script api](#migration-script-api)
+  - [Implementation, re-running migrations by hand](#implementation-re-running-migrations-by-hand)
+- [API Overview](#api-overview)
   - [Timestamps](#timestamps)
 - [Export](#export)
   - [GET /api/v1/export/forms/{formcode}](#get-apiv1exportformsformcode)
@@ -38,6 +41,7 @@ audit history where required.
   - [GET /api/v1/messages](#get-apiv1messages)
   - [GET /api/v1/messages/{{id}}](#get-apiv1messagesid)
   - [PUT /api/v1/messages/state/{{id}}](#put-apiv1messagesstateid)
+- [SMS](#sms)
   - [POST /api/sms](#post-apisms)
 - [People](#people)
   - [Supported Properties](#supported-properties)
@@ -690,6 +694,8 @@ Content-Type: application/json; charset=utf-8
 ```
 
 Todo: should updating the state value of a message require the doc's revision?
+
+# SMS
 
 ## POST /api/sms
 
