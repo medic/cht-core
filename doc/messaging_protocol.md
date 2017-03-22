@@ -1,21 +1,21 @@
 # SMS message sending
 
 ## Interaction between medic-webapp and medic-gateway
-[Medic-webapp](https://github.com/medic/medic-webapp) uses [medic-gateway](https://github.com/medic/medic-gateway) 
-to send SMS messages. 
+[Medic-webapp](https://github.com/medic/medic-webapp) uses [medic-gateway](https://github.com/medic/medic-gateway)
+to send SMS messages.
 
-When a report comes in, [medic-sentinel](https://github.com/medic/medic-sentinel) adds the appropriate list of 
+When a report comes in, [medic-sentinel](https://github.com/medic/medic-sentinel) adds the appropriate list of
 scheduled messages (to be sent at a future date) to the report doc.
 
 Periodically, sentinel checks for messages that need to be sent, and [sets their status to `pending`](https://github.com/medic/medic-sentinel/blob/master/schedule/due_tasks.js).
 
 Periodically, the gateway pings the webapp over HTTP to get any messages that need to be sent.
-and report on the status of the messages it's trying to send. 
-Webapp looks for messages with status `scheduled` and passes them along to gateway, and stores new statuses for messages based on gateway's status updates.
+and report on the status of the messages it's trying to send.
+Webapp looks for messages with status `pending` and passes them along to gateway, and stores new statuses for messages based on gateway's status updates.
 
 ## Message statuses
 
-Both webapp and gateway store statuses of the messages to keep track of the exchange. 
+Both webapp and gateway store statuses of the messages to keep track of the exchange.
 They each have their set of statuses, which sometimes are called the same but do not mean the same thing. Watch out.
 
 ### Message statuses in medic-gateway
