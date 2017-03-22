@@ -18,13 +18,57 @@ var ContactsPage = function () {
     this.rightHandSideFAB = {
         newActionButton: element(by.css('.mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle mm-icon-disabled')),
         newAreaButton: element(by.css('.mm-icon mm-icon-inverse mm-icon-caption')),
-        newPersonButton: element(by.css('')),
-        editButton=element(by.css('')),
-        deleteButton=element(by.css(''))
+        //todo: needs more precision
+        newPersonButton: element(by.css('.fa-stack')),
+        editButton:element(by.css('.fa fa-pencil')),
+        deleteButton:element(by.css('[ng-click="deleteDoc(actionBar.right.selected)"]'))
+
+        
 
     };
     //functions to interact with our page
 
+    this.addNewArea= function() {
+
+        helper.waitUntilReady(this.newAreaButton)
+         
+    };
+
+    this.addNewPerson= function() {
+
+        helper.waitUntilReady(this.newPersonButton)
+         
+    };
+
+    this.edit= function() {
+
+        helper.waitUntilReady(this.editButton)
+         
+    };
+
+     this.delete= function() {
+
+        helper.waitUntilReady(this.deleteButton)
+         
+    };
+
+ this.openDeliveryReport= function() {
+
+        helper.waitUntilReady(this.newActionButton)
+         
+    };
+
+
+ this.openNewPregnancyForm= function() {
+
+        helper.waitUntilReady(this.newActionButton)
+         
+    };
+ this.openPregnancyVisitForm= function() {
+
+        helper.waitUntilReady(this.newActionButton)
+         
+    };
 
 
 }
