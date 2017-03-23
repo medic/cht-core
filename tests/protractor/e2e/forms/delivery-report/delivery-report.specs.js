@@ -1,6 +1,6 @@
 var helper = require('../../helper');
 
-var DeliveryReportForm = require('../login/delivry-report.po.js');
+var DeliveryReportForm = require('../delivery-report/delivery-report.po.js');
 
 describe('Complete delivery report form : ', function () {
 
