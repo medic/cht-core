@@ -1,5 +1,5 @@
 var helper = require('../../helper'),
-    CommonElements = require('./common.po.js');
+    var CommonElements = require('./common.po.js');
 
 /*var MessagesPage = require('../messages/messages.po.js');
 var ContactsPage = require('../contacts/contacts.po.js');
