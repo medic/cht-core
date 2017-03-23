@@ -1,7 +1,7 @@
-var helper = require('../../helper'),
-    LoginPage = require('./login.po.js');
-CommonElements = require('../common/common.po.js')
-MessagesPage = require('../messages/messages.po.js')
+var helper = require('../../helper');
+  var  LoginPage = require('./login.po.js');
+var CommonElements = require('../common/common.po.js');
+var MessagesPage = require('../messages/messages.po.js');
 
 describe('Login page : ', function () {
 
@@ -20,10 +20,7 @@ describe('Login page : ', function () {
 
     beforeEach(function () {
         browser.get(browser.params.url);
-        //timeout jasmine
-        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-
+        
     });
 
     afterEach(function () {
@@ -31,8 +28,6 @@ describe('Login page : ', function () {
         browser.driver.sleep(1000);
         browser.manage().deleteAllCookies();
 
-        //jasmine timeout
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
 
     });
 
@@ -58,7 +53,7 @@ describe('Login page : ', function () {
         helper.waitUntilReady(commonElements.messagesLink);
 
         expect(messagesPage.noMessageErrorField.isDisplayed()).toBeTruthy();
-        expect(messagesPage.noMessageErrorField.getText()).toBe('No messages found')
+        expect(messagesPage.noMessageErrorField.getText()).toBe('No messages found');
 
 
     });

@@ -1,4 +1,4 @@
-var helper = require('../../helper'),
+var helper = require('../../helper');
 
 var ImportExportPage = function () {
 
@@ -16,10 +16,10 @@ var ImportExportPage = function () {
     this.export = function () {
         //todo: click exportButton
 
-    }
+    };
 
 
 
-}
+};
 
 module.exports = ImportExportPage;

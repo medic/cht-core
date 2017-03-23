@@ -1,32 +1,36 @@
-var helper = require('../../helper'),
+var helper = require('../../helper');
 
-var UsersPage = function() {
+var UsersPage = function () {
 
     //title 
     this.pageTitle = 'Medic Mobile';
-    this.addUserButton=element(by.id('add-user'));
-    this.usersList=element.all(by.repeater('user in users'));
-       
+    this.addUserButton = element(by.id('add-user'));
+    this.usersList = element.all(by.repeater('user in users'));
+
     //functions to interact with our page
-    
-    this.addUser = function(username, password) {
 
-        helper.waitUntilReady(this.addUserButton)
-      
-    }
+    this.addUser = function (username, password) {
+        username.trim();
+        password.trim();
+        helper.waitUntilReady(this.addUserButton);
 
-    this.editUser = function(username, password) {
+    };
 
-        helper.waitUntilReady(this.addUserButton)
-      
-    }
-this.deleteUser = function(username, password) {
+    this.editUser = function (username, password) {
+        username.trim();
+        password.trim();
 
-        helper.waitUntilReady(this.addUserButton)
-      
-    }
+        helper.waitUntilReady(this.addUserButton);
+
+    };
+    this.deleteUser = function (username, password) {
+        username.trim();
+        password.trim();
+        helper.waitUntilReady(this.addUserButton);
+
+    };
 
 
-}
+};
 
 module.exports = UsersPage;

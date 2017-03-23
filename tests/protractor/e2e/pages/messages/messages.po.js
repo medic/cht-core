@@ -1,5 +1,5 @@
-var helper = require('../../helper'),
-    faker = require('faker');
+//var helper = require('../../helper');
+   // faker = require('faker');
 
 var MessagesPage = function() {
 
@@ -14,6 +14,6 @@ var MessagesPage = function() {
     
  
 
-}
+};
 
 module.exports = MessagesPage;

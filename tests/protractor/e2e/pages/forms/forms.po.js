@@ -1,4 +1,4 @@
-var helper = require('../../helper'),
+var helper = require('../../helper');
 
 var FormsPage = function() {
 
@@ -8,34 +8,34 @@ var FormsPage = function() {
     this.importButton = element(by.className('btn btn-default choose'));
        this.downloadButton =element(by.xpath('//span[contains(text(), "Download")]'));
         this.goToMedicReporterButton =element(by.xpath('//span[contains(text(), "Go  To Medic Reporter")]'));
-        this.installedForms=element.all(by.repeater('form in forms'))
+        this.installedForms=element.all(by.repeater('form in forms'));
     
     //functions to interact with our page
     
     this.import = function() {
 
-        helper.waitUntilReady(this.importButton)
+        helper.waitUntilReady(this.importButton);
        
-        this.import.click()
+        this.import.click();
 
-    }
+    };
 
      this.download = function() {
 
-        helper.waitUntilReady(this.downloadButton)
+        helper.waitUntilReady(this.downloadButton);
        
-        this.downloadButton.click()
+        this.downloadButton.click();
 
-    }
+    };
 
 
       this.goToMedicReporter = function() {
 
-        helper.waitUntilReady(this.goToMedicReporterButton)
+        helper.waitUntilReady(this.goToMedicReporterButton);
        
-        this.goToMedicReporterButton.click()
+        this.goToMedicReporterButton.click();
 
-    }
+    };
 
 }
 

@@ -18,22 +18,22 @@ var configurationButtons = element.all(by.repeater('page in configurationPages')
  this.iconsButton=configurationButtons[6];
  this.targetsButton=configurationButtons[7];
  this.permissionsButton=configurationButtons[8];
- this.dropdown;
+
    
     //functions to interact with our page
     
     this.login = function(username, password) {
 
-        helper.waitUntilReady(this.usernameField)
-         this.usernameField.clear()
-        this.passwordField.clear()
+        helper.waitUntilReady(this.usernameField);
+         this.usernameField.clear();
+        this.passwordField.clear();
 
-        this.usernameField.sendKeys(username)
-        this.passwordField.sendKeys(password)
-        this.loginButton.click()
-    }
+        this.usernameField.sendKeys(username);
+        this.passwordField.sendKeys(password);
+        this.loginButton.click();
+    };
 
-}
+};
 
 module.exports = ConfigurationPage;
 

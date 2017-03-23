@@ -25,10 +25,10 @@ var waitElementToDisappear = function (locator) {
   browser.wait(function () {
     return browser.isElementPresent(locator) //if element is already present, this line will evaluate to true
     .then(function (presenceOfElement) {
-      return !presenceOfElement
+      return !presenceOfElement;
     }); // this modifies the previous line so that it evaluates to false until the element is no longer present.
   }, 10000);
-}
+};
 
 var waitForCheckboxToBeChecked = function (elem) {
   browser.wait(function () {
@@ -36,7 +36,7 @@ var waitForCheckboxToBeChecked = function (elem) {
       return (isElementChecked);
     });
   }, 10000);
-}
+};
 
 /**
 * Usage: selectDropdownByNumber ( element, index)
@@ -48,10 +48,10 @@ var selectDropdownByNumber = function (element, index, milliseconds) {
   .then(function (options) {
     options[index].click();
   });
-  if (typeof milliseconds != 'undefined') {
+  if (typeof milliseconds !== 'undefined') {
     browser.sleep(milliseconds);
   }
-}
+};
 
 /**
 * Usage: selectDropdownByText (selector, item)
@@ -64,7 +64,7 @@ var selectDropdownByText = function selectOption(element, item, milliseconds) {
   .then(function findMatchingOption(options) {
     options.some(function (option) {
       option.getText().then(function doesOptionMatch(text) {
-        if (text.indexOf(item) != -1) {
+        if (text.indexOf(item) !== -1) {
           desiredOption = option;
           return true;
         }
@@ -76,19 +76,20 @@ var selectDropdownByText = function selectOption(element, item, milliseconds) {
       desiredOption.click();
     }
   });
-  if (typeof milliseconds != 'undefined') {
+  if (typeof milliseconds !== 'undefined') {
     browser.sleep(milliseconds);
   }
-}
+};
 
 var setBrowserParams = function () {
   browser.driver.manage().window().setSize(browser.params.screenWidth, browser.params.screenHeight);
   browser.ignoreSynchronization = true;
-}
+};
 
 exports.waitElementToBeVisisble = waitElementToBeVisisble;
 var isTextDisplayed = function (text) {
- var selectedElement = element(by.xpath("//*[text()[normalize-space() = '" + text + "']]"));
+
+ var selectedElement = element(by.xpath('//*[text()[normalize-space() = ' + ' \' ' + text + '\']]'));
 return selectedElement.isPresent();
 
 };

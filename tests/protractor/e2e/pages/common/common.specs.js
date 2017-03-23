@@ -1,21 +1,23 @@
 var helper = require('../../helper'),
     CommonElements = require('./common.po.js');
 
-MessagesPage = require('../messages/messages.po.js');
-ContactsPage = require('../contacts/contacts.po.js');
-AnalyticsPage = require('../analytics/analytics.po.js');
-TasksPage = require('../tasks/tasks.po.js');
-ConfigurationPage = require('../configuration/configuration.po.js');
-LoginPage = require('../login/login.po.js');
+/*var MessagesPage = require('../messages/messages.po.js');
+var ContactsPage = require('../contacts/contacts.po.js');
+var AnalyticsPage = require('../analytics/analytics.po.js');
+var TasksPage = require('../tasks/tasks.po.js');
+var ConfigurationPage = require('../configuration/configuration.po.js');
+*/
+var LoginPage = require('../login/login.po.js');
 
 describe('Navigation tests : ', function () {
 
     var commonElements = new CommonElements();
-    var messagesPage = new MessagesPage();
+   /* var messagesPage = new MessagesPage();
     var contactsPage = new ContactsPage();
     var analyticsPage = new AnalyticsPage();
     var tasksPage = new TasksPage();
     var configurationPage = new ConfigurationPage();
+    */
     var loginPage = new LoginPage();
     //var helper=new Helper();
 
@@ -33,10 +35,7 @@ describe('Navigation tests : ', function () {
 
     beforeEach(function () {
         // browser.get(browser.params.url);
-        //timeout jasmine
-        originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
-
+      
 
     });
 
@@ -45,8 +44,6 @@ describe('Navigation tests : ', function () {
         browser.driver.sleep(1000);
        // browser.manage().deleteAllCookies();
 
-        //jasmine timeout
-        jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
 
 
 
@@ -59,11 +56,10 @@ describe('Navigation tests : ', function () {
         //assert message tab opens
         //expect(messagesPage.noMessageErrorField.getText()).toBe('No messages found');
 
-        text='No messages found';
+       
 
         expect(helper.isTextDisplayed('No messages found')).toBeTruthy();
-       // expect(element(by.xpath("//*[. = '" + text + "']"))).isDisplayed().toBeTruthy();
-//helper.isTextDisplayed('No messages found');
+ 
     });
 
 

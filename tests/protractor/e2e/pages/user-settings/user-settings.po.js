@@ -1,4 +1,4 @@
-var helper = require('../../helper'),
+var helper = require('../../helper');
 
 var UserSettingsPage = function() {
 
@@ -40,7 +40,7 @@ this.editUserProfileModal={
 
     }
 
-}
+};
 
 
     
@@ -49,15 +49,16 @@ this.editUserProfileModal={
     
     this.updatePassword = function(password) {
 //todo: fill updatePasswordModal and submit
+password.trim();
 
-    }
+    };
 
      this.editUserProfile = function() {
 
         //todo: fill editUserProfileModal and submit
 
-    }
+    };
 
-}
+};
 
 module.exports = UserSettingsPage;

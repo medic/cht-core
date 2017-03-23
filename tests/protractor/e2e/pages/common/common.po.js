@@ -1,3 +1,6 @@
+
+var helper = require('../../helper');
+
 var CommonElements = function() {
 
     this.medicLogo = element(by.className('logo-full'));
@@ -13,49 +16,49 @@ var CommonElements = function() {
 
        this.goToMessages = function() {
 
-        helper.waitUntilReady(this.messagesLink)
-        this.messagesLink.click()
-    }
+        helper.waitUntilReady(this.messagesLink);
+        this.messagesLink.click();
+    };
 
         this.goToTasks = function() {
 
-        helper.waitUntilReady(this.tasksLink)
-        this.tasksLink.click()
-    }
+        helper.waitUntilReady(this.tasksLink);
+        this.tasksLink.click();
+    };
 
         this.goToPeople = function() {
 
-        helper.waitUntilReady(this.peoplesLink)
-        this.peoplesLink.click()
-    }
+        helper.waitUntilReady(this.peoplesLink);
+        this.peoplesLink.click();
+    };
 
         this.goToTargets = function() {
 
-        helper.waitUntilReady(this.targetsLink)
-        this.targetsLink.click()
-    }
+        helper.waitUntilReady(this.targetsLink);
+        this.targetsLink.click();
+    };
 
 
    this.goToHistory = function() {
 
-        helper.waitUntilReady(this.historyLink)
-        this.historyLink.click()
-    }
+        helper.waitUntilReady(this.historyLink);
+        this.historyLink.click();
+    };
 
    this.goToConfiguration = function() {
 
-        helper.waitUntilReady(this.configurationLink)
-        this.configurationLink.click()
-    }
+        helper.waitUntilReady(this.configurationLink);
+        this.configurationLink.click();
+    };
 
 
       this.openMenu = function() {
 
-        helper.waitUntilReady(this.messagesLink)
-        this.hamburgerMenu.click()
-    }
+        helper.waitUntilReady(this.messagesLink);
+        this.hamburgerMenu.click();
+    };
 
-}
+};
 
 module.exports = CommonElements;
 

@@ -30,43 +30,43 @@ var ContactsPage = function () {
 
     this.addNewArea= function() {
 
-        helper.waitUntilReady(this.newAreaButton)
+        helper.waitUntilReady(this.newAreaButton);
          
     };
 
     this.addNewPerson= function() {
 
-        helper.waitUntilReady(this.newPersonButton)
+        helper.waitUntilReady(this.newPersonButton);
          
     };
 
     this.edit= function() {
 
-        helper.waitUntilReady(this.editButton)
+        helper.waitUntilReady(this.editButton);
          
     };
 
      this.delete= function() {
 
-        helper.waitUntilReady(this.deleteButton)
+        helper.waitUntilReady(this.deleteButton);
          
     };
 
  this.openDeliveryReport= function() {
 
-        helper.waitUntilReady(this.newActionButton)
+        helper.waitUntilReady(this.newActionButton);
          
     };
 
 
  this.openNewPregnancyForm= function() {
 
-        helper.waitUntilReady(this.newActionButton)
+        helper.waitUntilReady(this.newActionButton);
          
     };
  this.openPregnancyVisitForm= function() {
 
-        helper.waitUntilReady(this.newActionButton)
+        helper.waitUntilReady(this.newActionButton);
          
     };
 

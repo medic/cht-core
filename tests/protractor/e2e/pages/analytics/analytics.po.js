@@ -1,5 +1,5 @@
-var helper = require('../../helper'),
-    faker = require('faker');
+//var helper = require('../../helper'),
+   // faker = require('faker');
 
 var AnalyticsPage = function() {
 
@@ -13,6 +13,6 @@ var AnalyticsPage = function() {
     
  
 
-}
+};
 
 module.exports = AnalyticsPage;

@@ -1,4 +1,4 @@
-var helper = require('../../helper'),
+var helper = require('../../helper');
 
 var AddUserPage = function() {
 
@@ -25,20 +25,20 @@ var AddUserPage = function() {
     
     this.submit = function() {
 
-        helper.waitUntilReady(this.submitButton)
+        helper.waitUntilReady(this.submitButton);
        
-        this.submitButton.click()
+        this.submitButton.click();
 
-    }
+    };
 
      this.cancel = function() {
 
-        helper.waitUntilReady(this.cancelButton)
+        helper.waitUntilReady(this.cancelButton);
        
-        this.cancelButton.click()
+        this.cancelButton.click();
 
-    }
+    };
 
-}
+};
 
 module.exports = AddUserPage;
