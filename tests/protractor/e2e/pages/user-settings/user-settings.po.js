@@ -21,20 +21,20 @@ this.editUserProfileModal={
  phoneField: element(by.id('phone')),
  languageField :element(by.id('language')),
     
-   submitButton: element(by.className('btn submit btn-primary')),
-       cancelButton: element(by.className('btn cancel')),
+  
     
     
     submit :function() {
-
-        helper.waitUntilReady(this.submitButton);
+        var submitButton= element(by.className('btn submit btn-primary'));
+         helper.waitUntilReady(submitButton);
         submitButton.click();
 
     },
 
      cancel : function() {
+         var cancelButton= element(by.className('btn cancel'));
 
-        helper.waitUntilReady(this.cancelButton);
+        helper.waitUntilReady(cancelButton);
        
         cancelButton.click();
 

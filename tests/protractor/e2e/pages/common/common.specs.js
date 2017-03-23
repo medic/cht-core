@@ -1,4 +1,4 @@
-var helper = require('../../helper'),
+var helper = require('../../helper');
     var CommonElements = require('./common.po.js');
 
 /*var MessagesPage = require('../messages/messages.po.js');

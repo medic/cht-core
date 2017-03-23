@@ -37,6 +37,6 @@ var FormsPage = function() {
 
     };
 
-}
+};
 
 module.exports = FormsPage;

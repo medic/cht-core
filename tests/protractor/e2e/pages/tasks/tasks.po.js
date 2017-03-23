@@ -1,5 +1,5 @@
-var helper = require('../../helper'),
-    faker = require('faker');
+//var helper = require('../../helper'),
+   // faker = require('faker');
 
 var TasksPage = function() {
 
@@ -11,6 +11,6 @@ var TasksPage = function() {
     this.lefHandPane=element(by.id('tasks-list'));
     //functions to interact with our page
   
-}
+};
 
 module.exports = TasksPage;

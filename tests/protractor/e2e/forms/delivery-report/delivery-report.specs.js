@@ -1,4 +1,4 @@
-var helper = require('../../helper'),
+var helper = require('../../helper');
 
 var DeliveryReportForm = require('../login/delivry-report.po.js');
 

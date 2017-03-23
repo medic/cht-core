@@ -1,5 +1,5 @@
-var helper = require('../../helper'),
-    faker = require('faker');
+var helper = require('../../helper');
+  //  faker = require('faker');
 
 var ContactsPage = function () {
 
@@ -71,6 +71,6 @@ var ContactsPage = function () {
     };
 
 
-}
+};
 
 module.exports = ContactsPage;
