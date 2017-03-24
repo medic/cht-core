@@ -92,8 +92,8 @@ module.exports = {
             }, callback);
         }
 
-        transitionUtils.addRegistrationNotFoundMessage(doc, report);
-        callback(null, true);
+        transitionUtils.addRegistrationNotFoundError(doc, report);
+        return callback(null, true);
     },
     // find the messages to clear
     findToClear: function(options) {
@@ -210,7 +210,7 @@ module.exports = {
                 }
 
                 if (!patientContactId) {
-                    transitionUtils.addRegistrationNotFoundMessage(doc, report);
+                    transitionUtils.addRegistrationNotFoundError(doc, report);
                     return callback(null, true);
                 }
 

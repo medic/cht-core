@@ -8,7 +8,7 @@ before_script:
 script: "grunt test"
 
 notifications:
-  webhooks: 
+  webhooks:
     urls:
       - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
     on_success: change

@@ -27,6 +27,37 @@ var getRegistrations = function(db, patientId, callback) {
     utils.getRegistrations({ db: db, id: patientId }, callback);
 };
 
+var addValidationErrors = function(registrationConfig, doc, errors) {
+    messages.addErrors(doc, errors);
+    // join all errors into one response or respond with first error.
+    if (registrationConfig.validations.join_responses) {
+        var msgs = [];
+        _.each(errors, function(err) {
+            if (err.message) {
+                msgs.push(err.message);
+            } else if (err) {
+                msgs.push(err);
+            }
+        });
+        messages.addReply(doc, msgs.join('  '));
+    } else {
+        var err = _.first(errors);
+        messages.addReply(doc, err.message || err);
+    }
+};
+
+var getPatientNameField = function(params) {
+    if (Array.isArray(params) && params.length && params[0]) {
+        return params[0];
+    }
+
+    if (params && params.patient_name_field) {
+        return params.patient_name_field;
+    }
+
+    return 'patient_name';
+};
+
 module.exports = {
     filter: function(doc) {
         var self = module.exports,
@@ -150,57 +181,36 @@ module.exports = {
     onMatch: function(change, db, audit, callback) {
         var self = module.exports,
             doc = change.doc,
-            config = self.getRegistrationConfig(self.getConfig(), doc.form);
+            registrationConfig = self.getRegistrationConfig(self.getConfig(), doc.form);
 
-        if (!config) {
+        if (!registrationConfig) {
             return callback();
         }
 
-        self.validate(config, doc, function(errors) {
-
+        self.validate(registrationConfig, doc, function(errors) {
             if (errors && errors.length > 0) {
-                messages.addErrors(doc, errors);
-                // join all errors into one response or respond with first
-                // error.
-                if (config.validations.join_responses) {
-                    var msgs = [];
-                    _.each(errors, function(err) {
-                        if (err.message) {
-                            msgs.push(err.message);
-                        } else if (err) {
-                            msgs.push(err);
-                        }
-                    });
-                    messages.addReply(doc, msgs.join('  '));
-                } else {
-                    var err = _.first(errors);
-                    messages.addReply(doc, err.message || err);
-                }
+                addValidationErrors(registrationConfig, doc, errors, callback);
                 return callback(null, true);
             }
 
             if (doc.fields && doc.fields.patient_id) {
                 // We're attaching this registration to an existing patient, let's
                 // make sure it's valid
-                // NB: if in the future we allow partners to configure the add_patient
-                //     trigger to support passing in their own patient shortcodes
-                //     we're going to have to change this logic:
-                //     https://github.com/medic/medic-webapp/issues/3000
                 return utils.getPatientContactUuid(db, doc.fields.patient_id, function(err, patientContactId) {
                     if (err) {
                         return callback(err);
                     }
 
                     if (!patientContactId) {
-                        transitionUtils.addRegistrationNotFoundMessage(doc, config);
+                        transitionUtils.addRegistrationNotFoundError(doc, registrationConfig);
                         return callback(null, true);
                     }
 
-                    return self.fireConfiguredTriggers(db, audit, config, doc, callback);
+                    return self.fireConfiguredTriggers(db, audit, registrationConfig, doc, callback);
                 });
+            } else {
+                return self.fireConfiguredTriggers(db, audit, registrationConfig, doc, callback);
             }
-
-            return self.fireConfiguredTriggers(db, audit, config, doc, callback);
         });
     },
     fireConfiguredTriggers: function(db, audit, registrationConfig, doc, callback) {
@@ -217,21 +227,34 @@ module.exports = {
                 if (self.isBoolExprFalse(obj, event.bool_expr)) {
                     return;
                 }
-                var options = { db: db, audit: audit, doc: doc };
-                if (event.params) {
-                    // params setting get sent as array
-                    options.params = event.params.split(',');
+                var options = { db: db, audit: audit, doc: doc, registrationConfig: registrationConfig };
+
+
+                if (!event.params) {
+                    options.params = {};
+                } else {
+                    try {
+                        options.params = JSON.parse(event.params);
+                    } catch (e) {
+                        options.params = event.params.split(',');
+                    }
                 }
+
+                logger.debug('Parsed params for form', options.form,
+                    'trigger', event.trigger,
+                    ':', options.params);
+
                 series.push(function(cb) {
                     trigger.apply(null, [ options, cb ]);
                 });
             }
         });
 
-        async.series(series, function(err) {
+        async.series(series, function(err, changed) {
             if (err) {
-                return callback(err);
+                return callback(err, changed);
             }
+
             // add messages is done last so data on doc can be used in
             // messages
             self.addMessages(db, registrationConfig, doc, function() {
@@ -333,14 +356,47 @@ module.exports = {
         var doc = options.doc,
             db = db || options.db;
 
-        transitionUtils.addUniqueId(db, doc, callback);
+        var patientIdField = options.params.patient_id_field;
+
+        if (patientIdField === 'patient_id') {
+            callback(new Error('Configuration Error: patient_id_field cannot be patient_id'));
+        } else if (patientIdField) {
+            var providedId = doc.fields[options.params.patient_id_field];
+
+            if (!providedId) {
+                transitionUtils.addRejectionMessage(
+                    doc,
+                    options.registrationConfig,
+                    'no_provided_patient_id');
+                return callback(null, true);
+            }
+
+            transitionUtils.isIdUnique(db, providedId, function(err, isUnique) {
+                if (err) {
+                    return callback(err);
+                }
+
+                if (isUnique) {
+                    doc.patient_id = providedId;
+                    return callback();
+                }
+
+                transitionUtils.addRejectionMessage(
+                    doc,
+                    options.registrationConfig,
+                    'provided_patient_id_not_unique');
+                callback(null, true);
+            });
+        } else {
+            transitionUtils.addUniqueId(db, doc, callback);
+        }
     },
     addPatient: function(options, callback) {
         var doc = options.doc,
             db = options.db,
             audit = options.audit,
             patientShortcode = doc.patient_id,
-            patientNameField = _.first(options.params) || 'patient_name';
+            patientNameField = getPatientNameField(options.params);
 
         utils.getPatientContactUuid(db, patientShortcode, function(err, patientContactId) {
             if (err) {

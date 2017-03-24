@@ -3,6 +3,7 @@ var _ = require('underscore'),
     sinon = require('sinon'),
     moment = require('moment'),
     testUtils = require('../test_utils'),
+    transitionUtils = require('../../transitions/utils'),
     utils = require('../../lib/utils');
 
 function getMessage(doc) {
@@ -97,11 +98,12 @@ exports.setUp = function(callback) {
 
 exports.tearDown = function(callback) {
     testUtils.restore([
-        utils.getRegistrations,
-        utils.getPatientContactUuid,
-        utils.getClinicPhone,
         transition.getConfig,
-        utils.getForm
+        transitionUtils.addUniqueId,
+        utils.getClinicPhone,
+        utils.getForm,
+        utils.getPatientContactUuid,
+        utils.getRegistrations
     ]);
 
     callback();
@@ -197,8 +199,12 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
     var doc,
         start = moment().startOf('week').subtract(5, 'weeks');
 
-    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+
+    sinon.stub(transitionUtils, 'addUniqueId', (db, doc, callback) => {
+        doc.patient_id = 12345;
+        callback();
+    });
 
     doc = {
         form: 'p',
@@ -240,7 +246,7 @@ exports['pregnancies on existing patients fail without valid patient id'] = func
         test.equals(err, null);
         test.equals(changed, true);
         test.equals(doc.errors.length, 1);
-        test.equals(doc.errors[0].message, 'sys.registration_not_found');
+        test.equals(doc.errors[0].message, 'messages.generic.registration_not_found');
         test.done();
     });
 };
@@ -270,11 +276,12 @@ exports['pregnancies on existing patients succeeds with a valid patient id'] = f
 
 
 exports['zero lmp value only registers patient'] = function(test) {
-
-    test.expect(5);
-
-    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+
+    sinon.stub(transitionUtils, 'addUniqueId', (db, doc, callback) => {
+        doc.patient_id = 12345;
+        callback();
+    });
 
     var doc = {
         form: 'p',
@@ -300,8 +307,12 @@ exports['zero lmp value only registers patient'] = function(test) {
 exports['id only logic with valid name'] = function(test) {
     var doc;
 
-    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+
+    sinon.stub(transitionUtils, 'addUniqueId', (db, doc, callback) => {
+        doc.patient_id = 12345;
+        callback();
+    });
 
     doc = {
         form: 'p',

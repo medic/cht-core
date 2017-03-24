@@ -45,12 +45,16 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
   grunt.loadNpmTasks('grunt-env');
 
-  // Default tasks
   grunt.registerTask('test', [
     'env:test',
     'jshint',
     'nodeunit',
     'env:dev'
+  ]);
+
+  // Default tasks
+  grunt.registerTask('default', [
+    'test'
   ]);
 
 };

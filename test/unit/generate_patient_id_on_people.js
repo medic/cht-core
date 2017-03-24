@@ -2,7 +2,7 @@ var sinon = require('sinon'),
     testUtils = require('../test_utils'),
     transitionUtils = require('../../transitions/utils');
 
-var transition = require('../../transitions/generate_patient_id_on_patients');
+var transition = require('../../transitions/generate_patient_id_on_people');
 
 
 exports.tearDown = function(callback) {
@@ -12,7 +12,7 @@ exports.tearDown = function(callback) {
   callback();
 };
 
-exports['Adds patient_id to patient'] = function(test) {
+exports['Adds patient_id to people'] = function(test) {
   sinon.stub(transitionUtils, 'addUniqueId');
   transition.onMatch({}, {}, {}, {});
   test.equal(transitionUtils.addUniqueId.callCount, 1);

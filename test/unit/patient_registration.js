@@ -4,6 +4,7 @@ var _ = require('underscore'),
     sinon = require('sinon'),
     utils = require('../../lib/utils'),
     testUtils = require('../test_utils'),
+    transitionUtils = require('../../transitions/utils'),
     date = require('../../date');
 
 function getMessage(doc, idx) {
@@ -76,6 +77,7 @@ exports.tearDown = function(callback) {
         transition.getConfig,
         transition.getWeeksSinceDOB,
         transition.getDaysSinceDOB,
+        transitionUtils.addUniqueId,
         date.getDate]);
     callback();
 };
@@ -161,8 +163,12 @@ exports['isBoolExprFalse returns false/true based on regex'] = function(test) {
 
 exports['valid form adds patient_id and patient document'] = function(test) {
 
-    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
+
+    sinon.stub(transitionUtils, 'addUniqueId', (db, doc, callback) => {
+        doc.patient_id = 12345;
+        callback();
+    });
 
     var doc = {
         form: 'PATR',
@@ -215,6 +221,7 @@ exports['registration sets up responses'] = function(test) {
 
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+    sinon.stub(transitionUtils, 'addUniqueId').callsArgWith(2);
 
     var doc = {
         form: 'PATR',
@@ -276,6 +283,7 @@ exports['registration responses support locale'] = function(test) {
 
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
+    sinon.stub(transitionUtils, 'addUniqueId').callsArgWith(2);
 
     var doc = {
         form: 'PATR',

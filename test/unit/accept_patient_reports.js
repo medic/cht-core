@@ -87,7 +87,7 @@ exports['onMatch with no patient id adds error msg and response'] = function(tes
     }, {}, {}, function() {
         test.ok(doc.errors, 'There should be an error');
         test.equal(doc.errors.length, 1);
-        test.equal(doc.errors[0].message, 'sys.registration_not_found');
+        test.equal(doc.errors[0].message, 'messages.generic.registration_not_found');
         test.done();
     });
 };

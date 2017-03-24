@@ -2,6 +2,7 @@ var transition = require('../../transitions/registration'),
     sinon = require('sinon'),
     moment = require('moment'),
     testUtils = require('../test_utils'),
+    transitionUtils = require('../../transitions/utils'),
     utils = require('../../lib/utils');
 
 exports.setUp = function(callback) {
@@ -47,6 +48,7 @@ exports.tearDown = function(callback) {
     testUtils.restore([
         utils.getRegistrations,
         utils.getPatientContactUuid,
+        transitionUtils.addUniqueId,
         transition.getConfig]);
     callback();
 };
@@ -95,10 +97,13 @@ exports['setBirthDate does not set birthdate if no fields given'] = function(tes
 };
 
 exports['valid form adds patient_id and expected_date'] = function(test) {
-
-    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     // doc already exists bc we aren't testing the create patient step
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'UUID'});
+
+    sinon.stub(transitionUtils, 'addUniqueId', (db, doc, callback) => {
+        doc.patient_id = 12345;
+        callback();
+    });
 
     var doc = {
         form: 'BIR',
@@ -111,11 +116,11 @@ exports['valid form adds patient_id and expected_date'] = function(test) {
     transition.onMatch({
         doc: doc
     }, {}, {}, function(err, complete) {
-        test.equals(err, null);
-        test.equals(complete, true);
+        test.equal(err, null);
+        test.equal(complete, true);
         test.ok(doc.patient_id);
         test.ok(doc.birth_date);
-        test.equals(doc.tasks, undefined);
+        test.equal(doc.tasks, undefined);
         test.done();
     });
 };
