@@ -14,6 +14,7 @@ The web app is fully responsive with a mobile-first design, and supports localiz
 For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
 For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](doc/architecture.md).
 For more information about the format of docs in the database, see [Database Schema](doc/db_schema.md).
+For more information about the SMS exchange protocol between webapp and gateway, see [Message States](https://github.com/medic/medic-docs/blob/master/md/message-states.md).
 
 ## Development Setup
 

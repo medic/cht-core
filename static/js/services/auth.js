@@ -11,6 +11,7 @@ var _ = require('underscore');
 
 angular.module('inboxServices').factory('Auth',
   function(
+    $log,
     $q,
     Session,
     Settings
@@ -46,8 +47,9 @@ angular.module('inboxServices').factory('Auth',
       return permissions;
     };
 
-    var authFail = function(reason) {
-      return $q.reject(new Error('Auth failed: ' + reason));
+    var authFail = function(reason, permissions, roles) {
+      $log.debug('Auth failed: ' + reason + '. User roles: ' + roles + '. Wanted permissions: ' + permissions);
+      return $q.reject();
     };
 
     return function(permissions) {
@@ -56,17 +58,17 @@ angular.module('inboxServices').factory('Auth',
       }
       var userCtx = Session.userCtx();
       if (!userCtx) {
-        return authFail('not logged in');
+        return $q.reject(new Error('Not logged in'));
       }
       var roles = userCtx.roles;
       if (!roles || roles.length === 0) {
-        return authFail('user has no roles');
+        return authFail('user has no roles', permissions, roles);
       }
       var requiredPermissions = getRequired(permissions);
       var disallowedPermissions = getDisallowed(permissions);
       if (_.contains(roles, '_admin')) {
         if (disallowedPermissions.length > 0) {
-          return authFail('disallowed permission(s) found');
+          return authFail('disallowed permission(s) found for admin', permissions, roles);
         }
         return $q.resolve();
       }
@@ -75,7 +77,7 @@ angular.module('inboxServices').factory('Auth',
             check(disallowedPermissions, roles, settings, false)) {
           return $q.resolve();
         }
-        return authFail('missing required permission(s)');
+        return authFail('missing required permission(s)', permissions, roles);
       });
     };
 

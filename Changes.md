@@ -9,6 +9,15 @@ _TBD_
 - [#3230](https://github.com/medic/medic-webapp/issues/3230) changes patient ID generation so it automatically increases the length as needed, up to 13 digits. If you are validating incoming patient_ids in Sentinel, be sure to remove or correct any length restrictions, e.g. `\d{5}` becomes `\d+`, `\d{5,}` or `\d{5, 13}`.
 - [#3166](https://github.com/medic/medic-webapp/issues/3166) adds a new transition that adds patient_ids to every created person: `generate_patient_id_on_people`. Enable this transition if you want to send SMS about patients that may be created through the webapp.
 
+## 2.10.2
+
+_March 24, 2017
+
+### Bug fixes
+
+- Sentinel somehow infinitely loops and continually writes to it's metadata file. Issue: #3275
+- API crashes after `/medic/_bulk_docs` gets called. Issue: #3268
+
 ## 2.10.1
 
 _March 15, 2017_
