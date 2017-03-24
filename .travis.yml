@@ -6,7 +6,7 @@ node_js:
   - "5.6"
 
 addons:
-  firefox: latest-esr
+  firefox: "45.0"
 
 services:
   - couchdb
