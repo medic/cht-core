@@ -25,7 +25,7 @@ describe('Login page : ', function () {
 
     afterEach(function () {
 
-        browser.driver.sleep(1000);
+       
         browser.manage().deleteAllCookies();
 
 
