@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     READ_ONLY_TYPES = [ 'form', 'translations' ],
-    READ_ONLY_IDS = [ '_design/medic-client', 'resources', 'appcache', 'zscore-charts' ];
+    READ_ONLY_IDS = [ 'resources', 'appcache', 'zscore-charts' ],
+    DDOC_PREFIX = [ '_design/' ];
 
 (function () {
 
@@ -88,7 +89,8 @@ var _ = require('underscore'),
               filter: function(doc) {
                 // don't try to replicate read only docs back to the server
                 return READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
-                       READ_ONLY_IDS.indexOf(doc._id) === -1;
+                       READ_ONLY_IDS.indexOf(doc._id) === -1 &&
+                       doc._id.indexOf(DDOC_PREFIX) !== 0;
               }
             });
           })
