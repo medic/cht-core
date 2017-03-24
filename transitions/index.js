@@ -33,6 +33,8 @@ var AVAILABLE_TRANSITIONS = [
     'generate_patient_id_on_patients'
 ];
 
+var METADATA_DOCUMENT = 'sentinel-meta-data';
+
 var processed = 0;
 
 var changeQueue = async.queue(function(task, callback) {
@@ -291,13 +293,13 @@ var applyTransitions = function(options, callback) {
 };
 
 var getMetaData = function(callback) {
-    db.medic.get('sentinel-meta-data', function(err, doc) {
+    db.medic.get(METADATA_DOCUMENT, function(err, doc) {
         if (err) {
             if (err.statusCode !== 404) {
                 return callback(err);
             }
             doc = {
-                _id: 'sentinel-meta-data',
+                _id: METADATA_DOCUMENT,
                 processed_seq: 0
             };
         }
@@ -351,7 +353,10 @@ var attach = function() {
         });
         feed.on('change', function(change) {
             // skip uninteresting documents
-            if (change.deleted || change.id.match(/^_design\//)) {
+            if (change.deleted ||
+                    change.id.match(/^_design\//) ||
+                    change.id === METADATA_DOCUMENT) {
+
                 return;
             }
             changeQueue.push(change);
