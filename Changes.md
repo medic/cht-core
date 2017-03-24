@@ -1,5 +1,14 @@
 # Medic Mobile Release Notes
 
+## 2.10.2
+
+_March 24, 2017
+
+### Bug fixes
+
+- Sentinel somehow infinitely loops and continually writes to it's metadata file. Issue: #3275
+- API crashes after `/medic/_bulk_docs` gets called. Issue: #3268
+
 ## 2.10.1
 
 _March 15, 2017_
