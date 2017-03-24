@@ -127,6 +127,11 @@ describe('DBSync service', function() {
       chai.expect(actual).to.equal(false);
     });
 
+    it('does not replicate any ddoc - #3268', function() {
+      var actual = filterFunction({ _id: '_design/sneaky-mcsneakface' });
+      chai.expect(actual).to.equal(false);
+    });
+
     it('does not replicate the resources doc', function() {
       var actual = filterFunction({ _id: 'resources' });
       chai.expect(actual).to.equal(false);
@@ -138,17 +143,17 @@ describe('DBSync service', function() {
     });
 
     it('does not replicate forms', function() {
-      var actual = filterFunction({ type: 'form' });
+      var actual = filterFunction({ _id: '1', type: 'form' });
       chai.expect(actual).to.equal(false);
     });
 
     it('does not replicate translations', function() {
-      var actual = filterFunction({ type: 'translations' });
+      var actual = filterFunction({ _id: '1', type: 'translations' });
       chai.expect(actual).to.equal(false);
     });
 
     it('does replicate reports', function() {
-      var actual = filterFunction({ type: 'data_record' });
+      var actual = filterFunction({ _id: '1', type: 'data_record' });
       chai.expect(actual).to.equal(true);
     });
   });
