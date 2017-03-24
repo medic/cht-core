@@ -1,5 +1,5 @@
 var ExtendedXpathEvaluator = require('extended-xpath');
-var openrosa_xpath_extensions = require( 'openrosa-xpath-extensions');
+var openrosa_xpath_extensions = require('openrosa-xpath-extensions');
 
 module.exports = function() {
     // re-implement XPathJS ourselves!
@@ -14,17 +14,7 @@ module.exports = function() {
         var evaluator = new ExtendedXpathEvaluator(
                 function wrappedXpathEvaluator(v) {
                     var doc = contextPath.ownerDocument;
-                    return doc.evaluate(v, contextPath, namespaceResolver,
-                            // We pretty much always want to get a String in
-                            // the java rosa functions, and we don't want to
-                            // pass the top-level expectation all the way
-                            // down, so it's fairly safe to hard-code this,
-                            // especially considering we handle NUMBER_TYPEs
-                            // manually.
-                            // TODO what is `result` for?  Should it be
-                            // replaced in this call?
-                            XPathResult.ANY_TYPE, result);
-                            //resultType, result);
+                    return doc.evaluate(v, contextPath, namespaceResolver, resultType, result);
                 },
                 openrosa_xpath_extensions);
         return evaluator.evaluate(e, contextPath, namespaceResolver, resultType, result);
