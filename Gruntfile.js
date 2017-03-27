@@ -55,6 +55,7 @@ module.exports = function(grunt) {
             './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding',
             'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath',
             'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
+            'translator': './static/js/enketo/translator', // translator for enketo's internal i18n
             'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils',
             'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber',
             'worker-pouch/workerified': './node_modules/worker-pouch/lib/workerified/',
