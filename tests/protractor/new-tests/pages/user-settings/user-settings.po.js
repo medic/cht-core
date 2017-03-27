@@ -1,11 +1,9 @@
 var helper = require('../../helper');
 
-var UserSettingsPage = function() {
-
-    this.updatePasswordButton =element(by.css('[ng-click="updatePassword()"]'));
-    this.editUserProfileButton =element(by.css('[ng-click="editSettings()"]'));
+  var updatePasswordButton =element(by.css('[ng-click="updatePassword()"]'));
+   var editUserProfileButton =element(by.css('[ng-click="editSettings()"]'));
 //updatePassword modal
-this.updatePasswordModal={
+var updatePasswordModal={
     passwordField:element(by.id('password')),
     confirmPasswordField: element(by.id('password-confirm'))
 
@@ -13,7 +11,7 @@ this.updatePasswordModal={
 
 
 //editUserProfile modal
-this.editUserProfileModal={
+var editUserProfileModal={
 
   usernameField :element(by.id('name')),
    fullNameField: element(by.id('fullname')),
@@ -47,18 +45,15 @@ this.editUserProfileModal={
     
     //functions to interact with our page
     
-    this.updatePassword = function(password) {
+   var updatePassword = function(password) {
 //todo: fill updatePasswordModal and submit
 password.trim();
 
     };
 
-     this.editUserProfile = function() {
+    var editUserProfile = function() {
 
         //todo: fill editUserProfileModal and submit
 
     };
 
-};
-
-module.exports = UserSettingsPage;

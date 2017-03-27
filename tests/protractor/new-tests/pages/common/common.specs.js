@@ -1,5 +1,5 @@
 var helper = require('../../helper');
-    var CommonElements = require('./common.po.js');
+    var commonElements = require('./common.po.js');
 
 /*var MessagesPage = require('../messages/messages.po.js');
 var ContactsPage = require('../contacts/contacts.po.js');
@@ -7,19 +7,10 @@ var AnalyticsPage = require('../analytics/analytics.po.js');
 var TasksPage = require('../tasks/tasks.po.js');
 var ConfigurationPage = require('../configuration/configuration.po.js');
 */
-var LoginPage = require('../login/login.po.js');
+var loginPage = require('../login/login.po.js');
 
 describe('Navigation tests : ', function () {
 
-    var commonElements = new CommonElements();
-   /* var messagesPage = new MessagesPage();
-    var contactsPage = new ContactsPage();
-    var analyticsPage = new AnalyticsPage();
-    var tasksPage = new TasksPage();
-    var configurationPage = new ConfigurationPage();
-    */
-    var loginPage = new LoginPage();
-    //var helper=new Helper();
 
     beforeAll(function () {
         browser.get(browser.params.url);

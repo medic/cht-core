@@ -3,27 +3,27 @@ var helper = require('../../helper');
 var UsersPage = function () {
 
     //title 
-    this.pageTitle = 'Medic Mobile';
-    this.addUserButton = element(by.id('add-user'));
-    this.usersList = element.all(by.repeater('user in users'));
+   var pageTitle = 'Medic Mobile';
+   var addUserButton = element(by.id('add-user'));
+   var usersList = element.all(by.repeater('user in users'));
 
     //functions to interact with our page
 
-    this.addUser = function (username, password) {
+   var addUser = function (username, password) {
         username.trim();
         password.trim();
         helper.waitUntilReady(this.addUserButton);
 
     };
 
-    this.editUser = function (username, password) {
+   var editUser = function (username, password) {
         username.trim();
         password.trim();
 
         helper.waitUntilReady(this.addUserButton);
 
     };
-    this.deleteUser = function (username, password) {
+   var deleteUser = function (username, password) {
         username.trim();
         password.trim();
         helper.waitUntilReady(this.addUserButton);

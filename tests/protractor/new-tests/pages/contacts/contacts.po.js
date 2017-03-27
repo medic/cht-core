@@ -1,21 +1,18 @@
 var helper = require('../../helper');
   //  faker = require('faker');
 
-var ContactsPage = function () {
+   var pageTitle = 'Medic Mobile';
+   var noContactErrorField = $('[ng-show="!error && !loading && !contacts.length"]');
 
+   var rightHandPane = $('[ng-show="!selected.contacts[0] && !loadingContent"]');
+   var searchBox = $('#freetext');
+   var seachButton = $('#search');
+   var refreshButton = $('.fa fa-undo');
 
-    this.pageTitle = 'Medic Mobile';
-    this.noContactErrorField = $('[ng-show="!error && !loading && !contacts.length"]');
-
-    this.rightHandPane = $('[ng-show="!selected.contacts[0] && !loadingContent"]');
-    this.searchBox = $('#freetext');
-    this.seachButton = $('#search');
-    this.refreshButton = $('.fa fa-undo');
-
-    this.leftHandSideFab = {
+   var leftHandSideFab = {
 
     };
-    this.rightHandSideFAB = {
+   var rightHandSideFAB = {
         newActionButton: element(by.css('.mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle mm-icon-disabled')),
         newAreaButton: element(by.css('.mm-icon mm-icon-inverse mm-icon-caption')),
         //todo: needs more precision
@@ -28,49 +25,45 @@ var ContactsPage = function () {
     };
     //functions to interact with our page
 
-    this.addNewArea= function() {
+   var addNewArea= function() {
 
         helper.waitUntilReady(this.newAreaButton);
          
     };
 
-    this.addNewPerson= function() {
+   var addNewPerson= function() {
 
         helper.waitUntilReady(this.newPersonButton);
          
     };
 
-    this.edit= function() {
+   var edit= function() {
 
         helper.waitUntilReady(this.editButton);
          
     };
 
-     this.delete= function() {
+    var deleteEntry= function() {
 
         helper.waitUntilReady(this.deleteButton);
          
     };
 
- this.openDeliveryReport= function() {
+var openDeliveryReport= function() {
 
         helper.waitUntilReady(this.newActionButton);
          
     };
 
 
- this.openNewPregnancyForm= function() {
+var openNewPregnancyForm= function() {
 
         helper.waitUntilReady(this.newActionButton);
          
     };
- this.openPregnancyVisitForm= function() {
+var openPregnancyVisitForm= function() {
 
         helper.waitUntilReady(this.newActionButton);
          
     };
 
-
-};
-
-module.exports = ContactsPage;

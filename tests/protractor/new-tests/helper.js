@@ -86,7 +86,7 @@ var setBrowserParams = function () {
   browser.ignoreSynchronization = true;
 };
 
-exports.waitElementToBeVisisble = waitElementToBeVisisble;
+
 var isTextDisplayed = function (text) {
 
  var selectedElement = element(by.xpath('//*[text()[normalize-space() = ' + ' \' ' + text + '\']]'));

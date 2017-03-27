@@ -1,64 +1,62 @@
 
 var helper = require('../../helper');
 
-var CommonElements = function() {
-
-    this.medicLogo = element(by.className('logo-full'));
-    this.messagesLink=element(by.id('messages-tab'));
-    this.tasksLink=element(by.id('tasks-tab'));
-    this.contactsLink=element(by.id('contacts-tab'));
-    this.analyticsLink=element(by.id('analytics-tab'));
-    this.reportsLink=element(by.id('reports-tab'));
-    this.configurationLink=element(by.id('configuration-tab'));
-    this.hamburgerMenu=element(by.className('dropdown options'));
+   var medicLogo = element(by.className('logo-full'));
+   var messagesLink=element(by.id('messages-tab'));
+   var tasksLink=element(by.id('tasks-tab'));
+   var contactsLink=element(by.id('contacts-tab'));
+   var analyticsLink=element(by.id('analytics-tab'));
+   var reportsLink=element(by.id('reports-tab'));
+   var configurationLink=element(by.id('configuration-tab'));
+   var hamburgerMenu=element(by.className('dropdown options'));
 
     //vavigation functions
 
-       this.goToMessages = function() {
+      var goToMessages = function() {
 
         helper.waitUntilReady(this.messagesLink);
-        this.messagesLink.click();
+        messagesLink.click();
     };
 
-        this.goToTasks = function() {
+       var goToTasks = function() {
 
         helper.waitUntilReady(this.tasksLink);
-        this.tasksLink.click();
+        tasksLink.click();
     };
 
-        this.goToPeople = function() {
+       var goToPeople = function() {
 
         helper.waitUntilReady(this.peoplesLink);
-        this.peoplesLink.click();
+        peoplesLink.click();
     };
 
-        this.goToTargets = function() {
+       var goToTargets = function() {
 
         helper.waitUntilReady(this.targetsLink);
-        this.targetsLink.click();
+        targetsLink.click();
     };
 
 
-   this.goToHistory = function() {
+  var goToHistory = function() {
 
         helper.waitUntilReady(this.historyLink);
-        this.historyLink.click();
+        historyLink.click();
     };
 
-   this.goToConfiguration = function() {
+  var goToConfiguration = function() {
 
         helper.waitUntilReady(this.configurationLink);
-        this.configurationLink.click();
+        configurationLink.click();
     };
 
 
-      this.openMenu = function() {
+     var openMenu = function() {
 
         helper.waitUntilReady(this.messagesLink);
-        this.hamburgerMenu.click();
+        hamburgerMenu.click();
     };
 
-};
 
-module.exports = CommonElements;
+
+//module.exports = CommonElements;
 

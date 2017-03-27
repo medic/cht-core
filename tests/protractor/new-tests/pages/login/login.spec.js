@@ -1,7 +1,7 @@
 var helper = require('../../helper');
-  var  LoginPage = require('./login.po.js');
-var CommonElements = require('../common/common.po.js');
-var MessagesPage = require('../messages/messages.po.js');
+  var  loginPage = require('./login.po.js');
+var commonElements = require('../common/common.po.js');
+var messagesPage = require('../messages/messages.po.js');
 
 describe('Login page : ', function () {
 
@@ -13,10 +13,7 @@ describe('Login page : ', function () {
     var validUsername = 'admin';
     var validPassword = 'pass';
 
-    var loginPage = new LoginPage();
-    var commonElements = new CommonElements();
-    var messagesPage = new MessagesPage();
-
+   
 
     beforeEach(function () {
         browser.get(browser.params.url);
