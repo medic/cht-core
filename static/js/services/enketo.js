@@ -3,6 +3,7 @@ angular.module('inboxServices').service('Enketo',
   function(
     $log,
     $q,
+    $translate,
     $window,
     Auth,
     DB,
@@ -70,8 +71,14 @@ angular.module('inboxServices').service('Enketo',
         XSLT.transform('openrosa2xmlmodel.xsl', doc),
       ])
       .then(function(results) {
+        var html = $(results[0]);
+        html.find('[data-i18n]')
+          .each(function() {
+            var $this = $(this);
+            $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
+          });
         return {
-          html: $(results[0]),
+          html: html,
           model: results[1]
         };
       });
