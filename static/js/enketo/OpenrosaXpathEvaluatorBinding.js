@@ -13,8 +13,14 @@ module.exports = function() {
     this.xml.jsEvaluate = function(e, contextPath, namespaceResolver, resultType, result) {
         var evaluator = new ExtendedXpathEvaluator(
                 function wrappedXpathEvaluator(v) {
+                    // Node requests (i.e. result types greater than 3 (BOOLEAN)
+                    // should be processed unaltered, as they are passed this
+                    // way from the ExtendedXpathEvaluator.  For anything else,
+                    // we will be ask for the most appropriate result type, and
+                    // handle as best we can.
+                    var wrappedResultType = resultType > XPathResult.BOOLEAN_TYPE ? resultType : XPathResult.ANY_TYPE;
                     var doc = contextPath.ownerDocument;
-                    return doc.evaluate(v, contextPath, namespaceResolver, resultType, result);
+                    return doc.evaluate(v, contextPath, namespaceResolver, wrappedResultType, result);
                 },
                 openrosa_xpath_extensions);
         return evaluator.evaluate(e, contextPath, namespaceResolver, resultType, result);
