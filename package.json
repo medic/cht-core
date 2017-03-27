@@ -32,7 +32,6 @@
     "nools": "^0.4.4",
     "openrosa-xpath-evaluator": "^1.2.2",
     "pouchdb-browser": "^6.1.2",
-    "pouchdb-validation": "^1.2.1",
     "properties": "^1.2.1",
     "select2": "^4.0.3",
     "underscore": "^1.8.3",

@@ -99,17 +99,6 @@ describe('DB service', function() {
       chai.expect(pouchDB.callCount).to.equal(2);
       done();
     });
-
-    it('installs validation functions', function() {
-      isAdmin.returns(false);
-      Location.dbName = 'medicdb';
-      Location.url = 'ftp//myhost:21/medicdb';
-      userCtx.returns({ name: 'johnny' });
-
-      // init
-      getService();
-      chai.expect(expected.installValidationMethods.callCount).to.equal(1);
-    });
   });
 
   describe('get local', function() {
@@ -178,17 +167,6 @@ describe('DB service', function() {
       chai.expect(expected.viewCleanup.callCount).to.equal(0);
 
       done();
-    });
-
-    it('installs validation functions', function() {
-      isAdmin.returns(false);
-      Location.dbName = 'medicdb';
-      Location.url = 'ftp//myhost:21/medicdb';
-      userCtx.returns({ name: 'johnny' });
-
-      // init
-      getService();
-      chai.expect(expected.installValidationMethods.callCount).to.equal(1);
     });
 
   });
