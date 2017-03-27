@@ -17,7 +17,7 @@ var registerConsoleInterceptor = function() {
     var original = options.console[level];
     options.console[level] = function() {
       // push the error onto the stack
-      log.splice(0, 0, { level: level, arguments: arguments });
+      log.splice(0, 0, { level: level, arguments: JSON.stringify(arguments) });
       // remove any old log entries
       log.splice(20, Number.MAX_VALUE);
       // output to the console as per usual
