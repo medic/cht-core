@@ -104,6 +104,22 @@ var includeNonFormFields = function(doc, form_keys, locale) {
     });
 };
 
+var getGroupName = function(task) {
+    if (task.group) {
+        return task.type + ':' + task.group;
+    }
+    return task.type;
+};
+
+var getGroupDisplayName = function(task, language) {
+    if (task.translation_key) {
+        return exports.info.translate(
+            task.translation_key, language, { group: task.group }
+        );
+    }
+    return getGroupName(task);
+};
+
 /*
  * Take data record document and return nice formated JSON object.
  */
@@ -144,14 +160,14 @@ exports.makeDataRecordReadable = function(doc, appinfo, language) {
             }
 
             // setup scheduled groups
-            var group_name = t.type;
-            if (t.group) {
-                group_name += ":" + t.group;
-            }
 
-            if (!groups[group_name]) {
-                groups[group_name] = {
-                    group: group_name,
+            var groupName = getGroupName(t);
+            var displayName = getGroupDisplayName(t, language);
+            var group = groups[groupName];
+            if (!group) {
+                groups[groupName] = group = {
+                    group: groupName,
+                    name: displayName,
                     type: t.type,
                     number: t.group,
                     rows: []
@@ -161,7 +177,7 @@ exports.makeDataRecordReadable = function(doc, appinfo, language) {
             // Warning: _idx is used on frontend during save.
             //
             copy._idx = i;
-            groups[group_name].rows.push(copy);
+            group.rows.push(copy);
         }
         for (var k in groups) {
             data_record.scheduled_tasks_by_group.push(groups[k]);
