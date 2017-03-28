@@ -85,3 +85,23 @@ exports['renders Date datestimes'] = function(test) {
   test.equals(get.args[0][0], 'reported_date_format');
   test.done();
 };
+
+exports['renders bikram sambat dates'] = function(test) {
+  var date = 1457235941000; // 06 Mar 2016 (gregorian) // २३ फाल्गुन २०७२ = 2072-11-23 (bs)
+  var expected = '२३ फाल्गुन २०७२';
+  var input = '{{#bikram_sambat_date}}{{reported_date}}{{/bikram_sambat_date}}';
+  var context = { reported_date: date };
+  var actual = template.render(input, context);
+  test.equals(actual, expected);
+  test.done();
+};
+
+exports['renders bikram sambat Date dates'] = function(test) {
+  var date = 1457235941000; // 06 Mar 2016 (gregorian) // २०७२ फाल्गुन २३ = 2072-11-23 (bs)
+  var expected = '२३ फाल्गुन २०७२';
+  var input = '{{#bikram_sambat_date}}Date({{reported_date}}){{/bikram_sambat_date}}';
+  var context = { reported_date: date };
+  var actual = template.render(input, context);
+  test.equals(actual, expected);
+  test.done();
+};

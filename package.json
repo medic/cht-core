@@ -5,6 +5,7 @@
   "version": "0.1.0",
   "dependencies": {
     "async": "^2.1.4",
+    "bikram-sambat": "^1.0.0",
     "couchdb-audit": "^1.0.0",
     "epi-week": "^0.0.1",
     "follow": "^0.12.1",
