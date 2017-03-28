@@ -240,9 +240,16 @@
     width: 33.33333%;
     background-color: @background-color;
     border: 1px solid @seperator-color;
+    .title {
+      display: flex;
+      flex-wrap: nowrap;
+    }
     h4 {
       margin: 0;
+      flex-grow: 1;
+      word-break: break-all;
     }
+    h4,
     .icon {
       margin-right: 0.5em;
     }
@@ -255,16 +262,11 @@
     .goal {
       color: @analytics-color;
     }
-    .right-wrapper {
-      overflow: hidden;
-    }
     .count-only {
       clear: both;
       text-align: center;
     }
     .right-column {
-      margin-left: 15px;
-      float: right;
       text-align: right;
     }
     .progress {
