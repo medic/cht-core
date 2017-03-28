@@ -73,11 +73,13 @@ angular.module('inboxServices').factory('Auth',
         return $q.resolve();
       }
       return Settings().then(function(settings) {
-        if (check(requiredPermissions, roles, settings, true) &&
-            check(disallowedPermissions, roles, settings, false)) {
-          return $q.resolve();
+        if (!check(requiredPermissions, roles, settings, true)) {
+          return authFail('missing required permission(s)', permissions, roles);
         }
-        return authFail('missing required permission(s)', permissions, roles);
+        if (!check(disallowedPermissions, roles, settings, false)) {
+          return authFail('found disallowed permission(s)', permissions, roles);
+        }
+        return $q.resolve();
       });
     };
 
