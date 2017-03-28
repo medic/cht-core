@@ -75,7 +75,6 @@ angular.module('inboxServices').service('Enketo',
         html.find('[data-i18n]')
           .each(function() {
             var $this = $(this);
-            console.log('Translating enketo i18n node', this);
             $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
           });
         return {
