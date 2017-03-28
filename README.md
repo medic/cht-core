@@ -73,6 +73,12 @@ Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 export COUCH_URL='http://admin:pass@localhost:5984/medic'
 ```
 
+If you are using CouchDB2.0 you need to also provide your node name. e.g.
+
+```
+export COUCH_NODE_NAME=couchdb@localhost node server.js
+```
+
 If you're using couchdb-lucene in any configuration other than the standard (on the same server as CouchDb on port 5985) you can specify it with the `LUCENE_URL` env variable:
 
 ```

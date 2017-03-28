@@ -651,20 +651,63 @@ proxyForAuditing.on('error', function(err, req, res) {
   serverUtils.serverError(JSON.stringify(err), req, res);
 });
 
-var couchDbVersionCheck = function(callback) {
-  db.getCouchDbVersion(function(err, version) {
+const nodeVersionCheck = callback => {
+  try {
+    const [major, minor, patch] = process.versions.node.split('.').map(Number);
+
+    console.log(`Node Version: ${major}.${minor}.${patch}`);
+
+    if (major < 5) {
+      // 5 seems to be where the majority of ES6 was added without flags.
+      // Seems safeist to not allow api to run
+      callback(new Error(`Node version ${major}.${minor}.${patch} is not supported`));
+    }
+
+    if (major < 6 || ( major === 6 && minor < 10)) {
+      console.error('This node version may not be supported');
+    }
+
+    callback();
+  } catch (error) {
+    callback(error);
+  }
+};
+
+const envVarsCheck = callback => {
+  const envValueAndExample = [
+    ['COUCH_URL', 'http://admin:pass@localhost:5984/medic'],
+    ['COUCH_NODE_NAME', 'couchdb@localhost']
+  ];
+
+  const failures = [];
+  envValueAndExample.forEach(([envVar, example]) => {
+    if (!process.env[envVar]) {
+      failures.push(`${envVar} must be set. For example: ${envVar}=${example}`);
+    }
+  });
+
+  if (failures.length) {
+    callback('At least one required environment variable was not set:\n' + failures.join('\n'));
+  } else {
+    callback();
+  }
+};
+
+const couchDbVersionCheck = callback =>
+  db.getCouchDbVersion((err, version) => {
+    if (err) {
+      callback(err);
+    }
+
     console.log('CouchDB Version:', version);
     callback();
   });
-};
 
-var asyncLog = function(message) {
-  return async.asyncify(function() {
-    console.log(message);
-  });
-};
+const asyncLog = message => async.asyncify(() => console.log(message));
 
 async.series([
+  nodeVersionCheck,
+  envVarsCheck,
   couchDbVersionCheck,
   ddocExtraction.run,
   asyncLog('DDoc extraction completed successfully'),
@@ -676,19 +719,18 @@ async.series([
   migrations.run,
   asyncLog('Database migrations completed successfully'),
   async.asyncify(scheduler.init)
-], function(err) {
+], err => {
   if (err) {
     console.error('Fatal error initialising medic-api', err);
     process.exit(1);
   }
 
-  app.listen(apiPort, function() {
-    console.log('Medic API listening on port ' + apiPort);
-  });
+  app.listen(apiPort, () =>
+    console.log('Medic API listening on port ' + apiPort));
 });
 
 // Define error-handling middleware last.
 // http://expressjs.com/guide/error-handling.html
-app.use(function(err, req, res, next) { // jshint ignore:line
+app.use((err, req, res, next) => { // jshint ignore:line
   serverUtils.serverError(err, req, res);
 });

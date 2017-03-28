@@ -3,6 +3,8 @@
 
     "maxerr"        : 50,       // {int} Maximum error before stopping
 
+    "esversion"     : 6,
+
     // Enforcing
     "bitwise"       : true,     // true: Prohibit bitwise operators (&, |, ^, etc.)
     "camelcase"     : false,    // true: Identifiers must be in camelCase
@@ -37,8 +39,6 @@
     "boss"          : false,     // true: Tolerate assignments where comparisons would be expected
     "debug"         : false,     // true: Allow debugger statements e.g. browser breakpoints.
     "eqnull"        : true,      // true: Tolerate use of `== null`
-    "es5"           : false,     // true: Allow ES5 syntax (ex: getters and setters)
-    "esnext"        : false,     // true: Allow ES.next (ES6) syntax (ex: `const`)
     "moz"           : false,     // true: Allow Mozilla specific syntax (extends and overrides esnext features)
                                  // (ex: `for each`, multiple try/catch, function expression…)
     "evil"          : false,     // true: Tolerate use of `eval` and `new Function()`
