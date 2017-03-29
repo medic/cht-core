@@ -1,5 +1,5 @@
 var helper = require('../../helper');
-//var commonElements = require('../../page-objects/common/common.po.js');
+var commonElements = require('../../page-objects/common/common.po.js');
 
 describe('Navigation tests : ', function () {
 
