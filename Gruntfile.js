@@ -278,6 +278,10 @@ module.exports = function(grunt) {
       translations: {
         files: ['translations/*'],
         tasks: ['appcache', 'deploy']
+      },
+      node_modules: {
+        files: ['node_modules/**/*'],
+        tasks: ['mmjs', 'deploy']
       }
     },
     notify_hooks: {
