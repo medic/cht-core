@@ -31,7 +31,7 @@
 
         <div class="card">
           <div class="row flex">
-            <div class="col col-sm-{{field.width || 12}}" ng-repeat="field in selected.summary.fields">
+            <div class="col col-xs-12 col-sm-{{field.width || 12}}" ng-repeat="field in selected.summary.fields">
               <div class="cell">
                 <label translate>{{field.label}}</label>
                 <p ng-if="field.translate" translate translate-values="{{field.context}}">{{field.value}}</p>
@@ -49,7 +49,7 @@
           <div class="card action-list">
             <div class="accent"></div>
             <div class="row">
-              <div class="col col-sm-{{field.width || 12}}" ng-repeat="field in card.fields">
+              <div class="col col-xs-12 col-sm-{{field.width || 12}}" ng-repeat="field in card.fields">
                 <div class="cell">
                   <label translate>{{field.label}}</label>
                   <p ng-if="field.translate" translate translate-values="{{field.context}}">{{field.value}}</p>
