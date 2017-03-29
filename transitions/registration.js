@@ -218,36 +218,56 @@ module.exports = {
             series = [];
 
         _.each(registrationConfig.events, function(event) {
-            var trigger = self.triggers[event.trigger];
-            if (!trigger) {
-                return;
-            }
-            if (event.name === 'on_create') {
-                var obj = _.defaults({}, doc, doc.fields);
-                if (self.isBoolExprFalse(obj, event.bool_expr)) {
-                    return;
+            series.push(function(cb) {
+                var trigger = self.triggers[event.trigger];
+                if (!trigger) {
+                    return cb();
                 }
-                var options = { db: db, audit: audit, doc: doc, registrationConfig: registrationConfig };
-
-
-                if (!event.params) {
-                    options.params = {};
-                } else {
-                    try {
-                        options.params = JSON.parse(event.params);
-                    } catch (e) {
-                        options.params = event.params.split(',');
+                if (event.name === 'on_create') {
+                    var obj = _.defaults({}, doc, doc.fields);
+                    if (self.isBoolExprFalse(obj, event.bool_expr)) {
+                        return cb();
                     }
-                }
+                    var options = { db: db, audit: audit, doc: doc, registrationConfig: registrationConfig };
 
-                logger.debug('Parsed params for form', options.form,
-                    'trigger', event.trigger,
-                    ':', options.params);
 
-                series.push(function(cb) {
+                    if (!event.params) {
+                        options.params = {};
+                    } else {
+                        if (event.params instanceof Object) {
+                            // We support raw JSON even if we can't specify that
+                            // correctly in kanso.json
+                            options.params = event.params;
+                        } else {
+                            try {
+                                // We currently support JSON in a string:
+                                // "{\"foo\": \"bar\"}"
+                                // And comma delimted strings:
+                                // "foo,bar" or just "foo"
+                                switch (event.params.trim()[0]) {
+                                    case '[':
+                                    case '{':
+                                        options.params = JSON.parse(event.params);
+                                        break;
+                                    default:
+                                        options.params = event.params.split(',');
+
+                                }
+                            } catch (error) {
+                                return cb(new Error(
+        `Unable to parse params for ${registrationConfig.form}.${event.trigger}: ${event.params}
+        Error: ${error}`));
+                            }
+                        }
+                    }
+
+                    logger.debug('Parsed params for form', options.form,
+                        'trigger', event.trigger,
+                        ':', options.params);
+
                     trigger.apply(null, [ options, cb ]);
-                });
-            }
+                }
+            });
         });
 
         async.series(series, function(err, changed) {
