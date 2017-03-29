@@ -28,7 +28,7 @@ module.exports = {
     }, 10000).then(function () {
       return browser.wait(function () {
         return elm.isDisplayed();
-      }, 10000);
+      }, 12000);
     });
   },
 

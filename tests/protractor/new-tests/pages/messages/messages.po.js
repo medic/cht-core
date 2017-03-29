@@ -11,7 +11,12 @@
    var leftHandPane=element(by.id('message-list'));
     
     //functions to interact with our page
-    
+    module.exports = {
+
+    isAt : function () {
+
+        return browser.isElementPresent(leftHandPane);
+    },
  
 
 

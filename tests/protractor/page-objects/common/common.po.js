@@ -7,13 +7,18 @@ var tasksLink = element(by.id('tasks-tab'));
 var contactsLink = element(by.id('contacts-tab'));
 var analyticsLink = element(by.id('analytics-tab'));
 var reportsLink = element(by.id('reports-tab'));
-var configurationLink = element(by.id('configuration-tab'));
+var configurationLink = element(by.css('[ui-sref=configuration]'));
 var hamburgerMenu = element(by.className('dropdown options'));
 
 //vavigation functions
 
 
 module.exports = {
+
+    getBaseUrl : function () {
+//todo shouldn't be hard coded
+        return 'http://localhost:5998/medic-test/_design/medic/_rewrite/#/';
+    },
 
     goToMessages: function () {
 
@@ -33,7 +38,7 @@ module.exports = {
         contactsLink.click();
     },
 
-    goToTargets: function () {
+    goToReports: function () {
 
         helper.waitUntilReady(reportsLink);
         reportsLink.click();
@@ -48,7 +53,7 @@ module.exports = {
 
     goToConfiguration: function () {
 
-        helper.waitUntilReady(configurationLink);
+     helper.waitUntilReady(configurationLink);
         configurationLink.click();
     },
 
@@ -62,7 +67,13 @@ module.exports = {
 
         helper.waitUntilReady(medicLogo);
         medicLogo.click();
+    },
+ isAt: function (list) {
+
+        helper.waitUntilReady(medicLogo);
+        return browser.isElementPresent(element(by.id(list)));
     }
+
 
 };
 
