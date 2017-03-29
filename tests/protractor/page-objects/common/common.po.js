@@ -1,6 +1,5 @@
 
 var helper = require('../../helper');
-
 var medicLogo = element(by.className('logo-full'));
 var messagesLink = element(by.id('messages-tab'));
 var tasksLink = element(by.id('tasks-tab'));

@@ -1,12 +1,5 @@
 var helper = require('../../helper');
 
-
-
-
-
-    //title and texts of notifications/error messages
-   var pageTitle = 'Medic Mobile';
-  
 var configurationButtons = element.all(by.repeater('page in configurationPages'));
 
 var settingsButton=configurationButtons[0];
@@ -22,9 +15,61 @@ var permissionsButton=configurationButtons[8];
    
     //functions to interact with our page
     
-      
-   var goToSettings = function() {
 
+module.exports = {
+
+    goToSettings: function () {
+
+        helper.waitUntilReady(settingsButton);
         settingsButton.click();
-    };
+    },
 
+    goToLanguages: function () {
+
+        helper.waitUntilReady(languagesButton);
+        languagesButton.click();
+    },
+
+    goToForms: function () {
+
+        helper.waitUntilReady(formsButton);
+        formsButton.click();
+    },
+
+    goToImportExport: function () {
+
+        helper.waitUntilReady(importExportButton);
+        importExportButton.click();
+    },
+
+
+    goToUserSettings: function () {
+
+        helper.waitUntilReady(userSettingsButton);
+        userSettingsButton.click();
+    },
+
+    goToUsers: function () {
+
+        helper.waitUntilReady(usersButton);
+        usersButton.click();
+    },
+
+
+    openTargets: function () {
+
+        helper.waitUntilReady(targetsButton);
+        targetsButton.click();
+    },
+    goToIcons: function () {
+
+        helper.waitUntilReady(iconsButton);
+        iconsButton.click();
+    },
+     goToPermissions: function () {
+
+        helper.waitUntilReady(permissionsButton);
+        permissionsButton.click();
+    }
+
+};
