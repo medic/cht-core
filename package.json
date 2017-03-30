@@ -25,6 +25,7 @@
     "grunt-contrib-jshint": "^1.1.0",
     "grunt-contrib-nodeunit": "^1.0.0",
     "grunt-env": "^0.4.4",
+    "jsverify": "^0.8.1",
     "kanso": "^0.5.0",
     "nodeunit": "latest",
     "sinon": "latest"

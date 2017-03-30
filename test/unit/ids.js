@@ -1,4 +1,5 @@
 const sinon = require('sinon'),
+      jsc = require('jsverify'),
       testUtils = require('../test_utils'),
       ids = require('../../lib/ids.js');
 
@@ -16,26 +17,31 @@ const mockDb = (idFilterLogicFn) => {
 };
 
 exports.tearDown = callback => {
-    testUtils.restore([
-        Math.random
-    ]);
+  testUtils.restore([
+    Math.random
+  ]);
 
-    callback();
+  callback();
 };
 
-exports['generates an id of the given length'] = function(test) {
-    [1,2,3,4,5,6,7,8,9,10].forEach(function(l) {
-        test.equal(ids._generate(l).length, l);
-    });
+exports['generates an id of the given length'] = test => {
+  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].forEach(l =>
+    test.equal(ids._generate(l).length, l));
 
-    test.done();
+  test.done();
 };
 
-exports['ids can start with 0, will be correct length'] = function(test) {
-    sinon.stub(Math, 'random').returns(0.00001);
+exports['ids can start with 0, will be correct length'] = test => {
+  sinon.stub(Math, 'random').returns(0.00001);
 
-    test.equal(ids._generate(5), '00000');
-    test.done();
+  test.equal(ids._generate(5), '00000');
+  test.done();
+};
+
+exports['ids are "always" the length they should be'] = test => {
+  test.ok(
+    jsc.checkForall(jsc.integer(5, 13), i => ids._generate(i).length === i));
+  test.done();
 };
 
 module.exports['id generator returns ids not already used in the DB'] = test => {
@@ -65,7 +71,7 @@ module.exports['id generator doesnt use ids that are already used by the DB'] = 
   }).catch(err => test.fail(err));
 };
 
-module.exports['addUniqueId retries with a longer id if it only generates duplicates'] = function(test) {
+module.exports['addUniqueId retries with a longer id if it only generates duplicates'] = test => {
   let potentialIds;
   const db = mockDb(ids => {
     if (ids[0].length === 5) {
