@@ -79,13 +79,16 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var translateXml = function(text, title, language) {
+    var translateXml = function(text, language, title) {
       var xml = $.parseXML(text);
       var $xml = $(xml);
       // set the user's language as default so it'll be used for itext translations
       $xml.find('model itext translation[lang="' + language + '"]').attr('default', '');
-      // manually translate the title as itext doesn't seem to work
-      $xml.find('h\\:title,title').text(TranslateFrom(title));
+      // manually translate the title as enketo-core doesn't have any way to do this
+      // https://github.com/enketo/enketo-core/issues/405
+      if (title) {
+        $xml.find('h\\:title,title').text(TranslateFrom(title));
+      }
       return xml;
     };
 
@@ -93,7 +96,7 @@ angular.module('inboxServices').service('Enketo',
       return DB().getAttachment(form.id, FORM_ATTACHMENT_NAME)
         .then(FileReader)
         .then(function(text) {
-          return translateXml(text, form.doc.title, language);
+          return translateXml(text, language, form.doc.title);
         });
     };
 
@@ -258,7 +261,11 @@ angular.module('inboxServices').service('Enketo',
     };
 
     this.renderFromXmlString = function(wrapper, xmlString, instanceData) {
-      return transformXml($.parseXML(xmlString))
+      return Language()
+        .then(function(language) {
+          return translateXml(xmlString, language);
+        })
+        .then(transformXml)
         .then(function(doc) {
           return renderFromXmls(doc, wrapper, instanceData);
         });
