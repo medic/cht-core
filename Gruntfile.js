@@ -392,6 +392,14 @@ module.exports = function(grunt) {
       options: {
         pattern: /.only\(/g
       }
+    },
+    xmlmin: {
+      enketoxslt: {
+        files: {
+          'static/dist/xslt/openrosa2html5form.xsl': 'static/dist/xslt/openrosa2html5form.xsl',
+          'static/dist/xslt/openrosa2xmlmodel.xsl': 'static/dist/xslt/openrosa2xmlmodel.xsl'
+        }
+      }
     }
   });
 
@@ -419,11 +427,16 @@ module.exports = function(grunt) {
     'postcss'
   ]);
 
+  grunt.registerTask('enketoxslt', 'Process enketo XSL stylesheets', [
+    'copy:enketoxslt',
+    'xmlmin:enketoxslt'
+  ]);
+
   grunt.registerTask('build', 'Build the static resources', [
     'mmcss',
     'mmjs',
     'couch-compile',
-    'copy:enketoxslt',
+    'enketoxslt',
     'copy:inbox',
     'appcache'
   ]);
