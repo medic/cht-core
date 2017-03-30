@@ -273,13 +273,20 @@
     },
     "enketo-core": {
       "version": "4.5.5",
-      "from": "enketo-core@>=4.5.5 <5.0.0",
-      "resolved": "http://registry.npmjs.org/enketo-core/-/enketo-core-4.5.5.tgz"
+      "from": "git://github.com/medic/enketo-core.git#medic-2.10.x",
+      "resolved": "git://github.com/medic/enketo-core.git#a8154bd941fa7b2e4e5edfd2ba5f2ab48e830279",
+      "dependencies": {
+        "lie": {
+          "version": "3.0.4",
+          "from": "lie@>=3.0.0 <3.1.0",
+          "resolved": "https://registry.npmjs.org/lie/-/lie-3.0.4.tgz"
+        }
+      }
     },
     "enketo-xpathjs": {
-      "version": "1.3.3",
-      "from": "enketo-xpathjs@1.3.3",
-      "resolved": "http://registry.npmjs.org/enketo-xpathjs/-/enketo-xpathjs-1.3.3.tgz"
+      "version": "1.2.4",
+      "from": "enketo-xpathjs@1.2.4",
+      "resolved": "http://registry.npmjs.org/enketo-xpathjs/-/enketo-xpathjs-1.2.4.tgz"
     },
     "es6-promise-pool": {
       "version": "2.4.4",
