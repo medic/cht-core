@@ -23,7 +23,7 @@
     "bootstrap-daterangepicker": "^2.1.24",
     "bootstrap-tour": "^0.10.3",
     "enketo-client-side-transformer": "git://github.com/alxndrsn/enketo-client-side-transformer.git#cd1788f38fa5d9ea846d9de1168322ec25002040",
-    "enketo-core": "^4.5.5",
+    "enketo-core": "git://github.com/medic/enketo-core.git#medic-2.10.x",
     "font-awesome": "^4.7.0",
     "google-libphonenumber": "^2.0.9",
     "jquery": "^2.1.4",
