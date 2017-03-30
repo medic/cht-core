@@ -4,6 +4,7 @@
 
   angular.module('inboxServices', ['ngResource']);
 
+  require('./add-attachment');
   require('./analytics-modules');
   require('./android-api');
   require('./app-info');
