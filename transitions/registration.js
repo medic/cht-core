@@ -296,7 +296,7 @@ module.exports = {
         },
         add_patient_id: function(options, cb) {
             // Deprecated name for add_patient
-            console.warn('Use of add_patient_id trigger. This is deprecated in favour of add_patient.');
+            logger.warn('Use of add_patient_id trigger. This is deprecated in favour of add_patient.');
             module.exports.triggers.add_patient(options, cb);
         },
         add_expected_date: function(options, cb) {
