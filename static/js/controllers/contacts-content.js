@@ -320,6 +320,10 @@ var _ = require('underscore'),
 
                 selected.children = children;
 
+                if (contactDoc.patient_id) {
+                  addPatientName(selected.reports, [ selected ]);
+                }
+
                 return getPersonReports(children.persons).then(function(childrenReports) {
                   if (childrenReports.length) {
                     addPatientName(childrenReports, children.persons);
