@@ -55,7 +55,7 @@ var processChange = function(change, callback) {
         }
 
         if (processed > 0 && (processed % PROGRESS_REPORT_INTERVAL) === 0) {
-            logger.info('transitions: %d items processed', processed, '(total)');
+            logger.info('transitions: %d items processed (since sentinel started)', processed);
         }
         change.doc = doc;
         logger.debug('change event on doc %s seq %s', change.id, change.seq);
