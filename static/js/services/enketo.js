@@ -5,6 +5,7 @@ angular.module('inboxServices').service('Enketo',
     $q,
     $translate,
     $window,
+    AddAttachment,
     Auth,
     DB,
     EnketoPrepopulationData,
@@ -21,6 +22,7 @@ angular.module('inboxServices').service('Enketo',
     var objUrls = [];
     var xmlCache = {};
     var FORM_ATTACHMENT_NAME = 'xml';
+    var REPORT_ATTACHMENT_NAME = this.REPORT_ATTACHMENT_NAME = 'content';
 
     var replaceJavarosaMediaWithLoaders = function(formInternalId, form) {
       var mediaElements = form.find('img,video,audio');
@@ -270,31 +272,34 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    var attachContent = function(doc, content) {
-      doc._attachments = doc._attachments || {};
-      doc._attachments.content = {
-        content_type: 'application/xml',
-        data: btoa(content)
-      };
+    var storeXMLRecord = function(doc, record) {
+      AddAttachment(doc, REPORT_ATTACHMENT_NAME, record, 'application/xml');
+      doc.fields = EnketoTranslation.reportRecordToJs(record);
+      doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
+      return doc;
+    };
+
+    var saveReport = function(doc) {
+      return DB().post(doc).then(function(res) {
+        doc._id = res.id;
+        doc._rev = res.rev;
+        return doc;
+      });
     };
 
     var update = function(formInternalId, record, docId) {
       // update an existing doc.  For convenience, get the latest version
       // and then modify the content.  This will avoid most concurrent
       // edits, but is not ideal.
-      return DB().get(docId).then(function(doc) {
-        // previously XML was stored in the content property
-        // TODO delete this and other "legacy" code support commited against
-        //      the same git commit at some point in the future?
-        delete doc.content;
-
-        attachContent(doc, record);
-        doc.fields = EnketoTranslation.reportRecordToJs(record);
-        return DB().put(doc).then(function(res) {
-          doc._rev = res.rev;
-          return $q.resolve(doc);
-        });
-      });
+      return DB().get(docId)
+        .then(function(doc) {
+          // previously XML was stored in the content property
+          // TODO delete this and other "legacy" code support commited against
+          //      the same git commit at some point in the future?
+          delete doc.content;
+          return storeXMLRecord(doc, record);
+        })
+        .then(saveReport);
     };
 
     var getUserContact = function() {
@@ -307,24 +312,19 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var create = function(formInternalId, record) {
-      return getUserContact().then(function(contact) {
-        var doc = {
-          fields: EnketoTranslation.reportRecordToJs(record),
-          form: formInternalId,
-          type: 'data_record',
-          content_type: 'xml',
-          reported_date: Date.now(),
-          contact: contact,
-          from: contact && contact.phone,
-          hidden_fields: EnketoTranslation.getHiddenFieldList(record),
-        };
-        attachContent(doc, record);
-        return DB().post(doc).then(function(res) {
-          doc._id = res.id;
-          doc._rev = res.rev;
-          return $q.resolve(doc);
-        });
-      });
+      return getUserContact()
+        .then(function(contact) {
+          var doc = {
+            form: formInternalId,
+            type: 'data_record',
+            content_type: 'xml',
+            reported_date: Date.now(),
+            contact: contact,
+            from: contact && contact.phone
+          };
+          return storeXMLRecord(doc, record);
+        })
+        .then(saveReport);
     };
 
     this.save = function(formInternalId, form, docId) {
