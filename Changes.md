@@ -1,8 +1,24 @@
 # Medic Mobile Release Notes
 
+## 2.10.3
+
+_March 30, 2017_
+
+### Bug fixes
+
+- Unicode support for storing enketo xml. Issue: #3308
+- Support negative values in xform fields better. Issue: medic/medic-projects#1624
+- Trigger enketo calc updates when option names are changed. Issue: #3281
+
+### UI/UX improvements
+
+- Show report subject name on patient page. Issue: #3309
+- Translate task schedule group titles. Issue: #3283
+- Add additional supported moment locales. Issue: #3282
+
 ## 2.10.2
 
-_March 24, 2017
+_March 24, 2017_
 
 ### Bug fixes
 
