@@ -276,11 +276,6 @@
       "from": "git://github.com/medic/enketo-core.git#medic-2.10.x",
       "resolved": "git://github.com/medic/enketo-core.git#a8154bd941fa7b2e4e5edfd2ba5f2ab48e830279",
       "dependencies": {
-        "jquery": {
-          "version": "2.1.4",
-          "from": "jquery@>=2.1.0 <2.2.0",
-          "resolved": "http://registry.npmjs.org/jquery/-/jquery-2.1.4.tgz"
-        },
         "lie": {
           "version": "3.0.4",
           "from": "lie@>=3.0.0 <3.1.0",
