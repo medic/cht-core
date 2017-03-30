@@ -12,36 +12,35 @@ describe('Enketo service', function() {
     };
   };
 
-  var VISIT_FORM = `
-    <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
-      <h:head>
-        <h:title>Visit</h:title>
-        <model>
-          <instance>
-            <data id="V" version="2015-06-05">
-              <patient_id tag="id"/>
-              <name tag="name"/>
-              <inputs>
-                <patient_id tag="n"/>
-                <user>
-                  <_id tag="ui"/>
-                  <facility_id tag="ufi"/>
-                </user>
-              </inputs>
-            </data>
-          </instance>
-          <itext>
-            <translation lang="eng">
-              <text id="patient_id:label">
-                <value>Patient ID</value>
-              </text>
-            </translation>
-          </itext>
-          <bind nodeset="/data/patient_id" type="medicPatientSelect" required="true()" />
-          <bind nodeset="/data/name" type="string" required="true()" />
-        </model>
-      </h:head>
-    </h:html>`;
+  var VISIT_FORM = '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">' +
+    '  <h:head>' +
+    '    <h:title>Visit</h:title>' +
+    '    <model>' +
+    '      <instance>' +
+    '        <data id="V" version="2015-06-05">' +
+    '          <patient_id tag="id"/>' +
+    '          <name tag="name"/>' +
+    '          <inputs>' +
+    '            <patient_id tag="n"/>' +
+    '            <user>' +
+    '              <_id tag="ui"/>' +
+    '              <facility_id tag="ufi"/>' +
+    '            </user>' +
+    '          </inputs>' +
+    '        </data>' +
+    '      </instance>' +
+    '      <itext>' +
+    '        <translation lang="eng">' +
+    '          <text id="patient_id:label">' +
+    '            <value>Patient ID</value>' +
+    '          </text>' +
+    '        </translation>' +
+    '      </itext>' +
+    '      <bind nodeset="/data/patient_id" type="medicPatientSelect" required="true()" />' +
+    '      <bind nodeset="/data/name" type="string" required="true()" />' +
+    '    </model>' +
+    '  </h:head>' +
+    '</h:html>';
 
   var service,
       enketoInit = sinon.stub(),

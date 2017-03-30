@@ -10,6 +10,7 @@
       $q,
       $scope,
       $state,
+      $timeout,
       $translate,
       DB,
       Enketo,
