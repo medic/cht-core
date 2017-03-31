@@ -11,6 +11,7 @@ _March 31, 2017_
 - Trigger enketo calc updates when option names are changed. Issue: #3281
 - New Household button missing. Issue: #3132
 - Change report form language without requiring refresh. Issue: #3174
+- Corrupted translation strings. Issue: #3305
 
 ### UI/UX improvements
 
