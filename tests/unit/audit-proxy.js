@@ -40,7 +40,7 @@ exports['audit audits the request'] = function(test) {
   var passStreamFn = function(writeFn, endFn) {
     var chunks = JSON.stringify(doc).match(/.{1,4}/g);
     chunks.forEach(function(chunk){
-      writeFn(Buffer.from(chunk, 'utf8'), 'UTF-8', function() {});
+      writeFn(new Buffer(chunk), 'UTF-8', function() {});
     });
     endFn.call({push: function(body) {
       test.equals(body, JSON.stringify(auditedDoc));
@@ -83,7 +83,7 @@ exports['audit does not audit non json request'] = function(test) {
     web: function() {}
   };
   var passStreamFn = function(writeFn, endFn) {
-    writeFn(Buffer.from(doc, 'utf8'), 'UTF-8', function() {});
+    writeFn(new Buffer(doc), 'UTF-8', function() {});
     endFn.call({push: function(body) {
       test.equals(body, doc);
     }}, function() {});
@@ -122,7 +122,7 @@ exports['audit does not audit _local docs'] = function(test) {
     web: function() {}
   };
   var passStreamFn = function(writeFn, endFn) {
-    writeFn(Buffer.from(doc, 'utf8'), 'UTF-8', function() {});
+    writeFn(new Buffer(doc), 'UTF-8', function() {});
     endFn.call({push: function(body) {
       test.equals(body, doc);
     }}, function() {});
@@ -183,7 +183,7 @@ exports['audit audits the non _local docs'] = function(test) {
     }
   };
   var passStreamFn = function(writeFn, endFn) {
-    writeFn(Buffer.from(JSON.stringify(docs), 'utf8'), 'UTF-8', function() {});
+    writeFn(new Buffer(JSON.stringify(docs)), 'UTF-8', function() {});
     endFn.call({push: function(body) {
       // pass through both local and proper
       test.equals(body, JSON.stringify(docs));
@@ -281,7 +281,7 @@ exports['audit emits errors when stream emits errors'] = function(test) {
           if (eventName === 'error') {
             var chunks = JSON.stringify(doc).match(/.{1,4}/g);
             chunks.forEach(function(chunk){
-              writeFn(Buffer.from(chunk, 'utf8'), 'UTF-8', function() {});
+              writeFn(new Buffer(chunk), 'UTF-8', function() {});
             });
             endFn.call({push: function(body) {
               test.equals(body, JSON.stringify(auditedDoc));
