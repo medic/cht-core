@@ -9,6 +9,7 @@ var _ = require('underscore'),
     db = require('./db'),
     config = require('./config'),
     auth = require('./auth'),
+    clientIsHuman = require('./client_is_human'),
     scheduler = require('./scheduler'),
     AuditProxy = require('./audit-proxy'),
     migrations = require('./migrations'),
@@ -556,7 +557,7 @@ var changesHander = _.partial(require('./handlers/changes').request, proxy);
 app.get(pathPrefix + '_changes', changesHander);
 app.post(pathPrefix + '_changes', jsonParser, changesHander);
 
-var writeHeaders = function(req, res, headers, redirect) {
+var writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
   res.writeHead = function(_statusCode, _headers) {
     // hardcode this so we never show the basic auth prompt
@@ -566,8 +567,8 @@ var writeHeaders = function(req, res, headers, redirect) {
         res.setHeader(header[0], header[1]);
       });
     }
-    // for dynamic resources, redirect to login page
-    if (redirect && _statusCode === 401) {
+    // for dynamic resources, redirect humans to login page
+    if (_statusCode === 401 && redirectHumans && clientIsHuman(req)) {
       _statusCode = 302;
       res.setHeader(
         'Location',
