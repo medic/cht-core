@@ -79,7 +79,7 @@ AuditProxy.prototype.audit = function(proxy, req, res) {
     var endFn = function(cb) {
       var self = this;
       var options = { buffer: buffer };
-      var doc = parse(dataBuffer.join(''));
+      var doc = parse(Buffer.concat(dataBuffer).toString());
       audit(doc, function(err, data) {
         if (err) {
           return cb(err);
