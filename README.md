@@ -183,9 +183,9 @@ Initially your instance will have the [default forms defined inside the default 
 
 There are two types of forms : JSON forms, used for SMS interfaces, and XML forms, used for the android app, Medic Collect and the SimApps.
 
-You can view the list of JSON forms and load new ones through the webapp's interface (in Configuration).
+You can view the list of JSON forms and load new ones through the webapp's interface (in Configuration). You can also upload them from command line with the [load_forms.js](https://github.com/medic/medic-webapp/blob/master/scripts/load_forms.js) script
 
-You can view the XML forms from Futon (check out the `forms` view). You can upload new forms from command line with the [load_forms.js](https://github.com/medic/medic-webapp/blob/master/scripts/load_forms.js) script. XML forms with ids starting with `forms:contact` will customize the edit/create page for the given contact (person or place) type.
+You can view the XML forms from Futon (check out the `forms` view). You can upload new forms from command line with the [upload_xform.sh](https://github.com/medic/medic-webapp/blob/master/scripts/upload_xform.sh) script. XML forms with ids starting with `forms:contact` will customize the edit/create page for the given contact (person or place) type.
 
 ![XML forms](https://cdn.rawgit.com/medic/medic-webapp/master/doc/xml_forms.png)
 
