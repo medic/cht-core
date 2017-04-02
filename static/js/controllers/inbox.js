@@ -104,6 +104,7 @@ var feedback = require('../modules/feedback'),
       $scope.actionBar = {};
       $scope.tours = [];
       $scope.baseUrl = Location.path;
+      $scope.enketoStatus = { saving: false };
 
       if ($window.medicmobile_android) {
         $scope.android_app_version = $window.medicmobile_android.getAppVersion();
@@ -135,16 +136,18 @@ var feedback = require('../modules/feedback'),
 
       // User wants to cancel current flow, or pressed back button, etc.
       $scope.navigationCancel = function() {
-        Modal({
-          templateUrl: 'templates/modals/navigation_confirm.html',
-          controller: 'NavigationConfirmCtrl',
-          singleton: true
-        })
-        .then(function() {
-          if ($scope.cancelCallback) {
-            $scope.cancelCallback();
-          }
-        });
+        if (!$scope.enketoStatus.saving) {
+          Modal({
+            templateUrl: 'templates/modals/navigation_confirm.html',
+            controller: 'NavigationConfirmCtrl',
+            singleton: true
+          })
+          .then(function() {
+            if ($scope.cancelCallback) {
+              $scope.cancelCallback();
+            }
+          });
+        }
       };
 
       /**

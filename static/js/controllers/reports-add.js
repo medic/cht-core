@@ -78,30 +78,28 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         $log.error('Error setting selected doc', err);
       });
 
-    $scope.saveStatus = {};
-
     $scope.save = function() {
-      if ($scope.saveStatus.saving) {
+      if ($scope.enketoStatus.saving) {
         $log.debug('Attempted to call reports-add:$scope.save more than once');
         return;
       }
 
-      $scope.saveStatus.saving = true;
-      $scope.saveStatus.error = null;
+      $scope.enketoStatus.saving = true;
+      $scope.enketoStatus.error = null;
       var doc = $scope.selected[0].report;
       Enketo.save(doc.form, $scope.form, doc._id)
         .then(function(doc) {
           $log.debug('saved report', doc);
-          $scope.saveStatus.saving = false;
+          $scope.enketoStatus.saving = false;
           $translate($state.params.reportId ? 'report.updated' : 'report.created')
             .then(Snackbar);
           $state.go('reports.detail', { id: doc._id });
         })
         .catch(function(err) {
-          $scope.saveStatus.saving = false;
+          $scope.enketoStatus.saving = false;
           $log.error('Error submitting form data: ', err);
           $translate('error.report.save').then(function(msg) {
-            $scope.saveStatus.error = msg;
+            $scope.enketoStatus.error = msg;
           });
         });
     };
