@@ -135,18 +135,16 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         $log.error('Error loading contact form.', err);
       });
 
-    $scope.saveStatus = {};
-
     $scope.save = function() {
-      if ($scope.saveStatus.saving) {
+      if ($scope.enketoStatus.saving) {
         $log.debug('Attempted to call contacts-edit:$scope.save more than once');
         return;
       }
 
       var form = $scope.enketoContact.formInstance;
       var docId = $scope.enketoContact.docId;
-      $scope.saveStatus.saving = true;
-      $scope.saveStatus.error = null;
+      $scope.enketoStatus.saving = true;
+      $scope.enketoStatus.error = null;
 
       return form.validate()
         .then(function(valid) {
@@ -157,22 +155,22 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           return save(form, docId)
             .then(function(doc) {
               $log.debug('saved report', doc);
-              $scope.saveStatus.saving = false;
+              $scope.enketoStatus.saving = false;
               $translate(docId ? 'contact.updated' : 'contact.created').then(Snackbar);
               $state.go('contacts.detail', { id: doc._id });
             })
             .catch(function(err) {
-              $scope.saveStatus.saving = false;
+              $scope.enketoStatus.saving = false;
               $log.error('Error submitting form data', err);
               $translate('Error updating contact').then(function(msg) {
-                $scope.saveStatus.error = msg;
+                $scope.enketoStatus.error = msg;
               });
             });
         })
         .catch(function() {
           // validation messages will be displayed for individual fields.
           // That's all we want, really.
-          $scope.saveStatus.saving = false;
+          $scope.enketoStatus.saving = false;
           $scope.$apply();
         });
     };

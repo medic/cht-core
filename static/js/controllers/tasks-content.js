@@ -66,31 +66,29 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       }
     };
 
-    $scope.saveStatus = {};
-
     $scope.save = function() {
-      if ($scope.saveStatus.saving) {
+      if ($scope.enketoStatus.saving) {
         $log.debug('Attempted to call tasks-content:$scope.save more than once');
         return;
       }
 
-      $scope.saveStatus.saving = true;
-      $scope.saveStatus.error = null;
+      $scope.enketoStatus.saving = true;
+      $scope.enketoStatus.error = null;
       Enketo.save($scope.formId, $scope.form)
         .then(function(doc) {
           $log.debug('saved report', doc);
           $translate('report.created').then(Snackbar);
-          $scope.saveStatus.saving = false;
+          $scope.enketoStatus.saving = false;
           Enketo.unload($scope.form);
           $scope.clearSelected();
           $scope.clearCancelTarget();
           $state.go('tasks.detail', { id: null });
         })
         .catch(function(err) {
-          $scope.saveStatus.saving = false;
+          $scope.enketoStatus.saving = false;
           $log.error('Error submitting form data: ', err);
           $translate('error.report.save').then(function(msg) {
-            $scope.saveStatus.error = msg;
+            $scope.enketoStatus.error = msg;
           });
         });
     };
