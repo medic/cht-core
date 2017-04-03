@@ -249,10 +249,13 @@ module.exports = function(grunt) {
       }
     },
     watch: {
+      options: {
+        interval: 1000
+      },
       configFiles: {
         files: [ 'Gruntfile.js', 'package.json' ],
         options: {
-          reload: true
+          reload: true,
         }
       },
       css: {
