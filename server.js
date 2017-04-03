@@ -193,6 +193,9 @@ app.get('/api/upcoming-due-dates', function(req, res) {
   handleAnalyticsCall(req, res, upcomingDueDates);
 });
 
+app.get('/api/sms/', function(req, res) {
+  res.redirect(301, '/api/sms');
+});
 app.get('/api/sms', function(req, res) {
   auth.check(req, 'can_access_gateway_api', null, function(err) {
     if (err) {
@@ -207,6 +210,9 @@ app.get('/api/sms', function(req, res) {
   });
 });
 
+app.post('/api/sms/', function(req, res) {
+  res.redirect(301, '/api/sms');
+});
 app.post('/api/sms', jsonParser, function(req, res) {
   auth.check(req, 'can_access_gateway_api', null, function(err) {
     if (err) {
