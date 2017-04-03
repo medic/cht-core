@@ -143,6 +143,7 @@ module.exports = function(grunt) {
             src: [
               'bootstrap-daterangepicker/**',
               'font-awesome/**',
+              'moment/**',
               'pouchdb-adapter-idb/**',
             ],
             dest: 'node_modules_backup'
@@ -211,6 +212,7 @@ module.exports = function(grunt) {
           var modulesToPatch = [
             'bootstrap-daterangepicker',
             'font-awesome',
+            'moment',
             'pouchdb-adapter-idb',
           ];
           return modulesToPatch.map(function(module) {
@@ -239,6 +241,9 @@ module.exports = function(grunt) {
             // patch font-awesome to remove version attributes so appcache works
             // https://github.com/FortAwesome/Font-Awesome/issues/3286
             'patch node_modules/font-awesome/less/path.less < patches/font-awesome-remove-version-attribute.patch',
+
+            // patch moment.js to use western arabic (european) numerals in Hindi
+            'patch node_modules/moment/locale/hi.js < patches/moment-hindi-use-euro-numerals.patch',
 
             // patch pouch to improve safari checks
             // https://github.com/medic/medic-webapp/issues/2797
