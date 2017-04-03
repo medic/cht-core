@@ -3,33 +3,75 @@ var fs = require('fs'),
     async = require('async'),
     db = require('./db');
 
-var hasRun = function(meta, migration) {
-  if (!meta || !meta.migrations) {
+var MIGRATION_LOG_ID = 'migration-log',
+    MIGRATION_LOG_TYPE = 'meta';
+
+var hasRun = function(log, migration) {
+  if (!log || !log.migrations) {
     return false;
   }
-  return meta.migrations.indexOf(migration.name) !== -1;
+  return log.migrations.indexOf(migration.name) !== -1;
 };
 
 var error = function(migration, err) {
   return 'Migration "' + migration.name + '" failed with: ' + JSON.stringify(err);
 };
 
-var getMeta = function(callback) {
-  db.medic.view('medic-client', 'doc_by_type', { include_docs: true, key: [ 'meta' ] }, function(err, meta) {
+var getLogWithView = function(callback) {
+  var options = { include_docs: true, key: [ MIGRATION_LOG_TYPE ] };
+  db.medic.view('medic-client', 'doc_by_type', options, function(err, result) {
     if (err) {
       return callback(
         new Error(
           'Could not run migrations without doc_by_type view. Update ddoc. ' +
           JSON.stringify(err)));
     }
-    meta = meta && meta.rows && meta.rows[0] && meta.rows[0].doc;
-    if (!meta) {
-      meta = { type: 'meta' };
+    var log = result && result.rows && result.rows[0] && result.rows[0].doc;
+    callback(null, log);
+  });
+};
+
+var deleteOldLog = function(oldLog, callback) {
+  if (!oldLog) {
+    return callback();
+  }
+  oldLog._deleted = true;
+  db.medic.insert(oldLog, callback);
+};
+
+var createMigrationLog = function(callback) {
+  getLogWithView(function(err, oldLog) {
+    if (err) {
+      return callback(err);
     }
-    if (!meta.migrations) {
-      meta.migrations = [];
+    var newLog = {
+      _id: MIGRATION_LOG_ID,
+      type: MIGRATION_LOG_TYPE,
+      migrations: (oldLog && oldLog.migrations) || []
+    };
+    db.medic.insert(newLog, function(err) {
+      if (err) {
+        return callback(err);
+      }
+      deleteOldLog(oldLog, function(err) {
+        if (err) {
+          return callback(err);
+        }
+        getLog(callback);
+      });
+    });
+  });
+};
+
+var getLog = function(callback) {
+  db.medic.get(MIGRATION_LOG_ID, function(err, doc) {
+    if (err) {
+      if (err.statusCode === 404) {
+        return createMigrationLog(callback);
+      }
+      return callback(err);
     }
-    callback(null, meta);
+    callback(null, doc);
   });
 };
 
@@ -46,12 +88,12 @@ var runMigration = function(migration, callback) {
     if (err) {
       return callback(error(migration, err));
     }
-    getMeta(function(err, meta) {
+    getLog(function(err, log) {
       if (err) {
         return callback(error(migration, err));
       }
-      meta.migrations.push(migration.name);
-      db.medic.insert(meta, function(err) {
+      log.migrations.push(migration.name);
+      db.medic.insert(log, function(err) {
         if (err) {
           return callback(error(migration, err));
         }
@@ -62,12 +104,12 @@ var runMigration = function(migration, callback) {
   });
 };
 
-var runMigrations = function(meta, migrations, callback) {
+var runMigrations = function(log, migrations, callback) {
   migrations.sort(sortMigrations);
   async.eachSeries(
     migrations,
     function(migration, callback) {
-      if (hasRun(meta, migration)) {
+      if (hasRun(log, migration)) {
         // already run
         return callback();
       }
@@ -79,7 +121,7 @@ var runMigrations = function(meta, migrations, callback) {
 
 module.exports = {
   run: function(callback) {
-    getMeta(function(err, meta) {
+    getLog(function(err, log) {
       if (err) {
         return callback(err);
       }
@@ -87,7 +129,7 @@ module.exports = {
         if (err) {
           return callback(err);
         }
-        runMigrations(meta, migrations, callback);
+        runMigrations(log, migrations, callback);
       });
     });
   },
