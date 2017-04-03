@@ -2,6 +2,11 @@ const _ = require('underscore'),
       db = require('../db'),
       series = require('async/series');
 
+const DEFAULT_STRUCTURE = {
+    names: [],
+    roles: []
+};
+
 const addRole = (dbname, role, callback) => db.request({
     db: dbname,
     method: 'GET',
@@ -9,6 +14,12 @@ const addRole = (dbname, role, callback) => db.request({
   }, (err, result) => {
     if (err) {
       return callback(err);
+    }
+
+    // In CouchDB 1.x, if you have not written to the _security object before
+    // it is empty.
+    if (!result.admins) {
+      result.admins = DEFAULT_STRUCTURE;
     }
 
     if (!result.admins.roles.includes(role)) {
