@@ -1,55 +1,46 @@
 var _ = require('underscore');
 
-(function () {
+angular.module('inboxServices').service('ContactForm',
+  function(
+    ContactSchema,
+    DB,
+    EnketoTranslation
+  ) {
 
-  'use strict';
+    'use strict';
+    'ngInject';
 
-  angular.module('inboxServices').service('ContactForm',
-    function(
-      $q,
-      ContactSchema,
-      DB,
-      EnketoTranslation,
-      FileReader
-    ) {
+    var withAvailableForms = DB().query('medic-client/forms').then(function(res) {
+      return _.pluck(res.rows, 'id');
+    });
 
-      'ngInject';
-
-      var withAvailableForms = DB().query('medic-client/forms')
-        .then(function(res) {
-          return _.pluck(res.rows, 'id');
-        });
-
-      function getXmlAttachment(doc) {
-        return DB().getAttachment(doc._id, 'xml')
-          .then(FileReader);
+    var getFormById = function(availableForms, id) {
+      if (_.contains(availableForms, id)) {
+        return { id: id };
       }
+    };
 
-      function getFormById(availableForms, id) {
-        if (_.contains(availableForms, id)) {
-          return DB().get(id)
-            .then(getXmlAttachment);
-        }
+    var generateForm = function(type, extras) {
+      var schema = ContactSchema.get(type);
+      var xml = EnketoTranslation.generateXform(schema, extras);
+      return { xml: xml };
+    };
+
+    var getFormFor = function(type, mode, extras) {
+      return withAvailableForms.then(function(availableForms) {
+        return getFormById(availableForms, 'form:contact:' + type + ':' + mode) ||
+               getFormById(availableForms, 'form:contact:' + type) ||
+               generateForm(type, extras);
+      });
+    };
+
+    return {
+      forCreate: function(type, extras) {
+        return getFormFor(type, 'create', extras);
+      },
+      forEdit: function(type, extras) {
+        return getFormFor(type, 'edit', extras);
       }
-
-      function getFormFor(type, mode, extras) {
-        return withAvailableForms
-          .then(function(availableForms) {
-            return getFormById(availableForms, 'form:contact:' + type + ':' + mode) ||
-              getFormById(availableForms, 'form:contact:' + type) ||
-              $q.resolve(
-                EnketoTranslation.generateXform(ContactSchema.get(type), extras));
-          });
-      }
-
-      return {
-        forCreate: function(type, extras) {
-          return getFormFor(type, 'create', extras);
-        },
-        forEdit: function(type, extras) {
-          return getFormFor(type, 'edit', extras);
-        }
-      };
-    }
-  );
-}());
+    };
+  }
+);

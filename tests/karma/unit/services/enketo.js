@@ -2,13 +2,10 @@ describe('Enketo service', function() {
   'use strict';
 
   /** @return a mock form ready for putting in #dbContent */
-  var mockEnketoDoc = function(formInternalId, docId) {
+  var mockEnketoDoc = function(formInternalId) {
     return {
-      id: docId || 'form-0',
-      doc: {
-        internalId: formInternalId,
-        _attachments: { xml: { something: true } },
-      },
+      internalId: formInternalId,
+      _attachments: { xml: { something: true } },
     };
   };
 
@@ -48,7 +45,6 @@ describe('Enketo service', function() {
       transform = sinon.stub(),
       dbGetAttachment = sinon.stub(),
       dbGet = sinon.stub(),
-      dbQuery = sinon.stub(),
       dbPost = sinon.stub(),
       UserContact = sinon.stub(),
       createObjectURL = sinon.stub(),
@@ -59,7 +55,6 @@ describe('Enketo service', function() {
         validate: sinon.stub(),
         getDataStr: sinon.stub(),
       },
-      Auth = sinon.stub(),
       AddAttachment = sinon.stub(),
       EnketoForm = sinon.stub(),
       EnketoPrepopulationData = sinon.stub();
@@ -76,7 +71,6 @@ describe('Enketo service', function() {
       $provide.factory('DB', KarmaUtils.mockDB({
         getAttachment: dbGetAttachment,
         get: dbGet,
-        query: dbQuery,
         post: dbPost
       }));
       $provide.value('XSLT', { transform: transform });
@@ -86,7 +80,6 @@ describe('Enketo service', function() {
       });
       $provide.value('FileReader', FileReader);
       $provide.value('UserContact', UserContact);
-      $provide.value('Auth', Auth);
       $provide.value('Language', Language);
       $provide.value('TranslateFrom', TranslateFrom);
       $provide.value('EnketoPrepopulationData', EnketoPrepopulationData);
@@ -101,28 +94,12 @@ describe('Enketo service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbQuery, dbPost, transform, createObjectURL, FileReader, UserContact, form.validate, form.getDataStr, Auth, Language, TranslateFrom, AddAttachment);
+    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbPost, transform, createObjectURL, FileReader, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment);
   });
 
   describe('render', function() {
 
-    it('renders error when user lacks permission', function(done) {
-      Auth.returns(KarmaUtils.mockPromise('no permission'));
-      service
-        .render(null, 'not-defined')
-        .then(function() {
-          done(new Error('Should throw error'));
-        })
-        .catch(function(actual) {
-          chai.expect(Auth.callCount).to.equal(1);
-          chai.expect(Auth.args[0][0]).to.equal('can_create_records');
-          chai.expect(actual).to.equal('no permission');
-          done();
-        });
-    });
-
     it('renders error when user does not have associated contact', function(done) {
-      Auth.returns(KarmaUtils.mockPromise());
       UserContact.returns(KarmaUtils.mockPromise());
       service
         .render(null, 'not-defined')
@@ -135,26 +112,9 @@ describe('Enketo service', function() {
         });
     });
 
-    it('return error when form not found', function(done) {
-      // given only irrelevant forms are available
-      Auth.returns(KarmaUtils.mockPromise());
-      UserContact.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [] }));
-      service
-        .render(null, 'not-defined')
-        .then(function() {
-          done(new Error('Should throw error'));
-        })
-        .catch(function(actual) {
-          chai.expect(actual.message).to.equal('Requested form not found: not-defined');
-          done();
-        });
-    });
-
     it('return error when form initialisation fails', function(done) {
-      Auth.returns(KarmaUtils.mockPromise());
       UserContact.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
+      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
       dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xml'));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
@@ -175,9 +135,8 @@ describe('Enketo service', function() {
     });
 
     it('return form when everything works', function() {
-      Auth.returns(KarmaUtils.mockPromise());
       UserContact.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
+      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
       dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
       enketoInit.returns([]);
       FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
@@ -186,7 +145,6 @@ describe('Enketo service', function() {
         .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
         .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_FORM));
       return service.render($('<div></div>'), 'ok').then(function() {
-        chai.expect(Auth.callCount).to.equal(1);
         chai.expect(UserContact.callCount).to.equal(1);
         chai.expect(EnketoPrepopulationData.callCount).to.equal(2);
         chai.expect(transform.callCount).to.equal(2);
@@ -199,9 +157,8 @@ describe('Enketo service', function() {
     });
 
     it('replaces img src with obj urls', function() {
-      Auth.returns(KarmaUtils.mockPromise());
       UserContact.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
+      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, '<div><img src="jr://myimg"></div>'))
         .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_FORM));
@@ -229,9 +186,8 @@ describe('Enketo service', function() {
     });
 
     it('leaves img wrapped if failed to load', function() {
-      Auth.returns(KarmaUtils.mockPromise());
       UserContact.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
+      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, '<div><img src="jr://myimg"></div>'))
         .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_FORM));
@@ -255,9 +211,8 @@ describe('Enketo service', function() {
 
     it('passes xml instance data through to Enketo', function() {
       var data = '<data><patient_id>123</patient_id></data>';
-      Auth.returns(KarmaUtils.mockPromise());
       UserContact.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
+      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
       dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
       enketoInit.returns([]);
       FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
@@ -274,13 +229,12 @@ describe('Enketo service', function() {
 
     it('passes json instance data through to Enketo', function() {
       var data = '<data><patient_id>123</patient_id></data>';
-      Auth.returns(KarmaUtils.mockPromise());
       UserContact.returns(KarmaUtils.mockPromise(null, {
         _id: '456',
         contact_id: '123',
         facility_id: '789'
       }));
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [ mockEnketoDoc('ok', 'form-9') ] }));
+      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
       dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
       enketoInit.returns([]);
       FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));

@@ -4,12 +4,12 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     $q,
     $scope,
     $state,
-    $timeout,
     $translate,
     DB,
     Enketo,
     FileReader,
-    Snackbar
+    Snackbar,
+    XmlForm
   ) {
 
     'ngInject';
@@ -58,19 +58,20 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         // TODO: check doc.content as this is where legacy documents stored
         //       their XML. Consider removing this check at some point in the
         //       future.
-        return getReportContent(doc).then(function(content) {
-          $timeout(function() {
-            Enketo.render($('#report-form'), doc.form, content)
-              .then(function(form) {
-                $scope.form = form;
-                $scope.loadingContent = false;
-              })
-              .catch(function(err) {
-                $scope.loadingContent = false;
-                $scope.contentError = true;
-                $log.error('Error loading form.', err);
-              });
-          });
+        return $q.all([
+          getReportContent(doc),
+          XmlForm(doc.form, { include_docs: true })
+        ]).then(function(results) {
+          Enketo.render('#report-form', results[1].id, results[0])
+            .then(function(form) {
+              $scope.form = form;
+              $scope.loadingContent = false;
+            })
+            .catch(function(err) {
+              $scope.loadingContent = false;
+              $scope.contentError = true;
+              $log.error('Error loading form.', err);
+            });
         });
       })
       .catch(function(err) {

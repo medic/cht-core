@@ -7,7 +7,8 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     DB,
     Enketo,
     TranslateFrom,
-    Snackbar
+    Snackbar,
+    XmlForm
   ) {
 
     'use strict';
@@ -43,18 +44,14 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       if (action.type === 'report') {
         $scope.loadingForm = true;
         $scope.formId = action.form;
-        Enketo.render($('#task-report'), action.form, action.content)
-          .then(function(form) {
-            $scope.form = form;
-            $scope.loadingForm = false;
-          })
-          .then(function() {
-            return DB().query('medic-client/forms', { include_docs: true, key: action.form });
-          })
-          .then(function(res) {
-            if (res.rows[0]) {
-              $scope.setTitle(TranslateFrom(res.rows[0].doc.title));
-            }
+        XmlForm(action.form, { include_docs: true })
+          .then(function(formDoc) {
+            Enketo.render('#task-report', formDoc.id, action.content)
+              .then(function(formInstance) {
+                $scope.form = formInstance;
+                $scope.loadingForm = false;
+                $scope.setTitle(TranslateFrom(formDoc.doc.title));
+              });
           })
           .catch(function(err) {
             $scope.contentError = true;
