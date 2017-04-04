@@ -16,7 +16,7 @@ module.exports = (req) => {
   }
 
   if (DALVIK_DETECT.test(ua)) {
-    return !ua.includes('medic.gateway');
+    return !(ua.includes('medic.gateway') || ua.includes('.collect.android'));
   }
 
   return true;

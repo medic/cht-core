@@ -39,15 +39,52 @@ exports['should return false for gateway UserAgent strings'] = (test) => {
 };
 
 /**
- * Interestingly, ODK Collect and medic-collect do not supply a User-Agent
- * header with all requests.
+ * Old builds of ODK Collect and medic-collect do not supply a User-Agent
+ * header.  This was fixed as March/April 2017.
  */
-exports['should return false for collect UserAgent strings'] = (test) => {
+exports['should return false for empty UserAgent strings'] = (test) => {
   // given
   const req = mockRequestForUa(null);
 
   // expect
   test.equals(false, isClientHuman(req));
+
+  // finally
+  test.done();
+};
+
+exports['should return false for medic-collect UserAgent strings'] = (test) => {
+  [
+    'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android/SNAPSHOT',
+    'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android.amrefsenegal/1.2.3',
+    'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android.christianaidsr/4.5.6',
+    'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android.demo/SNAPSHOT',
+    'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android.intrahealthsenegal/SNAPSHOT',
+    'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android.ipasnigeria/SNAPSHOT',
+    'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android.queens/SNAPSHOT',
+    'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.medicmobile.collect.android.strongminds/SNAPSHOT',
+  ].forEach((humanUserAgent) => {
+    // given
+    const req = mockRequestForUa(humanUserAgent);
+
+    // expect
+    test.equals(false, isClientHuman(req));
+  });
+
+  // finally
+  test.done();
+};
+
+exports['should return false for ODK Collect UserAgent strings'] = (test) => {
+  [
+    'Dalvik/2.1.0 (Linux; U; Android 5.1.1; hi6210sft Build/LMY47X) org.odk.collect.android/v1.5.1-10-ge20fa334-dirty',
+  ].forEach((humanUserAgent) => {
+    // given
+    const req = mockRequestForUa(humanUserAgent);
+
+    // expect
+    test.equals(false, isClientHuman(req));
+  });
 
   // finally
   test.done();
