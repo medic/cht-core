@@ -1,4 +1,4 @@
-const clientIsHuman = require('../../client_is_human');
+const isClientHuman = require('../../is-client-human');
 
 exports.setUp = (callback) => callback();
 exports.tearDown = (callback) => callback();
@@ -16,7 +16,7 @@ exports['should return true for browser UserAgent strings'] = (test) => {
     const req = mockRequestForUa(humanUserAgent);
 
     // expect
-    test.equals(true, clientIsHuman(req));
+    test.equals(true, isClientHuman(req));
   });
 
   // finally
@@ -31,7 +31,7 @@ exports['should return false for gateway UserAgent strings'] = (test) => {
     const req = mockRequestForUa(humanUserAgent);
 
     // expect
-    test.equals(false, clientIsHuman(req));
+    test.equals(false, isClientHuman(req));
   });
 
   // finally
@@ -47,7 +47,7 @@ exports['should return false for collect UserAgent strings'] = (test) => {
   const req = mockRequestForUa(null);
 
   // expect
-  test.equals(false, clientIsHuman(req));
+  test.equals(false, isClientHuman(req));
 
   // finally
   test.done();
@@ -61,7 +61,7 @@ exports['should return true for medic-android UserAgent strings'] = (test) => {
     const req = mockRequestForUa(humanUserAgent);
 
     // expect
-    test.equals(true, clientIsHuman(req));
+    test.equals(true, isClientHuman(req));
   });
 
   // finally

@@ -99,14 +99,26 @@ exports['error handles unknown errors'] = function(test) {
   test.done();
 };
 
-exports['notLoggedIn redirects to login page'] = function(test) {
+exports['notLoggedIn redirects to login page for human user'] = function(test) {
   test.expect(3);
   var redirect = sinon.stub(res, 'redirect');
   req.url = 'someurl';
+  req.headers = { 'user-agent': 'Mozilla/1.0' };
   serverUtils.notLoggedIn(req, res);
   test.equals(redirect.callCount, 1);
   test.equals(redirect.args[0][0], 301);
   test.equals(redirect.args[0][1], '/medic/login?redirect=someurl');
+  test.done();
+};
+
+exports['notLoggedIn returns 401 for medic-collect'] = function(test) {
+  test.expect(2);
+  var writeHead = sinon.stub(res, 'writeHead');
+  req.url = 'someurl';
+  req.headers = { 'user-agent': null };
+  serverUtils.notLoggedIn(req, res);
+  test.equals(writeHead.callCount, 1);
+  test.equals(writeHead.args[0][0], 401);
   test.done();
 };
 

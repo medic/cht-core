@@ -9,7 +9,7 @@ var _ = require('underscore'),
     db = require('./db'),
     config = require('./config'),
     auth = require('./auth'),
-    clientIsHuman = require('./client_is_human'),
+    isClientHuman = require('./is-client-human'),
     scheduler = require('./scheduler'),
     AuditProxy = require('./audit-proxy'),
     migrations = require('./migrations'),
@@ -574,7 +574,7 @@ var writeHeaders = function(req, res, headers, redirectHumans) {
       });
     }
     // for dynamic resources, redirect humans to login page
-    if (_statusCode === 401 && redirectHumans && clientIsHuman(req)) {
+    if (_statusCode === 401 && redirectHumans && isClientHuman(req)) {
       _statusCode = 302;
       res.setHeader(
         'Location',

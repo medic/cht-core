@@ -1,6 +1,7 @@
 var url = require('url'),
     path = require('path'),
     db = require('./db'),
+    isClientHuman = require('./is-client-human'),
     MEDIC_BASIC_AUTH = 'Basic realm="Medic Mobile Web Services"';
 
 var wantsJSON = function(req) {
@@ -27,6 +28,14 @@ var respond = function(req, res, code, message, details) {
     message += ': ' + JSON.stringify(details);
   }
   res.end(message);
+};
+
+const promptForBasicAuth = (res) => {
+  res.writeHead(401, {
+    'Content-Type': 'text/plain',
+    'WWW-Authenticate': MEDIC_BASIC_AUTH
+  });
+  res.end('not logged in');
 };
 
 module.exports = {
@@ -56,23 +65,23 @@ module.exports = {
   notLoggedIn: function(req, res, showPrompt) {
     if (showPrompt) {
       // api access - basic auth allowed
-      res.writeHead(401, {
-        'Content-Type': 'text/plain',
-        'WWW-Authenticate': MEDIC_BASIC_AUTH
-      });
-      res.end('not logged in');
+      promptForBasicAuth(res);
       return;
     }
     if (wantsJSON(req)) {
       // couch request - respond with JSON error
       return writeJSON(res, 401, 'unauthorized');
     }
-    // web access - redirect to login page
-    var redirectUrl = url.format({
-      pathname: path.join('/', db.settings.db, 'login'),
-      query: { redirect: req.url }
-    });
-    res.redirect(301, redirectUrl);
+    // web access - redirect humans to login page; prompt others for basic auth
+    if (isClientHuman(req)) {
+      var redirectUrl = url.format({
+        pathname: path.join('/', db.settings.db, 'login'),
+        query: { redirect: req.url }
+      });
+      res.redirect(301, redirectUrl);
+    } else {
+      promptForBasicAuth(res);
+    }
   },
 
   /**
