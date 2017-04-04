@@ -6,7 +6,6 @@ angular.module('inboxServices').service('Enketo',
     $translate,
     $window,
     AddAttachment,
-    Auth,
     DB,
     EnketoPrepopulationData,
     EnketoTranslation,
@@ -24,47 +23,30 @@ angular.module('inboxServices').service('Enketo',
     var FORM_ATTACHMENT_NAME = 'xml';
     var REPORT_ATTACHMENT_NAME = this.REPORT_ATTACHMENT_NAME = 'content';
 
-    var replaceJavarosaMediaWithLoaders = function(formInternalId, form) {
-      var mediaElements = form.find('img,video,audio');
-
-      if (!mediaElements.length) {
-        return;
-      }
-
-      DB().query('medic-client/forms', { key: formInternalId })
-        .then(function(res) {
-          if (!res.rows.length) {
-            throw new Error('Requested form not found');
-          }
-          var formDoc = res.rows[0];
-
-          mediaElements.each(function(i, elem) {
-            elem = $(elem);
-            var src = elem.attr('src');
-            if (!(/^jr:\/\//.test(src))) {
-              return;
-            }
-            // Change URL to fragment to prevent browser trying to load it
-            elem.attr('src', '#' + src);
-            elem.css('visibility', 'hidden');
-            elem.wrap('<div class="loader">');
-            DB()
-              .getAttachment(formDoc.id, src.substring(5))
-              .then(function(blob) {
-                var objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
-                objUrls.push(objUrl);
-                elem.attr('src', objUrl);
-                elem.css('visibility', '');
-                elem.unwrap();
-              })
-              .catch(function(err) {
-                $log.error('Error fetching media file', formDoc.id, src, err);
-              });
+    var replaceJavarosaMediaWithLoaders = function(id, form) {
+      form.find('img,video,audio').each(function() {
+        var elem = $(this);
+        var src = elem.attr('src');
+        if (!(/^jr:\/\//.test(src))) {
+          return;
+        }
+        // Change URL to fragment to prevent browser trying to load it
+        elem.attr('src', '#' + src);
+        elem.css('visibility', 'hidden');
+        elem.wrap('<div class="loader">');
+        DB()
+          .getAttachment(id, src.substring(5))
+          .then(function(blob) {
+            var objUrl = ($window.URL || $window.webkitURL).createObjectURL(blob);
+            objUrls.push(objUrl);
+            elem.attr('src', objUrl);
+            elem.css('visibility', '');
+            elem.unwrap();
+          })
+          .catch(function(err) {
+            $log.error('Error fetching media file', id, src, err);
           });
-        })
-        .catch(function(err) {
-          $log.error('replaceJavarosaMediaWithLoaders', 'Error finding form by internal ID', formInternalId, err);
-        });
+      });
     };
 
     var transformXml = function(doc) {
@@ -74,11 +56,10 @@ angular.module('inboxServices').service('Enketo',
       ])
       .then(function(results) {
         var html = $(results[0]);
-        html.find('[data-i18n]')
-          .each(function() {
-            var $this = $(this);
-            $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
-          });
+        html.find('[data-i18n]').each(function() {
+          var $this = $(this);
+          $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
+        });
         return {
           html: html,
           model: results[1]
@@ -100,36 +81,26 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var getFormXml = function(form, language) {
-      return DB().getAttachment(form.id, FORM_ATTACHMENT_NAME)
+      return DB().getAttachment(form._id, FORM_ATTACHMENT_NAME)
         .then(FileReader)
         .then(function(text) {
-          return translateXml(text, language, form.doc.title);
+          return translateXml(text, language, form.title);
         });
     };
 
-    var withFormByFormInternalId = function(formInternalId, language) {
-      if (!xmlCache[formInternalId]) {
-        xmlCache[formInternalId] = {};
+    var withForm = function(id, language) {
+      if (!xmlCache[id]) {
+        xmlCache[id] = {};
       }
-      if (!xmlCache[formInternalId][language]) {
-        xmlCache[formInternalId][language] = DB()
-          .query('medic-client/forms', { include_docs: true, key: formInternalId })
-          .then(function(res) {
-            if (!res.rows.length) {
-              throw new Error('Requested form not found: ' + formInternalId);
-            }
-            return res.rows[0];
-          })
+      if (!xmlCache[id][language]) {
+        xmlCache[id][language] = DB()
+          .get(id)
           .then(function(form) {
             return getFormXml(form, language);
           })
           .then(transformXml);
       }
-      return xmlCache[formInternalId][language];
-    };
-
-    var checkPermissions = function() {
-      return Auth('can_create_records').then(getUserContact);
+      return xmlCache[id][language];
     };
 
     var handleKeypressOnInputField = function(e) {
@@ -182,7 +153,8 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
-    var renderFromXmls = function(doc, wrapper, instanceData) {
+    var renderFromXmls = function(doc, selector, instanceData) {
+      var wrapper = $(selector);
       wrapper.find('.form-footer')
              .addClass('end')
              .find('.previous-page,.next-page')
@@ -250,11 +222,11 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    this.render = function(wrapper, formInternalId, instanceData) {
-      return checkPermissions()
+    this.render = function(selector, id, instanceData) {
+      return getUserContact()
         .then(Language)
         .then(function(language) {
-          return withFormByFormInternalId(formInternalId, language);
+          return withForm(id, language);
         })
         .then(function(doc) {
           // clone doc to avoid leaking of data between instances of a form
@@ -262,19 +234,20 @@ angular.module('inboxServices').service('Enketo',
             html: doc.html.clone(),
             model: doc.model,
           };
-          replaceJavarosaMediaWithLoaders(formInternalId, doc.html);
-          return renderFromXmls(doc, wrapper, instanceData);
+          replaceJavarosaMediaWithLoaders(id, doc.html);
+          return renderFromXmls(doc, selector, instanceData);
         });
     };
 
-    this.renderFromXmlString = function(wrapper, xmlString, instanceData) {
-      return Language()
+    this.renderFromXmlString = function(selector, xmlString, instanceData) {
+      return getUserContact()
+        .then(Language)
         .then(function(language) {
           return translateXml(xmlString, language);
         })
         .then(transformXml)
         .then(function(doc) {
-          return renderFromXmls(doc, wrapper, instanceData);
+          return renderFromXmls(doc, selector, instanceData);
         });
     };
 
@@ -293,19 +266,17 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var update = function(formInternalId, record, docId) {
+    var update = function(docId) {
       // update an existing doc.  For convenience, get the latest version
       // and then modify the content.  This will avoid most concurrent
       // edits, but is not ideal.
-      return DB().get(docId)
-        .then(function(doc) {
-          // previously XML was stored in the content property
-          // TODO delete this and other "legacy" code support commited against
-          //      the same git commit at some point in the future?
-          delete doc.content;
-          return storeXMLRecord(doc, record);
-        })
-        .then(saveReport);
+      return DB().get(docId).then(function(doc) {
+        // previously XML was stored in the content property
+        // TODO delete this and other "legacy" code support commited against
+        //      the same git commit at some point in the future?
+        delete doc.content;
+        return doc;
+      });
     };
 
     var getUserContact = function() {
@@ -317,35 +288,34 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var create = function(formInternalId, record) {
-      return getUserContact()
-        .then(function(contact) {
-          var doc = {
-            form: formInternalId,
-            type: 'data_record',
-            content_type: 'xml',
-            reported_date: Date.now(),
-            contact: contact,
-            from: contact && contact.phone
-          };
-          return storeXMLRecord(doc, record);
-        })
-        .then(saveReport);
+    var create = function(formInternalId) {
+      return getUserContact().then(function(contact) {
+        return {
+          form: formInternalId,
+          type: 'data_record',
+          content_type: 'xml',
+          reported_date: Date.now(),
+          contact: contact,
+          from: contact && contact.phone
+        };
+      });
     };
 
     this.save = function(formInternalId, form, docId) {
-      return $q.when(form.validate())
+      return $q.resolve(form.validate())
         .then(function(valid) {
           if (!valid) {
             throw new Error('Form is invalid');
           }
-          var record = form.getDataStr();
           if (docId) {
-            return update(formInternalId, record, docId);
-          } else {
-            return create(formInternalId, record);
+            return update(docId);
           }
-        });
+          return create(formInternalId);
+        })
+        .then(function(doc) {
+          return storeXMLRecord(doc, form.getDataStr());
+        })
+        .then(saveReport);
     };
 
     this.unload = function(form) {

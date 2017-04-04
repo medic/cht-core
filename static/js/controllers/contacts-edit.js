@@ -100,14 +100,19 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
             .addClass('disabled');
         return;
       }
-      return Enketo.renderFromXmlString(container, form, getFormInstanceData())
-        .then(function(form) {
-          $scope.enketoContact = {
-            type: $scope.contact.type,
-            formInstance: form,
-            docId: $scope.contactId,
-          };
-        });
+      var instanceData = getFormInstanceData();
+      if (form.id) {
+        return Enketo.render('#contact-form', form.id, instanceData);
+      }
+      return Enketo.renderFromXmlString('#contact-form', form.xml, instanceData);
+    };
+
+    var setEnketoContact = function(formInstance) {
+      $scope.enketoContact = {
+        type: $scope.contact.type,
+        formInstance: formInstance,
+        docId: $scope.contactId,
+      };
     };
 
     $scope.unmodifiedSchema = ContactSchema.get();
@@ -126,6 +131,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       })
       .then(getForm)
       .then(renderForm)
+      .then(setEnketoContact)
       .then(function() {
         $scope.loadingContent = false;
       })

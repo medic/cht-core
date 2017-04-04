@@ -7,7 +7,8 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     DB,
     Enketo,
     Snackbar,
-    TranslateFrom
+    TranslateFrom,
+    XmlForm
   ) {
 
     'use strict';
@@ -22,11 +23,15 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
         source: 'contact',
         contact: doc,
       };
-      return Enketo
-        .render($('#contact-report'), $state.params.formId, instanceData)
+      return XmlForm($state.params.formId, { include_docs: true })
         .then(function(form) {
-          $scope.form = form;
-          $scope.loadingForm = false;
+          return Enketo
+            .render('#contact-report', form.id, instanceData)
+            .then(function(formInstance) {
+              $scope.setTitle(TranslateFrom(form.doc.title));
+              $scope.form = formInstance;
+              $scope.loadingForm = false;
+            });
         });
     };
 
@@ -64,14 +69,6 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     DB()
       .get($state.params.id)
       .then(render)
-      .then(function() {
-        return DB().query('medic-client/forms', { include_docs: true, key: $state.params.formId });
-      })
-      .then(function(res) {
-        if (res.rows[0]) {
-          $scope.setTitle(TranslateFrom(res.rows[0].doc.title));
-        }
-      })
       .catch(function(err) {
         $log.error('Error loading form', err);
         $scope.contentError = true;
