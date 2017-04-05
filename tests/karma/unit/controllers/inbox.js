@@ -92,7 +92,7 @@ describe('InboxCtrl controller', function() {
           init: sinon.stub()
         };
       });
-      $provide.factory('SetLanguageCookie', function() {
+      $provide.factory('SetLanguage', function() {
         return sinon.stub();
       });
       $provide.factory('Settings', function() {
