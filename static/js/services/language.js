@@ -5,30 +5,15 @@ var moment = require('moment');
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
-  var localeCookieKey = 'locale';
-
-  inboxServices.factory('SetLanguageCookie',
-    function(
-      ipCookie
-    ) {
-      'ngInject';
-      return function(value) {
-        ipCookie(localeCookieKey, value, { expires: 365, path: '/' });
-        return value;
-      };
-    }
-  );
 
   inboxServices.factory('SetLanguage',
     function(
-      $translate,
-      SetLanguageCookie
+      $translate
     ) {
       'ngInject';
       return function(code) {
         moment.locale([code, 'en']);
         $translate.use(code);
-        SetLanguageCookie(code);
       };
     }
   );
@@ -37,14 +22,11 @@ var moment = require('moment');
     function(
       $q,
       ipCookie,
-      SetLanguageCookie,
       Settings,
       UserSettings
     ) {
-
       'ngInject';
-
-      var fetchLocale = function() {
+      return function () {
         return UserSettings()
           .then(function(user) {
             if (user && user.language) {
@@ -55,14 +37,6 @@ var moment = require('moment');
                 return settings.locale || 'en';
               });
           });
-      };
-
-      return function() {
-        var cookieVal = ipCookie(localeCookieKey);
-        if (cookieVal) {
-          return $q.resolve(cookieVal);
-        }
-        return fetchLocale().then(SetLanguageCookie);
       };
     }
   );
