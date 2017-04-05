@@ -80,7 +80,7 @@ var processChange = function(change, callback) {
  */
 var loadTransitions = function() {
     var self = module.exports;
-    var configuredTransitions = config.get('transitions');
+    var configuredTransitions = config.get('transitions') || [];
     _.each(configuredTransitions, function(conf, key) {
         if (!conf || conf.disable) {
             logger.warn('transition %s is disabled', key);
