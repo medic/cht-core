@@ -160,7 +160,7 @@ describe('view docs_by_replication_key', function() {
     async.each(alldocs,
       function(testDoc, callback) {
         utils.saveDoc(testDoc)
-          .then(function(result) {
+          .then(function() {
             callback();
           })
           .catch(callback);
