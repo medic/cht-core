@@ -103,11 +103,11 @@ describe('Auditing', function() {
     flow.execute(function() {
       return utils.getDoc(savedUuid);
     }).then(function(doc) {
-      expect(doc.error).toEqual('not_found');
-      expect(doc.reason).toEqual('deleted');
-    }, function(err) {
-      console.error('Error fetching doc', err);
+      // should not be found!
       expect(true).toEqual(false);
+    }, function(err) {
+      expect(err.error).toEqual('not_found');
+      expect(err.reason).toEqual('deleted');
     });
 
     // check the audit doc is updated
