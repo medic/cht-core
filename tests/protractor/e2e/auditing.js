@@ -105,9 +105,8 @@ describe('Auditing', function() {
     }).then(function() {
       // should not be found!
       expect(true).toEqual(false);
-    }, function(err) {
-      expect(err.error).toEqual('not_found');
-      expect(err.reason).toEqual('deleted');
+    }, function() {
+      // expected
     });
 
     // check the audit doc is updated
@@ -125,4 +124,3 @@ describe('Auditing', function() {
 
   });
 });
-

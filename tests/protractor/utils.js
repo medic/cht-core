@@ -30,7 +30,7 @@ var request = function(options, debug) {
       try {
         body = JSON.parse(body);
         if (body.error) {
-          deferred.reject(body);
+          deferred.reject(new Error('Request failed: ' + options.path + ', with: ' + JSON.stringify(body)));
         } else {
           deferred.fulfill(body);
         }
