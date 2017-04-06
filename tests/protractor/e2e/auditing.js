@@ -102,7 +102,7 @@ describe('Auditing', function() {
     // check the doc is deleted
     flow.execute(function() {
       return utils.getDoc(savedUuid);
-    }).then(function(doc) {
+    }).then(function() {
       // should not be found!
       expect(true).toEqual(false);
     }, function(err) {
