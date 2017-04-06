@@ -28,7 +28,12 @@ var request = function(options, debug) {
     });
     res.on('end', function () {
       try {
-        deferred.fulfill(JSON.parse(body));
+        body = JSON.parse(body);
+        if (body.error) {
+          deferred.reject(body);
+        } else {
+          deferred.fulfill(body);
+        }
       } catch(e) {
         console.log('Error parsing response: ' + body);
         deferred.reject();
