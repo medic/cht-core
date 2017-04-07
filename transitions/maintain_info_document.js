@@ -1,28 +1,23 @@
-var infoDocId = function(id) {
-  return id + '-info';
-};
+const infoDocId = id => id + '-info';
 
-var getSisterInfoDoc = function(db, docId, callback) {
-  db.medic.get(infoDocId(docId), function(err, body) {
+const getSisterInfoDoc = (db, docId, callback) =>
+  db.medic.get(infoDocId(docId), (err, body) => {
     if (err && err.statusCode !== 404) {
       callback(err);
     } else {
       callback(null, body);
     }
   });
-};
 
-var generateInfoDocFromAuditTrail = function(audit, docId, callback) {
-  audit.get(docId, function(err, result) {
+const generateInfoDocFromAuditTrail = (audit, docId, callback) =>
+  audit.get(docId, (err, result) => {
     if (err && err.statusCode !== 404) {
       callback(err);
     } else {
-      var create = result &&
-                   result.doc &&
-                   result.doc.history &&
-                   result.doc.history.find(function(el) {
-        return el.action === 'create';
-      });
+      const create = result &&
+                     result.doc &&
+                     result.doc.history &&
+                     result.doc.history.find(el => el.action === 'create');
 
       if (create) {
         callback(null, {
@@ -36,26 +31,22 @@ var generateInfoDocFromAuditTrail = function(audit, docId, callback) {
       }
     }
   });
-};
 
 module.exports = {
-  filter: function(doc) {
-    return !(doc._id.startsWith('_design') ||
-             doc.type === 'info');
-  },
-  onMatch: function(change, db, audit, callback) {
-    getSisterInfoDoc(db, change.id, function(err, infoDoc) {
+  filter: doc => !(doc._id.startsWith('_design') ||
+                   doc.type === 'info'),
+  onMatch: (change, db, audit, callback) =>
+    getSisterInfoDoc(db, change.id, (err, infoDoc) => {
       if (err) {
         return callback(err);
       }
-
 
       if (infoDoc) {
         infoDoc.latest_replication_date = new Date();
         return db.medic.insert(infoDoc, callback);
       }
 
-      generateInfoDocFromAuditTrail(audit, change.id, function(err, infoDoc) {
+      generateInfoDocFromAuditTrail(audit, change.id, (err, infoDoc) => {
         if (err) {
           return callback(err);
         }
@@ -72,6 +63,5 @@ module.exports = {
         infoDoc.latest_replication_date = new Date();
         return db.medic.insert(infoDoc, callback);
       });
-    });
   }
 };
