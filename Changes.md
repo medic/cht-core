@@ -20,6 +20,7 @@ _TBD_
 
 ### Bug fixes
 
+- Fix outdated npm shrinkwrap entry for enketo-core Issue #3352
 - Set user-agent header in Medic Collect. Issue: #3334
 - Buttons in LHS FAB disappear. Issue: #3321
 - Analytics tab Hindi text is not aligning properly. Issue: #3297
