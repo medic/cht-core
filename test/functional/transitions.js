@@ -27,7 +27,7 @@ exports['transitions are only executed once if successful'] = function(test) {
   var saveDoc = sinon.stub();
   saveDoc.callsArg(1);
 
-  transitions.loadTransitions();
+  transitions.loadTransitions(false);
   var change1 = {
     id: 'abc',
     seq: '44',
@@ -69,7 +69,7 @@ exports['transitions are only executed again if first run failed'] = function(te
   var saveDoc = sinon.stub();
   saveDoc.callsArg(1);
 
-  transitions.loadTransitions();
+  transitions.loadTransitions(false);
   var change1 = {
     id: 'abc',
     seq: '44',
@@ -118,7 +118,7 @@ exports['transitions are executed again when subsequent transitions succeed'] = 
   var saveDoc = sinon.stub();
   saveDoc.callsArg(1);
 
-  transitions.loadTransitions();
+  transitions.loadTransitions(false);
   var change1 = {
     id: 'abc',
     seq: '44',

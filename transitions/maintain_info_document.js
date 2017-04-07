@@ -9,6 +9,15 @@ const getSisterInfoDoc = (db, docId, callback) =>
     }
   });
 
+const createInfoDoc = (docId, initialReplicationDate) => {
+  return  {
+    _id: infoDocId(docId),
+    type: 'info',
+    doc_id: docId,
+    initial_replication_date: initialReplicationDate
+  };
+};
+
 const generateInfoDocFromAuditTrail = (audit, docId, callback) =>
   audit.get(docId, (err, auditDoc) => {
     if (err && err.statusCode !== 404) {
@@ -19,12 +28,7 @@ const generateInfoDocFromAuditTrail = (audit, docId, callback) =>
                      auditDoc.history.find(el => el.action === 'create');
 
       if (create) {
-        callback(null, {
-          _id: infoDocId(docId),
-          type: 'info',
-          doc_id: docId,
-          initial_replication_date: create.timestamp
-        });
+        callback(null, createInfoDoc(docId, create.timestamp));
       } else {
         callback();
       }
@@ -50,14 +54,7 @@ module.exports = {
           return callback(err);
         }
 
-        if (!infoDoc) {
-          infoDoc = {
-            _id: infoDocId(change.id),
-            type: 'info',
-            doc_id: change.id,
-            initial_replication_date: 'unknown',
-          };
-        }
+        infoDoc = infoDoc || createInfoDoc(change.id, 'unknown');
 
         infoDoc.latest_replication_date = new Date();
         return db.medic.insert(infoDoc, callback);

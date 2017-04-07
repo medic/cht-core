@@ -15,9 +15,15 @@ const _ = require('underscore'),
       transitions = {};
 
 /*
- * Add new transitions here to make them available for configuration.  For
- * security reasons, we want to avoid doing a `require` based on random input,
- * hence we maintain this index of transitions.
+ * Add new transitions here to make them available for configuration and execution.
+ *
+ * (For security reasons, we want to avoid doing a `require` based on random input,
+ *  hence we maintain this index of transitions.)
+ *
+ * Transition on this list:
+ *  - Are disabled by default, and can be enabled in configuration
+ *  - should be documented as to what they do and how they are configured in
+ *    medic-docs
  */
 const AVAILABLE_TRANSITIONS = [
   'accept_patient_reports',
@@ -33,6 +39,30 @@ const AVAILABLE_TRANSITIONS = [
   'update_sent_forms',
   'generate_patient_id_on_people'
 ];
+
+/*
+ * Add transitions here to have them execute by default.
+ *
+ * Transitions on this list:
+ *  - must still be in the above master list
+ *  - can still be configured to be explicitly disabled if needed
+ *  - should not expect any particular configuration (as they run by default)
+ *  - do not necessarily need to be documented externally
+ *
+ * Only add transitions here whose lack of running would break data / system
+ * expectations, not just because you think most will want them to run.
+ */
+const SYSTEM_TRANSITIONS = [
+  'maintain_info_document'
+];
+
+// Init assertion that all SYSTEM_TRANSITIONS are also in AVAILABLE_TRANSITIONS
+(() => {
+  if (SYSTEM_TRANSITIONS.filter(transition => !AVAILABLE_TRANSITIONS.includes(transition)).length) {
+    logger.error('FATAL: All SYSTEM_TRANSITIONS must also be in AVAILABLE_TRANSITIONS');
+    process.exit(1);
+  }
+})();
 
 const METADATA_DOCUMENT = 'sentinel-meta-data';
 
@@ -73,24 +103,34 @@ const processChange = (change, callback) => {
  * Load transitions using `require` based on what is in AVAILABLE_TRANSITIONS
  * constant and what is enabled in the `transitions` property in the settings
  * data.  Log warnings on failure.
+ *
+ * Tests can diabled autoEnableSystemTransitions for more control.
  */
-const loadTransitions = () => {
+const loadTransitions = (autoEnableSystemTransitions = true) => {
+
   const self = module.exports;
-  const configuredTransitions = config.get('transitions') || [];
-  _.each(configuredTransitions, (conf, key) => {
-    if (!conf || conf.disable) {
-      return logger.warn(`transition ${key} is disabled`);
+  const transitionsConfig = config.get('transitions') || [];
+
+  // Load all system or configured transitions
+  AVAILABLE_TRANSITIONS.forEach(transition => {
+    const conf = transitionsConfig[transition];
+
+    const system =
+      autoEnableSystemTransitions && SYSTEM_TRANSITIONS.includes(transition);
+
+    const disabled = conf && conf.disable;
+
+    if ((system && disabled) || (!system && !conf || disabled)) {
+      return logger.warn(`transition ${transition} is disabled`);
     }
-    if (AVAILABLE_TRANSITIONS.indexOf(key) === -1) {
-      return logger.warn(`transition ${key} not available.`);
-    }
-    self._loadTransition(key);
+
+    self._loadTransition(transition);
   });
 
-  const confedKeys = Object.keys(configuredTransitions);
-  AVAILABLE_TRANSITIONS.forEach(transition => {
-    if (confedKeys.indexOf(transition) === -1) {
-      logger.warn(`transition ${transition} is disabled due to lack of config`);
+  // Warn if there are configured transitions that are not available
+  Object.keys(transitionsConfig).forEach(key => {
+    if (AVAILABLE_TRANSITIONS.indexOf(key) === -1) {
+      return logger.warn(`transition ${key} not available.`);
     }
   });
 };

@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    sinon = require('sinon'),
+var sinon = require('sinon'),
     follow = require('follow'),
     audit = require('couchdb-audit'),
     config = require('../../config'),
@@ -17,11 +16,6 @@ exports.tearDown = function(callback) {
         audit.withNano]);
     transitions._changeQueue.kill();
     callback();
-};
-
-exports['has canRun fn'] = function(test) {
-    test.equals(_.isFunction(transitions.canRun), true);
-    test.done();
 };
 
 exports['canRun returns false if filter returns false'] = function(test) {
@@ -134,7 +128,7 @@ exports['canRun returns true if transition is not defined'] = function(test) {
     test.done();
 };
 
-exports['describe loadTransitions'] = function(test) {
+exports['loadTransitions loads configured transitions'] = test => {
     // A list of states to test, first arg is the `transitions` config value and
     // second is whether you expect loadTransition to get called.
     var tests = [
@@ -145,6 +139,7 @@ exports['describe loadTransitions'] = function(test) {
         // falsey configuration
         [{registration: null}, false],
         [{registration: undefined}, false],
+        [{registration: false}, false],
         // transition not available
         [{foo: true}, false],
         // available and enabled
@@ -178,11 +173,31 @@ exports['describe loadTransitions'] = function(test) {
     tests.forEach(function(t) {
         sinon.stub(config, 'get').returns(t[0]);
         var stub = sinon.stub(transitions, '_loadTransition');
-        transitions.loadTransitions();
+        transitions.loadTransitions(false);
         test.equal(stub.called, t[1]);
         stub.restore();
         config.get.restore();
     });
+    test.done();
+};
+
+exports['loadTransitions loads system transitions by default'] = test => {
+    sinon.stub(config, 'get').returns({});
+    var stub = sinon.stub(transitions, '_loadTransition');
+    transitions.loadTransitions();
+    test.equal(stub.calledWith('maintain_info_document'), true);
+    stub.restore();
+    config.get.restore();
+    test.done();
+};
+
+exports['loadTransitions doesnt load system transistions that have been explicitly disabled'] = test => {
+    sinon.stub(config, 'get').returns({maintain_info_document: {disable: true}});
+    var stub = sinon.stub(transitions, '_loadTransition');
+    transitions.loadTransitions();
+    test.equal(stub.calledWith('maintain_info_document'), false);
+    stub.restore();
+    config.get.restore();
     test.done();
 };
 
