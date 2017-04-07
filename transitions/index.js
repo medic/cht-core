@@ -3,23 +3,23 @@
  * serially to a change.
  */
 
-var _ = require('underscore'),
-    follow = require('follow'),
-    async = require('async'),
-    utils = require('../lib/utils'),
-    logger = require('../lib/logger'),
-    config = require('../config'),
-    db = require('../db'),
-    PROCESSING_DELAY = 50, // ms
-    PROGRESS_REPORT_INTERVAL = 500, // items
-    transitions = {};
+const _ = require('underscore'),
+      follow = require('follow'),
+      async = require('async'),
+      utils = require('../lib/utils'),
+      logger = require('../lib/logger'),
+      config = require('../config'),
+      db = require('../db'),
+      PROCESSING_DELAY = 50, // ms
+      PROGRESS_REPORT_INTERVAL = 500, // items
+      transitions = {};
 
 /*
  * Add new transitions here to make them available for configuration.  For
  * security reasons, we want to avoid doing a `require` based on random input,
  * hence we maintain this index of transitions.
  */
-var AVAILABLE_TRANSITIONS = [
+const AVAILABLE_TRANSITIONS = [
   'accept_patient_reports',
   'conditional_alerts',
   'default_responses',
@@ -34,39 +34,35 @@ var AVAILABLE_TRANSITIONS = [
   'generate_patient_id_on_people'
 ];
 
-var METADATA_DOCUMENT = 'sentinel-meta-data';
+const METADATA_DOCUMENT = 'sentinel-meta-data';
 
-var processed = 0;
+let processed = 0;
 
-var changeQueue = async.queue(function(task, callback) {
-  processChange(task, function() {
-    _.delay(callback, PROCESSING_DELAY);
-  });
-});
+const changeQueue = async.queue((task, callback) =>
+  processChange(task, () => _.delay(callback, PROCESSING_DELAY)));
 
-var processChange = function(change, callback) {
+const processChange = (change, callback) => {
   if (!change) {
     return callback();
   }
-  var id = change.id;
-  db.medic.get(id, function(err, doc) {
+  db.medic.get(change.id, (err, doc) => {
     if (err) {
-      logger.error('transitions: fetch failed for %s (%s)', id, err);
+      logger.error(`transitions: fetch failed for ${change.id} (${err})`);
       return callback();
     }
 
     if (processed > 0 && (processed % PROGRESS_REPORT_INTERVAL) === 0) {
-      logger.info('transitions: %d items processed (since sentinel started)', processed);
+      logger.info(`transitions: ${processed} items processed (since sentinel started)`);
     }
     change.doc = doc;
-    logger.debug('change event on doc %s seq %s', change.id, change.seq);
-    var audit = require('couchdb-audit')
-        .withNano(db, db.settings.db, db.settings.auditDb, db.settings.ddoc, db.settings.username);
+    logger.debug(`change event on doc ${change.id} seq ${change.seq}`);
+    const audit = require('couchdb-audit')
+          .withNano(db, db.settings.db, db.settings.auditDb, db.settings.ddoc, db.settings.username);
     module.exports.applyTransitions({
       change: change,
       audit: audit,
       db: db
-    }, function() {
+    }, () => {
       processed++;
       updateMetaData(change.seq, callback);
     });
@@ -78,35 +74,33 @@ var processChange = function(change, callback) {
  * constant and what is enabled in the `transitions` property in the settings
  * data.  Log warnings on failure.
  */
-var loadTransitions = function() {
-  var self = module.exports;
-  var configuredTransitions = config.get('transitions') || [];
-  _.each(configuredTransitions, function(conf, key) {
+const loadTransitions = () => {
+  const self = module.exports;
+  const configuredTransitions = config.get('transitions') || [];
+  _.each(configuredTransitions, (conf, key) => {
     if (!conf || conf.disable) {
-      logger.warn('transition %s is disabled', key);
-      return;
+      return logger.warn(`transition ${key} is disabled`);
     }
     if (AVAILABLE_TRANSITIONS.indexOf(key) === -1) {
-      logger.warn('transition %s not available.', key);
-      return;
+      return logger.warn(`transition ${key} not available.`);
     }
     self._loadTransition(key);
   });
 
-  var confedKeys = Object.keys(configuredTransitions);
-  _.each(AVAILABLE_TRANSITIONS, function(key) {
-    if (confedKeys.indexOf(key) === -1) {
-      logger.warn('transition %s is disabled due to lack of config', key);
+  const confedKeys = Object.keys(configuredTransitions);
+  AVAILABLE_TRANSITIONS.forEach(transition => {
+    if (confedKeys.indexOf(transition) === -1) {
+      logger.warn(`transition ${transition} is disabled due to lack of config`);
     }
   });
 };
 
-var loadTransition = function(key) {
+const loadTransition = key => {
   try {
-    logger.info('loading transition %s', key);
+    logger.info(`loading transition ${key}`);
     transitions[key] = require('./' + key);
   } catch(e) {
-    logger.error('failed loading transition %s', key);
+    logger.error(`failed loading transition ${key}`);
     logger.error(e);
   }
 };
@@ -116,22 +110,17 @@ var loadTransition = function(key) {
  * repeatable logic, assuming all transitions are repeatable without adverse
  * effects.
  */
-var canRun = function(options) {
-  var key = options.key,
-    change = options.change,
-    doc = change.doc,
-    transition = options.transition;
+const canRun = options => {
+  const key = options.key,
+        change = options.change,
+        doc = change.doc,
+        transition = options.transition;
 
-  var isRevSame = function() {
+  const isRevSame = () => {
     if (doc.transitions && doc.transitions[key]) {
       return parseInt(doc._rev) === parseInt(doc.transitions[key].last_rev);
     }
-    logger.debug(
-      'isRevSame tested true on transition %s for seq %s doc %s',
-      key,
-      change.seq,
-      change.id
-    );
+    logger.debug(`isRevSame tested true on transition ${key} for seq ${change.seq} doc ${change.id}`);
     return false;
   };
 
@@ -159,40 +148,29 @@ var canRun = function(options) {
  * did nothing and saving is unnecessary.  If results has a true value in
  * it then a change was made.
  */
-var finalize = function(options, callback) {
-  var change = options.change,
-    audit = options.audit,
-    results = options.results;
-  logger.debug(
-    'transition results: %s', JSON.stringify(results)
-  );
-  var changed = _.some(results, function(i) {
-    return Boolean(i);
-  });
+const finalize = (options, callback) => {
+  const change = options.change,
+        audit = options.audit,
+        results = options.results;
+
+  logger.debug(`transition results: ${JSON.stringify(results)}`);
+
+  const changed = _.some(results, i => Boolean(i));
   if (!changed) {
     logger.debug(
-      'nothing changed skipping audit.saveDoc for doc %s seq %s',
-      change.id, change.seq
-    );
+      `nothing changed skipping audit.saveDoc for doc ${change.id} seq ${change.seq}`);
     return callback();
   }
   logger.debug(
-    'calling audit.saveDoc on doc %s seq %s',
-    change.id, change.seq
-  );
-  audit.saveDoc(change.doc, function(err) {
+    `calling audit.saveDoc on doc ${change.id} seq ${change.seq}`);
+
+  audit.saveDoc(change.doc, err => {
     // todo: how to handle a failed save? for now just
     // waiting until next change and try again.
     if (err) {
-      logger.error(
-        'error saving changes on doc %s seq %s: %s',
-        change.id, change.seq, JSON.stringify(err)
-      );
+      logger.error(`error saving changes on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
     } else {
-      logger.info(
-        'saved changes on doc %s seq %s',
-        change.id, change.seq
-      );
+      logger.info(`saved changes on doc ${change.id} seq ${change.seq}`);
     }
     return callback();
   });
@@ -206,16 +184,16 @@ var finalize = function(options, callback) {
  * transitions (updates) to a document with the cost of a single database
  * change/write.
  */
-var applyTransition = function(options, callback) {
+const applyTransition = (options, callback) => {
 
-  var key = options.key,
-    change = options.change,
-    transition = options.transition,
-    audit = options.audit,
-    db = options.db;
+  const key = options.key,
+        change = options.change,
+        transition = options.transition,
+        audit = options.audit,
+        db = options.db;
 
-  function _setProperty(property, value) {
-    var doc = change.doc;
+  const _setProperty = (property, value) => {
+    const doc = change.doc;
     if (!doc.transitions) {
       doc.transitions = {};
     }
@@ -223,22 +201,20 @@ var applyTransition = function(options, callback) {
       doc.transitions[key] = {};
     }
     doc.transitions[key][property] = value;
-  }
+  };
 
   logger.debug(
-    'calling transition.onMatch for doc %s seq %s and transition %s',
-    change.id, change.seq, key
-  );
+    `calling transition.onMatch for doc ${change.id} seq ${change.seq} and transition ${key}`);
 
   /*
    * Transitions are async and should return true if the document has
    * changed.  If a transition errors then log the error, but don't return it
    * because that will stop the series and the other transitions won't run.
    */
-  transition.onMatch(change, db, audit, function(err, changed) {
+  transition.onMatch(change, db, audit, (err, changed) => {
     logger.debug(
-      'finished transition %s for seq %s doc %s is %s',
-      key, change.seq, change.id, changed ? 'changed' : 'unchanged'
+      `finished transition ${key} for seq ${change.seq} doc ${change.id} is ` +
+      changed ? 'changed' : 'unchanged'
     );
     if (changed) {
       _setProperty('last_rev', parseInt(change.doc._rev) + 1);
@@ -249,23 +225,21 @@ var applyTransition = function(options, callback) {
       // adds an error to the doc but it will only get saved if there are
       // other changes too.
       utils.addError(change.doc, {
-        code: key + '_error',
-        message: 'Transition error on ' + key + ': ' +
+        code: `${key}_error'`,
+        message: `Transition error on ${key}: ` +
           err.message ? err.message: JSON.stringify(err)
       });
       logger.error(
-        'transition %s errored on doc %s seq %s: %s',
-        key, change.id, change.seq, JSON.stringify(err)
-      );
+        `transition ${key} errored on doc ${change.id} seq ${change.seq}: ${JSON.stringify(err)}`);
     }
     callback(null, changed);
   });
 };
 
-var applyTransitions = function(options, callback) {
-  var operations = [];
-  _.each(transitions, function(transition, key) {
-    var opts = {
+const applyTransitions = (options, callback) => {
+  const operations = [];
+  _.each(transitions, (transition, key) => {
+    const opts = {
       key: key,
       change: options.change,
       transition: transition,
@@ -274,16 +248,10 @@ var applyTransitions = function(options, callback) {
     };
     if (!canRun(opts)) {
       logger.debug(
-        'canRun test failed on transition %s for seq %s doc %s',
-        key,
-        options.change.seq,
-        options.change.id
-      );
+        `canRun test failed on transition ${key} for seq ${options.change.seq} doc ${options.change.id}`);
       return;
     }
-    operations.push(function(cb) {
-      applyTransition(opts, cb);
-    });
+    operations.push(cb => applyTransition(opts, cb));
   });
 
   /*
@@ -292,17 +260,16 @@ var applyTransitions = function(options, callback) {
    * function.  All we care about are results and whether we need to
    * save or not.
    */
-  async.series(operations, function(err, results) {
+  async.series(operations, (err, results) =>
     finalize({
       change: options.change,
       audit: options.audit,
       results: results
-    }, callback);
-  });
+    }, callback));
 };
 
-var getMetaData = function(callback) {
-  db.medic.get(METADATA_DOCUMENT, function(err, doc) {
+const getMetaData = callback =>
+  db.medic.get(METADATA_DOCUMENT, (err, doc) => {
     if (err) {
       if (err.statusCode !== 404) {
         return callback(err);
@@ -314,53 +281,49 @@ var getMetaData = function(callback) {
     }
     callback(null, doc);
   });
-};
 
-var getProcessedSeq = function(callback) {
-  getMetaData(function(err, doc) {
+const getProcessedSeq = callback =>
+  getMetaData((err, doc) => {
     if (err) {
       logger.error('Error getting meta data', err);
       return callback(err);
     }
     callback(null, doc.processed_seq);
   });
-};
 
-var updateMetaData = function(seq, callback) {
-  getMetaData(function(err, metaData) {
+const updateMetaData = (seq, callback) =>
+  getMetaData((err, metaData) => {
     if (err) {
       logger.error('Error fetching metaData for update', err);
       return callback();
     }
     metaData.processed_seq = seq;
-    db.medic.insert(metaData, function(err) {
+    db.medic.insert(metaData, err => {
       if (err) {
         logger.error('Error updating metaData', err);
       }
       return callback();
     });
   });
-};
 
 /*
  *  Setup changes feed listener.
  */
-var attach = function() {
-
+const attach = () => {
   // tell everyone we're here
   logger.info('transitions: processing enabled');
 
-  getProcessedSeq(function(err, processedSeq) {
+  getProcessedSeq((err, processedSeq) => {
     if (err) {
       logger.error('transitions: error fetching processed seq', err);
       return;
     }
-    logger.info('transitions: fetching changes feed, starting from %s', processedSeq);
-    var feed = new follow.Feed({
+    logger.info(`transitions: fetching changes feed, starting from ${processedSeq}`);
+    const feed = new follow.Feed({
       db: process.env.COUCH_URL,
       since: processedSeq
     });
-    feed.on('change', function(change) {
+    feed.on('change', change => {
       // skip uninteresting documents
       if (change.deleted ||
           change.id.match(/^_design\//) ||
