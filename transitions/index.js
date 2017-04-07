@@ -21,9 +21,9 @@ var _ = require('underscore'),
  */
 var AVAILABLE_TRANSITIONS = [
     'accept_patient_reports',
-    'add_info_document',
     'conditional_alerts',
     'default_responses',
+    'maintain_info_document',
     'update_sent_by',
     'resolve_pending',
     'registration',
