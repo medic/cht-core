@@ -10,14 +10,13 @@ const getSisterInfoDoc = (db, docId, callback) =>
   });
 
 const generateInfoDocFromAuditTrail = (audit, docId, callback) =>
-  audit.get(docId, (err, result) => {
+  audit.get(docId, (err, auditDoc) => {
     if (err && err.statusCode !== 404) {
       callback(err);
     } else {
-      const create = result &&
-                     result.doc &&
-                     result.doc.history &&
-                     result.doc.history.find(el => el.action === 'create');
+      const create = auditDoc &&
+                     auditDoc.history &&
+                     auditDoc.history.find(el => el.action === 'create');
 
       if (create) {
         callback(null, {
@@ -63,5 +62,5 @@ module.exports = {
         infoDoc.latest_replication_date = new Date();
         return db.medic.insert(infoDoc, callback);
       });
-  }
+    })
 };
