@@ -587,9 +587,9 @@
       "resolved": "http://registry.npmjs.org/make-plural/-/make-plural-3.0.6.tgz"
     },
     "medic-enketo-xslt": {
-      "version": "1.1.0",
-      "from": "medic-enketo-xslt@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/medic-enketo-xslt/-/medic-enketo-xslt-1.1.0.tgz"
+      "version": "1.1.1",
+      "from": "medic-enketo-xslt@>=1.1.1 <2.0.0",
+      "resolved": "https://registry.npmjs.org/medic-enketo-xslt/-/medic-enketo-xslt-1.1.1.tgz"
     },
     "mergexml": {
       "version": "1.1.2",
