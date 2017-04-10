@@ -8,6 +8,7 @@ api_working
 npm-debug.log
 /node_modules/
 /node_modules_backup/
+/scripts/node_modules/
 /static/dist/
 /static/fonts/
 /packages/libphonenumber/libphonenumber/libphonenumber.js

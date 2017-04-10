@@ -285,8 +285,8 @@
     },
     "enketo-core": {
       "version": "4.27.2",
-      "from": "git+https://github.com/medic/enketo-core.git#medic-0.9.1",
-      "resolved": "git+https://github.com/medic/enketo-core.git#9715efc981e4ed77e8943f01fcf9c57a0694d0b6"
+      "from": "git+https://github.com/medic/enketo-core.git#medic-0.9.3",
+      "resolved": "git+https://github.com/medic/enketo-core.git#8a372c1c239548d83cbc4076b0ddb39ba32eceab"
     },
     "enketo-xpathjs": {
       "version": "1.4.0",
@@ -587,9 +587,9 @@
       "resolved": "http://registry.npmjs.org/make-plural/-/make-plural-3.0.6.tgz"
     },
     "medic-enketo-xslt": {
-      "version": "1.1.0",
-      "from": "medic-enketo-xslt@>=1.0.0 <2.0.0",
-      "resolved": "https://registry.npmjs.org/medic-enketo-xslt/-/medic-enketo-xslt-1.1.0.tgz"
+      "version": "1.1.1",
+      "from": "medic-enketo-xslt@>=1.1.1 <2.0.0",
+      "resolved": "https://registry.npmjs.org/medic-enketo-xslt/-/medic-enketo-xslt-1.1.1.tgz"
     },
     "mergexml": {
       "version": "1.1.2",
