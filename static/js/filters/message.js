@@ -60,11 +60,12 @@ var format = require('../modules/format'),
   });
 
   module.filter('clinic', function(
+    $log,
     $state
   ) {
     'ngInject';
     return function(entity) {
-      console.log('`clinic` filter is deprecated. Use `lineage` filter instead.');
+      $log.warn('`clinic` filter is deprecated. Use `lineage` filter instead.');
       return format.lineage(entity, $state);
     };
   });
