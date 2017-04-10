@@ -63,7 +63,7 @@ exports['If no info doc exists, create one from audit records'] = test => {
   };
 
   db.medic.get.callsArgWith(1, {statusCode: 404});
-  audit.get.callsArgWith(1, null, auditDoc);
+  audit.get.callsArgWith(1, null, {doc: auditDoc});
   db.medic.insert.callsArg(1);
 
   transition.onMatch(change, db, audit, (err) => {
@@ -76,6 +76,7 @@ exports['If no info doc exists, create one from audit records'] = test => {
     test.equal(infoDoc.type, 'info');
     test.ok(infoDoc.initial_replication_date);
     test.ok(infoDoc.latest_replication_date);
+    test.equal(infoDoc.initial_replication_date, auditDoc.history[1].timestamp);
     test.done();
   });
 };

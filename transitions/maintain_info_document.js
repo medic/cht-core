@@ -19,13 +19,14 @@ const createInfoDoc = (docId, initialReplicationDate) => {
 };
 
 const generateInfoDocFromAuditTrail = (audit, docId, callback) =>
-  audit.get(docId, (err, auditDoc) => {
+  audit.get(docId, (err, result) => {
     if (err && err.statusCode !== 404) {
       callback(err);
     } else {
-      const create = auditDoc &&
-                     auditDoc.history &&
-                     auditDoc.history.find(el => el.action === 'create');
+      const create = result &&
+                     result.doc &&
+                     result.doc.history &&
+                     result.doc.history.find(el => el.action === 'create');
 
       if (create) {
         callback(null, createInfoDoc(docId, create.timestamp));
