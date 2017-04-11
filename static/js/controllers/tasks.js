@@ -27,13 +27,16 @@ var _ = require('underscore');
       };
 
       $scope.setSelected = function(id) {
-        var refreshing = ($scope.selected && $scope.selected._id) === id,
-            task = _.findWhere(LiveList.tasks.getList(), { _id: id });
+        if (!id) {
+          LiveList.tasks.clearSelected();
+          $scope.clearSelected();
+          return;
+        }
+        var task = _.findWhere(LiveList.tasks.getList(), { _id: id });
         if (task) {
+          var refreshing = ($scope.selected && $scope.selected._id) === id;
           $scope.settingSelected(refreshing);
           setSelectedTask(task);
-        } else {
-          $scope.clearSelected();
         }
       };
 
