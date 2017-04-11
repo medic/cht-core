@@ -40,6 +40,8 @@ const promptForBasicAuth = (res) => {
 
 module.exports = {
 
+  MEDIC_BASIC_AUTH: MEDIC_BASIC_AUTH,
+
   /*
    * Attempts to determine the correct response given the error code.
    * Set showPrompt if this is a direct API call rather than from the webapp

@@ -566,7 +566,7 @@ app.post(pathPrefix + '_changes', jsonParser, changesHander);
 var writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
   res.writeHead = function(_statusCode, _headers) {
-    // hardcode this so we never show the basic auth prompt
+    // hardcode this so we do not show the basic auth prompt by default
     res.setHeader('WWW-Authenticate', 'Cookie');
     if (headers) {
       headers.forEach(function(header) {
@@ -574,12 +574,18 @@ var writeHeaders = function(req, res, headers, redirectHumans) {
       });
     }
     // for dynamic resources, redirect humans to login page
-    if (_statusCode === 401 && redirectHumans && isClientHuman(req)) {
-      _statusCode = 302;
-      res.setHeader(
-        'Location',
-        pathPrefix + 'login?redirect=' + encodeURIComponent(req.url)
-      );
+    if (_statusCode === 401) {
+      if (isClientHuman(req)) {
+        if (redirectHumans) {
+          _statusCode = 302;
+          res.setHeader(
+            'Location',
+            pathPrefix + 'login?redirect=' + encodeURIComponent(req.url)
+          );
+        }
+      } else {
+        res.setHeader('WWW-Authenticate', serverUtils.MEDIC_BASIC_AUTH);
+      }
     }
     res.oldWriteHead(_statusCode, _headers);
   };
