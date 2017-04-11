@@ -102,12 +102,11 @@ describe('Auditing', function() {
     // check the doc is deleted
     flow.execute(function() {
       return utils.getDoc(savedUuid);
-    }).then(function(doc) {
-      expect(doc.error).toEqual('not_found');
-      expect(doc.reason).toEqual('deleted');
-    }, function(err) {
-      console.error('Error fetching doc', err);
+    }).then(function() {
+      // should not be found!
       expect(true).toEqual(false);
+    }, function() {
+      // expected
     });
 
     // check the audit doc is updated
@@ -125,4 +124,3 @@ describe('Auditing', function() {
 
   });
 });
-
