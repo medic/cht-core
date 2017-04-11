@@ -2,20 +2,6 @@ var commonElements = require('../../page-objects/common/common.po.js');
 
 describe('Navigation tests : ', function () {
 
-  /*  beforeAll(function () {
-
-    });
-
-
-    beforeEach(function () {
-      
-
-    });
-
-    afterEach(function () {
-
-    });
-*/
     it('should open Messages tab', function () {
         commonElements.goToMessages();
         expect(commonElements.isAt('message-list'));
