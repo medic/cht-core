@@ -102,14 +102,6 @@
       ]
     },
     {
-      "name": "can_view_analytics",
-      "roles": [
-        "national_admin",
-        "district_admin",
-        "analytics"
-      ]
-    },
-    {
       "name": "can_view_data_records",
       "roles": [
         "national_admin",
@@ -240,7 +232,8 @@
       "name": "can_view_analytics",
       "roles": [
         "national_admin",
-        "district_admin"
+        "district_admin",
+        "analytics"
       ]
     },
     {
