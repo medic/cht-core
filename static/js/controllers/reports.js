@@ -167,13 +167,14 @@ var _ = require('underscore'),
       };
 
       var fetchFormattedReport = function(report) {
-        if (_.isString(report)) {
-          // id only - fetch the full doc
-          return DB()
-            .get(report)
-            .then(FormatDataRecord);
-        }
-        return FormatDataRecord(report);
+        var id = _.isString(report) ? report : report._id;
+        return DB()
+          .query('medic-client/reports_by_id_lineage', { startkey: [id,0], endkey: [id, 10000], include_docs: true })
+          .then(function(result) {
+            console.log('result', result);
+            return result.rows[0].doc;
+          })
+          .then(FormatDataRecord);
       };
 
       $scope.refreshReportSilently = function(report) {
