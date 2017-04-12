@@ -7,8 +7,7 @@ var sinon = require('sinon'),
 exports.tearDown = function (callback) {
   utils.restore(
     db.medic.view,
-    db.medic.get,
-    db.medic.insert,
+    db.medic.bulk,
     config.get,
     config.load
   );
@@ -61,7 +60,7 @@ var forms =  {
 exports['run does nothing if no data records'] = function(test) {
   test.expect(2);
   sinon.stub(config, 'load').callsArg(0);
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [] });
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { total_rows: 0, rows: [] });
   sinon.stub(config, 'get').returns({});
   migration.run(function(err) {
     test.equals(err, undefined);
@@ -71,7 +70,7 @@ exports['run does nothing if no data records'] = function(test) {
 };
 
 exports['run does nothing if report already migrated'] = function(test) {
-  test.expect(3);
+  test.expect(2);
   var doc = {
     _id: 'a',
     reported_date: '123',
@@ -79,37 +78,33 @@ exports['run does nothing if report already migrated'] = function(test) {
     fields: { name: 'michael' }
   };
   sinon.stub(config, 'load').callsArg(0);
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
-  var getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, doc);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { total_rows: 1, rows: [ { doc: doc } ] });
   sinon.stub(config, 'get').returns({});
   migration.run(function(err) {
     test.equals(err, undefined);
     test.equals(getView.callCount, 1);
-    test.equals(getDoc.callCount, 1);
     test.done();
   });
 };
 
 exports['run does nothing if no form'] = function(test) {
-  test.expect(3);
+  test.expect(2);
   var doc = {
     _id: 'a',
     reported_date: '123'
   };
   sinon.stub(config, 'load').callsArg(0);
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
-  var getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, doc);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { total_rows: 1, rows: [ { doc: doc } ] });
   sinon.stub(config, 'get').returns({});
   migration.run(function(err) {
     test.equals(err, undefined);
     test.equals(getView.callCount, 1);
-    test.equals(getDoc.callCount, 1);
     test.done();
   });
 };
 
 exports['run migrates report'] = function(test) {
-  test.expect(8);
+  test.expect(7);
   var doc = {
     _id: 'a',
     reported_date: '123',
@@ -122,25 +117,23 @@ exports['run migrates report'] = function(test) {
     patient_name: 'sarah'
   };
   var getConfig = sinon.stub(config, 'load').callsArg(0);
-  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { id: 'a' } ] });
-  var getDoc = sinon.stub(db.medic, 'get').callsArgWith(1, null, doc);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { total_rows: 1, rows: [ { doc: doc } ] });
   sinon.stub(config, 'get').returns(forms);
-  var insert = sinon.stub(db.medic, 'insert').callsArgWith(1, null, null);
+  var bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1, null, null);
   migration.run(function(err) {
     test.equals(err, undefined);
     test.equals(getView.callCount, 1);
-    test.equals(getDoc.callCount, 1);
     test.equals(getConfig.callCount, 1);
-    test.equals(insert.callCount, 1);
-    test.same(insert.args[0][0].fields, expected);
-    test.same(insert.args[0][0].last_menstrual_period, undefined);
-    test.same(insert.args[0][0].patient_name, undefined);
+    test.equals(bulk.callCount, 1);
+    test.same(bulk.args[0][0].docs[0].fields, expected);
+    test.same(bulk.args[0][0].docs[0].last_menstrual_period, undefined);
+    test.same(bulk.args[0][0].docs[0].patient_name, undefined);
     test.done();
   });
 };
 
 exports['run migrates in batches'] = function(test) {
-  //test.expect(8);
+  test.expect(10);
   var BATCH_SIZE = 1;
   var docs = [
       {
@@ -172,32 +165,27 @@ exports['run migrates in batches'] = function(test) {
 
   var getView = sinon.stub(db.medic, 'view');
   getView.onCall(0).callsArgWith(3, null,
-    { total_rows: 2, rows: [ { id: docs[0]._id } ] });
+    { total_rows: 2, rows: [ { doc: docs[0] } ] });
   getView.onCall(1).callsArgWith(3, null,
-    { total_rows: 2, rows: [ { id: docs[1]._id } ] });
-
-  var getDoc = sinon.stub(db.medic, 'get');
-  getDoc.onCall(0).callsArgWith(1, null, docs[0]);
-  getDoc.onCall(1).callsArgWith(1, null, docs[1]);
+    { total_rows: 2, rows: [ { doc: docs[1] } ] });
 
   sinon.stub(config, 'get').returns(forms);
 
-  var insert = sinon.stub(db.medic, 'insert').callsArgWith(1, null, null);
+  var bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1, null, null);
 
   migration._runWithBatchSize(BATCH_SIZE, function(err) {
     test.equals(err, undefined);
     test.equals(getView.callCount, 2);
-    test.equals(getDoc.callCount, 2);
     test.equals(getConfig.callCount, 1);
-    test.equals(insert.callCount, 2);
+    test.equals(bulk.callCount, 2);
 
-    test.same(insert.args[0][0].fields, expected[0]);
-    test.same(insert.args[0][0].last_menstrual_period, undefined);
-    test.same(insert.args[0][0].patient_name, undefined);
+    test.same(bulk.args[0][0].docs[0].fields, expected[0]);
+    test.same(bulk.args[0][0].docs[0].last_menstrual_period, undefined);
+    test.same(bulk.args[0][0].docs[0].patient_name, undefined);
 
-    test.same(insert.args[1][0].fields, expected[1]);
-    test.same(insert.args[1][0].last_menstrual_period, undefined);
-    test.same(insert.args[1][0].patient_name, undefined);
+    test.same(bulk.args[1][0].docs[0].fields, expected[1]);
+    test.same(bulk.args[1][0].docs[0].last_menstrual_period, undefined);
+    test.same(bulk.args[1][0].docs[0].patient_name, undefined);
 
     test.done();
   });

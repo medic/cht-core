@@ -10,32 +10,28 @@ var async = require('async'),
 
 var BATCH_SIZE = 100;
 
-var namespace = function(id, callback) {
-  db.medic.get(id, function(err, doc) {
-    if (err) {
-      if (err.statusCode === 404) {
-        return callback();
-      }
-      return callback(err);
-    }
+var namespace = function(docs, callback) {
+  docs.forEach(function(doc) {
     if (doc.fields || !doc.form) {
-      return callback();
+      return;
     }
     var form = forms[doc.form];
     if (!form) {
-      return callback();
+      return;
     }
     doc.fields = {};
     _.keys(form.fields).forEach(function(key) {
       doc.fields[key] = doc[key];
       delete doc[key];
     });
-    db.medic.insert(doc, callback);
   });
+
+  db.medic.bulk({ docs : docs }, callback);
 };
 
 var runBatch = function(batchSize, skip, callback) {
   var options = {
+    include_docs: true,
     limit: batchSize,
     skip: skip
   };
@@ -44,9 +40,9 @@ var runBatch = function(batchSize, skip, callback) {
       return callback(err);
     }
     console.log('        Processing ' + skip + ' to ' + (skip + batchSize) + ' docs of ' + result.total_rows + ' total');
-    var ids = _.uniq(_.pluck(result.rows, 'id'));
+    var docs = _.uniq(_.pluck(result.rows, 'doc'));
 
-    async.eachSeries(ids, namespace, function(err) {
+    namespace(docs, function(err) {
       var keepGoing = result.total_rows > (skip + batchSize);
       callback(err, keepGoing);
     });
