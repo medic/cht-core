@@ -1,8 +1,14 @@
+/**
+ * For `data_records`, moves form fields from `doc.my_field` to `doc.fields.my_field`.
+ */
+
 var async = require('async'),
     _ = require('underscore'),
     db = require('../db'),
     config = require('../config'),
     forms;
+
+var BATCH_SIZE = 100;
 
 var namespace = function(id, callback) {
   db.medic.get(id, function(err, doc) {
@@ -28,19 +34,47 @@ var namespace = function(id, callback) {
   });
 };
 
+var runBatch = function(batchSize, skip, callback) {
+  var options = {
+    limit: batchSize,
+    skip: skip
+  };
+  db.medic.view('medic', 'data_records', options, function(err, result) {
+    if (err) {
+      return callback(err);
+    }
+    console.log('        Processing ' + skip + ' to ' + (skip + batchSize) + ' docs of ' + result.total_rows + ' total');
+    var ids = _.uniq(_.pluck(result.rows, 'id'));
+
+    async.eachSeries(ids, namespace, function(err) {
+      var keepGoing = result.total_rows > (skip + batchSize);
+      callback(err, keepGoing);
+    });
+  });
+};
+
 module.exports = {
   name: 'namespace-form-fields',
   created: new Date(2015, 5, 19, 10, 30, 0, 0),
-  run: function(callback) {
+  // Exposed for testing.
+  _runWithBatchSize: function(batchSize, callback) {
     config.load(function() {
       forms = config.get('forms');
-      db.medic.view('medic', 'data_records', { }, function(err, result) {
-        if (err) {
-          return callback(err);
-        }
-        var ids = _.uniq(_.pluck(result.rows, 'id'));
-        async.eachSeries(ids, namespace, callback);
-      });
+
+      var currentSkip = 0;
+      async.doWhilst(
+        function(callback) {
+          runBatch(batchSize, currentSkip, callback);
+        },
+        function(keepGoing) {
+          currentSkip += batchSize;
+          return keepGoing;
+        },
+        callback
+      );
     });
+  },
+  run: function(callback) {
+    module.exports._runWithBatchSize(BATCH_SIZE, callback);
   }
 };

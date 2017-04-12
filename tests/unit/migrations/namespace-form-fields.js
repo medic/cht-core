@@ -138,3 +138,67 @@ exports['run migrates report'] = function(test) {
     test.done();
   });
 };
+
+exports['run migrates in batches'] = function(test) {
+  //test.expect(8);
+  var BATCH_SIZE = 1;
+  var docs = [
+      {
+        _id: 'a',
+        reported_date: '123',
+        form: 'P',
+        last_menstrual_period: 22,
+        patient_name: 'sarah'
+      },
+      {
+        _id: 'b',
+        reported_date: '456',
+        form: 'P',
+        last_menstrual_period: 12,
+        patient_name: 'jane'
+      }
+  ];
+  var expected = [
+    {
+      last_menstrual_period: 22,
+      patient_name: 'sarah'
+    },
+    {
+      last_menstrual_period: 12,
+      patient_name: 'jane'
+    }
+  ];
+  var getConfig = sinon.stub(config, 'load').callsArg(0);
+
+  var getView = sinon.stub(db.medic, 'view');
+  getView.onCall(0).callsArgWith(3, null,
+    { total_rows: 2, rows: [ { id: docs[0]._id } ] });
+  getView.onCall(1).callsArgWith(3, null,
+    { total_rows: 2, rows: [ { id: docs[1]._id } ] });
+
+  var getDoc = sinon.stub(db.medic, 'get');
+  getDoc.onCall(0).callsArgWith(1, null, docs[0]);
+  getDoc.onCall(1).callsArgWith(1, null, docs[1]);
+
+  sinon.stub(config, 'get').returns(forms);
+
+  var insert = sinon.stub(db.medic, 'insert').callsArgWith(1, null, null);
+
+  migration._runWithBatchSize(BATCH_SIZE, function(err) {
+    test.equals(err, undefined);
+    test.equals(getView.callCount, 2);
+    test.equals(getDoc.callCount, 2);
+    test.equals(getConfig.callCount, 1);
+    test.equals(insert.callCount, 2);
+
+    test.same(insert.args[0][0].fields, expected[0]);
+    test.same(insert.args[0][0].last_menstrual_period, undefined);
+    test.same(insert.args[0][0].patient_name, undefined);
+
+    test.same(insert.args[1][0].fields, expected[1]);
+    test.same(insert.args[1][0].last_menstrual_period, undefined);
+    test.same(insert.args[1][0].patient_name, undefined);
+
+    test.done();
+  });
+};
