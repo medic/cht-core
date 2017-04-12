@@ -17,10 +17,10 @@ var _ = require('underscore'),
       Changes,
       DB,
       Export,
-      FormatDataRecord,
       LiveList,
       MarkRead,
       Modal,
+      ReportViewModelGenerator,
       Search,
       SearchFilters,
       Tour,
@@ -51,15 +51,15 @@ var _ = require('underscore'),
         }
       };
 
-      var setSelected = function(report) {
-        $scope.setSelected(report);
+      var setSelected = function(model) {
+        $scope.setSelected(model);
         if ($scope.selectMode) {
           return;
         }
-        if (!$scope.isRead(report)) {
+        if (!$scope.isRead(model.doc)) {
           $scope.readStatus.forms--;
         }
-        MarkRead(report._id, true)
+        MarkRead(model.doc._id, true)
           .then($scope.updateReadStatus)
           .catch(function(err) {
             $log.error('Error marking read', err);
@@ -99,14 +99,15 @@ var _ = require('underscore'),
         return results;
       };
 
-      var getDisplayFields = function(report) {
+      // TODO move this into model generator
+      var getDisplayFields = function(model) {
         // calculate fields to display
-        if (!report.fields) {
+        if (!model.doc.fields) {
           return [];
         }
-        var label = 'report.' + report.form;
-        var fields = getFields([], report.fields, label, 0);
-        var hide = report.hidden_fields || [];
+        var label = 'report.' + model.doc.form;
+        var fields = getFields([], model.doc.fields, label, 0);
+        var hide = model.doc.hidden_fields || [];
         hide.push('inputs');
         return _.reject(fields, function(field) {
           return _.some(hide, function(h) {
@@ -131,36 +132,41 @@ var _ = require('underscore'),
         $scope.setRightActionBar(model);
       };
 
-      $scope.setSelected = function(doc) {
+      $scope.setSelected = function(model) {
         var refreshing = true;
-        var displayFields = getDisplayFields(doc);
+        var displayFields = getDisplayFields(model);
         if ($scope.selectMode) {
-          var existing = _.findWhere($scope.selected, { _id: doc._id });
+          var existing = _.findWhere($scope.selected, { _id: model.doc._id });
           if (existing) {
-            existing.report = doc;
+            existing.report = model.doc;
             existing.displayFields = displayFields;
+            existing.contacts = model.contacts;
           } else {
+            // TODO just set the model here
+            // TODO add formatted somewhere and reference that in the UI
             $scope.selected.push({
-              _id: doc._id,
-              report: doc,
+              _id: model.doc._id,
+              report: model.doc,
               expanded: false,
-              displayFields: displayFields
+              displayFields: displayFields,
+              contacts: model.contacts
             });
           }
         } else {
           if (liveList.initialised()) {
-            liveList.setSelected(doc._id);
+            liveList.setSelected(model.doc._id);
           }
-          refreshing = doc &&
+          refreshing = model.doc &&
                        $scope.selected.length &&
-                       $scope.selected[0]._id === doc._id;
+                       $scope.selected[0]._id === model.doc._id;
           $scope.selected = [ {
-            _id: doc._id,
-            report: doc,
+            _id: model.doc._id,
+            report: model.doc,
             expanded: true,
-            displayFields: displayFields
+            displayFields: displayFields,
+            contacts: model.contacts
           } ];
-          setTitle(doc);
+          setTitle(model.doc);
         }
         setRightActionBar();
         $scope.settingSelected(refreshing);
@@ -168,19 +174,13 @@ var _ = require('underscore'),
 
       var fetchFormattedReport = function(report) {
         var id = _.isString(report) ? report : report._id;
-        return DB()
-          .query('medic-client/reports_by_id_lineage', { startkey: [id,0], endkey: [id, 10000], include_docs: true })
-          .then(function(result) {
-            console.log('result', result);
-            return result.rows[0].doc;
-          })
-          .then(FormatDataRecord);
+        return ReportViewModelGenerator(id);
       };
 
       $scope.refreshReportSilently = function(report) {
         return fetchFormattedReport(report)
-          .then(function(doc) {
-            setSelected(doc[0]);
+          .then(function(model) {
+            setSelected(model);
           })
           .catch(function(err) {
             $log.error('Error fetching formatted report', err);
@@ -211,12 +211,10 @@ var _ = require('underscore'),
         }
         $scope.setLoadingContent(report);
         fetchFormattedReport(report)
-          .then(function(formatted) {
-            return formatted && formatted.length && formatted[0];
-          })
-          .then(function(doc) {
-            if (doc) {
-              setSelected(doc);
+          .then(function(model) {
+            console.log('model', model);
+            if (model) {
+              setSelected(model);
               initScroll();
             }
           })

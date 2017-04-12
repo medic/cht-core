@@ -7,6 +7,7 @@ var _ = require('underscore');
   exports.clinic = function(entity, $state) {
     var parts;
     if (_.isArray(entity)) {
+      // TODO check each part for an object.name
       parts = entity;
     } else {
       parts = [];

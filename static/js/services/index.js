@@ -54,6 +54,7 @@
   require('./place-hierarchy');
   require('./properties');
   require('./read-messages');
+  require('./report-view-model-generator');
   require('./resource-icons');
   require('./rules-engine');
   require('./scheduled-forms');

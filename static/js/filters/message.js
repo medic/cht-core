@@ -64,6 +64,7 @@ var format = require('../modules/format'),
   ) {
     'ngInject';
     return function(entity) {
+      console.log('clinic entity', entity);
       return format.clinic(entity, $state);
     };
   });
