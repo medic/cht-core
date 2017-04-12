@@ -51,11 +51,16 @@ var _ = require('underscore'),
         });
       };
 
-      var replicate = function(direction, successCallback, options) {
+      var replicate = function(direction, updateListener, options) {
         return getOptions(direction, options)
           .then(function(options) {
             var remote = DB({ remote: true });
             return DB().replicate[direction](remote, options)
+              .on('active', function() {
+                if (updateListener) {
+                  updateListener({ direction: direction, status: 'in_progress' });
+                }
+              })
               .on('denied', function(err) {
                 // In theory this could be caused by 401s
                 // TODO: work out what `err` looks like and navigate to login
@@ -64,10 +69,14 @@ var _ = require('underscore'),
               })
               .on('error', function(err) {
                 $log.error('Error replicating ' + direction + ' remote server', err);
+                if (updateListener) {
+                  updateListener({ direction: direction, status: 'required' });
+                }
               })
               .on('paused', function(err) {
-                if (!err && successCallback) {
-                  successCallback({ direction: direction });
+                if (updateListener) {
+                  var status = err ? 'required' : 'not_required';
+                  updateListener({ direction: direction, status: status });
                 }
               })
               .on('complete', function (info) {
@@ -82,10 +91,10 @@ var _ = require('underscore'),
 
       };
 
-      var replicateTo = function(successCallback) {
+      var replicateTo = function(updateListener) {
         return Auth('can_edit')
           .then(function() {
-            return replicate('to', successCallback, {
+            return replicate('to', updateListener, {
               filter: function(doc) {
                 // don't try to replicate read only docs back to the server
                 return READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
@@ -100,20 +109,20 @@ var _ = require('underscore'),
           });
       };
 
-      var replicateFrom = function(successCallback) {
-        return replicate('from', successCallback);
+      var replicateFrom = function(updateListener) {
+        return replicate('from', updateListener);
       };
 
-      return function(successCallback) {
+      return function(updateListener) {
         if (Session.isAdmin()) {
-          if (successCallback) {
-            successCallback({ disabled: true });
+          if (updateListener) {
+            updateListener({ disabled: true });
           }
           return $q.resolve();
         }
         return $q.all([
-          replicateFrom(successCallback),
-          replicateTo(successCallback)
+          replicateFrom(updateListener),
+          replicateTo(updateListener)
         ]);
       };
     }

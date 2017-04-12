@@ -53,20 +53,39 @@ var feedback = require('../modules/feedback'),
 
       $scope.replicationStatus = {
         disabled: false,
-        lastSuccess: { }
+        lastSuccess: {},
+        current: 'unknown',
       };
-      DBSync(function(status) {
-        if (status.disabled) {
+      var SYNC_ICON = {
+        in_progress: 'fa-refresh',
+        not_required: 'fa-check',
+        required: 'fa-exclamation-triangle',
+        unknown: 'fa-question-circle',
+      };
+      DBSync(function(update) {
+        if (update.disabled) {
           $scope.replicationStatus.disabled = true;
           // admins have potentially too much data so bypass local pouch
           $log.debug('You have administrative privileges; not replicating');
           return;
         }
-        var now = Date.now();
-        var last = $scope.replicationStatus.lastSuccess[status.direction];
-        $scope.replicationStatus.lastSuccess[status.direction] = now;
-        var delay = last ? (now - last) / 1000 : 'unknown';
-        $log.info('Replicate ' + status.direction + ' server successful with ' + delay + ' seconds since the previous successful replication.');
+
+        var now;
+        if (update.state !== 'required') {
+          now = Date.now();
+          var last = $scope.replicationStatus.lastSuccess[update.direction];
+          $scope.replicationStatus.lastSuccess[update.direction] = now;
+          var delay = last ? (now - last) / 1000 : 'unknown';
+          $log.info('Replicate ' + update.direction + ' server successful with ' + delay + ' seconds since the previous successful replication.');
+        }
+
+        if (update.direction === 'to') {
+          if (update.state === 'not_required') {
+            $scope.replicationStatus.lastCompleted = now;
+          }
+          $scope.replicationStatus.current = update.state;
+          $scope.replicationStatus.icon = 'fa-' + SYNC_ICON[update.status];
+        }
       });
 
       RulesEngine.init
