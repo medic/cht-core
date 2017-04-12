@@ -20,6 +20,7 @@ _April 12, 2017_
 
 ### Bug fixes
 
+- namespace-form-fields migration causing Express toString fail. Issue: #3371
 - Cannot use Collect with username/password fields. Issue: #3118
 - No permissions available for configuration on first run. Issue: #3251
 - Fix outdated npm shrinkwrap entry for enketo-core. Issue: #3352
