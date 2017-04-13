@@ -14,12 +14,17 @@ var _ = require('underscore');
       var mapGroupModel = function(translations, path, labelParts) {
         return {
           label: labelParts.join(' › '),
-          translations: _.map(translations, function(translation, index) {
-            return {
-              path: path + '[' + index + ']',
-              translations: translation.message
-            };
-          })
+          translations: _.chain(translations)
+            .filter(function(translation) {
+              return translation && translation.message;
+            })
+            .map(function(translation, index) {
+              return {
+                path: path + '[' + index + ']',
+                translations: translation.message
+              };
+            })
+            .value()
         };
       };
 
@@ -91,4 +96,4 @@ var _ = require('underscore');
     }
   );
 
-}()); 
+}());

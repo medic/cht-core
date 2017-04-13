@@ -35,7 +35,9 @@ var _ = require('underscore'),
         return Settings()
           .then(function(settings) {
             var updated = false;
-            _.pairs(parsed).forEach(function(pair) {
+            _.pairs(parsed).filter(function(pair) {
+              return pair && pair[0] && pair[1];
+            }).forEach(function(pair) {
               var setting = objectpath.get(settings, pair[0]);
               if (setting) {
                 mergeTranslation(setting.message, locale, pair[1]);
@@ -127,4 +129,4 @@ var _ = require('underscore'),
     }
   );
 
-}()); 
+}());

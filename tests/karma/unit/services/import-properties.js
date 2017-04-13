@@ -104,7 +104,7 @@ describe('ImportProperties service', function() {
                   'registrations[0].messages[0] = MESSAGE 1\n' +
                   'registrations[0].validations.list[0] = VALIDATION 1\n' +
                   'registrations[0].validations.list[1] = VALIDATION 2';
-    Settings.returns(KarmaUtils.mockPromise(null, exampleSettings));
+    Settings.returns(KarmaUtils.mockPromise(null, settings()));
     UpdateSettings.returns(KarmaUtils.mockPromise());
     put.returns(KarmaUtils.mockPromise(null, {}));
     setTimeout(function() {
@@ -115,12 +115,51 @@ describe('ImportProperties service', function() {
     });
     return service(content, doc).then(function() {
       chai.expect(put.callCount).to.equal(0);
-      chai.expect(UpdateSettings.args[0][0]).to.deep.equal(expected);
+      chai.expect(UpdateSettings.args[0][0]).to.deep.equal(expected());
     });
-
   });
 
-  var exampleSettings = {
+  it('ignores empty message translations', () => {
+    const doc = { code: 'en', values: {} };
+    const content = '[Outgoing Messages]\n' +
+                  'registrations[0].messages[0] = MESSAGE 1\n' +
+                  'registrations[0].validations.list[0] = VALIDATION 1\n' +
+                  'registrations[0].validations.list[1] = VALIDATION 2\n' +
+                  'registrations[0].validations.list[2] =  ';
+    Settings.returns(KarmaUtils.mockPromise(null, settings(s => {
+      s.registrations[0].validations.list[2] = {
+        translation_key: 'test.translation.key',
+      };
+    })));
+    UpdateSettings.returns(KarmaUtils.mockPromise());
+    put.returns(KarmaUtils.mockPromise(null, {}));
+    setTimeout(() => {
+      rootScope.$digest();
+      setTimeout(() => {
+        rootScope.$digest();
+      });
+    });
+    return service(content, doc).then(() => {
+      chai.expect(put.callCount).to.equal(0);
+      chai.expect(UpdateSettings.args[0][0]).to.deep.equal(expected(e => {
+        console.log(e);
+        e.registrations[0].validations.list[2] = {
+          translation_key: 'test.translation.key'
+        };
+      }));
+    });
+  });
+
+  const cloneAndAlter = (json, alter = () => {}) => {
+    const cloned = JSON.parse(JSON.stringify(json));
+    alter(cloned);
+    return cloned;
+  };
+
+  const settings = (alter) => cloneAndAlter(defaultSettings, alter);
+  const expected = (alter) => cloneAndAlter(defaultExpected, alter);
+
+  const defaultSettings = {
     registrations: [
       {
         form: 'P',
@@ -196,11 +235,9 @@ describe('ImportProperties service', function() {
           }
         ]
       }
-    ]
-  };
+  ]};
 
-
-  var expected = {
+  const defaultExpected = {
     registrations: [
       {
         form: 'P',
@@ -280,8 +317,6 @@ describe('ImportProperties service', function() {
           }
         ]
       }
-    ]
-  };
-
+    ]};
 });
 
