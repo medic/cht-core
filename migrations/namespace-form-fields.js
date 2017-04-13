@@ -26,7 +26,26 @@ var namespace = function(docs, callback) {
     });
   });
 
-  db.medic.bulk({ docs : docs }, callback);
+  db.medic.bulk({ docs : docs }, function(err, results) {
+    if (err) {
+      return callback(err);
+    }
+
+    if (results && results.length) {
+      var errors = [];
+      results.forEach(function(result) {
+        if (!result.ok) {
+          errors.push(new Error(result.error + ' - ' + result.reason));
+        }
+      });
+
+      if (errors.length) {
+        return callback(new Error('Bulk create errors: ' + JSON.stringify(errors, null, 2)));
+      }
+    }
+
+    callback();
+  });
 };
 
 var runBatch = function(batchSize, skip, callback) {
