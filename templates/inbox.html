@@ -11,7 +11,10 @@
   <body class="inbox {{currentTab}}" ng-controller="InboxCtrl" ng-class="{'show-content': showContent, 'bootstrapped': version && dbWarmedUp, 'select-mode': selectMode}">
 
     <div class="bootstrap-layer">
-      <div class="loader"></div>
+      <div>
+        <div class="loader"></div>
+        <div class="status">Loading assets…</div>
+      </div>
     </div>
 
     <ng-include src="'templates/partials/actionbar.html'"></ng-include>
