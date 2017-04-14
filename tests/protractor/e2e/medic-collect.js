@@ -1,4 +1,5 @@
 const assert = require('chai').assert,
+    environment = require('../auth')(),
     tls = require('tls'),
     host = environment.apiHost,
     port = environment.apiPort,
@@ -51,16 +52,17 @@ Connection: close
 function rawHttpRequest(rawRequest) {
   return new Promise((resolve, reject) => {
 
-    var api = tls.connect(port, host);
+    const api = tls.connect(port, host);
+    var rawResponse = '';
 
-    api.on('connect', () => upstream.write(rawRequest));
+    api.on('connect', () => api.write(rawRequest));
     api.on('data', (data) => rawResponse += data);
     api.on('error', reject);
 
     api.on('close', () => {
       var parts = rawResponse.split('\n\n', 2);
 
-      var response = {
+      const response = {
         headers: parts[0],
         body: parts[1],
       };
@@ -72,7 +74,7 @@ function rawHttpRequest(rawRequest) {
       response.headers = parts[1].split('\n')
         .reduce((headers, line) =>
           {
-            var parts = line.split(': ', 2);
+            const parts = line.split(': ', 2);
             headers[parts[0]] = parts[1];
             return headers;
           },
