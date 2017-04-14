@@ -55,30 +55,20 @@ function rawHttpRequest(rawRequest) {
     var rawResponse = '';
 
     api.on('connect', () => api.write(rawRequest));
-    api.on('data', (data) => rawResponse += data);
+    api.on('data', (data) => rawResponse += data.toString());
     api.on('error', reject);
 
     api.on('close', () => {
-      if(true) { throw new Error('Read raw response: ' + rawResponse); }
+      const response = { headers:{} };
+      var lines = rawResponse.split('\r\n');
 
-      var parts = rawResponse.split('\n\n', 2);
-
-      const response = {
-        body: parts[1],
-      };
-
-      parts = parts[0].split('\n', 2);
-
-      response.statusCode = parseInt(parts[0].split(' ', 2)[0]);
-
-      response.headers = parts[1].split('\n')
-        .reduce((headers, line) =>
-          {
-            const parts = line.split(': ', 2);
-            headers[parts[0]] = parts[1];
-            return headers;
-          },
-          {});
+      response.statusCode = parseInt(lines.shift().split(' ')[1]);
+      while(next = lines.shift()) {
+        var colon = next.indexOf(':');
+        response.headers[next.substring(0, colon)] =
+            next.substring(colon+1);
+      }
+      response.body = lines.join('\r\n');
         
       resolve(response);
     });
