@@ -60,10 +60,11 @@ function rawHttpRequest(rawRequest) {
     api.on('error', reject);
 
     api.on('close', () => {
+      if(true) throw new Error('Read raw response: ' + rawResponse);
+
       var parts = rawResponse.split('\n\n', 2);
 
       const response = {
-        headers: parts[0],
         body: parts[1],
       };
 
