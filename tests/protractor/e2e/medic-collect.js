@@ -60,13 +60,13 @@ function rawHttpRequest(rawRequest) {
 
     api.on('close', () => {
       const response = { headers:{} };
-      var lines = rawResponse.split('\r\n');
+      var line, lines = rawResponse.split('\r\n');
 
       response.statusCode = parseInt(lines.shift().split(' ')[1]);
-      while(next = lines.shift()) {
-        var colon = next.indexOf(':');
-        response.headers[next.substring(0, colon)] =
-            next.substring(colon+1);
+      while((line = lines.shift())) {
+        var colon = line.indexOf(':');
+        response.headers[line.substring(0, colon)] =
+            line.substring(colon+1);
       }
       response.body = lines.join('\r\n');
         
