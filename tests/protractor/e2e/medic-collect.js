@@ -1,9 +1,8 @@
 const assert = require('chai').assert,
-    environment = require('../auth')(),
-    tls = require('tls'),
-    host = environment.apiHost,
-    port = environment.apiPort,
-    dbName = environment.dbName;
+    net = require('net'),
+    host = 'localhost',
+    port = '5988',
+    dbName = 'medic';
 
 describe('medic-collect', () => {
 
@@ -52,7 +51,7 @@ Connection: close
 function rawHttpRequest(rawRequest) {
   return new Promise((resolve, reject) => {
 
-    const api = tls.connect(port, host);
+    const api = net.connect(port, host);
     var rawResponse = '';
 
     api.on('connect', () => api.write(rawRequest));
