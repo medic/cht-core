@@ -22,8 +22,8 @@ Connection: close
 `).then((res) => {
 
         // then
-        assert.equal(res.statusCode, 401);
-        assert.equal(res.headers['WWW-Authenticate'], 'Basic realm="Medic Mobile Web Services"');
+        assert.equal(res.statusCode, 401, res);
+        assert.equal(res.headers['WWW-Authenticate'], 'Basic realm="Medic Mobile Web Services"', res);
 
       });
 
