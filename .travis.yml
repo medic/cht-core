@@ -35,6 +35,10 @@ before_install:
     fi
     until nc -z localhost 5984; do sleep 1; done
     echo "CouchDB Started"
+    echo "Fixing couch auth config..."
+    if [ "$COUCH_VERSION" = 2 ]; then
+      curl --data 'true' 'https://admin:pass@localhost:5984/_config/chttpd/require_valid_user'
+    fi
 
 install:
   nvm install $NODE_VERSION

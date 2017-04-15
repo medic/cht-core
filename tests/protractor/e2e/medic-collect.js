@@ -10,19 +10,6 @@ describe('medic-collect', () => {
 
     it('is prompted for auth details', () => {
 
-      // given
-      // authentication is set up properly
-      // I think this is a change in couch 2: https://issues.apache.org/jira/browse/COUCHDB-3100
-      rawHttpRequest(
-`PUT /_config/chttpd/require_valid_user HTTP/1.1
-Accept: application/json
-Content-Length: 4
-Content-Type: application/json
-Host: localhost:5984
-Connection: close
-
-true`).then(() => {
-
       // when
       return rawHttpRequest(
 
@@ -38,7 +25,6 @@ Connection: close
         assert.equal(res.statusCode, 401, JSON.stringify(res));
         assert.equal(res.headers['WWW-Authenticate'], 'Basic realm="Medic Mobile Web Services"', JSON.stringify(res));
 
-      });
       });
 
     });
