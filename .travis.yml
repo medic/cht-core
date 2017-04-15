@@ -35,16 +35,6 @@ before_install:
     fi
     until nc -z localhost 5984; do sleep 1; done
     echo "CouchDB Started"
-    if [ "$COUCH_VERSION" = 2 ]; then
-      # ref https://issues.apache.org/jira/browse/COUCHDB-3100
-      echo "Fixing couch auth config..."
-      curl --data 'true' 'http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config/chttpd/require_valid_user'
-      echo "Couch auth config fixed."
-    elif [ "$COUCH_VERSION" = 1 ]; then
-      echo "Fixing couch auth config..."
-      curl --data 'true' 'http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user'
-      echo "Couch auth config fixed."
-    fi
 
 install:
   nvm install $NODE_VERSION
@@ -56,6 +46,17 @@ before_script:
   - |
     if [ "$COUCH_VERSION" = 2 ]; then
       curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
+    fi
+  - | Prevent couch from accepting unauthed connections
+    if [ "$COUCH_VERSION" = 2 ]; then
+      # ref https://issues.apache.org/jira/browse/COUCHDB-3100
+      echo "Fixing couch auth config..."
+      curl --data 'true' 'http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config/chttpd/require_valid_user'
+      echo "Couch auth config fixed."
+    elif [ "$COUCH_VERSION" = 1 ]; then
+      echo "Fixing couch auth config..."
+      curl --data 'true' 'http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user'
+      echo "Couch auth config fixed."
     fi
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
