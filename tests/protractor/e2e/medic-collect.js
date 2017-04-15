@@ -66,7 +66,7 @@ function rawHttpRequest(rawRequest) {
       while((line = lines.shift())) {
         var colon = line.indexOf(':');
         response.headers[line.substring(0, colon)] =
-            line.substring(colon+1);
+            line.substring(colon+1).trim();
       }
       response.body = lines.join('\r\n');
         
