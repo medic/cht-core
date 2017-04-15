@@ -35,10 +35,11 @@ before_install:
     fi
     until nc -z localhost 5984; do sleep 1; done
     echo "CouchDB Started"
-    echo "Fixing couch auth config..."
     if [ "$COUCH_VERSION" = 2 ]; then
       # ref https://issues.apache.org/jira/browse/COUCHDB-3100
-      curl --data 'true' 'https://admin:pass@localhost:5984/_config/chttpd/require_valid_user'
+      echo "Fixing couch auth config..."
+      curl --data 'true' 'http://admin:pass@localhost:5984/_config/chttpd/require_valid_user'
+      echo "Couch auth config fixed."
     fi
 
 install:
