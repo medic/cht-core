@@ -47,7 +47,8 @@ before_script:
     if [ "$COUCH_VERSION" = 2 ]; then
       curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
     fi
-  - | Prevent couch from accepting unauthed connections
+  # Prevent couch from accepting unauthed connections
+  - | 
     if [ "$COUCH_VERSION" = 2 ]; then
       # ref https://issues.apache.org/jira/browse/COUCHDB-3100
       echo "Fixing couch auth config..."
