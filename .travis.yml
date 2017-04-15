@@ -40,6 +40,10 @@ before_install:
       echo "Fixing couch auth config..."
       curl --data 'true' 'http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config/chttpd/require_valid_user'
       echo "Couch auth config fixed."
+    elif [ "$COUCH_VERSION" = 1 ]; then
+      echo "Fixing couch auth config..."
+      curl --data 'true' 'http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user'
+      echo "Couch auth config fixed."
     fi
 
 install:
