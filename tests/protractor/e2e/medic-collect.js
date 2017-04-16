@@ -8,7 +8,7 @@ describe('medic-collect', () => {
 
   describe('without User-Agent header', () => {
 
-    it('is prompted for auth details', () => {
+    it('is prompted for auth details if not supplied', () => {
 
       // when
       return rawHttpRequest(
