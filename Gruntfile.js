@@ -183,14 +183,14 @@ module.exports = function(grunt) {
              ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
                  ' -H "Content-Type: application/json" ' +
                  ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\' ' +
-             ' && curl -X PUT --data \'"true"\' http://localhost:5984/_config/couch_httpd_auth/require_valid_user'
+             ' && curl -X PUT --data \'"true"\' http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user'
       },
       setupAdmin2: {
         cmd: 'curl -X PUT http://localhost:5984/_node/${COUCH_NODE_NAME}/_config/admins/admin -d \'"pass"\'' +
              ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
                  ' -H "Content-Type: application/json" ' +
                  ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\' ' +
-             ' && curl -X PUT --data \'"true"\' http://localhost:5984/_node/${COUCH_NODE_NAME}/_config/chttpd/require_valid_user'
+             ' && curl -X PUT --data \'"true"\' http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config/chttpd/require_valid_user'
       },
       deploytest: {
         stderr: false,
