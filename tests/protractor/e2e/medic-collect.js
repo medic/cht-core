@@ -1,7 +1,7 @@
 const assert = require('chai').assert,
     net = require('net'),
     host = 'localhost',
-    port = '5998',
+    port = '5988',
     dbName = 'medic';
 
 describe('medic-collect', () => {
