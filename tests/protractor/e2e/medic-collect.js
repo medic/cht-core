@@ -76,7 +76,7 @@ function rawHttpRequest(rawRequest) {
   return new Promise((resolve, reject) => {
 
     const api = net.connect(port, host);
-    var rawResponse = '';
+    let rawResponse = '';
 
     api.on('connect', () => api.write(rawRequest));
     api.on('data', (data) => rawResponse += data.toString());
@@ -84,11 +84,11 @@ function rawHttpRequest(rawRequest) {
 
     api.on('close', () => {
       const response = { headers:{} };
-      var line, lines = rawResponse.split('\r\n');
+      let line, lines = rawResponse.split('\r\n');
 
       response.statusCode = parseInt(lines.shift().split(' ')[1]);
       while((line = lines.shift())) {
-        var colon = line.indexOf(':');
+        const colon = line.indexOf(':');
         response.headers[line.substring(0, colon)] =
             line.substring(colon+1).trim();
       }
