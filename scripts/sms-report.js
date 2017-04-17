@@ -22,8 +22,13 @@ function log(...args) {
   console.log.apply(console, args);
 };
 
+function sanitiseUrl(url) {
+  return url.substring(0, url.indexOf('://') + 3) +
+      url.substring(url.indexOf('@') + 1);
+}
+
 function link(docId) {
-  return `${couchUrl}/${docId}`;
+  return `${sanitiseUrl(couchUrl)}/${docId}`;
 }
 
 function snip(s, w) {
@@ -58,7 +63,7 @@ function printTableRow(...columns) {
   console.log(row);
 }
 
-log(`Starting for ${couchUrl}…`);
+log(`Starting for ${sanitiseUrl(couchUrl)}…`);
 
 var db = PouchDB(couchUrl);
 
