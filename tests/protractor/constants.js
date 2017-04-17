@@ -1,5 +1,5 @@
 module.exports = {
-  API_PORT: 5998,
+  API_PORT: 5988,
   API_HOST: 'localhost',
 
   COUCH_PORT: 5984,
