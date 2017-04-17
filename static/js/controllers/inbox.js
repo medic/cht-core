@@ -83,7 +83,7 @@ var feedback = require('../modules/feedback'),
             $scope.replicationStatus.lastCompleted = now;
           }
           $scope.replicationStatus.current = update.state;
-          $scope.replicationStatus.icon = 'fa-' + SYNC_ICON[update.status];
+          $scope.replicationStatus.icon = SYNC_ICON[update.status];
         }
       });
 
