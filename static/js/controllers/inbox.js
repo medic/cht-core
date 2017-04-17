@@ -55,6 +55,7 @@ var feedback = require('../modules/feedback'),
         disabled: false,
         lastSuccess: {},
         current: 'unknown',
+        textKey: 'sync.status.unknown',
       };
       var SYNC_ICON = {
         in_progress: 'fa-refresh',
