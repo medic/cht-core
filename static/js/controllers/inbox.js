@@ -70,9 +70,8 @@ var feedback = require('../modules/feedback'),
           return;
         }
 
-        var now;
+        var now = Date.now();
         if (update.state !== 'required') {
-          now = Date.now();
           var last = $scope.replicationStatus.lastSuccess[update.direction];
           $scope.replicationStatus.lastSuccess[update.direction] = now;
           var delay = last ? (now - last) / 1000 : 'unknown';
