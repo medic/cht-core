@@ -100,7 +100,7 @@
           <li role="presentation disabled" ng-if="!replicationStatus.disabled" class="sync-status">
             <a ng-class="replicationStatus.current">
               <i class="fa fa-fw" ng-class="replicationStatus.icon"></i>
-              <span>{{'sync.status.' + replicationStatus.current | translate}}</span>
+              <span>{{replicationStatus.textKey | translate}}</span>
             </a>
           </li>
         </ul>
