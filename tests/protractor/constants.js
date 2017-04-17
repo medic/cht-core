@@ -5,6 +5,5 @@ module.exports = {
   COUCH_PORT: 5984,
   COUCH_HOST: 'localhost',
 
-  DB_NAME: 'medic',
-  TEST_DB_NAME: 'medic-test',
+  DB_NAME: 'medic-test',
 };

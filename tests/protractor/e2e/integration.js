@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     utils = require('../utils'),
-    auth = require('../auth');
+    auth = require('../auth')();
 
 describe('Integration', function() {
 
@@ -45,13 +45,12 @@ describe('Integration', function() {
   };
 
   var login = function() {
-    var environment = auth();
     return utils.request({
       method: 'POST',
       path: '/_session',
       body: JSON.stringify({
-        name: environment.user,
-        password: environment.pass
+        name: auth.user,
+        password: auth.pass
       })
     });
   };

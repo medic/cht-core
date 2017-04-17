@@ -1,5 +1,5 @@
 const utils = require('../utils'),
-      environment = require('../auth')();
+      auth = require('../auth')();
 
 describe('Submit Enketo form', () => {
 
@@ -23,7 +23,7 @@ describe('Submit Enketo form', () => {
   </h:html>`;
 
   const contactId = '3b3d50d275280d2568cd36281d00348b';
-  const userSettingsDocId = `org.couchdb.user:${environment.user}`;
+  const userSettingsDocId = `org.couchdb.user:${auth.user}`;
 
   const docs = [
     {

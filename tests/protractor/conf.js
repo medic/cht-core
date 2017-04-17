@@ -1,20 +1,21 @@
 const utils = require('./utils'),
       spawn = require('child_process').spawn,
-      environment = require('./auth')(),
+      constants = require('./constants'),
+      auth = require('./auth')(),
       modules = [];
 
 const getLoginUrl = () => {
-  const redirectUrl = encodeURIComponent(`/${environment.dbName}/_design/medic/_rewrite/#/messages?e2eTesting=true`);
-  return `http://${environment.apiHost}:${environment.apiPort}/${environment.dbName}/login?redirect=${redirectUrl}`;
+  const redirectUrl = encodeURIComponent(`/${constants.DB_NAME}/_design/medic/_rewrite/#/messages?e2eTesting=true`);
+  return `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
 };
 
 const getCouchUrl = () =>
-  `http://${environment.user}:${environment.pass}@${environment.couchHost}:${environment.couchPort}/${environment.dbName}`;
+  `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`;
 
 const login = browser => {
   browser.driver.get(getLoginUrl());
-  browser.driver.findElement(by.name('user')).sendKeys(environment.user);
-  browser.driver.findElement(by.name('password')).sendKeys(environment.pass);
+  browser.driver.findElement(by.name('user')).sendKeys(auth.user);
+  browser.driver.findElement(by.name('password')).sendKeys(auth.pass);
   browser.driver.findElement(by.id('login')).click();
   // Login takes some time, so wait until it's done.
   const bootstrappedCheck = () => browser.driver.isElementPresent(by.css('body.bootstrapped'));
@@ -26,7 +27,7 @@ const startNodeModule = (dir, startOutput) => {
     const module = spawn('node', ['server.js'], {
       cwd: dir,
       env: {
-        API_PORT: environment.apiPort,
+        API_PORT: constants.API_PORT,
         COUCH_URL: getCouchUrl(),
         COUCH_NODE_NAME: process.env.COUCH_NODE_NAME,
         PATH: process.env.PATH
@@ -54,14 +55,14 @@ const startModules = () => startApi().then(startSentinel);
 
 const setupSettings = () => {
   return utils.request({
-    path: `/${environment.dbName}/_design/medic/_rewrite/update_settings/medic`,
+    path: `/${constants.DB_NAME}/_design/medic/_rewrite/update_settings/medic`,
     method: 'PUT',
     body: JSON.stringify({ setup_complete: true })
   });
 };
 
 const setupUser = () => {
-  return utils.getDoc('org.couchdb.user:' + environment.user)
+  return utils.getDoc('org.couchdb.user:' + auth.user)
     .then(doc => {
       doc.known = true;
       doc.language = 'en';

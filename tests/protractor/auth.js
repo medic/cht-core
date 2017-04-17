@@ -1,5 +1,4 @@
 var url = require('url'),
-    constants = require('./constants'),
     auth;
 
 var getKansorc = function() {
@@ -12,11 +11,6 @@ var setAuth = function(user, pass) {
   auth = {
     user: user,
     pass: pass,
-    apiPort: constants.API_PORT,
-    apiHost: constants.API_HOST,
-    couchPort: constants.COUCH_PORT,
-    couchHost: constants.COUCH_HOST,
-    dbName: constants.TEST_DB_NAME
   };
 };
 
