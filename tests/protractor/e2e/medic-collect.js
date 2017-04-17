@@ -1,9 +1,22 @@
 const assert = require('chai').assert,
     net = require('net'),
-    host = 'localhost',
-    port = '5998',
-    dbName = 'medic';
+    constants = require('../constants'),
+    host = constants.API_HOST,
+    port = constants.API_PORT,
+    dbName = constants.DB_NAME;
 
+/**
+ * Tests to ensure continued support for Medic Collect.
+ *
+ * N.B. as of 4/5/2017 medic-collect builds set a User-Agent header, but prior
+ * to this, none was supplied at all.  Tests for both should be kept until old
+ * builds are no longer in use by projects.
+ *
+ * Tests to be added in the future:
+ *   - can get form list
+ *   - can get individual forms
+ *   - can submit form responses
+ */
 describe('medic-collect', () => {
 
   describe('without User-Agent header', () => {
@@ -29,22 +42,33 @@ Connection: close
 
     });
 
-    it('can request a list of forms', (done) => {
-      done('TODO');
-    });
+  });
 
-    it('can request a specific form', (done) => {
-      done('TODO');
-    });
+  describe('with User-Agent header', () => {
 
-    it('can submit a form response', (done) => {
-      done('TODO');
+    it('is prompted for auth details if not supplied', () => {
+
+      // when
+      return rawHttpRequest(
+
+`HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1
+X-OpenRosa-Version: 1.0
+Date: Tue, 11 Apr 2017 06:34:21 CEST
+Host: ${host}:${port}
+User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT
+Connection: close
+
+`).then((res) => {
+
+        // then
+        assert.equal(res.statusCode, 401, JSON.stringify(res));
+        assert.equal(res.headers['WWW-Authenticate'], 'Basic realm="Medic Mobile Web Services"', JSON.stringify(res));
+
+      });
+
     });
 
   });
-
-  // TODO repeat the tests _with_ a ua, such as:
-  // User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT
 
 });
 
@@ -69,7 +93,7 @@ function rawHttpRequest(rawRequest) {
             line.substring(colon+1).trim();
       }
       response.body = lines.join('\r\n');
-        
+
       resolve(response);
     });
   });
