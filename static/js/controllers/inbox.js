@@ -72,7 +72,7 @@ var feedback = require('../modules/feedback'),
         }
 
         var now = Date.now();
-        if (update.state !== 'required') {
+        if (update.status !== 'required') {
           var last = $scope.replicationStatus.lastSuccess[update.direction];
           $scope.replicationStatus.lastSuccess[update.direction] = now;
           var delay = last ? (now - last) / 1000 : 'unknown';
@@ -80,11 +80,11 @@ var feedback = require('../modules/feedback'),
         }
 
         if (update.direction === 'to') {
-          if (update.state === 'not_required') {
+          if (update.status === 'not_required') {
             $scope.replicationStatus.lastCompleted = now;
           }
-          $scope.replicationStatus.current = update.state;
-          $scope.replicationStatus.textKey = 'sync.status.' + update.state;
+          $scope.replicationStatus.current = update.status;
+          $scope.replicationStatus.textKey = 'sync.status.' + update.status;
           $scope.replicationStatus.icon = SYNC_ICON[update.status];
         }
       });
