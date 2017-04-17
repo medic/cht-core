@@ -37,15 +37,25 @@ var utils = require('kujua-utils');
   };
 
   var initialReplication = function(localDb, remoteDb, username) {
+    $('.bootstrap-layer .status').text('Fetching docs…');
     var dbSyncStartTime = Date.now();
     var dbSyncStartData = getDataUsage();
-    return localDb.replicate.from(remoteDb, {
-      live: false,
-      retry: false,
-      heartbeat: 10000,
-      timeout: 1000 * 60 * 10, // try for ten minutes then give up
-      doc_ids: [ 'org.couchdb.user:' + username ]
-    })
+    var replicator = localDb.replicate
+      .from(remoteDb, {
+        live: false,
+        retry: false,
+        heartbeat: 10000,
+        timeout: 1000 * 60 * 10, // try for ten minutes then give up
+        doc_ids: [ 'org.couchdb.user:' + username ],
+      });
+
+    replicator
+      .on('change', function(info) {
+        console.log('initialReplication()', 'change', info);
+        $('.bootstrap-layer .status').text(info.docs_read + ' docs…');
+      });
+
+    return replicator
       .then(function() {
         var duration = Date.now() - dbSyncStartTime;
         console.info('Initial sync completed successfully in ' + (duration / 1000) + ' seconds');
@@ -87,6 +97,7 @@ var utils = require('kujua-utils');
         initialReplication(localDb, remoteDb, username)
           .then(function() {
             // replication complete - bootstrap angular
+            $('.bootstrap-layer .status').text('100%…');
             callback();
           })
           .catch(function(err) {
