@@ -142,7 +142,6 @@ describe('ImportProperties service', function() {
     return service(content, doc).then(() => {
       chai.expect(put.callCount).to.equal(0);
       chai.expect(UpdateSettings.args[0][0]).to.deep.equal(expected(e => {
-        console.log(e);
         e.registrations[0].validations.list[2] = {
           translation_key: 'test.translation.key'
         };
