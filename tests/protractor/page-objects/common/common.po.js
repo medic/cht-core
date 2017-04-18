@@ -1,5 +1,7 @@
+var _ = require('underscore'),
+    helper = require('../../helper'),
+    auth = require('../../auth')();
 
-var helper = require('../../helper');
 var medicLogo = element(by.className('logo-full'));
 var messagesLink = element(by.id('messages-tab'));
 var tasksLink = element(by.id('tasks-tab'));
@@ -9,71 +11,56 @@ var reportsLink = element(by.id('reports-tab'));
 var configurationLink = element(by.css('[ui-sref=configuration]'));
 var hamburgerMenu = element(by.className('dropdown options'));
 
-//vavigation functions
-
-
 module.exports = {
+  getBaseUrl: function () {
+    var baseUrlTemplate = _.template('http://{{apiHost}}:{{apiPort}}/{{dbName}}/_design/medic/_rewrite/#/');
+    return baseUrlTemplate(auth);
+  },
 
-    getBaseUrl : function () {
-//todo shouldn't be hard coded
-        return 'http://localhost:5998/medic-test/_design/medic/_rewrite/#/';
-    },
+  goToMessages: function () {
+    helper.waitUntilReady(messagesLink);
+    messagesLink.click();
+  },
 
-    goToMessages: function () {
+  goToTasks: function () {
+    helper.waitUntilReady(tasksLink);
+    tasksLink.click();
+  },
 
-        helper.waitUntilReady(messagesLink);
-        messagesLink.click();
-    },
+  goToPeople: function () {
+    helper.waitUntilReady(contactsLink);
+    contactsLink.click();
+  },
 
-    goToTasks: function () {
+  goToReports: function () {
+    helper.waitUntilReady(reportsLink);
+    reportsLink.click();
+  },
 
-        helper.waitUntilReady(tasksLink);
-        tasksLink.click();
-    },
+  goToAnalytics: function () {
+    helper.waitUntilReady(analyticsLink);
+    analyticsLink.click();
+  },
 
-    goToPeople: function () {
+  goToConfiguration: function () {
+    helper.waitUntilReady(configurationLink);
+    configurationLink.click();
+  },
 
-        helper.waitUntilReady(contactsLink);
-        contactsLink.click();
-    },
+  openMenu: function () {
+    helper.waitUntilReady(messagesLink);
+    hamburgerMenu.click();
+  },
 
-    goToReports: function () {
+  goHome: function () {
+    helper.waitUntilReady(medicLogo);
+    medicLogo.click();
+  },
 
-        helper.waitUntilReady(reportsLink);
-        reportsLink.click();
-    },
-
-
-    goToAnalytics: function () {
-
-        helper.waitUntilReady(analyticsLink);
-        analyticsLink.click();
-    },
-
-    goToConfiguration: function () {
-
-     helper.waitUntilReady(configurationLink);
-        configurationLink.click();
-    },
-
-
-    openMenu: function () {
-
-        helper.waitUntilReady(messagesLink);
-        hamburgerMenu.click();
-    },
-    goHome: function () {
-
-        helper.waitUntilReady(medicLogo);
-        medicLogo.click();
-    },
- isAt: function (list) {
-
-        helper.waitUntilReady(medicLogo);
-        return browser.isElementPresent(element(by.id(list)));
-    }
-
-
+  isAt: function (list) {
+    helper.waitUntilReady(medicLogo);
+    return browser.isElementPresent(element(by.id(list)));
+  }
 };
 
 

@@ -3,24 +3,21 @@ var EC = protractor.ExpectedConditions;
 
 module.exports = {
   waitElementToBeVisisble: function (elm) {
-
     browser.wait(EC.visibilityOf(elm), 15000);
   },
 
   waitElementToBeClickable: function (elm) {
-
     browser.wait(EC.elementToBeClickable(elm), 15000);
   },
 
   waitElementToDisappear: function (locator) {
     browser.wait(function () {
-      return browser.isElementPresent(locator) //if element is already present, this line will evaluate to true
+      return browser.isElementPresent(locator)
         .then(function (presenceOfElement) {
           return !presenceOfElement;
-        }); // this modifies the previous line so that it evaluates to false until the element is no longer present.
+        });
     }, 10000);
   },
-
 
   waitUntilReady: function (elm) {
     return browser.wait(function () {
@@ -31,7 +28,6 @@ module.exports = {
       }, 12000);
     });
   },
-
 
   waitForCheckboxToBeChecked: function (elem) {
     browser.wait(function () {
@@ -89,14 +85,9 @@ module.exports = {
     browser.ignoreSynchronization = true;
   },
 
-
   isTextDisplayed: function (text) {
-
-    var selectedElement = element(by.xpath('//*[text()[normalize-space() = ' + ' \' ' + text + '\']]'));
+    var selectedElement = element(by.xpath('//*[text()[normalize-space() =  \' ' + text + '\']]'));
     return selectedElement.isPresent();
-
   }
 
-
 };
-
