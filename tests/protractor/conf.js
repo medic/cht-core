@@ -9,9 +9,6 @@ const getLoginUrl = () => {
   return `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
 };
 
-const getCouchUrl = () =>
-  `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`;
-
 const login = browser => {
   browser.driver.get(getLoginUrl());
   browser.driver.findElement(by.name('user')).sendKeys(auth.user);
@@ -28,7 +25,7 @@ const startNodeModule = (dir, startOutput) => {
       cwd: dir,
       env: {
         API_PORT: constants.API_PORT,
-        COUCH_URL: getCouchUrl(),
+        COUCH_URL: utils.getCouchUrl(),
         COUCH_NODE_NAME: process.env.COUCH_NODE_NAME,
         PATH: process.env.PATH
       }

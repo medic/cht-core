@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     helper = require('../../helper'),
-    auth = require('../../auth')();
+    utils = require('../../utils');
 
 var medicLogo = element(by.className('logo-full'));
 var messagesLink = element(by.id('messages-tab'));
@@ -13,8 +13,7 @@ var hamburgerMenu = element(by.className('dropdown options'));
 
 module.exports = {
   getBaseUrl: function () {
-    var baseUrlTemplate = _.template('http://{{apiHost}}:{{apiPort}}/{{dbName}}/_design/medic/_rewrite/#/');
-    return baseUrlTemplate(auth);
+    return utils.getBaseUrl() + '/_design/medic/_rewrite/#/';
   },
 
   goToMessages: function () {
