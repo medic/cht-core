@@ -7,7 +7,8 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     DB,
     Enketo,
     Snackbar,
-    TranslateFrom
+    TranslateFrom,
+    XmlForm
   ) {
 
     'use strict';
@@ -22,36 +23,38 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
         source: 'contact',
         contact: doc,
       };
-      return Enketo
-        .render($('#contact-report'), $state.params.formId, instanceData)
+      return XmlForm($state.params.formId, { include_docs: true })
         .then(function(form) {
-          $scope.form = form;
-          $scope.loadingForm = false;
+          return Enketo
+            .render('#contact-report', form.id, instanceData)
+            .then(function(formInstance) {
+              $scope.setTitle(TranslateFrom(form.doc.title));
+              $scope.form = formInstance;
+              $scope.loadingForm = false;
+            });
         });
     };
 
-    $scope.saveStatus = {};
-
     $scope.save = function() {
-      if ($scope.saveStatus.saving) {
+      if ($scope.enketoStatus.saving) {
         $log.debug('Attempted to call contacts-report:$scope.save more than once');
         return;
       }
 
-      $scope.saveStatus.saving = true;
-      $scope.saveStatus.error = null;
+      $scope.enketoStatus.saving = true;
+      $scope.enketoStatus.error = null;
       Enketo.save($state.params.formId, $scope.form)
         .then(function(doc) {
           $log.debug('saved report', doc);
-          $scope.saveStatus.saving = false;
+          $scope.enketoStatus.saving = false;
           $translate('report.created').then(Snackbar);
           $state.go('contacts.detail', { id: $state.params.id });
         })
         .catch(function(err) {
-          $scope.saveStatus.saving = false;
+          $scope.enketoStatus.saving = false;
           $log.error('Error submitting form data: ', err);
           $translate('error.report.save').then(function(msg) {
-            $scope.saveStatus.error = msg;
+            $scope.enketoStatus.error = msg;
           });
         });
     };
@@ -66,14 +69,6 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     DB()
       .get($state.params.id)
       .then(render)
-      .then(function() {
-        return DB().query('medic-client/forms', { include_docs: true, key: $state.params.formId });
-      })
-      .then(function(res) {
-        if (res.rows[0]) {
-          $scope.setTitle(TranslateFrom(res.rows[0].doc.title));
-        }
-      })
       .catch(function(err) {
         $log.error('Error loading form', err);
         $scope.contentError = true;

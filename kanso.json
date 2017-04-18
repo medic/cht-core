@@ -1,7 +1,7 @@
 {
     "name": "medic",
     "display_name": "Medic Mobile",
-    "version": "2.10.0",
+    "version": "2.11.0",
     "description": "Medic Mobile combines SMS messaging, data collection, and analytics for health workers and health systems in hard-to-reach areas with or without internet connectivity.",
     "long_description" : "Medic Mobile is a web based SMS data collection and analytics tool focused on community health care workers in rural environments. We help large health organizations collect and analyze data sent from health care workers using ordinary mobile phones.",
     "url": "https://github.com/medic/medic-webapp",
@@ -501,7 +501,7 @@
                                 "join_responses": {
                                     "title": "Join Validation Responses",
                                     "type": "boolean",
-                                    "description": "By default we send one validation response at a time.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
+                                    "description": "By default we send only the first validation response.  Use this option to join or concatenate all validation response messages in one.  Note, like all outgoing messages it will be truncated at 160 characters."
                                 },
                                 "list": {
                                     "title": "Response Messages",
@@ -785,6 +785,11 @@
                             "type": "string",
                             "title": "Name",
                             "description": "A unique name to define this schedule. e.g. ANC Reminders"
+                        },
+                        "translation_key": {
+                            "type": "string",
+                            "title": "Translation key",
+                            "description": "The key to look up in the translation files for the name of this schedule. The group number can be accessed in the translation value as '{{group}}'."
                         },
                         "summary": {
                             "type": "string",

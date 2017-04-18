@@ -36,6 +36,7 @@ exports.setUp = function(cb) {
     },
     PouchDB: pouchDb
   };
+  $ = sinon.stub().returns({ text:sinon.stub() });
   cb();
 };
 
@@ -87,7 +88,9 @@ exports['performs initial replication'] = function(test) {
   });
   pouchDb.onCall(1).returns({ remote: true });
   localGet.returns(Promise.reject());
-  localReplicate.returns(Promise.resolve());
+  var localReplicateResult = Promise.resolve();
+  localReplicateResult.on = function() {};
+  localReplicate.returns(localReplicateResult);
   bootstrap(pouchDbOptions, function(err) {
     test.equal(null, err);
     test.equal(pouchDb.callCount, 2);
@@ -119,7 +122,9 @@ exports['handles unauthorized initial replication'] = function(test) {
   });
   pouchDb.onCall(1).returns({ remote: true });
   localGet.returns(Promise.reject());
-  localReplicate.returns(Promise.reject({ status: 401 }));
+  var localReplicateResult = Promise.reject({ status: 401 });
+  localReplicateResult.on = function() {};
+  localReplicate.returns(localReplicateResult);
   bootstrap(pouchDbOptions, function(err) {
     test.equal(err.status, 401);
     test.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
@@ -136,7 +141,9 @@ exports['handles other errors in initial replication'] = function(test) {
   });
   pouchDb.onCall(1).returns({ remote: true });
   localGet.returns(Promise.reject());
-  localReplicate.returns(Promise.reject({ status: 404 }));
+  var localReplicateResult = Promise.reject({ status: 404 });
+  localReplicateResult.on = function() {};
+  localReplicate.returns(localReplicateResult);
   bootstrap(pouchDbOptions, function(err) {
     test.equal(err.status, 404);
     test.equal(err.redirect, null);

@@ -11,12 +11,9 @@ describe('OutgoingMessagesConfiguration service', function() {
     });
   });
 
-  it('creates models', function(done) {
-
+  it('creates models', function() {
     var actual = service(exampleSettings);
-    chai.expect(actual).to.deep.equal(expected);
-    done();
-
+    chai.expect(JSON.stringify(actual)).to.equal(JSON.stringify(expected));
   });
 
   var expected = [
@@ -306,6 +303,11 @@ describe('OutgoingMessagesConfiguration service', function() {
                   locale: 'sw'
                 }
               ]
+            },
+            {
+              translation_key: 'test.translation.key',
+              property: 'test_property',
+              rule: ''
             }
           ]
         },

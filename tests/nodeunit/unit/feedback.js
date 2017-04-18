@@ -28,7 +28,7 @@ exports.tearDown = function (callback) {
 };
 
 exports['unhandled error submits feedback'] = function(test) {
-  test.expect(22);
+  test.expect(17);
 
   getUserCtx.callsArgWith(0, null, { name: 'fred' });
   saveDoc.callsArgWith(1);
@@ -60,18 +60,13 @@ exports['unhandled error submits feedback'] = function(test) {
     
     test.equals(submittedDoc.log.length, 4);
     test.equals(submittedDoc.log[0].level, 'error');
-    test.equals(submittedDoc.log[0].arguments.length, 2);
-    test.equals(submittedDoc.log[0].arguments[0], 'Failed to save');
-    test.equals(submittedDoc.log[0].arguments[1], '404');
+    test.equals(submittedDoc.log[0].arguments, '{"0":"Failed to save","1":"404"}');
     test.equals(submittedDoc.log[1].level, 'warn');
-    test.equals(submittedDoc.log[1].arguments.length, 1);
-    test.equals(submittedDoc.log[1].arguments[0], 'Saving taking a while');
+    test.equals(submittedDoc.log[1].arguments, '{"0":"Saving taking a while"}');
     test.equals(submittedDoc.log[2].level, 'info');
-    test.equals(submittedDoc.log[2].arguments.length, 1);
-    test.equals(submittedDoc.log[2].arguments[0], 'Saving in process');
+    test.equals(submittedDoc.log[2].arguments, '{"0":"Saving in process"}');
     test.equals(submittedDoc.log[3].level, 'log');
-    test.equals(submittedDoc.log[3].arguments.length, 1);
-    test.equals(submittedDoc.log[3].arguments[0], 'Trying to save');
+    test.equals(submittedDoc.log[3].arguments, '{"0":"Trying to save"}');
 
     test.done();
 
@@ -100,8 +95,8 @@ exports['log history restricted to 20 lines'] = function(test) {
 
     var submittedDoc = saveDoc.args[0][0];
     test.equals(submittedDoc.log.length, 20);
-    test.equals(submittedDoc.log[0].arguments[0], 'item 24');
-    test.equals(submittedDoc.log[19].arguments[0], 'item 5');
+    test.equals(submittedDoc.log[0].arguments, '{"0":"item 24"}');
+    test.equals(submittedDoc.log[19].arguments, '{"0":"item 5"}');
 
     test.done();
 

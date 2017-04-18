@@ -7,9 +7,9 @@ module.exports = function(settings) {
     isTimely: function(date, event) {
       var due = new Date(date);
       var start = new Date();
-      start.setUTCDate(start.getUTCDate() + event.start);
+      start.setDate(start.getDate() + event.start);
       var end = new Date();
-      end.setUTCDate(end.getUTCDate() - event.end - 1);
+      end.setDate(end.getDate() - event.end - 1);
       return due.getTime() < start.getTime() && due.getTime() > end.getTime();
     },
     addDate: function(date, days) {

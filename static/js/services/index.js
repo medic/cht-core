@@ -4,6 +4,7 @@
 
   angular.module('inboxServices', ['ngResource']);
 
+  require('./add-attachment');
   require('./analytics-modules');
   require('./android-api');
   require('./app-info');
@@ -74,6 +75,7 @@
   require('./user');
   require('./user-contact');
   require('./web-worker');
+  require('./xml-form');
   require('./xml-forms');
   require('./xml-forms-context-utils');
   require('./xslt');

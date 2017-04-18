@@ -5,10 +5,12 @@ describe('TasksContentCtrl', function() {
       task,
       watchCallback,
       createController,
-      render;
+      render,
+      XmlForm;
 
   beforeEach(function() {
     render = sinon.stub();
+    XmlForm = sinon.stub();
     $scope = {
       $on: function() {},
       $watch: function(prop, cb) {
@@ -24,32 +26,39 @@ describe('TasksContentCtrl', function() {
       createController = function() {
         $controller('TasksContentCtrl', {
           $scope: $scope,
+          $q: Q,
           Enketo: { render: render },
           DB: sinon.stub(),
-          WatchDesignDoc: sinon.stub()
+          XmlForm: XmlForm
         });
       };
     });
   });
 
   afterEach(function() {
-    KarmaUtils.restore(render);
+    KarmaUtils.restore(render, XmlForm);
   });
 
   it('loads form when task has one action and no fields', function(done) {
     task = {
       actions: [{
         type: 'report',
-        form: 'A'
+        form: 'A',
+        content: 'nothing'
       }]
     };
+    XmlForm.returns(KarmaUtils.mockPromise(null, { id: 'myform', doc: { title: 'My Form' } }));
     createController();
     watchCallback();
     chai.expect($scope.formId).to.equal('A');
-    chai.expect($scope.loadingForm).to.equal(true);
-    chai.expect(render.callCount).to.equal(1);
-    chai.expect(render.getCall(0).args.length).to.equal(3);
-    done();
+    setTimeout(function() {
+      chai.expect(render.callCount).to.equal(1);
+      chai.expect(render.getCall(0).args.length).to.equal(3);
+      chai.expect(render.getCall(0).args[0]).to.equal('#task-report');
+      chai.expect(render.getCall(0).args[1]).to.equal('myform');
+      chai.expect(render.getCall(0).args[2]).to.equal('nothing');
+      done();
+    });
   });
 
   it('does not load form when task has more than one action', function(done) {

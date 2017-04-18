@@ -88,7 +88,7 @@
           <ul>
             <li ng-repeat="group in selection.report.scheduled_tasks_by_group">
               <p>
-                {{group.group}}
+                {{group.name}}
                 <span ng-hide="group.loading">
                   <a class="btn btn-link" ng-click="edit(selection, group)" translate>Edit</a>
                   <a class="btn btn-link" ng-click="mute(selection, group)" ng-show="canMute(group)" translate>Mute</a>

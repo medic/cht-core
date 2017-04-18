@@ -25,7 +25,10 @@ require('angular-ui-router');
 require('moment');
 require('moment/locale/es');
 require('moment/locale/fr');
+require('moment/locale/hi');
+require('moment/locale/id');
 require('moment/locale/ne');
+require('moment/locale/sw');
 
 require('./services');
 require('./controllers');

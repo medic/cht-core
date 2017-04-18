@@ -55,6 +55,7 @@ module.exports = function(grunt) {
             './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding',
             'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath',
             'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
+            'translator': './static/js/enketo/translator', // translator for enketo's internal i18n
             'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils',
             'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber',
             'worker-pouch/workerified': './node_modules/worker-pouch/lib/workerified/',
@@ -142,6 +143,7 @@ module.exports = function(grunt) {
             src: [
               'bootstrap-daterangepicker/**',
               'font-awesome/**',
+              'moment/**',
               'pouchdb-adapter-idb/**',
             ],
             dest: 'node_modules_backup'
@@ -179,18 +181,22 @@ module.exports = function(grunt) {
       setupAdmin1: {
         cmd: 'curl -X PUT http://localhost:5984/_config/admins/admin -d \'"pass"\'' +
              ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
-             ' -H "Content-Type: application/json" ' +
-             ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\''
+                 ' -H "Content-Type: application/json" ' +
+                 ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\' ' +
+             ' && curl -X PUT --data \'"true"\' http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user'
       },
       setupAdmin2: {
         cmd: 'curl -X PUT http://localhost:5984/_node/${COUCH_NODE_NAME}/_config/admins/admin -d \'"pass"\'' +
              ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
-             ' -H "Content-Type: application/json" ' +
-             ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\''
+                 ' -H "Content-Type: application/json" ' +
+                 ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\' ' +
+             ' && curl -X PUT --data \'"true"\' http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config/chttpd/require_valid_user'
       },
       deploytest: {
         stderr: false,
-        cmd: 'curl -X DELETE http://admin:pass@localhost:5984/medic-test' +
+        cmd: 'cd api && npm install && cd .. ' +
+             ' && cd sentinel && npm install && cd .. ' +
+             ' && curl -X DELETE http://admin:pass@localhost:5984/medic-test' +
              ' && curl -X DELETE http://admin:pass@localhost:5984/medic-audit-test' +
              ' && kanso push http://admin:pass@localhost:5984/medic-test'
       },
@@ -208,6 +214,7 @@ module.exports = function(grunt) {
           var modulesToPatch = [
             'bootstrap-daterangepicker',
             'font-awesome',
+            'moment',
             'pouchdb-adapter-idb',
           ];
           return modulesToPatch.map(function(module) {
@@ -237,6 +244,9 @@ module.exports = function(grunt) {
             // https://github.com/FortAwesome/Font-Awesome/issues/3286
             'patch node_modules/font-awesome/less/path.less < patches/font-awesome-remove-version-attribute.patch',
 
+            // patch moment.js to use western arabic (european) numerals in Hindi
+            'patch node_modules/moment/locale/hi.js < patches/moment-hindi-use-euro-numerals.patch',
+
             // patch pouch to improve safari checks
             // https://github.com/medic/medic-webapp/issues/2797
             'patch node_modules/pouchdb-adapter-idb/lib/index.js < patches/pouchdb-ignore-safari-check.patch',
@@ -246,10 +256,13 @@ module.exports = function(grunt) {
       }
     },
     watch: {
+      options: {
+        interval: 1000
+      },
       configFiles: {
         files: [ 'Gruntfile.js', 'package.json' ],
         options: {
-          reload: true
+          reload: true,
         }
       },
       css: {
@@ -385,6 +398,14 @@ module.exports = function(grunt) {
       options: {
         pattern: /.only\(/g
       }
+    },
+    xmlmin: {
+      enketoxslt: {
+        files: {
+          'static/dist/xslt/openrosa2html5form.xsl': 'static/dist/xslt/openrosa2html5form.xsl',
+          'static/dist/xslt/openrosa2xmlmodel.xsl': 'static/dist/xslt/openrosa2xmlmodel.xsl'
+        }
+      }
     }
   });
 
@@ -412,11 +433,16 @@ module.exports = function(grunt) {
     'postcss'
   ]);
 
+  grunt.registerTask('enketoxslt', 'Process enketo XSL stylesheets', [
+    'copy:enketoxslt',
+    'xmlmin:enketoxslt'
+  ]);
+
   grunt.registerTask('build', 'Build the static resources', [
     'mmcss',
     'mmjs',
     'couch-compile',
-    'copy:enketoxslt',
+    'enketoxslt',
     'copy:inbox',
     'appcache'
   ]);

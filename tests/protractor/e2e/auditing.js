@@ -1,5 +1,5 @@
 var utils = require('../utils'),
-    environment = require('../auth')();
+    auth = require('../auth')();
 
 describe('Auditing', function() {
 
@@ -102,12 +102,11 @@ describe('Auditing', function() {
     // check the doc is deleted
     flow.execute(function() {
       return utils.getDoc(savedUuid);
-    }).then(function(doc) {
-      expect(doc.error).toEqual('not_found');
-      expect(doc.reason).toEqual('deleted');
-    }, function(err) {
-      console.error('Error fetching doc', err);
+    }).then(function() {
+      // should not be found!
       expect(true).toEqual(false);
+    }, function() {
+      // expected
     });
 
     // check the audit doc is updated
@@ -116,7 +115,7 @@ describe('Auditing', function() {
     }).then(function(doc) {
       expect(doc.history.length).toEqual(2);
       expect(doc.history[1].action).toEqual('delete');
-      expect(doc.history[1].user).toEqual(environment.user);
+      expect(doc.history[1].user).toEqual(auth.user);
       expect(doc.history[1].doc._deleted).toEqual(true);
     }, function(err) {
       console.error('Error fetching audit doc', err);
@@ -125,4 +124,3 @@ describe('Auditing', function() {
 
   });
 });
-

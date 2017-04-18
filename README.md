@@ -12,14 +12,15 @@ The `medic-webapp` repository is the core tool of the Medic Mobile stack. When h
 The web app is fully responsive with a mobile-first design, and supports localization using any written language. It can be installed locally, as part of a virtual machine (see [medic-os](https://github.com/medic/medic-os)), or in the cloud.
 
 For more information about Medic Mobile's tools, visit http://medicmobile.org/tools.
-For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](doc/architecture.md).
-For more information about the format of docs in the database, see [Database Schema](doc/db_schema.md).
+For more information about Medic Mobile's architecture and how the pieces fit together, see [Architecture Overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
+For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db_schema.md).
+For more information about the SMS exchange protocol between webapp and gateway, see [Message States](https://github.com/medic/medic-docs/blob/master/user/message-states.md).
 
 ## Development Setup
 
-Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/md/dev/workflow.md) and the [architecture overview](doc/architecture.md).
+Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/md/dev/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
 
-The setup described below doesn't use [Medic OS](doc/architecture.md#medic-os), the tools will be run directly on your machine.
+The setup described below doesn't use [Medic OS](https://github.com/medic/medic-docs/blob/master/development/architecture.md#medic-os), the tools will be run directly on your machine.
 
 
 ### Dependencies
@@ -163,7 +164,7 @@ The app is very customizeable, and can end up looking very different depending o
 Much of the customization lives in the app_settings. Look for the `app_settings`
 field in the design doc for `medic` db.
 
-![App Settings in Futon](https://cdn.rawgit.com/medic/medic-webapp/master/doc/app_settings.png)
+![App Settings in Futon](https://cdn.rawgit.com/medic/medic-docs/master/img/app_settings.png)
 
 At first that `app_settings` field will be empty and you will have the default settings:
 https://github.com/medic/medic-webapp/blob/master/packages/kujua-sms/views/lib/app_settings.js
@@ -182,9 +183,9 @@ Initially your instance will have the [default forms defined inside the default 
 
 There are two types of forms : JSON forms, used for SMS interfaces, and XML forms, used for the android app, Medic Collect and the SimApps.
 
-You can view the list of JSON forms and load new ones through the webapp's interface (in Configuration).
+You can view the list of JSON forms and load new ones through the webapp's interface (in Configuration). You can also upload them from command line with the [load_forms.js](https://github.com/medic/medic-webapp/blob/master/scripts/load_forms.js) script
 
-You can view the XML forms from Futon (check out the `forms` view). You can upload new forms from command line with the [load_forms.js](https://github.com/medic/medic-webapp/blob/master/scripts/load_forms.js) script. XML forms with ids starting with `forms:contact` will customize the edit/create page for the given contact (person or place) type.
+You can view the XML forms from Futon (check out the `forms` view). You can upload new forms from command line with the [upload_xform.sh](https://github.com/medic/medic-webapp/blob/master/scripts/upload_xform.sh) script. XML forms with ids starting with `forms:contact` will customize the edit/create page for the given contact (person or place) type.
 
 ![XML forms](https://cdn.rawgit.com/medic/medic-webapp/master/doc/xml_forms.png)
 
@@ -205,7 +206,7 @@ curl -i -u gateway:123qwe \
 ```
 
 ### Localization
-All text labels in the app are localized. See [here](https://github.com/medic/medic-docs/blob/master/md/dev/translations.md) for more details on how to add new labels or modify existing ones.
+All text labels in the app are localized. See [here](https://github.com/medic/medic-docs/blob/master/development/translations.mdd) for more details on how to add new labels or modify existing ones.
 
 
 ## Tests
@@ -235,9 +236,9 @@ Some kanso tests are run in-browser; you can run them manually if you browse to 
 
 ## Run on Medic OS
 
-[What's Medic OS?](doc/architecture.md#medic-os)
+[What's Medic OS?](https://github.com/medic/medic-docs/blob/master/development/architecture.md#medic-os)
 
-For development, you can find it useful to [run Medic OS on a VM](https://github.com/medic/medic-docs/blob/master/md/index.md) locally, to leverage VM snapshots, for instance to work with different versions.
+For development, you can find it useful to [run Medic OS on a VM](https://github.com/medic/medic-docs#setup-medic-os) locally, to leverage VM snapshots, for instance to work with different versions.
 
 You can also use Medic-OS for production instances.
 

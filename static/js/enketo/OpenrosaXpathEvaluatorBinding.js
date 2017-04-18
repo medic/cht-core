@@ -1,5 +1,5 @@
 var ExtendedXpathEvaluator = require('extended-xpath');
-var openrosa_xpath_extensions = require( 'openrosa-xpath-extensions');
+var openrosa_xpath_extensions = require('openrosa-xpath-extensions');
 
 module.exports = function() {
     // re-implement XPathJS ourselves!
@@ -13,18 +13,14 @@ module.exports = function() {
     this.xml.jsEvaluate = function(e, contextPath, namespaceResolver, resultType, result) {
         var evaluator = new ExtendedXpathEvaluator(
                 function wrappedXpathEvaluator(v) {
+                    // Node requests (i.e. result types greater than 3 (BOOLEAN)
+                    // should be processed unaltered, as they are passed this
+                    // way from the ExtendedXpathEvaluator.  For anything else,
+                    // we will be ask for the most appropriate result type, and
+                    // handle as best we can.
+                    var wrappedResultType = resultType > XPathResult.BOOLEAN_TYPE ? resultType : XPathResult.ANY_TYPE;
                     var doc = contextPath.ownerDocument;
-                    return doc.evaluate(v, contextPath, namespaceResolver,
-                            // We pretty much always want to get a String in
-                            // the java rosa functions, and we don't want to
-                            // pass the top-level expectation all the way
-                            // down, so it's fairly safe to hard-code this,
-                            // especially considering we handle NUMBER_TYPEs
-                            // manually.
-                            // TODO what is `result` for?  Should it be
-                            // replaced in this call?
-                            XPathResult.ANY_TYPE, result);
-                            //resultType, result);
+                    return doc.evaluate(v, contextPath, namespaceResolver, wrappedResultType, result);
                 },
                 openrosa_xpath_extensions);
         return evaluator.evaluate(e, contextPath, namespaceResolver, resultType, result);

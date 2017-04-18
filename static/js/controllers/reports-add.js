@@ -4,11 +4,12 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     $q,
     $scope,
     $state,
-    $timeout,
     $translate,
     DB,
     Enketo,
-    Snackbar
+    FileReader,
+    Snackbar,
+    XmlForm
   ) {
 
     'ngInject';
@@ -19,9 +20,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         return $q.resolve({ form: $state.params.formId });
       }
       if ($state.params.reportId) { // editing
-        return DB().get($state.params.reportId, {
-          attachments: true
-        });
+        return DB().get($state.params.reportId);
       }
       return $q.reject(new Error('Must have either formId or reportId'));
     };
@@ -38,6 +37,20 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       $scope.clearCancelTarget();
     }
 
+    var getReportContent = function(doc) {
+      // creating a new doc - no content
+      if (!doc._id) {
+        return $q.resolve();
+      }
+      // check old style inline form content
+      if (doc.content) {
+        return $q.resolve(doc.content);
+      }
+      // check new style attached form content
+      return DB().getAttachment(doc._id, Enketo.REPORT_ATTACHMENT_NAME)
+        .then(FileReader);
+    };
+
     getSelected()
       .then(function(doc) {
         $log.debug('setting selected', doc);
@@ -45,15 +58,11 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         // TODO: check doc.content as this is where legacy documents stored
         //       their XML. Consider removing this check at some point in the
         //       future.
-        var content = doc.content || (
-          doc._attachments &&
-          doc._attachments.content &&
-          atob(doc._attachments.content.data));
-
-        // timeout to allow angular to finish rendering the page before
-        // enketo tries to bind to it
-        $timeout(function() {
-          Enketo.render($('#report-form'), doc.form, content)
+        return $q.all([
+          getReportContent(doc),
+          XmlForm(doc.form, { include_docs: true })
+        ]).then(function(results) {
+          Enketo.render('#report-form', results[1].id, results[0])
             .then(function(form) {
               $scope.form = form;
               $scope.loadingContent = false;
@@ -70,30 +79,28 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         $log.error('Error setting selected doc', err);
       });
 
-    $scope.saveStatus = {};
-
     $scope.save = function() {
-      if ($scope.saveStatus.saving) {
+      if ($scope.enketoStatus.saving) {
         $log.debug('Attempted to call reports-add:$scope.save more than once');
         return;
       }
 
-      $scope.saveStatus.saving = true;
-      $scope.saveStatus.error = null;
+      $scope.enketoStatus.saving = true;
+      $scope.enketoStatus.error = null;
       var doc = $scope.selected[0].report;
       Enketo.save(doc.form, $scope.form, doc._id)
         .then(function(doc) {
           $log.debug('saved report', doc);
-          $scope.saveStatus.saving = false;
+          $scope.enketoStatus.saving = false;
           $translate($state.params.reportId ? 'report.updated' : 'report.created')
             .then(Snackbar);
           $state.go('reports.detail', { id: doc._id });
         })
         .catch(function(err) {
-          $scope.saveStatus.saving = false;
+          $scope.enketoStatus.saving = false;
           $log.error('Error submitting form data: ', err);
           $translate('error.report.save').then(function(msg) {
-            $scope.saveStatus.error = msg;
+            $scope.enketoStatus.error = msg;
           });
         });
     };

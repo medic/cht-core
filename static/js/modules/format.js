@@ -4,7 +4,7 @@ var _ = require('underscore');
 
   'use strict';
 
-  exports.clinic = function(entity, $state) {
+  exports.lineage = function(entity, $state) {
     var parts;
     if (_.isArray(entity)) {
       parts = entity;
@@ -33,6 +33,9 @@ var _ = require('underscore');
     return '<ol class="horizontal lineage">' + items.join('') + '</ol>';
   };
 
+  // Deprecated, use lineage filter instead.
+  exports.clinic = exports.lineage;
+
   exports.sender = function(options) {
     var parts = [];
     if (options.name) {
@@ -41,7 +44,7 @@ var _ = require('underscore');
     if (options.phone) {
       parts.push('<span>' + _.escape(options.phone) + '</span>');
     }
-    var position = exports.clinic(options.parent);
+    var position = exports.lineage(options.parent);
     if (position) {
       parts.push('<div class="position">' + position + '</div>');
     }

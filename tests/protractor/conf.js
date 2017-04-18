@@ -1,61 +1,69 @@
-var _ = require('underscore'),
-  utils = require('./utils'),
-  spawn = require('child_process').spawn,
-  environment = require('./auth')(),
-  api;
+const utils = require('./utils'),
+      spawn = require('child_process').spawn,
+      constants = require('./constants'),
+      auth = require('./auth')(),
+      modules = [];
 
-_.templateSettings = {
-  interpolate: /\{\{(.+?)\}\}/g
+const getLoginUrl = () => {
+  const redirectUrl = encodeURIComponent(`/${constants.DB_NAME}/_design/medic/_rewrite/#/messages?e2eTesting=true`);
+  return `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
 };
 
-var login = function (browser) {
-  var loginUrlTemplate = _.template('http://{{apiHost}}:{{apiPort}}/{{dbName}}/login?redirect=');
-  var redirectUrl = encodeURIComponent('/' + environment.dbName + '/_design/medic/_rewrite/#/messages?e2eTesting=true');
-  browser.driver.get(loginUrlTemplate(environment) + redirectUrl);
-  browser.driver.findElement(by.name('user')).sendKeys(environment.user);
-  browser.driver.findElement(by.name('password')).sendKeys(environment.pass);
+const getCouchUrl = () =>
+  `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`;
+
+const login = browser => {
+  browser.driver.get(getLoginUrl());
+  browser.driver.findElement(by.name('user')).sendKeys(auth.user);
+  browser.driver.findElement(by.name('password')).sendKeys(auth.pass);
   browser.driver.findElement(by.id('login')).click();
   // Login takes some time, so wait until it's done.
-  return browser.driver.wait(function () {
-    return browser.driver.isElementPresent(by.css('body.bootstrapped'));
-  }, 20 * 1000, 'Login should be complete within 20 seconds');
+  const bootstrappedCheck = () => browser.driver.isElementPresent(by.css('body.bootstrapped'));
+  return browser.driver.wait(bootstrappedCheck, 20 * 1000, 'Login should be complete within 20 seconds');
 };
 
-var startApi = function () {
-  return new Promise(function (resolve) {
-    var couchUrlTemplate = _.template('http://{{user}}:{{pass}}@{{couchHost}}:{{couchPort}}/{{dbName}}');
-    api = spawn('node', ['server.js'], {
-      cwd: 'api',
+const startNodeModule = (dir, startOutput) => {
+  return new Promise(resolve => {
+    const module = spawn('node', ['server.js'], {
+      cwd: dir,
       env: {
-        API_PORT: environment.apiPort,
-        COUCH_URL: couchUrlTemplate(environment),
+        API_PORT: constants.API_PORT,
+        COUCH_URL: getCouchUrl(),
         COUCH_NODE_NAME: process.env.COUCH_NODE_NAME,
         PATH: process.env.PATH
       }
     });
-    api.stdout.on('data', function (data) {
-      if (data.toString().indexOf('Medic API listening on port') >= 0) {
+    let started = false;
+    module.stdout.on('data', data => {
+      if (!started && data.toString().includes(startOutput)) {
+        started = true;
         resolve();
       }
-      console.log('[api] ' + data);
+      console.log(`[${dir}] ${data}`);
     });
-    api.stderr.on('data', function (data) {
-      console.error('[api] ' + data);
-    });
+    module.stderr.on('data', data => console.error(`[${dir}] ${data}`));
+    modules.push(module);
   });
 };
 
-var setupSettings = function () {
+const startApi = () => startNodeModule('api', 'Medic API listening on port');
+
+const startSentinel = () => startNodeModule('sentinel', 'startup complete.');
+
+// start sentinel serially because it relies on api
+const startModules = () => startApi().then(startSentinel);
+
+const setupSettings = () => {
   return utils.request({
-    path: '/' + environment.dbName + '/_design/medic/_rewrite/update_settings/medic',
+    path: `/${constants.DB_NAME}/_design/medic/_rewrite/update_settings/medic`,
     method: 'PUT',
     body: JSON.stringify({ setup_complete: true })
   });
 };
 
-var setupUser = function () {
-  return utils.getDoc('org.couchdb.user:' + environment.user)
-    .then(function (doc) {
+const setupUser = () => {
+  return utils.getDoc('org.couchdb.user:' + auth.user)
+    .then(doc => {
       doc.known = true;
       doc.language = 'en';
       doc.roles = ['_admin'];
@@ -66,25 +74,21 @@ var setupUser = function () {
 exports.config = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
   specs: [ 'e2e/**/*.js' ],
- // specs: ['e2e/**/create-new-district.specs.js'],
 
   framework: 'jasmine2',
   capabilities: {
     // browserName: 'chrome'
     browserName: 'firefox'
   },
-  onPrepare: function () {
-    var started = startApi();
+  onPrepare: () => {
+    const startup = startModules();
     browser.ignoreSynchronization = true;
-
-    browser.driver.wait(started, 15 * 1000, 'Server should start within 15 seconds');
+    browser.driver.wait(startup, 15 * 1000, 'API should start within 15 seconds');
     browser.driver.sleep(1000);
     browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
     browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
     browser.driver.sleep(1000);
     return login(browser);
   },
-  onCleanUp: function () {
-    api.kill();
-  }
+  onCleanUp: () => modules.forEach(module => module.kill())
 };

@@ -104,6 +104,7 @@ var feedback = require('../modules/feedback'),
       $scope.actionBar = {};
       $scope.tours = [];
       $scope.baseUrl = Location.path;
+      $scope.enketoStatus = { saving: false };
 
       if ($window.medicmobile_android) {
         $scope.android_app_version = $window.medicmobile_android.getAppVersion();
@@ -135,16 +136,18 @@ var feedback = require('../modules/feedback'),
 
       // User wants to cancel current flow, or pressed back button, etc.
       $scope.navigationCancel = function() {
-        Modal({
-          templateUrl: 'templates/modals/navigation_confirm.html',
-          controller: 'NavigationConfirmCtrl',
-          singleton: true
-        })
-        .then(function() {
-          if ($scope.cancelCallback) {
-            $scope.cancelCallback();
-          }
-        });
+        if (!$scope.enketoStatus.saving) {
+          Modal({
+            templateUrl: 'templates/modals/navigation_confirm.html',
+            controller: 'NavigationConfirmCtrl',
+            singleton: true
+          })
+          .then(function() {
+            if ($scope.cancelCallback) {
+              $scope.cancelCallback();
+            }
+          });
+        }
       };
 
       /**
@@ -512,81 +515,6 @@ var feedback = require('../modules/feedback'),
           controller: 'FeedbackCtrl'
         });
       };
-
-      $scope.configurationPages = [
-        {
-          state: 'configuration.settings.basic',
-          icon: 'fa-wrench',
-          name: 'Settings',
-          active: function() {
-            return $state.includes('configuration.settings');
-          }
-        },
-        {
-          state: 'configuration.translation.languages',
-          icon: 'fa-language',
-          name: 'Languages',
-          active: function() {
-            return $state.includes('configuration.translation');
-          }
-        },
-        {
-          state: 'configuration.forms',
-          icon: 'fa-list-alt',
-          name: 'Forms',
-          active: function() {
-            return $state.is('configuration.forms');
-          }
-        },
-        {
-          state: 'configuration.export.messages',
-          icon: 'fa-exchange fa-rotate-90',
-          name: 'import.export',
-          active: function() {
-            return $state.includes('configuration.export');
-          }
-        },
-        {
-          state: 'configuration.user',
-          icon: 'fa-user',
-          name: 'edit.user.settings',
-          active: function() {
-            return $state.is('configuration.user');
-          }
-        },
-        {
-          state: 'configuration.users',
-          icon: 'fa-users',
-          name: 'Users',
-          active: function() {
-            return $state.is('configuration.users');
-          }
-        },
-        {
-          state: 'configuration.icons',
-          icon: 'fa-file-image-o',
-          name: 'icons',
-          active: function() {
-            return $state.is('configuration.icons');
-          }
-        },
-        {
-          state: 'configuration.targets',
-          icon: 'fa-dot-circle-o',
-          name: 'analytics.targets',
-          active: function() {
-            return $state.is('configuration.targets') || $state.is('configuration.targets-edit');
-          }
-        },
-        {
-          state: 'configuration.permissions',
-          icon: 'fa-key',
-          name: 'configuration.permissions',
-          active: function() {
-            return $state.is('configuration.permissions');
-          }
-        },
-      ];
 
       CountMessages.init();
 
