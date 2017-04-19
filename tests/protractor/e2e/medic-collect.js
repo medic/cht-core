@@ -64,6 +64,7 @@ X-OpenRosa-Version: 1.0
 Date: ${new Date().toISOString()}
 Host: ${host}:${port}
 Connection: close
+Transfer-Encoding: identity
 `).then((res) => {
 
             // then
