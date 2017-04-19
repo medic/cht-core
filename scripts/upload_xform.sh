@@ -70,10 +70,9 @@ shift
 
 DB="${COUCH_URL}"
 
-echo "[$SELF] parsing XML to get form title and internal ID..."
+echo "[$SELF] parsing XML to get form title..."
 # Yeah, it's ugly.  But we control the input.
 formTitle="$(grep h:title $XFORM_PATH | sed -E -e 's_.*<h:title>(.*)</h:title>.*_\1_')"
-formInternalId="$(sed -e '1,/<instance>/d' $XFORM_PATH | grep -E 'id="[^"]+"' | head -n1 | sed -E -e 's_.*id="([^"]+)".*_\1_')"
 
 if $USE_CONTEXT_FILE; then
     formContext="$(cat "${CONTEXT_FILE}")"
@@ -92,7 +91,6 @@ fi
 fullJson='{
     "type": "form",
     "title": "'"${formTitle}"'",
-    "internalId": "'"${formInternalId}"'",
     "context": '"${formContext}"'
 }'
 
@@ -109,7 +107,6 @@ cat <<EOF
 [$SELF]   reading from: $XFORM_PATH
 [$SELF]   doc ID: form:$ID
 [$SELF]   form title: $formTitle
-[$SELF]   form internal ID: $formInternalId
 [$SELF]   force override: $FORCE
 [$SELF]   uploading to: $docUrl
 [$SELF]   full JSON: $fullJson

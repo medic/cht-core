@@ -295,7 +295,7 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var create = function(formInternalId) {
+    var create = function(formId) {
       return $q.all([
         UserSettings(),
         getUserContact()
@@ -308,7 +308,7 @@ angular.module('inboxServices').service('Enketo',
           }
           var contact = results[1];
           return {
-            form: formInternalId,
+            form: formId,
             type: 'data_record',
             content_type: 'xml',
             reported_date: Date.now(),
@@ -319,7 +319,7 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    this.save = function(formInternalId, form, docId) {
+    this.save = function(formId, form, docId) {
       return $q.resolve(form.validate())
         .then(function(valid) {
           if (!valid) {
@@ -328,7 +328,7 @@ angular.module('inboxServices').service('Enketo',
           if (docId) {
             return update(docId);
           }
-          return create(formInternalId);
+          return create(formId);
         })
         .then(function(doc) {
           return storeXMLRecord(doc, form.getDataStr());
