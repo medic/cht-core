@@ -29,7 +29,7 @@ exports['getForm returns form not found message on empty view query'] = function
   test.expect(2);
   var req = sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: []});
   controller.getForm('', '', function(err, body, headers) {
-    test.equals(err.message, 'Form not found: ');
+    test.equals(err.message, 'Form not found:  ()');
     test.equals(req.callCount, 1);
     test.done();
   });
