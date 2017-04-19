@@ -28,11 +28,10 @@ describe('medic-collect', () => {
 
 `HEAD /${dbName}/_design/medic/_rewrite/add?deviceID=imei%3A357578064823168 HTTP/1.1
 X-OpenRosa-Version: 1.0
-Date: Tue, 11 Apr 2017 06:34:21 CEST
+Date: ${new Date().toISOString()}
 Host: ${host}:${port}
 Connection: close
-
-`).then((res) => {
+`).then((res) => {
 
         // then
         assert.equal(res.statusCode, 401, JSON.stringify(res));
