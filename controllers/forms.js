@@ -104,7 +104,7 @@ module.exports = {
         return callback(err);
       }
       if (data.rows.length === 0) {
-        return callback(new Error('Form not found.'));
+        return callback(new Error('Form not found: ' + form));
       }
       db.medic.attachment.get(data.rows[0].id, format, function(err, body, headers) {
         if (err) {
