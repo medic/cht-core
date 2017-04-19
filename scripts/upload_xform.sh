@@ -20,7 +20,7 @@ _usage () {
 cat <<EOF
 
 Usage:
-  $SELF [options] <form id> <path to xform> [attachments ...]
+  $SELF [options] <path to xform> [attachments ...]
 
 Options:
   -f
@@ -58,9 +58,6 @@ if ! curl "$COUCH_URL"; then
     exit 1
 fi
 
-ID="$1"
-shift
-
 XFORM_PATH="$1"
 if ! [[ -f "$XFORM_PATH" ]]; then
     echo "[$SELF] ERROR: could not find xform at path: $XFORM_PATH"
@@ -70,9 +67,10 @@ shift
 
 DB="${COUCH_URL}"
 
-echo "[$SELF] parsing XML to get form title..."
+echo "[$SELF] parsing XML to get form title and ID..."
 # Yeah, it's ugly.  But we control the input.
 formTitle="$(grep h:title $XFORM_PATH | sed -E -e 's_.*<h:title>(.*)</h:title>.*_\1_')"
+formInternalId="$(sed -e '1,/<instance>/d' $XFORM_PATH | grep -E 'id="[^"]+"' | head -n1 | sed -E -e 's_.*id="([^"]+)".*_\1_')"
 
 if $USE_CONTEXT_FILE; then
     formContext="$(cat "${CONTEXT_FILE}")"
@@ -91,6 +89,7 @@ fi
 fullJson='{
     "type": "form",
     "title": "'"${formTitle}"'",
+    "internalId": "'"${formInternalId}"'",
     "context": '"${formContext}"'
 }'
 
@@ -107,6 +106,7 @@ cat <<EOF
 [$SELF]   reading from: $XFORM_PATH
 [$SELF]   doc ID: form:$ID
 [$SELF]   form title: $formTitle
+[$SELF]   form internal ID: $formInternalId
 [$SELF]   force override: $FORCE
 [$SELF]   uploading to: $docUrl
 [$SELF]   full JSON: $fullJson

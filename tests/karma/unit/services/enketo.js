@@ -2,9 +2,9 @@ describe('Enketo service', function() {
   'use strict';
 
   /** @return a mock form ready for putting in #dbContent */
-  var mockEnketoDoc = function(id) {
+  var mockEnketoDoc = function(formInternalId) {
     return {
-      _id: id,
+      internalId: formInternalId,
       _attachments: { xml: { something: true } },
     };
   };

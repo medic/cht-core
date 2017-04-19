@@ -8,11 +8,11 @@ describe('XmlForms service', function() {
       UserContact,
       contextUtils;
 
-  var mockEnketoDoc = function(id, docId) {
+  var mockEnketoDoc = function(formInternalId, docId) {
     return {
       id: docId || 'form-0',
       doc: {
-        _id: id,
+        internalId: formInternalId,
         _attachments: { xml: { something: true } },
       },
     };
@@ -152,14 +152,14 @@ describe('XmlForms service', function() {
       {
         id: 'form-0',
         doc: {
-          _id: 'zero',
+          internalId: 'zero',
           _attachments: { xml: { something: true } },
         },
       },
       {
         id: 'form-1',
         doc: {
-          _id: 'one',
+          internalId: 'one',
           context: {},
           _attachments: { xml: { something: true } },
         },
@@ -167,7 +167,7 @@ describe('XmlForms service', function() {
       {
         id: 'form-2',
         doc: {
-          _id: 'two',
+          internalId: 'two',
           context: { person: true },
           _attachments: { xml: { something: true } },
         },
@@ -175,7 +175,7 @@ describe('XmlForms service', function() {
       {
         id: 'form-3',
         doc: {
-          _id: 'three',
+          internalId: 'three',
           context: { place: true },
           _attachments: { xml: { something: true } },
         },
@@ -183,7 +183,7 @@ describe('XmlForms service', function() {
       {
         id: 'form-4',
         doc: {
-          _id: 'four',
+          internalId: 'four',
           context: { person: true, place: false },
           _attachments: { xml: { something: true } },
         },
@@ -191,7 +191,7 @@ describe('XmlForms service', function() {
       {
         id: 'form-5',
         doc: {
-          _id: 'five',
+          internalId: 'five',
           context: { person: false, place: true },
           _attachments: { xml: { something: true } },
         },
@@ -199,7 +199,7 @@ describe('XmlForms service', function() {
       {
         id: 'form-6',
         doc: {
-          _id: 'six',
+          internalId: 'six',
           context: { person: true, place: true },
           _attachments: { xml: { something: true } },
         },
@@ -212,7 +212,7 @@ describe('XmlForms service', function() {
       try {
         chai.expect(err).to.equal(null);
         chai.expect(actual[0]).to.deep.equal(given[0].doc);
-        chai.assert.deepEqual(_.pluck(actual, '_id'), [
+        chai.assert.deepEqual(_.pluck(actual, 'internalId'), [
           'zero',
           'one',
           'two',
@@ -232,14 +232,14 @@ describe('XmlForms service', function() {
       {
         id: 'form-0',
         doc: {
-          _id: 'zero',
+          internalId: 'zero',
           _attachments: { xml: { something: true } },
         },
       },
       {
         id: 'form-1',
         doc: {
-          _id: 'one',
+          internalId: 'one',
           context: {},
           _attachments: { xml: { something: true } },
         },
@@ -247,7 +247,7 @@ describe('XmlForms service', function() {
       {
         id: 'form-2',
         doc: {
-          _id: 'two',
+          internalId: 'two',
           context: { person: true },
           _attachments: { xml: { something: true } },
         },
@@ -255,7 +255,7 @@ describe('XmlForms service', function() {
       {
         id: 'form-3',
         doc: {
-          _id: 'three',
+          internalId: 'three',
           context: { place: true },
           _attachments: { xml: { something: true } },
         },
@@ -263,7 +263,7 @@ describe('XmlForms service', function() {
       {
         id: 'form-4',
         doc: {
-          _id: 'four',
+          internalId: 'four',
           context: { person: true, place: false },
           _attachments: { xml: { something: true } },
         },
@@ -271,7 +271,7 @@ describe('XmlForms service', function() {
       {
         id: 'form-5',
         doc: {
-          _id: 'five',
+          internalId: 'five',
           context: { person: false, place: true },
           _attachments: { xml: { something: true } },
         },
@@ -279,7 +279,7 @@ describe('XmlForms service', function() {
       {
         id: 'form-6',
         doc: {
-          _id: 'six',
+          internalId: 'six',
           context: { person: true, place: true },
           _attachments: { xml: { something: true } },
         },
@@ -291,7 +291,7 @@ describe('XmlForms service', function() {
     service('test', { doc: { type: 'district_hospital' } }, function(err, actual) {
       try {
         chai.expect(err).to.equal(null);
-        chai.assert.deepEqual(_.pluck(actual, '_id'), [
+        chai.assert.deepEqual(_.pluck(actual, 'internalId'), [
           'zero',
           'one',
           'three',
@@ -311,7 +311,7 @@ describe('XmlForms service', function() {
       {
         id: 'form-0',
         doc: {
-          _id: 'visit',
+          internalId: 'visit',
           context: {
             expression: '!isBlue(contact) && user.name === "Frank"'
           },
@@ -321,7 +321,7 @@ describe('XmlForms service', function() {
       {
         id: 'form-1',
         doc: {
-          _id: 'stock-report',
+          internalId: 'stock-report',
           context: {
             expression: 'isBlue(contact) && user.name === "Frank"'
           },
@@ -357,7 +357,7 @@ describe('XmlForms service', function() {
       {
         id: 'form-0',
         doc: {
-          _id: 'visit',
+          internalId: 'visit',
           context: {
             person: true,
             expression: 'contact.sex === "female"'
@@ -368,7 +368,7 @@ describe('XmlForms service', function() {
       {
         id: 'form-1',
         doc: {
-          _id: 'stock-report',
+          internalId: 'stock-report',
           context: {
             place: true,
             expression: 'contact.sex === "female"'
@@ -399,6 +399,7 @@ describe('XmlForms service', function() {
         id: 'visit',
         doc: {
           _id: 'visit',
+          internalId: 'visit',
           _attachments: { xml: { something: true } },
         },
       },
@@ -406,6 +407,7 @@ describe('XmlForms service', function() {
         id: 'form:contact:person',
         doc: {
           _id: 'form:contact:person',
+          internalId: 'stock-report',
           _attachments: { xml: { something: true } },
         },
       },
@@ -413,6 +415,7 @@ describe('XmlForms service', function() {
         id: 'form:contact:clinic',
         doc: {
           _id: 'form:contact:clinic',
+          internalId: 'registration',
           _attachments: { xml: { something: true } },
         },
       }
@@ -440,6 +443,7 @@ describe('XmlForms service', function() {
         id: 'visit',
         doc: {
           _id: 'visit',
+          internalId: 'visit',
           _attachments: { xml: { something: true } },
         },
       },
@@ -447,6 +451,7 @@ describe('XmlForms service', function() {
         id: 'form:contact:person',
         doc: {
           _id: 'form:contact:person',
+          internalId: 'stock-report',
           _attachments: { xml: { something: true } },
         },
       },
@@ -454,6 +459,7 @@ describe('XmlForms service', function() {
         id: 'form:contact:clinic',
         doc: {
           _id: 'form:contact:clinic',
+          internalId: 'registration',
           _attachments: { xml: { something: true } },
         },
       }
@@ -480,6 +486,7 @@ describe('XmlForms service', function() {
         id: 'visit',
         doc: {
           _id: 'visit',
+          internalId: 'visit',
           _attachments: { xml: { something: true } },
           context: {
             permission: [ 'national_admin', 'district_admin' ]
@@ -490,6 +497,7 @@ describe('XmlForms service', function() {
         id: 'form:contact:person',
         doc: {
           _id: 'form:contact:person',
+          internalId: 'stock-report',
           _attachments: { xml: { something: true } },
           context: {
             permission: [ 'national_admin' ]
@@ -500,6 +508,7 @@ describe('XmlForms service', function() {
         id: 'form:contact:clinic',
         doc: {
           _id: 'form:contact:clinic',
+          internalId: 'registration',
           _attachments: { xml: { something: true } },
         },
       }
@@ -531,6 +540,7 @@ describe('XmlForms service', function() {
         id: 'visit',
         doc: {
           _id: 'visit',
+          internalId: 'visit',
           _attachments: { xml: { something: true } },
           context: {
             permission: [ 'national_admin', 'district_admin' ]
@@ -541,6 +551,7 @@ describe('XmlForms service', function() {
         id: 'form:contact:person',
         doc: {
           _id: 'form:contact:person',
+          internalId: 'stock-report',
           _attachments: { xml: { something: true } },
           context: {
             place: true,
@@ -552,6 +563,7 @@ describe('XmlForms service', function() {
         id: 'form:contact:clinic',
         doc: {
           _id: 'form:contact:clinic',
+          internalId: 'registration',
           _attachments: { xml: { something: true } },
           context: { person: true },
         },
@@ -579,6 +591,7 @@ describe('XmlForms service', function() {
         id: 'visit',
         doc: {
           _id: 'visit',
+          internalId: 'visit',
           _attachments: { xml: { something: true } },
           context: {
             permission: [ 'national_admin', 'district_admin' ]
@@ -589,6 +602,7 @@ describe('XmlForms service', function() {
         id: 'form:contact:person',
         doc: {
           _id: 'form:contact:person',
+          internalId: 'stock-report',
           _attachments: { xml: { something: true } },
           context: {
             place: true,
@@ -600,6 +614,7 @@ describe('XmlForms service', function() {
         id: 'form:contact:clinic',
         doc: {
           _id: 'form:contact:clinic',
+          internalId: 'registration',
           _attachments: { xml: { something: true } },
           context: { person: true },
         },
@@ -627,6 +642,7 @@ describe('XmlForms service', function() {
         id: 'visit',
         doc: {
           _id: 'visit',
+          internalId: 'visit',
           _attachments: { xml: { something: true } },
           context: {
             expression: '!!contact'
@@ -637,6 +653,7 @@ describe('XmlForms service', function() {
         id: 'registration',
         doc: {
           _id: 'visit',
+          internalId: 'visit',
           _attachments: { xml: { something: true } },
           context: {
             expression: '!contact'
