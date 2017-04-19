@@ -32,6 +32,11 @@ var _ = require('underscore');
                 return row.doc._attachments.xml;
               })
               .map(function(row) {
+                var doc = row.doc;
+                var trimmedId = doc._id.indexOf('form:') === 0 ?
+                    doc._id.substring(5) :
+                    doc._id;
+                doc.idLessPrefix = trimmedId;
                 return row.doc;
               });
           });

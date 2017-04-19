@@ -31,7 +31,7 @@
           </a>
           <ul class="dropdown-menu mm-dropdown-menu" ng-show="nonContactForms.length">
             <li ng-repeat="form in nonContactForms | orderBy: 'title | translateFrom' track by (form._id || form.code)">
-              <a ui-sref="reports.add({ formId: form._id })">
+              <a ui-sref="reports.add({ formId: form.idLessPrefix })">
                 <span ng-bind-html="form.icon | resourceIcon"></span>
                 {{form.title | translateFrom}}
               </a>
@@ -130,7 +130,7 @@
           </a>
           <ul class="dropdown-menu mm-dropdown-menu" ng-hide="(!actionBar.right.relevantForms || !actionBar.right.relevantForms.length)">
             <li ng-repeat="form in actionBar.right.relevantForms">
-              <a ui-sref="contacts.report({ id: actionBar.right.selected[0]._id, formId: form._id })">
+              <a ui-sref="contacts.report({ id: actionBar.right.selected[0]._id, formId: form.lessPrefix })">
                 <span ng-bind-html="form.icon | resourceIcon"></span>
                 {{form.title | translateFrom}}
                 <span class="pull-right fa fa-chevron-right"></span>
