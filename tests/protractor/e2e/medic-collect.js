@@ -51,12 +51,14 @@ X-OpenRosa-Version: 1.0
 Date: ${new Date().toISOString()}
 Host: ${host}:${port}
 Connection: close
-Authorization: Basic YWRtaW46cGFzcw==
 `).then((res) => {
 
         // then
         assert.equal(res.statusCode, 200, JSON.stringify(res));
-        assert.equal(res.headers['WWW-Authenticate'], 'Basic realm="Medic Mobile Web Services"', JSON.stringify(res));
+        assert.equal(res.body,
+`<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<xforms xmlns=\"http://openrosa.org/xforms/xformsList\"/>`,
+            JSON.stringify(res));
 
       });
 
