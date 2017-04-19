@@ -245,6 +245,15 @@ body {
   }
 }
 
+.header .dropdown-menu .sync-status {
+  .in_progress, .not_required {
+    color: @ok-color;
+  }
+  .required {
+    color: @error-color;
+  }
+}
+
 .configuration-form {
   margin-bottom: 1em;
   .delete {
