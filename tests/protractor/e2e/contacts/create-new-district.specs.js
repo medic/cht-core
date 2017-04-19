@@ -8,8 +8,4 @@ describe('Add new district tests : ', function () {
     expect(browser.getCurrentUrl()).toEqual(commonElements.getBaseUrl() + 'contacts/');
     contactPage.addNewDistrict('BedeDistrict', 'Bede');
   });
-
-  it('should complete new person form', function () {
-    contactPage.completeNewPersonForm('Bede');
-  });
 });

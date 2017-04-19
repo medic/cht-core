@@ -9,7 +9,7 @@ var newPlaceName = $('[name="/data/district_hospital/name"]');
 var newPersonButton = $('a.btn.btn-link.add-new');
 var externalId = $('[name="/data/district_hospital/external_id"]');
 var notesTextArea = $('[name="/data/district_hospital/notes"]');
-var nextButton = $('button.btn.btn-primary.next-page.ng-scope');
+//var nextButton = $('button.btn.btn-primary.next-page.ng-scope');
 var newPersonTextBox = $('[name="/data/contact/name"]');
 var datePicker = $('[placeholder="yyyy-mm-dd"]');
 var phoneNumbers = element.all(by.css(':not([style="display: none;"])[type="tel"]'));
@@ -31,11 +31,7 @@ module.exports = {
     newPersonButton.click();
     externalId.sendKeys('1245');
     notesTextArea.sendKeys('Some notes, just for testing purposes.&$@#!_)_@519874-#@1-3-$^%%');
-    browser.controlFlow().execute(function () {
-      browser.executeScript('arguments[0].scrollIntoView()', nextButton.getWebElement());
-    });
-
-    nextButton.click();
+    //nextButton.click();
   },
 
   completeNewPersonForm: function (name) {

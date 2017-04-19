@@ -76,6 +76,7 @@ exports.config = {
   capabilities: {
     // browserName: 'chrome'
     browserName: 'firefox'
+    //'marionette':'true'
   },
   onPrepare: () => {
     const startup = startModules();
