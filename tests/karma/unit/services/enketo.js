@@ -47,6 +47,7 @@ describe('Enketo service', function() {
       dbGet = sinon.stub(),
       dbPost = sinon.stub(),
       UserContact = sinon.stub(),
+      UserSettings = sinon.stub(),
       createObjectURL = sinon.stub(),
       FileReader = sinon.stub(),
       Language = sinon.stub(),
@@ -80,6 +81,7 @@ describe('Enketo service', function() {
       });
       $provide.value('FileReader', FileReader);
       $provide.value('UserContact', UserContact);
+      $provide.value('UserSettings', UserSettings);
       $provide.value('Language', Language);
       $provide.value('TranslateFrom', TranslateFrom);
       $provide.value('EnketoPrepopulationData', EnketoPrepopulationData);
@@ -273,6 +275,7 @@ describe('Enketo service', function() {
       form.getDataStr.returns(content);
       dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
       UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
+      UserSettings.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
       return service.save('V', form).then(function(actual) {
         chai.expect(form.validate.callCount).to.equal(1);
         chai.expect(form.getDataStr.callCount).to.equal(1);
@@ -287,6 +290,8 @@ describe('Enketo service', function() {
         chai.expect(actual.content_type).to.equal('xml');
         chai.expect(actual.contact._id).to.equal('123');
         chai.expect(actual.from).to.equal('555');
+        chai.expect(actual.read.length).to.equal(1);
+        chai.expect(actual.read[0]).to.equal('Jim');
         chai.expect(AddAttachment.callCount).to.equal(1);
         chai.expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
         chai.expect(AddAttachment.args[0][1]).to.equal('content');

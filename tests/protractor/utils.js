@@ -169,5 +169,12 @@ module.exports = {
     return function(c) {
       return c === count;
     };
-  }
+  },
+
+  getCouchUrl: () =>
+    `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`,
+
+  getBaseUrl: () =>
+    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}`
+
 };
