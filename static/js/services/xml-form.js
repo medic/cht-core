@@ -8,7 +8,7 @@ angular.module('inboxServices').factory('XmlForm',
 
     return function(id, options) {
       options = options || {};
-      options.key = id;
+      options.key = 'form:' + id;
       return DB()
         .query('medic-client/forms', options)
         .then(function(result) {
