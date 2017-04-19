@@ -13,6 +13,7 @@ angular.module('inboxServices').service('Enketo',
     Language,
     TranslateFrom,
     UserContact,
+    UserSettings,
     XSLT
   ) {
 
@@ -295,16 +296,27 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var create = function(formInternalId) {
-      return getUserContact().then(function(contact) {
-        return {
-          form: formInternalId,
-          type: 'data_record',
-          content_type: 'xml',
-          reported_date: Date.now(),
-          contact: contact,
-          from: contact && contact.phone
-        };
-      });
+      return $q.all([
+        UserSettings(),
+        getUserContact()
+      ])
+        .then(function(results) {
+          var user = results[0];
+          var read = [];
+          if (user && user.name) {
+            read.push(user.name);
+          }
+          var contact = results[1];
+          return {
+            form: formInternalId,
+            type: 'data_record',
+            content_type: 'xml',
+            reported_date: Date.now(),
+            contact: contact,
+            from: contact && contact.phone,
+            read: read
+          };
+        });
     };
 
     this.save = function(formInternalId, form, docId) {

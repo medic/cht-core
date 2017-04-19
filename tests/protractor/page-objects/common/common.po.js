@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    helper = require('../../helper'),
+var helper = require('../../helper'),
     utils = require('../../utils');
 
 var medicLogo = element(by.className('logo-full'));
