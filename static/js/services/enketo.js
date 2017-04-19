@@ -222,9 +222,8 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    this.render = function(selector, id, instanceData) {
-      return getUserContact()
-        .then(Language)
+    var renderForm = function(selector, id, instanceData) {
+      return Language()
         .then(function(language) {
           return withForm(id, language);
         })
@@ -239,9 +238,16 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
+    this.render = function(selector, id, instanceData) {
+      return getUserContact().then(function() {
+        return renderForm(selector, id, instanceData);
+      });
+    };
+
+    this.renderContactForm = renderForm;
+
     this.renderFromXmlString = function(selector, xmlString, instanceData) {
-      return getUserContact()
-        .then(Language)
+      return Language()
         .then(function(language) {
           return translateXml(xmlString, language);
         })
