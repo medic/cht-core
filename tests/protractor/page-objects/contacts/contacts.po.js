@@ -31,6 +31,10 @@ module.exports = {
     newPersonButton.click();
     externalId.sendKeys('1245');
     notesTextArea.sendKeys('Some notes, just for testing purposes.&$@#!_)_@519874-#@1-3-$^%%');
+    browser.controlFlow().execute(function () {
+      browser.executeScript('arguments[0].scrollIntoView()', nextButton.getWebElement());
+    });
+
     nextButton.click();
   },
 
