@@ -1,6 +1,7 @@
 const assert = require('chai').assert,
     net = require('net'),
     constants = require('../constants'),
+    PouchDB = require('pouchdb'),
     host = constants.API_HOST,
     port = constants.API_PORT,
     dbName = constants.DB_NAME;
@@ -43,8 +44,20 @@ Connection: close
 
     it('can fetch a list of forms', () => {
 
-      // when
-      return rawHttpRequest(
+      // given
+      const db = createDb();
+
+      return db
+        .put({
+          type: 'form',
+          _id: 'form:my_form',
+          internalId: 'MY-FORM',
+        })
+        .then(() => db.putAttachment('form:my_form', 'xml', new Blob('<xform/>'), { type: 'application/xml' }))
+        .then(() => {
+
+          // when
+          return rawHttpRequest(
 
 `GET /api/v1/forms HTTP/1.1
 X-OpenRosa-Version: 1.0
@@ -53,15 +66,16 @@ Host: ${host}:${port}
 Connection: close
 `).then((res) => {
 
-        // then
-        assert.equal(res.statusCode, 200, JSON.stringify(res));
-        assert.equal(res.body,
+            // then
+            assert.equal(res.statusCode, 200, JSON.stringify(res));
+            assert.equal(res.body,
 `<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <xforms xmlns=\"http://openrosa.org/xforms/xformsList\"/>`,
-            JSON.stringify(res));
+                JSON.stringify(res));
 
-      });
+          });
 
+        });
 
     });
 
@@ -120,4 +134,8 @@ function rawHttpRequest(rawRequest) {
       resolve(response);
     });
   });
+}
+
+function createDb() {
+  return new PouchDB(process.env.COUCH_URL);
 }
