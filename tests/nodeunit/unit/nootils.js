@@ -1,4 +1,6 @@
-var nootils = require('../../../static/js/modules/nootils')({});
+const jsc = require('jsverify'),
+      // sinon = require('sinon'),
+      nootils = require('../../../static/js/modules/nootils')({});
 
 var format = function(date) {
   var result = date.toString();
@@ -73,6 +75,32 @@ exports['isTimely returns false if too early'] = function(test) {
   test.done();
 };
 
+// jshint freeze:false
+exports['jsverify: isTimely returns false if too early'] = test => {
+  test.equal(
+    jsc.checkForall(
+      jsc.integer(-12 * 60, 14 * 60),
+      'datetime',
+      (tz, now) => {
+        // Save the original method.
+        const getTimezoneOffset = Date.prototype.getTimezoneOffset;
+
+        Date.prototype.getTimezoneOffset = () => tz;
+
+        const date = new Date(now);
+        date.setDate(date.getDate() + 1);
+        const event = {
+          start: 0,
+          end: 2
+        };
+
+        const result = nootils.isTimely(date, event, () => new Date(now));
+        Date.prototype.getTimezoneOffset = getTimezoneOffset;
+        return !result;
+    }), true);
+  test.done();
+};
+
 exports['isTimely returns false if too late'] = function(test) {
   var date = new Date();
   date.setDate(date.getDate() - 3);
@@ -96,6 +124,7 @@ exports['isTimely returns true if just right'] = function(test) {
   test.equal(actual, true);
   test.done();
 };
+
 
 exports['getMostRecentReport returns null on no reports'] = function(test) {
   var actual = nootils.getMostRecentReport([], 'V');

@@ -4,12 +4,12 @@ var NO_LMP_DATE_MODIFIER = 4;
 
 module.exports = function(settings) {
   return {
-    isTimely: function(date, event) {
+    isTimely: function(date, event, nowFn) {
       var due = new Date(date);
-      var start = new Date();
-      start.setDate(start.getDate() + event.start);
-      var end = new Date();
-      end.setDate(end.getDate() - event.end - 1);
+      var start = (nowFn && nowFn()) || new Date();
+      start.setUTCDate(start.getUTCDate() + event.start);
+      var end = (nowFn && nowFn()) || new Date();
+      end.setUTCDate(end.getUTCDate() - event.end - 1);
       return due.getTime() < start.getTime() && due.getTime() > end.getTime();
     },
     addDate: function(date, days) {

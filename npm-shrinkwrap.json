@@ -551,10 +551,20 @@
         }
       }
     },
+    "jsverify": {
+      "version": "0.8.2",
+      "from": "jsverify@latest",
+      "resolved": "https://registry.npmjs.org/jsverify/-/jsverify-0.8.2.tgz"
+    },
     "keypress": {
       "version": "0.1.0",
       "from": "keypress@>=0.1.0 <0.2.0",
       "resolved": "http://registry.npmjs.org/keypress/-/keypress-0.1.0.tgz"
+    },
+    "lazy-seq": {
+      "version": "1.0.0",
+      "from": "lazy-seq@>=1.0.0 <2.0.0",
+      "resolved": "https://registry.npmjs.org/lazy-seq/-/lazy-seq-1.0.0.tgz"
     },
     "leaflet": {
       "version": "0.7.7",
@@ -624,8 +634,7 @@
     "minimist": {
       "version": "1.2.0",
       "from": "minimist@>=1.2.0 <2.0.0",
-      "resolved": "http://registry.npmjs.org/minimist/-/minimist-1.2.0.tgz",
-      "optional": true
+      "resolved": "http://registry.npmjs.org/minimist/-/minimist-1.2.0.tgz"
     },
     "moment": {
       "version": "2.18.1",
@@ -882,6 +891,11 @@
       "from": "qs@>=6.3.0 <6.4.0",
       "resolved": "http://registry.npmjs.org/qs/-/qs-6.3.2.tgz"
     },
+    "rc4": {
+      "version": "0.1.5",
+      "from": "rc4@>=0.1.5 <0.2.0",
+      "resolved": "https://registry.npmjs.org/rc4/-/rc4-0.1.5.tgz"
+    },
     "request": {
       "version": "2.79.0",
       "from": "request@2.79.0",
@@ -959,6 +973,11 @@
       "from": "tough-cookie@>=2.3.0 <2.4.0",
       "resolved": "http://registry.npmjs.org/tough-cookie/-/tough-cookie-2.3.2.tgz"
     },
+    "trampa": {
+      "version": "1.0.0",
+      "from": "trampa@>=1.0.0 <2.0.0",
+      "resolved": "https://registry.npmjs.org/trampa/-/trampa-1.0.0.tgz"
+    },
     "tunnel-agent": {
       "version": "0.4.3",
       "from": "tunnel-agent@>=0.4.1 <0.5.0",
@@ -969,6 +988,11 @@
       "from": "tweetnacl@>=0.14.0 <0.15.0",
       "resolved": "http://registry.npmjs.org/tweetnacl/-/tweetnacl-0.14.5.tgz",
       "optional": true
+    },
+    "typify-parser": {
+      "version": "1.1.0",
+      "from": "typify-parser@>=1.1.0 <2.0.0",
+      "resolved": "https://registry.npmjs.org/typify-parser/-/typify-parser-1.1.0.tgz"
     },
     "uglify-js": {
       "version": "2.4.24",
