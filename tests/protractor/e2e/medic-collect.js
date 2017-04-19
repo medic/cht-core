@@ -53,7 +53,7 @@ Connection: close
           _id: 'form:my_form',
           internalId: 'MY-FORM',
         })
-        .then(() => db.putAttachment('form:my_form', 'xml', new Blob('<xform/>'), { type: 'application/xml' }))
+        .then(() => db.putAttachment('form:my_form', 'xml', '<xform/>', { type: 'application/xml' }))
         .then(() => {
 
           // when
