@@ -202,7 +202,7 @@ describe('sms-gateway api', function() {
       utils.deleteDoc(savedDoc).then(done).catch(done);
     });
 
-/*    it('shows content', function() {
+    it('shows content', function() {
       element(by.id('reports-tab')).click();
 
       // refresh - live list only updates on changes but changes are disabled for e2e
@@ -227,7 +227,7 @@ describe('sms-gateway api', function() {
       expect(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state')).getText()).toBe('failed');
 
     });
-  });*/
+  });
 
   describe('returns list of pending messages', function() {
 
@@ -281,7 +281,7 @@ describe('sms-gateway api', function() {
     });
 
     it('returns both pending and forwarded-to-gateway messages', function(done) {
-      const testResponse = (response) => {
+      var testResponse = function(response) {
         expect(response.messages.length).toBe(1);
         expect(response.messages[0].id).toBe(messageId1);
         expect(response.messages[0].state).toBe('forwarded-to-gateway');
