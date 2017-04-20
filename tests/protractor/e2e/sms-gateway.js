@@ -122,7 +122,7 @@ describe('sms-gateway api', function() {
 
   'use strict';
 
-  var submit = function(body) {
+  var pollSmsApi = function(body) {
     var content = JSON.stringify(body);
     return utils.request({
       method: 'POST',
@@ -146,7 +146,7 @@ describe('sms-gateway api', function() {
           id: 'a'
         } ]
       };
-      submit(body).then(done).catch(done);
+      pollSmsApi(body).then(done).catch(done);
     });
 
     it('shows content', function() {
@@ -193,7 +193,7 @@ describe('sms-gateway api', function() {
               { id: messageId3, status: 'FAILED', reason: 'Insufficient credit' }
             ]
           };
-          submit(body).then(done).catch(done);
+          pollSmsApi(body).then(done).catch(done);
         })
         .catch(done);
     });
@@ -202,7 +202,7 @@ describe('sms-gateway api', function() {
       utils.deleteDoc(savedDoc).then(done).catch(done);
     });
 
-    it('shows content', function() {
+/*    it('shows content', function() {
       element(by.id('reports-tab')).click();
 
       // refresh - live list only updates on changes but changes are disabled for e2e
@@ -227,7 +227,7 @@ describe('sms-gateway api', function() {
       expect(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state')).getText()).toBe('failed');
 
     });
-  });
+  });*/
 
   describe('returns list of pending messages', function() {
 
@@ -240,7 +240,7 @@ describe('sms-gateway api', function() {
       utils.saveDoc(report)
         .then(function(result) {
           savedDoc = result.id;
-          return submit({}).then(function(res) {
+          return pollSmsApi({}).then(function(res) {
             response = res;
             done();
           });
@@ -257,6 +257,7 @@ describe('sms-gateway api', function() {
       expect(response.messages[0].id).toBe(messageId1);
       expect(response.messages[0].to).toBe(messageTo1);
       expect(response.messages[0].content).toBe(messageContent1);
+      expect(response.messages[0].state).toBe('forwarded-to-gateway');
 
       element(by.id('reports-tab')).click();
 
@@ -275,8 +276,26 @@ describe('sms-gateway api', function() {
 
       // tasks
       expect(element(by.css('#reports-content .details > ul .task-list .task-state .state')).getText())
-          .toBe('forwarded-to-gateway');
+          .toBe('forwarded to gateway');
 
     });
+
+    it('returns both pending and forwarded-to-gateway messages', function(done) {
+      const testResponse = (response) => {
+        expect(response.messages.length).toBe(1);
+        expect(response.messages[0].id).toBe(messageId1);
+        expect(response.messages[0].state).toBe('forwarded-to-gateway');
+      };
+
+      // Gateway has polled. The message state has been changed to 'forwarded-to-gateway'.
+      testResponse(response);
+
+      // Gateway polls again. Same message is returned again, still has 'forwarded-to-gateway'.
+      pollSmsApi({}).then(function(secondResponse) {
+        testResponse(secondResponse);
+        done();
+      });
+    });
+
   });
 });
