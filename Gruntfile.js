@@ -311,6 +311,11 @@ module.exports = function(grunt) {
         singleRun: true,
         browsers: ['Chrome']
       },
+      headless: {
+        configFile: './tests/karma/karma-unit.conf.js',
+        singleRun: true,
+        browsers: ['Chrome_Beta_Headless']
+      },
       unit_ci: {
         configFile: './tests/karma/karma-unit.conf.js',
         singleRun: true,
@@ -480,7 +485,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('unit', 'All "Unit" tests', [
     'jshint',
-    'karma:unit',
+    'karma:headless',
     'nodeunit',
   ]);
 
