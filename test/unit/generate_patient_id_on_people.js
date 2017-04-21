@@ -1,14 +1,11 @@
-var sinon = require('sinon'),
-    testUtils = require('../test_utils'),
+var sinon = require('sinon').sandbox.create(),
     transitionUtils = require('../../transitions/utils');
 
 var transition = require('../../transitions/generate_patient_id_on_people');
 
 
 exports.tearDown = function(callback) {
-  testUtils.restore([
-    transitionUtils.addUniqueId
-  ]);
+  sinon.restore();
   callback();
 };
 

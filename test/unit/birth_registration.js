@@ -1,7 +1,6 @@
 var transition = require('../../transitions/registration'),
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create(),
     moment = require('moment'),
-    testUtils = require('../test_utils'),
     transitionUtils = require('../../transitions/utils'),
     utils = require('../../lib/utils');
 
@@ -45,11 +44,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-    testUtils.restore([
-        utils.getRegistrations,
-        utils.getPatientContactUuid,
-        transitionUtils.addUniqueId,
-        transition.getConfig]);
+    sinon.restore();
     callback();
 };
 

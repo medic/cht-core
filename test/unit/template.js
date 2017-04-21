@@ -1,11 +1,10 @@
 var template = require('../../lib/template'),
     config = require('../../config'),
-    sinon = require('sinon'),
-    testUtils = require('../test_utils'),
+    sinon = require('sinon').sandbox.create(),
     moment = require('moment');
 
 exports.tearDown = function(callback) {
-  testUtils.restore([config.get]);
+  sinon.restore();
   callback();
 };
 

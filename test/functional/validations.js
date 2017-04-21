@@ -1,6 +1,5 @@
-var sinon = require('sinon'),
+var sinon = require('sinon').sandbox.create(),
     utils = require('../../lib/utils'),
-    testUtils = require('../test_utils'),
     transition = require('../../transitions/accept_patient_reports');
 
 /*
@@ -8,10 +7,7 @@ var sinon = require('sinon'),
  * be merged one transition, probably called form events.
  */
 exports.tearDown = function(callback) {
-    testUtils.restore([
-        transition.getAcceptedReports,
-        utils.translate
-    ]);
+    sinon.restore();
     callback();
 };
 

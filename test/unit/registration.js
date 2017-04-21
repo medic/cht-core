@@ -1,24 +1,12 @@
-var sinon = require('sinon'),
+var sinon = require('sinon').sandbox.create(),
     transition = require('../../transitions/registration'),
     transitionUtils = require('../../transitions/utils'),
     utils = require('../../lib/utils'),
-    testUtils = require('../test_utils'),
     schedules = require('../../lib/schedules'),
     config = require('../../config');
 
 exports.tearDown = function(callback) {
-    testUtils.restore([
-        config.get,
-        transition.validate,
-        transitionUtils.isIdUnique,
-        transitionUtils.addUniqueId,
-        utils.getRegistrations,
-        utils.getPatientContactUuid,
-        utils.getForm,
-        utils.getClinicPhone,
-        schedules.getScheduleConfig,
-        schedules.assignSchedule
-    ]);
+    sinon.restore();
     callback();
 };
 

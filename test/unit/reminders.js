@@ -1,8 +1,7 @@
 var _ = require('underscore'),
     moment = require('moment'),
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create(),
     config = require('../../config'),
-    testUtils = require('../test_utils'),
     reminders = require('../../schedule/reminders');
 
 exports.setUp = function(callback) {
@@ -11,8 +10,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-    testUtils.restoreAll(reminders);
-    testUtils.restore([config.get]);
+    sinon.restore();
     callback();
 };
 

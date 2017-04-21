@@ -1,8 +1,7 @@
 var _ = require('underscore'),
     transition = require('../../transitions/registration'),
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create(),
     moment = require('moment'),
-    testUtils = require('../test_utils'),
     transitionUtils = require('../../transitions/utils'),
     utils = require('../../lib/utils');
 
@@ -97,14 +96,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-    testUtils.restore([
-        transition.getConfig,
-        transitionUtils.addUniqueId,
-        utils.getClinicPhone,
-        utils.getForm,
-        utils.getPatientContactUuid,
-        utils.getRegistrations
-    ]);
+    sinon.restore();
 
     callback();
 };

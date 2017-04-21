@@ -1,10 +1,9 @@
 var _ = require('underscore'),
     transition = require('../../transitions/registration'),
     schedules = require('../../lib/schedules'),
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create(),
     moment = require('moment'),
     utils = require('../../lib/utils'),
-    testUtils = require('../test_utils'),
     uuid = require('uuid'),
     contact = {
         phone: '+1234',
@@ -44,13 +43,7 @@ function getScheduledMessage(doc, idx) {
 }
 
 exports.tearDown = function(callback) {
-    testUtils.restore([
-        utils.getRegistrations,
-        transition.getConfig,
-        schedules.getScheduleConfig,
-        uuid.v4,
-        utils.translate
-    ]);
+    sinon.restore();
     callback();
 };
 

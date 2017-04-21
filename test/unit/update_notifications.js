@@ -1,15 +1,10 @@
 var _ = require('underscore'),
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create(),
     transition = require('../../transitions/update_notifications'),
-    testUtils = require('../test_utils'),
     utils = require('../../lib/utils');
 
 exports.tearDown = function(callback) {
-    testUtils.restore([
-        transition.getConfig,
-        utils.getRegistrations,
-        utils.getClinicPhone
-    ]);
+    sinon.restore();
     callback();
 };
 

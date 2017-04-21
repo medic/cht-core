@@ -1,9 +1,8 @@
 var _ = require('underscore'),
     moment = require('moment'),
     transition = require('../../transitions/registration'),
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create(),
     utils = require('../../lib/utils'),
-    testUtils = require('../test_utils'),
     transitionUtils = require('../../transitions/utils'),
     date = require('../../date');
 
@@ -71,14 +70,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-    testUtils.restore([
-        utils.getRegistrations,
-        utils.getPatientContactUuid,
-        transition.getConfig,
-        transition.getWeeksSinceDOB,
-        transition.getDaysSinceDOB,
-        transitionUtils.addUniqueId,
-        date.getDate]);
+    sinon.restore();
     callback();
 };
 

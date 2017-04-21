@@ -1,19 +1,12 @@
-var sinon = require('sinon'),
+var sinon = require('sinon').sandbox.create(),
     follow = require('follow'),
     audit = require('couchdb-audit'),
     config = require('../../config'),
     db = require('../../db'),
-    testUtils = require('../test_utils'),
     transitions = require('../../transitions');
 
 exports.tearDown = function(callback) {
-    testUtils.restore([
-        config.get,
-        db.medic.get,
-        db.medic.insert,
-        transitions.applyTransitions,
-        follow.Feed,
-        audit.withNano]);
+    sinon.restore();
     transitions._changeQueue.kill();
     callback();
 };

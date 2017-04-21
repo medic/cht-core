@@ -1,17 +1,11 @@
 var moment = require('moment'),
     validation = require('../../lib/validation'),
-    utils = require('../../lib/utils'),
-    testUtils = require('../test_utils'),
     db = require('../../db'),
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create(),
     clock;
 
 exports.tearDown = function(callback) {
-    testUtils.restore([
-        utils.getRegistrations,
-        db.fti,
-        clock
-    ]);
+    sinon.restore();
     callback();
 };
 

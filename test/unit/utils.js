@@ -2,19 +2,13 @@ process.env.TEST_ENV = 'hello'; // required for ../../db.js
 
 var _ = require('underscore'),
     db = require('../../db'),
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create(),
     utils = require('../../lib/utils'),
-    testUtils = require('../test_utils'),
     uuid = require('uuid'),
     config = require('../../config');
 
 exports.tearDown = function(callback) {
-    testUtils.restore([
-        db.medic.view,
-        config.getTranslations,
-        config.get,
-        uuid.v4
-    ]);
+    sinon.restore();
     callback();
 };
 

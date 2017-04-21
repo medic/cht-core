@@ -1,6 +1,5 @@
-const sinon = require('sinon'),
+const sinon = require('sinon').sandbox.create(),
       jsc = require('jsverify'),
-      testUtils = require('../test_utils'),
       ids = require('../../lib/ids.js');
 
 const mockDb = (idFilterLogicFn) => {
@@ -17,9 +16,7 @@ const mockDb = (idFilterLogicFn) => {
 };
 
 exports.tearDown = callback => {
-  testUtils.restore([
-    Math.random
-  ]);
+  sinon.restore();
 
   callback();
 };

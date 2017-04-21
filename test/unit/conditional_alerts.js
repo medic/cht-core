@@ -1,16 +1,11 @@
 var _ = require('underscore'),
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create(),
     messages = require('../../lib/messages'),
     utils = require('../../lib/utils'),
-    testUtils = require('../test_utils'),
     transition = require('../../transitions/conditional_alerts');
 
 exports.tearDown = function(callback) {
-    testUtils.restore([
-        transition._getConfig,
-        messages.addMessage,
-        utils.getRecentForm
-    ]);
+    sinon.restore();
     callback();
 };
 

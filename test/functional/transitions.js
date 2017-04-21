@@ -1,7 +1,6 @@
 var transitions = require('../../transitions/index'),
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create(),
     config = require('../../config'),
-    testUtils = require('../test_utils'),
     configGet;
 
 exports.setUp = function(callback) {
@@ -10,7 +9,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-  testUtils.restore([config.get]);
+  sinon.restore();
   callback();
 };
 

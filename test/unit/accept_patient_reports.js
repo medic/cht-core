@@ -1,17 +1,11 @@
 var _ = require('underscore'),
     moment = require('moment'),
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create(),
     transition = require('../../transitions/accept_patient_reports'),
-    testUtils = require('../test_utils'),
     utils = require('../../lib/utils');
 
 exports.tearDown = function(callback) {
-    testUtils.restore([
-        transition.getAcceptedReports,
-        transition.silenceReminders,
-        transition.matchRegistrations,
-        utils.getRegistrations,
-        utils.getPatientContactUuid]);
+    sinon.restore();
     callback();
 };
 

@@ -1,13 +1,6 @@
 var _ = require('underscore'),
-    sinon = require('sinon'),
-    transition = require('../../transitions/update_scheduled_reports'),
-    testUtils = require('../test_utils'),
-    utils = require('../../lib/utils');
-
-exports.tearDown = function(callback) {
-    testUtils.restore([utils.getRegistrations]);
-    callback();
-};
+    sinon = require('sinon').sandbox.create(),
+    transition = require('../../transitions/update_scheduled_reports');
 
 exports['onMatch signature'] = function(test) {
     test.ok(_.isFunction(transition.onMatch));
