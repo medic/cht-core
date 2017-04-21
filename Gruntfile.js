@@ -509,7 +509,7 @@ module.exports = function(grunt) {
     'mmnpm',
     'build',
     'minify',
-    'karma:unit_ci',
+    'karma:unit_headless',
     'nodeunit',
   ]);
   grunt.registerTask('ci_after', '', [
