@@ -246,7 +246,7 @@ describe('sms-gateway api', function() {
         { state: 'forwarded-to-gateway', timestamp: '2016-08-05T02:24:48.569Z' }
       );
 
-      utils.saveDoc(report)
+      utils.saveDoc(reportWithTwoMessagesToSend)
         .then(function(result) {
           savedDoc = result.id;
           return pollSmsApi({}).then(function(res) {
