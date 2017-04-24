@@ -117,7 +117,6 @@ exports.env = {
 };
 ```
 
-
 ### Push the webapp
 
 `grunt dev` will build and deploy the webapp, then watch for changes and redeploy when necessary.
@@ -146,55 +145,13 @@ node ./server.js
 
 See [Medic API](https://github.com/medic/medic-api) for more information.
 
-
 ### Try it out
 
-Navigate your browser to:
-
-```
-http://localhost:5988/medic/login
-```
-
-
-## Configure
-
-## Configure
-The app is very customizeable, and can end up looking very different depending on configuration.
-
-### App_settings
-
-Much of the customization lives in the app_settings. Look for the `app_settings`
-field in the design doc for `medic` db.
-
-![App Settings in Futon](https://cdn.rawgit.com/medic/medic-docs/master/img/app_settings.png)
-
-At first that `app_settings` field will be empty and you will have the default settings:
-https://github.com/medic/medic-webapp/blob/master/packages/kujua-sms/views/lib/app_settings.js
-
-You can update these settings with the
-[scripts/update_settings.js](https://github.com/medic/medic-webapp/blob/master/scripts/update_app_settings.sh)
-script, or by editing the file in Futon directly.
-
-For more details on what you can use in settings, check out the [schema of supported settings](https://github.com/medic/medic-webapp/blob/master/kanso.json#L83).
-
-### Forms
-
-Forms define information flows. Users fill in forms by SMS, or through SIMapps, or medic-collect, or the android app, or the desktop app. You can have forms for registering new patients, for sending in the status of a patient, for creating a new health center, ...
-
-Initially your instance will have the [default forms defined inside the default settings](https://github.com/medic/medic-webapp/blob/master/packages/kujua-sms/views/lib/app_settings.js#L327).
-
-There are two types of forms : JSON forms, used for SMS interfaces, and XML forms, used for the android app, Medic Collect and the SimApps.
-
-You can view the list of JSON forms and load new ones through the webapp's interface (in Configuration). You can also upload them from command line with the [load_forms.js](https://github.com/medic/medic-webapp/blob/master/scripts/load_forms.js) script
-
-You can view the XML forms from Futon (check out the `forms` view). You can upload new forms from command line with the [upload_xform.sh](https://github.com/medic/medic-webapp/blob/master/scripts/upload_xform.sh) script. XML forms with ids starting with `forms:contact` will customize the edit/create page for the given contact (person or place) type.
-
-![XML forms](https://cdn.rawgit.com/medic/medic-webapp/master/doc/xml_forms.png)
-
+Navigate your browser to `http://localhost:5988/medic/login`
 
 ### Data
-To fill your app with generated data, you can batch-load messages from a CSV file, with the [load_messages.js](https://github.com/medic/medic-webapp/blob/master/scripts/load_messages.js) script.
 
+To fill your app with generated data, you can batch-load messages from a CSV file, with the [load_messages.js](https://github.com/medic/medic-webapp/blob/master/scripts/load_messages.js) script.
 
 Use `curl` to submit a single message:
 
@@ -208,8 +165,8 @@ curl -i -u gateway:123qwe \
 ```
 
 ### Localization
-All text labels in the app are localized. See [here](https://github.com/medic/medic-docs/blob/master/development/translations.mdd) for more details on how to add new labels or modify existing ones.
 
+All text labels in the app are localized. See the [translation documentation](https://github.com/medic/medic-docs/blob/master/development/translations.md) for more details on how to add new labels or modify existing ones.
 
 ## Tests
 Check out the [Gruntfile](Gruntfile.js) for all the tests you can run.
@@ -224,7 +181,7 @@ They live in [tests/protractor](tests/protractor). To run them:
 2. Start Webdriver: `./node_modules/.bin/webdriver-manager start`
 3. Run tests: `grunt e2e-chrome`
 
-### Api integration tests
+### API integration tests
 `grunt api_e2e`
 
 ### Kanso tests
@@ -232,7 +189,6 @@ Some kanso tests are run in-browser; you can run them manually if you browse to 
 
 ### Integration tests
 [Travis](https://travis-ci.org/medic/medic-webapp) runs `grunt ci` every time some new code is pushed to github.
-
 
 # Other deployment steps
 
