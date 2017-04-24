@@ -68,20 +68,44 @@ const setupUser = () => {
     });
 };
 
-exports.config = {
-  seleniumAddress: 'http://localhost:4444/wd/hub',
-  specs: [ 'e2e/**/*.js' ],
+var FirefoxProfile = require('firefox-profile');
 
-  framework: 'jasmine2',
-  capabilities: {
-    // browserName: 'chrome'
-    browserName: 'firefox'
-    //'marionette':'true'
-  },
-  onPrepare: () => {
-    const startup = startModules();
-    browser.ignoreSynchronization = true;
-    browser.driver.wait(startup, 15 * 1000, 'API should start within 15 seconds');
+var q = require('q');
+
+var makeFirefoxProfile = function() {
+    console.log('makeFirefoxProfile', process.cwd());
+    var deferred = q.defer();
+    var firefoxProfile = new FirefoxProfile();
+
+    // Don't use default Download dir
+    firefoxProfile.setPreference('browser.download.folderList', 2);
+    // turns off showing download progress
+    firefoxProfile.setPreference('browser.download.manager.showWhenStarting', false);
+    firefoxProfile.setPreference('browser.download.dir', '/Users/estellecomment/Desktop');
+    firefoxProfile.setPreference('browser.helperApps.neverAsk.saveToDisk', 'application/vnd.ms-excel;application/xml;text/xml');
+
+    console.log('firefoxProfile', firefoxProfile);
+
+    firefoxProfile.encoded(function (encodedProfile) {
+      console.log('firefoxProfile encoded', encodedProfile);
+      console.log('cwd', process.cwd());
+      deferred.resolve([{
+        browserName: 'firefox',
+        marionette: true,
+        firefox_profile: encodedProfile,
+        seleniumAddress: 'http://localhost:4444/wd/hub',
+        specs: [ 'e2e/export-data.js' ],
+        framework: 'jasmine2'
+      }]);
+    });
+    return deferred.promise;
+};
+
+exports.config = {
+  getMultiCapabilities: makeFirefoxProfile,
+  onPrepare: function() {
+    var started = startApi();
+    browser.driver.wait(started, 45 * 1000, 'Server should start within 45 seconds');
     browser.driver.sleep(1000);
     browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
     browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
