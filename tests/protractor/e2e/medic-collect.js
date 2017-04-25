@@ -72,8 +72,7 @@ Connection: close\r
 `5e\r
 <?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <xforms xmlns=\"http://openrosa.org/xforms/xformsList\"/>\r
-0\r\n\r\n`
-`,
+0\r\n\r\n`,
                 JSON.stringify(res));
 
           });
