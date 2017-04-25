@@ -64,14 +64,17 @@ X-OpenRosa-Version: 1.0
 Date: ${new Date().toISOString()}
 Host: ${host}:${port}
 Connection: close
-Transfer-Encoding: identity
 `).then((res) => {
 
             // then
             assert.equal(res.statusCode, 200, JSON.stringify(res));
             assert.equal(res.body,
-`<?xml version=\"1.0\" encoding=\"UTF-8\"?>
-<xforms xmlns=\"http://openrosa.org/xforms/xformsList\"/>`,
+`5e
+<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<xforms xmlns=\"http://openrosa.org/xforms/xformsList\"/>\r
+0
+
+`,
                 JSON.stringify(res));
 
           });
