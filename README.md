@@ -27,11 +27,11 @@ The setup described below doesn't use [Medic OS](https://github.com/medic/medic-
 
 You will need to install the following:
 
-[Node.js](http://nodejs.org) latest
+[Node.js](http://nodejs.org) 6.10.x and above ideally
 
 [CouchDB](http://couchdb.apache.org) v2.x
 
-[couchdb-lucene](https://github.com/rnewson/couchdb-lucene) v2.x
+[couchdb-lucene](https://github.com/rnewson/couchdb-lucene) v2.x (optional, only required for some in-app analytics)
 
 ### Setup CouchDB on a single node
 
@@ -61,25 +61,17 @@ curl -X POST http://admin:pass@localhost:5984/_users \
   -d '{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}'
 ```
 
-### Kanso
+### Build dependenceis
 
-[Kanso](http://kan.so) is required to build and deploy.
-
-```
-npm install kanso -g
-```
-
-### Grunt
-
-[Grunt](http://gruntjs.com) is required to build.
+[Kanso](http://kan.so) and [Grunt](http://gruntjs.com) are required to build and deploy the webapp.
 
 ```
-npm install grunt-cli -g
+npm install -g kanso grunt-clit
 ```
 
 ### Configure Lucene
 
-Lucene powers full-text search on CouchDB.
+Lucene is used for some in-app analytics. You probably do not need to install this for general development, but it is part of a proper production deployment.
 
 Update `$lucene_home/conf/couchdb-lucene.ini` (if you installed with homebrew, `$lucene_home` is something like `/usr/local/Cellar/couchdb-lucene/1.0.2/libexec/`) so the URL has credentials, e.g.:
 
@@ -131,6 +123,7 @@ export COUCH_NODE_NAME=couchdb@localhost
 export COUCH_URL=http://admin:pass@localhost:5984/medic
 node ./server.js
 ```
+
 See [Medic Sentinel](https://github.com/medic/medic-sentinel) for more information.
 
 ### Start medic-api
