@@ -69,11 +69,10 @@ Connection: close
             // then
             assert.equal(res.statusCode, 200, JSON.stringify(res));
             assert.equal(res.body,
-`5e
+`5e\r
 <?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <xforms xmlns=\"http://openrosa.org/xforms/xformsList\"/>\r
-0
-
+0\r\n\r\n`
 `,
                 JSON.stringify(res));
 
