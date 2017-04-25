@@ -435,7 +435,7 @@ app.get('/api/v1/forms/:form', function(req, res) {
       form = parts.slice(0, -1).join('.'),
       format = parts.slice(-1)[0];
   if (!form || !format) {
-    return serverUtils.serverError(new Error('Invalid form parameter.'), req, res);
+    return serverUtils.serverError(new Error(`Invalid form parameter (form=${form},format=${format})`), req, res);
   }
   forms.getForm(form, format, function(err, body, headers) {
     if (err) {
