@@ -66,7 +66,7 @@ curl -X POST http://admin:pass@localhost:5984/_users \
 [Kanso](http://kan.so) and [Grunt](http://gruntjs.com) are required to build and deploy the webapp.
 
 ```
-npm install -g kanso grunt-clit
+npm install -g kanso grunt-cli
 ```
 
 ### Configure Lucene
