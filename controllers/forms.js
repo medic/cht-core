@@ -32,7 +32,7 @@ function listFormsXML(data, template, callback) {
   data.rows.forEach(function(row) {
     if (row.doc && row.doc._attachments && row.doc._attachments.xml) {
       ret.push(
-        template.replace('{{id}}', removePrefix(row.doc._id))
+        template.replace('{{id}}', row.doc.internalId)
       );
     }
   });
