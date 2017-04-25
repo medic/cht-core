@@ -53,7 +53,7 @@ Connection: close
           _id: 'form:my_form',
           internalId: 'MY-FORM',
         })
-        .then((res) => db.putAttachment('form:my_form', 'xml', res.rev, new Buffer('<xform/>').toString('base64'), { type: 'application/xml' }))
+        .then((res) => db.putAttachment('form:my_form', 'xml', res.rev, new Buffer('<xform/>').toString('base64'), { type: 'application/xml', length:8 }))
         .then(() => {
 
           // when
