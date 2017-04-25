@@ -1,9 +1,12 @@
 const assert = require('chai').assert,
+    auth = require('../auth')(),
     net = require('net'),
     constants = require('../constants'),
+    PouchDB = require('pouchdb'),
     host = constants.API_HOST,
     port = constants.API_PORT,
-    dbName = constants.DB_NAME;
+    dbName = constants.DB_NAME,
+    db = createDb();
 
 /**
  * Tests to ensure continued support for Medic Collect.
@@ -18,6 +21,18 @@ const assert = require('chai').assert,
  *   - can submit form responses
  */
 describe('medic-collect', () => {
+
+  beforeAll(() =>
+    db.put({
+        type: 'form',
+        _id: 'form:my_form',
+        internalId: 'MY-FORM',
+      })
+      .then((res) => db.putAttachment('form:my_form', 'xml', res.rev, new Buffer('<xform/>').toString('base64'), { type: 'text/xml', length:8 })));
+
+  afterAll(() =>
+    db.get('form:my_form')
+      .then((doc) => db.remove(doc)));
 
   describe('without User-Agent header', () => {
 
@@ -36,6 +51,36 @@ Connection: close\r
         // then
         assert.equal(res.statusCode, 401, JSON.stringify(res));
         assert.equal(res.headers['WWW-Authenticate'], 'Basic realm="Medic Mobile Web Services"', JSON.stringify(res));
+
+      });
+
+    });
+
+    it('can fetch a list of forms', () => {
+
+      // when
+      return rawHttpRequest(
+
+`GET /api/v1/forms HTTP/1.1\r
+X-OpenRosa-Version: 1.0\r
+Date: ${new Date().toISOString()}\r
+Host: ${host}:${port}\r
+Connection: close\r
+\r\n`).then((res) => {
+
+        // then
+        assert.equal(res.statusCode, 200, JSON.stringify(res));
+        assert.equal(res.body,
+`100\r
+<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<xforms xmlns=\"http://openrosa.org/xforms/xformsList\">
+  <xform>
+    <hash>md5:5dfee698c9998ee4ee8939fc6fe72136</hash>
+    <downloadUrl>http://${host}:${port}/api/v1/forms/MY-FORM.xml</downloadUrl>
+  </xform>
+</xforms>\r
+0\r\n\r\n`,
+            JSON.stringify(res));
 
       });
 
@@ -61,6 +106,37 @@ Connection: close\r
         // then
         assert.equal(res.statusCode, 401, JSON.stringify(res));
         assert.equal(res.headers['WWW-Authenticate'], 'Basic realm="Medic Mobile Web Services"', JSON.stringify(res));
+
+      });
+
+    });
+
+    it('can fetch a list of forms', () => {
+
+      // when
+      return rawHttpRequest(
+
+`GET /api/v1/forms HTTP/1.1\r
+X-OpenRosa-Version: 1.0\r
+Date: ${new Date().toISOString()}\r
+Host: ${host}:${port}\r
+User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT
+Connection: close\r
+\r\n`).then((res) => {
+
+        // then
+        assert.equal(res.statusCode, 200, JSON.stringify(res));
+        assert.equal(res.body,
+`100\r
+<?xml version=\"1.0\" encoding=\"UTF-8\"?>
+<xforms xmlns=\"http://openrosa.org/xforms/xformsList\">
+  <xform>
+    <hash>md5:5dfee698c9998ee4ee8939fc6fe72136</hash>
+    <downloadUrl>http://${host}:${port}/api/v1/forms/MY-FORM.xml</downloadUrl>
+  </xform>
+</xforms>\r
+0\r\n\r\n`,
+            JSON.stringify(res));
 
       });
 
@@ -95,4 +171,8 @@ function rawHttpRequest(rawRequest) {
       resolve(response);
     });
   });
+}
+
+function createDb() {
+  return new PouchDB(`http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`);
 }
