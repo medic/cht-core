@@ -207,7 +207,7 @@ module.exports = function(grunt) {
         cmd: 'cd api && grunt test_integration',
       },
       test_api_e2e: {
-        cmd: 'cd api && node server.js & sleep 20 && cd api && ./scripts/e2e/delete_fixtures && ./scripts/e2e/create_fixtures && grunt test_e2e',
+        cmd: 'cd api && node server.js & sleep 20 && cd api && ./scripts/e2e/setup_fixtures && grunt test_e2e',
       },
       undopatches: {
         cmd: function() {
