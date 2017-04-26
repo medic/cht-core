@@ -26,19 +26,19 @@ u.log(`Starting for ${u.sanitiseUrl(couchUrl)}…`);
 
 var db = PouchDB(couchUrl);
 
-console.log('        state | to               |  len | message                          | doc URL');
+console.log('from             |  len | message                          | doc URL');
 
-db.query('medic/tasks_messages')
-  .then((res) => {
-    res.rows.map((row) => {
-        doc = row.value;
-        const m = doc.message;
-        u.printTableRow(
-            doc.state, -13,
-            doc.to, 16,
-            m ? m.length : 0, -4,
-            m, 32,
-            link(row.id), 0);
+db.allDocs({ include_docs:true })
+  .then((res) => res.rows.map((row) => row.doc))
+  .then((docs) => docs.filter((doc) => doc.sms_message))
+  .then((docs) => {
+    docs.forEach((doc) => {
+      const m = doc.sms_message.message;
+      u.printTableRow(
+          doc.sms_message.from, 16,
+          m ? m.length : 0, -4,
+          m, 32,
+          link(doc._id), 0)
     });
   })
   .then(() => u.log('Finished.'))
