@@ -14,8 +14,7 @@ Example:
 
 const couchUrl = process.argv[2] || process.env.COUCH_URL || 'http://admin:pass@localhost:5984/medic';
 
-const _ = require('lodash'),
-    PouchDB = require('pouchdb');
+const PouchDB = require('pouchdb');
 
 function log(...args) {
   args.unshift('LOG');
