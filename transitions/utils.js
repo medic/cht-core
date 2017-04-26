@@ -39,7 +39,7 @@ module.exports = {
     module.exports.addRejectionMessage(document, reportConfig, 'registration_not_found');
   },
   isIdUnique: function(db, id, callback){
-    db.medic.view('medic', 'registered_patients', {
+    db.medic.view('medic', 'patient_by_patient_shortcode_id', {
       key: id
     }, (err, results) => {
       if (err) {
