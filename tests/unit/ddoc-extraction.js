@@ -1,10 +1,9 @@
 var ddocExtraction = require('../../ddoc-extraction'),
-    sinon = require('sinon'),
-    utils = require('./utils'),
+    sinon = require('sinon').sandbox.create(),
     db = require('../../db');
 
 exports.tearDown = function (callback) {
-  utils.restore(db.medic.get, db.medic.bulk);
+  sinon.restore();
   callback();
 };
 

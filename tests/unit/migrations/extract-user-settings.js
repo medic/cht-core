@@ -1,6 +1,5 @@
-var sinon = require('sinon'),
+var sinon = require('sinon').sandbox.create(),
     db = require('../../../db'),
-    utils = require('../utils'),
     migration = require('../../../migrations/extract-user-settings');
 
 var ddoc = { id: '_design/_auth', key: '_design/_auth' };
@@ -42,7 +41,7 @@ var userB = {
 };
 
 exports.tearDown = function (callback) {
-  utils.restore(db._users.list, db._users.insert, db.medic.insert, db.medic.get);
+  sinon.restore();
   callback();
 };
 

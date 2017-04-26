@@ -1,10 +1,9 @@
-var sinon = require('sinon'),
+var sinon = require('sinon').sandbox.create(),
     db = require('../../../db'),
-    utils = require('../utils'),
     migration = require('../../../migrations/extract-translations');
 
 exports.tearDown = function (callback) {
-  utils.restore(db.getSettings, db.updateSettings, db.medic.view, db.medic.bulk);
+  sinon.restore();
   db.settings = {};
   callback();
 };

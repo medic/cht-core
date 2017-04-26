@@ -1,8 +1,7 @@
 var schedule = require('../../../schedules/usage-stats'),
     db = require('../../../db'),
     utils = require('../../../controllers/utils'),
-    testUtils = require('../utils'),
-    sinon = require('sinon');
+    sinon = require('sinon').sandbox.create();
 
 var clock;
 
@@ -12,15 +11,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function (callback) {
-  testUtils.restore(
-    clock,
-    db.medic.view,
-    db.medic.insert,
-    utils.getBirthPatientIds,
-    utils.rejectDeliveries,
-    utils.getDeliveries,
-    utils.getVisits
-  );
+  sinon.restore();
   callback();
 };
 

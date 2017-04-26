@@ -1,8 +1,7 @@
-var sinon = require('sinon'),
+var sinon = require('sinon').sandbox.create(),
     db = require('../../../db'),
     people = require('../../../controllers/people'),
     places = require('../../../controllers/places'),
-    utils = require('../utils'),
     migration = require('../../../migrations/extract-person-contacts');
 
 var createPerson, getDoc, getView, insertDoc, updatePlace;
@@ -17,7 +16,7 @@ exports.setUp = function(done) {
 };
 
 exports.tearDown = function (callback) {
-  utils.restore(db.medic.view, db.medic.get, db.medic.insert, people.createPerson, places.updatePlace);
+  sinon.restore();
   callback();
 };
 

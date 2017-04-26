@@ -1,10 +1,9 @@
-var sinon = require('sinon'),
+var sinon = require('sinon').sandbox.create(),
     db = require('../../../db'),
-    utils = require('../utils'),
     migration = require('../../../migrations/associate-records-with-people');
 
 exports.tearDown = function (callback) {
-  utils.restore(db.medic.view, db.medic.get, db.medic.insert);
+  sinon.restore();
   callback();
 };
 
@@ -192,7 +191,7 @@ var outgoingMessageToPerson = {
                   phone: '+2884615402'
                 },
                 parent: {
-                  
+
                 }
               }
             }

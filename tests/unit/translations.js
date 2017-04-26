@@ -1,17 +1,10 @@
-var sinon = require('sinon'),
+var sinon = require('sinon').sandbox.create(),
     properties = require('properties'),
-    utils = require('./utils'),
     db = require('../../db'),
     translations = require('../../translations');
 
 exports.tearDown = function (callback) {
-  utils.restore(
-    properties.parse,
-    db.medic.get,
-    db.medic.attachment.get,
-    db.medic.view,
-    db.medic.bulk
-  );
+  sinon.restore();
   callback();
 };
 

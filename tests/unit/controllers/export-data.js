@@ -4,8 +4,7 @@ var controller = require('../../../controllers/export-data'),
     fti = require('../../../controllers/fti'),
     childProcess = require('child_process'),
     JSZip = require('jszip'),
-    sinon = require('sinon'),
-    utils = require('../utils'),
+    sinon = require('sinon').sandbox.create(),
     moment = require('moment');
 
 function readStream(dataHook, callback) {
@@ -26,14 +25,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-  utils.restore(
-    fti.get,
-    db.medic.view,
-    db.audit.list,
-    config.translate,
-    config.get,
-    childProcess.spawn
-  );
+  sinon.restore();
   callback();
 };
 

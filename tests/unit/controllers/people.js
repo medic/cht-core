@@ -2,21 +2,12 @@ var controller = require('../../../controllers/people'),
     places = require('../../../controllers/places'),
     cutils = require('../../../controllers/utils'),
     db = require('../../../db'),
-    utils = require('../utils'),
-    sinon = require('sinon');
+    sinon = require('sinon').sandbox.create();
 
 var example;
 
 exports.tearDown = function (callback) {
-  utils.restore(
-    db.medic.get,
-    db.medic.insert,
-    controller.getPerson,
-    controller.createPerson,
-    controller.validatePerson,
-    places.getOrCreatePlace,
-    cutils.isDateStrValid
-  );
+  sinon.restore();
   callback();
 };
 

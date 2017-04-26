@@ -1,8 +1,7 @@
 var controller = require('../../../controllers/visits-completed'),
     db = require('../../../db'),
     config = require('../../../config'),
-    utils = require('../utils'),
-    sinon = require('sinon');
+    sinon = require('sinon').sandbox.create();
 
 exports.setUp = function(callback) {
   sinon.stub(config, 'get').returns({});
@@ -10,7 +9,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function (callback) {
-  utils.restore(db.fti, db.medic.view, config.get);
+  sinon.restore();
   callback();
 };
 

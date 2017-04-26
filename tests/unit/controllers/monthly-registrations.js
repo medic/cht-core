@@ -2,8 +2,7 @@ var controller = require('../../../controllers/monthly-registrations'),
     db = require('../../../db'),
     config = require('../../../config'),
     moment = require('moment'),
-    utils = require('../utils'),
-    sinon = require('sinon');
+    sinon = require('sinon').sandbox.create();
 
 var clock;
 
@@ -14,7 +13,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-  utils.restore(clock, db.fti, config.get);
+  sinon.restore();
   callback();
 };
 

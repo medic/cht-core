@@ -2,8 +2,7 @@ var controller = require('../../../controllers/monthly-deliveries'),
     db = require('../../../db'),
     config = require('../../../config'),
     moment = require('moment'),
-    utils = require('../utils'),
-    sinon = require('sinon');
+    sinon = require('sinon').sandbox.create();
 
 var clock;
 
@@ -20,7 +19,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-  utils.restore(clock, db.fti, config.get);
+  sinon.restore();
   callback();
 };
 
@@ -117,7 +116,7 @@ exports['get returns monthly deliveries count'] = function(test) {
       { month: 'Sep 1969', count: 1 }, // delivery report for patient 4
       { month: 'Oct 1969', count: 0 },
       { month: 'Nov 1969', count: 0 },
-      { month: 'Dec 1969', count: 0 } 
+      { month: 'Dec 1969', count: 0 }
     ];
     test.same(results, expected);
     test.equals(fti.callCount, 2);

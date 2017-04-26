@@ -1,7 +1,6 @@
-var sinon = require('sinon'),
+var sinon = require('sinon').sandbox.create(),
     db = require('../../../db'),
     config = require('../../../config'),
-    utils = require('../utils'),
     migration = require('../../../migrations/namespace-form-fields');
 
 var makeStubs = (...viewBatches) => {
@@ -34,12 +33,7 @@ var makeStubs = (...viewBatches) => {
 };
 
 exports.tearDown = function (callback) {
-  utils.restore(
-    db.medic.view,
-    db.medic.bulk,
-    config.get,
-    config.load
-  );
+  sinon.restore();
   callback();
 };
 

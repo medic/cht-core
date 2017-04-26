@@ -2,16 +2,10 @@
 
 var controller = require('../../../controllers/forms'),
     db = require('../../../db'),
-    utils = require('../utils'),
-    sinon = require('sinon');
+    sinon = require('sinon').sandbox.create();
 
 exports.tearDown = function (callback) {
-  utils.restore(
-    db.request,
-    db.sanitizeResponse,
-    db.medic.view,
-    db.medic.attachment.get
-  );
+  sinon.restore();
   callback();
 };
 

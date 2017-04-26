@@ -1,14 +1,9 @@
 var controller = require('../../../controllers/message-utils'),
     db = require('../../../db'),
-    utils = require('../utils'),
-    sinon = require('sinon');
+    sinon = require('sinon').sandbox.create();
 
 exports.tearDown = function (callback) {
-  utils.restore(
-    db.medic.view,
-    db.medic.updateWithHandler,
-    controller.getMessage
-  );
+  sinon.restore();
   callback();
 };
 

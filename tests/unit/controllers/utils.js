@@ -2,8 +2,7 @@ var utils = require('../../../controllers/utils'),
     db = require('../../../db'),
     config = require('../../../config'),
     moment = require('moment'),
-    testUtils = require('../utils'),
-    sinon = require('sinon');
+    sinon = require('sinon').sandbox.create();
 
 var clock;
 
@@ -13,7 +12,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function (callback) {
-  testUtils.restore(clock, db.fti, config.get);
+  sinon.restore();
   callback();
 };
 

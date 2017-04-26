@@ -1,17 +1,12 @@
-var request = require('request'),
-    url = require('url'),
-    sinon = require('sinon'),
-    auth = require('../../auth'),
-    utils = require('./utils'),
-    config = require('../../config'),
-    db = require('../../db');
-
-exports.setUp = function(callback) {
-  callback();
-};
+const request = require('request'),
+      url = require('url'),
+      sinon = require('sinon').sandbox.create(),
+      auth = require('../../auth'),
+      config = require('../../config'),
+      db = require('../../db');
 
 exports.tearDown = function (callback) {
-  utils.restore(request.get, request.head, url.format, config.get);
+  sinon.restore();
   callback();
 };
 

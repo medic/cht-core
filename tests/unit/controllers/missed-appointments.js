@@ -2,8 +2,7 @@ var controller = require('../../../controllers/missed-appointments'),
     db = require('../../../db'),
     config = require('../../../config'),
     moment = require('moment'),
-    utils = require('../utils'),
-    sinon = require('sinon');
+    sinon = require('sinon').sandbox.create();
 
 var clock;
 
@@ -20,7 +19,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function (callback) {
-  utils.restore(clock, db.fti, config.get);
+  sinon.restore();
   callback();
 };
 
@@ -51,23 +50,23 @@ exports['get returns zero if all registrations have delivered'] = function(test)
   var fti = sinon.stub(db, 'fti');
   fti.onFirstCall().callsArgWith(2, null, {
     rows: [
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 1,
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
           } ]
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 2,
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
           } ]
-        } 
+        }
       }
     ]
   });
@@ -89,23 +88,23 @@ exports['get returns zero if all registrations have visits'] = function(test) {
   var fti = sinon.stub(db, 'fti');
   fti.onFirstCall().callsArgWith(2, null, {
     rows: [
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: '1',
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
           } ]
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: '2',
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
           } ]
-        } 
+        }
       }
     ]
   });
@@ -131,29 +130,29 @@ exports['get ignores registrations with no missed appointments'] = function(test
   var fti = sinon.stub(db, 'fti');
   fti.onFirstCall().callsArgWith(2, null, {
     rows: [
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 1,
           scheduled_tasks: []
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 2,
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(24, 'days').toISOString()
           } ]
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 3,
           scheduled_tasks: [ {
             group: 1,
             due: moment().subtract(11, 'days').toISOString()
           } ]
-        } 
+        }
       }
     ]
   });
@@ -172,8 +171,8 @@ exports['get returns all registrations with missed appointments'] = function(tes
   // get registrations
   fti.onCall(0).callsArgWith(2, null, {
     rows: [
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 1,
           fields: { patient_name: 'sarah' },
           form: 'R',
@@ -183,10 +182,10 @@ exports['get returns all registrations with missed appointments'] = function(tes
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
           } ]
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 2,
           fields: { patient_name: 'sally' },
           form: 'P',
@@ -196,7 +195,7 @@ exports['get returns all registrations with missed appointments'] = function(tes
             group: 1,
             due: moment().subtract(20, 'days').toISOString()
           } ]
-        } 
+        }
       }
     ]
   });

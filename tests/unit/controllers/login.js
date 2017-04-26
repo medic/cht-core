@@ -2,8 +2,7 @@ var controller = require('../../../controllers/login'),
     _ = require('underscore'),
     db = require('../../../db'),
     auth = require('../../../auth'),
-    sinon = require('sinon'),
-    utils = require('../utils'),
+    sinon = require('sinon').sandbox.create(),
     config = require('../../../config'),
     request = require('request'),
     fs = require('fs'),
@@ -37,12 +36,7 @@ exports.setUp = function(callback) {
 
 exports.tearDown = function(callback) {
   db.settings = {};
-  utils.restore(
-    auth.getUserCtx,
-    fs.readFile,
-    config.translate,
-    request.post
-  );
+  sinon.restore();
   callback();
 };
 

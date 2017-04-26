@@ -1,7 +1,6 @@
 var db = require('../../db'),
-    sinon = require('sinon'),
+    sinon = require('sinon').sandbox.create(),
     serverUtils = require('../../server-utils'),
-    utils = require('./utils'),
     req = {
       url: '',
       get: function() {}
@@ -20,16 +19,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function (callback) {
-  utils.restore(
-    res.writeHead,
-    res.end,
-    res.redirect,
-    res.json,
-    res.status,
-    req.get,
-    serverUtils.serverError,
-    serverUtils.notLoggedIn
-  );
+  sinon.restore();
   db.settings = {};
   callback();
 };

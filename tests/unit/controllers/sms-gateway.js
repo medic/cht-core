@@ -1,15 +1,10 @@
 var controller = require('../../../controllers/sms-gateway'),
     messageUtils = require('../../../controllers/message-utils'),
     recordUtils = require('../../../controllers/record-utils'),
-    utils = require('../utils'),
-    sinon = require('sinon');
+    sinon = require('sinon').sandbox.create();
 
 exports.tearDown = function (callback) {
-  utils.restore(
-    messageUtils.getMessages,
-    messageUtils.updateMessage,
-    recordUtils.createByForm
-  );
+  sinon.restore();
   callback();
 };
 

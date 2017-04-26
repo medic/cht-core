@@ -1,8 +1,6 @@
-var sinon = require('sinon'),
-    testUtils = require('../utils'),
+var sinon = require('sinon').sandbox.create(),
     auth = require('../../../auth'),
     config = require('../../../config'),
-    serverUtils = require('../../../server-utils'),
     handler = require('../../../handlers/changes'),
     db = require('../../../db'),
     DDOC_ID = '_design/medic-client',
@@ -14,19 +12,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function (callback) {
-  testUtils.restore(
-    auth.getUserCtx,
-    auth.hasAllPermissions,
-    auth.getFacilityId,
-    auth.getContactId,
-    serverUtils.serverError,
-    serverUtils.error,
-    config.get,
-    console.error,
-    db.request,
-    db.medic.view,
-    db.medic.changes
-  );
+  sinon.restore();
   handler._reset();
   callback();
 };

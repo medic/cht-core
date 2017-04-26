@@ -1,10 +1,9 @@
 var controller = require('../../../controllers/record-utils'),
     db = require('../../../db'),
-    utils = require('../utils'),
-    sinon = require('sinon');
+    sinon = require('sinon').sandbox.create();
 
 exports.tearDown = function (callback) {
-  utils.restore(db.request, db.getPath);
+  sinon.restore();
   callback();
 };
 

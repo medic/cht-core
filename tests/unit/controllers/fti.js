@@ -1,15 +1,14 @@
 var controller = require('../../../controllers/fti'),
     utils = require('../../../controllers/utils'),
     config = require('../../../config'),
-    testUtils = require('../utils'),
-    sinon = require('sinon');
+    sinon = require('sinon').sandbox.create();
 
 exports.setUp = function(callback) {
   callback();
 };
 
 exports.tearDown = function (callback) {
-  testUtils.restore(utils.fti, config.get);
+  sinon.restore();
   callback();
 };
 

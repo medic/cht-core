@@ -1,9 +1,8 @@
-var sinon = require('sinon'),
+var sinon = require('sinon').sandbox.create(),
     request = require('request'),
     schedule = require('../../../schedules/stats-submission'),
     db = require('../../../db'),
     config = require('../../../config'),
-    utils = require('../utils'),
     successfulResponse = JSON.stringify({ payload: { success: true }});
 
 var clock;
@@ -14,13 +13,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function (callback) {
-  utils.restore(
-    clock,
-    db.medic.view,
-    db.medic.insert,
-    config.get,
-    request.post
-  );
+  sinon.restore();
   callback();
 };
 
@@ -234,7 +227,7 @@ exports['go submits populated submission string'] = function(test) {
       version: 2,
       visits_per_delivery: { '1+': 20, '2+': 19, '3+': 18, '4+': 17 },
       estimated_deliveries: 50,
-      valid_form_submissions: { _totalReports: 251, _totalMessages: 5, D: 60, F: 12, V: 101, R: 63, P: 15 }, 
+      valid_form_submissions: { _totalReports: 251, _totalMessages: 5, D: 60, F: 12, V: 101, R: 63, P: 15 },
       delivery_locations: { F: 23, S: 20 },
       active_facilities: { _total: 12, _totalReports: 11, _totalMessages: 4, D: 10, F: 5, V: 12, R: 1, P: 5 },
       type: 'usage_stats',
@@ -402,7 +395,7 @@ exports['go submits populated submission string for old style active_facilities'
     doc: {
       visits_per_delivery: { '1+': 20, '2+': 19, '3+': 18, '4+': 17 },
       estimated_deliveries: 50,
-      valid_form_submissions: { D: 60, F: 12, V: 101, R: 63, P: 15 }, 
+      valid_form_submissions: { D: 60, F: 12, V: 101, R: 63, P: 15 },
       delivery_locations: { F: 23, S: 20 },
       active_facilities: 20,
       type: 'usage_stats',

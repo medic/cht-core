@@ -2,8 +2,7 @@ var controller = require('../../../controllers/users'),
     people = require('../../../controllers/people'),
     places = require('../../../controllers/places'),
     db = require('../../../db'),
-    utils = require('../utils'),
-    sinon = require('sinon');
+    sinon = require('sinon').sandbox.create();
 
 var facilitya = { _id: 'a', name: 'aaron' },
     facilityb = { _id: 'b', name: 'brian' },
@@ -12,37 +11,7 @@ var facilitya = { _id: 'a', name: 'aaron' },
 var userData;
 
 exports.tearDown = function (callback) {
-  utils.restore(
-    db.request,
-    db.getPath,
-    db.medic,
-    db.medic.get,
-    db.medic.insert,
-    db.medic.view,
-    db._users.get,
-    db._users.insert,
-    controller._mapUsers,
-    controller._createContact,
-    controller._createPlace,
-    controller._createUser,
-    controller._createUserSettings,
-    controller._getAllUsers,
-    controller._getAllUserSettings,
-    controller._getFacilities,
-    controller._setContactParent,
-    controller._validateUser,
-    controller._validateUserSettings,
-    controller._hasParent,
-    controller._updatePlace,
-    controller._updateUser,
-    controller._updateUserSettings,
-    controller._validateNewUsername,
-    controller.getList,
-    people.createPerson,
-    people.getOrCreatePerson,
-    places.getOrCreatePlace,
-    places.getPlace
-  );
+  sinon.restore();
   callback();
 };
 

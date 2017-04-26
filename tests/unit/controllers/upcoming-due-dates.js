@@ -2,8 +2,7 @@ var controller = require('../../../controllers/upcoming-due-dates'),
     db = require('../../../db'),
     config = require('../../../config'),
     moment = require('moment'),
-    utils = require('../utils'),
-    sinon = require('sinon');
+    sinon = require('sinon').sandbox.create();
 
 var clock;
 
@@ -20,7 +19,7 @@ exports.setUp = function(callback) {
 };
 
 exports.tearDown = function(callback) {
-  utils.restore(clock, db.fti, config.get);
+  sinon.restore();
   callback();
 };
 
@@ -51,23 +50,23 @@ exports['get returns zero if all registrations have delivered'] = function(test)
   var fti = sinon.stub(db, 'fti');
   fti.onFirstCall().callsArgWith(2, null, {
     rows: [
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 1,
           scheduled_tasks: [ {
             group: 1,
             due: moment().toISOString()
           } ]
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 2,
           scheduled_tasks: [ {
             group: 1,
             due: moment().toISOString()
           } ]
-        } 
+        }
       }
     ]
   });
@@ -92,23 +91,23 @@ exports['get returns all women with upcoming due dates'] = function(test) {
   // get registrations
   fti.onCall(0).callsArgWith(2, null, {
     rows: [
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 1,
           fields: { patient_name: 'sarah' },
           form: 'R',
           reported_date: today.clone().subtract(36, 'weeks').toISOString(),
           related_entities: { clinic: { id: 'x' } }
-        } 
+        }
       },
-      { 
-        doc: { 
+      {
+        doc: {
           patient_id: 2,
           fields: { patient_name: 'sally' },
           form: 'P',
           lmp_date: today.clone().subtract(40, 'weeks').toISOString(),
           related_entities: { clinic: { id: 'y' } }
-        } 
+        }
       }
     ]
   });
@@ -123,11 +122,11 @@ exports['get returns all women with upcoming due dates'] = function(test) {
   // get visits
   fti.onCall(2).callsArgWith(2, null, {
     rows: [
-      { doc: { 
+      { doc: {
         reported_date: today.clone().subtract(2, 'weeks').toISOString(),
         fields: { patient_id: 1 }
       } },
-      { doc: { 
+      { doc: {
         reported_date: today.clone().subtract(6, 'weeks').toISOString(),
         fields: { patient_id: 1 }
       } }
