@@ -5,6 +5,8 @@ var messageId2 = '40cb5078-57da-427c-b3a9-b76ae581e5da';
 var messageId3 = '121a9fe4-2da0-49c1-a0cf-13f2554d7430';
 var messageTo1 = '+64275555556';
 var messageContent1 = 'Thank you for registering Shannon. Their pregnancy ID is 28551, and EDD is Sun, Dec 18th, 2016';
+var messageContent2 = 'Please remind Shannon (28551) to visit the health facility for ANC visit this week. When she does let us know with "V 28551". Thanks!';
+var messageTo2 = '+64275555556';
 var report = {
   type: 'data_record',
   from: '+64275555556',
@@ -51,8 +53,8 @@ var report = {
       due: '2016-08-28T21:00:00.000Z',
       messages: [
         {
-          to: '+64275555556',
-          message: 'Please remind Shannon (28551) to visit the health facility for ANC visit this week. When she does let us know with "V 28551". Thanks!',
+          to: messageTo2,
+          message: messageContent2,
           uuid: messageId2
         }
       ],
@@ -122,7 +124,7 @@ describe('sms-gateway api', function() {
 
   'use strict';
 
-  var submit = function(body) {
+  var pollSmsApi = function(body) {
     var content = JSON.stringify(body);
     return utils.request({
       method: 'POST',
@@ -135,7 +137,7 @@ describe('sms-gateway api', function() {
     });
   };
 
-  describe('submits new sms messages', function() {
+  describe('- gateway submits new WT sms messages', function() {
 
     beforeEach(function(done) {
       browser.ignoreSynchronization = true;
@@ -146,10 +148,10 @@ describe('sms-gateway api', function() {
           id: 'a'
         } ]
       };
-      submit(body).then(done).catch(done);
+      pollSmsApi(body).then(done).catch(done);
     });
 
-    it('shows content', function() {
+    it('- shows content', function() {
       element(by.id('messages-tab')).click();
 
       // refresh - live list only updates on changes but changes are disabled for e2e
@@ -176,7 +178,7 @@ describe('sms-gateway api', function() {
 
   });
 
-  describe('submits sms status updates', function() {
+  describe('- gateway submits WT sms status updates', function() {
 
     var savedDoc;
 
@@ -193,7 +195,7 @@ describe('sms-gateway api', function() {
               { id: messageId3, status: 'FAILED', reason: 'Insufficient credit' }
             ]
           };
-          submit(body).then(done).catch(done);
+          pollSmsApi(body).then(done).catch(done);
         })
         .catch(done);
     });
@@ -202,7 +204,7 @@ describe('sms-gateway api', function() {
       utils.deleteDoc(savedDoc).then(done).catch(done);
     });
 
-    it('shows content', function() {
+    it('- shows content', function() {
       element(by.id('reports-tab')).click();
 
       // refresh - live list only updates on changes but changes are disabled for e2e
@@ -229,7 +231,7 @@ describe('sms-gateway api', function() {
     });
   });
 
-  describe('returns list of pending messages', function() {
+  describe('- api returns list of pending WO messages', function() {
 
     var savedDoc;
     var response;
@@ -237,10 +239,17 @@ describe('sms-gateway api', function() {
     beforeEach(function(done) {
       browser.ignoreSynchronization = true;
 
-      utils.saveDoc(report)
+      var reportWithTwoMessagesToSend = JSON.parse(JSON.stringify(report));
+      // First scheduled message is in forwarded-to-gateway state.
+      reportWithTwoMessagesToSend.scheduled_tasks[0].state = 'forwarded-to-gateway';
+      reportWithTwoMessagesToSend.scheduled_tasks[0].state_history.push(
+        { state: 'forwarded-to-gateway', timestamp: '2016-08-05T02:24:48.569Z' }
+      );
+
+      utils.saveDoc(reportWithTwoMessagesToSend)
         .then(function(result) {
           savedDoc = result.id;
-          return submit({}).then(function(res) {
+          return pollSmsApi({}).then(function(res) {
             response = res;
             done();
           });
@@ -252,11 +261,14 @@ describe('sms-gateway api', function() {
       utils.deleteDoc(savedDoc).then(done).catch(done);
     });
 
-    it('returns list and updates state', function() {
-      expect(response.messages.length).toBe(1);
+    it('- returns list and updates state', function() {
+      expect(response.messages.length).toBe(2);
       expect(response.messages[0].id).toBe(messageId1);
       expect(response.messages[0].to).toBe(messageTo1);
       expect(response.messages[0].content).toBe(messageContent1);
+      expect(response.messages[1].id).toBe(messageId2);
+      expect(response.messages[1].to).toBe(messageTo2);
+      expect(response.messages[1].content).toBe(messageContent2);
 
       element(by.id('reports-tab')).click();
 
@@ -274,8 +286,14 @@ describe('sms-gateway api', function() {
       browser.sleep(100); // without this the elements are found to be detached...
 
       // tasks
-      expect(element(by.css('#reports-content .details > ul .task-list .task-state .state')).getText()).toBe('pending');
+      // State for messageId1 has been updated from pending to forwarded-to-gateway.
+      expect(element(by.css('#reports-content .details > ul .task-list .task-state .state')).getText())
+          .toBe('forwarded to gateway');
 
+      // scheduled tasks
+      // State for messageId2 is still forwarded-to-gateway
+      expect(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state'))
+          .getText()).toBe('forwarded to gateway');
     });
   });
 });
