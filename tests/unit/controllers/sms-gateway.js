@@ -128,11 +128,10 @@ exports['post() should provide WO messages in response'] = function(test) {
         { id:'3', to:'+3', content:'three' },
       ],
     });
-    // TODO add this back 
-    // test.equals(updateMessage.callCount, 3);
-    // test.equals(updateMessage.withArgs('1', { state:'forwarded-to-gateway' }).callCount, 1);
-    // test.equals(updateMessage.withArgs('2', { state:'forwarded-to-gateway' }).callCount, 1);
-    // test.equals(updateMessage.withArgs('3', { state:'forwarded-to-gateway' }).callCount, 1);
+    test.equals(updateMessage.callCount, 3);
+    test.equals(updateMessage.withArgs('1', { state:'forwarded-to-gateway' }).callCount, 1);
+    test.equals(updateMessage.withArgs('2', { state:'forwarded-to-gateway' }).callCount, 1);
+    test.equals(updateMessage.withArgs('3', { state:'forwarded-to-gateway' }).callCount, 1);
     test.done();
   });
 };
@@ -154,7 +153,7 @@ exports['post() should continue processing other stuff if saving a wt message fa
       { id:'wt', from:'+WT', content:'wt message' },
     ],
     updates: [
-      { id:'status', status:'SENT' },
+      { id:'wt_status_changed', status:'SENT' },
     ],
   } };
 
@@ -164,8 +163,11 @@ exports['post() should continue processing other stuff if saving a wt message fa
     test.equals(err, null);
     test.equals(createRecord.callCount, 1);
     test.equals(createRecord.withArgs({ gateway_ref:'wt', from:'+WT', message:'wt message' }).callCount, 1);
-    test.equals(updateMessage.callCount, 1);
-    test.equals(updateMessage.withArgs('status', { state:'sent' }).callCount, 1);
+
+    test.equals(updateMessage.callCount, 2);
+    test.equals(updateMessage.withArgs('wo', { state:'forwarded-to-gateway' }).callCount, 1);
+    test.equals(updateMessage.withArgs('wt_status_changed', { state:'sent' }).callCount, 1);
+
     test.deepEqual(res, {
       messages: [
         { id:'wo', to:'+WO', content:'wo message' },
@@ -192,7 +194,7 @@ exports['post() should continue processing other stuff if updating a status fail
       { id:'wt', from:'+WT', content:'wt message' },
     ],
     updates: [
-      { id:'status', status:'SENT' },
+      { id:'wt_status_changed', status:'SENT' },
     ],
   } };
 
@@ -202,8 +204,11 @@ exports['post() should continue processing other stuff if updating a status fail
     test.equals(err, null);
     test.equals(createRecord.callCount, 1);
     test.equals(createRecord.withArgs({ gateway_ref:'wt', from:'+WT', message:'wt message' }).callCount, 1);
-    test.equals(updateMessage.callCount, 1);
-    test.equals(updateMessage.withArgs('status', { state:'sent' }).callCount, 1);
+
+    test.equals(updateMessage.callCount, 2);
+    test.equals(updateMessage.withArgs('wo', { state:'forwarded-to-gateway' }).callCount, 1);
+    test.equals(updateMessage.withArgs('wt_status_changed', { state:'sent' }).callCount, 1);
+
     test.deepEqual(res, {
       messages: [
         { id:'wo', to:'+WO', content:'wo message' },

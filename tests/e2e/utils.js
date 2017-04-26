@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     PouchDB = require('pouchdb'),
-    url = require('url'),
+    request = require('request-promise-native'),
+    urlLib = require('url'),
 
     db,
     dbName;
@@ -22,7 +23,7 @@ var _ = require('underscore'),
     throw new Error('It looks like you\'re using your standard COUCH_URL for medic-api e2e tests.  You must use a temporary database!');
   }
 
-  var couchUrl = url.parse(process.env.COUCH_URL);
+  var couchUrl = urlLib.parse(process.env.COUCH_URL);
 
   if(couchUrl.pathname.length < 2) {
     throw new Error('No database name supplied in COUCH_URL env var.');
@@ -42,7 +43,23 @@ var _ = require('underscore'),
 module.exports = {
   adminUser: adminUser,
 
-  beforeEach: function() {
+  API_URL: process.env.API_URL,
+  COUCH_URL: process.env.COUCH_URL,
+
+  adminDb: db,
+
+  apiRequest: (endpoint, queryParams) => {
+    var url = urlLib.parse(module.exports.API_URL);
+    url.pathname = endpoint;
+    url = urlLib.format(url);
+    return request({
+      uri: url,
+      json: true,
+      qs: queryParams
+    });
+  },
+
+  cleanDb: function() {
     // delete all docs from DB except for standard medic docs
     return db.allDocs()
       .then(function(res) {

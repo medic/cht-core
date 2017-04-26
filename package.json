@@ -43,6 +43,7 @@
     "mocha": "^3.0.2",
     "nodeunit": "latest",
     "pouchdb": "^6.0.4",
+    "request-promise-native": "^1.0.3",
     "sinon": "latest"
   },
   "scripts": {

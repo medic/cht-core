@@ -1,16 +1,15 @@
 var _ = require('underscore'),
     assert = require('chai').assert,
-    PouchDB = require('pouchdb'),
     request = require('request'),
-    Url = require('url'),
+    urlLib = require('url'),
     utils = require('../utils');
 
 var DB_NAME = require('../../../db').settings.db,
-    adminDb = new PouchDB(process.env.COUCH_URL);
+    adminDb = utils.adminDb;
 
-var adminUrl = process.env.API_URL;
+var adminUrl = utils.API_URL;
 function userUrl(name) {
-  var url = Url.parse(adminUrl);
+  var url = urlLib.parse(adminUrl);
   url.auth = name + ':secret';
   return url;
 }
@@ -49,7 +48,7 @@ function requestChanges(username, ids, last_seq) {
 
     var url = userUrl(username);
     url.pathname = '/' + DB_NAME + '/_changes';
-    url = Url.format(url);
+    url = urlLib.format(url);
     request({ uri:url, qs:qs, },
     function(err, res, body) {
       if(err) {
@@ -103,7 +102,7 @@ describe('changes handler', function() {
     AppSettings.modified = false;
     delete AppSettings.original;
 
-    utils.beforeEach()
+    utils.cleanDb()
       .then(function() {
         done();
       })

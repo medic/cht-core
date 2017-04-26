@@ -54,23 +54,26 @@ function updateState(messageId, newState, details, callback) {
   messageUtils.updateMessage(messageId, updateBody, callback);
 }
 
-// function markMessagesForwarded(messages, callback) {
-//   async.eachSeries(
-//     messages,
-//     function(message, callback) {
-//       updateState(message.id, 'forwarded-to-gateway', null, callback);
-//     },
-//     function(err) {
-//       if (err) {
-//         warn(err);
-//       }
-//       return callback();
-//     }
-//   );
-// }
+function markMessagesForwarded(messages, callback) {
+  async.eachSeries(
+    messages,
+    function(message, callback) {
+      updateState(message.id, 'forwarded-to-gateway', null, callback);
+    },
+    function(err) {
+      if (err) {
+        // No error throwing here, because no big deal : 'forwarded-to-gateway' status
+        // wasn't saved to DB, so message will stay in 'pending' status and be retried next time.
+        warn(err);
+      }
+      return callback();
+    }
+  );
+}
 
 function getOutgoing(callback) {
-  messageUtils.getMessages({ state: 'pending' }, function(err, pendingMessages) {
+  messageUtils.getMessages({ states: ['pending', 'forwarded-to-gateway'] },
+    function(err, pendingMessages) {
     if (err) {
       warn(err);
       return callback(null, []);
@@ -82,11 +85,9 @@ function getOutgoing(callback) {
         content: message.message,
       };
     });
-    // TODO add this back in once this function also queries for
-    // messages in state: 'forwarded-to-gateway'
-    // markMessagesForwarded(messages, function() {
+    markMessagesForwarded(messages, function() {
       callback(null, messages);
-    // });
+    });
   });
 }
 

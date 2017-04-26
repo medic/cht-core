@@ -5,7 +5,7 @@ var assert = require('chai').assert,
 
 describe('medic-api e2e tests framework', function() {
   beforeEach(function(done) {
-    utils.beforeEach()
+    utils.cleanDb()
       .then(function() {
         done();
       })

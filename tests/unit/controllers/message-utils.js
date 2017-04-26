@@ -44,6 +44,46 @@ exports['getMessages returns 500 error if limit over 100'] = function(test) {
   });
 };
 
+exports['getMessages passes state param'] = function(test) {
+  test.expect(4);
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+    { key: 'yayaya', value: { sending_due_date: 456 } },
+    { key: 'pending', value: { sending_due_date: 123 } },
+    { key: 'pending', value: { sending_due_date: 789 } }
+  ] });
+  controller.getMessages({}, function(err, messages) {
+    test.ok(!err);
+    test.equals(messages.length, 3);
+    test.ok(messages[0].sending_due_date <= messages[1].sending_due_date);
+    test.ok(messages[1].sending_due_date <= messages[2].sending_due_date);
+    test.done();
+  });
+};
+
+exports['getMessages passes states param'] = function(test) {
+  test.expect(3);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [] });
+  controller.getMessages({ states: ['happy', 'angry'] }, function(err) {
+    console.log(err);
+    test.ok(!err);
+    test.equals(getView.callCount, 1);
+    test.deepEqual(['happy', 'angry'], getView.getCall(0).args[2].keys);
+    test.done();
+  });
+};
+
+exports['getMessages sorts results'] = function(test) {
+  test.expect(3);
+  var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [] });
+  controller.getMessages({ states: ['happy', 'angry'] }, function(err) {
+    console.log(err);
+    test.ok(!err);
+    test.equals(getView.callCount, 1);
+    test.deepEqual(['happy', 'angry'], getView.getCall(0).args[2].keys);
+    test.done();
+  });
+};
+
 exports['getMessage returns 404 if view returns empty rows'] = function(test) {
   test.expect(3);
   var getView = sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: []});

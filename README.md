@@ -510,6 +510,7 @@ Returns list of messages, oldest first based on timestamp or due date.
 | Variable           | Description
 | ------------------ | -------------
 | state              | Returns only messages that match a given state value. e.g. state=pending
+| states             | Array. Returns only messages with state matching one of the states in the array.
 | start (todo)       | Returns list of messages, limited to 25 starting at id (uuid).
 | descending         | Returns latest messages first.
 | limit              | Modifies number of returned messages to specified value, max is 1000.
@@ -580,6 +581,46 @@ Content-Type: application/json; charset=utf-8
         "timestamp": "2015-04-08T20:10:00.000Z"
       }
     ]
+  },
+  {
+    "message": "[Sample message] Of course, I will send some with Charles tomorrow. Let me know when you get it.",
+    "to": "+2896503099",
+    "id": "c8ca60c6c19d4e253f5d107ac801594e",
+    "state": "sent",
+    "state_history": [
+      {
+        "state": "pending",
+        "timestamp": "2015-03-08T13:09:00.000Z"
+      },
+      {
+        "state": "sent",
+        "timestamp": "2015-03-08T13:10:00.000Z"
+      }
+    ]
+  }
+]
+```
+
+Get pending and sent messages.
+
+```
+GET /api/v1/messages?states%5B0%5D=pending&states%5B1%5D=sent
+```
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+
+[
+  {
+    "message": "Thank you  for registering Jane. Their ID is 12345.",
+    "to": "+2896503099",
+    "id": "8dc30e38-bc31-491e-8321-407573b86e0b",
+    "state": "pending",
+    "state_history": [{
+      "state": "pending",
+      "timestamp": "2017-04-11T09:01:29.665Z"
+    }]
   },
   {
     "message": "[Sample message] Of course, I will send some with Charles tomorrow. Let me know when you get it.",

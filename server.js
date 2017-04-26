@@ -352,7 +352,7 @@ app.get('/api/v1/messages', function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res, true);
     }
-    var opts = _.pick(req.query, 'limit', 'start', 'descending', 'state');
+    var opts = _.pick(req.query, 'limit', 'start', 'descending', 'state', 'states');
     messages.getMessages(opts, function(err, result) {
       if (err) {
         return serverUtils.serverError(err.message, req, res);
