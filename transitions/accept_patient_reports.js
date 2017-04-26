@@ -92,7 +92,6 @@ module.exports = {
             }, callback);
         }
 
-        transitionUtils.addRegistrationNotFoundError(doc, report);
         return callback(null, true);
     },
     // find the messages to clear

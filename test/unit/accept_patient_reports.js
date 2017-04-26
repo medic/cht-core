@@ -86,7 +86,9 @@ exports['onMatch with no patient id adds error msg and response'] = function(tes
     });
 };
 
-exports['matchRegistrations with no registrations adds error msg and response'] = function(test) {
+// Because patients can be created through the UI and not neccessarily have
+// a registration at all
+exports['matchRegistrations with no registrations does not error'] = function(test) {
 
     var doc = {
         fields: { patient_id: 'x' },
@@ -107,13 +109,8 @@ exports['matchRegistrations with no registrations adds error msg and response'] 
             }]
         }
     }, function() {
-        test.ok(doc.errors);
-        test.equal(doc.errors[0].message, 'not found x');
-        test.ok(doc.tasks);
-        test.equal(
-            _.first(_.first(doc.tasks).messages).message,
-            'not found x'
-        );
+        test.ok(!doc.errors);
+        test.ok(!doc.tasks);
         test.done();
     });
 };
