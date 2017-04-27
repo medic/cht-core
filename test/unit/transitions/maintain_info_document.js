@@ -38,10 +38,11 @@ exports['Updates an existing document with a new sync date'] = test => {
   };
 
   db.medic.get.callsArgWith(1, null, infoDoc);
-  db.medic.insert.callsArg(1);
+  db.medic.insert.callsArgWith(1, null, {});
 
-  transition.onMatch(change, db, audit, (err) => {
+  transition.onMatch(change, db, audit, (err, changed) => {
     test.ok(!err);
+    test.ok(!changed);
     test.ok(db.medic.get.calledWith(infoDoc._id));
     test.ok(infoDoc.latest_replication_date);
     test.ok(infoDoc.latest_replication_date instanceof Date);
@@ -64,10 +65,11 @@ exports['If no info doc exists, create one from audit records'] = test => {
 
   db.medic.get.callsArgWith(1, {statusCode: 404});
   audit.get.callsArgWith(1, null, {doc: auditDoc});
-  db.medic.insert.callsArg(1);
+  db.medic.insert.callsArgWith(1, null, {});
 
-  transition.onMatch(change, db, audit, (err) => {
+  transition.onMatch(change, db, audit, (err, changed) => {
     test.ok(!err);
+    test.ok(!changed);
     test.ok(db.medic.get.calledWith('foo-info'));
     test.ok(audit.get.calledWith('foo'));
     test.equal(db.medic.insert.callCount, 1);

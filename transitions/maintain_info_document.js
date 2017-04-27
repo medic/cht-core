@@ -41,24 +41,30 @@ module.exports = {
                    doc.type === 'info'),
   onMatch: (change, db, audit, callback) =>
     getSisterInfoDoc(db, change.id, (err, infoDoc) => {
+      // If we pass callback directly to other functions they may return a
+      // second parameter that is considered truthy and invoke
+      // index.js:applyTransition() to call _setProperty and write to the
+      // document needlessly
+      const done = (err) => callback(err);
+
       if (err) {
         return callback(err);
       }
 
       if (infoDoc) {
         infoDoc.latest_replication_date = new Date();
-        return db.medic.insert(infoDoc, callback);
+        return db.medic.insert(infoDoc, done);
       }
 
       generateInfoDocFromAuditTrail(audit, change.id, (err, infoDoc) => {
         if (err) {
-          return callback(err);
+          return done(err);
         }
 
         infoDoc = infoDoc || createInfoDoc(change.id, 'unknown');
 
         infoDoc.latest_replication_date = new Date();
-        return db.medic.insert(infoDoc, callback);
+        return db.medic.insert(infoDoc, done);
       });
     })
 };
