@@ -82,13 +82,20 @@
         Select2Search($('#edit-user-profile [name=facility]'), ContactSchema.getPlaceTypes());
       });
 
+      var validateRequired = function(fieldName, fieldDisplayName) {
+        if (!$scope.editUserModel[fieldName]) {
+          $scope.errors[fieldName] = $translate.instant('field is required', {
+            field: $translate.instant(fieldDisplayName)
+          });
+          return false;
+        }
+        return true;
+      };
+
       var validatePassword = function() {
         var newUser = !$scope.editUserModel.id;
         if (newUser) {
-          if (!$scope.editUserModel.password) {
-            $scope.errors.password = $translate.instant('field is required', {
-              field: $translate.instant('Password')
-            });
+          if (!validateRequired('password', 'Password')) {
             return false;
           }
         }
@@ -101,13 +108,16 @@
       };
 
       var validateName = function() {
-        if (!$scope.editUserModel.name) {
-          $scope.errors.name = $translate.instant('field is required', {
-            field: $translate.instant('User Name')
-          });
-          return false;
+        return validateRequired('name', 'User Name');
+      };
+
+      var validateRestrictedUser = function() {
+        if ($scope.editUserModel.type !== 'district-manager') {
+          return true;
         }
-        return true;
+        var hasFacility = validateRequired('facility_id', 'Facility');
+        var hasContact = validateRequired('contact_id', 'associated.contact');
+        return hasFacility && hasContact;
       };
 
       var getRoles = function(type, includeAdmin) {
@@ -133,10 +143,16 @@
         if (!updatingSelf) {
           // users don't have permission to update their own security settings
           settings.roles = getRoles($scope.editUserModel.type, true);
-          settings.facility_id = $('#edit-user-profile [name=facility]').val();
-          settings.contact_id = $('#edit-user-profile [name=contact]').val();
+          settings.facility_id = $scope.editUserModel.facility_id;
+          settings.contact_id = $scope.editUserModel.contact_id;
         }
         return settings;
+      };
+
+      var computeFields = function() {
+        $scope.editUserModel.roles = getRoles($scope.editUserModel.type, true);
+        $scope.editUserModel.facility_id = $('#edit-user-profile [name=facility]').val();
+        $scope.editUserModel.contact_id = $('#edit-user-profile [name=contact]').val();
       };
 
       var getUserUpdates = function() {
@@ -170,6 +186,7 @@
       $scope.editUserSettings = function() {
         $scope.setProcessing();
         $scope.errors = {};
+        computeFields();
         if (validateName()) {
           saveEdit('#edit-user-settings', $scope.editUserModel.id, getSettingsUpdates(true));
         } else {
@@ -181,8 +198,9 @@
       $scope.editUser = function() {
         $scope.setProcessing();
         $scope.errors = {};
-        if (validatePassword() && validateName()) {
-          saveEdit('#edit-user-profile', $scope.editUserModel.id, getSettingsUpdates(), getUserUpdates());
+        computeFields();
+        if (validatePassword() && validateName() && validateRestrictedUser()) {
+          saveEdit('#edit-user-profile', $scope.editUserModel.id, getSettingsUpdates(false), getUserUpdates());
         } else {
           $scope.setError();
         }

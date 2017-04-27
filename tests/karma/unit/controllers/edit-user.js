@@ -271,9 +271,80 @@ describe('EditUserCtrl controller', function() {
       chai.expect(scope.errors).not.to.have.property('password');
     });
 
+    it('must have associated place if user type is restricted user', function() {
+      UpdateUser.returns(KarmaUtils.mockPromise());
+      dbQuery.returns(KarmaUtils.mockPromise());
+      createController();
+
+      scope.editUserModel.type = 'district-manager';
+      scope.editUserModel.facility_id = undefined;
+
+      // when
+      scope.editUser();
+
+      // expect
+      chai.expect(scope.errors).to.have.property('facility_id');
+    });
+
+    it('must have associated contact if user type is restricted user', function() {
+      UpdateUser.returns(KarmaUtils.mockPromise());
+      dbQuery.returns(KarmaUtils.mockPromise());
+      createController();
+
+      scope.editUserModel.type = 'district-manager';
+      scope.editUserModel.contact_id = undefined;
+
+      // when
+      scope.editUser();
+
+      // expect
+      chai.expect(scope.errors).to.have.property('contact_id');
+    });
+
+    it('must have associated place and contact if user type is restricted user', function() {
+      UpdateUser.returns(KarmaUtils.mockPromise());
+      dbQuery.returns(KarmaUtils.mockPromise());
+      createController();
+
+      scope.editUserModel.type = 'district-manager';
+      scope.editUserModel.facility_id = undefined;
+      scope.editUserModel.contact_id = undefined;
+
+      // when
+      scope.editUser();
+
+      // expect
+      chai.expect(scope.errors).to.have.property('facility_id');
+      chai.expect(scope.errors).to.have.property('contact_id');
+    });
+
+    it('doesn\'t need associated place and contact if user type is not restricted user', function() {
+      UpdateUser.returns(KarmaUtils.mockPromise());
+      dbQuery.returns(KarmaUtils.mockPromise());
+      createController();
+
+      scope.editUserModel.type = 'some-other-type';
+
+      // when
+      scope.editUser();
+
+      // expect
+      chai.expect(scope.errors).not.to.have.property('facility_id');
+      chai.expect(scope.errors).not.to.have.property('contact_id');
+    });
+
+    var mockjQueryFormFields = function() {
+      window.$ = sinon.stub();
+      window.$.withArgs('#edit-user-profile [name=contact]').returns(
+        {val: function(){ return model.contact_id; }});
+      window.$.withArgs('#edit-user-profile [name=facility]').returns(
+        {val: function(){ return model.facility_id; }});
+    };
+
     it('user is updated', function() {
       UpdateUser.returns(KarmaUtils.mockPromise());
       dbQuery.returns(KarmaUtils.mockPromise());
+      mockjQueryFormFields();
       createController();
 
       scope.editUser();
@@ -291,7 +362,7 @@ describe('EditUserCtrl controller', function() {
       chai.expect(settingsUpdates.fullname).to.equal(scope.editUserModel.fullname);
       chai.expect(settingsUpdates.email).to.equal(scope.editUserModel.email);
       chai.expect(settingsUpdates.phone).to.equal(scope.editUserModel.phone);
-      chai.expect(settingsUpdates.facility_id).to.equal(scope.editUserModel.facility._id);
+      chai.expect(settingsUpdates.facility_id).to.equal(scope.editUserModel.facility_id);
       chai.expect(settingsUpdates.contact_id).to.equal(scope.editUserModel.contact_id);
       chai.expect(settingsUpdates.language).to.equal(scope.editUserModel.language.code);
       chai.expect(settingsUpdates.roles).to.deep.equal(['district-manager', 'kujua_user', 'data_entry', 'district_admin']);
@@ -303,7 +374,7 @@ describe('EditUserCtrl controller', function() {
         });
       chai.expect(userUdates.name).to.equal(scope.editUserModel.name);
       chai.expect(userUdates.password).to.equal(scope.editUserModel.password);
-      chai.expect(userUdates.facility_id).to.equal(scope.editUserModel.facility._id);
+      chai.expect(userUdates.facility_id).to.equal(scope.editUserModel.facility_id);
       chai.expect(userUdates.roles).to.deep.equal(['district-manager', 'kujua_user', 'data_entry', 'district_admin']);
     });
   });
