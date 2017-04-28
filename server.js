@@ -676,8 +676,8 @@ const nodeVersionCheck = callback => {
       callback(new Error(`Node version ${major}.${minor}.${patch} is not supported`));
     }
 
-    if (major < 6 || ( major === 6 && minor < 10)) {
-      console.error('This node version may not be supported');
+    if (major < 6 || ( major === 6 && minor < 5)) {
+      console.error('We recommend nodejs 6.5 or higher.');
     }
 
     callback();
