@@ -120,7 +120,7 @@ Connection: close\r
 X-OpenRosa-Version: 1.0\r
 Date: ${new Date().toISOString()}\r
 Host: ${host}:${port}\r
-User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT
+User-Agent: Dalvik/1.6.0 (Linux; U; Android 4.4.2; TECNO-Y4 Build/KOT49H) org.medicmobile.collect.android/SNAPSHOT\r
 Connection: close\r
 \r\n`).then((res) => {
 
