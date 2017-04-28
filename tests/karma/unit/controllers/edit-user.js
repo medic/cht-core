@@ -333,7 +333,12 @@ describe('EditUserCtrl controller', function() {
       chai.expect(scope.errors).not.to.have.property('contact_id');
     });
 
-    var mockjQueryFormFields = function() {
+
+    var jQuery;
+    // If you use this, don't forget to reset: you're mocking out
+    // jQuery for all unit tests.
+    var mockOutjQueryFormFields = function() {
+      jQuery = window.$;
       window.$ = sinon.stub();
       window.$.withArgs('#edit-user-profile [name=contact]').returns(
         {val: function(){ return model.contact_id; }});
@@ -341,13 +346,18 @@ describe('EditUserCtrl controller', function() {
         {val: function(){ return model.facility_id; }});
     };
 
+    var resetJQuery = function() {
+      window.$ = jQuery;
+    };
+
     it('user is updated', function() {
       UpdateUser.returns(KarmaUtils.mockPromise());
       dbQuery.returns(KarmaUtils.mockPromise());
-      mockjQueryFormFields();
+      mockOutjQueryFormFields();
       createController();
 
       scope.editUser();
+
       chai.expect(UpdateUser.called).to.equal(true);
       var updateUserArgs = UpdateUser.getCall(0).args;
 
@@ -376,6 +386,8 @@ describe('EditUserCtrl controller', function() {
       chai.expect(userUdates.password).to.equal(scope.editUserModel.password);
       chai.expect(userUdates.facility_id).to.equal(scope.editUserModel.facility_id);
       chai.expect(userUdates.roles).to.deep.equal(['district-manager', 'kujua_user', 'data_entry', 'district_admin']);
+
+      resetJQuery();
     });
   });
 });
