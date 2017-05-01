@@ -9,6 +9,7 @@ var analyticsLink = element(by.id('analytics-tab'));
 var reportsLink = element(by.id('reports-tab'));
 var configurationLink = element(by.css('[ui-sref=configuration]'));
 var hamburgerMenu = element(by.className('dropdown options'));
+var logoutButton=$('[ng-click=logout]');
 
 module.exports = {
   getBaseUrl: function () {
@@ -58,6 +59,11 @@ module.exports = {
   isAt: function (list) {
     helper.waitUntilReady(medicLogo);
     return browser.isElementPresent(element(by.id(list)));
+  }, 
+  logout:function(){
+    hamburgerMenu.click();
+    helper.waitElementToBeVisisble(logoutButton);
+    logoutButton.click();
   }
 };
 
