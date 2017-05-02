@@ -7,7 +7,6 @@ var EC = protractor.ExpectedConditions;
         stream.end();
     }
 
-
 module.exports = {
   waitElementToBeVisisble: function (elm) {
     browser.wait(EC.visibilityOf(elm), 15000);

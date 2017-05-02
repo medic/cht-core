@@ -88,5 +88,5 @@ exports.config = {
     browser.driver.sleep(1000);
     return login(browser);
   },
-  onCleanUp: () => modules.forEach(module => module.kill())
+ onCleanUp: () => modules.forEach(module => module.kill())
 };
