@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    async = require('async');
+    parallel = require('async/parallel');
 
 angular.module('inboxServices').factory('Contacts',
   function(
@@ -51,7 +51,7 @@ angular.module('inboxServices').factory('Contacts',
         return cacheByType[type];
       });
       var deferred = $q.defer();
-      async.parallel(relevantCaches, function(err, results) {
+      parallel(relevantCaches, function(err, results) {
         if (err) {
           return deferred.reject(err);
         }
