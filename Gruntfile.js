@@ -83,7 +83,8 @@ module.exports = function(grunt) {
         jshintrc: true,
         reporter: require('jshint-stylish'),
         ignores: [
-          'tests/karma/q.js'
+          'tests/karma/q.js',
+          '**/node_modules/**/*',
         ]
       },
       all: [
@@ -91,8 +92,9 @@ module.exports = function(grunt) {
         'static/js/**/*.js',
         'tests/**/*.js',
         'ddocs/**/*.js',
-        'lib/**/*.js'
-      ]
+        'lib/**/*.js',
+        'packages/kujua-*/**/*.js',
+      ],
     },
     less: {
       all: {

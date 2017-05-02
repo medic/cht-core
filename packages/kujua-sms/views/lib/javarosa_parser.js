@@ -52,7 +52,7 @@ exports.parse = function(def, doc) {
             if (labels[i].match(new RegExp('^' + label + '$', 'i'))) {
                 obj[key] = vals[i].replace(/\\#/g, '#');
             }
-        };
+        }
     });
 
     return obj;

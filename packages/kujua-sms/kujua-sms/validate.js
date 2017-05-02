@@ -54,7 +54,7 @@ exports.validate = function(def, form_data) {
             } else if (ret) {
                 errors.push(ret);
             }
-        };
+        }
 
         if (errors.length !== 0) {
             return errors;

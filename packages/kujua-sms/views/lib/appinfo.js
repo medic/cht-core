@@ -19,7 +19,7 @@ exports.getAppInfo = function() {
      */
     function getForm(code) {
         return this.forms && this.forms[code];
-    };
+    }
 
 
     /*
@@ -55,7 +55,7 @@ exports.getAppInfo = function() {
           locale = cookies.readBrowserCookie('locale');
         }
         return locale || app_settings.locale;
-    };
+    }
 
     /*
      * Value is object with locale strings, e.g.
