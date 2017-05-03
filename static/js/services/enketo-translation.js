@@ -254,6 +254,11 @@ angular.module('inboxServices').service('EnketoTranslation', [
       var fields = {};
       withElements(data)
         .each(function(n) {
+          var dbDocAttribute = n.attributes.getNamedItem('db-doc');
+          if (dbDocAttribute && dbDocAttribute.value === 'true') {
+            return;
+          }
+
           var hasChildren = withElements(n.childNodes).size().value();
           if(hasChildren) {
             fields[n.nodeName] = nodesToJs(n.childNodes);

@@ -83,6 +83,7 @@ module.exports = function(grunt) {
         jshintrc: true,
         reporter: require('jshint-stylish'),
         ignores: [
+          'static/js/modules/xpath-element-path.js',
           'tests/karma/q.js'
         ]
       },

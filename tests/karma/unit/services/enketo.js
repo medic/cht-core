@@ -45,7 +45,7 @@ describe('Enketo service', function() {
       transform = sinon.stub(),
       dbGetAttachment = sinon.stub(),
       dbGet = sinon.stub(),
-      dbPost = sinon.stub(),
+      dbPut = sinon.stub(),
       UserContact = sinon.stub(),
       UserSettings = sinon.stub(),
       createObjectURL = sinon.stub(),
@@ -72,7 +72,7 @@ describe('Enketo service', function() {
       $provide.factory('DB', KarmaUtils.mockDB({
         getAttachment: dbGetAttachment,
         get: dbGet,
-        post: dbPost
+        put: dbPut,
       }));
       $provide.value('XSLT', { transform: transform });
       $provide.value('$window', {
@@ -96,7 +96,7 @@ describe('Enketo service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbPost, transform, createObjectURL, FileReader, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment);
+    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbPut, transform, createObjectURL, FileReader, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment);
   });
 
   describe('render', function() {
@@ -273,15 +273,17 @@ describe('Enketo service', function() {
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
       form.getDataStr.returns(content);
-      dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
+      dbPut.returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
       UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
       UserSettings.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
       return service.save('V', form).then(function(actual) {
+        actual = actual[0];
+
         chai.expect(form.validate.callCount).to.equal(1);
         chai.expect(form.getDataStr.callCount).to.equal(1);
-        chai.expect(dbPost.callCount).to.equal(1);
+        chai.expect(dbPut.callCount).to.equal(1);
         chai.expect(UserContact.callCount).to.equal(1);
-        chai.expect(actual._id).to.equal('5');
+        chai.expect(actual._id).to.match(/(\w+-)\w+/);
         chai.expect(actual._rev).to.equal('1-abc');
         chai.expect(actual.fields.name).to.equal('Sally');
         chai.expect(actual.fields.lmp).to.equal('10');
@@ -309,14 +311,16 @@ describe('Enketo service', function() {
           '<secret_code_name tag="hidden">S4L</secret_code_name>' +
         '</doc>';
       form.getDataStr.returns(content);
-      dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
+      dbPut.returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
       UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
       return service.save('V', form).then(function(actual) {
+        actual = actual[0];
+
         chai.expect(form.validate.callCount).to.equal(1);
         chai.expect(form.getDataStr.callCount).to.equal(1);
-        chai.expect(dbPost.callCount).to.equal(1);
+        chai.expect(dbPut.callCount).to.equal(1);
         chai.expect(UserContact.callCount).to.equal(1);
-        chai.expect(actual._id).to.equal('5');
+        chai.expect(actual._id).to.match(/(\w+-)\w+/);
         chai.expect(actual._rev).to.equal('1-abc');
         chai.expect(actual.fields.name).to.equal('Sally');
         chai.expect(actual.fields.lmp).to.equal('10');
@@ -344,13 +348,15 @@ describe('Enketo service', function() {
         type: 'data_record',
         reported_date: 500,
       }));
-      dbPost.returns(KarmaUtils.mockPromise(null, { id: '6', rev: '2-abc' }));
+      dbPut.returns(KarmaUtils.mockPromise(null, { id: '6', rev: '2-abc' }));
       return service.save('V', form, '6').then(function(actual) {
+        actual = actual[0];
+
         chai.expect(form.validate.callCount).to.equal(1);
         chai.expect(form.getDataStr.callCount).to.equal(1);
         chai.expect(dbGet.callCount).to.equal(1);
         chai.expect(dbGet.args[0][0]).to.equal('6');
-        chai.expect(dbPost.callCount).to.equal(1);
+        chai.expect(dbPut.callCount).to.equal(1);
         chai.expect(actual._id).to.equal('6');
         chai.expect(actual._rev).to.equal('2-abc');
         chai.expect(actual.fields.name).to.equal('Sally');
@@ -364,6 +370,214 @@ describe('Enketo service', function() {
         chai.expect(AddAttachment.args[0][1]).to.equal('content');
         chai.expect(AddAttachment.args[0][2]).to.equal(content);
         chai.expect(AddAttachment.args[0][3]).to.equal('application/xml');
+      });
+    });
+
+    it('creates extra docs', function() {
+      /* jshint expr: true */
+
+      form.validate.returns(KarmaUtils.mockPromise(null, true));
+      var content =
+          `<data>
+            <name>Sally</name>
+            <lmp>10</lmp>
+            <secret_code_name tag="hidden">S4L</secret_code_name>
+            <doc1 db-doc="true">
+              <type>thing_1</type>
+              <some_property_1>some_value_1</some_property_1>
+            </doc1>
+            <doc2 db-doc="true">
+              <type>thing_2</type>
+              <some_property_2>some_value_2</some_property_2>
+            </doc2>
+          </data>`;
+      form.getDataStr.returns(content);
+      dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
+      dbPut.onCall(1).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-def' }));
+      dbPut.onCall(2).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-ghi' }));
+      UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
+      return service.save('V', form).then(function(actual) {
+        chai.expect(form.validate.callCount).to.equal(1);
+        chai.expect(form.getDataStr.callCount).to.equal(1);
+        chai.expect(dbPut.callCount).to.equal(3);
+        chai.expect(UserContact.callCount).to.equal(1);
+
+        chai.expect(actual.length).to.equal(3);
+
+        var actualReport = actual[0];
+        chai.expect(actualReport._id).to.match(/(\w+-)\w+/);
+        chai.expect(actualReport._rev).to.equal('1-abc');
+        chai.expect(actualReport.fields.name).to.equal('Sally');
+        chai.expect(actualReport.fields.lmp).to.equal('10');
+        chai.expect(actualReport.fields.secret_code_name).to.equal('S4L');
+        chai.expect(actualReport.form).to.equal('V');
+        chai.expect(actualReport.type).to.equal('data_record');
+        chai.expect(actualReport.content_type).to.equal('xml');
+        chai.expect(actualReport.contact._id).to.equal('123');
+        chai.expect(actualReport.from).to.equal('555');
+        chai.expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+
+        chai.expect(actualReport.fields.doc1).to.be.undefined;
+        chai.expect(actualReport.fields.doc2).to.be.undefined;
+
+        var actualThing1 = actual[1];
+        chai.expect(actualThing1._id).to.match(/(\w+-)\w+/);
+        chai.expect(actualThing1._rev).to.equal('1-def');
+        chai.expect(actualThing1.some_property_1).to.equal('some_value_1');
+
+        var actualThing2 = actual[2];
+        chai.expect(actualThing2._id).to.match(/(\w+-)\w+/);
+        chai.expect(actualThing2._rev).to.equal('1-ghi');
+        chai.expect(actualThing2.some_property_2).to.equal('some_value_2');
+
+        chai.expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
+      });
+    });
+
+    it('creates extra docs with references', function() {
+      /* jshint expr: true */
+
+      form.validate.returns(KarmaUtils.mockPromise(null, true));
+      var content =
+          `<data>
+            <name>Sally</name>
+            <lmp>10</lmp>
+            <secret_code_name tag="hidden">S4L</secret_code_name>
+            <doc1 db-doc="true">
+              <type>thing_1</type>
+              <some_property_1>some_value_1</some_property_1>
+              <my_self_1 db-doc-ref="/data/doc1"/>
+              <my_parent_1 db-doc-ref="/data"/>
+              <my_sibling_1 db-doc-ref="/data/doc2"/>
+            </doc1>
+            <doc2 db-doc="true">
+              <type>thing_2</type>
+              <some_property_2>some_value_2</some_property_2>
+              <my_self_2 db-doc-ref="/data/doc2"/>
+              <my_parent_2 db-doc-ref="/data"/>
+              <my_sibling_2 db-doc-ref="/data/doc1"/>
+            </doc2>
+            <my_self_0 db-doc-ref="/data"/>
+            <my_child_01 db-doc-ref="/data/doc1"/>
+            <my_child_02 db-doc-ref="/data/doc2"/>
+          </data>`;
+      form.getDataStr.returns(content);
+      dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
+      dbPut.onCall(1).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-def' }));
+      dbPut.onCall(2).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-ghi' }));
+      UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
+      return service.save('V', form).then(function(actual) {
+        chai.expect(form.validate.callCount).to.equal(1);
+        chai.expect(form.getDataStr.callCount).to.equal(1);
+        chai.expect(dbPut.callCount).to.equal(3);
+        chai.expect(UserContact.callCount).to.equal(1);
+
+        chai.expect(actual.length).to.equal(3);
+        const reportId = actual[0]._id;
+        const doc1_id = actual[1]._id;
+        const doc2_id = actual[2]._id;
+
+        var actualReport = actual[0];
+        chai.expect(actualReport._id).to.match(/(\w+-)\w+/);
+        chai.expect(actualReport._rev).to.equal('1-abc');
+        chai.expect(actualReport.fields.name).to.equal('Sally');
+        chai.expect(actualReport.fields.lmp).to.equal('10');
+        chai.expect(actualReport.fields.secret_code_name).to.equal('S4L');
+        chai.expect(actualReport.fields.my_self_0).to.equal(reportId);
+        chai.expect(actualReport.fields.my_child_01).to.equal(doc1_id);
+        chai.expect(actualReport.fields.my_child_02).to.equal(doc2_id);
+        chai.expect(actualReport.form).to.equal('V');
+        chai.expect(actualReport.type).to.equal('data_record');
+        chai.expect(actualReport.content_type).to.equal('xml');
+        chai.expect(actualReport.contact._id).to.equal('123');
+        chai.expect(actualReport.from).to.equal('555');
+        chai.expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+
+        chai.expect(actualReport.fields.doc1).to.be.undefined;
+        chai.expect(actualReport.fields.doc2).to.be.undefined;
+
+        var actualThing1 = actual[1];
+        chai.expect(actualThing1._id).to.match(/(\w+-)\w+/);
+        chai.expect(actualThing1._rev).to.equal('1-def');
+        chai.expect(actualThing1.some_property_1).to.equal('some_value_1');
+        chai.expect(actualThing1.my_self_1).to.equal(doc1_id);
+        chai.expect(actualThing1.my_parent_1).to.equal(reportId);
+        chai.expect(actualThing1.my_sibling_1).to.equal(doc2_id);
+
+        var actualThing2 = actual[2];
+        chai.expect(actualThing2._id).to.match(/(\w+-)\w+/);
+        chai.expect(actualThing2._rev).to.equal('1-ghi');
+        chai.expect(actualThing2.some_property_2).to.equal('some_value_2');
+        chai.expect(actualThing2.my_self_2).to.equal(doc2_id);
+        chai.expect(actualThing2.my_parent_2).to.equal(reportId);
+        chai.expect(actualThing2.my_sibling_2).to.equal(doc1_id);
+
+        chai.expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
+      });
+    });
+
+    it('creates extra docs with repeats', function() {
+      /* jshint expr: true */
+
+      form.validate.returns(KarmaUtils.mockPromise(null, true));
+      var content =
+          `<data xmlns:jr="http://openrosa.org/javarosa">
+            <name>Sally</name>
+            <lmp>10</lmp>
+            <secret_code_name tag="hidden">S4L</secret_code_name>
+            <repeat_doc db-doc="true" jr:template="">
+              <type>repeater</type>
+              <some_property>some_value_1</some_property>
+              <my_parent db-doc-ref="/data"/>
+            </repeat_doc>
+            <repeat_doc db-doc="true">
+              <type>repeater</type>
+              <some_property>some_value_2</some_property>
+              <my_parent db-doc-ref="/data"/>
+            </repeat_doc>
+            <repeat_doc db-doc="true">
+              <type>repeater</type>
+              <some_property>some_value_3</some_property>
+              <my_parent db-doc-ref="/data"/>
+            </repeat_doc>
+          </data>`;
+      form.getDataStr.returns(content);
+      dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
+      dbPut.onCall(1).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-xxx' }));
+      dbPut.onCall(2).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '2-xxx' }));
+      dbPut.onCall(3).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '3-xxx' }));
+      UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
+      return service.save('V', form).then(function(actual) {
+        chai.expect(form.validate.callCount).to.equal(1);
+        chai.expect(form.getDataStr.callCount).to.equal(1);
+        chai.expect(dbPut.callCount).to.equal(4);
+        chai.expect(UserContact.callCount).to.equal(1);
+
+        chai.expect(actual.length).to.equal(4);
+        const reportId = actual[0]._id;
+
+        var actualReport = actual[0];
+        chai.expect(actualReport._id).to.match(/(\w+-)\w+/);
+        chai.expect(actualReport._rev).to.equal('1-abc');
+        chai.expect(actualReport.fields.name).to.equal('Sally');
+        chai.expect(actualReport.fields.lmp).to.equal('10');
+        chai.expect(actualReport.fields.secret_code_name).to.equal('S4L');
+        chai.expect(actualReport.form).to.equal('V');
+        chai.expect(actualReport.type).to.equal('data_record');
+        chai.expect(actualReport.content_type).to.equal('xml');
+        chai.expect(actualReport.contact._id).to.equal('123');
+        chai.expect(actualReport.from).to.equal('555');
+        chai.expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+
+        for (var i=1; i<=3; ++i) {
+          var repeatDocN = actual[i];
+          chai.expect(repeatDocN._id).to.match(/(\w+-)\w+/);
+          chai.expect(repeatDocN._rev).to.equal(i+'-xxx');
+          chai.expect(repeatDocN.my_parent).to.equal(reportId);
+          chai.expect(repeatDocN.some_property).to.equal('some_value_'+i);
+        }
+
+        chai.expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(4);
       });
     });
 
