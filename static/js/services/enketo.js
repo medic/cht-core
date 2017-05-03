@@ -1,3 +1,5 @@
+var uuid = require('uuid/v4');
+
 /* globals EnketoForm */
 angular.module('inboxServices').service('Enketo',
   function(
@@ -258,19 +260,45 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    var storeXMLRecord = function(doc, record) {
+    var xmlToDocs = function(doc, record) {
+      var docsToStore = [];
+
+      record = $.parseXML(record);
+
+      $(record).find('[db-doc=true]').each(function(i, xml) {
+        docsToStore.push(EnketoTranslation.reportRecordToJs(xml));
+        xml.remove();
+      });
+
+      record = record.html();
+
       AddAttachment(doc, REPORT_ATTACHMENT_NAME, record, 'application/xml');
       doc.fields = EnketoTranslation.reportRecordToJs(record);
       doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
-      return doc;
+
+      docsToStore.unshift(doc);
+
+      docsToStore.forEach(function(doc) {
+        if (!doc._id) {
+          doc._id = uuid();
+        }
+      });
+
+      // TODO update inter-doc references
+
+      return docsToStore;
     };
 
-    var saveReport = function(doc) {
-      return DB().post(doc).then(function(res) {
-        doc._id = res.id;
-        doc._rev = res.rev;
-        return doc;
-      });
+    var saveDocs = function(docs) {
+      return $q.all(docs.map(function(doc) {
+        return DB()
+          .post(doc)
+          .then(function(res) {
+            doc._id = res.id;
+            doc._rev = res.rev;
+            return doc;
+          });
+      }));
     };
 
     var update = function(docId) {
@@ -331,9 +359,9 @@ angular.module('inboxServices').service('Enketo',
           return create(formInternalId);
         })
         .then(function(doc) {
-          return storeXMLRecord(doc, form.getDataStr());
+          return xmlToDocs(doc, form.getDataStr());
         })
-        .then(saveReport);
+        .then(saveDocs);
     };
 
     this.unload = function(form) {

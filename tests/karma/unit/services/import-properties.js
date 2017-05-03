@@ -119,7 +119,7 @@ describe('ImportProperties service', function() {
     });
   });
 
-  it('ignores empty message translations', () => {
+  it('ignores empty message translations', function() {
     const doc = { code: 'en', values: {} };
     const content = '[Outgoing Messages]\n' +
                   'registrations[0].messages[0] = MESSAGE 1\n' +
