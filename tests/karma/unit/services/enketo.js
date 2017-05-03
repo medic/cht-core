@@ -367,6 +367,44 @@ describe('Enketo service', function() {
       });
     });
 
+    it('creates extra docs', function() {
+      form.validate.returns(KarmaUtils.mockPromise(null, true));
+      var content =
+          '<data>' +
+            '<name>Sally</name>' +
+            '<lmp>10</lmp>' +
+            '<doc1 db-doc="true">' +
+              '<type>thing_1</type>' +
+              '<some_property_1>some_value_1</some_property_1>' +
+            '</doc1>' +
+            '<doc2 db-doc="true">' +
+              '<type>thing_2</type>' +
+              '<some_property_2>some_value_2</some_property_2>' +
+            '</doc2>' +
+          '</data>';
+      form.getDataStr.returns(content);
+      dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
+      UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
+      return service.save('V', form).then(function(actual) {
+        chai.expect(form.validate.callCount).to.equal(1);
+        chai.expect(form.getDataStr.callCount).to.equal(1);
+        chai.expect(dbPost.callCount).to.equal(3);
+        chai.expect(UserContact.callCount).to.equal(1);
+
+        chai.expect(actual._id).to.equal('5');
+        chai.expect(actual._rev).to.equal('1-abc');
+        chai.expect(actual.fields.name).to.equal('Sally');
+        chai.expect(actual.fields.lmp).to.equal('10');
+        chai.expect(actual.fields.secret_code_name).to.equal('S4L');
+        chai.expect(actual.form).to.equal('V');
+        chai.expect(actual.type).to.equal('data_record');
+        chai.expect(actual.content_type).to.equal('xml');
+        chai.expect(actual.contact._id).to.equal('123');
+        chai.expect(actual.from).to.equal('555');
+        chai.expect(actual.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+      });
+    });
+
   });
 
 });
