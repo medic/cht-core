@@ -9,6 +9,7 @@ angular.module('inboxServices').service('Enketo',
     DB,
     EnketoPrepopulationData,
     EnketoTranslation,
+    ExtractLineage,
     FileReader,
     Language,
     TranslateFrom,
@@ -295,7 +296,7 @@ angular.module('inboxServices').service('Enketo',
           type: 'data_record',
           content_type: 'xml',
           reported_date: Date.now(),
-          contact: contact,
+          contact: ExtractLineage(contact),
           from: contact && contact.phone
         };
       });

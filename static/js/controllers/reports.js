@@ -66,9 +66,9 @@ var _ = require('underscore'),
           });
       };
 
-      var setTitle = function(doc) {
-        var name = doc.form;
-        var form = _.findWhere($scope.forms, { code: doc.form });
+      var setTitle = function(model) {
+        var name = model.form;
+        var form = _.findWhere($scope.forms, { code: model.form });
         if (form) {
           name = form.name || form.title;
         }
@@ -80,15 +80,25 @@ var _ = require('underscore'),
         model.selected = $scope.selected.map(function(s) {
           return s.doc || s.summary;
         });
-        if (!$scope.selectMode &&
-            model.selected &&
-            model.selected.length === 1) {
-          var doc = model.selected[0];
+        console.log('setting rhs', model);
+        var doc = !$scope.selectMode &&
+                  model.selected &&
+                  model.selected.length === 1 &&
+                  model.selected[0];
+        if (doc) {
           model.verified = doc.verified;
           model.type = doc.content_type;
-          model.sendTo = doc.contact;
+          if (doc.contact && doc.contact._id) {
+            DB().get(doc.contact._id).then(function(contact) {
+              model.sendTo = contact;
+              $scope.setRightActionBar(model);
+            });
+          } else {
+            $scope.setRightActionBar(model);
+          }
+        } else {
+          $scope.setRightActionBar(model);
         }
-        $scope.setRightActionBar(model);
       };
 
       $scope.setSelected = function(model) {
@@ -103,14 +113,14 @@ var _ = require('underscore'),
           }
         } else {
           if (liveList.initialised()) {
-            liveList.setSelected(model.doc._id);
+            liveList.setSelected(model.doc && model.doc._id);
           }
           refreshing = model.doc &&
                        $scope.selected.length &&
                        $scope.selected[0]._id === model.doc._id;
           model.expanded = true;
           $scope.selected = [ model ];
-          setTitle(model.doc);
+          setTitle(model);
         }
         setRightActionBar();
         $scope.settingSelected(refreshing);

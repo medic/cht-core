@@ -30,6 +30,7 @@
   require('./enketo-prepopulation-data');
   require('./enketo-translation');
   require('./export');
+  require('./extract-lineage');
   require('./file-reader');
   require('./json-forms');
   require('./json-parse');
