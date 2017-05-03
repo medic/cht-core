@@ -263,6 +263,8 @@ describe('Enketo service', function() {
     it('rejects on invalid form', function(done) {
       form.validate.returns(KarmaUtils.mockPromise(null, false));
       service.save('V', form).catch(function(actual) {
+        actual = actual[0];
+
         chai.expect(actual.message).to.equal('Form is invalid');
         chai.expect(form.validate.callCount).to.equal(1);
         done();
@@ -277,6 +279,8 @@ describe('Enketo service', function() {
       UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
       UserSettings.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
       return service.save('V', form).then(function(actual) {
+        actual = actual[0];
+
         chai.expect(form.validate.callCount).to.equal(1);
         chai.expect(form.getDataStr.callCount).to.equal(1);
         chai.expect(dbPost.callCount).to.equal(1);
@@ -312,6 +316,8 @@ describe('Enketo service', function() {
       dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
       UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
       return service.save('V', form).then(function(actual) {
+        actual = actual[0];
+
         chai.expect(form.validate.callCount).to.equal(1);
         chai.expect(form.getDataStr.callCount).to.equal(1);
         chai.expect(dbPost.callCount).to.equal(1);
@@ -346,6 +352,8 @@ describe('Enketo service', function() {
       }));
       dbPost.returns(KarmaUtils.mockPromise(null, { id: '6', rev: '2-abc' }));
       return service.save('V', form, '6').then(function(actual) {
+        actual = actual[0];
+
         chai.expect(form.validate.callCount).to.equal(1);
         chai.expect(form.getDataStr.callCount).to.equal(1);
         chai.expect(dbGet.callCount).to.equal(1);
