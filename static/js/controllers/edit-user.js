@@ -96,19 +96,34 @@
         return true;
       };
 
-      var validatePassword = function() {
+      var validatePasswordForEditUser = function() {
         var newUser = !$scope.editUserModel.id;
         if (newUser) {
-          if (!validateRequired('password', 'Password')) {
-            return false;
-          }
+          return validatePasswordAndConfirm();
         }
-        if ($scope.editUserModel.password &&
-            $scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
+
+        // if existing user : needs both fields, or none
+        if ($scope.editUserModel.password) {
+          return validatePasswordAndConfirm();
+        }
+        if ($scope.editUserModel.passwordConfirm) {
           $scope.errors.password = $translate.instant('Passwords must match');
           return false;
         }
         return true;
+      };
+
+      var validateConfirmPasswordMatches = function() {
+        if ($scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
+          $scope.errors.password = $translate.instant('Passwords must match');
+          return false;
+        }
+        return true;
+      };
+
+      var validatePasswordAndConfirm = function() {
+        return validateRequired('password', 'Password') &&
+          validateConfirmPasswordMatches();
       };
 
       var validateName = function() {
@@ -172,7 +187,7 @@
       $scope.updatePassword = function() {
         $scope.errors = {};
         $scope.setProcessing();
-        if (validatePassword()) {
+        if (validatePasswordAndConfirm()) {
           var updates = { password: $scope.editUserModel.password };
           UpdateUser($scope.editUserModel.id, null, updates)
             .then(function() {
@@ -204,7 +219,7 @@
         $scope.setProcessing();
         $scope.errors = {};
         computeFields();
-        if (validatePassword() && validateName() && validateRestrictedUser()) {
+        if (validatePasswordForEditUser() && validateName() && validateRestrictedUser()) {
           saveEdit('#edit-user-profile', $scope.editUserModel.id, getSettingsUpdates(false), getUserUpdates());
         } else {
           $scope.setError();

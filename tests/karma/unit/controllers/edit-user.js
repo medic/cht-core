@@ -143,17 +143,120 @@ describe.only('EditUserCtrl controller', function() {
 
   });
 
-  describe('password changes', function() {
+  // Note : $scope.updatePassword is only called when editing the current user.
+  // Never when creating a new user, or aditing a non-current user.
+  describe('$scope.updatePassword', function() {
+    it('password must be filled', function(done) {
+      mockEditCurrentUser(userToEdit);
+
+      setTimeout(function() {
+        scope.editUserModel.password = '';
+
+        scope.updatePassword();
+        chai.expect(scope.errors).to.have.property('password');
+        done();
+      });
+    });
+
+    it('password and passwordConfirm must match', function() {
+      mockEditCurrentUser(userToEdit);
+
+      setTimeout(function() {
+        scope.editUserModel.password = 'password';
+        scope.editUser();
+        chai.expect(scope.errors).to.have.property('password');
+
+        scope.editUserModel.passwordConfirm = 'password';
+        scope.editUser();
+        chai.expect(scope.errors).not.to.have.property('password');
+      });
+    });
+
+    it('user is updated with password change', function(done) {
+      mockEditCurrentUser(userToEdit);
+
+      setTimeout(function() {
+        scope.editUserModel.password = 'password';
+        scope.editUserModel.passwordConfirm = 'password';
+
+        scope.updatePassword();
+
+        setTimeout(function() {
+          chai.expect(UpdateUser.called).to.equal(true);
+          console.log('args', UpdateUser.getCall(0).args);
+          chai.expect(UpdateUser.getCall(0).args[0]).to.equal('user.id');
+          chai.expect(UpdateUser.getCall(0).args[2].password).to.equal('password');
+          done();
+        });
+      });
+    });
+  });
+
+  describe('$scope.editUserSettings', function() {
+    it('name must be present', function() {
+      mockEditAUser(userToEdit);
+      scope.editUserModel.name = '';
+
+      scope.editUserSettings();
+      chai.expect(scope.errors).to.have.property('name');
+    });
+
+    it('user is updated', function(done) {
+      UpdateUser.returns(KarmaUtils.mockPromise());
+      mockEditAUser(userToEdit);
+
+      scope.editUserSettings();
+
+      setTimeout(function() {
+        chai.expect(UpdateUser.called).to.equal(true);
+        var updateUserArgs = UpdateUser.getCall(0).args;
+        chai.expect(updateUserArgs[0]).to.equal('user.id');
+
+        var settingsUpdates = updateUserArgs[1];
+        ['name', 'fullname', 'email', 'phone', 'language']
+          .forEach(function(field) {
+            chai.expect(settingsUpdates).to.have.property(field);
+          });
+        // users don't have permission to change their own roles, facility, or contact
+        ['roles', 'facility_id', 'contact_id']
+          .forEach(function(field) {
+            chai.expect(settingsUpdates).to.not.have.property(field);
+          });
+        chai.expect(settingsUpdates.name).to.equal(scope.editUserModel.name);
+        chai.expect(settingsUpdates.fullname).to.equal(scope.editUserModel.fullname);
+        chai.expect(settingsUpdates.email).to.equal(scope.editUserModel.email);
+        chai.expect(settingsUpdates.phone).to.equal(scope.editUserModel.phone);
+        chai.expect(settingsUpdates.facility_id).to.equal(scope.editUserModel.facility._id);
+        chai.expect(settingsUpdates.language).to.equal(scope.editUserModel.language.code);
+        done();
+      });
+    });
+  });
+
+  describe('$scope.editUser', function() {
+    it('name must be present', function() {
+      mockEditAUser(userToEdit);
+      scope.editUserModel.name = '';
+
+      scope.editUser();
+
+      chai.expect(scope.errors).to.have.property('name');
+    });
+
     it('password must be filled when creating new user', function() {
       mockCreateNewUser();
+
       scope.editUser();
+
       chai.expect(scope.errors).to.have.property('password');
     });
 
     it('password doesn\'t need to be filled when editing user', function() {
-      mockEditCurrentUser(userToEdit);
+      mockEditAUser(userToEdit);
       chai.expect(scope.editUserModel).not.to.have.property('password');
+
       scope.editUser();
+
       chai.expect(scope.errors).not.to.have.property('password');
     });
 
@@ -162,6 +265,7 @@ describe.only('EditUserCtrl controller', function() {
       scope.editUserModel.password = 'password';
 
       scope.editUser();
+
       chai.expect(scope.errors).to.have.property('password');
 
       scope.editUserModel.passwordConfirm = 'password';
@@ -174,98 +278,6 @@ describe.only('EditUserCtrl controller', function() {
 
       scope.editUserModel.password = 'password';
       scope.editUser();
-      chai.expect(scope.errors).to.have.property('password');
-
-      scope.editUserModel.passwordConfirm = 'password';
-      scope.editUser();
-      chai.expect(scope.errors).not.to.have.property('password');
-    });
-    // tmp add tests for update_password.html template.
-    it('user is updated with password change', function() {
-      mockEditCurrentUser(userToEdit);
-      // tmp race condition. UserSettings.then is not called yet.
-      scope.editUserModel.password = 'password';
-      scope.editUserModel.passwordConfirm = 'password';
-      scope.updatePassword();
-      chai.expect(UpdateUser.called).to.equal(true);
-      chai.expect(UpdateUser.getCall(0).args[0]).to.equal('user.id');
-      chai.expect(UpdateUser.getCall(0).args[2].password).to.equal('password');
-    });
-  });
-
-  describe('editUserSettings', function() {
-    it('name must be present', function() {
-      mockEditAUser(userToEdit);
-      scope.editUserModel.name = '';
-
-      scope.editUserSettings();
-      chai.expect(scope.errors).to.have.property('name');
-      chai.expect(UpdateUser.called).to.equal(false);
-    });
-
-    it('user is updated', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      mockEditAUser(userToEdit);
-
-      scope.editUserSettings();
-
-      chai.expect(UpdateUser.called).to.equal(true);
-      var updateUserArgs = UpdateUser.getCall(0).args;
-      chai.expect(updateUserArgs[0]).to.equal('user.id');
-
-      var settingsUpdates = updateUserArgs[1];
-      ['name', 'fullname', 'email', 'phone', 'language']
-        .forEach(function(field) {
-          chai.expect(settingsUpdates).to.have.property(field);
-        });
-      // users don't have permission to change their own roles, facility, or contact
-      ['roles', 'facility_id', 'contact_id']
-        .forEach(function(field) {
-          chai.expect(settingsUpdates).to.not.have.property(field);
-        });
-      chai.expect(settingsUpdates.name).to.equal(scope.editUserModel.name);
-      chai.expect(settingsUpdates.fullname).to.equal(scope.editUserModel.fullname);
-      chai.expect(settingsUpdates.email).to.equal(scope.editUserModel.email);
-      chai.expect(settingsUpdates.phone).to.equal(scope.editUserModel.phone);
-      chai.expect(settingsUpdates.facility_id).to.equal(scope.editUserModel.facility._id);
-      chai.expect(settingsUpdates.language).to.equal(scope.editUserModel.language.code);
-    });
-  });
-
-  describe('editUser', function() {
-    it('name must be present', function() {
-      mockEditAUser(userToEdit);
-      scope.editUserModel.name = '';
-
-      scope.editUser();
-
-      chai.expect(scope.errors).to.have.property('name');
-      chai.expect(UpdateUser.called).to.equal(false);
-    });
-
-    it('password must be filled when creating new user', function() {
-      mockCreateNewUser();
-
-      scope.editUser();
-
-      chai.expect(scope.errors).to.have.property('password');
-    });
-
-    it('password doesn\'t need to be filled when editing user', function() {
-      mockEditAUser(userToEdit);
-      chai.expect(scope.editUserModel).not.to.have.property('password');
-
-      scope.editUser();
-
-      chai.expect(scope.errors).not.to.have.property('password');
-    });
-
-    it('password and passwordConfirm must match when creating new user', function() {
-      mockCreateNewUser();
-      scope.editUserModel.password = 'password';
-
-      scope.editUser();
-
       chai.expect(scope.errors).to.have.property('password');
 
       scope.editUserModel.passwordConfirm = 'password';
@@ -343,7 +355,6 @@ describe.only('EditUserCtrl controller', function() {
     it('user is updated', function() {
       mockOutjQueryFormFields();
       mockEditAUser(userToEdit);
-
 
       scope.editUser();
 
