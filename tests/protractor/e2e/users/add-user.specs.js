@@ -9,5 +9,6 @@ describe('Add user test : ', function () {
   browser.driver.get(utils.getBaseUrl() + '/_design/medic/_rewrite/#/configuration/users');
     usersPage.openAddUserModal();
     addUserModal.fillForm();
+   addUserModal.submit();
   });
 });

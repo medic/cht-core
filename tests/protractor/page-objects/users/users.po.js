@@ -26,7 +26,7 @@ module.exports = {
 	openAddUserModal:function(){
 		helper.waitElementToBeClickable(addUserButton);
 		addUserButton.click();
-		helper.waitElementToBeVisisble(addUserModal);
+		//helper.waitElementToBeVisisble(addUserModal);
 	}
 
 
