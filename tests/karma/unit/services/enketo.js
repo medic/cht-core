@@ -384,24 +384,40 @@ describe('Enketo service', function() {
           '</data>';
       form.getDataStr.returns(content);
       dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
+      dbPost.returns(KarmaUtils.mockPromise(null, { id: '6', rev: '1-def' }));
+      dbPost.returns(KarmaUtils.mockPromise(null, { id: '7', rev: '1-ghi' }));
       UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
       return service.save('V', form).then(function(actual) {
+        chai.expect(JSON.stringify(actual)).to.equal(3);
+        chai.expect(actual.length).to.equal(3);
+
         chai.expect(form.validate.callCount).to.equal(1);
         chai.expect(form.getDataStr.callCount).to.equal(1);
         chai.expect(dbPost.callCount).to.equal(3);
         chai.expect(UserContact.callCount).to.equal(1);
 
-        chai.expect(actual._id).to.equal('5');
-        chai.expect(actual._rev).to.equal('1-abc');
-        chai.expect(actual.fields.name).to.equal('Sally');
-        chai.expect(actual.fields.lmp).to.equal('10');
-        chai.expect(actual.fields.secret_code_name).to.equal('S4L');
-        chai.expect(actual.form).to.equal('V');
-        chai.expect(actual.type).to.equal('data_record');
-        chai.expect(actual.content_type).to.equal('xml');
-        chai.expect(actual.contact._id).to.equal('123');
-        chai.expect(actual.from).to.equal('555');
-        chai.expect(actual.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+        var actualReport = actual[0];
+        chai.expect(actualReport._id).to.equal('5');
+        chai.expect(actualReport._rev).to.equal('1-abc');
+        chai.expect(actualReport.fields.name).to.equal('Sally');
+        chai.expect(actualReport.fields.lmp).to.equal('10');
+        chai.expect(actualReport.fields.secret_code_name).to.equal('S4L');
+        chai.expect(actualReport.form).to.equal('V');
+        chai.expect(actualReport.type).to.equal('data_record');
+        chai.expect(actualReport.content_type).to.equal('xml');
+        chai.expect(actualReport.contact._id).to.equal('123');
+        chai.expect(actualReport.from).to.equal('555');
+        chai.expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+
+        var actualThing1 = actual[1];
+        chai.expect(actualThing1._id).to.equal('6');
+        chai.expect(actualThing1._rev).to.equal('1-def');
+        chai.expect(actualThing1.some_property_1).to.equal('some_value_1');
+
+        var actualThing2 = actual[2];
+        chai.expect(actualThing2._id).to.equal('7');
+        chai.expect(actualThing2._rev).to.equal('1-ghi');
+        chai.expect(actualThing2.some_property_2).to.equal('some_value_2');
       });
     });
 
