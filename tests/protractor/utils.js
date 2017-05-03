@@ -176,6 +176,7 @@ module.exports = {
 
   getBaseUrl: () =>
     `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}`,
+    
 getLoginUrl: () =>
  `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login`
 

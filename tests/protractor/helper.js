@@ -65,7 +65,7 @@ module.exports = {
   */
   selectDropdownByText: function selectOption(element, item, milliseconds) {
     var desiredOption;
-    element.findElements(by.tagName('option'))
+    element.all(by.tagName('option'))
       .then(function findMatchingOption(options) {
         options.some(function (option) {
           option.getText().then(function doesOptionMatch(text) {
