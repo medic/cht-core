@@ -17,6 +17,7 @@
   require('./contact-form');
   require('./contact-schema');
   require('./contact-summary');
+  require('./contact-view-model-generator');
   require('./contacts');
   require('./count-messages');
   require('./db');
@@ -36,6 +37,7 @@
   require('./format-date');
   require('./generate-search-query');
   require('./generate-search-requests');
+  require('./get-contact-summaries');
   require('./get-data-records');
   require('./import-contacts');
   require('./kanso-packages');

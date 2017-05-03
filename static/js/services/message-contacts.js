@@ -1,62 +1,51 @@
 var _ = require('underscore');
 
-(function () {
+angular.module('inboxServices').factory('MessageContacts',
+  function(
+    DB,
+    GetContactSummaries
+  ) {
+    'use strict';
+    'ngInject';
 
-  'use strict';
+    var listParams = function() {
+      return {
+        group_level: 1,
+        startkey: [],
+        endkey: [{}]
+      };
+    };
 
-  var inboxServices = angular.module('inboxServices');
+    var getParams = function(options) {
+      return {
+        reduce: false,
+        descending: true,
+        include_docs: true,
+        skip: options.skip,
+        limit: 50,
+        startkey: [ options.id, {} ],
+        endkey: [ options.id ]
+      };
+    };
 
-  var generateQuery = function(options) {
-    var query = _.clone(options.queryOptions);
-    query.startkey = [ ];
-    query.endkey = [ ];
-    if (options.id) {
-      query.startkey.push(options.id);
-      query.endkey.push(options.id);
-    }
-    (query.descending ? query.startkey : query.endkey).push({});
-    return query;
-  };
-
-  var query = function(DB, options) {
-    var params = generateQuery(options);
-    return DB()
-      .query('medic-client/messages_by_contact_date', params)
-      .then(function(res) {
-        return res.rows;
+    var getSummaries = function(result) {
+      // populate the summaries of the result values then return the result
+      return GetContactSummaries(_.pluck(result, 'value')).then(function() {
+        return result;
       });
-  };
+    };
 
-  inboxServices.factory('MessageContact',
-    function(
-      DB
-    ) {
-      'ngInject';
-      return function(options) {
-        options.targetScope = 'messages';
-        options.queryOptions = { group_level: 1 };
-        return query(DB, options);
-      };
-    }
-  );
-
-  inboxServices.factory('ContactConversation',
-    function(
-      DB
-    ) {
-      'ngInject';
-      return function(options) {
-        options.targetScope = 'messages.details';
-        options.queryOptions = {
-          reduce: false,
-          descending: true,
-          include_docs: true,
-          skip: options.skip,
-          limit: 50
-        };
-        return query(DB, options);
-      };
-    }
-  );
-
-}());
+    return function(options) {
+      options = options || {};
+      var params = options.id ? getParams(options) : listParams();
+      return DB().query('medic-client/messages_by_contact_date', params)
+        .then(function(response) {
+          var result = response.rows;
+          if (options.id) {
+            return result;
+          }
+          return getSummaries(result);
+        });
+    };
+  }
+);

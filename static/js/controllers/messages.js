@@ -15,7 +15,7 @@ var _ = require('underscore');
       $timeout,
       Changes,
       Export,
-      MessageContact,
+      MessageContacts,
       Tour
     ) {
       'ngInject';
@@ -65,12 +65,12 @@ var _ = require('underscore');
         if (!options.changes) {
           $scope.loading = true;
         }
-        return MessageContact({})
-          .then(function(data) {
-            $scope.loading = false;
-            options.messages = data;
-            setMessages(options);
-          });
+        return MessageContacts().then(function(data) {
+          console.log('data', data);
+          $scope.loading = false;
+          options.messages = data;
+          setMessages(options);
+        });
       };
 
       $scope.setSelected = function(doc) {

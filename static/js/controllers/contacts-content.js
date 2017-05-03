@@ -16,6 +16,7 @@ var _ = require('underscore'),
       $translate,
       Changes,
       ContactSchema,
+      ContactViewModelGenerator,
       DB,
       Search,
       TasksForContact,
@@ -243,27 +244,6 @@ var _ = require('underscore'),
         return $q.resolve([]);
       };
 
-      var getParents = function(contactDoc) {
-        return getHomePlaceId().then(function(home) {
-          var parents = [];
-          var link = contactDoc._id !== home;
-          var current = contactDoc.parent;
-          while (current) {
-            parents.push({
-              _id: current._id,
-              name: current.name,
-              link: link
-            });
-            if (current._id === home) {
-              // don't link to any places above the users home place
-              link = false;
-            }
-            current = current.parent;
-          }
-          return parents;
-        });
-      };
-
       var addPatientName = function(reports, children) {
         reports.filter(function(report) {
           return report.fields && !report.fields.patient_name;
@@ -282,25 +262,27 @@ var _ = require('underscore'),
       };
 
       var getInitialData = function(contactId) {
-        return DB().get(contactId)
-          .then(function(contactDoc) {
+        return ContactViewModelGenerator(contactId)
+          .then(function(model) {
             return $q.all([
-              getReports([contactDoc]),
-              isPersonAndPrimaryContact(contactDoc),
-              getChildren(contactDoc),
-              getParents(contactDoc),
-              getPrimaryContact(contactDoc)
+              getReports([model.doc]),
+              isPersonAndPrimaryContact(model.doc),
+              getChildren(model.doc),
+              getPrimaryContact(model.doc)
             ])
               .then(function(results) {
+                console.log('model', model);
+                console.log('cresults', results);
                 var reports = results[0];
                 var isPrimaryContact = results[1];
                 var children = results[2];
-                var parents = results[3];
-                var primaryContact = results[4];
-                var schema = ContactSchema.get(contactDoc.type);
+                var parents = model.lineage;
+                var primaryContact = results[3];
+                var schema = ContactSchema.get(model.doc.type);
 
+                // TODO move this stuff to the model generator so we just store the model
                 var selected = {
-                  doc: contactDoc,
+                  doc: model.doc,
                   reports: reports,
                   parents: parents,
                   icon: schema.icon,
@@ -310,7 +292,7 @@ var _ = require('underscore'),
 
                 selected.fields = selectedSchemaVisibleFields(selected);
 
-                sortChildPersons(children, contactDoc, primaryContact);
+                sortChildPersons(children, model.doc, primaryContact);
 
                 if (children.places && children.places.length) {
                   var childPlacesSchema = ContactSchema.get(children.places[0].doc.type);
@@ -320,7 +302,7 @@ var _ = require('underscore'),
 
                 selected.children = children;
 
-                if (contactDoc.patient_id) {
+                if (model.doc.patient_id) {
                   addPatientName(selected.reports, [ selected ]);
                 }
 

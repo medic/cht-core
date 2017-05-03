@@ -47,7 +47,7 @@ angular.module('inboxServices').service('ContactSummary',
       return summary;
     };
 
-    return function(contact, reports) { // jshint ignore:line
+    return function(contact, reports, lineage) { // jshint ignore:line
       return getScript()
         .then(function(script) {
           return script && eval(script); // jshint ignore:line

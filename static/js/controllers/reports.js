@@ -75,51 +75,10 @@ var _ = require('underscore'),
         $scope.setTitle(TranslateFrom(name));
       };
 
-      var getFields = function(results, values, labelPrefix, depth) {
-        if (depth > 3) {
-          depth = 3;
-        }
-        Object.keys(values).forEach(function(key) {
-          var value = values[key];
-          var label = labelPrefix + '.' + key;
-          if (_.isObject(value)) {
-            results.push({
-              label: label,
-              depth: depth
-            });
-            getFields(results, value, label, depth + 1);
-          } else {
-            results.push({
-              label: label,
-              value: value,
-              depth: depth
-            });
-          }
-        });
-        return results;
-      };
-
-      // TODO move this into model generator
-      var getDisplayFields = function(model) {
-        // calculate fields to display
-        if (!model.doc.fields) {
-          return [];
-        }
-        var label = 'report.' + model.doc.form;
-        var fields = getFields([], model.doc.fields, label, 0);
-        var hide = model.doc.hidden_fields || [];
-        hide.push('inputs');
-        return _.reject(fields, function(field) {
-          return _.some(hide, function(h) {
-            return field.label.indexOf(label + '.' + h) === 0;
-          });
-        });
-      };
-
       var setRightActionBar = function() {
         var model = {};
         model.selected = $scope.selected.map(function(s) {
-          return s.report || s.summary;
+          return s.doc || s.summary;
         });
         if (!$scope.selectMode &&
             model.selected &&
@@ -134,23 +93,13 @@ var _ = require('underscore'),
 
       $scope.setSelected = function(model) {
         var refreshing = true;
-        var displayFields = getDisplayFields(model);
         if ($scope.selectMode) {
           var existing = _.findWhere($scope.selected, { _id: model.doc._id });
           if (existing) {
-            existing.report = model.doc;
-            existing.displayFields = displayFields;
-            existing.contacts = model.contacts;
+            _.extend(existing, model);
           } else {
-            // TODO just set the model here
-            // TODO add formatted somewhere and reference that in the UI
-            $scope.selected.push({
-              _id: model.doc._id,
-              report: model.doc,
-              expanded: false,
-              displayFields: displayFields,
-              contacts: model.contacts
-            });
+            model.expanded = false;
+            $scope.selected.push(model);
           }
         } else {
           if (liveList.initialised()) {
@@ -159,13 +108,8 @@ var _ = require('underscore'),
           refreshing = model.doc &&
                        $scope.selected.length &&
                        $scope.selected[0]._id === model.doc._id;
-          $scope.selected = [ {
-            _id: model.doc._id,
-            report: model.doc,
-            expanded: true,
-            displayFields: displayFields,
-            contacts: model.contacts
-          } ];
+          model.expanded = true;
+          $scope.selected = [ model ];
           setTitle(model.doc);
         }
         setRightActionBar();
@@ -308,7 +252,7 @@ var _ = require('underscore'),
       });
 
       $scope.$on('VerifyReport', function(e, verify) {
-        if ($scope.selected[0].report.form) {
+        if ($scope.selected[0].doc.form) {
           DB().get($scope.selected[0]._id)
             .then(function(message) {
               message.verified = verify;
@@ -324,7 +268,7 @@ var _ = require('underscore'),
         Modal({
           templateUrl: 'templates/modals/edit_report.html',
           controller: 'EditReportCtrl',
-          model: { report: $scope.selected[0].report }
+          model: { report: $scope.selected[0].doc }
         });
       });
 
@@ -401,7 +345,7 @@ var _ = require('underscore'),
           $scope.search();
           var doc = $scope.selected &&
                     $scope.selected[0] &&
-                    $scope.selected[0].report;
+                    $scope.selected[0].doc;
           if (doc) {
             setTitle(doc);
           }
@@ -441,13 +385,10 @@ var _ = require('underscore'),
         $scope.setLoadingContent(true);
         Search('reports', $scope.filters, { limit: 10000 })
           .then(function(summaries) {
-            $scope.selected = summaries.map(function(summary) {
-              return {
-                _id: summary._id,
-                summary: summary,
-                expanded: false
-              };
+            summaries.forEach(function(summary) {
+              summary.expanded = false;
             });
+            $scope.selected = summaries;
             $scope.settingSelected(true);
             setRightActionBar();
             $('#reports-list input[type="checkbox"]').prop('checked', true);

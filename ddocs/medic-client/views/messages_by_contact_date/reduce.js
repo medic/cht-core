@@ -15,9 +15,6 @@ function(key, values) {
   });
   max.read = read;
 
-  // needed to reduce object size
-  max.facility = undefined;
-
   if (max.message) {
     var code = max.message.charCodeAt(99);
     if (0xD800 <= code && code <= 0xDBFF) {

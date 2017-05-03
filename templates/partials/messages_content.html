@@ -12,7 +12,7 @@
 
   <div class="message-content-wrapper" ng-show="selected.messages[0] && !loadingContent">
     <div id="message-header" class="col-sm-8 name-header">
-      <mm-sender message="selected.messages[0].value"></mm-sender>
+      <mm-sender message="selected.contact"></mm-sender>
     </div>
     <div id="message-content" class="col-sm-8 item-content">
       <div class="loader" ng-show="loadingMoreContent"></div>
@@ -61,7 +61,7 @@
     <div id="message-footer" class="reply message-form col-sm-8" ng-if="selected.messages[0]">
       <div class="control-group">
         <div class="controls">
-          <textarea name="message" ng-model="send.message" translate translate-attr-placeholder="Reply to name" translate-values="{ contact: (selected.messages[0].value.contact.name || (!selected.messages[0].value.form && selected.messages[0].value.name) || selected.messages[0].value.from || selected.messages[0].value.sent_by) }"></textarea>
+          <textarea name="message" ng-model="send.message" translate translate-attr-placeholder="Reply to name" translate-values="{ contact: (selected.contact.doc.name) }"></textarea>
         </div>
       </div>
       <div class="message-actions">

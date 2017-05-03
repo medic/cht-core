@@ -4,31 +4,37 @@ var _ = require('underscore');
 
   'use strict';
 
+  var formatEntity = function(entity, $state) {
+    if (!entity) {
+      return;
+    }
+    if (_.isString(entity)) {
+      return entity;
+    }
+    var part = entity.name || (entity.contact && entity.contact.phone);
+    if (part) {
+      if (entity._id && $state) {
+        var url = $state.href('contacts.detail', { id: entity._id });
+        part = '<a href="' + url + '">' + part + '</a>';
+      }
+      return part;
+    }
+  };
+
   exports.clinic = function(entity, $state) {
     var parts;
     if (_.isArray(entity)) {
-      // TODO check each part for an object.name
-      parts = entity;
+      parts = entity.map(function(i) {
+        return formatEntity(i, $state);
+      });
     } else {
       parts = [];
       while (entity) {
-        var part;
-        if (entity.name) {
-          part = entity.name;
-        } else if (entity.contact && entity.contact.phone) {
-          part = entity.contact.phone;
-        }
-        if (part) {
-          if (entity._id && $state) {
-            var url = $state.href('contacts.detail', { id: entity._id });
-            part = '<a href="' + url + '">' + part + '</a>';
-          }
-          parts.push(part);
-        }
+        parts.push(formatEntity(entity, $state));
         entity = entity.parent;
       }
     }
-    var items = parts.map(function(part) {
+    var items = _.compact(parts).map(function(part) {
       return '<li>' + part + '</li>';
     });
     return '<ol class="horizontal lineage">' + items.join('') + '</ol>';

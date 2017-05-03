@@ -131,19 +131,30 @@ var _ = require('underscore'),
         });
       };
 
+// TODO extract this - I'll need it everywhere
+      var minifyContact = function(contact) {
+        var result = { _id: contact._id };
+        var minified = result;
+        while(contact.parent) {
+          minified.parent = { _id: contact.parent._id };
+          minified = minified.parent;
+          contact = contact.parent;
+        };
+        return result;
+      };
+
       var createTask = function(settings, recipient, message, user) {
         var task = {
           messages: [{
             from: user && user.phone,
             sent_by: user && user.name || 'unknown',
             to: libphonenumber.normalize(settings, recipient.phone) || recipient.phone,
-            contact: recipient.contact,
+            contact: minifyContact(recipient.contact),
             message: message,
             uuid: uuid()
           }]
         };
         utils.setTaskState(task, 'pending');
-
         return task;
       };
 

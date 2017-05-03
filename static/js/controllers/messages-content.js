@@ -9,13 +9,15 @@ var _ = require('underscore');
   inboxControllers.controller('MessagesContentCtrl',
     function (
       $log,
+      $q,
       $scope,
       $state,
       $stateParams,
       $timeout,
       Changes,
-      ContactConversation,
+      ContactViewModelGenerator,
       MarkAllRead,
+      MessageContacts,
       Modal,
       SendMessage,
       Session
@@ -42,11 +44,13 @@ var _ = require('underscore');
 
       var markAllRead = function() {
         var docs = _.pluck($scope.selected.messages, 'doc');
-        MarkAllRead(docs, true)
-          .then($scope.updateReadStatus)
-          .catch(function(err) {
-            return $log.error('Error marking all as read', err);
-          });
+        if (docs.length) {
+          MarkAllRead(docs, true)
+            .then($scope.updateReadStatus)
+            .catch(function(err) {
+              return $log.error('Error marking all as read', err);
+            });
+        }
       };
 
       var findMostRecentFacility = function(messages) {
@@ -78,8 +82,14 @@ var _ = require('underscore');
         if (!options.silent) {
           $scope.setLoadingContent(id);
         }
-        ContactConversation({ id: id })
-          .then(function(data) {
+        $q.all([
+          ContactViewModelGenerator(id), // TODO what if not a UUID? eg: phone number
+          MessageContacts({ id: id })
+        ])
+          .then(function(results) {
+            console.log('results', results);
+            var contactModel = results[0];
+            var conversation = results[1];
             if ($scope.selected && $scope.selected.id !== id) {
               // ignore response for previous request
               return;
@@ -87,17 +97,16 @@ var _ = require('underscore');
 
             $scope.setLoadingContent(false);
             $scope.error = false;
-            var unread = _.filter(data, function(message) {
+            var unread = _.filter(conversation, function(message) {
               return !$scope.isRead(message.doc);
             });
             $scope.firstUnread = _.min(unread, function(message) {
               return message.doc.reported_date;
             });
-            $scope.selected.messages = data;
-            if (data.length) {
-              setTitle(data.length && data[0].value);
-              markAllRead();
-            }
+            $scope.selected.contact = contactModel;
+            $scope.selected.messages = conversation;
+            setTitle(contactModel);
+            markAllRead();
             $timeout(scrollToUnread);
           })
           .catch(function(err) {
@@ -107,12 +116,13 @@ var _ = require('underscore');
           });
       };
 
-      var setTitle = function(message) {
-        var title = message.contact.name ||
-          (!message.form && message.name) ||
-          message.from ||
-          message.sent_by;
-        $scope.setTitle(title);
+      var setTitle = function(contactModel) {
+        // TODO
+        // var title = message.contact.name ||
+        //   (!message.form && message.name) ||
+        //   message.from ||
+        //   message.sent_by;
+        $scope.setTitle(contactModel.doc.name);
       };
 
       var updateConversation = function(options) {
@@ -126,7 +136,7 @@ var _ = require('underscore');
               $scope.loadingMoreContent = true;
             });
           }
-          ContactConversation(opts)
+          MessageContacts(opts)
             .then(function(data) {
               $scope.loadingMoreContent = false;
               var contentElem = $('#message-content');

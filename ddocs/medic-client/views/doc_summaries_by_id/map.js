@@ -1,48 +1,39 @@
 function(doc) {
-  var getPlaceHierarchy = function(contact) {
-    if (!contact) {
-      return;
-    }
-    var place = contact.parent;
+  var getLineage = function(contact) {
     var parts = [];
-    while (place) {
-      if (place.name) {
-        parts.push(place.name);
+    while (contact) {
+      if (contact._id) {
+        parts.push(contact._id);
       }
-      place = place.parent;
+      contact = contact.parent;
     }
     return parts;
   };
 
   if (doc.type === 'data_record' && doc.form) { // report
-    var from = (doc.contact && doc.contact.name) ||
-               doc.from ||
-               doc.sent_by;
-    emit([ doc._id ], {
+    emit(doc._id, {
       _rev: doc._rev,
-      from: from,
+      from: doc.from || doc.sent_by,
       phone: doc.contact && doc.contact.phone,
       form: doc.form,
       read: doc.read,
       valid: !doc.errors || !doc.errors.length,
       verified: doc.verified,
       reported_date: doc.reported_date,
-      place: getPlaceHierarchy(doc.contact)
+      contact: doc.contact && doc.contact._id,
+      lineage: getLineage(doc.contact && doc.contact.parent)
     });
   } else if (doc.type === 'clinic' ||
       doc.type === 'district_hospital' ||
       doc.type === 'health_center' ||
       doc.type === 'person') { // contact
-    var place = doc.parent;
-    var phone = doc.phone || (doc.contact && doc.contact.phone);
-    var name = doc.name || phone;
-    emit([ doc._id ], {
+    emit(doc._id, {
       _rev: doc._rev,
-      name: name,
-      phone: phone,
+      name: doc.name || phone,
+      phone: doc.phone || (doc.contact && doc.contact.phone),
       type: doc.type,
-      primaryContactName: doc.contact && doc.contact.name,
-      place: getPlaceHierarchy(doc)
+      contact: doc.contact && doc.contact._id,
+      lineage: getLineage(doc.parent)
     });
   }
 }
