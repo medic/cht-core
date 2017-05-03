@@ -1,21 +1,27 @@
-describe('EditUserCtrl controller', function() {
+describe.only('EditUserCtrl controller', function() {
 
   'use strict';
 
-  var createController,
+  var mockCreateNewUser,
+      mockEditAUser,
+      mockEditCurrentUser,
       scope,
       UpdateUser,
       UserSettings,
-      dbQuery,
-      model;
+      translationsDbQuery,
+      userToEdit;
 
   beforeEach(function() {
     module('inboxApp');
 
-    dbQuery = sinon.stub();
+    translationsDbQuery = sinon.stub();
+    translationsDbQuery.returns(KarmaUtils.mockPromise(null, { rows: [
+      { value: { code: 'en' } },
+      { value: { code: 'fr' } }
+    ] }));
     UpdateUser = sinon.stub();
     UserSettings = sinon.stub();
-    model = {
+    userToEdit = {
       _id: 'user.id',
       name: 'user.name',
       fullname: 'user.fullname',
@@ -37,13 +43,13 @@ describe('EditUserCtrl controller', function() {
       $provide.factory('processingFunction', function() {
         return null;
       });
-      $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery }));
+      $provide.factory('DB', KarmaUtils.mockDB({ query: translationsDbQuery }));
       $provide.value('UpdateUser', UpdateUser);
       $provide.value('UserSettings', UserSettings);
     });
 
     inject(function($rootScope, $controller) {
-      createController = function() {
+      var createController = function(model) {
         scope = $rootScope.$new();
         scope.model = model;
         scope.setProcessing = sinon.stub();
@@ -65,55 +71,71 @@ describe('EditUserCtrl controller', function() {
           '$window': {location: {reload: sinon.stub()}}
         });
       };
-    });
+      mockEditCurrentUser = (user) => {
+        UserSettings.returns(KarmaUtils.mockPromise(null, user));
+        UpdateUser.returns(KarmaUtils.mockPromise());
+        createController();
+      };
 
+      mockEditAUser = (user) => {
+        // Don't mock UserSettings, we're not fetching current user.
+        UpdateUser.returns(KarmaUtils.mockPromise());
+        createController(user);
+      };
+
+      mockCreateNewUser = () => {
+        // Don't mock UserSettings, we're not fetching current user.
+        UpdateUser.returns(KarmaUtils.mockPromise());
+        createController({});
+      };
+    });
+  });
+
+  afterEach(function() {
+    KarmaUtils.restore(
+      UpdateUser,
+      UserSettings,
+      translationsDbQuery);
   });
 
   describe('initialisation', function() {
 
-    it('uses the given model', function(done) {
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [
-        { value: { code: 'en' } },
-        { value: { code: 'fr' } }
-      ] }));
-      createController();
+    it('edits the given user', function(done) {
+      mockEditAUser(userToEdit);
       setTimeout(function() {
         chai.expect(scope.enabledLocales.length).to.equal(2);
         chai.expect(scope.enabledLocales[0].code).to.equal('en');
         chai.expect(scope.enabledLocales[1].code).to.equal('fr');
-        chai.expect(dbQuery.callCount).to.equal(1);
-        chai.expect(dbQuery.args[0][0]).to.equal('medic-client/doc_by_type');
-        chai.expect(dbQuery.args[0][1].key[0]).to.equal('translations');
-        chai.expect(dbQuery.args[0][1].key[1]).to.equal(true);
+        chai.expect(translationsDbQuery.callCount).to.equal(1);
+        chai.expect(translationsDbQuery.args[0][0]).to.equal('medic-client/doc_by_type');
+        chai.expect(translationsDbQuery.args[0][1].key[0]).to.equal('translations');
+        chai.expect(translationsDbQuery.args[0][1].key[1]).to.equal(true);
         chai.expect(scope.editUserModel).to.deep.equal({
-          id: model._id,
-          name: model.name,
-          fullname: model.fullname,
-          email: model.email,
-          phone: model.phone,
-          facility: model.facility_id,
-          type: model.roles[0],
-          language: { code: model.language },
-          contact: model.contact_id
+          id: userToEdit._id,
+          name: userToEdit.name,
+          fullname: userToEdit.fullname,
+          email: userToEdit.email,
+          phone: userToEdit.phone,
+          facility: userToEdit.facility_id,
+          type: userToEdit.roles[0],
+          language: { code: userToEdit.language },
+          contact: userToEdit.contact_id
         });
         done();
       });
     });
 
-    it('when no model gets the current user', function(done) {
-      var user = model;
-      model = null;
-      dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [] }));
-      UserSettings.returns(KarmaUtils.mockPromise(null, user));
-      createController();
+    it('when no given user edits the current user', function(done) {
+      var currentUser = userToEdit;
+      mockEditCurrentUser(currentUser);
       setTimeout(function() {
         chai.expect(scope.editUserModel).to.deep.equal({
-          id: user._id,
-          name: user.name,
-          fullname: user.fullname,
-          email: user.email,
-          phone: user.phone,
-          language: { code: user.language }
+          id: currentUser._id,
+          name: currentUser.name,
+          fullname: currentUser.fullname,
+          email: currentUser.email,
+          phone: currentUser.phone,
+          language: { code: currentUser.language }
         });
         done();
       });
@@ -121,59 +143,47 @@ describe('EditUserCtrl controller', function() {
 
   });
 
-  describe('updatePassword', function() {
+  describe('password changes', function() {
     it('password must be filled when creating new user', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
-      scope.editUserModel = {}; // new user
-      scope.updatePassword();
+      mockCreateNewUser();
+      scope.editUser();
       chai.expect(scope.errors).to.have.property('password');
     });
 
     it('password doesn\'t need to be filled when editing user', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
+      mockEditCurrentUser(userToEdit);
       chai.expect(scope.editUserModel).not.to.have.property('password');
-      scope.updatePassword();
+      scope.editUser();
       chai.expect(scope.errors).not.to.have.property('password');
     });
 
     it('password and passwordConfirm must match when creating new user', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
-
-      scope.editUserModel = {}; // new user
+      mockCreateNewUser();
       scope.editUserModel.password = 'password';
-      scope.updatePassword();
+
+      scope.editUser();
       chai.expect(scope.errors).to.have.property('password');
 
       scope.editUserModel.passwordConfirm = 'password';
-      scope.updatePassword();
+      scope.editUser();
       chai.expect(scope.errors).not.to.have.property('password');
     });
 
     it('password and passwordConfirm must match when editing user', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
+      mockEditCurrentUser(userToEdit);
 
       scope.editUserModel.password = 'password';
-      scope.updatePassword();
+      scope.editUser();
       chai.expect(scope.errors).to.have.property('password');
 
       scope.editUserModel.passwordConfirm = 'password';
-      scope.updatePassword();
+      scope.editUser();
       chai.expect(scope.errors).not.to.have.property('password');
     });
-
-    it('user is updated', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
-
+    // tmp add tests for update_password.html template.
+    it('user is updated with password change', function() {
+      mockEditCurrentUser(userToEdit);
+      // tmp race condition. UserSettings.then is not called yet.
       scope.editUserModel.password = 'password';
       scope.editUserModel.passwordConfirm = 'password';
       scope.updatePassword();
@@ -185,11 +195,9 @@ describe('EditUserCtrl controller', function() {
 
   describe('editUserSettings', function() {
     it('name must be present', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
-
+      mockEditAUser(userToEdit);
       scope.editUserModel.name = '';
+
       scope.editUserSettings();
       chai.expect(scope.errors).to.have.property('name');
       chai.expect(UpdateUser.called).to.equal(false);
@@ -197,10 +205,10 @@ describe('EditUserCtrl controller', function() {
 
     it('user is updated', function() {
       UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
+      mockEditAUser(userToEdit);
 
       scope.editUserSettings();
+
       chai.expect(UpdateUser.called).to.equal(true);
       var updateUserArgs = UpdateUser.getCall(0).args;
       chai.expect(updateUserArgs[0]).to.equal('user.id');
@@ -226,44 +234,38 @@ describe('EditUserCtrl controller', function() {
 
   describe('editUser', function() {
     it('name must be present', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
-
+      mockEditAUser(userToEdit);
       scope.editUserModel.name = '';
+
       scope.editUser();
+
       chai.expect(scope.errors).to.have.property('name');
       chai.expect(UpdateUser.called).to.equal(false);
     });
 
     it('password must be filled when creating new user', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
+      mockCreateNewUser();
 
-      scope.editUserModel = {}; // new user
       scope.editUser();
+
       chai.expect(scope.errors).to.have.property('password');
     });
 
     it('password doesn\'t need to be filled when editing user', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
-
+      mockEditAUser(userToEdit);
       chai.expect(scope.editUserModel).not.to.have.property('password');
+
       scope.editUser();
+
       chai.expect(scope.errors).not.to.have.property('password');
     });
 
     it('password and passwordConfirm must match when creating new user', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
-
-      scope.editUserModel = {}; // new user
+      mockCreateNewUser();
       scope.editUserModel.password = 'password';
+
       scope.editUser();
+
       chai.expect(scope.errors).to.have.property('password');
 
       scope.editUserModel.passwordConfirm = 'password';
@@ -272,12 +274,9 @@ describe('EditUserCtrl controller', function() {
     });
 
     it('must have associated place if user type is restricted user', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
-
+      mockEditAUser(userToEdit);
       scope.editUserModel.type = 'district-manager';
-      scope.editUserModel.facility_id = undefined;
+      scope.editUserModel.facility_id = null;
 
       // when
       scope.editUser();
@@ -287,12 +286,9 @@ describe('EditUserCtrl controller', function() {
     });
 
     it('must have associated contact if user type is restricted user', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
-
+      mockEditAUser(userToEdit);
       scope.editUserModel.type = 'district-manager';
-      scope.editUserModel.contact_id = undefined;
+      scope.editUserModel.contact_id = null;
 
       // when
       scope.editUser();
@@ -302,13 +298,10 @@ describe('EditUserCtrl controller', function() {
     });
 
     it('must have associated place and contact if user type is restricted user', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
-
+      mockEditAUser(userToEdit);
       scope.editUserModel.type = 'district-manager';
-      scope.editUserModel.facility_id = undefined;
-      scope.editUserModel.contact_id = undefined;
+      scope.editUserModel.facility_id = null;
+      scope.editUserModel.contact_id = null;
 
       // when
       scope.editUser();
@@ -319,10 +312,7 @@ describe('EditUserCtrl controller', function() {
     });
 
     it('doesn\'t need associated place and contact if user type is not restricted user', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
-      createController();
-
+      mockEditAUser(userToEdit);
       scope.editUserModel.type = 'some-other-type';
 
       // when
@@ -341,9 +331,9 @@ describe('EditUserCtrl controller', function() {
       jQuery = window.$;
       window.$ = sinon.stub();
       window.$.withArgs('#edit-user-profile [name=contact]').returns(
-        {val: function(){ return model.contact_id; }});
+        {val: function(){ return userToEdit.contact_id; }});
       window.$.withArgs('#edit-user-profile [name=facility]').returns(
-        {val: function(){ return model.facility_id; }});
+        {val: function(){ return userToEdit.facility_id; }});
     };
 
     var resetJQuery = function() {
@@ -351,10 +341,9 @@ describe('EditUserCtrl controller', function() {
     };
 
     it('user is updated', function() {
-      UpdateUser.returns(KarmaUtils.mockPromise());
-      dbQuery.returns(KarmaUtils.mockPromise());
       mockOutjQueryFormFields();
-      createController();
+      mockEditAUser(userToEdit);
+
 
       scope.editUser();
 

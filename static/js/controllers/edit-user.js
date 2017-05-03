@@ -44,6 +44,9 @@
       };
 
       if ($scope.model) {
+        // Edit a user that's not the current user.
+        // $scope.model is the user object passed in by controller creating the Modal.
+        // If $scope.model === {}, we're creating a new user.
         $scope.editUserModel = {
           id: $scope.model._id,
           name: $scope.model.name,
@@ -56,8 +59,9 @@
           contact: $scope.model.contact_id
         };
       } else {
+        // Edit the current user.
+        // Could be full edit, or editPassword only.
         $scope.editUserModel = {};
-        // get the current user
 
         UserSettings()
           .then(function(user) {
@@ -164,6 +168,7 @@
         };
       };
 
+      // Submit function if template is update_password.html
       $scope.updatePassword = function() {
         $scope.errors = {};
         $scope.setProcessing();
