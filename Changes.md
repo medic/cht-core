@@ -1,5 +1,14 @@
 # Medic Mobile Release Notes
 
+## 2.11.1
+
+_May 4 :star:, 2017_
+
+### Bug fixes
+ - Cannot report via SMS about people who are registered in the web app. Issue: #3401
+ - Results page CSS messed up in v2.11. Issue: #3369
+ - The user needs an associated contact to create a contact. Issue: #3394
+
 ## 2.11.0
 
 _April 12, 2017_
@@ -502,7 +511,7 @@ This release contains breaking changes from 0.x versions. Updating from 0.x vers
 ## 0.4.15
 
 _March 2, 2017_
- 
+
 - Fixed potential race condition with medic-gateway. Issue: medic-projects/issues/1243
 - Bumped libphonenumber to make phone number validation more up to date. Issue: medic-projects/issues/1005
 
@@ -567,7 +576,7 @@ _Aug 26, 2015_
 _July 14, 2015_
 
 - Added SMS parser fixes from dev branch:
-   
+
   - parse string fields with exclamation marks
   - compact textforms format handles quotes in quotes
 
@@ -605,7 +614,7 @@ _May 28, 2015_
 
 - Fixed bug in schedules editor for LMP (last menstrual period) based
   schedules. #973
-    
+
 - Initial support for messages, records and forms API.  See
   https://github.com/medic/medic-api/blob/master/API_v1.md
 
@@ -614,7 +623,7 @@ _May 28, 2015_
 _May 21, 2015_
 
 - Added support for a new messages parser we're calling Javarosa prefixed with
-  the `J1` format code. 
+  the `J1` format code.
 
 ## 0.4.3
 
@@ -654,7 +663,7 @@ _February 26, 2015_
 
 - CouchDB Lucene >= 1.0.2
 
-- Gardener >= 1.1.0 
+- Gardener >= 1.1.0
 
 - New [Nginx configuration](https://github.com/medic/medic-os/blob/3aedf0622eb0669aee2e5bbfba95a42faf05b9da/platform/packages/medic-core/settings/medic-core/nginx/nginx.conf), close or redirect port 5984, proxy all requests through medic-api.
 
@@ -710,7 +719,7 @@ _July 10, 2014_
 
 - Added Patient ID field to default data record export
 
-- Allow specifying of task columns in message export. 
+- Allow specifying of task columns in message export.
 
   To include the group column, include the parameter `columns=["task.group"]`
   (and any other columns you need, eg: `patient_id`). #432
@@ -725,13 +734,13 @@ _July 10, 2014_
 
 - Fixed too many requests for app_settings #511
 
-- Fixed saving user password, was getting reset/wiped #509 
+- Fixed saving user password, was getting reset/wiped #509
 
 - Render facilities controls on all facilities tabs. #338
 
 ### Deprecated and Backwards Incompatible changes
 
-- deprecated `exclude_cols` parameter for export integrations. Migrate 
+- deprecated `exclude_cols` parameter for export integrations. Migrate
   applications to use the `columns` parameter instead.
 
 - No forms are included by default, you must upload your forms. As usual
@@ -754,12 +763,12 @@ _June 19, 2014_
 - Fixed notifications to add the configured response #508
 
 - Fixed bug and added support for multiple schedules in schedule silencing
-    
+
     When `silence_for` is specified we should only silence/clear one group, I
     introduced a bug a few commits ago that would ignore the group and
     silence/clear based on date. Use the `silence_for` window to match and
     clear the first group.
-    
+
     Also added support for comma separate string on `silence_type` option.
     In the MCH case we have two schedules that can be generated depending on
     the form submission/registration: ANC Reminders and ANC Reminders LMP.
@@ -788,7 +797,7 @@ _May 22, 2014_
   unstructured messages were being ignored. #502
 
 - added support for app-settings kanso package.
-        
+
     Saving settings in dashboard was too slow for use because entire ddoc was
     being updated.  Using app-settings API fixes that.
 
@@ -871,9 +880,9 @@ _April 10, 2014_
 
         REG 4165550000 John Smith
         REG "John Smith" 4165550000
-    
+
 - Include state change timestamps and patient_id in messages export #453
-    
+
     Old Columns:
 
     Record UUID, Reported Date, From, Clinic Contact Name, Clinic Name,  Health
@@ -904,7 +913,7 @@ _April 10, 2014_
 - Fixed bug where facility spreadsheet update records when field value is
   unchanged. #457
 
-- Fixed bug where registrations was not using db-wide unique IDs. medic-sentinel#54 
+- Fixed bug where registrations was not using db-wide unique IDs. medic-sentinel#54
 
 - Fixed duplicate records on ID search #430
 
@@ -919,7 +928,7 @@ _April 10, 2014_
 _March 11, 2014 _
 
 - fixed facilities spreadsheet bug #451 in Chrome
-    
+
 - minor user interface tweaks on deletion of facilities modal
 
 
@@ -932,11 +941,11 @@ _March 3, 2014 _
 - Added Bulk Messaging support, so you can send messages to multiple recipients. #333
 
 - Fixed bug to include incoming messages in messages export. #436
-    
+
 - Fixed bug where it is possible to send a message twice by double clicking the submit button
 
 - Fixed bug where we failed to retrieve settings on port 80 #438
-    
+
     This was experienced when proxying to couchdb because http proxying will
     decode the URL including docid of the show parameter, so the show
     returns 404.  Solution is to always double URL encode if the show docid
@@ -952,20 +961,20 @@ _March 3, 2014 _
     Validation rules may consist of Pupil.js rules and custom rules.  These
     cannot be combined as part of the same rule.
 
-    Not OK:        
-    
+    Not OK:
+
         rule: "regex('[0-9]{5}') && unique('patient_id')"
-    
+
     OK:
-        
-        rule: "regex('[0-9]{5}') && max(11111)"    
+
+        rule: "regex('[0-9]{5}') && max(11111)"
 
     If for example you want to validate that patient_id is 5 numbers and it
     is unique (or some other custom validation) you need to define two
     validation configs/separate rules in your settings. Example validation
     settings:
 
-    ``` 
+    ```
     [
       {
         property: "patient_id",
@@ -984,8 +993,8 @@ _March 3, 2014 _
 
     Configure the Alerts section of the App Settings to send a message when an
     incoming message meets the configured condition.
-    
-    
+
+
 ## 0.3.0-beta.39 (bugfix)
 
 _February 25, 2014_
@@ -994,34 +1003,34 @@ _February 25, 2014_
 
     Textforms parser wasn't trimming space correctly on a field value, so if
     you had a list defined using those values they would never get matched.
-    
+
     Textforms was only matching numeric values of length 2 or more, so if
     you submitted a one digit number you would not get a numeric match.
-    
+
     Also if the value didn't match numeric or a date format then the
     whitespace was not being trimmed correctly.
 
 
-## 0.3.0-beta.38 (debug) 
+## 0.3.0-beta.38 (debug)
 
 _February 13, 2014_
- 
+
 - added logging calls to help debug and identify whitespace parsing bug #431
 
 
-## 0.3.0-beta.37 
+## 0.3.0-beta.37
 
 _January 21, 2014_
 
 - Fixes to user roles (@marc)
- 
+
     Matches Transitional V2 in
     https://docs.google.com/a/medicmobile.org/spreadsheet/ccc?key=0Ao9l2yegOFn7dEJRTEw1Z3RmZm0wTEo4Nk92NjVocnc
 
 - Added support for Kemri Muvuku Form (KEMR)
 
 - Added exclude_cols query param to csv/xml form exports. #421
-    
+
     For example inlude `exclude_cols=1,5` in your query parameters to
     remove the first and fifth column of an export.
 
@@ -1029,18 +1038,18 @@ _January 21, 2014_
 
     Made English CSV export default. SpreadsheetML can be a little buggy
     because we're using HTML entities (not valid XML).
-    
+
     Disabled default month value in exports screen since record count does
     not reflect the export row totals displayed.  It's probably better UX to
     have the user set the date knowing they are doing something than having a
     default that doesn't make sense with the totals on the screen and having
     to guess why that is.
-    
+
 - Added timezone support to exports #394
 
     Render page contents first and then load the fields data since that was
     holding up the page load.
-    
+
     Indexing _id as `uuid` in field index so you can search for
     `uuid:10366976d62ab9a31257b2fad16113ee` now and it shows up in avaialble
     fields index.  For some reason I think underscore prefixed fields do
@@ -1050,10 +1059,10 @@ _January 21, 2014_
 
 
 - added timezone support to exports #394
-        
+
     Now dates in the exported spreadsheet should include your locale timezone. Controlled by the `tz` query param.
-    
-    
+
+
 - Added new Messages Export and removed message data from Forms Export
 
     New http endpoint `/export/messages` to get messages export. Records are
@@ -1061,31 +1070,31 @@ _January 21, 2014_
     all records (valid and invalid), the point of the messages export is to
     give you access to all your message data, including outgoing error
     messages.
-            
+
     **Warning**: the following URLs are no longer supported:
-    
+
     ```
     /{form}/data_records.csv
     /{form}/data_records.xml
     /form_data_records.xml
     /form_data_records.csv
     ```
-    
+
     Use `/export/forms/{form}` path instead.
-    
+
     **Warning**: Existing form data export format has changed.  Included UUID of
     the related record so data among the two spreadsheets (messages and form
     data) can be correlated if need be.  Also removed the message
     data/columns from form data export. A record can be found via UUID by
     using `uuid:<the uuid string>` in the search box.
-    
+
     Changed default column name of "From" to "Reported From".  Note if this
     shouldn't change if you have an existing install since it is generated
     based on your translation settings.
 
 ```
     The NEW columns (added UUID column and removed message data):
-    
+
     Record UUID
     Reported Date
     Reported From
@@ -1095,9 +1104,9 @@ _January 21, 2014_
     Health Center Name
     District Hospital Name
     [columns for form fields data depending on form]
-    
+
     The OLD columns:
-    
+
     Reported Date
     From
     Clinic Contact Name
