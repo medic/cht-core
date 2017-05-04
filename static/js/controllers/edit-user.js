@@ -161,17 +161,11 @@
         };
         if (!updatingSelf) {
           // users don't have permission to update their own security settings
-          settings.roles = getRoles($scope.editUserModel.type, true);
+          settings.roles = $scope.editUserModel.roles;
           settings.facility_id = $scope.editUserModel.facility_id;
           settings.contact_id = $scope.editUserModel.contact_id;
         }
         return settings;
-      };
-
-      var computeFields = function() {
-        $scope.editUserModel.roles = getRoles($scope.editUserModel.type, true);
-        $scope.editUserModel.facility_id = $('#edit-user-profile [name=facility]').val();
-        $scope.editUserModel.contact_id = $('#edit-user-profile [name=contact]').val();
       };
 
       var getUserUpdates = function() {
@@ -181,6 +175,12 @@
           roles: getRoles($scope.editUserModel.type),
           facility_id: $('#edit-user-profile [name=facility]').val()
         };
+      };
+
+      var computeFields = function() {
+        $scope.editUserModel.roles = getRoles($scope.editUserModel.type, true);
+        $scope.editUserModel.facility_id = $('#edit-user-profile [name=facility]').val();
+        $scope.editUserModel.contact_id = $('#edit-user-profile [name=contact]').val();
       };
 
       // Submit function if template is update_password.html
@@ -227,6 +227,8 @@
       };
 
       var saveEdit = function(modalId, userId, settingsUpdates, userUpdates) {
+        // TODO : Bad API, refactor it, which will allow simpler code in this file.
+        // https://github.com/medic/medic-webapp/issues/3441
         UpdateUser(userId, settingsUpdates, userUpdates)
           .then(function() {
             if (settingsUpdates.language && Session.userCtx().name === settingsUpdates.name) {
