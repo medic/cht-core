@@ -2,6 +2,8 @@
 
   'use strict';
 
+  // TODO : too many input possibilities, and two different templates. Refactor.
+  // https://github.com/medic/medic-webapp/issues/3436
   angular.module('inboxControllers').controller('EditUserCtrl',
     function (
       $log,
@@ -130,7 +132,7 @@
         return validateRequired('name', 'User Name');
       };
 
-      var validateRestrictedUser = function() {
+      var validateContactAndFacility = function() {
         if ($scope.editUserModel.type !== 'district-manager') {
           return true;
         }
@@ -219,7 +221,7 @@
         $scope.setProcessing();
         $scope.errors = {};
         computeFields();
-        if (validatePasswordForEditUser() && validateName() && validateRestrictedUser()) {
+        if (validatePasswordForEditUser() && validateName() && validateContactAndFacility()) {
           saveEdit('#edit-user-profile', $scope.editUserModel.id, getSettingsUpdates(false), getUserUpdates());
         } else {
           $scope.setError();
