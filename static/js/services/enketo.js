@@ -270,7 +270,7 @@ angular.module('inboxServices').service('Enketo',
         xml.remove();
       });
 
-      record = record.html();
+      record = record[0].documentElement.outerHTML;
 
       AddAttachment(doc, REPORT_ATTACHMENT_NAME, record, 'application/xml');
       doc.fields = EnketoTranslation.reportRecordToJs(record);
