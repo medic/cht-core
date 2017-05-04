@@ -140,6 +140,8 @@ function normalise(type, schema) {
   return clone;
 }
 
+// NB: this operates as a deep-clone of the schema, avoiding problems with
+//     callers being able to mutate the reference schema
 function getSchema() {
   var normalisedSchema = {};
   RAW_SCHEMAS.forEach(function(elem) {
@@ -154,68 +156,15 @@ function getTypesInOrder() {
   });
 }
 
-var RESERVED_FIELD_NAMES = [
-  'children',
-  'parents',
-];
-
-function validateSchema(type, schema) {
-  schema = normalise(type, schema);
-
-  var fieldNames = Object.keys(schema.fields);
-
-  // check for reserved fields
-  if(_.some(RESERVED_FIELD_NAMES, function(restricted) {
-        return _.contains(fieldNames, restricted);
-      })) {
-    throw new Error('Reserved name used for field.  Do not name fields any of: ' + RESERVED_FIELD_NAMES);
-  }
-
-  // check for fields in `name` which do not exist
-  if(schema.fields.hasOwnProperty('name')) {
-    if(schema.name) {
-      throw new Error('Cannot define calculated `name` if there is also a field called `name`.');
-    }
-  } else {
-    if(!schema.name) {
-      throw new Error('No `name` property specified and no `name` field present.');
-    }
-    _.chain(schema.name.match(/\{\{[^}]*\}\}/g))
-        .map(function(m) {
-          return m.substring(2, m.length-2);
-        })
-        .each(function(key) {
-          if(fieldNames.indexOf(key) === -1) {
-            throw new Error('Non-existent field referenced in name: "' + key + '"');
-          }
-        });
-  }
-
-  return true;
-}
-
 angular.module('inboxServices').service('ContactSchema',
   function() {
     return {
-      get: function() {
-        var schema = getSchema();
-        if(arguments.length) {
-          return schema[arguments[0]];
+      get: function(type) {
+        if(type) {
+          return getSchema()[type];
+        } else {
+          return getSchema();
         }
-        return schema;
-      },
-      getBelow: function(limit) {
-        var schema = getSchema();
-        var deleting;
-        _.each(getTypesInOrder().reverse(), function(key) {
-          if (key === limit) {
-            deleting = true;
-          }
-          if (deleting) {
-            delete schema[key];
-          }
-        });
-        return schema;
       },
       getChildPlaceType: function(type) {
         var schema = getSchema();
@@ -227,28 +176,20 @@ angular.module('inboxServices').service('ContactSchema',
         });
       },
       getPlaceTypes: function() {
-        var placeTypes = RAW_SCHEMAS.map(function(elem) {
-          if (elem.isPlace) {
-            return elem.type;
-          }
-        });
-        return _.filter(placeTypes, function(val) { return val !== undefined; });
+        return _.chain(RAW_SCHEMAS)
+                .filter(function(schema) {
+                  return schema.isPlace;
+                })
+                .map(function(schema) {
+                  return schema.type;
+                })
+                .value();
       },
       getTypes: getTypesInOrder,
       getVisibleFields: function() {
-        // return a modified schema, missing special fields such as `parent`, and
-        // anything included in the `name` attribute
+        // return a modified schema, missing special fields such as `parent`
         var schema = getSchema();
         _.each(schema, function(s) {
-          // Remove fields included in the name, so they are not duplicated below
-          // it in the form
-          if(s.name) {
-            _.map(s.name.match(/\{\{[^}]+\}\}/g), function(key) {
-              return key.substring(2, key.length-2);
-            }).forEach(function(key) {
-              delete s.fields[key];
-            });
-          }
           delete s.fields.name;
           delete s.fields.parent;
 
@@ -259,9 +200,7 @@ angular.module('inboxServices').service('ContactSchema',
           });
         });
         return schema;
-      },
-      // Used by Enketo.
-      validate: validateSchema,
+      }
     };
   }
 );
