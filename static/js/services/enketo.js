@@ -292,9 +292,8 @@ angular.module('inboxServices').service('Enketo',
     var saveDocs = function(docs) {
       return $q.all(docs.map(function(doc) {
         return DB()
-          .post(doc)
+          .post(doc) // TODO change this to PUT, if that allows for updates as well as inserts
           .then(function(res) {
-            doc._id = res.id;
             doc._rev = res.rev;
             return doc;
           });
