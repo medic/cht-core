@@ -381,6 +381,7 @@ describe('Enketo service', function() {
           '<data>' +
             '<name>Sally</name>' +
             '<lmp>10</lmp>' +
+            '<secret_code_name tag="hidden">S4L</secret_code_name>' +
             '<doc1 db-doc="true">' +
               '<type>thing_1</type>' +
               '<some_property_1>some_value_1</some_property_1>' +
@@ -391,18 +392,17 @@ describe('Enketo service', function() {
             '</doc2>' +
           '</data>';
       form.getDataStr.returns(content);
-      dbPost.returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
-      dbPost.returns(KarmaUtils.mockPromise(null, { id: '6', rev: '1-def' }));
-      dbPost.returns(KarmaUtils.mockPromise(null, { id: '7', rev: '1-ghi' }));
+      dbPost.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '5', rev: '1-abc' }));
+      dbPost.onCall(1).returns(KarmaUtils.mockPromise(null, { id: '6', rev: '1-def' }));
+      dbPost.onCall(2).returns(KarmaUtils.mockPromise(null, { id: '7', rev: '1-ghi' }));
       UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
       return service.save('V', form).then(function(actual) {
-        chai.expect(JSON.stringify(actual)).to.equal(3);
-        chai.expect(actual.length).to.equal(3);
-
         chai.expect(form.validate.callCount).to.equal(1);
         chai.expect(form.getDataStr.callCount).to.equal(1);
         chai.expect(dbPost.callCount).to.equal(3);
         chai.expect(UserContact.callCount).to.equal(1);
+
+        chai.expect(actual.length).to.equal(3);
 
         var actualReport = actual[0];
         chai.expect(actualReport._id).to.equal('5');

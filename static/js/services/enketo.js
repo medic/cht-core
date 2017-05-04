@@ -266,7 +266,7 @@ angular.module('inboxServices').service('Enketo',
       record = $($.parseXML(record));
 
       record.find('[db-doc=true]').each(function(i, xml) {
-        docsToStore.push(EnketoTranslation.reportRecordToJs(xml));
+        docsToStore.push(EnketoTranslation.reportRecordToJs(xml.outerHTML));
         xml.remove();
       });
 
