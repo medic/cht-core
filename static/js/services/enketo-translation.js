@@ -298,26 +298,41 @@ angular.module('inboxServices').service('EnketoTranslation', [
       return nodesToJs(root.childNodes);
     };
 
+    /*
+     * Given a record, returns the parsed doc and associated docs
+     * result.doc: the main document
+     * result.siblings: more documents at the same level. These docs are docs
+     *   that must link to the main doc, but the main doc must also link to them,
+     *   for example the main doc may be a place, and a CHW a sibling.
+     *   see: contacts-edit.js:saveSiblings
+     * result.repeats: documents from repeat nodes. These docs are simple docs
+     *   that we wish to save independently of the main document.
+     *   see: contacts-edit.js:saveRepeated
+     */
     self.contactRecordToJs = function(record) {
       var root = $.parseXML(record).firstChild;
+
+      var result = {
+        doc: undefined,
+        siblings: {},
+      };
       var repeats = repeatsToJs(root);
-      var siblings = {};
-      var first = null;
+      if (repeats) {
+        result.repeats = repeats;
+      }
+
       withElements(root.childNodes)
         // TODO repeat-relevant may be unnecessary if https://github.com/enketo/enketo-core/issues/336 is resolved
         .filter(without('meta', 'inputs', 'repeat', 'repeat-relevant'))
         .each(function(child) {
-          if(!first) {
-            first = child;
-            return;
+          // First child is the main result, rest are siblings
+          if(!result.doc) {
+            result.doc = nodesToJs(child.childNodes);
+          } else {
+            result.siblings[child.nodeName] = nodesToJs(child.childNodes);
           }
-          siblings[child.nodeName] = nodesToJs(child.childNodes);
         });
-      var res = [ nodesToJs(first.childNodes), siblings ];
-      if(repeats) {
-        res.push(repeats);
-      }
-      return res;
+      return result;
     };
 
     var findCurrentElement = function(elem, name, childMatcher) {

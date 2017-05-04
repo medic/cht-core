@@ -321,14 +321,14 @@ describe('EnketoTranslation service', function() {
       var js = service.contactRecordToJs(xml);
 
       // then
-      assert.deepEqual(js, [
-        {
+      assert.deepEqual(js, {
+        doc: {
           name: 'Denise Degraffenreid',
           phone: '+123456789',
           parent: 'eeb17d6d-5dde-c2c0-a0f2a91e2d232c51',
         },
-        {}
-      ]);
+        siblings: {}
+      });
     });
 
     it('should convert a complex record without new instance to JS', function() {
@@ -353,18 +353,18 @@ describe('EnketoTranslation service', function() {
       var js = service.contactRecordToJs(xml);
 
       // then
-      assert.deepEqual(js, [
-        {
+      assert.deepEqual(js, {
+        doc: {
           name: 'A New Catchmnent Area',
           parent: 'eeb17d6d-5dde-c2c0-48ac53f275043126',
           contact: 'abc-123-xyz-987',
         },
-        {
+        siblings: {
           contact: {
             name: '',
             phone: '',
           },
-        }]);
+        }});
     });
 
     it('should convert a complex record with new instance to JS', function() {
@@ -389,18 +389,18 @@ describe('EnketoTranslation service', function() {
       var js = service.contactRecordToJs(xml);
 
       // then
-      assert.deepEqual(js, [
-        {
+      assert.deepEqual(js, {
+        doc: {
           name: 'A New Catchmnent Area',
           parent: 'eeb17d6d-5dde-c2c0-48ac53f275043126',
           contact: 'NEW',
         },
-        {
+        siblings: {
           contact: {
             name: 'Jeremy Fisher',
             phone: '+123456789',
           },
-        }]);
+        }});
     });
 
     it('should support repeated elements', function() {
@@ -436,26 +436,26 @@ describe('EnketoTranslation service', function() {
       var js = service.contactRecordToJs(xml);
 
       // then
-      assert.deepEqual(js, [
-        {
+      assert.deepEqual(js, {
+        doc: {
           name: 'A House in the Woods',
           parent: 'eeb17d6d-5dde-c2c0-48ac53f275043126',
           contact: 'abc-123-xyz-987',
         },
-        {
+        siblings: {
           contact: {
             name: 'Mummy Bear',
             phone: '123',
           },
         },
-        {
+        repeats: {
           child_data: [
             { name: 'Daddy Bear', },
             { name: 'Baby Bear', },
             { name: 'Goldilocks', },
           ],
         },
-      ]);
+      });
     });
 
     it('should ignore text in repeated elements', function() {
@@ -495,26 +495,26 @@ describe('EnketoTranslation service', function() {
       var js = service.contactRecordToJs(xml);
 
       // then
-      assert.deepEqual(js, [
-        {
+      assert.deepEqual(js, {
+        doc: {
           name: 'A House in the Woods',
           parent: 'eeb17d6d-5dde-c2c0-48ac53f275043126',
           contact: 'abc-123-xyz-987',
         },
-        {
+        siblings: {
           contact: {
             name: 'Mummy Bear',
             phone: '123',
           },
         },
-        {
+        repeats: {
           child_data: [
             { name: 'Daddy Bear', },
             { name: 'Baby Bear', },
             { name: 'Goldilocks', },
           ],
         },
-      ]);
+      });
     });
 
     it('should include repeats if they are explicitly requested', function() {
@@ -551,26 +551,26 @@ describe('EnketoTranslation service', function() {
       var js = service.contactRecordToJs(xml);
 
       // then
-      assert.deepEqual(js, [
-        {
+      assert.deepEqual(js, {
+        doc: {
           name: 'A House in the Woods',
           parent: 'eeb17d6d-5dde-c2c0-48ac53f275043126',
           contact: 'abc-123-xyz-987',
         },
-        {
+        siblings: {
           contact: {
             name: 'Mummy Bear',
             phone: '123',
           },
         },
-        {
+        repeats: {
           child_data: [
             { name: 'Daddy Bear', },
             { name: 'Baby Bear', },
             { name: 'Goldilocks', },
           ],
         },
-      ]);
+      });
     });
 
     it('should exclude repeats if they are explicitly excluded', function() {
@@ -607,20 +607,20 @@ describe('EnketoTranslation service', function() {
       var js = service.contactRecordToJs(xml);
 
       // then
-      assert.deepEqual(js, [
-        {
+      assert.deepEqual(js, {
+        doc: {
           name: 'A House in the Woods',
           parent: 'eeb17d6d-5dde-c2c0-48ac53f275043126',
           contact: 'abc-123-xyz-987',
         },
-        {
+        siblings: {
           contact: {
             name: 'Mummy Bear',
             phone: '123',
           },
         },
-        {},
-      ]);
+        repeats: {},
+      });
     });
   });
 
