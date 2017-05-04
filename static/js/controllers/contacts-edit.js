@@ -12,6 +12,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     DB,
     Enketo,
     EnketoTranslation,
+    ExtractLineage,
     Snackbar
   ) {
 
@@ -280,6 +281,9 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
               }
               return DB().get(doc[f])
                 .then(function(dbFieldValue) {
+                  if (f === 'parent') {
+                    dbFieldValue = ExtractLineage(dbFieldValue);
+                  }
                   doc[f] = dbFieldValue;
                   return doc;
                 });
@@ -305,11 +309,18 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           children = children.concat(res.children);
           return res.doc;
         })
+        .then(function(doc) {
+          if (doc.contact && doc.contact._id) {
+            doc.contact = ExtractLineage(doc.contact);
+          }
+          return doc;
+        })
         .then(persist)
         .then(function(doc) {
+          var lineage = ExtractLineage(doc);
           return $q
             .all(_.map(children, function(child) {
-              child.parent = doc;
+              child.parent = lineage;
               return DB().put(child);
             }))
             .then(function() {
