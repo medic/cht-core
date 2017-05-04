@@ -263,8 +263,6 @@ describe('Enketo service', function() {
     it('rejects on invalid form', function(done) {
       form.validate.returns(KarmaUtils.mockPromise(null, false));
       service.save('V', form).catch(function(actual) {
-        actual = actual[0];
-
         chai.expect(actual.message).to.equal('Form is invalid');
         chai.expect(form.validate.callCount).to.equal(1);
         done();
