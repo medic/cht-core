@@ -44,8 +44,8 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       $scope.enketoStatus.saving = true;
       $scope.enketoStatus.error = null;
       Enketo.save($state.params.formId, $scope.form)
-        .then(function(doc) {
-          $log.debug('saved report', doc);
+        .then(function(docs) {
+          $log.debug('saved report and associated docs', docs);
           $scope.enketoStatus.saving = false;
           $translate('report.created').then(Snackbar);
           $state.go('contacts.detail', { id: $state.params.id });

@@ -72,8 +72,8 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
       $scope.enketoStatus.saving = true;
       $scope.enketoStatus.error = null;
       Enketo.save($scope.formId, $scope.form)
-        .then(function(doc) {
-          $log.debug('saved report', doc);
+        .then(function(docs) {
+          $log.debug('saved report and associated docs', docs);
           $translate('report.created').then(Snackbar);
           $scope.enketoStatus.saving = false;
           Enketo.unload($scope.form);
