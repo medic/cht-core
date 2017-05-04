@@ -374,6 +374,8 @@ describe('Enketo service', function() {
     });
 
     it('creates extra docs', function() {
+      /* jshint expr: true */
+
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content =
           '<data>' +
@@ -415,8 +417,8 @@ describe('Enketo service', function() {
         chai.expect(actualReport.from).to.equal('555');
         chai.expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
 
-        chai.expect(actualReport.fields.doc1).to.be.undefined; /* jshint expr: true */
-        chai.expect(actualReport.fields.doc2).to.be.undefined; /* jshint expr: true */
+        chai.expect(actualReport.fields.doc1).to.be.undefined;
+        chai.expect(actualReport.fields.doc2).to.be.undefined;
 
         var actualThing1 = actual[1];
         chai.expect(actualThing1._id).to.match(/(\w+-)\w+/);
