@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    uuidV4 = require('uuid/v4');
 
 angular.module('inboxControllers').controller('ContactsEditCtrl',
   function (
@@ -159,11 +160,11 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           }
 
           return save(form, docId)
-            .then(function(doc) {
-              $log.debug('saved report', doc);
+            .then(function(result) {
+              $log.debug('saved report', result);
               $scope.enketoStatus.saving = false;
               $translate(docId ? 'contact.updated' : 'contact.created').then(Snackbar);
-              $state.go('contacts.detail', { id: doc._id });
+              $state.go('contacts.detail', { id: result.docId });
             })
             .catch(function(err) {
               $scope.enketoStatus.saving = false;
@@ -181,6 +182,20 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         });
     };
 
+    function generateFailureMessage(bulkDocsResult) {
+      return _.reduce(bulkDocsResult, function(msg, result) {
+        var newMsg = msg;
+        if (!result.ok) {
+         if (!newMsg) {
+          newMsg = 'Some documents did not save correctly: ';
+         }
+
+         newMsg += result.id + ' with ' + result.message + '; ';
+        }
+        return newMsg;
+      }, undefined);
+    }
+
     function save(form, docId) {
       return $q.resolve()
         .then(function() {
@@ -192,142 +207,115 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         .then(function(original) {
           var submitted = EnketoTranslation.contactRecordToJs(form.getDataStr());
 
-          var repeated = submitted[2];
-          var extras = submitted[1];
-          submitted = submitted[0];
-
           if(original) {
-            submitted = $.extend({}, original, submitted);
+            submitted.doc = $.extend({}, original, submitted.doc);
           } else {
-            submitted.type = $scope.enketoContact.type;
+            submitted.doc.type = $scope.enketoContact.type;
           }
 
-          return saveDoc(submitted, original, extras, repeated);
-        });
-    }
+          return prepareSubmittedDocsForSave(original, submitted);
+        })
+        .then(function(preparedDocs) {
+          return DB().bulkDocs(preparedDocs.preparedDocs)
+            .then(function(bulkDocsResult) {
+              var failureMessage = generateFailureMessage(bulkDocsResult);
 
-    function persist(doc) {
-      updateTitle(doc);
+              if (failureMessage) {
+                throw new Error(failureMessage);
+              }
 
-      var put;
-      if(doc._id) {
-        put = DB().put(doc);
-      } else {
-        doc.reported_date = Date.now();
-        put = DB().post(doc);
-      }
-      return put
-        .then(function(response) {
-          return DB().get(response.id);
-        });
-    }
-
-    function saveRepeated(repeated) {
-      if (!(repeated && repeated.child_data)) {
-        return $q.resolve();
-      }
-
-      var children = [];
-      return $q
-        .all(_.map(repeated.child_data, function(child) {
-          return persist(child)
-            .then(function(savedChild) {
-              children.push(savedChild);
+              return {docId: preparedDocs.docId, bulkDocsResult: bulkDocsResult};
             });
-        }))
-        .then(function() {
-          return children;
         });
     }
 
-    function saveExtras(doc, original, extras) {
-      var children = [];
+    // Prepares document to be bulk-saved at a later time, and for it to be
+    // referenced by _id by other docs if required.
+    function prepare(doc) {
+      if(!doc._id) {
+        doc.reported_date = Date.now();
+        doc._id = uuidV4();
+      }
+
+      return doc;
+    }
+
+    function prepareRepeatedDocs(doc, repeated) {
+      if (repeated && repeated.child_data) {
+        return _.map(repeated.child_data, function(child) {
+          child.parent = doc;
+          return prepare(child);
+        });
+      } else {
+        return [];
+      }
+    }
+
+    // Mutates the passed doc to attach prepared siblings, and returns all
+    // prepared siblings to be persisted
+    function prepareAndAttachSiblingDocs(doc, original, siblings) {
+      if (!doc._id) {
+        throw new Error('doc passed must already be prepared with an _id');
+      }
+
+      var preparedSiblings = [];
       var schema = $scope.unmodifiedSchema[doc.type];
+      var promiseChain = $q.resolve();
 
-      // sequentially update all dirty db fields
-      var result = $q.resolve(doc);
-      _.each(schema.fields, function(conf, f) {
-        var customType = conf.type.match(/^(db|custom):(.*)$/);
+      _.each(schema.fields, function(fieldConf, fieldName) {
+        var customType = fieldConf.type.match(/^(db|custom):(.*)$/);
         if (customType) {
-          result = result.then(function(doc) {
-            if(!doc[f]) {
-              doc[f] = {};
-            } else if(doc[f] === 'NEW') {
-              var extra = extras[f];
-              extra.type = customType[2];
-              extra.reported_date = Date.now();
+          if(!doc[fieldName]) {
+            doc[fieldName] = {};
+          } else if(doc[fieldName] === 'NEW') {
+            var preparedSibling = prepare(siblings[fieldName]);
+            preparedSibling.type = customType[2];
 
-              var isChild = extra.parent === 'PARENT' ||
-                            (!extra.parent && conf.parent === 'PARENT');
-              if (isChild) {
-                delete extra.parent;
-              }
+            var isChild = preparedSibling.parent === 'PARENT' ||
+                          (!preparedSibling.parent && fieldConf.parent === 'PARENT');
 
-              return persist(extra)
-                .then(function(newlySavedDoc) {
-                  doc[f] = newlySavedDoc;
-                  if(isChild) {
-                    children.push(newlySavedDoc);
-                  }
-                  return doc;
-                });
-            } else if(original && original[f] && doc[f] === original[f]._id) {
-              doc[f] = original[f];
+            if (isChild) {
+              delete preparedSibling.parent;
+              // Cloning to avoid the circular reference we would make:
+              //   doc.fieldName.parent.fieldName.parent...
+              doc[fieldName] = _.clone(preparedSibling);
+              preparedSibling.parent = doc;
             } else {
-              var docId = doc[f];
-              if (typeof docId === 'object') {
-                docId = doc[f]._id;
-              }
-              return DB().get(doc[f])
-                .then(function(dbFieldValue) {
-                  doc[f] = dbFieldValue;
-                  return doc;
-                });
+              doc[fieldName] = preparedSibling;
             }
-            return doc;
-          });
+
+            preparedSiblings.push(preparedSibling);
+          } else if(original &&
+                    original[fieldName] &&
+                    original[fieldName]._id === doc[fieldName]) {
+
+            doc[fieldName] = original[fieldName];
+          } else {
+            promiseChain = promiseChain.then(function() {
+              return DB().get(doc[fieldName]).then(function(dbFieldValue) {
+                doc[fieldName] = dbFieldValue;
+              });
+            });
+          }
         }
       });
-      return result
-        .then(function(doc) {
-          return { doc: doc, children: children };
-        });
+
+      return promiseChain.then(function() {
+        return preparedSiblings;
+      });
     }
 
-    function saveDoc(doc, original, extras, repeated) {
-      var children;
-      return saveRepeated(repeated)
-        .then(function(repeatedChildren) {
-          children = repeatedChildren || [];
-          return saveExtras(doc, original, extras);
-        })
-        .then(function(res) {
-          children = children.concat(res.children);
-          return res.doc;
-        })
-        .then(persist)
-        .then(function(doc) {
-          return $q
-            .all(_.map(children, function(child) {
-              child.parent = doc;
-              return DB().put(child);
-            }))
-            .then(function() {
-              return doc;
-            });
-        });
-    }
+    function prepareSubmittedDocsForSave(original, submitted) {
+      var doc = prepare(submitted.doc);
+      var repeated = prepareRepeatedDocs(submitted.doc, submitted.repeats);
 
-    function updateTitle(doc) {
-      if(!doc) {
-        return;
-      }
-      var nameFormat = $scope.unmodifiedSchema[doc.type].name;
-      if (nameFormat) {
-        doc.name = nameFormat.replace(/\{\{([^}]+)\}\}/g, function(all, name) {
-          return doc[name];
+      return prepareAndAttachSiblingDocs(submitted.doc, original, submitted.siblings)
+        .then(function(siblings) {
+          return {
+            docId: doc._id,
+            preparedDocs: [].concat(repeated, siblings, doc)
+          };
         });
-      }
     }
 
     $scope.$on('$destroy', function() {
