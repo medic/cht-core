@@ -445,9 +445,9 @@ describe('Enketo service', function() {
             '<doc1 db-doc="true">' +
               '<type>thing_1</type>' +
               '<some_property_1>some_value_1</some_property_1>' +
-              '<my_self_1 doc-ref="/data/doc2"/>' +
+              '<my_self_1 doc-ref="/data/doc1"/>' +
               '<my_parent_1 doc-ref="/data"/>' +
-              '<my_sibling_1 doc-ref="/data/doc1"/>' +
+              '<my_sibling_1 doc-ref="/data/doc2"/>' +
             '</doc1>' +
             '<doc2 db-doc="true">' +
               '<type>thing_2</type>' +
@@ -500,17 +500,17 @@ describe('Enketo service', function() {
         chai.expect(actualThing1._id).to.match(/(\w+-)\w+/);
         chai.expect(actualThing1._rev).to.equal('1-def');
         chai.expect(actualThing1.some_property_1).to.equal('some_value_1');
-        chai.expect(actualReport.my_self_1).to.equal(doc1_id);
-        chai.expect(actualReport.my_parent).to.equal(reportId);
-        chai.expect(actualReport.my_sibling_1).to.equal(doc2_id);
+        chai.expect(actualThing1.my_self_1).to.equal(doc1_id);
+        chai.expect(actualThing1.my_parent).to.equal(reportId);
+        chai.expect(actualThing1.my_sibling_1).to.equal(doc2_id);
 
         var actualThing2 = actual[2];
         chai.expect(actualThing2._id).to.match(/(\w+-)\w+/);
         chai.expect(actualThing2._rev).to.equal('1-ghi');
         chai.expect(actualThing2.some_property_2).to.equal('some_value_2');
-        chai.expect(actualReport.my_self_2).to.equal(doc2_id);
-        chai.expect(actualReport.my_parent).to.equal(reportId);
-        chai.expect(actualReport.my_sibling_2).to.equal(doc1_id);
+        chai.expect(actualThing2.my_self_2).to.equal(doc2_id);
+        chai.expect(actualThing2.my_parent).to.equal(reportId);
+        chai.expect(actualThing2.my_sibling_2).to.equal(doc1_id);
       });
     });
 
