@@ -194,24 +194,6 @@ var _ = require('underscore');
       };
 
       $scope.addRecipients = function() {
-        console.log('recipient', $scope.selected.id);
-        // var recipient = $scope.selected &&
-        //                 $scope.selected.messages &&
-        //                 $scope.selected.messages.length &&
-        //                 $scope.selected.messages[0].value;
-
-        // if (recipient) {
-        //   if (recipient.facility) {
-        //     recipient = recipient.facility._id;
-        //   } else if (recipient.contact) {
-        //     if (recipient.contact._id) {
-        //       recipient = recipient.contact._id;
-        //     } else if (recipient.contact.name) {
-        //       recipient = recipient.contact.name; // raw phone number
-        //     }
-        //   }
-        // }
-
         Modal({
           templateUrl: 'templates/modals/send_message.html',
           controller: 'SendMessageCtrl',
@@ -220,7 +202,6 @@ var _ = require('underscore');
             message: $scope.send.message
           }
         });
-
         $scope.send.message = '';
       };
 
