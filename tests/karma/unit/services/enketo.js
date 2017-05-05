@@ -444,20 +444,20 @@ describe('Enketo service', function() {
             '<doc1 db-doc="true">' +
               '<type>thing_1</type>' +
               '<some_property_1>some_value_1</some_property_1>' +
-              <my_self_1 doc-ref="/doc2"/>
-              <my_parent_1 doc-ref="/"/>
-              <my_sibling_1 doc-ref="/doc1"/>
+              '<my_self_1 doc-ref="/doc2"/>' +
+              '<my_parent_1 doc-ref="/"/>' +
+              '<my_sibling_1 doc-ref="/doc1"/>' +
             '</doc1>' +
             '<doc2 db-doc="true">' +
               '<type>thing_2</type>' +
               '<some_property_2>some_value_2</some_property_2>' +
-              <my_self_2 doc-ref="/doc2"/>
-              <my_parent_2 doc-ref="/"/>
-              <my_sibling_2 doc-ref="/doc1"/>
+              '<my_self_2 doc-ref="/doc2"/>' +
+              '<my_parent_2 doc-ref="/"/>' +
+              '<my_sibling_2 doc-ref="/doc1"/>' +
             '</doc2>' +
-            <my_self_0 doc-ref="/"/>
-            <my_child_01 doc-ref="/doc1"/>
-            <my_child_02 doc-ref="/doc2"/>
+            '<my_self_0 doc-ref="/"/>' +
+            '<my_child_01 doc-ref="/doc1"/>' +
+            '<my_child_02 doc-ref="/doc2"/>' +
           '</data>';
       form.getDataStr.returns(content);
       dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));

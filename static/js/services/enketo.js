@@ -261,16 +261,37 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var xmlToDocs = function(doc, record) {
-      var docsToStore = [];
+      var docsToStore = [], idMap = {}, $otherDocs, $record;
 
-      record = $($.parseXML(record));
+      function mapOrAssignId(ref, $e) {
+        var $id = $e.children('_id');
+        if (!$id.length) {
+          $e.append('<_id>', uuid());
+        } else if(!$id.text()) {
+          $id.text(uuid());
+        }
+        idMap[ref] = $e.children('_id').text();
+      }
 
-      record.find('[db-doc=true]').each(function(i, xml) {
-        docsToStore.push(EnketoTranslation.reportRecordToJs(xml.outerHTML));
-        xml.remove();
+      $record = $($.parseXML(record));
+      mapOrAssignId('/', $record);
+
+      $otherDocs = record.find('[db-doc=true]');
+      $otherDocs.each(function(i, e) {
+        mapOrAssignId('/' + e.nodeName, $(e));
       });
 
-      record = record[0].documentElement.outerHTML;
+      $record.find('[doc-ref]').each(function(i, ref) {
+        var $ref = $(ref);
+        $ref.text(idMap[$ref.attr('doc-ref')]);
+      });
+
+      $otherDocs.each(function(i, e) {
+        docsToStore.push(EnketoTranslation.reportRecordToJs(e.outerHTML));
+        e.remove();
+      });
+
+      record = $record[0].documentElement.outerHTML;
 
       AddAttachment(doc, REPORT_ATTACHMENT_NAME, record, 'application/xml');
       doc.fields = EnketoTranslation.reportRecordToJs(record);
