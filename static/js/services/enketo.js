@@ -276,7 +276,7 @@ angular.module('inboxServices').service('Enketo',
       $record = $($.parseXML(record));
       mapOrAssignId('/', $record);
 
-      $otherDocs = record.find('[db-doc=true]');
+      $otherDocs = $record.find('[db-doc=true]');
       $otherDocs.each(function(i, e) {
         mapOrAssignId('/' + e.nodeName, $(e));
       });
