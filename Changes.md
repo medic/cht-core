@@ -8,6 +8,7 @@ _May 4 :star:, 2017_
  - Cannot report via SMS about people who are registered in the web app. Issue: #3401
  - Results page CSS messed up in v2.11. Issue: #3369
  - The user needs an associated contact to create a contact. Issue: #3394
+ - Error when adding Place with new person. Issue: #3420
 
 ## 2.11.0
 
