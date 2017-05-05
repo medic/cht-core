@@ -2,13 +2,14 @@ describe.only('EditUserCtrl controller', function() {
 
   'use strict';
 
-  var mockCreateNewUser,
+  var jQuery,
+      mockCreateNewUser,
       mockEditAUser,
       mockEditCurrentUser,
       scope,
+      translationsDbQuery,
       UpdateUser,
       UserSettings,
-      translationsDbQuery,
       userToEdit;
 
   beforeEach(function() {
@@ -32,6 +33,9 @@ describe.only('EditUserCtrl controller', function() {
       roles: [ 'district-manager' ],
       language: 'zz'
     };
+
+    jQuery = sinon.stub(window, '$');
+    window.$.callThrough();
 
     module(function($provide) {
       $provide.factory('$uibModalInstance', function() {
@@ -95,8 +99,19 @@ describe.only('EditUserCtrl controller', function() {
     KarmaUtils.restore(
       UpdateUser,
       UserSettings,
-      translationsDbQuery);
+      translationsDbQuery,
+      jQuery);
   });
+
+
+  const mockFacility = (facility_id) => {
+      window.$.withArgs('#edit-user-profile [name=facility]').returns(
+        {val: function(){ return facility_id; }});
+  };
+  const mockContact = (contact_id) => {
+      window.$.withArgs('#edit-user-profile [name=contact]').returns(
+        {val: function(){ return contact_id; }});
+  };
 
   describe('initialisation', function() {
 
@@ -288,7 +303,7 @@ describe.only('EditUserCtrl controller', function() {
     it('must have associated place if user type is restricted user', function() {
       mockEditAUser(userToEdit);
       scope.editUserModel.type = 'district-manager';
-      scope.editUserModel.facility_id = null;
+      mockFacility(null);
 
       // when
       scope.editUser();
@@ -300,7 +315,7 @@ describe.only('EditUserCtrl controller', function() {
     it('must have associated contact if user type is restricted user', function() {
       mockEditAUser(userToEdit);
       scope.editUserModel.type = 'district-manager';
-      scope.editUserModel.contact_id = null;
+      mockContact(null);
 
       // when
       scope.editUser();
@@ -312,8 +327,8 @@ describe.only('EditUserCtrl controller', function() {
     it('must have associated place and contact if user type is restricted user', function() {
       mockEditAUser(userToEdit);
       scope.editUserModel.type = 'district-manager';
-      scope.editUserModel.facility_id = null;
-      scope.editUserModel.contact_id = null;
+      mockFacility(null);
+      mockContact(null);
 
       // when
       scope.editUser();
@@ -326,6 +341,8 @@ describe.only('EditUserCtrl controller', function() {
     it('doesn\'t need associated place and contact if user type is not restricted user', function() {
       mockEditAUser(userToEdit);
       scope.editUserModel.type = 'some-other-type';
+      mockFacility(null);
+      mockContact(null);
 
       // when
       scope.editUser();
@@ -335,26 +352,10 @@ describe.only('EditUserCtrl controller', function() {
       chai.expect(scope.errors).not.to.have.property('contact_id');
     });
 
-
-    var jQuery;
-    // If you use this, don't forget to reset: you're mocking out
-    // jQuery for all unit tests.
-    var mockOutjQueryFormFields = function() {
-      jQuery = window.$;
-      window.$ = sinon.stub();
-      window.$.withArgs('#edit-user-profile [name=contact]').returns(
-        {val: function(){ return userToEdit.contact_id; }});
-      window.$.withArgs('#edit-user-profile [name=facility]').returns(
-        {val: function(){ return userToEdit.facility_id; }});
-    };
-
-    var resetJQuery = function() {
-      window.$ = jQuery;
-    };
-
     it('user is updated', function() {
-      mockOutjQueryFormFields();
       mockEditAUser(userToEdit);
+      mockContact(userToEdit.contact_id);
+      mockFacility(userToEdit.facility_id);
 
       scope.editUser();
 
@@ -386,8 +387,6 @@ describe.only('EditUserCtrl controller', function() {
       chai.expect(userUdates.password).to.equal(scope.editUserModel.password);
       chai.expect(userUdates.facility_id).to.equal(scope.editUserModel.facility_id);
       chai.expect(userUdates.roles).to.deep.equal(['district-manager', 'kujua_user', 'data_entry', 'district_admin']);
-
-      resetJQuery();
     });
   });
 });
