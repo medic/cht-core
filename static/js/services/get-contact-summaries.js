@@ -33,7 +33,7 @@ angular.module('inboxServices').factory('GetContactSummaries',
         return [summary.contact].concat(summary.lineage);
       }))));
       if (!ids.length) {
-        return $q.resolve([]);
+        return $q.resolve(summaries);
       }
       return DB()
         .query('medic-client/doc_summaries_by_id', { keys: ids })

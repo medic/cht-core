@@ -83,11 +83,10 @@ var _ = require('underscore');
           $scope.setLoadingContent(id);
         }
         $q.all([
-          ContactViewModelGenerator(id), // TODO what if not a UUID? eg: phone number
+          ContactViewModelGenerator(id),
           MessageContacts({ id: id })
         ])
           .then(function(results) {
-            console.log('results', results);
             var contactModel = results[0];
             var conversation = results[1];
             if ($scope.selected && $scope.selected.id !== id) {
@@ -103,9 +102,9 @@ var _ = require('underscore');
             $scope.firstUnread = _.min(unread, function(message) {
               return message.doc.reported_date;
             });
-            $scope.selected.contact = contactModel;
+            $scope.selected.contact = contactModel || { name: id }; // TODO imrpove model gen?
             $scope.selected.messages = conversation;
-            setTitle(contactModel);
+            $scope.setTitle((contactModel && contactModel.doc.name) || id);
             markAllRead();
             $timeout(scrollToUnread);
           })
@@ -114,15 +113,6 @@ var _ = require('underscore');
             $scope.error = true;
             $log.error('Error fetching contact conversation', err);
           });
-      };
-
-      var setTitle = function(contactModel) {
-        // TODO
-        // var title = message.contact.name ||
-        //   (!message.form && message.name) ||
-        //   message.from ||
-        //   message.sent_by;
-        $scope.setTitle(contactModel.doc.name);
       };
 
       var updateConversation = function(options) {
@@ -184,12 +174,17 @@ var _ = require('underscore');
       };
 
       $scope.sendMessage = function() {
-        var recipients = findMostRecentFacility($scope.selected.messages);
-        if (recipients.length === 0) {
+        if (!$scope.selected) {
           $log.error('Error sending message', new Error('No facility selected'));
           return;
         }
-        SendMessage(recipients, $scope.send.message)
+        var recipient;
+        if ($scope.selected.contact.doc) { // known contact
+          recipient = { doc: $scope.selected.contact.doc };
+        } else { // unknown sender
+          recipient = { doc: { contact: { phone: $scope.selected.id } } };
+        }
+        SendMessage(recipient, $scope.send.message)
           .then(function() {
             $scope.send.message = '';
           })
@@ -199,28 +194,29 @@ var _ = require('underscore');
       };
 
       $scope.addRecipients = function() {
-        var recipient = $scope.selected &&
-                        $scope.selected.messages &&
-                        $scope.selected.messages.length &&
-                        $scope.selected.messages[0].value;
+        console.log('recipient', $scope.selected.id);
+        // var recipient = $scope.selected &&
+        //                 $scope.selected.messages &&
+        //                 $scope.selected.messages.length &&
+        //                 $scope.selected.messages[0].value;
 
-        if (recipient) {
-          if (recipient.facility) {
-            recipient = recipient.facility._id;
-          } else if (recipient.contact) {
-            if (recipient.contact._id) {
-              recipient = recipient.contact._id;
-            } else if (recipient.contact.name) {
-              recipient = recipient.contact.name; // raw phone number
-            }
-          }
-        }
+        // if (recipient) {
+        //   if (recipient.facility) {
+        //     recipient = recipient.facility._id;
+        //   } else if (recipient.contact) {
+        //     if (recipient.contact._id) {
+        //       recipient = recipient.contact._id;
+        //     } else if (recipient.contact.name) {
+        //       recipient = recipient.contact.name; // raw phone number
+        //     }
+        //   }
+        // }
 
         Modal({
           templateUrl: 'templates/modals/send_message.html',
           controller: 'SendMessageCtrl',
           model: {
-            to: recipient,
+            to: $scope.selected.id,
             message: $scope.send.message
           }
         });

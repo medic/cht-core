@@ -4,7 +4,7 @@ describe('Bulk delete reports', function() {
 
   'use strict';
 
-  var reports = [
+  var docs = [
     {
       fields: {
         lmp_date: 'Feb 3, 2016'
@@ -14,11 +14,7 @@ describe('Bulk delete reports', function() {
       content_type: 'xml',
       reported_date: 1462333250374,
       contact: {
-        name: 'Sharon',
-        phone: '+555',
-        type: 'person',
-        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32',
-        _rev: '1-fb7fbda241dbf6c2239485c655818a69'
+        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
       },
       from: '+555',
       hidden_fields: []
@@ -32,11 +28,7 @@ describe('Bulk delete reports', function() {
       content_type: 'xml',
       reported_date: 1462338250374,
       contact: {
-        name: 'Sharon',
-        phone: '+555',
-        type: 'person',
-        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32',
-        _rev: '1-fb7fbda241dbf6c2239485c655818a69'
+        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
       },
       from: '+555',
       hidden_fields: []
@@ -50,14 +42,17 @@ describe('Bulk delete reports', function() {
       content_type: 'xml',
       reported_date: 1462538250374,
       contact: {
-        name: 'Sharon',
-        phone: '+555',
-        type: 'person',
-        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32',
-        _rev: '1-fb7fbda241dbf6c2239485c655818a69'
+        _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
       },
       from: '+555',
       hidden_fields: []
+    },
+    {
+      name: 'Sharon',
+      phone: '+555',
+      type: 'person',
+      reported_date: 1462538250374,
+      _id: '3305E3D0-2970-7B0E-AB97-C3239CD22D32'
     }
   ];
 
@@ -65,7 +60,7 @@ describe('Bulk delete reports', function() {
   beforeEach(function(done) {
     browser.ignoreSynchronization = true;
     protractor.promise
-      .all(reports.map(utils.saveDoc))
+      .all(docs.map(utils.saveDoc))
       .then(function(results) {
         results.forEach(function(result) {
           savedUuids.push(result.id);

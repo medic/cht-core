@@ -8,13 +8,12 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     return function(id) {
       var options = {
         startkey: [ id, 0 ],
-        endkey: [ id, 100 ], // TODO what's the max depth?
+        endkey: [ id, {} ],
         include_docs: true
       };
       return DB()
         .query('medic-client/docs_by_id_lineage', options)
         .then(function(result) {
-          console.log('result', result);
           var contactRow = result.rows.shift();
           if (!contactRow) {
             return;

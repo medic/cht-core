@@ -8,6 +8,6 @@
   </div>
   <div class="position"
     ng-if="message.lineage || message.contact.parent || message.place || (!message.form && message.name)"
-    ng-bind-html="message.lineage || message.contact.parent || message.place || (!message.form && message.name) | clinic">
+    ng-bind-html="message.lineage || message.contact.parent || message.place | clinic">
   </div>
 </div>

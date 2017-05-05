@@ -18,10 +18,10 @@ angular.module('inboxControllers').controller('MessagesCtrl',
     var removeDeletedMessages = function(messages) {
       var existingKey;
       var checkExisting = function(updated) {
-        return existingKey === updated.key[0];
+        return existingKey === updated.key;
       };
       for (var i = $scope.messages.length - 1; i >= 0; i--) {
-        existingKey = $scope.messages[i].key[0];
+        existingKey = $scope.messages[i].key;
         if (!_.some(messages, checkExisting)) {
           $scope.messages.splice(i, 1);
         }
@@ -31,16 +31,16 @@ angular.module('inboxControllers').controller('MessagesCtrl',
     var mergeUpdatedMessages = function(messages) {
       _.each(messages, function(updated) {
         var match = _.find($scope.messages, function(existing) {
-          return existing.key[0] === updated.key[0];
+          return existing.key === updated.key;
         });
         if (match) {
-          if (!_.isEqual(updated.value, match.value)) {
-            match.value = updated.value;
+          if (!_.isEqual(updated.message, match.message)) {
+            match.message = updated.message;
           }
         } else {
           $scope.messages.push(updated);
         }
-        if ($scope.selected && $scope.selected.id === updated.key[0]) {
+        if ($scope.selected && $scope.selected.id === updated.key) {
           $scope.$broadcast('UpdateContactConversation', { silent: true });
         }
       });
@@ -61,7 +61,6 @@ angular.module('inboxControllers').controller('MessagesCtrl',
         $scope.loading = true;
       }
       return MessageContacts().then(function(data) {
-        console.log('data', data);
         $scope.loading = false;
         options.messages = data;
         setMessages(options);
