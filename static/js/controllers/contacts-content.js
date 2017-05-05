@@ -161,13 +161,12 @@ var _ = require('underscore'),
           return $q.resolve(false);
         }
         // Fetch parent to check if person is primary contact.
-        // We don't rely on contactDoc.parent.contact, because it's a circular dependency so
-        // it'll disappear in data cleanup eventually.
         return DB().get(contactDoc.parent._id)
           .then(function(parent) {
             return parent.contact && (parent.contact._id === contactDoc._id);
-          }).catch(function(err) {
-            $log.error(err);
+          })
+          .catch(function(err) {
+            $log.error('Error checking if person is primary contact', err);
             return false;
           });
       };
@@ -271,8 +270,6 @@ var _ = require('underscore'),
               getPrimaryContact(model.doc)
             ])
               .then(function(results) {
-                console.log('model', model);
-                console.log('cresults', results);
                 var reports = results[0];
                 var isPrimaryContact = results[1];
                 var children = results[2];

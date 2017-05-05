@@ -27,7 +27,6 @@ angular.module('inboxServices').factory('GetDataRecords',
     'ngInject';
 
     var getDocs = function(ids) {
-      // TODO query some docs by lineage view instead?
       return DB()
         .allDocs({ keys: ids, include_docs: true })
         .then(function(response) {

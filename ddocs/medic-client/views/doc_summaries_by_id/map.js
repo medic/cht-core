@@ -27,10 +27,11 @@ function(doc) {
       doc.type === 'district_hospital' ||
       doc.type === 'health_center' ||
       doc.type === 'person') { // contact
+    var phone = doc.phone || (doc.contact && doc.contact.phone);
     emit(doc._id, {
       _rev: doc._rev,
       name: doc.name || phone,
-      phone: doc.phone || (doc.contact && doc.contact.phone),
+      phone: phone,
       type: doc.type,
       contact: doc.contact && doc.contact._id,
       lineage: getLineage(doc.parent)

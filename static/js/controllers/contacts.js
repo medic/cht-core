@@ -232,7 +232,6 @@ var _ = require('underscore'),
         } else if (Session.isAdmin()) {
           type = ContactSchema.getPlaceTypes()[0];
         }
-        console.log('usersHomePlace', usersHomePlace);
         if (type) {
           defaultTypeFilter = { types: { selected: [ type ] }};
           var schema = ContactSchema.get(type);

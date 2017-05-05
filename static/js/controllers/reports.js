@@ -67,11 +67,10 @@ var _ = require('underscore'),
       };
 
       var setTitle = function(model) {
-        var name = model.form;
         var form = _.findWhere($scope.forms, { code: model.form });
-        if (form) {
-          name = form.name || form.title;
-        }
+        var name = (form && form.name) ||
+                   (form && form.title) ||
+                   model.form;
         $scope.setTitle(TranslateFrom(name));
       };
 
@@ -80,7 +79,6 @@ var _ = require('underscore'),
         model.selected = $scope.selected.map(function(s) {
           return s.doc || s.summary;
         });
-        console.log('setting rhs', model);
         var doc = !$scope.selectMode &&
                   model.selected &&
                   model.selected.length === 1 &&

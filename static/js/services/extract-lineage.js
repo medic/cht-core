@@ -15,7 +15,7 @@ angular.module('inboxServices').factory('ExtractLineage',
         minified.parent = { _id: contact.parent._id };
         minified = minified.parent;
         contact = contact.parent;
-      };
+      }
       return result;
     };
   }

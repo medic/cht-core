@@ -1,46 +1,46 @@
-describe('ContactsContentCtrl', function() {
+describe('ContactsContentCtrl', () => {
   'use strict';
 
-  var FETCH_CHILDREN_VIEW = 'medic-client/contacts_by_parent_name_type';
+  const FETCH_CHILDREN_VIEW = 'medic-client/contacts_by_parent_name_type';
 
-  var assert = chai.assert,
-    childContactPerson,
-    childPerson,
-    childPerson2,
-    childPlace,
-    childPlace2,
-    childPlaceIcon,
-    childPlacePluralLabel,
-    createController,
-    dbGet,
-    dbQuery,
-    doc,
-    getVisibleFields,
-    idStateParam,
-    scope,
-    search,
-    stubGetQuery,
-    stubGetVisibleFields,
-    stubFetchChildren,
-    stubSearch,
-    stubTasksForContact,
-    tasksForContact;
+  let assert = chai.assert,
+      childContactPerson,
+      childPerson,
+      childPerson2,
+      childPlace,
+      childPlace2,
+      childPlaceIcon,
+      childPlacePluralLabel,
+      createController,
+      dbGet,
+      dbQuery,
+      doc,
+      getVisibleFields,
+      idStateParam,
+      scope,
+      search,
+      stubGetQuery,
+      stubGetVisibleFields,
+      stubFetchChildren,
+      stubSearch,
+      stubTasksForContact,
+      stubContactViewModelGenerator,
+      contactViewModelGenerator,
+      tasksForContact;
 
   beforeEach(module('inboxApp'));
 
-  beforeEach(inject(function(_$rootScope_, $controller) {
-    var $rootScope = _$rootScope_;
+  beforeEach(inject((_$rootScope_, $controller) => {
+    const $rootScope = _$rootScope_;
     scope = $rootScope.$new();
     scope.setLoadingContent = sinon.stub();
-    scope.setSelected = function(selected) {
-      scope.selected = selected;
-    };
+    scope.setSelected = selected => scope.selected = selected;
     scope.clearSelected = sinon.stub();
     scope.settingSelected = sinon.stub();
-    var log = { error: console.error, debug: console.info };
+    const log = { error: console.error, debug: console.info };
 
-    var parentId = 'districtsdistrict';
-    var contactId = 'mario';
+    const parentId = 'districtsdistrict';
+    const contactId = 'mario';
     childContactPerson = { _id: contactId, type: 'person', parent: { _id: parentId } };
     childPerson = { _id: 'peach', type: 'person', name: 'Peach', date_of_birth: '1986-01-01' };
     childPerson2 = { _id: 'zelda', type: 'person', name: 'Zelda', date_of_birth: '1985-01-01' };
@@ -53,26 +53,30 @@ describe('ContactsContentCtrl', function() {
       type: 'clinic',
       contact: { _id: contactId }
     };
+    contactViewModelGenerator = sinon.stub();
     dbGet = sinon.stub();
     dbQuery = sinon.stub();
-    var db = function() {
+    const db = () => {
       return {
         get: dbGet,
         query: dbQuery
       };
     };
-    stubGetQuery = function(err, doc) {
-      db().get.withArgs(doc._id).returns(KarmaUtils.mockPromise(err, doc));
+    stubContactViewModelGenerator = doc => {
+      contactViewModelGenerator.withArgs(doc._id).returns(KarmaUtils.mockPromise(null, { doc: doc }));
     };
-    stubFetchChildren = function(childrenArray) {
-      var rows = childrenArray.map(function(doc) {
+    stubGetQuery = (err, doc) => {
+      dbGet.withArgs(doc._id).returns(KarmaUtils.mockPromise(err, doc));
+    };
+    stubFetchChildren = childrenArray => {
+      const rows = childrenArray.map(doc => {
         return { doc: doc, id: doc._id };
       });
-      db().query.withArgs(sinon.match(FETCH_CHILDREN_VIEW), sinon.match.any)
+      dbQuery.withArgs(sinon.match(FETCH_CHILDREN_VIEW), sinon.match.any)
         .returns(KarmaUtils.mockPromise(null, { rows: rows }));
     };
     search = sinon.stub();
-    stubSearch = function(err, reports, callNumber) {
+    stubSearch = (err, reports, callNumber) => {
       if (callNumber) {
         search.onCall(callNumber).returns(KarmaUtils.mockPromise(err, reports));
       }
@@ -83,30 +87,30 @@ describe('ContactsContentCtrl', function() {
     stubSearch(null, []);
 
     getVisibleFields = sinon.stub();
-    stubGetVisibleFields = function(type) {
-      var fields = {};
+    stubGetVisibleFields = type => {
+      const fields = {};
       fields[type] = { fields: [] };
       getVisibleFields.returns(fields);
     };
 
     tasksForContact = sinon.stub();
-    stubTasksForContact = function(tasks) {
+    stubTasksForContact = tasks => {
       tasksForContact.callsArgWith(4, true, tasks);
     };
 
-    createController = function() {
+    createController = () => {
       return $controller('ContactsContentCtrl', {
         '$scope': scope,
         '$rootScope': $rootScope,
         '$log': log,
         '$q': Q,
         '$stateParams': idStateParam,
-        'Changes': function() {
-          return { unsubscribe: function() {} };
+        'Changes': () => {
+          return { unsubscribe: () => {} };
         },
         'ContactSchema': {
           getVisibleFields: getVisibleFields,
-          get: function() {
+          get: () => {
             return {
               pluralLabel: childPlacePluralLabel,
               icon: childPlaceIcon
@@ -116,38 +120,37 @@ describe('ContactsContentCtrl', function() {
         'DB': db,
         'Search': search,
         'TasksForContact': tasksForContact,
-        'UserSettings': KarmaUtils.promiseService(null, '')
+        'UserSettings': KarmaUtils.promiseService(null, ''),
+        'ContactViewModelGenerator': contactViewModelGenerator
       });
     };
   }));
 
-  afterEach(function() {
+  afterEach(() => {
     KarmaUtils.restore(dbGet, dbQuery, getVisibleFields, search);
   });
 
-  describe('Place', function() {
-    var runPlaceTest = function(done, childrenArray, assertions) {
+  describe('Place', () => {
+    const runPlaceTest = (childrenArray, assertions) => {
       idStateParam = { id: doc._id };
-      stubGetQuery(null, doc);
+      stubContactViewModelGenerator(doc);
       stubGetQuery(null, childContactPerson);
       stubGetVisibleFields(doc.type);
       stubFetchChildren(childrenArray);
-      createController().getSetupPromiseForTesting()
-        .then(function() {
-          assert(scope.selected, 'selected should be set on the scope');
-          assertions(scope.selected);
-          done();
-        }).catch(done);
+      return createController().getSetupPromiseForTesting().then(() => {
+        assert(scope.selected, 'selected should be set on the scope');
+        assertions(scope.selected);
+      });
     };
 
-    it('contact passed in $stateParams is selected', function(done) {
-      runPlaceTest(done, [childContactPerson, childPlace], function(selected) {
+    it('contact passed in $stateParams is selected', () => {
+      return runPlaceTest([childContactPerson, childPlace], selected => {
         assert.equal(selected.doc._id, doc._id);
       });
     });
 
-    it('child places and persons get displayed separately', function(done) {
-      runPlaceTest(done, [childContactPerson, childPlace], function(selected) {
+    it('child places and persons get displayed separately', () => {
+      return runPlaceTest([childContactPerson, childPlace], selected => {
         assert.equal(selected.children.persons.length, 1);
         assert.deepEqual(selected.children.persons[0].doc, childContactPerson);
         assert.equal(selected.children.places.length, 1);
@@ -157,16 +160,16 @@ describe('ContactsContentCtrl', function() {
       });
     });
 
-    it('if no child places, child persons get displayed', function(done) {
-      runPlaceTest(done, [childContactPerson, childPerson], function(selected) {
+    it('if no child places, child persons get displayed', () => {
+      return runPlaceTest([childContactPerson, childPerson], selected => {
         assert.equal(selected.children.persons.length, 2);
         assert.equal(selected.children.places, undefined);
       });
     });
 
-    it('if no child persons, child places get displayed', function(done) {
+    it('if no child persons, child places get displayed', () => {
       delete doc.contact;
-      runPlaceTest(done, [childPlace], function(selected) {
+      return runPlaceTest([childPlace], selected => {
         assert.equal(selected.children.persons.length, 0);
         assert.equal(selected.children.places.length, 1);
         assert.deepEqual(selected.children.places[0].doc, childPlace);
@@ -175,52 +178,50 @@ describe('ContactsContentCtrl', function() {
       });
     });
 
-    it('contact person gets displayed on top', function(done) {
-      runPlaceTest(done, [childPerson, childContactPerson], function(selected) {
+    it('contact person gets displayed on top', () => {
+      return runPlaceTest([childPerson, childContactPerson], selected => {
         assert.deepEqual(selected.children.persons[0].doc, childContactPerson);
         assert(selected.children.persons[0].isPrimaryContact, 'has isPrimaryContact flag');
       });
     });
 
-    it('if no contact in parent, persons still get displayed', function(done) {
+    it('if no contact in parent, persons still get displayed', () => {
       delete doc.contact;
-      runPlaceTest(done, [childPerson, childContactPerson], function(selected) {
+      return runPlaceTest([childPerson, childContactPerson], selected => {
         assert.equal(selected.children.persons.length, 2);
       });
     });
 
-    it('if no contact person in children, persons still get displayed', function(done) {
+    it('if no contact person in children, persons still get displayed', () => {
       idStateParam = { id: doc._id };
-      stubGetQuery(null, doc);
+      stubContactViewModelGenerator(doc);
       stubGetQuery({ status: 404 }, childContactPerson);
       stubGetVisibleFields(doc.type);
       stubFetchChildren([childPerson]);
-      createController().getSetupPromiseForTesting()
-        .then(function() {
-          assert(scope.selected, 'selected should be set on the scope');
-          assert.equal(scope.selected.children.persons.length, 1);
-          done();
-        }).catch(done);
+      return createController().getSetupPromiseForTesting().then(() => {
+        assert(scope.selected, 'selected should be set on the scope');
+        assert.equal(scope.selected.children.persons.length, 1);
+      });
     });
 
-    it('if contact doesn\'t belong to place, it still gets displayed', function(done) {
-      runPlaceTest(done, [], function(selected) {
+    it('if contact doesn\'t belong to place, it still gets displayed', () => {
+      return runPlaceTest([], selected => {
         assert.equal(selected.children.persons.length, 1);
         assert.equal(selected.children.persons[0].id, childContactPerson._id);
         assert.equal(selected.children.persons[0].isPrimaryContact, true);
       });
     });
 
-    it('child places are sorted in alphabetical order', function(done) {
-      runPlaceTest(done, [childPlace2, childPlace], function(selected) {
+    it('child places are sorted in alphabetical order', () => {
+      return runPlaceTest([childPlace2, childPlace], selected => {
         assert.equal(selected.children.places[0].doc._id, childPlace._id);
         assert.equal(selected.children.places[1].doc._id, childPlace2._id);
       });
     });
 
-    it('child persons are sorted in alphabetical order', function(done) {
+    it('child persons are sorted in alphabetical order', () => {
       doc.type = 'star';
-      runPlaceTest(done, [childPerson2, childPerson], function(selected) {
+      return runPlaceTest([childPerson2, childPerson], selected => {
         // Remove the primary contact
         selected.children.persons.splice(0, 1);
         assert.equal(selected.children.persons[0].doc._id, childPerson._id);
@@ -228,17 +229,17 @@ describe('ContactsContentCtrl', function() {
       });
     });
 
-    it('when selected doc is a clinic, child places are sorted in alphabetical order (like for other places)', function(done) {
+    it('when selected doc is a clinic, child places are sorted in alphabetical order (like for other places)', () => {
       doc.type = 'clinic';
-      runPlaceTest(done, [childPlace2, childPlace], function(selected) {
+      return runPlaceTest([childPlace2, childPlace], selected => {
         assert.equal(selected.children.places[0].doc._id, childPlace._id);
         assert.equal(selected.children.places[1].doc._id, childPlace2._id);
       });
     });
 
-    it('when selected doc is a clinic, child persons are sorted by age', function(done) {
+    it('when selected doc is a clinic, child persons are sorted by age', () => {
       doc.type = 'clinic';
-      runPlaceTest(done, [childPerson2, childPerson], function(selected) {
+      return runPlaceTest([childPerson2, childPerson], selected => {
         // Remove the primary contact
         selected.children.persons.splice(0, 1);
         assert.equal(selected.children.persons[0].doc._id, childPerson2._id);
@@ -247,40 +248,38 @@ describe('ContactsContentCtrl', function() {
     });
   });
 
-  describe('Person', function() {
-    var runPersonTest = function(done, parentDoc, getParentError, assertions) {
+  describe('Person', () => {
+    const runPersonTest = (parentDoc, getParentError, assertions) => {
       // Selected doc is childContactPerson
       idStateParam = { id: childContactPerson._id };
-      stubGetQuery(null, childContactPerson);
+      stubContactViewModelGenerator(childContactPerson);
       stubGetVisibleFields(childContactPerson.type);
       // Fetch parent doc
       stubGetQuery(getParentError, parentDoc);
 
-      createController().getSetupPromiseForTesting()
-        .then(function() {
-          assert(scope.selected, 'selected should be set on the scope');
-          assertions(scope.selected);
-          done();
-        }).catch(done);
+      return createController().getSetupPromiseForTesting().then(() => {
+        assert(scope.selected, 'selected should be set on the scope');
+        assertions(scope.selected);
+      });
     };
 
-    describe('isPrimaryContact flag', function() {
+    describe('isPrimaryContact flag', () => {
 
-      it('if selected doc is primary contact, the isPrimaryContact flag should be true', function(done) {
-        runPersonTest(done, doc, null, function(selected) {
+      it('if selected doc is primary contact, the isPrimaryContact flag should be true', () => {
+        return runPersonTest(doc, null, selected => {
           assert(selected.isPrimaryContact, 'isPrimaryContact flag should be true');
         });
       });
 
-      it('if selected doc has no parent field, the isPrimaryContact flag should be false', function(done) {
+      it('if selected doc has no parent field, the isPrimaryContact flag should be false', () => {
         delete childContactPerson.parent;
-        runPersonTest(done, doc, null, function(selected) {
+        return runPersonTest(doc, null, selected => {
           assert(!selected.isPrimaryContact, 'isPrimaryContact flag should be false');
         });
       });
 
-      it('if selected doc\'s parent is not found, the isPrimaryContact flag should be false', function(done) {
-        runPersonTest(done, doc, { status: 404 }, function(selected) {
+      it('if selected doc\'s parent is not found, the isPrimaryContact flag should be false', () => {
+        return runPersonTest(doc, { status: 404 }, selected => {
           assert(!selected.isPrimaryContact, 'isPrimaryContact flag should be false');
         });
       });
@@ -288,50 +287,47 @@ describe('ContactsContentCtrl', function() {
     });
   });
 
-  describe('Reports', function() {
-    var runReportsTest = function(done, childrenArray, assertions) {
+  describe('Reports', () => {
+    const runReportsTest = (childrenArray, assertions) => {
       idStateParam = { id: doc._id };
-      stubGetQuery(null, doc);
+      stubContactViewModelGenerator(doc);
       // No contact person.
       stubGetQuery({ status: 404 }, childContactPerson);
       stubGetVisibleFields(doc.type);
       stubFetchChildren(childrenArray);
-      createController().getSetupPromiseForTesting()
-        .then(function() {
-          assert(scope.selected, 'selected should be set on the scope');
-          assertions(scope.selected);
-          done();
-        }).catch(done);
+      return createController().getSetupPromiseForTesting().then(() => {
+        assert(scope.selected, 'selected should be set on the scope');
+        assertions(scope.selected);
+      });
     };
 
-    it('sets the returned reports as selected', function(done) {
+    it('sets the returned reports as selected', () => {
       stubSearch(null, [ { _id: 'ab' } ]);
-      runReportsTest(done, [], function(selected) {
-        console.log(selected.reports);
+      return runReportsTest([], selected => {
         chai.expect(selected.reports.length).to.equal(1);
         chai.expect(selected.reports[0]._id).to.equal('ab');
       });
     });
 
-    it('sorts reports by reported_date', function(done) {
-      var report1 = { _id: 'ab', reported_date: 123 };
-      var report2 = { _id: 'cd', reported_date: 456 };
+    it('sorts reports by reported_date', () => {
+      const report1 = { _id: 'ab', reported_date: 123 };
+      const report2 = { _id: 'cd', reported_date: 456 };
       stubSearch(null, [ report1, report2]);
-      runReportsTest(done, [], function(selected) {
+      return runReportsTest([], selected => {
         chai.expect(selected.reports.length).to.equal(2);
         chai.expect(selected.reports[0]._id).to.equal(report2._id);
         chai.expect(selected.reports[1]._id).to.equal(report1._id);
       });
     });
 
-    it('includes reports from child places', function(done) {
+    it('includes reports from child places', () => {
       stubSearch(null, [ { _id: 'ab' } ]);
-      runReportsTest(done, [childPerson, childPerson2], function(selected) {
+      return runReportsTest([childPerson, childPerson2], selected => {
         chai.expect(search.callCount).to.equal(2);
 
-        var parentSearchArgs = search.args[0][1].subjectIds;
+        const parentSearchArgs = search.args[0][1].subjectIds;
         chai.assert.sameMembers(parentSearchArgs, [ doc._id ]);
-        var childSearchArgs = search.args[1][1].subjectIds;
+        const childSearchArgs = search.args[1][1].subjectIds;
         chai.assert.sameMembers(childSearchArgs, [ childPerson._id, childPerson2._id ]);
 
         chai.expect(selected.reports.length).to.equal(2);
@@ -340,27 +336,27 @@ describe('ContactsContentCtrl', function() {
       });
     });
 
-    it('sorts reports by reported_date, not by parent vs. child', function(done) {
-      var expectedReports = [ { _id: 'aa', reported_date: 123 }, { _id: 'bb', reported_date: 345 } ];
+    it('sorts reports by reported_date, not by parent vs. child', () => {
+      const expectedReports = [ { _id: 'aa', reported_date: 123 }, { _id: 'bb', reported_date: 345 } ];
       stubSearch(null, [ expectedReports[0] ], 0);
       stubSearch(null, [ expectedReports[1] ], 1);
-      runReportsTest(done, [childPerson, childPerson2], function(selected) {
+      return runReportsTest([childPerson, childPerson2], selected => {
         chai.expect(search.callCount).to.equal(2);
 
-        var parentSearchArgs = search.args[0][1].subjectIds;
+        const parentSearchArgs = search.args[0][1].subjectIds;
         chai.assert.sameMembers(parentSearchArgs, [ doc._id ]);
-        var childSearchArgs = search.args[1][1].subjectIds;
+        const childSearchArgs = search.args[1][1].subjectIds;
         chai.assert.sameMembers(childSearchArgs, [ childPerson._id, childPerson2._id ]);
 
         chai.assert.deepEqual(selected.reports, [ expectedReports[1], expectedReports[0]]);
       });
     });
 
-    it('includes subjectIds in reports search so JSON reports are found', function(done) {
+    it('includes subjectIds in reports search so JSON reports are found', () => {
       doc.patient_id = 'cd';
       doc.place_id = 'ef';
       stubSearch(null, [ { _id: 'ab' } ]);
-      runReportsTest(done, [], function() {
+      return runReportsTest([], () => {
         chai.expect(search.callCount).to.equal(1);
         chai.expect(search.args[0][0]).to.equal('reports');
         chai.expect(search.args[0][1].subjectIds.length).to.equal(3);
@@ -371,26 +367,24 @@ describe('ContactsContentCtrl', function() {
     });
   });
 
-  describe('Tasks', function() {
-    var runTasksTest = function(done, childrenArray, assertions) {
+  describe('Tasks', () => {
+    const runTasksTest = (childrenArray, assertions) => {
       idStateParam = { id: doc._id };
-      stubGetQuery(null, doc);
+      stubContactViewModelGenerator(doc);
       // No contact person.
       stubGetQuery({ status: 404 }, childContactPerson);
       stubGetVisibleFields(doc.type);
       stubFetchChildren(childrenArray);
-      createController().getSetupPromiseForTesting()
-        .then(function() {
-          assert(scope.selected, 'selected should be set on the scope');
-          assertions(scope.selected);
-          done();
-        }).catch(done);
+      return createController().getSetupPromiseForTesting().then(() => {
+        assert(scope.selected, 'selected should be set on the scope');
+        assertions(scope.selected);
+      });
     };
 
-    it('displays tasks for selected contact', function(done) {
-      var task = { _id: 'aa', contact: { _id: doc._id } };
+    it('displays tasks for selected contact', () => {
+      const task = { _id: 'aa', contact: { _id: doc._id } };
       stubTasksForContact([task]);
-      runTasksTest(done, [], function(selected) {
+      return runTasksTest([], selected => {
         chai.assert.equal(tasksForContact.callCount, 1);
         chai.assert.equal(tasksForContact.args[0][0], doc._id);
         chai.assert.equal(tasksForContact.args[0][1], doc.type);
@@ -400,8 +394,8 @@ describe('ContactsContentCtrl', function() {
       });
     });
 
-    it('displays tasks for selected place and child persons', function(done) {
-      var tasks = [
+    it('displays tasks for selected place and child persons', () => {
+      const tasks = [
         {
           _id: 'taskForParent',
           date: 'Wed Oct 19 2016 13:50:16 GMT+0200 (CEST)',
@@ -414,7 +408,7 @@ describe('ContactsContentCtrl', function() {
         }
       ];
       stubTasksForContact(tasks);
-      runTasksTest(done, [ childPerson ], function(selected) {
+      return runTasksTest([ childPerson ], selected => {
         chai.assert.equal(tasksForContact.callCount, 1);
         chai.assert.equal(tasksForContact.args[0][0], doc._id);
         chai.assert.equal(tasksForContact.args[0][1], doc.type);

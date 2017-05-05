@@ -11,7 +11,7 @@ angular.module('inboxServices').factory('GetContactSummaries',
 
     var findContactName = function(response, id) {
       var parent = _.findWhere(response.rows, { id: id });
-      return parent && parent.value.name;
+      return parent && parent.value.name || id;
     };
 
     var replaceContactIdsWithNames = function(summaries, response) {
@@ -19,9 +19,11 @@ angular.module('inboxServices').factory('GetContactSummaries',
         if (summary.contact) {
           summary.contact = findContactName(response, summary.contact);
         }
-        summary.lineage = summary.lineage.map(function(id) {
-          return findContactName(response, id);
-        });
+        if (summary.lineage) {
+          summary.lineage = summary.lineage.map(function(id) {
+            return findContactName(response, id);
+          });
+        }
       });
       return summaries;
     };
@@ -30,6 +32,9 @@ angular.module('inboxServices').factory('GetContactSummaries',
       var ids = _.uniq(_.compact(_.flatten(summaries.map(function(summary) {
         return [summary.contact].concat(summary.lineage);
       }))));
+      if (!ids.length) {
+        return $q.resolve([]);
+      }
       return DB()
         .query('medic-client/doc_summaries_by_id', { keys: ids })
         .then(function(response) {
