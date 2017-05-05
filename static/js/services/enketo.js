@@ -260,25 +260,40 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
+    function xpathish(e) {
+      for (var path = '', $e = $(e);
+          $e.length && !($e[0] instanceof Document);
+          $e = $e.parent()) {
+        path = '/' + $e[0].nodeName.toLowerCase() + path;
+      }
+      return path;
+    }
+
     var xmlToDocs = function(doc, record) {
       var docsToStore = [], idMap = {}, $otherDocs, $record;
 
-      function mapOrAssignId(ref, $e) {
-        var $id = $e.children('_id');
-        if (!$id.length) {
-          $e.append('<_id>', uuid());
-        } else if(!$id.text()) {
-          $id.text(uuid());
+      function mapOrAssignId(e) {
+        var id,
+            $id = $(e).children('_id');
+
+        if ($id.length) {
+          id = $id.text();
         }
-        idMap[ref] = $e.children('_id').text();
+
+        if (!id) {
+          id = uuid();
+        }
+
+        idMap[xpathish(e)] = id;
       }
 
-      $record = $($.parseXML(record));
-      mapOrAssignId('/', $record);
+      $record = $($($.parseXML(record)).children()[0]);
+      idMap[xpathish($record)] = doc._id || uuid();
 
       $otherDocs = $record.find('[db-doc=true]');
+
       $otherDocs.each(function(i, e) {
-        mapOrAssignId('/' + e.nodeName, $(e));
+        mapOrAssignId(e);
       });
 
       $record.find('[doc-ref]').each(function(i, ref) {
@@ -287,25 +302,20 @@ angular.module('inboxServices').service('Enketo',
       });
 
       $otherDocs.each(function(i, e) {
-        docsToStore.push(EnketoTranslation.reportRecordToJs(e.outerHTML));
+        var docToStore = EnketoTranslation.reportRecordToJs(e.outerHTML);
+        docToStore._id = idMap[xpathish(e)];
+        docsToStore.push(docToStore);
         e.remove();
       });
 
-      record = $record[0].documentElement.outerHTML;
+      record = $record[0].outerHTML;
 
       AddAttachment(doc, REPORT_ATTACHMENT_NAME, record, 'application/xml');
+      doc._id = idMap[xpathish($record)];
       doc.fields = EnketoTranslation.reportRecordToJs(record);
       doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
 
       docsToStore.unshift(doc);
-
-      docsToStore.forEach(function(doc) {
-        if (!doc._id) {
-          doc._id = uuid();
-        }
-      });
-
-      // TODO update inter-doc references
 
       return docsToStore;
     };

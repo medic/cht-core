@@ -390,6 +390,7 @@ describe('Enketo service', function() {
               '<type>thing_2</type>' +
               '<some_property_2>some_value_2</some_property_2>' +
             '</doc2>' +
+            // TODO put a doc within a child node
           '</data>';
       form.getDataStr.returns(content);
       dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
@@ -458,6 +459,7 @@ describe('Enketo service', function() {
             '<my_self_0 doc-ref="/"/>' +
             '<my_child_01 doc-ref="/doc1"/>' +
             '<my_child_02 doc-ref="/doc2"/>' +
+            // TODO put a doc within a child node and check IDs are set
           '</data>';
       form.getDataStr.returns(content);
       dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
