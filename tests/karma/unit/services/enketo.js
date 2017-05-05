@@ -390,7 +390,6 @@ describe('Enketo service', function() {
               '<type>thing_2</type>' +
               '<some_property_2>some_value_2</some_property_2>' +
             '</doc2>' +
-            // TODO put a doc within a child node
           '</data>';
       form.getDataStr.returns(content);
       dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
@@ -433,7 +432,7 @@ describe('Enketo service', function() {
       });
     });
 
-    it('creates extra docs with refenences', function() {
+    it('creates extra docs with references', function() {
       /* jshint expr: true */
 
       form.validate.returns(KarmaUtils.mockPromise(null, true));
@@ -459,7 +458,6 @@ describe('Enketo service', function() {
             '<my_self_0 doc-ref="/data"/>' +
             '<my_child_01 doc-ref="/data/doc1"/>' +
             '<my_child_02 doc-ref="/data/doc2"/>' +
-            // TODO put a doc within a child node and check IDs are set
           '</data>';
       form.getDataStr.returns(content);
       dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
@@ -511,6 +509,71 @@ describe('Enketo service', function() {
         chai.expect(actualThing2.my_self_2).to.equal(doc2_id);
         chai.expect(actualThing2.my_parent_2).to.equal(reportId);
         chai.expect(actualThing2.my_sibling_2).to.equal(doc1_id);
+      });
+    });
+
+    it('creates extra docs with repeats', function() {
+      /* jshint expr: true */
+
+      form.validate.returns(KarmaUtils.mockPromise(null, true));
+      var content =
+          '<data>' +
+            '<name>Sally</name>' +
+            '<lmp>10</lmp>' +
+            '<secret_code_name tag="hidden">S4L</secret_code_name>' +
+            '<repeat>' +
+              '<repeat_doc db-doc="true">' +
+                '<type>repeater</type>' +
+                '<some_property>some_value_1</some_property>' +
+                '<my_parent doc-ref="/data"/>' +
+              '</repeat_doc>' +
+              '<repeat_doc db-doc="true">' +
+                '<type>repeater</type>' +
+                '<some_property>some_value_2</some_property>' +
+                '<my_parent doc-ref="/data"/>' +
+              '</repeat_doc>' +
+              '<repeat_doc db-doc="true">' +
+                '<type>repeater</type>' +
+                '<some_property>some_value_3</some_property>' +
+                '<my_parent doc-ref="/data"/>' +
+              '</repeat_doc>' +
+            '</repeat>' +
+          '</data>';
+      form.getDataStr.returns(content);
+      dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
+      dbPut.onCall(1).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-xxx' }));
+      dbPut.onCall(2).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '2-xxx' }));
+      dbPut.onCall(3).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '3-xxx' }));
+      UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
+      return service.save('V', form).then(function(actual) {
+        chai.expect(form.validate.callCount).to.equal(1);
+        chai.expect(form.getDataStr.callCount).to.equal(1);
+        chai.expect(dbPut.callCount).to.equal(4);
+        chai.expect(UserContact.callCount).to.equal(1);
+
+        chai.expect(actual.length).to.equal(4);
+        const reportId = actual[0]._id;
+
+        var actualReport = actual[0];
+        chai.expect(actualReport._id).to.match(/(\w+-)\w+/);
+        chai.expect(actualReport._rev).to.equal('1-abc');
+        chai.expect(actualReport.fields.name).to.equal('Sally');
+        chai.expect(actualReport.fields.lmp).to.equal('10');
+        chai.expect(actualReport.fields.secret_code_name).to.equal('S4L');
+        chai.expect(actualReport.form).to.equal('V');
+        chai.expect(actualReport.type).to.equal('data_record');
+        chai.expect(actualReport.content_type).to.equal('xml');
+        chai.expect(actualReport.contact._id).to.equal('123');
+        chai.expect(actualReport.from).to.equal('555');
+        chai.expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+
+        for (var i=1; i<=3; ++i) {
+          var repeatDocN = actual[i];
+          chai.expect(repeatDocN._id).to.match(/(\w+-)\w+/);
+          chai.expect(repeatDocN._rev).to.equal(i+'-xxx');
+          chai.expect(repeatDocN.my_parent).to.equal(reportId);
+          chai.expect(repeatDocN.some_property).to.equal('some_value_'+i);
+        }
       });
     });
 
