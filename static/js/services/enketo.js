@@ -270,7 +270,7 @@ angular.module('inboxServices').service('Enketo',
     }
 
     var xmlToDocs = function(doc, record) {
-      var docsToStore = [], idMap = {}, $otherDocs, $record;
+      var docsToStore = [], idMap = {}, $record;
 
       function mapOrAssignId(e) {
         var id,
