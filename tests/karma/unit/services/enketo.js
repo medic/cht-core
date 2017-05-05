@@ -501,7 +501,7 @@ describe('Enketo service', function() {
         chai.expect(actualThing1._rev).to.equal('1-def');
         chai.expect(actualThing1.some_property_1).to.equal('some_value_1');
         chai.expect(actualThing1.my_self_1).to.equal(doc1_id);
-        chai.expect(actualThing1.my_parent).to.equal(reportId);
+        chai.expect(actualThing1.my_parent_1).to.equal(reportId);
         chai.expect(actualThing1.my_sibling_1).to.equal(doc2_id);
 
         var actualThing2 = actual[2];
@@ -509,7 +509,7 @@ describe('Enketo service', function() {
         chai.expect(actualThing2._rev).to.equal('1-ghi');
         chai.expect(actualThing2.some_property_2).to.equal('some_value_2');
         chai.expect(actualThing2.my_self_2).to.equal(doc2_id);
-        chai.expect(actualThing2.my_parent).to.equal(reportId);
+        chai.expect(actualThing2.my_parent_2).to.equal(reportId);
         chai.expect(actualThing2.my_sibling_2).to.equal(doc1_id);
       });
     });
