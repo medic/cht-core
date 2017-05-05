@@ -445,20 +445,20 @@ describe('Enketo service', function() {
             '<doc1 db-doc="true">' +
               '<type>thing_1</type>' +
               '<some_property_1>some_value_1</some_property_1>' +
-              '<my_self_1 doc-ref="/doc2"/>' +
-              '<my_parent_1 doc-ref="/"/>' +
-              '<my_sibling_1 doc-ref="/doc1"/>' +
+              '<my_self_1 doc-ref="/data/doc2"/>' +
+              '<my_parent_1 doc-ref="/data"/>' +
+              '<my_sibling_1 doc-ref="/data/doc1"/>' +
             '</doc1>' +
             '<doc2 db-doc="true">' +
               '<type>thing_2</type>' +
               '<some_property_2>some_value_2</some_property_2>' +
-              '<my_self_2 doc-ref="/doc2"/>' +
-              '<my_parent_2 doc-ref="/"/>' +
-              '<my_sibling_2 doc-ref="/doc1"/>' +
+              '<my_self_2 doc-ref="/data/doc2"/>' +
+              '<my_parent_2 doc-ref="/data"/>' +
+              '<my_sibling_2 doc-ref="/data/doc1"/>' +
             '</doc2>' +
-            '<my_self_0 doc-ref="/"/>' +
-            '<my_child_01 doc-ref="/doc1"/>' +
-            '<my_child_02 doc-ref="/doc2"/>' +
+            '<my_self_0 doc-ref="/data"/>' +
+            '<my_child_01 doc-ref="/data/doc1"/>' +
+            '<my_child_02 doc-ref="/data/doc2"/>' +
             // TODO put a doc within a child node and check IDs are set
           '</data>';
       form.getDataStr.returns(content);
@@ -483,15 +483,15 @@ describe('Enketo service', function() {
         chai.expect(actualReport.fields.name).to.equal('Sally');
         chai.expect(actualReport.fields.lmp).to.equal('10');
         chai.expect(actualReport.fields.secret_code_name).to.equal('S4L');
+        chai.expect(actualReport.fields.my_self_0).to.equal(reportId);
+        chai.expect(actualReport.fields.my_child_01).to.equal(doc1_id);
+        chai.expect(actualReport.fields.my_child_02).to.equal(doc2_id);
         chai.expect(actualReport.form).to.equal('V');
         chai.expect(actualReport.type).to.equal('data_record');
         chai.expect(actualReport.content_type).to.equal('xml');
         chai.expect(actualReport.contact._id).to.equal('123');
         chai.expect(actualReport.from).to.equal('555');
         chai.expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
-        chai.expect(actualReport.my_self_0).to.equal(reportId);
-        chai.expect(actualReport.my_child_01).to.equal(doc1_id);
-        chai.expect(actualReport.my_child_02).to.equal(doc2_id);
 
         chai.expect(actualReport.fields.doc1).to.be.undefined;
         chai.expect(actualReport.fields.doc2).to.be.undefined;
