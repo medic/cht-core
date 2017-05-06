@@ -20,7 +20,7 @@ _usage () {
 cat <<EOF
 
 Usage:
-  $SELF [options] <form id> <path to xform> [attachments ...]
+  $SELF [options] <path to xform> [attachments ...]
 
 Options:
   -f
@@ -58,7 +58,6 @@ if ! curl "$COUCH_URL"; then
     exit 1
 fi
 
-ID="$1"
 shift
 
 XFORM_PATH="$1"
@@ -70,10 +69,10 @@ shift
 
 DB="${COUCH_URL}"
 
-echo "[$SELF] parsing XML to get form title and internal ID..."
+echo "[$SELF] parsing XML to get form title and ID..."
 # Yeah, it's ugly.  But we control the input.
 formTitle="$(grep h:title $XFORM_PATH | sed -E -e 's_.*<h:title>(.*)</h:title>.*_\1_')"
-formInternalId="$(sed -e '1,/<instance>/d' $XFORM_PATH | grep -E 'id="[^"]+"' | head -n1 | sed -E -e 's_.*id="([^"]+)".*_\1_')"
+formId="$(sed -e '1,/<instance>/d' $XFORM_PATH | grep -E 'id="[^"]+"' | head -n1 | sed -E -e 's_.*id="([^"]+)".*_\1_')"
 
 if [[ "$formInternalId" != "$ID" ]]; then
   echo "[$SELF] WARNING: ID supplied on CLI and ID in form XML are different."
@@ -107,7 +106,7 @@ fi
 fullJson='{
     "type": "form",
     "title": "'"${formTitle}"'",
-    "internalId": "'"${formInternalId}"'",
+    "internalId": "'"${formId}"'",
     "context": '"${formContext}"'
 }'
 
@@ -116,15 +115,15 @@ if $USE_META_FILE; then
     fullJson="$(echo $fullJson | jq '. * '"$meta"'')"
 fi
 
-docUrl="${DB}/form:${ID}"
+docUrl="${DB}/form:${formId}"
 
 cat <<EOF
 [$SELF] -----
 [$SELF] Summary
 [$SELF]   reading from: $XFORM_PATH
-[$SELF]   doc ID: form:$ID
+[$SELF]   doc ID: form:$formId
 [$SELF]   form title: $formTitle
-[$SELF]   form internal ID: $formInternalId
+[$SELF]   form internal ID: $formId
 [$SELF]   force override: $FORCE
 [$SELF]   uploading to: $docUrl
 [$SELF]   full JSON: $fullJson
@@ -165,7 +164,7 @@ check_rev
 # Upload a temp file with the title stripped
 sed '/<h:title>/d' "$XFORM_PATH" > "$XFORM_PATH.$$.tmp"
 
-echo "[$SELF] Uploading form xml: id: $ID, rev: $rev..."
+echo "[$SELF] Uploading form xml: id: $formId, rev: $rev..."
 revResponse=$(curl -# -f -X PUT -H "Content-Type: text/xml" \
     --data-binary "@${XFORM_PATH}.$$.tmp" \
     "${docUrl}/xml?rev=${rev}")
