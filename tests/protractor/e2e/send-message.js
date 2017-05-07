@@ -60,22 +60,21 @@ describe('Send message', function() {
     done();
   });
 
-  // afterAll(function(done) {
-  //   protractor.promise
-  //     .all(savedUuids.map(utils.deleteDoc))
-  //     .then(function() {
-  //       return utils.requestOnTestDb({
-  //         path: '/_design/medic/_view/tasks_messages',
-  //         method: 'GET'
-  //       });
-  //     })
-  //     .then(function(results) {
-  //       var ids = _.uniq(_.pluck(results.rows, 'id'));
-  //       return protractor.promise.all(ids.map(utils.deleteDoc));
-  //     })
-  //     .then(done);
-  // });
-
+  afterAll(function(done) {
+    protractor.promise
+      .all(savedUuids.map(utils.deleteDoc))
+      .then(function() {
+        return utils.requestOnTestDb({
+          path: '/_design/medic/_view/tasks_messages',
+          method: 'GET'
+        });
+      })
+      .then(function(results) {
+        var ids = _.uniq(_.pluck(results.rows, 'id'));
+        return protractor.promise.all(ids.map(utils.deleteDoc));
+      })
+      .then(done);
+  });
 
   var messageInList = function(identifier) {
     return '#message-list li[data-record-id="'+identifier+'"]';

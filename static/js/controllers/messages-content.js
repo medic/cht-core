@@ -53,22 +53,6 @@ var _ = require('underscore');
         }
       };
 
-      var findMostRecentFacility = function(messages) {
-        var message = _.find(messages, function(message) {
-          return message.value.facility;
-        });
-        if (message) {
-          return [{ doc: message.value.facility }];
-        }
-        message = _.find(messages, function(message) {
-          return message.value && message.value.contact && message.value.contact.name;
-        });
-        if (message) {
-          return [{ doc: { contact: { phone: message.value.contact.name } } }];
-        }
-        return [];
-      };
-
       var selectContact = function(id, options) {
         options = options || {};
         if (!id) {

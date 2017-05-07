@@ -1,43 +1,48 @@
-describe('MessageContacts service', function() {
+describe('MessageContacts service', () => {
 
   'use strict';
 
-  var service,
+  let service,
       query,
       getContactSummaries;
 
-  beforeEach(function() {
+  beforeEach(() => {
     query = sinon.stub();
     getContactSummaries = sinon.stub();
     module('inboxApp');
-    module(function ($provide) {
+    module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
       $provide.value('GetContactSummaries', getContactSummaries);
     });
-    inject(function($injector) {
-      service = $injector.get('MessageContacts');
-    });
+    inject($injector => service = $injector.get('MessageContacts'));
   });
 
-  describe('list', function() {
+  describe('list', () => {
 
-    it('builds admin list', function() {
-      var expected = [ { value: 'a' }, { value: 'b' } ];
-      query.returns(KarmaUtils.mockPromise(null, { rows: expected }));
+    it('builds admin list', () => {
+      const given = [
+        { key: [ 'a' ], value: { name: 'alistair' } },
+        { key: [ 'b' ], value: { name: 'britney' } },
+      ];
+      const expected = [
+        { name: 'alistair', from: 'a', key: 'a' },
+        { name: 'britney' , from: 'b', key: 'b' },
+      ];
+      query.returns(KarmaUtils.mockPromise(null, { rows: given }));
       getContactSummaries.returns(KarmaUtils.mockPromise());
-      return service({}).then(function(actual) {
+      return service({}).then(actual => {
         chai.expect(actual).to.deep.equal(expected);
-        chai.expect(getContactSummaries.args[0][0]).to.deep.equal([ 'a', 'b' ]);
+        chai.expect(getContactSummaries.args[0][0]).to.deep.equal(expected);
       });
     });
 
-    it('returns errors from db query', function(done) {
+    it('returns errors from db query', done => {
       query.returns(KarmaUtils.mockPromise('server error'));
       service({})
-        .then(function() {
+        .then(() => {
           done(new Error('exception expected'));
         })
-        .catch(function(err) {
+        .catch(err => {
           chai.expect(err).to.equal('server error');
           done();
         });
@@ -45,35 +50,31 @@ describe('MessageContacts service', function() {
 
   });
 
-  describe('get', function() {
+  describe('get', () => {
 
-    it('builds admin conversation', function() {
-      var expected = {
-        rows: [ 'a', 'b' ]
-      };
-      query.returns(KarmaUtils.mockPromise(null, expected));
-      return service({ id: 'abc'}).then(function(actual) {
-        chai.expect(actual).to.deep.equal(expected.rows);
+    it('builds admin conversation', () => {
+      const expected = [ 'a', 'b' ];
+      query.returns(KarmaUtils.mockPromise(null, { rows: expected }));
+      return service({ id: 'abc'}).then(actual => {
+        chai.expect(actual).to.deep.equal(expected);
       });
     });
 
-    it('builds admin conversation with skip', function() {
-      var expected = {
-        rows: [ 'a', 'b' ]
-      };
-      query.returns(KarmaUtils.mockPromise(null, expected));
-      return service({ id: 'abc', skip: 45 }).then(function(actual) {
-        chai.expect(actual).to.deep.equal(expected.rows);
+    it('builds admin conversation with skip', () => {
+      const expected = [ 'a', 'b' ];
+      query.returns(KarmaUtils.mockPromise(null, { rows: expected }));
+      return service({ id: 'abc', skip: 45 }).then(actual => {
+        chai.expect(actual).to.deep.equal(expected);
       });
     });
 
-    it('returns errors from db query', function(done) {
+    it('returns errors from db query', done => {
       query.returns(KarmaUtils.mockPromise('server error'));
       service({ id: 'abc' })
-        .then(function() {
+        .then(() => {
           done(new Error('expected exception'));
         })
-        .catch(function(err) {
+        .catch(err => {
           chai.expect(err).to.equal('server error');
           done();
         });
