@@ -92,22 +92,19 @@ var moment = require('moment'),
 
             var couchId = 'form:' + formId;
             DB().get(couchId, { include_attachments:true })
-              .then(function(doc) {
-                return DB()
-                  .put(update(doc));
-              })
-              .then(function () { uploadXFormFinished(); })
               .catch(function(err) {
-                // check for 404
                 if (err.status === 404) {
-                  DB()
-                    .put(update({ _id:couchId }))
-                    .then(function () { uploadXFormFinished(); })
-                    .catch(uploadXFormFinished);
-                } else {
-                  uploadXFormFinished(err);
+                  return { _id:couchId };
                 }
-              });
+                throw err;
+              })
+              .then(function(doc) {
+                return DB().put(update(doc));
+              })
+              .then(function() {
+                uploadXFormFinished();
+              })
+              .catch(uploadXFormFinished);
           })
           .catch(uploadXFormFinished);
       };
