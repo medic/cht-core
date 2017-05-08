@@ -51,7 +51,7 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
     return function(id) {
       var options = {
         startkey: [ id, 0 ],
-        endkey: [ id, 100 ], // TODO what's the max depth?
+        endkey: [ id, {} ],
         include_docs: true
       };
       return DB()
@@ -75,9 +75,6 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
           };
         })
         .then(function(model) {
-          // TODO inline FormatDataRecord and the sms_utils call
-          //      here - it's antiquated
-          // TODO clone model.doc so it's not modified!
           return FormatDataRecord(model.doc).then(function(formatted) {
             model.formatted = formatted;
             return model;
