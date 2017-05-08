@@ -283,7 +283,7 @@ exports.parseArray = function(doc) {
     var obj = exports.parse(doc);
 
     var arr = [];
-    for (key in obj) {
+    for (var key in obj) {
         arr.push(obj[key]);
     }
 

@@ -273,7 +273,7 @@ exports.parseArray = function(def, doc) {
     var arr = [];
     for (var k in def.fields) {
         arr.push(obj[k]);
-    };
+    }
 
     // The fields sent_timestamp and from are set by the gateway, so they are
     // not included in the raw sms message and added manually.

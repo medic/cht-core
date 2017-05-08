@@ -1,0 +1,27 @@
+{
+    "extends"       : "../.jshintrc",
+
+    // CouchDB uses SpiderMonkey 1.8.5, which is ES5: https://developer.mozilla.org/en-US/docs/Mozilla/Projects/SpiderMonkey/Releases/1.8.5
+    "esversion"     : 5,
+
+    // Custom Globals
+    "globals"       : {         // additional predefined global variables
+        "JSON": true,
+        "log" : true
+    },
+
+    // Allow looser coding standards than in our own code.  Remove these as the
+    // violations are fixed.
+    "curly"         : false,
+    "unused"        : false,
+    "forin"         : false,
+    "laxbreak"      : true,
+    "shadow"        : true,
+    "evil"          : true,
+    "boss"          : true,
+    "eqeqeq"        : false,
+    "asi"           : true,
+    "undef"         : false,
+    "loopfunc"      : true,
+    "quotmark"      : false
+}

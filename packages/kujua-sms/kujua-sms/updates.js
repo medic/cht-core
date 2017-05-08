@@ -363,13 +363,13 @@ var getTask = function(uuid, doc) {
                 return doc.tasks[i];
             }
         }
-    };
+    }
     for (var i in doc.scheduled_tasks) {
         for (var j in doc.scheduled_tasks[i].messages) {
             if (uuid === doc.scheduled_tasks[i].messages[j].uuid) {
                 return doc.scheduled_tasks[i];
             }
         }
-    };
+    }
     return;
 };

@@ -45,6 +45,7 @@ var prettyVal = function(data_record, key, def) {
                     }
                 }
             }
+            /* falls through */
         default:
             return val;
     }
@@ -508,7 +509,8 @@ exports.addError = function(record, error) {
         .replace('{{fields}}', error.fields && error.fields.join(', '))
         .replace('{{form}}', form);
 
-    record.errors ? record.errors.push(error) : record.errors = [error];
+    if(record.errors) record.errors.push(error);
+    else record.errors = [error];
 
     logger.warn(JSON.stringify(error));
 };
