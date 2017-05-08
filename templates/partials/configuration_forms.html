@@ -4,7 +4,7 @@
       <fieldset>
         <legend translate>upload.xform.title</legend>
         <div class="alert alert-danger alert-dismissible" role="alert" ng-show="xform.error">
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <button type="button" class="close" aria-label="Close" ng-click="xform.error = false"><span aria-hidden="true">&times;</span></button>
           <span translate>Upload failed</span>
         </div>
         <div class="alert alert-success" role="alert" ng-show="xform.success" translate>Upload succeeded</div>
@@ -31,7 +31,7 @@
       <fieldset>
         <legend translate>upload.json.forms.title</legend>
         <div class="alert alert-danger alert-dismissible" role="alert" ng-show="json.error">
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <button type="button" class="close" aria-label="Close" ng-click="json.error = false"><span aria-hidden="true">&times;</span></button>
           <span translate>Upload failed</span>
         </div>
         <div class="alert alert-success" role="alert" ng-show="json.success" translate>Upload succeeded</div>
