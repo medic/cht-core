@@ -21,6 +21,7 @@ var moment = require('moment'),
       $log,
       $q,
       $scope,
+      AddAttachment,
       DB,
       FileReader,
       JsonParse,
@@ -85,13 +86,7 @@ var moment = require('moment'),
               doc.title = title;
               doc.type = 'form';
               doc.internalId = formId;
-              if (!doc._attachments) {
-                doc._attachments = {};
-              }
-              doc._attachments.xml = {
-                content_type: 'application/xml',
-                data: new Blob([xml]),
-              };
+              AddAttachment(doc, 'xml', xml, 'application/xml');
               return doc;
             };
 
