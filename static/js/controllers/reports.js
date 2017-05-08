@@ -164,10 +164,11 @@ var _ = require('underscore'),
         $scope.setLoadingContent(report);
         fetchFormattedReport(report)
           .then(function(model) {
-            console.log('model', model);
             if (model) {
-              setSelected(model);
-              initScroll();
+              $timeout(function(){
+                setSelected(model);
+                initScroll();
+              });
             }
           })
           .catch(function(err) {

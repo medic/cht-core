@@ -5,6 +5,7 @@ describe('ContactViewModelGenerator service', () => {
   let assert = chai.assert,
       service,
       contactSchema,
+      lineageModelGenerator,
       childContactPerson,
       childPerson,
       childPerson2,
@@ -22,18 +23,12 @@ describe('ContactViewModelGenerator service', () => {
     dbGet.withArgs(doc._id).returns(KarmaUtils.mockPromise(err, doc));
   };
 
-  const stubDbQueryLineage = (err, docs) => {
-    const id = docs[0]._id;
-    const options = {
-      startkey: [ id, 0 ],
-      endkey: [ id, {} ],
-      include_docs: true
-    };
-    docs = (docs || []).map(function(doc) {
-      return { doc: doc };
-    });
-    dbQuery.withArgs('medic-client/docs_by_id_lineage', options)
-      .returns(KarmaUtils.mockPromise(err, { rows: docs }));
+  const stubLineageModelGenerator = (err, contact, lineage) => {
+    lineageModelGenerator.contact.returns(KarmaUtils.mockPromise(err, {
+      _id: contact && contact._id,
+      doc: contact,
+      lineage: lineage
+    }));
   };
 
   const stubDbQueryChildren = (err, parentId, docs) => {
@@ -64,11 +59,13 @@ describe('ContactViewModelGenerator service', () => {
         pluralLabel: childPlacePluralLabel,
         icon: childPlaceIcon
       });
+      lineageModelGenerator = { contact: sinon.stub() };
 
       $provide.factory('DB', KarmaUtils.mockDB({ get: dbGet, query: dbQuery }));
       $provide.value('Search', search);
       $provide.value('ContactSchema', contactSchema);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
+      $provide.value('LineageModelGenerator', lineageModelGenerator);
 
       const parentId = 'districtsdistrict';
       const contactId = 'mario';
@@ -89,7 +86,7 @@ describe('ContactViewModelGenerator service', () => {
 
   describe('Place', () => {
     const runPlaceTest = childrenArray => {
-      stubDbQueryLineage(null, [ doc ]);
+      stubLineageModelGenerator(null, doc);
       stubDbGet(null, childContactPerson);
       stubSearch(null, []);
       stubDbQueryChildren(null, doc._id, childrenArray);
@@ -140,7 +137,7 @@ describe('ContactViewModelGenerator service', () => {
     });
 
     it('if no contact person in children, persons still get displayed', () => {
-      stubDbQueryLineage(null, [ doc ]);
+      stubLineageModelGenerator(null, doc);
       stubDbGet({ status: 404 }, childContactPerson);
       stubSearch(null, []);
       stubDbQueryChildren(null, doc._id, [childPerson]);
@@ -195,11 +192,7 @@ describe('ContactViewModelGenerator service', () => {
 
   describe('Person', () => {
     const runPersonTest = parentDoc => {
-      const lineage = [ childContactPerson ];
-      if (parentDoc) {
-        lineage.push(parentDoc);
-      }
-      stubDbQueryLineage(null, lineage);
+      stubLineageModelGenerator(null, childContactPerson, [ parentDoc ]);
       stubSearch(null, []);
       return service(childContactPerson._id);
     };
@@ -224,7 +217,7 @@ describe('ContactViewModelGenerator service', () => {
 
   describe('Reports', () => {
     const runReportsTest = childrenArray => {
-      stubDbQueryLineage(null, [ doc ]);
+      stubLineageModelGenerator(null, doc);
       stubDbGet({ status: 404 }, childContactPerson);
       stubDbQueryChildren(null, doc._id, childrenArray);
       return service(doc._id);

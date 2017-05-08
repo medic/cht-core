@@ -3,7 +3,8 @@ var _ = require('underscore');
 angular.module('inboxServices').factory('ReportViewModelGenerator',
   function(
     DB,
-    FormatDataRecord
+    FormatDataRecord,
+    LineageModelGenerator
   ) {
     'ngInject';
     'use strict';
@@ -49,37 +50,16 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
     };
 
     return function(id) {
-      var options = {
-        startkey: [ id, 0 ],
-        endkey: [ id, {} ],
-        include_docs: true
-      };
-      return DB()
-        .query('medic-client/docs_by_id_lineage', options)
-        .then(function(result) {
-          var reportRow = result.rows.shift();
-          if (!reportRow) {
-            return;
-          }
-          var report = reportRow && reportRow.doc;
-          var contactRow = result.rows.shift();
-          var lineage = result.rows.map(function(row) {
-            return row.doc;
-          });
-          return {
-            _id: report._id,
-            doc: report,
-            displayFields: getDisplayFields(report),
-            contact: contactRow && contactRow.doc,
-            lineage: lineage
-          };
-        })
-        .then(function(model) {
-          return FormatDataRecord(model.doc).then(function(formatted) {
-            model.formatted = formatted;
-            return model;
-          });
+      return LineageModelGenerator.report(id).then(function(model) {
+        if (!model.doc) {
+          return model;
+        }
+        model.displayFields = getDisplayFields(model.doc);
+        return FormatDataRecord(model.doc).then(function(formatted) {
+          model.formatted = formatted;
+          return model;
         });
+      });
     };
   }
 );

@@ -6,6 +6,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     $q,
     ContactSchema,
     DB,
+    LineageModelGenerator,
     Search
   ) {
     'ngInject';
@@ -50,7 +51,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     var setPrimaryContact = function(model) {
-      var parent = model.lineage.length && model.lineage[0];
+      var parent = model.lineage && model.lineage.length && model.lineage[0];
       model.isPrimaryContact = parent &&
         parent.contact &&
         (parent.contact._id === model.doc._id);
@@ -62,31 +63,6 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       model.icon = schema.icon;
       model.label = schema.label;
       return model;
-    };
-
-    var getDocAndLineage = function(id) {
-      var options = {
-        startkey: [ id, 0 ],
-        endkey: [ id, {} ],
-        include_docs: true
-      };
-      return DB()
-        .query('medic-client/docs_by_id_lineage', options)
-        .then(function(result) {
-          var contactRow = result.rows.shift();
-          if (!contactRow) {
-            return;
-          }
-          var contact = contactRow && contactRow.doc;
-          var lineage = result.rows.map(function(row) {
-            return row.doc;
-          });
-          return {
-            _id: contact._id,
-            doc: contact,
-            lineage: lineage
-          };
-        });
     };
 
     var splitContactsByType = function(results) {
@@ -233,7 +209,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     return function(id) {
-      return getDocAndLineage(id)
+      return LineageModelGenerator.contact(id)
         .then(setChildren)
         .then(setReports)
         .then(setPrimaryContact)

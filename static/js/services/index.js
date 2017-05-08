@@ -44,6 +44,7 @@
   require('./kanso-packages');
   require('./language');
   require('./languages');
+  require('./lineage-model-generator');
   require('./live-list');
   require('./location');
   require('./markdown');
