@@ -61,12 +61,12 @@ var moment = require('moment'),
 
         var formFiles = $('#forms-upload-xform .form.uploader')[0].files;
         if (!formFiles || formFiles.length === 0) {
-          uploadXFormFinished(new Error('XML file not found'));
+          return uploadXFormFinished(new Error('XML file not found'));
         }
 
         var contextFiles = $('#forms-upload-xform .context.uploader')[0].files;
         if (!contextFiles || contextFiles.length === 0) {
-          uploadXFormFinished(new Error('JSON context file not found'));
+          return uploadXFormFinished(new Error('JSON context file not found'));
         }
 
         $q.all([
