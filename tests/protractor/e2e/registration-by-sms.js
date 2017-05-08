@@ -20,7 +20,7 @@ describe('registration transition', () => {
     type: 'person',
     phone: PHONE,
     name: 'Carol Carolina',
-    parent: BOB_PLACE,
+    parent: { id: BOB_PLACE._id },
     patient_id: '05946',
     sex: 'f',
     date_of_birth: 1462333250374

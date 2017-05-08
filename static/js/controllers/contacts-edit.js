@@ -283,7 +283,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
               preparedSibling.parent = doc;
             } else {
               if (fieldName === 'parent') {
-                doc[fieldName] = ExtractLineage(dbFieldValue);
+                doc[fieldName] = ExtractLineage(preparedSibling);
               } else {
                 doc[fieldName] = preparedSibling;
               }
