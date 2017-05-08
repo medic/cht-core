@@ -95,7 +95,6 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
 
       $scope.enketoStatus.saving = true;
       $scope.enketoStatus.error = null;
-      console.log('$scope.selected', $scope.selected);
       var model = $scope.selected[0];
       var reportId = model.doc && model.doc._id;
       var formInternalId = model.formInternalId;
