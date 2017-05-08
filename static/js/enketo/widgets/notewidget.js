@@ -51,7 +51,13 @@ define( function( require, exports, module ) {
     Notewidget.prototype._init = function() {
         var $el = $( this.element );
         var markdownToHtml = angular.element(document.body).injector().get('Markdown').element;
+
+        applyLiveLinkHtml( $el );
+
         markdownToHtml($el.find( '.question-label' ));
+
+        applyLiveLinkEventHandlers( $el );
+
         $el.find( '[readonly]' ).addClass( 'ignore' );
 
         if ( $el.is( '.note' ) && !$el.next().is( '.note' ) ) {
@@ -62,6 +68,26 @@ define( function( require, exports, module ) {
     Notewidget.prototype.destroy = function( element ) {
         /* jshint unused:false */
     };
+
+    // Replace any markdown-style links containing HTML with hrefs which are
+    // generated when the link is clicked.
+    function applyLiveLinkHtml( $el ) {
+        var html = $el.html();
+
+        html = html.replace( /\[([^\]]*)\]\(([^)]*<[^>]*\>[^)]*)\)/gm,
+                '<a class="live-link" href="#" target="_blank">$1<span class="href" style="display:none">$2</span></a>' );
+
+        $el.text( '' ).append( html );
+    }
+
+    function applyLiveLinkEventHandlers( $el ) {
+        $el.find( '.live-link' ).each( function() {
+            var $this = $( this );
+            $this.on( 'click', function( e ) {
+                e.originalEvent.currentTarget.href = $( this ).find( '.href' ).text();
+            } );
+        } );
+    }
 
     $.fn[ pluginName ] = function( options, event ) {
         return this.each( function() {

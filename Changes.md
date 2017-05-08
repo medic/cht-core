@@ -2,7 +2,7 @@
 
 ## 2.11.0
 
-_TBD_
+_April 12, 2017_
 
 ### Migration Notes
 
@@ -20,7 +20,10 @@ _TBD_
 
 ### Bug fixes
 
-- Fix outdated npm shrinkwrap entry for enketo-core Issue #3352
+- namespace-form-fields migration causing Express toString fail. Issue: #3371
+- Cannot use Collect with username/password fields. Issue: #3118
+- No permissions available for configuration on first run. Issue: #3251
+- Fix outdated npm shrinkwrap entry for enketo-core. Issue: #3352
 - Set user-agent header in Medic Collect. Issue: #3334
 - Buttons in LHS FAB disappear. Issue: #3321
 - Analytics tab Hindi text is not aligning properly. Issue: #3297

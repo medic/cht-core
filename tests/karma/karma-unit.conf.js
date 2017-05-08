@@ -10,6 +10,12 @@ module.exports = function(config) {
     singleRun: false,
     colors: true,
     browserNoActivityTimeout: 60000,
+    customLaunchers: {
+      Chrome_Beta_Headless: {
+        base: 'ChromeCanary',
+        flags: ['--headless', '--disable-gpu', '--remote-debugging-port=9222']
+      }
+    },
     preprocessors: {
       'templates/**/*.html': ['ng-html2js']
     },

@@ -1,6 +1,7 @@
 var _ = require('underscore'),
+    auth = require('./auth')(),
+    constants = require('./constants'),
     http = require('http'),
-    environment = require('./auth')(),
     path = require('path');
 
 var originalSettings = {};
@@ -11,9 +12,9 @@ var mainDdocName = 'medic';
 var request = function(options, debug) {
   var deferred = protractor.promise.defer();
 
-  options.hostname = environment.apiHost;
-  options.port = environment.apiPort;
-  options.auth = environment.user + ':' + environment.pass;
+  options.hostname = constants.API_HOST;
+  options.port = constants.API_PORT;
+  options.auth = auth.user + ':' + auth.pass;
 
   if (debug) {
     console.log('REQUEST');
@@ -28,7 +29,12 @@ var request = function(options, debug) {
     });
     res.on('end', function () {
       try {
-        deferred.fulfill(JSON.parse(body));
+        body = JSON.parse(body);
+        if (body.error) {
+          deferred.reject(new Error('Request failed: ' + options.path + ',\n  body: ' + JSON.stringify(options.body) + '\n  response: ' + JSON.stringify(body)));
+        } else {
+          deferred.fulfill(body);
+        }
       } catch(e) {
         console.log('Error parsing response: ' + body);
         deferred.reject();
@@ -53,7 +59,7 @@ var updateSettingsForDdoc = function(updates, ddocName) {
       throw new Error('A previous test did not call revertSettings on ' + ddocName);
     }
     return request({
-      path: path.join('/', environment.dbName, '_design', mainDdocName, '_rewrite/app_settings', ddocName),
+      path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/app_settings', ddocName),
       method: 'GET'
     }).then(function(result) {
       originalSettings[ddocName] = result.settings;
@@ -67,7 +73,7 @@ var updateSettingsForDdoc = function(updates, ddocName) {
       return;
     }).then(function() {
       return request({
-        path: path.join('/', environment.dbName, '_design', mainDdocName, '_rewrite/update_settings', ddocName, '?replace=1'),
+        path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/update_settings', ddocName, '?replace=1'),
         method: 'PUT',
         body: JSON.stringify(updates)
       });
@@ -80,7 +86,7 @@ var revertSettingsForDdoc = function(ddocName) {
     }
 
     return request({
-      path: path.join('/', environment.dbName, '_design', mainDdocName, '_rewrite/update_settings', ddocName, '?replace=1'),
+      path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/update_settings', ddocName, '?replace=1'),
       method: 'PUT',
       body: JSON.stringify(originalSettings[ddocName])
     }).then(function() {
@@ -94,14 +100,14 @@ module.exports = {
   request: request,
 
   requestOnTestDb: function(options, debug) {
-    options.path = '/' + environment.dbName + options.path;
+    options.path = '/' + constants.DB_NAME + options.path;
     return request(options, debug);
   },
 
   saveDoc: function(doc) {
     var postData = JSON.stringify(doc);
     return request({
-      path: '/' + environment.dbName,
+      path: '/' + constants.DB_NAME,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -113,14 +119,14 @@ module.exports = {
 
   getDoc: function(id) {
     return request({
-      path: '/' + environment.dbName + '/' + id,
+      path: '/' + constants.DB_NAME + '/' + id,
       method: 'GET'
     });
   },
 
   getAuditDoc: function(id) {
     return request({
-      path: '/' + environment.dbName + '-audit/' + id + '-audit',
+      path: '/' + constants.DB_NAME + '-audit/' + id + '-audit',
       method: 'GET'
     });
   },
@@ -163,5 +169,12 @@ module.exports = {
     return function(c) {
       return c === count;
     };
-  }
+  },
+
+  getCouchUrl: () =>
+    `http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`,
+
+  getBaseUrl: () =>
+    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}`
+
 };

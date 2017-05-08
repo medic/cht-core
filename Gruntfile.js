@@ -181,14 +181,16 @@ module.exports = function(grunt) {
       setupAdmin1: {
         cmd: 'curl -X PUT http://localhost:5984/_config/admins/admin -d \'"pass"\'' +
              ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
-             ' -H "Content-Type: application/json" ' +
-             ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\''
+                 ' -H "Content-Type: application/json" ' +
+                 ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\' ' +
+             ' && curl -X PUT --data \'"true"\' http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user'
       },
       setupAdmin2: {
         cmd: 'curl -X PUT http://localhost:5984/_node/${COUCH_NODE_NAME}/_config/admins/admin -d \'"pass"\'' +
              ' && curl -X POST http://admin:pass@localhost:5984/_users ' +
-             ' -H "Content-Type: application/json" ' +
-             ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\''
+                 ' -H "Content-Type: application/json" ' +
+                 ' -d \'{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}\' ' +
+             ' && curl -X PUT --data \'"true"\' http://admin:pass@localhost:5984/_node/${COUCH_NODE_NAME}/_config/chttpd/require_valid_user'
       },
       deploytest: {
         stderr: false,
@@ -205,7 +207,7 @@ module.exports = function(grunt) {
         cmd: 'cd api && grunt test_integration',
       },
       test_api_e2e: {
-        cmd: 'cd api && node server.js & sleep 20 && cd api && ./scripts/e2e/create_fixtures && grunt test_e2e',
+        cmd: 'cd api && node server.js & sleep 20 && cd api && ./scripts/e2e/setup_fixtures && grunt test_e2e',
       },
       undopatches: {
         cmd: function() {
@@ -308,6 +310,11 @@ module.exports = function(grunt) {
         configFile: './tests/karma/karma-unit.conf.js',
         singleRun: true,
         browsers: ['Chrome']
+      },
+      headless: {
+        configFile: './tests/karma/karma-unit.conf.js',
+        singleRun: true,
+        browsers: ['Chrome_Beta_Headless']
       },
       unit_ci: {
         configFile: './tests/karma/karma-unit.conf.js',
@@ -478,7 +485,7 @@ module.exports = function(grunt) {
 
   grunt.registerTask('unit', 'All "Unit" tests', [
     'jshint',
-    'karma:unit',
+    'karma:headless',
     'nodeunit',
   ]);
 

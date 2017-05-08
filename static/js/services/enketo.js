@@ -14,6 +14,7 @@ angular.module('inboxServices').service('Enketo',
     Language,
     TranslateFrom,
     UserContact,
+    UserSettings,
     XSLT
   ) {
 
@@ -223,9 +224,8 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    this.render = function(selector, id, instanceData) {
-      return getUserContact()
-        .then(Language)
+    var renderForm = function(selector, id, instanceData) {
+      return Language()
         .then(function(language) {
           return withForm(id, language);
         })
@@ -240,9 +240,16 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
+    this.render = function(selector, id, instanceData) {
+      return getUserContact().then(function() {
+        return renderForm(selector, id, instanceData);
+      });
+    };
+
+    this.renderContactForm = renderForm;
+
     this.renderFromXmlString = function(selector, xmlString, instanceData) {
-      return getUserContact()
-        .then(Language)
+      return Language()
         .then(function(language) {
           return translateXml(xmlString, language);
         })
@@ -290,16 +297,27 @@ angular.module('inboxServices').service('Enketo',
     };
 
     var create = function(formInternalId) {
-      return getUserContact().then(function(contact) {
-        return {
-          form: formInternalId,
-          type: 'data_record',
-          content_type: 'xml',
-          reported_date: Date.now(),
-          contact: ExtractLineage(contact),
-          from: contact && contact.phone
-        };
-      });
+      return $q.all([
+        UserSettings(),
+        getUserContact()
+      ])
+        .then(function(results) {
+          var user = results[0];
+          var read = [];
+          if (user && user.name) {
+            read.push(user.name);
+          }
+          var contact = results[1];
+          return {
+            form: formInternalId,
+            type: 'data_record',
+            content_type: 'xml',
+            reported_date: Date.now(),
+            contact: ExtractLineage(contact),
+            from: contact && contact.phone,
+            read: read
+          };
+        });
     };
 
     this.save = function(formInternalId, form, docId) {

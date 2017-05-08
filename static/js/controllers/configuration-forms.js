@@ -19,7 +19,10 @@ var moment = require('moment'),
   inboxControllers.controller('ConfigurationFormsCtrl',
     function (
       $log,
+      $q,
       $scope,
+      AddAttachment,
+      DB,
       FileReader,
       JsonParse,
       Settings,
@@ -28,24 +31,95 @@ var moment = require('moment'),
 
       'ngInject';
 
-      $scope.uploading = false;
+      $scope.json = { uploading: false };
+      $scope.xform = { uploading: false };
 
-      var uploadFinished = function(err) {
-        $scope.uploading = false;
-        $scope.error = !!err;
-        $scope.success = !err;
+      var uploadJsonFinished = function(err) {
+        uploadFinished('json', err);
+      };
+
+      var uploadXFormFinished = function(err) {
+        uploadFinished('xform', err);
+      };
+
+      var uploadFinished = function(type, err) {
+        $scope[type] = {
+          uploading: false,
+          error: !!err,
+          success: !err,
+        };
         if (err) {
           $log.error('Upload failed', err);
         }
       };
 
-      var uploadForms = function() {
-        $scope.uploading = true;
-        $scope.error = false;
-        $scope.success = false;
-        var files = $('#forms-upload-form .uploader')[0].files;
+      var uploadXForm = function() {
+        $scope.xform = {
+          uploading: true,
+          error: false,
+          success: false,
+        };
+
+        var formFiles = $('#forms-upload-xform .form.uploader')[0].files;
+        if (!formFiles || formFiles.length === 0) {
+          uploadXFormFinished(new Error('XML file not found'));
+          return $scope.$apply(); // upload triggered with jQuery
+        }
+
+        var contextFiles = $('#forms-upload-xform .context.uploader')[0].files;
+        if (!contextFiles || contextFiles.length === 0) {
+          uploadXFormFinished(new Error('JSON context file not found'));
+          return $scope.$apply(); // upload triggered with jQuery
+        }
+
+        $q.all([
+            FileReader(formFiles[0]),
+            FileReader(contextFiles[0]).then(JsonParse) ])
+          .then(function(results) {
+            var xml = results[0];
+            var context = results[1];
+
+            var $xml = $($.parseXML(xml));
+            var title = $xml.find('title').text();
+            var formId = $xml.find('instance').children().first().attr('id');
+
+            var update = function(doc) {
+              doc.context = context;
+              doc.title = title;
+              doc.type = 'form';
+              doc.internalId = formId;
+              AddAttachment(doc, 'xml', xml, 'application/xml');
+              return doc;
+            };
+
+            var couchId = 'form:' + formId;
+            DB().get(couchId, { include_attachments:true })
+              .catch(function(err) {
+                if (err.status === 404) {
+                  return { _id:couchId };
+                }
+                throw err;
+              })
+              .then(function(doc) {
+                return DB().put(update(doc));
+              })
+              .then(function() {
+                uploadXFormFinished();
+              })
+              .catch(uploadXFormFinished);
+          })
+          .catch(uploadXFormFinished);
+      };
+
+      var uploadJsonForms = function() {
+        $scope.json = {
+          uploading: true,
+          error: false,
+          success: false,
+        };
+        var files = $('#forms-upload-json .uploader')[0].files;
         if (!files || files.length === 0) {
-          uploadFinished(new Error('File not found'));
+          uploadJsonFinished(new Error('File not found'));
         }
         var settings = { forms: {} };
         FileReader(files[0])
@@ -62,16 +136,19 @@ var moment = require('moment'),
           })
           .then(function() {
             $scope.forms = settings.forms;
-            uploadFinished();
+            uploadJsonFinished();
           })
-          .catch(uploadFinished);
+          .catch(uploadJsonFinished);
       };
 
-      $('#forms-upload-form .uploader').on('change', uploadForms);
-      $('#forms-upload-form .choose').on('click', function(_ev) {
+      $('#forms-upload-json .uploader').on('change', uploadJsonForms);
+      $('#forms-upload-json .choose').on('click', function(_ev) {
         _ev.preventDefault();
-        $('#forms-upload-form .uploader').click();
+        $('#forms-upload-json .uploader').click();
       });
+
+      $('#forms-upload-xform .upload').on('click', uploadXForm); // can't get ng-click working :¬\
+
       Settings()
         .then(function(settings) {
           $scope.forms = settings.forms;

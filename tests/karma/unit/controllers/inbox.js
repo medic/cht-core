@@ -140,10 +140,7 @@ describe('InboxCtrl controller', function() {
 
     createController();
     spyState.go.reset();
-    stubModal.reset();
   });
-
-  afterEach(function() {});
 
   it('navigates back to contacts state after deleting contact', function(done) {
     scope.deleteDoc(dummyId);

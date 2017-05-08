@@ -8,32 +8,38 @@ describe('view docs_by_replication_key', function() {
   var documentsToReturn = [
     {
       _id: 'form:doc_by_place_test_form',
+      reported_date: 1,
       type: 'form'
     },
     {
       _id: 'report_about_patient',
+      reported_date: 1,
       form: 'V',
       type: 'data_record',
       patient_id: 'testpatient'
     },
     {
       _id: 'report_about_patient_2',
+      reported_date: 1,
       form: 'V',
       type: 'data_record',
       fields: { patient_id: 'testpatient' }
     },
     {
       _id: 'report_about_place',
+      reported_date: 1,
       form: 'V',
       type: 'data_record',
       place_id: 'testplace'
     },
     {
       _id: 'testuser',
+      reported_date: 1,
       type: 'person',
     },
     {
       _id: 'test_kujua_message',
+      reported_date: 1,
       type: 'data_record',
       kujua_message: true,
       tasks: [
@@ -50,6 +56,7 @@ describe('view docs_by_replication_key', function() {
     },
     {
       _id: 'report_with_contact',
+      reported_date: 1,
       form: 'V',
       type: 'data_record',
       contact: {
@@ -61,14 +68,17 @@ describe('view docs_by_replication_key', function() {
   var documentsToIgnore = [
     {
       _id: 'fakedoctype',
+      reported_date: 1,
       type: 'fakedoctype'
     },
     {
       _id: 'not_the_testuser',
+      reported_date: 1,
       type: 'person',
     },
     {
       _id: 'test_not_assigned_kujua_message',
+      reported_date: 1,
       type: 'data_record',
       kujua_message: true,
       tasks: [
@@ -83,6 +93,7 @@ describe('view docs_by_replication_key', function() {
     },
     {
       _id: 'test_data_record_wrong_user',
+      reported_date: 1,
       type: 'data_record',
       contact: 'not_the_testuser'
     }
@@ -92,17 +103,20 @@ describe('view docs_by_replication_key', function() {
   var documentsToIgnoreSometimes = [
     {
       _id: 'test_kujua_message_no_tasks',
+      reported_date: 1,
       type: 'data_record',
       kujua_message: true
     },
     {
       _id: 'test_kujua_message_empty_tasks',
+      reported_date: 1,
       type: 'data_record',
       kujua_message: true,
       tasks: []
     },
     {
       _id: 'test_kujua_message_no_contact',
+      reported_date: 1,
       type: 'data_record',
       kujua_message: true,
       tasks: [
@@ -113,6 +127,7 @@ describe('view docs_by_replication_key', function() {
     },
     {
       _id: 'test_kujua_message_incoming_no_contact',
+      reported_date: 1,
       type: 'data_record'
     }
   ];
@@ -143,21 +158,19 @@ describe('view docs_by_replication_key', function() {
 
     console.log('Pushing ' + alldocs.length + ' documents for testing…');
     async.each(alldocs,
-      function(testDoc, asyncNext) {
-        utils.saveDoc(testDoc).then(function(result) {
-          if (result.error) {
-            console.log('Error saving doc ' + testDoc._id, testDoc, result);
-          }
-          asyncNext();
-        });
+      function(testDoc, callback) {
+        utils.saveDoc(testDoc)
+          .then(function() {
+            callback();
+          })
+          .catch(callback);
       },
       function(err) {
         if (err) {
-          console.log('Error saving doc', err);
-          done();
-        } else {
-          console.log('…done');
+          console.error(err);
+          return done(err);
         }
+        console.log('…done');
 
         getChanges(['_all', 'testuser', 'testplace', 'testpatient'])
           .then(function(docs) {
@@ -176,12 +189,13 @@ describe('view docs_by_replication_key', function() {
     var alldocs = documentsToReturn.concat(documentsToIgnore).concat(documentsToIgnoreSometimes)
                     .map(function(doc) { return doc._id; });
     console.log('\nCleaning up ' + alldocs.length + ' documentIds…', alldocs);
-    async.each(alldocs, function(id, asyncNext) {
-      utils.deleteDoc(id).then(asyncNext);
-    }, function() {
-      console.log('…done.');
-      done();
-    });
+    async.each(alldocs, function(id, callback) {
+      utils.deleteDoc(id)
+        .then(function() {
+          callback();
+        })
+        .catch(callback);
+    }, done);
   });
 
   it('Does not return the ddoc', function() {

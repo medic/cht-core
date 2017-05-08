@@ -245,6 +245,15 @@ body {
   }
 }
 
+.header .dropdown-menu .sync-status {
+  .in_progress, .not_required {
+    color: @ok-color;
+  }
+  .required {
+    color: @error-color;
+  }
+}
+
 .configuration-form {
   margin-bottom: 1em;
   .delete {
@@ -1261,7 +1270,7 @@ a.fa:hover {
 .lineage {
   margin-bottom: 0;
   li:after {
-    content: "•";
+    content: "\2022"; /* bullet */
     padding: 0 5px;
   }
 }
