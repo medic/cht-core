@@ -1,11 +1,5 @@
-var fs = require('fs');
-var EC = protractor.ExpectedConditions;
 
- function writeScreenShot(data, filename) {
-        var stream = fs.createWriteStream(filename);
-        stream.write(new Buffer(data, 'base64'));
-        stream.end();
-    }
+var EC = protractor.ExpectedConditions;
 
 module.exports = {
   waitElementToBeVisisble: function (elm) {
@@ -65,7 +59,7 @@ module.exports = {
   */
   selectDropdownByText: function selectOption(element, item, milliseconds) {
     var desiredOption;
-    element.all(by.tagName('option'))
+    element.findElements(by.tagName('option'))
       .then(function findMatchingOption(options) {
         options.some(function (option) {
           option.getText().then(function doesOptionMatch(text) {
@@ -94,12 +88,6 @@ module.exports = {
   isTextDisplayed: function (text) {
     var selectedElement = element(by.xpath('//*[text()[normalize-space() =  \' ' + text + '\']]'));
     return selectedElement.isPresent();
-  },
-
-  takeScreenshot:function(filename){
-    browser.takeScreenshot().then(function (png) {
-        writeScreenShot(png, filename);
-    });
   }
 
 };
