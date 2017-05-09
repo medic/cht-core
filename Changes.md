@@ -2,19 +2,20 @@
 
 ## 2.11.1
 
-_May 4 :star:, 2017_
+_May 9, 2017_
 
 ### Bug fixes
  - Cannot report via SMS about people who are registered in the web app. Issue: #3401
  - Results page CSS messed up in v2.11. Issue: #3369
  - The user needs an associated contact to create a contact. Issue: #3394
  - Error when adding Place with new person. Issue: #3420
+ - Error after canceling and re-opening any contact creation form. Issue: #3448
 
 ## 2.11.0
 
 _April 12, 2017_
 
-### Migration Notes
+### Migration notes
 
 - [#3230](https://github.com/medic/medic-webapp/issues/3230) changes patient ID generation so it automatically increases the length as needed, up to 13 digits. If you are validating incoming patient_ids in Sentinel, be sure to remove or correct any length restrictions, e.g. `\d{5}` becomes `\d+`, `\d{5,}` or `\d{5, 13}`.
 - [#3166](https://github.com/medic/medic-webapp/issues/3166) adds a new transition that adds patient_ids to every created person: `generate_patient_id_on_people`. Enable this transition if you want to send SMS about patients that may be created through the webapp.
