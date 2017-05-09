@@ -8,13 +8,9 @@ module.exports = {
     helper.waitUntilReady(exportButton);
     exportButton.click();
   },
+
   openSendMessageModal: function () {
     helper.waitUntilReady(sendMessageButton);
     sendMessageButton.click();
-  },
- getSendMessageButton: function () {
-    helper.waitUntilReady(sendMessageButton);
-    return sendMessageButton;
   }
-  
 };
