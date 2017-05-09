@@ -7,6 +7,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     $q,
     $scope,
     $state,
+    $timeout,
     $translate,
     ContactForm,
     ContactSchema,
@@ -93,19 +94,21 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     };
 
     var renderForm = function(form) {
-      var container = $('#contact-form');
-      if (!form) {
-        // Disable next and prev buttons
-        container.find('.form-footer .btn')
-            .filter('.previous-page, .next-page')
-            .addClass('disabled');
-        return;
-      }
-      var instanceData = getFormInstanceData();
-      if (form.id) {
-        return Enketo.renderContactForm('#contact-form', form.id, instanceData);
-      }
-      return Enketo.renderFromXmlString('#contact-form', form.xml, instanceData);
+      return $timeout(function() {
+        var container = $('#contact-form');
+        if (!form) {
+          // Disable next and prev buttons
+          container.find('.form-footer .btn')
+              .filter('.previous-page, .next-page')
+              .addClass('disabled');
+          return;
+        }
+        var instanceData = getFormInstanceData();
+        if (form.id) {
+          return Enketo.renderContactForm('#contact-form', form.id, instanceData);
+        }
+        return Enketo.renderFromXmlString('#contact-form', form.xml, instanceData);
+      });
     };
 
     var setEnketoContact = function(formInstance) {
