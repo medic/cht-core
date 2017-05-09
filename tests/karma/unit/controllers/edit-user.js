@@ -1,4 +1,4 @@
-describe.only('EditUserCtrl controller', function() {
+describe('EditUserCtrl controller', function() {
 
   'use strict';
 
