@@ -13,7 +13,8 @@ var LOCAL_NAME_MAP = {
   fr: 'Français (French)',
   ne: 'नेपाली (Nepali)',
   sw: 'Kiswahili (Swahili)',
-  hi: 'हिन्दी (Hindi)'
+  hi: 'हिन्दी (Hindi)',
+  id: 'Bahasa Indonesia (Indonesian)'
 };
 
 var extractLocaleCode = function(filename) {
