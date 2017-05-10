@@ -1,11 +1,11 @@
 var fs = require('fs');
 var EC = protractor.ExpectedConditions;
 
- function writeScreenShot(data, filename) {
-        var stream = fs.createWriteStream(filename);
-        stream.write(new Buffer(data, 'base64'));
-        stream.end();
-    }
+function writeScreenShot(data, filename) {
+  var stream = fs.createWriteStream(filename);
+  stream.write(new Buffer(data, 'base64'));
+  stream.end();
+}
 
 module.exports = {
   waitElementToBeVisisble: function (elm) {
@@ -96,9 +96,9 @@ module.exports = {
     return selectedElement.isPresent();
   },
 
-  takeScreenshot:function(filename){
+  takeScreenshot: function (filename) {
     browser.takeScreenshot().then(function (png) {
-        writeScreenShot(png, filename);
+      writeScreenShot(png, filename);
     });
   }
 

@@ -1,37 +1,63 @@
-var helper = require('../../helper');
+const helper = require('../../helper');
 
-var usernameField = element(by.id('name'));
-var fullNameField = element(by.id('fullname'));
-var emailField = element(by.id('email'));
-var phoneField = element(by.id('phone'));
-var languageField = element(by.id('language'));
-var userTypeField = element(by.id('type'));
-//var placeField = element(by.id('facility'));
-//var contactField = element(by.id('contact'));
-var passwordField = element(by.id('password'));
-var confirmPasswordField = element(by.id('password-confirm'));
-var submitButton = element(by.className('btn submit btn-primary'));
-var cancelButton = element(by.className('btn cancel'));
+const getUsernameField = () => {
+  return element(by.id('name'));
+};
+
+const getFullNameField = () => {
+  return element(by.id('fullname'));
+};
+
+const getPhoneField = () => {
+  return element(by.id('phone'));
+};
+
+const getEmailField = () => {
+  return element(by.id('email'));
+};
+const getLanguageField = () => {
+  return element(by.id('language'));
+};
+
+const getUserTypeField = () => {
+  return element(by.id('type'));
+};
+
+const getPasswordField = () => {
+  return element(by.id('password'));
+};
+
+const getConfirmPasswordField = () => {
+  return element(by.id('password-confirm'));
+};
+const getSubmitButton = () => {
+  return element(by.className('btn submit btn-primary'));
+};
+
+const getCancelButton = () => {
+  return element(by.className('btn cancel'));
+};
 
 module.exports = {
   submit: function () {
-    helper.waitUntilReady(submitButton);
-    submitButton.click();
-   },
+    helper.waitUntilReady(getSubmitButton());
+    getSubmitButton.click();
+  },
 
   cancel: function () {
-    helper.waitUntilReady(cancelButton);
-    cancelButton.click();
+    helper.waitUntilReady(getCancelButton());
+    getCancelButton().click();
   },
+
   fillForm: function () {
-    usernameField.sendKeys('bedeTester01');
-    fullNameField.sendKeys('Bede Ngaruko');
-    emailField.sendKeys('bede@mobile.org');
-    phoneField.sendKeys('0064212134566');
-    helper.selectDropdownByText(languageField, 'English', 2);
-    helper.selectDropdownByText(userTypeField, 'Full access');
-    passwordField.sendKeys('pass');
-    confirmPasswordField.sendKeys('pass');
+    getUsernameField().sendKeys('bedeTester020');
+    getFullNameField().sendKeys('Bede Ngaruko');
+    getEmailField().sendKeys('bede@mobile.org');
+    getPhoneField().sendKeys('0064212134566');
+    helper.selectDropdownByText(getLanguageField(), 'English', 2);
+    helper.selectDropdownByText(getUserTypeField(), 'Full access');
+    getPasswordField().sendKeys('pass');
+    getConfirmPasswordField().sendKeys('pass');
   }
 };
 

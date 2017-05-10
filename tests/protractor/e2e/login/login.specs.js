@@ -10,7 +10,6 @@ describe('Login tests : ', function () {
   });
 
   afterEach(function () {
-    helper.takeScreenshot('login-test');
     browser.manage().deleteAllCookies();
   });
 

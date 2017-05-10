@@ -17,13 +17,28 @@ module.exports = {
     loginButton.click();
     browser.waitForAngular();
   },
+
   getIncorrectCredentialsText: function () {
     return incorrectCredentialsText;
   },
+
   getIncorrectCredeantialsError: function () {
     return incorrectCredeantialsError;
   },
+
   getPasswordBlankText: function () {
     return passwordBlankText;
+  },
+
+  getUsernameField: function () {
+    return usernameField;
+  },
+
+  getPasswordField: function () {
+    return passwordField;
+  },
+  
+  getLoginButton: function () {
+    return loginButton;
   }
 };

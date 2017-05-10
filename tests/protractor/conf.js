@@ -1,8 +1,8 @@
 const utils = require('./utils'),
-      spawn = require('child_process').spawn,
-      constants = require('./constants'),
-      auth = require('./auth')(),
-      modules = [];
+  spawn = require('child_process').spawn,
+  constants = require('./constants'),
+  auth = require('./auth')(),
+  modules = [];
 
 const getLoginUrl = () => {
   const redirectUrl = encodeURIComponent(`/${constants.DB_NAME}/_design/medic/_rewrite/#/messages?e2eTesting=true`);
@@ -70,7 +70,7 @@ const setupUser = () => {
 
 exports.config = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
-  specs: [ 'e2e/**/add-user.specs.js' ],
+  specs: ['e2e/**/add-user.specs.js'],
 
   framework: 'jasmine2',
   capabilities: {
@@ -88,5 +88,5 @@ exports.config = {
     browser.driver.sleep(1000);
     return login(browser);
   },
- onCleanUp: () => modules.forEach(module => module.kill())
+  onCleanUp: () => modules.forEach(module => module.kill())
 };
