@@ -1,44 +1,38 @@
-var helper = require('../../helper');
+const helper = require('../../helper');
 
-var incorrectCredentialsText = 'Incorrect user name or password. Please try again.';
-var passwordBlankText = 'Can\'t be blank.';
-var usernameField = element(by.id('user'));
-var passwordField = element(by.id('password'));
-var loginButton = element(by.id('login'));
-var incorrectCredeantialsError = element(by.className('error incorrect'));
+const incorrectCredentialsText = 'Incorrect user name or password. Please try again.';
+const passwordBlankText = 'Can\'t be blank.';
+const getUsernameField = () => {
+  return element(by.id('user'));
+};
+const getPasswordField = () => {
+  return element(by.id('password'));
+};
+
+const getLoginButton = () => {
+  return element(by.id('login'));
+};
 
 module.exports = {
   login: function (username, password) {
-    helper.waitUntilReady(usernameField);
-    usernameField.clear();
-    passwordField.clear();
-    usernameField.sendKeys(username);
-    passwordField.sendKeys(password);
-    loginButton.click();
+    helper.waitUntilReady(getUsernameField());
+    getUsernameField().clear();
+    getPasswordField().clear();
+    getUsernameField().sendKeys(username);
+    getPasswordField().sendKeys(password);
+    getLoginButton().click();
     browser.waitForAngular();
   },
 
-  getIncorrectCredentialsText: function () {
+  getIncorrectCredeantialsError: () => {
+    return element(by.className('error incorrect'));
+  },
+
+  getIncorrectCredentialsText: () => {
     return incorrectCredentialsText;
   },
 
-  getIncorrectCredeantialsError: function () {
-    return incorrectCredeantialsError;
-  },
-
-  getPasswordBlankText: function () {
+  getPasswordBlankText: () => {
     return passwordBlankText;
-  },
-
-  getUsernameField: function () {
-    return usernameField;
-  },
-
-  getPasswordField: function () {
-    return passwordField;
-  },
-  
-  getLoginButton: function () {
-    return loginButton;
   }
 };

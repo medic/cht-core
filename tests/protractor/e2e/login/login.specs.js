@@ -1,10 +1,10 @@
-var helper = require('../../helper'),
-  utils = require('../../utils.js');
-  var loginPage = require('../../page-objects/login/login.po.js');
+const helper = require('../../helper'),
+  utils = require('../../utils.js'),
+   loginPage = require('../../page-objects/login/login.po.js');
 
 describe('Login tests : ', function () {
-  var wrongUsername = 'fakeuser';
-  var wrongPassword = 'fakepass';
+  const wrongUsername = 'fakeuser';
+  const wrongPassword = 'fakepass';
   beforeEach(function () {
     browser.driver.get(utils.getLoginUrl());
   });
@@ -19,6 +19,6 @@ describe('Login tests : ', function () {
 
   it('should try to sign in and verify that credentials were incorrect', function () {
     loginPage.login(wrongUsername, wrongPassword);
-    expect(helper.isTextDisplayed(loginPage.getIncorrectCredentialsText));
+    expect(helper.isTextDisplayed(loginPage.getIncorrectCredentialsText()));
   });
 });

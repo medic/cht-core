@@ -41,7 +41,7 @@ const getCancelButton = () => {
 module.exports = {
   submit: function () {
     helper.waitUntilReady(getSubmitButton());
-    getSubmitButton.click();
+    getSubmitButton().click();
   },
 
   cancel: function () {
