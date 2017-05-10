@@ -70,8 +70,7 @@ const setupUser = () => {
 
 exports.config = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
-  specs: ['e2e/**/add-user.specs.js'],
-
+  specs: ['e2e/**/*.js'],
   framework: 'jasmine2',
   capabilities: {
     // browserName: 'chrome'
