@@ -10,6 +10,7 @@ _May 9, 2017_
  - The user needs an associated contact to create a contact. Issue: #3394
  - Error when adding Place with new person. Issue: #3420
  - Error after canceling and re-opening any contact creation form. Issue: #3448
+ - namespace-form-fields migration : report bulk errors. Issue: #3371 (second part)
 
 ## 2.11.0
 
