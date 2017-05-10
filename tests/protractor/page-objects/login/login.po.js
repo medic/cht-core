@@ -14,7 +14,7 @@ const getLoginButton = () => {
 };
 
 module.exports = {
-  login: function (username, password) {
+  login: function(username, password) {
     helper.waitUntilReady(getUsernameField());
     getUsernameField().clear();
     getPasswordField().clear();
