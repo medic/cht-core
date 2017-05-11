@@ -26,7 +26,7 @@ describe('registration transition', () => {
     date_of_birth: 1462333250374
   };
 
-  const DOCS = [ BOB_PLACE, CAROL ];
+  const DOCS = [BOB_PLACE, CAROL];
   const CONFIG = {
     transitions: {
       accept_patient_reports: {
@@ -80,25 +80,25 @@ describe('registration transition', () => {
             },
             position: 0,
             type: 'string',
-            length: [ 1, 30 ],
+            length: [1, 30],
             required: true
           },
           last_menstrual_period: {
             labels: {
               tiny: {
-                  en: 'LMP'
+                en: 'LMP'
               },
               description: {
-                  en: 'Weeks since last menstrual period'
+                en: 'Weeks since last menstrual period'
               },
               short: {
-                  en: 'Weeks since LMP'
+                en: 'Weeks since LMP'
               }
             },
             position: 1,
             type: 'integer',
-            length: [ 1, 2 ],
-            range: [ 0, 40 ],
+            length: [1, 2],
+            range: [0, 40],
             required: true,
             validations: {},
             flags: {}
@@ -254,10 +254,11 @@ describe('registration transition', () => {
     };
 
     it('shows content', () => {
+      // wait for sentinel to do its thing
+      // TODO find a better way to wait
+      browser.sleep(1000);
       refresh();
       element(by.id('reports-tab')).click();
-
-      // wait for sentinel to do its thing
       browser.wait(() => browser.isElementPresent(by.cssContainingText('#reports-list .unfiltered li:first-child .name', CAROL.name)), 10000);
 
       element(by.css('#reports-list .unfiltered li:first-child .item-summary')).click();
