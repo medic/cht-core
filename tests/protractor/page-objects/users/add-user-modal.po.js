@@ -49,9 +49,9 @@ module.exports = {
     getCancelButton().click();
   },
 
-  fillForm: function () {
-    getUsernameField().sendKeys('bedeTester020');
-    getFullNameField().sendKeys('Bede Ngaruko');
+  fillForm: function ( username, fullName) {
+    getUsernameField().sendKeys(username);
+    getFullNameField().sendKeys(fullName);
     getEmailField().sendKeys('bede@mobile.org');
     getPhoneField().sendKeys('0064212134566');
     helper.selectDropdownByText(getLanguageField(), 'English', 2);

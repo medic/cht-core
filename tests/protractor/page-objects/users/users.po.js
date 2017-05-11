@@ -24,6 +24,7 @@ module.exports = {
   },
 
   openAddUserModal: function () {
+    console.log('waiting for button to be clickable');
     helper.waitElementToBeClickable(getAddUserButton());
     getAddUserButton().click();
   },
