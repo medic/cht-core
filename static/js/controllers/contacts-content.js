@@ -18,6 +18,7 @@ var _ = require('underscore'),
       ContactSchema,
       DB,
       Search,
+      Snackbar,
       TasksForContact,
       UserSettings
     ) {
@@ -382,6 +383,9 @@ var _ = require('underscore'),
           .catch(function(err) {
             $scope.clearSelected();
             $log.error('Error setting up ContactsContentCtrl', err);
+            if (err.error === 'not_found') {
+              $translate('error.404.title').then(Snackbar);
+            }
           });
       };
 
