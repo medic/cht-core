@@ -96,6 +96,10 @@ module.exports = function(grunt) {
     'env:dev',
   ]);
 
+  grunt.registerTask('unit', [
+    'test_unit'
+  ]);
+
   grunt.registerTask('test_integration', [
     'exec:check_env_vars',
     'mochaTest:integration',
