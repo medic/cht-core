@@ -203,7 +203,7 @@ app.get('/api/sms', function(req, res) {
     }
     smsGateway.get(function(err, obj) {
       if (err) {
-        return serverUtils.error(err, res);
+        return serverUtils.error(err, req, res);
       }
       res.json(obj);
     });
@@ -220,7 +220,7 @@ app.post('/api/sms', jsonParser, function(req, res) {
     }
     smsGateway.post(req, function(err, obj) {
       if (err) {
-        return serverUtils.error(err, res);
+        return serverUtils.error(err, req, res);
       }
       res.json(obj);
     });
@@ -381,10 +381,15 @@ app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
     if (err) {
       return serverUtils.error(err, req, res, true);
     }
-    messages.updateMessage(req.params.id, req.body, function(err, result) {
+    messages.updateMessageTaskState({
+      messageId: req.params.id,
+      state: req.body.state,
+      details: req.body.details
+    }, function(err, result) {
       if (err) {
         return serverUtils.serverError(err.message, req, res);
       }
+      result.id = req.params.id;
       res.json(result);
     });
   });

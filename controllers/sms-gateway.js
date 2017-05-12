@@ -5,7 +5,7 @@
 
 const _ = require('underscore'),
       async = require('async'),
-      messageUtils = require('./message-utils'),
+      messageUtils = require('./messages'),
       recordUtils = require('./record-utils'),
 
       // map from the medic-gateway state to the medic-webapp state
@@ -17,12 +17,11 @@ const _ = require('underscore'),
         FAILED: 'failed',
       };
 
-function warn() {
-  const args = Array.prototype.slice.call(arguments, 0);
-  args.unshift('WARN', 'sms-gateway');
-  console.error.apply(console, args);
-}
-
+// TODO: once Milan's refactor is complete this code will be out of couch, and
+//       we can make this a bulk update.
+//
+// See: https://github.com/medic/medic-webapp/issues/3019
+// Specifically, this should be in a new repo that we can pull in via npm
 function saveToDb(message, callback) {
   recordUtils.createByForm({
     from: message.from,
@@ -31,55 +30,39 @@ function saveToDb(message, callback) {
   }, callback);
 }
 
-function updateStateFor(update, callback) {
-  let details,
-      newState = STATUS_MAP[update.status];
-  if (newState) {
+function mapStateFields(update) {
+  const result = {
+    messageId: update.id
+  };
+  result.state = STATUS_MAP[update.status];
+  if (result.state) {
     if(update.reason) {
-      details = { reason: update.reason };
+      result.details = { reason: update.reason };
     }
   } else {
-    newState = 'unrecognised';
-    details = { gateway_status: update.status };
+    result.state = 'unrecognised';
+    result.details = { gateway_status: update.status };
   }
-  updateState(update.id, newState, details, callback);
-}
 
-function updateState(messageId, newState, details, callback) {
-  const updateBody = {
-    state: newState,
-  };
-  if(details) {
-    updateBody.details = details;
-  }
-  messageUtils.updateMessage(messageId, updateBody, callback);
+  return result;
 }
 
 function markMessagesForwarded(messages, callback) {
-  async.eachSeries(
-    messages,
-    (message, callback) => updateState(message.id, 'forwarded-to-gateway', null, callback),
-    (err) => {
-      if (err) {
-        // TODO: this comment (and the action of warning) is not correct. What
-        //       should we really do here?
+  const taskStateChanges = messages.map(message => ({
+    messageId: message.id,
+    state: 'forwarded-to-gateway'
+  }));
 
-        // No error throwing here, because no big deal : 'forwarded-to-gateway' status
-        // wasn't saved to DB, so message will stay in 'pending' status and be retried next time.
-        warn(err);
-      }
-      return callback();
-    }
-  );
+  messageUtils.updateMessageTaskStates(taskStateChanges, callback);
 }
 
 function getOutgoing(callback) {
   messageUtils.getMessages({ states: ['pending', 'forwarded-to-gateway'] },
     (err, pendingMessages) => {
       if (err) {
-        warn(err);
-        return callback(null, []);
+        return callback(err);
       }
+
       const messages = pendingMessages.map(message => {
         return {
           id: message.id,
@@ -87,35 +70,35 @@ function getOutgoing(callback) {
           content: message.message,
         };
       });
-      markMessagesForwarded(messages, () => callback(null, messages));
+
+      markMessagesForwarded(messages, (err) => {
+        if (err) {
+          callback(err);
+        } else {
+          callback(null, messages);
+        }
+      });
   });
 }
 
 // Process webapp-terminating messages
-function processMessages(req, callback) {
+function addNewMessages(req, callback) {
   if (!req.body.messages) {
     return callback();
   }
 
-  async.eachSeries(req.body.messages, saveToDb, err => {
-    if (err) {
-      warn(err);
-    }
-    callback();
-  });
+  async.eachSeries(req.body.messages, saveToDb, callback);
 }
 
 // Process message status updates
-function processUpdates(req, callback) {
+function processTaskStateUpdates(req, callback) {
   if (!req.body.updates) {
     return callback();
   }
-  async.eachSeries(req.body.updates, updateStateFor, err => {
-    if (err) {
-      warn(err);
-    }
-    callback();
-  });
+
+  const taskStateChanges = req.body.updates.map(mapStateFields);
+
+  messageUtils.updateMessageTaskStates(taskStateChanges, callback);
 }
 
 module.exports = {
@@ -124,8 +107,8 @@ module.exports = {
   },
   post: function(req, callback) {
     async.series([
-      _.partial(processMessages, req),
-      _.partial(processUpdates, req),
+      _.partial(addNewMessages, req),
+      _.partial(processTaskStateUpdates, req),
       getOutgoing
     ], (err, [,,outgoingMessages]) => {
       if (err) {

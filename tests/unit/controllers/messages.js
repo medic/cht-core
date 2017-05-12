@@ -1,4 +1,4 @@
-var controller = require('../../../controllers/message-utils'),
+var controller = require('../../../controllers/messages'),
     db = require('../../../db'),
     sinon = require('sinon').sandbox.create();
 
@@ -103,12 +103,122 @@ exports['getMessage returns view data'] = function(test) {
   });
 };
 
-exports['updateMessage returns errors'] = function(test) {
-  test.expect(2);
-  var get = sinon.stub(controller, 'getMessage').callsArgWith(1, 'boom');
-  controller.updateMessage('c38uz32a', null, function(err) {
-    test.deepEqual(err, 'boom');
-    test.equals(get.callCount, 1);
+exports['updateMessageTaskStates takes a collection of state changes and saves it to docs'] = test => {
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: [
+    {id: 'testMessageId1'},
+    {id: 'testMessageId2'}]});
+
+  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {rows: [
+    {doc: {
+      _id: 'testDoc',
+      tasks: [{
+        messages: [{
+          uuid: 'testMessageId1'
+        }]
+      }],
+      scheduled_tasks: [{
+        messages: [{
+          uuid: 'testMessageId2'
+        }]
+      }]
+    }}
+  ]});
+
+  const bulk = sinon.stub(db.medic, 'bulk').callsArgWith(1, null, []);
+
+  controller.updateMessageTaskStates([
+    {
+      messageId: 'testMessageId1',
+      state: 'testState1',
+    },
+    {
+      messageId: 'testMessageId2',
+      state: 'testState2',
+      details: 'Just because.'
+    }
+  ], (err, result) => {
+    test.equal(err, null);
+    test.deepEqual(result, {success: true});
+
+    const doc = bulk.args[0][0].docs[0];
+    test.equal(doc._id, 'testDoc');
+    test.equal(doc.tasks[0].state, 'testState1');
+    test.equal(doc.scheduled_tasks[0].state, 'testState2');
+    test.equal(doc.scheduled_tasks[0].state_details, 'Just because.');
+
+    test.done();
+  });
+};
+
+exports['updateMessageTaskStates re-applies changes if it errored'] = test => {
+  const view = sinon.stub(db.medic, 'view')
+  .onFirstCall().callsArgWith(3, null, {rows: [
+    {id: 'testMessageId1'},
+    {id: 'testMessageId2'}]})
+  .onSecondCall().callsArgWith(3, null, {rows: [
+    {id: 'testMessageId2'}]});
+
+  sinon.stub(db.medic, 'fetch')
+  .onFirstCall().callsArgWith(1, null, {rows: [
+    {doc: {
+      _id: 'testDoc',
+      tasks: [{
+        messages: [{
+          uuid: 'testMessageId1'
+        }]
+      }]
+    }},
+    {doc: {
+      _id: 'testDoc2',
+      tasks: [{
+        messages: [{
+          uuid: 'testMessageId2'
+        }]
+      }]
+    }}
+  ]})
+  .onSecondCall().callsArgWith(1, null, {rows: [
+    {doc: {
+      _id: 'testDoc2',
+      tasks: [{
+        messages: [{
+          uuid: 'testMessageId2'
+        }]
+      }]
+    }}
+  ]});
+
+  const bulk = sinon.stub(db.medic, 'bulk')
+  .onFirstCall().callsArgWith(1, null, [
+    {id: 'testDoc', ok: true},
+    {id: 'testDoc2', error: 'oh no!'}])
+  .onSecondCall().callsArgWith(1, null, [
+    {id: 'testDoc2', ok: true}]);
+
+  controller.updateMessageTaskStates([
+    {
+      messageId: 'testMessageId1',
+      state: 'testState1',
+    },
+    {
+      messageId: 'testMessageId2',
+      state: 'testState2',
+      details: 'Just because.'
+    }
+  ], (err, result) => {
+    test.equal(err, null);
+    test.deepEqual(result, {success: true});
+
+    test.equal(view.callCount, 2);
+    test.deepEqual(view.args[0][2], {keys: ['testMessageId1', 'testMessageId2']});
+    test.deepEqual(view.args[1][2], {keys: ['testMessageId2']});
+
+    test.equal(bulk.args[0][0].docs.length, 2);
+    test.equal(bulk.args[0][0].docs[0]._id, 'testDoc');
+    test.equal(bulk.args[0][0].docs[1]._id, 'testDoc2');
+    test.equal(bulk.args[1][0].docs.length, 1);
+    test.equal(bulk.args[1][0].docs[0]._id, 'testDoc2');
+
     test.done();
   });
 };

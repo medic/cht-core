@@ -137,6 +137,7 @@ if (couchUrl) {
       get: function() {},
       insert: function() {},
       updateWithHandler: function() {},
+      fetch: function() {},
       fetchRevs: function() {},
       bulk: function() {},
       changes: function() {},
