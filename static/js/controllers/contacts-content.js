@@ -9,6 +9,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     $stateParams,
     Changes,
     ContactViewModelGenerator,
+    Snackbar,
     TasksForContact,
     UserSettings
   ) {
@@ -85,6 +86,9 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
           getTasks();
         })
         .catch(function(err) {
+          if (err.error === 'not_found') {
+            $translate('error.404.title').then(Snackbar);
+          }
           $scope.clearSelected();
           $log.error('Error generating contact view model', err, err.message);
         });

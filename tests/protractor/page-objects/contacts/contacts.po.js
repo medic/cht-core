@@ -49,7 +49,7 @@ module.exports = {
     submitButton.click();
   },
 
-  refresh: function () {
+  refresh: function() {
     refreshButton.click();
   },
   search: function (query) {
