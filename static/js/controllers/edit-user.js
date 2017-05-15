@@ -101,16 +101,12 @@
       var validatePasswordForEditUser = function() {
         var newUser = !$scope.editUserModel.id;
         if (newUser) {
-          return validatePasswordAndConfirm();
+          return validatePasswordFields();
         }
 
         // if existing user : needs both fields, or none
-        if ($scope.editUserModel.password) {
-          return validatePasswordAndConfirm();
-        }
-        if ($scope.editUserModel.passwordConfirm) {
-          $scope.errors.password = $translate.instant('Passwords must match');
-          return false;
+        if ($scope.editUserModel.password || $scope.editUserModel.passwordConfirm) {
+          return validatePasswordFields();
         }
         return true;
       };
@@ -123,7 +119,7 @@
         return true;
       };
 
-      var validatePasswordAndConfirm = function() {
+      var validatePasswordFields = function() {
         return validateRequired('password', 'Password') &&
           validateConfirmPasswordMatches();
       };
@@ -189,7 +185,7 @@
       $scope.updatePassword = function() {
         $scope.errors = {};
         $scope.setProcessing();
-        if (validatePasswordAndConfirm()) {
+        if (validatePasswordFields()) {
           var updates = { password: $scope.editUserModel.password };
           UpdateUser($scope.editUserModel.id, null, updates)
             .then(function() {
