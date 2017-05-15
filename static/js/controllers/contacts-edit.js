@@ -236,8 +236,11 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     // referenced by _id by other docs if required.
     function prepare(doc) {
       if(!doc._id) {
-        doc.reported_date = Date.now();
         doc._id = uuidV4();
+      }
+
+      if (!doc._rev) {
+        doc.reported_date = Date.now();
       }
 
       return doc;
