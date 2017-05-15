@@ -52,19 +52,21 @@
       </select>
     </div>
 
-    <div class="form-group" mm-auth="can_configure">
+    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.facility_id}">
       <label for="facility" translate>Facility</label>
       <select id="facility" name="facility">
         <option ng-value="editUserModel.facility" ng-if="editUserModel.facility"></option>
       </select>
+      <span class="help-block">{{errors.facility_id}}</span>
     </div>
 
-    <div class="form-group" mm-auth="can_configure">
+    <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.contact_id}">
       <label for="contact" translate>associated.contact</label>
+      <div class="text-muted" translate>associated.contact.help</div>
       <select id="contact" name="contact" autocomplete="off">
         <option ng-value="editUserModel.contact" ng-if="editUserModel.contact"></option>
       </select>
-      <span class="help-block" translate>associated.contact.help</span>
+      <span class="help-block">{{errors.contact_id}}</span>
     </div>
 
     <div class="form-group" ng-class="{'has-error': errors.password}">
