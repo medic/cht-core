@@ -304,7 +304,6 @@ angular.module('inboxServices').service('Enketo',
         var docToStore = EnketoTranslation.reportRecordToJs(e.outerHTML);
         docToStore._id = idMap[xpathish(e)];
         docsToStore.push(docToStore);
-        e.remove();
       });
 
       record = $record[0].outerHTML;
