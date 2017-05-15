@@ -1,32 +1,21 @@
 const helper = require('../../helper');
 
-
-const getNextButton = () => {
-  return element(by.css('.btn btn-primary next-page'));
-};
-const getPreviousButton = () => {
-  return element(by.css('.btn btn-default previous-page'));
-};
-const getSubmitButton = () => {
-  return element(by.css('.btn submit btn-primary'));
-};
-
 const getPatientNameDropDown = () => {
   element(by.id('select2-/delivery/inputs/contact/_id-wg-container'));
 };
 
 module.exports = {
+
   goNext: () => {
-    helper.waitUntilReady(getNextButton);
-    getNextButton.click();
+    element(by.css('.btn btn-primary next-page')).click();
   },
 
   goBack: () => {
-    getPreviousButton().click();
+    element(by.css('.btn btn-default previous-page')).click();
   },
 
   submit: () => {
-    getSubmitButton().click();
+    element(by.css('.btn submit btn-primary')).click();
   },
 
   //patient page
