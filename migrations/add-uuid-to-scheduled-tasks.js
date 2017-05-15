@@ -1,7 +1,7 @@
 var db = require('../db'),
     async = require('async'),
     moment = require('moment'),
-    uuid = require('node-uuid'),
+    uuidV4 = require('uuid/v4'),
     BATCH_SIZE = 100;
 
 var updateMessage = function(message) {
@@ -9,7 +9,7 @@ var updateMessage = function(message) {
     // already has the required uuid
     return false;
   }
-  message.uuid = uuid.v4();
+  message.uuid = uuidV4();
   return true;
 };
 
