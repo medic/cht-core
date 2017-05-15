@@ -254,7 +254,8 @@ angular.module('inboxServices').service('EnketoTranslation', [
       var fields = {};
       withElements(data)
         .each(function(n) {
-          if (n.attributes.getNamedItem('db-doc') === 'true') {
+          var dbDocAttribute = n.attributes.getNamedItem('db-doc');
+          if (dbDocAttribute && dbDocAttribute.value === 'true') {
             return;
           }
 
