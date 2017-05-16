@@ -45,6 +45,7 @@ NoolsTest = module.exports = (function() {
   }
 
   return {
+    nootils: nootils,
     parseRules: parseRules,
   };
 }());
