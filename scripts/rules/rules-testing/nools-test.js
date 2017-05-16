@@ -41,11 +41,10 @@ NoolsTest = module.exports = (function() {
         .then(() => assert.deepEqual(actualEmits, expectedEmits));
     };
 
-    return { flow:flow, session:session };
+    return { flow:flow, session:session, utils:Utils };
   }
 
   return {
-    nootils: nootils,
     parseRules: parseRules,
   };
 }());

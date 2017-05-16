@@ -2,15 +2,13 @@ var _ = require('underscore');
 
 var NO_LMP_DATE_MODIFIER = 4;
 
-var now = function() { return new Date(); };
-
 module.exports = function(settings) {
-  return {
+  var lib = {
     isTimely: function(date, event) {
       var due = new Date(date);
-      var start = now();
+      var start = lib.now();
       start.setDate(start.getDate() + event.start);
-      var end = now();
+      var end = lib.now();
       end.setDate(end.getDate() - event.end - 1);
       return due.getTime() < start.getTime() && due.getTime() > end.getTime();
     },
@@ -19,7 +17,7 @@ module.exports = function(settings) {
       if (date) {
         result = new Date(date.getTime());
       } else {
-        result = now();
+        result = lib.now();
       }
       result.setDate(result.getDate() + days);
       result.setHours(0, 0, 0, 0);
@@ -74,6 +72,8 @@ module.exports = function(settings) {
       return !isNaN(date.getTime());
     },
     MS_IN_DAY: 24*60*60*1000, // 1 day in ms
-    now: now,
+    now: function() { return new Date(); },
+
   };
+  return lib;
 };
