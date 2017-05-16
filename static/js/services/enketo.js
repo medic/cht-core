@@ -308,7 +308,7 @@ angular.module('inboxServices').service('Enketo',
       });
 
       $record.find('[db-doc=true]').each(function() {
-        var docToStore = EnketoTranslation.reportRecordToJs(e.outerHTML);
+        var docToStore = EnketoTranslation.reportRecordToJs(this.outerHTML);
         docToStore._id = idMap[xpathPath(this)];
         docsToStore.push(docToStore);
       });
