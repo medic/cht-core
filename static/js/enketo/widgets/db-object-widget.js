@@ -36,10 +36,14 @@ define( function( require, exports, module ) {
     Dbobjectwidget.prototype.constructor = Dbobjectwidget;
 
     Dbobjectwidget.prototype._init = function() {
+        construct( this.element );
+    };
+
+    function construct( element ) {
+        var $question = $( element );
+
         var angularServices = angular.element(document.body).injector();
         var Select2Search = angularServices.get('Select2Search');
-
-        var $question = $(this.element);
 
         var $textInput = $question.find('input');
         var value = $textInput.val();
@@ -54,7 +58,7 @@ define( function( require, exports, module ) {
         var dbObjectType = $textInput.attr('data-type-xml');
 
         if (!$question.hasClass('or-appearance-bind-id-only')) {
-            $textInput.on('change', function() {
+            $textInput.on('change.dbobjectwidget', function() {
                 // TODO this should be $(this), not $textInput - probably not good to cache jQuery objects
                 var selected = $textInput.select2('data');
                 var doc = selected && selected[0] && selected[0].doc;
@@ -72,7 +76,7 @@ define( function( require, exports, module ) {
             // select2 doesn't understand readonly
             $textInput.prop('disabled', disabled);
         });
-    };
+    }
 
     var updateFields = function(form, doc, objectRoot, keyPath) {
         Object.keys(doc).forEach(function(key) {
@@ -96,7 +100,41 @@ define( function( require, exports, module ) {
         });
     };
 
-    Dbobjectwidget.prototype.destroy = function( /* element */ ) {};
+    /**
+     * This function, implemented on all enketo widgets, is only called when
+     * cloning repeated sections of a form.  It's actually called on the cloned
+     * copy of a question, and for some reason for this widget needs to destroy
+     * and then re-create the select2.
+     * @see https://github.com/medic/medic-webapp/issues/3487
+     */
+    Dbobjectwidget.prototype.destroy = function( element ) {
+        deconstruct( element );
+        construct( element );
+    };
+
+    /** Reverse the select2 setup steps performed in construct() */
+    function deconstruct( element ) {
+        var $question = $( element );
+
+        $question.find( '.select2-container' ).remove();
+
+        var $selectInput = $question.find( 'select' );
+
+        // At this stage in construct(), the select2 jquery plugin is
+        // initialised.  To reverse this, we would call:
+        //     $selectInput.data( 'select2' ).destroy();
+        // However, calling this here would destroy the select2 for the original
+        // widget, so -do not do it-.
+
+        $selectInput.off( 'change.dbobjectwidget' );
+
+        $selectInput.find( 'option' ).remove();
+
+        var replacementHtml = $selectInput[0].outerHTML
+                .replace( /^<select /, '<input ' )
+                .replace( /<\/select>/, '</input>' );
+        $selectInput.replaceWith( replacementHtml );
+    }
 
     $.fn[ pluginName ] = function( options, event ) {
         return this.each( function() {
