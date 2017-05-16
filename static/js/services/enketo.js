@@ -297,19 +297,19 @@ angular.module('inboxServices').service('Enketo',
       $record = $($($.parseXML(record)).children()[0]);
       idMap[xpathPath($record)] = doc._id || uuid();
 
-      $record.find('[db-doc=true]').each(function(i, e) {
-        mapOrAssignId(e);
+      $record.find('[db-doc=true]').each(function() {
+        mapOrAssignId(this);
       });
 
-      $record.find('[doc-ref]').each(function(i, ref) {
-        var $ref = $(ref);
+      $record.find('[doc-ref]').each(function() {
+        var $ref = $(this);
         var refId = idMap[$ref.attr('doc-ref')];
         $ref.text(refId);
       });
 
-      $record.find('[db-doc=true]').each(function(i, e) {
+      $record.find('[db-doc=true]').each(function() {
         var docToStore = EnketoTranslation.reportRecordToJs(e.outerHTML);
-        docToStore._id = idMap[xpathPath(e)];
+        docToStore._id = idMap[xpathPath(this)];
         docsToStore.push(docToStore);
       });
 
