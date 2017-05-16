@@ -267,7 +267,8 @@ angular.module('inboxServices').service('Enketo',
      * unique xpaths for nodes which have siblings with matching names.
      */
     function xpathPath(e) {
-      for (var path = '', $e = $(e);
+      var $e, path = '';
+      for (var $e = $(e);
           $e.length && !($e[0] instanceof Document);
           $e = $e.parent()) {
         path = '/' + $e[0].nodeName.toLowerCase() + path;
