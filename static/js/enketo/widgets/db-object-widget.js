@@ -55,6 +55,7 @@ define( function( require, exports, module ) {
 
         if (!$question.hasClass('or-appearance-bind-id-only')) {
             $textInput.on('change', function() {
+                // TODO this should be $(this), not $textInput - probably not good to cache jQuery objects
                 var selected = $textInput.select2('data');
                 var doc = selected && selected[0] && selected[0].doc;
                 if (doc) {
