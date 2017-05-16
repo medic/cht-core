@@ -92,13 +92,13 @@
 
           <li role="separator" class="divider" ng-if="!replicationStatus.disabled"></li>
           <li role="presentation disabled" ng-show="!replicationStatus.disabled && replicationStatus.current !== 'unknown'">
-            <a>
+            <a class="no-click">
               <span translate>sync.last_success</span> <i class="fa fa-fw fa-refresh"></i><br>
               <span ng-bind-html="replicationStatus.lastCompleted | relativeDate"></span>
             </a>
           </li>
           <li role="presentation disabled" ng-if="!replicationStatus.disabled" class="sync-status">
-            <a ng-class="replicationStatus.current">
+            <a ng-class="replicationStatus.current" class="no-click">
               <i class="fa fa-fw" ng-class="replicationStatus.icon"></i>
               <span translate>{{replicationStatus.textKey}}</span>
             </a>
