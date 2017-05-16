@@ -378,19 +378,19 @@ describe('Enketo service', function() {
 
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content =
-          '<data>' +
-            '<name>Sally</name>' +
-            '<lmp>10</lmp>' +
-            '<secret_code_name tag="hidden">S4L</secret_code_name>' +
-            '<doc1 db-doc="true">' +
-              '<type>thing_1</type>' +
-              '<some_property_1>some_value_1</some_property_1>' +
-            '</doc1>' +
-            '<doc2 db-doc="true">' +
-              '<type>thing_2</type>' +
-              '<some_property_2>some_value_2</some_property_2>' +
-            '</doc2>' +
-          '</data>';
+          `<data>
+            <name>Sally</name>
+            <lmp>10</lmp>
+            <secret_code_name tag="hidden">S4L</secret_code_name>
+            <doc1 db-doc="true">
+              <type>thing_1</type>
+              <some_property_1>some_value_1</some_property_1>
+            </doc1>
+            <doc2 db-doc="true">
+              <type>thing_2</type>
+              <some_property_2>some_value_2</some_property_2>
+            </doc2>
+          </data>`;
       form.getDataStr.returns(content);
       dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
       dbPut.onCall(1).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-def' }));
@@ -437,28 +437,28 @@ describe('Enketo service', function() {
 
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content =
-          '<data>' +
-            '<name>Sally</name>' +
-            '<lmp>10</lmp>' +
-            '<secret_code_name tag="hidden">S4L</secret_code_name>' +
-            '<doc1 db-doc="true">' +
-              '<type>thing_1</type>' +
-              '<some_property_1>some_value_1</some_property_1>' +
-              '<my_self_1 doc-ref="/data/doc1"/>' +
-              '<my_parent_1 doc-ref="/data"/>' +
-              '<my_sibling_1 doc-ref="/data/doc2"/>' +
-            '</doc1>' +
-            '<doc2 db-doc="true">' +
-              '<type>thing_2</type>' +
-              '<some_property_2>some_value_2</some_property_2>' +
-              '<my_self_2 doc-ref="/data/doc2"/>' +
-              '<my_parent_2 doc-ref="/data"/>' +
-              '<my_sibling_2 doc-ref="/data/doc1"/>' +
-            '</doc2>' +
-            '<my_self_0 doc-ref="/data"/>' +
-            '<my_child_01 doc-ref="/data/doc1"/>' +
-            '<my_child_02 doc-ref="/data/doc2"/>' +
-          '</data>';
+          `<data>
+            <name>Sally</name>
+            <lmp>10</lmp>
+            <secret_code_name tag="hidden">S4L</secret_code_name>
+            <doc1 db-doc="true">
+              <type>thing_1</type>
+              <some_property_1>some_value_1</some_property_1>
+              <my_self_1 doc-ref="/data/doc1"/>
+              <my_parent_1 doc-ref="/data"/>
+              <my_sibling_1 doc-ref="/data/doc2"/>
+            </doc1>
+            <doc2 db-doc="true">
+              <type>thing_2</type>
+              <some_property_2>some_value_2</some_property_2>
+              <my_self_2 doc-ref="/data/doc2"/>
+              <my_parent_2 doc-ref="/data"/>
+              <my_sibling_2 doc-ref="/data/doc1"/>
+            </doc2>
+            <my_self_0 doc-ref="/data"/>
+            <my_child_01 doc-ref="/data/doc1"/>
+            <my_child_02 doc-ref="/data/doc2"/>
+          </data>`;
       form.getDataStr.returns(content);
       dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
       dbPut.onCall(1).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-def' }));
@@ -517,28 +517,28 @@ describe('Enketo service', function() {
 
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content =
-          '<data>' +
-            '<name>Sally</name>' +
-            '<lmp>10</lmp>' +
-            '<secret_code_name tag="hidden">S4L</secret_code_name>' +
-            '<repeat>' +
-              '<repeat_doc db-doc="true">' +
-                '<type>repeater</type>' +
-                '<some_property>some_value_1</some_property>' +
-                '<my_parent doc-ref="/data"/>' +
-              '</repeat_doc>' +
-              '<repeat_doc db-doc="true">' +
-                '<type>repeater</type>' +
-                '<some_property>some_value_2</some_property>' +
-                '<my_parent doc-ref="/data"/>' +
-              '</repeat_doc>' +
-              '<repeat_doc db-doc="true">' +
-                '<type>repeater</type>' +
-                '<some_property>some_value_3</some_property>' +
-                '<my_parent doc-ref="/data"/>' +
-              '</repeat_doc>' +
-            '</repeat>' +
-          '</data>';
+          `<data>
+            <name>Sally</name>
+            <lmp>10</lmp>
+            <secret_code_name tag="hidden">S4L</secret_code_name>
+            <repeat>
+              <repeat_doc db-doc="true">
+                <type>repeater</type>
+                <some_property>some_value_1</some_property>
+                <my_parent doc-ref="/data"/>
+              </repeat_doc>
+              <repeat_doc db-doc="true">
+                <type>repeater</type>
+                <some_property>some_value_2</some_property>
+                <my_parent doc-ref="/data"/>
+              </repeat_doc>
+              <repeat_doc db-doc="true">
+                <type>repeater</type>
+                <some_property>some_value_3</some_property>
+                <my_parent doc-ref="/data"/>
+              </repeat_doc>
+            </repeat>
+          </data>`;
       form.getDataStr.returns(content);
       dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
       dbPut.onCall(1).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-xxx' }));
