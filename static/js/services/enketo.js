@@ -267,13 +267,13 @@ angular.module('inboxServices').service('Enketo',
      * unique xpaths for nodes which have siblings with matching names.
      */
     function xpathPath(e) {
-      var $e, path = '';
-      for (var $e = $(e);
+      var $e, path = [];
+      for ($e = $(e);
           $e.length && !($e[0] instanceof Document);
           $e = $e.parent()) {
-        path = '/' + $e[0].nodeName.toLowerCase() + path;
+        path.unshift($e[0].nodeName.toLowerCase());
       }
-      return path;
+      return '/' + path.join('/');
     }
 
     var xmlToDocs = function(doc, record) {
