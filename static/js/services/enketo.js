@@ -260,7 +260,13 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    function xpathish(e) {
+    /**
+     * @return the xpath path of supplied element.
+     *
+     * N.B. that this function is overly simplistic, and won't properly generate
+     * unique xpaths for nodes which have siblings with matching names.
+     */
+    function xpathPath(e) {
       for (var path = '', $e = $(e);
           $e.length && !($e[0] instanceof Document);
           $e = $e.parent()) {
@@ -284,11 +290,11 @@ angular.module('inboxServices').service('Enketo',
           id = uuid();
         }
 
-        idMap[xpathish(e)] = id;
+        idMap[xpathPath(e)] = id;
       }
 
       $record = $($($.parseXML(record)).children()[0]);
-      idMap[xpathish($record)] = doc._id || uuid();
+      idMap[xpathPath($record)] = doc._id || uuid();
 
       $record.find('[db-doc=true]').each(function(i, e) {
         mapOrAssignId(e);
@@ -302,14 +308,14 @@ angular.module('inboxServices').service('Enketo',
 
       $record.find('[db-doc=true]').each(function(i, e) {
         var docToStore = EnketoTranslation.reportRecordToJs(e.outerHTML);
-        docToStore._id = idMap[xpathish(e)];
+        docToStore._id = idMap[xpathPath(e)];
         docsToStore.push(docToStore);
       });
 
       record = $record[0].outerHTML;
 
       AddAttachment(doc, REPORT_ATTACHMENT_NAME, record, 'application/xml');
-      doc._id = idMap[xpathish($record)];
+      doc._id = idMap[xpathPath($record)];
       doc.fields = EnketoTranslation.reportRecordToJs(record);
       doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
 
