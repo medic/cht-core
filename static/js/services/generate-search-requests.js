@@ -17,10 +17,11 @@ var _ = require('underscore'),
         });
       };
 
-      var getViewForMultidropdown = function(view, filter, mapKeys) {
+      var getRequestForMultidropdown = function(view, filter, mapKeys) {
         if (!filter || !filter.selected) {
           return;
         }
+        // tmp what's options? What's selected?
         if (filter.selected.length > 0 &&
            (!filter.options || filter.selected.length < filter.options.length)) {
 
@@ -33,18 +34,19 @@ var _ = require('underscore'),
         }
       };
 
-      var getViewForTernarySelect = function(view, value) {
-        if (value === true || value === false) {
-          return {
-            view: view,
-            params: {
-              key: [ value ]
-            }
-          };
+      var getRequestForBooleanKey = function(view, key) {
+        if (!_.isBoolean(key)) {
+          return;
         }
+        return {
+          view: view,
+          params: {
+            key: [ key ]
+          }
+        };
       };
 
-      var reportedDate = function(filters, view) {
+      var reportedDateRequest = function(filters, view) {
         var dateRange = filters.date;
         if (!dateRange || (!dateRange.to && !dateRange.from)) {
           return;
@@ -60,27 +62,27 @@ var _ = require('underscore'),
         };
       };
 
-      var form = function(filters, view) {
-        return getViewForMultidropdown(view, filters.forms, function(forms) {
+      var formRequest = function(filters, view) {
+        return getRequestForMultidropdown(view, filters.forms, function(forms) {
           return _.map(forms, function(form) {
             return [ form.code ];
           });
         });
       };
 
-      var validity = function(filters, view) {
-        return getViewForTernarySelect(view, filters.valid);
+      var validityRequest = function(filters, view) {
+        return getRequestForBooleanKey(view, filters.valid);
       };
 
-      var verification = function(filters, view) {
-        return getViewForTernarySelect(view, filters.verified);
+      var verificationRequest = function(filters, view) {
+        return getRequestForBooleanKey(view, filters.verified);
       };
 
-      var place = function(filters, view) {
-        return getViewForMultidropdown(view, filters.facilities, getKeysArray);
+      var placeRequest = function(filters, view) {
+        return getRequestForMultidropdown(view, filters.facilities, getKeysArray);
       };
 
-      var freetext = function(filters, view) {
+      var freetextRequest = function(filters, view) {
         if (filters.search) {
           var words = filters.search.trim().toLowerCase().split(/\s+/);
           return words.map(function(word) {
@@ -101,7 +103,7 @@ var _ = require('underscore'),
         }
       };
 
-      var subject = function(filters, view) {
+      var subjectRequest = function(filters, view) {
         var subjectIds = filters.subjectIds;
         if (!subjectIds || !subjectIds.length) {
           return;
@@ -114,20 +116,20 @@ var _ = require('underscore'),
         };
       };
 
-      var documentType = function(filters, view) {
-        return getViewForMultidropdown(view, filters.types, getKeysArray);
+      var documentTypeRequest = function(filters, view) {
+        return getRequestForMultidropdown(view, filters.types, getKeysArray);
       };
 
-      var types = {
+      var requestBuilders = {
         reports: function(filters) {
           var requests = [];
-          requests.push(reportedDate(filters, 'medic-client/reports_by_date'));
-          requests.push(form(filters, 'medic-client/reports_by_form'));
-          requests.push(validity(filters, 'medic-client/reports_by_validity'));
-          requests.push(verification(filters, 'medic-client/reports_by_verification'));
-          requests.push(place(filters, 'medic-client/reports_by_place'));
-          requests.push(freetext(filters, 'medic-client/reports_by_freetext'));
-          requests.push(subject(filters, 'medic-client/reports_by_subject'));
+          requests.push(reportedDateRequest(filters, 'medic-client/reports_by_date'));
+          requests.push(formRequest(filters, 'medic-client/reports_by_form'));
+          requests.push(validityRequest(filters, 'medic-client/reports_by_validity'));
+          requests.push(verificationRequest(filters, 'medic-client/reports_by_verification'));
+          requests.push(placeRequest(filters, 'medic-client/reports_by_place'));
+          requests.push(freetextRequest(filters, 'medic-client/reports_by_freetext'));
+          requests.push(subjectRequest(filters, 'medic-client/reports_by_subject'));
           requests = _.compact(_.flatten(requests));
           if (!requests.length) {
             requests.push({
@@ -139,40 +141,51 @@ var _ = require('underscore'),
           return requests;
         },
         contacts: function(filters) {
-          var typeViews = documentType(filters, 'medic-client/contacts_by_type');
-          var freetextViews = freetext(filters, 'medic-client/contacts_by_freetext');
-          if (typeViews && typeViews.params.keys.length &&
-              freetextViews && freetextViews.length) {
-            return freetextViews.map(function(freetextView) {
+          var typeRequests = documentTypeRequest(filters, 'medic-client/contacts_by_type');
+          var freetextRequests = freetextRequest(filters, 'medic-client/contacts_by_freetext');
+
+          // If both type and freetext requests, and type request has keys param
+          // then we use a combined contacts+type view.
+          // tmp what's keys for typeRequests? Does documentTypeRequest return null when no keys?
+          if (typeRequests && typeRequests.params.keys.length &&
+              freetextRequests && freetextRequests.length) {
+
+            var makeCombinedParams = function(freetextRequest, typeKey) {
+              var type = typeKey[0];
+              var params = {};
+              if (freetextRequest.key) {
+                params.key = [ type, freetextRequest.params.key[0] ];
+              } else {
+                params.startkey = [ type, freetextRequest.params.startkey[0] ];
+                params.endkey = [ type, freetextRequest.params.endkey[0] ];
+              }
+              return params;
+            };
+
+            var makeCombinedRequest = function(freetextRequest, typeRequests) {
               var result = {
                 view: 'medic-client/contacts_by_type_freetext',
-                union: typeViews.params.keys.length > 1
+                union: typeRequests.params.keys.length > 1
               };
+
               if (result.union) {
-                result.params = [];
+                result.paramSets =
+                    typeRequests.params.keys.map(_.partial(makeCombinedParams, freetextRequest, _));
+                return result;
               }
-              typeViews.params.keys.forEach(function(typeKey) {
-                var type = typeKey[0];
-                var params = {};
-                if (freetextView.key) {
-                  params.key = [ type, freetextView.params.key[0] ];
-                } else {
-                  params.startkey = [ type, freetextView.params.startkey[0] ];
-                  params.endkey = [ type, freetextView.params.endkey[0] ];
-                }
-                if (result.union) {
-                  result.params.push(params);
-                } else {
-                  result.params = params;
-                }
-              });
+
+              result.params = makeCombinedParams(freetextRequest, typeRequests.params.keys[0]);
               return result;
-            });
+            };
+
+            return freetextRequests.map(_.partial(makeCombinedRequest, _, typeRequests));
           }
+
           var requests = [];
-          requests.push(freetextViews);
-          requests.push(typeViews);
+          requests.push(freetextRequests);
+          requests.push(typeRequests);
           requests = _.compact(_.flatten(requests));
+
           if (!requests.length) {
             requests.push({
               view: 'medic-client/contacts_by_type_index_name',
@@ -184,7 +197,7 @@ var _ = require('underscore'),
       };
 
       return function(type, filters) {
-        var builder = types[type];
+        var builder = requestBuilders[type];
         if (!builder) {
           throw new Error('Unknown type: ' + type);
         }

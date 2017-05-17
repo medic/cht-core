@@ -5,7 +5,7 @@ var _ = require('underscore');
   'use strict';
 
   var inboxServices = angular.module('inboxServices');
-  
+
   inboxServices.factory('Search',
     function(
       $q,
@@ -34,7 +34,8 @@ var _ = require('underscore');
         return false;
       };
 
-      var getPage = function(type, rows, options) {
+      // Get the subset of rows, in appropriate order, according to options.
+      var getPageSubset = function(type, rows, options) {
         var start;
         var end;
         if (type === 'reports') {
@@ -52,6 +53,8 @@ var _ = require('underscore');
         return _.sortBy(rows, 'value').slice(start, end);
       };
 
+      // Get the intersection of the results of multiple search queries.
+      // responses = [searchResults1, searchResult2, ...]
       var getIntersection = function(responses) {
         var intersection = responses.pop();
         intersection = _.uniq(intersection, 'id');
@@ -63,9 +66,13 @@ var _ = require('underscore');
         return intersection;
       };
 
-      var view = function(request) {
-        var params = request.union ? request.params : [ request.params ];
-        return $q.all(params.map(function(params) {
+      // Queries view as specified by request object coming from GenerateSearchQueries.
+      // request = {view, union: true, paramSets: [params1, ...] }
+      // or
+      // request = {view, params: {...} }
+      var queryView = function(request) {
+        var paramSets = request.union ? request.paramSets : [ request.params ];
+        return $q.all(paramSets.map(function(params) {
           return DB().query(request.view, params);
         }))
           .then(function(data) {
@@ -75,22 +82,22 @@ var _ = require('underscore');
           });
       };
 
-      var viewPaginated = function(request, options) {
+      var queryViewPaginated = function(request, options) {
         request.params = request.params || {};
         request.params.limit = options.limit;
         request.params.skip = options.skip;
-        return view(request);
+        return queryView(request);
       };
 
       var getRows = function(type, requests, options) {
         if (requests.length === 1 && requests[0].ordered) {
           // 1 ordered view - let the db do the pagination for us
-          return viewPaginated(requests[0], options);
+          return queryViewPaginated(requests[0], options);
         }
         // multiple requests - have to manually paginate
-        return $q.all(requests.map(view))
+        return $q.all(requests.map(queryView))
           .then(getIntersection)
-          .then(_.partial(getPage, type, _, options));
+          .then(_.partial(getPageSubset, type, _, options));
       };
 
       var generateRequests = function(type, filters, options) {
@@ -101,6 +108,7 @@ var _ = require('underscore');
         return requests;
       };
 
+      // tmp what's in filters??? What's in options????
       return function(type, filters, options) {
         options = options || {};
         _.defaults(options, {

@@ -289,7 +289,7 @@ describe('GenerateSearchRequests service', function() {
       chai.expect(result.length).to.equal(2);
       chai.expect(result[0].view).to.equal('medic-client/contacts_by_type_freetext');
       chai.expect(result[0].union).to.equal(true);
-      chai.expect(result[0].params).to.deep.equal([
+      chai.expect(result[0].paramSets).to.deep.equal([
         {
           startkey: [ 'clinic', 'some' ],
           endkey: [ 'clinic', 'some\ufff0' ],
@@ -301,7 +301,7 @@ describe('GenerateSearchRequests service', function() {
       ]);
       chai.expect(result[1].view).to.equal('medic-client/contacts_by_type_freetext');
       chai.expect(result[1].union).to.equal(true);
-      chai.expect(result[1].params).to.deep.equal([
+      chai.expect(result[1].paramSets).to.deep.equal([
         {
           startkey: [ 'clinic', 'thing' ],
           endkey: [ 'clinic', 'thing\ufff0' ],
