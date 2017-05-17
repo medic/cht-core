@@ -17,18 +17,22 @@ var _ = require('underscore'),
         });
       };
 
-      var getRequestForMultidropdown = function(view, filter, mapKeys) {
-        if (!filter || !filter.selected) {
+      // filter = { selected: [...], options: [...]}
+      var getRequestForMultidropdown = function(view, filter, mapKeysFunc) {
+        var nothingSelected = !filter || !filter.selected || filter.selected.length === 0;
+        if (nothingSelected) {
           return;
         }
-        // tmp what's options? What's selected?
-        if (filter.selected.length > 0 &&
-           (!filter.options || filter.selected.length < filter.options.length)) {
 
+        // If everything is selected, no filter to apply.
+        var everythingSelected = filter.options && (filter.selected.length === filter.options.length);
+
+        // tmp in which case is there no options?? Why do we still filter?
+        if (!filter.options || !everythingSelected) {
           return {
             view: view,
             params: {
-              keys: mapKeys(filter.selected)
+              keys: mapKeysFunc(filter.selected)
             }
           };
         }
