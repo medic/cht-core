@@ -146,13 +146,16 @@ var _ = require('underscore'),
         },
         contacts: function(filters) {
           var typeRequests = documentTypeRequest(filters, 'medic-client/contacts_by_type');
-          var freetextRequests = freetextRequest(filters, 'medic-client/contacts_by_freetext');
+          // Single request, with one key for each type.
+          var hasTypeRequests = typeRequests && typeRequests.params.keys.length;
 
-          // If both type and freetext requests, and type request has keys param
-          // then we use a combined contacts+type view.
-          // tmp what's keys for typeRequests? Does documentTypeRequest return null when no keys?
-          if (typeRequests && typeRequests.params.keys.length &&
-              freetextRequests && freetextRequests.length) {
+          var freetextRequests = freetextRequest(filters, 'medic-client/contacts_by_freetext');
+          // One request per word.
+          var hasFreetextRequests = freetextRequests && freetextRequests.length;
+
+          // If both type and freetext requests,
+          // then we make a special combined contacts+type request.
+          if (hasTypeRequests && hasFreetextRequests) {
 
             var makeCombinedParams = function(freetextRequest, typeKey) {
               var type = typeKey[0];
