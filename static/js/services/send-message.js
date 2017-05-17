@@ -65,10 +65,9 @@ angular.module('inboxServices').factory('SendMessage',
     };
 
     var descendants = function(recipient) {
-      return DB().query('medic-client/contacts_by_parent_name_type', {
+      return DB().query('medic-client/contacts_by_parent', {
         include_docs: true,
-        startkey: [recipient.doc._id],
-        endkey: [recipient.doc._id, {}]
+        key: recipient.doc._id
       }).then(function(results) {
         return results.rows;
       });

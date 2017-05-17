@@ -130,9 +130,8 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
     };
 
     var getChildren = function(contactId) {
-      return DB().query('medic-client/contacts_by_parent_name_type', {
-        startkey: [ contactId ],
-        endkey: [ contactId, {} ],
+      return DB().query('medic-client/contacts_by_parent', {
+        key: contactId,
         include_docs: true
       });
     };

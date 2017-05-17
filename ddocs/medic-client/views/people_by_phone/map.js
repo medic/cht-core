@@ -1,5 +1,5 @@
 function(doc) {
-  if (doc.type === 'person') {
-    emit([doc.phone]);
+  if (doc.phone) {
+    emit(doc.phone);
   }
 }

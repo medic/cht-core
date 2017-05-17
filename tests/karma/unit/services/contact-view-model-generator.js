@@ -33,14 +33,13 @@ describe('ContactViewModelGenerator service', () => {
 
   const stubDbQueryChildren = (err, parentId, docs) => {
     const options = {
-      startkey: [ parentId ],
-      endkey: [ parentId, {} ],
+      key: parentId,
       include_docs: true
     };
     docs = (docs || []).map(function(doc) {
       return { doc: doc };
     });
-    dbQuery.withArgs('medic-client/contacts_by_parent_name_type', options)
+    dbQuery.withArgs('medic-client/contacts_by_parent', options)
       .returns(KarmaUtils.mockPromise(err, { rows: docs }));
   };
 
