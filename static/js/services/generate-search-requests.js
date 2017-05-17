@@ -196,6 +196,36 @@ var _ = require('underscore'),
         }
       };
 
+      // Filters object can be :
+      //  - For multidropdown :
+      // filter = { <field>: { selected: [...], options: [...] } }
+      // With <field> = types or facilities or forms
+      // E.g. var filters = {
+      //  types: {
+      //    selected: [ 'person', 'clinic' ],
+      //    options: [ 'person', 'clinic', 'district_hospital' ]
+      //  }
+      // }
+      //
+      // - For freetext search :
+      // var filters = { search: 'patient_id:123 form:D   ' }
+      //
+      // - For reports_by_subject
+      // var filters = { subjectIds: [ 'a', 'b', 'c' ] };
+      //
+      // - For reports_by_date
+      // var filters = { date: { from: date20130208, to: date20130612 } };
+      //
+      // In case of several requests to combine, the filter object will have
+      // the corresponding fields simultaneously.
+      // e.g. freetext search + contacts dropdown:
+      //  var filters = {
+      //   search: 'some thing',
+      //   types: {
+      //     selected: [ 'clinic', 'district_hospital' ],
+      //     options: [ 'person', 'clinic', 'district_hospital' ]
+      //   }
+      //  };
       return function(type, filters) {
         var builder = requestBuilders[type];
         if (!builder) {

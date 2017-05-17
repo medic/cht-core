@@ -123,7 +123,10 @@ describe('GenerateSearchRequests service', function() {
   });
 
   it('creates requests for reports with subjectIds filter', function() {
-    var result = service('reports', { subjectIds: [ 'a', 'b', 'c' ] });
+    var filters = {
+      subjectIds: [ 'a', 'b', 'c' ]
+    };
+    var result = service('reports', filters);
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0].view).to.equal('medic-client/reports_by_subject');
     chai.expect(result[0].params).to.deep.equal({
