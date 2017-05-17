@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     moment = require('moment');
 
-angular.module('inboxServices').factory('GenerateSearchQuery',
+angular.module('inboxServices').factory('GenerateLuceneQuery',
   function(
     ContactSchema
   ) {
@@ -95,7 +95,8 @@ angular.module('inboxServices').factory('GenerateSearchQuery',
 
     var TYPES = {
       reports: {
-        buildQuery: function(filters, operands) {
+        buildQuery: function(filters) {
+          var operands = [];
           operands.push(formatFreetext(filters));
           operands.push(formatReportedDate(filters));
           operands.push(formatReportType());
@@ -103,6 +104,7 @@ angular.module('inboxServices').factory('GenerateSearchQuery',
           operands.push(formatForm(filters));
           operands.push(formatErrors(filters));
           operands.push(formatVerified(filters));
+          return operands;
         },
         schema: {
           errors: 'int',
@@ -111,9 +113,11 @@ angular.module('inboxServices').factory('GenerateSearchQuery',
         }
       },
       contacts: {
-        buildQuery: function(filters, operands) {
+        buildQuery: function(filters) {
+          var operands = [];
           operands.push(formatFreetext(filters));
           operands.push(formatContactType());
+          return operands;
         }
       }
     };
@@ -123,8 +127,7 @@ angular.module('inboxServices').factory('GenerateSearchQuery',
       if (!type) {
         throw new Error('Unknown type');
       }
-      var operands = [];
-      type.buildQuery(filters, operands);
+      var operands = type.buildQuery(filters);
       return {
         schema: type.schema,
         query: { $operands: _.compact(operands) }

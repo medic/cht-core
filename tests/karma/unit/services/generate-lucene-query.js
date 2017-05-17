@@ -1,4 +1,4 @@
-describe('GenerateSearchQuery service', function() {
+describe('GenerateLuceneQuery service', function() {
 
   'use strict';
 
@@ -9,8 +9,8 @@ describe('GenerateSearchQuery service', function() {
 
   beforeEach(function (){
     module('inboxApp');
-    inject(function(_GenerateSearchQuery_) {
-      service = _GenerateSearchQuery_;
+    inject(function(_GenerateLuceneQuery_) {
+      service = _GenerateLuceneQuery_;
     });
   });
 

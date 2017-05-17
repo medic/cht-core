@@ -16,7 +16,7 @@
   inboxServices.factory('DownloadUrl',
     function(
       $q,
-      GenerateSearchQuery,
+      GenerateLuceneQuery,
       Language
     ) {
       'ngInject';
@@ -33,7 +33,7 @@
           locale: language
         };
         if (type.lucene) {
-          var response = GenerateSearchQuery(type.name, filters);
+          var response = GenerateLuceneQuery(type.name, filters);
           params.query = JSON.stringify(response.query);
           params.schema = JSON.stringify(response.schema);
         }
@@ -52,4 +52,4 @@
     }
   );
 
-}()); 
+}());
