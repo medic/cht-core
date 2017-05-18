@@ -6,7 +6,7 @@ jdk:
   - oraclejdk8
 
 addons:
-  firefox: "45.0"
+  firefox: "53.0"
 
 services:
   # docker is used for couchdb 2.0 (not currently available as a travis service)
