@@ -38,7 +38,7 @@
     "grunt-contrib-jshint": "^1.1.0",
     "grunt-contrib-nodeunit": "^1.0.0",
     "grunt-env": "^0.4.4",
-    "grunt-exec": "^1.0.1",
+    "grunt-exec": "^2.0.0",
     "grunt-mocha-test": "^0.13.2",
     "mocha": "^3.0.2",
     "nodeunit": "latest",
