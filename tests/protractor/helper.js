@@ -18,7 +18,7 @@ module.exports = {
 
   waitElementToDisappear: function (locator) {
     browser.wait(function () {
-      return browser.isElementPresent(locator)
+      return element(locator).isPresent()
         .then(function (presenceOfElement) {
           return !presenceOfElement;
         });

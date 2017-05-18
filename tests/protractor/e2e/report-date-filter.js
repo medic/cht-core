@@ -113,7 +113,7 @@ describe('Bulk delete reports', function() {
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.driver.navigate().refresh();
     browser.wait(function() {
-      return browser.isElementPresent(by.css('#reports-list li:first-child'));
+      return element(by.css('#reports-list li:first-child')).isPresent();
     }, 10000);
 
     var clear = '';
@@ -127,7 +127,7 @@ describe('Bulk delete reports', function() {
     element(by.css('.daterangepicker .applyBtn')).click();
 
     browser.wait(function() {
-      return browser.isElementPresent(by.css('#reports-list .filtered li:first-child'));
+      return element(by.css('#reports-list .filtered li:first-child')).isPresent();
     }, 10000);
 
     expect(element.all(by.css('#reports-list .filtered li')).count()).toBe(2);

@@ -66,7 +66,7 @@ describe('Auditing', function() {
 
     var listitem = element(by.css('.inbox-items li[data-record-id="+64555555555"]'));
     browser.wait(function() {
-      return browser.isElementPresent(listitem);
+      return listitem.isPresent();
     }, 5000);
 
     // mark item read
@@ -81,7 +81,7 @@ describe('Auditing', function() {
     // check message is displayed correctly
     listitem = element(by.css('.inbox-items li[data-record-id="+64555555555"]'));
     browser.wait(function() {
-      return browser.isElementPresent(listitem);
+      return listitem.isPresent();
     }, 5000);
     listitem.click();
     var newMessage = element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .data p span'));

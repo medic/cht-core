@@ -90,13 +90,13 @@ describe('Bulk delete reports', function() {
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.driver.navigate().refresh();
     browser.wait(function() {
-      return browser.isElementPresent(by.css('#reports-list li:first-child'));
+      return element(by.css('#reports-list li:first-child')).isPresent();
     }, 10000);
 
     // start select mode
     var selectModeButton = element(by.css('.action-container .select-mode-start'));
     browser.wait(function() {
-      return browser.isElementPresent(selectModeButton);
+      return element(selectModeButton).isPresent();
     }, 1000);
     selectModeButton.click();
     expect(element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).isDisplayed()).toBeTruthy();
@@ -154,7 +154,7 @@ describe('Bulk delete reports', function() {
     browser.sleep(1000);
     browser.driver.navigate().refresh();
     browser.wait(function() {
-      return browser.isElementPresent(by.css('#reports-list li:first-child'));
+      return element(by.css('#reports-list li:first-child')).isPresent();
     }, 10000);
 
     // make sure the reports are deleted
