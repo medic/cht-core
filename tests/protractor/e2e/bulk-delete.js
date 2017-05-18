@@ -96,7 +96,7 @@ describe('Bulk delete reports', function() {
     // start select mode
     var selectModeButton = element(by.css('.action-container .select-mode-start'));
     browser.wait(function() {
-      return element(selectModeButton).isPresent();
+      return selectModeButton.isPresent();
     }, 1000);
     selectModeButton.click();
     expect(element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).isDisplayed()).toBeTruthy();
