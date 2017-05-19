@@ -1,6 +1,9 @@
 var _ = require('underscore'),
     scrollLoader = require('../modules/scroll-loader');
 
+/** Mask used in medic-android for separating request ID from request code. */
+var SP_ID_MASK = 0xFFFFF8;
+
 (function () {
 
   'use strict';
@@ -9,6 +12,7 @@ var _ = require('underscore'),
 
   inboxControllers.controller('ContactsCtrl',
     function (
+      $element,
       $log,
       $q,
       $scope,
@@ -190,6 +194,7 @@ var _ = require('underscore'),
         $scope.selected = null;
         LiveList.contacts.clearSelected();
         LiveList['contact-search'].clearSelected();
+        LiveList['contact-simprints-search'].clearSelected();
       });
 
       $scope.search = function() {
@@ -212,6 +217,63 @@ var _ = require('underscore'),
         $scope.filters = {};
         SearchFilters.reset();
         $scope.search();
+      };
+
+      $scope.simprintsEnabled = !!(window.medicmobile_android &&
+          window.medicmobile_android.simprints_available &&
+          window.medicmobile_android.simprints_available());
+      $scope.triggerSimprintsIdent = function() {
+        /* jslint bitwise: true */
+        var simprintsInputId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) & SP_ID_MASK;
+        console.log('Launching simprints with input ID: ' + simprintsInputId);
+
+        var $input = $($element).find('input[name=simprints-idents]');
+        $input.attr('data-simprints-idents', simprintsInputId);
+        $input.on('change', function() {
+          var $this = $(this);
+          $this.off('change');
+          handleSimprintsIdentResponse(JSON.parse($this.val()));
+        });
+
+        $scope.loading = true;
+        window.medicmobile_android.simprints_ident(simprintsInputId);
+      };
+
+      var handleSimprintsIdentResponse = function(idents) {
+        console.log('handleSimprintsIdentResponse()', idents);
+
+        $scope.loading = true;
+        $scope.filtered = true;
+        liveList = LiveList['contact-simprints-search'];
+        liveList.set([]);
+
+        DB().query('medic-client/people_by_simprints_id', {
+          keys: _.pluck(idents, 'id'),
+          include_docs: true,
+        })
+          .then(function(results) {
+            var docs = _.pluck(results.rows, 'doc');
+            docs.forEach(function(doc) {
+              var ident = idents.find(function(ident) {
+                return ident.id === doc.simprints_id;
+              });
+              doc._simprints_confidence = ident.confidence;
+              doc._simprints_stars = Array(7 - Number.parseInt(ident.tier.split('_')[1])).join('<span class="fa fa-star"></span>');
+              liveList.update(doc);
+            });
+            liveList.refresh();
+            _initScroll();
+            $scope.moreItems = false;
+            $scope.loading = false;
+            $scope.appending = false;
+            $scope.hasContacts = liveList.count() > 0;
+          })
+          .catch(function(err) {
+            $scope.error = true;
+            $scope.loading = false;
+            $scope.appending = false;
+            $log.error('Error searching for contacts by simprints ID', err);
+          });
       };
 
       var setActionBarData = function() {

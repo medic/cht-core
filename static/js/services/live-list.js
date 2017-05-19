@@ -35,27 +35,35 @@ angular.module('inboxServices').factory('LiveListConfig',
           }
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
-        listItem: function(contact) {
-          var contactHtml = $templateCache.get('templates/partials/contacts_list_item.html');
+        listItemForTemplate: function(template) {
+          return function(contact) {
+            var contactHtml = $templateCache.get('templates/partials/' + template + '.html');
 
-          var scope = $scope.$new();
-          scope.contact = contact;
-          scope.primaryContactName = { name: contact.contact };
+            var scope = $scope.$new();
+            scope.contact = contact;
+            scope.primaryContactName = { name: contact.contact };
 
-          return contactHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
+            return contactHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
+          };
         },
       };
 
       LiveList.$listFor('contacts', {
         selector: '#contacts-list ul.unfiltered',
         orderBy: contacts_config.orderBy,
-        listItem: contacts_config.listItem,
+        listItem: contacts_config.listItemForTemplate('contacts_list_item'),
       });
 
       LiveList.$listFor('contact-search', {
         selector: '#contacts-list ul.filtered',
         orderBy: contacts_config.orderBy,
-        listItem: contacts_config.listItem,
+        listItem: contacts_config.listItemForTemplate('contacts_list_item'),
+      });
+
+      LiveList.$listFor('contact-simprints-search', {
+        selector: '#contacts-list ul.filtered',
+        orderBy: function(a, b) { return b._simprints_confidence - a._simprints_confidence; },
+        listItem: contacts_config.listItemForTemplate('contacts_list_item_simprints'),
       });
 
       var reports_config = {
