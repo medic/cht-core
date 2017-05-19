@@ -70,6 +70,7 @@ describe('Contacts controller', () => {
       searchService.returns(KarmaUtils.mockPromise(null, searchResults));
 
       return $controller('ContactsCtrl', {
+        '$element': sinon.stub(),
         '$scope': scope,
         '$rootScope': $rootScope,
         '$log': { error: sinon.stub() },

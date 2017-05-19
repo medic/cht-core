@@ -21,6 +21,7 @@ define( function( require, exports, module ) {
         require( './widgets/android-datepicker' ),
         require( './widgets/z-score' ),
         require( './widgets/bikram-sambat-datepicker' ),
+        require( './widgets/simprints' ),
     ];
 
     module.exports = widgets;

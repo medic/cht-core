@@ -356,7 +356,7 @@ body {
     }
   }
 
-  .reset-filter {
+  .reset-filter, .simprints-filter {
     line-height: 38px;
     > a {
       color: @grayDark;
@@ -367,6 +367,15 @@ body {
       &.disabled {
         cursor: default;
         color: @grey;
+      }
+    }
+  }
+
+  .simprints-filter {
+    > a {
+      > i {
+        font-size: 2em;
+        vertical-align: middle;
       }
     }
   }
