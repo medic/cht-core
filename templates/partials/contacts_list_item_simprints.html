@@ -1,0 +1,16 @@
+<li class="{{contact.place.length ? '' : 'orphan'}}">
+  <a class="item-summary message-wrapper" href="#contacts/{{contact._id}}">
+    <span class="icon mm-badge">
+      <span class="fa fa-user"></span>
+    </span>
+    <div class="detail">
+      <div class="sender">
+        <div>
+          <span class="name">{{contact.name}}</span>
+        </div>
+        <div class="simprints-stars">
+          {{contact._simprints_stars}}
+        </div>
+    </div>
+  </a>
+</li>
