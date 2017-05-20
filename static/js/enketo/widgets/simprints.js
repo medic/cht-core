@@ -55,14 +55,14 @@ define( function( require, exports, module ) {
             $el.append( '<p>Simprints is only supported for android app users.</p>' );
             return;
         }
-        if ( !window.medicmobile_android.simprints ) {
+        if ( !window.medicmobile_android.simprints_reg ) {
             $el.append( '<p>Simprints is not supported on this version of the wrapper app.</p>' );
             return;
         }
 
         var simprintsInputId = Math.floor(Math.random() * 2147483647); // Java's Integer.MAX_VALUE
         $el.find( 'input' ).attr( 'data-simprints-input-id', simprintsInputId );
-        $el.append( '<button class="btn btn-primary" onclick="medicmobile_android.simprints(' + simprintsInputId + ')">Scan Some Digits!</button>' );
+        $el.append( '<button class="btn btn-primary" onclick="medicmobile_android.simprints_reg(' + simprintsInputId + ')">Scan Some Digits!</button>' );
     };
 
     Simprintswidget.prototype.destroy = function( element ) {
