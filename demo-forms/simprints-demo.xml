@@ -22,7 +22,7 @@
       <input ref="/data/name">
         <label>Name</label>
       </input>
-      <input ref="/data/simprints_id" appearance="simprints">
+      <input ref="/data/simprints_id" appearance="simprints-reg">
         <label>Simprints ID</label>
       </input>
     </group>
