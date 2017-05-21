@@ -89,12 +89,12 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       $scope.enketoStatus.error = null;
       var doc = $scope.selected[0].report;
       Enketo.save(doc.form, $scope.form, doc._id)
-        .then(function(doc) {
-          $log.debug('saved report', doc);
+        .then(function(docs) {
+          $log.debug('saved report and associated docs', docs);
           $scope.enketoStatus.saving = false;
           $translate($state.params.reportId ? 'report.updated' : 'report.created')
             .then(Snackbar);
-          $state.go('reports.detail', { id: doc._id });
+          $state.go('reports.detail', { id: docs[0]._id });
         })
         .catch(function(err) {
           $scope.enketoStatus.saving = false;

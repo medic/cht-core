@@ -1695,8 +1695,8 @@
     },
     "google-libphonenumber": {
       "version": "2.0.15",
-      "from": "google-libphonenumber@2.0.15",
-      "resolved": "http://registry.npmjs.org/google-libphonenumber/-/google-libphonenumber-2.0.15.tgz"
+      "from": "google-libphonenumber@>=2.0.15 <3.0.0",
+      "resolved": "https://registry.npmjs.org/google-libphonenumber/-/google-libphonenumber-2.0.15.tgz"
     },
     "graceful-fs": {
       "version": "4.1.11",
