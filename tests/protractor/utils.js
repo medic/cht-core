@@ -160,7 +160,7 @@ module.exports = {
   resetBrowser: function () {
     browser.driver.navigate().refresh().then(function () {
       return browser.wait(function () {
-        return browser.isElementPresent(by.css('#message-list'));
+        return element(by.css('#message-list')).isPresent();
       }, 10000);
     });
   },

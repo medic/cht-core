@@ -125,21 +125,21 @@ describe('Submit Enketo form', () => {
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.driver.navigate().refresh();
     browser.wait(() => {
-      return browser.isElementPresent(by.css('.action-container .general-actions .fa-plus'));
+      return element(by.css('.action-container .general-actions .fa-plus')).isPresent();
     }, 10000);
 
     // select form
     element(by.css('.action-container .general-actions .fa-plus')).click();
     element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
     browser.wait(() => {
-      return browser.isElementPresent(by.css('#report-form form [name="/data/name"]'));
+      return element(by.css('#report-form form [name="/data/name"]')).isPresent();
     }, 10000);
 
     // submit form
     element(by.css('#report-form form [name="/data/name"]')).sendKeys('Jones');
     element(by.css('#report-form .submit')).click();
     browser.wait(() => {
-      return browser.isElementPresent(by.css('#reports-content .details ul li:first-child p'));
+      return element(by.css('#reports-content .details ul li:first-child p')).isPresent();
     }, 10000);
 
     // check the submitted name
