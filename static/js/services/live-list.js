@@ -57,7 +57,6 @@ angular.module('inboxServices').factory('LiveListConfig',
       LiveList.$listFor('contact-search', {
         selector: '#contacts-list ul.filtered',
         orderBy: contacts_config.orderBy,
-        listItem: contacts_config.listItem,
         listItem: contacts_config.listItemForTemplate('contacts_list_item'),
       });
 
