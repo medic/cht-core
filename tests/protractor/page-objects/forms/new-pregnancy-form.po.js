@@ -108,11 +108,7 @@ module.exports = {
   },
 
   //summary page
-  getPregnancyDetailLabel: () => {
-    return element(by.css(''));
-  },
-
-  getId: () => {
+ getId: () => {
     return element(by.css('[data-value=" /pregnancy/group_review/r_patient_id "]'));
   },
 
