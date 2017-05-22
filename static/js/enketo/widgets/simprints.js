@@ -19,6 +19,9 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
  * limitations under the License.
  */
 
+/** Mask used in medic-android for separating request ID from request code. */
+var SP_ID_MASK = 0xFFFFFFF8;
+
 define( function( require, exports, module ) {
     'use strict';
     var Widget = require( 'enketo-core/src/js/Widget' );
@@ -60,7 +63,8 @@ define( function( require, exports, module ) {
             return;
         }
 
-        var simprintsInputId = Math.floor(Math.random() * 2147483647); // Java's Integer.MAX_VALUE
+        /*jslint bitwise: true */
+        var simprintsInputId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) & SP_ID_MASK;
         $el.find( 'input' ).attr( 'data-simprints-reg', simprintsInputId );
         $el.append( '<button class="btn btn-primary" onclick="medicmobile_android.simprints_reg(' + simprintsInputId + ')">Scan Some Digits!</button>' );
     };
