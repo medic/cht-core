@@ -1,5 +1,5 @@
 var _ = require('underscore'),
-    kujua_utils = require('kujua-utils');
+    utils = require('medic-api-utils');
 
 (function () {
 
@@ -23,7 +23,7 @@ var _ = require('underscore'),
               _.each(doc.scheduled_tasks, function(task) {
                 if (task.group === group && task.state === fromState) {
                   changed = true;
-                  kujua_utils.setTaskState(task, toState);
+                  utils.setTaskState(task, toState);
                 }
               });
               if (!changed) {

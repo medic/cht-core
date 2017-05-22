@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     uuid = require('uuid/v4'),
-    utils = require('kujua-utils'),
-    libphonenumber = require('libphonenumber/utils');
+    utils = require('medic-api-utils'),
+    libphonenumber = require('medic-libphonenumber');
 
 angular.module('inboxServices').factory('SendMessage',
   function(
