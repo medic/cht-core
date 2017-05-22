@@ -1,0 +1,15 @@
+<li class="{{contact.place.length ? '' : 'orphan'}} {{contact.home ? 'home' : ''}}">
+  <a class="item-summary message-wrapper" href="#contacts/{{contact._id}}">
+    <span class="icon mm-badge">
+      <span class="fa {{contact.type === 'person' ? 'fa-user' : ''}} {{contact.type === 'clinic' ? 'fa-group' : ''}} {{contact.type === 'health_center' ? 'fa-hospital-o' : ''}} {{contact.type === 'district_hospital' ? 'fa-building' : ''}}"></span>
+    </span>
+    <div class="detail">
+      <div class="sender">
+        <div>
+          <span class="name">{{contact.name}}</span>
+        </div>
+        <div class="position" ng-show="contact.type !== 'person'">{{contact.type === 'person' ? '' : 'contact.primary_contact_name' | translate:primaryContactName}}</div>
+        <div class="simprints-confidence">{{contact._simprints_confidence}}%</div>
+    </div>
+  </a>
+</li>
