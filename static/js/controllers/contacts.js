@@ -239,6 +239,8 @@ var SP_ID_MASK = 0xFFFFF8;
           $this.off('change');
           handleSimprintsIdentResponse(JSON.parse($this.val()));
         });
+
+        $scope.loading = true;
         window.medicmobile_android.simprints_ident(simprintsInputId);
       };
 
