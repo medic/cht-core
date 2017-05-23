@@ -8,8 +8,9 @@
         <div>
           <span class="name">{{contact.name}}</span>
         </div>
-        <div class="position" ng-show="contact.type !== 'person'">{{contact.type === 'person' ? '' : 'contact.primary_contact_name' | translate:primaryContactName}}</div>
-        <div class="simprints-confidence">{{contact._simprints_confidence}}%</div>
+        <div class="simprints-stars">
+          {{contact._simprints_stars}}
+        </div>
     </div>
   </a>
 </li>

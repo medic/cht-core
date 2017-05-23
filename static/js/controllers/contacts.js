@@ -259,9 +259,11 @@ var SP_ID_MASK = 0xFFFFF8;
           .then(function(results) {
             var docs = _.pluck(results.rows, 'doc');
             docs.forEach(function(doc) {
-              doc._simprints_confidence = idents.find(function(ident) {
+              var ident = idents.find(function(ident) {
                 return ident.id === doc.simprints_id;
-              }).confidence;
+              });
+              doc._simprints_confidence = ident.confidence;
+              doc._simprints_stars = Array(6 - Number.parseInt(ident.tier.split('_')[1])).join('<span class="fa fa-star"></span>');
               liveList.update(doc);
             });
             liveList.refresh();
