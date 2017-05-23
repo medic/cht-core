@@ -14,15 +14,15 @@ angular.module('inboxServices').factory('MessageContacts',
       };
     };
 
-    var getParams = function(options) {
+    var getParams = function(id, skip) {
       return {
         reduce: false,
         descending: true,
         include_docs: true,
-        skip: options.skip,
+        skip: skip,
         limit: 50,
-        startkey: [ options.id, {} ],
-        endkey: [ options.id ]
+        startkey: [ id, {} ],
+        endkey: [ id ]
       };
     };
 
@@ -41,7 +41,7 @@ angular.module('inboxServices').factory('MessageContacts',
 
     return function(options) {
       options = options || {};
-      var params = options.id ? getParams(options) : listParams();
+      var params = options.id ? getParams(options.id, options.skip) : listParams();
       return DB().query('medic-client/messages_by_contact_date', params)
         .then(function(response) {
           var result = response.rows;

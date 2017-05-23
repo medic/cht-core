@@ -95,6 +95,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         });
     };
 
+    // exposed solely for testing purposes
     this.setupPromise = $q.resolve().then(function() {
       if ($stateParams.id) {
         return selectContact($stateParams.id);
