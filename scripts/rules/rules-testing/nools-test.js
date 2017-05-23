@@ -15,14 +15,15 @@ function traverse(keys, element) {
 }
 
 NoolsTest = module.exports = (function() {
-  function parseRules(rulesetFilePath, scheduleFilePath) {
+  function parseRules(rulesetFilePath, scheduleFilePath, additionalScope) {
     var rawSchedules = fs.readFileSync(scheduleFilePath, { encoding:'utf-8' });
     var schedules = JSON.parse('{' + rawSchedules + '}').schedules;
     var settings = { tasks: { schedules: schedules } };
     var Utils = nootils(settings);
+    var scope = Object.assign({}, additionalScope, { Utils:Utils });
 
     var rawRules = fs.readFileSync(rulesetFilePath, { encoding:'utf-8' });
-    var flow = Nools.compile(rawRules, { name:'test', scope:{ Utils:Utils } });
+    var flow = Nools.compile(rawRules, { name:'test', scope:scope });
     var session = flow.getSession();
 
     session.expectEmits = (key, ...expectedEmits) => {
