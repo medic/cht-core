@@ -98,10 +98,13 @@ var batchCreatePatientContacts = function(batch, callback) {
         var patientPersons = uniqueValidRegistrations.map(function(registration) {
           var contact = contactForPhoneNumber[registration.from];
           // create a new patient with this patient_id
+          var fields = registration.fields || {};
+          var name = fields.patient_name ||
+                     fields.full_name ||
+                     registration.patient_name ||
+                     registration.full_name;
           var patient = {
-            // TODO: Marc is working out the full list of these alternates
-            name: registration.fields.patient_name ||
-                  registration.fields.full_name,
+            name: name,
             parent: contact && contact.parent,
             reported_date: registration.reported_date,
             type: 'person',
