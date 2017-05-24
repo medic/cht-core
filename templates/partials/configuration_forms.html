@@ -26,6 +26,19 @@
     </div>
   </form>
 
+  <div class="section">
+    <fieldset>
+      <legend translate>Installed Forms</legend>
+      <ul>
+        <li ng-repeat="form in xForms">
+          <a href="/_utils/#database/medic/{{form._id}}">
+            {{form.title}}
+          </a>
+        </li>
+      </ul>
+    </fieldset>
+  </div>
+
   <form id="forms-upload-json">
     <div>
       <fieldset>

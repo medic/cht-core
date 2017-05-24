@@ -26,7 +26,8 @@ var moment = require('moment'),
       FileReader,
       JsonParse,
       Settings,
-      UpdateSettings
+      UpdateSettings,
+      XmlForms
     ) {
 
       'ngInject';
@@ -166,6 +167,13 @@ var moment = require('moment'),
         .catch(function(err) {
           $log.error('Error fetching settings', err);
         });
+
+      XmlForms('configuration-forms', { ignoreContext:true }, function(err, forms) {
+        if (err) {
+          return console.log('Error fetching XForms for form config page.', err);
+        }
+        $scope.xForms = forms;
+      });
     }
   );
 
