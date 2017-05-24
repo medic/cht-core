@@ -58,7 +58,7 @@ module.exports = {
 
   isAt: function (list) {
     helper.waitUntilReady(medicLogo);
-    return browser.isElementPresent(element(by.id(list)));
+    return element(by.id(list)).isPresent();
   }, 
   logout:function(){
     hamburgerMenu.click();

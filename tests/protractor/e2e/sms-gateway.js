@@ -159,7 +159,7 @@ describe('sms-gateway api', function() {
 
       // LHS
       browser.wait(function() {
-        return browser.isElementPresent(by.css('#message-list li:first-child'));
+        return element(by.css('#message-list li:first-child')).isPresent();
       }, 10000);
       expect(element(by.css('#message-list li:first-child .name')).getText()).toBe('+64271234567');
       expect(element(by.css('#message-list li:first-child .description')).getText()).toBe('hello');
@@ -167,7 +167,7 @@ describe('sms-gateway api', function() {
       // RHS
       element(by.css('#message-list li:first-child .name')).click();
       browser.wait(function() {
-        return browser.isElementPresent(by.css('#message-content .body li.incoming:first-child .data p:first-child'));
+        return element(by.css('#message-content .body li.incoming:first-child .data p:first-child')).isPresent();
       }, 10000);
       browser.sleep(250); // without this the elements are found to be detached...
 
@@ -211,11 +211,11 @@ describe('sms-gateway api', function() {
       browser.driver.navigate().refresh();
 
       browser.wait(function() {
-        return browser.isElementPresent(by.css('#reports-list li:first-child'));
+        return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
       element(by.css('#reports-list li:first-child .description')).click();
       browser.wait(function() {
-        return browser.isElementPresent(by.css('#reports-content .body .item-summary .icon'));
+        return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
       }, 10000);
 
       browser.sleep(100); // without this the elements are found to be detached...
@@ -276,11 +276,11 @@ describe('sms-gateway api', function() {
       browser.driver.navigate().refresh();
 
       browser.wait(function() {
-        return browser.isElementPresent(by.css('#reports-list li:first-child'));
+        return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
       element(by.css('#reports-list li:first-child .description')).click();
       browser.wait(function() {
-        return browser.isElementPresent(by.css('#reports-content .body .item-summary .icon'));
+        return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
       }, 10000);
 
       browser.sleep(100); // without this the elements are found to be detached...

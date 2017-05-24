@@ -2,6 +2,8 @@
 
   'use strict';
 
+  // TODO : too many input possibilities, and two different templates. Refactor.
+  // https://github.com/medic/medic-webapp/issues/3436
   angular.module('inboxControllers').controller('EditUserCtrl',
     function (
       $log,
@@ -44,6 +46,9 @@
       };
 
       if ($scope.model) {
+        // Edit a user that's not the current user.
+        // $scope.model is the user object passed in by controller creating the Modal.
+        // If $scope.model === {}, we're creating a new user.
         $scope.editUserModel = {
           id: $scope.model._id,
           name: $scope.model.name,
@@ -56,8 +61,9 @@
           contact: $scope.model.contact_id
         };
       } else {
+        // Edit the current user.
+        // Could be full edit, or editPassword only.
         $scope.editUserModel = {};
-        // get the current user
 
         UserSettings()
           .then(function(user) {
@@ -82,32 +88,53 @@
         Select2Search($('#edit-user-profile [name=facility]'), ContactSchema.getPlaceTypes());
       });
 
-      var validatePassword = function() {
+      var validateRequired = function(fieldName, fieldDisplayName) {
+        if (!$scope.editUserModel[fieldName]) {
+          $scope.errors[fieldName] = $translate.instant('field is required', {
+            field: $translate.instant(fieldDisplayName)
+          });
+          return false;
+        }
+        return true;
+      };
+
+      var validatePasswordForEditUser = function() {
         var newUser = !$scope.editUserModel.id;
         if (newUser) {
-          if (!$scope.editUserModel.password) {
-            $scope.errors.password = $translate.instant('field is required', {
-              field: $translate.instant('Password')
-            });
-            return false;
-          }
+          return validatePasswordFields();
         }
-        if ($scope.editUserModel.password &&
-            $scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
+
+        // if existing user : needs both fields, or none
+        if ($scope.editUserModel.password || $scope.editUserModel.passwordConfirm) {
+          return validatePasswordFields();
+        }
+        return true;
+      };
+
+      var validateConfirmPasswordMatches = function() {
+        if ($scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
           $scope.errors.password = $translate.instant('Passwords must match');
           return false;
         }
         return true;
       };
 
+      var validatePasswordFields = function() {
+        return validateRequired('password', 'Password') &&
+          validateConfirmPasswordMatches();
+      };
+
       var validateName = function() {
-        if (!$scope.editUserModel.name) {
-          $scope.errors.name = $translate.instant('field is required', {
-            field: $translate.instant('User Name')
-          });
-          return false;
+        return validateRequired('name', 'User Name');
+      };
+
+      var validateContactAndFacility = function() {
+        if ($scope.editUserModel.type !== 'district-manager') {
+          return true;
         }
-        return true;
+        var hasFacility = validateRequired('facility_id', 'Facility');
+        var hasContact = validateRequired('contact_id', 'associated.contact');
+        return hasFacility && hasContact;
       };
 
       var getRoles = function(type, includeAdmin) {
@@ -132,9 +159,9 @@
         };
         if (!updatingSelf) {
           // users don't have permission to update their own security settings
-          settings.roles = getRoles($scope.editUserModel.type, true);
-          settings.facility_id = $('#edit-user-profile [name=facility]').val();
-          settings.contact_id = $('#edit-user-profile [name=contact]').val();
+          settings.roles = $scope.editUserModel.roles;
+          settings.facility_id = $scope.editUserModel.facility_id;
+          settings.contact_id = $scope.editUserModel.contact_id;
         }
         return settings;
       };
@@ -148,10 +175,17 @@
         };
       };
 
+      var computeFields = function() {
+        $scope.editUserModel.roles = getRoles($scope.editUserModel.type, true);
+        $scope.editUserModel.facility_id = $('#edit-user-profile [name=facility]').val();
+        $scope.editUserModel.contact_id = $('#edit-user-profile [name=contact]').val();
+      };
+
+      // Submit function if template is update_password.html
       $scope.updatePassword = function() {
         $scope.errors = {};
         $scope.setProcessing();
-        if (validatePassword()) {
+        if (validatePasswordFields()) {
           var updates = { password: $scope.editUserModel.password };
           UpdateUser($scope.editUserModel.id, null, updates)
             .then(function() {
@@ -170,6 +204,7 @@
       $scope.editUserSettings = function() {
         $scope.setProcessing();
         $scope.errors = {};
+        computeFields();
         if (validateName()) {
           saveEdit('#edit-user-settings', $scope.editUserModel.id, getSettingsUpdates(true));
         } else {
@@ -181,14 +216,17 @@
       $scope.editUser = function() {
         $scope.setProcessing();
         $scope.errors = {};
-        if (validatePassword() && validateName()) {
-          saveEdit('#edit-user-profile', $scope.editUserModel.id, getSettingsUpdates(), getUserUpdates());
+        computeFields();
+        if (validatePasswordForEditUser() && validateName() && validateContactAndFacility()) {
+          saveEdit('#edit-user-profile', $scope.editUserModel.id, getSettingsUpdates(false), getUserUpdates());
         } else {
           $scope.setError();
         }
       };
 
       var saveEdit = function(modalId, userId, settingsUpdates, userUpdates) {
+        // TODO : Bad API, refactor it, which will allow simpler code in this file.
+        // https://github.com/medic/medic-webapp/issues/3441
         UpdateUser(userId, settingsUpdates, userUpdates)
           .then(function() {
             if (settingsUpdates.language && Session.userCtx().name === settingsUpdates.name) {

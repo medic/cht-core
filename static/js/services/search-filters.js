@@ -155,50 +155,42 @@ var _ = require('underscore'),
       };
 
       var initDate = function(callback) {
-        $translate.onReady().then(function() {
-          $('#date-filter').daterangepicker({
-            startDate: moment().subtract(1, 'months'),
-            endDate: moment(),
-            maxDate: moment(),
-            opens: 'center',
-            applyClass: 'btn-primary',
-            cancelClass: 'btn-link',
-            locale: {
-              applyLabel: $translate.instant('Apply'),
-              cancelLabel: $translate.instant('Cancel'),
-              fromLabel: $translate.instant('date.from'),
-              toLabel: $translate.instant('date.to'),
-              daysOfWeek: moment.weekdaysMin(),
-              monthNames: moment.monthsShort(),
-              firstDay: moment.localeData()._week.dow
-            }
-          },
-          function(start, end) {
-            callback({
-              from: start.valueOf(),
-              to: end.valueOf()
-            });
-          })
-          .on('show.daterangepicker', function(e, picker) {
-            setTimeout(function() {
-              if ($('#dateRangeDropdown').is('.disabled')) {
-                picker.hide();
-              }
-            });
-          })
-          .on('mm.dateSelected.daterangepicker', function(e, picker) {
-            if (isMobile()) {
-              // mobile version - only show one calendar at a time
-              if (picker.container.is('.show-from')) {
-                picker.container.removeClass('show-from').addClass('show-to');
-              } else {
-                picker.container.removeClass('show-to').addClass('show-from');
-                picker.hide();
-              }
+        $('#date-filter').daterangepicker({
+          startDate: moment().subtract(1, 'months'),
+          endDate: moment(),
+          maxDate: moment(),
+          opens: 'center',
+          autoApply: true,
+          locale: {
+            daysOfWeek: moment.weekdaysMin(),
+            monthNames: moment.monthsShort(),
+            firstDay: moment.localeData()._week.dow
+          }
+        },
+        function(start, end) {
+          callback({
+            from: start.valueOf(),
+            to: end.valueOf()
+          });
+        })
+        .on('show.daterangepicker', function(e, picker) {
+          setTimeout(function() {
+            if ($('#dateRangeDropdown').is('.disabled')) {
+              picker.hide();
             }
           });
-          $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
+        })
+        .on('mm.dateSelected.daterangepicker', function(e, picker) {
+          if (isMobile()) {
+            // mobile version - only show one calendar at a time
+            if (picker.container.is('.show-from')) {
+              picker.container.removeClass('show-from').addClass('show-to');
+            } else {
+              picker.container.removeClass('show-to').addClass('show-from');
+            }
+          }
         });
+        $('.daterangepicker').addClass('filter-daterangepicker mm-dropdown-menu show-from');
       };
 
       return {

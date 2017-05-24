@@ -144,7 +144,7 @@ describe('Contact summary info', function() {
     var refresh = function() {
       browser.driver.navigate().refresh();
       browser.wait(function() {
-        return browser.isElementPresent(by.id('contacts-tab'));
+        return element(by.id('contacts-tab')).isPresent();
       }, 10000);
       done();
     };
@@ -162,7 +162,7 @@ describe('Contact summary info', function() {
     element(by.id('freetext')).sendKeys(term);
     element(by.id('search')).click();
     browser.wait(function() {
-      return browser.isElementPresent(by.css('#contacts-list .filtered .item-summary'));
+      return element(by.css('#contacts-list .filtered .item-summary')).isPresent();
     }, 10000);
     element(by.css('#contacts-list .filtered .item-summary')).click();
   };
@@ -172,13 +172,13 @@ describe('Contact summary info', function() {
     // select contact
     browser.driver.navigate().refresh();
     browser.wait(function() {
-      return browser.isElementPresent(by.id('contacts-tab'));
+      return element(by.id('contacts-tab')).isPresent();
     }, 10000);
     selectContact('carol');
 
     // assert the summary card has the right fields
     browser.wait(function() {
-      return browser.isElementPresent(by.css('.content-pane .item-body .meta .card .col-sm-3:nth-child(1) label'));
+      return element(by.css('.content-pane .item-body .meta .card .col-sm-3:nth-child(1) label')).isPresent();
     }, 10000);
     expect(element(by.css('.content-pane .item-body .meta > .card .col-sm-3:nth-child(1) label')).getText()).toBe('test.pid');
     expect(element(by.css('.content-pane .item-body .meta > .card .col-sm-3:nth-child(1) p')).getText()).toBe(CAROL.patient_id);

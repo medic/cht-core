@@ -15,41 +15,34 @@ function traverse(keys, element) {
 }
 
 NoolsTest = module.exports = (function() {
-  function parseRules(rulesetFilePath, scheduleFilePath) {
+  function parseRules(rulesetFilePath, scheduleFilePath, additionalScope) {
     var rawSchedules = fs.readFileSync(scheduleFilePath, { encoding:'utf-8' });
     var schedules = JSON.parse('{' + rawSchedules + '}').schedules;
     var settings = { tasks: { schedules: schedules } };
     var Utils = nootils(settings);
+    var scope = Object.assign({}, additionalScope, { Utils:Utils });
 
     var rawRules = fs.readFileSync(rulesetFilePath, { encoding:'utf-8' });
-    var flow = Nools.compile(rawRules, { name:'test', scope:{ Utils:Utils } });
+    var flow = Nools.compile(rawRules, { name:'test', scope:scope });
     var session = flow.getSession();
 
-    session.expectEmits = function(key) {
-      skip = 1;
+    session.expectEmits = (key, ...expectedEmits) => {
       if(typeof key !== 'string') {
-        skip = 0;
-        key = null;
+        expectedEmits.unshift(key);
+        key = '*';
       }
+      if(key === '*') expectedEmits = expectedEmits[0];
 
-      var expectedEmits = Array.prototype.slice.call(arguments, skip);
       var actualEmits = [];
 
       var keys = key ? key.split('.') : null;
-      session.on('task', function() {
-        var args = Array.prototype.slice.call(arguments, 0);
-
-        if(keys) actualEmits.push(traverse(keys, args[0]));
-        else throw new Error('This is not currently handled correctly :-(  Please use \'*\' matcher.');
-      });
+      session.on('task', (task) => actualEmits.push(traverse(keys, task)));
 
       return session.match()
-        .then(function() {
-          assert.deepEqual(actualEmits, expectedEmits);
-        });
+        .then(() => assert.deepEqual(actualEmits, expectedEmits));
     };
 
-    return { flow:flow, session:session };
+    return { flow:flow, session:session, utils:Utils };
   }
 
   return {

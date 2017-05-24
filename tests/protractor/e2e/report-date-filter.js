@@ -1,7 +1,7 @@
 var utils = require('../utils'),
     moment = require('moment');
 
-describe('Bulk delete reports', function() {
+describe('Filters reports', function() {
 
   'use strict';
 
@@ -107,13 +107,13 @@ describe('Bulk delete reports', function() {
       .then(done, done);
   });
 
-  it('reports', function() {
+  it('by date', function() {
     element(by.id('reports-tab')).click();
 
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.driver.navigate().refresh();
     browser.wait(function() {
-      return browser.isElementPresent(by.css('#reports-list li:first-child'));
+      return element(by.css('#reports-list li:first-child')).isPresent();
     }, 10000);
 
     var clear = '';
@@ -123,11 +123,11 @@ describe('Bulk delete reports', function() {
 
     element(by.css('#date-filter')).click();
     element(by.css('.daterangepicker [name="daterangepicker_start"]')).click().sendKeys(clear + '05/16/2016');
-    element(by.css('.daterangepicker [name="daterangepicker_end"]')).click().sendKeys(clear + '05/17/2016');
-    element(by.css('.daterangepicker .applyBtn')).click();
+    element(by.css('.daterangepicker [name="daterangepicker_end"]')).click().sendKeys(clear + '05/17/2016' + protractor.Key.ENTER);
+    element(by.css('#freetext')).click(); // blur the datepicker
 
     browser.wait(function() {
-      return browser.isElementPresent(by.css('#reports-list .filtered li:first-child'));
+      return element(by.css('#reports-list .filtered li:first-child')).isPresent();
     }, 10000);
 
     expect(element.all(by.css('#reports-list .filtered li')).count()).toBe(2);

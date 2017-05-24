@@ -177,6 +177,11 @@ body {
       padding: 3px 20px;
       color: #262626;
       margin-top: 0;
+      white-space: normal;
+      &.no-click:hover {
+        background-color: transparent;
+        cursor: default;
+      }
     }
     .disabled a {
       color: #999999;
@@ -262,7 +267,7 @@ body {
 }
 
 .header .options .dropdown-menu {
-  width: 200px;
+  width: 220px;
   left: auto;
   margin-top: 1.9em;
 }

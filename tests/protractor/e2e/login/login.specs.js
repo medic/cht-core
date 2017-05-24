@@ -1,10 +1,11 @@
 const helper = require('../../helper'),
   utils = require('../../utils.js'),
+  auth = require('../../auth')(),
   loginPage = require('../../page-objects/login/login.po.js');
 
 describe('Login tests : ', function() {
   const wrongUsername = 'fakeuser',
-   wrongPassword = 'fakepass';
+        wrongPassword = 'fakepass';
 
   it('should have a title', function() {
     expect(browser.getTitle()).toEqual('Medic Mobile');
@@ -15,6 +16,6 @@ describe('Login tests : ', function() {
     browser.driver.get(utils.getLoginUrl());
     loginPage.login(wrongUsername, wrongPassword);
     expect(helper.isTextDisplayed(loginPage.getIncorrectCredentialsText()));
-    loginPage.login('admin', 'pass');
+    loginPage.login(auth.user, auth.pass);
   });
 });

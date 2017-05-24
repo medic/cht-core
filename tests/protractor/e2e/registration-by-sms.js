@@ -198,7 +198,7 @@ describe('registration transition', () => {
   // refresh after changing settings so the new settings are loaded
   const refresh = () => {
     browser.driver.navigate().refresh();
-    return browser.wait(() => browser.isElementPresent(by.id('reports-tab')), 10000);
+    return browser.wait(() => element(by.id('reports-tab')).isPresent(), 10000);
   };
 
   describe('submits new sms messages', () => {
@@ -259,12 +259,12 @@ describe('registration transition', () => {
       browser.sleep(1000);
       refresh();
       element(by.id('reports-tab')).click();
-      browser.wait(() => browser.isElementPresent(by.cssContainingText('#reports-list .unfiltered li:first-child .name', CAROL.name)), 10000);
+      browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child .name', CAROL.name)).isPresent(), 10000);
 
       element(by.css('#reports-list .unfiltered li:first-child .item-summary')).click();
 
       // wait for content to load
-      browser.wait(() => browser.isElementPresent(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)), 10000);
+      browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 10000);
 
       checkItemSummary();
       checkAutoResponse();
