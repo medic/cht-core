@@ -76,12 +76,9 @@ var batchCreatePatientContacts = function(batch, callback) {
       var contactPhoneNumbers = _.chain(uniqueValidRegistrations)
         .pluck('from')
         .uniq()
-        .map(function(ph) {
-          return [ph];
-        })
         .value();
 
-      db.medic.view('medic-client', 'people_by_phone', {
+      db.medic.view('medic-client', 'contacts_by_phone', {
         keys: contactPhoneNumbers,
         include_docs: true
       }, function(err, results) {
