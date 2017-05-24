@@ -238,7 +238,7 @@ exports['refid field is cast to a string in view query'] = function(test) {
   var db = {
     medic: {
       view: function(ddoc, view, q) {
-        test.ok(q.key[0] === '123');
+        test.equals(q.key, '123');
         test.done();
       }
     }
@@ -257,7 +257,7 @@ exports['from field is cast to string in view query'] = function(test) {
   var db = {
     medic: {
       view: function(ddoc, view, q) {
-        test.ok(q.key[0] === '123');
+        test.equals(q.key, '123');
         test.done();
       }
     }

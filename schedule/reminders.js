@@ -115,18 +115,19 @@ module.exports = {
         var db = options.db;
 
         // gets all clinics
-        db.medic.view('medic', 'clinic_by_phone', {
+        db.medic.view('medic-client', 'doc_by_type', {
+            startkey: [ 'clinic' ],
+            endkey: [ 'clinic', {} ],
             include_docs: true
         }, function(err, data) {
             if (err) {
                 return callback(err);
             }
-            var clinics,
-                docs = _.pluck(data.rows, 'doc');
+            var docs = _.pluck(data.rows, 'doc');
 
             // filter them by the canSend function (i.e. not already sent, not
             // on cooldown from having received a form)
-            clinics = _.filter(docs, function(clinic) {
+            var clinics = _.filter(docs, function(clinic) {
                 return module.exports.canSend(options, clinic);
             });
 

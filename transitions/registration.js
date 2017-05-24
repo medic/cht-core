@@ -4,6 +4,7 @@ var vm = require('vm'),
     utils = require('../lib/utils'),
     transitionUtils = require('./utils'),
     logger = require('../lib/logger'),
+    lineage = require('../lib/lineage'),
     messages = require('../lib/messages'),
     validation = require('../lib/validation'),
     schedules = require('../lib/schedules'),
@@ -427,14 +428,15 @@ module.exports = {
                 return callback();
             }
 
-            db.medic.view('medic-client', 'people_by_phone', {
-                key: [ doc.from ],
+            db.medic.view('medic-client', 'contacts_by_phone', {
+                key: doc.from,
                 include_docs: true
             }, function(err, result) {
                 if (err) {
                     return callback(err);
                 }
                 var contact = _.result(_.first(result.rows), 'doc');
+                lineage.minify(contact);
                 // create a new patient with this patient_id
                 var patient = {
                     name: doc.fields[patientNameField],

@@ -4,15 +4,10 @@ var _ = require('underscore'),
 var associateContact = function(audit, doc, contact, callback) {
     var self = module.exports;
 
-    if (!contact) {
-        return callback();
-    }
-
     // reporting phone stayed the same and contact data is up to date
     if (doc.from === contact.phone &&
         doc.contact &&
-        contact._id === doc.contact._id &&
-        contact._rev === doc.contact._rev) {
+        contact._id === doc.contact._id) {
         return callback();
     }
 
@@ -27,6 +22,50 @@ var associateContact = function(audit, doc, contact, callback) {
         });
     } else {
         self.setContact(doc, contact, callback);
+    }
+};
+
+var getContact = function(db, doc, callback) {
+    if (doc.refid) { // use reference id to find clinic if defined
+        let params = {
+            key: String(doc.refid),
+            include_docs: true,
+            limit: 1
+        };
+        db.medic.view('medic', 'contacts_by_refid', params, function(err, data) {
+            if (err) {
+                return callback(err);
+            }
+            if (!data.rows.length) {
+                return callback();
+            }
+            var result = data.rows[0].doc;
+            if (result.type === 'person') {
+                return callback(null, result);
+            }
+            if (result.type === 'clinic') {
+                var id = result.contact && result.contact._id;
+                if (!id) {
+                    return callback(null, result.contact || { parent: result });
+                }
+                return db.medic.get(id, callback);
+            }
+            callback();
+        });
+    } else if (doc.from) {
+        let params = {
+            key: String(doc.from),
+            include_docs: true,
+            limit: 1
+        };
+        db.medic.view('medic-client', 'contacts_by_phone', params, function(err, data) {
+            if (err) {
+                return callback(err);
+            }
+            callback(null, data.rows.length && data.rows[0].doc);
+        });
+    } else {
+        callback();
     }
 };
 
@@ -56,43 +95,15 @@ module.exports = {
         );
     },
     onMatch: function(change, db, audit, callback) {
-        var doc = change.doc,
-            q = { include_docs: true, limit: 1 };
-
-        if (doc.refid) { // use reference id to find clinic if defined
-            q.key = [ String(doc.refid) ];
-            db.medic.view('medic', 'clinic_by_refid', q, function(err, data) {
-                if (err) {
-                    return callback(err);
-                }
-                if (!data.rows.length) {
-                    // ref id not found
-                    return callback();
-                }
-                var clinic = data.rows[0].doc;
-                if (clinic.contact && clinic.contact._id) {
-                    db.medic.get(clinic.contact._id, function(err, contact) {
-                        if (err) {
-                            return callback(err);
-                        }
-                        associateContact(audit, doc, contact, callback);
-                    });
-                } else {
-                    associateContact(audit, doc, clinic.contact || { parent: clinic }, callback);
-                }
-            });
-        } else if (doc.from) {
-            q.key = [ String(doc.from) ];
-            q.include_docs = true;
-            db.medic.view('medic-client', 'people_by_phone', q, function(err, data) {
-                if (!data.rows.length) {
-                    return callback();
-                }
-                associateContact(audit, doc, data.rows[0].doc, callback);
-            });
-        } else {
-            return callback();
-        }
+        getContact(db, change.doc, function(err, contact) {
+            if (err) {
+                return callback(err);
+            }
+            if (!contact) {
+                return callback();
+            }
+            associateContact(audit, change.doc, contact, callback);
+        });
     },
     setContact: function(doc, contact, callback) {
         doc.contact = contact;

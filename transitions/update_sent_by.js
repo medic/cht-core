@@ -1,6 +1,3 @@
-var _ = require('underscore'),
-    utils = require('../lib/utils');
-
 module.exports = {
     filter: function(doc) {
         var self = module.exports;
@@ -23,17 +20,19 @@ module.exports = {
     onMatch: function(change, db, audit, callback) {
         var doc = change.doc;
 
-        db.medic.view('medic', 'clinic_by_phone', {
-            key: [ doc.from ],
+        db.medic.view('medic-client', 'contacts_by_phone', {
+            key: doc.from,
             include_docs: true
         }, function(err, result) {
             if (err) {
                 return callback(err);
             }
-            var clinic = _.result(_.first(result.rows), 'doc'); // _.result handles falsey first row
-            var sent_by = utils.getClinicContactName(clinic, true) || utils.getClinicName(clinic, true);
-            if (sent_by) {
-                doc.sent_by = sent_by;
+            var sentBy = result.rows &&
+                         result.rows.length &&
+                         result.rows[0].doc &&
+                         result.rows[0].doc.name;
+            if (sentBy) {
+                doc.sent_by = sentBy;
                 return callback(null, true);
             }
             callback();

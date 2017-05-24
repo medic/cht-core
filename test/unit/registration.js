@@ -74,7 +74,7 @@ exports['add_patient trigger creates a new patient'] = function(test) {
         fields: { patient_name: patientName },
         birth_date: dob
     } };
-    // return expected view results when searching for people_by_phone
+    // return expected view results when searching for contacts_by_phone
     var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: submitterId } } } ] });
     var getPatientContactUuid = sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
     var db = { medic: { view: view } };
@@ -96,8 +96,8 @@ exports['add_patient trigger creates a new patient'] = function(test) {
         test.equal(getPatientContactUuid.callCount, 1);
         test.equal(view.callCount, 1);
         test.equal(view.args[0][0], 'medic-client');
-        test.equal(view.args[0][1], 'people_by_phone');
-        test.deepEqual(view.args[0][2].key, [ senderPhoneNumber ]);
+        test.equal(view.args[0][1], 'contacts_by_phone');
+        test.equal(view.args[0][2].key, senderPhoneNumber);
         test.equal(view.args[0][2].include_docs, true);
         test.equal(saveDoc.callCount, 1);
         test.equal(saveDoc.args[0][0].name, patientName);
@@ -147,7 +147,7 @@ exports['add_patient uses a given id if configured to'] = function(test) {
         birth_date: '2017-03-31T01:15:09.000Z'
     };
     var change = { doc: doc };
-    // return expected view results when searching for people_by_phone
+    // return expected view results when searching for contacts_by_phone
     var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: 'papa' } } } ] });
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
     var db = { medic: { view: view } };
@@ -184,7 +184,7 @@ exports['add_patient errors if the configuration doesnt point to an id'] = funct
         birth_date: '2017-03-31T01:15:09.000Z'
     };
     var change = { doc: doc };
-    // return expected view results when searching for people_by_phone
+    // return expected view results when searching for contacts_by_phone
     var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: 'papa' } } } ] });
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
     var db = { medic: { view: view } };
@@ -222,7 +222,7 @@ exports['add_patient errors if the given id is not unique'] = function(test) {
         birth_date: '2017-03-31T01:15:09.000Z'
     };
     var change = { doc: doc };
-    // return expected view results when searching for people_by_phone
+    // return expected view results when searching for contacts_by_phone
     var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: 'papa' } } } ] });
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
     var db = { medic: { view: view } };
@@ -265,7 +265,7 @@ exports['add_patient event parameter overwrites the default property for the nam
         fields: { name: patientName },
         birth_date: dob
     } };
-    // return expected view results when searching for people_by_phone
+    // return expected view results when searching for contacts_by_phone
     var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: submitterId } } } ] });
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
     var db = { medic: { view: view } };
@@ -305,7 +305,7 @@ exports['add_patient event parameter overwrites the default property for the nam
         fields: { name: patientName },
         birth_date: dob
     } };
-    // return expected view results when searching for people_by_phone
+    // return expected view results when searching for contacts_by_phone
     var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: submitterId } } } ] });
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
     var db = { medic: { view: view } };
@@ -345,7 +345,7 @@ exports['add_patient and add_patient_id triggers are idempotent'] = function(tes
         fields: { name: patientName },
         birth_date: dob
     } };
-    // return expected view results when searching for people_by_phone
+    // return expected view results when searching for contacts_by_phone
     var view = sinon.stub().callsArgWith(3, null, { rows: [ { doc: { parent: { _id: submitterId } } } ] });
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
     var db = { medic: { view: view } };
