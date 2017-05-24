@@ -40,7 +40,7 @@ angular.module('inboxServices').factory('LiveListConfig',
 
           var scope = $scope.$new();
           scope.contact = contact;
-          scope.primaryContactName = { name: contact.primaryContactName };
+          scope.primaryContactName = { name: contact.contact };
 
           return contactHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
         },

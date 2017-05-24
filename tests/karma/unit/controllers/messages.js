@@ -1,45 +1,38 @@
-describe('MessagesCtrl controller', function() {
+describe('MessagesCtrl controller', () => {
 
   'use strict';
 
-  var createController,
+  let createController,
       scope,
       UserDistrict;
 
   beforeEach(module('inboxApp'));
 
-  beforeEach(inject(function($rootScope, $controller) {
+  beforeEach(inject(($rootScope, $controller) => {
     scope = $rootScope.$new();
     scope.filterModel = {};
     scope.selected = { id: 'a' };
     scope.permissions = { admin: true };
-    scope.setMessages = function() {};
-    scope.setSelected = function(obj) {
-      scope.selected = obj;
-    };
-    scope.setLoadingContent = function() {};
+    scope.setMessages = () => {};
+    scope.setSelected = obj => scope.selected = obj;
+    scope.setLoadingContent = () => {};
     scope.setLeftActionBar = sinon.stub();
-
-    UserDistrict = function(callback) {
-      callback();
-    };
-
-    createController = function() {
+    UserDistrict = callback => callback();
+    createController = () => {
       return $controller('MessagesCtrl', {
         '$scope': scope,
-        'Changes': function() {
-          return { unsubscribe: function() {} };
+        'Changes': () => {
+          return { unsubscribe: () => {} };
         },
         'MarkAllRead': {},
-        'ContactConversation': KarmaUtils.nullPromise(),
-        'MessageContact': KarmaUtils.nullPromise(),
-        'Export': function() {},
-        'Tour': function() {}
+        'MessageContacts': KarmaUtils.nullPromise(),
+        'Export': () => {},
+        'Tour': () => {}
       });
     };
   }));
 
-  it('set up controller', function() {
+  it('set up controller', () => {
     createController();
   });
 

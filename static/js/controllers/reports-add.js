@@ -17,10 +17,19 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
 
     var getSelected = function() {
       if ($state.params.formId) { // adding
-        return $q.resolve({ form: $state.params.formId });
+        return $q.resolve({
+          formInternalId: $state.params.formId
+        });
       }
       if ($state.params.reportId) { // editing
-        return DB().get($state.params.reportId);
+        return DB()
+          .get($state.params.reportId)
+          .then(function(doc) {
+            return {
+              doc: doc,
+              formInternalId: doc.form
+            };
+          });
       }
       return $q.reject(new Error('Must have either formId or reportId'));
     };
@@ -39,10 +48,12 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
 
     var getReportContent = function(doc) {
       // creating a new doc - no content
-      if (!doc._id) {
+      if (!doc || !doc._id) {
         return $q.resolve();
       }
-      // check old style inline form content
+      // TODO: check doc.content as this is where legacy documents stored
+      //       their XML. Consider removing this check at some point in the
+      //       future.
       if (doc.content) {
         return $q.resolve(doc.content);
       }
@@ -52,15 +63,12 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     };
 
     getSelected()
-      .then(function(doc) {
-        $log.debug('setting selected', doc);
-        $scope.setSelected(doc);
-        // TODO: check doc.content as this is where legacy documents stored
-        //       their XML. Consider removing this check at some point in the
-        //       future.
+      .then(function(model) {
+        $log.debug('setting selected', model);
+        $scope.setSelected(model);
         return $q.all([
-          getReportContent(doc),
-          XmlForm(doc.form, { include_docs: true })
+          getReportContent(model.doc),
+          XmlForm(model.formInternalId, { include_docs: true })
         ]).then(function(results) {
           Enketo.render('#report-form', results[1].id, results[0])
             .then(function(form) {
@@ -87,8 +95,10 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
 
       $scope.enketoStatus.saving = true;
       $scope.enketoStatus.error = null;
-      var doc = $scope.selected[0].report;
-      Enketo.save(doc.form, $scope.form, doc._id)
+      var model = $scope.selected[0];
+      var reportId = model.doc && model.doc._id;
+      var formInternalId = model.formInternalId;
+      Enketo.save(formInternalId, $scope.form, reportId)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           $scope.enketoStatus.saving = false;

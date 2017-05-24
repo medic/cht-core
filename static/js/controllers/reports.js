@@ -17,10 +17,10 @@ var _ = require('underscore'),
       Changes,
       DB,
       Export,
-      FormatDataRecord,
       LiveList,
       MarkRead,
       Modal,
+      ReportViewModelGenerator,
       Search,
       SearchFilters,
       Tour,
@@ -51,135 +51,88 @@ var _ = require('underscore'),
         }
       };
 
-      var setSelected = function(report) {
-        $scope.setSelected(report);
+      var setSelected = function(model) {
+        $scope.setSelected(model);
         if ($scope.selectMode) {
           return;
         }
-        if (!$scope.isRead(report)) {
+        if (!$scope.isRead(model.doc)) {
           $scope.readStatus.forms--;
         }
-        MarkRead(report._id, true)
+        MarkRead(model.doc._id, true)
           .then($scope.updateReadStatus)
           .catch(function(err) {
             $log.error('Error marking read', err);
           });
       };
 
-      var setTitle = function(doc) {
-        var name = doc.form;
-        var form = _.findWhere($scope.forms, { code: doc.form });
-        if (form) {
-          name = form.name || form.title;
-        }
+      var setTitle = function(model) {
+        var form = _.findWhere($scope.forms, { code: model.form });
+        var name = (form && form.name) ||
+                   (form && form.title) ||
+                   model.form;
         $scope.setTitle(TranslateFrom(name));
-      };
-
-      var getFields = function(results, values, labelPrefix, depth) {
-        if (depth > 3) {
-          depth = 3;
-        }
-        Object.keys(values).forEach(function(key) {
-          var value = values[key];
-          var label = labelPrefix + '.' + key;
-          if (_.isObject(value)) {
-            results.push({
-              label: label,
-              depth: depth
-            });
-            getFields(results, value, label, depth + 1);
-          } else {
-            results.push({
-              label: label,
-              value: value,
-              depth: depth
-            });
-          }
-        });
-        return results;
-      };
-
-      var getDisplayFields = function(report) {
-        // calculate fields to display
-        if (!report.fields) {
-          return [];
-        }
-        var label = 'report.' + report.form;
-        var fields = getFields([], report.fields, label, 0);
-        var hide = report.hidden_fields || [];
-        hide.push('inputs');
-        return _.reject(fields, function(field) {
-          return _.some(hide, function(h) {
-            return field.label.indexOf(label + '.' + h) === 0;
-          });
-        });
       };
 
       var setRightActionBar = function() {
         var model = {};
         model.selected = $scope.selected.map(function(s) {
-          return s.report || s.summary;
+          return s.doc || s.summary;
         });
-        if (!$scope.selectMode &&
-            model.selected &&
-            model.selected.length === 1) {
-          var doc = model.selected[0];
+        var doc = !$scope.selectMode &&
+                  model.selected &&
+                  model.selected.length === 1 &&
+                  model.selected[0];
+        if (doc) {
           model.verified = doc.verified;
           model.type = doc.content_type;
-          model.sendTo = doc.contact;
+          if (doc.contact && doc.contact._id) {
+            DB().get(doc.contact._id).then(function(contact) {
+              model.sendTo = contact;
+              $scope.setRightActionBar(model);
+            });
+          } else {
+            $scope.setRightActionBar(model);
+          }
+        } else {
+          $scope.setRightActionBar(model);
         }
-        $scope.setRightActionBar(model);
       };
 
-      $scope.setSelected = function(doc) {
+      $scope.setSelected = function(model) {
         var refreshing = true;
-        var displayFields = getDisplayFields(doc);
         if ($scope.selectMode) {
-          var existing = _.findWhere($scope.selected, { _id: doc._id });
+          var existing = _.findWhere($scope.selected, { _id: model.doc._id });
           if (existing) {
-            existing.report = doc;
-            existing.displayFields = displayFields;
+            _.extend(existing, model);
           } else {
-            $scope.selected.push({
-              _id: doc._id,
-              report: doc,
-              expanded: false,
-              displayFields: displayFields
-            });
+            model.expanded = false;
+            $scope.selected.push(model);
           }
         } else {
           if (liveList.initialised()) {
-            liveList.setSelected(doc._id);
+            liveList.setSelected(model.doc && model.doc._id);
           }
-          refreshing = doc &&
+          refreshing = model.doc &&
                        $scope.selected.length &&
-                       $scope.selected[0]._id === doc._id;
-          $scope.selected = [ {
-            _id: doc._id,
-            report: doc,
-            expanded: true,
-            displayFields: displayFields
-          } ];
-          setTitle(doc);
+                       $scope.selected[0]._id === model.doc._id;
+          model.expanded = true;
+          $scope.selected = [ model ];
+          setTitle(model);
         }
         setRightActionBar();
         $scope.settingSelected(refreshing);
       };
 
       var fetchFormattedReport = function(report) {
-        if (_.isString(report)) {
-          // id only - fetch the full doc
-          return DB()
-            .get(report)
-            .then(FormatDataRecord);
-        }
-        return FormatDataRecord(report);
+        var id = _.isString(report) ? report : report._id;
+        return ReportViewModelGenerator(id);
       };
 
       $scope.refreshReportSilently = function(report) {
         return fetchFormattedReport(report)
-          .then(function(doc) {
-            setSelected(doc[0]);
+          .then(function(model) {
+            setSelected(model);
           })
           .catch(function(err) {
             $log.error('Error fetching formatted report', err);
@@ -210,13 +163,12 @@ var _ = require('underscore'),
         }
         $scope.setLoadingContent(report);
         fetchFormattedReport(report)
-          .then(function(formatted) {
-            return formatted && formatted.length && formatted[0];
-          })
-          .then(function(doc) {
-            if (doc) {
-              setSelected(doc);
-              initScroll();
+          .then(function(model) {
+            if (model) {
+              $timeout(function(){
+                setSelected(model);
+                initScroll();
+              });
             }
           })
           .catch(function(err) {
@@ -309,7 +261,7 @@ var _ = require('underscore'),
       });
 
       $scope.$on('VerifyReport', function(e, verify) {
-        if ($scope.selected[0].report.form) {
+        if ($scope.selected[0].doc.form) {
           DB().get($scope.selected[0]._id)
             .then(function(message) {
               message.verified = verify;
@@ -325,7 +277,7 @@ var _ = require('underscore'),
         Modal({
           templateUrl: 'templates/modals/edit_report.html',
           controller: 'EditReportCtrl',
-          model: { report: $scope.selected[0].report }
+          model: { report: $scope.selected[0].doc }
         });
       });
 
@@ -402,7 +354,7 @@ var _ = require('underscore'),
           $scope.search();
           var doc = $scope.selected &&
                     $scope.selected[0] &&
-                    $scope.selected[0].report;
+                    $scope.selected[0].doc;
           if (doc) {
             setTitle(doc);
           }
@@ -442,13 +394,10 @@ var _ = require('underscore'),
         $scope.setLoadingContent(true);
         Search('reports', $scope.filters, { limit: 10000 })
           .then(function(summaries) {
-            $scope.selected = summaries.map(function(summary) {
-              return {
-                _id: summary._id,
-                summary: summary,
-                expanded: false
-              };
+            summaries.forEach(function(summary) {
+              summary.expanded = false;
             });
+            $scope.selected = summaries;
             $scope.settingSelected(true);
             setRightActionBar();
             $('#reports-list input[type="checkbox"]').prop('checked', true);
