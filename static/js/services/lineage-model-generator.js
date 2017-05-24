@@ -1,3 +1,13 @@
+/**
+ * Hydrates the given doc by uuid and creates a model which holds
+ * the doc and associated contacts. eg:
+ * {
+ *   _id: <doc uuid>,
+ *   doc: <doc>,
+ *   contact: <doc reporter>, // only relevant for reports
+ *   lineage: <array of parents>
+ * }
+ */
 angular.module('inboxServices').factory('LineageModelGenerator',
   function(
     DB

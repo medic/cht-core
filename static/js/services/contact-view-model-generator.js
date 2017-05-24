@@ -1,5 +1,19 @@
 var _ = require('underscore');
 
+/**
+ * Hydrates the given contact by uuid and creates a model which
+ * holds the doc and associated information for rendering. eg:
+ * {
+ *   _id: <doc uuid>,
+ *   doc: <doc>,
+ *   lineage: <array of contact's parents>,
+ *   children: <array of contact's children>,
+ *   reports: <array of reports about the contact>,
+ *   isPrimaryContact: <boolean, true if contact is a primary for another contact>
+ *   icon: <the ID of the icon resource that represents this contact's type>,
+ *   label: <the translation key that describes this contact's type>
+ * }
+ */
 angular.module('inboxServices').factory('ContactViewModelGenerator',
   function(
     $log,

@@ -1,5 +1,17 @@
 var _ = require('underscore');
 
+/**
+ * Hydrates the given contact by uuid and creates a model which
+ * holds the doc and associated information for rendering. eg:
+ * {
+ *   _id: <doc uuid>,
+ *   doc: <doc>,
+ *   contact: <doc reporter>,
+ *   lineage: <array of contact's parents>,
+ *   displayFields: <array of fields to show>,
+ *   formatted: <the doc formatted using the FormatDataRecord service>
+ * }
+ */
 angular.module('inboxServices').factory('ReportViewModelGenerator',
   function(
     DB,
