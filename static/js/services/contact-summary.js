@@ -3,7 +3,7 @@ var SETTING_NAME = 'contact_summary';
 /**
  * Service for generating summary information based on a given
  * contact and reports about them.
- * Documentation: https://github.com/medic/medic-docs/blob/master/md/config/contact-summary.md
+ * Documentation: https://github.com/medic/medic-docs/blob/master/configuration/contact-summary.md
  */
 angular.module('inboxServices').service('ContactSummary',
   function(
@@ -47,7 +47,7 @@ angular.module('inboxServices').service('ContactSummary',
       return summary;
     };
 
-    return function(contact, reports) { // jshint ignore:line
+    return function(contact, reports, lineage) { // jshint ignore:line
       return getScript()
         .then(function(script) {
           return script && eval(script); // jshint ignore:line

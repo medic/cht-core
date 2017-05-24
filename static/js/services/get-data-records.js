@@ -8,70 +8,65 @@ var _ = require('underscore');
  *      _id: 'myuuid',
  *      name: 'John Smith',
  *      type: 'person',
- *      place: [ 'Dunedin' ]
+ *      lineage: [ 'Dunedin' ]
  *    }
  * The summary will contain different data based on the doc type,
  * as defined in the doc_summaries_by_id view.
  *
  * If options.include_docs is true, returns the full doc.
  */
-(function () {
 
-  'use strict';
+angular.module('inboxServices').factory('GetDataRecords',
+  function(
+    $q,
+    DB,
+    GetContactSummaries
+  ) {
 
-  var inboxServices = angular.module('inboxServices');
-  
-  inboxServices.factory('GetDataRecords',
-    function(
-      $q,
-      DB
-    ) {
+    'use strict';
+    'ngInject';
 
-      'ngInject';
-
-      var getDocs = function(ids) {
-        return DB()
-          .allDocs({ keys: ids, include_docs: true })
-          .then(function(response) {
-            return _.pluck(response.rows, 'doc');
-          });
-      };
-
-      var getSummaries = function(ids) {
-        ids = ids.map(function(id) {
-          return [ id ];
+    var getDocs = function(ids) {
+      return DB()
+        .allDocs({ keys: ids, include_docs: true })
+        .then(function(response) {
+          return _.pluck(response.rows, 'doc');
         });
-        return DB()
-          .query('medic-client/doc_summaries_by_id', { keys: ids })
-          .then(function(response) {
-            return _.map(response.rows, function(row) {
-              row.value._id = row.id;
-              return row.value;
-            });
-          });
-      };
+    };
 
-      return function(ids, options) {
-        if (!ids) {
-          return $q.resolve([]);
-        }
-        var arrayGiven = _.isArray(ids);
-        if (!arrayGiven) {
-          ids = [ ids ];
-        }
-        if (!ids.length) {
-          return $q.resolve([]);
-        }
-        var getFn = options && options.include_docs ? getDocs : getSummaries;
-        return getFn(ids)
-          .then(function(response) {
-            if (!arrayGiven) {
-              response = response.length ? response[0] : null;
-            }
-            return response;
-          });
-      };
-    }
-  );
+    var getResponseValues = function(response) {
+      return _.map(response.rows, function(row) {
+        row.value._id = row.id;
+        return row.value;
+      });
+    };
 
-}());
+    var getSummaries = function(ids) {
+      return DB()
+        .query('medic-client/doc_summaries_by_id', { keys: ids })
+        .then(getResponseValues)
+        .then(GetContactSummaries);
+    };
+
+    return function(ids, options) {
+      if (!ids) {
+        return $q.resolve([]);
+      }
+      var arrayGiven = _.isArray(ids);
+      if (!arrayGiven) {
+        ids = [ ids ];
+      }
+      if (!ids.length) {
+        return $q.resolve([]);
+      }
+      var getFn = options && options.include_docs ? getDocs : getSummaries;
+      return getFn(ids)
+        .then(function(response) {
+          if (!arrayGiven) {
+            response = response.length ? response[0] : null;
+          }
+          return response;
+        });
+    };
+  }
+);

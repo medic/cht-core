@@ -25,7 +25,7 @@ describe('Send message', function() {
     reported_date: 1,
     type: 'person',
     name: 'Carol Carolina',
-    parent: BOB_PLACE
+    parent: { _id: BOB_PLACE._id }
   };
   var DAVID = {
     _id: 'david-contact',
@@ -33,7 +33,7 @@ describe('Send message', function() {
     type: 'person',
     name: 'David Davidson',
     phone: '+447765902002',
-    parent: BOB_PLACE
+    parent: { _id: BOB_PLACE._id }
   };
 
   var CONTACTS = [ALICE, BOB_PLACE, CAROL, DAVID];
@@ -75,7 +75,6 @@ describe('Send message', function() {
       })
       .then(done);
   });
-
 
   var messageInList = function(identifier) {
     return '#message-list li[data-record-id="'+identifier+'"]';
@@ -218,7 +217,7 @@ describe('Send message', function() {
       expect(element(by.css(messageInList(DAVID.phone))).isPresent()).toBeFalsy();
 
       openSendMessageModal();
-      enterCheckAndSelect(BOB_PLACE.name, 3, contactNameSelector, everyoneAtText(BOB_PLACE.name));
+      enterCheckAndSelect(BOB_PLACE.name, 2, contactNameSelector, everyoneAtText(BOB_PLACE.name));
       element(by.css('#send-message textarea')).sendKeys(smsMsg('everyoneAt'));
       sendMessage();
 

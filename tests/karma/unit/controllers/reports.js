@@ -1,8 +1,8 @@
-describe('ReportsCtrl controller', function() {
+describe('ReportsCtrl controller', () => {
 
   'use strict';
 
-  var createController,
+  let createController,
       scope,
       report,
       get,
@@ -17,65 +17,55 @@ describe('ReportsCtrl controller', function() {
 
   beforeEach(module('inboxApp'));
 
-  beforeEach(inject(function($rootScope, $controller) {
+  beforeEach(inject(($rootScope, $controller) => {
     get = sinon.stub();
     post = sinon.stub();
     scope = $rootScope.$new();
     scope.filterModel = { date: {} };
     report = { _id: 'x' };
     scope.readStatus = { forms: 0, messages: 0 };
-    scope.updateReadStatus = function() {};
-    scope.isRead = function() {
-      return true;
-    };
-    scope.setFilterQuery = function() {};
+    scope.updateReadStatus = () => {};
+    scope.isRead = () => true;
+    scope.setFilterQuery = () => {};
     scope.reports = [ report, { _id: 'a' } ];
-    scope.clearSelected = function() {};
-    scope.setBackTarget = function() {};
-    scope.isMobile = function() {
-      return false;
-    };
-    scope.setTitle = function() {};
+    scope.clearSelected = () => {};
+    scope.setBackTarget = () => {};
+    scope.isMobile = () => false;
+    scope.setTitle = () => {};
     scope.setRightActionBar = sinon.stub();
     scope.setLeftActionBar = sinon.stub();
-    scope.settingSelected = function() {};
-
-    UserDistrict = function() {
-      return {
-        then: function() {}
-      };
+    scope.settingSelected = () => {};
+    UserDistrict = () => {
+      return { then: () => {} };
     };
-
     LiveList = { reports: {
-      initialised: function() { return true; },
+      initialised: () => true,
       setSelected: sinon.stub()
     }};
-
-    MarkRead = function() {};
-
-    FormatDataRecord = function(data) {
+    MarkRead = () => {};
+    FormatDataRecord = data => {
       return {
-        then: function(cb) {
+        then: cb => {
           cb(data);
           return {
-            catch: function() {}
+            catch: () => {}
           };
         }
       };
     };
 
-    Search = function(type, filters, options, callback) {
+    Search = (type, filters, options, callback) => {
       callback(null, { });
     };
 
-    Changes = function(options) {
+    Changes = options => {
       changesCallback = options.callback;
-      return { unsubscribe: function() {} };
+      return { unsubscribe: () => {} };
     };
 
     changesCallback = undefined;
 
-    createController = function() {
+    createController = () => {
       return $controller('ReportsCtrl', {
         '$scope': scope,
         'UserDistrict': UserDistrict,
@@ -91,27 +81,28 @@ describe('ReportsCtrl controller', function() {
         'Settings': KarmaUtils.nullPromise(),
         'DB': KarmaUtils.mockDB({ get: get, post: post })(),
         'LiveList': LiveList,
-        'Tour': function() {},
-        'SearchFilters': function() {},
-        'Export': function() {}
+        'ReportViewModelGenerator': {},
+        'Tour': () => {},
+        'SearchFilters': () => {},
+        'Export': () => {}
       });
     };
   }));
 
-  it('set up controller', function() {
+  it('set up controller', () => {
     createController();
   });
 
-  it('verifies the given report', function(done) {
+  it('verifies the given report', done => {
     get.returns(KarmaUtils.mockPromise(null, { _id: 'def', name: 'hello' }));
     post.returns(KarmaUtils.mockPromise());
     createController();
     scope.selected[0] = {
       _id: 'abc',
-      report: { form: 'P' }
+      doc: { form: 'P' }
     };
     scope.$broadcast('VerifyReport', true);
-    setTimeout(function() {
+    setTimeout(() => {
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.args[0][0]).to.equal('abc');
       chai.expect(post.callCount).to.equal(1);
@@ -122,18 +113,21 @@ describe('ReportsCtrl controller', function() {
     });
   });
 
-  it('when selecting a report, it sets the phone number in the actionbar', function() {
-    get.returns(KarmaUtils.mockPromise(null, { _id: 'def', name: 'hello' }));
+  it('when selecting a report, it sets the phone number in the actionbar', done => {
+    const phone = 12345;
+    get.returns(KarmaUtils.mockPromise(null, { _id: 'def', name: 'hello', phone: phone }));
     post.returns(KarmaUtils.mockPromise());
     createController();
-    var phone = 12345;
-    scope.setSelected({
+    scope.setSelected({ doc: {
       _id: 'abc',
       form: 'P',
-      contact: { _id: 'def', phone: phone}
+      contact: { _id: 'def' }
+    }});
+    setTimeout(() => { // timeout to let the DB query finish
+      chai.expect(scope.setRightActionBar.callCount).to.equal(1);
+      chai.expect(scope.setRightActionBar.args[0][0].sendTo.phone).to.equal(phone);
+      done();
     });
-    chai.assert(scope.setRightActionBar.called);
-    chai.expect(scope.setRightActionBar.args[0][0].sendTo.phone).to.equal(phone);
   });
 
 });
