@@ -1,10 +1,19 @@
 # Medic Mobile Release Notes
 
+## 2.13.0
+
+_TBC_
+
+### Migration notes
+
+- [#2635](https://github.com/medic/medic-webapp/issues/2635) changes the context available to the configured contact summary script. The `contact` parameter no longer has information about parents. This information is now in an array called `lineage`. More information is available in the [configuration documentation](https://github.com/medic/medic-docs/blob/master/configuration/contact-summary.md).
+
 ## 2.11.1
 
 _May 9, 2017_
 
 ### Bug fixes
+
  - Cannot report via SMS about people who are registered in the web app. Issue: #3401
  - Results page CSS messed up in v2.11. Issue: #3369
  - The user needs an associated contact to create a contact. Issue: #3394
