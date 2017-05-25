@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    async = require('async'),
     auth = require('../auth'),
     config = require('../config'),
     serverUtils = require('../server-utils'),
@@ -8,6 +9,13 @@ var _ = require('underscore'),
     CONTACT_TYPES = ['person', 'clinic', 'health_center', 'district_hospital'],
     inited = false,
     continuousFeeds = [];
+
+/**
+ * As per https://issues.apache.org/jira/browse/COUCHDB-1288, there is a 100 doc
+ * limit on processing changes feeds with the _doc_ids filter within a
+ * reasonable amount of time.
+ */
+const MAX_DOC_IDS = 100;
 
 var error = function(code, message) {
   return JSON.stringify({ code: code, message: message });
@@ -147,6 +155,12 @@ var prepareResponse = function(feed, changes) {
   feed.res.write(JSON.stringify(changes));
 };
 
+var abortAllChangesRequests = feed => {
+  if (feed.changesReqs) {
+    feed.changesReqs.forEach(req => req && req.abort());
+  }
+};
+
 var cleanUp = function(feed) {
   if (feed.heartbeat) {
     clearInterval(feed.heartbeat);
@@ -155,43 +169,97 @@ var cleanUp = function(feed) {
   if (index !== -1) {
     continuousFeeds.splice(index, 1);
   }
-  if (feed.changesReq) {
-    feed.changesReq.abort();
-  }
+  abortAllChangesRequests(feed);
 };
 
 var getChanges = function(feed) {
+  const allIds = _.union(feed.requestedIds, feed.validatedIds);
+  const chunks = [];
+
+  if (feed.req.query.feed === 'longpoll') {
+    chunks.push(allIds);
+  } else {
+    while (allIds.length) {
+      chunks.push(allIds.splice(0, MAX_DOC_IDS));
+    }
+  }
+
+  feed.changesReqs = [];
   // we cannot call 'changes' in nano because it only uses GET requests and
   // our query string might be too long for GET
-  feed.changesReq = db.request({
-    db: db.settings.db,
-    path: '_changes',
-    qs:  _.pick(feed.req.query, 'timeout', 'style', 'heartbeat', 'since', 'feed', 'limit', 'filter'),
-    body: { doc_ids: _.union(feed.requestedIds, feed.validatedIds) },
-    method: 'POST'
-  }, function(err, changes) {
-    if (feed.res.finished) {
-      // Don't write to the response if it has already ended. The change
-      // will be picked up in the subsequent changes request.
+  async.map(
+    chunks,
+    (docIds, callback) => {
+      feed.changesReqs.push(db.request({
+        db: db.settings.db,
+        path: '_changes',
+        qs:  _.pick(feed.req.query, 'timeout', 'style', 'heartbeat', 'since', 'feed', 'limit', 'filter'),
+        body: { doc_ids: docIds },
+        method: 'POST'
+      }, callback));
+    },
+    (err, responses) => {
+      if (feed.res.finished) {
+        // Don't write to the response if it has already ended. The change
+        // will be picked up in the subsequent changes request.
+        return;
+      }
+      cleanUp(feed);
+      if (err) {
+        feed.res.write(error(503, 'Error processing your changes'));
+      } else {
+        const changes = mergeChangesResponses(responses);
+        if (changes) {
+          prepareResponse(feed, changes);
+        } else {
+          feed.res.write(error(503, 'No _changes error, but malformed response.'));
+        }
+      }
+      feed.res.end();
+    }
+  );
+};
+
+const mergeChangesResponses = responses => {
+  let lastSeqNum = 0;
+  let lastSeq;
+  let err = false;
+  const results = [];
+
+  responses.forEach(changes => {
+    if (err) {
       return;
     }
-    cleanUp(feed);
-    if (err) {
-      feed.res.write(error(503, 'Error processing your changes'));
-    } else if (!changes || !changes.results) {
+    if (!changes || !changes.results) {
       // See: https://github.com/medic/medic-webapp/issues/3099
       // This should never happen, but apparently it does sometimes.
       // Attempting to log out the response usefully to see what's occuring
-      var malformedChangesError = 'No _changes error, but malformed response: ';
-      var printableChanges = JSON.stringify(changes);
-      console.error(malformedChangesError, printableChanges);
-      feed.res.write(error(503, malformedChangesError + printableChanges));
+      console.error('No _changes error, but malformed response:', JSON.stringify(changes));
+      err = true;
     } else {
-      prepareResponse(feed, changes);
+      results.push(changes.results);
+      const numericSeq = numericSeqFrom(changes.last_seq);
+      if (numericSeq > lastSeqNum) {
+        lastSeq = changes.last_seq;
+        lastSeqNum = numericSeq;
+      }
     }
-    feed.res.end();
   });
+
+  if (err) {
+    return;
+  }
+
+  const merged = Array.prototype.concat(...results); // flatten the result sets
+  merged.sort((a, b) => numericSeqFrom(a.seq) - numericSeqFrom(b.seq));
+
+  return {
+    last_seq: lastSeq,
+    results: merged
+  };
 };
+
+const numericSeqFrom = seq => typeof seq === 'number' ? seq : Number.parseInt(seq.split('-')[0]);
 
 var bindServerIds = function(feed, callback) {
   bindSubjectIds(feed, function(err) {
@@ -308,9 +376,7 @@ var updateFeeds = function(changes) {
   continuousFeeds.forEach(function(feed) {
     // check if new and relevant
     if (hasNewApplicableDoc(feed, modifiedChanges)) {
-      if (feed.changesReq) {
-        feed.changesReq.abort();
-      }
+      abortAllChangesRequests(feed);
       bindServerIds(feed, function(err) {
         if (err) {
           return serverUtils.error(err, feed.req, feed.res);
