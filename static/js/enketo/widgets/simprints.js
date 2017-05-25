@@ -66,7 +66,7 @@ define( function( require, exports, module ) {
         /* jslint bitwise: true */
         var simprintsInputId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) & SP_ID_MASK;
         $el.find( 'input' ).attr( 'data-simprints-reg', simprintsInputId );
-        $el.append( '<button class="btn btn-primary" onclick="medicmobile_android.simprints_reg(' + simprintsInputId + ')">Scan Some Digits!</button>' );
+        $el.append( '<button class="btn btn-primary" onclick="medicmobile_android.simprints_reg(' + simprintsInputId + ')"><i class="fa fa-bluetooth"> Get new Simprints ID</button>' );
     };
 
     Simprintswidget.prototype.destroy = function( element ) {
