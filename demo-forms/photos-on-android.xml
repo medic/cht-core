@@ -1,0 +1,34 @@
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
+	<h:head>
+		<h:title>Photos on Android - Demo Form</h:title>
+
+		<model>
+			<instance>
+				<photos-on-android id="photos-on-android">
+					<my_old_photo/>
+					<my_new_photo/>
+					<meta>
+						<instanceID/>
+					</meta>
+				</photos-on-android>
+			</instance>
+
+			<bind nodeset="/photos-on-android/my_old_photo" type="binary"/>
+			<bind nodeset="/photos-on-android/my_new_photo" type="binary"/>
+		</model>
+	</h:head>
+
+	<h:body>
+		<upload ref="/photos-on-android/my_old_photo" mediatype="image/*">
+			<hint>Select a picture</hint>
+			<label>Image widget without capture</label>
+		</upload>
+	</h:body>
+
+	<h:body>
+		<upload ref="/photos-on-android/my_new_photo" mediatype="image/*" capture="camera">
+			<hint>Take a new picture</hint>
+			<label>Image widget with capture</label>
+		</upload>
+	</h:body>
+</h:html>
