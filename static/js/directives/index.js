@@ -7,6 +7,7 @@
   require('./auth');
   require('./enketo');
   require('./modal');
+  require('./report-image');
   require('./sender');
 
 }());

@@ -53,7 +53,8 @@
           </li>
           <li ng-if="selection.doc.form && selection.doc.content_type === 'xml'" ng-repeat="field in selection.displayFields" class="indent-{{field.depth}}">
             <label translate>{{field.label}}</label>
-            <p>{{field.value}}</p>
+            <p ng-hide="field.imagePath">{{field.value}}</p>
+            <report-image ng-if="field.imagePath" report="{{selection.doc._id}}" path="{{field.imagePath}}"/>
           </li>
           <li ng-if="selection.doc.errors.length">
             <label translate>Errors</label>
