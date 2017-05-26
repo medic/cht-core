@@ -20,7 +20,7 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
     'ngInject';
     'use strict';
 
-    var getFields = function(results, values, labelPrefix, depth) {
+    var getFields = function(doc, results, values, labelPrefix, depth) {
       if (depth > 3) {
         depth = 3;
       }
@@ -32,13 +32,25 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
             label: label,
             depth: depth
           });
-          getFields(results, value, label, depth + 1);
+          getFields(doc, results, value, label, depth + 1);
         } else {
-          results.push({
+          var result = {
             label: label,
             value: value,
             depth: depth
-          });
+          };
+
+          var filePath = 'user-file/' + label.split('.').slice(1).join('/');
+          if (doc &&
+              doc._attachments &&
+              doc._attachments[filePath] &&
+              doc._attachments[filePath].content_type &&
+              doc._attachments[filePath].content_type.startsWith('image/') &&
+                true) {
+            result.imagePath = filePath;
+          }
+
+          results.push(result);
         }
       });
       return results;
@@ -50,7 +62,7 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
         return [];
       }
       var label = 'report.' + doc.form;
-      var fields = getFields([], doc.fields, label, 0);
+      var fields = getFields(doc, [], doc.fields, label, 0);
       var hide = doc.hidden_fields || [];
       hide.push('inputs');
       return _.reject(fields, function(field) {
