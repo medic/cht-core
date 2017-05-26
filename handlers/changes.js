@@ -42,6 +42,8 @@ var getDepth = function(userCtx) {
 };
 
 var bindSubjectIds = function(feed, callback) {
+  var startTime = startTimer();
+
   auth.getFacilityId(feed.req, feed.userCtx, function(err, facilityId) {
     if (err) {
       return callback(err);
@@ -85,6 +87,7 @@ var bindSubjectIds = function(feed, callback) {
           subjectIds.push(UNASSIGNED_KEY);
         }
         feed.subjectIds = subjectIds;
+        endTimer('bindSubjectIds().before-callback', startTime);
         callback();
       });
     });
@@ -108,7 +111,9 @@ var isSensitive = function(feed, subject, submitter) {
 };
 
 var bindValidatedDocIds = function(feed, callback) {
+  var startTime = startTimer();
   db.medic.view('medic', 'docs_by_replication_key', { keys: feed.subjectIds }, function(err, viewResult) {
+    endTimer('bindValidatedDocIds().docs_by_replication_key', startTime);
     if (err) {
       return callback(err);
     }
@@ -118,6 +123,7 @@ var bindValidatedDocIds = function(feed, callback) {
       }
       return ids;
     }, [ '_design/medic-client', 'org.couchdb.user:' + feed.userCtx.name ]);
+    endTimer('bindValidatedDocIds().before-callback', startTime);
     callback();
   });
 };
@@ -173,6 +179,8 @@ var cleanUp = function(feed) {
 };
 
 var getChanges = function(feed) {
+  var startTime = startTimer();
+
   const allIds = _.union(feed.requestedIds, feed.validatedIds);
   const chunks = [];
 
@@ -199,6 +207,8 @@ var getChanges = function(feed) {
       }, callback));
     },
     (err, responses) => {
+      endTimer(`getChanges().requests:${chunks.length}`, startTime);
+
       if (feed.res.finished) {
         // Don't write to the response if it has already ended. The change
         // will be picked up in the subsequent changes request.
@@ -216,6 +226,7 @@ var getChanges = function(feed) {
         }
       }
       feed.res.end();
+      endTimer('getChanges().end', startTime);
     }
   );
 };
@@ -451,6 +462,15 @@ module.exports = {
   },
   _getReplicationKey: getReplicationKey // used for testing
 };
+
+function startTimer() {
+  return Date.now();
+}
+
+function endTimer(name, start) {
+  var diff = Date.now() - start;
+  console.log('TIMED SECTION COMPLETE', name, diff, 'ms');
+}
 
 // used for testing
 if (process.env.UNIT_TEST_ENV) {
