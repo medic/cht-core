@@ -81,7 +81,16 @@ var moment = require('moment'),
 
             var $xml = $($.parseXML(xml));
             var title = $xml.find('title').text();
-            var formId = $xml.find('instance').children().first().attr('id');
+
+            var dataNode = $xml.find('instance').children().first();
+            if (!dataNode.children('meta').children('instanceID').length) {
+              throw new Error('No <meta><instanceID/></meta> node found for first child of <instance> element.');
+            }
+
+            var formId = dataNode.attr('id');
+            if (!formId) {
+              throw new Error('No ID attribute found for first child of <instance> element.');
+            }
 
             var update = function(doc) {
               doc.context = context;
