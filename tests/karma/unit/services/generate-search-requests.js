@@ -148,20 +148,64 @@ describe('GenerateSearchRequests service', function() {
     chai.expect(result[0].params.endkey[0]).to.equal(1371038399999);
   });
 
-  it('creates unfiltered contacts request for no filter', function() {
-    var result = service('contacts', {});
+  var assertUnfilteredContactRequest = function(result) {
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0]).to.deep.equal({
       ordered: true,
       view: 'medic-client/contacts_by_type_index_name'
     });
+  };
+
+  it('creates unfiltered contacts request for no filter', function() {
+    var result = service('contacts', {});
+    assertUnfilteredContactRequest(result);
   });
 
-  it('creates unfiltered contacts request for type filter', function() {
+  it('creates contacts type request for types filter', function() {
     var filters = {
       types: {
         selected: [ 'person', 'clinic' ],
         options: [ 'person', 'clinic', 'district_hospital' ]
+      }
+    };
+    var result = service('contacts', filters);
+    chai.expect(result.length).to.equal(1);
+    chai.expect(result[0]).to.deep.equal({
+      view: 'medic-client/contacts_by_type',
+      params: {
+        keys: [ [ 'person' ], [ 'clinic' ] ]
+      }
+    });
+  });
+
+  it('creates unfiltered contacts request for types filter when all options are selected', function() {
+    var filters = {
+      types: {
+        selected: [ 'person', 'clinic', 'district_hospital' ],
+        options: [ 'person', 'clinic', 'district_hospital' ]
+      }
+    };
+    var result = service('contacts', filters);
+    assertUnfilteredContactRequest(result);
+  });
+
+  it('creates unfiltered contacts request for types filter when no options are selected', function() {
+    var filters = {
+      types: {
+        selected: [],
+        options: [ 'person', 'clinic', 'district_hospital' ]
+      }
+    };
+    var result = service('contacts', filters);
+    assertUnfilteredContactRequest(result);
+  });
+
+  // format used by select2search
+  it('creates contacts type request for type filter without options', function() {
+    var filters = {
+      types: {
+        selected: [ 'person', 'clinic' ]
+        // no options.
       }
     };
     var result = service('contacts', filters);

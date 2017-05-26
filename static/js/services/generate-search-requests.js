@@ -19,23 +19,29 @@ var _ = require('underscore'),
 
       // filter = { selected: [...], options: [...]}
       var getRequestForMultidropdown = function(view, filter, mapKeysFunc) {
-        var nothingSelected = !filter || !filter.selected || filter.selected.length === 0;
-        if (nothingSelected) {
+        if (!filter || !filter.selected || !filter.options) {
           return;
         }
 
         // If everything is selected, no filter to apply.
-        var everythingSelected = filter.options && (filter.selected.length === filter.options.length);
+        var everythingSelected = filter.selected.length === filter.options.length;
+        if (everythingSelected) {
+          return;
+        }
 
-        // tmp in which case is there no options?? Why do we still filter?
-        if (!filter.options || !everythingSelected) {
+        return getRequestWithMappedKeys(view, filter.selected, mapKeysFunc);
+      };
+
+      var getRequestWithMappedKeys = function(view, keys, mapKeysFunc) {
+          if (keys.length === 0) {
+            return;
+          }
           return {
             view: view,
             params: {
-              keys: mapKeysFunc(filter.selected)
+              keys: mapKeysFunc(keys)
             }
           };
-        }
       };
 
       var getRequestForBooleanKey = function(view, key) {
@@ -121,7 +127,14 @@ var _ = require('underscore'),
       };
 
       var documentTypeRequest = function(filters, view) {
-        return getRequestForMultidropdown(view, filters.types, getKeysArray);
+        if (!filters.types) {
+          return;
+        }
+        if (filters.types.selected && filters.types.options) {
+          return getRequestForMultidropdown(view, filters.types, getKeysArray);
+        }
+        // Used by select2search.
+        return getRequestWithMappedKeys(view, filters.types.selected, getKeysArray);
       };
 
       var requestBuilders = {
@@ -145,17 +158,13 @@ var _ = require('underscore'),
           return requests;
         },
         contacts: function(filters) {
-          var typeRequests = documentTypeRequest(filters, 'medic-client/contacts_by_type');
-          // Single request, with one key for each type.
-          var hasTypeRequests = typeRequests && typeRequests.params.keys.length;
+          var typeRequest = documentTypeRequest(filters, 'medic-client/contacts_by_type');
+          var hasTypeRequest = typeRequest && typeRequest.params.keys.length;
 
           var freetextRequests = freetextRequest(filters, 'medic-client/contacts_by_freetext');
-          // One request per word.
           var hasFreetextRequests = freetextRequests && freetextRequests.length;
 
-          // If both type and freetext requests,
-          // then we make a special combined contacts+type request.
-          if (hasTypeRequests && hasFreetextRequests) {
+          if (hasTypeRequest && hasFreetextRequests) {
 
             var makeCombinedParams = function(freetextRequest, typeKey) {
               var type = typeKey[0];
@@ -169,7 +178,7 @@ var _ = require('underscore'),
               return params;
             };
 
-            var makeCombinedRequest = function(freetextRequest, typeRequests) {
+            var makeCombinedRequest = function(typeRequests, freetextRequest) {
               var result = {
                 view: 'medic-client/contacts_by_type_freetext',
                 union: typeRequests.params.keys.length > 1
@@ -185,12 +194,12 @@ var _ = require('underscore'),
               return result;
             };
 
-            return freetextRequests.map(_.partial(makeCombinedRequest, _, typeRequests));
+            return freetextRequests.map(_.partial(makeCombinedRequest, typeRequest, _));
           }
 
           var requests = [];
           requests.push(freetextRequests);
-          requests.push(typeRequests);
+          requests.push(typeRequest);
           requests = _.compact(_.flatten(requests));
 
           if (!requests.length) {
@@ -215,13 +224,13 @@ var _ = require('underscore'),
       // }
       //
       // - For freetext search :
-      // var filters = { search: 'patient_id:123 form:D   ' }
+      // var filters = { search: 'patient_id:123 stones   ' }
       //
       // - For reports_by_subject
       // var filters = { subjectIds: [ 'a', 'b', 'c' ] };
       //
       // - For reports_by_date
-      // var filters = { date: { from: date20130208, to: date20130612 } };
+      // var filters = { date: { from: 1493244000000, to: 1495749599999 } };
       //
       // In case of several requests to combine, the filter object will have
       // the corresponding fields simultaneously.

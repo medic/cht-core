@@ -35,7 +35,7 @@ var _ = require('underscore');
       };
 
       // Get the subset of rows, in appropriate order, according to options.
-      var getPageSubset = function(type, rows, options) {
+      var getPageRows = function(type, rows, options) {
         var start;
         var end;
         if (type === 'reports') {
@@ -97,7 +97,7 @@ var _ = require('underscore');
         // multiple requests - have to manually paginate
         return $q.all(requests.map(queryView))
           .then(getIntersection)
-          .then(_.partial(getPageSubset, type, _, options));
+          .then(_.partial(getPageRows, type, _, options));
       };
 
       var generateRequests = function(type, filters, options) {
@@ -108,7 +108,6 @@ var _ = require('underscore');
         return requests;
       };
 
-      // tmp what's in filters??? What's in options????
       return function(type, filters, options) {
         options = options || {};
         _.defaults(options, {

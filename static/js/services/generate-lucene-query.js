@@ -96,15 +96,15 @@ angular.module('inboxServices').factory('GenerateLuceneQuery',
     var TYPES = {
       reports: {
         buildQuery: function(filters) {
-          var operands = [];
-          operands.push(formatFreetext(filters));
-          operands.push(formatReportedDate(filters));
-          operands.push(formatReportType());
-          operands.push(formatClinics(filters));
-          operands.push(formatForm(filters));
-          operands.push(formatErrors(filters));
-          operands.push(formatVerified(filters));
-          return operands;
+          return _.compact([
+            formatFreetext(filters),
+            formatReportedDate(filters),
+            formatReportType(),
+            formatClinics(filters),
+            formatForm(filters),
+            formatErrors(filters),
+            formatVerified(filters)
+          ]);
         },
         schema: {
           errors: 'int',
@@ -114,10 +114,10 @@ angular.module('inboxServices').factory('GenerateLuceneQuery',
       },
       contacts: {
         buildQuery: function(filters) {
-          var operands = [];
-          operands.push(formatFreetext(filters));
-          operands.push(formatContactType());
-          return operands;
+          return _.compact([
+            formatFreetext(filters),
+            formatContactType()
+          ]);
         }
       }
     };
@@ -127,10 +127,9 @@ angular.module('inboxServices').factory('GenerateLuceneQuery',
       if (!type) {
         throw new Error('Unknown type');
       }
-      var operands = type.buildQuery(filters);
       return {
         schema: type.schema,
-        query: { $operands: _.compact(operands) }
+        query: { $operands: type.buildQuery(filters) }
       };
     };
   }
