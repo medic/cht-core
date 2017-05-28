@@ -14,6 +14,10 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     'use strict';
     'ngInject';
 
+    var markFormEdited = function() {
+      $scope.enketoStatus.edited = true;
+    };
+
     var render = function(doc) {
       $scope.setSelected({ doc: doc });
       $scope.setCancelTarget(function() {
@@ -26,7 +30,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       return XmlForm($state.params.formId, { include_docs: true })
         .then(function(form) {
           return Enketo
-            .render('#contact-report', form.id, instanceData)
+            .render('#contact-report', form.id, instanceData, markFormEdited)
             .then(function(formInstance) {
               $scope.setTitle(TranslateFrom(form.doc.title));
               $scope.form = formInstance;

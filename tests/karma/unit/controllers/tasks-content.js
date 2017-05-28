@@ -53,7 +53,7 @@ describe('TasksContentCtrl', function() {
     chai.expect($scope.formId).to.equal('A');
     setTimeout(function() {
       chai.expect(render.callCount).to.equal(1);
-      chai.expect(render.getCall(0).args.length).to.equal(3);
+      chai.expect(render.getCall(0).args.length).to.equal(4);
       chai.expect(render.getCall(0).args[0]).to.equal('#task-report');
       chai.expect(render.getCall(0).args[1]).to.equal('myform');
       chai.expect(render.getCall(0).args[2]).to.equal('nothing');

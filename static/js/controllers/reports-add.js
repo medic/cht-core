@@ -62,6 +62,10 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
         .then(FileReader);
     };
 
+    var markFormEdited = function() {
+      $scope.enketoStatus.edited = true;
+    };
+
     getSelected()
       .then(function(model) {
         $log.debug('setting selected', model);
@@ -70,7 +74,8 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
           getReportContent(model.doc),
           XmlForm(model.formInternalId, { include_docs: true })
         ]).then(function(results) {
-          Enketo.render('#report-form', results[1].id, results[0])
+          $scope.enketoStatus.edited = false;
+          Enketo.render('#report-form', results[1].id, results[0], markFormEdited)
             .then(function(form) {
               $scope.form = form;
               $scope.loadingContent = false;

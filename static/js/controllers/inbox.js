@@ -156,18 +156,28 @@ var feedback = require('../modules/feedback'),
 
       // User wants to cancel current flow, or pressed back button, etc.
       $scope.navigationCancel = function() {
-        if (!$scope.enketoStatus.saving) {
-          Modal({
-            templateUrl: 'templates/modals/navigation_confirm.html',
-            controller: 'NavigationConfirmCtrl',
-            singleton: true
-          })
-          .then(function() {
-            if ($scope.cancelCallback) {
-              $scope.cancelCallback();
-            }
-          });
+        if ($scope.enketoStatus.saving) {
+          // wait for save to finish
+          return;
         }
+        if (!$scope.enketoStatus.edited) {
+          // form hasn't been modified - return immediately
+          if ($scope.cancelCallback) {
+            $scope.cancelCallback();
+          }
+          return;
+        }
+        // otherwise data will be discarded so confirm navigation
+        Modal({
+          templateUrl: 'templates/modals/navigation_confirm.html',
+          controller: 'NavigationConfirmCtrl',
+          singleton: true
+        })
+        .then(function() {
+          if ($scope.cancelCallback) {
+            $scope.cancelCallback();
+          }
+        });
       };
 
       /**

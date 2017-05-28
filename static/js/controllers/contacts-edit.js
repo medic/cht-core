@@ -94,6 +94,10 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       return $q.resolve();
     };
 
+    var markFormEdited = function() {
+      $scope.enketoStatus.edited = true;
+    };
+
     var renderForm = function(form) {
       return $timeout(function() {
         var container = $('#contact-form');
@@ -106,9 +110,9 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         }
         var instanceData = getFormInstanceData();
         if (form.id) {
-          return Enketo.renderContactForm('#contact-form', form.id, instanceData);
+          return Enketo.renderContactForm('#contact-form', form.id, instanceData, markFormEdited);
         }
-        return Enketo.renderFromXmlString('#contact-form', form.xml, instanceData);
+        return Enketo.renderFromXmlString('#contact-form', form.xml, instanceData, markFormEdited);
       });
     };
 
