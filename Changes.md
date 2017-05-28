@@ -1,5 +1,25 @@
 # Medic Mobile Release Notes
 
+## 2.11.2
+
+_May 29, 2017_
+
+### Performance improvements
+
+- Slow initial replication for users with lots of docs. Issue: #3508
+
+## 2.11.1
+
+_May 9, 2017_
+
+### Bug fixes
+ - Cannot report via SMS about people who are registered in the web app. Issue: #3401
+ - Results page CSS messed up in v2.11. Issue: #3369
+ - The user needs an associated contact to create a contact. Issue: #3394
+ - Error when adding Place with new person. Issue: #3420
+ - Error after canceling and re-opening any contact creation form. Issue: #3448
+ - namespace-form-fields migration : report bulk errors. Issue: #3371 (second part)
+
 ## 2.11.0
 
 _May 26, 2017_
