@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 2.11.2
+
+_May 29, 2017_
+
+### Performance improvements
+
+- Slow initial replication for users with lots of docs. Issue: #3508
+
 ## 2.11.1
 
 _May 9, 2017_
