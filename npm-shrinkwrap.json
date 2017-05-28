@@ -1,6 +1,6 @@
 {
   "name": "medic",
-  "version": "2.11.1",
+  "version": "2.11.2",
   "dependencies": {
     "abbrev": {
       "version": "1.1.0",
