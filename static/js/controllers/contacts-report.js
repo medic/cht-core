@@ -29,6 +29,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       };
       return XmlForm($state.params.formId, { include_docs: true })
         .then(function(form) {
+          $scope.enketoStatus.edited = false;
           return Enketo
             .render('#contact-report', form.id, instanceData, markFormEdited)
             .then(function(formInstance) {
