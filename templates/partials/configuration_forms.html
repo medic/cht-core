@@ -31,16 +31,8 @@
       <legend translate>Installed Forms</legend>
       <ul>
         <li ng-repeat="form in xForms" class="row">
-          <div class="col-sm-6">
-            <a href="/_utils/#database/medic/{{form._id}}">
-              {{form._id}}
-            </a>
-          </div>
-          <div class="col-sm-6">
-            <a href="/_utils/#database/medic/{{form._id}}">
-              {{form.title}}
-            </a>
-          </div>
+          <div class="col-sm-6">{{form._id}}</div>
+          <div class="col-sm-6">{{form.title}}</div>
         </li>
       </ul>
     </fieldset>
