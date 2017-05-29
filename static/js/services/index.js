@@ -36,7 +36,7 @@
   require('./json-parse');
   require('./format-data-record');
   require('./format-date');
-  require('./generate-search-query');
+  require('./generate-lucene-query');
   require('./generate-search-requests');
   require('./get-contact-summaries');
   require('./get-data-records');
