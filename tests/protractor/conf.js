@@ -73,9 +73,8 @@ exports.config = {
   specs: ['e2e/**/*.js'],
   framework: 'jasmine2',
   capabilities: {
-    // browserName: 'chrome'
     browserName: 'firefox'
-    //'marionette':'true'
+    marionette: false // legacy driver for firefox 47
   },
   onPrepare: () => {
     const startup = startModules();
