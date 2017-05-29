@@ -61,7 +61,7 @@
     "grunt-karma": "^2.0.0",
     "grunt-notify": "^0.4.5",
     "grunt-postcss": "^0.8.0",
-    "grunt-protractor-runner": "^4.0.0",
+    "grunt-protractor-runner": "^5.0.0",
     "grunt-regex-check": "^0.1.10",
     "grunt-sass": "^2.0.0",
     "grunt-text-replace": "^0.4.0",
