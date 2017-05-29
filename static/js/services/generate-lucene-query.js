@@ -1,7 +1,7 @@
 var _ = require('underscore'),
     moment = require('moment');
 
-angular.module('inboxServices').factory('GenerateSearchQuery',
+angular.module('inboxServices').factory('GenerateLuceneQuery',
   function(
     ContactSchema
   ) {
@@ -95,14 +95,16 @@ angular.module('inboxServices').factory('GenerateSearchQuery',
 
     var TYPES = {
       reports: {
-        buildQuery: function(filters, operands) {
-          operands.push(formatFreetext(filters));
-          operands.push(formatReportedDate(filters));
-          operands.push(formatReportType());
-          operands.push(formatClinics(filters));
-          operands.push(formatForm(filters));
-          operands.push(formatErrors(filters));
-          operands.push(formatVerified(filters));
+        buildQuery: function(filters) {
+          return _.compact([
+            formatFreetext(filters),
+            formatReportedDate(filters),
+            formatReportType(),
+            formatClinics(filters),
+            formatForm(filters),
+            formatErrors(filters),
+            formatVerified(filters)
+          ]);
         },
         schema: {
           errors: 'int',
@@ -111,9 +113,11 @@ angular.module('inboxServices').factory('GenerateSearchQuery',
         }
       },
       contacts: {
-        buildQuery: function(filters, operands) {
-          operands.push(formatFreetext(filters));
-          operands.push(formatContactType());
+        buildQuery: function(filters) {
+          return _.compact([
+            formatFreetext(filters),
+            formatContactType()
+          ]);
         }
       }
     };
@@ -123,11 +127,9 @@ angular.module('inboxServices').factory('GenerateSearchQuery',
       if (!type) {
         throw new Error('Unknown type');
       }
-      var operands = [];
-      type.buildQuery(filters, operands);
       return {
         schema: type.schema,
-        query: { $operands: _.compact(operands) }
+        query: { $operands: type.buildQuery(filters) }
       };
     };
   }

@@ -4,13 +4,13 @@ describe('DownloadUrl service', function() {
 
   var service,
       Language = sinon.stub(),
-      GenerateSearchQuery = sinon.stub();
+      GenerateLuceneQuery = sinon.stub();
 
   beforeEach(function() {
     module('inboxApp');
     module(function($provide) {
       $provide.value('Language', Language);
-      $provide.value('GenerateSearchQuery', GenerateSearchQuery);
+      $provide.value('GenerateLuceneQuery', GenerateLuceneQuery);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject(function(_DownloadUrl_) {
@@ -19,7 +19,7 @@ describe('DownloadUrl service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(Language, GenerateSearchQuery);
+    KarmaUtils.restore(Language, GenerateLuceneQuery);
   });
 
   it('builds url for messages', function() {
@@ -52,7 +52,7 @@ describe('DownloadUrl service', function() {
 
   it('builds url for forms', function() {
     Language.returns(KarmaUtils.mockPromise(null, 'en'));
-    GenerateSearchQuery.returns({ query: 'form:P' });
+    GenerateLuceneQuery.returns({ query: 'form:P' });
     return service(null, 'reports').then(function(actual) {
       chai.expect(decodeURIComponent(actual))
           .to.equal('/api/v1/export/forms?format=xml&locale=en&query="form:P"&schema=');
@@ -61,7 +61,7 @@ describe('DownloadUrl service', function() {
 
   it('builds url for contacts backup', function() {
     Language.returns(KarmaUtils.mockPromise(null, 'en'));
-    GenerateSearchQuery.returns({ query: 'district:2' });
+    GenerateLuceneQuery.returns({ query: 'district:2' });
     return service(null, 'contacts').then(function(actual) {
       chai.expect(decodeURIComponent(actual))
           .to.equal('/api/v1/export/contacts?format=json&locale=en&query="district:2"&schema=');
