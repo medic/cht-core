@@ -73,7 +73,7 @@ exports.config = {
   specs: ['e2e/**/*.js'],
   framework: 'jasmine2',
   capabilities: {
-    browserName: 'firefox'
+    browserName: 'firefox',
     marionette: false // legacy driver for firefox 47
   },
   onPrepare: () => {
