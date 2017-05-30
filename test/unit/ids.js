@@ -3,16 +3,19 @@ const sinon = require('sinon').sandbox.create(),
       ids = require('../../lib/ids.js');
 
 const mockDb = (idFilterLogicFn) => {
-  return { medic: { view: sinon.spy((db, view, options, callback) => {
+  return { medic: {
+    view: sinon.spy((db, view, options, callback) => {
+      const ids = options.keys.slice(0);
 
-    const ids = options.keys.slice(0);
+      const toReturn = {
+        rows: idFilterLogicFn(ids).map(id => {return {key: id};})
+      };
 
-    const toReturn = {
-      rows: idFilterLogicFn(ids).map(id => {return {key: id};})
-    };
-
-    callback(null, toReturn);
-  })}};
+      callback(null, toReturn);
+    }),
+    get: sinon.stub().callsArgWith(1, null, {_id: 'shortcode-id-length', current_length: 5}),
+    put: sinon.stub().callsArgWith(1)
+  }};
 };
 
 exports.tearDown = callback => {
@@ -82,6 +85,18 @@ module.exports['addUniqueId retries with a longer id if it only generates duplic
     test.ok(patientId, 'id should be generated');
     test.equal(patientId.length, 6);
     test.ok(potentialIds.includes(patientId), 'id should come from the cached ids');
+    test.done();
+  }).catch(err => test.fail(err));
+};
+
+module.exports['id generator uses id length from the database'] = test => {
+  const db = mockDb(() => []),
+        LENGTH = 10;
+  db.medic.get = sinon.stub().callsArgWith(1, null, {_id: 'shortcode-id-length', current_length: LENGTH});
+
+  ids.generator(db).next().value.then(patientId => {
+    test.ok(patientId);
+    test.equal(patientId.length, LENGTH);
     test.done();
   }).catch(err => test.fail(err));
 };
