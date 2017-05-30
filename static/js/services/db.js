@@ -1,68 +1,61 @@
 var _ = require('underscore');
 
-(function () {
+angular.module('inboxServices').factory('DB',
+  function(
+    $window,
+    Location,
+    pouchDB,
+    POUCHDB_OPTIONS,
+    Session,
+    WebWorker
+  ) {
 
-  'use strict';
+    'use strict';
+    'ngInject';
 
-  var inboxServices = angular.module('inboxServices');
+    var cache = {};
 
-  inboxServices.factory('DB',
-    function(
-      $window,
-      Location,
-      pouchDB,
-      POUCHDB_OPTIONS,
-      Session,
-      WebWorker
-    ) {
+    var pouchWorker = WebWorker(require('worker-pouch/workerified'));
 
-      'ngInject';
+    $window.PouchDB.adapter('worker', require('worker-pouch/client'));
 
-      var cache = {};
+    var getRemote = function() {
+      return getFromCache(Location.url, POUCHDB_OPTIONS.remote);
+    };
 
-      var pouchWorker = WebWorker(require('worker-pouch/workerified'));
-
-      $window.PouchDB.adapter('worker', require('worker-pouch/client'));
-
-      var getRemote = function() {
-        return getFromCache(Location.url, POUCHDB_OPTIONS.remote);
-      };
-
-      var getLocal = function() {
-        var userCtx = Session.userCtx();
-        if (!userCtx) {
-          return Session.navigateToLogin();
-        }
-        var name = Location.dbName + '-user-' + userCtx.name;
-        var options = {
-          adapter: 'worker',
-          worker: function () {
-            return pouchWorker;
-          }
-        };
-        _.defaults(options, POUCHDB_OPTIONS.local);
-        return getFromCache(name, options);
-      };
-
-      var getFromCache = function(name, options) {
-        if (!cache[name]) {
-          var db = pouchDB(name, options);
-          cache[name] = db;
-        }
-        return cache[name];
-      };
-
-      if (!Session.isAdmin()) {
-        getLocal().viewCleanup();
+    var getLocal = function() {
+      var userCtx = Session.userCtx();
+      if (!userCtx) {
+        return Session.navigateToLogin();
       }
-
-      return function(options) {
-        if ((options && options.remote) || Session.isAdmin()) {
-          return getRemote();
+      var name = Location.dbName + '-user-' + userCtx.name;
+      var options = {
+        adapter: 'worker',
+        worker: function () {
+          return pouchWorker;
         }
-        return getLocal();
       };
-    }
-  );
+      _.defaults(options, POUCHDB_OPTIONS.local);
+      return getFromCache(name, options);
+    };
 
-}());
+    var getFromCache = function(name, options) {
+      if (!cache[name]) {
+        var db = pouchDB(name, options);
+        cache[name] = db;
+      }
+      return cache[name];
+    };
+
+    if (!Session.isAdmin()) {
+      getLocal().viewCleanup();
+    }
+
+    return function(options) {
+      if ((options && options.remote) || Session.isAdmin()) {
+        return getRemote();
+      }
+      return getLocal();
+    };
+  }
+);
