@@ -16,41 +16,43 @@ angular.module('inboxServices').factory('LineageModelGenerator',
     'use strict';
 
     var get = function(id) {
-      return DB().query('medic-client/docs_by_id_lineage', {
-        startkey: [ id ],
-        endkey: [ id, {} ],
-        include_docs: true
-      });
-    };
-
-    var next = function(result) {
-      var row = result.rows.shift();
-      return row && row.doc;
-    };
-
-    var rest = function(result) {
-      return result.rows.map(function(row) {
-        return row.doc;
-      });
-    };
-
-    var getBaseModel = function(id) {
-      return get(id).then(function(result) {
-        return {
-          _id: id,
-          doc: next(result),
-          lineage: rest(result)
-        };
-      });
+      return DB()
+        .query('medic-client/docs_by_id_lineage', {
+          startkey: [ id ],
+          endkey: [ id, {} ],
+          include_docs: true
+        })
+        .then(function(result) {
+          return result.rows.map(function(row) {
+            return row && row.doc;
+          });
+        });
     };
 
     return {
-      contact: getBaseModel,
+      contact: function(id) {
+        return get(id).then(function(docs) {
+          // the first row is the contact
+          var doc = docs.shift();
+          return {
+            _id: id,
+            doc: doc,
+            lineage: docs // everything else is the lineage
+          };
+        });
+      },
       report: function(id) {
-        return getBaseModel(id).then(function(model) {
-          // strip the first lineage element off for the contact
-          model.contact = model.lineage.shift();
-          return model;
+        return get(id).then(function(docs) {
+          // the first row is the report
+          var doc = docs.shift();
+          // the second row is the report's contact
+          var contact = docs.shift();
+          return {
+            _id: id,
+            doc: doc,
+            contact: contact,
+            lineage: docs // everything else is the lineage
+          };
         });
       }
     };
