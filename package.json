@@ -21,7 +21,6 @@
     "moment": "^2.10.6",
     "morgan": "^1.6.1",
     "nano": "^6.1.5",
-    "uuid": "^3.0.1",
     "object-path": "^0.11.1",
     "openrosa-formlist": "medic/openrosa-formlist#sax",
     "pass-stream": "^1.0.0",
@@ -29,6 +28,7 @@
     "request": "^2.60.0",
     "underscore": "^1.8.3",
     "url": "^0.11.0",
+    "uuid": "^3.0.1",
     "xmlbuilder": "^8.2.2"
   },
   "devDependencies": {
@@ -42,7 +42,8 @@
     "grunt-mocha-test": "^0.13.2",
     "mocha": "^3.0.2",
     "nodeunit": "latest",
-    "pouchdb": "^6.0.4",
+    "pouchdb-adapter-http": "^6.2.0",
+    "pouchdb-core": "^6.2.0",
     "request-promise-native": "^1.0.3",
     "sinon": "latest"
   },

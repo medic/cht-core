@@ -1,10 +1,12 @@
 var _ = require('underscore'),
-    PouchDB = require('pouchdb'),
+    PouchDB = require('pouchdb-core'),
     request = require('request-promise-native'),
     urlLib = require('url'),
 
     db,
     dbName;
+
+PouchDB.plugin(require('pouchdb-adapter-http'));
 
 //> INITIALISATION
 {
