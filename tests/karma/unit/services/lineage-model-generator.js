@@ -10,10 +10,6 @@ describe('LineageModelGenerator service', () => {
     module($provide => {
       dbQuery = sinon.stub();
       $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery }));
-      // $provide.value('Search', search);
-      // $provide.value('ContactSchema', contactSchema);
-      // $provide.value('$q', Q); // bypass $q so we don't have to digest
-      // $provide.value('LineageModelGenerator', lineageModelGenerator);
     });
     inject(_LineageModelGenerator_ => service = _LineageModelGenerator_);
   });
