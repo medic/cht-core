@@ -4,7 +4,6 @@ function map(doc) {
   var usedKeys = [];
   var emitMaybe = function(key, value) {
     if (usedKeys.indexOf(key) === -1 && // Not already used
-        !key.match(/(^$)/) && // Not empty
         key.length > 2 // Not too short
     ) {
       usedKeys.push(key);
