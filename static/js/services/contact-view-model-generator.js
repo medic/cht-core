@@ -175,11 +175,11 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
                           report.patient_id;
 
           var patient = contacts.find(function(contact) {
-            return contact.doc.patient_id === patientId;
+            return contact.patient_id === patientId;
           });
 
           if (patient) {
-            report.fields.patient_name = patient.doc.name;
+            report.fields.patient_name = patient.name;
           }
         }
       });
