@@ -157,7 +157,7 @@ exports['valid form adds patient_id and patient document'] = function(test) {
 
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
 
-    sinon.stub(transitionUtils, 'addUniqueId', (db, doc, callback) => {
+    sinon.stub(transitionUtils, 'addUniqueId').callsFake((db, doc, callback) => {
         doc.patient_id = 12345;
         callback();
     });

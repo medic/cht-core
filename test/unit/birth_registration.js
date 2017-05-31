@@ -95,7 +95,7 @@ exports['valid form adds patient_id and expected_date'] = function(test) {
     // doc already exists bc we aren't testing the create patient step
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'UUID'});
 
-    sinon.stub(transitionUtils, 'addUniqueId', (db, doc, callback) => {
+    sinon.stub(transitionUtils, 'addUniqueId').callsFake((db, doc, callback) => {
         doc.patient_id = 12345;
         callback();
     });
