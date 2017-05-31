@@ -279,7 +279,7 @@ describe('ContactViewModelGenerator service', () => {
       });
     });
 
-    it('adds patient_id to reports', () => {
+    it('adds patient_name to reports', () => {
       const report = { _id: 'ab', fields: { patient_id: childPerson._id} };
       stubSearch(null, [ report ]);
       return runReportsTest([childPerson], (model) => {
