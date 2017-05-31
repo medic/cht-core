@@ -14,7 +14,6 @@ var _ = require('underscore');
  */
 angular.module('inboxServices').factory('ReportViewModelGenerator',
   function(
-    DB,
     FormatDataRecord,
     LineageModelGenerator
   ) {
