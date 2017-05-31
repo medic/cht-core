@@ -9,11 +9,11 @@ module.exports.loadMedicClientView = (viewName) => {
     '/map.js'), 'utf8');
 
   var map;
-  eval(mapString);
+  eval(mapString); // jshint ignore:line
 
   // Override emit function for use in map function.
   const emitted = [];
-  const emit = function(e) {
+  const emit = function(e) { // jshint ignore:line
     emitted.push(e);
   };
   return { map: map, emitted: emitted };
