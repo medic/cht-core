@@ -25,7 +25,7 @@ exports.tearDown = callback => {
 };
 
 exports['generates an id of the given length'] = test => {
-  [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].forEach(l =>
+  [5, 6, 7, 8, 9, 10, 11, 12, 13].forEach(l =>
     test.equal(ids._generate(l).length, l));
 
   test.done();
