@@ -43,10 +43,10 @@ const flatten = (array) =>
 
 exports['indexes doc name'] = function(test) {
   // given
-  const { map, emitted } = utils.loadMedicClientView('contacts_by_freetext');
+  const map = utils.loadMedicClientView('contacts_by_freetext');
 
   // when
-  map(doc);
+  const emitted = map(doc);
 
   // then
   // Keys are arrays, so flatten the array of arrays for easier asserts.
@@ -59,10 +59,10 @@ exports['indexes doc name'] = function(test) {
 
 exports['indexes non-ascii doc name'] = function(test) {
   // given
-  const { map, emitted } = utils.loadMedicClientView('contacts_by_freetext');
+  const map = utils.loadMedicClientView('contacts_by_freetext');
 
   // when
-  map(nonAsciiDoc);
+  const emitted = map(nonAsciiDoc);
 
   // then
   // Keys are arrays, so flatten the array of arrays for easier asserts.
@@ -74,10 +74,10 @@ exports['indexes non-ascii doc name'] = function(test) {
 
 exports['does not index words of less than 3 chars'] = function(test) {
   // given
-  const { map, emitted } = utils.loadMedicClientView('contacts_by_freetext');
+  const map = utils.loadMedicClientView('contacts_by_freetext');
 
   // when
-  map(doc);
+  const emitted = map(doc);
 
   // then
   // Keys are arrays, so flatten the array of arrays for easier asserts.

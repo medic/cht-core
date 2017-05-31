@@ -1,5 +1,8 @@
 const fs = require('fs'),
-	path = require('path');
+	path = require('path'),
+  vm = require('vm');
+
+const MAP_ARG_NAME = 'doc';
 
 module.exports.loadMedicClientView = (viewName) => {
   const mapString = fs.readFileSync(path.join(
@@ -8,13 +11,19 @@ module.exports.loadMedicClientView = (viewName) => {
     viewName,
     '/map.js'), 'utf8');
 
-  var map;
-  eval(mapString); // jshint ignore:line
+  const mapScript = new vm.Script('(' + mapString + ')(' + MAP_ARG_NAME + ');');
 
-  // Override emit function for use in map function.
   const emitted = [];
-  const emit = function(e) { // jshint ignore:line
-    emitted.push(e);
+  const context = new vm.createContext({
+    emitted: emitted,
+    emit: function(e) {
+      emitted.push(e);
+    }
+  });
+
+  return (doc) => {
+    context[MAP_ARG_NAME] = doc;
+    mapScript.runInContext(context);
+    return context.emitted;
   };
-  return { map: map, emitted: emitted };
 };

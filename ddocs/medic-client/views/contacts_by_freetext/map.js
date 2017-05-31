@@ -1,4 +1,4 @@
-function map(doc) {
+function (doc) {
   var skip = [ '_id', '_rev', 'type', 'refid', 'geolocation' ];
 
   var usedKeys = [];
