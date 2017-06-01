@@ -479,7 +479,7 @@ exports['_updateUserSettings returns response'] = function(test) {
 };
 
 exports['createUserSettings sets default roles on user-settings'] = function(test) {
-  sinon.stub(db.medic, 'insert', function(settings) {
+  sinon.stub(db.medic, 'insert').callsFake(function(settings) {
     test.deepEqual(settings.roles, [
       'district-manager',
       'kujua_user',
@@ -529,7 +529,7 @@ exports['createContact sets up response'] = function(test) {
 };
 
 exports['_createUser sets default roles on user'] = function(test) {
-  sinon.stub(db._users, 'insert', function(user) {
+  sinon.stub(db._users, 'insert').callsFake(function(user) {
     test.deepEqual(user.roles, [
       'district-manager',
       'kujua_user',
@@ -759,7 +759,7 @@ exports['setContactParent resolves contact parent in waterfall'] = function(test
   });
   sinon.stub(controller, '_hasParent').returns(true);
   // checking function after setContactParent
-  sinon.stub(controller, '_createContact', function(data) {
+  sinon.stub(controller, '_createContact').callsFake(function(data) {
     test.deepEqual(data.contact.parent, { biz: 'marquee' });
     test.done();
   });
@@ -774,7 +774,7 @@ exports['updatePlace resolves place\'s contact in waterfall'] = function(test) {
     name: 'mickey'
   });
   sinon.stub(db.medic, 'insert').callsArg(1);
-  sinon.stub(controller, '_createUser', function(data) {
+  sinon.stub(controller, '_createUser').callsFake(function(data) {
     test.deepEqual(data.contact, { name: 'mickey' });
     test.deepEqual(data.place.contact, { name: 'mickey' });
     test.done();
@@ -922,11 +922,11 @@ exports['updateUser type param updates roles on user and user-settings doc'] = f
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
-  var update = sinon.stub(controller, '_updateUser', function(id, data, callback) {
+  var update = sinon.stub(controller, '_updateUser').callsFake(function(id, data, callback) {
     test.deepEqual(data.roles, ['rebel', undefined]);
     callback();
   });
-  var updateSettings = sinon.stub(controller, '_updateUserSettings', function(id, data, callback) {
+  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsFake(function(id, data, callback) {
     test.deepEqual(data.roles, ['rebel', undefined]);
     callback();
   });
@@ -946,7 +946,7 @@ exports['updateUser updates password on user doc'] = function(test) {
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   sinon.stub(places, 'getPlace').callsArg(1);
-  var update = sinon.stub(controller, '_updateUser', function(id, data, callback) {
+  var update = sinon.stub(controller, '_updateUser').callsFake(function(id, data, callback) {
     test.equal(data.password, 'whachamacallit');
     callback();
   });
@@ -971,11 +971,11 @@ exports['updateUser updates facility_id on user and user settings'] = function(t
     facility_id: 'maine'
   });
   sinon.stub(places, 'getPlace').callsArg(1);
-  var update = sinon.stub(controller, '_updateUser', function(id, user, cb) {
+  var update = sinon.stub(controller, '_updateUser').callsFake(function(id, user, cb) {
     test.equal(user.facility_id, 'paris');
     cb();
   });
-  var updateSettings = sinon.stub(controller, '_updateUserSettings', function(id, settings, cb) {
+  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsFake(function(id, settings, cb) {
     test.equal(settings.facility_id, 'paris');
     cb();
   });
@@ -1005,7 +1005,7 @@ exports['updateUser updates user and user settings doc'] = function(test) {
     known: false
   });
   sinon.stub(places, 'getPlace').callsArg(1);
-  var update = sinon.stub(controller, '_updateUser', function(id, user, cb) {
+  var update = sinon.stub(controller, '_updateUser').callsFake(function(id, user, cb) {
     test.equal(user.facility_id, 'el paso');
     test.deepEqual(user.roles, ['rambler', undefined]);
     test.equal(user.shoes, 'dusty boots');
@@ -1013,7 +1013,7 @@ exports['updateUser updates user and user settings doc'] = function(test) {
     test.equal(user.type, 'user');
     cb();
   });
-  var updateSettings = sinon.stub(controller, '_updateUserSettings', function(id, settings, cb) {
+  var updateSettings = sinon.stub(controller, '_updateUserSettings').callsFake(function(id, settings, cb) {
     test.equal(settings.facility_id, 'el paso');
     test.equal(settings.phone, '123');
     test.equal(settings.known, false);

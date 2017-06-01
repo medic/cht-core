@@ -1,16 +1,16 @@
-var _ = require('underscore'),
-    db = require('../db'),
-    utils = require('./utils'),
-    places = require('./places');
+const _ = require('underscore'),
+      db = require('../db'),
+      utils = require('./utils'),
+      places = require('./places');
 
-var getPerson = function(id, callback) {
-  var error = function(msg, code) {
+const getPerson = (id, callback) => {
+  const error = (msg, code) => {
     return callback({
       code: code || 404,
       message: msg || 'Failed to find person.'
     });
   };
-  db.medic.get(id, function(err, doc) {
+  db.medic.get(id, (err, doc) => {
     if (err) {
       if (err.statusCode === 404) {
         return error();
@@ -24,12 +24,10 @@ var getPerson = function(id, callback) {
   });
 };
 
-var isAPerson  = function(obj) {
-  return obj.type === 'person';
-};
+const isAPerson = obj => obj.type === 'person';
 
-var validatePerson  = function(obj, callback) {
-  var err = function(msg, code) {
+const validatePerson = (obj, callback) => {
+  const err = (msg, code) => {
     return callback({
       code: code || 400,
       message: msg
@@ -62,10 +60,10 @@ var validatePerson  = function(obj, callback) {
  * database. Ideally CouchDB would validate a given object against a form in
  * validate_doc_update. https://github.com/medic/medic-webapp/issues/2203
  */
-var createPerson = function(data, callback) {
+const createPerson = (data, callback) => {
   data.type = 'person';
-  var self = module.exports;
-  self.validatePerson(data, function(err) {
+  const self = module.exports;
+  self.validatePerson(data, err => {
     if (err) {
       return callback(err);
     }
@@ -75,11 +73,11 @@ var createPerson = function(data, callback) {
       data.reported_date = utils.parseDate(data.reported_date).valueOf();
     }
     if (data.place) {
-      places.getOrCreatePlace(data.place, function(err, place) {
+      places.getOrCreatePlace(data.place, (err, place) => {
         if (err) {
           return callback(err);
         }
-        data.parent = place;
+        data.parent = places.minify(place);
         delete data.place;
         db.medic.insert(data, callback);
       });
@@ -93,11 +91,11 @@ var createPerson = function(data, callback) {
  * Return existing or newly created contact or error. Assumes stored records
  * are valid.
  */
-var getOrCreatePerson = function(data, callback) {
-  var self = module.exports;
+const getOrCreatePerson = (data, callback) => {
+  const self = module.exports;
   if (_.isString(data)) {
     // fetch
-    self.getPerson(data, function(err, doc) {
+    self.getPerson(data, (err, doc) => {
       if (err) {
         return callback(err);
       }
@@ -105,7 +103,7 @@ var getOrCreatePerson = function(data, callback) {
     });
   } else if (_.isObject(data) && _.isUndefined(data._rev)) {
     // create and fetch
-    self.createPerson(data, function(err, resp) {
+    self.createPerson(data, (err, resp) => {
       if (err) {
         return callback(err);
       }

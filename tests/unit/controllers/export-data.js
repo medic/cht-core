@@ -18,7 +18,7 @@ function readStream(dataHook, callback) {
 }
 
 exports.setUp = function(callback) {
-  sinon.stub(config, 'translate', function(key, locale) {
+  sinon.stub(config, 'translate').callsFake(function(key, locale) {
     return '{' + key + ':' + locale + '}';
   });
   callback();

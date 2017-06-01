@@ -25,7 +25,7 @@ exports['allows "can_access_directly" users direct access'] = function(test) {
 
   var userCtx = 'fake userCtx';
   sinon.stub(auth, 'getUserCtx').callsArgWith(1, null, userCtx);
-  sinon.stub(auth, 'hasAllPermissions', function() { return true; });
+  sinon.stub(auth, 'hasAllPermissions').callsFake(function() { return true; });
 
   var proxy = {web: function(req, res) {
     test.equals(req, testReq);
