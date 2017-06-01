@@ -19,3 +19,7 @@ logs
 
 *.sublime-project
 *.sublime-workspace
+/screenshots
+xmlResults.xml
+chrome-test-report.html
+*.png

@@ -70,15 +70,17 @@ const setupUser = () => {
 
 exports.config = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
-  specs: ['e2e/**/*.js'],
+  specs: ['e2e/**/submit-delivery*.js'],
   framework: 'jasmine2',
   capabilities: {
     // browserName: 'chrome'
     browserName: 'firefox'
     //'marionette':'true'
   },
+  
   onPrepare: () => {
     const startup = startModules();
+    utils.getXmlResults();
     browser.ignoreSynchronization = true;
     browser.driver.wait(startup, 15 * 1000, 'API should start within 15 seconds');
     browser.driver.sleep(1000);
@@ -87,5 +89,10 @@ exports.config = {
     browser.driver.sleep(1000);
     return login(browser);
   },
-  onCleanUp: () => modules.forEach(module => module.kill())
+  onCleanUp: () => modules.forEach(module => module.kill()),
+
+  //HTMLReport generated once tests are finished
+  onComplete: function() {
+    utils.generateHtmlReport();
+  }
 };
