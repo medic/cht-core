@@ -44,8 +44,13 @@ curl -X PUT http://localhost:5986/_config/admins/admin -d '"pass"'
 
 Reconfigure CouchDB to require authentication:
 ```
+# CouchDB 1.6
 curl -X PUT http://admin:pass@localhost:5986/_config/couch_httpd_auth/require_valid_user \
   -d '"true"' -H "Content-Type: application/json"
+# CouchDB 2.0
+curl -X PUT http://admin:pass@localhost:5986/_config/chttpd/require_valid_user \
+  -d '"true"' -H "Content-Type: application/json"
+
 ```
 
 The above command automatically modifies `local.ini` to contain:
