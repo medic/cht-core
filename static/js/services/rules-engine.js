@@ -1,6 +1,6 @@
 var nools = require('nools'),
     _ = require('underscore'),
-    nootils = require('../modules/nootils'),
+    nootils = require('medic-nootils'),
     FIRST_RUN_COMPLETE_TYPE = '_complete',
     // number of weeks before reported date to assume for start of pregnancy
     KNOWN_TYPES = [ FIRST_RUN_COMPLETE_TYPE, 'task', 'target' ];
