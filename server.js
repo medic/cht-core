@@ -711,6 +711,24 @@ const envVarsCheck = callback => {
   }
 };
 
+const couchDbNoAdminPartyModeCheck = callback => {
+  const url = require('url'),
+        noAuthUrl = url.parse(process.env.COUCH_URL),
+        protocol = noAuthUrl.protocol.replace(':', ''),
+        net = require(protocol);
+
+  delete noAuthUrl.auth;
+
+  net.get(url.format(noAuthUrl), ({statusCode}) => {
+    // We expect to be rejected because we didn't provide auth
+    if (statusCode === 401) {
+      callback();
+    } else {
+      callback(new Error('CouchDB Admin Party Mode detected, please disable: https://github.com/medic/medic-webapp#disable-couchdb-admin-party-mode'));
+    }
+  });
+};
+
 const couchDbVersionCheck = callback =>
   db.getCouchDbVersion((err, version) => {
     if (err) {
@@ -726,6 +744,7 @@ const asyncLog = message => async.asyncify(() => console.log(message));
 async.series([
   nodeVersionCheck,
   envVarsCheck,
+  couchDbNoAdminPartyModeCheck,
   couchDbVersionCheck,
   ddocExtraction.run,
   asyncLog('DDoc extraction completed successfully'),
