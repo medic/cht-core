@@ -17,6 +17,7 @@ _June 10, 2017_
 - Reporting Rates for Daily Reports. Issue: #1029
 - Prevent duplicates for Daily reports. Issue: #1028
 - Ability to "mark all read". Issue: #682
+- Change patient id generation to store the length of id it's generating. Issues: #3505
 
 ### Bug fixes
 
@@ -39,7 +40,6 @@ _June 10, 2017_
 - AWS EC2 AMI Regression: Does not currently boot. Issue: #3173
 - Form exits on Refresh/Reload in Tasks tab. Issue: #3090
 - Bullet displayed incorrectly. Issue: #3020
-- Remove nested contacts. Issue: #2635
 - medic-api weird behavior?. Issue: #2273
 - [pouch] contact names with accented letters do not turn up in non-accented searches. Issue: #1474
 - [medic-android]  security/permission exception when saving url. Issue: #1436
@@ -61,6 +61,7 @@ _June 10, 2017_
 - Compress form-content. Issue: #2882
 - Store the doc transition status in a separate doc. Issue: #2569
 - See if we can cancel an existing search if search terms change. Issue: #2321
+- Slow initial replication for users with lots of docs. Issue: #3508
 
 ## 2.11.3
 
