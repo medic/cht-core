@@ -284,12 +284,13 @@ var feedback = require('../modules/feedback'),
       });
 
       $scope.updateReadStatus = function() {
-        ReadMessages(function(err, data) {
-          if (err) {
-            return $log.error('Error fetching read status', err);
-          }
-          $scope.readStatus = data;
-        });
+        ReadMessages()
+          .then(function(data) {
+            $scope.readStatus = data;
+          })
+          .catch(function(err) {
+            $log.error('Error fetching read status', err);
+          });
       };
       Changes({
         key: 'inbox-read-status',

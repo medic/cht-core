@@ -59,7 +59,7 @@ var _ = require('underscore'),
         if (!$scope.isRead(model.doc)) {
           $scope.readStatus.forms--;
         }
-        MarkRead(model.doc._id, true)
+        MarkRead([ model.doc ])
           .then($scope.updateReadStatus)
           .catch(function(err) {
             $log.error('Error marking read', err);
