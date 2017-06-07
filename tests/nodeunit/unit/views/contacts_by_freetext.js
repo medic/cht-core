@@ -85,3 +85,16 @@ exports['does not index words of less than 3 chars'] = function(test) {
   test.ok(!flattened.includes('of'));
   test.done();
 };
+
+exports['does not index non-contact docs'] = function(test) {
+  // given
+  const map = utils.loadMedicClientView('contacts_by_freetext');
+
+  // when
+  const emitted = map({ type: 'data_record', name: 'do not index me'});
+
+  // then
+  // Keys are arrays, so flatten the array of arrays for easier asserts.
+  test.ok(emitted.length === 0);
+  test.done();
+};
