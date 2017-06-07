@@ -27,3 +27,11 @@ module.exports.loadMedicClientView = (viewName) => {
     return context.emitted;
   };
 };
+
+module.exports.assertIncludesPair = (test, array, pair) => {
+  test.ok(array.find((keyArray) => keyArray[0] === pair[0] && keyArray[1] === pair[1]));
+};
+
+module.exports.assertDoesNotIncludePair = (test, array, pair) => {
+  test.ok(!array.find((keyArray) => keyArray[0] === pair[0] && keyArray[1] === pair[1]));
+};
