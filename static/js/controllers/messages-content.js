@@ -10,7 +10,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     $timeout,
     Changes,
     LineageModelGenerator,
-    MarkAllRead,
+    MarkRead,
     MessageContacts,
     Modal,
     SendMessage,
@@ -40,7 +40,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     var markAllRead = function() {
       var docs = _.pluck($scope.selected.messages, 'doc');
       if (docs.length) {
-        MarkAllRead(docs, true)
+        MarkRead(docs)
           .then($scope.updateReadStatus)
           .catch(function(err) {
             return $log.error('Error marking all as read', err);

@@ -1,46 +1,45 @@
-describe('ReadMessages service', function() {
+describe('ReadMessages service', () => {
 
   'use strict';
 
-  var service,
+  let service,
       query,
       userCtx;
 
-  beforeEach(function() {
+  beforeEach(() => {
     query = sinon.stub();
     module('inboxApp');
-    module(function ($provide) {
+    module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: query }));
-      $provide.factory('Session', function() {
+      $provide.factory('Session', () => {
         return {
-          userCtx: function() {
+          userCtx: () => {
             return userCtx;
           }
         };
       });
     });
-    inject(function($injector) {
+    inject($injector => {
       service = $injector.get('ReadMessages');
     });
   });
 
-  afterEach(function() {
+  afterEach(() => {
     KarmaUtils.restore(query);
   });
 
-  it('returns zero when no messages', function(done) {
+  it('returns zero when no messages', () => {
     userCtx = { name: 'gareth' };
     query.returns(KarmaUtils.mockPromise(null, { rows: [] }));
-    service(function(err, res) {
-      chai.expect(res).to.deep.equal({
+    return service().then(actual => {
+      chai.expect(actual).to.deep.equal({
         forms: 0,
         messages: 0
       });
-      done();
     });
   });
 
-  it('returns total', function(done) {
+  it('returns total', () => {
     userCtx = { name: 'gareth' };
     query.returns(KarmaUtils.mockPromise(null, { rows: [
       {'key': ['_total', 'forms',    'christchurch'], 'value': 5 },
@@ -51,12 +50,11 @@ describe('ReadMessages service', function() {
       {'key': ['gareth', 'messages', 'dunedin'],      'value': 5 },
       {'key': ['test3',  'messages', 'dunedin'],      'value': 2 }
     ] }));
-    service(function(err, res) {
-      chai.expect(res).to.deep.equal({
+    return service().then(actual => {
+      chai.expect(actual).to.deep.equal({
         forms: 10,
         messages: 5
       });
-      done();
     });
   });
 

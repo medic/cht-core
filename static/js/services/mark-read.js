@@ -1,57 +1,37 @@
 var _ = require('underscore');
 
-(function () {
+angular.module('inboxServices').factory('MarkRead', function(
+  $q,
+  DB,
+  Session
+) {
 
   'use strict';
+  'ngInject';
 
-  var inboxServices = angular.module('inboxServices');
-
-  var updateDoc = function(user, read, doc) {
+  var updateDoc = function(user, doc) {
     var readers = doc.read || [];
     var index = readers.indexOf(user);
-    if ((index !== -1) === read) {
-      // already in the correct state
+    if (index !== -1) {
+      // already marked as read
       return;
     }
-    if (read) {
-      readers.push(user);
-    } else {
-      readers.splice(index, 1);
-    }
+    readers.push(user);
     doc.read = readers;
     return doc;
   };
 
-  var updatDocs = function(user, read, docs) {
-    return _.compact(_.map(docs, _.partial(updateDoc, user, read)));
+  var updateDocs = function(user, docs) {
+    return _.compact(_.map(docs, _.partial(updateDoc, user)));
   };
 
-  inboxServices.factory('MarkRead', ['DB', 'Session',
-    function(DB, Session) {
-      return function(docId, read) {
-        var user = Session.userCtx().name;
-        return DB()
-          .get(docId)
-          .then(_.partial(updateDoc, user, read))
-          .then(function(doc) {
-            if (!doc) {
-              return;
-            }
-            return DB().put(doc);
-          });
-      };
+  return function(docs) {
+    var user = Session.userCtx().name;
+    var updated = updateDocs(user, docs);
+    // Conflicts will fail silently. That's ok.
+    if (!updated.length) {
+      return $q.resolve();
     }
-  ]);
-
-  inboxServices.factory('MarkAllRead', ['DB', 'Session',
-    function(DB, Session) {
-      return function(docs, read) {
-        var user = Session.userCtx().name;
-        var updated = updatDocs(user, read, docs);
-        // Conflicts will fail silently. That's ok.
-        return DB().bulkDocs(updated);
-      };
-    }
-  ]);
-
-}());
+    return DB().bulkDocs(updated);
+  };
+});

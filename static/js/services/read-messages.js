@@ -1,8 +1,10 @@
-(function () {
+angular.module('inboxServices').factory('ReadMessages', function(
+  DB,
+  Session
+) {
 
   'use strict';
-
-  var inboxServices = angular.module('inboxServices');
+  'ngInject';
 
   var getMultiplier = function(key, user) {
     if (key === '_total') {
@@ -13,7 +15,8 @@
     }
   };
 
-  var calculateStatus = function(res, user) {
+  var calculateStatus = function(res) {
+    var user = Session.userCtx().name;
     var status = { forms: 0, messages: 0 };
     res.rows.forEach(function(row) {
       var name = row.key[0];
@@ -26,22 +29,9 @@
     return status;
   };
 
-  inboxServices.factory('ReadMessages', [
-    'DB', 'Session',
-    function(DB, Session) {
-      return function(callback) {
-        var user = Session.userCtx().name;
-        DB()
-          .query('medic-client/data_records_read_by_type', { group: true })
-          .then(function(res) {
-            callback(null, calculateStatus(res, user));
-          })
-          .catch(function(err) {
-            callback(err);
-          });
-      };
-    }
-  ]);
-
-
-}());
+  return function() {
+    return DB()
+      .query('medic-client/data_records_read_by_type', { group: true })
+      .then(calculateStatus);
+  };
+});
