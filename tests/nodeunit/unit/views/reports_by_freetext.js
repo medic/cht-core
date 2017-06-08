@@ -1,4 +1,5 @@
-const utils = require('./utils');
+const _ = require('underscore'),
+    utils = require('./utils');
 
 const doc = {
   _id: '7383B568-4A6C-2C97-B463-3CC2630A562E',
@@ -110,11 +111,6 @@ const doc = {
   ]
 };
 
-const flatten = (array) =>
-  array.reduce(
-    (flat, current) => flat.concat(current), []
-  );
-
 exports['indexes doc name'] = function(test) {
   // given
   const map = utils.loadMedicClientView('reports_by_freetext');
@@ -124,7 +120,7 @@ exports['indexes doc name'] = function(test) {
 
   // then
   // Keys are arrays, so flatten the array of arrays for easier asserts.
-  var flattened = flatten(emitted);
+  var flattened = _.flatten(emitted);
   test.ok(flattened.includes('patient'));
   test.ok(flattened.includes('with'));
   test.ok(flattened.includes('problem'));
@@ -141,7 +137,7 @@ exports['indexes non-ascii doc name'] = function(test) {
 
   // then
   // Keys are arrays, so flatten the array of arrays for easier asserts.
-  var flattened = flatten(emitted);
+  var flattened = _.flatten(emitted);
   test.ok(flattened.includes('बुद्ध'));
   test.ok(flattened.includes('élève'));
   test.done();
@@ -156,7 +152,7 @@ exports['does not index words of less than 3 chars'] = function(test) {
 
   // then
   // Keys are arrays, so flatten the array of arrays for easier asserts.
-  var flattened = flatten(emitted);
+  var flattened = _.flatten(emitted);
   test.ok(!flattened.includes('a'));
   test.done();
 };

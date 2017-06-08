@@ -12,7 +12,7 @@ var _ = require('underscore'),
     function() {
 
       var getKeysArray = function(keys) {
-        return _.map(keys, function(t) {
+        return keys.map(function(t) {
           return [ t ];
         });
       };
@@ -77,7 +77,7 @@ var _ = require('underscore'),
           'medic-client/reports_by_form',
           filters.forms,
           function(forms) {
-            return _.map(forms, function(form) {
+            return forms.map(function(form) {
               return [ form.code ];
             });
           });
