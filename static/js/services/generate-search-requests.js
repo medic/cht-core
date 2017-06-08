@@ -12,7 +12,7 @@ var _ = require('underscore'),
     function() {
 
       var getKeysArray = function(keys) {
-        return _.map(keys, function(t) {
+        return keys.map(function(t) {
           return [ t ];
         });
       };
@@ -33,7 +33,7 @@ var _ = require('underscore'),
       };
 
       var getRequestWithMappedKeys = function(view, keys, mapKeysFunc) {
-          if (keys.length === 0) {
+          if (!keys || keys.length === 0) {
             return;
           }
           return {
@@ -56,7 +56,7 @@ var _ = require('underscore'),
         };
       };
 
-      var reportedDateRequest = function(filters, view) {
+      var reportedDateRequest = function(filters) {
         var dateRange = filters.date;
         if (!dateRange || (!dateRange.to && !dateRange.from)) {
           return;
@@ -64,7 +64,7 @@ var _ = require('underscore'),
         var to = moment(dateRange.to);
         var from = moment(dateRange.from || 0);
         return {
-          view: view,
+          view: 'medic-client/reports_by_date',
           params: {
             startkey: [ from.valueOf() ],
             endkey: [ to.valueOf() ]
@@ -72,24 +72,27 @@ var _ = require('underscore'),
         };
       };
 
-      var formRequest = function(filters, view) {
-        return getRequestForMultidropdown(view, filters.forms, function(forms) {
-          return _.map(forms, function(form) {
-            return [ form.code ];
+      var formRequest = function(filters) {
+        return getRequestForMultidropdown(
+          'medic-client/reports_by_form',
+          filters.forms,
+          function(forms) {
+            return forms.map(function(form) {
+              return [ form.code ];
+            });
           });
-        });
       };
 
-      var validityRequest = function(filters, view) {
-        return getRequestForBooleanKey(view, filters.valid);
+      var validityRequest = function(filters) {
+        return getRequestForBooleanKey('medic-client/reports_by_validity', filters.valid);
       };
 
-      var verificationRequest = function(filters, view) {
-        return getRequestForBooleanKey(view, filters.verified);
+      var verificationRequest = function(filters) {
+        return getRequestForBooleanKey('medic-client/reports_by_verification', filters.verified);
       };
 
-      var placeRequest = function(filters, view) {
-        return getRequestForMultidropdown(view, filters.facilities, getKeysArray);
+      var placeRequest = function(filters) {
+        return getRequestForMultidropdown('medic-client/reports_by_place', filters.facilities, getKeysArray);
       };
 
       var freetextRequest = function(filters, view) {
@@ -113,23 +116,16 @@ var _ = require('underscore'),
         }
       };
 
-      var subjectRequest = function(filters, view) {
+      var subjectRequest = function(filters) {
         var subjectIds = filters.subjectIds;
-        if (!subjectIds || !subjectIds.length) {
-          return;
-        }
-        return {
-          view: view,
-          params: {
-            keys: getKeysArray(subjectIds)
-          }
-        };
+        return getRequestWithMappedKeys('medic-client/reports_by_subject', subjectIds, getKeysArray);
       };
 
-      var documentTypeRequest = function(filters, view) {
+      var contactTypeRequest = function(filters) {
         if (!filters.types) {
           return;
         }
+        var view = 'medic-client/contacts_by_type';
         if (filters.types.selected && filters.types.options) {
           return getRequestForMultidropdown(view, filters.types, getKeysArray);
         }
@@ -137,28 +133,40 @@ var _ = require('underscore'),
         return getRequestWithMappedKeys(view, filters.types.selected, getKeysArray);
       };
 
+      var defaultReportRequest = function() {
+        return {
+          view: 'medic-client/reports_by_date',
+          ordered: true,
+          params: { descending: true }
+        };
+      };
+
+      var defaultContactRequest = function() {
+        return {
+          view: 'medic-client/contacts_by_type_index_name',
+          ordered: true
+        };
+      };
+
       var requestBuilders = {
         reports: function(filters) {
-          var requests = [];
-          requests.push(reportedDateRequest(filters, 'medic-client/reports_by_date'));
-          requests.push(formRequest(filters, 'medic-client/reports_by_form'));
-          requests.push(validityRequest(filters, 'medic-client/reports_by_validity'));
-          requests.push(verificationRequest(filters, 'medic-client/reports_by_verification'));
-          requests.push(placeRequest(filters, 'medic-client/reports_by_place'));
-          requests.push(freetextRequest(filters, 'medic-client/reports_by_freetext'));
-          requests.push(subjectRequest(filters, 'medic-client/reports_by_subject'));
+          var requests = [
+            reportedDateRequest(filters),
+            formRequest(filters),
+            validityRequest(filters),
+            verificationRequest(filters),
+            placeRequest(filters),
+            freetextRequest(filters, 'medic-client/reports_by_freetext'),
+            subjectRequest(filters)
+          ];
           requests = _.compact(_.flatten(requests));
           if (!requests.length) {
-            requests.push({
-              view: 'medic-client/reports_by_date',
-              ordered: true,
-              params: { descending: true }
-            });
+            requests.push(defaultReportRequest());
           }
           return requests;
         },
         contacts: function(filters) {
-          var typeRequest = documentTypeRequest(filters, 'medic-client/contacts_by_type');
+          var typeRequest = contactTypeRequest(filters);
           var hasTypeRequest = typeRequest && typeRequest.params.keys.length;
 
           var freetextRequests = freetextRequest(filters, 'medic-client/contacts_by_freetext');
@@ -197,16 +205,11 @@ var _ = require('underscore'),
             return freetextRequests.map(_.partial(makeCombinedRequest, typeRequest, _));
           }
 
-          var requests = [];
-          requests.push(freetextRequests);
-          requests.push(typeRequest);
+          var requests = [ freetextRequests, typeRequest ];
           requests = _.compact(_.flatten(requests));
 
           if (!requests.length) {
-            requests.push({
-              view: 'medic-client/contacts_by_type_index_name',
-              ordered: true
-            });
+            requests.push(defaultContactRequest());
           }
           return requests;
         }
