@@ -2,7 +2,7 @@
 
 ## 2.12.0
 
-_May 26, 2017_
+_June 10, 2017_
 
 ### Features
 
@@ -61,6 +61,15 @@ _May 26, 2017_
 - Compress form-content. Issue: #2882
 - Store the doc transition status in a separate doc. Issue: #2569
 - See if we can cancel an existing search if search terms change. Issue: #2321
+
+## 2.11.3
+
+_June 9, 2017_
+
+### Bug fixes
+
+- The namespace-form-fields migration conflicts itself. Issue: #3534
+- In the create-patient-contacts migration provide a more complete list of potential patient_name locations. Issue: #3372
 
 ## 2.11.2
 
