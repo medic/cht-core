@@ -1,5 +1,14 @@
 # Medic Mobile Release Notes
 
+## 2.11.3
+
+_June 9, 2017_
+
+### Bug fixes
+
+- The namespace-form-fields migration conflicts itself. Issue: #3534
+- In the create-patient-contacts migration provide a more complete list of potential patient_name locations. Issue: #3372
+
 ## 2.11.2
 
 _May 29, 2017_
