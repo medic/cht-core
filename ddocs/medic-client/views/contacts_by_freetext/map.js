@@ -4,7 +4,6 @@ function(doc) {
   var usedKeys = [];
   var emitMaybe = function(key, value) {
     if (usedKeys.indexOf(key) === -1 && // Not already used
-        !key.match(/(^$)|(^[^A-Za-z0-9+])/) && // Not empty or starting with bad symbol
         key.length > 2 // Not too short
     ) {
       usedKeys.push(key);
