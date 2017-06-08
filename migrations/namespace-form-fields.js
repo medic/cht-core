@@ -50,11 +50,12 @@ var namespace = function(docs, callback) {
 
 var runBatch = function(batchSize, skip, callback) {
   var options = {
+    key: [ 'data_record' ],
     include_docs: true,
     limit: batchSize,
     skip: skip
   };
-  db.medic.view('medic', 'data_records', options, function(err, result) {
+  db.medic.view('medic-client', 'doc_by_type', options, function(err, result) {
     if (err) {
       return callback(err);
     }
