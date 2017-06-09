@@ -263,7 +263,7 @@ var SP_ID_MASK = 0xFFFFF8;
                 return ident.id === doc.simprints_id;
               });
               doc._simprints_confidence = ident.confidence;
-              doc._simprints_stars = Array(6 - Number.parseInt(ident.tier.split('_')[1])).join('<span class="fa fa-star"></span>');
+              doc._simprints_stars = Array(7 - Number.parseInt(ident.tier.split('_')[1])).join('<span class="fa fa-star"></span>');
               liveList.update(doc);
             });
             liveList.refresh();
