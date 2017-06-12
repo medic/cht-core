@@ -4,7 +4,8 @@ var _ = require('underscore'),
   http = require('http'),
   path = require('path'),
   jasmineReporters = require('jasmine-reporters'),
-  HTMLReport = require('protractor-html-reporter');
+  HTMLReport = require('protractor-html-reporter'),
+  fs=require('fs');
 
 var originalSettings = {};
 
@@ -96,6 +97,11 @@ var revertSettingsForDdoc = function(ddocName) {
   });
 };
 
+const writeScreenShot=(data, filename)=> {
+  var stream = fs.createWriteStream(filename);
+  stream.write(new Buffer(data, 'base64'));
+  stream.end();
+};
 
 module.exports = {
 
@@ -207,6 +213,11 @@ module.exports = {
         screenshotsOnlyOnFailure: true
       };
       new HTMLReport().from('xmlresults.xml', testConfig);
+    });
+  },
+    takeScreenshot: function (filename) {
+    browser.takeScreenshot().then(function (png) {
+      writeScreenShot(png, filename);
     });
   }
 };
