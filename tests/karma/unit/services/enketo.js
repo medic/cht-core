@@ -46,6 +46,7 @@ describe('Enketo service', function() {
       dbGetAttachment = sinon.stub(),
       dbGet = sinon.stub(),
       dbPut = sinon.stub(),
+      ContactSummary = sinon.stub(),
       UserContact = sinon.stub(),
       UserSettings = sinon.stub(),
       createObjectURL = sinon.stub(),
@@ -79,6 +80,7 @@ describe('Enketo service', function() {
         angular: { callbacks: [] },
         URL: { createObjectURL: createObjectURL }
       });
+      $provide.value('ContactSummary', ContactSummary);
       $provide.value('FileReader', FileReader);
       $provide.value('UserContact', UserContact);
       $provide.value('UserSettings', UserSettings);
@@ -96,7 +98,7 @@ describe('Enketo service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbPut, transform, createObjectURL, FileReader, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment);
+    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbPut, transform, createObjectURL, ContactSummary, FileReader, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment);
   });
 
   describe('render', function() {

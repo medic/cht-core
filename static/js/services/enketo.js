@@ -9,6 +9,7 @@ angular.module('inboxServices').service('Enketo',
     $translate,
     $window,
     AddAttachment,
+    ContactSummary,
     DB,
     EnketoPrepopulationData,
     EnketoTranslation,
@@ -158,7 +159,7 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
-    var renderFromXmls = function(doc, selector, instanceData) {
+    var renderFromXmls = function(doc, selector, instanceData, contact) {
       var wrapper = $(selector);
       wrapper.find('.form-footer')
              .addClass('end')
@@ -170,25 +171,33 @@ angular.module('inboxServices').service('Enketo',
 
       return EnketoPrepopulationData(doc.model, instanceData)
         .then(function(instanceStr) {
-          var form = new EnketoForm(wrapper.find('form').first(), {
+          var data = {
             modelStr: doc.model,
             instanceStr: instanceStr
-          });
-          var loadErrors = form.init();
-          if (loadErrors && loadErrors.length) {
-            return $q.reject(new Error(JSON.stringify(loadErrors)));
-          }
-          wrapper.show();
+          };
 
-          wrapper.find('input').on('keydown', handleKeypressOnInputField);
+          return (contact ? ContactSummary(contact) : $q.resolve())
+            .then(function(contactSummary) {
+              addExternalData(data, 'contact-summary', { contact:contactSummary });
+            })
+            .then(function() {
+              var form = new EnketoForm(wrapper.find('form').first(), data);
+              var loadErrors = form.init();
+              if (loadErrors && loadErrors.length) {
+                return $q.reject(new Error(JSON.stringify(loadErrors)));
+              }
+              wrapper.show();
 
-          // handle page turning using browser history
-          window.history.replaceState({ enketo_page_number: 0 }, '');
-          overrideNavigationButtons(form, wrapper);
-          addPopStateHandler(form, wrapper);
+              wrapper.find('input').on('keydown', handleKeypressOnInputField);
 
-          return form;
-        });
+              // handle page turning using browser history
+              window.history.replaceState({ enketo_page_number: 0 }, '');
+              overrideNavigationButtons(form, wrapper);
+              addPopStateHandler(form, wrapper);
+
+              return form;
+            });
+      });
     };
 
     var overrideNavigationButtons = function(form, $wrapper) {
@@ -233,7 +242,7 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
-    var renderForm = function(selector, id, instanceData, editedListener) {
+    var renderForm = function(selector, id, instanceData, editedListener, contact) {
       return Language()
         .then(function(language) {
           return withForm(id, language);
@@ -245,28 +254,28 @@ angular.module('inboxServices').service('Enketo',
             model: doc.model,
           };
           replaceJavarosaMediaWithLoaders(id, doc.html);
-          var form = renderFromXmls(doc, selector, instanceData);
+          var form = renderFromXmls(doc, selector, instanceData, contact);
           registerEditedListener(selector, editedListener);
           return form;
         });
     };
 
-    this.render = function(selector, id, instanceData, editedListener) {
+    this.render = function(selector, id, instanceData, editedListener, contact) {
       return getUserContact().then(function() {
-        return renderForm(selector, id, instanceData, editedListener);
+        return renderForm(selector, id, instanceData, editedListener, contact);
       });
     };
 
     this.renderContactForm = renderForm;
 
-    this.renderFromXmlString = function(selector, xmlString, instanceData, editedListener) {
+    this.renderFromXmlString = function(selector, xmlString, instanceData, editedListener, contact) {
       return Language()
         .then(function(language) {
           return translateXml(xmlString, language);
         })
         .then(transformXml)
         .then(function(doc) {
-          var form = renderFromXmls(doc, selector, instanceData);
+          var form = renderFromXmls(doc, selector, instanceData, contact);
           registerEditedListener(selector, editedListener);
           return form;
         });
@@ -422,3 +431,37 @@ angular.module('inboxServices').service('Enketo',
     };
   }
 );
+
+function addExternalData(enketoFormData, id, value) {
+  if (!value) {
+    return;
+  }
+
+  if (!enketoFormData.external) {
+    enketoFormData.external = [];
+  }
+
+  enketoFormData.external.push({
+    id: id,
+    xmlStr: json2xml(value),
+  });
+}
+
+function json2xml(json) {
+  if(typeof json === 'object') {
+    var xml = '';
+    Object.keys(json).forEach(function(k) {
+      var val = json[k];
+      if(val || val === 0) {
+        xml += '<' + k + '>' + json2xml(val) + '</' + k + '>';
+      } else {
+        xml += '<' + k + '/>';
+      }
+    });
+    return xml;
+  } else if(json || json === 0) {
+    return json.toString();
+  } else {
+    return '';
+  }
+}

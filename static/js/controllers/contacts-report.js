@@ -18,20 +18,20 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       $scope.enketoStatus.edited = true;
     };
 
-    var render = function(doc) {
-      $scope.setSelected({ doc: doc });
+    var render = function(contact) {
+      $scope.setSelected({ doc: contact });
       $scope.setCancelTarget(function() {
         $state.go('contacts.detail', { id: $state.params.id });
       });
       var instanceData = {
         source: 'contact',
-        contact: doc,
+        contact: contact,
       };
       return XmlForm($state.params.formId, { include_docs: true })
         .then(function(form) {
           $scope.enketoStatus.edited = false;
           return Enketo
-            .render('#contact-report', form.id, instanceData, markFormEdited)
+            .render('#contact-report', form.id, instanceData, markFormEdited, contact)
             .then(function(formInstance) {
               $scope.setTitle(TranslateFrom(form.doc.title));
               $scope.form = formInstance;
