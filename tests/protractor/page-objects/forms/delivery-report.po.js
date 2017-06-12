@@ -1086,9 +1086,9 @@ const saveDocs = function(done, documents) {
     });
 };
 
-const  selectRadioButton= (value) => {
-    element(by.css(`[value=${value}]`)).click();
-  };
+const selectRadioButton = (value) => {
+  element(by.css(`[value=${value}]`)).click();
+};
 
 module.exports = {
   configureForm: done => {
@@ -1121,10 +1121,10 @@ module.exports = {
   },
 
   submit: () => {
-  const submitButton=element(by.css('[ng-click="onSubmit()"]'));
-  helper.waitElementToBeClickable(submitButton);
-   submitButton.click();
-   helper.waitElementToBeVisisble(element(by.css('div#reports-content')));
+    const submitButton = element(by.css('[ng-click="onSubmit()"]'));
+    helper.waitElementToBeClickable(submitButton);
+    submitButton.click();
+    helper.waitElementToBeVisisble(element(by.css('div#reports-content')));
   },
 
   //patient page
@@ -1140,21 +1140,21 @@ module.exports = {
     const search = element(by.css('.select2-search__field'));
     search.click();
     search.sendKeys(name);
-   helper.waitElementToBeVisisble(element(by.css('.name')));
-   element(by.css('.name')).click();
- },
+    helper.waitElementToBeVisisble(element(by.css('.name')));
+    element(by.css('.name')).click();
+  },
 
-   //Delivery Info page -- Pregnancy outcomes
- selectLiveBirthButton: () => {
-  selectRadioButton('healthy');
-},
-selectStillBirthButton: () => {
-  selectRadioButton('still_birth');
-},
+  //Delivery Info page -- Pregnancy outcomes
+  selectLiveBirthButton: () => {
+    selectRadioButton('healthy');
+  },
+  selectStillBirthButton: () => {
+    selectRadioButton('still_birth');
+  },
 
-selectMiscarriageButton: () => {
-  selectRadioButton('miscarriage');
-},
+  selectMiscarriageButton: () => {
+    selectRadioButton('miscarriage');
+  },
 
   //Delivery Info page -- Location of delivery
   selectFacilityButton: () => {
@@ -1162,7 +1162,7 @@ selectMiscarriageButton: () => {
   },
 
   selectHomeSkilledButton: () => {
-     selectRadioButton('s');
+    selectRadioButton('s');
   },
 
   selectHomeNonSkilledButton: () => {
@@ -1199,5 +1199,15 @@ selectMiscarriageButton: () => {
 
   getFollowUpMessage: () => {
     return element(by.css('[data-value=" /delivery/group_note/g_chw_sms "]')).getInnerHtml();
+  },
+
+  deleteReport: () => {
+    browser.navigate().refresh();
+    browser.sleep(100);
+    const deleteButton = element(by.css('[ng-click="deleteDoc(actionBar.right.selected)"]'));
+    helper.waitElementToBeVisisble(deleteButton);
+    deleteButton.click();
+    helper.waitElementToBeVisisble(element(by.css('.btn.submit.btn-danger')));
+    element(by.css('.btn.submit.btn-danger')).click();
   }
 };

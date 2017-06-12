@@ -1,5 +1,9 @@
 const helper = require('../../helper'),
-  deliveryReport = require('../../page-objects/forms/delivery-report.po.js');
+ utils = require('../../utils'),
+  deliveryReport = require('../../page-objects/forms/delivery-report.po.js'),
+common = require('../../page-objects/common/common.po.js');
+
+
 
 describe('Submit Delivery Report', () => {
 
@@ -63,12 +67,12 @@ describe('Submit Delivery Report', () => {
   });
 
   afterEach(done => {
-    deliveryReport.teardown(done);
+   deliveryReport.teardown(done);
   });
 
   it('open delivery form', () => {
-    element(by.id('reports-tab')).click();
 
+common.goToReports();
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.driver.navigate().refresh();
     browser.wait(() => {
@@ -102,6 +106,12 @@ describe('Submit Delivery Report', () => {
     expect(deliveryReport.getFollowUpMessage()).toBe(noteToCHW);
     //submit
     deliveryReport.submit();
+    //const snackbar=element(by.css('#snackbar'));
+     //helper.waitElementToBeVisisble(snackbar);
     expect(element(by.css('div.details')).isPresent()).toBeTruthy();
+//delete report
+utils.takeScreenshot('screen');
+deliveryReport.deleteReport();
+    
   });
 });
