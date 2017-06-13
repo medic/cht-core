@@ -10,7 +10,7 @@ angular.module('inboxServices').factory('CountUnreadRecords', function(
 
   var getTotals = function() {
     return DB()
-      .query('medic-client/data_records_read_by_type', { group: true })
+      .query('medic-client/data_records_by_type', { group: true })
       .then(function(response) {
         var result = {};
         response.rows.forEach(function(row) {

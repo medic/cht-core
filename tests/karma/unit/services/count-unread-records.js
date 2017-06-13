@@ -43,7 +43,7 @@ describe('CountUnreadRecords service', () => {
         message: 5
       });
       chai.expect(query.callCount).to.equal(1);
-      chai.expect(query.args[0][0]).to.equal('medic-client/data_records_read_by_type');
+      chai.expect(query.args[0][0]).to.equal('medic-client/data_records_by_type');
       chai.expect(query.args[0][1].group).to.equal(true);
       chai.expect(allDocs.callCount).to.equal(2);
       chai.expect(allDocs.args[0][0].startkey).to.equal('read:report:');
