@@ -9,8 +9,6 @@ angular.module('inboxServices').service('ContactSummary',
   function(
     $filter,
     $log,
-    $parse,
-    $sanitize,
     Settings
   ) {
 
