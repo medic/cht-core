@@ -1086,6 +1086,8 @@ const saveDocs = function(done, documents) {
     });
 };
 
+
+
 const selectRadioButton = (value) => {
   element(by.css(`[value=${value}]`)).click();
 };
@@ -1100,6 +1102,9 @@ module.exports = {
   },
 
   teardown: done => {
+
+    //savedUuids.push(rep);
+
     protractor.promise
       .all(savedUuids.map(utils.deleteDoc))
       .then(() => utils.getDoc(userSettingsDocId))
@@ -1201,13 +1206,9 @@ module.exports = {
     return element(by.css('[data-value=" /delivery/group_note/g_chw_sms "]')).getInnerHtml();
   },
 
-  deleteReport: () => {
-    browser.navigate().refresh();
-    browser.sleep(100);
-    const deleteButton = element(by.css('[ng-click="deleteDoc(actionBar.right.selected)"]'));
-    helper.waitElementToBeVisisble(deleteButton);
-    deleteButton.click();
-    helper.waitElementToBeVisisble(element(by.css('.btn.submit.btn-danger')));
-    element(by.css('.btn.submit.btn-danger')).click();
+  deleteReport: (done) => {
+    element(by.css('li.read.selected')).getAttribute('data-record-id').then(function(docId) {
+      utils.deleteDoc(docId).then(done).catch(done);
+    });
   }
 };
