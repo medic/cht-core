@@ -114,7 +114,6 @@ describe('Auditing', function() {
       return utils.getAuditDoc(savedUuid);
     }).then(function(doc) {
       expect(doc.history.length).toEqual(1);
-      expect(doc.history[0].action).toEqual('delete');
       expect(doc.history[0].user).toEqual(auth.user);
       expect(doc.history[0].doc._deleted).toEqual(true);
     }, function(err) {
