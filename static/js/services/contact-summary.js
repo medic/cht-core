@@ -10,7 +10,6 @@ angular.module('inboxServices').service('ContactSummary',
     $filter,
     $log,
     $parse,
-    $sanitize,
     Settings
   ) {
 
@@ -47,10 +46,11 @@ angular.module('inboxServices').service('ContactSummary',
       return summary;
     };
 
-    return function(contact, reports, lineage) { // jshint ignore:line
+    return function(contact, reports, lineage) {
       return getScript()
         .then(function(script) {
-          return script && eval(script); // jshint ignore:line
+          var context = { contact:contact, reports:reports, lineage:lineage };
+          return script && $parse(script)(context);
         })
         .then(applyFilters);
     };

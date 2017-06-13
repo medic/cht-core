@@ -38,11 +38,10 @@ describe('ContactSummary service', function() {
   });
 
   it('evals expression with `reports` and `contact` in scope', function() {
-    var expression = 'var result = { fields: [ ' +
+    var expression = '{ fields: [ ' +
                        '{ label: "Notes", value: "Hello " + contact.name },' +
                        '{ label: "Num reports", value: reports.length }' +
-                      '] };' +
-                      'result;';
+                      '] }';
     Settings.returns(KarmaUtils.mockPromise(null, { contact_summary: expression }));
     var contact = { name: 'jack' };
     var reports = [ { _id: 1 }, { _id: 2} ];
@@ -57,10 +56,9 @@ describe('ContactSummary service', function() {
   });
 
   it('applies filters to values', function() {
-    var expression = 'var result = { fields: [ ' +
+    var expression = '{ fields: [ ' +
                        '{ label: "Notes", value: "Hello", filter: "reversify" }' +
-                      '] };' +
-                      'result;';
+                      '] }';
     Settings.returns(KarmaUtils.mockPromise(null, { contact_summary: expression }));
     var contact = {};
     var reports = [];
