@@ -1,7 +1,6 @@
 const helper = require('../../helper'),
- utils = require('../../utils'),
   deliveryReport = require('../../page-objects/forms/delivery-report.po.js'),
-common = require('../../page-objects/common/common.po.js');
+  common = require('../../page-objects/common/common.po.js');
 
 
 
@@ -60,6 +59,7 @@ describe('Submit Delivery Report', () => {
   const noteToCHW = 'Good news, Jack! Jack () has delivered at the health facility. We will alert you when it is time to refer them for PNC. Please monitor them for danger signs. Thank you!';
 
   beforeEach(done => {
+    console.log('WOT=');
     browser.ignoreSynchronization = true;
     deliveryReport.saveDocs(done, docs);
     deliveryReport.configureForm(done);
@@ -67,12 +67,15 @@ describe('Submit Delivery Report', () => {
   });
 
   afterEach(done => {
-   deliveryReport.teardown(done);
+    deliveryReport.teardown(done);
+  });
+  afterAll(done => {
+    deliveryReport.deleteReport(done);
   });
 
   it('open delivery form', () => {
 
-common.goToReports();
+    common.goToReports();
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.driver.navigate().refresh();
     browser.wait(() => {
@@ -106,12 +109,6 @@ common.goToReports();
     expect(deliveryReport.getFollowUpMessage()).toBe(noteToCHW);
     //submit
     deliveryReport.submit();
-    //const snackbar=element(by.css('#snackbar'));
-     //helper.waitElementToBeVisisble(snackbar);
     expect(element(by.css('div.details')).isPresent()).toBeTruthy();
-//delete report
-utils.takeScreenshot('screen');
-deliveryReport.deleteReport();
-    
   });
 });
