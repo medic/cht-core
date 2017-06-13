@@ -9,6 +9,7 @@ describe('DBSync service', () => {
       allDocs,
       isAdmin,
       userCtx,
+      sync,
       Auth;
 
   beforeEach(() => {
@@ -18,12 +19,14 @@ describe('DBSync service', () => {
     allDocs = sinon.stub();
     isAdmin = sinon.stub();
     userCtx = sinon.stub();
+    sync = sinon.stub();
     Auth = sinon.stub();
     module('inboxApp');
     module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({
         replicate: { to: to, from: from },
-        allDocs: allDocs
+        allDocs: allDocs,
+        sync: sync
       }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('Session', {
@@ -38,7 +41,7 @@ describe('DBSync service', () => {
   });
 
   afterEach(() => {
-    KarmaUtils.restore(to, from, query, allDocs, isAdmin, userCtx, Auth);
+    KarmaUtils.restore(to, from, query, allDocs, isAdmin, userCtx, sync, Auth);
   });
 
   it('does nothing for admin', () => {

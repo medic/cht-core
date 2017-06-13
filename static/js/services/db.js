@@ -19,43 +19,64 @@ angular.module('inboxServices').factory('DB',
 
     $window.PouchDB.adapter('worker', require('worker-pouch/client'));
 
-    var getRemote = function() {
-      return getFromCache(Location.url, POUCHDB_OPTIONS.remote);
+    // TODO clean this up 
+    var getDbName = function(remote, meta) {
+      var userCtx = Session.userCtx();
+      if (remote) {
+        if (meta) {
+          return Location.url + '-user-' + userCtx.name + '-meta';
+        } else {
+          return Location.url;
+        }
+      } else {
+        if (meta) {
+          return Location.dbName + '-user-' + userCtx.name + '-meta';
+        } else {
+          return Location.dbName + '-user-' + userCtx.name;
+        }
+      }
     };
 
-    var getLocal = function() {
+    var getParams = function(remote, meta) {
+      var params = { };
+      if (remote) {
+        if (meta) {
+          params.skip_setup = false;
+        }
+        _.defaults(params, POUCHDB_OPTIONS.remote);
+      } else {
+        params.adapter = 'worker';
+        params.worker = function () {
+          return pouchWorker;
+        };
+        _.defaults(params, POUCHDB_OPTIONS.local);
+      }
+      return params;
+    };
+
+    var get = function(options) {
       var userCtx = Session.userCtx();
       if (!userCtx) {
         return Session.navigateToLogin();
       }
-      var name = Location.dbName + '-user-' + userCtx.name;
-      var options = {
-        adapter: 'worker',
-        worker: function () {
-          return pouchWorker;
-        }
-      };
-      _.defaults(options, POUCHDB_OPTIONS.local);
-      return getFromCache(name, options);
-    };
-
-    var getFromCache = function(name, options) {
+      options = options || {};
+      _.defaults(options, {
+        remote: Session.isAdmin(),
+        meta: false
+      });
+      var name = getDbName(options.remote, options.meta);
       if (!cache[name]) {
-        var db = pouchDB(name, options);
+        var db = pouchDB(name, getParams(options.remote, options.meta));
         cache[name] = db;
       }
       return cache[name];
     };
 
     if (!Session.isAdmin()) {
-      getLocal().viewCleanup();
+      get({ local: true }).viewCleanup();
+      get({ local: true, meta: true }).viewCleanup();
     }
 
-    return function(options) {
-      if ((options && options.remote) || Session.isAdmin()) {
-        return getRemote();
-      }
-      return getLocal();
-    };
+    return get;
   }
 );

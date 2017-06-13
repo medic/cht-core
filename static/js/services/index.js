@@ -20,6 +20,7 @@
   require('./contact-view-model-generator');
   require('./contacts');
   require('./count-messages');
+  require('./count-unread-records');
   require('./db');
   require('./db-sync');
   require('./debug');
@@ -57,7 +58,6 @@
   require('./outgoing-messages-configuration');
   require('./place-hierarchy');
   require('./properties');
-  require('./read-messages');
   require('./report-view-model-generator');
   require('./resource-icons');
   require('./rules-engine');

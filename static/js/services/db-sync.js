@@ -108,6 +108,13 @@ angular.module('inboxServices').factory('DBSync',
       return replicate('from', updateListener);
     };
 
+    var replicateMeta = function() {
+      var remote = DB({ meta: true, remote: true });
+      var local = DB({ meta: true });
+      // TODO setinterval every 30 minutes
+      local.sync(remote);
+    };
+
     return function(updateListener) {
       if (Session.isAdmin()) {
         if (updateListener) {
@@ -115,6 +122,9 @@ angular.module('inboxServices').factory('DBSync',
         }
         return $q.resolve();
       }
+
+      replicateMeta();
+
       return $q.all([
         replicateFrom(updateListener),
         replicateTo(updateListener)

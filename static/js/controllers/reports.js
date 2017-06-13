@@ -40,15 +40,30 @@ var _ = require('underscore'),
 
       var liveList = LiveList.reports;
 
-      var updateLiveList = function(updated) {
-        _.each(updated, function(report) {
-          liveList.update(report);
+      var recordReadStatus = function(models) {
+        var ids = models.map(function(model) {
+          return 'read:report:' + model._id;
         });
-        $scope.hasReports = liveList.count() > 0;
-        liveList.refresh();
-        if ($state.params.id) {
-          liveList.setSelected($state.params.id);
-        }
+        return DB({ meta: true })
+          .allDocs({ keys: ids })
+          .then(function(response) {
+            for (var i = 0; i < models.length; i++) {
+              models[i].read = !!response.rows[i].value;
+            }
+          });
+      };
+
+      var updateLiveList = function(updated) {
+        recordReadStatus(updated).then(function() {
+          updated.forEach(function(report) {
+            liveList.update(report);
+          });
+          $scope.hasReports = liveList.count() > 0;
+          liveList.refresh();
+          if ($state.params.id) {
+            liveList.setSelected($state.params.id);
+          }
+        });
       };
 
       var setSelected = function(model) {
@@ -56,8 +71,12 @@ var _ = require('underscore'),
         if ($scope.selectMode) {
           return;
         }
-        if (!$scope.isRead(model.doc)) {
+        var listModel = _.findWhere(liveList.getList(), { _id: model._id });
+        if (listModel && !listModel.read) {
           $scope.readStatus.forms--;
+          listModel.read = true;
+          LiveList.reports.update(listModel);
+          LiveList['report-search'].update(listModel);
         }
         MarkRead([ model.doc ])
           .then($scope.updateReadStatus)

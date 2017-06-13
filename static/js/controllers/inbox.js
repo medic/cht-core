@@ -24,6 +24,7 @@ var feedback = require('../modules/feedback'),
       CheckDate,
       ContactSchema,
       CountMessages,
+      CountUnreadRecords,
       DB,
       DBSync,
       Enketo,
@@ -33,7 +34,6 @@ var feedback = require('../modules/feedback'),
       LiveListConfig,
       Location,
       Modal,
-      ReadMessages,
       RulesEngine,
       Select2Search,
       SendMessage,
@@ -240,11 +240,6 @@ var feedback = require('../modules/feedback'),
         $scope.setShowContent(true);
       };
 
-      $scope.isRead = function(message) {
-        return _.contains(message.read, Session.userCtx().name);
-      };
-
-      $scope.readStatus = { forms: 0, messages: 0 };
 
       $scope.$on('$stateChangeSuccess', function(event, toState) {
         $scope.currentTab = toState.name.split('.')[0];
@@ -283,8 +278,9 @@ var feedback = require('../modules/feedback'),
         callback: updateAvailableFacilities
       });
 
+      $scope.readStatus = {};
       $scope.updateReadStatus = function() {
-        ReadMessages()
+        CountUnreadRecords()
           .then(function(data) {
             $scope.readStatus = data;
           })

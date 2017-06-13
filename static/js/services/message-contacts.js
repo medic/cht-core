@@ -34,9 +34,26 @@ angular.module('inboxServices').factory('MessageContacts',
         return value;
       });
       // populate the summaries of the result values then return the result
-      return GetContactSummaries(result).then(function() {
-        return result;
+      return GetContactSummaries(result);
+    };
+
+    var recordReadStatus = function(summaries) {
+      if (!summaries.length) {
+        return summaries;
+      }
+      var ids = summaries.map(function(summary) {
+        return 'read:message:' + summary.id;
       });
+      return DB({ meta: true })
+        .allDocs({ keys: ids })
+        .then(function(response) {
+          for (var i = 0; i < summaries.length; i++) {
+            summaries[i].read = !!response.rows[i].value;
+          }
+        })
+        .then(function() {
+          return summaries;
+        });
     };
 
     return function(options) {
@@ -49,7 +66,8 @@ angular.module('inboxServices').factory('MessageContacts',
             return result;
           }
           return getSummaries(result);
-        });
+        })
+        .then(recordReadStatus);
     };
   }
 );
