@@ -260,36 +260,10 @@ module.exports = function(grunt) {
       options: {
         interval: 1000
       },
-      configFiles: {
-        files: [ 'Gruntfile.js', 'package.json' ],
-        options: {
-          reload: true,
-        }
+      trigger: {
+        files: [ '.rebuild-trigger' ],
+        tasks: ['mmcss', 'mmjs', 'appcache', 'couch-compile', 'deploy']
       },
-      css: {
-        files: ['static/css/**/*'],
-        tasks: ['mmcss', 'appcache', 'deploy']
-      },
-      js: {
-        files: ['templates/**/*', 'static/js/**/*', 'packages/kujua-*/**/*', 'packages/libphonenumber/**/*'],
-        tasks: ['mmjs', 'appcache', 'deploy']
-      },
-      other: {
-        files: ['lib/**/*'],
-        tasks: ['appcache', 'deploy']
-      },
-      compiledddocs: {
-        files: ['ddocs/**/*'],
-        tasks: ['couch-compile', 'deploy']
-      },
-      ddocs: {
-        files: ['kanso.json'],
-        tasks: ['deploy']
-      },
-      translations: {
-        files: ['translations/*'],
-        tasks: ['appcache', 'deploy']
-      }
     },
     notify_hooks: {
       options: {

@@ -19,3 +19,5 @@ logs
 
 *.sublime-project
 *.sublime-workspace
+
+/.rebuild-trigger
