@@ -1,4 +1,6 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    USER_DB_SUFFIX = 'user',
+    META_DB_SUFFIX = 'meta';
 
 angular.module('inboxServices').factory('DB',
   function(
@@ -19,22 +21,21 @@ angular.module('inboxServices').factory('DB',
 
     $window.PouchDB.adapter('worker', require('worker-pouch/client'));
 
-    // TODO clean this up 
     var getDbName = function(remote, meta) {
-      var userCtx = Session.userCtx();
+      var parts = [];
       if (remote) {
-        if (meta) {
-          return Location.url + '-user-' + userCtx.name + '-meta';
-        } else {
-          return Location.url;
-        }
+        parts.push(Location.url);
       } else {
-        if (meta) {
-          return Location.dbName + '-user-' + userCtx.name + '-meta';
-        } else {
-          return Location.dbName + '-user-' + userCtx.name;
-        }
+        parts.push(Location.dbName);
       }
+      if (!remote || meta) {
+        parts.push(USER_DB_SUFFIX);
+        parts.push(Session.userCtx().name);
+      }
+      if (meta) {
+        parts.push(META_DB_SUFFIX);
+      }
+      return parts.join('-');
     };
 
     var getParams = function(remote, meta) {
