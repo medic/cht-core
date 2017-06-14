@@ -109,7 +109,7 @@ describe('Enketo service', function() {
           done(new Error('Should throw error'));
         })
         .catch(function(actual) {
-          chai.expect(actual.message).to.equal('Your user does not have an associated contact. Talk to your administrator to correct this.');
+          chai.expect(actual.message).to.equal('Your user does not have an associated contact, or does not have access to the associated contact. Talk to your administrator to correct this.');
           done();
         });
     });

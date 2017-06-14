@@ -123,7 +123,10 @@ describe('GenerateSearchRequests service', function() {
   });
 
   it('creates requests for reports with subjectIds filter', function() {
-    var result = service('reports', { subjectIds: [ 'a', 'b', 'c' ] });
+    var filters = {
+      subjectIds: [ 'a', 'b', 'c' ]
+    };
+    var result = service('reports', filters);
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0].view).to.equal('medic-client/reports_by_subject');
     chai.expect(result[0].params).to.deep.equal({
@@ -145,20 +148,64 @@ describe('GenerateSearchRequests service', function() {
     chai.expect(result[0].params.endkey[0]).to.equal(1371038399999);
   });
 
-  it('creates unfiltered contacts request for no filter', function() {
-    var result = service('contacts', {});
+  var assertUnfilteredContactRequest = function(result) {
     chai.expect(result.length).to.equal(1);
     chai.expect(result[0]).to.deep.equal({
       ordered: true,
       view: 'medic-client/contacts_by_type_index_name'
     });
+  };
+
+  it('creates unfiltered contacts request for no filter', function() {
+    var result = service('contacts', {});
+    assertUnfilteredContactRequest(result);
   });
 
-  it('creates unfiltered contacts request for type filter', function() {
+  it('creates contacts type request for types filter', function() {
     var filters = {
       types: {
         selected: [ 'person', 'clinic' ],
         options: [ 'person', 'clinic', 'district_hospital' ]
+      }
+    };
+    var result = service('contacts', filters);
+    chai.expect(result.length).to.equal(1);
+    chai.expect(result[0]).to.deep.equal({
+      view: 'medic-client/contacts_by_type',
+      params: {
+        keys: [ [ 'person' ], [ 'clinic' ] ]
+      }
+    });
+  });
+
+  it('creates unfiltered contacts request for types filter when all options are selected', function() {
+    var filters = {
+      types: {
+        selected: [ 'person', 'clinic', 'district_hospital' ],
+        options: [ 'person', 'clinic', 'district_hospital' ]
+      }
+    };
+    var result = service('contacts', filters);
+    assertUnfilteredContactRequest(result);
+  });
+
+  it('creates unfiltered contacts request for types filter when no options are selected', function() {
+    var filters = {
+      types: {
+        selected: [],
+        options: [ 'person', 'clinic', 'district_hospital' ]
+      }
+    };
+    var result = service('contacts', filters);
+    assertUnfilteredContactRequest(result);
+  });
+
+  // format used by select2search
+  it('creates contacts type request for type filter without options', function() {
+    var filters = {
+      types: {
+        selected: [ 'person', 'clinic' ]
+        // no options.
       }
     };
     var result = service('contacts', filters);
@@ -289,7 +336,7 @@ describe('GenerateSearchRequests service', function() {
       chai.expect(result.length).to.equal(2);
       chai.expect(result[0].view).to.equal('medic-client/contacts_by_type_freetext');
       chai.expect(result[0].union).to.equal(true);
-      chai.expect(result[0].params).to.deep.equal([
+      chai.expect(result[0].paramSets).to.deep.equal([
         {
           startkey: [ 'clinic', 'some' ],
           endkey: [ 'clinic', 'some\ufff0' ],
@@ -301,7 +348,7 @@ describe('GenerateSearchRequests service', function() {
       ]);
       chai.expect(result[1].view).to.equal('medic-client/contacts_by_type_freetext');
       chai.expect(result[1].union).to.equal(true);
-      chai.expect(result[1].params).to.deep.equal([
+      chai.expect(result[1].paramSets).to.deep.equal([
         {
           startkey: [ 'clinic', 'thing' ],
           endkey: [ 'clinic', 'thing\ufff0' ],

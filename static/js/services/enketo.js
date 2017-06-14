@@ -12,6 +12,7 @@ angular.module('inboxServices').service('Enketo',
     DB,
     EnketoPrepopulationData,
     EnketoTranslation,
+    ExtractLineage,
     FileReader,
     Language,
     TranslateFrom,
@@ -226,7 +227,13 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var renderForm = function(selector, id, instanceData) {
+    var registerEditedListener = function(selector, listener) {
+      if (listener) {
+        $(selector).on('edited.enketo', listener);
+      }
+    };
+
+    var renderForm = function(selector, id, instanceData, editedListener) {
       return Language()
         .then(function(language) {
           return withForm(id, language);
@@ -238,26 +245,30 @@ angular.module('inboxServices').service('Enketo',
             model: doc.model,
           };
           replaceJavarosaMediaWithLoaders(id, doc.html);
-          return renderFromXmls(doc, selector, instanceData);
+          var form = renderFromXmls(doc, selector, instanceData);
+          registerEditedListener(selector, editedListener);
+          return form;
         });
     };
 
-    this.render = function(selector, id, instanceData) {
+    this.render = function(selector, id, instanceData, editedListener) {
       return getUserContact().then(function() {
-        return renderForm(selector, id, instanceData);
+        return renderForm(selector, id, instanceData, editedListener);
       });
     };
 
     this.renderContactForm = renderForm;
 
-    this.renderFromXmlString = function(selector, xmlString, instanceData) {
+    this.renderFromXmlString = function(selector, xmlString, instanceData, editedListener) {
       return Language()
         .then(function(language) {
           return translateXml(xmlString, language);
         })
         .then(transformXml)
         .then(function(doc) {
-          return renderFromXmls(doc, selector, instanceData);
+          var form = renderFromXmls(doc, selector, instanceData);
+          registerEditedListener(selector, editedListener);
+          return form;
         });
     };
 
@@ -347,7 +358,7 @@ angular.module('inboxServices').service('Enketo',
     var getUserContact = function() {
       return UserContact().then(function(contact) {
         if (!contact) {
-          throw new Error('Your user does not have an associated contact. Talk to your administrator to correct this.');
+          throw new Error('Your user does not have an associated contact, or does not have access to the associated contact. Talk to your administrator to correct this.');
         }
         return contact;
       });
@@ -370,7 +381,7 @@ angular.module('inboxServices').service('Enketo',
             type: 'data_record',
             content_type: 'xml',
             reported_date: Date.now(),
-            contact: contact,
+            contact: ExtractLineage(contact),
             from: contact && contact.phone,
             read: read
           };

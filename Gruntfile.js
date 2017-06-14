@@ -341,7 +341,7 @@ module.exports = function(grunt) {
       },
     },
     nodeunit: {
-      all: ['tests/nodeunit/unit/**/*.js']
+      all: ['tests/nodeunit/unit/**/*.js', '!tests/nodeunit/unit/*/utils.js']
     },
     ngtemplates: {
       inboxApp: {

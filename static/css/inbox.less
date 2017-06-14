@@ -627,8 +627,14 @@ body {
     padding-top: 0;
     margin-top: 0;
   }
-  .item-content .actions a {
-    margin-right: 1em;
+  .item-content {
+    .actions a {
+      margin-right: 1em;
+      margin-bottom: 1em;
+    }
+    .body > div > ul > li:first-child {
+      border-top: 0;
+    }
   }
 }
 
@@ -862,59 +868,62 @@ a.fa:hover {
   }
 }
 
-.reports .item-content,
-.tasks .item-content {
+.reports,
+.tasks {
+  .item-content {
+    .body {
 
-  .body {
+      background-color: @form-background-color;
+      border: 1px solid @seperator-color;
+      border-radius: @radius-size;
+      margin: 1em;
 
-    background-color: @form-background-color;
-    border: 1px solid @seperator-color;
-    border-radius: @radius-size;
-    margin: 1em;
-
-    p {
-      font-weight: bold;
-      font-size: 1.4em;
-    }
-
-    h5 {
-      text-align: center;
-      margin-top: -1em;
-    }
-
-    > div > ul > li {
-      border-top: 1px solid @seperator-color;
-      padding: 1em 3em 1em 2em;
-      margin: 0;
-      &.indent-1 {
-        padding-left: 3em;
+      p {
+        font-weight: bold;
+        font-size: 1.4em;
       }
-      &.indent-2 {
-        padding-left: 4em;
+
+      h2 {
+        margin-left: 1em;
       }
-      &.indent-3 {
-        padding-left: 5em;
+
+      h5 {
+        text-align: center;
+        margin-top: -1em;
       }
-    }
 
-    label {
-      display: block;
-      margin: 0;
-      font-weight: normal;
-      font-style: italic;
-      color: @label-color;
-    }
+      > div > ul > li {
+        border-top: 1px solid @seperator-color;
+        padding: 1em 3em 1em 2em;
+        margin: 0;
+        &.indent-1 {
+          padding-left: 3em;
+        }
+        &.indent-2 {
+          padding-left: 4em;
+        }
+        &.indent-3 {
+          padding-left: 5em;
+        }
+      }
 
-    .missing p {
-      color: @lightgrey;
-    }
+      label {
+        display: block;
+        margin: 0;
+        font-weight: normal;
+        font-style: italic;
+        color: @label-color;
+      }
 
+      .missing p {
+        color: @lightgrey;
+      }
+
+    }
+    .task-list > li {
+      margin-top: 1em;
+    }
   }
-
-  .task-list > li {
-    margin-top: 1em;
-  }
-
 }
 
 .item-content,
@@ -1435,8 +1444,9 @@ a.fa:hover {
       padding-bottom: 0;
     }
   }
-  .reports, .tasks {
-    .content .item-content .body > ul > li {
+  .reports,
+  .tasks {
+    .content .item-content .body > div > ul > li {
       padding: 1em;
       &.indent-1 {
         padding-left: 2em;

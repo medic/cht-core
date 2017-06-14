@@ -388,7 +388,7 @@ describe('Search service', function() {
       GenerateSearchRequests.returns([ {
         view: 'get_stuff',
         union: true,
-        params: [ { key: [ 'a' ] }, { key: [ 'b' ] } ]
+        paramSets: [ { key: [ 'a' ] }, { key: [ 'b' ] } ]
       } ]);
       dbQuery.onCall(0).returns(KarmaUtils.mockPromise(null, { rows: [ { id: 'a', value: 1 }, { id: 'b', value: 2 } ] }));
       dbQuery.onCall(1).returns(KarmaUtils.mockPromise(null, { rows: [ { id: 'b', value: 2 }, { id: 'c', value: 3 } ] }));

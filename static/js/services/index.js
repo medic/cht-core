@@ -17,6 +17,7 @@
   require('./contact-form');
   require('./contact-schema');
   require('./contact-summary');
+  require('./contact-view-model-generator');
   require('./contacts');
   require('./count-messages');
   require('./db');
@@ -29,18 +30,21 @@
   require('./enketo-prepopulation-data');
   require('./enketo-translation');
   require('./export');
+  require('./extract-lineage');
   require('./file-reader');
   require('./json-forms');
   require('./json-parse');
   require('./format-data-record');
   require('./format-date');
-  require('./generate-search-query');
+  require('./generate-lucene-query');
   require('./generate-search-requests');
+  require('./get-contact-summaries');
   require('./get-data-records');
   require('./import-contacts');
   require('./kanso-packages');
   require('./language');
   require('./languages');
+  require('./lineage-model-generator');
   require('./live-list');
   require('./location');
   require('./markdown');
@@ -54,6 +58,7 @@
   require('./place-hierarchy');
   require('./properties');
   require('./read-messages');
+  require('./report-view-model-generator');
   require('./resource-icons');
   require('./rules-engine');
   require('./scheduled-forms');

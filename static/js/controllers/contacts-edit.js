@@ -14,6 +14,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     DB,
     Enketo,
     EnketoTranslation,
+    ExtractLineage,
     Snackbar
   ) {
 
@@ -93,6 +94,10 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
       return $q.resolve();
     };
 
+    var markFormEdited = function() {
+      $scope.enketoStatus.edited = true;
+    };
+
     var renderForm = function(form) {
       return $timeout(function() {
         var container = $('#contact-form');
@@ -103,11 +108,12 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
               .addClass('disabled');
           return;
         }
+        $scope.enketoStatus.edited = false;
         var instanceData = getFormInstanceData();
         if (form.id) {
-          return Enketo.renderContactForm('#contact-form', form.id, instanceData);
+          return Enketo.renderContactForm('#contact-form', form.id, instanceData, markFormEdited);
         }
-        return Enketo.renderFromXmlString('#contact-form', form.xml, instanceData);
+        return Enketo.renderFromXmlString('#contact-form', form.xml, instanceData, markFormEdited);
       });
     };
 
@@ -249,7 +255,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     function prepareRepeatedDocs(doc, repeated) {
       if (repeated && repeated.child_data) {
         return _.map(repeated.child_data, function(child) {
-          child.parent = doc;
+          child.parent = ExtractLineage(doc.contact);
           return prepare(child);
         });
       } else {
@@ -287,7 +293,11 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
               doc[fieldName] = _.clone(preparedSibling);
               preparedSibling.parent = doc;
             } else {
-              doc[fieldName] = preparedSibling;
+              if (fieldName === 'parent') {
+                doc[fieldName] = ExtractLineage(preparedSibling);
+              } else {
+                doc[fieldName] = preparedSibling;
+              }
             }
 
             preparedSiblings.push(preparedSibling);
@@ -299,7 +309,11 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           } else {
             promiseChain = promiseChain.then(function() {
               return DB().get(doc[fieldName]).then(function(dbFieldValue) {
-                doc[fieldName] = dbFieldValue;
+                if (fieldName === 'parent') {
+                  doc[fieldName] = ExtractLineage(dbFieldValue);
+                } else {
+                  doc[fieldName] = dbFieldValue;
+                }
               });
             });
           }

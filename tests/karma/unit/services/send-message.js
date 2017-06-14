@@ -86,7 +86,7 @@ describe('SendMessage service', function() {
           from: '+5551',
           sent_by: 'jack',
           to: '+5552',
-          contact: recipient
+          contact: { _id: recipient._id }
         });
         done();
       })
@@ -146,7 +146,7 @@ describe('SendMessage service', function() {
           from: '+5551',
           sent_by: 'jack',
           to: '+254' + phoneNumber,
-          contact: recipient
+          contact: { _id: recipient._id }
         });
         done();
       }).catch(done);
@@ -182,13 +182,13 @@ describe('SendMessage service', function() {
           from: '+5551',
           sent_by: 'jack',
           to: '+5552',
-          contact: recipients[0]
+          contact: { _id: recipients[0]._id }
         });
         assertMessage(post.args[0][0].tasks[1], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5553',
-          contact: recipients[1]
+          contact: { _id: recipients[1]._id }
         });
         chai.expect    (post.args[0][0].tasks[0].messages[0].uuid)
           .to.not.equal(post.args[0][0].tasks[1].messages[0].uuid);
@@ -250,19 +250,19 @@ describe('SendMessage service', function() {
           from: '+5551',
           sent_by: 'jack',
           to: '+5553',
-          contact: descendants[0]
+          contact: { _id: descendants[0]._id }
         });
         assertMessage(post.args[0][0].tasks[1], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5552',
-          contact: descendants[1]
+          contact: { _id: descendants[1]._id }
         });
         assertMessage(post.args[0][0].tasks[2], {
           from: '+5551',
           sent_by: 'jack',
           to: '+5554',
-          contact: descendants[2]
+          contact: { _id: descendants[2]._id }
         });
         done();
       }).catch(done);

@@ -40,30 +40,28 @@ var _ = require('underscore'),
       var defaultTypeFilter = {};
       var usersHomePlace;
 
-      // The type of the children of the user's facility.
-      var getUserFacilityId = function() {
-        return UserSettings()
-          .then(function(u) {
-            return u.facility_id;
-          });
-      };
       var getUserHomePlaceSummary = function() {
-        return getUserFacilityId().then(function(facilityId) {
-          return facilityId && DB().query('medic-client/doc_summaries_by_id', {
-            key: [facilityId]
-          }).then(function(results) {
-              var summary = results &&
-                            results.rows &&
-                            results.rows.length &&
-                            results.rows[0].value;
-
-              if (summary) {
-                summary._id = facilityId;
-                summary.home = true;
-                return summary;
-              }
+        return UserSettings()
+          .then(function(userSettings) {
+            if (userSettings.facility_id) {
+              return DB().query(
+                'medic-client/doc_summaries_by_id',
+                { key: userSettings.facility_id }
+              );
+            }
+          })
+          .then(function(results) {
+            var firstRow = results &&
+                           results.rows &&
+                           results.rows.length &&
+                           results.rows[0];
+            if (firstRow) {
+              var summary = firstRow.value;
+              summary._id = firstRow.id;
+              summary.home = true;
+              return summary;
+            }
           });
-        });
       };
 
       var _initScroll = function() {
@@ -163,7 +161,7 @@ var _ = require('underscore'),
           $translate(title),
           getActionBarDataForChild(selectedDoc.type),
           getCanEdit(selectedDoc),
-          ContactSummary(selected.doc, selected.reports || [])
+          ContactSummary(selected.doc, selected.reports, selected.parents || [])
         ])
           .then(function(results) {
             $scope.setTitle(results[0]);

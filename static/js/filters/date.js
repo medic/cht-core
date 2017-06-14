@@ -60,128 +60,116 @@ var _ = require('underscore'),
     return task.due || task.reported_date;
   };
 
-  var getState = function(state, translate) {
-    return '<span class="state ' + state + '">' + translate('state.' + state) + '</span>';
+  var getState = function(state, $translate) {
+    var label = $translate.instant('state.' + state);
+    return '<span class="state ' + state + '">' + label + '</span>';
   };
 
-  module.filter('autoreply', ['FormatDate', 'translateFilter',
-    function (FormatDate, translateFilter) {
-      return function (task) {
-        if (!task || !task.state) {
-          return '';
-        }
-        var content = getState(task.state, translateFilter) + '&nbsp;' +
-          '<span class="autoreply" title="' + task.messages[0].message + '">' +
-            '<span class="autoreply-content">' + translateFilter('autoreply') + '</span>' +
-          '</span>&nbsp';
-        return getRelativeDate(getTaskDate(task), {
-          FormatDate: FormatDate,
-          prefix: content
-        });
-      };
-    }
-  ]);
+  module.filter('autoreply', function(FormatDate, $translate) {
+    'ngInject';
+    return function (task) {
+      if (!task || !task.state) {
+        return '';
+      }
+      var content = getState(task.state, $translate) + '&nbsp;' +
+        '<span class="autoreply" title="' + task.messages[0].message + '">' +
+          '<span class="autoreply-content">' + $translate.instant('autoreply') + '</span>' +
+        '</span>&nbsp';
+      return getRelativeDate(getTaskDate(task), {
+        FormatDate: FormatDate,
+        prefix: content
+      });
+    };
+  });
 
-  var getRecipient = function(task, translateFilter) {
-    if (task && task.messages && task.messages.length && task.messages[0].to) {
-      return '<span class="recipient">&nbsp;' +
-               translateFilter('to recipient', { recipient: task.messages[0].to }) +
-             '</span>';
+  var getRecipient = function(task, $translate) {
+    var recipient = task && task.messages && task.messages.length && task.messages[0].to;
+    if (recipient) {
+      var label = $translate.instant('to recipient', { recipient: recipient });
+      return '<span class="recipient">&nbsp;' + label + '</span>';
     }
     return '';
   };
 
-  module.filter('state', ['FormatDate', 'translateFilter',
-    function (FormatDate, translateFilter) {
-      return function (task) {
-        if (!task) {
-          return '';
-        }
-        return getRelativeDate(getTaskDate(task), {
-          FormatDate: FormatDate,
-          prefix: getState(task.state || 'received', translateFilter) + '&nbsp;',
-          suffix: getRecipient(task, translateFilter)
-        });
-      };
-    }
-  ]);
+  module.filter('state', function(FormatDate, $translate) {
+    'ngInject';
+    return function (task) {
+      if (!task) {
+        return '';
+      }
+      return getRelativeDate(getTaskDate(task), {
+        FormatDate: FormatDate,
+        prefix: getState(task.state || 'received', $translate) + '&nbsp;',
+        suffix: getRecipient(task, $translate)
+      });
+    };
+  });
 
-  module.filter('age', ['FormatDate',
-    function (FormatDate) {
-      return function (date) {
-        return getRelativeDate(date, {
-          FormatDate: FormatDate,
-          withoutTime: true,
-          age: true
-        });
-      };
-    }
-  ]);
+  module.filter('age', function(FormatDate) {
+    'ngInject';
+    return function (date) {
+      return getRelativeDate(date, {
+        FormatDate: FormatDate,
+        withoutTime: true,
+        age: true
+      });
+    };
+  });
 
-  module.filter('relativeDate', ['FormatDate',
-    function (FormatDate) {
-      return function (date) {
-        return getRelativeDate(date, { FormatDate: FormatDate });
-      };
-    }
-  ]);
+  module.filter('relativeDate', function(FormatDate) {
+    'ngInject';
+    return function (date) {
+      return getRelativeDate(date, { FormatDate: FormatDate });
+    };
+  });
 
-  module.filter('relativeDay', ['FormatDate',
-    function (FormatDate) {
-      return function (date) {
-        return getRelativeDate(date, {
-          FormatDate: FormatDate,
-          withoutTime: true
-        });
-      };
-    }
-  ]);
+  module.filter('relativeDay', function(FormatDate) {
+    'ngInject';
+    return function (date) {
+      return getRelativeDate(date, {
+        FormatDate: FormatDate,
+        withoutTime: true
+      });
+    };
+  });
 
-  module.filter('simpleDate', ['FormatDate',
-    function (FormatDate) {
-      return function (date) {
-        return FormatDate.date(date);
-      };
-    }
-  ]);
+  module.filter('simpleDate', function(FormatDate) {
+    return function (date) {
+      return FormatDate.date(date);
+    };
+  });
 
-  module.filter('simpleDateTime', ['FormatDate',
-    function (FormatDate) {
-      return function (date) {
-        return FormatDate.datetime(date);
-      };
-    }
-  ]);
+  module.filter('simpleDateTime', function(FormatDate) {
+    return function (date) {
+      return FormatDate.datetime(date);
+    };
+  });
 
-  module.filter('fullDate', ['FormatDate',
-    function (FormatDate) {
-      return function (date) {
-        if (!date) {
-          return '';
-        }
-        return '<div class="relative-date-content">' + FormatDate.relative(date) + '</div>' +
-               '<div class="full-date">' + FormatDate.datetime(date) + '</div>';
-      };
-    }
-  ]);
+  module.filter('fullDate', function(FormatDate) {
+    return function (date) {
+      if (!date) {
+        return '';
+      }
+      return '<div class="relative-date-content">' + FormatDate.relative(date) + '</div>' +
+             '<div class="full-date">' + FormatDate.datetime(date) + '</div>';
+    };
+  });
 
-  module.filter('weeksPregnant', ['FormatDate',
-    function () {
-      return function (weeks) {
-        if (!weeks || !weeks.number) {
-          return '';
-        }
-        var classes = [];
-        if (weeks.number >= 37) {
-          classes.push('upcoming-edd');
-        }
-        if (weeks.approximate) {
-          classes.push('approximate');
-        }
-        var attr = classes.length ? ' class="' + classes.join(' ') + '"' : '';
-        return '<span' + attr + '>' + weeks.number + '</span>';
-      };
-    }
-  ]);
+  module.filter('weeksPregnant', function() {
+    return function(weeks) {
+      if (!weeks || !weeks.number) {
+        return '';
+      }
+      var classes = [];
+      if (weeks.number >= 37) {
+        classes.push('upcoming-edd');
+      }
+      if (weeks.approximate) {
+        classes.push('approximate');
+      }
+      var attr = classes.length ? ' class="' + classes.join(' ') + '"' : '';
+      return '<span' + attr + '>' + weeks.number + '</span>';
+    };
+  });
 
 }());

@@ -33,7 +33,7 @@ define( function( require, exports, module ) {
                     // field `phone`.
 
                     var DB = angularServices.get( 'DB' );
-                    return DB().query('medic-client/people_by_phone', { key: [ phoneNumber ] });
+                    return DB().query('medic-client/contacts_by_phone', { key: phoneNumber });
                 } )
                 .then( function( res ) {
                     if ( res.rows.length === 0 ) {

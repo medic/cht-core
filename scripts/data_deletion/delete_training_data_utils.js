@@ -142,15 +142,13 @@ var getContactsForPlace = function(db, placeId, skip, batchSize) {
 // Skip : how many records to skip before outputting (~= offset)
 var getDataRecordsForBranch = function(db, branchId, skip, batchSize) {
   console.log('query with batchsize ' + batchSize + ' , skip ' + skip);
-  return db.query(
-    'medic/data_records_by_district',
-    {
-      startkey: [branchId],
-      endkey: [branchId + '\ufff0'],
-      skip: skip,
-      include_docs: true,
-      limit: batchSize }
-  ).then(function (result) {
+  var params = {
+    key: branchId,
+    skip: skip,
+    include_docs: true,
+    limit: batchSize
+  };
+  return db.query('medic/data_records_by_ancestor', params).then(function (result) {
     console.log('total_rows : ' + result.total_rows + ', offset : ' + result.offset);
     console.log('Reports for branch : ' + result.rows.length);
     return getDocsFromRows(result.rows);
@@ -207,7 +205,7 @@ var filterFamilyMembers = function(personsList, logdir) {
 
 // Find which facilities (if any) this person is a contact for.
 var isContactFor = function(db, personId) {
-  return db.query('medic-client/places_by_contact', {key: [personId], include_docs: true})
+  return db.query('medic/places_by_contact', {key: personId, include_docs: true})
     .then(function(result) {
       var ids = getIdsFromRows(result.rows);
       if (result.rows.length > 0) {

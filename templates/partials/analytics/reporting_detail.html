@@ -125,10 +125,9 @@
     <div class="records" ng-if="expandedClinic === clinic.id">
       <div ng-repeat="record in clinic.records">
         <div class="row" ng-class="{ 'valid': record.is_valid }" ng-click="expandRecord(record.id)">
-          <div class="col-sm-4">
+          <div class="col-sm-8">
             <i class="fa fa-caret-down" ng-show="record.id && expandedRecord === record.id"></i><i class="fa fa-caret-right" ng-show="record.id && expandedRecord !== record.id"></i>{{record.name}}
           </div>
-          <div class="col-sm-4">{{record.reporter}}</div>
         </div>
         <div class="loader" ng-show="record.id && loadingRecord === record.id"></div>
         <div class="fields" ng-if="expandedRecord && expandedRecord === record.id">

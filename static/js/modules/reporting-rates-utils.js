@@ -7,8 +7,8 @@ var _ = require('underscore'),
 
     var isValid = function(report) {
 
-        if (typeof report.is_valid !== 'undefined') {
-            return report.is_valid;
+        if (typeof report.isValid !== 'undefined') {
+            return report.isValid;
         }
 
         if (!report) {
@@ -366,7 +366,7 @@ var _ = require('underscore'),
             row.valid = 0;
 
             _.each(row.records, function(record) {
-                var clinicId = record.clinic.id,
+                var clinicId = record.clinicId,
                     key = (record.month || record.week_number) + '-' + record.year;
 
                 seen[clinicId] = seen[clinicId] || {};
@@ -424,21 +424,16 @@ var _ = require('underscore'),
         // find the matching facility and populate row.clinic array
         _.each(rows, function(row) {
             _.each(reports, function(report) {
-                if (report.key[4] === row.id) {
+                if (report.value.healthCenterId === row.id) {
                     var is_valid = isValid(report.value);
                     var formatted_record = {
                         id: report.id,
-                        clinic: {
-                            id: report.key[5],
-                            name: report.value.clinic
-                        },
-                        month: report.key[2],
-                        month_pp: prettyMonth(report.key[2], true),
+                        clinicId: report.value.clinicId,
+                        month: report.value.month,
+                        month_pp: prettyMonth(report.value.month, true),
                         year: report.key[1],
-                        reporter: report.value.reporter,
-                        reporting_phone: report.value.reporting_phone,
                         is_valid: is_valid,
-                        week_number: report.value.week_number
+                        week_number: report.value.weekNumber
                     };
                     formatted_record.name = getName(formatted_record);
                     row.records.unshift(formatted_record);
@@ -489,21 +484,16 @@ var _ = require('underscore'),
         // find the matching facility and populate row.records array.
         _.each(rows, function(row) {
             _.each(reports, function(report) {
-                if (report.key[5] === row.id) {
+                if (report.value.clinicId === row.id) {
                     var is_valid = isValid(report.value);
                     var formatted_record = {
                         id: report.id,
-                        clinic: {
-                            id: report.key[5],
-                            name: report.value.clinic,
-                        },
-                        month: report.key[2],
-                        month_pp: prettyMonth(report.key[2], true),
+                        clinicId: report.value.clinicId,
+                        month: report.value.month,
+                        month_pp: prettyMonth(report.value.month, true),
                         year: report.key[1],
-                        reporter: report.value.reporter,
-                        reporting_phone: report.value.reporting_phone,
                         is_valid: is_valid,
-                        week_number: report.value.week_number
+                        week_number: report.value.weekNumber
                     };
                     formatted_record.name = getName(formatted_record);
                     row.records.unshift(formatted_record);
@@ -615,7 +605,7 @@ var _ = require('underscore'),
         });
 
         _.each(reports, function(r) {
-            if (r.value.is_valid) { t.complete++; }
+            if (r.value.isValid) { t.complete++; }
             else { t.incomplete++; }
         });
 

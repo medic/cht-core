@@ -1,86 +1,75 @@
-describe('MarkRead service', function() {
+describe('MarkRead service', () => {
 
   'use strict';
 
-  var service,
-      get,
-      put;
+  let service,
+      bulkDocs;
 
-  beforeEach(function() {
-    put = sinon.stub();
-    get = sinon.stub();
+  beforeEach(() => {
+    bulkDocs = sinon.stub();
     module('inboxApp');
-    module(function ($provide) {
-      $provide.factory('DB', KarmaUtils.mockDB({ put: put, get: get }));
-      $provide.factory('Session', function() {
+    module($provide => {
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
+      $provide.factory('DB', KarmaUtils.mockDB({ bulkDocs: bulkDocs }));
+      $provide.factory('Session', () => {
         return {
-          userCtx: function() {
+          userCtx: () => {
             return { name: 'james' };
           }
         };
       });
     });
-    inject(function(_MarkRead_) {
+    inject(_MarkRead_ => {
       service = _MarkRead_;
     });
   });
 
-  afterEach(function() {
-    KarmaUtils.restore(put, get);
+  afterEach(() => {
+    KarmaUtils.restore(bulkDocs);
   });
 
-  it('marks the message read', function(done) {
-    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz' }));
-    put.returns(KarmaUtils.mockPromise());
-    var expected = { _id: 'xyz', read: [ 'james' ] };
-    service('abc', true).then(function() {
-      chai.expect(get.args[0][0]).to.deep.equal('abc');
-      chai.expect(put.args[0][0]).to.deep.equal(expected);
+  it('marks the message read', () => {
+    const given = [ { _id: 'xyz' } ];
+    const expected = [ { _id: 'xyz', read: [ 'james' ] } ];
+    bulkDocs.returns(KarmaUtils.mockPromise());
+    return service(given).then(() => {
+      chai.expect(bulkDocs.args[0][0]).to.deep.equal(expected);
+    });
+  });
+
+  it('marks the message read when already read', () => {
+    const given = [ { _id: 'xyz', read: [ 'james' ] } ];
+    return service(given).then(() => {
+      chai.expect(bulkDocs.callCount).to.equal(0);
+    });
+  });
+
+  it('returns bulkDocs errors', done => {
+    const given = { _id: 'xyz' };
+    const expected = 'errcode2';
+    bulkDocs.returns(KarmaUtils.mockPromise(expected));
+    service([given]).catch(err => {
+      chai.expect(err).to.equal(expected);
       done();
     });
   });
 
-  it('marks the message unread', function(done) {
-    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz', read: [ 'james' ] }));
-    put.returns(KarmaUtils.mockPromise());
-    var expected = { _id: 'xyz', read: [ ] };
-    service('abc', false).then(function() {
-      chai.expect(get.args[0][0]).to.deep.equal('abc');
-      chai.expect(put.args[0][0]).to.deep.equal(expected);
-      done();
-    });
-  });
+  it('marks multiple docs read', () => {
 
-  it('marks the message read when already read', function(done) {
-    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz', read: [ 'james' ] }));
-    service('abc', true).then(function() {
-      chai.expect(get.args[0][0]).to.deep.equal('abc');
-      done();
-    });
-  });
+    const given = [
+      { _id: 'a' },
+      { _id: 'b', read: [ 'james' ] },
+      { _id: 'c', read: [ 'jack' ] }
+    ];
+    const expected = [
+      { _id: 'a', read: [ 'james' ] },
+      { _id: 'c', read: [ 'jack', 'james' ] }
+    ];
 
-  it('marks the message unread when already unread', function(done) {
-    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz' }));
-    service('abc', false).then(function() {
-      chai.expect(get.args[0][0]).to.deep.equal('abc');
-      done();
-    });
-  });
+    bulkDocs.returns(KarmaUtils.mockPromise());
 
-  it('returns db errors', function(done) {
-    get.returns(KarmaUtils.mockPromise('errcode1'));
-    service('abc', true).catch(function(err) {
-      chai.expect(err).to.equal('errcode1');
-      done();
-    });
-  });
-
-  it('returns save errors', function(done) {
-    get.returns(KarmaUtils.mockPromise(null, { _id: 'xyz' }));
-    put.returns(KarmaUtils.mockPromise('errcode2'));
-    service('abc', true).catch(function(err) {
-      chai.expect(err).to.equal('errcode2');
-      done();
+    return service(given).then(() => {
+      chai.expect(bulkDocs.args[0][0]).to.deep.equal(expected);
     });
   });
 

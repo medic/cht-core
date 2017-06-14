@@ -235,9 +235,9 @@ var _ = require('underscore'),
           .then(function(data) {
             // additional filtering for this facility
             var saved_data = [];
-            var idx = doc.type === 'health_center' ? 4 : 3;
+            var contactIdProperty = doc.type === 'health_center' ? 'healthCenterId' : 'districtId';
             data.rows.forEach(function(row) {
-              if (doc._id === row.key[idx]) {
+              if (doc._id === row.value[contactIdProperty]) {
                 saved_data.push(row);
               }
             });

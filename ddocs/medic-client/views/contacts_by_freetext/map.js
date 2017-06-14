@@ -4,7 +4,6 @@ function(doc) {
   var usedKeys = [];
   var emitMaybe = function(key, value) {
     if (usedKeys.indexOf(key) === -1 && // Not already used
-        !key.match(/(^$)|(^[^A-Za-z0-9+])/) && // Not empty or starting with bad symbol
         key.length > 2 // Not too short
     ) {
       usedKeys.push(key);
@@ -19,9 +18,6 @@ function(doc) {
     key = key.toLowerCase();
     if (skip.indexOf(key) !== -1 || /_date$/.test(key)) {
       return;
-    }
-    if (key === 'parent' && typeof value === 'object' && value.hasOwnProperty('name')) {
-      value = value.name;
     }
     if (typeof value === 'string') {
       value = value.toLowerCase();
