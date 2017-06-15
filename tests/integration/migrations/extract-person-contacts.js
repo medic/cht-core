@@ -34,16 +34,8 @@ describe('extract-person-contacts migration', function() {
           name: 'myfacility',
           contact: {
             _id: ANY_STRING,
-            _rev: ANY_STRING,
-            type: 'person',
-            name: 'Alice',
-            phone: '+123',
-            reported_date: ANY_NUMBER,
             parent: {
-              _id: 'abc',
-              _rev: ANY_STRING,
-              type: 'district_hospital',
-              name: 'myfacility',
+              _id: 'abc'
             },
           },
         },
@@ -53,10 +45,7 @@ describe('extract-person-contacts migration', function() {
           phone: '+123',
           reported_date: ANY_NUMBER,
           parent: {
-            _id: 'abc',
-            _rev: ANY_STRING,
-            type: 'district_hospital',
-            name: 'myfacility',
+            _id: 'abc'
           },
         },
       ]);
@@ -95,16 +84,8 @@ describe('extract-person-contacts migration', function() {
           place_id: 'rc1',
           contact: {
             _id: ANY_STRING,
-            _rev: ANY_STRING,
-            type: 'person',
-            name: 'Alice',
-            phone: '+123',
-            reported_date: ANY_NUMBER,
             parent: {
-              _id: 'abc',
-              _rev: ANY_STRING,
-              type: 'district_hospital',
-              name: 'myfacility',
+              _id: 'abc'
             },
           },
         },
@@ -114,10 +95,7 @@ describe('extract-person-contacts migration', function() {
           phone: '+123',
           reported_date: ANY_NUMBER,
           parent: {
-            _id: 'abc',
-            _rev: ANY_STRING,
-            type: 'district_hospital',
-            name: 'myfacility',
+            _id: 'abc'
           },
         },
       ]);
