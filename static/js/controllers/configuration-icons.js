@@ -1,96 +1,95 @@
 var _ = require('underscore');
 
-(function () {
+angular.module('inboxControllers').controller('ConfigurationIconsCtrl',
+  function(
+    $log,
+    $scope,
+    $translate,
+    DB
+  ) {
 
-  'use strict';
+    'ngInject';
+    'use strict';
 
-  var inboxControllers = angular.module('inboxControllers');
+    $('#icon-upload .choose').on('click', function(_ev) {
+      _ev.preventDefault();
+      $('#icon-upload .uploader').click();
+    });
 
-  inboxControllers.controller('ConfigurationIconsCtrl',
-    ['$scope', '$translate', '$log', 'DB',
-    function ($scope, $translate, $log, DB) {
+    $scope.name = null;
+    $scope.error = null;
+    $scope.icons = null;
+    $scope.loading = true;
 
-      $('#icon-upload .choose').on('click', function(_ev) {
-        _ev.preventDefault();
-        $('#icon-upload .uploader').click();
+    var renderResources = function() {
+      $scope.icons = _.map(_.pairs($scope.doc.resources), function(pair) {
+        var icon = $scope.doc._attachments[pair[1]];
+        return {
+          name: pair[0],
+          data: icon.data,
+          type: icon.content_type
+        };
+      });
+      $scope.loading = false;
+    };
+
+    var getResourcesDoc = function() {
+      return DB().get('resources', { attachments: true });
+    };
+
+    getResourcesDoc()
+      .then(function(doc) {
+        $scope.doc = doc;
+        renderResources();
+      })
+      .catch(function(err) {
+        $log.error('Error fetching resources file', err);
       });
 
-      $scope.name = null;
-      $scope.error = null;
-      $scope.icons = null;
-      $scope.loading = true;
-
-      var renderResources = function() {
-        $scope.icons = _.map(_.pairs($scope.doc.resources), function(pair) {
-          var icon = $scope.doc._attachments[pair[1]];
-          return {
-            name: pair[0],
-            data: icon.data,
-            type: icon.content_type
-          };
-        });
-        $scope.loading = false;
-      };
-
-      var getResourcesDoc = function() {
-        return DB().get('resources', { attachments: true });
-      };
-
-      getResourcesDoc()
+    var addAttachment = function(file) {
+      $scope.submitting = true;
+      DB()
+        .putAttachment('resources', file.name, $scope.doc._rev, file, file.type)
+        .then(getResourcesDoc)
         .then(function(doc) {
+          doc.resources[$scope.name] = file.name;
           $scope.doc = doc;
+          return DB().put(doc);
+        })
+        .then(function(response) {
+          $scope.doc._rev = response.rev;
+          $scope.submitting = false;
           renderResources();
         })
         .catch(function(err) {
-          $log.error('Error fetching resources file', err);
-        });
-
-      var addAttachment = function(file) {
-        $scope.submitting = true;
-        DB()
-          .putAttachment('resources', file.name, $scope.doc._rev, file, file.type)
-          .then(getResourcesDoc)
-          .then(function(doc) {
-            doc.resources[$scope.name] = file.name;
-            $scope.doc = doc;
-            return DB().put(doc);
-          })
-          .then(function(response) {
-            $scope.doc._rev = response.rev;
-            $scope.submitting = false;
-            renderResources();
-          })
-          .catch(function(err) {
-            $log.error('Error uploading image', err);
-            $scope.submitting = false;
-            $scope.error = $translate.instant('Error saving settings');
-          });
-      };
-
-      $scope.submit = function() {
-        $scope.error = null;
-        if (!$scope.doc) {
+          $log.error('Error uploading image', err);
+          $scope.submitting = false;
           $scope.error = $translate.instant('Error saving settings');
-          return;
-        }
-        if (!$scope.name) {
-          $scope.error = $translate.instant('field is required', {
-            field: $translate.instant('Name')
-          });
-        }
-        var files = $('#icon-upload .uploader')[0].files;
-        if (!files || files.length === 0) {
-          $scope.error = $translate.instant('field is required', {
-            field: $translate.instant('icon')
-          });
-        }
-        if ($scope.error) {
-          return;
-        }
-        addAttachment(files[0]);
-      };
+        });
+    };
 
-    }
-  ]);
+    $scope.submit = function() {
+      $scope.error = null;
+      if (!$scope.doc) {
+        $scope.error = $translate.instant('Error saving settings');
+        return;
+      }
+      if (!$scope.name) {
+        $scope.error = $translate.instant('field is required', {
+          field: $translate.instant('Name')
+        });
+      }
+      var files = $('#icon-upload .uploader')[0].files;
+      if (!files || files.length === 0) {
+        $scope.error = $translate.instant('field is required', {
+          field: $translate.instant('icon')
+        });
+      }
+      if ($scope.error) {
+        return;
+      }
+      addAttachment(files[0]);
+    };
 
-}());
+  }
+);
