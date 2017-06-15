@@ -185,7 +185,7 @@ exports['executes multiple migrations and stops when one errors'] = function(tes
   sinon.stub(migrations, 'get').callsArgWith(0, null, migration);
   var saveDoc = sinon.stub(db.medic, 'insert').callsArg(1);
   migrations.run(function(err) {
-    test.equals(err, 'Migration "b" failed with: "boom!"');
+    test.equals(err, 'boom!');
     test.equals(getLog.callCount, 2);
     test.equals(saveDoc.callCount, 1);
     test.deepEqual(saveDoc.firstCall.args[0], {

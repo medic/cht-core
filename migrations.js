@@ -1,20 +1,15 @@
-var fs = require('fs'),
-    path = require('path'),
-    async = require('async'),
-    db = require('./db');
-
-var MIGRATION_LOG_ID = 'migration-log',
-    MIGRATION_LOG_TYPE = 'meta';
+const fs = require('fs'),
+      path = require('path'),
+      async = require('async'),
+      db = require('./db'),
+      MIGRATION_LOG_ID = 'migration-log',
+      MIGRATION_LOG_TYPE = 'meta';
 
 var hasRun = function(log, migration) {
   if (!log || !log.migrations) {
     return false;
   }
   return log.migrations.indexOf(migration.name) !== -1;
-};
-
-var error = function(migration, err) {
-  return 'Migration "' + migration.name + '" failed with: ' + JSON.stringify(err);
 };
 
 var getLogWithView = function(callback) {
@@ -81,39 +76,40 @@ var sortMigrations = function(lhs, rhs) {
 
 var runMigration = function(migration, callback) {
   if (!migration.created) {
-    return callback(new Error('Migration "' + migration.name + '" has no "created" date property'));
+    return callback(new Error(`Migration "${migration.name}" has no "created" date property`));
   }
-  console.log('Running migration "' + migration.name + '"...');
+  console.log(`Running migration ${migration.name}...`);
   migration.run(function(err) {
     if (err) {
-      return callback(error(migration, err));
+      return callback(err);
     }
     getLog(function(err, log) {
       if (err) {
-        return callback(error(migration, err));
+        return callback(err);
       }
       log.migrations.push(migration.name);
-      db.medic.insert(log, function(err) {
-        if (err) {
-          return callback(error(migration, err));
-        }
-        console.log('Migration "' + migration.name + '" completed successfully');
-        callback();
-      });
+      db.medic.insert(log, callback);
     });
   });
 };
 
-var runMigrations = function(log, migrations, callback) {
+var runMigrations = (log, migrations, callback) => {
   migrations.sort(sortMigrations);
   async.eachSeries(
     migrations,
-    function(migration, callback) {
+    (migration, callback) => {
       if (hasRun(log, migration)) {
         // already run
         return callback();
       }
-      runMigration(migration, callback);
+      runMigration(migration, err => {
+        if (err) {
+          console.error(`Migration ${migration.name} failed`);
+        } else {
+          console.log(`Migration ${migration.name} completed successfully`);
+        }
+        callback(err);
+      });
     },
     callback
   );

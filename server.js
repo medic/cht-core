@@ -568,6 +568,16 @@ var changesHander = _.partial(require('./handlers/changes').request, proxy);
 app.get(pathPrefix + '_changes', changesHander);
 app.post(pathPrefix + '_changes', jsonParser, changesHander);
 
+// Attempting to create the user's personal meta db
+app.put('/medic-user-\*-meta/', (req, res) => {
+  require('./controllers/create-user-db')(req, err => {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+    res.json({ ok: true });
+  });
+});
+
 var writeHeaders = function(req, res, headers, redirectHumans) {
   res.oldWriteHead = res.writeHead;
   res.writeHead = function(_statusCode, _headers) {
@@ -758,7 +768,8 @@ async.series([
   async.asyncify(scheduler.init)
 ], err => {
   if (err) {
-    console.error('Fatal error initialising medic-api', err);
+    console.error('Fatal error initialising medic-api');
+    console.error(err);
     process.exit(1);
   }
 
