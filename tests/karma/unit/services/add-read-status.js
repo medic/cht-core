@@ -46,7 +46,7 @@ describe('AddReadStatus service', () => {
         { _id: 'c', read: true }
       ];
       return service.reports(given).then(actual => {
-        chai.expect(actual).to.deep.equal(given);
+        chai.expect(actual).to.deep.equal(expected);
         chai.expect(allDocs.callCount).to.equal(1);
         chai.expect(allDocs.args[0][0].keys).to.deep.equal([
           'read:report:a',
@@ -87,7 +87,7 @@ describe('AddReadStatus service', () => {
         { _id: 'c', read: true }
       ];
       return service.messages(given).then(actual => {
-        chai.expect(actual).to.deep.equal(given);
+        chai.expect(actual).to.deep.equal(expected);
         chai.expect(allDocs.callCount).to.equal(1);
         chai.expect(allDocs.args[0][0].keys).to.deep.equal([
           'read:message:a',
