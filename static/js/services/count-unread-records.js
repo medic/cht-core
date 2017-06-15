@@ -1,3 +1,6 @@
+var _ = require('underscore'),
+    TYPES = [ 'report', 'message' ];
+
 angular.module('inboxServices').factory('CountUnreadRecords', function(
   $q,
   DB
@@ -6,39 +9,26 @@ angular.module('inboxServices').factory('CountUnreadRecords', function(
   'use strict';
   'ngInject';
 
-  var TYPES = [ 'report', 'message' ];
-
-  var getTotals = function() {
-    return DB()
-      .query('medic-client/data_records_by_type', { group: true })
-      .then(function(response) {
-        var result = {};
-        response.rows.forEach(function(row) {
-          result[row.key] = row.value;
-        });
-        return result;
-      });
+  var getTotal = function() {
+    return DB().query('medic-client/data_records_by_type', { group: true });
   };
 
-  var getRead = function(type) {
-    var key = 'read:' + type + ':';
-    return DB({ meta: true })
-      .allDocs({ startkey: key, endkey: key + '\uFFFF' })
-      .then(function(response) {
-        return response.rows.length;
-      });
+  var getRead = function() {
+    return DB({ meta: true }).query('medic-user/read', { group: true });
+  };
+
+  var getValue = function(response, type) {
+    var result = _.findWhere(response.rows, { key: type });
+    return (result && result.value) || 0;
   };
 
   return function() {
-    var promises = TYPES.map(getRead);
-    promises.unshift(getTotals());
-    return $q.all(promises).then(function(results) {
+    return $q.all([ getTotal(), getRead() ]).then(function(results) {
+      var total = results[0];
+      var read = results[1];
       var result = {};
-      var totals = results.shift();
       TYPES.forEach(function(type) {
-        var read = results.shift();
-        var total = totals[type] || 0;
-        result[type] = total - read;
+        result[type] = getValue(total, type) - getValue(read, type);
       });
       return result;
     });
