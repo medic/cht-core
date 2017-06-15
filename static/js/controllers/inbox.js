@@ -278,11 +278,11 @@ var feedback = require('../modules/feedback'),
         callback: updateAvailableFacilities
       });
 
-      $scope.readStatus = {};
-      $scope.updateReadStatus = function() {
+      $scope.unreadCount = {};
+      $scope.updateUnreadCount = function() {
         CountUnreadRecords()
           .then(function(data) {
-            $scope.readStatus = data;
+            $scope.unreadCount = data;
           })
           .catch(function(err) {
             $log.error('Error fetching read status', err);
@@ -293,7 +293,7 @@ var feedback = require('../modules/feedback'),
         filter: function(change) {
           return change.doc.type === 'data_record';
         },
-        callback: $scope.updateReadStatus
+        callback: $scope.updateUnreadCount
       });
 
       // get the forms for the forms filter

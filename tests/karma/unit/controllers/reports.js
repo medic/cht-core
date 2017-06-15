@@ -82,6 +82,7 @@ describe('ReportsCtrl controller', () => {
         'DB': KarmaUtils.mockDB({ get: get, post: post })(),
         'LiveList': LiveList,
         'ReportViewModelGenerator': {},
+        'AddReadStatus': () => {},
         'Tour': () => {},
         'SearchFilters': () => {},
         'Export': () => {}

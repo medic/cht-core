@@ -1,5 +1,6 @@
 angular.module('inboxServices').factory('MessageContacts',
   function(
+    AddReadStatus,
     DB,
     GetContactSummaries
   ) {
@@ -37,25 +38,6 @@ angular.module('inboxServices').factory('MessageContacts',
       return GetContactSummaries(result);
     };
 
-    var recordReadStatus = function(summaries) {
-      if (!summaries.length) {
-        return summaries;
-      }
-      var ids = summaries.map(function(summary) {
-        return 'read:message:' + summary.id;
-      });
-      return DB({ meta: true })
-        .allDocs({ keys: ids })
-        .then(function(response) {
-          for (var i = 0; i < summaries.length; i++) {
-            summaries[i].read = !!response.rows[i].value;
-          }
-        })
-        .then(function() {
-          return summaries;
-        });
-    };
-
     return function(options) {
       options = options || {};
       var params = options.id ? getParams(options.id, options.skip) : listParams();
@@ -67,7 +49,9 @@ angular.module('inboxServices').factory('MessageContacts',
           }
           return getSummaries(result);
         })
-        .then(recordReadStatus);
+        .then(function(summaries) {
+          return AddReadStatus.messages(summaries);
+        });
     };
   }
 );
