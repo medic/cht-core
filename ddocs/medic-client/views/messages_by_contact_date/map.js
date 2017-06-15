@@ -14,8 +14,8 @@ function(doc) {
   var emitMessage = function(doc, contact, phone, message) {
     var id = (contact && contact._id) || phone;
     emit([ id, doc.reported_date ], {
+      id: doc._id,
       date: doc.reported_date,
-      read: doc.read,
       message: message,
       contact: contact && contact._id,
       lineage: getLineage(contact && contact.parent)

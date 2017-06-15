@@ -20,19 +20,15 @@ angular.module('inboxServices').factory('SendMessage',
     };
 
     var createMessageDoc = function(user) {
-      var name = user && user.name;
-
       return  {
         errors: [],
         form: null,
         from: user && user.phone,
         reported_date: Date.now(),
         tasks: [],
-        read: [ name ],
-        //TODO: rename this to outgoing_message: https://github.com/medic/medic-webapp/issues/2656
         kujua_message: true,
         type: 'data_record',
-        sent_by: name || 'unknown'
+        sent_by: (user && user.name) || 'unknown'
       };
     };
 

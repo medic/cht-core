@@ -1,10 +1,12 @@
 var _ = require('underscore'),
     READ_ONLY_TYPES = [ 'form', 'translations' ],
     READ_ONLY_IDS = [ 'resources', 'appcache', 'zscore-charts' ],
-    DDOC_PREFIX = [ '_design/' ];
+    DDOC_PREFIX = [ '_design/' ],
+    META_SYNC_FREQUENCY = 30 * 60 * 1000; // 30 minutes
 
 angular.module('inboxServices').factory('DBSync',
   function(
+    $interval,
     $log,
     $q,
     Auth,
@@ -108,6 +110,12 @@ angular.module('inboxServices').factory('DBSync',
       return replicate('from', updateListener);
     };
 
+    var syncMeta = function() {
+      var remote = DB({ meta: true, remote: true });
+      var local = DB({ meta: true });
+      local.sync(remote);
+    };
+
     return function(updateListener) {
       if (Session.isAdmin()) {
         if (updateListener) {
@@ -115,6 +123,10 @@ angular.module('inboxServices').factory('DBSync',
         }
         return $q.resolve();
       }
+
+      syncMeta();
+      $interval(syncMeta, META_SYNC_FREQUENCY);
+
       return $q.all([
         replicateFrom(updateListener),
         replicateTo(updateListener)

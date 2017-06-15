@@ -1,6 +1,6 @@
 <div id="message-list" class="col-sm-4 inbox-items left-pane">
   <ul>
-    <li ng-show="!loading || appending" ng-repeat="message in messages | orderBy:'-date'" ng-class="{'selected': message.key === loadingContent || !loadingContent && message.key === selected.id, 'read': isRead(message)}" data-record-id="{{message.key}}">
+    <li ng-show="!loading || appending" ng-repeat="message in messages | orderBy:'-date'" ng-class="{'selected': message.key === loadingContent || !loadingContent && message.key === selected.id, 'read': message.read}" data-record-id="{{message.key}}">
       <a class="item-summary message-wrapper" ui-sref="messages.detail({ id: message.key })">
         <div class="detail">
           <span class="time" ng-bind-html="message.date | relativeDate"></span>

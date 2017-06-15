@@ -3,14 +3,17 @@ describe('MarkRead service', () => {
   'use strict';
 
   let service,
+      db,
       bulkDocs;
 
   beforeEach(() => {
     bulkDocs = sinon.stub();
+    db = sinon.stub();
+    db.returns({ bulkDocs: bulkDocs });
     module('inboxApp');
     module($provide => {
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.factory('DB', KarmaUtils.mockDB({ bulkDocs: bulkDocs }));
+      $provide.value('DB', db);
       $provide.factory('Session', () => {
         return {
           userCtx: () => {
@@ -28,19 +31,32 @@ describe('MarkRead service', () => {
     KarmaUtils.restore(bulkDocs);
   });
 
-  it('marks the message read', () => {
+  it('marks messages read', () => {
     const given = [ { _id: 'xyz' } ];
-    const expected = [ { _id: 'xyz', read: [ 'james' ] } ];
+    const expected = [ { _id: 'read:message:xyz' } ];
     bulkDocs.returns(KarmaUtils.mockPromise());
     return service(given).then(() => {
+      chai.expect(db.args[0][0].meta).to.equal(true);
       chai.expect(bulkDocs.args[0][0]).to.deep.equal(expected);
     });
   });
 
-  it('marks the message read when already read', () => {
-    const given = [ { _id: 'xyz', read: [ 'james' ] } ];
+  it('marks reports read', () => {
+    const given = [ { _id: 'xyz', form: 'P' } ];
+    const expected = [ { _id: 'read:report:xyz' } ];
+    bulkDocs.returns(KarmaUtils.mockPromise());
     return service(given).then(() => {
-      chai.expect(bulkDocs.callCount).to.equal(0);
+      chai.expect(db.args[0][0].meta).to.equal(true);
+      chai.expect(bulkDocs.args[0][0]).to.deep.equal(expected);
+    });
+  });
+
+  it('ignores conflicts when marking a document read thats already read', () => {
+    const given = [ { _id: 'xyz' } ];
+    const conflictResult = { ok: false, id: 'read:message:xyz', rev: '1' };
+    bulkDocs.returns(KarmaUtils.mockPromise(null, [ conflictResult ]));
+    return service(given).then(() => {
+      chai.expect(bulkDocs.callCount).to.equal(1);
     });
   });
 
@@ -58,12 +74,11 @@ describe('MarkRead service', () => {
 
     const given = [
       { _id: 'a' },
-      { _id: 'b', read: [ 'james' ] },
-      { _id: 'c', read: [ 'jack' ] }
+      { _id: 'b' }
     ];
     const expected = [
-      { _id: 'a', read: [ 'james' ] },
-      { _id: 'c', read: [ 'jack', 'james' ] }
+      { _id: 'read:message:a' },
+      { _id: 'read:message:b' }
     ];
 
     bulkDocs.returns(KarmaUtils.mockPromise());

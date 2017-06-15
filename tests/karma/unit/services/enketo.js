@@ -292,8 +292,6 @@ describe('Enketo service', function() {
         chai.expect(actual.content_type).to.equal('xml');
         chai.expect(actual.contact._id).to.equal('123');
         chai.expect(actual.from).to.equal('555');
-        chai.expect(actual.read.length).to.equal(1);
-        chai.expect(actual.read[0]).to.equal('Jim');
         chai.expect(AddAttachment.callCount).to.equal(1);
         chai.expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
         chai.expect(AddAttachment.args[0][1]).to.equal('content');

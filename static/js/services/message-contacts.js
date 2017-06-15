@@ -1,5 +1,6 @@
 angular.module('inboxServices').factory('MessageContacts',
   function(
+    AddReadStatus,
     DB,
     GetContactSummaries
   ) {
@@ -34,9 +35,7 @@ angular.module('inboxServices').factory('MessageContacts',
         return value;
       });
       // populate the summaries of the result values then return the result
-      return GetContactSummaries(result).then(function() {
-        return result;
-      });
+      return GetContactSummaries(result);
     };
 
     return function(options) {
@@ -49,6 +48,9 @@ angular.module('inboxServices').factory('MessageContacts',
             return result;
           }
           return getSummaries(result);
+        })
+        .then(function(summaries) {
+          return AddReadStatus.messages(summaries);
         });
     };
   }

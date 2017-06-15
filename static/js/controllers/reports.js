@@ -14,6 +14,7 @@ var _ = require('underscore'),
       $state,
       $stateParams,
       $timeout,
+      AddReadStatus,
       Changes,
       DB,
       Export,
@@ -41,14 +42,16 @@ var _ = require('underscore'),
       var liveList = LiveList.reports;
 
       var updateLiveList = function(updated) {
-        _.each(updated, function(report) {
-          liveList.update(report);
+        AddReadStatus.reports(updated).then(function() {
+          updated.forEach(function(report) {
+            liveList.update(report);
+          });
+          $scope.hasReports = liveList.count() > 0;
+          liveList.refresh();
+          if ($state.params.id) {
+            liveList.setSelected($state.params.id);
+          }
         });
-        $scope.hasReports = liveList.count() > 0;
-        liveList.refresh();
-        if ($state.params.id) {
-          liveList.setSelected($state.params.id);
-        }
       };
 
       var setSelected = function(model) {
@@ -56,11 +59,15 @@ var _ = require('underscore'),
         if ($scope.selectMode) {
           return;
         }
-        if (!$scope.isRead(model.doc)) {
-          $scope.readStatus.forms--;
+        var listModel = _.findWhere(liveList.getList(), { _id: model._id });
+        if (listModel && !listModel.read) {
+          $scope.unreadCount.report--;
+          listModel.read = true;
+          LiveList.reports.update(listModel);
+          LiveList['report-search'].update(listModel);
         }
         MarkRead([ model.doc ])
-          .then($scope.updateReadStatus)
+          .then($scope.updateUnreadCount)
           .catch(function(err) {
             $log.error('Error marking read', err);
           });

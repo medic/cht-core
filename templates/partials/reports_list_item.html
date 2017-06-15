@@ -1,4 +1,4 @@
-<li class="{{isRead(report) ? 'read' : ''}}" data-record-id="{{report._id}}">
+<li class="{{report.read ? 'read' : ''}}" data-record-id="{{report._id}}">
   <a class="item-summary message-wrapper" href="#reports/{{report._id}}">
     <input type="checkbox">
     <span class="icon">{{report | formIcon:forms}}</span>
