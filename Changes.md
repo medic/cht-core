@@ -55,6 +55,7 @@ _June 10, 2017_
 - First-run setup modals would be better as pages. Issue: #2254
 - Confusion between family page and person page. Issue: #2023
 - Redesign the Configuration>Schedule (=tasks) page for SMS+android. Issue: #1784
+- Update startup text labels. Issue: #3541
 
 ### Performance improvements
 
