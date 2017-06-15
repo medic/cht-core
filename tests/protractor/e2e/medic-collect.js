@@ -2,11 +2,14 @@ const assert = require('chai').assert,
     auth = require('../auth')(),
     net = require('net'),
     constants = require('../constants'),
-    PouchDB = require('pouchdb'),
+    PouchDB = require('pouchdb-core'),
     host = constants.API_HOST,
     port = constants.API_PORT,
-    dbName = constants.DB_NAME,
-    db = createDb();
+    dbName = constants.DB_NAME;
+
+PouchDB.plugin(require('pouchdb-adapter-http'));
+
+const db = createDb();
 
 /**
  * Tests to ensure continued support for Medic Collect.

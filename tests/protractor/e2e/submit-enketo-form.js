@@ -142,6 +142,8 @@ describe('Submit Enketo form', () => {
       return element(by.css('#reports-content .details ul li:first-child p')).isPresent();
     }, 10000);
 
+    browser.sleep(100); // TODO required to make the test deterministic. https://github.com/medic/medic-webapp/issues/3509
+
     // check the submitted name
     expect(element(by.css('#reports-content .details ul li:first-child p')).getText()).toBe('Jones');
 
