@@ -234,7 +234,8 @@ var createPlace = function(data, response, callback) {
 };
 
 var updatePlace = function(data, response, callback) {
-  data.place.contact = data.contact;
+  data.place.contact = places.minify(data.contact);
+  data.place.parent = places.minify(data.place.parent);
   db.medic.insert(data.place, function(err) {
     callback(err, data, response);
   });
@@ -251,11 +252,11 @@ var setContactParent = function(data, response, callback) {
         return error400('Contact is not within place.', callback);
       }
       // save result to contact object
-      data.contact.parent = place;
+      data.contact.parent = places.minify(place);
       callback(null, data, response);
     });
   } else {
-    data.contact.parent = data.place;
+    data.contact.parent = places.minify(data.place);
     callback(null, data, response);
   }
 };

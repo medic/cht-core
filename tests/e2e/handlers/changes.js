@@ -55,7 +55,7 @@ function requestChanges(username, ids, last_seq) {
         return reject(err);
       }
       if(res.statusCode !== 200) {
-        return reject(body);
+        return reject(new Error(body));
       }
       return resolve(JSON.parse(body));
     });

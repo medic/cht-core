@@ -755,12 +755,13 @@ exports['setContactParent resolves contact parent in waterfall'] = function(test
   sinon.stub(controller, '_validateNewUsername').callsArg(1);
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, userData, {});
   sinon.stub(places, 'getPlace').callsArgWith(1, null, {
+    _id: 'a',
     biz: 'marquee'
   });
   sinon.stub(controller, '_hasParent').returns(true);
   // checking function after setContactParent
   sinon.stub(controller, '_createContact').callsFake(function(data) {
-    test.deepEqual(data.contact.parent, { biz: 'marquee' });
+    test.deepEqual(data.contact.parent, { _id: 'a' });
     test.done();
   });
   controller.createUser(userData);
@@ -771,12 +772,13 @@ exports['updatePlace resolves place\'s contact in waterfall'] = function(test) {
   sinon.stub(controller, '_createPlace').callsArgWith(2, null, {}, {});
   sinon.stub(controller, '_setContactParent').callsArgWith(2, null, userData, {});
   sinon.stub(people, 'getOrCreatePerson').callsArgWith(1, null, {
+    _id: 'b',
     name: 'mickey'
   });
   sinon.stub(db.medic, 'insert').callsArg(1);
   sinon.stub(controller, '_createUser').callsFake(function(data) {
-    test.deepEqual(data.contact, { name: 'mickey' });
-    test.deepEqual(data.place.contact, { name: 'mickey' });
+    test.deepEqual(data.contact, { _id: 'b', name: 'mickey' });
+    test.deepEqual(data.place.contact, { _id: 'b' });
     test.done();
   });
   controller.createUser(userData);
