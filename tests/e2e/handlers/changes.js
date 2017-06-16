@@ -343,7 +343,7 @@ describe('changes handler', function() {
     it('should have no effect if not configured', function() {
       // given
       // replication depth is not configured
-      Promise.resolve()
+      return Promise.resolve()
         .then(function() {
 
           // and a contact exists within replication depth 1
