@@ -62,18 +62,18 @@ angular.module('inboxControllers').controller('ConfigurationFormsCtrl',
         return $scope.$apply(); // upload triggered with jQuery
       }
 
-      var contextFiles = $('#forms-upload-xform .context.uploader')[0].files;
-      if (!contextFiles || contextFiles.length === 0) {
-        uploadXFormFinished(new Error('JSON context file not found'));
+      var metaFiles = $('#forms-upload-xform .meta.uploader')[0].files;
+      if (!metaFiles || metaFiles.length === 0) {
+        uploadXFormFinished(new Error('JSON meta file not found'));
         return $scope.$apply(); // upload triggered with jQuery
       }
 
       $q.all([
           FileReader(formFiles[0]),
-          FileReader(contextFiles[0]).then(JsonParse) ])
+          FileReader(metaFiles[0]).then(JsonParse) ])
         .then(function(results) {
           var xml = results[0];
-          var context = results[1];
+          var meta = results[1];
 
           var $xml = $($.parseXML(xml));
           var title = $xml.find('title').text();
@@ -89,10 +89,10 @@ angular.module('inboxControllers').controller('ConfigurationFormsCtrl',
           }
 
           var update = function(doc) {
-            doc.context = context;
             doc.title = title;
             doc.type = 'form';
             doc.internalId = formId;
+            _.extend(doc, meta);
             AddAttachment(doc, 'xml', xml, 'application/xml');
             return doc;
           };
@@ -101,7 +101,7 @@ angular.module('inboxControllers').controller('ConfigurationFormsCtrl',
           DB().get(couchId, { include_attachments:true })
             .catch(function(err) {
               if (err.status === 404) {
-                return { _id:couchId };
+                return { _id: couchId };
               }
               throw err;
             })
