@@ -123,10 +123,10 @@ if (couchUrl) {
       if (err) {
         return callback(err);
       }
-      console.log(`        Processing ${skip} to ${skip + batchSize} docs of ${response.total_rows} total`);
+      console.log(`        Processing doc ${skip}`);
       iteratee(response, err => {
-        const keepGoing = response.total_rows > (skip + batchSize);
-        callback(err, keepGoing);
+        // keep going if at least one row was found last time
+        callback(err, !!response.rows.length);
       });
     });
   };
