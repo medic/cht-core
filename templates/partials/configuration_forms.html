@@ -12,7 +12,7 @@
           <input class="form uploader" type="file" accept="application/xml"/>
         </label>
         <label><span translate>upload.xform.context</span>
-          <input class="context uploader" type="file" accept="application/json"/>
+          <input class="meta uploader" type="file" accept="application/json"/>
         </label>
         <button type="button" class="btn btn-default upload" ng-disabled="xform.uploading">
           <i class="fa fa-arrow-up"></i>
@@ -25,6 +25,18 @@
       </fieldset>
     </div>
   </form>
+
+  <div class="section">
+    <fieldset>
+      <legend translate>Installed Forms</legend>
+      <ul>
+        <li ng-repeat="form in xForms" class="row">
+          <div class="col-sm-6">{{form._id}}</div>
+          <div class="col-sm-6">{{form.title | translateFrom}}</div>
+        </li>
+      </ul>
+    </fieldset>
+  </div>
 
   <form id="forms-upload-json">
     <div>

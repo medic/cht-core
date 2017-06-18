@@ -2,7 +2,7 @@
 
 ## 2.12.0
 
-_June 10, 2017_
+_June 20, 2017_
 
 ### Features
 
@@ -18,6 +18,7 @@ _June 10, 2017_
 - Prevent duplicates for Daily reports. Issue: #1028
 - Ability to "mark all read". Issue: #682
 - Change patient id generation to store the length of id it's generating. Issues: #3505
+- Allow form upload through Form Configuration UI. Issue: #3433
 
 ### Bug fixes
 
