@@ -6,6 +6,7 @@ angular.module('inboxControllers').controller('ConfigurationFormsCtrl',
     $log,
     $q,
     $scope,
+    $timeout,
     AddAttachment,
     DB,
     FileReader,
@@ -39,14 +40,18 @@ angular.module('inboxControllers').controller('ConfigurationFormsCtrl',
     };
 
     var uploadFinished = function(type, err) {
-      $scope[type] = {
-        uploading: false,
-        error: !!err,
-        success: !err,
-      };
       if (err) {
         $log.error('Upload failed', err);
       }
+      // some events are triggered outside of angular so wrap in
+      // $timeout so the UI is updated.
+      $timeout(function() {
+        $scope[type] = {
+          uploading: false,
+          error: !!err,
+          success: !err,
+        };
+      });
     };
 
     var uploadXForm = function() {
@@ -58,19 +63,18 @@ angular.module('inboxControllers').controller('ConfigurationFormsCtrl',
 
       var formFiles = $('#forms-upload-xform .form.uploader')[0].files;
       if (!formFiles || formFiles.length === 0) {
-        uploadXFormFinished(new Error('XML file not found'));
-        return $scope.$apply(); // upload triggered with jQuery
+        return uploadXFormFinished(new Error('XML file not found'));
       }
 
       var metaFiles = $('#forms-upload-xform .meta.uploader')[0].files;
       if (!metaFiles || metaFiles.length === 0) {
-        uploadXFormFinished(new Error('JSON meta file not found'));
-        return $scope.$apply(); // upload triggered with jQuery
+        return uploadXFormFinished(new Error('JSON meta file not found'));
       }
 
       $q.all([
-          FileReader(formFiles[0]),
-          FileReader(metaFiles[0]).then(JsonParse) ])
+        FileReader(formFiles[0]),
+        FileReader(metaFiles[0]).then(JsonParse)
+      ])
         .then(function(results) {
           var xml = results[0];
           var meta = results[1];
@@ -88,17 +92,12 @@ angular.module('inboxControllers').controller('ConfigurationFormsCtrl',
             throw new Error('No ID attribute found for first child of <instance> element.');
           }
 
-          var update = function(doc) {
-            doc.title = title;
-            doc.type = 'form';
-            doc.internalId = formId;
-            _.extend(doc, meta);
-            AddAttachment(doc, 'xml', xml, 'application/xml');
-            return doc;
-          };
+          if (meta.internalId && meta.internalId !== formId) {
+            throw new Error('The internalId propoerty in the meta file will be overwritten by the ID attribute on the first child of <instance> element in the XML. Remove this property from the meta file and try again.');
+          }
 
           var couchId = 'form:' + formId;
-          DB().get(couchId, { include_attachments:true })
+          return DB().get(couchId, { include_attachments:true })
             .catch(function(err) {
               if (err.status === 404) {
                 return { _id: couchId };
@@ -106,12 +105,19 @@ angular.module('inboxControllers').controller('ConfigurationFormsCtrl',
               throw err;
             })
             .then(function(doc) {
-              return DB().put(update(doc));
-            })
-            .then(function() {
-              uploadXFormFinished();
-            })
-            .catch(uploadXFormFinished);
+              doc.title = title;
+              _.extend(doc, meta);
+              doc.type = 'form';
+              doc.internalId = formId;
+              AddAttachment(doc, 'xml', xml, 'application/xml');
+              return doc;
+            });
+        })
+        .then(function(doc) {
+          return DB().put(doc);
+        })
+        .then(function() {
+          uploadXFormFinished();
         })
         .catch(uploadXFormFinished);
     };

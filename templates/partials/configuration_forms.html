@@ -32,7 +32,7 @@
       <ul>
         <li ng-repeat="form in xForms" class="row">
           <div class="col-sm-6">{{form._id}}</div>
-          <div class="col-sm-6">{{form.title}}</div>
+          <div class="col-sm-6">{{form.title | translateFrom}}</div>
         </li>
       </ul>
     </fieldset>
