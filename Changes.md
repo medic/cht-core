@@ -25,6 +25,7 @@ _June 10, 2017_
 - Reporting Rates for Daily Reports. Issue: #1029
 - Prevent duplicates for Daily reports. Issue: #1028
 - Ability to "mark all read". Issue: #682
+- Allow form upload through Form Configuration UI. Issue: #3433
 
 ### Bug fixes
 
