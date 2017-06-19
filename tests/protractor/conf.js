@@ -88,10 +88,8 @@ exports.config = {
     browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
     browser.driver.sleep(1000);
     return login(browser);
-  },
+  },  
   onCleanUp: () => modules.forEach(module => module.kill()),
-
-  //HTMLReport generated once tests are finished
   onComplete: function() {
     utils.generateHtmlReport();
   }
