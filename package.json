@@ -24,7 +24,7 @@
     "bootstrap-tour": "^0.10.3",
     "enketo-core": "https://github.com/medic/enketo-core.git#medic-0.9.3",
     "font-awesome": "^4.7.0",
-    "google-libphonenumber": "^2.0.15",
+    "google-libphonenumber": "^2.0.18",
     "jquery": "^3.2.1",
     "medic-enketo-xslt": "^1.1.1",
     "messageformat": "^1.0.0",
