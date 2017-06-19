@@ -66,4 +66,14 @@ elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
 
 fi;
 
+if [[ -n "$TRAVIS_TAG" ]]; then
+    node --stack_size=10000 `which kanso` push --minify \
+            --id="$TRAVIS_TAG" \
+            "$UPLOAD_URL"/builds
+else
+    node --stack_size=10000 `which kanso` push --minify \
+            --id="$TRAVIS_BRANCH" \
+            "$UPLOAD_URL"/builds
+fi
+
 exit 0;
