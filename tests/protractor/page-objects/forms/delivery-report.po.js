@@ -1092,19 +1092,18 @@ const selectRadioButton = (value) => {
   element(by.css(`[value=${value}]`)).click();
 };
 
+const deleteReport = () => element(by.css('li.read.selected'))
+  .getAttribute('data-record-id')
+  .then(docId => utils.deleteDoc(docId));
+
 module.exports = {
   configureForm: done => {
     saveDocs(done, docs);
   },
 
-  saveDocs: (done, documents) => {
-    saveDocs(done, documents);
-  },
+  saveDocs:saveDocs,
 
   teardown: done => {
-
-    //savedUuids.push(rep);
-
     protractor.promise
       .all(savedUuids.map(utils.deleteDoc))
       .then(() => utils.getDoc(userSettingsDocId))
@@ -1113,9 +1112,10 @@ module.exports = {
         return utils.saveDoc(user);
       })
       .then(done, done);
+    deleteReport(done);
   },
 
-  goNext: () => {
+  nextPage: () => {
     const nextButton = element(by.css('button.btn.btn-primary.next-page'));
     helper.waitElementToBeClickable(nextButton);
     nextButton.click();
@@ -1205,10 +1205,4 @@ module.exports = {
   getFollowUpMessage: () => {
     return element(by.css('[data-value=" /delivery/group_note/g_chw_sms "]')).getInnerHtml();
   },
-
-  deleteReport: (done) => {
-    element(by.css('li.read.selected')).getAttribute('data-record-id').then(function(docId) {
-      utils.deleteDoc(docId).then(done).catch(done);
-    });
-  }
 };

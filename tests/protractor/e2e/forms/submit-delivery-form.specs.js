@@ -66,9 +66,6 @@ describe('Submit Delivery Report', () => {
   afterEach(done => {
     deliveryReport.teardown(done);
   });
-  afterAll(done => {
-    deliveryReport.deleteReport(done);
-  });
 
   it('open delivery form', () => {
 
@@ -88,16 +85,16 @@ describe('Submit Delivery Report', () => {
 
     //select name
     deliveryReport.selectPatientName('jack');
-    deliveryReport.goNext();
+    deliveryReport.nextPage();
     helper.waitElementToBeVisisble(element(by.css('[value="healthy"]')));
 
     //Delivery info
     deliveryReport.selectLiveBirthButton();
     deliveryReport.selectFacilityButton();
     deliveryReport.enterDeliveryDate('');
-    deliveryReport.goNext();
+    deliveryReport.nextPage();
     expect(deliveryReport.getNoteToCHW()).toBe(noteToCHW);
-    deliveryReport.goNext();
+    deliveryReport.nextPage();
 
     //summary page
     expect(deliveryReport.getOutcomeText()).toBe('Live Birth');
