@@ -67,6 +67,8 @@ elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
 fi;
 
 echo 'Building build for builds database...'
+cleanUploadUrl="$(sed -E -e 's_(.*://)[^/@]*(@[^/:]+.*)_\1****\2_' <<< "$UPLOAD_URL")"
+echo "UPLOAD_URL: $cleanUploadUrl"
 if [[ -n "$TRAVIS_TAG" ]]; then
     node --stack_size=10000 `which kanso` push --minify \
             --id="$TRAVIS_TAG" \
