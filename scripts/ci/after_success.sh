@@ -66,6 +66,7 @@ elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
 
 fi;
 
+echo 'Building build for builds database...'
 if [[ -n "$TRAVIS_TAG" ]]; then
     node --stack_size=10000 `which kanso` push --minify \
             --id="$TRAVIS_TAG" \
@@ -75,5 +76,6 @@ else
             --id="$TRAVIS_BRANCH" \
             "$UPLOAD_URL"/builds
 fi
+echo 'Build for build database built.'
 
 exit 0;
