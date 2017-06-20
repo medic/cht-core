@@ -325,7 +325,7 @@
             "contact_summary": {
                 "title": "Contact summary",
                 "type": "string",
-                "description": "A function to generate contact summaries, cards, and context objects. <a href=\"https://github.com/medic/medic-docs/blob/master/md/config/contact-summary.md\">Configuration documentation</a>.",
+                "description": "A function to generate contact summaries, cards, and context objects. <a href=\"https://github.com/medic/medic-docs/blob/master/configuration/contact-summary.md\">Configuration documentation</a>.",
                 "default": "var cards = [];var context = {};var fields = [];if (contact.type === 'person') {  fields = [    { label: 'patient_id', value: contact.patient_id, width: 3 },    { label: 'contact.sex', value: contact.sex, width: 3 },    { label: 'contact.age', value: contact.date_of_birth, width: 3, filter: 'age' },    { label: 'Phone Number', value: contact.phone, width: 3, filter: 'phone' },    { label: 'Notes', value: contact.notes, width: 12 },    { label: 'contact.parent', value: contact.parent, filter: 'clinic' }  ];} else {  fields = [    { label: 'contact.place.id', value: contact.place_id, width: 12 },    { label: 'Notes', value: contact.notes, width: 12 }  ];}var result = {  fields: fields,  cards: cards,  context: context};result;",
                 "je:hint": "textarea",
                 "je:textarea": {
