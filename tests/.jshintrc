@@ -25,6 +25,7 @@
         "KarmaUtils": true,
         "Promise"   : true,
         "Q"         : true,
-        "emit"      : true
+        "emit"      : true,
+        "jasmine": true
     }
 }

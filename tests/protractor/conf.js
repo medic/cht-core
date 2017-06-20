@@ -77,8 +77,10 @@ exports.config = {
     browserName: 'firefox'
     //'marionette':'true'
   },
+  
   onPrepare: () => {
     const startup = startModules();
+    utils.getXmlResults();
     browser.ignoreSynchronization = true;
     browser.driver.wait(startup, 15 * 1000, 'API should start within 15 seconds');
     browser.driver.sleep(1000);
@@ -86,6 +88,9 @@ exports.config = {
     browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
     browser.driver.sleep(1000);
     return login(browser);
-  },
-  onCleanUp: () => modules.forEach(module => module.kill())
+  },  
+  onCleanUp: () => modules.forEach(module => module.kill()),
+  onComplete: function() {
+    utils.generateHtmlReport();
+  }
 };

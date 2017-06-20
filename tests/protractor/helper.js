@@ -1,11 +1,4 @@
-var fs = require('fs');
-var EC = protractor.ExpectedConditions;
-
-function writeScreenShot(data, filename) {
-  var stream = fs.createWriteStream(filename);
-  stream.write(new Buffer(data, 'base64'));
-  stream.end();
-}
+const EC = protractor.ExpectedConditions;
 
 module.exports = {
   waitElementToBeVisisble: function (elm) {
@@ -95,11 +88,4 @@ module.exports = {
     var selectedElement = element(by.xpath('//*[text()[normalize-space() =  \' ' + text + '\']]'));
     return selectedElement.isPresent();
   },
-
-  takeScreenshot: function (filename) {
-    browser.takeScreenshot().then(function (png) {
-      writeScreenShot(png, filename);
-    });
-  }
-
 };

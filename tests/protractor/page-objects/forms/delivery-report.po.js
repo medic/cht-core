@@ -1061,80 +1061,50 @@ const docs = [
         data: new Buffer(xml).toString('base64')
       }
     }
-  },
-  {
-    _id: 'c49385b3594af7025ef097114104ef48',
-    reported_date: 1469578114543,
-    notes: '',
-    contact: {
-      _id: contactId,
-      name: 'Jack',
-      date_of_birth: '',
-      phone: '+64274444444',
-      alternate_phone: '',
-      notes: '',
-      type: 'person',
-      reported_date: 1478469976421
-    },
-    name: 'Number three district',
-    external_id: '',
-    type: 'district_hospital'
-  },
-  {
-    _id: contactId,
-    name: 'Jack',
-    date_of_birth: '',
-    phone: '+64274444444',
-    alternate_phone: '',
-    notes: '',
-    type: 'person',
-    reported_date: 1478469976421,
-    parent: {
-      _id: 'c49385b3594af7025ef097114104ef48',
-      reported_date: 1469578114543,
-      notes: '',
-      contact: {
-        _id: contactId,
-        name: 'Jack',
-        date_of_birth: '',
-        phone: '+64274444444',
-        alternate_phone: '',
-        notes: '',
-        type: 'person',
-        reported_date: 1478469976421
-      },
-      name: 'Number three district',
-      external_id: '',
-      type: 'district_hospital'
-    }
   }
 ];
 
 const savedUuids = [];
+const saveDocs = function(done, documents) {
+  browser.ignoreSynchronization = true;
+  protractor.promise
+    .all(documents.map(utils.saveDoc))
+    .then(results => {
+      results.forEach(result => {
+        savedUuids.push(result.id);
+      });
+    })
+    .then(() => utils.getDoc(userSettingsDocId))
+    .then((user) => {
+      user.contact_id = contactId;
+      return utils.saveDoc(user);
+    })
+    .then(done)
+    .catch(err => {
+      console.error('Error saving docs', err);
+      done(err);
+    });
+};
+
+
+
+const selectRadioButton = (value) => {
+  element(by.css(`[value=${value}]`)).click();
+};
 
 module.exports = {
   configureForm: done => {
-    browser.ignoreSynchronization = true;
-    protractor.promise
-      .all(docs.map(utils.saveDoc))
-      .then(results => {
-        results.forEach(result => {
-          savedUuids.push(result.id);
-        });
-      })
-      .then(() => utils.getDoc(userSettingsDocId))
-      .then((user) => {
-        user.contact_id = contactId;
-        return utils.saveDoc(user);
-      })
-      .then(done)
-      .catch(err => {
-        console.error('Error saving docs', err);
-        done(err);
-      });
+    saveDocs(done, docs);
+  },
+
+  saveDocs: (done, documents) => {
+    saveDocs(done, documents);
   },
 
   teardown: done => {
+
+    //savedUuids.push(rep);
+
     protractor.promise
       .all(savedUuids.map(utils.deleteDoc))
       .then(() => utils.getDoc(userSettingsDocId))
@@ -1144,12 +1114,11 @@ module.exports = {
       })
       .then(done, done);
   },
+
   goNext: () => {
     const nextButton = element(by.css('button.btn.btn-primary.next-page'));
     helper.waitElementToBeClickable(nextButton);
-
-    // nextButton.click();
-    browser.actions().mouseMove(nextButton).click();
+    nextButton.click();
   },
 
   goBack: () => {
@@ -1157,7 +1126,10 @@ module.exports = {
   },
 
   submit: () => {
-    element(by.css('button.btn.submit.btn-primary')).click();
+    const submitButton = element(by.css('[ng-click="onSubmit()"]'));
+    helper.waitElementToBeClickable(submitButton);
+    submitButton.click();
+    helper.waitElementToBeVisisble(element(by.css('div#reports-content')));
   },
 
   //patient page
@@ -1171,36 +1143,35 @@ module.exports = {
 
     element(by.css('.selection')).click();
     const search = element(by.css('.select2-search__field'));
+    search.click();
     search.sendKeys(name);
-    helper.waitElementToBeClickable(element(by.css('[role="treeitem"]')));
-    search.sendKeys(protractor.Key.ENTER);
-    element(by.css('[role="treeitem"]')).click();
+    helper.waitElementToBeVisisble(element(by.css('.name')));
+    element(by.css('.name')).click();
   },
 
   //Delivery Info page -- Pregnancy outcomes
   selectLiveBirthButton: () => {
-    element(by.css('[value="health"]')).click();
+    selectRadioButton('healthy');
   },
-
   selectStillBirthButton: () => {
-    element(by.css('[value="still_birth"]')).click();
+    selectRadioButton('still_birth');
   },
 
   selectMiscarriageButton: () => {
-    element(by.css('[value="miscarriage"]')).click();
+    selectRadioButton('miscarriage');
   },
 
   //Delivery Info page -- Location of delivery
   selectFacilityButton: () => {
-    element(by.css('[value="f"]')).click();
+    selectRadioButton('f');
   },
 
   selectHomeSkilledButton: () => {
-    element(by.css('[value="s"]')).click();
+    selectRadioButton('s');
   },
 
   selectHomeNonSkilledButton: () => {
-    element(by.css('[value="ns"]')).click();
+    selectRadioButton('ns');
   },
 
   //Delivery Info page -- Delivery date
@@ -1209,7 +1180,6 @@ module.exports = {
     datePicker.click();
     //type date in the text box as '2017-04-23'
     datePicker.sendKeys(deliveryDate);
-
   },
 
   reset: () => {
@@ -1218,21 +1188,27 @@ module.exports = {
 
   //note to CHW
   getNoteToCHW: () => {
-    return element(by.name('/delivery/group_note/g_chw_sms')).getText();
+    return element(by.css('textarea')).getAttribute('value');
   },
 
   //summary page
   getOutcomeText: () => {
     return element(by.css('[data-value=" /delivery/group_delivery_summary/display_delivery_outcome "]'))
-      .getText();
+      .getInnerHtml();
   },
 
   getDeliveryLocationSummaryText: () => {
     return element(by.css('[data-value=" /delivery/group_summary/r_delivery_location "]'))
-      .getText();
+      .getInnerHtml();
   },
 
   getFollowUpMessage: () => {
-    return element(by.css('[data-value=" /delivery/group_note/g_chw_sms "]')).getText();
+    return element(by.css('[data-value=" /delivery/group_note/g_chw_sms "]')).getInnerHtml();
+  },
+
+  deleteReport: (done) => {
+    element(by.css('li.read.selected')).getAttribute('data-record-id').then(function(docId) {
+      utils.deleteDoc(docId).then(done).catch(done);
+    });
   }
 };
