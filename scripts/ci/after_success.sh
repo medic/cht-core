@@ -72,11 +72,11 @@ echo "UPLOAD_URL: $cleanUploadUrl"
 if [[ -n "$TRAVIS_TAG" ]]; then
     node --stack_size=10000 `which kanso` push --minify \
             --id="$TRAVIS_TAG" \
-            "$UPLOAD_URL"/builds
+            "$UPLOAD_URL"/_couch/builds
 else
     node --stack_size=10000 `which kanso` push --minify \
             --id="$TRAVIS_BRANCH" \
-            "$UPLOAD_URL"/builds
+            "$UPLOAD_URL"/_couch/builds
 fi
 echo 'Build for build database built.'
 
