@@ -1,14 +1,10 @@
-var _ = require('underscore');
-
 angular.module('inboxControllers').controller('AboutCtrl',
   function (
     $interval,
-    $q,
     $log,
     $scope,
     DB,
     Debug,
-    Language,
     Session
   ) {
     'use strict';
@@ -59,19 +55,5 @@ angular.module('inboxControllers').controller('AboutCtrl',
     }).catch(function (err) {
       $log.error('Failed to fetch DB info', err);
     });
-
-    $scope.help_loading = true;
-
-    var helpPageGet = DB().query('medic-client/help_pages');
-
-    $q.all([ helpPageGet, Language() ])
-      .then(function(results) {
-        var helpPageRes = results[0];
-        var lang = results[1];
-        $scope.help_loading = false;
-        $scope.help_pages = _.map(helpPageRes.rows, function(row) {
-          return { id: row.key, title: row.value[lang] || row.value.en };
-        });
-      });
   }
 );
