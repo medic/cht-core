@@ -505,31 +505,19 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci_before', '', [
-    'regex-check',
-    'jshint',
     'mmnpm',
     'build',
     'minify',
-    'karma:unit_ci',
-    'nodeunit',
   ]);
   grunt.registerTask('ci_after', '', [
-    'exec:deploy',
-    'test_api_integration',
-    'e2e',
-    'api_e2e',
   ]);
 
   grunt.registerTask('ci1', 'Lint, build, minify, deploy and test for CI [CouchDB 1.x]', [
-    'ci_before',
-    'exec:setupAdmin1',
-    'ci_after'
+    'ci_before'
   ]);
 
   grunt.registerTask('ci2', 'Lint, build, minify, deploy and test for CI [CouchDB 2.x]', [
-    'ci_before',
-    'exec:setupAdmin2',
-    'ci_after'
+    'ci_before'
   ]);
 
   // Dev tasks

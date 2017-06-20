@@ -59,7 +59,13 @@ before_script:
   - until nc -z localhost 4444; do sleep 1; done
 
 script:
-  - echo 'derek is cool'
+  - |
+    if [ "$COUCH_VERSION" = 2 ]; then
+      node --stack_size=10000 `which grunt` ci2
+    elif [ "$COUCH_VERSION" = 1 ]; then
+      node --stack_size=10000 `which grunt` ci1
+    fi
+  - cat nohup.out || true
 
 after_success:
   - python ./scripts/ci/travis_after_all.py
