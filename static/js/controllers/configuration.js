@@ -25,11 +25,11 @@ angular.module('inboxControllers').controller('ConfigurationCtrl',
         }
       },
       {
-        state: 'configuration.forms',
+        state: 'configuration.forms.xml',
         icon: 'fa-list-alt',
         name: 'Forms',
         active: function() {
-          return $state.is('configuration.forms');
+          return $state.includes('configuration.forms');
         }
       },
       {
