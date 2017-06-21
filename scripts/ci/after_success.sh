@@ -13,8 +13,8 @@ if [ -z "$UPLOAD_URL" ]; then
     exit 1;
 fi
 
-cd sentinel && npm install && cd .. && \
-cd api && npm install && cd ..
+(cd sentinel && npm install)
+(cd api && npm install)
 
 function tagSubmodule {
     cd $1
