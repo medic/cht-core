@@ -28,6 +28,8 @@ function tagSubmodules {
     tagSubmodule 'sentinel'
 }
 
+### --- TODO delete this section when upgrade-from-api is accepted START --- ###
+
 # Try pushing up to $MAX times.
 function push {
     ((COUNT++))
@@ -65,6 +67,8 @@ elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
     push 'rc'
 
 fi;
+
+### ---- TODO delete this section when upgrade-from-api is accepted END ---- ###
 
 echo 'Building build for builds database...'
 if [[ -n "$TRAVIS_TAG" ]]; then
