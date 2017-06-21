@@ -34,6 +34,7 @@ angular.module('inboxControllers').controller('ConfigurationFormsJsonCtrl',
       } else {
         $translate('Upload succeeded').then(Snackbar);
         $('#forms-upload-json').get(0).reset(); // clear the fields
+        loadForms();
       }
       // some events are triggered outside of angular so wrap in
       // $timeout so the UI is updated.
@@ -82,13 +83,18 @@ angular.module('inboxControllers').controller('ConfigurationFormsJsonCtrl',
       $('#forms-upload-json .uploader').click();
     });
 
-    Settings()
-      .then(function(settings) {
-        $scope.forms = settings.forms;
-        $scope.download = generateDownload(settings.forms);
-      })
-      .catch(function(err) {
-        $log.error('Error fetching settings', err);
-      });
+    var loadForms = function() {
+      Settings()
+        .then(function(settings) {
+          $scope.forms = settings.forms;
+          $scope.download = generateDownload(settings.forms);
+        })
+        .catch(function(err) {
+          $log.error('Error fetching settings', err);
+        });
+    };
+
+    loadForms();
+
   }
 );
