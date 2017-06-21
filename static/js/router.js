@@ -269,8 +269,25 @@
         url: '/forms',
         views: {
           content: {
-            controller: 'ConfigurationFormsCtrl',
             templateUrl: 'templates/partials/configuration_forms.html'
+          }
+        }
+      })
+      .state('configuration.forms.json', {
+        url: '/json',
+        views: {
+          tab: {
+            controller: 'ConfigurationFormsJsonCtrl',
+            templateUrl: 'templates/partials/configuration_forms_json.html'
+          }
+        }
+      })
+      .state('configuration.forms.xml', {
+        url: '/xml',
+        views: {
+          tab: {
+            controller: 'ConfigurationFormsXmlCtrl',
+            templateUrl: 'templates/partials/configuration_forms_xml.html'
           }
         }
       })
