@@ -13,6 +13,8 @@ if [ -z "$UPLOAD_URL" ]; then
     exit 1;
 fi
 
+rm -rf node_modules && npm install --production
+
 cd sentinel && npm install && cd .. && \
 cd api && npm install && cd ..
 
