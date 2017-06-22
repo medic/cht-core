@@ -13,12 +13,28 @@ services:
   - docker
 
 env:
+  matrix:
+  - NODE_VERSION=8 COUCH_VERSION=2
+#  - NODE_VERSION=6.10 COUCH_VERSION=1
   global:
-  - NODE_VERSION=8
-  - COUCH_VERSION=2
   - COUCH_URL=http://admin:pass@localhost:5984/medic
   - API_URL=http://admin:pass@localhost:5988
   - COUCH_NODE_NAME=nonode@nohost
+
+before_install:
+  - |
+    if [ "$COUCH_VERSION" = 2 ]; then
+      # start couchdb 2.x docker instance
+      docker run -d -p 5984:5984 --name couch klaemo/couchdb:2.0.0
+      echo "Starting CouchDB 2.0"
+    elif [ "$COUCH_VERSION" = 1 ]; then
+      # because we're on a java project we don't get CouchDB1.x for free
+      sudo apt-get install -y couchdb
+      until nc -z localhost 5984; do sleep 1; done
+      echo "Starting CouchDB 1.x started"
+    fi
+    until nc -z localhost 5984; do sleep 1; done
+    echo "CouchDB Started"
 
 install:
   nvm install $NODE_VERSION
@@ -26,6 +42,11 @@ install:
 before_script:
   - nvm use $NODE_VERSION
   - npm install
+  # Create couchdb system tables (this has to be done manually on couchdb 2.0)
+  - |
+    if [ "$COUCH_VERSION" = 2 ]; then
+      curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
+    fi
   - export DISPLAY=:99.0
   - sh -e /etc/init.d/xvfb start
   - curl -X PUT localhost:5984/medic
@@ -38,11 +59,26 @@ before_script:
   - until nc -z localhost 4444; do sleep 1; done
 
 script:
-  - node --stack_size=10000 `which grunt` ci2
+  - |
+    if [ "$COUCH_VERSION" = 2 ]; then
+      node --stack_size=10000 `which grunt` ci2
+    elif [ "$COUCH_VERSION" = 1 ]; then
+      node --stack_size=10000 `which grunt` ci1
+    fi
   - cat nohup.out || true
 
 after_success:
-  - export $(cat .to_export_back)
+#  - python ./scripts/ci/travis_after_all.py
+#  - export $(cat .to_export_back)
+#  - |
+#      if [ "$BUILD_LEADER" = "YES" ]; then
+#        if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
+#          echo "All jobs succeeded! Publishing..."
+#          bash ./scripts/ci/after_success.sh
+#        else
+#          echo "Some jobs failed. Not publishing."
+#        fi
+#      fi
   - bash ./scripts/ci/after_success.sh
 
 after_failure:
