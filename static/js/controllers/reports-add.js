@@ -9,6 +9,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     Enketo,
     FileReader,
     Snackbar,
+    TranslateFrom,
     XmlForm
   ) {
 
@@ -74,8 +75,11 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
           getReportContent(model.doc),
           XmlForm(model.formInternalId, { include_docs: true })
         ]).then(function(results) {
+          var report = results[0];
+          var form = results[1];
           $scope.enketoStatus.edited = false;
-          Enketo.render('#report-form', results[1].id, results[0], markFormEdited)
+          $scope.setTitle(TranslateFrom(form.doc.title));
+          Enketo.render('#report-form', form.id, report, markFormEdited)
             .then(function(form) {
               $scope.form = form;
               $scope.loadingContent = false;
