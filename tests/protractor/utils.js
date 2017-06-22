@@ -2,7 +2,8 @@ var _ = require('underscore'),
   auth = require('./auth')(),
   constants = require('./constants'),
   http = require('http'),
-  path = require('path');
+  path = require('path'),
+  fs=require('fs');
 
 var originalSettings = {};
 
@@ -94,6 +95,11 @@ var revertSettingsForDdoc = function (ddocName) {
   });
 };
 
+const writeScreenShot=(data, filename)=> {
+  var stream = fs.createWriteStream(filename);
+  stream.write(new Buffer(data, 'base64'));
+  stream.end();
+};
 
 module.exports = {
 
@@ -178,5 +184,10 @@ module.exports = {
     `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}`,
 
   getLoginUrl: () =>
-    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login`
+    `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login`,
+    takeScreenshot: function (filename) {
+    browser.takeScreenshot().then(function (png) {
+      writeScreenShot(png, filename);
+    });
+  }
 };
