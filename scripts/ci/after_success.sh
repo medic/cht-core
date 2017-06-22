@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 MAX=50
 COUNT=0
@@ -13,8 +13,16 @@ if [ -z "$UPLOAD_URL" ]; then
     exit 1;
 fi
 
-cd sentinel && npm install && cd .. && \
-cd api && npm install && cd ..
+(cd sentinel &&
+    npm install --production &&
+    rm -rf test &&
+    rm -rf ./node_modules/*/test &&
+    rm -rf ./node_modules/*/tests)
+(cd api &&
+    npm install --production &&
+    rm -rf tests &&
+    rm -rf ./node_modules/*/test &&
+    rm -rf ./node_modules/*/tests)
 
 function tagSubmodule {
     cd $1
@@ -27,6 +35,8 @@ function tagSubmodules {
     tagSubmodule 'api'
     tagSubmodule 'sentinel'
 }
+
+### --- TODO delete this section when upgrade-from-api is accepted START --- ###
 
 # Try pushing up to $MAX times.
 function push {
@@ -65,5 +75,19 @@ elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
     push 'rc'
 
 fi;
+
+### ---- TODO delete this section when upgrade-from-api is accepted END ---- ###
+
+echo 'Building build for builds database...'
+if [[ -n "$TRAVIS_TAG" ]]; then
+    node --stack_size=10000 `which kanso` push --minify \
+            --id="$TRAVIS_TAG" \
+            "$UPLOAD_URL"/_couch/builds
+else
+    node --stack_size=10000 `which kanso` push --minify \
+            --id="$TRAVIS_BRANCH" \
+            "$UPLOAD_URL"/_couch/builds
+fi
+echo 'Build for build database built.'
 
 exit 0;
