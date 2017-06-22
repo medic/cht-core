@@ -1,24 +1,24 @@
-describe('EnketoTranslation service', function() {
+describe('EnketoTranslation service', () => {
   'use strict';
 
-  var service,
-      assert = chai.assert;
+  const assert = chai.assert;
+  let service;
 
-  beforeEach(function() {
+  beforeEach(() => {
     module('inboxApp');
-    inject(function(_EnketoTranslation_) {
+    inject(_EnketoTranslation_ => {
       service = _EnketoTranslation_;
     });
   });
 
-  it('exists', function() {
+  it('exists', () => {
     assert.isDefined(service);
   });
 
-  describe('XForm generation', function() {
-    it('generates a simple XForm when supplied with a simple schema', function() {
+  describe('XForm generation', () => {
+    it('generates a simple XForm when supplied with a simple schema', () => {
       // given
-      var schema = {
+      const schema = {
         type: 'person',
         title: '{{name}}',
         fields: {
@@ -29,7 +29,7 @@ describe('EnketoTranslation service', function() {
       };
 
       // when
-      var xform = service.generateXform(schema);
+      const xform = service.generateXform(schema);
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
@@ -45,9 +45,9 @@ describe('EnketoTranslation service', function() {
           '</h:body></h:html>');
     });
 
-    it('handles *required* fields', function() {
+    it('handles *required* fields', () => {
       // given
-      var schema = {
+      const schema = {
         type: 'person',
         title: '{{name}}',
         fields: {
@@ -59,7 +59,7 @@ describe('EnketoTranslation service', function() {
       };
 
       // when
-      var xform = service.generateXform(schema);
+      const xform = service.generateXform(schema);
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
@@ -75,9 +75,9 @@ describe('EnketoTranslation service', function() {
           '</h:body></h:html>');
     });
 
-    it('handles text data type', function() {
+    it('handles text data type', () => {
       // given
-      var schema = {
+      const schema = {
         type: 'dog',
         title: '{{name}}',
         fields: {
@@ -92,7 +92,7 @@ describe('EnketoTranslation service', function() {
       };
 
       // when
-      var xform = service.generateXform(schema);
+      const xform = service.generateXform(schema);
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
@@ -112,9 +112,9 @@ describe('EnketoTranslation service', function() {
           '</h:body></h:html>');
     });
 
-    it('handles phone number data type', function() {
+    it('handles phone number data type', () => {
       // given
-      var schema = {
+      const schema = {
         type: 'contact',
         title: '{{number}}',
         fields: {
@@ -125,7 +125,7 @@ describe('EnketoTranslation service', function() {
       };
 
       // when
-      var xform = service.generateXform(schema);
+      const xform = service.generateXform(schema);
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
@@ -141,9 +141,9 @@ describe('EnketoTranslation service', function() {
           '</h:body></h:html>');
     });
 
-    it('handles fields hidden in form', function() {
+    it('handles fields hidden in form', () => {
       // given
-      var schema = {
+      const schema = {
         type: 'contact',
         title: '{{number}}',
         fields: {
@@ -157,7 +157,7 @@ describe('EnketoTranslation service', function() {
       };
 
       // when
-      var xform = service.generateXform(schema);
+      const xform = service.generateXform(schema);
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><h:head>' +
@@ -172,9 +172,9 @@ describe('EnketoTranslation service', function() {
           '</h:body></h:html>');
     });
 
-    it('handles db-reference fields', function() {
+    it('handles db-reference fields', () => {
       // given
-      var schema = {
+      const schema = {
         type: 'person',
         title: '{{name}}',
         fields: {
@@ -185,7 +185,7 @@ describe('EnketoTranslation service', function() {
       };
 
       // when
-      var xform = service.generateXform(schema);
+      const xform = service.generateXform(schema);
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
@@ -201,9 +201,9 @@ describe('EnketoTranslation service', function() {
           '</h:body></h:html>');
     });
 
-    it('handles facility fields', function() {
+    it('handles facility fields', () => {
       // given
-      var schema = {
+      const schema = {
         type: 'person',
         title: '{{name}}',
         fields: {
@@ -214,7 +214,7 @@ describe('EnketoTranslation service', function() {
       };
 
       // when
-      var xform = service.generateXform(schema);
+      const xform = service.generateXform(schema);
 
       // then
       assert.equal(xform, '<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">' +
@@ -230,9 +230,9 @@ describe('EnketoTranslation service', function() {
           '</h:body></h:html>');
     });
 
-    it('generates a double XForm when supplied with an object-pair schema', function() {
+    it('generates a double XForm when supplied with an object-pair schema', () => {
       // given
-      var schema = {
+      const schema = {
         type: 'clinic',
         title: 'name',
         fields: {
@@ -252,7 +252,7 @@ describe('EnketoTranslation service', function() {
           },
         },
       };
-      var contactSchema = {
+      const contactSchema = {
         type: 'person',
         title: 'name',
         fields: {
@@ -268,7 +268,7 @@ describe('EnketoTranslation service', function() {
       };
 
       // when
-      var xform = service.generateXform(schema, { contact:contactSchema });
+      const xform = service.generateXform(schema, { contact:contactSchema });
 
       // then
       assert.equal(xform,
@@ -302,10 +302,10 @@ describe('EnketoTranslation service', function() {
     });
   });
 
-  describe('#contactRecordToJs()', function() {
-    it('should convert a simple record to JS', function() {
+  describe('#contactRecordToJs()', () => {
+    it('should convert a simple record to JS', () => {
       // given
-      var xml =
+      const xml =
         '<data id="person" version="1">' +
           '<person>' +
             '<name>Denise Degraffenreid</name>' +
@@ -318,7 +318,7 @@ describe('EnketoTranslation service', function() {
         '</data>';
 
       // when
-      var js = service.contactRecordToJs(xml);
+      const js = service.contactRecordToJs(xml);
 
       // then
       assert.deepEqual(js, {
@@ -331,9 +331,9 @@ describe('EnketoTranslation service', function() {
       });
     });
 
-    it('should convert a complex record without new instance to JS', function() {
+    it('should convert a complex record without new instance to JS', () => {
       // given
-      var xml =
+      const xml =
         '<data id="clinic" version="1">' +
           '<clinic>' +
             '<name>A New Catchmnent Area</name>' +
@@ -350,7 +350,7 @@ describe('EnketoTranslation service', function() {
         '</data>';
 
       // when
-      var js = service.contactRecordToJs(xml);
+      const js = service.contactRecordToJs(xml);
 
       // then
       assert.deepEqual(js, {
@@ -367,9 +367,9 @@ describe('EnketoTranslation service', function() {
         }});
     });
 
-    it('should convert a complex record with new instance to JS', function() {
+    it('should convert a complex record with new instance to JS', () => {
       // given
-      var xml =
+      const xml =
         '<data id="clinic" version="1">' +
           '<clinic>' +
             '<name>A New Catchmnent Area</name>' +
@@ -386,7 +386,7 @@ describe('EnketoTranslation service', function() {
         '</data>';
 
       // when
-      var js = service.contactRecordToJs(xml);
+      const js = service.contactRecordToJs(xml);
 
       // then
       assert.deepEqual(js, {
@@ -403,9 +403,9 @@ describe('EnketoTranslation service', function() {
         }});
     });
 
-    it('should support repeated elements', function() {
+    it('should support repeated elements', () => {
       // given
-      var xml =
+      const xml =
         '<data id="clinic" version="1">' +
           '<clinic>' +
             '<name>A House in the Woods</name>' +
@@ -433,7 +433,7 @@ describe('EnketoTranslation service', function() {
         '</data>';
 
       // when
-      var js = service.contactRecordToJs(xml);
+      const js = service.contactRecordToJs(xml);
 
       // then
       assert.deepEqual(js, {
@@ -458,9 +458,9 @@ describe('EnketoTranslation service', function() {
       });
     });
 
-    it('should ignore text in repeated elements', function() {
+    it('should ignore text in repeated elements', () => {
       // given
-      var xml =
+      const xml =
         '<data id="clinic" version="1">' +
           '<clinic>' +
             '<name>A House in the Woods</name>' +
@@ -492,7 +492,7 @@ describe('EnketoTranslation service', function() {
         '</data>';
 
       // when
-      var js = service.contactRecordToJs(xml);
+      const js = service.contactRecordToJs(xml);
 
       // then
       assert.deepEqual(js, {
@@ -517,9 +517,9 @@ describe('EnketoTranslation service', function() {
       });
     });
 
-    it('should include repeats if they are explicitly requested', function() {
+    it('should include repeats if they are explicitly requested', () => {
       // given
-      var xml =
+      const xml =
         '<data id="clinic" version="1">' +
           '<clinic>' +
             '<name>A House in the Woods</name>' +
@@ -548,7 +548,7 @@ describe('EnketoTranslation service', function() {
         '</data>';
 
       // when
-      var js = service.contactRecordToJs(xml);
+      const js = service.contactRecordToJs(xml);
 
       // then
       assert.deepEqual(js, {
@@ -573,9 +573,9 @@ describe('EnketoTranslation service', function() {
       });
     });
 
-    it('should exclude repeats if they are explicitly excluded', function() {
+    it('should exclude repeats if they are explicitly excluded', () => {
       // given
-      var xml =
+      const xml =
         '<data id="clinic" version="1">' +
           '<clinic>' +
             '<name>A House in the Woods</name>' +
@@ -604,7 +604,7 @@ describe('EnketoTranslation service', function() {
         '</data>';
 
       // when
-      var js = service.contactRecordToJs(xml);
+      const js = service.contactRecordToJs(xml);
 
       // then
       assert.deepEqual(js, {
@@ -624,36 +624,36 @@ describe('EnketoTranslation service', function() {
     });
   });
 
-  describe('#reportRecordToJs()', function() {
-    it('should convert nested nodes to nested JSON', function() {
+  describe('#reportRecordToJs()', () => {
+    it('should convert nested nodes to nested JSON', () => {
       // given
-      var xml =
-        '<treatments id="ASDF" version="abc123">' +
-          '<inputs>' +
-            '<meta>' +
-              '<location>' +
-                '<lat>-47.15</lat>' +
-                '<long>-126.72</long>' +
-          '</location></meta></inputs>' +
-          '<date>Last Friday</date>' +
-          '<district>' +
-            '<id>d1</id>' +
-            '<name>DISTRICT ONE</name>' +
-          '</district>' +
-          '<patient>' +
-            '<condition>' +
-              '<temperature>41</temperature>' +
-              '<weight>100</weight>' +
-            '</condition>' +
-            '<prescription>' +
-              '<name>paracetamol</name>' +
-              '<dose>1g * 4, 1/7</dose>' +
-            '</prescription>' +
-          '</patient>' +
-        '</treatments>';
+      const xml =
+        `<treatments id="ASDF" version="abc123">
+          <inputs>
+            <meta>
+              <location>
+                <lat>-47.15</lat>
+                <long>-126.72</long>
+          </location></meta></inputs>
+          <date>Last Friday</date>
+          <district>
+            <id>d1</id>
+            <name>DISTRICT ONE</name>
+          </district>
+          <patient>
+            <condition>
+              <temperature>41</temperature>
+              <weight>100</weight>
+            </condition>
+            <prescription>
+              <name>paracetamol</name>
+              <dose>1g * 4, 1/7</dose>
+            </prescription>
+          </patient>
+        </treatments>`;
 
       // when
-      var js = service.reportRecordToJs(xml);
+      const js = service.reportRecordToJs(xml);
 
       // then
       assert.deepEqual(js, {
@@ -684,56 +684,56 @@ describe('EnketoTranslation service', function() {
     });
   });
 
-  describe('#getHiddenFieldList()', function() {
-    it('returns of one an empty array if no fields are hidden', function() {
+  describe('#getHiddenFieldList()', () => {
+    it('returns of one an empty array if no fields are hidden', () => {
       // given
-      var xml =
-        '<doc>' +
-          '<name>Sally</name>' +
-          '<lmp>10</lmp>' +
-        '</doc>';
+      const xml =
+        `<doc>
+          <name>Sally</name>
+          <lmp>10</lmp>
+        </doc>`;
 
       // when
-      var hidden_fields = service.getHiddenFieldList(xml);
+      const hidden_fields = service.getHiddenFieldList(xml);
 
       // then
       assert.deepEqual(hidden_fields, []);
     });
 
-    it('returns an array containing fields tagged `hidden`', function() {
+    it('returns an array containing fields tagged `hidden`', () => {
       // given
-      var xml =
-        '<doc>' +
-          '<name>Sally</name>' +
-          '<secret_code_name_one tag="hidden">S4L</secret_code_name_one>' +
-          '<secret_code_name_two tag="hidden">S5L</secret_code_name_two>' +
-          '<lmp>10</lmp>' +
-        '</doc>';
+      const xml =
+        `<doc>
+          <name>Sally</name>
+          <secret_code_name_one tag="hidden">S4L</secret_code_name_one>
+          <secret_code_name_two tag="hidden">S5L</secret_code_name_two>
+          <lmp>10</lmp>
+        </doc>`;
 
       // when
-      var hidden_fields = service.getHiddenFieldList(xml);
+      const hidden_fields = service.getHiddenFieldList(xml);
 
       // then
       assert.deepEqual(hidden_fields, [ 'secret_code_name_one', 'secret_code_name_two' ]);
     });
   });
 
-  describe('#bindJsonToXml()', function() {
-    it('binds simple data', function() {
+  describe('#bindJsonToXml()', () => {
+    it('binds simple data', () => {
       // given
-      var model =
-        '<data id="district_hospital" version="1">' +
-          '<district_hospital>' +
-            '<name/>' +
-            '<external_id/>' +
-            '<notes/>' +
-          '</district_hospital>' +
-          '<meta>' +
-            '<instanceID/>' +
-          '</meta>' +
-        '</data>';
-      var element = $($.parseXML(model)).children().first();
-      var data = {
+      const model =
+        `<data id="district_hospital" version="1">
+          <district_hospital>
+            <name/>
+            <external_id/>
+            <notes/>
+          </district_hospital>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>`;
+      const element = $($.parseXML(model)).children().first();
+      const data = {
           district_hospital: {
             name: 'Davesville',
             external_id: 'THING',
@@ -751,22 +751,22 @@ describe('EnketoTranslation service', function() {
       assert.equal(element.find('notes').text(), 'Some notes');
     });
 
-    it('binds embedded objects to id-only fields', function() {
+    it('binds embedded objects to id-only fields', () => {
       // given
-      var model =
-        '<data id="district_hospital" version="1">' +
-          '<district_hospital>' +
-            '<name/>' +
-            '<contact/>' +
-            '<external_id/>' +
-            '<notes/>' +
-          '</district_hospital>' +
-          '<meta>' +
-            '<instanceID/>' +
-          '</meta>' +
-        '</data>';
-      var element = $($.parseXML(model)).children().first();
-      var data = {
+      const model =
+        `<data id="district_hospital" version="1">
+          <district_hospital>
+            <name/>
+            <contact/>
+            <external_id/>
+            <notes/>
+          </district_hospital>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>`;
+      const element = $($.parseXML(model)).children().first();
+      const data = {
           district_hospital: {
             name: 'Davesville',
             contact: {
@@ -789,25 +789,25 @@ describe('EnketoTranslation service', function() {
       assert.equal(element.find('notes').text(), 'Some notes');
     });
 
-    it('binds embedded objects to trees', function() {
+    it('binds embedded objects to trees', () => {
       // given
-      var model =
-        '<data id="district_hospital" version="1">' +
-          '<district_hospital>' +
-            '<name/>' +
-            '<contact>' +
-              '<_id/>' +
-              '<name/>' +
-            '</contact>' +
-            '<external_id/>' +
-            '<notes/>' +
-          '</district_hospital>' +
-          '<meta>' +
-            '<instanceID/>' +
-          '</meta>' +
-        '</data>';
-      var element = $($.parseXML(model)).children().first();
-      var data = {
+      const model =
+        `<data id="district_hospital" version="1">
+          <district_hospital>
+            <name/>
+            <contact>
+              <_id/>
+              <name/>
+            </contact>
+            <external_id/>
+            <notes/>
+          </district_hospital>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>`;
+      const element = $($.parseXML(model)).children().first();
+      const data = {
           district_hospital: {
             name: 'Davesville',
             contact: {
@@ -832,24 +832,24 @@ describe('EnketoTranslation service', function() {
       assert.equal(element.find('contact > name').text(), 'Dr. D');
     });
 
-    it('binds data 1:1 with its representation', function() {
-      var element = $($.parseXML(
-        '<data id="district_hospital" version="1">' +
-          '<district_hospital>' +
-            '<name/>' +
-            '<contact>' +
-              '<_id/>' +
-              '<name/>' +
-            '</contact>' +
-            '<external_id/>' +
-            '<notes/>' +
-          '</district_hospital>' +
-          '<meta>' +
-            '<instanceID/>' +
-          '</meta>' +
-        '</data>'
+    it('binds data 1:1 with its representation', () => {
+      const element = $($.parseXML(
+        `<data id="district_hospital" version="1">
+          <district_hospital>
+            <name/>
+            <contact>
+              <_id/>
+              <name/>
+            </contact>
+            <external_id/>
+            <notes/>
+          </district_hospital>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>`
       )).children().first();
-      var data = {
+      const data = {
         district_hospital: {
           name: 'Davesville',
           contact: {
@@ -867,11 +867,11 @@ describe('EnketoTranslation service', function() {
         'The contact name should not get the value of the district hospital');
     });
 
-    it('preferentially binds to more specific data structures', function() {
-      var DEEP_TEST_VALUE = 'deep';
+    it('preferentially binds to more specific data structures', () => {
+      const DEEP_TEST_VALUE = 'deep';
 
-      var element = $($.parseXML('<foo><bar><baz><smang /></baz></bar></foo>')).children().first();
-      var data = {
+      const element = $($.parseXML('<foo><bar><baz><smang /></baz></bar></foo>')).children().first();
+      const data = {
         foo: {
           smang: 'shallow5',
           baz: {
