@@ -144,25 +144,27 @@
         </div>
       </div>
 
-      <div class="action-header" mm-auth="can_view_reports">
-        <h4 translate>Reports</h4>
-        <span class="table-filter">
-          <a ng-click="setReportsTimeWindowMonths(3)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 3}"  translate translate-values="{ MONTHS: 3 }" translate-interpolation="messageformat">n.month</a>
-          |
-          <a ng-click="setReportsTimeWindowMonths(6)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 6}"  translate translate-values="{ MONTHS: 6 }" translate-interpolation="messageformat">n.month</a>
-          |
-          <a ng-click="setReportsTimeWindowMonths()" class="btn btn-link" ng-class="{selected: !reportsTimeWindowMonths}" translate>view.all</a>
-        </span>
-      </div>
-      <div class="card action-list reports">
-        <div class="accent"></div>
-        <div class="row" ng-repeat="report in selected.reports | filter:filterReports as filteredReports track by report._id">
-          <ng-include src="'templates/partials/contacts_content_report.html'"></ng-include>
+      <div mm-auth="can_view_reports">
+        <div class="action-header">
+          <h4 translate>Reports</h4>
+          <span class="table-filter">
+            <a ng-click="setReportsTimeWindowMonths(3)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 3}"  translate translate-values="{ MONTHS: 3 }" translate-interpolation="messageformat">n.month</a>
+            |
+            <a ng-click="setReportsTimeWindowMonths(6)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 6}"  translate translate-values="{ MONTHS: 6 }" translate-interpolation="messageformat">n.month</a>
+            |
+            <a ng-click="setReportsTimeWindowMonths()" class="btn btn-link" ng-class="{selected: !reportsTimeWindowMonths}" translate>view.all</a>
+          </span>
         </div>
-        <div class="row" ng-show="!filteredReports.length">
-          <div class="cell">
-            <span ng-show="!reportsTimeWindowMonths" translate>reports.none</span>
-            <span ng-show="reportsTimeWindowMonths" translate translate-values="{MONTHS: reportsTimeWindowMonths}" translate-interpolation="messageformat">reports.none.n.months</span>
+        <div class="card action-list reports">
+          <div class="accent"></div>
+          <div class="row" ng-repeat="report in selected.reports | filter:filterReports as filteredReports track by report._id">
+            <ng-include src="'templates/partials/contacts_content_report.html'"></ng-include>
+          </div>
+          <div class="row" ng-show="!filteredReports.length">
+            <div class="cell">
+              <span ng-show="!reportsTimeWindowMonths" translate>reports.none</span>
+              <span ng-show="reportsTimeWindowMonths" translate translate-values="{MONTHS: reportsTimeWindowMonths}" translate-interpolation="messageformat">reports.none.n.months</span>
+            </div>
           </div>
         </div>
       </div>
