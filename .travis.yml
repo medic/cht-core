@@ -13,9 +13,9 @@ services:
   - docker
 
 env:
-  matrix:
-  - NODE_VERSION=8 COUCH_VERSION=2
   global:
+  - NODE_VERSION=8
+  - COUCH_VERSION=2
   - COUCH_URL=http://admin:pass@localhost:5984/medic
   - API_URL=http://admin:pass@localhost:5988
   - COUCH_NODE_NAME=nonode@nohost
