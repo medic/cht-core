@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -e
 
 MAX=50
 COUNT=0
