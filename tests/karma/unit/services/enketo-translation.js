@@ -682,6 +682,78 @@ describe('EnketoTranslation service', () => {
         },
       });
     });
+
+    it('converts repeated fields to arrays - #3430', () => {
+      // given
+      const record = `
+        <treatments id="ASDF" version="abc123">
+          <group_test>
+            <chp>
+              <other_chp>a</other_chp>
+            </chp>
+            <chp>
+              <other_chp>b</other_chp>
+            </chp>
+          </group_test>
+        </treatments>`;
+
+      const form = `
+        <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml">
+          <h:head>
+            <h:title>Repeat Bug</h:title>
+            <model>
+              <instance>
+                <treatments delimiter="#" id="treatments" prefix="J1!repeat_bug!" version="2017-03-28 00:00:00">
+                  <group_test>
+                    <chp jr:template="">
+                      <other_chp/>
+                    </chp>
+                  </group_test>
+                  <meta>
+                    <instanceID/>
+                  </meta>
+                </treatments>
+              </instance>
+              <bind nodeset="/treatments/group_test/chp/other_chp" required="true()" type="db:person"/>
+              <bind calculate="concat('uuid:', uuid())" nodeset="/treatments/meta/instanceID" readonly="true()" type="string"/>
+            </model>
+          </h:head>
+          <h:body class="pages">
+            <group appearance="field-list" ref="/treatments/group_test">
+              <label>Community Event</label>
+              <group ref="/treatments/group_test/chp">
+                <label></label>
+                <repeat nodeset="/treatments/group_test/chp">
+                  <input appearance="db-object" ref="/treatments/group_test/chp/other_chp">
+                    <label>CHP Name</label>
+                  </input>
+                </repeat>
+              </group>
+              <group ref="/treatments/group_test/chp2">
+                <label></label>
+                <repeat nodeset="/treatments/group_test/chp2">
+                  <input appearance="db-object" ref="/treatments/group_test/chp/other_chp">
+                    <label>CHP Name</label>
+                  </input>
+                </repeat>
+              </group>
+            </group>
+          </h:body>
+        </h:html>`;
+
+      // when
+      const js = service.reportRecordToJs(record, form);
+
+      // then
+      assert.deepEqual(js, {
+        group_test: {
+          chp: [
+            { other_chp: 'a' },
+            { other_chp: 'b' }
+          ]
+        }
+      });
+    });
   });
 
   describe('#getHiddenFieldList()', () => {

@@ -18,6 +18,7 @@ angular.module('inboxServices').service('Enketo',
     TranslateFrom,
     UserContact,
     UserSettings,
+    XmlForm,
     XSLT
   ) {
 
@@ -85,12 +86,15 @@ angular.module('inboxServices').service('Enketo',
       return xml;
     };
 
+    var getFormAttachment = function(id) {
+      return DB().getAttachment(id, FORM_ATTACHMENT_NAME)
+        .then(FileReader);
+    };
+
     var getFormXml = function(form, language) {
-      return DB().getAttachment(form._id, FORM_ATTACHMENT_NAME)
-        .then(FileReader)
-        .then(function(text) {
-          return translateXml(text, language, form.title);
-        });
+      return getFormAttachment(form._id).then(function(text) {
+        return translateXml(text, language, form.title);
+      });
     };
 
     var withForm = function(id, language) {
@@ -272,35 +276,30 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    var xmlToDocs = function(doc, record) {
-      var docsToStore = [], recordDoc, $record;
+    var xmlToDocs = function(doc, formInternalId, record) {
 
       function mapOrAssignId(e, id) {
-        var $e, $id;
-
         if (!id) {
-          $e = $(e);
-          $id = $e.children('_id');
-
+          var $id = $(e).children('_id');
           if ($id.length) {
             id = $id.text();
           }
-
           if (!id) {
             id = uuid();
           }
         }
-
         e._couchId = id;
       }
 
       function getId(xpath) {
-        return recordDoc.evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null)
-            .iterateNext()._couchId;
+        return recordDoc
+          .evaluate(xpath, recordDoc, null, XPathResult.ANY_TYPE, null)
+          .iterateNext()
+          ._couchId;
       }
 
-      recordDoc = $.parseXML(record);
-      $record = $($(recordDoc).children()[0]);
+      var recordDoc = $.parseXML(record);
+      var $record = $($(recordDoc).children()[0]);
       mapOrAssignId($record[0], doc._id || uuid());
 
       $record.find('[db-doc=true]').each(function() {
@@ -313,22 +312,25 @@ angular.module('inboxServices').service('Enketo',
         $ref.text(refId);
       });
 
-      $record.find('[db-doc=true]').each(function() {
+      var docsToStore = $record.find('[db-doc=true]').map(function() {
         var docToStore = EnketoTranslation.reportRecordToJs(this.outerHTML);
         docToStore._id = getId(xpathPath(this));
-        docsToStore.push(docToStore);
-      });
+        return docToStore;
+      }).get();
 
-      record = $record[0].outerHTML;
-
-      AddAttachment(doc, REPORT_ATTACHMENT_NAME, record, 'application/xml');
-      doc._id = getId('/*');
-      doc.fields = EnketoTranslation.reportRecordToJs(record);
-      doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
-
-      docsToStore.unshift(doc);
-
-      return docsToStore;
+      return XmlForm(formInternalId)
+        .then(function(form) {
+          return getFormAttachment(form.id);
+        })
+        .then(function(form) {
+          doc._id = getId('/*');
+          record = $record[0].outerHTML;
+          doc.fields = EnketoTranslation.reportRecordToJs($record[0].outerHTML, form);
+          doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
+          AddAttachment(doc, REPORT_ATTACHMENT_NAME, record, 'application/xml');
+          docsToStore.unshift(doc);
+          return docsToStore;
+        });
     };
 
     var saveDocs = function(docs) {
@@ -389,7 +391,7 @@ angular.module('inboxServices').service('Enketo',
           return create(formInternalId);
         })
         .then(function(doc) {
-          return xmlToDocs(doc, form.getDataStr());
+          return xmlToDocs(doc, formInternalId, form.getDataStr());
         })
         .then(saveDocs);
     };
