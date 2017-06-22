@@ -440,11 +440,14 @@ app.get('/api/v1/forms/:form', function(req, res) {
       form = parts.slice(0, -1).join('.'),
       format = parts.slice(-1)[0];
   if (!form || !format) {
-    return serverUtils.serverError(new Error(`Invalid form parameter (form=${form},format=${format})`), req, res);
+    return serverUtils.error({
+      code: 400,
+      message: `Invalid form parameter (form="${form}", format="${format}")`
+    }, req, res);
   }
   forms.getForm(form, format, function(err, body, headers) {
     if (err) {
-      return serverUtils.serverError(err, req, res);
+      return serverUtils.error(err, req, res);
     }
     if (headers) {
       res.writeHead(headers.statusCode || 200, headers);
