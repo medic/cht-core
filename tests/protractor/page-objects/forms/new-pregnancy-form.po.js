@@ -6,7 +6,7 @@ const getPatientNameDropDown = () => {
 
 module.exports = {
 
-  goNext: () => {
+  nextPage: () => {
     element(by.css('.btn btn-primary next-page')).click();
   },
 
