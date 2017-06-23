@@ -1,0 +1,58 @@
+<div ng-show="loading || upgrading">
+  <div class="loader"></div>
+  <p class="status" ng-show="upgrading">Upgrading…</p>
+</div>
+
+<div ng-show="error">
+  <p class="error">{{error}}</p>
+</div>
+
+<div ng-hide="loading || upgrading">
+
+  <div>
+    <h1>Current version</h1>
+    <p ng-hide="deployInfo">(details unavailable)</p>
+    <table ng-show="deployInfo">
+      <tr>
+        <td>Version</td>
+        <td>{{deployInfo.version}}</td>
+      </tr>
+      <tr>
+        <td>Deployed by</td>
+        <td>{{deployInfo.user}}</td>
+      </tr>
+      <tr>
+        <td>At</td>
+        <td>{{deployInfo.timestamp}}</td>
+      </tr>
+    </table>
+  </div>
+
+  <div>
+    <h1>Releases</h1>
+    <p ng-hide="versions.tags.length">No new releases available.</p>
+    <table ng-show="versions.tags.length">
+      <tr ng-repeat="v in versions.tags">
+        <td>{{v}}</td>
+        <td><button ng-click="upgrade(v)">Upgrade</button></td>
+      </tr>
+    </table>
+  </div>
+
+  <div>
+    <h1>Branches</h1>
+
+    <p ng-hide="allowBranches">Upgrade to non-release builds is not permitted on production systems.</p>
+
+    <div ng-show="allowBranches">
+      <p ng-hide="versions.branches.length">No build branches available.</p>
+      <table ng-show="versions.branches.length">
+        <tr ng-repeat="v in versions.branches">
+          <td>{{v}}</td>
+          <td><button ng-click="upgrade(v)">Upgrade</button></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+</div>

@@ -30,6 +30,7 @@
   require('./configuration-translation-application');
   require('./configuration-translation-languages');
   require('./configuration-translation-messages');
+  require('./configuration-upgrade');
   require('./configuration-user');
   require('./configuration-users');
   require('./contacts');

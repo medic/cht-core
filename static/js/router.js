@@ -274,6 +274,15 @@
           }
         }
       })
+      .state('configuration.upgrade', {
+        url: '/upgrade',
+        views: {
+          content: {
+            controller: 'ConfigurationUpgradeCtrl',
+            templateUrl: 'templates/partials/configuration_upgrade.html'
+          }
+        }
+      })
       .state('configuration.user', {
         url: '/user',
         views: {
