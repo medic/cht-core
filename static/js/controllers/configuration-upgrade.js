@@ -55,6 +55,7 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
       });
 
     $scope.upgrade = function(version) {
+      $scope.error = false;
       $scope.upgrading = true;
 
       window.jQuery.ajax({
