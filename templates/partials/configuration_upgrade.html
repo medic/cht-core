@@ -12,7 +12,7 @@
   <div>
     <h1>Current version</h1>
     <p ng-hide="deployInfo">(details unavailable)</p>
-    <table ng-show="deployInfo">
+    <table ng-show="deployInfo" class="table table-striped">
       <tr>
         <td>Version</td>
         <td>{{deployInfo.version}}</td>
@@ -31,10 +31,10 @@
   <div>
     <h1>Releases</h1>
     <p ng-hide="versions.tags.length">No new releases available.</p>
-    <table ng-show="versions.tags.length">
+    <table ng-show="versions.tags.length" class="table table-striped">
       <tr ng-repeat="v in versions.tags">
         <td>{{v}}</td>
-        <td><button ng-click="upgrade(v)">Upgrade</button></td>
+        <td><a ng-click="upgrade(v)">Upgrade</a></td>
       </tr>
     </table>
   </div>
@@ -46,10 +46,10 @@
 
     <div ng-show="allowBranches">
       <p ng-hide="versions.branches.length">No build branches available.</p>
-      <table ng-show="versions.branches.length">
+      <table ng-show="versions.branches.length" class="table table-striped">
         <tr ng-repeat="v in versions.branches">
           <td>{{v}}</td>
-          <td><button ng-click="upgrade(v)">Upgrade</button></td>
+          <td><a ng-click="upgrade(v)">Upgrade</a></td>
         </tr>
       </table>
     </div>
