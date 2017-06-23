@@ -20,8 +20,7 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
 
         $scope.allowBranches = !window.location.href.match(/^https:\/\/[^.]+.app.medicmobile.org\//);
 
-//        return new PouchDB('https://staging.dev.medicmobile.org/_couch/builds')
-        return new PouchDB('http://admin:pass@localhost:5984/builds')
+        return new PouchDB('https://staging.dev.medicmobile.org/_couch/builds')
           .allDocs()
           .then(function(res) {
             $scope.versions.tags = [];
