@@ -1,4 +1,4 @@
-var PouchDB = require('pouchdb');
+var PouchDB = require('pouchdb-browser');
 
 angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
   function(
