@@ -56,7 +56,7 @@ var findUpdatedDdocs = function(settings, callback) {
 };
 
 var findUpdatedAppcache = function(ddoc, callback) {
-  var attachment = ddoc._attachments[APPCACHE_ATTACHMENT_NAME];
+  var attachment = ddoc._attachments && ddoc._attachments[APPCACHE_ATTACHMENT_NAME];
   var digest = attachment && attachment.digest;
   if (!digest) {
     return callback();
