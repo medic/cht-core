@@ -276,7 +276,7 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    var xmlToDocs = function(doc, formInternalId, record) {
+    var xmlToDocs = function(doc, record) {
 
       function mapOrAssignId(e, id) {
         if (!id) {
@@ -318,7 +318,7 @@ angular.module('inboxServices').service('Enketo',
         return docToStore;
       }).get();
 
-      return XmlForm(formInternalId)
+      return XmlForm(doc.form)
         .then(function(form) {
           return getFormAttachment(form.id);
         })
@@ -391,7 +391,7 @@ angular.module('inboxServices').service('Enketo',
           return create(formInternalId);
         })
         .then(function(doc) {
-          return xmlToDocs(doc, formInternalId, form.getDataStr());
+          return xmlToDocs(doc, form.getDataStr());
         })
         .then(saveDocs);
     };

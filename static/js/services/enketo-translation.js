@@ -273,7 +273,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
 
           if (repeatPaths.indexOf(updatedPath) !== -1) {
             if (!result[n.nodeName]) {
-              result[n.nodeName] = [ ];
+              result[n.nodeName] = [];
             }
             result[n.nodeName].push(value);
           } else {
@@ -312,12 +312,12 @@ angular.module('inboxServices').service('EnketoTranslation', [
       return repeats;
     };
 
-    self.reportRecordToJs = function(record, form) {
+    self.reportRecordToJs = function(record, formXml) {
       var root = $.parseXML(record).firstChild;
-      if (!form) {
+      if (!formXml) {
         return nodesToJs(root.childNodes);
       }
-      var repeatPaths = $(form)
+      var repeatPaths = $(formXml)
         .find('repeat[nodeset]')
         .map(function() {
           return $(this).attr('nodeset');

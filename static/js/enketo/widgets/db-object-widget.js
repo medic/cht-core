@@ -74,7 +74,7 @@ define( function( require, exports, module ) {
 
     var changeHandler = function() {
         var $this = $(this);
-        var selected = $(this).select2('data');
+        var selected = $this.select2('data');
         var doc = selected && selected[0] && selected[0].doc;
         if (doc) {
             var form = $this.closest('form.or');
