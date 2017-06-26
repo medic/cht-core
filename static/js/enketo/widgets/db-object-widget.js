@@ -40,43 +40,49 @@ define( function( require, exports, module ) {
     };
 
     function construct( element ) {
-        var $question = $( element );
+        // timeout needed to let setting the value complete before rendering
+        setTimeout(function() {
+            var $question = $( element );
 
-        var angularServices = angular.element(document.body).injector();
-        var Select2Search = angularServices.get('Select2Search');
+            var angularServices = angular.element(document.body).injector();
+            var Select2Search = angularServices.get('Select2Search');
 
-        var $textInput = $question.find('input');
-        var value = $textInput.val();
-        var disabled = $textInput.prop('readonly');
-        $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
-        $textInput = $question.find('select');
-        var preSelectedOption = $('<option></option>')
-                  .attr('value', value)
-                  .text(value);
-        $textInput.append(preSelectedOption);
+            var $textInput = $question.find('input');
 
-        var dbObjectType = $textInput.attr('data-type-xml');
+            var value = $textInput.val();
+            var disabled = $textInput.prop('readonly');
+            $textInput.replaceWith($textInput[0].outerHTML.replace(/^<input /, '<select ').replace(/<\/input>/, '</select>'));
+            $textInput = $question.find('select');
+            var preSelectedOption = $('<option></option>')
+                      .attr('value', value)
+                      .text(value);
+            $textInput.append(preSelectedOption);
 
-        if (!$question.hasClass('or-appearance-bind-id-only')) {
-            $textInput.on('change.dbobjectwidget', function() {
-                // TODO this should be $(this), not $textInput - probably not good to cache jQuery objects
-                var selected = $textInput.select2('data');
-                var doc = selected && selected[0] && selected[0].doc;
-                if (doc) {
-                    var form = $question.closest('form.or');
-                    var field = $question.find('select[name]').attr('name');
-                    var objectRoot = field.substring(0, field.lastIndexOf('/'));
-                    updateFields(form, doc, objectRoot, field);
-                }
+            var dbObjectType = $textInput.attr('data-type-xml');
+
+            if (!$question.hasClass('or-appearance-bind-id-only')) {
+                $textInput.on('change.dbobjectwidget', changeHandler);
+            }
+            Select2Search($textInput, dbObjectType, {
+                allowNew: $question.hasClass('or-appearance-allow-new')
+            }).then(function() {
+                // select2 doesn't understand readonly
+                $textInput.prop('disabled', disabled);
             });
-        }
-        Select2Search($textInput, dbObjectType, {
-            allowNew: $question.hasClass('or-appearance-allow-new')
-        }).then(function() {
-            // select2 doesn't understand readonly
-            $textInput.prop('disabled', disabled);
         });
     }
+
+    var changeHandler = function() {
+        var $this = $(this);
+        var selected = $this.select2('data');
+        var doc = selected && selected[0] && selected[0].doc;
+        if (doc) {
+            var form = $this.closest('form.or');
+            var field = $this.attr('name');
+            var objectRoot = field.substring(0, field.lastIndexOf('/'));
+            updateFields(form, doc, objectRoot, field);
+        }
+    };
 
     var updateFields = function(form, doc, objectRoot, keyPath) {
         Object.keys(doc).forEach(function(key) {
