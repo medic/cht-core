@@ -1,8 +1,7 @@
 var path = require('path'),
     url = require('url'),
     nano = require('nano'),
-    request = require('request'),
-    async = require('async');
+    request = require('request');
 
 var couchUrl = process.env.COUCH_URL;
 var luceneUrl = process.env.LUCENE_URL;
@@ -117,42 +116,6 @@ if (couchUrl) {
   };
 
   module.exports.sanitizeResponse = sanitizeResponse;
-
-  const runBatch = (query, iteratee, batchSize, skip, callback) => {
-    query(skip, (err, response) => {
-      if (err) {
-        return callback(err);
-      }
-      console.log(`        Processing doc ${skip}`);
-      iteratee(response, err => {
-        // keep going if at least one row was found last time
-        callback(err, !!response.rows.length);
-      });
-    });
-  };
-
-  /**
-   * Run an operation over all documents returned from the query in batches.
-   *
-   * query function     Called with a skip number and a callback to
-   *                    invoke with the next batch.
-   * iteratee function  Called with the query response and a callback to
-   *                    invoke when rows have been processed and persisted.
-   * batchSize int      The size each batch should be.
-   * callback function  Called when no more rows are returned from the
-   *                    query function.
-   */
-  module.exports.batch = (query, iteratee, batchSize, callback) => {
-    let skip = 0;
-    async.doWhilst(
-      callback => runBatch(query, iteratee, batchSize, skip, callback),
-      keepGoing => {
-        skip += batchSize;
-        return keepGoing;
-      },
-      callback
-    );
-  };
 } else if (process.env.UNIT_TEST_ENV) {
   // Running tests only
   module.exports = {
