@@ -167,12 +167,17 @@
       };
 
       var getUserUpdates = function() {
-        return {
+        var updates = {
           name: $scope.editUserModel.name,
-          password: $scope.editUserModel.password,
           roles: getRoles($scope.editUserModel.type),
           facility_id: $('#edit-user-profile [name=facility]').val()
         };
+
+        if ($scope.editUserModel.password) {
+          updates.password = $scope.editUserModel.password;
+        }
+
+        return updates;
       };
 
       var computeFields = function() {

@@ -300,6 +300,29 @@ describe('EditUserCtrl controller', function() {
       chai.expect(scope.errors).not.to.have.property('password');
     });
 
+    it('should not change password when none is supplied', function(done) {
+      // given
+      UpdateUser.returns(KarmaUtils.mockPromise());
+      mockEditAUser(userToEdit);
+      mockContact(userToEdit.contact_id);
+      mockFacility(userToEdit.facility_id);
+      scope.editUserModel.password = '';
+      scope.editUserModel.passwordConfirm = '';
+
+      // when
+      scope.editUser();
+
+      // then
+      setTimeout(function() {
+        chai.expect(UpdateUser.called).to.equal(true);
+
+        var userUpdates = UpdateUser.getCall(0).args[2];
+        chai.expect(userUpdates).not.to.have.property('password');
+
+        done();
+      });
+    });
+
     it('must have associated place if user type is restricted user', function() {
       mockEditAUser(userToEdit);
       scope.editUserModel.type = 'district-manager';
@@ -356,6 +379,8 @@ describe('EditUserCtrl controller', function() {
       mockEditAUser(userToEdit);
       mockContact(userToEdit.contact_id);
       mockFacility(userToEdit.facility_id);
+      scope.editUserModel.password = 'new password';
+      scope.editUserModel.passwordConfirm = 'new password';
 
       scope.editUser();
 
