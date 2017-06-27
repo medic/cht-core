@@ -1,8 +1,7 @@
 const helper = require('../../helper'),
   deliveryReport = require('../../page-objects/forms/delivery-report.po.js'),
-  common = require('../../page-objects/common/common.po.js'),
-  utils=require('../../utils');
-
+  common = require('../../page-objects/common/common.po.js');
+  
 describe('Submit Delivery Report', () => {
 
   const contactId = '3b3d50d275280d2568cd36281d00348b';
@@ -69,10 +68,8 @@ describe('Submit Delivery Report', () => {
   });
 
   it('open delivery form', () => {
-utils.takeScreenshot('screen1');
-    common.goToReports();
+     common.goToReports();
     // refresh - live list only updates on changes but changes are disabled for e2e
-    utils.takeScreenshot('screen2');
     browser.driver.navigate().refresh();
     browser.wait(() => {
       return element(by.css('.action-container .general-actions .fa-plus')).isPresent();

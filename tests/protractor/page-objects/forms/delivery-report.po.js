@@ -1097,7 +1097,7 @@ const deleteReport = () => element(by.css('li.read.selected'))
   .then(docId => utils.deleteDoc(docId));
 
 module.exports = {
-  configureForm: done => {
+  configureForm: (done) => {
     saveDocs(done, docs);
   },
 
