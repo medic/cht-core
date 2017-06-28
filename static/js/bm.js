@@ -1,3 +1,4 @@
+// jshint ignore: start
 // File added locally until moment.js releases with Bambara.
 // https://github.com/medic/medic-webapp/issues/3588
 
