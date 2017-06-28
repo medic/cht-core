@@ -8,6 +8,7 @@ var async = require('async'),
     BACKUP_TYPE = 'translations-backup';
 
 var LOCAL_NAME_MAP = {
+  bm: 'Bamanankan (Bambara)',
   en: 'English',
   es: 'Español (Spanish)',
   fr: 'Français (French)',
