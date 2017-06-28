@@ -23,6 +23,7 @@ require('angular-ui-bootstrap');
 require('angular-ui-router');
 
 require('moment');
+require('./bm'); // local copy until moment.js releases Bambara https://github.com/medic/medic-webapp/issues/3588
 require('moment/locale/es');
 require('moment/locale/fr');
 require('moment/locale/hi');
