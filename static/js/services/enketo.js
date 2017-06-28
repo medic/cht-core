@@ -159,7 +159,61 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
-    var renderFromXmls = function(doc, selector, instanceData, contact) {
+    var json2xml = function(json) {
+      if(typeof json === 'object') {
+        var xml = '';
+        Object.keys(json).forEach(function(k) {
+          var val = json[k];
+          if(val || val === 0) {
+            xml += '<' + k + '>' + json2xml(val) + '</' + k + '>';
+          } else {
+            xml += '<' + k + '/>';
+          }
+        });
+        return xml;
+      } else if(json || json === 0) {
+        return json.toString();
+      } else {
+        return '';
+      }
+    };
+
+    var getContactSummary = function(instanceData) {
+      var contact = instanceData && instanceData.contact;
+      if (!contact) {
+        return $q.resolve();
+      }
+      return ContactSummary(contact).then(function(summary) {
+        if (!summary) {
+          return;
+        }
+        return {
+          id: 'contact-summary',
+          xmlStr: json2xml(summary),
+        };
+      });
+    };
+
+    var getEnketoOptions = function(doc, instanceData) {
+      return $q.all([
+        EnketoPrepopulationData(doc.model, instanceData),
+        getContactSummary(instanceData)
+      ])
+        .then(function(results) {
+          var instanceStr = results[0];
+          var contactSummary = results[1];
+          var options = {
+            modelStr: doc.model,
+            instanceStr: instanceStr
+          };
+          if (contactSummary) {
+            options.external = [ contactSummary ];
+          }
+          return options;
+        });
+    };
+
+    var renderFromXmls = function(doc, selector, instanceData) {
       var wrapper = $(selector);
       wrapper.find('.form-footer')
              .addClass('end')
@@ -169,34 +223,22 @@ angular.module('inboxServices').service('Enketo',
       var formContainer = wrapper.find('.container').first();
       formContainer.html(doc.html);
 
-      return EnketoPrepopulationData(doc.model, instanceData)
-        .then(function(instanceStr) {
-          var data = {
-            modelStr: doc.model,
-            instanceStr: instanceStr
-          };
+      return getEnketoOptions(doc, instanceData).then(function(options) {
+        var form = new EnketoForm(wrapper.find('form').first(), options);
+        var loadErrors = form.init();
+        if (loadErrors && loadErrors.length) {
+          return $q.reject(new Error(JSON.stringify(loadErrors)));
+        }
+        wrapper.show();
 
-          return (contact ? ContactSummary(contact) : $q.resolve())
-            .then(function(contactSummary) {
-              addExternalData(data, 'contact-summary', { contact:contactSummary });
-            })
-            .then(function() {
-              var form = new EnketoForm(wrapper.find('form').first(), data);
-              var loadErrors = form.init();
-              if (loadErrors && loadErrors.length) {
-                return $q.reject(new Error(JSON.stringify(loadErrors)));
-              }
-              wrapper.show();
+        wrapper.find('input').on('keydown', handleKeypressOnInputField);
 
-              wrapper.find('input').on('keydown', handleKeypressOnInputField);
+        // handle page turning using browser history
+        window.history.replaceState({ enketo_page_number: 0 }, '');
+        overrideNavigationButtons(form, wrapper);
+        addPopStateHandler(form, wrapper);
 
-              // handle page turning using browser history
-              window.history.replaceState({ enketo_page_number: 0 }, '');
-              overrideNavigationButtons(form, wrapper);
-              addPopStateHandler(form, wrapper);
-
-              return form;
-            });
+        return form;
       });
     };
 
@@ -242,7 +284,7 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
-    var renderForm = function(selector, id, instanceData, editedListener, contact) {
+    var renderForm = function(selector, id, instanceData, editedListener) {
       return Language()
         .then(function(language) {
           return withForm(id, language);
@@ -254,28 +296,28 @@ angular.module('inboxServices').service('Enketo',
             model: doc.model,
           };
           replaceJavarosaMediaWithLoaders(id, doc.html);
-          var form = renderFromXmls(doc, selector, instanceData, contact);
+          var form = renderFromXmls(doc, selector, instanceData);
           registerEditedListener(selector, editedListener);
           return form;
         });
     };
 
-    this.render = function(selector, id, instanceData, editedListener, contact) {
+    this.render = function(selector, id, instanceData, editedListener) {
       return getUserContact().then(function() {
-        return renderForm(selector, id, instanceData, editedListener, contact);
+        return renderForm(selector, id, instanceData, editedListener);
       });
     };
 
     this.renderContactForm = renderForm;
 
-    this.renderFromXmlString = function(selector, xmlString, instanceData, editedListener, contact) {
+    this.renderFromXmlString = function(selector, xmlString, instanceData, editedListener) {
       return Language()
         .then(function(language) {
           return translateXml(xmlString, language);
         })
         .then(transformXml)
         .then(function(doc) {
-          var form = renderFromXmls(doc, selector, instanceData, contact);
+          var form = renderFromXmls(doc, selector, instanceData);
           registerEditedListener(selector, editedListener);
           return form;
         });
@@ -431,37 +473,3 @@ angular.module('inboxServices').service('Enketo',
     };
   }
 );
-
-function addExternalData(enketoFormData, id, value) {
-  if (!value) {
-    return;
-  }
-
-  if (!enketoFormData.external) {
-    enketoFormData.external = [];
-  }
-
-  enketoFormData.external.push({
-    id: id,
-    xmlStr: json2xml(value),
-  });
-}
-
-function json2xml(json) {
-  if(typeof json === 'object') {
-    var xml = '';
-    Object.keys(json).forEach(function(k) {
-      var val = json[k];
-      if(val || val === 0) {
-        xml += '<' + k + '>' + json2xml(val) + '</' + k + '>';
-      } else {
-        xml += '<' + k + '/>';
-      }
-    });
-    return xml;
-  } else if(json || json === 0) {
-    return json.toString();
-  } else {
-    return '';
-  }
-}
