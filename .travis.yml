@@ -30,6 +30,8 @@ before_install:
     elif [ "$COUCH_VERSION" = 1 ]; then
       # because we're on a java project we don't get CouchDB1.x for free
       sudo apt-get install -y couchdb
+      # though sometimes we may do, so make sure it's running
+      sudo service couchdb start
       until nc -z localhost 5984; do sleep 1; done
       echo "Starting CouchDB 1.x started"
     fi
