@@ -113,10 +113,9 @@ describe('Auditing', function() {
     flow.execute(function() {
       return utils.getAuditDoc(savedUuid);
     }).then(function(doc) {
-      expect(doc.history.length).toEqual(2);
-      expect(doc.history[1].action).toEqual('delete');
-      expect(doc.history[1].user).toEqual(auth.user);
-      expect(doc.history[1].doc._deleted).toEqual(true);
+      expect(doc.history.length).toEqual(1);
+      expect(doc.history[0].user).toEqual(auth.user);
+      expect(doc.history[0].doc._deleted).toEqual(true);
     }, function(err) {
       console.error('Error fetching audit doc', err);
       expect(true).toEqual(false);

@@ -7,68 +7,39 @@ _TBC_
 ### Migration notes
 
 - [#2635](https://github.com/medic/medic-webapp/issues/2635) changes the context available to the configured contact summary script. The `contact` parameter no longer has information about parents. This information is now in an array called `lineage`. More information is available in the [configuration documentation](https://github.com/medic/medic-docs/blob/master/configuration/contact-summary.md).
+- [#3546](https://github.com/medic/medic-webapp/issues/3546) changes the implementation of the `contact_summary` so instead of declaring the output on the last line of the script, now you have to return the output. Usually this is as easy as adding a return on the last line, so `output;` becomes `return output;`. More information is available in the [configuration documentation](https://github.com/medic/medic-docs/blob/master/configuration/contact-summary.md).
 
 ## 2.12.0
 
-_June 10, 2017_
+_June 20, 2017_
 
 ### Features
 
-- Add sync status indicator for offline users (mobile and web). Issue: #3357
-- Difficult to specify and maintain which form fields to hide. Issue: #3261
-- Add gateway message delivery statuses . Issue: #3073
-- Enable registration of a person from a report/action form. Issue: #2912
-- support `external_id` property on user-settings docs. Issue: #2310
-- add a "created_date" property to records. (aka "replication_date"). Issue: #2180
-- Add a privacy policy. Issue: #1648
-- Post-deployment change control and/or versioning for forms. Issue: #1329
-- Reporting Rates for Daily Reports. Issue: #1029
-- Prevent duplicates for Daily reports. Issue: #1028
-- Ability to "mark all read". Issue: #682
+- Add sync status indicator for offline users. Issue: #3357
+- Add gateway message delivery statuses. Issue: #3073
+- Add a replication_date property to records. Issue: #2180
+- Change patient id generation to store the length of id it's generating. Issues: #3505
+- Allow form upload through Form Configuration UI. Issue: #3433
 
 ### Bug fixes
 
 - On small screen, cannot re-open date filter in history tab. Issue: #3467
 - Debug section of the About screen has some weird extra text. Issue: #3463
-- There is no warning when HBB is used to exit a form. Issue: #3462
 - Medic Gateway runs into document update conflicts while trying to upload sms status. Issue: #3443
-- Config tab missing when screen gets too small. Issue: #3442
-- Stop maintain_info_doc transition from writing sentinel metadata. Issue: #3424
-- Doc for gateway<->api SMS protocol is wrong. Issue: #3407
+- Stop `maintain_info_doc` transition from writing sentinel metadata. Issue: #3424
 - Webapp does not supply XML forms (XForms) to Collect. Issue: #3390
-- namespace-form-fields migration causing Express toString fail. Issue: #3371
-- can_logout permission no longer works as expected. Issue: #3358
 - Cannot render form in Firefox. Issue: #3354
 - False positive error uploading translations. Issue: #3350
-- API Uncaught Exception: Can't render headers after they are sent to the client. Issue: #3340
-- V2 Schedules Configuration: "recipient": "parent" doesn't work. Issue: #3253
-- No permissions available for configuration on first run. Issue: #3251
 - Exporting server logs fails with api 500. Issue: #3209
 - AWS EC2 AMI Regression: Does not currently boot. Issue: #3173
 - Form exits on Refresh/Reload in Tasks tab. Issue: #3090
-- Bullet displayed incorrectly. Issue: #3020
-- Remove nested contacts. Issue: #2635
-- medic-api weird behavior?. Issue: #2273
-- [pouch] contact names with accented letters do not turn up in non-accented searches. Issue: #1474
-- [medic-android]  security/permission exception when saving url. Issue: #1436
-- Medic OS: Broken nginx redirect if using non-TLS HTTP/1.0. Issue: #1115
-- facility reference code fails to match when using integers and textforms. Issue: #1058
-- parse fields regardless of locale when using textforms. Issue: #351
+- Facility reference code fails to match when using integers and textforms. Issue: #1058
 
 ### UI/UX improvements
 
+- Bullet displayed incorrectly. Issue: #3020
 - File chooser for importing translations should filter for .properties files. Issue: #3474
 - Show loading progress when app is starting. Issue: #3384
-- Improve Android back button flow to account for deeper navigation in the person & places tab. Issue: #2820
-- First-run setup modals would be better as pages. Issue: #2254
-- Confusion between family page and person page. Issue: #2023
-- Redesign the Configuration>Schedule (=tasks) page for SMS+android. Issue: #1784
-
-### Performance improvements
-
-- Compress form-content. Issue: #2882
-- Store the doc transition status in a separate doc. Issue: #2569
-- See if we can cancel an existing search if search terms change. Issue: #2321
 
 ## 2.11.3
 

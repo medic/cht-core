@@ -1,0 +1,46 @@
+<form id="forms-upload-json">
+  <legend translate>Upload Forms</legend>
+
+  <div class="form-actions">
+    <a class="btn btn-primary choose" ng-disabled="status.uploading">
+      <i class="fa fa-arrow-up"></i>
+      <span translate>Import</span>
+    </a>
+    <div class="error" ng-show="status.error" translate>Upload failed</div>
+    <div class="loader" ng-show="status.uploading"></div>
+    <span class="help-block" translate>upload.json.forms.help</span>
+    <div class="hide">
+      <input class="uploader" type="file" accept="application/json">
+    </div>
+  </div>
+</form>
+
+<div class="section">
+  <fieldset>
+    <legend translate>Installed Forms</legend>
+    <ul>
+      <li ng-repeat="form in forms" class="row">
+        <div class="col-sm-1" ng-bind-html="form.meta.icon | resourceIcon"></div>
+        <div class="col-sm-1">{{form.meta.code}}</div>
+        <div class="col-sm-10">{{form.meta.label | translateFrom}}</div>
+      </li>
+    </ul>
+    <a class="btn btn-primary" ng-attr-download="{{download.name}}" ng-href="{{download.url}}">
+      <i class="fa fa-arrow-down"></i>
+      <span translate>Download</span>
+    </a>
+  </fieldset>
+</div>
+
+<form class="section">
+  <div>
+    <fieldset>
+      <legend translate>reporter.section.title</legend>
+      <p translate>reporter.section.help</p>
+      <a class="btn btn-link" href="/medic-reporter/_design/medic-reporter/_rewrite/">
+        <i class="fa fa-external-link"></i>
+        <span translate>reporter.link</span>
+      </a>
+    </fieldset>
+  </div>
+</form>

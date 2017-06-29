@@ -59,7 +59,8 @@ describe('Enketo service', function() {
       },
       AddAttachment = sinon.stub(),
       EnketoForm = sinon.stub(),
-      EnketoPrepopulationData = sinon.stub();
+      EnketoPrepopulationData = sinon.stub(),
+      XmlForm = sinon.stub();
 
   beforeEach(function() {
     module('inboxApp');
@@ -68,6 +69,8 @@ describe('Enketo service', function() {
     EnketoForm.returns({
       init: enketoInit
     });
+
+    XmlForm.returns(KarmaUtils.mockPromise(null, { id: 'abc' }));
 
     module(function($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({
@@ -88,6 +91,7 @@ describe('Enketo service', function() {
       $provide.value('TranslateFrom', TranslateFrom);
       $provide.value('EnketoPrepopulationData', EnketoPrepopulationData);
       $provide.value('AddAttachment', AddAttachment);
+      $provide.value('XmlForm', XmlForm);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
     inject(function(_Enketo_) {
@@ -352,6 +356,7 @@ describe('Enketo service', function() {
       var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
       form.getDataStr.returns(content);
       dbPut.returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
+      dbGetAttachment.returns(KarmaUtils.mockPromise(null, '<form/>'));
       UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
       UserSettings.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
       return service.save('V', form).then(function(actual) {
@@ -370,8 +375,8 @@ describe('Enketo service', function() {
         chai.expect(actual.content_type).to.equal('xml');
         chai.expect(actual.contact._id).to.equal('123');
         chai.expect(actual.from).to.equal('555');
-        chai.expect(actual.read.length).to.equal(1);
-        chai.expect(actual.read[0]).to.equal('Jim');
+        chai.expect(dbGetAttachment.callCount).to.equal(1);
+        chai.expect(dbGetAttachment.args[0][0]).to.equal('abc');
         chai.expect(AddAttachment.callCount).to.equal(1);
         chai.expect(AddAttachment.args[0][0]._id).to.equal(actual._id);
         chai.expect(AddAttachment.args[0][1]).to.equal('content');
@@ -383,13 +388,14 @@ describe('Enketo service', function() {
     it('creates report with hidden fields', function() {
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content =
-        '<doc>' +
-          '<name>Sally</name>' +
-          '<lmp>10</lmp>' +
-          '<secret_code_name tag="hidden">S4L</secret_code_name>' +
-        '</doc>';
+        `<doc>
+          <name>Sally</name>
+          <lmp>10</lmp>
+          <secret_code_name tag="hidden">S4L</secret_code_name>
+        </doc>`;
       form.getDataStr.returns(content);
       dbPut.returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
+      dbGetAttachment.returns(KarmaUtils.mockPromise(null, '<form/>'));
       UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
       return service.save('V', form).then(function(actual) {
         actual = actual[0];
@@ -427,6 +433,7 @@ describe('Enketo service', function() {
         reported_date: 500,
       }));
       dbPut.returns(KarmaUtils.mockPromise(null, { id: '6', rev: '2-abc' }));
+      dbGetAttachment.returns(KarmaUtils.mockPromise(null, '<form/>'));
       return service.save('V', form, '6').then(function(actual) {
         actual = actual[0];
 
@@ -473,6 +480,7 @@ describe('Enketo service', function() {
       dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
       dbPut.onCall(1).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-def' }));
       dbPut.onCall(2).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-ghi' }));
+      dbGetAttachment.returns(KarmaUtils.mockPromise(null, '<form/>'));
       UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
       return service.save('V', form).then(function(actual) {
         chai.expect(form.validate.callCount).to.equal(1);
@@ -543,6 +551,7 @@ describe('Enketo service', function() {
       dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
       dbPut.onCall(1).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-def' }));
       dbPut.onCall(2).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-ghi' }));
+      dbGetAttachment.returns(KarmaUtils.mockPromise(null, '<form/>'));
       UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
       return service.save('V', form).then(function(actual) {
         chai.expect(form.validate.callCount).to.equal(1);
@@ -624,6 +633,7 @@ describe('Enketo service', function() {
       dbPut.onCall(1).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-xxx' }));
       dbPut.onCall(2).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '2-xxx' }));
       dbPut.onCall(3).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '3-xxx' }));
+      dbGetAttachment.returns(KarmaUtils.mockPromise(null, '<form/>'));
       UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
       return service.save('V', form).then(function(actual) {
         chai.expect(form.validate.callCount).to.equal(1);

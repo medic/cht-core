@@ -1,4 +1,4 @@
-<li class="{{isRead(report) ? 'read' : ''}}" data-record-id="{{report._id}}">
+<li class="{{report.read ? 'read' : ''}}" data-record-id="{{report._id}}">
   <a class="item-summary message-wrapper" href="#reports/{{report._id}}">
     <input type="checkbox">
     <span class="icon">{{report | formIcon:forms}}</span>
@@ -12,7 +12,7 @@
           <span class="name">{{report.contact || report.from}}</span>
           <span class="phone">{{report.phone}}</span>
         </div>
-        <div class="position">{{report.lineage | clinic}}</div>
+        <div class="position">{{report.lineage | lineage}}</div>
       </div>
       <div class="description">{{report | summary:forms}}</div>
     </div>

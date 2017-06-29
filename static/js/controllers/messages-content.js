@@ -40,8 +40,9 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     var markAllRead = function() {
       var docs = _.pluck($scope.selected.messages, 'doc');
       if (docs.length) {
+        $scope.markConversationRead(docs);
         MarkRead(docs)
-          .then($scope.updateReadStatus)
+          .then($scope.updateUnreadCount)
           .catch(function(err) {
             return $log.error('Error marking all as read', err);
           });
@@ -76,7 +77,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
           $scope.setLoadingContent(false);
           $scope.error = false;
           var unread = _.filter(conversation, function(message) {
-            return !$scope.isRead(message.doc);
+            return !message.read;
           });
           $scope.firstUnread = _.min(unread, function(message) {
             return message.doc.reported_date;

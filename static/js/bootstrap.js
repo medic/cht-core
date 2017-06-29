@@ -37,7 +37,7 @@ var utils = require('kujua-utils');
   };
 
   var initialReplication = function(localDb, remoteDb, username) {
-    $('.bootstrap-layer .status').text('Fetching docs…');
+    $('.bootstrap-layer .status').text('Loading app…');
     var dbSyncStartTime = Date.now();
     var dbSyncStartData = getDataUsage();
     var replicator = localDb.replicate
@@ -52,7 +52,7 @@ var utils = require('kujua-utils');
     replicator
       .on('change', function(info) {
         console.log('initialReplication()', 'change', info);
-        $('.bootstrap-layer .status').text(info.docs_read + ' docs…');
+        $('.bootstrap-layer .status').text('Fetching info (' + info.docs_read + ' docs)…');
       });
 
     return replicator
@@ -97,7 +97,7 @@ var utils = require('kujua-utils');
         initialReplication(localDb, remoteDb, username)
           .then(function() {
             // replication complete - bootstrap angular
-            $('.bootstrap-layer .status').text('100%…');
+            $('.bootstrap-layer .status').text('Starting app…');
             callback();
           })
           .catch(function(err) {

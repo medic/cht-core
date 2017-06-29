@@ -76,18 +76,8 @@
       </dl>
     </div>
 
-    <div ng-hide="help_pages.length === 0">
-      <h3 translate>Help</h3>
-      <ul>
-        <li ng-repeat="page in help_pages">
-          <a ui-sref="help({ page: page.id })">{{page.title}}</a>
-        </li>
-      </ul>
-      <div class="loader" ng-show="help_loading"></div>
-    </div>
-
     <div>
-      <h3 translate>Debug</h3>
+      <h3 translate>debug.mode</h3>
       <p translate>debug.mode.description</p>
       <form>
         <label>

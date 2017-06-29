@@ -36,6 +36,7 @@ angular.module('inboxControllers').controller('MessagesCtrl',
         if (match) {
           if (!_.isEqual(updated.message, match.message)) {
             match.message = updated.message;
+            match.read = false;
           }
         } else {
           $scope.messages.push(updated);
@@ -65,6 +66,16 @@ angular.module('inboxControllers').controller('MessagesCtrl',
         options.messages = data;
         setMessages(options);
       });
+    };
+
+    $scope.markConversationRead = function(docs) {
+      var ids = _.pluck(docs, '_id');
+      var conversation = _.find($scope.messages, function(message) {
+        return ids.indexOf(message.id) !== -1;
+      });
+      if (conversation) {
+        conversation.read = true;
+      }
     };
 
     $scope.setSelected = function(doc) {

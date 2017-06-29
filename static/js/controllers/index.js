@@ -20,7 +20,8 @@
   require('./configuration-export-messages');
   require('./configuration-export-reports');
   require('./configuration-export-server-logs');
-  require('./configuration-forms');
+  require('./configuration-forms-json');
+  require('./configuration-forms-xml');
   require('./configuration-icons');
   require('./configuration-permissions');
   require('./configuration-settings-advanced');

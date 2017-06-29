@@ -162,17 +162,12 @@ echo "[$0] Upload response: $revResponse"
 rev=$(jq -r .rev <<< "$revResponse")
 check_rev
 
-# Upload a temp file with the title stripped
-sed '/<h:title>/d' "$XFORM_PATH" > "$XFORM_PATH.$$.tmp"
-
 echo "[$SELF] Uploading form xml: id: $ID, rev: $rev..."
 revResponse=$(curl -# -f -X PUT -H "Content-Type: text/xml" \
-    --data-binary "@${XFORM_PATH}.$$.tmp" \
+    --data-binary "@${XFORM_PATH}" \
     "${docUrl}/xml?rev=${rev}")
 echo "revResponse: $revResponse"
 rev=$(jq -r .rev <<< "$revResponse")
-
-rm "$XFORM_PATH.$$.tmp"
 
 while [ $# -gt 0 ]; do
     attachment="$1"

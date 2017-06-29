@@ -250,8 +250,10 @@ angular.module('inboxServices').service('EnketoTranslation', [
         .value();
     };
 
-    var nodesToJs = function(data) {
-      var fields = {};
+    var nodesToJs = function(data, repeatPaths, path) {
+      repeatPaths = repeatPaths || [];
+      path = path || '';
+      var result = {};
       withElements(data)
         .each(function(n) {
           var dbDocAttribute = n.attributes.getNamedItem('db-doc');
@@ -259,14 +261,26 @@ angular.module('inboxServices').service('EnketoTranslation', [
             return;
           }
 
+          var updatedPath = path + '/' + n.nodeName;
+          var value;
+
           var hasChildren = withElements(n.childNodes).size().value();
           if(hasChildren) {
-            fields[n.nodeName] = nodesToJs(n.childNodes);
+            value = nodesToJs(n.childNodes, repeatPaths, updatedPath);
           } else {
-            fields[n.nodeName] = n.textContent;
+            value = n.textContent;
+          }
+
+          if (repeatPaths.indexOf(updatedPath) !== -1) {
+            if (!result[n.nodeName]) {
+              result[n.nodeName] = [];
+            }
+            result[n.nodeName].push(value);
+          } else {
+            result[n.nodeName] = value;
           }
         });
-      return fields;
+      return result;
     };
 
     // TODO repeat-relevant may be unnecessary if https://github.com/enketo/enketo-core/issues/336 is resolved
@@ -298,9 +312,18 @@ angular.module('inboxServices').service('EnketoTranslation', [
       return repeats;
     };
 
-    self.reportRecordToJs = function(record) {
+    self.reportRecordToJs = function(record, formXml) {
       var root = $.parseXML(record).firstChild;
-      return nodesToJs(root.childNodes);
+      if (!formXml) {
+        return nodesToJs(root.childNodes);
+      }
+      var repeatPaths = $(formXml)
+        .find('repeat[nodeset]')
+        .map(function() {
+          return $(this).attr('nodeset');
+        })
+        .get();
+      return nodesToJs(root.childNodes, repeatPaths, '/' + root.nodeName);
     };
 
     /*

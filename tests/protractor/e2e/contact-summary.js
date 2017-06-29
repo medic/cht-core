@@ -4,50 +4,50 @@ describe('Contact summary info', function() {
 
   'use strict';
 
-  var SCRIPT =
-    'var cards = [];' +
-    'var context = {};' +
-    'var fields = [];' +
-    'if (contact.type === "person") {' +
-    '  fields = [' +
-    '    { label: "test.pid", value: contact.patient_id, width: 3 },' +
-    '    { label: "test.sex", value: contact.sex, width: 3 }' +
-    '  ];' +
-    '  var pregnancy;' +
-    '  var pregnancyDate;' +
-    '  reports.forEach(function(report) {' +
-    '    if (report.form === "P") {' +
-    '      var subsequentDeliveries = reports.filter(function(report2) {' +
-    '        return report2.form === "D" && report2.reported_date > report.reported_date;' +
-    '      });' +
-    '      if (subsequentDeliveries.length > 0) {' +
-    '        return;' +
-    '      }' +
-    '      var subsequentVisits = reports.filter(function(report2) {' +
-    '        return report2.form === "V" && report2.reported_date > report.reported_date;' +
-    '      });' +
-    '      context.pregnant = true;' +
-    '      if (!pregnancy || pregnancyDate < report.reported_date) {' +
-    '        pregnancyDate = report.reported_date;' +
-    '        pregnancy = {' +
-    '          label: "test.pregnancy",' +
-    '          fields: [' +
-    '            { label: "test.visits", value: subsequentVisits.length }' +
-    '          ]' +
-    '        };' +
-    '      }' +
-    '    }' +
-    '  });' +
-    '  if (pregnancy) {' +
-    '    cards.push(pregnancy);' +
-    '  }' +
-    '}' +
-    'var result = {' +
-    '  fields: fields,' +
-    '  cards: cards,' +
-    '  context: context' +
-    '};' +
-    'result;';
+  var SCRIPT = `
+    var cards = [];
+    var context = {};
+    var fields = [];
+    if (contact.type === "person") {
+      fields = [
+        { label: "test.pid", value: contact.patient_id, width: 3 },
+        { label: "test.sex", value: contact.sex, width: 3 }
+      ];
+      var pregnancy;
+      var pregnancyDate;
+      reports.forEach(function(report) {
+        if (report.form === "P") {
+          var subsequentDeliveries = reports.filter(function(report2) {
+            return report2.form === "D" && report2.reported_date > report.reported_date;
+          });
+          if (subsequentDeliveries.length > 0) {
+            return;
+          }
+          var subsequentVisits = reports.filter(function(report2) {
+            return report2.form === "V" && report2.reported_date > report.reported_date;
+          });
+          context.pregnant = true;
+          if (!pregnancy || pregnancyDate < report.reported_date) {
+            pregnancyDate = report.reported_date;
+            pregnancy = {
+              label: "test.pregnancy",
+              fields: [
+                { label: "test.visits", value: subsequentVisits.length }
+              ]
+            };
+          }
+        }
+      });
+      if (pregnancy) {
+        cards.push(pregnancy);
+      }
+    }
+    return {
+      fields: fields,
+      cards: cards,
+      context: context
+    };
+  `;
 
   // contacts
   var ALICE = {
