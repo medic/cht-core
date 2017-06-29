@@ -70,18 +70,17 @@ script:
   - cat nohup.out || true
 
 after_success:
-#  - python ./scripts/ci/travis_after_all.py
-#  - export $(cat .to_export_back)
-#  - |
-#      if [ "$BUILD_LEADER" = "YES" ]; then
-#        if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-#          echo "All jobs succeeded! Publishing..."
-#          bash ./scripts/ci/after_success.sh
-#        else
-#          echo "Some jobs failed. Not publishing."
-#        fi
-#      fi
-  - bash ./scripts/ci/after_success.sh
+ - python ./scripts/ci/travis_after_all.py
+ - export $(cat .to_export_back)
+ - |
+     if [ "$BUILD_LEADER" = "YES" ]; then
+       if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
+         echo "All jobs succeeded! Publishing..."
+         bash ./scripts/ci/after_success.sh
+       else
+         echo "Some jobs failed. Not publishing."
+       fi
+     fi
 
 after_failure:
   - |
