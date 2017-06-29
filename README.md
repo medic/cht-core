@@ -37,12 +37,20 @@ You will need to install the following:
 
 NB: multiple CouchDB nodes will be more complicated, but the general pattern outlined below will be the same.
 
+After installation and initial startup, visit Fauxton at
+[http://127.0.0.1:5984/_utils#setup](http://127.0.0.1:5984/_utils#setup) and
+finish setup for a single-node instance.  For more information see
+the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
+
+
 Setup admin access (note 5986 for single-node access):
+
 ```
 curl -X PUT http://localhost:5986/_config/admins/admin -d '"pass"'
 ```
 
 Reconfigure CouchDB to require authentication:
+
 ```
 # CouchDB 1.6
 curl -X PUT http://admin:pass@localhost:5986/_config/couch_httpd_auth/require_valid_user \
@@ -54,12 +62,14 @@ curl -X PUT http://admin:pass@localhost:5986/_config/chttpd/require_valid_user \
 ```
 
 The above command automatically modifies `local.ini` to contain:
+
 ```
 [couch_httpd_auth]
 require_valid_user = true
 ```
 
 Create an admin user:
+
 ```
 curl -X POST http://admin:pass@localhost:5984/_users \
   -H "Content-Type: application/json" \
