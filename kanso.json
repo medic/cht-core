@@ -428,7 +428,7 @@
                                 "rows": 3
                             },
                             "title": "Message",
-                            "description": "Text that will be sent out in the alert. You can refer to the latest report as countedReports[0], the previous counted report as countedReports[1], etc. E.g. \"Three patients with suspected cholera in 7 days, reported at {{countedReports[0].contact.parent.name}}. Reported by {{countedReports[0].contact.name}}, {{countedReports[1].contact.name}}, {{countedReports[2].contact.name}}.\""
+                            "description": "Text that will be sent out in the alert. You can refer to the latest report as countedReports.0 (not countedReports[0] as in usual javascript! This is specific to the templates we use.), the previous counted report as countedReports.1, etc. E.g. \"Three patients with suspected cholera in 7 days, reported at {{countedReports.0.contact.parent.name}}. Reported by {{countedReports.0.contact.name}}, {{countedReports.1.contact.name}}, {{countedReports.2.contact.name}}.\""
                         },
                         "recipients": {
                             "type": "array",
