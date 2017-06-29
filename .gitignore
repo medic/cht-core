@@ -19,4 +19,4 @@ logs
 
 *.sublime-project
 *.sublime-workspace
-screen.png
+/screenshots/

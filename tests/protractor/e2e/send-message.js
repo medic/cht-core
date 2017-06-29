@@ -1,5 +1,5 @@
 var utils = require('../utils'),
-  _ = require('underscore');
+   _ = require('underscore');
 
 describe('Send message', function() {
   'use strict';

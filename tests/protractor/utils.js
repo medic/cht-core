@@ -3,10 +3,9 @@ var _ = require('underscore'),
   constants = require('./constants'),
   http = require('http'),
   path = require('path'),
-  fs=require('fs');
+  fs = require('fs');
 
 var originalSettings = {};
-
 // The app_settings and update_settings modules are on the main ddoc.
 var mainDdocName = 'medic';
 
@@ -95,8 +94,12 @@ var revertSettingsForDdoc = function (ddocName) {
   });
 };
 
-const writeScreenShot=(data, filename)=> {
-  var stream = fs.createWriteStream(filename);
+const writeScreenShot=(data, filename)=>{
+  var directory='screenshots/';
+  if (!fs.existsSync(directory)){
+    fs.mkdirSync(directory);
+}
+  var stream = fs.createWriteStream(directory + filename);
   stream.write(new Buffer(data, 'base64'));
   stream.end();
 };
@@ -185,8 +188,8 @@ module.exports = {
 
   getLoginUrl: () =>
     `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login`,
-    takeScreenshot: function (filename) {
-    browser.takeScreenshot().then(function (png) {
+    takeScreenshot: filename=> {
+    browser.takeScreenshot().then(png => {
       writeScreenShot(png, filename);
     });
   }

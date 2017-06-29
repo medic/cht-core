@@ -1,7 +1,7 @@
 const helper = require('../../helper'),
   deliveryReport = require('../../page-objects/forms/delivery-report.po.js'),
   common = require('../../page-objects/common/common.po.js');
-  
+
 describe('Submit Delivery Report', () => {
 
   const contactId = '3b3d50d275280d2568cd36281d00348b';
@@ -60,7 +60,6 @@ describe('Submit Delivery Report', () => {
     browser.ignoreSynchronization = true;
     deliveryReport.saveDocs(done, docs);
     deliveryReport.configureForm(done);
-
   });
 
   afterEach(done => {
@@ -68,7 +67,7 @@ describe('Submit Delivery Report', () => {
   });
 
   it('open delivery form', () => {
-     common.goToReports();
+    common.goToReports();
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.driver.navigate().refresh();
     browser.wait(() => {
