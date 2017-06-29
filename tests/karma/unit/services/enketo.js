@@ -294,6 +294,46 @@ describe('Enketo service', function() {
         chai.expect(ContactSummary.args[0][0]._id).to.equal('fffff');
       });
     });
+
+    it('handles arrays and escaping characters', function() {
+      var data = '<data><patient_id>123</patient_id></data>';
+      UserContact.returns(KarmaUtils.mockPromise(null, {
+        _id: '456',
+        contact_id: '123',
+        facility_id: '789'
+      }));
+      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
+      dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
+      enketoInit.returns([]);
+      FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
+      EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, data));
+      transform
+        .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_FORM));
+      var instanceData = {
+        contact: {
+          _id: 'fffff'
+        },
+        inputs: {
+          patient_id: 123,
+          name: 'sharon'
+        }
+      };
+      ContactSummary.returns(Promise.resolve({
+        pregnant: true,
+        previousChildren: [ { dob: 2016 }, { dob: 2013 }, { dob: 2010 } ],
+        notes: `always <uses> reserved "characters" & 'words'`
+      }));
+      return service.render($('<div></div>'), 'ok', instanceData).then(function() {
+        chai.expect(EnketoForm.callCount).to.equal(1);
+        chai.expect(EnketoForm.args[0][1].external.length).to.equal(1);
+        var summary = EnketoForm.args[0][1].external[0];
+        chai.expect(summary.id).to.equal('contact-summary');
+        chai.expect(summary.xmlStr).to.equal('<pregnant>true</pregnant><previousChildren><dob>2016</dob><dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved &quot;characters&quot; &amp; \'words\'</notes>');
+        chai.expect(ContactSummary.callCount).to.equal(1);
+        chai.expect(ContactSummary.args[0][0]._id).to.equal('fffff');
+      });
+    });
   });
 
   describe('save', function() {

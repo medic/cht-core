@@ -1,5 +1,6 @@
-var uuid = require('uuid/v4');
-var xpathPath = require('../modules/xpath-element-path');
+var uuid = require('uuid/v4'),
+    json2xml = require('json2xml'),
+    xpathPath = require('../modules/xpath-element-path');
 
 /* globals EnketoForm */
 angular.module('inboxServices').service('Enketo',
@@ -156,25 +157,6 @@ angular.module('inboxServices').service('Enketo',
         next.trigger('click');
       } else {
         angular.element(enketoContainer.find('.btn.submit')).triggerHandler('click');
-      }
-    };
-
-    var json2xml = function(json) {
-      if(typeof json === 'object') {
-        var xml = '';
-        Object.keys(json).forEach(function(k) {
-          var val = json[k];
-          if(val || val === 0) {
-            xml += '<' + k + '>' + json2xml(val) + '</' + k + '>';
-          } else {
-            xml += '<' + k + '/>';
-          }
-        });
-        return xml;
-      } else if(json || json === 0) {
-        return json.toString();
-      } else {
-        return '';
       }
     };
 
