@@ -15,7 +15,7 @@ services:
 env:
   matrix:
   - NODE_VERSION=8 COUCH_VERSION=2
-#  - NODE_VERSION=6.10 COUCH_VERSION=1
+  - NODE_VERSION=6.10 COUCH_VERSION=1
   global:
   - COUCH_URL=http://admin:pass@localhost:5984/medic
   - API_URL=http://admin:pass@localhost:5988
@@ -30,6 +30,8 @@ before_install:
     elif [ "$COUCH_VERSION" = 1 ]; then
       # because we're on a java project we don't get CouchDB1.x for free
       sudo apt-get install -y couchdb
+      # though sometimes we may do, so make sure it's running
+      sudo service couchdb start
       until nc -z localhost 5984; do sleep 1; done
       echo "Starting CouchDB 1.x started"
     fi
@@ -68,18 +70,17 @@ script:
   - cat nohup.out || true
 
 after_success:
-#  - python ./scripts/ci/travis_after_all.py
-#  - export $(cat .to_export_back)
-#  - |
-#      if [ "$BUILD_LEADER" = "YES" ]; then
-#        if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-#          echo "All jobs succeeded! Publishing..."
-#          bash ./scripts/ci/after_success.sh
-#        else
-#          echo "Some jobs failed. Not publishing."
-#        fi
-#      fi
-  - bash ./scripts/ci/after_success.sh
+ - python ./scripts/ci/travis_after_all.py
+ - export $(cat .to_export_back)
+ - |
+     if [ "$BUILD_LEADER" = "YES" ]; then
+       if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
+         echo "All jobs succeeded! Publishing..."
+         bash ./scripts/ci/after_success.sh
+       else
+         echo "Some jobs failed. Not publishing."
+       fi
+     fi
 
 after_failure:
   - |
