@@ -395,6 +395,60 @@
                     }
                 }
             },
+            "multi_form_alerts": {
+                "title": "Multi-form Alerts",
+                "type": "array",
+                "description": "Send alert messages by SMS when specific conditions are received through reports. More flexible than simple Alerts. E.g. send SMS to the district manager when 3 CHWs within the same district report cholera or diarrhea symptoms within the last week.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "numReportsThreshold": {
+                            "type": "integer",
+                            "title": "Threshold in number of reports",
+                            "description": "Number of counted reports that will trigger the message sending. E.g. \"3\" (3 reports of either cholera or diarrhea)"
+                        },
+                        "timeWindowInDays": {
+                            "type": "integer",
+                            "title": "Time window for reports, in days",
+                            "description": "How far back through reports the transition should look when counting reports, in number of days. E.g. \"7\" (look for cholera or diarrhea reports in the 7 previous days)."
+                        },
+                        "isReportCounted": {
+                            "type": "string",
+                            "je:hint": "textarea",
+                            "je:textarea": {
+                                "rows": 10
+                            },
+                            "title": "isReportCounted test function",
+                            "description": "Javascript function to test recent reports to know whether they should be counted for the alert. It should take two (optional) arguments : the report from the time window being tested, and the latest report that triggered the transition. It should return true if the report should be counted. E.g. \"function(report, latestReport) { return (report.form === 'C' || report.form === 'D') && latestReport.contact.parent._id === report.contact.parent._id; }\" (report is about cholera or diarrhea, and its parent place is the same as the latest report.) Note that the latestReport will also be counted using this function."
+                        },
+                        "message": {
+                            "type": "string",
+                            "je:hint": "textarea",
+                            "je:textarea": {
+                                "rows": 3
+                            },
+                            "title": "Message",
+                            "description": "Text that will be sent out in the alert. You can refer to the latest report as countedReports[0], the previous counted report as countedReports[1], etc. E.g. \"Three patients with suspected cholera in 7 days, reported at {{countedReports[0].contact.parent.name}}. Reported by {{countedReports[0].contact.name}}, {{countedReports[1].contact.name}}, {{countedReports[2].contact.name}}.\""
+                        },
+                        "recipients": {
+                            "type": "array",
+                            "title": "Recipients for the alerts",
+                            "description": "The phone numbers to receive alerts. You can use international format phone numbers (e.g. \"+254777888999\") or an expression to fetch phone fields in the countedReports (e.g. \"countedReports[0].contact.parent.contact.phone\" for the Primary Contact of the parent place of the sender. E.g.2: \"countedReports.map((report) => report.contact.phone)\" for the senders of the countedReports.)",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "forms": {
+                            "type": "array",
+                            "title": "Forms",
+                            "description": "Optional. Only reports from these forms will be considered. E.g. \"C\" (cholera form)",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
             "reminders": {
                 "title": "Scheduled Report Reminders",
                 "type": "array",
