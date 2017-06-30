@@ -161,7 +161,7 @@ var _ = require('underscore'),
           $translate(title),
           getActionBarDataForChild(selectedDoc.type),
           getCanEdit(selectedDoc),
-          ContactSummary(selected.doc, selected.reports, selected.parents || [])
+          ContactSummary(selected.doc, selected.reports, selected.lineage)
         ])
           .then(function(results) {
             $scope.setTitle(results[0]);
@@ -188,6 +188,10 @@ var _ = require('underscore'),
                 canDelete: canDelete
               });
             });
+          })
+          .catch(function(e) {
+            $log.error('Error setting selected contact');
+            $log.error(e);
           });
       };
 
