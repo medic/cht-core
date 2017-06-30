@@ -310,22 +310,17 @@ module.exports = function(grunt) {
       unit: {
         configFile: './tests/karma/karma-unit.conf.js',
         singleRun: true,
-        browsers: ['Chrome']
-      },
-      headless: {
-        configFile: './tests/karma/karma-unit.conf.js',
-        singleRun: true,
-        browsers: ['Chrome_Beta_Headless']
+        browsers: ['Chrome_Headless']
       },
       unit_ci: {
         configFile: './tests/karma/karma-unit.conf.js',
         singleRun: true,
-        browsers: ['Firefox']
+        browsers: ['Chrome_Headless']
       },
       unit_continuous: {
         configFile: './tests/karma/karma-unit.conf.js',
         singleRun: false,
-        browsers: ['Chrome']
+        browsers: ['Chrome_Headless']
       }
     },
     protractor: {
@@ -484,16 +479,14 @@ module.exports = function(grunt) {
     'exec:test_api_integration',
   ]);
 
-  grunt.registerTask('unit', 'All "Unit" tests', [
+  grunt.registerTask('unit', 'Lint and unit tests', [
     'jshint',
-    'karma:headless',
+    'karma:unit',
     'nodeunit',
   ]);
 
   grunt.registerTask('test', 'Lint, unit tests, api_integration tests and e2e tests', [
-    'jshint',
-    'karma:unit',
-    'nodeunit',
+    'unit',
     'test_api_integration',
     'e2e'
   ]);
