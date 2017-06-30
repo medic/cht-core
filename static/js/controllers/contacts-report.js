@@ -1,9 +1,11 @@
 angular.module('inboxControllers').controller('ContactsReportCtrl',
   function (
     $log,
+    $q,
     $scope,
     $state,
     $translate,
+    ContactViewModelGenerator,
     DB,
     Enketo,
     Snackbar,
@@ -18,17 +20,25 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       $scope.enketoStatus.edited = true;
     };
 
-    var render = function(contact) {
-      $scope.setSelected({ doc: contact });
+    var setSelected = function(contact) {
       $scope.setCancelTarget(function() {
         $state.go('contacts.detail', { id: $state.params.id });
       });
-      var instanceData = {
-        source: 'contact',
-        contact: contact,
-      };
-      return XmlForm($state.params.formId, { include_docs: true })
-        .then(function(form) {
+      return ContactViewModelGenerator(contact._id)
+        .then($scope.setSelected);
+    };
+
+    var render = function(contact) {
+      return $q.all([
+        setSelected(contact),
+        XmlForm($state.params.formId, { include_docs: true })
+      ])
+        .then(function(results) {
+          var form = results[1];
+          var instanceData = {
+            source: 'contact',
+            contact: contact,
+          };
           $scope.enketoStatus.edited = false;
           return Enketo
             .render('#contact-report', form.id, instanceData, markFormEdited)

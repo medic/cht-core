@@ -17,6 +17,8 @@ angular.module('inboxServices').service('Enketo',
     ExtractLineage,
     FileReader,
     Language,
+    LineageModelGenerator,
+    Search,
     TranslateFrom,
     UserContact,
     UserSettings,
@@ -68,9 +70,12 @@ angular.module('inboxServices').service('Enketo',
           var $this = $(this);
           $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
         });
+        var model = $(results[1]);
+        var hasContactSummary = model.find('> instance[id="contact-summary"]').length === 1;
         return {
           html: html,
-          model: results[1]
+          model: results[1],
+          hasContactSummary: hasContactSummary
         };
       });
     };
@@ -111,7 +116,18 @@ angular.module('inboxServices').service('Enketo',
           })
           .then(transformXml);
       }
-      return xmlCache[id][language];
+      return $q.resolve()
+        .then(function() {
+          return xmlCache[id][language];
+        })
+        .then(function(doc) {
+          // clone doc to avoid leaking of data between instances of a form
+          return {
+            html: doc.html.clone(),
+            model: doc.model,
+            hasContactSummary: doc.hasContactSummary
+          };
+        });
     };
 
     var handleKeypressOnInputField = function(e) {
@@ -164,26 +180,49 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
-    var getContactSummary = function(instanceData) {
+    var getLineage = function(contact) {
+      return LineageModelGenerator.contact(contact._id)
+        .then(function(model) {
+          return model.lineage;
+        });
+    };
+
+    var getContactReports = function(contact) {
+      var subjectIds = [ contact._id ];
+      var shortCode = contact.patient_id || contact.place_id;
+      if (shortCode) {
+        subjectIds.push(shortCode);
+      }
+      return Search('reports', { subjectIds: subjectIds }, { include_docs: true });
+    };
+
+    var getContactSummary = function(doc, instanceData) {
       var contact = instanceData && instanceData.contact;
-      if (!contact) {
+      if (!doc.hasContactSummary || !contact) {
         return $q.resolve();
       }
-      return ContactSummary(contact).then(function(summary) {
-        if (!summary) {
-          return;
-        }
-        return {
-          id: 'contact-summary',
-          xmlStr: json2xml(summary),
-        };
-      });
+      return $q.all([
+        getContactReports(contact),
+        getLineage(contact)
+      ])
+        .then(function(results) {
+          return ContactSummary(contact, results[0], results[1]);
+        })
+        .then(function(summary) {
+          if (!summary) {
+            return;
+          }
+          return {
+            id: 'contact-summary',
+            xmlStr: json2xml({ context: summary.context })
+          };
+        });
     };
 
     var getEnketoOptions = function(doc, instanceData) {
       return $q.all([
         EnketoPrepopulationData(doc.model, instanceData),
-        getContactSummary(instanceData)
+        getContactSummary(doc, instanceData)
       ])
         .then(function(results) {
           var instanceStr = results[0];
@@ -276,11 +315,6 @@ angular.module('inboxServices').service('Enketo',
           return withForm(id, language);
         })
         .then(function(doc) {
-          // clone doc to avoid leaking of data between instances of a form
-          doc = {
-            html: doc.html.clone(),
-            model: doc.model,
-          };
           replaceJavarosaMediaWithLoaders(id, doc.html);
           var form = renderFromXmls(doc, selector, instanceData);
           registerEditedListener(selector, editedListener);
