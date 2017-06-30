@@ -52,7 +52,7 @@ angular.module('inboxServices').service('ContactSummary',
             return;
           }
           var fn = new Function('contact', 'reports', 'lineage', script); // jshint ignore:line
-          return fn(contact, reports, lineage);
+          return fn(contact, reports || [], lineage || []);
         })
         .then(applyFilters);
     };
