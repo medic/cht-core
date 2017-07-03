@@ -11,8 +11,8 @@ module.exports = function(config) {
     colors: true,
     browserNoActivityTimeout: 60000,
     customLaunchers: {
-      Chrome_Beta_Headless: {
-        base: 'ChromeCanary',
+      Chrome_Headless: {
+        base: 'Chrome',
         flags: ['--headless', '--disable-gpu', '--remote-debugging-port=9222']
       }
     },

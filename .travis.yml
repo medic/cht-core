@@ -7,6 +7,7 @@ jdk:
 
 addons:
   firefox: "45.0"
+  chrome: "stable"
 
 services:
   # docker is used for couchdb 2.0 (not currently available as a travis service)
