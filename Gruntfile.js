@@ -273,17 +273,17 @@ module.exports = function(grunt) {
       unit: {
         configFile: './tests/karma/karma-unit.conf.js',
         singleRun: true,
-        browsers: ['Chrome']
+        browsers: ['Chrome_Headless']
       },
       unit_ci: {
         configFile: './tests/karma/karma-unit.conf.js',
         singleRun: true,
-        browsers: ['Firefox']
+        browsers: ['Chrome_Headless']
       },
       unit_continuous: {
         configFile: './tests/karma/karma-unit.conf.js',
         singleRun: false,
-        browsers: ['Chrome']
+        browsers: ['Chrome_Headless']
       }
     },
     protractor: {
@@ -383,6 +383,45 @@ module.exports = function(grunt) {
     'appcache'
   ]);
 
+  // Test tasks
+  grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
+    'exec:deploytest',
+    'protractor:default'
+  ]);
+
+  grunt.registerTask('e2e-chrome', 'Deploy app for testing and run e2e tests on chrome', [
+    'exec:deploytest',
+    'protractor:chrome'
+  ]);
+
+  grunt.registerTask('api_e2e', 'Deploy app for testing and run e2e tests', [
+    'exec:deploytest',
+    'exec:test_api_e2e',
+  ]);
+
+  grunt.registerTask('unit_continuous', 'Lint, karma unit tests running on a loop', [
+    'jshint',
+    'karma:unit_continuous'
+  ]);
+
+  grunt.registerTask('test_api_integration', 'Integration tests for medic-api', [
+    'exec:test_api_integration_setup',
+    'exec:test_api_integration',
+  ]);
+
+  grunt.registerTask('unit', 'Lint and unit tests', [
+    'jshint',
+    'karma:unit',
+    'nodeunit',
+  ]);
+
+  grunt.registerTask('test', 'Lint, unit tests, api_integration tests and e2e tests', [
+    'unit',
+    'test_api_integration',
+    'e2e'
+  ]);
+
+  // CI tasks
   grunt.registerTask('minify', 'Minify JS and CSS', [
     'uglify',
     'cssmin'
