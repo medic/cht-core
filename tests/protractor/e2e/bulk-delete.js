@@ -73,11 +73,7 @@ describe('Bulk delete reports', function() {
       });
   });
 
-  afterEach(function(done) {
-    protractor.promise
-      .all(savedUuids.map(utils.deleteDoc))
-      .then(done, done);
-  });
+  afterEach(utils.afterEach);
 
   it('reports', function() {
     element(by.id('reports-tab')).click();

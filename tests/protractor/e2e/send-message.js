@@ -1,5 +1,4 @@
-var utils = require('../utils'),
-    _ = require('underscore');
+var utils = require('../utils');
 
 describe('Send message', function() {
   'use strict';
@@ -38,21 +37,12 @@ describe('Send message', function() {
 
   var CONTACTS = [ALICE, BOB_PLACE, CAROL, DAVID];
 
-  var savedUuids = [];
   beforeAll(function(done) {
     browser.ignoreSynchronization = true;
     protractor.promise
       .all(CONTACTS.map(utils.saveDoc))
-      .then(function(results) {
-        results.forEach(function(result) {
-          savedUuids.push(result.id);
-        });
-        done();
-      })
-      .catch(function(err) {
-        console.error('Error saving docs', err);
-        done();
-      });
+      .then(done)
+      .catch(done);
   });
 
   afterEach(function(done) {
@@ -60,21 +50,7 @@ describe('Send message', function() {
     done();
   });
 
-  afterAll(function(done) {
-    protractor.promise
-      .all(savedUuids.map(utils.deleteDoc))
-      .then(function() {
-        return utils.requestOnTestDb({
-          path: '/_design/medic/_view/tasks_messages',
-          method: 'GET'
-        });
-      })
-      .then(function(results) {
-        var ids = _.uniq(_.pluck(results.rows, 'id'));
-        return protractor.promise.all(ids.map(utils.deleteDoc));
-      })
-      .then(done);
-  });
+  afterAll(utils.afterEach);
 
   var messageInList = function(identifier) {
     return '#message-list li[data-record-id="'+identifier+'"]';
