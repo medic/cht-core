@@ -1,5 +1,5 @@
 var utils = require('../utils'),
-    _ = require('underscore');
+   _ = require('underscore');
 
 describe('Send message', function() {
   'use strict';
@@ -77,7 +77,7 @@ describe('Send message', function() {
   });
 
   var messageInList = function(identifier) {
-    return '#message-list li[data-record-id="'+identifier+'"]';
+    return '#message-list li[data-record-id="' + identifier + '"]';
   };
 
   var smsMsg = function(key) {
@@ -96,7 +96,7 @@ describe('Send message', function() {
   };
 
   var findSelect2Entry = function(selector, expectedValue) {
-    return element.all(by.css('.select2-results__option'+selector)).filter(function(item) {
+    return element.all(by.css('.select2-results__option' + selector)).filter(function(item) {
       return item.getText()
         .then(function(text) {
           return text === expectedValue;
@@ -114,13 +114,13 @@ describe('Send message', function() {
 
     browser.wait(function() {
       return protractor.promise.all([
-          findSelect2Entry(entrySelector, entryText).count().then(utils.countOf(1)),
-          element.all(by.css('.select2-results__option.loading-results')).count().then(utils.countOf(0)),
-          element.all(by.css('.select2-results__option')).count().then(utils.countOf(totalExpectedResults))
-        ]).then(function(results) {
-          // My kingdom for results.reduce(&&);
-          return results[0] && results[1] && results[2];
-        });
+        findSelect2Entry(entrySelector, entryText).count().then(utils.countOf(1)),
+        element.all(by.css('.select2-results__option.loading-results')).count().then(utils.countOf(0)),
+        element.all(by.css('.select2-results__option')).count().then(utils.countOf(totalExpectedResults))
+      ]).then(function(results) {
+        // My kingdom for results.reduce(&&);
+        return results[0] && results[1] && results[2];
+      });
     }, 10000);
 
     return findSelect2Entry(entrySelector, entryText).first();
@@ -204,6 +204,7 @@ describe('Send message', function() {
       enterCheckAndSelect(ALICE.name, 2, contactNameSelector, ALICE.name);
       element(by.css('#send-message textarea')).sendKeys(smsMsg('contact'));
       sendMessage();
+      utils.takeScreenshot('screen');
       clickLhsEntry(ALICE._id, ALICE.name);
 
       expect(element.all(by.css('#message-content li')).count()).toBe(1);
