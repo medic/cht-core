@@ -13,6 +13,14 @@ var form = process.argv[3];
 var patientId = process.argv[4];
 const startTimestamp = process.argv[5];
 
+if (!chwId || !form || !patientId || !startTimestamp) {
+  console.log('Usage:\nnode delete_what_bishwas_wants.js <chwId> ' +
+    '<form code> <patientId> <startTimestamp>\n');
+  console.log('startTimestamp is start of the time window. The end time is now. Unix timestamp in milliseconds since epoch.');
+  console.log('\nExample :\nnode delete_what_bishwas_wants.js 0e64a0b4566ca8eede14f6fe1fca7970 ग 12345 1498600800000');
+  process.exit();
+}
+
 const logdir = 'logs_' + new Date().getTime();
 var logfile = 'deletion.log';
 utils.setupLogging(logdir, logfile);
