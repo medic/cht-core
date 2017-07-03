@@ -59,22 +59,22 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var transformXml = function(doc) {
+    var transformXml = function(xml) {
       return $q.all([
-        XSLT.transform('openrosa2html5form.xsl', doc),
-        XSLT.transform('openrosa2xmlmodel.xsl', doc),
+        XSLT.transform('openrosa2html5form.xsl', xml),
+        XSLT.transform('openrosa2xmlmodel.xsl', xml)
       ])
       .then(function(results) {
-        var html = $(results[0]);
-        html.find('[data-i18n]').each(function() {
+        var $html = $(results[0]);
+        var model = results[1];
+        $html.find('[data-i18n]').each(function() {
           var $this = $(this);
           $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
         });
-        var model = $(results[1]);
-        var hasContactSummary = model.find('> instance[id="contact-summary"]').length === 1;
+        var hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
         return {
-          html: html,
-          model: results[1],
+          html: $html,
+          model: model,
           hasContactSummary: hasContactSummary
         };
       });
@@ -116,18 +116,14 @@ angular.module('inboxServices').service('Enketo',
           })
           .then(transformXml);
       }
-      return $q.resolve()
-        .then(function() {
-          return xmlCache[id][language];
-        })
-        .then(function(doc) {
-          // clone doc to avoid leaking of data between instances of a form
-          return {
-            html: doc.html.clone(),
-            model: doc.model,
-            hasContactSummary: doc.hasContactSummary
-          };
-        });
+      return xmlCache[id][language].then(function(form) {
+        // clone form to avoid leaking of data between instances of a form
+        return {
+          html: form.html.clone(),
+          model: form.model,
+          hasContactSummary: form.hasContactSummary
+        };
+      });
     };
 
     var handleKeypressOnInputField = function(e) {
