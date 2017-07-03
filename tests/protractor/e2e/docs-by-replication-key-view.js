@@ -185,18 +185,7 @@ describe('view docs_by_replication_key', function() {
       });
   }, 5 * 60 * 1000);
 
-  afterAll(function(done) {
-    var alldocs = documentsToReturn.concat(documentsToIgnore).concat(documentsToIgnoreSometimes)
-                    .map(function(doc) { return doc._id; });
-    console.log('\nCleaning up ' + alldocs.length + ' documentIds…', alldocs);
-    async.each(alldocs, function(id, callback) {
-      utils.deleteDoc(id)
-        .then(function() {
-          callback();
-        })
-        .catch(callback);
-    }, done);
-  });
+  afterAll(utils.afterEach);
 
   it('Does not return the ddoc', function() {
     expect(docByPlaceIds).not.toContain('_design/medic');

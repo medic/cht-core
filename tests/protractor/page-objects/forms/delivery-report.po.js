@@ -1110,18 +1110,11 @@ const docs = [
   }
 ];
 
-const savedUuids = [];
-
 module.exports = {
   configureForm: done => {
     browser.ignoreSynchronization = true;
     protractor.promise
       .all(docs.map(utils.saveDoc))
-      .then(results => {
-        results.forEach(result => {
-          savedUuids.push(result.id);
-        });
-      })
       .then(() => utils.getDoc(userSettingsDocId))
       .then((user) => {
         user.contact_id = contactId;
@@ -1135,8 +1128,7 @@ module.exports = {
   },
 
   teardown: done => {
-    protractor.promise
-      .all(savedUuids.map(utils.deleteDoc))
+    utils.afterEach()
       .then(() => utils.getDoc(userSettingsDocId))
       .then((user) => {
         user.contact_id = undefined;

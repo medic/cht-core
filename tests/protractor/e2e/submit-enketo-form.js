@@ -86,16 +86,10 @@ describe('Submit Enketo form', () => {
     }
   ];
 
-  const savedUuids = [];
   beforeEach(done => {
     browser.ignoreSynchronization = true;
     protractor.promise
       .all(docs.map(utils.saveDoc))
-      .then(results => {
-        results.forEach(result => {
-          savedUuids.push(result.id);
-        });
-      })
       .then(() => utils.getDoc(userSettingsDocId))
       .then((user) => {
         user.contact_id = contactId;
@@ -109,8 +103,7 @@ describe('Submit Enketo form', () => {
   });
 
   afterEach(done => {
-    protractor.promise
-      .all(savedUuids.map(utils.deleteDoc))
+    utils.afterEach()
       .then(() => utils.getDoc(userSettingsDocId))
       .then((user) => {
         user.contact_id = undefined;

@@ -82,8 +82,10 @@ var updateSettingsForDdoc = function (updates, ddocName) {
 
 var revertSettingsForDdoc = function (ddocName) {
   if (!originalSettings[ddocName]) {
-    throw new Error('No original settings to revert to for ' + ddocName);
+    return Promise.resolve();
   }
+
+  console.log(`Reverting settings for ${ddocName}`);
 
   return request({
     path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/update_settings', ddocName, '?replace=1'),
@@ -94,6 +96,34 @@ var revertSettingsForDdoc = function (ddocName) {
   });
 };
 
+var deleteAll = () => {
+  const typesToIgnore = [ 'translations', 'translations-backup', 'user-settings' ];
+  const idsToIgnore = [ 'appcache', 'migration-log', 'resources', 'sentinel-meta-data' ];
+  request({
+    path: path.join('/', constants.DB_NAME, '_all_docs?include_docs=true'),
+    method: 'GET'
+  })
+    .then(response => {
+      return response.rows.filter(row => {
+        return row.id.indexOf('_design/') !== 0 &&
+               idsToIgnore.indexOf(row.id) === -1 &&
+               typesToIgnore.indexOf(row.doc.type) === -1;
+      }).map(row => {
+        row.doc._deleted = true;
+        return row.doc;
+      });
+    })
+    .then(toDelete => {
+      const ids = toDelete.map(doc => doc._id);
+      console.log(`Deleting docs: ${ids}`);
+      return request({
+        path: path.join('/', constants.DB_NAME, '_bulk_docs'),
+        method: 'POST',
+        body: JSON.stringify({ docs: toDelete }),
+        headers: { 'content-type': 'application/json' }
+      });
+    });
+};
 
 module.exports = {
 
@@ -154,6 +184,27 @@ module.exports = {
     return revertSettingsForDdoc('medic-client')
       .then(function () {
         return revertSettingsForDdoc('medic');
+      });
+  },
+
+  /**
+   * Cleans up DB after each test. Works with the given callback
+   * and also returns a promise - pick one!
+   */
+  afterEach: done => {
+    return module.exports.revertSettings()
+      .then(deleteAll)
+      .then(() => {
+        if (done) {
+          done();
+        }
+        return;
+      })
+      .catch(err => {
+        if (done) {
+          done(err);
+        }
+        return err;
       });
   },
 

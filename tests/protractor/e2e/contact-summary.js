@@ -119,42 +119,26 @@ describe('Contact summary info', function() {
 
   var DOCS = [ ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT ];
 
-  var savedUuids = [];
   beforeEach(function(done) {
     browser.ignoreSynchronization = true;
     utils.updateSettings({ contact_summary: SCRIPT })
       .then(function() {
         return protractor.promise.all(DOCS.map(utils.saveDoc));
       })
-      .then(function(results) {
-        results.forEach(function(result) {
-          savedUuids.push(result.id);
-        });
-        done();
-      })
-      .catch(function(err) {
-        console.error('Error saving docs', err);
-        done();
-      });
+      .then(done)
+      .catch(done);
   });
 
-  afterEach(function(done) {
-
-    // refresh after changing settings so the new settings are loaded
-    var refresh = function() {
-      browser.driver.navigate().refresh();
-      browser.wait(function() {
-        return element(by.id('contacts-tab')).isPresent();
-      }, 10000);
-      done();
-    };
-
-    utils.revertSettings()
-      .then(function() {
-        return protractor.promise.all(savedUuids.map(utils.deleteDoc));
-      })
-      .then(refresh)
-      .catch(refresh);
+  afterEach(done => {
+    utils.afterEach()
+      .catch(() => {})
+      .then(() => {
+        browser.driver.navigate().refresh();
+        browser.wait(() => {
+          return element(by.id('contacts-tab')).isPresent();
+        }, 10000);
+        done();
+      });
   });
 
   var selectContact = function(term) {

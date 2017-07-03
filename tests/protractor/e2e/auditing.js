@@ -48,10 +48,7 @@ describe('Auditing', function() {
       });
   });
 
-  afterEach(function(done) {
-    utils.deleteDoc(savedUuid)
-      .then(done, done);
-  });
+  afterEach(utils.afterEach);
 
   it('audits message deletion', function() {
 

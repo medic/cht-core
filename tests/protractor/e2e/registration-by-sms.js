@@ -180,7 +180,6 @@ describe('registration transition', () => {
       ]
     }]
   };
-  const savedUuids = [];
 
   const submit = body => {
     const content = JSON.stringify(body);
@@ -214,20 +213,13 @@ describe('registration transition', () => {
       };
       utils.updateSettings(CONFIG)
         .then(() => protractor.promise.all(DOCS.map(utils.saveDoc)))
-        .then(results => results.forEach(result => savedUuids.push(result.id)))
         .then(() => submit(body))
         .then(() => refresh)
         .then(done)
         .catch(done);
     });
 
-    afterEach(done => {
-      utils.revertSettings()
-        .then(() => protractor.promise.all(savedUuids.map(utils.deleteDoc)))
-        .then(refresh)
-        .then(done)
-        .catch(done);
-    });
+    afterEach(utils.afterEach);
 
     const checkItemSummary = () => {
       const summaryElement = element(by.css('#reports-content .item-summary'));

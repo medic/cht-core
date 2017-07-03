@@ -4,7 +4,8 @@ const utils = require('../../utils'),
   helper = require('../../helper'),
   addUserModal = require('../../page-objects/users/add-user-modal.po.js');
 
-const addedUser = 'bedetester2020', fullName = 'Bede Ngaruko';
+const addedUser = 'bedetester2020',
+  fullName = 'Bede Ngaruko';
 
 describe('Add user test : ', function() {
   it('should open add user modal', function() {
