@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 /**
  * Utils for data deletion scripts.
  */
@@ -19,9 +20,13 @@ var setupLogging = function(logdir, logfile) {
   var log_file = fs.createWriteStream(logdir + '/' + logfile, {flags : 'w'});
   log_file.write(''); // create file by writing in it
   var log_stdout = process.stdout;
-  console.log = function(d) {
-    log_file.write(util.format(d) + '\n');
-    log_stdout.write(util.format(d) + '\n');
+  console.log = function(...args) {
+    args.forEach(arg => {
+      log_file.write(util.format(arg) + ' ');
+      log_stdout.write(util.format(arg) + ' ');
+    });
+    log_file.write('\n');
+    log_stdout.write('\n');
   };
 };
 
@@ -65,6 +70,7 @@ var deleteDocs = function(dryrun, db, docs) {
     })
     .catch(function(err) {
       console.log('Ignoring error in deleteDoc, because db times out all the time anyway.');
+      console.log(err);
       return docsWithDeleteField;
     });
 };
@@ -280,7 +286,7 @@ var writeDocsToFile = function(filepath, docsList) {
     // don't write empty files.
     return docsList;
   }
-  return _writeToFile(filepath, JSON.stringify(docsList))
+  return _writeToFile(filepath, JSON.stringify(docsList, null, 2))
     .then(function() {
       console.log('Wrote ' + docsList.length + ' docs to file ' + filepath);
       return docsList;
