@@ -9,36 +9,58 @@ describe('Enketo service', function() {
     };
   };
 
-  var VISIT_FORM = `
-    <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:jr="http://openrosa.org/javarosa">
-      <h:head>
-        <h:title>Visit</h:title>
-        <model>
-          <instance>
-            <data id="V" version="2015-06-05">
-              <patient_id tag="id"/>
-              <name tag="name"/>
-              <inputs>
-                <patient_id tag="n"/>
-                <user>
-                  <_id tag="ui"/>
-                  <facility_id tag="ufi"/>
-                </user>
-              </inputs>
-            </data>
-          </instance>
-          <itext>
-            <translation lang="eng">
-              <text id="patient_id:label">
-                <value>Patient ID</value>
-              </text>
-            </translation>
-          </itext>
-          <bind nodeset="/data/patient_id" type="medicPatientSelect" required="true()" />
-          <bind nodeset="/data/name" type="string" required="true()" />
-        </model>
-      </h:head>
-    </h:html>`;
+  var VISIT_MODEL = `
+    <model>
+      <instance>
+        <data id="V" version="2015-06-05">
+          <patient_id tag="id"/>
+          <name tag="name"/>
+          <inputs>
+            <patient_id tag="n"/>
+            <user>
+              <_id tag="ui"/>
+              <facility_id tag="ufi"/>
+            </user>
+          </inputs>
+        </data>
+      </instance>
+      <itext>
+        <translation lang="eng">
+          <text id="patient_id:label">
+            <value>Patient ID</value>
+          </text>
+        </translation>
+      </itext>
+      <bind nodeset="/data/patient_id" type="medicPatientSelect" required="true()" />
+      <bind nodeset="/data/name" type="string" required="true()" />
+    </model>`;
+
+  var VISIT_MODEL_WITH_CONTACT_SUMMARY = `
+    <model>
+      <instance>
+        <data id="V" version="2015-06-05">
+          <patient_id tag="id"/>
+          <name tag="name"/>
+          <inputs>
+            <patient_id tag="n"/>
+            <user>
+              <_id tag="ui"/>
+              <facility_id tag="ufi"/>
+            </user>
+          </inputs>
+        </data>
+      </instance>
+      <instance id="contact-summary" />
+      <itext>
+        <translation lang="eng">
+          <text id="patient_id:label">
+            <value>Patient ID</value>
+          </text>
+        </translation>
+      </itext>
+      <bind nodeset="/data/patient_id" type="medicPatientSelect" required="true()" />
+      <bind nodeset="/data/name" type="string" required="true()" />
+    </model>`;
 
   var service,
       enketoInit = sinon.stub(),
@@ -46,6 +68,7 @@ describe('Enketo service', function() {
       dbGetAttachment = sinon.stub(),
       dbGet = sinon.stub(),
       dbPut = sinon.stub(),
+      ContactSummary = sinon.stub(),
       UserContact = sinon.stub(),
       UserSettings = sinon.stub(),
       createObjectURL = sinon.stub(),
@@ -59,7 +82,9 @@ describe('Enketo service', function() {
       AddAttachment = sinon.stub(),
       EnketoForm = sinon.stub(),
       EnketoPrepopulationData = sinon.stub(),
-      XmlForm = sinon.stub();
+      XmlForm = sinon.stub(),
+      Search = sinon.stub(),
+      LineageModelGenerator = { contact: sinon.stub() };
 
   beforeEach(function() {
     module('inboxApp');
@@ -82,6 +107,9 @@ describe('Enketo service', function() {
         angular: { callbacks: [] },
         URL: { createObjectURL: createObjectURL }
       });
+      $provide.value('ContactSummary', ContactSummary);
+      $provide.value('Search', Search);
+      $provide.value('LineageModelGenerator', LineageModelGenerator);
       $provide.value('FileReader', FileReader);
       $provide.value('UserContact', UserContact);
       $provide.value('UserSettings', UserSettings);
@@ -100,7 +128,7 @@ describe('Enketo service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbPut, transform, createObjectURL, FileReader, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment);
+    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbPut, transform, createObjectURL, ContactSummary, FileReader, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
   });
 
   describe('render', function() {
@@ -124,7 +152,7 @@ describe('Enketo service', function() {
       dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xml'));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_FORM));
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL));
       EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, '<xml></xml>'));
       var expected = [ 'nope', 'still nope' ];
       enketoInit.returns(expected);
@@ -149,7 +177,7 @@ describe('Enketo service', function() {
       EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, '<xml></xml>'));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_FORM));
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL));
       return service.render($('<div></div>'), 'ok').then(function() {
         chai.expect(UserContact.callCount).to.equal(1);
         chai.expect(EnketoPrepopulationData.callCount).to.equal(2);
@@ -167,7 +195,7 @@ describe('Enketo service', function() {
       dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, '<div><img src="jr://myimg"></div>'))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_FORM));
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL));
       dbGetAttachment
         .onFirstCall().returns(KarmaUtils.mockPromise(null, 'xmlblob'))
         .onSecondCall().returns(KarmaUtils.mockPromise(null, 'myobjblob'));
@@ -196,7 +224,7 @@ describe('Enketo service', function() {
       dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, '<div><img src="jr://myimg"></div>'))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_FORM));
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL));
       dbGetAttachment
         .onFirstCall().returns(KarmaUtils.mockPromise(null, 'xmlblob'))
         .onSecondCall().returns(KarmaUtils.mockPromise('not found'));
@@ -247,7 +275,7 @@ describe('Enketo service', function() {
       EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, data));
       transform
         .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_FORM));
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL));
       var instanceData = {
         inputs: {
           patient_id: 123,
@@ -256,8 +284,131 @@ describe('Enketo service', function() {
       };
       return service.render($('<div></div>'), 'ok', instanceData).then(function() {
         chai.expect(EnketoForm.callCount).to.equal(1);
-        chai.expect(EnketoForm.args[0][1].modelStr).to.equal(VISIT_FORM);
+        chai.expect(EnketoForm.args[0][1].modelStr).to.equal(VISIT_MODEL);
         chai.expect(EnketoForm.args[0][1].instanceStr).to.equal(data);
+      });
+    });
+
+    it('passes contact summary data to enketo', function() {
+      var data = '<data><patient_id>123</patient_id></data>';
+      UserContact.returns(KarmaUtils.mockPromise(null, {
+        _id: '456',
+        contact_id: '123',
+        facility_id: '789'
+      }));
+      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
+      dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
+      enketoInit.returns([]);
+      FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
+      EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, data));
+      transform
+        .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL_WITH_CONTACT_SUMMARY));
+      var instanceData = {
+        contact: {
+          _id: 'fffff',
+          patient_id: '44509'
+        },
+        inputs: {
+          patient_id: 123,
+          name: 'sharon'
+        }
+      };
+      ContactSummary.returns(Promise.resolve({ context: { pregnant: true } }));
+      Search.returns(Promise.resolve([ { _id: 'somereport' }]));
+      LineageModelGenerator.contact.returns(Promise.resolve({ lineage: [ { _id: 'someparent' } ] }));
+      return service.render($('<div></div>'), 'ok', instanceData).then(function() {
+        chai.expect(EnketoForm.callCount).to.equal(1);
+        chai.expect(EnketoForm.args[0][1].external.length).to.equal(1);
+        var summary = EnketoForm.args[0][1].external[0];
+        chai.expect(summary.id).to.equal('contact-summary');
+        chai.expect(summary.xmlStr).to.equal('<context><pregnant>true</pregnant></context>');
+        chai.expect(Search.callCount).to.equal(1);
+        chai.expect(Search.args[0][0]).to.equal('reports');
+        chai.expect(Search.args[0][1].subjectIds).to.deep.equal(['fffff', '44509']);
+        chai.expect(LineageModelGenerator.contact.callCount).to.equal(1);
+        chai.expect(LineageModelGenerator.contact.args[0][0]).to.equal('fffff');
+        chai.expect(ContactSummary.callCount).to.equal(1);
+        chai.expect(ContactSummary.args[0][0]._id).to.equal('fffff');
+        chai.expect(ContactSummary.args[0][1].length).to.equal(1);
+        chai.expect(ContactSummary.args[0][1][0]._id).to.equal('somereport');
+        chai.expect(ContactSummary.args[0][2].length).to.equal(1);
+        chai.expect(ContactSummary.args[0][2][0]._id).to.equal('someparent');
+      });
+    });
+
+    it('handles arrays and escaping characters', function() {
+      var data = '<data><patient_id>123</patient_id></data>';
+      UserContact.returns(KarmaUtils.mockPromise(null, {
+        _id: '456',
+        contact_id: '123',
+        facility_id: '789'
+      }));
+      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
+      dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
+      enketoInit.returns([]);
+      FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
+      EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, data));
+      transform
+        .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL_WITH_CONTACT_SUMMARY));
+      var instanceData = {
+        contact: {
+          _id: 'fffff'
+        },
+        inputs: {
+          patient_id: 123,
+          name: 'sharon'
+        }
+      };
+      ContactSummary.returns(Promise.resolve({
+        context: {
+          pregnant: true,
+          previousChildren: [ { dob: 2016 }, { dob: 2013 }, { dob: 2010 } ],
+          notes: `always <uses> reserved "characters" & 'words'`
+        }
+      }));
+      LineageModelGenerator.contact.returns(Promise.resolve({ lineage: [] }));
+      return service.render($('<div></div>'), 'ok', instanceData).then(function() {
+        chai.expect(EnketoForm.callCount).to.equal(1);
+        chai.expect(EnketoForm.args[0][1].external.length).to.equal(1);
+        var summary = EnketoForm.args[0][1].external[0];
+        chai.expect(summary.id).to.equal('contact-summary');
+        chai.expect(summary.xmlStr).to.equal('<context><pregnant>true</pregnant><previousChildren><dob>2016</dob><dob>2013</dob><dob>2010</dob></previousChildren><notes>always &lt;uses&gt; reserved &quot;characters&quot; &amp; \'words\'</notes></context>');
+        chai.expect(ContactSummary.callCount).to.equal(1);
+        chai.expect(ContactSummary.args[0][0]._id).to.equal('fffff');
+      });
+    });
+
+    it('does not get contact summary when the form has no instance for it', function() {
+      var data = '<data><patient_id>123</patient_id></data>';
+      UserContact.returns(KarmaUtils.mockPromise(null, {
+        _id: '456',
+        contact_id: '123',
+        facility_id: '789'
+      }));
+      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
+      dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
+      enketoInit.returns([]);
+      FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
+      EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, data));
+      transform
+        .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
+        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL));
+      var instanceData = {
+        contact: {
+          _id: 'fffff'
+        },
+        inputs: {
+          patient_id: 123,
+          name: 'sharon'
+        }
+      };
+      return service.render($('<div></div>'), 'ok', instanceData).then(function() {
+        chai.expect(EnketoForm.callCount).to.equal(1);
+        chai.expect(EnketoForm.args[0][1].external).to.equal(undefined);
+        chai.expect(ContactSummary.callCount).to.equal(0);
+        chai.expect(LineageModelGenerator.contact.callCount).to.equal(0);
       });
     });
   });

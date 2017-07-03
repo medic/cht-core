@@ -1,5 +1,6 @@
-var uuid = require('uuid/v4');
-var xpathPath = require('../modules/xpath-element-path');
+var uuid = require('uuid/v4'),
+    json2xml = require('json2xml'),
+    xpathPath = require('../modules/xpath-element-path');
 
 /* globals EnketoForm */
 angular.module('inboxServices').service('Enketo',
@@ -9,12 +10,15 @@ angular.module('inboxServices').service('Enketo',
     $translate,
     $window,
     AddAttachment,
+    ContactSummary,
     DB,
     EnketoPrepopulationData,
     EnketoTranslation,
     ExtractLineage,
     FileReader,
     Language,
+    LineageModelGenerator,
+    Search,
     TranslateFrom,
     UserContact,
     UserSettings,
@@ -55,20 +59,23 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    var transformXml = function(doc) {
+    var transformXml = function(xml) {
       return $q.all([
-        XSLT.transform('openrosa2html5form.xsl', doc),
-        XSLT.transform('openrosa2xmlmodel.xsl', doc),
+        XSLT.transform('openrosa2html5form.xsl', xml),
+        XSLT.transform('openrosa2xmlmodel.xsl', xml)
       ])
       .then(function(results) {
-        var html = $(results[0]);
-        html.find('[data-i18n]').each(function() {
+        var $html = $(results[0]);
+        var model = results[1];
+        $html.find('[data-i18n]').each(function() {
           var $this = $(this);
           $this.text($translate.instant('enketo.' + $this.attr('data-i18n')));
         });
+        var hasContactSummary = $(model).find('> instance[id="contact-summary"]').length === 1;
         return {
-          html: html,
-          model: results[1]
+          html: $html,
+          model: model,
+          hasContactSummary: hasContactSummary
         };
       });
     };
@@ -109,7 +116,14 @@ angular.module('inboxServices').service('Enketo',
           })
           .then(transformXml);
       }
-      return xmlCache[id][language];
+      return xmlCache[id][language].then(function(form) {
+        // clone form to avoid leaking of data between instances of a form
+        return {
+          html: form.html.clone(),
+          model: form.model,
+          hasContactSummary: form.hasContactSummary
+        };
+      });
     };
 
     var handleKeypressOnInputField = function(e) {
@@ -162,6 +176,64 @@ angular.module('inboxServices').service('Enketo',
       }
     };
 
+    var getLineage = function(contact) {
+      return LineageModelGenerator.contact(contact._id)
+        .then(function(model) {
+          return model.lineage;
+        });
+    };
+
+    var getContactReports = function(contact) {
+      var subjectIds = [ contact._id ];
+      var shortCode = contact.patient_id || contact.place_id;
+      if (shortCode) {
+        subjectIds.push(shortCode);
+      }
+      return Search('reports', { subjectIds: subjectIds }, { include_docs: true });
+    };
+
+    var getContactSummary = function(doc, instanceData) {
+      var contact = instanceData && instanceData.contact;
+      if (!doc.hasContactSummary || !contact) {
+        return $q.resolve();
+      }
+      return $q.all([
+        getContactReports(contact),
+        getLineage(contact)
+      ])
+        .then(function(results) {
+          return ContactSummary(contact, results[0], results[1]);
+        })
+        .then(function(summary) {
+          if (!summary) {
+            return;
+          }
+          return {
+            id: 'contact-summary',
+            xmlStr: json2xml({ context: summary.context })
+          };
+        });
+    };
+
+    var getEnketoOptions = function(doc, instanceData) {
+      return $q.all([
+        EnketoPrepopulationData(doc.model, instanceData),
+        getContactSummary(doc, instanceData)
+      ])
+        .then(function(results) {
+          var instanceStr = results[0];
+          var contactSummary = results[1];
+          var options = {
+            modelStr: doc.model,
+            instanceStr: instanceStr
+          };
+          if (contactSummary) {
+            options.external = [ contactSummary ];
+          }
+          return options;
+        });
+    };
+
     var renderFromXmls = function(doc, selector, instanceData) {
       var wrapper = $(selector);
       wrapper.find('.form-footer')
@@ -172,27 +244,23 @@ angular.module('inboxServices').service('Enketo',
       var formContainer = wrapper.find('.container').first();
       formContainer.html(doc.html);
 
-      return EnketoPrepopulationData(doc.model, instanceData)
-        .then(function(instanceStr) {
-          var form = new EnketoForm(wrapper.find('form').first(), {
-            modelStr: doc.model,
-            instanceStr: instanceStr
-          });
-          var loadErrors = form.init();
-          if (loadErrors && loadErrors.length) {
-            return $q.reject(new Error(JSON.stringify(loadErrors)));
-          }
-          wrapper.show();
+      return getEnketoOptions(doc, instanceData).then(function(options) {
+        var form = new EnketoForm(wrapper.find('form').first(), options);
+        var loadErrors = form.init();
+        if (loadErrors && loadErrors.length) {
+          return $q.reject(new Error(JSON.stringify(loadErrors)));
+        }
+        wrapper.show();
 
-          wrapper.find('input').on('keydown', handleKeypressOnInputField);
+        wrapper.find('input').on('keydown', handleKeypressOnInputField);
 
-          // handle page turning using browser history
-          window.history.replaceState({ enketo_page_number: 0 }, '');
-          overrideNavigationButtons(form, wrapper);
-          addPopStateHandler(form, wrapper);
+        // handle page turning using browser history
+        window.history.replaceState({ enketo_page_number: 0 }, '');
+        overrideNavigationButtons(form, wrapper);
+        addPopStateHandler(form, wrapper);
 
-          return form;
-        });
+        return form;
+      });
     };
 
     var overrideNavigationButtons = function(form, $wrapper) {
@@ -243,11 +311,6 @@ angular.module('inboxServices').service('Enketo',
           return withForm(id, language);
         })
         .then(function(doc) {
-          // clone doc to avoid leaking of data between instances of a form
-          doc = {
-            html: doc.html.clone(),
-            model: doc.model,
-          };
           replaceJavarosaMediaWithLoaders(id, doc.html);
           var form = renderFromXmls(doc, selector, instanceData);
           registerEditedListener(selector, editedListener);
