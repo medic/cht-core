@@ -219,7 +219,12 @@ describe('registration transition', () => {
         .catch(done);
     });
 
-    afterEach(utils.afterEach);
+    afterEach(done => {
+      utils.afterEach()
+        .then(refresh)
+        .then(done)
+        .catch(done);
+    });
 
     const checkItemSummary = () => {
       const summaryElement = element(by.css('#reports-content .item-summary'));
