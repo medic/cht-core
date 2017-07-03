@@ -25,9 +25,11 @@ const logdir = 'logs_' + new Date().getTime();
 var logfile = 'deletion.log';
 utils.setupLogging(logdir, logfile);
 
-const dryrun = true;
+const dryrun = true; // edit this when you want to delete
 if (!dryrun) {
   console.log('DELETING FORREALZ!!!');
+} else {
+  console.log('Dryrun, not deleting.');
 }
 console.log('chwId', chwId);
 console.log('form', form);
