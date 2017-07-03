@@ -150,6 +150,43 @@ exports['updateMessageTaskStates takes a collection of state changes and saves i
   });
 };
 
+exports['updateMessageTaskStates throws an error if it cant find the message'] = test => {
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: [
+    {id: 'testMessageId1'}]});
+
+  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {rows: [
+    {doc: {
+      _id: 'testDoc',
+      tasks: [{
+        messages: [{
+          uuid: 'testMessageId1'
+        }]
+      }]
+    }}
+  ]});
+
+  sinon.stub(db.medic, 'bulk').callsArgWith(1, null, []);
+
+  controller.updateMessageTaskStates([
+    {
+      messageId: 'testMessageId1',
+      state: 'testState1',
+    },
+    {
+      messageId: 'testMessageId2',
+      state: 'testState2',
+      details: 'Just because.'
+    }
+  ], (err) => {
+    test.ok(err);
+
+    test.equal(err.code, 404);
+    test.equal(err.message, `Message not found: testMessageId2`);
+
+    test.done();
+  });
+};
+
 exports['updateMessageTaskStates re-applies changes if it errored'] = test => {
   const view = sinon.stub(db.medic, 'view')
   .onFirstCall().callsArgWith(3, null, {rows: [
