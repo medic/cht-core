@@ -10,6 +10,12 @@ module.exports = function(config) {
     singleRun: false,
     colors: true,
     browserNoActivityTimeout: 60000,
+    customLaunchers: {
+      Chrome_Headless: {
+        base: 'Chrome',
+        flags: ['--headless', '--disable-gpu', '--remote-debugging-port=9222']
+      }
+    },
     preprocessors: {
       'templates/partials/*.html': ['ng-html2js']
     },
