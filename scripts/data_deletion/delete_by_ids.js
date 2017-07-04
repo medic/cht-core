@@ -54,11 +54,13 @@ utils.getJsonFromFile(idsFile)
       console.log('index', index, batch);
       const i = index;
       chain.then(() => {
-        return getAndDelete(batch, i);
+        return getAndDelete(batch, i)
+          .catch(err => {
+            console.log('Batch', i, 'failed : ', err);
+          });
       });
       index = index + BATCH_SIZE;
     }
     return chain;
   })
-//  .then(console.log)
   .catch(console.log);

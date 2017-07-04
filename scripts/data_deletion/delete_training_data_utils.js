@@ -105,10 +105,11 @@ const getDocs = (db, ids) => {
     .then(result => {
       return result.rows.map(row => {
         if (row.error) {
-          throw new Error('Could not get ' + row.key + '. Error : ' + row.error);
+          console.log('ERROR Could not get ' + row.key + '. Skipping it. Error : ' + row.error);
+          return null;
         }
         return row.doc;
-      });
+      }).filter(doc => !!doc);
     });
 };
 
