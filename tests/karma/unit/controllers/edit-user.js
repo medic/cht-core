@@ -110,11 +110,11 @@ describe('EditUserCtrl controller', () => {
 
   const mockFacility = (facility_id) => {
       window.$.withArgs('#edit-user-profile [name=facility]')
-        .returns({ val: () => facility_id; });
+        .returns({ val: () => facility_id });
   };
   const mockContact = (contact_id) => {
       window.$.withArgs('#edit-user-profile [name=contact]')
-        .returns({ val: () => contact_id; });
+        .returns({ val: () => contact_id });
   };
 
   describe('initialisation', () => {
