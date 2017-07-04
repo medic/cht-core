@@ -1,3 +1,7 @@
+var passwordTester = require('simple-password-tester'),
+    PASSWORD_MINIMUM_LENGTH = 8,
+    PASSWORD_MINIMUM_SCORE = 50;
+
 (function () {
 
   'use strict';
@@ -9,7 +13,6 @@
       $log,
       $rootScope,
       $scope,
-      $translate,
       $uibModalInstance,
       $window,
       ContactSchema,
@@ -17,6 +20,7 @@
       Select2Search,
       Session,
       SetLanguage,
+      Translate,
       UpdateUser,
       UserSettings
     ) {
@@ -90,9 +94,13 @@
 
       var validateRequired = function(fieldName, fieldDisplayName) {
         if (!$scope.editUserModel[fieldName]) {
-          $scope.errors[fieldName] = $translate.instant('field is required', {
-            field: $translate.instant(fieldDisplayName)
-          });
+          Translate(fieldDisplayName)
+            .then(function(field) {
+              return Translate('field is required', { field: field });
+            })
+            .then(function(value) {
+              $scope.errors[fieldName] = value;
+            });
           return false;
         }
         return true;
@@ -113,7 +121,26 @@
 
       var validateConfirmPasswordMatches = function() {
         if ($scope.editUserModel.password !== $scope.editUserModel.passwordConfirm) {
-          $scope.errors.password = $translate.instant('Passwords must match');
+          Translate('Passwords must match').then(function(value) {
+            $scope.errors.password = value;
+          });
+          return false;
+        }
+        return true;
+      };
+
+      var validatePasswordStrength = function() {
+        var password = $scope.editUserModel.password || '';
+        if (password.length < PASSWORD_MINIMUM_LENGTH) {
+          Translate('password.length.minimum', { minimum: PASSWORD_MINIMUM_LENGTH }).then(function(value) {
+            $scope.errors.password = value;
+          });
+          return false;
+        }
+        if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
+          Translate('password.weak').then(function(value) {
+            $scope.errors.password = value;
+          });
           return false;
         }
         return true;
@@ -121,6 +148,7 @@
 
       var validatePasswordFields = function() {
         return validateRequired('password', 'Password') &&
+          validatePasswordStrength() &&
           validateConfirmPasswordMatches();
       };
 
