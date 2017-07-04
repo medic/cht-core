@@ -30,6 +30,19 @@ var setupLogging = function(logdir, logfile) {
   };
 };
 
+const getJsonFromFile = (idsFile) => {
+  return new Promise((resolve, reject) => {
+    fs.readFile(idsFile, (err, data) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      resolve(JSON.parse(data));
+    });
+
+  });
+};
+
 // Useful to keep track of the last seq number, and who knows what else?
 var printoutDbStats = function(db, data) {
   return db.info().then(function (result) {
@@ -72,6 +85,30 @@ var deleteDocs = function(dryrun, db, docs) {
       console.log('Ignoring error in deleteDoc, because db times out all the time anyway.');
       console.log(err);
       return docsWithDeleteField;
+    });
+};
+
+// logs deleted docs and ids to file, for restoring later.
+const deleteDocsWithLog = (dryrun, db, docs, logfilePath, idLogfilePath) => {
+  return Promise.resolve(docs)
+    .then(_.partial(writeDocsToFile, logfilePath))
+    .then(_.partial(writeDocsIdsToFile, idLogfilePath))
+    .then(_.partial(deleteDocs, dryrun, db))
+    .then(function(result) {
+      console.log(result.length + ' reports deleted!\n');
+      return result;
+    });
+};
+
+const getDocs = (db, ids) => {
+  return db.allDocs({keys: ids, include_docs: true})
+    .then(result => {
+      return result.rows.map(row => {
+        if (row.error) {
+          throw new Error('Could not get ' + row.key + '. Error : ' + row.error);
+        }
+        return row.doc;
+      });
     });
 };
 
@@ -385,6 +422,7 @@ var userConfirm = function(message) {
 module.exports = {
   cleanContactPersons: cleanContactPersons,
   deleteDocs: deleteDocs,
+  deleteDocsWithLog: deleteDocsWithLog,
   fetchBranchInfo: fetchBranchInfo,
   fetchBranch: fetchBranch,
   filterByType: filterByType,
@@ -392,6 +430,8 @@ module.exports = {
   filterFamilyMembers: filterFamilyMembers,
   getContactsForPlace: getContactsForPlace,
   getDataRecordsForBranch: getDataRecordsForBranch,
+  getDocs: getDocs,
+  getJsonFromFile: getJsonFromFile,
   printoutDbStats: printoutDbStats,
   queryInBatches: queryInBatches,
   setupLogging: setupLogging,

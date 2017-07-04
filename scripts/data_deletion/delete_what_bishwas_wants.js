@@ -73,13 +73,12 @@ const getReportsToDelete = () => {
 const deleteBatch = (batch, index) => {
   console.log('batch index', index);
   return Promise.resolve(batch)
-    .then(_.partial(utils.writeDocsToFile, logdir + '/reports_deleted_' + chwId + '_' + patientId + '_' + form + '_' + index + '.json'))
-    .then(_.partial(utils.writeDocsIdsToFile, logdir + '/reports_deleted_' + chwId + '_' + patientId + '_' + form + '_' + index + '_ids.json'))
-    .then(_.partial(utils.deleteDocs, dryrun, db))
-    .then(function(result) {
-      console.log(result.length + ' reports deleted!\n');
-      return result;
-    });
+    .then(_.partial(utils.deleteDocsWithLog,
+      dryrun,
+      db,
+      _,
+      logdir + '/reports_deleted_' + chwId + '_' + patientId + '_' + form + '_' + index + '.json',
+      logdir + '/reports_deleted_' + chwId + '_' + patientId + '_' + form + '_' + index + '_ids.json'));
 };
 
 const BATCH_SIZE = 100;
