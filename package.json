@@ -26,6 +26,7 @@
     "pass-stream": "^1.0.0",
     "properties": "^1.2.1",
     "request": "^2.60.0",
+    "simple-password-tester": "^1.0.0",
     "underscore": "^1.8.3",
     "url": "^0.11.0",
     "uuid": "^3.0.1",

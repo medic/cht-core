@@ -1,18 +1,20 @@
-var async = require('async'),
-    _ = require('underscore');
+const async = require('async'),
+      _ = require('underscore'),
+      passwordTester = require('simple-password-tester'),
+      people  = require('./people'),
+      places = require('./places'),
+      db = require('../db'),
+      PASSWORD_MINIMUM_LENGTH = 8,
+      PASSWORD_MINIMUM_SCORE = 50;
 
-var people  = require('./people'),
-    places = require('./places'),
-    db = require('../db');
-
-var USER_EDITABLE_FIELDS  = [
+const USER_EDITABLE_FIELDS = [
   'password',
   'known',
   'place',
   'type'
 ];
 
-var SETTINGS_EDITABLE_FIELDS  = [
+const SETTINGS_EDITABLE_FIELDS = [
   'fullname',
   'email',
   'phone',
@@ -27,11 +29,8 @@ var SETTINGS_EDITABLE_FIELDS  = [
 /*
  * Set error codes to 400 to minimize 500 errors and stacktraces in the logs.
  */
-var error400 = function(msg, callback) {
-  callback({
-    code: 400,
-    message: msg
-  });
+var error400 = msg => {
+  return { code: 400, message: msg };
 };
 
 var getType = function(user) {
@@ -95,10 +94,10 @@ var validateContact = function(id, placeID, callback) {
       return callback(err, callback);
     }
     if (doc.type !== 'person') {
-      return error400('Wrong type, contact is not a person.', callback);
+      return callback(error400('Wrong type, contact is not a person.'));
     }
     if (!module.exports._hasParent(doc, placeID)) {
-      return error400('Contact is not within place.', callback);
+      return callback(error400('Contact is not within place.'));
     }
     callback(null, doc);
   });
@@ -249,7 +248,7 @@ var setContactParent = function(data, response, callback) {
         return callback(err);
       }
       if (!module.exports._hasParent(place, data.place)) {
-        return error400('Contact is not within place.', callback);
+        return callback(error400('Contact is not within place.'));
       }
       // save result to contact object
       data.contact.parent = places.minify(place);
@@ -402,6 +401,15 @@ var deleteUser = function(id, callback) {
   });
 };
 
+const validatePassword = password => {
+  if (password.length < PASSWORD_MINIMUM_LENGTH) {
+    return error400(`The password must be at least ${PASSWORD_MINIMUM_LENGTH} characters long.`);
+  }
+  if (passwordTester(password) < PASSWORD_MINIMUM_SCORE) {
+    return error400('The password is too easy to guess. Include a range of types of characters to increase the score.');
+  }
+};
+
 /*
  * Everything not exported directly is private.  Underscore prefix is only used
  * to export functions needed for testing.
@@ -452,20 +460,18 @@ module.exports = {
    * @api public
    */
   createUser: function(data, callback) {
-    var self = this,
-        required = ['username', 'password', 'place', 'contact'],
-        missing = [],
-        response = {};
-    required.forEach(function(prop) {
-      if (!data[prop]) {
-        missing.push(prop);
-      }
-    });
+    const self = this,
+          required = ['username', 'password', 'place', 'contact'];
+    const missing = required.filter(prop => !data[prop]);
     if (missing.length > 0) {
-      return error400('Missing required fields: ' + missing.join(', '), callback);
+      return callback(error400('Missing required fields: ' + missing.join(', ')));
     }
     if (!data.contact.parent && !data.place) {
-      return error400('Contact parent or place is required.', callback);
+      return callback(error400('Contact parent or place is required.'));
+    }
+    var passwordError = validatePassword(data.password);
+    if (passwordError) {
+      return callback(passwordError);
     }
     self._validateNewUsername(data.username, function(err) {
       if (err) {
@@ -474,7 +480,7 @@ module.exports = {
       async.waterfall([
         function(cb) {
           // start the waterfall
-          cb(null, data, response);
+          cb(null, data, {});
         },
         self._createPlace,
         self._setContactParent,
@@ -488,32 +494,33 @@ module.exports = {
     });
   },
   updateUser: function(username, data, callback) {
-    var self = this,
-        userID = createID(username),
-        series = [],
-        response = {},
-        settings,
-        user;
-    var props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS));
-    var hasFields = _.some(props, function(k) {
+    const self = this,
+          userID = createID(username);
+    const props = _.uniq(USER_EDITABLE_FIELDS.concat(SETTINGS_EDITABLE_FIELDS));
+    const hasFields = _.some(props, function(k) {
       return !_.isNull(data[k]) && !_.isUndefined(data[k]);
     });
     if (!hasFields) {
-      return error400(
-        'One of the following fields are required: ' + props.join(', '),
-        callback
-      );
+      return callback(error400('One of the following fields are required: ' + props.join(', ')));
+    }
+    if (data.password) {
+      var passwordError = validatePassword(data.password);
+      if (passwordError) {
+        return callback(passwordError);
+      }
     }
     self._validateUser(userID, function(err, doc) {
       if (err) {
         return callback(err);
       }
-      user = _.extend(doc, self._getUserUpdates(username, data));
+      const user = _.extend(doc, self._getUserUpdates(username, data));
       self._validateUserSettings(userID, function(err, doc) {
         if (err) {
           return callback(err);
         }
-        settings = _.extend(doc, self._getSettingsUpdates(username, data));
+        const series = [];
+        const response = {};
+        const settings = _.extend(doc, self._getSettingsUpdates(username, data));
         if (data.place) {
           settings.facility_id = user.facility_id;
           series.push(function(cb) {

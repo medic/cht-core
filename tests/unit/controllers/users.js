@@ -1,14 +1,15 @@
-var controller = require('../../../controllers/users'),
-    people = require('../../../controllers/people'),
-    places = require('../../../controllers/places'),
-    db = require('../../../db'),
-    sinon = require('sinon').sandbox.create();
+const controller = require('../../../controllers/users'),
+      people = require('../../../controllers/people'),
+      places = require('../../../controllers/places'),
+      db = require('../../../db'),
+      sinon = require('sinon').sandbox.create(),
+      COMPLEX_PASSWORD = '23l4ijk3nSDELKSFnwekirh';
 
-var facilitya = { _id: 'a', name: 'aaron' },
-    facilityb = { _id: 'b', name: 'brian' },
-    facilityc = { _id: 'c', name: 'cathy' };
+const facilitya = { _id: 'a', name: 'aaron' },
+      facilityb = { _id: 'b', name: 'brian' },
+      facilityc = { _id: 'c', name: 'cathy' };
 
-var userData;
+let userData;
 
 exports.tearDown = function (callback) {
   sinon.restore();
@@ -23,7 +24,7 @@ exports.setUp = function(callback) {
   ]);
   userData = {
     username: 'x',
-    password: 'x',
+    password: COMPLEX_PASSWORD,
     place: { name: 'x' },
     contact: { 'parent': 'x' }
   };
@@ -491,7 +492,6 @@ exports['createUserSettings sets default roles on user-settings'] = function(tes
   controller._createUserSettings({});
 };
 
-
 exports['createContact returns error from db insert'] = function(test) {
   sinon.stub(people, 'createPerson').callsArgWith(1, 'yucky');
   controller._createContact(userData, {}, function(err) {
@@ -574,50 +574,78 @@ exports['createUser returns error if missing fields.'] = function(test) {
   });
   // missing username
   controller.createUser({
-    'password': 'x',
-    'place': 'x',
-    'contact': { 'parent': 'x'}
+    password: 'x',
+    place: 'x',
+    contact: { parent: 'x' }
   }, function(err) {
     test.ok(err);
     test.equal(err.code, 400);
   });
   // missing password
   controller.createUser({
-    'username': 'x',
-    'place': 'x',
-    'contact': { 'parent': 'x'}
+    username: 'x',
+    place: 'x',
+    contact: { parent: 'x' }
   }, function(err) {
     test.ok(err);
     test.equal(err.code, 400);
   });
   // missing place
   controller.createUser({
-    'username': 'x',
-    'password': 'x',
-    'contact': { 'parent': 'x'}
+    username: 'x',
+    password: 'x',
+    contact: { parent: 'x' }
   }, function(err) {
     test.ok(err);
     test.equal(err.code, 400);
   });
   // missing contact
   controller.createUser({
-    'username': 'x',
-    'place': 'x',
-    'contact': { 'parent': 'x'}
+    username: 'x',
+    place: 'x',
+    contact: { parent: 'x' }
   }, function(err) {
     test.ok(err);
     test.equal(err.code, 400);
   });
   // missing contact.parent
   controller.createUser({
-    'username': 'x',
-    'place': 'x',
-    'contact': {}
+    username: 'x',
+    place: 'x',
+    contact: {}
   }, function(err) {
     test.ok(err);
     test.equal(err.code, 400);
   });
   test.done();
+};
+
+exports['createUser returns error if short password.'] = test => {
+  controller.createUser({
+    username: 'x',
+    place: 'x',
+    contact: { parent: 'x' },
+    password: 'short'
+  }, function(err) {
+    test.ok(err);
+    test.equal(err.code, 400);
+    test.equal(err.message, 'The password must be at least 8 characters long.');
+    test.done();
+  });
+};
+
+exports['createUser returns error if weak password.'] = test => {
+  controller.createUser({
+    username: 'x',
+    place: 'x',
+    contact: { parent: 'x' },
+    password: 'password'
+  }, function(err) {
+    test.ok(err);
+    test.equal(err.code, 400);
+    test.equal(err.message, 'The password is too easy to guess. Include a range of types of characters to increase the score.');
+    test.done();
+  });
 };
 
 exports['createUser returns error if contact.parent lookup fails.'] = function(test) {
@@ -886,7 +914,7 @@ exports['updateUser succeeds if type is defined'] = function(test) {
 
 exports['updateUser succeeds if password is defined'] = function(test) {
   var data = {
-    password: 'x'
+    password: COMPLEX_PASSWORD
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArg(1);
@@ -943,13 +971,13 @@ exports['updateUser type param updates roles on user and user-settings doc'] = f
 exports['updateUser updates password on user doc'] = function(test) {
   test.expect(4);
   var data = {
-    password: 'whachamacallit'
+    password: COMPLEX_PASSWORD
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {});
   sinon.stub(controller, '_validateUserSettings').callsArgWith(1, null, {});
   sinon.stub(places, 'getPlace').callsArg(1);
   var update = sinon.stub(controller, '_updateUser').callsFake(function(id, data, callback) {
-    test.equal(data.password, 'whachamacallit');
+    test.equal(data.password, COMPLEX_PASSWORD);
     callback();
   });
   var updateSettings = sinon.stub(controller, '_updateUserSettings').callsArg(2);
@@ -957,6 +985,38 @@ exports['updateUser updates password on user doc'] = function(test) {
     test.ok(!err);
     test.same(update.callCount, 1);
     test.same(updateSettings.callCount, 1);
+    test.done();
+  });
+};
+
+exports['updateUser returns error if short password.'] = test => {
+  var data = {
+    password: 'short'
+  };
+  var update = sinon.stub(controller, '_updateUser');
+  var updateSettings = sinon.stub(controller, '_updateUserSettings');
+  controller.updateUser('paul', data, function(err) {
+    test.ok(err);
+    test.equal(err.code, 400);
+    test.equal(err.message, 'The password must be at least 8 characters long.');
+    test.equal(update.callCount, 0);
+    test.equal(updateSettings.callCount, 0);
+    test.done();
+  });
+};
+
+exports['updateUser returns error if weak password.'] = test => {
+  var data = {
+    password: 'aaaaaaaa'
+  };
+  var update = sinon.stub(controller, '_updateUser');
+  var updateSettings = sinon.stub(controller, '_updateUserSettings');
+  controller.updateUser('paul', data, function(err) {
+    test.ok(err);
+    test.equal(err.code, 400);
+    test.equal(err.message, 'The password is too easy to guess. Include a range of types of characters to increase the score.');
+    test.equal(update.callCount, 0);
+    test.equal(updateSettings.callCount, 0);
     test.done();
   });
 };
@@ -994,7 +1054,7 @@ exports['updateUser updates user and user settings doc'] = function(test) {
   var data = {
     place: 'el paso',
     type: 'rambler',
-    password: '*.*'
+    password: COMPLEX_PASSWORD
   };
   sinon.stub(controller, '_validateUser').callsArgWith(1, null, {
     facility_id: 'maine',
@@ -1011,7 +1071,7 @@ exports['updateUser updates user and user settings doc'] = function(test) {
     test.equal(user.facility_id, 'el paso');
     test.deepEqual(user.roles, ['rambler', undefined]);
     test.equal(user.shoes, 'dusty boots');
-    test.equal(user.password, '*.*');
+    test.equal(user.password, COMPLEX_PASSWORD);
     test.equal(user.type, 'user');
     cb();
   });
