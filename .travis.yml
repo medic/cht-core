@@ -77,7 +77,8 @@ after_success:
      if [ "$BUILD_LEADER" = "YES" ]; then
        if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
          echo "All jobs succeeded! Publishing..."
-         bash ./scripts/ci/after_success.sh
+         ./scripts/ci/push_to_staging.sh
+         bash ./scripts/ci/push_to_market.sh
        else
          echo "Some jobs failed. Not publishing."
        fi

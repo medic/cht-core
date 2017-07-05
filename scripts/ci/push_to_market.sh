@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 
 MAX=50
 COUNT=0
@@ -13,18 +13,6 @@ if [ -z "$UPLOAD_URL" ]; then
     exit 1;
 fi
 
-# Attempt to reduce size of api and sentinel artifacts
-(cd sentinel &&
-    npm install --production &&
-    rm -rf test &&
-    rm -rf ./node_modules/*/test &&
-    rm -rf ./node_modules/*/tests)
-(cd api &&
-    npm install --production &&
-    rm -rf tests &&
-    rm -rf ./node_modules/*/test &&
-    rm -rf ./node_modules/*/tests)
-
 function tagSubmodule {
     cd $1
     git tag $TRAVIS_TAG
@@ -36,8 +24,6 @@ function tagSubmodules {
     tagSubmodule 'api'
     tagSubmodule 'sentinel'
 }
-
-### --- TODO delete this section once we have fully moved to horticultularist START --- ###
 
 # Try pushing up to $MAX times.
 function push {
@@ -76,19 +62,5 @@ elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]; then
     push 'rc'
 
 fi;
-
-### ---- TODO delete this section once we have fully moved to horticultularist END ---- ###
-
-echo 'Building build for builds database...'
-if [[ -n "$TRAVIS_TAG" ]]; then
-    node --stack_size=10000 `which kanso` push --minify \
-            --id="$TRAVIS_TAG" \
-            "$UPLOAD_URL"/_couch/builds
-else
-    node --stack_size=10000 `which kanso` push --minify \
-            --id="$TRAVIS_BRANCH" \
-            "$UPLOAD_URL"/_couch/builds
-fi
-echo 'Build for build database built.'
 
 exit 0;
