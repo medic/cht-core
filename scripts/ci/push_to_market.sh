@@ -13,6 +13,9 @@ if [ -z "$UPLOAD_URL" ]; then
     exit 1;
 fi
 
+cd sentinel && npm install --production && cd .. && \
+cd api && npm install --production && cd ..
+
 function tagSubmodule {
     cd $1
     git tag $TRAVIS_TAG
