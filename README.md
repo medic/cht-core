@@ -42,18 +42,21 @@ After installation and initial startup, visit Fauxton at
 finish setup for a single-node instance.  For more information see
 the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
 
+### Enabling a secure CouchDB
 
-Setup admin access (note 5986 for single-node access):
+By default CouchDB runs in "admin party" mode, which means you do not need users to read or edit any data. This is great for some, but to use Medic safely we're going to disable this feature.
 
-```
+First, setup admin access in config (note 5986 for single-node access):
+
+```shell
 curl -X PUT http://localhost:5986/_config/admins/admin -d '"pass"'
 ```
 
-Reconfigure CouchDB to require authentication:
+Then reconfigure CouchDB to require authentication:
 
-```
+```shell
 # CouchDB 1.6
-curl -X PUT http://admin:pass@localhost:5986/_config/couch_httpd_auth/require_valid_user \
+curl -X PUT http://admin:pass@localhost:5984/_config/couch_httpd_auth/require_valid_user \
   -d '"true"' -H "Content-Type: application/json"
 # CouchDB 2.0
 curl -X PUT http://admin:pass@localhost:5986/_config/chttpd/require_valid_user \
@@ -61,19 +64,21 @@ curl -X PUT http://admin:pass@localhost:5986/_config/chttpd/require_valid_user \
 
 ```
 
-The above command automatically modifies `local.ini` to contain:
+Now, create an actual admin user (note the username and password are the same as the admin user you created in the first step of this section):
 
-```
-[couch_httpd_auth]
-require_valid_user = true
-```
-
-Create an admin user:
-
-```
+```shell
 curl -X POST http://admin:pass@localhost:5984/_users \
   -H "Content-Type: application/json" \
   -d '{"_id": "org.couchdb.user:admin", "name": "admin", "password":"pass", "type":"user", "roles":[]}'
+```
+
+After following these steps CouchDB should no longer allow unauthorised access:
+
+```shell
+$ curl http://admin:pass@localhost:5984 # should work
+{"couchdb":"Welcome","version":"2.0.0","vendor":{"name":"The Apache Software Foundation"}}
+$ curl http://localhost:5984 # should fail
+{"error":"unauthorized","reason":"Authentication required."}
 ```
 
 ### Build dependenceis
