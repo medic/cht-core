@@ -1,8 +1,8 @@
-describe('EditUserCtrl controller', function() {
+describe('EditUserCtrl controller', () => {
 
   'use strict';
 
-  var jQuery,
+  let jQuery,
       mockCreateNewUser,
       mockEditAUser,
       mockEditCurrentUser,
@@ -10,9 +10,10 @@ describe('EditUserCtrl controller', function() {
       translationsDbQuery,
       UpdateUser,
       UserSettings,
+      Translate,
       userToEdit;
 
-  beforeEach(function() {
+  beforeEach(() => {
     module('inboxApp');
 
     translationsDbQuery = sinon.stub();
@@ -33,27 +34,30 @@ describe('EditUserCtrl controller', function() {
       roles: [ 'district-manager' ],
       language: 'zz'
     };
+    Translate = sinon.stub();
 
     jQuery = sinon.stub(window, '$');
     window.$.callThrough();
 
-    module(function($provide) {
-      $provide.factory('$uibModalInstance', function() {
+    module($provide => {
+      $provide.factory('$uibModalInstance', () => {
         return {
           rendered: KarmaUtils.mockPromise(),
-          close: function() {}
+          close: () => {}
         };
       });
-      $provide.factory('processingFunction', function() {
+      $provide.factory('processingFunction', () => {
         return null;
       });
       $provide.factory('DB', KarmaUtils.mockDB({ query: translationsDbQuery }));
       $provide.value('UpdateUser', UpdateUser);
       $provide.value('UserSettings', UserSettings);
+      $provide.value('Translate', Translate);
+
     });
 
-    inject(function($rootScope, $controller) {
-      var createController = function(model) {
+    inject(($rootScope, $controller) => {
+      const createController = model => {
         scope = $rootScope.$new();
         scope.model = model;
         scope.setProcessing = sinon.stub();
@@ -63,10 +67,10 @@ describe('EditUserCtrl controller', function() {
           '$scope': scope,
           '$rootScope': $rootScope,
           'Language': sinon.stub(),
-          'ContactSchema': { getPlaceTypes: function() { return []; } },
+          'ContactSchema': { getPlaceTypes: () => { return []; } },
           'Search': sinon.stub(),
           'Session': {
-            userCtx: function() {
+            userCtx: () => {
               return { name: 'greg' };
             }
           },
@@ -75,13 +79,13 @@ describe('EditUserCtrl controller', function() {
           '$window': {location: {reload: sinon.stub()}}
         });
       };
-      mockEditCurrentUser = (user) => {
+      mockEditCurrentUser = user => {
         UserSettings.returns(KarmaUtils.mockPromise(null, user));
         UpdateUser.returns(KarmaUtils.mockPromise());
         createController();
       };
 
-      mockEditAUser = (user) => {
+      mockEditAUser = user => {
         // Don't mock UserSettings, we're not fetching current user.
         UpdateUser.returns(KarmaUtils.mockPromise());
         createController(user);
@@ -95,7 +99,7 @@ describe('EditUserCtrl controller', function() {
     });
   });
 
-  afterEach(function() {
+  afterEach(() => {
     KarmaUtils.restore(
       UpdateUser,
       UserSettings,
@@ -105,19 +109,19 @@ describe('EditUserCtrl controller', function() {
 
 
   const mockFacility = (facility_id) => {
-      window.$.withArgs('#edit-user-profile [name=facility]').returns(
-        {val: function(){ return facility_id; }});
+      window.$.withArgs('#edit-user-profile [name=facility]')
+        .returns({ val: () => facility_id });
   };
   const mockContact = (contact_id) => {
-      window.$.withArgs('#edit-user-profile [name=contact]').returns(
-        {val: function(){ return contact_id; }});
+      window.$.withArgs('#edit-user-profile [name=contact]')
+        .returns({ val: () => contact_id });
   };
 
-  describe('initialisation', function() {
+  describe('initialisation', () => {
 
-    it('edits the given user', function(done) {
+    it('edits the given user', done => {
       mockEditAUser(userToEdit);
-      setTimeout(function() {
+      setTimeout(() => {
         chai.expect(scope.enabledLocales.length).to.equal(2);
         chai.expect(scope.enabledLocales[0].code).to.equal('en');
         chai.expect(scope.enabledLocales[1].code).to.equal('fr');
@@ -140,10 +144,10 @@ describe('EditUserCtrl controller', function() {
       });
     });
 
-    it('when no given user edits the current user', function(done) {
-      var currentUser = userToEdit;
+    it('when no given user edits the current user', done => {
+      const currentUser = userToEdit;
       mockEditCurrentUser(currentUser);
-      setTimeout(function() {
+      setTimeout(() => {
         chai.expect(scope.editUserModel).to.deep.equal({
           id: currentUser._id,
           name: currentUser.name,
@@ -159,82 +163,117 @@ describe('EditUserCtrl controller', function() {
   });
 
   // Note : $scope.updatePassword is only called when editing the current user.
-  // Never when creating a new user, or aditing a non-current user.
-  describe('$scope.updatePassword', function() {
-    it('password must be filled', function(done) {
+  // Never when creating a new user, or editing a non-current user.
+  describe('$scope.updatePassword', () => {
+    it('password must be filled', done => {
       mockEditCurrentUser(userToEdit);
-
-      setTimeout(function() {
+      Translate.withArgs('Password').returns(Promise.resolve('pswd'));
+      Translate.withArgs('field is required', { field: 'pswd' }).returns(Promise.resolve('pswd field must be filled'));
+      setTimeout(() => {
         scope.editUserModel.password = '';
-
         scope.updatePassword();
-        chai.expect(scope.errors).to.have.property('password');
-        done();
+        setTimeout(() => {
+          chai.expect(scope.errors.password).to.equal('pswd field must be filled');
+          done();
+        });
       });
     });
 
-    it('password and passwordConfirm must match', function() {
+    it('password must be long enough', done => {
       mockEditCurrentUser(userToEdit);
-
-      setTimeout(function() {
-        scope.editUserModel.password = 'password';
-        scope.editUser();
-        chai.expect(scope.errors).to.have.property('password');
-
-        scope.editUserModel.passwordConfirm = 'password';
-        scope.editUser();
-        chai.expect(scope.errors).not.to.have.property('password');
+      Translate.withArgs('password.length.minimum', { minimum: 8 }).returns(Promise.resolve('short'));
+      setTimeout(() => {
+        scope.editUserModel.password = '2sml4me';
+        scope.updatePassword();
+        setTimeout(() => {
+          chai.expect(scope.errors.password).to.equal('short');
+          done();
+        });
       });
     });
 
-    it('user is updated with password change', function(done) {
+    it('password must be hard to brute force', done => {
       mockEditCurrentUser(userToEdit);
-
-      setTimeout(function() {
+      Translate.withArgs('password.weak').returns(Promise.resolve('hackable'));
+      setTimeout(() => {
         scope.editUserModel.password = 'password';
-        scope.editUserModel.passwordConfirm = 'password';
+        scope.updatePassword();
+        setTimeout(() => {
+          chai.expect(scope.errors.password).to.equal('hackable');
+          done();
+        });
+      });
+    });
+
+    it('error if password and confirm do not match', done => {
+      mockEditCurrentUser(userToEdit);
+      setTimeout(() => {
+        Translate.withArgs('Passwords must match').returns(Promise.resolve('wrong'));
+        const password = '1QrAs$$3%%kkkk445234234234';
+        scope.editUserModel.password = password;
+        scope.editUserModel.passwordConfirm = password + 'a';
+        scope.updatePassword();
+        setTimeout(() => {
+          chai.expect(scope.errors.password).to.equal('wrong');
+          done();
+        });
+      });
+    });
+
+    it('user is updated with password change', done => {
+      mockEditCurrentUser(userToEdit);
+      const password = '1QrAs$$3%%kkkk445234234234';
+
+      setTimeout(() => {
+        scope.editUserModel.password = password;
+        scope.editUserModel.passwordConfirm = password;
 
         scope.updatePassword();
 
-        setTimeout(function() {
+        setTimeout(() => {
           chai.expect(UpdateUser.called).to.equal(true);
-          console.log('args', UpdateUser.getCall(0).args);
           chai.expect(UpdateUser.getCall(0).args[0]).to.equal('user.id');
-          chai.expect(UpdateUser.getCall(0).args[2].password).to.equal('password');
+          chai.expect(UpdateUser.getCall(0).args[2].password).to.equal(password);
           done();
         });
       });
     });
   });
 
-  describe('$scope.editUserSettings', function() {
-    it('name must be present', function() {
+  describe('$scope.editUserSettings', () => {
+    it('name must be present', done => {
       mockEditAUser(userToEdit);
-      scope.editUserModel.name = '';
-
-      scope.editUserSettings();
-      chai.expect(scope.errors).to.have.property('name');
+      Translate.withArgs('User Name').returns(Promise.resolve('uname'));
+      Translate.withArgs('field is required', { field: 'uname' }).returns(Promise.resolve('uname req'));
+      setTimeout(() => {
+        scope.editUserModel.name = '';
+        scope.editUserSettings();
+        setTimeout(() => {
+          chai.expect(scope.errors.name).to.equal('uname req');
+          done();
+        });
+      });
     });
 
-    it('user is updated', function(done) {
+    it('user is updated', done => {
       UpdateUser.returns(KarmaUtils.mockPromise());
       mockEditAUser(userToEdit);
 
       scope.editUserSettings();
 
-      setTimeout(function() {
+      setTimeout(() => {
         chai.expect(UpdateUser.called).to.equal(true);
-        var updateUserArgs = UpdateUser.getCall(0).args;
+        const updateUserArgs = UpdateUser.getCall(0).args;
         chai.expect(updateUserArgs[0]).to.equal('user.id');
 
-        var settingsUpdates = updateUserArgs[1];
+        const settingsUpdates = updateUserArgs[1];
         ['name', 'fullname', 'email', 'phone', 'language']
-          .forEach(function(field) {
+          .forEach(field => {
             chai.expect(settingsUpdates).to.have.property(field);
           });
         // users don't have permission to change their own roles, facility, or contact
         ['roles', 'facility_id', 'contact_id']
-          .forEach(function(field) {
+          .forEach(field => {
             chai.expect(settingsUpdates).to.not.have.property(field);
           });
         chai.expect(settingsUpdates.name).to.equal(scope.editUserModel.name);
@@ -248,59 +287,62 @@ describe('EditUserCtrl controller', function() {
     });
   });
 
-  describe('$scope.editUser', function() {
-    it('name must be present', function() {
+  describe('$scope.editUser', () => {
+    it('name must be present', done => {
       mockEditAUser(userToEdit);
-      scope.editUserModel.name = '';
-
-      scope.editUser();
-
-      chai.expect(scope.errors).to.have.property('name');
+      Translate.withArgs('User Name').returns(Promise.resolve('uname'));
+      Translate.withArgs('field is required', { field: 'uname' }).returns(Promise.resolve('uname req'));
+      setTimeout(() => {
+        scope.editUserModel.name = '';
+        scope.editUser();
+        setTimeout(() => {
+          chai.expect(scope.errors.name).to.equal('uname req');
+          done();
+        });
+      });
     });
 
-    it('password must be filled when creating new user', function() {
+    it('password must be filled when creating new user', done => {
       mockCreateNewUser();
-
-      scope.editUser();
-
-      chai.expect(scope.errors).to.have.property('password');
+      Translate.withArgs('Password').returns(Promise.resolve('pswd'));
+      Translate.withArgs('field is required', { field: 'pswd' }).returns(Promise.resolve('pswd field must be filled'));
+      setTimeout(() => {
+        scope.editUser();
+        setTimeout(() => {
+          chai.expect(scope.errors.password).to.equal('pswd field must be filled');
+          done();
+        });
+      });
     });
 
-    it('password doesn\'t need to be filled when editing user', function() {
+    it('password doesn\'t need to be filled when editing user', done => {
       mockEditAUser(userToEdit);
-      chai.expect(scope.editUserModel).not.to.have.property('password');
-
-      scope.editUser();
-
-      chai.expect(scope.errors).not.to.have.property('password');
+      Translate.returns(Promise.resolve('something'));
+      setTimeout(() => {
+        chai.expect(scope.editUserModel).not.to.have.property('password');
+        scope.editUser();
+        setTimeout(() => {
+          chai.expect(scope.errors).not.to.have.property('password');
+          done();
+        });
+      });
     });
 
-    it('password and passwordConfirm must match when creating new user', function() {
-      mockCreateNewUser();
-      scope.editUserModel.password = 'password';
-
-      scope.editUser();
-
-      chai.expect(scope.errors).to.have.property('password');
-
-      scope.editUserModel.passwordConfirm = 'password';
-      scope.editUser();
-      chai.expect(scope.errors).not.to.have.property('password');
+    it('error if password and confirm do not match when creating new user', done => {
+      mockEditCurrentUser();
+      Translate.withArgs('Passwords must match').returns(Promise.resolve('wrong'));
+      setTimeout(() => {
+        const password = '1QrAs$$3%%kkkk445234234234';
+        scope.editUserModel.password = password;
+        scope.editUser();
+        setTimeout(() => {
+          chai.expect(scope.errors.password).to.equal('wrong');
+          done();
+        });
+      });
     });
 
-    it('password and passwordConfirm must match when editing user', function() {
-      mockEditCurrentUser(userToEdit);
-
-      scope.editUserModel.password = 'password';
-      scope.editUser();
-      chai.expect(scope.errors).to.have.property('password');
-
-      scope.editUserModel.passwordConfirm = 'password';
-      scope.editUser();
-      chai.expect(scope.errors).not.to.have.property('password');
-    });
-
-    it('should not change password when none is supplied', function(done) {
+    it('should not change password when none is supplied', done => {
       // given
       UpdateUser.returns(KarmaUtils.mockPromise());
       mockEditAUser(userToEdit);
@@ -313,55 +355,74 @@ describe('EditUserCtrl controller', function() {
       scope.editUser();
 
       // then
-      setTimeout(function() {
+      setTimeout(() => {
         chai.expect(UpdateUser.called).to.equal(true);
 
-        var userUpdates = UpdateUser.getCall(0).args[2];
+        const userUpdates = UpdateUser.getCall(0).args[2];
         chai.expect(userUpdates).not.to.have.property('password');
 
         done();
       });
     });
 
-    it('must have associated place if user type is restricted user', function() {
+    it('must have associated place if user type is restricted user', done => {
       mockEditAUser(userToEdit);
       scope.editUserModel.type = 'district-manager';
       mockFacility(null);
+      mockContact(userToEdit.contact_id);
+      Translate.withArgs('Facility').returns(Promise.resolve('fac'));
+      Translate.withArgs('field is required', { field: 'fac' }).returns(Promise.resolve('fac req'));
 
       // when
       scope.editUser();
 
       // expect
-      chai.expect(scope.errors).to.have.property('facility_id');
+      setTimeout(() => {
+        chai.expect(scope.errors.facility_id).to.equal('fac req');
+        done();
+      });
     });
 
-    it('must have associated contact if user type is restricted user', function() {
+    it('must have associated contact if user type is restricted user', done => {
       mockEditAUser(userToEdit);
       scope.editUserModel.type = 'district-manager';
+      mockFacility(userToEdit.facility_id);
       mockContact(null);
+      Translate.withArgs('associated.contact').returns(Promise.resolve('con'));
+      Translate.withArgs('field is required', { field: 'con' }).returns(Promise.resolve('con req'));
 
       // when
       scope.editUser();
 
       // expect
-      chai.expect(scope.errors).to.have.property('contact_id');
+      setTimeout(() => {
+        chai.expect(scope.errors.contact_id).to.equal('con req');
+        done();
+      });
     });
 
-    it('must have associated place and contact if user type is restricted user', function() {
+    it('must have associated place and contact if user type is restricted user', done => {
       mockEditAUser(userToEdit);
       scope.editUserModel.type = 'district-manager';
       mockFacility(null);
       mockContact(null);
+      Translate.withArgs('associated.contact').returns(Promise.resolve('con'));
+      Translate.withArgs('field is required', { field: 'con' }).returns(Promise.resolve('con req'));
+      Translate.withArgs('Facility').returns(Promise.resolve('fac'));
+      Translate.withArgs('field is required', { field: 'fac' }).returns(Promise.resolve('fac req'));
 
       // when
       scope.editUser();
 
       // expect
-      chai.expect(scope.errors).to.have.property('facility_id');
-      chai.expect(scope.errors).to.have.property('contact_id');
+      setTimeout(() => {
+        chai.expect(scope.errors.facility_id).to.equal('fac req');
+        chai.expect(scope.errors.contact_id).to.equal('con req');
+        done();
+      });
     });
 
-    it('doesn\'t need associated place and contact if user type is not restricted user', function() {
+    it('doesn\'t need associated place and contact if user type is not restricted user', () => {
       mockEditAUser(userToEdit);
       scope.editUserModel.type = 'some-other-type';
       mockFacility(null);
@@ -375,23 +436,24 @@ describe('EditUserCtrl controller', function() {
       chai.expect(scope.errors).not.to.have.property('contact_id');
     });
 
-    it('user is updated', function() {
+    it('user is updated', () => {
       mockEditAUser(userToEdit);
       mockContact(userToEdit.contact_id);
       mockFacility(userToEdit.facility_id);
-      scope.editUserModel.password = 'new password';
-      scope.editUserModel.passwordConfirm = 'new password';
+      const password = '234lkjsdlf9u)*)(OJKJDfiyer';
+      scope.editUserModel.password = password;
+      scope.editUserModel.passwordConfirm = password;
 
       scope.editUser();
 
       chai.expect(UpdateUser.called).to.equal(true);
-      var updateUserArgs = UpdateUser.getCall(0).args;
+      const updateUserArgs = UpdateUser.getCall(0).args;
 
       chai.expect(updateUserArgs[0]).to.equal('user.id');
 
-      var settingsUpdates = updateUserArgs[1];
+      const settingsUpdates = updateUserArgs[1];
       ['name', 'fullname', 'email', 'phone', 'roles', 'language', 'facility_id', 'contact_id']
-        .forEach(function(field) {
+        .forEach(field => {
           chai.expect(settingsUpdates).to.have.property(field);
         });
       chai.expect(settingsUpdates.name).to.equal(scope.editUserModel.name);
@@ -403,9 +465,9 @@ describe('EditUserCtrl controller', function() {
       chai.expect(settingsUpdates.language).to.equal(scope.editUserModel.language.code);
       chai.expect(settingsUpdates.roles).to.deep.equal(['district-manager', 'kujua_user', 'data_entry', 'district_admin']);
 
-      var userUdates = updateUserArgs[2];
+      const userUdates = updateUserArgs[2];
       ['name', 'password', 'roles', 'facility_id']
-        .forEach(function(field) {
+        .forEach(field => {
           chai.expect(userUdates).to.have.property(field);
         });
       chai.expect(userUdates.name).to.equal(scope.editUserModel.name);

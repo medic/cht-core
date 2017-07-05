@@ -10,6 +10,10 @@ _TBC_
 - [#3546](https://github.com/medic/medic-webapp/issues/3546) changes the implementation of the `contact_summary` so instead of declaring the output on the last line of the script, now you have to return the output. Usually this is as easy as adding a return on the last line, so `output;` becomes `return output;`. More information is available in the [configuration documentation](https://github.com/medic/medic-docs/blob/master/configuration/contact-summary.md).
 - [#3419](https://github.com/medic/medic-webapp/issues/3419) exposes the person contact to message templates used by registration forms, to allow the patient's name to be referred to in situations where the initial patient creation did not occur via a registration (ie they were created in the UI). To ensure correct messages use `{{person.name}}` in registration messages instead of `{{patient_name}}`.
 
+### Security
+
+- [#1472](https://github.com/medic/medic-webapp/issues/1472) adds password validation so when creating or updating users the new passwords have to be at least 8 characters long and reasonably complex.
+
 ## 2.12.0
 
 _June 20, 2017_

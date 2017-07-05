@@ -73,6 +73,7 @@
   require('./target-generator');
   require('./tasks-for-contact');
   require('./tour');
+  require('./translate');
   require('./translate-from');
   require('./translation-loader');
   require('./update-facility');
