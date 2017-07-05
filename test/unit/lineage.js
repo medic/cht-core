@@ -79,7 +79,7 @@ exports['hydrateDoc attaches the lineage'] = test => {
     { doc: parent },
     { doc: grandparent }
   ] });
-  const fetch = sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [] });
+  const fetch = sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [] }); // without subcontacts
   lineage.fetchHydratedDoc(docId, (err, actual) => {
     test.equals(err, null);
     test.equals(actual.name, 'joe');
@@ -90,6 +90,86 @@ exports['hydrateDoc attaches the lineage'] = test => {
   });
 };
 
+exports['hydrateDoc attaches the full lineage for reports'] = test => {
+  const docId = 'abc';
+
+  const parentContact = {
+    _id: 'contact-def',
+    phone: '+123'
+  };
+  const grandparentContact = {
+    _id: 'contact-ghi',
+    phone: '+456'
+  };
+  const parent = {
+    _id: 'def',
+    name: 'jack',
+    contact: { _id: parentContact._id },
+    parent: {
+      _id: 'ghi'
+    }
+  };
+  const grandparent = {
+    _id: 'ghi',
+    contact: { _id: grandparentContact._id },
+    name: 'jim'
+  };
+  const givenContact = {
+    _id: 'contact',
+    name: 'apex',
+    parent: {
+      _id: parent._id,
+      parent: {
+        _id: grandparent._id
+      }
+    }
+  };
+  const given = {
+    _id: docId,
+    type: 'data_record',
+    form: 'A',
+    contact: {
+      _id: givenContact._id,
+      parent: {
+        _id: parent._id,
+        parent: {
+          _id: grandparent._id
+        }
+      }
+    }
+  };
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+    { doc: given },
+    { doc: givenContact },
+    { doc: parent },
+    { doc: grandparent }
+  ] });
+
+  const fetch = sinon.stub(db.medic, 'fetch');
+  fetch.callsFake((options, callback) => {
+    const contactDocs = options.keys.map(id => {
+      return [ givenContact, parentContact, grandparentContact ]
+        .find(contact => contact._id === id);
+    });
+    callback(null, { rows: contactDocs.map(doc => { return {doc: doc}; }) });
+  });
+
+  lineage.fetchHydratedDoc(docId, (err, actual) => {
+    test.equals(err, null);
+    test.equals(actual.form, 'A');
+    // parents
+    test.equals(actual.contact.name, 'apex');
+    test.equals(actual.contact.parent.name, 'jack');
+    test.equals(actual.contact.parent.parent.name, 'jim');
+    test.ok(!actual.parent);
+    // contacts of parents
+    test.equals(actual.contact.parent.contact.phone, '+123');
+    test.equals(actual.contact.parent.parent.contact.phone, '+456');
+
+    test.equals(fetch.callCount, 1);
+    test.done();
+  });
+};
 
 exports['hydrateDoc attaches the contacts'] = test => {
   const docId = 'abc';
@@ -233,4 +313,138 @@ exports['minify minifies the contact and lineage'] = test => {
   lineage.minify(actual);
   test.deepEqual(actual, expected);
   test.done();
+};
+
+exports['hydrate+minify is noop on a report'] = test => {
+  const docId = 'abc';
+
+  const parentContact = {
+    _id: 'contact-def',
+    phone: '+123'
+  };
+  const grandparentContact = {
+    _id: 'contact-ghi',
+    phone: '+456'
+  };
+  const parent = {
+    _id: 'def',
+    name: 'jack',
+    contact: { _id: parentContact._id },
+    parent: {
+      _id: 'ghi'
+    }
+  };
+  const grandparent = {
+    _id: 'ghi',
+    contact: { _id: grandparentContact._id },
+    name: 'jim'
+  };
+  const givenContact = {
+    _id: 'contact',
+    name: 'apex',
+    parent: {
+      _id: parent._id,
+      parent: {
+        _id: grandparent._id
+      }
+    }
+  };
+  const given = {
+    _id: docId,
+    type: 'data_record',
+    form: 'A',
+    contact: {
+      _id: givenContact._id,
+      parent: {
+        _id: parent._id,
+        parent: {
+          _id: grandparent._id
+        }
+      }
+    }
+  };
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+    { doc: JSON.parse(JSON.stringify(given)) },
+    { doc: givenContact },
+    { doc: parent },
+    { doc: grandparent }
+  ] });
+
+  const fetch = sinon.stub(db.medic, 'fetch');
+  fetch.callsFake((options, callback) => {
+    const contactDocs = options.keys.map(id => {
+      return [ givenContact, parentContact, grandparentContact ]
+        .find(contact => contact._id === id);
+    });
+    callback(null, { rows: contactDocs.map(doc => { return {doc: doc}; }) });
+  });
+
+  lineage.fetchHydratedDoc(docId, (err, actual) => {
+    test.equals(err, null);
+    lineage.minify(actual);
+    test.deepEqual(actual, given);
+    test.done();
+  });
+};
+
+exports['hydrate+minify is noop on a place'] = test => {
+  const docId = 'abc';
+  const parentContact = {
+    _id: 'contact-def',
+    phone: '+123'
+  };
+  const grandparentContact = {
+    _id: 'contact-ghi',
+    phone: '+456'
+  };
+  const givenContact = {
+    _id: 'contact-abc',
+    phone: '+789'
+  };
+  const parent = {
+    _id: 'def',
+    name: 'jack',
+    contact: { _id: parentContact._id },
+    parent: {
+      _id: 'ghi'
+    }
+  };
+  const grandparent = {
+    _id: 'ghi',
+    name: 'jim',
+    contact: { _id: grandparentContact._id }
+  };
+  const given = {
+    _id: docId,
+    name: 'joe',
+    contact: { _id: givenContact._id },
+    parent: {
+      _id: parent._id,
+      parent: {
+        _id: grandparent._id
+      }
+    }
+  };
+
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+    { doc: JSON.parse(JSON.stringify(given)) },
+    { doc: parent },
+    { doc: grandparent }
+  ] });
+
+  const fetch = sinon.stub(db.medic, 'fetch');
+  fetch.callsFake((options, callback) => {
+    const contactDocs = options.keys.map(id => {
+      return [ givenContact, parentContact, grandparentContact ]
+        .find(contact => contact._id === id);
+    });
+    callback(null, { rows: contactDocs.map(doc => { return {doc: doc}; }) });
+  });
+
+  lineage.fetchHydratedDoc(docId, (err, actual) => {
+    test.equals(err, null);
+    lineage.minify(actual);
+    test.deepEqual(actual, given);
+    test.done();
+  });
 };
