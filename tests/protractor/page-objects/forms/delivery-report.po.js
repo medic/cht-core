@@ -1046,9 +1046,8 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
   </h:body>
 </h:html>`;
 
-const contactId = '3b3d50d275280d2568cd36281d00348b';
 const userSettingsDocId = `org.couchdb.user:${auth.user}`;
-
+const contactId = '3b3d50d275280d2568cd36281d00348b';
 const docs = [
   {
     _id: 'form:delivery',
@@ -1061,72 +1060,12 @@ const docs = [
         data: new Buffer(xml).toString('base64')
       }
     }
-  },
-  {
-    _id: 'c49385b3594af7025ef097114104ef48',
-    reported_date: 1469578114543,
-    notes: '',
-    contact: {
-      _id: contactId,
-      name: 'Jack',
-      date_of_birth: '',
-      phone: '+64274444444',
-      alternate_phone: '',
-      notes: '',
-      type: 'person',
-      reported_date: 1478469976421
-    },
-    name: 'Number three district',
-    external_id: '',
-    type: 'district_hospital'
-  },
-  {
-    _id: contactId,
-    name: 'Jack',
-    date_of_birth: '',
-    phone: '+64274444444',
-    alternate_phone: '',
-    notes: '',
-    type: 'person',
-    reported_date: 1478469976421,
-    parent: {
-      _id: 'c49385b3594af7025ef097114104ef48',
-      reported_date: 1469578114543,
-      notes: '',
-      contact: {
-        _id: contactId,
-        name: 'Jack',
-        date_of_birth: '',
-        phone: '+64274444444',
-        alternate_phone: '',
-        notes: '',
-        type: 'person',
-        reported_date: 1478469976421
-      },
-      name: 'Number three district',
-      external_id: '',
-      type: 'district_hospital'
-    }
-  }
-];
+  }];
 
 module.exports = {
-  configureForm: done => {
-    browser.ignoreSynchronization = true;
-    protractor.promise
-      .all(docs.map(utils.saveDoc))
-      .then(() => utils.getDoc(userSettingsDocId))
-      .then((user) => {
-        user.contact_id = contactId;
-        return utils.saveDoc(user);
-      })
-      .then(done)
-      .catch(err => {
-        console.error('Error saving docs', err);
-        done(err);
-      });
+  configureForm: (done) => {
+    utils.seedTestData(done, contactId, docs);
   },
-
   teardown: done => {
     utils.afterEach()
       .then(() => utils.getDoc(userSettingsDocId))
@@ -1136,7 +1075,7 @@ module.exports = {
       })
       .then(done, done);
   },
-  goNext: () => {
+  nextPage: () => {
     const nextButton = element(by.css('button.btn.btn-primary.next-page'));
     helper.waitElementToBeClickable(nextButton);
 
@@ -1160,13 +1099,13 @@ module.exports = {
   selectPatientName: (name) => {
     browser.driver.navigate().refresh();
     helper.waitElementToBeClickable(element(by.css('button.btn.btn-primary.next-page')));
-
     element(by.css('.selection')).click();
     const search = element(by.css('.select2-search__field'));
     search.sendKeys(name);
     helper.waitElementToBeClickable(element(by.css('[role="treeitem"]')));
     search.sendKeys(protractor.Key.ENTER);
-    element(by.css('[role="treeitem"]')).click();
+    element(by.css(element(by.css('.select2-results')))).click();
+    helper.waitElementToBeClickable(element(by.css('button.btn.btn-primary.next-page')));
   },
 
   //Delivery Info page -- Pregnancy outcomes

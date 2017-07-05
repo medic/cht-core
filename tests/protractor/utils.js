@@ -8,8 +8,9 @@ var originalSettings = {};
 
 // The app_settings and update_settings modules are on the main ddoc.
 var mainDdocName = 'medic';
+const userSettingsDocId = `org.couchdb.user:${auth.user}`;
 
-var request = function (options, debug) {
+var request = function(options, debug) {
   var deferred = protractor.promise.defer();
 
   options.hostname = constants.API_HOST;
@@ -21,13 +22,13 @@ var request = function (options, debug) {
     console.log(JSON.stringify(options));
   }
 
-  var req = http.request(options, function (res) {
+  var req = http.request(options, function(res) {
     res.setEncoding('utf8');
     var body = '';
-    res.on('data', function (chunk) {
+    res.on('data', function(chunk) {
       body += chunk;
     });
-    res.on('end', function () {
+    res.on('end', function() {
       try {
         body = JSON.parse(body);
         if (body.error) {
@@ -41,7 +42,7 @@ var request = function (options, debug) {
       }
     });
   });
-  req.on('error', function (e) {
+  req.on('error', function(e) {
     console.log('Request failed: ' + e.message);
     deferred.reject();
   });
@@ -54,24 +55,24 @@ var request = function (options, debug) {
   return deferred.promise;
 };
 
-var updateSettingsForDdoc = function (updates, ddocName) {
+var updateSettingsForDdoc = function(updates, ddocName) {
   if (originalSettings[ddocName]) {
     throw new Error('A previous test did not call revertSettings on ' + ddocName);
   }
   return request({
     path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/app_settings', ddocName),
     method: 'GET'
-  }).then(function (result) {
+  }).then(function(result) {
     originalSettings[ddocName] = result.settings;
 
     // Make sure all updated fields are present in originalSettings[ddocName], to enable reverting later.
-    Object.keys(updates).forEach(function (updatedField) {
+    Object.keys(updates).forEach(function(updatedField) {
       if (!_.has(originalSettings[ddocName], updatedField)) {
         originalSettings[ddocName][updatedField] = null;
       }
     });
     return;
-  }).then(function () {
+  }).then(function() {
     return request({
       path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/update_settings', ddocName, '?replace=1'),
       method: 'PUT',
@@ -80,7 +81,7 @@ var updateSettingsForDdoc = function (updates, ddocName) {
   });
 };
 
-var revertSettingsForDdoc = function (ddocName) {
+var revertSettingsForDdoc = function(ddocName) {
   if (!originalSettings[ddocName]) {
     return Promise.resolve();
   }
@@ -91,14 +92,14 @@ var revertSettingsForDdoc = function (ddocName) {
     path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/update_settings', ddocName, '?replace=1'),
     method: 'PUT',
     body: JSON.stringify(originalSettings[ddocName])
-  }).then(function () {
+  }).then(function() {
     delete originalSettings[ddocName];
   });
 };
 
 var deleteAll = () => {
-  const typesToIgnore = [ 'translations', 'translations-backup', 'user-settings' ];
-  const idsToIgnore = [ 'appcache', 'migration-log', 'resources', 'sentinel-meta-data' ];
+  const typesToIgnore = ['translations', 'translations-backup', 'user-settings'];
+  const idsToIgnore = ['appcache', 'migration-log', 'resources', 'sentinel-meta-data'];
   request({
     path: path.join('/', constants.DB_NAME, '_all_docs?include_docs=true'),
     method: 'GET'
@@ -106,8 +107,8 @@ var deleteAll = () => {
     .then(response => {
       return response.rows.filter(row => {
         return row.id.indexOf('_design/') !== 0 &&
-               idsToIgnore.indexOf(row.id) === -1 &&
-               typesToIgnore.indexOf(row.doc.type) === -1;
+          idsToIgnore.indexOf(row.id) === -1 &&
+          typesToIgnore.indexOf(row.doc.type) === -1;
       }).map(row => {
         row.doc._deleted = true;
         return row.doc;
@@ -129,12 +130,12 @@ module.exports = {
 
   request: request,
 
-  requestOnTestDb: function (options, debug) {
+  requestOnTestDb: function(options, debug) {
     options.path = '/' + constants.DB_NAME + options.path;
     return request(options, debug);
   },
 
-  saveDoc: function (doc) {
+  saveDoc: function(doc) {
     var postData = JSON.stringify(doc);
     return request({
       path: '/' + constants.DB_NAME,
@@ -147,44 +148,57 @@ module.exports = {
     });
   },
 
-  getDoc: function (id) {
+  getDoc: function(id) {
     return request({
       path: '/' + constants.DB_NAME + '/' + id,
       method: 'GET'
     });
   },
 
-  getAuditDoc: function (id) {
+  getAuditDoc: function(id) {
     return request({
       path: '/' + constants.DB_NAME + '-audit/' + id + '-audit',
       method: 'GET'
     });
   },
 
-  deleteDoc: function (id) {
+  deleteDoc: function(id) {
     return module.exports.getDoc(id)
-      .then(function (doc) {
+      .then(function(doc) {
         doc._deleted = true;
         return module.exports.saveDoc(doc);
       });
   },
 
-  updateSettings: function (updates) {
+  updateSettings: function(updates) {
     // Update both ddocs, to avoid instability in tests.
     // Note that API will be copying changes to medic over to medic-client, so change
     // medic-client first (api does nothing) and medic after (api copies changes over to
     // medic-client, but the changes are already there.)
     return updateSettingsForDdoc(updates, 'medic-client')
-      .then(function () {
+      .then(function() {
         return updateSettingsForDdoc(updates, 'medic');
       });
   },
 
-  revertSettings: function () {
+  revertSettings: function() {
     return revertSettingsForDdoc('medic-client')
-      .then(function () {
+      .then(function() {
         return revertSettingsForDdoc('medic');
       });
+  },
+
+  seedTestData: (done, contactId, documents) => {
+    browser.ignoreSynchronization = true;
+    protractor.promise
+      .all(documents.map(module.exports.saveDoc))
+      .then(() => module.exports.getDoc(userSettingsDocId))
+      .then((user) => {
+        user.contact_id = contactId;
+        return module.exports.saveDoc(user);
+      })
+      .then(done)
+      .catch(done);
   },
 
   /**
@@ -208,16 +222,16 @@ module.exports = {
       });
   },
 
-  resetBrowser: function () {
-    browser.driver.navigate().refresh().then(function () {
-      return browser.wait(function () {
-        return element(by.css('#message-list')).isPresent();
+  resetBrowser: function() {
+    browser.driver.navigate().refresh().then(function() {
+      return browser.wait(function() {
+        return element(by.css('#messages-tab')).isPresent();
       }, 10000);
     });
   },
 
-  countOf: function (count) {
-    return function (c) {
+  countOf: function(count) {
+    return function(c) {
       return c === count;
     };
   },
