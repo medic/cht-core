@@ -192,7 +192,7 @@ describe('EditUserCtrl controller', () => {
       });
     });
 
-    it('password must be hard to hack', done => {
+    it('password must be hard to brute force', done => {
       mockEditCurrentUser(userToEdit);
       Translate.withArgs('password.weak').returns(Promise.resolve('hackable'));
       setTimeout(() => {
