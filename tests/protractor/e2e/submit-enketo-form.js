@@ -22,8 +22,8 @@ describe('Submit Enketo form', () => {
     </h:body>
   </h:html>`;
 
-  const contactId = '3b3d50d275280d2568cd36281d00348b';
-  const userSettingsDocId = `org.couchdb.user:${auth.user}`;
+ const contactId = '3b3d50d275280d2568cd36281d00348b';
+  //const userSettingsDocId = `org.couchdb.user:${auth.user}`;
 
   const docs = [
     {
@@ -86,31 +86,17 @@ describe('Submit Enketo form', () => {
     }
   ];
 
-  beforeEach(done => {
-    browser.ignoreSynchronization = true;
-    protractor.promise
-      .all(docs.map(utils.saveDoc))
-      .then(() => utils.getDoc(userSettingsDocId))
-      .then((user) => {
-        user.contact_id = contactId;
-        return utils.saveDoc(user);
-      })
-      .then(done)
-      .catch(err => {
-        console.error('Error saving docs', err);
-        done(err);
-      });
+ 
+ beforeAll(function(done) {
+    utils.seedTestData(done,contactId, docs);
   });
 
-  afterEach(done => {
-    utils.afterEach()
-      .then(() => utils.getDoc(userSettingsDocId))
-      .then((user) => {
-        user.contact_id = undefined;
-        return utils.saveDoc(user);
-      })
-      .then(done, done);
+  afterEach(function(done) {
+    utils.resetBrowser();
+    done();
   });
+
+  afterAll(utils.afterEach);
 
   it('submits on reports tab', () => {
     element(by.id('reports-tab')).click();
