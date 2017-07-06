@@ -1,0 +1,102 @@
+"targets": {
+  "enabled": true,
+  "items": [
+    {
+      "type": "count",
+      "id": "active-pregnancies",
+      "icon": "pregnancy-4",
+      "goal": -1,
+      "name": [
+        {
+          "locale": "en",
+          "content": "Active Pregnancies"
+        },
+        {
+          "locale": "hi",
+          "content": "मौजूदा गर्भावस्था"
+        }
+      ]
+    },
+    {
+      "type": "count",
+      "id": "pregnancy-registrations-this-month",
+      "icon": "pregnancy-4",
+      "goal": -1,
+      "name": [
+        {
+          "locale": "en",
+          "content": "Pregnancies Registered This Month"
+        },
+        {
+          "locale": "hi",
+          "content": "इस महीने में दर्ज किये गए गर्भावस्था"
+        }
+      ]
+    },
+    {
+      "type": "count",
+      "id": "births-this-month",
+      "icon": "infant",
+      "goal": -1,
+      "name": [
+        {
+          "locale": "en",
+          "content": "Births This Month"
+        },
+        {
+          "locale": "hi",
+          "content": "इस महीने में जन्म"
+        }
+      ]
+    },
+    {
+      "type": "percent",
+      "id": "delivery-with-min-1-visit",
+      "icon": "nurse",
+      "goal": 100,
+      "name": [
+        {
+          "locale": "en",
+          "content": "Deliveries with 1+ visits"
+        },
+        {
+          "locale": "hi",
+          "content": "जांच के साथ डिलिवरी"
+        }
+      ]
+    },
+    {
+      "type": "percent",
+      "id": "delivery-with-min-4-visits",
+      "icon": "nurse",
+      "goal": 100,
+      "name": [
+        {
+          "locale": "en",
+          "content": "Deliveries with 4+ visits"
+        },
+        {
+          "locale": "hi",
+          "content": "जांच के साथ डिलिवरी"
+        }
+      ]
+    },
+    {
+      "type": "percent",
+      "id": "delivery-at-facility-total",
+      "icon": "clinic",
+      "goal": 100,
+      "name": [
+        {
+          "locale": "en",
+          "content": "Deliveries at Facility All Time"
+        },
+        {
+          "locale": "hi",
+          "content": "अब तक के स्वास्थ्य केंद्र में डिलीवरी"
+        }
+      ]
+    }
+  ]
+}
+

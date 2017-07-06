@@ -1,0 +1,22 @@
+{
+   "area": "area.png",
+   "branch": "branch.png",
+   "child": "child.png",
+   "children": "children.png",
+   "clinic": "clinic.png",
+   "family": "family.png",
+   "follow-up": "follow-up.png",
+   "household": "household.png",
+   "immunization": "immunization.png",
+   "infant": "infant.png",
+   "mother-child": "mother-child.png",
+   "new-person": "new-person.png",
+   "nurse": "icon-nurse-lg.png",
+   "off": "off.png",
+   "on": "on.png",
+   "person": "person.png",
+   "pregnancy-1": "pregnancy-1.png",
+   "pregnancy-4": "pregnancy-4.png",
+   "risk": "risk.png",
+   "chw": "icon-chw-lg.png"
+}

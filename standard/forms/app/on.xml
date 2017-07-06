@@ -1,0 +1,129 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Turn Notifications ON</h:title>
+    <model>
+      <instance>
+        <on delimiter="#" id="on" prefix="J1!on!" version="2016-12-21">
+          <inputs>
+            <meta>
+              <location>
+                <lat/>
+                <long/>
+                <error/>
+                <message/>
+              </location>
+            </meta>
+            <source>user</source>
+            <source_id/>
+            <contact>
+              <_id/>
+              <patient_id/>
+              <name/>
+              <date_of_birth/>
+              <sex/>
+              <parent>
+                <contact>
+                  <phone/>
+                  <name/>
+                </contact>
+              </parent>
+            </contact>
+          </inputs>
+          <patient_uuid/>
+          <patient_id/>
+          <patient_name/>
+          <chw_name/>
+          <chw_phone/>
+          <chw_sms/>
+          <group_note>
+            <pregnancy_note/>
+            <send_note/>
+            <chw_note/>
+          </group_note>
+          <meta>
+            <instanceID/>
+          </meta>
+        </on>
+      </instance>
+      <bind nodeset="/on/inputs" relevant="./source = 'user'"/>
+      <bind nodeset="/on/inputs/source" type="string"/>
+      <bind nodeset="/on/inputs/source_id" type="string"/>
+      <bind nodeset="/on/inputs/contact/_id" type="db:person"/>
+      <bind nodeset="/on/inputs/contact/patient_id" type="string"/>
+      <bind nodeset="/on/inputs/contact/name" type="string"/>
+      <bind nodeset="/on/inputs/contact/date_of_birth" type="string"/>
+      <bind nodeset="/on/inputs/contact/sex" type="string"/>
+      <bind nodeset="/on/inputs/contact/parent/contact/phone" type="string"/>
+      <bind nodeset="/on/inputs/contact/parent/contact/name" type="string"/>
+      <bind calculate="../inputs/contact/_id" nodeset="/on/patient_uuid" type="string"/>
+      <bind calculate="../inputs/contact/patient_id" nodeset="/on/patient_id" type="string"/>
+      <bind calculate="../inputs/contact/name" nodeset="/on/patient_name" type="string"/>
+      <bind calculate="../inputs/contact/parent/contact/name" nodeset="/on/chw_name" type="string"/>
+      <bind calculate="../inputs/contact/parent/contact/phone" nodeset="/on/chw_phone" type="string"/>
+      <bind calculate=" /on/group_note/chw_note " nodeset="/on/chw_sms" type="string"/>
+      <bind nodeset="/on/group_note/pregnancy_note" readonly="true()" type="string"/>
+      <bind nodeset="/on/group_note/send_note" required="true()" type="select1"/>
+      <bind nodeset="/on/group_note/chw_note" relevant=" /on/group_note/send_note  = 'yes'" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/on/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <group appearance="field-list" ref="/on/inputs">
+      <label>Patient</label>
+      <input appearance="hidden" ref="/on/inputs/source">
+        <label>Source</label>
+      </input>
+      <input appearance="hidden" ref="/on/inputs/source_id">
+        <label>Source ID</label>
+      </input>
+      <group ref="/on/inputs/contact">
+        <input appearance="db-object" ref="/on/inputs/contact/_id">
+          <label>What is the patient's name?</label>
+          <hint>Select a person from list</hint>
+        </input>
+        <input appearance="hidden" ref="/on/inputs/contact/patient_id">
+          <label>Patient ID</label>
+        </input>
+        <input appearance="hidden" ref="/on/inputs/contact/name">
+          <label>Name</label>
+        </input>
+        <input appearance="hidden" ref="/on/inputs/contact/date_of_birth">
+          <label>Date of Birth</label>
+        </input>
+        <input appearance="hidden" ref="/on/inputs/contact/sex">
+          <label>Sex</label>
+        </input>
+        <group ref="/on/inputs/contact/parent">
+          <group ref="/on/inputs/contact/parent/contact">
+            <input appearance="hidden" ref="/on/inputs/contact/parent/contact/phone">
+              <label>CHW Phone</label>
+            </input>
+            <input appearance="hidden" ref="/on/inputs/contact/parent/contact/name">
+              <label>CHW Name</label>
+            </input>
+          </group>
+        </group>
+      </group>
+    </group>
+    <group appearance="field-list" ref="/on/group_note">
+      <label>Turning Notifications ON</label>
+      <input ref="/on/group_note/pregnancy_note">
+        <label>An SMS will automatically be sent to <output value=" /on/chw_name "/> (<output value=" /on/chw_phone "/>) to inform them that reminders are turned ON for <output value=" /on/patient_name "/></label></input>
+      <select1 ref="/on/group_note/send_note">
+        <label>Write additional info to send to the CHW?</label>
+        <item>
+          <label>Yes</label>
+          <value>yes</value>
+        </item>
+        <item>
+          <label>No</label>
+          <value>no</value>
+        </item>
+      </select1>
+      <input appearance="multiline" ref="/on/group_note/chw_note">
+        <label>Enter short message to be sent</label>
+      </input>
+    </group>
+  </h:body>
+</h:html>
