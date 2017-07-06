@@ -1062,6 +1062,10 @@ const docs = [
     }
   }];
 
+const selectRadioButton = (value) => {
+  element(by.css(`[value=${value}]`)).click();
+};
+
 module.exports = {
   configureForm: (done) => {
     utils.seedTestData(done, contactId, docs);
@@ -1078,9 +1082,7 @@ module.exports = {
   nextPage: () => {
     const nextButton = element(by.css('button.btn.btn-primary.next-page'));
     helper.waitElementToBeClickable(nextButton);
-
-    // nextButton.click();
-    browser.actions().mouseMove(nextButton).click();
+    nextButton.click();
   },
 
   goBack: () => {
@@ -1088,7 +1090,10 @@ module.exports = {
   },
 
   submit: () => {
-    element(by.css('button.btn.submit.btn-primary')).click();
+    const submitButton = element(by.css('[ng-click="onSubmit()"]'));
+    helper.waitElementToBeClickable(submitButton);
+    submitButton.click();
+    helper.waitElementToBeVisisble(element(by.css('div#reports-content')));
   },
 
   //patient page
@@ -1099,39 +1104,38 @@ module.exports = {
   selectPatientName: (name) => {
     browser.driver.navigate().refresh();
     helper.waitElementToBeClickable(element(by.css('button.btn.btn-primary.next-page')));
+
     element(by.css('.selection')).click();
     const search = element(by.css('.select2-search__field'));
+    search.click();
     search.sendKeys(name);
-    helper.waitElementToBeClickable(element(by.css('[role="treeitem"]')));
-    search.sendKeys(protractor.Key.ENTER);
-    element(by.css(element(by.css('.select2-results')))).click();
-    helper.waitElementToBeClickable(element(by.css('button.btn.btn-primary.next-page')));
+    helper.waitElementToBeVisisble(element(by.css('.name')));
+    element(by.css('.name')).click();
   },
 
   //Delivery Info page -- Pregnancy outcomes
   selectLiveBirthButton: () => {
-    element(by.css('[value="health"]')).click();
+    selectRadioButton('healthy');
   },
-
   selectStillBirthButton: () => {
-    element(by.css('[value="still_birth"]')).click();
+    selectRadioButton('still_birth');
   },
 
   selectMiscarriageButton: () => {
-    element(by.css('[value="miscarriage"]')).click();
+    selectRadioButton('miscarriage');
   },
 
   //Delivery Info page -- Location of delivery
   selectFacilityButton: () => {
-    element(by.css('[value="f"]')).click();
+    selectRadioButton('f');
   },
 
   selectHomeSkilledButton: () => {
-    element(by.css('[value="s"]')).click();
+    selectRadioButton('s');
   },
 
   selectHomeNonSkilledButton: () => {
-    element(by.css('[value="ns"]')).click();
+    selectRadioButton('ns');
   },
 
   //Delivery Info page -- Delivery date
@@ -1140,7 +1144,6 @@ module.exports = {
     datePicker.click();
     //type date in the text box as '2017-04-23'
     datePicker.sendKeys(deliveryDate);
-
   },
 
   reset: () => {
@@ -1149,21 +1152,21 @@ module.exports = {
 
   //note to CHW
   getNoteToCHW: () => {
-    return element(by.name('/delivery/group_note/g_chw_sms')).getText();
+    return element(by.css('textarea')).getAttribute('value');
   },
 
   //summary page
   getOutcomeText: () => {
     return element(by.css('[data-value=" /delivery/group_delivery_summary/display_delivery_outcome "]'))
-      .getText();
+      .getInnerHtml();
   },
 
   getDeliveryLocationSummaryText: () => {
     return element(by.css('[data-value=" /delivery/group_summary/r_delivery_location "]'))
-      .getText();
+      .getInnerHtml();
   },
 
   getFollowUpMessage: () => {
-    return element(by.css('[data-value=" /delivery/group_note/g_chw_sms "]')).getText();
-  }
+    return element(by.css('[data-value=" /delivery/group_note/g_chw_sms "]')).getInnerHtml();
+  },
 };
