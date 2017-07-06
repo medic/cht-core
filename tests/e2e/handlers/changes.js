@@ -10,7 +10,7 @@ var DB_NAME = require('../../../db').settings.db,
 var adminUrl = utils.API_URL;
 function userUrl(name) {
   var url = urlLib.parse(adminUrl);
-  url.auth = name + ':secret';
+  url.auth = name + ':passwordSUP3RS3CR37!';
   return url;
 }
 

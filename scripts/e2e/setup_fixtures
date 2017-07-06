@@ -44,7 +44,7 @@ curl -X POST \
 	-H 'Content-Type: application/json' \
 	--data '{
 	  "username":"bob",
-	  "password":"secret",
+	  "password":"passwordSUP3RS3CR37!",
 	  "place":{
 	     "_id":"fixture:bobville",
 	     "type":"health_center",
@@ -63,7 +63,7 @@ curl -X POST \
 	-H 'Content-Type: application/json' \
 	--data '{
 	  "username":"clare",
-	  "password":"secret",
+	  "password":"passwordSUP3RS3CR37!",
 	  "place":{
 	     "_id":"fixture:clareville",
 	     "type":"health_center",
@@ -82,7 +82,7 @@ curl -X POST \
 	-H 'Content-Type: application/json' \
 	--data '{
 	  "username":"chw-boss",
-	  "password":"secret",
+	  "password":"passwordSUP3RS3CR37!",
 	  "place":{
 	     "_id":"fixture:chw-bossville",
 	     "type":"health_center",
@@ -102,7 +102,7 @@ curl -X POST \
 	-H 'Content-Type: application/json' \
 	--data '{
 	  "username":"chw",
-	  "password":"secret",
+	  "password":"passwordSUP3RS3CR37!",
 	  "place":{
 	     "_id":"fixture:chwville",
 	     "type":"district_hospital",

@@ -59,7 +59,7 @@ exports['getForm sanitizes bad headers from attachment query'] = function(test) 
   sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: [1]});
   sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'foo', {
     'content-type': 'xml',
-    'uri' : 'http://admin:secret@localhost',
+    'uri' : 'http://admin:passwordSUP3RS3CR37!@localhost',
     'statusCode' : 'junk'
   });
   var spy = sinon.spy(db, 'sanitizeResponse');
