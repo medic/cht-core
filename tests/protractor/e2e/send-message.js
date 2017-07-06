@@ -1,5 +1,5 @@
-var utils = require('../utils');
-var helper = require('../helper');
+const utils = require('../utils'),
+  helper = require('../helper');
 
 describe('Send message', function() {
   'use strict';

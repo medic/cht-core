@@ -1,5 +1,4 @@
-const utils = require('../utils'),
-      auth = require('../auth')();
+const utils = require('../utils');
 
 describe('Submit Enketo form', () => {
 
