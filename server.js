@@ -737,7 +737,9 @@ const couchDbNoAdminPartyModeCheck = callback => {
     if (statusCode === 401) {
       callback();
     } else {
-      callback(new Error('CouchDB Admin Party Mode detected, please disable: https://github.com/medic/medic-webapp#disable-couchdb-admin-party-mode'));
+      console.error('Expected a 401 when accessing db without authentication.');
+      console.error(`Instead we got a ${statusCode}`).
+      callback(new Error('CouchDB security seems to be misconfigured, see: https://github.com/medic/medic-webapp#enabling-a-secure-couchdb'));
     }
   });
 };
