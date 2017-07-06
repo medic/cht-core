@@ -38,6 +38,7 @@ describe('Send message', function() {
   var CONTACTS = [ALICE, BOB_PLACE, CAROL, DAVID];
 
   beforeAll(function(done) {
+    console.log('beforeAll for send-message');
     browser.ignoreSynchronization = true;
     protractor.promise
       .all(CONTACTS.map(utils.saveDoc))
@@ -50,7 +51,13 @@ describe('Send message', function() {
     done();
   });
 
-  afterAll(utils.afterEach);
+  afterAll(done => {
+    console.log('About to call utils.afterEach from send-message');
+    utils.afterEach(() => {
+      console.log('Finsished calling utils.afterEach from send-message');
+      done();
+    });
+  });
 
   var messageInList = function(identifier) {
     return '#message-list li[data-record-id="'+identifier+'"]';
