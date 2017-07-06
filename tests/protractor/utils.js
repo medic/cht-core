@@ -123,7 +123,7 @@ var deleteAll = () => {
         headers: { 'content-type': 'application/json' }
       }).then(response => {
         console.log(`Deleted docs: ${JSON.stringify(response)}`);
-      });;
+      });
     });
 };
 
