@@ -77,14 +77,15 @@ define( function( require, exports, module ) {
         var selected = $this.select2('data');
         var doc = selected && selected[0] && selected[0].doc;
         if (doc) {
-            var form = $this.closest('form.or');
+            // find the nearest repeat section, or form if not in a repeat
+            var parent = $this.closest('.or-repeat,form.or');
             var field = $this.attr('name');
             var objectRoot = field.substring(0, field.lastIndexOf('/'));
-            updateFields(form, doc, objectRoot, field);
+            updateFields(parent, doc, objectRoot, field);
         }
     };
 
-    var updateFields = function(form, doc, objectRoot, keyPath) {
+    var updateFields = function(parent, doc, objectRoot, keyPath) {
         Object.keys(doc).forEach(function(key) {
             var path = objectRoot + '/' + key;
             if (path === keyPath) {
@@ -98,9 +99,9 @@ define( function( require, exports, module ) {
             }
             if (_.isObject(value)) {
                 // recursively set fields for children
-                return updateFields(form, value, path, keyPath);
+                return updateFields(parent, value, path, keyPath);
             }
-            form.find('[name="' + path + '"]')
+            parent.find('[name="' + path + '"]')
                 .val(value)
                 .trigger('change');
         });
