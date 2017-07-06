@@ -212,6 +212,15 @@
           }
         }
       })
+      .state('configuration.settings.god', {
+        url: '/god',
+        views: {
+          tab: {
+            controller: 'ConfigurationSettingsGodCtrl',
+            templateUrl: 'templates/partials/configuration_settings_god.html'
+          }
+        }
+      })
       .state('configuration.targets', {
         url: '/targets',
         views: {

@@ -26,6 +26,7 @@
   require('./configuration-permissions');
   require('./configuration-settings-advanced');
   require('./configuration-settings-basic');
+  require('./configuration-settings-god');
   require('./configuration-targets');
   require('./configuration-targets-edit.js');
   require('./configuration-translation-application');

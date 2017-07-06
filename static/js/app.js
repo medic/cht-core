@@ -16,6 +16,7 @@ require('angular-pouchdb');
 require('angular-resource');
 require('angular-route');
 require('angular-sanitize');
+require('angular-schema-form');
 require('angular-translate');
 require('angular-translate-interpolation-messageformat');
 require('angular-translate-handler-log');
@@ -59,7 +60,8 @@ _.templateSettings = {
     'inboxServices',
     'pascalprecht.translate',
     'nvd3',
-    'pouchdb'
+    'pouchdb',
+    'schemaForm'
   ]);
 
   app.config(function(

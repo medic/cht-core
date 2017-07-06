@@ -4,23 +4,23 @@
 
   var inboxServices = angular.module('inboxServices');
 
-  inboxServices.factory('Settings',
+  inboxServices.factory('DdocCache',
     function(
-      $log,
-      $q,
-      Cache,
       DB,
-      Session
+      Session,
+      Cache
     ) {
-
       'ngInject';
 
-      var cache = Cache({
+    // NOSHIP: instead, move app_settings and schema out of the ddoc
+    var DDOC_ID = '_design/medic';
+
+      return Cache({
         get: function(callback) {
           DB()
-            .get('_design/medic-client')
+            .get(DDOC_ID)
             .then(function(ddoc) {
-              callback(null, ddoc.app_settings);
+              callback(null, ddoc);
             })
             .catch(function(err) {
               if (err && err.status === 401) {
@@ -30,9 +30,19 @@
             });
         },
         invalidate: function(doc) {
-          return doc._id === '_design/medic-client';
+          return doc._id === DDOC_ID;
         }
       });
+    });
+
+  inboxServices.factory('Settings',
+    function(
+      $log,
+      $q,
+      DdocCache
+    ) {
+
+      'ngInject';
 
       return function() {
         var listeners = {};
@@ -50,7 +60,8 @@
         }
 
         var deferred = $q(function(resolve, reject) {
-          cache(function(err, settings) {
+          DdocCache(function(err, ddoc) {
+            var settings = ddoc.app_settings;
             if (err) {
               emit('error', err);
               return reject(err);
@@ -73,5 +84,24 @@
       };
     }
   );
+
+
+  inboxServices.factory('SettingsSchema',
+    function(
+      $q,
+      DdocCache
+      ) {
+
+      'ngInject';
+
+      return $q(function(resolve, reject) {
+        DdocCache(function(err, ddoc) {
+          if (err) {
+            return reject(err);
+          }
+          return resolve(ddoc.kanso.config.settings_schema);
+        });
+      });
+    });
 
 }());
