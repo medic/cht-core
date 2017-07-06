@@ -1,0 +1,50 @@
+"{{FORM_CODE}}": {
+  "meta": {
+    "code": "{{FORM_CODE}}",
+    "icon": "immunization",
+    "label": {
+      "en": "{{FORM_NAME}}"
+    }
+  },
+  "fields": {
+    "patient_id": {
+      "labels": {
+        "description": {
+          "en": "Patient ID"
+        },
+        "short": {
+          "en": "ID"
+        }
+      },
+      "position": 0,
+      "type": "string",
+      "flags": {
+        "input_digits_only": true
+      },
+      "length": [
+        5,
+        5
+      ],
+      "required": true
+    },
+    "notes": {
+      "labels": {
+        "description": {
+          "en": "Notes"
+        },
+        "short": {
+          "en": "Notes"
+        }
+      },
+      "position": 1,
+      "type": "string",
+      "length": [
+        1,
+        100
+      ],
+      "required": false
+    }
+  },
+  "public_form": false,
+  "use_sentinel": true
+},

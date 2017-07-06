@@ -1,0 +1,140 @@
+"schedules": [
+  {
+    "name": "pregnancy-missing-visit",
+    "events": [
+      {
+        "id": "pregnancy-missing-visit",
+        "days": 7,
+        "start": 0,
+        "end": 7,
+        "type": "pregnancy-1",
+        "title": [
+          {
+            "content": "{{contact.name}} missing pregnancy visit",
+            "locale": "en"
+          }
+        ],
+        "description": [
+          {
+            "content": "High Risk",
+            "locale": "en"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "pregnancy-missing-birth",
+    "events": [
+      {
+        "id": "pregnancy-missing-birth",
+        "days": 7,
+        "start": 1,
+        "end": 14,
+        "type": "mother-child",
+        "title": [
+          {
+            "content": "{{contact.name}} missing birth report",
+            "locale": "en"
+          }
+        ],
+        "description": [
+          {
+            "content": "High Risk",
+            "locale": "en"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "danger-sign",
+    "events": [
+      {
+        "id": "danger-sign",
+        "days": 0,
+        "start": 0,
+        "end": 6,
+        "type": "clinic",
+        "title": [
+          {
+            "content": "{{contact.name}} danger sign reported",
+            "locale": "en"
+          }
+        ],
+        "description": [
+          {
+            "content": "Confirm Danger Sign",
+            "locale": "en"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "postnatal-home-birth",
+    "events": [
+      {
+        "id": "postnatal-home-birth",
+        "days": 0,
+        "start": 0,
+        "end": 4,
+        "type": "mother-child",
+        "title": [
+          {
+            "content": "{{contact.name}} postnatal visit needed",
+            "locale": "en"
+          }
+        ],
+        "description": [
+          {
+            "content": "Home Birth",
+            "locale": "en"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "postnatal-missing-visit",
+    "events": [
+      {
+        "id": "postnatal-missing-visit",
+        "days": 1,
+        "start": 0,
+        "end": 4,
+        "type": "mother-child",
+        "title": [
+          {
+            "content": "{{contact.name}} missing postnatal visit",
+            "locale": "en"
+          }
+        ],
+        "description": [
+          {
+            "content": "Home Birth",
+            "locale": "en"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "immunization-missing-visit",
+    "events": [
+      {
+        "id": "immunization-missing-visit",
+        "days": 7,
+        "start": 0,
+        "end": 14,
+        "type": "immunization",
+        "title": [
+          {
+            "content": "{{contact.name}} missing immunization visit",
+            "locale": "en"
+          }
+        ]
+      }
+    ]
+  }
+]

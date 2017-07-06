@@ -1,0 +1,5396 @@
+{
+  "locales": [
+    {
+      "code": "en",
+      "name": "English"
+    },
+    {
+      "code": "es",
+      "name": "Español (Spanish)"
+    },
+    {
+      "code": "fr",
+      "name": "Français (French)"
+    },
+    {
+      "code": "ne",
+      "name": "नेपाली (Nepali)"
+    },
+    {
+      "code": "sw",
+      "name": "Kiswahili (Swahili)"
+    },
+    {
+      "code": "hi",
+      "name": "हिन्दी (Hindi)"
+    },
+    {
+      "code": "id",
+      "name": "Bahasa Indonesia (Indonesian)"
+    }
+  ],
+  "locale": "en",
+  "locale_outgoing": "en",
+  "muvuku_webapp_url": "/medic-reporter/_design/medic-reporter/_rewrite/?_embed_mode=2&_locale=en#/generic-anc.json",
+  "date_format": "ddd, MMM Do, YYYY",
+  "reported_date_format": "ddd, MMM Do, YYYY [at] h:mm A",
+  "forms_only_mode": false,
+  "default_responses": {
+    "start_date": "1970-01-01"
+  },
+  "district_admins_access_unallocated_messages": true,
+  "public_access": false,
+  "default_country_code": "254",
+  "gateway_number": "+254741095736",
+  "kujua-reporting": [
+    {
+      "code": "SS",
+      "reporting_freq": "monthly"
+    }
+  ],
+  "anc_forms": {
+    "registration": "R",
+    "registrationLmp": "P",
+    "visit": "V",
+    "delivery": "D",
+    "flag": "F"
+  },
+  "schedule_morning_hours": 6,
+  "schedule_morning_minutes": 0,
+  "schedule_evening_hours": 20,
+  "schedule_evening_minutes": 0,
+  "synthetic_date": "",
+  "contact_display_short": "clinic.name",
+  "permissions": [
+    {
+      "name": "can_export_messages",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "analytics"
+      ]
+    },
+    {
+      "name": "can_export_forms",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "analytics"
+      ]
+    },
+    {
+      "name": "can_export_contacts",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_export_audit",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_export_feedback",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_export_server_logs",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_access_directly",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_view_analytics",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "analytics"
+      ]
+    },
+    {
+      "name": "can_view_data_records",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "analytics",
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_view_unallocated_data_records",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_view_users",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_edit",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_update_messages",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_update_users",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_update_people",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_update_places",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_create_records",
+      "roles": [
+        "national_admin",
+        "district_admin",
+        "data_entry",
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_access_gateway_api",
+      "roles": [
+        "gateway"
+      ]
+    },
+    {
+      "name": "can_create_users",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_create_people",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_create_places",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_tasks",
+      "roles": [
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_tasks_tab",
+      "roles": [
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_configure",
+      "roles": [
+        "national_admin"
+      ]
+    },
+    {
+      "name": "can_view_messages",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_messages_tab",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_reports",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_reports_tab",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_analytics_tab",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_contacts",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_view_contacts_tab",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_edit_profile",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_delete_reports",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_bulk_delete_reports",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_delete_contacts",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_delete_messages",
+      "roles": [
+        "national_admin",
+        "district_admin"
+      ]
+    },
+    {
+      "name": "can_delete_users",
+      "roles": [
+        "national_admin"
+      ]
+    }
+  ],
+  "setup_complete": true,
+  "outgoing_phone_replace": {
+    "match": "",
+    "replace": ""
+  },
+  "outgoing_phone_filters": [
+    {
+      "match": "",
+      "replace": ""
+    }
+  ],
+  "id_format": "1111",
+  "alerts": [
+    {
+      "form": "",
+      "condition": "",
+      "message": "",
+      "recipient": ""
+    }
+  ],
+  "reminders": [
+    {
+      "form": "",
+      "text_expression": "",
+      "cron": "",
+      "mute_after_form_for": "",
+      "message": ""
+    }
+  ],
+  "registrations": [
+    {
+      "form": "C",
+      "events": [
+        {
+          "name": "on_create",
+          "trigger": "add_birth_date",
+          "params": "weeks_since_birth",
+          "bool_expr": "doc.fields.weeks_since_birth"
+        },
+        {
+          "name": "on_create",
+          "trigger": "add_patient",
+          "params": "",
+          "bool_expr": ""
+        },
+        {
+          "name": "on_create",
+          "trigger": "assign_schedule",
+          "params": "Immunizations",
+          "bool_expr": "doc.fields.weeks_since_birth"
+        }
+      ],
+      "validations": {
+        "join_responses": true,
+        "list": [
+          {
+            "property": "patient_name",
+            "rule": "lenMin(1) && lenMax(30)",
+            "translation_key": "messages.c.validation.patient_name"
+          },
+          {
+            "property": "weeks_since_birth",
+            "rule": "integer && between(0,90)",
+            "translation_key": "messages.c.validation.weeks_since_birth"
+          }
+        ]
+      },
+      "messages": [
+        {
+          "translation_key": "messages.c.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "P",
+      "events": [
+        {
+          "name": "on_create",
+          "trigger": "add_expected_date",
+          "params": "lmp_date",
+          "bool_expr": "doc.fields.last_menstrual_period && /^[0-9]+$/.test(doc.fields.last_menstrual_period)"
+        },
+        {
+          "name": "on_create",
+          "trigger": "assign_schedule",
+          "params": "ANC Reminders LMP",
+          "bool_expr": "doc.fields.last_menstrual_period && /^[0-9]+$/.test(doc.fields.last_menstrual_period)"
+        },
+        {
+          "name": "on_create",
+          "trigger": "assign_schedule",
+          "params": "ANC Reminders",
+          "bool_expr": "!doc.fields.last_menstrual_period || !(/^[0-9]+$/.test(doc.fields.last_menstrual_period))"
+        },
+        {
+          "name": "on_create",
+          "trigger": "clear_schedule",
+          "params": "ANC Reminders LMP from App, ANC Reminders LMP, ANC Reminders, Postnatal Care, Postnatal Care for Facility Birth, Postnatal Care from App",
+          "bool_expr": ""
+        }
+      ],
+      "validations": {
+        "join_responses": true,
+        "list": [
+          {
+            "property": "patient_id",
+            "rule": "regex('^[0-9]{5,13}$')",
+            "translation_key": "messages.generic.validation.patient_id"
+          },
+          {
+            "property": "last_menstrual_period",
+            "rule": "lenMin(1) ? (integer && between(2,42)) : optional",
+            "translation_key": "messages.p.validation.last_menstrual_period"
+          }
+        ]
+      },
+      "messages": [
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.p.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "D",
+      "events": [
+        {
+          "name": "on_create",
+          "trigger": "add_birth_date",
+          "params": "days_since_birth",
+          "bool_expr": "doc.fields.days_since_birth"
+        },
+        {
+          "name": "on_create",
+          "trigger": "assign_schedule",
+          "params": "Postnatal Care",
+          "bool_expr": "doc.fields.days_since_birth && /^[0-9]+$/.test(doc.fields.days_since_birth) && !(doc.fields.delivery_code === 'f' || doc.fields.delivery_code === 'F')"
+        },
+        {
+          "name": "on_create",
+          "trigger": "assign_schedule",
+          "params": "Postnatal Care for Facility Birth",
+          "bool_expr": "doc.fields.days_since_birth && /^[0-9]+$/.test(doc.fields.days_since_birth) && (doc.fields.delivery_code === 'f' || doc.fields.delivery_code === 'F')"
+        },
+        {
+          "name": "on_create",
+          "trigger": "clear_schedule",
+          "params": "ANC Reminders LMP from App, ANC Reminders LMP, ANC Reminders, Postnatal Care, Postnatal Care for Facility Birth, Postnatal Care from App",
+          "bool_expr": ""
+        }
+      ],
+      "validations": {
+        "join_responses": true,
+        "list": [
+          {
+            "property": "patient_id",
+            "rule": "regex('^[0-9]{5,13}$')",
+            "translation_key": "messages.generic.validation.patient_id"
+          },
+          {
+            "property": "delivery_code",
+            "rule": "regex('^(F|f|S|s|Ns|NS|ns|nS)$')",
+            "translation_key": "messages.d.validation.delivery_code"
+          }
+        ]
+      },
+      "messages": [
+        {
+          "translation_key": "messages.d.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "delivery",
+      "events": [
+        {
+          "name": "on_create",
+          "trigger": "assign_schedule",
+          "params": "Postnatal Care from App",
+          "bool_expr": "doc.fields.birth_date && doc.contact.parent && doc.contact.parent.parent && doc.contact.parent.parent.use_cases && doc.contact.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1"
+        },
+        {
+          "name": "on_create",
+          "trigger": "clear_schedule",
+          "params": "ANC Reminders LMP from App, ANC Reminders LMP, ANC Reminders, Postnatal Care, Postnatal Care for Facility Birth, Postnatal Care from App",
+          "bool_expr": ""
+        }
+      ],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.relay.chw_sms",
+          "event_type": "report_accepted",
+          "recipient": "chw_phone"
+        }
+      ]
+    },
+    {
+      "form": "pregnancy",
+      "events": [
+        {
+          "name": "on_create",
+          "trigger": "assign_schedule",
+          "params": "ANC Reminders LMP from App",
+          "bool_expr": "doc.fields.lmp_date_8601"
+        },
+        {
+          "name": "on_create",
+          "trigger": "clear_schedule",
+          "params": "ANC Reminders LMP from App, ANC Reminders LMP, ANC Reminders, Postnatal Care, Postnatal Care for Facility Birth, Postnatal Care from App",
+          "bool_expr": ""
+        }
+      ],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.relay.chw_sms",
+          "event_type": "report_accepted",
+          "recipient": "chw_phone"
+        }
+      ]
+    },
+    {
+      "form": "N",
+      "events": [
+        {
+          "name": "on_create",
+          "trigger": "add_patient",
+          "params": "",
+          "bool_expr": ""
+        }
+      ],
+      "validations": {
+        "join_responses": true,
+        "list": [
+          {
+            "property": "patient_name",
+            "rule": "lenMin(1) && lenMax(30)",
+            "translation_key": "messages.n.validation.patient_name"
+          }
+        ]
+      },
+      "messages": [
+        {
+          "translation_key": "messages.n.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        }
+      ]
+    }
+  ],
+  "patient_reports": [
+    {
+      "form": "pregnancy_visit",
+      "name": "Pregnancy Visit",
+      "format": "",
+      "silence_type": "ANC Reminders, ANC Reminders LMP, ANC Reminders LMP from App",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.relay.chw_sms",
+          "event_type": "report_accepted",
+          "recipient": "chw_phone"
+        }
+      ]
+    },
+    {
+      "form": "postnatal_visit",
+      "name": "Postnatal Visit",
+      "format": "",
+      "silence_type": "Postnatal Care, Postnatal Care for Facility Birth, Postnatal Care from App",
+      "silence_for": "3 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.relay.chw_sms",
+          "event_type": "report_accepted",
+          "recipient": "chw_phone"
+        }
+      ]
+    },
+    {
+      "form": "immunization_visit",
+      "name": "Immunization Visit",
+      "format": "",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.relay.chw_sms",
+          "event_type": "report_accepted",
+          "recipient": "chw_phone"
+        }
+      ]
+    },
+    {
+      "form": "V",
+      "name": "Visit (SMS)",
+      "format": "V <patientid>",
+      "silence_type": "ANC Reminders, ANC Reminders LMP, ANC Reminders LMP from App, Immunizations",
+      "silence_for": "8 days",
+      "fields": [
+        {
+          "field_name": "",
+          "title": ""
+        }
+      ],
+      "validations": {
+        "join_responses": true,
+        "list": [
+          {
+            "property": "patient_id",
+            "rule": "regex('^[0-9]{5,13}$')",
+            "translation_key": "messages.generic.validation.patient_id"
+          }
+        ]
+      },
+      "messages": [
+        {
+          "translation_key": "messages.v.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "F",
+      "name": "Flag (SMS)",
+      "format": "F <patientid>",
+      "silence_type": "",
+      "silence_for": "",
+      "fields": [
+        {
+          "field_name": "",
+          "title": ""
+        }
+      ],
+      "validations": {
+        "join_responses": true,
+        "list": [
+          {
+            "property": "patient_id",
+            "rule": "regex('^[0-9]{5,13}$')",
+            "translation_key": "messages.generic.validation.patient_id"
+          }
+        ]
+      },
+      "messages": [
+        {
+          "translation_key": "messages.f.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.f.report_accepted_parent",
+          "event_type": "report_accepted",
+          "recipient": "parent"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "PEN1",
+      "name": " PEN1 Pentavalent",
+      "format": "PEN1 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "PEN2",
+      "name": " PEN2 Pentavalent",
+      "format": "PEN2 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "PEN3",
+      "name": " PEN3 Pentavalent",
+      "format": "PEN3 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "BCG",
+      "name": " BCG Bacille Calmette-Guerin",
+      "format": "BCG <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "OPV0",
+      "name": " OPV0 Oral polio",
+      "format": "OPV0 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "OPV1",
+      "name": " OPV1 Oral polio",
+      "format": "OPV1 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "OPV2",
+      "name": " OPV2 Oral polio",
+      "format": "OPV2 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "OPV3",
+      "name": " OPV3 Oral polio",
+      "format": "OPV3 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "PCV1",
+      "name": " PCV1 Pneumococcal pneumonia",
+      "format": "PCV1 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "PCV2",
+      "name": " PCV2 Pneumococcal pneumonia",
+      "format": "PCV2 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "PCV3",
+      "name": " PCV3 Pneumococcal pneumonia",
+      "format": "PCV3 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "RV1",
+      "name": " RV1 Rotavirus",
+      "format": "RV1 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "RV2",
+      "name": " RV2 Rotavirus",
+      "format": "RV2 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "RV3",
+      "name": " RV3 Rotavirus",
+      "format": "RV3 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "VA",
+      "name": " VA Vitamin A",
+      "format": "VA <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "MTV1",
+      "name": " MTV1 Maternal tetanus",
+      "format": "MTV1 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "MTV2",
+      "name": " MTV2 Maternal tetanus",
+      "format": "MTV2 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "MMR1",
+      "name": " MMR1 Measles Mumps Rubella",
+      "format": "MMR1 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "MMR2",
+      "name": " MMR2 Measles Mumps Rubella",
+      "format": "MMR2 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "MMRV1",
+      "name": " MMRV1 Measles Mumps Rubella Varicella",
+      "format": "MMRV1 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "MMRV2",
+      "name": " MMRV2 Measles Mumps Rubella Varicella",
+      "format": "MMRV2 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "MN1",
+      "name": " MN1 Meningococcal",
+      "format": "MN1 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "MN2",
+      "name": " MN2 Meningococcal",
+      "format": "MN2 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "MN3",
+      "name": " MN3 Meningococcal",
+      "format": "MN3 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "MN4",
+      "name": " MN4 Meningococcal",
+      "format": "MN4 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "FLU",
+      "name": " FLU Influenza",
+      "format": "FLU <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "HA1",
+      "name": " HA1 Hepatitis A",
+      "format": "HA1 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "HA2",
+      "name": " HA2 Hepatitis A",
+      "format": "HA2 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "JE",
+      "name": " JE Japanese encephalitis",
+      "format": "JE <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "YF",
+      "name": " YF Yellow fever",
+      "format": "YF <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "TY1",
+      "name": " TY1 Typhoid",
+      "format": "TY1 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "TY2",
+      "name": " TY2 Typhoid",
+      "format": "TY2 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "HPV1",
+      "name": " HPV1 Human papillomavirus",
+      "format": "HPV1 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "HPV2",
+      "name": " HPV2 Human papillomavirus",
+      "format": "HPV2 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "HPV3",
+      "name": " HPV3 Human papillomavirus",
+      "format": "HPV3 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "CH",
+      "name": " CH Cholera",
+      "format": "CH <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "RB1",
+      "name": " RB1 Rabies",
+      "format": "RB1 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "RB2",
+      "name": " RB2 Rabies",
+      "format": "RB2 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "form": "RB3",
+      "name": " RB3 Rabies",
+      "format": "RB3 <patientid>",
+      "silence_type": "Immunizations",
+      "silence_for": "8 days",
+      "fields": [],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.generic.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.generic.registration_not_found",
+          "event_type": "registration_not_found",
+          "recipient": "reporting_unit"
+        }
+      ]
+    }
+  ],
+  "schedules": [
+    {
+      "name": "Postnatal Care",
+      "translation_key": "schedule.pnc",
+      "summary": "",
+      "description": "",
+      "start_from": "birth_date",
+      "messages": [
+        {
+          "translation_key": "messages.schedule.postnatal.day_0",
+          "group": 1,
+          "offset": "0",
+          "send_day": "",
+          "send_time": "",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.day_0_overdue",
+          "group": 1,
+          "offset": "1 day",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.day_3",
+          "group": 2,
+          "offset": "2 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.day_3_overdue",
+          "group": 2,
+          "offset": "4 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.day_7",
+          "group": 3,
+          "offset": "6 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.day_7_overdue",
+          "group": 3,
+          "offset": "8 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.week_6",
+          "group": 4,
+          "offset": "41 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.week_6_overdue",
+          "group": 4,
+          "offset": "43 days",
+          "send_day": "",
+          "send_time": "9:00",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "name": "Postnatal Care for Facility Birth",
+      "translation_key": "schedule.pnc_facility_birth",
+      "summary": "",
+      "description": "",
+      "start_from": "birth_date",
+      "messages": [
+        {
+          "translation_key": "messages.schedule.postnatal.day_3",
+          "group": 1,
+          "offset": "2 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.day_3_overdue",
+          "group": 1,
+          "offset": "4 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.day_7",
+          "group": 2,
+          "offset": "6 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.day_7_overdue",
+          "group": 2,
+          "offset": "8 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.week_6",
+          "group": 3,
+          "offset": "41 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.week_6_overdue",
+          "group": 3,
+          "offset": "43 days",
+          "send_day": "",
+          "send_time": "9:00",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "name": "Postnatal Care from App",
+      "translation_key": "schedule.pnc_from_app",
+      "summary": "",
+      "description": "",
+      "start_from": "fields.birth_date",
+      "messages": [
+        {
+          "translation_key": "messages.schedule.postnatal.day_3",
+          "group": 1,
+          "offset": "2 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.day_3_overdue",
+          "group": 1,
+          "offset": "4 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.day_7",
+          "group": 2,
+          "offset": "6 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.day_7_overdue",
+          "group": 2,
+          "offset": "8 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.week_6",
+          "group": 3,
+          "offset": "41 days",
+          "send_day": "",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.postnatal.week_6_overdue",
+          "group": 3,
+          "offset": "43 days",
+          "send_day": "",
+          "send_time": "9:00",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "name": "Immunizations",
+      "translation_key": "schedule.imm",
+      "summary": "",
+      "description": "",
+      "start_from": "birth_date",
+      "messages": [
+        {
+          "translation_key": "messages.schedule.imm.reminder",
+          "group": 1,
+          "offset": "6 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.imm.followup",
+          "group": 1,
+          "offset": "7 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.imm.reminder",
+          "group": 2,
+          "offset": "12 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.imm.followup",
+          "group": 2,
+          "offset": "13 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.imm.reminder",
+          "group": 3,
+          "offset": "18 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.imm.followup",
+          "group": 3,
+          "offset": "19 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.imm.reminder",
+          "group": 4,
+          "offset": "24 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.imm.followup",
+          "group": 4,
+          "offset": "25 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.imm.checkin",
+          "group": 5,
+          "offset": "36 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.imm.reminder",
+          "group": 6,
+          "offset": "52 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.imm.followup",
+          "group": 6,
+          "offset": "53 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.imm.checkin",
+          "group": 7,
+          "offset": "65 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.imm.reminder",
+          "group": 8,
+          "offset": "72 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.imm.followup",
+          "group": 8,
+          "offset": "73 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.imm.checkin",
+          "group": 9,
+          "offset": "90 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "name": "ANC Reminders LMP",
+      "translation_key": "schedule.anc_lmp",
+      "summary": "",
+      "description": "",
+      "start_from": "lmp_date",
+      "messages": [
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 1,
+          "offset": "12 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 1,
+          "offset": "13 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 2,
+          "offset": "24 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 2,
+          "offset": "25 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 3,
+          "offset": "32 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 3,
+          "offset": "33 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 4,
+          "offset": "36 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 4,
+          "offset": "37 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.week_38",
+          "group": 5,
+          "offset": "38 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.week_40",
+          "group": 5,
+          "offset": "40 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.checkin",
+          "group": 5,
+          "offset": "42 weeks",
+          "send_day": "monday",
+          "send_time": "11:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.checkin",
+          "group": 5,
+          "offset": "44 weeks",
+          "send_day": "monday",
+          "send_time": "11:00",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "name": "ANC Reminders LMP from App",
+      "translation_key": "schedule.anc_lmp_from_app",
+      "summary": "",
+      "description": "",
+      "start_from": "fields.lmp_date_8601",
+      "messages": [
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 1,
+          "offset": "12 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 1,
+          "offset": "13 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 2,
+          "offset": "24 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 2,
+          "offset": "25 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 3,
+          "offset": "32 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 3,
+          "offset": "33 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 4,
+          "offset": "36 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 4,
+          "offset": "37 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.week_38",
+          "group": 5,
+          "offset": "38 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.week_40",
+          "group": 5,
+          "offset": "40 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.checkin",
+          "group": 5,
+          "offset": "42 weeks",
+          "send_day": "monday",
+          "send_time": "11:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.checkin",
+          "group": 5,
+          "offset": "44 weeks",
+          "send_day": "monday",
+          "send_time": "11:00",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "name": "ANC Reminders",
+      "translation_key": "schedule.anc_no_lmp",
+      "summary": "",
+      "description": "",
+      "start_from": "reported_date",
+      "messages": [
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 1,
+          "offset": "1 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 1,
+          "offset": "2 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 2,
+          "offset": "5 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 2,
+          "offset": "6 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 3,
+          "offset": "9 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 3,
+          "offset": "10 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 4,
+          "offset": "13 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 4,
+          "offset": "14 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 5,
+          "offset": "17 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 5,
+          "offset": "18 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 6,
+          "offset": "21 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 6,
+          "offset": "22 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.reminder",
+          "group": 7,
+          "offset": "25 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 7,
+          "offset": "26 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.reminder_due",
+          "group": 8,
+          "offset": "29 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 8,
+          "offset": "30 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.reminder_due",
+          "group": 9,
+          "offset": "33 weeks",
+          "send_day": "monday",
+          "send_time": "09:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.followup",
+          "group": 9,
+          "offset": "34 weeks",
+          "send_day": "monday",
+          "send_time": "10:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.checkin",
+          "group": 10,
+          "offset": "37 weeks",
+          "send_day": "monday",
+          "send_time": "11:00",
+          "recipient": "reporting_unit"
+        },
+        {
+          "translation_key": "messages.schedule.anc.checkin",
+          "group": 10,
+          "offset": "39 weeks",
+          "send_day": "monday",
+          "send_time": "11:00",
+          "recipient": "reporting_unit"
+        }
+      ]
+    }
+  ],
+  "notifications": {
+    "off_form": "OFF",
+    "on_form": "ON",
+    "confirm_deactivation": false,
+    "validations": {
+      "join_responses": true,
+      "list": [
+        {
+          "property": "patient_id",
+          "rule": "regex('^[0-9]{5,13}$')",
+          "translation_key": "messages.generic.validation.patient_id"
+        }
+      ]
+    },
+    "messages": [
+      {
+        "message": [
+          {
+            "content": "No further notifications regarding {{patient_name}} will be sent until you submit 'ON {{patient_id}}'.{{#chw_sms}} {{chw_sms}}{{/chw_sms}}",
+            "locale": "en"
+          },
+          {
+            "content": "आगे {{patient_name}} से संबंधित कोई भी संदेश नहीं भेजा जाएगा जब तक की आप 'ऑन {{patient_id}}' संदेश नहीं भेजते हैं | {{#chw_sms}} {{chw_sms}}{{/chw_sms}} ",
+            "locale": "hi"
+          },
+          {
+            "content": "Tidak ada pemberitahuan lebih lanjut mengenai {{patient_name}} akan dikirim sampai Anda submit 'ON {{patient_id}}'.{{#chw_sms}} {{chw_sms}}{{/chw_sms}}",
+            "locale": "id"
+          }
+        ],
+        "event_type": "on_mute",
+        "recipient": "reporting_unit"
+      },
+      {
+        "message": [
+          {
+            "content": "Notifications for {{patient_name}} ({{patient_id}}) have been reactivated.{{#chw_sms}} {{chw_sms}}{{/chw_sms}}",
+            "locale": "en"
+          },
+          {
+            "content": "{{patient_name}} ({{patient_id}}) के लिए सूचनाए फिर से शुरू की गई है | {{#chw_sms}} {{chw_sms}}{{/chw_sms}}",
+            "locale": "hi"
+          },
+          {
+            "content": "Pemberitahuan untuk {{patient_name}} ({{patient_id}}) telah diaktifkan kembali. {{#chw_sms}} {{chw_sms}}{{/chw_sms}}",
+            "locale": "id"
+          }
+        ],
+        "event_type": "on_unmute",
+        "recipient": "reporting_unit"
+      },
+      {
+        "message": [
+          {
+            "content": "No person with ID number '{{patient_id}}' found. Verify the ID and resend the message.",
+            "locale": "en"
+          },
+          {
+            "content": "कोई भी व्यक्ति ID नंबर '{{patient_id}}' के साथ नहीं पाया गया | ID को जाँचें और फिर से संदेश भेजें |",
+            "locale": "hi"
+          },
+          {
+            "content": "Tidak ada orang dengan nomor ID '{{patient_id}}' yang ditemukan. Verifikasi ID dan mengirim ulang pesan.",
+            "locale": "id"
+          }
+        ],
+        "event_type": "patient_not_found",
+        "recipient": "reporting_unit"
+      }
+    ]
+  },
+  "_version": "2.9.0-alpha.4373",
+  "transitions": {
+    "default_responses": true,
+    "update_clinics": true,
+    "accept_patient_reports": true,
+    "conditional_alerts": false,
+    "update_sent_by": false,
+    "registration": true,
+    "update_notifications": true,
+    "update_scheduled_reports": false,
+    "update_sent_forms": false,
+    "generate_patient_id_on_people": true
+  },
+  "forms": {
+    "ANC": {
+      "meta": {
+        "label": {
+          "en": "ANC"
+        },
+        "code": "anc"
+      },
+      "fields": {
+        "first_name": {
+          "position": 1,
+          "type": "string",
+          "labels": {
+            "tiny": {
+              "en": "first_name"
+            },
+            "short": {
+              "en": "First Name"
+            },
+            "description": {
+              "en": "First Name"
+            }
+          },
+          "list": []
+        },
+        "last_name": {
+          "position": 2,
+          "type": "string",
+          "labels": {
+            "tiny": {
+              "en": "last_name"
+            },
+            "short": {
+              "en": "Last Name"
+            },
+            "description": {
+              "en": "Last Name"
+            }
+          },
+          "list": []
+        },
+        "phone_number": {
+          "position": 3,
+          "type": "integer",
+          "labels": {
+            "tiny": {
+              "en": "phone_number"
+            },
+            "short": {
+              "en": "phone_number"
+            },
+            "description": {
+              "en": "phone_number"
+            }
+          },
+          "list": []
+        },
+        "": {
+          "position": 21,
+          "type": "string",
+          "labels": {
+            "tiny": {
+              "en": ""
+            },
+            "short": {
+              "en": ""
+            },
+            "description": {
+              "en": ""
+            }
+          },
+          "list": []
+        },
+        "pregnancy_mm_id": {
+          "position": 5,
+          "type": "integer",
+          "labels": {
+            "tiny": {
+              "en": "pregnancy_mm_id"
+            },
+            "short": {
+              "en": "Patient ID"
+            },
+            "description": {
+              "en": "Patient ID"
+            }
+          },
+          "list": []
+        },
+        "lmp_weeks": {
+          "position": 6,
+          "type": "integer",
+          "labels": {
+            "tiny": {
+              "en": "lmp_weeks"
+            },
+            "short": {
+              "en": "Enter LMP in weeks"
+            },
+            "description": {
+              "en": "Enter LMP in weeks"
+            }
+          },
+          "list": []
+        },
+        "flag_mm_id": {
+          "position": 8,
+          "type": "integer",
+          "labels": {
+            "tiny": {
+              "en": "flag_mm_id"
+            },
+            "short": {
+              "en": "Patient ID"
+            },
+            "description": {
+              "en": "Patient ID"
+            }
+          },
+          "list": []
+        },
+        "danger_flags": {
+          "position": 9,
+          "type": "string",
+          "labels": {
+            "tiny": {
+              "en": "danger_flags"
+            },
+            "short": {
+              "en": "Select all the danger signs/Flags"
+            },
+            "description": {
+              "en": "Select all the danger signs/Flags"
+            }
+          },
+          "list": [
+            [
+              "bd1",
+              {
+                "en": "Fever"
+              }
+            ],
+            [
+              "bd1",
+              {
+                "en": "Fast breathing"
+              }
+            ],
+            [
+              "bd1",
+              {
+                "en": "Chest indrawing"
+              }
+            ],
+            [
+              "bd1",
+              {
+                "en": "Convulsions"
+              }
+            ],
+            [
+              "bd1",
+              {
+                "en": "Diarrhea"
+              }
+            ],
+            [
+              "bd1",
+              {
+                "en": "Infected umblical cord"
+              }
+            ],
+            [
+              "bd1",
+              {
+                "en": "Unable to breast feed"
+              }
+            ],
+            [
+              "bd1",
+              {
+                "en": "Many skin pustules"
+              }
+            ],
+            [
+              "bd1",
+              {
+                "en": "Vomits everything"
+              }
+            ],
+            [
+              "bd1",
+              {
+                "en": "Very sleepy"
+              }
+            ]
+          ]
+        },
+        "visit_type_anc": {
+          "position": 11,
+          "type": "string",
+          "labels": {
+            "tiny": {
+              "en": "visit_type_anc"
+            },
+            "short": {
+              "en": "Choose Visit type"
+            },
+            "description": {
+              "en": "Choose Visit type"
+            }
+          },
+          "list": [
+            [
+              "vs1",
+              {
+                "en": "On Phone"
+              }
+            ],
+            [
+              "vs2",
+              {
+                "en": "In Person"
+              }
+            ]
+          ]
+        },
+        "date_visit": {
+          "position": 12,
+          "type": "string",
+          "labels": {
+            "tiny": {
+              "en": "date_visit"
+            },
+            "short": {
+              "en": "Visit Date"
+            },
+            "description": {
+              "en": "Visit Date"
+            }
+          },
+          "list": []
+        },
+        "delivery_mm_id": {
+          "position": 16,
+          "type": "integer",
+          "labels": {
+            "tiny": {
+              "en": "delivery_mm_id"
+            },
+            "short": {
+              "en": "Patient ID"
+            },
+            "description": {
+              "en": "Patient ID"
+            }
+          },
+          "list": []
+        },
+        "delivery_type": {
+          "position": 17,
+          "type": "string",
+          "labels": {
+            "tiny": {
+              "en": "delivery_type"
+            },
+            "short": {
+              "en": "Where did the mother deliver?"
+            },
+            "description": {
+              "en": "Where did the mother deliver?"
+            }
+          },
+          "list": [
+            [
+              "f",
+              {
+                "en": "Facility"
+              }
+            ],
+            [
+              "s",
+              {
+                "en": "Home with Skilled Attendant"
+              }
+            ],
+            [
+              "ns",
+              {
+                "en": "Home with No Skilled Attendant"
+              }
+            ]
+          ]
+        },
+        "delivery_date": {
+          "position": 18,
+          "type": "string",
+          "labels": {
+            "tiny": {
+              "en": "delivery_date"
+            },
+            "short": {
+              "en": "Date"
+            },
+            "description": {
+              "en": "Date"
+            }
+          },
+          "list": []
+        },
+        "reminders_on_mm_id": {
+          "position": 20,
+          "type": "integer",
+          "labels": {
+            "tiny": {
+              "en": "reminders_on_mm_id"
+            },
+            "short": {
+              "en": "Patient ID "
+            },
+            "description": {
+              "en": "Patient ID "
+            }
+          },
+          "list": []
+        },
+        "reminders_off_mm_id": {
+          "position": 22,
+          "type": "integer",
+          "labels": {
+            "tiny": {
+              "en": "reminders_off_mm_id"
+            },
+            "short": {
+              "en": "Patient ID "
+            },
+            "description": {
+              "en": "Patient ID "
+            }
+          },
+          "list": []
+        }
+      },
+      "facility_reference": "rc_code",
+      "use_sentinel": true
+    },
+    "N": {
+      "meta": {
+        "code": "N",
+        "icon": "new-person",
+        "label": {
+          "en": "New person (SMS)",
+          "hi": "नया व्यक्ति  (SMS)",
+          "id": "Orang baru (SMS)"
+        }
+      },
+      "fields": {
+        "patient_name": {
+          "labels": {
+            "tiny": {
+              "en": "N"
+            },
+            "description": {
+              "en": "Patient Name"
+            },
+            "short": {
+              "en": "Name"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [
+            1,
+            30
+          ],
+          "required": true
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "C": {
+      "meta": {
+        "code": "C",
+        "icon": "child",
+        "label": {
+          "en": "New child + immunization registration (SMS)",
+          "hi": "नया बच्चा + टीकाकरण का रेजिस्ट्रेशन (SMS)",
+          "id": "Baru anak dan pendaftaran imunisasi (SMS)"
+        }
+      },
+      "fields": {
+        "weeks_since_birth": {
+          "labels": {
+            "tiny": {
+              "en": "W"
+            },
+            "description": {
+              "en": "weeks since birth"
+            },
+            "short": {
+              "en": "Weeks"
+            }
+          },
+          "position": 0,
+          "type": "integer",
+          "length": [
+            1,
+            2
+          ],
+          "range": [
+            0,
+            90
+          ],
+          "required": true,
+          "validations": {},
+          "flags": {}
+        },
+        "patient_name": {
+          "labels": {
+            "tiny": {
+              "en": "N"
+            },
+            "description": {
+              "en": "Patient Name"
+            },
+            "short": {
+              "en": "Name"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            30
+          ],
+          "required": true
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "P": {
+      "meta": {
+        "code": "P",
+        "icon": "pregnancy-1",
+        "label": {
+          "en": "New pregnancy (SMS)",
+          "hi": "नयी गर्भावस्था (SMS)",
+          "id": "Kehamilan baru (SMS)"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "last_menstrual_period": {
+          "labels": {
+            "tiny": {
+              "en": "LMP"
+            },
+            "description": {
+              "en": "Weeks since last menstrual period"
+            },
+            "short": {
+              "en": "Weeks since LMP"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            1,
+            2
+          ],
+          "range": [
+            2,
+            42
+          ],
+          "required": false,
+          "validations": {}
+        }
+      },
+      "public_form": true,
+      "use_sentinel": true
+    },
+    "V": {
+      "meta": {
+        "code": "V",
+        "icon": "clinic",
+        "label": {
+          "en": "Clinic visit (SMS)",
+          "hi": "अस्पताल में जांच (SMS)",
+          "id": "Fasilitas kunjungan (SMS)"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "tiny": {
+              "en": "id"
+            },
+            "description": {
+              "en": "Patient's ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        }
+      },
+      "public_form": true,
+      "use_sentinel": true
+    },
+    "D": {
+      "meta": {
+        "code": "D",
+        "icon": "mother-child",
+        "label": {
+          "en": "Delivery report (SMS)",
+          "hi": "डिलीवरी की रिपोर्ट (SMS)",
+          "id": "Laporan persalinan (SMS)"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "delivery_code": {
+          "labels": {
+            "description": {
+              "en": "Delivery Code"
+            },
+            "short": {
+              "en": "Delivery Code"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            2
+          ],
+          "required": true
+        },
+        "days_since_birth": {
+          "labels": {
+            "description": {
+              "en": "Days since birth"
+            },
+            "short": {
+              "en": "Days ago"
+            }
+          },
+          "position": 2,
+          "type": "string",
+          "length": [
+            1,
+            20
+          ],
+          "required": false
+        }
+      },
+      "public_form": true,
+      "use_sentinel": true
+    },
+    "F": {
+      "meta": {
+        "code": "F",
+        "icon": "risk",
+        "label": {
+          "en": "Danger sign flag (SMS)",
+          "hi": "खतरे की सूचना (SMS)",
+          "id": "Laporan tanda bahaya (SMS)"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": true,
+      "use_sentinel": true
+    },
+    "PEN1": {
+      "meta": {
+        "code": "PEN1",
+        "icon": "immunization",
+        "label": {
+          "en": " PEN1 Pentavalent"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "PEN2": {
+      "meta": {
+        "code": "PEN2",
+        "icon": "immunization",
+        "label": {
+          "en": " PEN2 Pentavalent"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "PEN3": {
+      "meta": {
+        "code": "PEN3",
+        "icon": "immunization",
+        "label": {
+          "en": " PEN3 Pentavalent"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "BCG": {
+      "meta": {
+        "code": "BCG",
+        "icon": "immunization",
+        "label": {
+          "en": " BCG Bacille Calmette-Guerin"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "OPV0": {
+      "meta": {
+        "code": "OPV0",
+        "icon": "immunization",
+        "label": {
+          "en": " OPV0 Oral polio"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "OPV1": {
+      "meta": {
+        "code": "OPV1",
+        "icon": "immunization",
+        "label": {
+          "en": " OPV1 Oral polio"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "OPV2": {
+      "meta": {
+        "code": "OPV2",
+        "icon": "immunization",
+        "label": {
+          "en": " OPV2 Oral polio"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "OPV3": {
+      "meta": {
+        "code": "OPV3",
+        "icon": "immunization",
+        "label": {
+          "en": " OPV3 Oral polio"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "PCV1": {
+      "meta": {
+        "code": "PCV1",
+        "icon": "immunization",
+        "label": {
+          "en": " PCV1 Pneumococcal pneumonia"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "PCV2": {
+      "meta": {
+        "code": "PCV2",
+        "icon": "immunization",
+        "label": {
+          "en": " PCV2 Pneumococcal pneumonia"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "PCV3": {
+      "meta": {
+        "code": "PCV3",
+        "icon": "immunization",
+        "label": {
+          "en": " PCV3 Pneumococcal pneumonia"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "RV1": {
+      "meta": {
+        "code": "RV1",
+        "icon": "immunization",
+        "label": {
+          "en": " RV1 Rotavirus"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "RV2": {
+      "meta": {
+        "code": "RV2",
+        "icon": "immunization",
+        "label": {
+          "en": " RV2 Rotavirus"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "RV3": {
+      "meta": {
+        "code": "RV3",
+        "icon": "immunization",
+        "label": {
+          "en": " RV3 Rotavirus"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "VA": {
+      "meta": {
+        "code": "VA",
+        "icon": "immunization",
+        "label": {
+          "en": " VA Vitamin A"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "MTV1": {
+      "meta": {
+        "code": "MTV1",
+        "icon": "immunization",
+        "label": {
+          "en": " MTV1 Maternal tetanus"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "MTV2": {
+      "meta": {
+        "code": "MTV2",
+        "icon": "immunization",
+        "label": {
+          "en": " MTV2 Maternal tetanus"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "MMR1": {
+      "meta": {
+        "code": "MMR1",
+        "icon": "immunization",
+        "label": {
+          "en": " MMR1 Measles Mumps Rubella"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "MMR2": {
+      "meta": {
+        "code": "MMR2",
+        "icon": "immunization",
+        "label": {
+          "en": " MMR2 Measles Mumps Rubella"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "MMRV1": {
+      "meta": {
+        "code": "MMRV1",
+        "icon": "immunization",
+        "label": {
+          "en": " MMRV1 Measles Mumps Rubella Varicella"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "MMRV2": {
+      "meta": {
+        "code": "MMRV2",
+        "icon": "immunization",
+        "label": {
+          "en": " MMRV2 Measles Mumps Rubella Varicella"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "MN1": {
+      "meta": {
+        "code": "MN1",
+        "icon": "immunization",
+        "label": {
+          "en": " MN1 Meningococcal"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "MN2": {
+      "meta": {
+        "code": "MN2",
+        "icon": "immunization",
+        "label": {
+          "en": " MN2 Meningococcal"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "MN3": {
+      "meta": {
+        "code": "MN3",
+        "icon": "immunization",
+        "label": {
+          "en": " MN3 Meningococcal"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "MN4": {
+      "meta": {
+        "code": "MN4",
+        "icon": "immunization",
+        "label": {
+          "en": " MN4 Meningococcal"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "FLU": {
+      "meta": {
+        "code": "FLU",
+        "icon": "immunization",
+        "label": {
+          "en": " FLU Influenza"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "HA1": {
+      "meta": {
+        "code": "HA1",
+        "icon": "immunization",
+        "label": {
+          "en": " HA1 Hepatitis A"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "HA2": {
+      "meta": {
+        "code": "HA2",
+        "icon": "immunization",
+        "label": {
+          "en": " HA2 Hepatitis A"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "JE": {
+      "meta": {
+        "code": "JE",
+        "icon": "immunization",
+        "label": {
+          "en": " JE Japanese encephalitis"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "YF": {
+      "meta": {
+        "code": "YF",
+        "icon": "immunization",
+        "label": {
+          "en": " YF Yellow fever"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "TY1": {
+      "meta": {
+        "code": "TY1",
+        "icon": "immunization",
+        "label": {
+          "en": " TY1 Typhoid"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "TY2": {
+      "meta": {
+        "code": "TY2",
+        "icon": "immunization",
+        "label": {
+          "en": " TY2 Typhoid"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "HPV1": {
+      "meta": {
+        "code": "HPV1",
+        "icon": "immunization",
+        "label": {
+          "en": " HPV1 Human papillomavirus"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "HPV2": {
+      "meta": {
+        "code": "HPV2",
+        "icon": "immunization",
+        "label": {
+          "en": " HPV2 Human papillomavirus"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "HPV3": {
+      "meta": {
+        "code": "HPV3",
+        "icon": "immunization",
+        "label": {
+          "en": " HPV3 Human papillomavirus"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "CH": {
+      "meta": {
+        "code": "CH",
+        "icon": "immunization",
+        "label": {
+          "en": " CH Cholera"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "RB1": {
+      "meta": {
+        "code": "RB1",
+        "icon": "immunization",
+        "label": {
+          "en": " RB1 Rabies"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "RB2": {
+      "meta": {
+        "code": "RB2",
+        "icon": "immunization",
+        "label": {
+          "en": " RB2 Rabies"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "RB3": {
+      "meta": {
+        "code": "RB3",
+        "icon": "immunization",
+        "label": {
+          "en": " RB3 Rabies"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "OFF": {
+      "meta": {
+        "code": "OFF",
+        "icon": "off",
+        "label": {
+          "en": "Turn Notifications OFF (SMS)",
+          "hi": "सूचना बंद करें (SMS)",
+          "id": "Menonaktifkan pesan (SMS)"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "tiny": {
+              "en": "ID"
+            },
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "type": "string",
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "tiny": {
+              "en": "r",
+              "sw": "r"
+            },
+            "description": {
+              "en": "Reason"
+            },
+            "short": {
+              "en": "Reason"
+            }
+          },
+          "position": 1,
+          "length": [
+            3,
+            100
+          ],
+          "type": "string"
+        }
+      },
+      "public_form": true,
+      "use_sentinel": true
+    },
+    "ON": {
+      "meta": {
+        "code": "ON",
+        "icon": "on",
+        "label": {
+          "en": "Turn Notifications ON (SMS)",
+          "hi": "सूचना शूरू करें (SMS)",
+          "id": "Menghidupkan pesan (SMS)"
+        }
+      },
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "tiny": {
+              "en": "ID"
+            },
+            "description": {
+              "en": "Patient ID"
+            },
+            "short": {
+              "en": "ID"
+            }
+          },
+          "position": 0,
+          "flags": {
+            "input_digits_only": true
+          },
+          "length": [
+            5,
+            13
+          ],
+          "type": "string",
+          "required": true
+        },
+        "notes": {
+          "labels": {
+            "description": {
+              "en": "Notes"
+            },
+            "short": {
+              "en": "Notes"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            100
+          ],
+          "required": false
+        }
+      },
+      "use_sentinel": true
+    }
+  },
+  "statistics_submission": "none",
+  "statistics_submission_number": "",
+  "replication_depth": [
+    {
+      "role": "non-existant-role",
+      "depth": 42
+    }
+  ],
+  "tasks": {
+    "rules": "define Target {_id: null,deleted: null,type: null,pass: null,date: null}define Contact {contact: null,reports: null}define Task {_id: null,deleted: null,doc: null,contact: null,icon: null,date: null,title: null,fields: null,resolved: null,priority: null,priorityLabel: null,reports: null,actions: null}rule GenerateEvents {when {c: Contact}then {var now = new Date();var MS_IN_DAY = 24*60*60*1000;var MAX_DAYS_IN_PREGNANCY = 44*7;var DAYS_IN_PNC = 42;var createTask = function(contact, schedule, report) {return new Task({_id: report._id + '-' + schedule.id,deleted: (contact.contact ? contact.contact.deleted : false) || (report ? report.deleted : false),doc: contact,contact: contact.contact,icon: schedule.icon,priority: schedule.description ? 'high' : null,priorityLabel: schedule.description ? schedule.description : '',icon: schedule.type,date: null,title: schedule.title,resolved: false,actions: []});};var emitTask = function(task, scheduleEvent) {if (Utils.isTimely(task.date, scheduleEvent)) {emit('task', task);}};var createTargetInstance = function(type, report, pass) {return new Target({_id: report._id + '-' + type,deleted: !!report.deleted,type: type,pass: pass,date: report.reported_date});};var emitTargetInstance = function(instance) {emit('target', instance);};var antenatalForms = ['V','pregnancy_visit'];var deliveryForms = ['D','delivery'];var postnatalForms = ['M','postnatal_visit'];var immunizationForms = ['V','immunization_visit','DT1','DT2','DT3','BCG','OPV0','OPV1','OPV2','OPV3','PCV1','PCV2','PCV3','RV1','RV2','RV3','VA','MTV1','MTV2','MMR1','MMR2','MMRV1','MMRV2','MN1','MN2','MN3','MN4','FLU','HA1','HA2','JE','YF','TY1','TY2','HPV1','HPV2','HPV3','CH','RB1','RB2','RB3','TBE'];var immunizations = ['bcg','cholera_1','cholera_2','cholera_3','hep_a_1','hep_a_2','hpv_1','hpv_2','hpv_3','flu','jap_enc','meningococcal_1','meningococcal_2','meningococcal_3','meningococcal_4','mmr_1','mmr_2','mmrv_1','mmrv_2','polio_0','polio_1','polio_2','polio_3','penta_1','penta_2','penta_3','pneumococcal_1','pneumococcal_2','pneumococcal_3','pneumococcal_4','rotavirus_1','rotavirus_2','rotavirus_3','typhoid_1','typhoid_2','vitamin_a','yellow_fever'];var isFormFromArraySubmittedInWindow = function (reports, formsArray, startTime, endTime) {for ( var i=0; i < formsArray.length; i++ ) {if ( Utils.isFormSubmittedInWindow(reports, formsArray[i], startTime , endTime) ) {return true;}}return false;};var isCoveredByUseCase = function (contact, usecase) {if (!contact) {return false;}else if (!contact.parent && !contact.hasOwnProperty('use_cases')) {return true;}else if (contact.parent && contact.parent.use_cases && contact.parent.use_cases.split(' ').indexOf(usecase) !== -1) {return true;}else {return isCoveredByUseCase(contact.parent, usecase);}};var countDoses = function (report) {var dosesGiven = 0;immunizations.forEach(function(i) {var vaccineDose = 'received_' + i;if(report.fields.vaccines_received[vaccineDose] == 'yes') {dosesGiven++;}});return dosesGiven;};if (c.contact != null && c.contact.type === 'person') {var newestPregnancyTimestamp = Math.max(Utils.getMostRecentTimestamp(c.reports, 'P'),Utils.getMostRecentTimestamp(c.reports, 'pregnancy'));var newestDeliveryTimestamp = Math.max(Utils.getMostRecentTimestamp(c.reports, 'D'),Utils.getMostRecentTimestamp(c.reports, 'delivery'));var newestImmunizationRegTimestamp = Math.max(Utils.getMostRecentTimestamp(c.reports, 'C'),Utils.getMostRecentTimestamp(c.reports, 'immunization'));c.reports.forEach(function(r) {if (r.reported_date === newestPregnancyTimestamp && (r.form === 'P' || r.form === 'pregnancy')) {var instance = createTargetInstance('pregnancy-registrations-this-month', r, true);instance._id = c.contact._id + '-' + 'pregnancy-registrations-this-month';emitTargetInstance(instance);var lmp = new Date(r.lmp_date);var maxEDD = new Date();maxEDD.setDate(lmp.getDate() + 294);if ( newestDeliveryTimestamp == null || newestDeliveryTimestamp < newestPregnancyTimestamp || maxEDD < now ) {var instance = createTargetInstance('active-pregnancies', r, true);instance._id = c.contact._id + '-' + 'active-pregnancies';emitTargetInstance(instance);c.reports.forEach(function(r) {if (r.form === 'F') {var instance = createTargetInstance('active-pregnancies-high-risk', r, true);instance._id = c.contact._id + '-' + 'active-pregnancies-high-risk';emitTargetInstance(instance);}});var edd = new Date(r.expected_date);if (edd.getFullYear() == now.getFullYear() && edd.getMonth() == now.getMonth()) {var instance = createTargetInstance('expected-deliveries-this-month', r, true);instance._id = c.contact._id + '-' + 'expected-deliveries-this-month';instance.date = now.getTime();emitTargetInstance(instance);}}}if (r.reported_date === newestDeliveryTimestamp && (r.form === 'D' || r.form === 'delivery')) {var instance = createTargetInstance('births-this-month', r, true);instance._id = c.contact._id + '-' + 'births-this-month';emitTargetInstance(instance);var instance = createTargetInstance('births-total', r, true);instance._id = c.contact._id + '-' + 'births-total';instance.date = now.getTime();emitTargetInstance(instance);var pass = r.fields.delivery_code && r.fields.delivery_code.toUpperCase() == 'F';var instance = createTargetInstance('delivery-at-facility-this-month', r, pass);emitTargetInstance(instance);var pass = r.fields.delivery_code && r.fields.delivery_code.toUpperCase() == 'F';var instance = createTargetInstance('delivery-at-facility-total', r, pass);instance.date = now.getTime();emitTargetInstance(instance);var visits = 0;c.reports.forEach(function(r) {if (r.reported_date > newestPregnancyTimestamp && (r.form === 'V' || r.form === 'pregnancy_visit')) {visits++;}});var instance = createTargetInstance('delivery-with-min-1-visit', r, visits >= 1);instance.date = now.getTime();emitTargetInstance(instance);var instance = createTargetInstance('delivery-with-min-4-visits', r, visits >= 4);instance.date = now.getTime();emitTargetInstance(instance);}if (r.form === 'C') {var instance = createTargetInstance('imm-reg-this-month', r, true);instance._id = c.contact._id + '-' + 'imm-reg-this-month';emitTargetInstance(instance);var birthDate = new Date(r.birth_date);var age = Date.now() - birthDate.getTime();var ageDate = new Date(age);var ageMonth = ageDate.getMonth();var ageInMonths = (Math.abs(ageDate.getFullYear() - 1970) * 12) + ageMonth;if (ageInMonths < 24) {var instance = createTargetInstance('immunizations-under-2-years', r, true);instance.date = now.getTime();emitTargetInstance(instance);var visits = 0;c.reports.forEach(function(r) {if (isFormFromArraySubmittedInWindow(c.reports, immunizationForms, Utils.addDate(now, 90 * -1).getTime(), now.getTime())) {visits++;}});var instance = createTargetInstance('immunizations-1-plus-in-last-3-months', r, visits >= 1);emitTargetInstance(instance);}if (ageInMonths < 6) {var noVaccine = true;c.reports.forEach(function(r) {if(immunizationForms.indexOf(r.form) != -1) {noVaccine = false;return;}});var instance = createTargetInstance('immunizations-6-months-no-vaccine', r, noVaccine);instance.date = now.getTime();emitTargetInstance(instance);}c.reports.forEach(function(r) {if(immunizationForms.indexOf(r.form) != -1) {if(r.form == 'immunization_visit') {var totalDoses = countDoses(r);for(i=0; i<totalDoses; i++) {var instance = createTargetInstance('vaccine-doses',r,true);instance._id = r._id + '-' + 'vaccine-doses-' + i;emitTargetInstance(instance);}}else {var instance = createTargetInstance('vaccine-doses',r,true);emitTargetInstance(instance);}}});}});}if (c.contact && c.contact.type === 'person') {c.reports.forEach(function(r) {switch(r.form) {case 'P':case 'pregnancy':var isHighRiskPregnancy = (r.form === 'pregnancy' && r.fields && (r.fields.risk_factors || r.fields.danger_signs))|| Utils.isFormSubmittedInWindow(c.reports, 'F', r.reported_date, Utils.addDate(new Date(r.reported_date), MAX_DAYS_IN_PREGNANCY).getTime());if (r.scheduled_tasks) {for (var i = 0; i < r.scheduled_tasks.length; i++) {if (i+1 < r.scheduled_tasks.length && r.scheduled_tasks[i].group != r.scheduled_tasks[i+1].group) {var schedule = Utils.getSchedule('pregnancy-missing-visit');if (schedule) {for (var k = 0; k < schedule.events.length; k++) {var s = schedule.events[k];var dueDate = new Date(r.scheduled_tasks[i].due);var task = createTask(c, s, r);task._id += '-' + i;task.date = dueDate;task.priority = isHighRiskPregnancy ? 'high' : null;task.priorityLabel = isHighRiskPregnancy ? ( schedule.description ? schedule.description : 'High Risk' ) : '';task.actions.push({type: 'report',form: 'pregnancy_visit',label: 'Follow up',content: {source: 'task',source_id: r._id,contact: c.contact}});task.resolved = r.reported_date < newestPregnancyTimestamp|| r.reported_date < newestDeliveryTimestamp|| isFormFromArraySubmittedInWindow(c.reports, antenatalForms, Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end).getTime());emitTask(task, s);}}}}var schedule = Utils.getSchedule('pregnancy-missing-birth');if (schedule) {for (var k = 0; k < schedule.events.length; k++) {var s = schedule.events[k];var dueDate = new Date(r.scheduled_tasks[r.scheduled_tasks.length-1].due);var task = createTask(c, s, r);task.date = dueDate;task.priority = isHighRiskPregnancy ? 'high' : null;task.priorityLabel = isHighRiskPregnancy ? ( schedule.description ? schedule.description : 'High Risk' ) : '';task.actions.push({type: 'report',form: 'delivery',label: 'Follow up',content: {source: 'task',source_id: r._id,contact: c.contact}});task.resolved = isFormFromArraySubmittedInWindow(c.reports, deliveryForms, r.reported_date, now.getTime());emitTask(task, s);}}}break;case 'C':case 'immunization':if (r.scheduled_tasks) {for (var i = 0; i < r.scheduled_tasks.length; i++) {if (i+1 == r.scheduled_tasks.length|| i+1 < r.scheduled_tasks.length && r.scheduled_tasks[i].group != r.scheduled_tasks[i+1].group) {var schedule = Utils.getSchedule('immunization-missing-visit');if (schedule) {for (var k = 0; k < schedule.events.length; k++) {var s = schedule.events[k];var dueDate = new Date(r.scheduled_tasks[i].due);var task = createTask(c, s, r);task._id += '-' + i;task.date = dueDate;task.actions.push({type: 'report',form: 'immunization_visit',label: 'Follow up',content: {source: 'task',source_id: r._id,contact: c.contact}});task.resolved = isFormFromArraySubmittedInWindow(c.reports, immunizationForms, Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end).getTime());emitTask(task, s);}}}}}break;case 'D':case 'delivery':if ( !isCoveredByUseCase(c.contact, 'pnc') ) {break;}var isHomeBirth = false;if ( r.fields && r.fields.delivery_code && r.fields.delivery_code.toUpperCase() !== 'F' ) {isHomeBirth = true;var schedule = Utils.getSchedule('postnatal-home-birth');if (schedule) {for (var k = 0; k < schedule.events.length; k++) {var s = schedule.events[k];var dueDate = new Date(r.reported_date);var task = createTask(c, s, r);task.date = dueDate;task.actions.push({type: 'report',form: 'postnatal_visit',label: 'Follow up',content: {source: 'task',source_id: r._id,contact: c.contact}});task.resolved = r.reported_date < newestDeliveryTimestamp|| r.reported_date < newestPregnancyTimestamp|| isFormFromArraySubmittedInWindow(c.reports, postnatalForms, Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end).getTime());emitTask(task, s);}}}if (Utils.isFormSubmittedInWindow(c.reports, 'F', r.reported_date, Utils.addDate(new Date(r.reported_date), DAYS_IN_PNC).getTime())) {var schedule = Utils.getSchedule('postnatal-danger-sign');if (schedule) {for (var k = 0; k < schedule.events.length; k++) {var s = schedule.events[k];var dueDate = new Date(r.reported_date);var task = createTask(c, s, r);task.date = dueDate;task.actions.push({type: 'report',form: 'postnatal_visit',label: 'Follow up',content: {source: 'task',source_id: r._id,contact: c.contact}});task.resolved = r.reported_date < newestDeliveryTimestamp|| r.reported_date < newestPregnancyTimestamp|| isFormFromArraySubmittedInWindow(c.reports, 'postnatal_visit', Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end).getTime());emitTask(task, s);}}}if (r.scheduled_tasks) {for (var i = 0; i < r.scheduled_tasks.length; i++) {if (i+1 == r.scheduled_tasks.length|| i+1 < r.scheduled_tasks.length && r.scheduled_tasks[i].group != r.scheduled_tasks[i+1].group) {var schedule = Utils.getSchedule('postnatal-missing-visit');if (schedule) {for (var k = 0; k < schedule.events.length; k++) {var s = schedule.events[k];var dueDate = new Date(r.scheduled_tasks[i].due);var task = createTask(c, s, r);task._id += '-' + i;task.date = dueDate;task.priority = isHomeBirth ? 'high' : null;task.priorityLabel = isHomeBirth ? ( schedule.description ? schedule.description : 'Home Birth' ) : '';task.actions.push({type: 'report',form: 'postnatal_visit',label: 'Follow up',content: {source: 'task',source_id: r._id,contact: c.contact}});task.resolved = r.reported_date < newestDeliveryTimestamp|| r.reported_date < newestPregnancyTimestamp|| isFormFromArraySubmittedInWindow(c.reports, postnatalForms, Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end).getTime());emitTask(task, s);}}}}}break;}});}emit('_complete', { _id: true });}}",
+    "schedules": [
+      {
+        "name": "pregnancy-missing-visit",
+        "events": [
+          {
+            "id": "pregnancy-missing-visit",
+            "days": 3,
+            "start": 0,
+            "end": 7,
+            "type": "pregnancy-1",
+            "title": [
+              {
+                "content": "{{contact.name}} missing pregnancy visit",
+                "locale": "en"
+              }
+            ],
+            "description": [
+              {
+                "content": "High Risk",
+                "locale": "en"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "pregnancy-missing-birth",
+        "events": [
+          {
+            "id": "pregnancy-missing-birth",
+            "days": 1,
+            "start": 0,
+            "end": 14,
+            "type": "mother-child",
+            "title": [
+              {
+                "content": "{{contact.name}} missing birth report",
+                "locale": "en"
+              }
+            ],
+            "description": [
+              {
+                "content": "High Risk",
+                "locale": "en"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "postnatal-danger-sign",
+        "events": [
+          {
+            "id": "postnatal-danger-sign",
+            "days": 0,
+            "start": 0,
+            "end": 6,
+            "type": "mother-child",
+            "title": [
+              {
+                "content": "{{contact.name}} postnatal visit needed",
+                "locale": "en"
+              }
+            ],
+            "description": [
+              {
+                "content": "Danger Signs",
+                "locale": "en"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "postnatal-home-birth",
+        "events": [
+          {
+            "id": "postnatal-home-birth",
+            "days": 0,
+            "start": 0,
+            "end": 4,
+            "type": "mother-child",
+            "title": [
+              {
+                "content": "{{contact.name}} postnatal visit needed",
+                "locale": "en"
+              }
+            ],
+            "description": [
+              {
+                "content": "Home Birth",
+                "locale": "en"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "postnatal-missing-visit",
+        "events": [
+          {
+            "id": "postnatal-missing-visit",
+            "days": 2,
+            "start": 0,
+            "end": 4,
+            "type": "mother-child",
+            "title": [
+              {
+                "content": "{{contact.name}} missing postnatal visit",
+                "locale": "en"
+              }
+            ],
+            "description": [
+              {
+                "content": "Home Birth",
+                "locale": "en"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "immunization-missing-visit",
+        "events": [
+          {
+            "id": "immunization-missing-visit",
+            "days": 1,
+            "start": 0,
+            "end": 14,
+            "type": "immunization",
+            "title": [
+              {
+                "content": "{{contact.name}} missing immunization visit",
+                "locale": "en"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "targets": {
+      "enabled": true,
+      "items": [
+        {
+          "type": "count",
+          "id": "active-pregnancies",
+          "icon": "pregnancy-4",
+          "goal": -1,
+          "name": [
+            {
+              "locale": "en",
+              "content": "Active pregnancies"
+            },
+            {
+              "locale": "hi",
+              "content": "मौजूदा गर्भावस्था"
+            },
+            {
+              "locale": "id",
+              "content": "Kehamilan Aktif"
+            }
+          ]
+        },
+        {
+          "type": "count",
+          "id": "pregnancy-registrations-this-month",
+          "icon": "pregnancy-4",
+          "goal": -1,
+          "name": [
+            {
+              "locale": "en",
+              "content": "New pregnancies this month"
+            },
+            {
+              "locale": "hi",
+              "content": "इस महीने में दर्ज किये गए गर्भावस्था"
+            },
+            {
+              "locale": "id",
+              "content": "Kehamilan terdaftar bulan ini"
+            }
+          ]
+        },
+        {
+          "type": "count",
+          "id": "births-this-month",
+          "icon": "infant",
+          "goal": -1,
+          "name": [
+            {
+              "locale": "en",
+              "content": "Births this month"
+            },
+            {
+              "locale": "hi",
+              "content": "इस महीने में जन्म"
+            },
+            {
+              "locale": "id",
+              "content": "Kelahiran bulan ini"
+            }
+          ]
+        },
+        {
+          "type": "percent",
+          "id": "delivery-with-min-1-visit",
+          "icon": "nurse",
+          "goal": 100,
+          "name": [
+            {
+              "locale": "en",
+              "content": "Deliveries with 1+ visits"
+            },
+            {
+              "locale": "hi",
+              "content": "1+ जांच के साथ डिलिवरी"
+            },
+            {
+              "locale": "id",
+              "content": "Kelahiran dengan 1+ kunjungan"
+            }
+          ]
+        },
+        {
+          "type": "percent",
+          "id": "delivery-with-min-4-visits",
+          "icon": "nurse",
+          "goal": 100,
+          "name": [
+            {
+              "locale": "en",
+              "content": "Deliveries with 4+ visits"
+            },
+            {
+              "locale": "hi",
+              "content": "4+ जांच के साथ डिलिवरी"
+            },
+            {
+              "locale": "id",
+              "content": "Kelahiran dengan 4+ kunjungan"
+            }
+          ]
+        },
+        {
+          "type": "percent",
+          "id": "delivery-at-facility-total",
+          "icon": "clinic",
+          "goal": 100,
+          "name": [
+            {
+              "locale": "en",
+              "content": "Deliveries at facility"
+            },
+            {
+              "locale": "hi",
+              "content": "अब तक के स्वास्थ्य केंद्र में डिलीवरी"
+            },
+            {
+              "locale": "id",
+              "content": "Kelahiran total di fasilitas"
+            }
+          ]
+        },
+        {
+          "type": "count",
+          "id": "immunizations-under-2-years",
+          "icon": "children",
+          "goal": -1,
+          "name": [
+            {
+              "locale": "en",
+              "content": "Active children under 2"
+            }
+          ]
+        },
+        {
+          "type": "count",
+          "id": "imm-reg-this-month",
+          "icon": "child",
+          "goal": -1,
+          "name": [
+            {
+              "locale": "en",
+              "content": "Children registered this month"
+            }
+          ]
+        },
+        {
+          "type": "count",
+          "id": "vaccine-doses",
+          "icon": "immunization",
+          "goal": -1,
+          "name": [
+            {
+              "locale": "en",
+              "content": "Vaccines given this month"
+            }
+          ]
+        },
+        {
+          "type": "count",
+          "id": "immunizations-1-plus-in-last-3-months",
+          "icon": "chw",
+          "goal": -1,
+          "name": [
+            {
+              "locale": "en",
+              "content": "U6 Immunized in past 3 months"
+            }
+          ]
+        },
+        {
+          "type": "count",
+          "id": "immunizations-6-months-no-vaccine",
+          "icon": "risk",
+          "goal": -1,
+          "name": [
+            {
+              "locale": "en",
+              "content": "U6 without vaccines logged"
+            }
+          ]
+        },
+        {
+          "type": "percent",
+          "id": "immunizations-full-under-2",
+          "icon": "child",
+          "goal": 100,
+          "name": [
+            {
+              "locale": "en",
+              "content": "U2 fully immunized"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "outgoing_deny_list": "",
+  "multipart_sms_limit": 10,
+  "contact_summary": "var cards = [];var context = {};var fields = [];var MAX_DAYS_IN_PREGNANCY = 44*7;var isFormSubmittedInWindow = function(reports, form, start, end, count) {var result = false;reports.forEach(function(report) {if (!result && report.form === form) {if (report.reported_date >= start && report.reported_date <= end) {if (!count ||(count && report.fields && report.fields.follow_up_count > count)) {result = true;}}}});return result;};var addDate = function(date, days) {var result;if (date) {result = new Date(date.getTime());} else {result = new Date();}result.setUTCDate(result.getUTCDate() + days);result.setUTCHours(0, 0, 0, 0);return result;};var getOldestReport = function(reports) {var result = null;reports.forEach(function(report) {if (!result || report.reported_date < result.reported_date) {result = report;}});return result;};if (contact.type === 'person') {fields = [{ label: 'patient_id', value: contact.patient_id, width: 4 },{ label: 'contact.age', value: contact.date_of_birth, width: 4, filter: 'age' },{ label: 'Phone Number', value: contact.phone, width: 4, filter: 'phone' },{ label: 'Notes', value: contact.notes, width: 12 },{ label: 'contact.parent', value: contact.parent, filter: 'clinic' }];var pregnancy;var pregnancyDate;var pastPregnancies = { label: 'contact.profile.past_pregnancies', fields: [] };reports.forEach(function(report) {if (report.form === 'pregnancy' || report.form === 'P') {var subsequentDeliveries = reports.filter(function(report2) {return (report2.form === 'delivery' || report2.form === 'D') && report2.reported_date > report.reported_date;});if (subsequentDeliveries.length > 0) {var relevantDelivery = getOldestReport(subsequentDeliveries);var relevantVisits = reports.filter(function(report2) {return (report2.form === 'V' || report2.form === 'pregnancy_visit') && report2.reported_date > report.reported_date && report2.reported_date < relevantDelivery.reported_date;});var birthdate = relevantDelivery.birth_date || relevantDelivery.fields.birth_date || relevantDelivery.reported_date;var deliveryCode = (relevantDelivery.fields.group_note && relevantDelivery.fields.group_note.default_chw_sms) || relevantDelivery.fields.delivery_code || 'unknown';deliveryCode = deliveryCode.replace('anc_only_', '').toLowerCase();pastPregnancies.fields.push({ label: 'contact.profile.delivery_code.' + deliveryCode, value: birthdate, filter: 'relativeDay', width: 6 },{ label: 'contact.profile.visit', value: 'contact.profile.visits.of', translate: true, context: { count: relevantVisits.length, total: 4 }, width: 6 });return;}var subsequentVisits = reports.filter(function(report2) {return (report2.form === 'pregnancy_visit' || report2.form === 'V') && report2.reported_date > report.reported_date;});context.pregnant = true;var edd = report.expected_date || report.fields.edd_8601;var isHighRiskPregnancy = (report.form === 'pregnancy' && report.fields && (report.fields.risk_factors || report.fields.danger_signs))|| isFormSubmittedInWindow(reports, 'F', report.reported_date, addDate(new Date(report.reported_date), MAX_DAYS_IN_PREGNANCY).getTime());if (!pregnancy || pregnancyDate < report.reported_date) {pregnancyDate = report.reported_date;pregnancy = {label: 'contact.profile.pregnancy',fields: [{ label: 'contact.profile.edd', value: edd, filter: 'relativeDay', width: 12 },{ label: 'contact.profile.visit', value: 'contact.profile.visits.of', translate: true, context: { count: subsequentVisits.length, total: 4 }, width: 6 },{ label: 'contact.profile.risk.title', value: isHighRiskPregnancy ? 'contact.profile.risk.high':'contact.profile.risk.normal', translate: true, width: 5},{ label: '', value: isHighRiskPregnancy ? 'risk':'', filter: 'resourceIcon', width: 1}]};}}});if (pregnancy) {cards.push(pregnancy);}if (pastPregnancies.fields.length > 0) {cards.push(pastPregnancies);}} else {fields = [{ label: 'Notes', value: contact.notes, width: 12 }];if (contact.parent) {fields.push({ label: 'contact.parent', value: contact.parent, filter: 'clinic' });}}var result = {fields: fields,cards: cards,context: context};result;",
+  "_id": "0ba96f94b93899b06a4136ab5c42cdb7"
+}

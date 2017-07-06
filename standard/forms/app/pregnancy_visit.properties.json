@@ -1,0 +1,32 @@
+{
+  "title": [
+    {
+      "locale": "en",
+      "content": "Pregnancy Visit"
+    },
+    {
+      "locale": "hi",
+      "content": "गर्भावस्था जांच"
+    },
+    {
+      "locale": "id",
+      "content": "Kunjungan kehamilan"
+    }
+  ],
+  "icon": "clinic",
+  "context": {
+    "person": true,
+    "place": false,
+    "expression": "!contact || (contact.type === 'person' && (!contact.sex || contact.sex === 'female') && (!contact.date_of_birth || (ageInYears(contact) >= 10 && ageInYears(contact) < 65)))"
+  },
+  "hidden_fields": [
+    "patient_age_in_years",
+    "patient_phone",
+    "patient_uuid",
+    "group_chw_info",
+    "group_danger_signs",
+    "group_note",
+    "group_review",
+    "meta"
+  ]
+}
