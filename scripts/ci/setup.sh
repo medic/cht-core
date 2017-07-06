@@ -6,6 +6,9 @@ ARGS+='this.dependencies_included = true;'
 # Process append to the version string if pre-release
 if [ "$TRAVIS_BRANCH" == "master" ]; then
     ARGS+="this.version += \"-alpha.$TRAVIS_BUILD_NUMBER\";"
+    # Run CI against latest master of submodules if this is master
+    git submodule update --remote api
+    git submodule update --remote sentinel
 elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-(rc|beta)\.[0-9]+$ ]]; then
     ARGS+="this.version = \"$TRAVIS_TAG\";"
 fi
