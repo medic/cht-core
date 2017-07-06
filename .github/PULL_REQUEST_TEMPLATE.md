@@ -11,3 +11,4 @@ medic/medic-webapp#[number]
 - [ ] Tested: Unit and/or e2e where appropriate
 - [ ] Internationalised: All user facing text
 - [ ] Backwards compatible: Works with existing data and configuration or includes a migration. Any breaking changes documented in Changes.md.
+- [ ] Webapp CI runs clean against this branch
