@@ -1,4 +1,5 @@
 var utils = require('../utils');
+var helper = require('../helper');
 
 describe('Send message', function() {
   'use strict';
@@ -60,7 +61,7 @@ describe('Send message', function() {
   });
 
   var messageInList = function(identifier) {
-    return '#message-list li[data-record-id="'+identifier+'"]';
+    return '#message-list li[data-record-id="' + identifier + '"]';
   };
 
   var smsMsg = function(key) {
@@ -79,7 +80,7 @@ describe('Send message', function() {
   };
 
   var findSelect2Entry = function(selector, expectedValue) {
-    return element.all(by.css('.select2-results__option'+selector)).filter(function(item) {
+    return element.all(by.css('.select2-results__option' + selector)).filter(function(item) {
       return item.getText()
         .then(function(text) {
           return text === expectedValue;
@@ -97,13 +98,13 @@ describe('Send message', function() {
 
     browser.wait(function() {
       return protractor.promise.all([
-          findSelect2Entry(entrySelector, entryText).count().then(utils.countOf(1)),
-          element.all(by.css('.select2-results__option.loading-results')).count().then(utils.countOf(0)),
-          element.all(by.css('.select2-results__option')).count().then(utils.countOf(totalExpectedResults))
-        ]).then(function(results) {
-          // My kingdom for results.reduce(&&);
-          return results[0] && results[1] && results[2];
-        });
+        findSelect2Entry(entrySelector, entryText).count().then(utils.countOf(1)),
+        element.all(by.css('.select2-results__option.loading-results')).count().then(utils.countOf(0)),
+        element.all(by.css('.select2-results__option')).count().then(utils.countOf(totalExpectedResults))
+      ]).then(function(results) {
+        // My kingdom for results.reduce(&&);
+        return results[0] && results[1] && results[2];
+      });
     }, 10000);
 
     return findSelect2Entry(entrySelector, entryText).first();
@@ -144,9 +145,10 @@ describe('Send message', function() {
 
     expect(element.all(by.css(liIdentifier)).count()).toBe(1);
     element(by.css(liIdentifier + ' a.message-wrapper')).click();
+
     browser.wait(function() {
       var el = element(by.css('#message-header .name'));
-      if (el.isPresent()) {
+      if (helper.waitUntilReady(el)) {
         return el.getText().then(function(text) {
           return text === entryName;
         });
