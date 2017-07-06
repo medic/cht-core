@@ -71,6 +71,7 @@ exports['registration sets up schedule'] = function(test) {
             }
         ]
     }]);
+    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     sinon.stub(schedules, 'getScheduleConfig').returns({
         name: 'group1',
@@ -169,6 +170,7 @@ exports['registration sets up schedule using translation_key'] = function(test) 
             recipient: 'reporting_unit'
         }]
     });
+    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     sinon.stub(utils, 'translate')
         .withArgs('thanks', 'en').returns('thanks {{contact.name}}')
@@ -248,6 +250,7 @@ exports['registration sets up schedule using bool_expr'] = function(test) {
             }
         ]
     }]);
+    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     sinon.stub(schedules, 'getScheduleConfig').returns({
         name: 'group1',
@@ -342,6 +345,7 @@ exports['two phase registration sets up schedule using bool_expr'] = function(te
             }
         ]
     }]);
+    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
     var getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [ { doc: { fields: { patient_name: 'barry' } } } ]);
     sinon.stub(schedules, 'getScheduleConfig').returns({
         name: 'group1',
@@ -442,6 +446,7 @@ exports['no schedule using false bool_expr'] = function(test) {
         ]
     }]);
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
+    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
     sinon.stub(schedules, 'getScheduleConfig').returns({
         name: 'group1',
         start_from: 'reported_date',

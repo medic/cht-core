@@ -1,6 +1,7 @@
 var sinon = require('sinon').sandbox.create(),
     transition = require('../../transitions/registration'),
     transitionUtils = require('../../transitions/utils'),
+    messages = require('../../lib/messages'),
     utils = require('../../lib/utils'),
     schedules = require('../../lib/schedules'),
     config = require('../../config');
@@ -586,6 +587,51 @@ exports['trigger param configuration parse failure for invalid JSON propagates t
     transition.fireConfiguredTriggers({}, {}, eventConfig, {}, function(err) {
         test.ok(err instanceof Error);
 
+        test.done();
+    });
+};
+
+exports['addMessage prepops and passes the right information to messages.addMessage'] = (test) => {
+    const testPhone = '1234',
+          testMessage = 'A Test Message',
+          testRegistration = 'some registrations',
+          testPerson = 'a patient contact';
+
+    sinon.stub(messages, 'getRecipientPhone').returns(testPhone);
+    sinon.stub(messages, 'getMessage').returns(testMessage);
+    const addMessage = sinon.stub(messages, 'addMessage');
+
+    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, testRegistration);
+    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, testPerson);
+
+    const testConfig = {
+        messages: [{
+        },
+        {
+            event_type: 'report_accepted'
+        }]
+    };
+    const testDoc = {
+        fields: {
+            patient_id: '12345'
+        }
+    };
+
+    transition.addMessages({}, testConfig, testDoc, err => {
+        test.equal(err, undefined);
+        test.equal(addMessage.callCount, 2);
+
+        const expected = {
+            doc: testDoc,
+            phone: testPhone,
+            message: testMessage,
+            options: { next_msg: { minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 } },
+            registrations: testRegistration,
+            person: testPerson
+        };
+
+        test.deepEqual(addMessage.args[0][0], expected);
+        test.deepEqual(addMessage.args[1][0], expected);
         test.done();
     });
 };

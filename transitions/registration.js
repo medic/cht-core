@@ -329,25 +329,30 @@ module.exports = {
     },
     addMessages: function(db, config, doc, callback) {
         // send response if configured
-        var locale = utils.getLocale(doc),
-            now = moment(date.getDate()),
-            extra = {next_msg: schedules.getNextTimes(doc, now)},
-            patientId = doc.fields && doc.fields.patient_id;
+        const locale = utils.getLocale(doc),
+              now = moment(date.getDate()),
+              extra = {next_msg: schedules.getNextTimes(doc, now)},
+              patientId = doc.fields && doc.fields.patient_id;
         if (!config.messages || !config.messages.length) {
             return callback();
         }
-        getRegistrations(db, patientId, function(err, registrations) {
+        async.parallel({
+            registrations: _.partial(getRegistrations, db, patientId),
+            person: _.partial(utils.getPatientContact, db, patientId)
+        }, (err, {registrations, person}) => {
             if (err) {
                 return callback(err);
             }
-            config.messages.forEach(function(msg) {
+
+            config.messages.forEach(msg => {
                 if (!msg.event_type || msg.event_type === 'report_accepted') {
                     messages.addMessage({
                         doc: doc,
                         phone: messages.getRecipientPhone(doc, msg.recipient),
                         message: messages.getMessage(msg, locale),
                         options: extra,
-                        registrations: registrations
+                        registrations: registrations,
+                        person: person
                     });
                 }
             });
