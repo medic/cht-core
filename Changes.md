@@ -14,6 +14,12 @@ _TBC_
 
 - [#1472](https://github.com/medic/medic-webapp/issues/1472) adds password validation so when creating or updating users the new passwords have to be at least 8 characters long and reasonably complex.
 
+### Continuous Integration
+
+- [#3621](https://github.com/medic/medic-webapp/pull/3621) Automatically update
+  to master branches of `api` and `sentinel` submodules before running CI in
+  Travis.
+
 ## 2.12.0
 
 _June 20, 2017_
