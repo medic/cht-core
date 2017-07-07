@@ -7,7 +7,7 @@ exports.tearDown = function(callback) {
   callback();
 };
 
-exports['hydrateDoc returns errors from view'] = test => {
+exports['fetchHydratedDoc returns errors from view'] = test => {
   const expected = 'boom';
   const id = 'abc';
   const view = sinon.stub(db.medic, 'view').callsArgWith(3, expected);
@@ -23,7 +23,7 @@ exports['hydrateDoc returns errors from view'] = test => {
   });
 };
 
-exports['hydrateDoc returns errors from fetch'] = test => {
+exports['fetchHydratedDoc returns errors from fetch'] = test => {
   const expected = 'boom';
   const docId = 'abc';
   const contactId = 'def';
@@ -38,7 +38,7 @@ exports['hydrateDoc returns errors from fetch'] = test => {
   });
 };
 
-exports['hydrateDoc handles no lineage and no contact'] = test => {
+exports['fetchHydratedDoc handles no lineage and no contact'] = test => {
   const docId = 'abc';
   const expected = { _id: docId };
   sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: expected } ] });
@@ -51,7 +51,18 @@ exports['hydrateDoc handles no lineage and no contact'] = test => {
   });
 };
 
-exports['hydrateDoc attaches the lineage'] = test => {
+exports['fetchHydratedDoc handles doc with deleted parent'] = test => {
+  const docId = 'abc';
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { _id: 'abc' } }, { doc: null } ] });
+  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [] });
+  lineage.fetchHydratedDoc(docId, (err, actual) => {
+    test.equals(err, null);
+    test.deepEqual(actual, { _id: 'abc', parent: null });
+    test.done();
+  });
+};
+
+exports['fetchHydratedDoc attaches the lineage'] = test => {
   const docId = 'abc';
   const parent = {
     _id: 'def',
@@ -90,7 +101,7 @@ exports['hydrateDoc attaches the lineage'] = test => {
   });
 };
 
-exports['hydrateDoc attaches the full lineage for reports'] = test => {
+exports['fetchHydratedDoc attaches the full lineage for reports'] = test => {
   const docId = 'abc';
 
   const parentContact = {
@@ -171,7 +182,7 @@ exports['hydrateDoc attaches the full lineage for reports'] = test => {
   });
 };
 
-exports['hydrateDoc attaches the contacts'] = test => {
+exports['fetchHydratedDoc attaches the contacts'] = test => {
   const docId = 'abc';
   const parentContact = {
     _id: 'contact-def',
