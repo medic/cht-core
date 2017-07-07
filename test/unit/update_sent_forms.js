@@ -1,16 +1,10 @@
-var _ = require('underscore'),
-    moment = require('moment'),
+var moment = require('moment'),
     sinon = require('sinon'),
     transition = require('../../transitions/update_sent_forms');
 
 exports.setUp = function(callback) {
     process.env.TEST_ENV = true;
     callback();
-};
-
-exports['onMatch is a function'] = function(test) {
-    test.ok(_.isFunction(transition.onMatch));
-    test.done();
 };
 
 exports['calls db.get with id of clinic'] = function(test) {

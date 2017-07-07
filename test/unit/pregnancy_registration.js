@@ -97,14 +97,7 @@ exports.setUp = function(callback) {
 
 exports.tearDown = function(callback) {
     sinon.restore();
-
     callback();
-};
-
-exports['filter exists'] = function(test) {
-    test.ok(_.isFunction(transition.filter));
-    test.ok(transition.filter.length >= 1);
-    test.done();
 };
 
 exports['filter fails with empty doc'] = function(test) {

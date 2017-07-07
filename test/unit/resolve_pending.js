@@ -1,15 +1,9 @@
-var _ = require('underscore'),
-    transition = require('../../transitions/resolve_pending');
+var transition = require('../../transitions/resolve_pending');
 
 exports.tearDown = function(callback) {
     callback();
 };
 
-exports['filter signature'] = function(test) {
-    test.ok(_.isFunction(transition.filter));
-    test.equals(transition.filter.length, 1);
-    test.done();
-};
 
 exports['filter fails on undefined tasks or scheduled_tasks'] = function(test) {
     test.equals(transition.filter({}), false);

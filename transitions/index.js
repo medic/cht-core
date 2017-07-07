@@ -380,8 +380,6 @@ const attach = () => {
 };
 
 module.exports = {
-  _loadTransition: loadTransition,
-  _changeQueue: changeQueue,
   loadTransitions: loadTransitions,
   canRun: canRun,
   attach: attach,
@@ -390,6 +388,10 @@ module.exports = {
   applyTransitions: applyTransitions
 };
 
-if (!process.env.TEST_ENV) {
+if (process.env.TEST_ENV) {
+  module.exports._loadTransition = loadTransition;
+  module.exports._changeQueue = changeQueue;
+  module.exports._AVAILABLE_TRANSITIONS = AVAILABLE_TRANSITIONS;
+} else {
   loadTransitions();
 }

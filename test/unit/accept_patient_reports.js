@@ -9,15 +9,6 @@ exports.tearDown = function(callback) {
     callback();
 };
 
-exports['function signature'] = function(test) {
-    test.ok(_.isFunction(transition.onMatch));
-    test.equal(transition.onMatch.length, 4);
-
-    test.ok(_.isFunction(transition.filter));
-    test.equal(transition.filter.length, 1);
-    test.done();
-};
-
 exports['filter validation'] = function(test) {
     test.equal(transition.filter({}), false);
     test.equal(transition.filter({

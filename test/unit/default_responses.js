@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    sinon = require('sinon').sandbox.create(),
+var sinon = require('sinon').sandbox.create(),
     config = require('../../config'),
     utils = require('../../lib/utils'),
     messages = require('../../lib/messages'),
@@ -13,18 +12,6 @@ exports.setUp = function(callback) {
 exports.tearDown = function(callback) {
     sinon.restore();
     callback();
-};
-
-exports['onMatch signature'] = function(test) {
-    test.ok(_.isFunction(transition.onMatch));
-    test.equals(transition.onMatch.length, 4);
-    test.done();
-};
-
-exports['filter signature'] = function(test) {
-    test.ok(_.isFunction(transition.filter));
-    test.equals(transition.filter.length, 1);
-    test.done();
 };
 
 exports['when document type is unknown do not pass filter'] = function(test) {

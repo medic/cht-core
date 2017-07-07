@@ -1,23 +1,10 @@
-var _ = require('underscore'),
-    sinon = require('sinon').sandbox.create(),
+var sinon = require('sinon').sandbox.create(),
     transition = require('../../transitions/update_notifications'),
     utils = require('../../lib/utils');
 
 exports.tearDown = function(callback) {
     sinon.restore();
     callback();
-};
-
-exports['onMatch signature'] = function(test) {
-    test.ok(_.isFunction(transition.onMatch));
-    test.equals(transition.onMatch.length, 4);
-    test.done();
-};
-
-exports['filter signature'] = function(test) {
-    test.ok(_.isFunction(transition.filter));
-    test.equals(transition.filter.length, 1);
-    test.done();
 };
 
 exports['filter empty doc does not match'] = function(test) {

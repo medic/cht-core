@@ -1,6 +1,7 @@
 const sinon = require('sinon').sandbox.create(),
       follow = require('follow'),
       audit = require('couchdb-audit'),
+      _ = require('underscore'),
       config = require('../../config'),
       db = require('../../db'),
       lineage = require('../../lib/lineage'),
@@ -260,3 +261,18 @@ exports['attach handles existing meta data doc'] = test => {
   // invoke the change handler
   on.args[0][1]({ id: 'abc', seq: 55 });
 };
+
+const requiredFunctions = {
+  onMatch: 4,
+  filter: 1
+};
+transitions._AVAILABLE_TRANSITIONS.forEach(name => {
+  const transition = require(`../../transitions/${name}`);
+  Object.keys(requiredFunctions).forEach(key => {
+    exports[`Checking ${key} signature for ${name} transition`] = test => {
+      test.ok(_.isFunction(transition[key]), 'Required function not found');
+      test.equal(transition[key].length, requiredFunctions[key], 'Function takes the wrong number of parameters');
+      test.done();
+    };
+  });
+});
