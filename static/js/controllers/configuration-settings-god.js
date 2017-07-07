@@ -45,14 +45,14 @@ angular.module('inboxControllers').controller('ConfigurationSettingsGodCtrl',
       console.log('We got submit!');
     };
 
-    /*    $q.all(Settings, SettingsSchema)
-          .then(function(results) {
-             $scope.model = results[0];
-             $scope.schema = results[1];
-          })
-          .catch(function(err) {
-            $log.error('Error loading settings', err);
-          });
-    */
+    $q.all([Settings, SettingsSchema])
+      .then(function(results) {
+        $scope.model = results[0];
+        $scope.schema = results[1];
+      })
+      .catch(function(err) {
+        $log.error('Error loading settings', err);
+      });
+
   }
 );
