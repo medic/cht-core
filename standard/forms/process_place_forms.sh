@@ -6,6 +6,12 @@ SELF="$(basename $0)"
 SELFPATH=$(grealpath "$0" 2>/dev/null || realpath "$0")
 SELFDIR=$(dirname $SELFPATH)
 
+OUTPUT_DIR="contact"
+BACKUP_DIR="${OUTPUT_DIR}/_backups"
+
+[ -d "${OUTPUT_DIR}" ] || mkdir -p "${OUTPUT_DIR}"
+[ -d "${BACKUP_DIR}" ] || mkdir -p "${BACKUP_DIR}"
+
 verbose='false'
 upload='false'
 upload_only='false'
@@ -36,8 +42,8 @@ _usage () {
     echo ""
     echo "Example: "
     echo "  COUCH_URL=http://user:password@localhost:8000/medic"
-    echo "  PYTHON_PATH=C:/Program Files/Python/Python27/python.exe"
-    echo "  PYXFORM_PATH=../../pyxform/pyxform/xls2xform.py"
+    echo "  PYTHON=C:/Program Files/Python/Python27/python.exe"
+    echo "  PYXFORM=../../pyxform/"
     echo "  CONVERT_SCRIPT=/path/to/medic-projects/scripts/convert.sh"
     echo "  UPLOAD_SCRIPT=/path/to/medic-webapp/scripts/upload_xform.sh"
     echo "  $SELF -u"
@@ -65,8 +71,8 @@ do
   else
     # COMMON FOR ALL PLACES
 
-    rm data.xlsx
-
+    [ -f "data.xlsx" ] && rm "data.xlsx"
+    
     cp "${SELFDIR}/${PLACE_TYPE_MARKER}-${FORM_TYPES[$k]}.xlsx" data.xlsx
 
     "$CONVERTER" -f data
@@ -102,7 +108,12 @@ do
     # SPECIFIC FOR EACH PLACE
     for i in "${!PLACE_TYPES[@]}"
     do
-      filename="${PLACE_TYPES[$i]}-${FORM_TYPES[$k]}.xml"
+      filename="${OUTPUT_DIR}/${PLACE_TYPES[$i]}-${FORM_TYPES[$k]}.xml"
+      filename_bak="${BACKUP_DIR}/${PLACE_TYPES[$i]}-${FORM_TYPES[$k]}.xml.bak"
+      
+      #backup old one if it exists
+      [ -f "${filename}" ] && mv "${filename}" "${filename_bak}"
+      
       cp data.xml "${filename}"
 
       echo ""
@@ -110,14 +121,16 @@ do
 
       sed -i.sedbak "s/${PLACE_TYPE_MARKER}/${PLACE_TYPES[$i]}/g" "${filename}"
       sed -i.sedbak "s/${PLACE_NAME_MARKER}/${PLACE_NAMES[$i]}/g" "${filename}"
+      
+      [ -f "${filename}.sedbak" ] && rm "${filename}.sedbak"
 
     done
 
-    rm *.sedbak
-
-    rm data.tmp
-    rm data.xml
-    rm data.xlsx
+    [ -f "data.tmp" ] && rm "data.tmp"
+    [ -f "data.tmp.sedbak" ] && rm "data.tmp.sedbak"
+    [ -f "data.xlsx" ] && rm "data.xlsx"
+    [ -f "data.xml" ] && rm "data.xml"
+    [ -f "data.xml.sedbak" ] && rm "data.xml.sedbak"
 
   fi
 
