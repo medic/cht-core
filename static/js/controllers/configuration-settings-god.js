@@ -12,37 +12,22 @@ angular.module('inboxControllers').controller('ConfigurationSettingsGodCtrl',
     'use strict';
     'ngInject';
 
-    $scope.schema = {
-      type: "object",
-      properties: {
-        name: {
-          type: "string",
-          minLength: 2,
-          title: "Name",
-          description: "Name or alias"
-        },
-        title: {
-          type: "string",
-          enum: ['dr', 'jr', 'sir', 'mrs', 'mr', 'NaN', 'dj']
-        }
-      }
-    };
-
+    $scope.model = {};
+    $scope.schema = {};
     $scope.form = [
-      "*", {
-        type: "submit",
-        title: "Save"
+      '*',
+      {
+        type: 'submit',
+        title: 'Save'
       }
     ];
 
-    $scope.model = {};
-
-    $scope.save = function() {
-      console.log('We got save!');
-    };
-
-    $scope.submit = function() {
-      console.log('We got submit!');
+    $scope.onSubmit = function(form) {
+      if (form.$valid) {
+        console.log('TODO: save change, data changed in $scope.model');
+      } else {
+        console.log('TOOD: deal with validation issues');
+      }
     };
 
     $q.all([Settings, SettingsSchema])
@@ -53,6 +38,5 @@ angular.module('inboxControllers').controller('ConfigurationSettingsGodCtrl',
       .catch(function(err) {
         $log.error('Error loading settings', err);
       });
-
   }
 );
