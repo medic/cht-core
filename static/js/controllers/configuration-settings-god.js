@@ -58,8 +58,8 @@ angular.module('inboxControllers').controller('ConfigurationSettingsGodCtrl',
 
     $q.all(Settings, SettingsSchema)
       .then(function(results) {
-        $scope.model = results[0];
-        $scope.schema = results[1];
+        // $scope.model = results[0];
+        // $scope.schema = results[1];
       })
       .catch(function(err) {
         $log.error('Error loading settings', err);
