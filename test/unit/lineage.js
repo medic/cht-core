@@ -62,6 +62,17 @@ exports['fetchHydratedDoc handles doc with deleted parent'] = test => {
   });
 };
 
+exports['fetchHydratedDoc handles missing contacts'] = test => {
+  const docId = 'abc';
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { _id: 'abc', contact: { _id: 'xyz' } } } ] });
+  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [ { doc: null }] });
+  lineage.fetchHydratedDoc(docId, (err, actual) => {
+    test.equals(err, null);
+    test.deepEqual(actual, { _id: 'abc', contact: { _id: 'xyz' }, parent: undefined });
+    test.done();
+  });
+};
+
 exports['fetchHydratedDoc attaches the lineage'] = test => {
   const docId = 'abc';
   const parent = {
