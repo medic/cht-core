@@ -1,5 +1,5 @@
 angular.module('inboxControllers').controller('ConfigurationSettingsGodCtrl',
-  function (
+  function(
     $q,
     $log,
     $scope,
@@ -12,41 +12,30 @@ angular.module('inboxControllers').controller('ConfigurationSettingsGodCtrl',
     'use strict';
     'ngInject';
 
-    $scope.form = [
-      '*',
-      { // TODO: translation
-        type: 'submit',
-        title: 'Save'
-      }
-    ];
-    $scope.model = {};
-    $scope.form = {
-      type: 'object',
-      title: 'Comment',
+    $scope.schema = {
+      type: "object",
       properties: {
         name: {
-          title: 'Name',
-          type: 'string'
+          type: "string",
+          minLength: 2,
+          title: "Name",
+          description: "Name or alias"
         },
-        email: {
-          title: 'Email',
-          type: 'string',
-          pattern: '^\\S+@\\S+$',
-          description: 'Email will be used for evil.'
-        },
-        comment: {
-          title: 'Comment',
-          type: 'string',
-          maxLength: 20,
-          validationMessage: 'Don\'t be greedy!'
+        title: {
+          type: "string",
+          enum: ['dr', 'jr', 'sir', 'mrs', 'mr', 'NaN', 'dj']
         }
-      },
-      required: [
-        'name',
-        'email',
-        'comment'
-      ]
+      }
     };
+
+    $scope.form = [
+      "*", {
+        type: "submit",
+        title: "Save"
+      }
+    ];
+
+    $scope.model = {};
 
     $scope.save = function() {
       console.log('We got save!');
@@ -56,14 +45,14 @@ angular.module('inboxControllers').controller('ConfigurationSettingsGodCtrl',
       console.log('We got submit!');
     };
 
-    $q.all(Settings, SettingsSchema)
-      .then(function(results) {
-        // $scope.model = results[0];
-        // $scope.schema = results[1];
-      })
-      .catch(function(err) {
-        $log.error('Error loading settings', err);
-      });
-
+    /*    $q.all(Settings, SettingsSchema)
+          .then(function(results) {
+             $scope.model = results[0];
+             $scope.schema = results[1];
+          })
+          .catch(function(err) {
+            $log.error('Error loading settings', err);
+          });
+    */
   }
 );

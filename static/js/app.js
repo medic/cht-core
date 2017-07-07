@@ -17,6 +17,7 @@ require('angular-resource');
 require('angular-route');
 require('angular-sanitize');
 require('angular-schema-form');
+require('angular-schema-form-bootstrap');
 require('angular-translate');
 require('angular-translate-interpolation-messageformat');
 require('angular-translate-handler-log');

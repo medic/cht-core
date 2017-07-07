@@ -16,6 +16,7 @@
     "angular-route": "^1.6.4",
     "angular-sanitize": "^1.6.4",
     "angular-schema-form": "^0.8.13",
+    "angular-schema-form-bootstrap": "^0.2.0",
     "angular-translate": "^2.15.1",
     "angular-ui-bootstrap": "^2.5.0",
     "angular-ui-router": "^0.4.2",
