@@ -266,7 +266,8 @@ const requiredFunctions = {
   onMatch: 4,
   filter: 1
 };
-transitions._AVAILABLE_TRANSITIONS.forEach(name => {
+
+transitions.availableTransitions().forEach(name => {
   const transition = require(`../../transitions/${name}`);
   Object.keys(requiredFunctions).forEach(key => {
     exports[`Checking ${key} signature for ${name} transition`] = test => {
