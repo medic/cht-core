@@ -202,7 +202,7 @@ module.exports = function(grunt) {
              ' && kanso push http://admin:pass@localhost:5984/medic-test'
       },
       test_api_integration_setup: {
-        cmd: 'cd api && npm install',
+        cmd: 'cd api && npm install --no-package-lock',
       },
       test_api_integration: {
         cmd: 'cd api && grunt test_integration',
