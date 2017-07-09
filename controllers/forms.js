@@ -1,4 +1,4 @@
-var openrosaFormList = require('openrosa-formlist'),
+var openrosaFormList = require('@medic/openrosa-formlist'),
     db = require('../db');
 
 // removes form: prefix on form docs
