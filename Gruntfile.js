@@ -195,14 +195,14 @@ module.exports = function(grunt) {
       },
       deploytest: {
         stderr: false,
-        cmd: 'cd api && npm install && cd .. ' +
-             ' && cd sentinel && npm install && cd .. ' +
+        cmd: 'cd api && npm install --only=prod --no-package-lock && cd .. ' +
+             ' && cd sentinel && npm install --only=prod --no-package-lock && cd .. ' +
              ' && curl -X DELETE http://admin:pass@localhost:5984/medic-test' +
              ' && curl -X DELETE http://admin:pass@localhost:5984/medic-audit-test' +
              ' && kanso push http://admin:pass@localhost:5984/medic-test'
       },
       test_api_integration_setup: {
-        cmd: 'cd api && npm install',
+        cmd: 'cd api && npm install --no-package-lock',
       },
       test_api_integration: {
         cmd: 'cd api && grunt test_integration',
