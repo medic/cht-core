@@ -27,8 +27,8 @@
     "grunt-env": "^0.4.4",
     "jsverify": "^0.8.1",
     "kanso": "^0.5.0",
-    "nodeunit": "latest",
-    "sinon": "latest"
+    "nodeunit": "^0.11.1",
+    "sinon": "^2.3.6"
   },
   "scripts": {
     "start": "node server.js",
