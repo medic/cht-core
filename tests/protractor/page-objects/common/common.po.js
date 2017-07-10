@@ -1,66 +1,66 @@
-var helper = require('../../helper'),
-    utils = require('../../utils');
+const helper = require('../../helper'),
+  utils = require('../../utils');
 
-var medicLogo = element(by.className('logo-full'));
-var messagesLink = element(by.id('messages-tab'));
-var tasksLink = element(by.id('tasks-tab'));
-var contactsLink = element(by.id('contacts-tab'));
-var analyticsLink = element(by.id('analytics-tab'));
-var reportsLink = element(by.id('reports-tab'));
-var configurationLink = element(by.css('[ui-sref=configuration]'));
-var hamburgerMenu = element(by.className('dropdown options'));
-var logoutButton=$('[ng-click=logout]');
+const medicLogo = element(by.className('logo-full'));
+const messagesLink = element(by.id('messages-tab'));
+const tasksLink = element(by.id('tasks-tab'));
+const contactsLink = element(by.id('contacts-tab'));
+const analyticsLink = element(by.id('analytics-tab'));
+const reportsLink = element(by.id('reports-tab'));
+const configurationLink = element(by.css('[ui-sref=configuration]'));
+const hamburgerMenu = element(by.className('dropdown options'));
+const logoutButton = $('[ng-click=logout]');
 
 module.exports = {
-  getBaseUrl: function () {
+  getBaseUrl: () => {
     return utils.getBaseUrl() + '/_design/medic/_rewrite/#/';
   },
 
-  goToMessages: function () {
+  goToMessages: () => {
     helper.waitUntilReady(messagesLink);
     messagesLink.click();
   },
 
-  goToTasks: function () {
+  goToTasks: () => {
     helper.waitUntilReady(tasksLink);
     tasksLink.click();
   },
 
-  goToPeople: function () {
+  goToPeople: () => {
     helper.waitUntilReady(contactsLink);
     contactsLink.click();
   },
 
-  goToReports: function () {
+  goToReports: () => {
     helper.waitUntilReady(reportsLink);
     reportsLink.click();
   },
 
-  goToAnalytics: function () {
+  goToAnalytics: () => {
     helper.waitUntilReady(analyticsLink);
     analyticsLink.click();
   },
 
-  goToConfiguration: function () {
+  goToConfiguration: () => {
     helper.waitUntilReady(configurationLink);
     configurationLink.click();
   },
 
-  openMenu: function () {
+  openMenu: () => {
     helper.waitUntilReady(messagesLink);
     hamburgerMenu.click();
   },
 
-  goHome: function () {
+  goHome: () => {
     helper.waitUntilReady(medicLogo);
     medicLogo.click();
   },
 
-  isAt: function (list) {
+  isAt: list => {
     helper.waitUntilReady(medicLogo);
     return element(by.id(list)).isPresent();
-  }, 
-  logout:function(){
+  },
+  logout: () => {
     hamburgerMenu.click();
     helper.waitElementToBeVisisble(logoutButton);
     logoutButton.click();

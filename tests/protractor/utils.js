@@ -1,17 +1,17 @@
-var _ = require('underscore'),
+const _ = require('underscore'),
   auth = require('./auth')(),
   constants = require('./constants'),
   http = require('http'),
   path = require('path');
 
-var originalSettings = {};
+const originalSettings = {};
 
 // The app_settings and update_settings modules are on the main ddoc.
-var mainDdocName = 'medic';
+const mainDdocName = 'medic';
 const userSettingsDocId = `org.couchdb.user:${auth.user}`;
 
-var request = function(options, debug) {
-  var deferred = protractor.promise.defer();
+const request = (options, debug) =>  {
+  const deferred = protractor.promise.defer();
 
   options.hostname = constants.API_HOST;
   options.port = constants.API_PORT;
@@ -22,13 +22,13 @@ var request = function(options, debug) {
     console.log(JSON.stringify(options));
   }
 
-  var req = http.request(options, function(res) {
+  const req = http.request(options, res =>  {
     res.setEncoding('utf8');
-    var body = '';
-    res.on('data', function(chunk) {
+    let body = '';
+    res.on('data', chunk =>  {
       body += chunk;
     });
-    res.on('end', function() {
+    res.on('end', () =>  {
       try {
         body = JSON.parse(body);
         if (body.error) {
@@ -42,7 +42,7 @@ var request = function(options, debug) {
       }
     });
   });
-  req.on('error', function(e) {
+  req.on('error', e =>  {
     console.log('Request failed: ' + e.message);
     deferred.reject();
   });
@@ -55,24 +55,24 @@ var request = function(options, debug) {
   return deferred.promise;
 };
 
-var updateSettingsForDdoc = function(updates, ddocName) {
+const updateSettingsForDdoc = (updates, ddocName) =>  {
   if (originalSettings[ddocName]) {
     throw new Error('A previous test did not call revertSettings on ' + ddocName);
   }
   return request({
     path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/app_settings', ddocName),
     method: 'GET'
-  }).then(function(result) {
+  }).then(result =>  {
     originalSettings[ddocName] = result.settings;
 
     // Make sure all updated fields are present in originalSettings[ddocName], to enable reverting later.
-    Object.keys(updates).forEach(function(updatedField) {
+    Object.keys(updates).forEach(updatedField =>  {
       if (!_.has(originalSettings[ddocName], updatedField)) {
         originalSettings[ddocName][updatedField] = null;
       }
     });
     return;
-  }).then(function() {
+  }).then(() =>  {
     return request({
       path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/update_settings', ddocName, '?replace=1'),
       method: 'PUT',
@@ -81,7 +81,7 @@ var updateSettingsForDdoc = function(updates, ddocName) {
   });
 };
 
-var revertSettingsForDdoc = function(ddocName) {
+const revertSettingsForDdoc = ddocName =>  {
   if (!originalSettings[ddocName]) {
     return Promise.resolve();
   }
@@ -92,12 +92,12 @@ var revertSettingsForDdoc = function(ddocName) {
     path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/update_settings', ddocName, '?replace=1'),
     method: 'PUT',
     body: JSON.stringify(originalSettings[ddocName])
-  }).then(function() {
+  }).then(() =>  {
     delete originalSettings[ddocName];
   });
 };
 
-var deleteAll = () => {
+const deleteAll = () => {
   const typesToIgnore = ['translations', 'translations-backup', 'user-settings'];
   const idsToIgnore = ['appcache', 'migration-log', 'resources', 'sentinel-meta-data'];
   return request({
@@ -132,13 +132,13 @@ module.exports = {
 
   request: request,
 
-  requestOnTestDb: function(options, debug) {
+  requestOnTestDb: (options, debug) =>  {
     options.path = '/' + constants.DB_NAME + options.path;
     return request(options, debug);
   },
 
-  saveDoc: function(doc) {
-    var postData = JSON.stringify(doc);
+  saveDoc: doc =>  {
+    const postData = JSON.stringify(doc);
     return request({
       path: '/' + constants.DB_NAME,
       method: 'POST',
@@ -150,42 +150,42 @@ module.exports = {
     });
   },
 
-  getDoc: function(id) {
+  getDoc: id =>  {
     return request({
       path: '/' + constants.DB_NAME + '/' + id,
       method: 'GET'
     });
   },
 
-  getAuditDoc: function(id) {
+  getAuditDoc: id =>  {
     return request({
       path: '/' + constants.DB_NAME + '-audit/' + id + '-audit',
       method: 'GET'
     });
   },
 
-  deleteDoc: function(id) {
+  deleteDoc: id =>  {
     return module.exports.getDoc(id)
-      .then(function(doc) {
+      .then(doc =>  {
         doc._deleted = true;
         return module.exports.saveDoc(doc);
       });
   },
 
-  updateSettings: function(updates) {
+  updateSettings: updates =>  {
     // Update both ddocs, to avoid instability in tests.
     // Note that API will be copying changes to medic over to medic-client, so change
     // medic-client first (api does nothing) and medic after (api copies changes over to
     // medic-client, but the changes are already there.)
     return updateSettingsForDdoc(updates, 'medic-client')
-      .then(function() {
+      .then(() =>  {
         return updateSettingsForDdoc(updates, 'medic');
       });
   },
 
-  revertSettings: function() {
+  revertSettings: () =>  {
     return revertSettingsForDdoc('medic-client')
-      .then(function() {
+      .then(() =>  {
         return revertSettingsForDdoc('medic');
       });
   },
@@ -224,16 +224,16 @@ module.exports = {
       });
   },
 
-  resetBrowser: function() {
-    browser.driver.navigate().refresh().then(function() {
-      return browser.wait(function() {
+  resetBrowser: () =>  {
+    browser.driver.navigate().refresh().then(() =>  {
+      return browser.wait(() =>  {
         return element(by.css('#messages-tab')).isPresent();
       }, 10000);
     });
   },
 
-  countOf: function(count) {
-    return function(c) {
+  countOf: count =>  {
+    return c =>  {
       return c === count;
     };
   },

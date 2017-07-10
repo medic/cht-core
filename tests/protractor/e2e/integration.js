@@ -1,12 +1,12 @@
-var _ = require('underscore'),
-    utils = require('../utils'),
-    auth = require('../auth')();
+const _ = require('underscore'),
+  utils = require('../utils'),
+  auth = require('../auth')();
 
-describe('Integration', function() {
+describe('Integration', () => {
 
   'use strict';
 
-  var message = {
+  const message = {
     errors: [],
     form: null,
     from: '0211111111',
@@ -37,14 +37,14 @@ describe('Integration', function() {
     sent_by: 'gareth'
   };
 
-  var logout = function() {
+  const logout = () => {
     return utils.request({
       method: 'DELETE',
       path: '/_session'
     });
   };
 
-  var login = function() {
+  const login = () => {
     return utils.request({
       method: 'POST',
       path: '/_session',
@@ -55,52 +55,52 @@ describe('Integration', function() {
     });
   };
 
-  var savedUuid;
-  beforeEach(function(done) {
+  let savedUuid;
+  beforeEach(done => {
     utils.saveDoc(message)
-      .then(function(doc) {
+      .then(doc => {
         savedUuid = doc.id;
         logout()
-          .then(function() {
+          .then(() => {
             done();
           },
-          function(err) {
+          err => {
             console.error('Error logging out', err);
             done();
           });
-      }, function(err) {
+      }, err => {
         console.error('Error saving doc', err);
         done();
       });
   });
 
-  afterEach(function(done) {
+  afterEach(done => {
     login()
-      .then(function() {
+      .then(() => {
         utils.deleteDoc(savedUuid)
           .then(done, done);
       },
-      function(err) {
+      err => {
         console.error('Error logging in', err);
         utils.deleteDoc(savedUuid)
           .then(done, done);
       });
   });
 
-  it('can download messages using basic auth', function() {
-    var flow = protractor.promise.controlFlow();
-    flow.execute(function() {
+  it('can download messages using basic auth', () => {
+    const flow = protractor.promise.controlFlow();
+    flow.execute(() => {
       return utils.request({
         path: '/api/v1/messages',
         method: 'GET'
       });
-    }).then(function(result) {
-      var doc = _.findWhere(result, { _record_id: savedUuid });
+    }).then(result => {
+      const doc = _.findWhere(result, { _record_id: savedUuid });
       expect(doc._record_id).toEqual(savedUuid);
       expect(doc.message).toEqual('hello!');
-    }, function(err) {
-        console.error(err);
-        expect(true).toEqual(false);
+    }, err => {
+      console.error(err);
+      expect(true).toEqual(false);
     });
   });
 });

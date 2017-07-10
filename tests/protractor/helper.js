@@ -1,43 +1,43 @@
-var fs = require('fs');
-var EC = protractor.ExpectedConditions;
+const fs = require('fs'),
+ EC = protractor.ExpectedConditions;
 
 function writeScreenShot(data, filename) {
-  var stream = fs.createWriteStream(filename);
+  const stream = fs.createWriteStream(filename);
   stream.write(new Buffer(data, 'base64'));
   stream.end();
 }
 
 module.exports = {
-  waitElementToBeVisisble: function (elm) {
+  waitElementToBeVisisble: elm=> {
     browser.wait(EC.visibilityOf(elm), 15000);
   },
 
-  waitElementToBeClickable: function (elm) {
+  waitElementToBeClickable: elm=> {
     browser.wait(EC.elementToBeClickable(elm), 15000);
   },
 
-  waitElementToDisappear: function (locator) {
-    browser.wait(function () {
+  waitElementToDisappear: locator=> {
+    browser.wait(()=> {
       return element(locator).isPresent()
-        .then(function (presenceOfElement) {
+        .then(presenceOfElement=> {
           return !presenceOfElement;
         });
     }, 10000);
   },
 
-  waitUntilReady: function (elm) {
-    return browser.wait(function () {
+  waitUntilReady: elm=> {
+    return browser.wait(()=> {
       return elm.isPresent();
-    }, 10000).then(function () {
-      return browser.wait(function () {
+    }, 10000).then(()=> {
+      return browser.wait(()=> {
         return elm.isDisplayed();
       }, 12000);
     });
   },
 
-  waitForCheckboxToBeChecked: function (elem) {
-    browser.wait(function () {
-      return (elem.getAttribute('checked')).then(function (isElementChecked) {
+  waitForCheckboxToBeChecked: elem=> {
+    browser.wait(()=> {
+      return (elem.getAttribute('checked')).then(isElementChecked=> {
         return (isElementChecked);
       });
     }, 10000);
@@ -48,9 +48,9 @@ module.exports = {
   * element : select element
   * index : index in the dropdown, 1 base.
   */
-  selectDropdownByNumber: function (element, index, milliseconds) {
+  selectDropdownByNumber:  (element, index, milliseconds)=> {
     element.findElements(by.tagName('option'))
-      .then(function (options) {
+      .then(options=> {
         options[index].click();
       });
     if (typeof milliseconds !== 'undefined') {
@@ -64,10 +64,10 @@ module.exports = {
   * item : option(s) in the dropdown.
   */
   selectDropdownByText: function selectOption(element, item, milliseconds) {
-    var desiredOption;
+    let desiredOption;
     element.all(by.tagName('option'))
       .then(function findMatchingOption(options) {
-        options.some(function (option) {
+        options.some(option=> {
           option.getText().then(function doesOptionMatch(text) {
             if (text.indexOf(item) !== -1) {
               desiredOption = option;
@@ -86,18 +86,18 @@ module.exports = {
     }
   },
 
-  setBrowserParams: function () {
+  setBrowserParams: ()=> {
     browser.driver.manage().window().setSize(browser.params.screenWidth, browser.params.screenHeight);
     browser.ignoreSynchronization = true;
   },
 
-  isTextDisplayed: function (text) {
-    var selectedElement = element(by.xpath('//*[text()[normalize-space() =  \' ' + text + '\']]'));
+  isTextDisplayed: text=> {
+    const selectedElement = element(by.xpath('//*[text()[normalize-space() =  \' ' + text + '\']]'));
     return selectedElement.isPresent();
   },
 
-  takeScreenshot: function (filename) {
-    browser.takeScreenshot().then(function (png) {
+  takeScreenshot: filename=> {
+    browser.takeScreenshot().then(png=> {
       writeScreenShot(png, filename);
     });
   }

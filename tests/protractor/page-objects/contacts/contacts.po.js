@@ -1,29 +1,29 @@
-var helper = require('../../helper');
+const helper = require('../../helper');
 
-var searchBox = $('#freetext');
-var seachButton = $('#search');
-var refreshButton = $('.fa fa-undo');
-var newDistrictButton = $('a[href="#/contacts//add/district_hospital"]');
-var newPlaceForm = $('#district_hospital');
-var newPlaceName = $('[name="/data/district_hospital/name"]');
-var newPersonButton = $('a.btn.btn-link.add-new');
-var externalId = $('[name="/data/district_hospital/external_id"]');
-var notesTextArea = $('[name="/data/district_hospital/notes"]');
-//var nextButton = $('button.btn.btn-primary.next-page.ng-scope');
-var newPersonTextBox = $('[name="/data/contact/name"]');
-var datePicker = $('[placeholder="yyyy-mm-dd"]');
-var phoneNumbers = element.all(by.css(':not([style="display: none;"])[type="tel"]'));
-var phoneNumber = phoneNumbers.first();
-var alternativePhoneNumber = phoneNumbers.get(1);
-var personNotes = $('[name="/data/contact/notes"]');
-var submitButton = $('[ng-click="onSubmit()"]');
+const searchBox = $('#freetext');
+const seachButton = $('#search');
+const refreshButton = $('.fa fa-undo');
+const newDistrictButton = $('a[href="#/contacts//add/district_hospital"]');
+const newPlaceForm = $('#district_hospital');
+const newPlaceName = $('[name="/data/district_hospital/name"]');
+const newPersonButton = $('a.btn.btn-link.add-new');
+const externalId = $('[name="/data/district_hospital/external_id"]');
+const notesTextArea = $('[name="/data/district_hospital/notes"]');
+//const nextButton = $('button.btn.btn-primary.next-page.ng-scope');
+const newPersonTextBox = $('[name="/data/contact/name"]');
+const datePicker = $('[placeholder="yyyy-mm-dd"]');
+const phoneNumbers = element.all(by.css(':not([style="display: none;"])[type="tel"]'));
+const phoneNumber = phoneNumbers.first();
+const alternativePhoneNumber = phoneNumbers.get(1);
+const personNotes = $('[name="/data/contact/notes"]');
+const submitButton = $('[ng-click="onSubmit()"]');
 
 module.exports = {
-  getSubmitButton: function () {
+  getSubmitButton: () => {
     return submitButton;
   },
 
-  addNewDistrict: function (districtName) {
+  addNewDistrict: districtName => {
     helper.waitUntilReady(newDistrictButton);
     newDistrictButton.click();
     helper.waitUntilReady(newPlaceForm);
@@ -34,7 +34,7 @@ module.exports = {
     //nextButton.click();
   },
 
-  completeNewPersonForm: function (name) {
+  completeNewPersonForm: name => {
     helper.waitUntilReady(newPersonTextBox);
     //complete form
     newPersonTextBox.sendKeys(name);
@@ -49,10 +49,10 @@ module.exports = {
     submitButton.click();
   },
 
-  refresh: function() {
+  refresh: () => {
     refreshButton.click();
   },
-  search: function (query) {
+  search: query => {
 
     searchBox.sendKeys(query);
     seachButton.click();

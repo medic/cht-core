@@ -1,11 +1,11 @@
-var utils = require('../utils'),
-    moment = require('moment');
+const utils = require('../utils'),
+  moment = require('moment');
 
-describe('Filters reports', function() {
+describe('Filters reports', () => {
 
   'use strict';
 
-  var reports = [
+  const reports = [
     // one registration half an hour before the start date
     {
       fields: {
@@ -84,18 +84,18 @@ describe('Filters reports', function() {
     },
   ];
 
-  var savedUuids = [];
-  beforeEach(function(done) {
+  const savedUuids = [];
+  beforeEach(done => {
     browser.ignoreSynchronization = true;
     protractor.promise
       .all(reports.map(utils.saveDoc))
-      .then(function(results) {
-        results.forEach(function(result) {
+      .then(results => {
+        results.forEach(result => {
           savedUuids.push(result.id);
         });
         done();
       })
-      .catch(function(err) {
+      .catch(err => {
         console.error('Error saving docs', err);
         done();
       });
@@ -103,17 +103,17 @@ describe('Filters reports', function() {
 
   afterEach(utils.afterEach);
 
-  it('by date', function() {
+  it('by date', () => {
     element(by.id('reports-tab')).click();
 
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.driver.navigate().refresh();
-    browser.wait(function() {
+    browser.wait(() => {
       return element(by.css('#reports-list li:first-child')).isPresent();
     }, 10000);
 
-    var clear = '';
-    for (var i = 0; i < 20; i++) {
+    let clear = '';
+    for (let i = 0; i < 20; i++) {
       clear += protractor.Key.BACK_SPACE;
     }
 
@@ -122,7 +122,7 @@ describe('Filters reports', function() {
     element(by.css('.daterangepicker [name="daterangepicker_end"]')).click().sendKeys(clear + '05/17/2016' + protractor.Key.ENTER);
     element(by.css('#freetext')).click(); // blur the datepicker
 
-    browser.wait(function() {
+    browser.wait(() => {
       return element(by.css('#reports-list .filtered li:first-child')).isPresent();
     }, 10000);
 

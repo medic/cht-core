@@ -1,11 +1,11 @@
-var utils = require('../utils'),
-    async = require('async');
+const utils = require('../utils'),
+  async = require('async');
 
-describe('view docs_by_replication_key', function() {
+describe('view docs_by_replication_key', () => {
 
   'use strict';
 
-  var documentsToReturn = [
+  const documentsToReturn = [
     {
       _id: 'form:doc_by_place_test_form',
       reported_date: 1,
@@ -65,7 +65,7 @@ describe('view docs_by_replication_key', function() {
     }
   ];
 
-  var documentsToIgnore = [
+  const documentsToIgnore = [
     {
       _id: 'fakedoctype',
       reported_date: 1,
@@ -100,7 +100,7 @@ describe('view docs_by_replication_key', function() {
   ];
 
   // Should pass filter if unassigned = true
-  var documentsToIgnoreSometimes = [
+  const documentsToIgnoreSometimes = [
     {
       _id: 'test_kujua_message_no_tasks',
       reported_date: 1,
@@ -133,39 +133,39 @@ describe('view docs_by_replication_key', function() {
   ];
 
   // TODO: consider removing this and just pulling ids from the two arrays above
-  var docByPlaceIds,
-      docByPlaceIds_unassigned;
+  let docByPlaceIds,
+    docByPlaceIds_unassigned;
 
-  beforeAll(function(done) {
-    var alldocs = documentsToReturn.concat(documentsToIgnore, documentsToIgnoreSometimes);
+  beforeAll(done => {
+    const alldocs = documentsToReturn.concat(documentsToIgnore, documentsToIgnoreSometimes);
 
-    var getChanges = function(keys) {
+    const getChanges = keys => {
       console.log('Requesting changes, please be patient…');
 
       return utils.requestOnTestDb({
         path: '/_design/medic/_view/docs_by_replication_key?keys=' + JSON.stringify(keys),
         method: 'GET'
-      }).then(function(response) {
+      }).then(response => {
         console.log('…got changes', response);
-        return response.rows.map(function(doc) {
+        return response.rows.map(doc => {
           return doc.id;
         });
       })
-      .catch(function(err) {
-        console.log('Error requesting changes', err);
-      });
+        .catch(err => {
+          console.log('Error requesting changes', err);
+        });
     };
 
     console.log('Pushing ' + alldocs.length + ' documents for testing…');
     async.each(alldocs,
-      function(testDoc, callback) {
+      (testDoc, callback) => {
         utils.saveDoc(testDoc)
-          .then(function() {
+          .then(() => {
             callback();
           })
           .catch(callback);
       },
-      function(err) {
+      err => {
         if (err) {
           console.error(err);
           return done(err);
@@ -173,11 +173,11 @@ describe('view docs_by_replication_key', function() {
         console.log('…done');
 
         getChanges(['_all', 'testuser', 'testplace', 'testpatient'])
-          .then(function(docs) {
+          .then(docs => {
             docByPlaceIds = docs;
 
             getChanges(['_all', '_unassigned', 'testuser', 'testplace', 'testpatient'])
-              .then(function(docs) {
+              .then(docs => {
                 docByPlaceIds_unassigned = docs;
                 done();
               });
@@ -187,55 +187,55 @@ describe('view docs_by_replication_key', function() {
 
   afterAll(utils.afterEach);
 
-  it('Does not return the ddoc', function() {
+  it('Does not return the ddoc', () => {
     expect(docByPlaceIds).not.toContain('_design/medic');
   });
 
-  it('Should always return forms', function() {
+  it('Should always return forms', () => {
     expect(docByPlaceIds).toContain('form:doc_by_place_test_form');
   });
 
-  describe('Documents associated with the person id', function() {
-    it('Should return clinics if a recursive parent is the user', function() {
+  describe('Documents associated with the person id', () => {
+    it('Should return clinics if a recursive parent is the user', () => {
       expect(docByPlaceIds).toContain('report_about_patient');
     });
 
-    it('Should return district_hospitals if the recursive parent is the user', function() {
+    it('Should return district_hospitals if the recursive parent is the user', () => {
       expect(docByPlaceIds).toContain('report_about_patient_2');
     });
 
-    it('Should return health_centers if the recursive parent is the user', function() {
+    it('Should return health_centers if the recursive parent is the user', () => {
       expect(docByPlaceIds).toContain('report_about_place');
     });
 
-    it('Should check the contact of the first message of the first task in kujua messages', function() {
+    it('Should check the contact of the first message of the first task in kujua messages', () => {
       expect(docByPlaceIds).toContain('test_kujua_message');
       expect(docByPlaceIds).not.toContain('test_not_assigned_kujua_message');
     });
 
-    it('Should check the contact of data records', function() {
+    it('Should check the contact of data records', () => {
       expect(docByPlaceIds).toContain('report_with_contact');
       expect(docByPlaceIds).not.toContain('test_data_record_wrong_user');
     });
   });
 
-  describe('Documents that only pass when unassigned == true', function() {
-    it('Should pass when no tasks', function() {
+  describe('Documents that only pass when unassigned == true', () => {
+    it('Should pass when no tasks', () => {
       expect(docByPlaceIds_unassigned).toContain('test_kujua_message_no_tasks');
       expect(docByPlaceIds).not.toContain('test_kujua_message_no_tasks');
     });
 
-    it('Should pass when empty tasks', function() {
+    it('Should pass when empty tasks', () => {
       expect(docByPlaceIds_unassigned).toContain('test_kujua_message_empty_tasks');
       expect(docByPlaceIds).not.toContain('test_kujua_message_empty_tasks');
     });
 
-    it('Should pass when no contact', function() {
+    it('Should pass when no contact', () => {
       expect(docByPlaceIds_unassigned).toContain('test_kujua_message_no_contact');
       expect(docByPlaceIds).not.toContain('test_kujua_message_no_contact');
     });
 
-    it('Should pass when no contact (incoming)', function() {
+    it('Should pass when no contact (incoming)', () => {
       expect(docByPlaceIds_unassigned).toContain('test_kujua_message_incoming_no_contact');
       expect(docByPlaceIds).not.toContain('test_kujua_message_incoming_no_contact');
     });
