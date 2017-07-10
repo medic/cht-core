@@ -214,13 +214,14 @@ module.exports = {
         if (done) {
           done();
         }
-        return;
       })
       .catch(err => {
         if (done) {
           done(err);
+        } else {
+          console.error('Error deleting all docs');
+          throw err;
         }
-        return err;
       });
   },
 
