@@ -39,17 +39,17 @@ const getCancelButton = () => {
 };
 
 module.exports = {
-  submit: function () {
+  submit: () => {
     helper.waitUntilReady(getSubmitButton());
     getSubmitButton().click();
   },
 
-  cancel: function () {
+  cancel: () => {
     helper.waitUntilReady(getCancelButton());
     getCancelButton().click();
   },
 
-  fillForm: function ( username, fullName) {
+  fillForm: (username, fullName) => {
     getUsernameField().sendKeys(username);
     getFullNameField().sendKeys(fullName);
     getEmailField().sendKeys('bede@mobile.org');

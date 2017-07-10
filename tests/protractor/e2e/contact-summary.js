@@ -1,29 +1,29 @@
-var utils = require('../utils');
+const utils = require('../utils');
 
-describe('Contact summary info', function() {
+describe('Contact summary info', () => {
 
   'use strict';
 
-  var SCRIPT = `
-    var cards = [];
-    var context = {};
-    var fields = [];
+  const SCRIPT = `
+    let cards = [];
+    let context = {};
+    let fields = [];
     if (contact.type === "person") {
       fields = [
         { label: "test.pid", value: contact.patient_id, width: 3 },
         { label: "test.sex", value: contact.sex, width: 3 }
       ];
-      var pregnancy;
-      var pregnancyDate;
-      reports.forEach(function(report) {
+      let pregnancy;
+      let pregnancyDate;
+      reports.forEach(report=> {
         if (report.form === "P") {
-          var subsequentDeliveries = reports.filter(function(report2) {
+          const subsequentDeliveries = reports.filter(report2=> {
             return report2.form === "D" && report2.reported_date > report.reported_date;
           });
           if (subsequentDeliveries.length > 0) {
             return;
           }
-          var subsequentVisits = reports.filter(function(report2) {
+          const subsequentVisits = reports.filter(report2=> {
             return report2.form === "V" && report2.reported_date > report.reported_date;
           });
           context.pregnant = true;
@@ -50,20 +50,20 @@ describe('Contact summary info', function() {
   `;
 
   // contacts
-  var ALICE = {
+  const ALICE = {
     _id: 'alice-contact',
     reported_date: 1,
     type: 'person',
     name: 'Alice Alison',
     phone: '+447765902001'
   };
-  var BOB_PLACE = {
+  const BOB_PLACE = {
     _id: 'bob-contact',
     reported_date: 1,
     type: 'clinic',
     name: 'Bob Place'
   };
-  var CAROL = {
+  const CAROL = {
     _id: 'carol-contact',
     reported_date: 1,
     type: 'person',
@@ -73,7 +73,7 @@ describe('Contact summary info', function() {
     sex: 'f',
     date_of_birth: 1462333250374
   };
-  var DAVID = {
+  const DAVID = {
     _id: 'david-contact',
     reported_date: 1,
     type: 'person',
@@ -83,7 +83,7 @@ describe('Contact summary info', function() {
   };
 
   // reports
-  var PREGNANCY = {
+  const PREGNANCY = {
     form: 'P',
     type: 'data_record',
     content_type: 'xml',
@@ -100,7 +100,7 @@ describe('Contact summary info', function() {
     from: '+555',
     hidden_fields: []
   };
-  var VISIT = {
+  const VISIT = {
     form: 'V',
     type: 'data_record',
     content_type: 'xml',
@@ -117,12 +117,12 @@ describe('Contact summary info', function() {
     hidden_fields: []
   };
 
-  var DOCS = [ ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT ];
+  const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT];
 
-  beforeEach(function(done) {
+  beforeEach(done => {
     browser.ignoreSynchronization = true;
     utils.updateSettings({ contact_summary: SCRIPT })
-      .then(function() {
+      .then(() => {
         return protractor.promise.all(DOCS.map(utils.saveDoc));
       })
       .then(done)
@@ -131,7 +131,7 @@ describe('Contact summary info', function() {
 
   afterEach(done => {
     utils.afterEach()
-      .catch(() => {})
+      .catch(() => { })
       .then(() => {
         browser.driver.navigate().refresh();
         browser.wait(() => {
@@ -141,27 +141,27 @@ describe('Contact summary info', function() {
       });
   });
 
-  var selectContact = function(term) {
+  const selectContact = term => {
     element(by.id('contacts-tab')).click();
     element(by.id('freetext')).sendKeys(term);
     element(by.id('search')).click();
-    browser.wait(function() {
+    browser.wait(() => {
       return element(by.css('#contacts-list .filtered .item-summary')).isPresent();
     }, 10000);
     element(by.css('#contacts-list .filtered .item-summary')).click();
   };
 
-  it('contact summary', function() {
+  it('contact summary', () => {
 
     // select contact
     browser.driver.navigate().refresh();
-    browser.wait(function() {
+    browser.wait(() => {
       return element(by.id('contacts-tab')).isPresent();
     }, 10000);
     selectContact('carol');
 
     // assert the summary card has the right fields
-    browser.wait(function() {
+    browser.wait(() => {
       return element(by.css('.content-pane .item-body .meta .card .col-sm-3:nth-child(1) label')).isPresent();
     }, 10000);
     expect(element(by.css('.content-pane .item-body .meta > .card .col-sm-3:nth-child(1) label')).getText()).toBe('test.pid');

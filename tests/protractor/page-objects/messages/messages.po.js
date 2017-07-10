@@ -1,18 +1,18 @@
-var helper = require('../../helper');
+const helper = require('../../helper');
 
-var sendMessageButton = element(by.className('mm-icon mm-icon-inverse mm-icon-caption send-message'));
-var exportButton = element(by.css('[ng-click=actionBar.left.exportFn()]'));
+const sendMessageButton = element(by.className('mm-icon mm-icon-inverse mm-icon-caption send-message'));
+const exportButton = element(by.css('[ng-click=actionBar.left.exportFn()]'));
 
 module.exports = {
-  exportData: function () {
+  exportData: ()=> {
     helper.waitUntilReady(exportButton);
     exportButton.click();
   },
-  openSendMessageModal: function () {
+  openSendMessageModal: ()=> {
     helper.waitUntilReady(sendMessageButton);
     sendMessageButton.click();
   },
- getSendMessageButton: function () {
+ getSendMessageButton: ()=> {
     helper.waitUntilReady(sendMessageButton);
     return sendMessageButton;
   }

@@ -21,7 +21,7 @@ describe('Submit Enketo form', () => {
     </h:body>
   </h:html>`;
 
- const contactId = '3b3d50d275280d2568cd36281d00348b';
+  const contactId = '3b3d50d275280d2568cd36281d00348b';
   //const userSettingsDocId = `org.couchdb.user:${auth.user}`;
 
   const docs = [
@@ -85,12 +85,12 @@ describe('Submit Enketo form', () => {
     }
   ];
 
- 
- beforeAll(function(done) {
-    utils.seedTestData(done,contactId, docs);
+
+  beforeAll(done => {
+    utils.seedTestData(done, contactId, docs);
   });
 
-  afterEach(function(done) {
+  afterEach(done => {
     utils.resetBrowser();
     done();
   });

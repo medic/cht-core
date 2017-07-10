@@ -1,11 +1,11 @@
-var utils = require('../utils'),
-    auth = require('../auth')();
+const utils = require('../utils'),
+  auth = require('../auth')();
 
-describe('Auditing', function() {
+describe('Auditing', () => {
 
   'use strict';
 
-  var message = {
+  const message = {
     errors: [],
     form: null,
     from: '0211111111',
@@ -35,14 +35,14 @@ describe('Auditing', function() {
     sent_by: 'gareth'
   };
 
-  var savedUuid;
-  beforeEach(function(done) {
+  let savedUuid;
+  beforeEach(done=> {
     browser.ignoreSynchronization = true;
     utils.saveDoc(message)
-      .then(function(doc) {
+      .then(doc=> {
         savedUuid = doc.id;
         browser.waitForAngular().then(done);
-      }, function(err) {
+      }, err=> {
         console.error('Error saving doc', err);
         done();
       });
@@ -50,7 +50,7 @@ describe('Auditing', function() {
 
   afterEach(utils.afterEach);
 
-  it('audits message deletion', function() {
+  it('audits message deletion', () => {
 
     // reload messages tab page (changes feeds are disabled)
     element(by.id('reports-tab')).click();
@@ -58,11 +58,11 @@ describe('Auditing', function() {
     element(by.id('messages-tab')).click();
 
     // check selected tab
-    var selectedTab = element(by.css('.tabs .selected .button-label'));
+    const selectedTab = element(by.css('.tabs .selected .button-label'));
     expect(selectedTab.getText()).toEqual('Messages');
 
-    var listitem = element(by.css('.inbox-items li[data-record-id="+64555555555"]'));
-    browser.wait(function() {
+    let listitem = element(by.css('.inbox-items li[data-record-id="+64555555555"]'));
+    browser.wait(() => {
       return listitem.isPresent();
     }, 5000);
 
@@ -77,43 +77,43 @@ describe('Auditing', function() {
 
     // check message is displayed correctly
     listitem = element(by.css('.inbox-items li[data-record-id="+64555555555"]'));
-    browser.wait(function() {
+    browser.wait(() => {
       return listitem.isPresent();
     }, 5000);
     listitem.click();
-    var newMessage = element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .data p span'));
+    const newMessage = element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .data p span'));
     expect(newMessage.getText()).toEqual('hello!');
 
     // delete the message
     newMessage.click();
     element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .fa-trash-o')).click();
-    var confirmButton = element(by.css('#delete-confirm .submit'));
+    const confirmButton = element(by.css('#delete-confirm .submit'));
     browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton), 5000);
     confirmButton.click();
 
     // TODO find a better way to wait for DB to update
     browser.sleep(1000);
 
-    var flow = protractor.promise.controlFlow();
+    const flow = protractor.promise.controlFlow();
 
     // check the doc is deleted
-    flow.execute(function() {
+    flow.execute(() => {
       return utils.getDoc(savedUuid);
-    }).then(function() {
+    }).then(() => {
       // should not be found!
       expect(true).toEqual(false);
-    }, function() {
+    }, () => {
       // expected
     });
 
     // check the audit doc is updated
-    flow.execute(function() {
+    flow.execute(() => {
       return utils.getAuditDoc(savedUuid);
-    }).then(function(doc) {
+    }).then(doc=> {
       expect(doc.history.length).toEqual(1);
       expect(doc.history[0].user).toEqual(auth.user);
       expect(doc.history[0].doc._deleted).toEqual(true);
-    }, function(err) {
+    }, err=> {
       console.error('Error fetching audit doc', err);
       expect(true).toEqual(false);
     });

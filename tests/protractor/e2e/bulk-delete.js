@@ -1,10 +1,10 @@
-var utils = require('../utils');
+const utils = require('../utils');
 
-describe('Bulk delete reports', function() {
+describe('Bulk delete reports', () => {
 
   'use strict';
 
-  var docs = [
+  const docs = [
     {
       fields: {
         lmp_date: 'Feb 3, 2016'
@@ -56,18 +56,18 @@ describe('Bulk delete reports', function() {
     }
   ];
 
-  var savedUuids = [];
-  beforeEach(function(done) {
+  const savedUuids = [];
+  beforeEach(done => {
     browser.ignoreSynchronization = true;
     protractor.promise
       .all(docs.map(utils.saveDoc))
-      .then(function(results) {
-        results.forEach(function(result) {
+      .then(results => {
+        results.forEach(result => {
           savedUuids.push(result.id);
         });
         done();
       })
-      .catch(function(err) {
+      .catch(err => {
         console.error('Error saving docs', err);
         done();
       });
@@ -75,18 +75,18 @@ describe('Bulk delete reports', function() {
 
   afterEach(utils.afterEach);
 
-  it('reports', function() {
+  it('reports', () => {
     element(by.id('reports-tab')).click();
 
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.driver.navigate().refresh();
-    browser.wait(function() {
+    browser.wait(() => {
       return element(by.css('#reports-list li:first-child')).isPresent();
     }, 10000);
 
     // start select mode
-    var selectModeButton = element(by.css('.action-container .select-mode-start'));
-    browser.wait(function() {
+    const selectModeButton = element(by.css('.action-container .select-mode-start'));
+    browser.wait(() => {
       return selectModeButton.isPresent();
     }, 1000);
     selectModeButton.click();
@@ -114,7 +114,7 @@ describe('Bulk delete reports', function() {
     // collapse selection
     element(by.css('#reports-content .report-body .item-summary')).click();
     expect(element(by.css('#reports-content .report-body .details')).isDisplayed()).toBeFalsy();
-    
+
     // deselect
     element(by.css('#reports-content .report-body .deselect')).click();
 
@@ -137,14 +137,14 @@ describe('Bulk delete reports', function() {
 
     // delete all selected
     element(by.css('.action-container .detail-actions .delete-all')).click();
-    var confirmButton = element(by.css('#delete-confirm .submit'));
+    const confirmButton = element(by.css('#delete-confirm .submit'));
     browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton), 5000);
     confirmButton.click();
 
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.sleep(1000);
     browser.driver.navigate().refresh();
-    browser.wait(function() {
+    browser.wait(() => {
       return element(by.css('#reports-list li:first-child')).isPresent();
     }, 10000);
 

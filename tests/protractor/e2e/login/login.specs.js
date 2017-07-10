@@ -3,15 +3,15 @@ const helper = require('../../helper'),
   auth = require('../../auth')(),
   loginPage = require('../../page-objects/login/login.po.js');
 
-describe('Login tests : ', function() {
+describe('Login tests : ', () => {
   const wrongUsername = 'fakeuser',
-        wrongPassword = 'fakepass';
+    wrongPassword = 'fakepass';
 
-  it('should have a title', function() {
+  it('should have a title', () => {
     expect(browser.getTitle()).toEqual('Medic Mobile');
   });
 
-  it('should try to sign in and verify that credentials were incorrect', function() {
+  it('should try to sign in and verify that credentials were incorrect', () => {
     browser.manage().deleteAllCookies();
     browser.driver.get(utils.getLoginUrl());
     loginPage.login(wrongUsername, wrongPassword);

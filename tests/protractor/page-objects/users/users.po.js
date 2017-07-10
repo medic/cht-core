@@ -5,30 +5,30 @@ const getAddUserButton = () => {
 };
 
 module.exports = {
-  addUser: function (username, password) {
+  addUser: (username, password) => {
     username.trim();
     password.trim();
     helper.waitUntilReady(getAddUserButton());
   },
 
-  editUser: function (username, password) {
+  editUser: (username, password) => {
     username.trim();
     password.trim();
     helper.waitUntilReady(getAddUserButton());
   },
 
-  deleteUser: function (username, password) {
+  deleteUser: (username, password) => {
     username.trim();
     password.trim();
     helper.waitUntilReady(getAddUserButton());
   },
 
-  openAddUserModal: function () {
+  openAddUserModal: () => {
     console.log('waiting for button to be clickable');
     helper.waitElementToBeClickable(getAddUserButton());
     getAddUserButton().click();
   },
-  getUsersList: function () {
+  getUsersList: () => {
     helper.waitUntilReady(getAddUserButton());
     return element.all(by.repeater('user in users'));
   }

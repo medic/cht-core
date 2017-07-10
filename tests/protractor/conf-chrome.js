@@ -1,4 +1,4 @@
-var conf = require('./conf');
+const conf = require('./conf');
 
 if (!conf.config.capabilities) {
 	conf.config.capabilities = {};
