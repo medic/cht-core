@@ -48,8 +48,7 @@
         "app-settings": ">=0.0.2",
         "url": null,
         "querystring": null,
-        "duality": null,
-        "kanso-gardener": null
+        "duality": null
     },
     "postprocessors": {
         "bundle_templates": "scripts/bundle_templates"
