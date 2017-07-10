@@ -5,18 +5,19 @@ var config = require('../config'),
     async = require('async'),
     vm = require('vm');
 
+const _hasRun = function(doc) {
+    // Avoid running forever. Also ignores the error state
+    // (doc.transitions.conditional_alerts.ok) of the previous run.
+    return Boolean(
+        doc &&
+        doc.transitions &&
+        doc.transitions.conditional_alerts
+    );
+};
+
 module.exports = {
     _getConfig: function() {
         return _.extend({}, config.get('alerts'));
-    },
-    _hasRun: function(doc) {
-        // Avoid running forever. Also ignores the error state
-        // (doc.transitions.conditional_alerts.ok) of the previous run.
-        return Boolean(
-            doc &&
-            doc.transitions &&
-            doc.transitions.conditional_alerts
-        );
     },
     _runCondition: function(condition, context, callback) {
         try {
@@ -30,7 +31,7 @@ module.exports = {
         if (alert.condition.indexOf(alert.form) === -1) {
             module.exports._runCondition(alert.condition, context, callback);
         } else {
-            utils.getRecentForm({
+            utils.getReportsWithSameClinicAndForm({
                 doc: doc,
                 formName: alert.form
             }, function(err, rows) {
@@ -49,12 +50,11 @@ module.exports = {
         }
     },
     filter: function(doc) {
-        var self = module.exports;
         return Boolean(
             doc &&
             doc.form &&
             doc.type === 'data_record' &&
-            !self._hasRun(doc)
+            !_hasRun(doc)
         );
     },
     onMatch: function(change, db, audit, cb) {
@@ -71,8 +71,8 @@ module.exports = {
                             return callback(err);
                         } else if(result) {
                             var phone = messages.getRecipientPhone(
-                                doc, 
-                                alert.recipient, 
+                                doc,
+                                alert.recipient,
                                 alert.recipient
                             );
                             messages.addMessage({
@@ -87,7 +87,7 @@ module.exports = {
                 } else {
                     callback();
                 }
-            }, 
+            },
             function(err) {
                 cb(err, updated);
             }

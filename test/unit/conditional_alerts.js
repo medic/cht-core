@@ -169,7 +169,7 @@ exports['when recent form condition is true send message'] = function(test) {
         }
     });
 
-    sinon.stub(utils, 'getRecentForm')
+    sinon.stub(utils, 'getReportsWithSameClinicAndForm')
         .callsArgWith(1, null, [{
             reported_date: 1390427075750,
             doc: {
@@ -207,7 +207,7 @@ exports['handle missing condition reference gracefully'] = function(test) {
         }
     });
 
-    sinon.stub(utils, 'getRecentForm')
+    sinon.stub(utils, 'getReportsWithSameClinicAndForm')
         .callsArgWith(1, null, [{
             reported_date: 1390427075750,
             s1_avail: 0
@@ -235,7 +235,7 @@ exports['when complex condition is true send message'] = function(test) {
         }
     });
 
-    sinon.stub(utils, 'getRecentForm')
+    sinon.stub(utils, 'getReportsWithSameClinicAndForm')
         .callsArgWith(1, null, [{
             reported_date: 1,
             doc: {
@@ -286,7 +286,7 @@ exports['database records are sorted before condition evaluation'] = function(te
         }
     });
 
-    sinon.stub(utils, 'getRecentForm')
+    sinon.stub(utils, 'getReportsWithSameClinicAndForm')
         .callsArgWith(1, null, [{
             reported_date: 3,
             doc: {

@@ -166,7 +166,7 @@ exports['addMessage adds uuid'] = function(test) {
     test.done();
 };
 
-exports['getRecentForm calls through to db view correctly'] = function(test) {
+exports['getReportsWithSameClinicAndForm calls through to db view correctly'] = function(test) {
 
     var formName = 'someForm';
     var clinicId = 'someClinicId';
@@ -185,7 +185,7 @@ exports['getRecentForm calls through to db view correctly'] = function(test) {
         .callsArgWith(3, null, { rows: result });
 
     test.expect(2);
-    utils.getRecentForm({
+    utils.getReportsWithSameClinicAndForm({
         formName: formName,
         doc: {
             contact: {
