@@ -8,8 +8,12 @@ function removePrefix(str) {
 
 /**
  * Take view data and prepare forms list for openrosa lib call that generates
- * the OpenRosa xformsList compatible XML.  If no xml attachment is on the doc
- * then we skip because there is no xml format available for that form.
+ * the OpenRosa xformsList compatible XML.
+ *
+ * Forms are skipped if:
+ * - no xml attachment is on the doc (presumably it's a JSON form)
+ * - the doc does not have the `context.collect` property set - presumably it's
+ *   an in-app form rather than one designed for medic-collect.
  *
  * The template parameter is a url string used to contruct the URL and fetch
  * the form.  Also used as the `downloadURL` property of the forms list so it
@@ -28,14 +32,12 @@ function removePrefix(str) {
  * @api private
  */
 function listFormsXML(data, template, callback) {
-  var ret = [];
-  data.rows.forEach(function(row) {
-    if (row.doc && row.doc._attachments && row.doc._attachments.xml) {
-      ret.push(
-        template.replace('{{id}}', row.doc.internalId)
-      );
-    }
-  });
+  const ret =
+    data.rows
+      .filter(row => row.doc &&
+          row.doc.context && row.doc.context.collect &&
+          row.doc._attachments && row.doc._attachments.xml)
+      .map(row => template.replace('{{id}}', row.doc.internalId));
   openrosaFormList(ret, function(err, xml) {
     if (err) {
       return callback(err);
