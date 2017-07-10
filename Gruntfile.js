@@ -391,7 +391,10 @@ module.exports = function(grunt) {
     },
     auto_install: {
       npm: {
-        bower: false
+        bower: false,
+        options: {
+          npm: '--no-package-lock'
+        }
       }
     },
     'regex-check': {
