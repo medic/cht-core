@@ -6,11 +6,11 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 
 define( function( require, exports, module ) {
     'use strict';
-    var FormModel = require( 'enketo-core/src/js/Form-model' );
-    var Widget = require( 'enketo-core/src/js/Widget' );
+    var FormModel = require( '@medic/enketo-core/src/js/Form-model' );
+    var Widget = require( '@medic/enketo-core/src/js/Widget' );
     var $ = require( 'jquery' );
     var libphonenumber = require( 'libphonenumber/utils' );
-    require( 'enketo-core/src/js/plugins' );
+    require( '@medic/enketo-core/src/js/plugins' );
 
     var pluginName = 'phonewidget';
 

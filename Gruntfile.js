@@ -174,7 +174,7 @@ module.exports = function(grunt) {
     },
     exec: {
       dedupe_jquery: {
-        cmd: 'rm -rf node_modules/enketo-core/node_modules/jquery'
+        cmd: 'rm -rf node_modules/@medic/enketo-core/node_modules/jquery'
       },
       deploy: {
         cmd: 'kanso push $COUCH_URL'
@@ -391,7 +391,10 @@ module.exports = function(grunt) {
     },
     auto_install: {
       npm: {
-        bower: false
+        bower: false,
+        options: {
+          npm: '--no-package-lock'
+        }
       }
     },
     'regex-check': {

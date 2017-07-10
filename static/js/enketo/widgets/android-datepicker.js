@@ -21,9 +21,9 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
 
 define( function( require, exports, module ) {
     'use strict';
-    var Widget = require( 'enketo-core/src/js/Widget' );
+    var Widget = require( '@medic/enketo-core/src/js/Widget' );
     var $ = require( 'jquery' );
-    require( 'enketo-core/src/js/plugins' );
+    require( '@medic/enketo-core/src/js/plugins' );
 
     var pluginName = 'androiddatepicker';
 
