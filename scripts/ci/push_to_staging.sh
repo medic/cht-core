@@ -2,6 +2,7 @@
 
 # Attempt to reduce size of api and sentinel artifacts
 (cd sentinel &&
+    echo '[medic-sentinel] package-lock.json' && cat package-lock.json &&
     echo '[medic-sentinel] Available modules:' && ls node_modules &&
     npm install --production &&
     echo '[medic-sentinel] Available modules:' && ls node_modules &&
@@ -10,6 +11,7 @@
     rm -rf ./node_modules/*/tests &&
     echo '[medic-sentinel] Available modules:' && ls node_modules)
 (cd api &&
+    echo '[medic-api] package-lock.json' && cat package-lock.json &&
     echo '[medic-api] Available modules:' && ls node_modules &&
     npm install --production &&
     echo '[medic-api] Available modules:' && ls node_modules &&
