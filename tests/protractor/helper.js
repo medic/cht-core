@@ -98,7 +98,7 @@ module.exports = {
 
   takeScreenshot: filename=> {
     browser.takeScreenshot().then(png=> {
-      writeScreenShot(png, filename);
+      writeScreenShot(png, filename='screen');
     });
   }
 
