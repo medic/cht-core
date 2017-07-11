@@ -72,20 +72,7 @@ describe('Submit Delivery Report', () => {
 
 
   it('open delivery form', () => {
-    common.goToReports();
-    // refresh - live list only updates on changes but changes are disabled for e2e
-    browser.driver.navigate().refresh();
-    browser.wait(() => {
-      return element(by.css('.action-container .general-actions .fa-plus')).isPresent();
-    }, 10000);
-
-    // select form
-   element(by.css('.action-container .general-actions .fa-plus')).click();
-    element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
-    browser.wait(() => {
-      return element(by.css('#report-form')).isPresent();
-    }, 10000);
-
+    common.openForm();
     //select name
     deliveryReport.selectPatientName('jack');
     deliveryReport.nextPage();

@@ -1,13 +1,45 @@
-const helper = require('../../helper');
+const utils = require('../../utils'),
+  auth = require('../../auth')(),
+  helper = require('../../helper'),
+  path=require('path'),
+  fs=require('fs');
 
-const getPatientNameDropDown = () => {
-  element(by.id('select2-/delivery/inputs/contact/_id-wg-container'));
-};
+const FILE = path.join(__dirname,'..', '..', 'resources/xml/new-pregnancy.xml');
+const userSettingsDocId = `org.couchdb.user:${auth.user}`;
+const contactId = '3b3d50d275280d2568cd36281d00348b';
+const docs = [
+  {
+    _id: 'form:pregnancy',
+    internalId: 'P',
+    title: 'New Pregnancy',
+    type: 'form',
+    _attachments: {
+      xml: {
+        content_type: 'application/octet-stream',
+        data: Buffer.from(fs.readFileSync(FILE, 'utf8')).toString('base64')
+      }
+    }
+  }];
 
 module.exports = {
+  configureForm: (done) => {
 
-  goNext: () => {
-    element(by.css('.btn btn-primary next-page')).click();
+    utils.seedTestData(done, contactId, docs);
+  },
+  teardown: done => {
+    utils.afterEach()
+      .then(() => utils.getDoc(userSettingsDocId))
+      .then((user) => {
+        user.contact_id = undefined;
+        return utils.saveDoc(user);
+      })
+      .then(done, done);
+  },
+
+   nextPage: () => {
+    const nextButton = element(by.css('button.btn.btn-primary.next-page'));
+    helper.waitElementToBeClickable(nextButton);
+    nextButton.click();
   },
 
   goBack: () => {
@@ -23,8 +55,16 @@ module.exports = {
     return element(by.css('span[data-itext-id=/delivery/inputs:label]'));
   },
 
-  selectPatientName: () => {
-    getPatientNameDropDown().click();
+ selectPatientName: (name) => {
+    browser.driver.navigate().refresh();
+    helper.waitElementToBeClickable(element(by.css('button.btn.btn-primary.next-page')));
+
+    element(by.css('.selection')).click();
+    const search = element(by.css('.select2-search__field'));
+    search.click();
+    search.sendKeys(name);
+    helper.waitElementToBeVisisble(element(by.css('.name')));
+    element(by.css('.name')).click();
   },
   //LMP page
   selectLMPYesButton: () => {
