@@ -2,19 +2,21 @@
 
 # Attempt to reduce size of api and sentinel artifacts
 (cd sentinel &&
+    echo '[medic-sentinel] Available modules:' && ls node_modules &&
     npm install --production &&
-    echo 'Available modules:' && ls node_modules &&
+    echo '[medic-sentinel] Available modules:' && ls node_modules &&
     rm -rf test &&
     rm -rf ./node_modules/*/test &&
     rm -rf ./node_modules/*/tests &&
-    echo 'Available modules:' && ls node_modules)
+    echo '[medic-sentinel] Available modules:' && ls node_modules)
 (cd api &&
+    echo '[medic-api] Available modules:' && ls node_modules &&
     npm install --production &&
-    echo 'Available modules:' && ls node_modules &&
+    echo '[medic-api] Available modules:' && ls node_modules &&
     rm -rf tests &&
     rm -rf ./node_modules/*/test &&
     rm -rf ./node_modules/*/tests
-    echo 'Available modules:' && ls node_modules)
+    echo '[medic-api] Available modules:' && ls node_modules)
 
 echo 'Building build for builds database...'
 if [[ -n "$TRAVIS_TAG" ]]; then
