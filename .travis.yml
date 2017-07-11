@@ -44,7 +44,7 @@ install:
 
 before_script:
   - nvm use $NODE_VERSION
-  - npm i -g npm
+  - npm i -g npm@5.1.0
   - echo 'npm version:'
   - npm --version
   - npm install --no-package-lock
