@@ -307,7 +307,7 @@ app.all([
     req.query.district = ctx.district;
     exportData.get(req.query, function(err, exportDataResult) {
       if (err) {
-        return serverUtils.serverError(err, req, res);
+        return serverUtils.error(err, req, res);
       }
 
       var format = formats[req.query.format] || formats.csv;

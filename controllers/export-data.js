@@ -657,7 +657,7 @@ module.exports = {
   get: function(params, callback) {
     var type = exportTypes[params.type];
     if (!type) {
-      return callback(new Error('Unknown export type'));
+      return callback({ code: 404 });
     }
     if (!_.isFunction(type.generate)) {
       return callback(new Error('Export type must provide a "generate" method'));
