@@ -53,15 +53,6 @@ const hydratedReports = [
   { _id: 'docB', form: 'B', contact: { _id: 'contactB', phone: '+345678'} }
 ];
 
-exports['function signature'] = test => {
-  test.ok(_.isFunction(transition.onMatch));
-  test.equal(transition.onMatch.length, 4);
-
-  test.ok(_.isFunction(transition.filter));
-  test.equal(transition.filter.length, 1);
-  test.done();
-};
-
 exports['filter validation'] = test => {
   test.equal(transition.filter({}), false);
   test.equal(transition.filter({
