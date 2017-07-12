@@ -9,7 +9,7 @@ const assert = require('chai').assert,
 
 PouchDB.plugin(require('pouchdb-adapter-http'));
 
-const db = createDb();
+const db = new PouchDB(`http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`);
 
 /**
  * Tests to ensure continued support for Medic Collect.
@@ -174,8 +174,4 @@ function rawHttpRequest(rawRequest) {
       resolve(response);
     });
   });
-}
-
-function createDb() {
-  return new PouchDB(`http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}:${constants.COUCH_PORT}/${constants.DB_NAME}`);
 }
