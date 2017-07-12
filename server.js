@@ -685,8 +685,9 @@ proxyForAuditing.on('error', function(err, req, res) {
 const nodeVersionCheck = callback => {
   try {
     const [major, minor, patch] = process.versions.node.split('.').map(Number);
+    const environment = app.get('env');
 
-    console.log(`Node Version: ${major}.${minor}.${patch}`);
+    console.log(`Node Version: ${major}.${minor}.${patch} running in ${environment} mode`);
 
     if (major < 5) {
       // 5 seems to be where the majority of ES6 was added without flags.
@@ -750,7 +751,7 @@ const couchDbVersionCheck = callback =>
       callback(err);
     }
 
-    console.log('CouchDB Version:', version);
+    console.log(`CouchDB Version: ${version.major}.${version.minor}.${version.patch}`);
     callback();
   });
 
