@@ -45,11 +45,13 @@
         "kujua-utils": null,
         "cookies": null,
         "kanso-app-settings": null,
+        "kanso-gardener": null,
         "app-settings": ">=0.0.2",
         "url": null,
         "querystring": null,
         "duality": null
     },
+    "dependencies_included": true,
     "postprocessors": {
         "bundle_templates": "scripts/bundle_templates"
     },
