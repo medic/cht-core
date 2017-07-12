@@ -1,3 +1,6 @@
+const transitionUtils = require('./utils'),
+      NAME = 'update_sent_by';
+
 module.exports = {
     filter: function(doc) {
         var self = module.exports;
@@ -11,10 +14,8 @@ module.exports = {
     },
     _hasRun: function(doc) {
         return Boolean(
-            doc &&
-            doc.transitions &&
-            doc.transitions.update_sent_by &&
-            doc.transitions.update_sent_by.ok
+            transitionUtils.hasRun(doc, NAME) &&
+            doc.transitions[NAME].ok
         );
     },
     onMatch: function(change, db, audit, callback) {

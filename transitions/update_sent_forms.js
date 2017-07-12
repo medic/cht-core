@@ -1,7 +1,9 @@
 var _ = require('underscore'),
     moment = require('moment'),
     config = require('../config'),
-    logger = require('../lib/logger');
+    logger = require('../lib/logger'),
+    transitionUtils = require('./utils'),
+    NAME = 'update_sent_forms';
 
 /*
  * Update sent_forms property on facilities so we can setup reminders for
@@ -19,14 +21,7 @@ module.exports = {
             doc.contact.parent._id &&
             doc.type === 'data_record' &&
             self._hasConfig(doc) &&
-            !self._hasRun(doc)
-        );
-    },
-    _hasRun: function(doc) {
-        return Boolean(
-            doc &&
-            doc.transitions &&
-            doc.transitions.update_sent_forms
+            !transitionUtils.hasRun(doc, NAME)
         );
     },
     _getConfig: function() {

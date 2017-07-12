@@ -4,13 +4,9 @@ const vm = require('vm'),
       lineage = require('../lib/lineage'),
       logger = require('../lib/logger'),
       messages = require('../lib/messages'),
-      utils = require('../lib/utils');
-
-const hasRun = (doc) => Boolean(
-  doc &&
-  doc.transitions &&
-  doc.transitions.multi_form_alerts
-);
+      utils = require('../lib/utils'),
+      transitionUtils = require('./utils'),
+      NAME = 'multi_form_alerts';
 
 const getAlertConfig = () => config.get('multi_form_alerts');
 
@@ -206,11 +202,11 @@ const onMatch = (change, db, audit, callback) => {
 };
 
 module.exports = {
-  filter: (doc) => Boolean(
+  filter: doc => !!(
     doc &&
     doc.form &&
     doc.type === 'data_record' &&
-    !hasRun(doc)
+    !transitionUtils.hasRun(doc, NAME)
   ),
   onMatch: onMatch
 };

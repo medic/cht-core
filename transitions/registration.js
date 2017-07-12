@@ -12,6 +12,7 @@ var vm = require('vm'),
     moment = require('moment'),
     config = require('../config'),
     date = require('../date'),
+    NAME = 'registration',
     XFORM_CONTENT_TYPE = 'xml';
 
 var findFirstDefinedValue = function(doc, fields) {
@@ -66,19 +67,12 @@ module.exports = {
         return Boolean(
             doc.type === 'data_record' &&
             self.getRegistrationConfig(self.getConfig(), doc.form) &&
-            !self._hasRun(doc) &&
+            !transitionUtils.hasRun(doc, NAME) &&
             (
                 (doc && doc.content_type === XFORM_CONTENT_TYPE) || // xform submission
                 (form && utils.getClinicPhone(doc)) || // json submission by known submitter
                 (form && form.public_form) // json submission to public form
             )
-        );
-    },
-    _hasRun: function(doc) {
-        return Boolean(
-            doc &&
-            doc.transitions &&
-            doc.transitions.registration
         );
     },
     getDOB: function(doc) {

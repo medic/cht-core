@@ -3,7 +3,9 @@ var async = require('async'),
     config = require('../config'),
     utils = require('../lib/utils'),
     messages = require('../lib/messages'),
-    validation = require('../lib/validation');
+    validation = require('../lib/validation'),
+    transitionUtils = require('./utils'),
+    NAME = 'update_notifications';
 
 var getMessage = function(config, eventType) {
     var msg = _.findWhere(config.messages, { event_type: eventType });
@@ -31,14 +33,6 @@ var getEventType = function(config, doc) {
         return false;
     }
     return { mute: mute, type: eventType };
-};
-
-var hasRun = function(doc) {
-    return Boolean(
-        doc &&
-        doc.transitions &&
-        doc.transitions.update_notifications
-    );
 };
 
 module.exports = {
@@ -79,7 +73,7 @@ module.exports = {
             doc.type === 'data_record' &&
             doc.fields &&
             doc.fields.patient_id &&
-            !hasRun(doc) &&
+            !transitionUtils.hasRun(doc, NAME) &&
             utils.getClinicPhone(doc)
         );
     },

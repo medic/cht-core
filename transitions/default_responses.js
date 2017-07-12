@@ -3,7 +3,9 @@ var _ = require('underscore'),
     config = require('../config'),
     utils = require('../lib/utils'),
     logger = require('../lib/logger'),
-    messages = require('../lib/messages');
+    messages = require('../lib/messages'),
+    transitionUtils = require('./utils'),
+    NAME = 'default_responses';
 
 module.exports = {
     filter: function(doc) {
@@ -14,15 +16,8 @@ module.exports = {
             doc.type === 'data_record' &&
             !doc.kujua_message &&
             self._isReportedAfterStartDate(doc) &&
-            !self._hasRun(doc) &&
+            !transitionUtils.hasRun(doc, NAME) &&
             !self._isMessageFromGateway(doc)
-        );
-    },
-    _hasRun: function(doc) {
-        return Boolean(
-            doc &&
-            doc.transitions &&
-            doc.transitions.default_responses
         );
     },
     /*

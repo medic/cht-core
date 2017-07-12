@@ -3,17 +3,9 @@ var config = require('../config'),
     messages = require('../lib/messages'),
     utils = require('../lib/utils'),
     async = require('async'),
-    vm = require('vm');
-
-const _hasRun = function(doc) {
-    // Avoid running forever. Also ignores the error state
-    // (doc.transitions.conditional_alerts.ok) of the previous run.
-    return Boolean(
-        doc &&
-        doc.transitions &&
-        doc.transitions.conditional_alerts
-    );
-};
+    vm = require('vm'),
+    transitionUtils = require('./utils'),
+    NAME = 'conditional_alerts';
 
 module.exports = {
     _getConfig: function() {
@@ -54,7 +46,7 @@ module.exports = {
             doc &&
             doc.form &&
             doc.type === 'data_record' &&
-            !_hasRun(doc)
+            !transitionUtils.hasRun(doc, NAME)
         );
     },
     onMatch: function(change, db, audit, cb) {

@@ -6,7 +6,8 @@ var _ = require('underscore'),
     validation = require('../lib/validation'),
     utils = require('../lib/utils'),
     transitionUtils = require('./utils'),
-    date = require('../date');
+    date = require('../date'),
+    NAME = 'accept_patient_reports';
 
 module.exports = {
     filter: function(doc) {
@@ -16,7 +17,7 @@ module.exports = {
             doc.type === 'data_record' &&
             doc.form &&
             doc.reported_date &&
-            !self._hasRun(doc) &&
+            !transitionUtils.hasRun(doc, NAME) &&
             self._hasConfig(doc) &&
             utils.getClinicPhone(doc)
         );
@@ -26,13 +27,6 @@ module.exports = {
         return Boolean(_.findWhere(self.getAcceptedReports(), {
             form: doc.form
         }));
-    },
-    _hasRun: function(doc) {
-        return Boolean(
-            doc &&
-            doc.transitions &&
-            doc.transitions.accept_patient_reports
-        );
     },
     getAcceptedReports: function() {
         return config.get('patient_reports') || [];

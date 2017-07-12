@@ -1,5 +1,7 @@
 var _ = require('underscore'),
-    logger = require('../lib/logger');
+    logger = require('../lib/logger'),
+    transitionUtils = require('./utils'),
+    NAME = 'update_clinics';
 
 var associateContact = function(audit, doc, contact, callback) {
     var self = module.exports;
@@ -79,19 +81,11 @@ var getContact = function(db, doc, callback) {
  */
 module.exports = {
     filter: function(doc) {
-        var self = module.exports;
         return Boolean(
             doc &&
             doc.type === 'data_record' &&
             !doc.contact &&
-            !self._hasRun(doc)
-        );
-    },
-    _hasRun: function(doc) {
-        return Boolean(
-            doc &&
-            doc.transitions &&
-            doc.transitions.update_clinics
+            !transitionUtils.hasRun(doc, NAME)
         );
     },
     onMatch: function(change, db, audit, callback) {
