@@ -17,7 +17,7 @@
       <span ng-show="selected.length !== 1" translate translate-values="{ number: {{selected.length}} }">select.mode.count.plural</span>
     </div>
 
-    <div ng-repeat="selection in selected track by selection._id" ng-init="summary = selection.doc || selection; valid = selection.summary.valid || (selection.doc && !selection.doc.errors.length)" class="body report-body">
+    <div ng-repeat="selection in selected track by selection._id" ng-init="summary = selection.doc || selection.summary; valid = selection.summary.valid || (selection.doc && !selection.doc.errors.length)" class="body report-body">
 
       <div class="item-summary" ng-click="toggleExpand(selection)">
         <span class="icon" ng-bind-html="summary | formIcon:forms"></span>
@@ -33,7 +33,7 @@
             <i ng-show="!valid && summary.verified" class="fa fa-check-circle red-dot"></i>
           </div>
 
-          <mm-sender message="selection"></mm-sender>
+          <mm-sender message="summary"></mm-sender>
           <div>{{summary | title:forms}}</div>
         </div>
       </div>
