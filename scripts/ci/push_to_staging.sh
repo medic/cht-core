@@ -20,6 +20,8 @@
     echo '[medic-sentinel] Available modules:' && ls node_modules &&
     echo '[medic-sentinel] package-lock.json' && cat package-lock.json)
 
+./scripts/ci/npm_version_check
+
 echo 'Building build for builds database...'
 if [[ -n "$TRAVIS_TAG" ]]; then
     node --stack_size=10000 `which kanso` push --minify \
