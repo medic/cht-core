@@ -6,9 +6,8 @@
 
 #### Continuous Integration
 
-- [#3621](https://github.com/medic/medic-webapp/pull/3621) Automatically update
-  to master branches of `api` and `sentinel` submodules before running CI in
-  Travis.
+- Automatically update to master branches of `api` and `sentinel` submodules
+  before running CI in Travis. [#3621](https://github.com/medic/medic-webapp/pull/3621)
 - Fixed kanso packages that inadvertantly cached data. Issue: #3648
 
 ## 2.8.5
