@@ -88,6 +88,8 @@ function clean_up(dir, tgz_file, callback) {
 function sane_package_json(kanso_json) {
     var package_json = _.extend({}, kanso_json);
     _.each(['_id',
+            '_url',
+            '_utils',
             'minify',
             'dependencies',
             'load',
