@@ -57,13 +57,13 @@ describe('Submit Delivery Report', () => {
 
   const noteToCHW = 'Good news, Jack! Jack () has delivered at the health facility. We will alert you when it is time to refer them for PNC. Please monitor them for danger signs. Thank you!';
 
-  beforeAll(done =>{
+  beforeAll(done => {
     browser.ignoreSynchronization = true;
     deliveryReport.configureForm(done);
     utils.seedTestData(done, contactId, docs);
   });
 
-  afterEach(done =>{
+  afterEach(done => {
     utils.resetBrowser();
     done();
   });
@@ -71,7 +71,7 @@ describe('Submit Delivery Report', () => {
   afterAll(utils.afterEach);
 
 
-  it('open delivery form', () => {
+  it('Submit delivery form', () => {
     common.openForm();
     //select name
     deliveryReport.selectPatientName('jack');
