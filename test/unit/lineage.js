@@ -462,3 +462,26 @@ exports['hydrate+minify is noop on a place'] = test => {
     test.done();
   });
 };
+
+exports['hydrateDocs binds contacts and parents'] = test => {
+  const docs = [
+    { _id: 'a', contact: { _id: 'b' }, parent: { _id: 'c', parent: { _id: 'e' }} },
+    { _id: 'a', parent: { _id: 'd', parent: { _id: 'e' }} },
+  ];
+  const fetch = sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [
+    { id: 'b', doc: { _id: 'b', name: 'barney' } },
+    { id: 'c', doc: null }, // cathy not found in databas
+    { id: 'd', doc: { _id: 'd', name: 'donny', parent: { _id: 'e' } } },
+    { id: 'e', doc: { _id: 'e', name: 'eric' } }
+  ] });
+  lineage.hydrateDocs(docs).then(() => {
+    test.equals(docs[0].contact.name, 'barney');
+    test.equals(docs[0].parent.name, null);
+    test.equals(docs[0].parent.parent.name, 'eric');
+    test.equals(docs[1].parent.name, 'donny');
+    test.equals(docs[1].parent.parent.name, 'eric');
+    test.equals(fetch.callCount, 1);
+    test.deepEqual(fetch.args[0][0].keys, [ 'b', 'c', 'e', 'd' ]);
+    test.done();
+  });
+};

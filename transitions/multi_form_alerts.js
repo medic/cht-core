@@ -1,5 +1,6 @@
 const vm = require('vm'),
       _ = require('underscore'),
+      async = require('async'),
       config = require('../config'),
       lineage = require('../lib/lineage'),
       logger = require('../lib/logger'),
@@ -7,6 +8,7 @@ const vm = require('vm'),
       utils = require('../lib/utils'),
       transitionUtils = require('./utils'),
       NAME = 'multi_form_alerts',
+      BATCH_SIZE = 100,
       requiredFields = [
         'isReportCounted',
         'numReportsThreshold',
@@ -18,37 +20,24 @@ const vm = require('vm'),
 const getAlertConfig = () => config.get('multi_form_alerts');
 
 /* Returned list does not include the change.doc. */
-const fetchReports = (latestTimestamp, timeWindowInDays, formTypes) => {
-  return utils.getReportsWithinTimeWindow(latestTimestamp, timeWindowInDays)
+const fetchReports = (latestTimestamp, timeWindowInDays, formTypes, options) => {
+  return utils.getReportsWithinTimeWindow(latestTimestamp, timeWindowInDays, options)
     .then((reports) => {
       if (formTypes && formTypes.length) {
         return reports.filter((report) => report.form && formTypes.includes(report.form));
       }
       return reports;
     })
-    .then(hydrateDocs);
+    .then(lineage.hydrateDocs);
 };
 
-const hydrateDocs = (docs) => {
-  return docs.reduce(function(promise, doc) {
-    return promise.then((fetchedDocs) => {
-      return lineage.fetchHydratedDoc(doc._id)
-        .then(fetchedDoc => {
-          fetchedDocs.push(fetchedDoc);
-          return fetchedDocs;
-        });
-    });
-  }, Promise.resolve([]));
-};
-
-const countReports = (reports, isReportCountedString) => {
+const countReports = (reports, latestReport, script) => {
   return reports.filter((report) => {
-    const context = { report: report, latestReport: reports[0]};
+    const context = { report: report, latestReport: latestReport };
     try {
-      return vm.runInNewContext(`(${isReportCountedString})(report, latestReport)`, context);
+      return script.runInNewContext(context);
     } catch(err) {
-      logger.error(`Could not eval "isReportCounted" function for (report=${context.report._id}, latestReport=${context.latestReport._id}` +
-        `). Report will not be counted. Function passed: "${isReportCountedString}". Error: ${err.message}`);
+      logger.error(`Could not eval "isReportCounted" function for (report=${context.report._id}, latestReport=${context.latestReport._id}). Report will not be counted. Error: ${err.message}`);
       return false;
     }
   });
@@ -96,7 +85,7 @@ const getPhonesWithDuplicates = (recipients, countedReports) => {
       return [recipient];
     }
 
-    const context = { countedReports: countedReports};
+    const context = { countedReports: countedReports };
     try {
       const evaled = vm.runInNewContext(recipient, context);
       if (_.isString(evaled)) {
@@ -114,7 +103,7 @@ const getPhonesWithDuplicates = (recipients, countedReports) => {
       return { error: `multi_form_alerts : phone number for "${recipient}"` +
         ` is not a string or array of strings. Message will not be sent. Found: "${JSON.stringify(evaled)}"` };
     } catch(err) {
-      return { error: `multi_form_alerts : Could not find a phone number for "${recipient}".` +
+      return { error: `multi_form_alerts : Could not find a phone number for "${recipient}". ` +
         `Message will not be sent. Error: "${err.message}"` };
     }
   };
@@ -163,22 +152,45 @@ const validateConfig = () => {
   }
 };
 
+const getReports = (alert, latestReport) => {
+  return new Promise((resolve, reject) => {
+    const script = vm.createScript(`(${alert.isReportCounted})(report, latestReport)`);
+    let reports = countReports([ latestReport ], latestReport, script);
+    let skip = 0;
+    async.doWhilst(
+      callback => {
+        const options = { skip: skip, limit: BATCH_SIZE };
+        fetchReports(latestReport.reported_date - 1, alert.timeWindowInDays, alert.forms, options)
+          .then(fetched => callback(null, fetched))
+          .catch(callback);
+      },
+      fetched => {
+        const countedReports = countReports(fetched, latestReport, script);
+        reports = reports.concat(countedReports);
+        skip += BATCH_SIZE;
+        return fetched.length === BATCH_SIZE;
+      },
+      err => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(reports);
+      }
+    );
+  });
+};
+
 /* Return true if the doc has been changed. */
 const runOneAlert = (alert, latestReport) => {
   if (alert.forms && alert.forms.length && !alert.forms.includes(latestReport.form)) {
     return Promise.resolve(false);
   }
-
-  return fetchReports(latestReport.reported_date - 1, alert.timeWindowInDays, alert.forms)
-    .then((fetchedReports) => {
-      return countReports([latestReport, ...fetchedReports], alert.isReportCounted);
-    })
-    .then((countedReports) => {
-      if (countedReports.length >= alert.numReportsThreshold) {
-        return generateMessages(alert.recipients, alert.message, countedReports);
-      }
-      return false;
-    });
+  return getReports(alert, latestReport).then(reports => {
+    if (reports.length >= alert.numReportsThreshold) {
+      return generateMessages(alert.recipients, alert.message, reports);
+    }
+    return false;
+  });
 };
 
 const onMatch = (change, db, audit, callback) => {
@@ -190,16 +202,14 @@ const onMatch = (change, db, audit, callback) => {
   alertConfig.forEach(alert => {
     promiseSeries = promiseSeries.then(() => {
       return runOneAlert(alert, latestReport)
-        .then((isDocChangedByOneAlert) => {
+        .then(isDocChangedByOneAlert => {
           docNeedsSaving = docNeedsSaving || isDocChangedByOneAlert;
         })
-        .catch((err) => {
-          errors.push(err);
-        });
+        .catch(errors.push);
     });
   });
   promiseSeries.then(() => {
-    if (errors.length > 0) {
+    if (errors.length) {
       return callback(errors, true);
     }
     callback(null, docNeedsSaving);
