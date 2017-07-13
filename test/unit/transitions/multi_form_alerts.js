@@ -83,12 +83,12 @@ exports['filter validation hasRun'] = test => {
 
 const testConfigIsValid = (test, alert) => {
   sinon.stub(config, 'get').returns([alert]);
-  transition.onMatch({ doc: doc }, null, null, (err, docNeedsSaving) => {
+  try {
+    transition.init();
+  } catch(e) {
     test.equals(config.get.getCall(0).args[0], 'multi_form_alerts');
-    test.ok(!docNeedsSaving);
-    test.ok(err);
     test.done();
-  });
+  }
 };
 
 exports['validates config : isReportCounted'] = test => {

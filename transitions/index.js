@@ -140,7 +140,11 @@ const loadTransitions = (autoEnableSystemTransitions = true) => {
 const loadTransition = key => {
   try {
     logger.info(`loading transition ${key}`);
-    transitions[key] = require('./' + key);
+    const transition = require('./' + key);
+    if (transition.init) {
+      transition.init();
+    }
+    transitions[key] = transition;
   } catch(e) {
     logger.error(`failed loading transition ${key}`);
     logger.error(e);
