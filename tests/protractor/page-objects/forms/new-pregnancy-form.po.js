@@ -81,36 +81,13 @@ module.exports = {
 
   setLastCycleDate: (lmpDate) => {
     const datePicker = $('[placeholder="yyyy-mm-dd"]');
-   datePicker.click();
-  // $('[placeholder="yyyy-mm-dd"]').trigger("click");
-   // element(by.css('.icon.icon-refresh')).click();
-    //type date in the text box as '2017-04-23'
-    //$('[placeholder="yyyy-mm-dd"]').trigger('change');
-   // datePicker.sendKeys(lmpDate);//.then(function() {
-    $('td.today.day').click();
-     // datePicker.sendKeys(protractor.Key.ENTER);
-//browser.actions().mousedown().perform();
-setTimeout(function(){ datePicker.click();}, 100);
-        helper.takeScreenshot();
-        console.error('made it here');
-       // browser.sleep(1000);
-   //   element(by.css('[value="calendar"]')).click();
-   // });
-     //element(by.css('[value="approx"]')).click();
-    // $('[placeholder="yyyy-mm-dd"]').trigger('change');
-    //browser.driver.executeScript(`setAttribute('value',${lmpDate})`,datePicker);
-    //browser.driver.executeScript(`setAttribute('value','2017-05-23')`,datePicker);
+    datePicker.click();
+    $('td.today.day').click().then(function() {
 
-    //datePicker.;
-    //  datePicker.sendKeys(protractor.Key.ENTER);
-   // helper.takeScreenshot();
-    //element(by.css('td.active.day')).click();
-    //helper.waitUntilReady(element(by.css('.or-output')));
-    // element(by.css('.or-output')).click();
-    //expect(element(by.css('.or-output')))
-    //datePicker.sendKeys(protractor.Key.ENTER);
-    //browser.waitForAngular();
-
+      datePicker.sendKeys(protractor.Key.ENTER);
+    });
+    browser.executeScript(
+      'trigger("change");', datePicker);
   },
   //If no selected
   select2Months: () => {
