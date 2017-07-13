@@ -1,10 +1,10 @@
 const utils = require('../../utils'),
   auth = require('../../auth')(),
   helper = require('../../helper'),
-  path=require('path'),
-  fs=require('fs');
+  path = require('path'),
+  fs = require('fs');
 
-const FILE = path.join(__dirname,'..', '..', 'resources/xml/new-pregnancy.xml');
+const FILE = path.join(__dirname, '..', '..', 'resources/xml/new-pregnancy.xml');
 const userSettingsDocId = `org.couchdb.user:${auth.user}`;
 const contactId = '3b3d50d275280d2568cd36281d00348b';
 const docs = [
@@ -21,6 +21,10 @@ const docs = [
     }
   }];
 
+const selectApproximateLMPDate = value => {
+  element(by.css(`[value=${value}]`)).click();
+};
+
 module.exports = {
   configureForm: (done) => {
 
@@ -36,7 +40,7 @@ module.exports = {
       .then(done, done);
   },
 
-   nextPage: () => {
+  nextPage: () => {
     const nextButton = element(by.css('button.btn.btn-primary.next-page'));
     helper.waitElementToBeClickable(nextButton);
     nextButton.click();
@@ -55,10 +59,9 @@ module.exports = {
     return element(by.css('span[data-itext-id=/delivery/inputs:label]'));
   },
 
- selectPatientName: (name) => {
+  selectPatientName: (name) => {
     browser.driver.navigate().refresh();
     helper.waitElementToBeClickable(element(by.css('button.btn.btn-primary.next-page')));
-
     element(by.css('.selection')).click();
     const search = element(by.css('.select2-search__field'));
     search.click();
@@ -72,16 +75,48 @@ module.exports = {
   },
 
   selectLMPNoButton: () => {
+    browser.sleep(100);
     element(by.css('[value="approx"]')).click();
   },
 
   setLastCycleDate: (lmpDate) => {
-    const datePicker = element(by.css('[placeholder="yyyy-mm-dd"]'));
-    datePicker.click();
+    const datePicker = $('[placeholder="yyyy-mm-dd"]');
+   datePicker.click();
+  // $('[placeholder="yyyy-mm-dd"]').trigger("click");
+   // element(by.css('.icon.icon-refresh')).click();
     //type date in the text box as '2017-04-23'
-    datePicker.sendKeys(lmpDate);
+    //$('[placeholder="yyyy-mm-dd"]').trigger('change');
+   // datePicker.sendKeys(lmpDate);//.then(function() {
+    $('td.today.day').click();
+     // datePicker.sendKeys(protractor.Key.ENTER);
+//browser.actions().mousedown().perform();
+setTimeout(function(){ datePicker.click();}, 100);
+        helper.takeScreenshot();
+        console.error('made it here');
+       // browser.sleep(1000);
+   //   element(by.css('[value="calendar"]')).click();
+   // });
+     //element(by.css('[value="approx"]')).click();
+    // $('[placeholder="yyyy-mm-dd"]').trigger('change');
+    //browser.driver.executeScript(`setAttribute('value',${lmpDate})`,datePicker);
+    //browser.driver.executeScript(`setAttribute('value','2017-05-23')`,datePicker);
+
+    //datePicker.;
+    //  datePicker.sendKeys(protractor.Key.ENTER);
+   // helper.takeScreenshot();
+    //element(by.css('td.active.day')).click();
+    //helper.waitUntilReady(element(by.css('.or-output')));
+    // element(by.css('.or-output')).click();
+    //expect(element(by.css('.or-output')))
+    //datePicker.sendKeys(protractor.Key.ENTER);
+    //browser.waitForAngular();
 
   },
+  //If no selected
+  select2Months: () => {
+    element(by.css('[value="61"]')).click();
+  },
+
   reset: () => {
     element(by.css('.icon.icon-refresh')).click();
   },
@@ -108,6 +143,11 @@ module.exports = {
   },
   checkHIVPisotiveCheckBox: () => {
     element(by.css('[value="r6"]')).click();
+  },
+  selectAllBoxes: () => {
+    element.all(by.css('[type="checkbox"]')).each(item => {
+      item.click();
+    });
   },
 
   //Danger signs page
@@ -148,7 +188,7 @@ module.exports = {
   },
 
   //summary page
- getId: () => {
+  getId: () => {
     return element(by.css('[data-value=" /pregnancy/group_review/r_patient_id "]'));
   },
 
