@@ -77,28 +77,28 @@ const processChange = (change, callback) => {
   if (!change) {
     return callback();
   }
-  lineage.fetchHydratedDoc(change.id, (err, doc) => {
-    if (err) {
+  lineage.fetchHydratedDoc(change.id)
+    .then(doc => {
+      if (processed > 0 && (processed % PROGRESS_REPORT_INTERVAL) === 0) {
+        logger.info(`transitions: ${processed} items processed (since sentinel started)`);
+      }
+      change.doc = doc;
+      logger.debug(`change event on doc ${change.id} seq ${change.seq}`);
+      const audit = require('couchdb-audit')
+            .withNano(db, db.settings.db, db.settings.auditDb, db.settings.ddoc, db.settings.username);
+      module.exports.applyTransitions({
+        change: change,
+        audit: audit,
+        db: db
+      }, () => {
+        processed++;
+        updateMetaData(change.seq, callback);
+      });
+    })
+    .catch(err => {
       logger.error(`transitions: fetch failed for ${change.id} (${err})`);
       return callback();
-    }
-
-    if (processed > 0 && (processed % PROGRESS_REPORT_INTERVAL) === 0) {
-      logger.info(`transitions: ${processed} items processed (since sentinel started)`);
-    }
-    change.doc = doc;
-    logger.debug(`change event on doc ${change.id} seq ${change.seq}`);
-    const audit = require('couchdb-audit')
-          .withNano(db, db.settings.db, db.settings.auditDb, db.settings.ddoc, db.settings.username);
-    module.exports.applyTransitions({
-      change: change,
-      audit: audit,
-      db: db
-    }, () => {
-      processed++;
-      updateMetaData(change.seq, callback);
     });
-  });
 };
 
 /*

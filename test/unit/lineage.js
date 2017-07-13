@@ -11,7 +11,7 @@ exports['fetchHydratedDoc returns errors from view'] = test => {
   const expected = 'boom';
   const id = 'abc';
   const view = sinon.stub(db.medic, 'view').callsArgWith(3, expected);
-  lineage.fetchHydratedDoc(id, err => {
+  lineage.fetchHydratedDoc(id).catch(err => {
     test.equals(err, expected);
     test.equals(view.callCount, 1);
     test.equals(view.args[0][0], 'medic-client');
@@ -31,7 +31,7 @@ exports['fetchHydratedDoc returns errors from fetch'] = test => {
     rows: [ { doc: { contact: { _id: contactId } } } ]
   });
   const fetch = sinon.stub(db.medic, 'fetch').callsArgWith(1, expected);
-  lineage.fetchHydratedDoc(docId, err => {
+  lineage.fetchHydratedDoc(docId).catch(err => {
     test.equals(err, expected);
     test.equals(fetch.callCount, 1);
     test.done();
@@ -43,8 +43,7 @@ exports['fetchHydratedDoc handles no lineage and no contact'] = test => {
   const expected = { _id: docId };
   sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: expected } ] });
   const fetch = sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [] });
-  lineage.fetchHydratedDoc(docId, (err, actual) => {
-    test.equals(err, null);
+  lineage.fetchHydratedDoc(docId).then(actual => {
     test.deepEqual(actual, expected);
     test.equals(fetch.callCount, 1);
     test.done();
@@ -55,8 +54,7 @@ exports['fetchHydratedDoc handles doc with deleted parent'] = test => {
   const docId = 'abc';
   sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { _id: 'abc' } }, { doc: null } ] });
   sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [] });
-  lineage.fetchHydratedDoc(docId, (err, actual) => {
-    test.equals(err, null);
+  lineage.fetchHydratedDoc(docId).then(actual => {
     test.deepEqual(actual, { _id: 'abc', parent: null });
     test.done();
   });
@@ -66,8 +64,7 @@ exports['fetchHydratedDoc handles missing contacts'] = test => {
   const docId = 'abc';
   sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { _id: 'abc', contact: { _id: 'xyz' } } } ] });
   sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [ { doc: null }] });
-  lineage.fetchHydratedDoc(docId, (err, actual) => {
-    test.equals(err, null);
+  lineage.fetchHydratedDoc(docId).then(actual => {
     test.deepEqual(actual, { _id: 'abc', contact: { _id: 'xyz' }, parent: undefined });
     test.done();
   });
@@ -102,8 +99,7 @@ exports['fetchHydratedDoc attaches the lineage'] = test => {
     { doc: grandparent }
   ] });
   const fetch = sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [] }); // without subcontacts
-  lineage.fetchHydratedDoc(docId, (err, actual) => {
-    test.equals(err, null);
+  lineage.fetchHydratedDoc(docId).then(actual => {
     test.equals(actual.name, 'joe');
     test.equals(actual.parent.name, 'jack');
     test.equals(actual.parent.parent.name, 'jim');
@@ -176,8 +172,7 @@ exports['fetchHydratedDoc attaches the full lineage for reports'] = test => {
     callback(null, { rows: contactDocs.map(doc => { return {doc: doc}; }) });
   });
 
-  lineage.fetchHydratedDoc(docId, (err, actual) => {
-    test.equals(err, null);
+  lineage.fetchHydratedDoc(docId).then(actual => {
     test.equals(actual.form, 'A');
     // parents
     test.equals(actual.contact.name, 'apex');
@@ -241,8 +236,7 @@ exports['fetchHydratedDoc attaches the contacts'] = test => {
     { doc: parentContact },
     { doc: grandparentContact }
   ] });
-  lineage.fetchHydratedDoc(docId, (err, actual) => {
-    test.equals(err, null);
+  lineage.fetchHydratedDoc(docId).then(actual => {
     test.equals(actual.name, 'joe');
     test.equals(actual.contact.phone, '+789');
     test.equals(actual.parent.name, 'jack');
@@ -401,8 +395,7 @@ exports['hydrate+minify is noop on a report'] = test => {
     callback(null, { rows: contactDocs.map(doc => { return {doc: doc}; }) });
   });
 
-  lineage.fetchHydratedDoc(docId, (err, actual) => {
-    test.equals(err, null);
+  lineage.fetchHydratedDoc(docId).then(actual => {
     lineage.minify(actual);
     test.deepEqual(actual, given);
     test.done();
@@ -463,8 +456,7 @@ exports['hydrate+minify is noop on a place'] = test => {
     callback(null, { rows: contactDocs.map(doc => { return {doc: doc}; }) });
   });
 
-  lineage.fetchHydratedDoc(docId, (err, actual) => {
-    test.equals(err, null);
+  lineage.fetchHydratedDoc(docId).then(actual => {
     lineage.minify(actual);
     test.deepEqual(actual, given);
     test.done();

@@ -22,11 +22,10 @@ const fetchReports = (latestTimestamp, timeWindowInDays, formTypes) => {
     .then(hydrateDocs);
 };
 
-// This is inefficient. Implement a bulk fetch : https://github.com/medic/medic-webapp/issues/3631
 const hydrateDocs = (docs) => {
   return docs.reduce(function(promise, doc) {
     return promise.then((fetchedDocs) => {
-      return lineage.fetchHydratedDocPromise(doc._id)
+      return lineage.fetchHydratedDoc(doc._id)
         .then(fetchedDoc => {
           fetchedDocs.push(fetchedDoc);
           return fetchedDocs;

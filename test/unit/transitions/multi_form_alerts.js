@@ -26,7 +26,7 @@ exports.setUp = callback => {
 };
 
 const stubFetchHydratedDocs = () => {
-  sinon.stub(lineage, 'fetchHydratedDocPromise')
+  sinon.stub(lineage, 'fetchHydratedDoc')
     .withArgs(doc._id).returns(Promise.resolve(doc))
     .withArgs(reports[0]._id).returns(Promise.resolve(hydratedReports[0]))
     .withArgs(reports[1]._id).returns(Promise.resolve(hydratedReports[1]));
