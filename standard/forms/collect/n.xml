@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>New Person</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/n/n:label">
+            <value>Person's Name</value>
+          </text>
+          <text id="/n/n:hint">
+            <value>Submitting this form will give you a Medic ID associated to this person</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <n delimiter="#" id="n" prefix="J1!n!" version="2017-07-13_14-02">
+          <n/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </n>
+      </instance>
+      <bind nodeset="/n/n" required="true()" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/n/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <input ref="/n/n">
+      <label ref="jr:itext('/n/n:label')"/>
+      <hint ref="jr:itext('/n/n:hint')"/>
+    </input>
+  </h:body>
+</h:html>

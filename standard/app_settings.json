@@ -2315,349 +2315,721 @@
     "generate_patient_id_on_people": true
   },
   "forms": {
-    "ANC": {
+    "IMM": {
       "meta": {
+        "code": "IMM",
+        "icon": "immunization",
         "label": {
-          "en": "ANC"
-        },
-        "code": "anc"
-      },
-      "fields": {
-        "first_name": {
-          "position": 1,
-          "type": "string",
-          "labels": {
-            "tiny": {
-              "en": "first_name"
-            },
-            "short": {
-              "en": "First Name"
-            },
-            "description": {
-              "en": "First Name"
-            }
-          },
-          "list": []
-        },
-        "last_name": {
-          "position": 2,
-          "type": "string",
-          "labels": {
-            "tiny": {
-              "en": "last_name"
-            },
-            "short": {
-              "en": "Last Name"
-            },
-            "description": {
-              "en": "Last Name"
-            }
-          },
-          "list": []
-        },
-        "phone_number": {
-          "position": 3,
-          "type": "integer",
-          "labels": {
-            "tiny": {
-              "en": "phone_number"
-            },
-            "short": {
-              "en": "phone_number"
-            },
-            "description": {
-              "en": "phone_number"
-            }
-          },
-          "list": []
-        },
-        "": {
-          "position": 21,
-          "type": "string",
-          "labels": {
-            "tiny": {
-              "en": ""
-            },
-            "short": {
-              "en": ""
-            },
-            "description": {
-              "en": ""
-            }
-          },
-          "list": []
-        },
-        "pregnancy_mm_id": {
-          "position": 5,
-          "type": "integer",
-          "labels": {
-            "tiny": {
-              "en": "pregnancy_mm_id"
-            },
-            "short": {
-              "en": "Patient ID"
-            },
-            "description": {
-              "en": "Patient ID"
-            }
-          },
-          "list": []
-        },
-        "lmp_weeks": {
-          "position": 6,
-          "type": "integer",
-          "labels": {
-            "tiny": {
-              "en": "lmp_weeks"
-            },
-            "short": {
-              "en": "Enter LMP in weeks"
-            },
-            "description": {
-              "en": "Enter LMP in weeks"
-            }
-          },
-          "list": []
-        },
-        "flag_mm_id": {
-          "position": 8,
-          "type": "integer",
-          "labels": {
-            "tiny": {
-              "en": "flag_mm_id"
-            },
-            "short": {
-              "en": "Patient ID"
-            },
-            "description": {
-              "en": "Patient ID"
-            }
-          },
-          "list": []
-        },
-        "danger_flags": {
-          "position": 9,
-          "type": "string",
-          "labels": {
-            "tiny": {
-              "en": "danger_flags"
-            },
-            "short": {
-              "en": "Select all the danger signs/Flags"
-            },
-            "description": {
-              "en": "Select all the danger signs/Flags"
-            }
-          },
-          "list": [
-            [
-              "bd1",
-              {
-                "en": "Fever"
-              }
-            ],
-            [
-              "bd1",
-              {
-                "en": "Fast breathing"
-              }
-            ],
-            [
-              "bd1",
-              {
-                "en": "Chest indrawing"
-              }
-            ],
-            [
-              "bd1",
-              {
-                "en": "Convulsions"
-              }
-            ],
-            [
-              "bd1",
-              {
-                "en": "Diarrhea"
-              }
-            ],
-            [
-              "bd1",
-              {
-                "en": "Infected umblical cord"
-              }
-            ],
-            [
-              "bd1",
-              {
-                "en": "Unable to breast feed"
-              }
-            ],
-            [
-              "bd1",
-              {
-                "en": "Many skin pustules"
-              }
-            ],
-            [
-              "bd1",
-              {
-                "en": "Vomits everything"
-              }
-            ],
-            [
-              "bd1",
-              {
-                "en": "Very sleepy"
-              }
-            ]
-          ]
-        },
-        "visit_type_anc": {
-          "position": 11,
-          "type": "string",
-          "labels": {
-            "tiny": {
-              "en": "visit_type_anc"
-            },
-            "short": {
-              "en": "Choose Visit type"
-            },
-            "description": {
-              "en": "Choose Visit type"
-            }
-          },
-          "list": [
-            [
-              "vs1",
-              {
-                "en": "On Phone"
-              }
-            ],
-            [
-              "vs2",
-              {
-                "en": "In Person"
-              }
-            ]
-          ]
-        },
-        "date_visit": {
-          "position": 12,
-          "type": "string",
-          "labels": {
-            "tiny": {
-              "en": "date_visit"
-            },
-            "short": {
-              "en": "Visit Date"
-            },
-            "description": {
-              "en": "Visit Date"
-            }
-          },
-          "list": []
-        },
-        "delivery_mm_id": {
-          "position": 16,
-          "type": "integer",
-          "labels": {
-            "tiny": {
-              "en": "delivery_mm_id"
-            },
-            "short": {
-              "en": "Patient ID"
-            },
-            "description": {
-              "en": "Patient ID"
-            }
-          },
-          "list": []
-        },
-        "delivery_type": {
-          "position": 17,
-          "type": "string",
-          "labels": {
-            "tiny": {
-              "en": "delivery_type"
-            },
-            "short": {
-              "en": "Where did the mother deliver?"
-            },
-            "description": {
-              "en": "Where did the mother deliver?"
-            }
-          },
-          "list": [
-            [
-              "f",
-              {
-                "en": "Facility"
-              }
-            ],
-            [
-              "s",
-              {
-                "en": "Home with Skilled Attendant"
-              }
-            ],
-            [
-              "ns",
-              {
-                "en": "Home with No Skilled Attendant"
-              }
-            ]
-          ]
-        },
-        "delivery_date": {
-          "position": 18,
-          "type": "string",
-          "labels": {
-            "tiny": {
-              "en": "delivery_date"
-            },
-            "short": {
-              "en": "Date"
-            },
-            "description": {
-              "en": "Date"
-            }
-          },
-          "list": []
-        },
-        "reminders_on_mm_id": {
-          "position": 20,
-          "type": "integer",
-          "labels": {
-            "tiny": {
-              "en": "reminders_on_mm_id"
-            },
-            "short": {
-              "en": "Patient ID "
-            },
-            "description": {
-              "en": "Patient ID "
-            }
-          },
-          "list": []
-        },
-        "reminders_off_mm_id": {
-          "position": 22,
-          "type": "integer",
-          "labels": {
-            "tiny": {
-              "en": "reminders_off_mm_id"
-            },
-            "short": {
-              "en": "Patient ID "
-            },
-            "description": {
-              "en": "Patient ID "
-            }
-          },
-          "list": []
+          "en": "Immunization Visit (Collect)",
+          "hi": "अस्पताल में जांच (Collect)",
+          "id": "Fasilitas kunjungan (Collect)"
         }
       },
-      "facility_reference": "rc_code",
+      "fields": {
+        "patient_id": {
+          "labels": {
+            "tiny": {
+              "en": "id"
+            },
+            "description": {
+              "en": "patient_id"
+            },
+            "short": {
+              "en": "patient_id"
+            }
+          },
+          "position": 0,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "visit_confirmed": {
+          "labels": {
+            "tiny": {
+              "en": "c"
+            },
+            "description": {
+              "en": "visit_confirmed"
+            },
+            "short": {
+              "en": "visit_confirmed"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_bcg": {
+          "labels": {
+            "tiny": {
+              "en": "bcg"
+            },
+            "description": {
+              "en": "received_bcg"
+            },
+            "short": {
+              "en": "received_bcg"
+            }
+          },
+          "position": 3,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_cholera_1": {
+          "labels": {
+            "tiny": {
+              "en": "ch1"
+            },
+            "description": {
+              "en": "received_cholera_1"
+            },
+            "short": {
+              "en": "received_cholera_1"
+            }
+          },
+          "position": 4,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_cholera_2": {
+          "labels": {
+            "tiny": {
+              "en": "ch2"
+            },
+            "description": {
+              "en": "received_cholera_2"
+            },
+            "short": {
+              "en": "received_cholera_2"
+            }
+          },
+          "position": 5,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_cholera_3": {
+          "labels": {
+            "tiny": {
+              "en": "ch3"
+            },
+            "description": {
+              "en": "received_cholera_3"
+            },
+            "short": {
+              "en": "received_cholera_3"
+            }
+          },
+          "position": 6,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_hep_a_1": {
+          "labels": {
+            "tiny": {
+              "en": "ha1"
+            },
+            "description": {
+              "en": "received_hep_a_1"
+            },
+            "short": {
+              "en": "received_hep_a_1"
+            }
+          },
+          "position": 7,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_hep_a_2": {
+          "labels": {
+            "tiny": {
+              "en": "ha2"
+            },
+            "description": {
+              "en": "received_hep_a_2"
+            },
+            "short": {
+              "en": "received_hep_a_2"
+            }
+          },
+          "position": 8,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_hpv_1": {
+          "labels": {
+            "tiny": {
+              "en": "hpv1"
+            },
+            "description": {
+              "en": "received_hpv_1"
+            },
+            "short": {
+              "en": "received_hpv_1"
+            }
+          },
+          "position": 9,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_hpv_2": {
+          "labels": {
+            "tiny": {
+              "en": "hpv2"
+            },
+            "description": {
+              "en": "received_hpv_2"
+            },
+            "short": {
+              "en": "received_hpv_2"
+            }
+          },
+          "position": 10,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_hpv_3": {
+          "labels": {
+            "tiny": {
+              "en": "hpv3"
+            },
+            "description": {
+              "en": "received_hpv_3"
+            },
+            "short": {
+              "en": "received_hpv_3"
+            }
+          },
+          "position": 11,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_flu": {
+          "labels": {
+            "tiny": {
+              "en": "flu"
+            },
+            "description": {
+              "en": "received_flu"
+            },
+            "short": {
+              "en": "received_flu"
+            }
+          },
+          "position": 12,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_jap_enc": {
+          "labels": {
+            "tiny": {
+              "en": "je"
+            },
+            "description": {
+              "en": "received_jap_enc"
+            },
+            "short": {
+              "en": "received_jap_enc"
+            }
+          },
+          "position": 13,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_meningococcal_1": {
+          "labels": {
+            "tiny": {
+              "en": "mn1"
+            },
+            "description": {
+              "en": "received_meningococcal_1"
+            },
+            "short": {
+              "en": "received_meningococcal_1"
+            }
+          },
+          "position": 14,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_meningococcal_2": {
+          "labels": {
+            "tiny": {
+              "en": "mn2"
+            },
+            "description": {
+              "en": "received_meningococcal_2"
+            },
+            "short": {
+              "en": "received_meningococcal_2"
+            }
+          },
+          "position": 15,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_meningococcal_3": {
+          "labels": {
+            "tiny": {
+              "en": "mn3"
+            },
+            "description": {
+              "en": "received_meningococcal_3"
+            },
+            "short": {
+              "en": "received_meningococcal_3"
+            }
+          },
+          "position": 16,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_meningococcal_4": {
+          "labels": {
+            "tiny": {
+              "en": "mn4"
+            },
+            "description": {
+              "en": "received_meningococcal_4"
+            },
+            "short": {
+              "en": "received_meningococcal_4"
+            }
+          },
+          "position": 17,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_mmr_1": {
+          "labels": {
+            "tiny": {
+              "en": "mmr1"
+            },
+            "description": {
+              "en": "received_mmr_1"
+            },
+            "short": {
+              "en": "received_mmr_1"
+            }
+          },
+          "position": 18,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_mmr_2": {
+          "labels": {
+            "tiny": {
+              "en": "mmr2"
+            },
+            "description": {
+              "en": "received_mmr_2"
+            },
+            "short": {
+              "en": "received_mmr_2"
+            }
+          },
+          "position": 19,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_mmrv_1": {
+          "labels": {
+            "tiny": {
+              "en": "mmrv1"
+            },
+            "description": {
+              "en": "received_mmrv_1"
+            },
+            "short": {
+              "en": "received_mmrv_1"
+            }
+          },
+          "position": 20,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_mmrv_2": {
+          "labels": {
+            "tiny": {
+              "en": "mmrv2"
+            },
+            "description": {
+              "en": "received_mmrv_2"
+            },
+            "short": {
+              "en": "received_mmrv_2"
+            }
+          },
+          "position": 21,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_polio_0": {
+          "labels": {
+            "tiny": {
+              "en": "opv0"
+            },
+            "description": {
+              "en": "received_polio_0"
+            },
+            "short": {
+              "en": "received_polio_0"
+            }
+          },
+          "position": 22,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_polio_1": {
+          "labels": {
+            "tiny": {
+              "en": "opv1"
+            },
+            "description": {
+              "en": "received_polio_1"
+            },
+            "short": {
+              "en": "received_polio_1"
+            }
+          },
+          "position": 23,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_polio_2": {
+          "labels": {
+            "tiny": {
+              "en": "opv2"
+            },
+            "description": {
+              "en": "received_polio_2"
+            },
+            "short": {
+              "en": "received_polio_2"
+            }
+          },
+          "position": 24,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_polio_3": {
+          "labels": {
+            "tiny": {
+              "en": "opv3"
+            },
+            "description": {
+              "en": "received_polio_3"
+            },
+            "short": {
+              "en": "received_polio_3"
+            }
+          },
+          "position": 25,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_penta_1": {
+          "labels": {
+            "tiny": {
+              "en": "dt1"
+            },
+            "description": {
+              "en": "received_penta_1"
+            },
+            "short": {
+              "en": "received_penta_1"
+            }
+          },
+          "position": 26,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_penta_2": {
+          "labels": {
+            "tiny": {
+              "en": "dt2"
+            },
+            "description": {
+              "en": "received_penta_2"
+            },
+            "short": {
+              "en": "received_penta_2"
+            }
+          },
+          "position": 27,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_penta_3": {
+          "labels": {
+            "tiny": {
+              "en": "dt3"
+            },
+            "description": {
+              "en": "received_penta_3"
+            },
+            "short": {
+              "en": "received_penta_3"
+            }
+          },
+          "position": 28,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_pneumococcal_1": {
+          "labels": {
+            "tiny": {
+              "en": "pcv1"
+            },
+            "description": {
+              "en": "received_pneumococcal_1"
+            },
+            "short": {
+              "en": "received_pneumococcal_1"
+            }
+          },
+          "position": 29,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_pneumococcal_2": {
+          "labels": {
+            "tiny": {
+              "en": "pcv2"
+            },
+            "description": {
+              "en": "received_pneumococcal_2"
+            },
+            "short": {
+              "en": "received_pneumococcal_2"
+            }
+          },
+          "position": 30,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_pneumococcal_3": {
+          "labels": {
+            "tiny": {
+              "en": "pcv3"
+            },
+            "description": {
+              "en": "received_pneumococcal_3"
+            },
+            "short": {
+              "en": "received_pneumococcal_3"
+            }
+          },
+          "position": 31,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_pneumococcal_4": {
+          "labels": {
+            "tiny": {
+              "en": "pcv4"
+            },
+            "description": {
+              "en": "received_pneumococcal_4"
+            },
+            "short": {
+              "en": "received_pneumococcal_4"
+            }
+          },
+          "position": 32,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_rotavirus_1": {
+          "labels": {
+            "tiny": {
+              "en": "rv1"
+            },
+            "description": {
+              "en": "received_rotavirus_1"
+            },
+            "short": {
+              "en": "received_rotavirus_1"
+            }
+          },
+          "position": 33,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_rotavirus_2": {
+          "labels": {
+            "tiny": {
+              "en": "rv2"
+            },
+            "description": {
+              "en": "received_rotavirus_2"
+            },
+            "short": {
+              "en": "received_rotavirus_2"
+            }
+          },
+          "position": 34,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_rotavirus_3": {
+          "labels": {
+            "tiny": {
+              "en": "rv3"
+            },
+            "description": {
+              "en": "received_rotavirus_3"
+            },
+            "short": {
+              "en": "received_rotavirus_3"
+            }
+          },
+          "position": 35,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_typhoid_1": {
+          "labels": {
+            "tiny": {
+              "en": "ty1"
+            },
+            "description": {
+              "en": "received_typhoid_1"
+            },
+            "short": {
+              "en": "received_typhoid_1"
+            }
+          },
+          "position": 36,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_typhoid_2": {
+          "labels": {
+            "tiny": {
+              "en": "ty2"
+            },
+            "description": {
+              "en": "received_typhoid_2"
+            },
+            "short": {
+              "en": "received_typhoid_2"
+            }
+          },
+          "position": 37,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_vitamin_a": {
+          "labels": {
+            "tiny": {
+              "en": "vita"
+            },
+            "description": {
+              "en": "received_vitamin_a"
+            },
+            "short": {
+              "en": "received_vitamin_a"
+            }
+          },
+          "position": 38,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        },
+        "received_yellow_fever": {
+          "labels": {
+            "tiny": {
+              "en": "yf"
+            },
+            "description": {
+              "en": "received_yellow_fever"
+            },
+            "short": {
+              "en": "received_yellow_fever"
+            }
+          },
+          "position": 39,
+          "type": "string",
+          "length": [1,
+          10],
+          "required": false
+        }
+      },
+      "public_form": false,
       "use_sentinel": true
     },
     "N": {
@@ -2774,6 +3146,9 @@
             },
             "short": {
               "en": "ID"
+            },
+            "tiny": {
+              "en": "ID"
             }
           },
           "position": 0,
@@ -2875,6 +3250,9 @@
             },
             "short": {
               "en": "ID"
+            },
+            "tiny": {
+              "en": "ID"
             }
           },
           "position": 0,
@@ -2895,7 +3273,11 @@
             },
             "short": {
               "en": "Delivery Code"
+            },
+            "tiny": {
+              "en": "C"
             }
+
           },
           "position": 1,
           "type": "string",
@@ -2912,6 +3294,9 @@
             },
             "short": {
               "en": "Days ago"
+            },
+            "tiny": {
+              "en": "D"
             }
           },
           "position": 2,
@@ -2944,6 +3329,9 @@
             },
             "short": {
               "en": "ID"
+            },
+            "tiny": {
+              "en": "ID"
             }
           },
           "position": 0,
@@ -2964,6 +3352,9 @@
             },
             "short": {
               "en": "Notes"
+            },
+            "tiny": {
+              "en": "N"
             }
           },
           "position": 1,

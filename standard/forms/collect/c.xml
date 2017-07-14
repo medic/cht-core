@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>New Child</h:title>
+    <model>
+      <itext>
+        <translation lang="en">
+          <text id="/c/review:label">
+            <value>Submitting new person report for <output value=" /c/n "/></value></text>
+          <text id="/c/n:label">
+            <value>Child's Name</value>
+          </text>
+          <text id="/c/w:jr:constraintMsg">
+            <value>Age must be between 0 and 90 weeks</value>
+          </text>
+          <text id="/c/w:label">
+            <value>Weeks since birth</value>
+          </text>
+          <text id="/c/n:hint">
+            <value>Submitting this form will give you a Medic ID associated to this person</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <c delimiter="#" id="c" prefix="J1!c!" version="2017-07-13_14-02">
+          <n/>
+          <w/>
+          <review/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </c>
+      </instance>
+      <bind nodeset="/c/n" required="true()" type="string"/>
+      <bind constraint=". &gt;= 0 and . &lt;= 90" jr:constraintMsg="jr:itext('/c/w:jr:constraintMsg')" nodeset="/c/w" required="true()" type="int"/>
+      <bind nodeset="/c/review" readonly="true()" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/c/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <input ref="/c/n">
+      <label ref="jr:itext('/c/n:label')"/>
+      <hint ref="jr:itext('/c/n:hint')"/>
+    </input>
+    <input ref="/c/w">
+      <label ref="jr:itext('/c/w:label')"/>
+    </input>
+    <input ref="/c/review">
+      <label ref="jr:itext('/c/review:label')"/>
+    </input>
+  </h:body>
+</h:html>
