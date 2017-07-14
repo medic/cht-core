@@ -9,6 +9,10 @@ _July 14, 2017_
 - Improved error messages for SMS endpoint. Issue: #3587
 - Allow for empty SMS message Content. Issue: #3656
 
+### Continuous Integration
+
+- Fix build issue in kanso-gardener. Issue: #3648
+
 ## 2.12.0
 
 _June 20, 2017_
