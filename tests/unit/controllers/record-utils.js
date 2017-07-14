@@ -21,13 +21,13 @@ exports['create form returns formated error from string'] = function(test) {
   });
 };
 
-exports['create form returns error if missing required field'] = function(test) {
+exports['create form returns error if form value is missing'] = function(test) {
   test.expect(2);
   var req = sinon.stub(db, 'request');
   controller.createByForm({
     message: 'test'
   }, function(err) {
-    test.equals(err.message, 'Missing required field: from');
+    test.equals(err.message, 'Missing required value: from');
     test.equals(req.callCount, 0);
     test.done();
   });
