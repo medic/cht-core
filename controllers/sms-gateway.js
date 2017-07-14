@@ -23,6 +23,10 @@ const _ = require('underscore'),
 // See: https://github.com/medic/medic-webapp/issues/3019
 // Specifically, this should be in a new repo that we can pull in via npm
 function saveToDb(message, callback) {
+  if (!(message.from && message.content)) {
+    return callback(new Error('All SMS messages must contain a from and content field'));
+  }
+
   recordUtils.createByForm({
     from: message.from,
     message: message.content,
@@ -112,6 +116,8 @@ module.exports = {
       getOutgoing
     ], (err, [,,outgoingMessages]) => {
       if (err) {
+        console.error('There was an error processing the following SMS POST request');
+        console.error(JSON.stringify(req.body));
         return callback(err);
       }
       callback(null, { messages: outgoingMessages });
