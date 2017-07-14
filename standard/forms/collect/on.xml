@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>Turn Notifications ON</h:title>
+    <model>
+      <itext>
+        <translation lang="hi">
+          <text id="/on/id:label">
+            <value>मरीज का ID</value>
+          </text>
+          <text id="/on/review:label">
+            <value>-</value>
+          </text>
+          <text id="/on/r:label">
+            <value>-</value>
+          </text>
+        </translation>
+        <translation lang="en">
+          <text id="/on/id:label">
+            <value>Patient ID</value>
+          </text>
+          <text id="/on/review:label">
+            <value>Submitting report to turn ON notifications for ID <output value=" /on/id "/>, with the following notes: <output value=" /on/r "/></value></text>
+          <text id="/on/r:label">
+            <value>Notes</value>
+          </text>
+        </translation>
+        <translation lang="id">
+          <text id="/on/id:label">
+            <value>Pasien ID</value>
+          </text>
+          <text id="/on/review:label">
+            <value>-</value>
+          </text>
+          <text id="/on/r:label">
+            <value>-</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <on delimiter="#" id="on" prefix="J1!on!" version="2017-07-13_13-43">
+          <id/>
+          <r/>
+          <review/>
+          <meta>
+            <instanceID/>
+          </meta>
+        </on>
+      </instance>
+      <bind nodeset="/on/id" required="true()" type="string"/>
+      <bind nodeset="/on/r" type="string"/>
+      <bind nodeset="/on/review" readonly="true()" type="string"/>
+      <bind calculate="concat('uuid:', uuid())" nodeset="/on/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body class="pages">
+    <input appearance="numbers" ref="/on/id">
+      <label ref="jr:itext('/on/id:label')"/>
+    </input>
+    <input ref="/on/r">
+      <label ref="jr:itext('/on/r:label')"/>
+    </input>
+    <input ref="/on/review">
+      <label ref="jr:itext('/on/review:label')"/>
+    </input>
+  </h:body>
+</h:html>
