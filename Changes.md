@@ -22,6 +22,19 @@ _TBC_
   to master branches of `api` and `sentinel` submodules before running CI in
   Travis.
 
+## 2.12.1
+
+_July 14, 2017_
+
+### Bug fixes
+
+- Improved error messages for SMS endpoint. Issue: #3587
+- Allow for empty SMS message Content. Issue: #3656
+
+### Continuous Integration
+
+- Fix build issue in kanso-gardener. Issue: #3648
+
 ## 2.12.0
 
 _June 20, 2017_
