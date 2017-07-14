@@ -50,7 +50,7 @@ if (contact.type === 'person') {
     { label: 'contact.age', value: contact.date_of_birth, width: 4, filter: 'age' },
     { label: 'Phone Number', value: contact.phone, width: 4, filter: 'phone' },
     { label: 'Notes', value: contact.notes, width: 12 },
-    { label: 'contact.parent', value: contact.parent, filter: 'clinic' }
+    { label: 'contact.parent', value: contact.parent, filter: 'lineage' }
   ];
   var pregnancy;
   var pregnancyDate;
@@ -126,7 +126,7 @@ if (contact.type === 'person') {
     { label: 'Notes', value: contact.notes, width: 12 }
   ];
   if (contact.parent) {
-    fields.push({ label: 'contact.parent', value: contact.parent, filter: 'clinic' });
+    fields.push({ label: 'contact.parent', value: contact.parent, filter: 'lineage' });
   }
 }
 
