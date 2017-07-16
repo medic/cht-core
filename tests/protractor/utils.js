@@ -98,7 +98,7 @@ const revertSettingsForDdoc = ddocName =>  {
 };
 
 const deleteAll = () => {
-  const typesToIgnore = ['translations', 'translations-backup', 'user-settings'];
+  const typesToIgnore = ['translations', 'translations-backup', 'user-settings', 'info'];
   const idsToIgnore = ['appcache', 'migration-log', 'resources', 'sentinel-meta-data'];
   return request({
     path: path.join('/', constants.DB_NAME, '_all_docs?include_docs=true'),
@@ -106,9 +106,9 @@ const deleteAll = () => {
   })
     .then(response => {
       return response.rows.filter(row => {
-        return row.id.indexOf('_design/') !== 0 &&
-          idsToIgnore.indexOf(row.id) === -1 &&
-          typesToIgnore.indexOf(row.doc.type) === -1;
+        return !row.id.startsWith('_design/') &&
+               !idsToIgnore.includes(row.id) &&
+               !typesToIgnore.includes(row.doc.type);
       }).map(row => {
         row.doc._deleted = true;
         return row.doc;
