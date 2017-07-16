@@ -73,9 +73,9 @@ exports.config = {
   specs: ['e2e/**/*.js'],
   framework: 'jasmine2',
   capabilities: {
-    // browserName: 'chrome'
-    browserName: 'firefox'
-    //'marionette':'true'
+    browserName: 'chrome'
+    // browserName: 'firefox',
+    // 'marionette':'true'
   },
   onPrepare: () => {
     const startup = startModules();
