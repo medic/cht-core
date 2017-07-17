@@ -59,13 +59,13 @@ const applyTaskStateChangesToDocs = (taskStateChanges, docs) => {
 
   taskStateChanges.forEach(taskStateChange => {
     if (!taskStateChange.messageId) {
-      throw {code: 400, message: 'Message id required'};
+      return console.error('Message id required', taskStateChange);
     }
 
     const {task, docId} = getTaskAndDocForMessage(taskStateChange.messageId, docs);
 
     if (!task) {
-      throw {code: 404, message: `Message not found: ${taskStateChange.messageId}`};
+      return console.error(`Message not found: ${taskStateChange.messageId}`);
     }
 
     fillTaskStateChangeByDocId(taskStateChange, docId);
@@ -155,12 +155,7 @@ module.exports = {
       db.medic.fetch({keys: idsToFetch}, (err, docResults) => {
         const docs = _.pluck(docResults.rows, 'doc');
 
-        let stateChangesByDocId;
-        try {
-          stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
-        } catch (err) {
-          return callback(err);
-        }
+        const stateChangesByDocId = applyTaskStateChangesToDocs(taskStateChanges, docs);
 
         db.medic.bulk({docs: docs}, (err, results) => {
           if (err) {

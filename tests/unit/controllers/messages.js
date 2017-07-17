@@ -150,7 +150,7 @@ exports['updateMessageTaskStates takes a collection of state changes and saves i
   });
 };
 
-exports['updateMessageTaskStates throws an error if it cant find the message'] = test => {
+exports['updateMessageTaskStates DOES NOT throw an error if it cant find the message'] = test => {
   sinon.stub(db.medic, 'view').callsArgWith(3, null, {rows: [
     {id: 'testMessageId1'}]});
 
@@ -177,11 +177,9 @@ exports['updateMessageTaskStates throws an error if it cant find the message'] =
       state: 'testState2',
       details: 'Just because.'
     }
-  ], (err) => {
-    test.ok(err);
-
-    test.equal(err.code, 404);
-    test.equal(err.message, `Message not found: testMessageId2`);
+  ], (err, result) => {
+    test.equal(err, null);
+    test.deepEqual(result, {success: true});
 
     test.done();
   });
