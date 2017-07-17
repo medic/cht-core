@@ -1,4 +1,4 @@
-describe.only('InboxCtrl controller', () => {
+describe('InboxCtrl controller', () => {
 
   'use strict';
 
@@ -17,7 +17,7 @@ describe.only('InboxCtrl controller', () => {
       $provide.value('ActiveRequests', sinon.stub());
       $provide.value('Auth', () => Promise.resolve({}));
       $provide.value('Location', () => {
-        return { path: 'localhost' }
+        return { path: 'localhost' };
       });
       $provide.value('DB', () => {
         return { query: KarmaUtils.nullPromise() };
