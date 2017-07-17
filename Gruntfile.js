@@ -328,12 +328,7 @@ module.exports = function(grunt) {
         options: {
           configFile: 'tests/protractor/conf.js'
         }
-      },
-      chrome: {
-        options: {
-          configFile: 'tests/protractor/conf-chrome.js'
-        }
-      },
+      }
     },
     nodeunit: {
       all: ['tests/nodeunit/unit/**/*.js', '!tests/nodeunit/unit/*/utils.js']
@@ -460,11 +455,6 @@ module.exports = function(grunt) {
   grunt.registerTask('e2e', 'Deploy app for testing and run e2e tests', [
     'exec:deploytest',
     'protractor:default'
-  ]);
-
-  grunt.registerTask('e2e-chrome', 'Deploy app for testing and run e2e tests on chrome', [
-    'exec:deploytest',
-    'protractor:chrome'
   ]);
 
   grunt.registerTask('api_e2e', 'Deploy app for testing and run e2e tests', [
