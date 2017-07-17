@@ -1,5 +1,11 @@
 # Medic Mobile Release Notes
 
+## 0.4.17
+
+### Jul 17, 2017
+
+- Fixed kanso packages that inadvertantly cached data in the ddoc. Issue: #3648
+
 ## 0.4.16
 
 ### Mar 16, 2017
