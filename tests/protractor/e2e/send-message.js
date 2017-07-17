@@ -55,7 +55,7 @@ describe('Send message', () => {
   afterAll(done => {
     console.log('About to call utils.afterEach from send-message');
     utils.afterEach(() => {
-      console.log('Finsished calling utils.afterEach from send-message');
+      console.log('Finished calling utils.afterEach from send-message');
       done();
     });
   });
@@ -221,8 +221,9 @@ describe('Send message', () => {
   describe('Sending from message pane', () => {
     const openMessageContent = (id, name) => {
       element(by.id('messages-tab')).click();
-      expect(element(by.css(messageInList(id))).isPresent()).toBeTruthy();
-
+      browser.wait(() => {
+        return element(by.css(messageInList(id))).isPresent();
+      }, 1000);
       clickLhsEntry(id, name);
     };
     const enterMessageText = message => {
