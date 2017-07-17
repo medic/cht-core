@@ -6,7 +6,6 @@ jdk:
   - oraclejdk8
 
 addons:
-  firefox: "45.0"
   chrome: "stable"
 
 services:
@@ -58,7 +57,7 @@ before_script:
   - npm install grunt-cli -g
   - npm --prefix api install --no-package-lock
   - ./node_modules/.bin/webdriver-manager update
-  - ./node_modules/.bin/webdriver-manager start &
+  - nohup bash -c "./node_modules/.bin/webdriver-manager start 2>&1 &"
   - until nc -z localhost 4444; do sleep 1; done
 
 script:

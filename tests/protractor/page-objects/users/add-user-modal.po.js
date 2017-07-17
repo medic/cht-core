@@ -50,6 +50,7 @@ module.exports = {
   },
 
   fillForm: (username, fullName) => {
+    helper.waitUntilReady(getSubmitButton()); // wait for form to load
     getUsernameField().sendKeys(username);
     getFullNameField().sendKeys(fullName);
     getEmailField().sendKeys('bede@mobile.org');

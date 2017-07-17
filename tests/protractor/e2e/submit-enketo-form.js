@@ -1,4 +1,5 @@
-const utils = require('../utils');
+const utils = require('../utils'),
+      helper = require('../helper');
 
 describe('Submit Enketo form', () => {
 
@@ -102,9 +103,7 @@ describe('Submit Enketo form', () => {
 
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.driver.navigate().refresh();
-    browser.wait(() => {
-      return element(by.css('.action-container .general-actions .fa-plus')).isPresent();
-    }, 10000);
+    helper.waitElementToBeClickable(element(by.css('.action-container .general-actions .fa-plus')));
 
     // select form
     element(by.css('.action-container .general-actions .fa-plus')).click();

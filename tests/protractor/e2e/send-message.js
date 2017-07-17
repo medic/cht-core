@@ -1,5 +1,5 @@
 const utils = require('../utils'),
-  helper = require('../helper');
+      helper = require('../helper');
 
 describe('Send message', () => {
   'use strict';
@@ -142,6 +142,8 @@ describe('Send message', () => {
   const clickLhsEntry = (entryId, entryName) => {
     entryName = entryName || entryId;
     const liIdentifier = messageInList(entryId);
+
+    helper.waitUntilReady(element(by.css(liIdentifier)));
 
     expect(element.all(by.css(liIdentifier)).count()).toBe(1);
     element(by.css(liIdentifier + ' a.message-wrapper')).click();

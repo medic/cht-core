@@ -102,14 +102,18 @@ describe('Bulk delete reports', () => {
 
     // select a report
     element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).click();
-    expect(element(by.css('#reports-content .selection-count > span:first-child')).isDisplayed()).toBeTruthy();
+    browser.wait(() => {
+      return element(by.css('#reports-content .selection-count > span:first-child')).isDisplayed();
+    }, 1000);
     expect(element.all(by.css('#reports-content .report-body')).count()).toBe(1);
     expect(element(by.css('#reports-content .report-body .item-summary .sender .name')).getText()).toBe('Sharon');
     expect(element(by.css('#reports-content .report-body .details')).isDisplayed()).toBeFalsy();
 
     // expand selection
     element(by.css('#reports-content .report-body .item-summary')).click();
-    expect(element(by.css('#reports-content .report-body .details')).isDisplayed()).toBeTruthy();
+    browser.wait(() => {
+      return element(by.css('#reports-content .report-body .details')).isDisplayed();
+    }, 1000);
 
     // collapse selection
     element(by.css('#reports-content .report-body .item-summary')).click();
@@ -120,8 +124,9 @@ describe('Bulk delete reports', () => {
 
     // select all
     element(by.css('.action-container .select-all')).click();
-    browser.sleep(1000);
-    expect(element(by.css('#reports-content .selection-count > span:nth-child(2)')).isDisplayed()).toBeTruthy();
+    browser.wait(() => {
+      return element(by.css('#reports-content .selection-count > span:nth-child(2)')).isDisplayed();
+    }, 1000);
     expect(element.all(by.css('#reports-content .report-body')).count()).toBe(3);
 
     // deselect all
@@ -154,4 +159,3 @@ describe('Bulk delete reports', () => {
 
   });
 });
-

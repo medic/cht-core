@@ -24,14 +24,12 @@ module.exports = {
   },
 
   openAddUserModal: () => {
-    console.log('waiting for button to be clickable');
     helper.waitElementToBeClickable(getAddUserButton());
     getAddUserButton().click();
   },
+
   getUsersList: () => {
     helper.waitUntilReady(getAddUserButton());
     return element.all(by.repeater('user in users'));
   }
 };
-
-
