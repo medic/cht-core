@@ -23,7 +23,9 @@ exports.prepareDoc = function (doc) {
 
 exports.addSettings = function (root, doc, settings, name) {
     name = name || 'packages/' + settings.name;
-    delete settings._url;
+    if (settings._url && settings._url.indexOf('localhost') === -1) {
+        delete settings._url;
+    }
     var json = JSON.stringify(settings);
     var path = 'settings/' + name;
     var src = 'module.exports = ' + json + ';';
