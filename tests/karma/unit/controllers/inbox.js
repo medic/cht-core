@@ -1,79 +1,41 @@
-describe('InboxCtrl controller', function() {
+describe.only('InboxCtrl controller', () => {
 
   'use strict';
 
-  var createController,
+  let createController,
       scope,
       snackbar,
       spyState,
       stubModal,
       dummyId = 'dummydummy';
 
-  beforeEach(function() {
+  beforeEach(() => {
     snackbar = sinon.stub();
     module('inboxApp');
 
-    module(function($provide) {
-      $provide.factory('ActiveRequests', function() {
-        return sinon.stub();
+    module($provide => {
+      $provide.value('ActiveRequests', sinon.stub());
+      $provide.value('Auth', () => Promise.resolve({}));
+      $provide.value('Location', () => {
+        return { path: 'localhost' }
       });
-      $provide.factory('Auth', function() {
-        return function() {
-          return Promise.resolve({});
-        };
-      });
-      $provide.factory('Location', function() {
-        return function() {
-          return { path: 'localhost' };
-        };
-      });
-      $provide.value('DB', function() {
+      $provide.value('DB', () => {
         return { query: KarmaUtils.nullPromise() };
       });
-      $provide.factory('WatchDesignDoc', function() {
-        return sinon.stub();
-      });
-      $provide.factory('DBSync', function() {
-        return sinon.stub();
-      });
-      $provide.factory('Changes', function() {
-        return sinon.stub();
-      });
-      $provide.factory('CheckDate', function() {
-        return sinon.stub();
-      });
-      $provide.factory('Contact', function() {
-        return sinon.stub();
-      });
-      $provide.factory('CountMessages', function() {
-        return {
-          init: sinon.stub()
-        };
-      });
-      $provide.factory('DeleteDocs', function() {
-        return KarmaUtils.nullPromise();
-      });
-      $provide.factory('XmlForms', function() {
-        return sinon.stub();
-      });
-      $provide.factory('Contacts', function() {
-        return sinon.stub();
-      });
-      $provide.factory('PlaceHierarchy', function() {
-        return KarmaUtils.nullPromise();
-      });
-      $provide.factory('JsonForms', function() {
-        return function() {
-          return Promise.resolve({});
-        };
-      });
-      $provide.factory('Language', function() {
-        return KarmaUtils.nullPromise();
-      });
-      $provide.factory('LiveListConfig', function() {
-        return sinon.stub();
-      });
-      $provide.factory('Modal', function() {
+      $provide.value('WatchDesignDoc', sinon.stub());
+      $provide.value('DBSync', sinon.stub());
+      $provide.value('Changes', sinon.stub());
+      $provide.value('CheckDate', sinon.stub());
+      $provide.value('Contact', sinon.stub());
+      $provide.value('CountMessages', { init: sinon.stub() });
+      $provide.value('DeleteDocs', KarmaUtils.nullPromise());
+      $provide.value('XmlForms', sinon.stub());
+      $provide.value('Contacts', sinon.stub());
+      $provide.value('PlaceHierarchy', () => Promise.resolve());
+      $provide.value('JsonForms', () => Promise.resolve({}));
+      $provide.value('Language', () => Promise.resolve({}));
+      $provide.value('LiveListConfig', sinon.stub());
+      $provide.factory('Modal', () => {
         stubModal = sinon.stub();
         // ConfirmModal : Always return as if user clicked delete. This ignores the DeleteDocs
         // altogether. The calling of the processingFunction is tested in
@@ -81,46 +43,25 @@ describe('InboxCtrl controller', function() {
         stubModal.returns(KarmaUtils.mockPromise());
         return stubModal;
       });
-      $provide.factory('ReadMessages', function() {
-        return sinon.stub();
-      });
-      $provide.factory('SendMessage', function() {
-        return sinon.stub();
-      });
-      $provide.factory('Session', function() {
-        return {
-          init: sinon.stub()
-        };
-      });
-      $provide.factory('SetLanguageCookie', function() {
-        return sinon.stub();
-      });
-      $provide.factory('Settings', function() {
-        return KarmaUtils.nullPromise();
-      });
-      $provide.factory('Snackbar', function() {
-        return snackbar;
-      });
-      $provide.factory('$state', function() {
+      $provide.value('ReadMessages', sinon.stub());
+      $provide.value('SendMessage', sinon.stub());
+      $provide.value('Session', { init: sinon.stub() });
+      $provide.value('SetLanguageCookie', sinon.stub());
+      $provide.value('Settings', () => KarmaUtils.nullPromise());
+      $provide.value('Snackbar', () => snackbar);
+      $provide.factory('$state', () => {
         spyState = {
           go: sinon.spy(),
           current: { name: 'my.state.is.great' },
-          includes: function() { return true; }
+          includes: () => { return true; }
         };
         return spyState;
       });
-      $provide.factory('$timeout', function() {
-        return sinon.stub();
-      });
-      $provide.factory('UpdateUser', function() {
-        return sinon.stub();
-      });
-      $provide.factory('UpdateSettings', function() {
-        return sinon.stub();
-      });
-      $provide.factory('UserSettings', function() {
-        return sinon.stub();
-      });
+      $provide.value('$timeout', sinon.stub());
+      $provide.value('UpdateUser', sinon.stub());
+      $provide.value('UpdateSettings', sinon.stub());
+      $provide.value('UserSettings', sinon.stub());
+      $provide.value('Tour', { getTours: () => Promise.resolve([]) });
       $provide.value('RulesEngine', { init: KarmaUtils.nullPromise()() });
       $provide.constant('APP_CONFIG', {
         name: 'name',
@@ -128,9 +69,9 @@ describe('InboxCtrl controller', function() {
       });
     });
 
-    inject(function($rootScope, $controller) {
+    inject(($rootScope, $controller) => {
       scope = $rootScope.$new();
-      createController = function() {
+      createController = () => {
         return $controller('InboxCtrl', {
           '$scope': scope,
           '$rootScope': $rootScope
@@ -142,10 +83,10 @@ describe('InboxCtrl controller', function() {
     spyState.go.reset();
   });
 
-  it('navigates back to contacts state after deleting contact', function(done) {
+  it('navigates back to contacts state after deleting contact', done => {
     scope.deleteDoc(dummyId);
 
-    setTimeout(function() {
+    setTimeout(() => {
       scope.$apply(); // needed to resolve the promises
 
       chai.assert(spyState.go.called, 'Should change state');
@@ -155,14 +96,14 @@ describe('InboxCtrl controller', function() {
     });
   });
 
-  it('doesn\'t change state after deleting message', function(done) {
-    spyState.includes = function(state) {
+  it('doesn\'t change state after deleting message', done => {
+    spyState.includes = state => {
       return state === 'messages';
     };
 
     scope.deleteDoc(dummyId);
 
-    setTimeout(function() {
+    setTimeout(() => {
       scope.$apply(); // needed to resolve the promises
 
       chai.assert.isFalse(spyState.go.called, 'state change should not happen');
@@ -170,13 +111,13 @@ describe('InboxCtrl controller', function() {
     });
   });
 
-  it('doesn\'t deleteContact if user cancels modal', function() {
+  it('doesn\'t deleteContact if user cancels modal', () => {
     stubModal.reset();
     stubModal.returns(KarmaUtils.mockPromise({err: 'user cancelled'}));
 
     scope.deleteDoc(dummyId);
 
-    setTimeout(function() {
+    setTimeout(() => {
       scope.$apply(); // needed to resolve the promises
 
       chai.assert.isFalse(spyState.go.called, 'state change should not happen');
