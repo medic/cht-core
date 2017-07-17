@@ -23,11 +23,7 @@ exports.prepareDoc = function (doc) {
 
 exports.addSettings = function (root, doc, settings, name) {
     name = name || 'packages/' + settings.name;
-    ['_url', '_utils'].forEach(function(prop) {
-      if (settings[prop]) {
-        delete settings[prop];
-      }
-    });
+    delete settings._url;
     var json = JSON.stringify(settings);
     var path = 'settings/' + name;
     var src = 'module.exports = ' + json + ';';
