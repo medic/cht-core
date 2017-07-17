@@ -7,7 +7,8 @@ angular.module('inboxServices').service('Tour',
     $timeout,
     $translate,
     AnalyticsModules,
-    Auth
+    Auth,
+    Session
   ) {
 
     'use strict';
@@ -500,6 +501,9 @@ angular.module('inboxServices').service('Tour',
     };
 
     var getTasksTour = function() {
+      if (Session.isAdmin()) {
+        return;
+      }
       return Auth('can_view_tasks_tab')
         .then(function() {
           return {
