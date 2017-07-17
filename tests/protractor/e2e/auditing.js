@@ -82,6 +82,9 @@ describe('Auditing', () => {
     }, 5000);
     listitem.click();
     const newMessage = element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .data p span'));
+    browser.wait(() => {
+      return newMessage.isPresent();
+    }, 5000);
     expect(newMessage.getText()).toEqual('hello!');
 
     // delete the message
