@@ -225,7 +225,6 @@ var SP_ID_MASK = 0xFFFFF8;
       $scope.triggerSimprintsIdent = function() {
         /* jslint bitwise: true */
         var simprintsInputId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) & SP_ID_MASK;
-        console.log('Launching simprints with input ID: ' + simprintsInputId);
 
         var $input = $($element).find('input[name=simprints-idents]');
         $input.attr('data-simprints-idents', simprintsInputId);
@@ -240,8 +239,6 @@ var SP_ID_MASK = 0xFFFFF8;
       };
 
       var handleSimprintsIdentResponse = function(idents) {
-        console.log('handleSimprintsIdentResponse()', idents);
-
         $scope.loading = true;
         $scope.filtered = true;
         liveList = LiveList['contact-simprints-search'];
