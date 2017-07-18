@@ -370,28 +370,3 @@ exports['add response when recipient is allowed'] = function (test) {
         test.done();
     });
 };
-
-exports['add response with denied state when recipient is denied'] = function (test) {
-    sinon.stub(utils, 'isOutgoingAllowed').returns(false);
-    sinon.stub(config, 'getTranslations').returns({
-        en: { sms_received: 'ahoy mate' }
-    });
-    var messageFn = sinon.spy(messages, 'addMessage');
-    test.expect(4);
-    var doc = {
-        from: 'x',
-        type: 'data_record'
-    };
-    transition.onMatch({ doc: doc }, {}, {}, function(err, changed) {
-        test.ok(messageFn.calledOnce);
-        test.ok(messageFn.calledWith({
-            doc: doc,
-            phone: 'x',
-            message: 'ahoy mate',
-            state: 'denied'
-        }));
-        test.equals(err, null);
-        test.equals(changed, true);
-        test.done();
-    });
-};

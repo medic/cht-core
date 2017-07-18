@@ -168,7 +168,7 @@ const assertMessage = (test, messageArgs, recipient, message) => {
     doc: doc,
     phone: recipient,
     message: message,
-    options: { countedReports: [doc, ...hydratedReports] }
+    templateContext: { countedReports: [doc, ...hydratedReports] }
   });
 };
 

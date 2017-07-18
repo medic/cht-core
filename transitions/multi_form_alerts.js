@@ -57,7 +57,7 @@ const generateMessages = (recipients, messageTemplate, countedReports) => {
       doc: countedReports[0],
       phone: phone,
       message: messageTemplate,
-      options: {countedReports: countedReports}
+      templateContext: {countedReports: countedReports}
     });
     isLatestReportChanged = true;
   });

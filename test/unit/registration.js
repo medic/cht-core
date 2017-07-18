@@ -625,7 +625,7 @@ exports['addMessage prepops and passes the right information to messages.addMess
             doc: testDoc,
             phone: testPhone,
             message: testMessage,
-            options: { next_msg: { minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 } },
+            templateContext: { next_msg: { minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 } },
             registrations: testRegistration,
             person: testPerson
         };

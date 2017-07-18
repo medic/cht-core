@@ -10,7 +10,7 @@ exports.tearDown = function(callback) {
     callback();
 };
 
-exports['extractDetails supports template variables on doc'] = function(test) {
+exports['extractTemplateContext supports template variables on doc'] = function(test) {
     var doc = {
         form: 'x',
         reported_date: '2050-03-13T13:06:22.002Z',
@@ -24,13 +24,13 @@ exports['extractDetails supports template variables on doc'] = function(test) {
             }
         }
     };
-    var details = messages.extractDetails(doc);
-    test.equals(details.contact.phone, '123');
-    test.equals(details.governor, 'arnold');
+    var templateContext = messages.extractTemplateContext(doc);
+    test.equals(templateContext.contact.phone, '123');
+    test.equals(templateContext.governor, 'arnold');
     test.done();
 };
 
-exports['extractDetails internal fields always override form fields'] = function(test) {
+exports['extractTemplateContext internal fields always override form fields'] = function(test) {
     var doc = {
         form: 'x',
         reported_date: '2050-03-13T13:06:22.002Z',
@@ -44,9 +44,9 @@ exports['extractDetails internal fields always override form fields'] = function
             }
         }
     };
-    var details = messages.extractDetails(doc);
-    test.equals(details.chw_name, 'Arnold');
-    test.equals(details.contact.name, 'Sally');
+    var templateContext = messages.extractTemplateContext(doc);
+    test.equals(templateContext.chw_name, 'Arnold');
+    test.equals(templateContext.contact.name, 'Sally');
     test.done();
 };
 

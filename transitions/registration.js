@@ -344,7 +344,7 @@ module.exports = {
                         doc: doc,
                         phone: messages.getRecipientPhone(doc, msg.recipient),
                         message: messages.getMessage(msg, locale),
-                        options: extra,
+                        templateContext: extra,
                         registrations: registrations,
                         person: person
                     });
