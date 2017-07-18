@@ -23,9 +23,11 @@ exports.prepareDoc = function (doc) {
 
 exports.addSettings = function (root, doc, settings, name) {
     name = name || 'packages/' + settings.name;
-    if (settings._url && settings._url.indexOf('localhost') === -1) {
-        delete settings._url;
-    }
+    // do not write url and utils anywhere, but preserve them.
+    var _url = settings._url;
+    var _utils = settings._utils;
+    delete settings._url;
+    delete settings._utils;
     var json = JSON.stringify(settings);
     var path = 'settings/' + name;
     var src = 'module.exports = ' + json + ';';
@@ -39,5 +41,7 @@ exports.addSettings = function (root, doc, settings, name) {
             path.replace('"', '\\"') +
         '");');
     }
+    settings._url = _url;
+    settings._utils = _utils;
     return doc;
 };
