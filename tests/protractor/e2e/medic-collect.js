@@ -187,8 +187,6 @@ function rawHttpRequest(rawRequest) {
 
 const saveFormToDb = doc =>
     Promise.resolve()
-      .then(() => console.log('saveFormToDb()', doc))
       .then(() => db.put(doc))
       .then(res => db.putAttachment(doc._id, 'xml', res.rev, new Buffer('<xform/>').toString('base64'), { type: 'text/xml', length:8 }))
-      .then(() => console.log('saveFormToDb()', 'Saved.'))
       ;
