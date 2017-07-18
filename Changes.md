@@ -2,7 +2,7 @@
 
 ## 2.12.1
 
-_July 14, 2017_
+_TBD_
 
 ### Bug fixes
 
@@ -11,7 +11,8 @@ _July 14, 2017_
 
 ### Continuous Integration
 
-- Fix build issue in kanso-gardener. Issue: #3648
+- Fixed kanso packages that inadvertantly cached data. Issue: #3648
+
 
 ## 2.12.0
 
