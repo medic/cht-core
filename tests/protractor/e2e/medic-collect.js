@@ -26,16 +26,25 @@ const db = new PouchDB(`http://${auth.user}:${auth.pass}@${constants.COUCH_HOST}
 describe('medic-collect', () => {
 
   beforeAll(() =>
-    db.put({
-        type: 'form',
-        _id: 'form:my_form',
-        internalId: 'MY-FORM',
-      })
-      .then((res) => db.putAttachment('form:my_form', 'xml', res.rev, new Buffer('<xform/>').toString('base64'), { type: 'text/xml', length:8 })));
+    Promise.all([
+        saveFormToDb({
+            type: 'form',
+            _id: 'form:my_app_form',
+            internalId: 'MY-APP-FORM',
+          }),
+        saveFormToDb({
+            type: 'form',
+            _id: 'form:my_collect_form',
+            internalId: 'MY-COLLECT-FORM',
+            context: { collect:true },
+          }),
+    ]));
 
-  afterAll(() =>
-    db.get('form:my_form')
-      .then((doc) => db.remove(doc)));
+/*  afterAll(() =>
+    Promise.all([ 'form:my_app_form', 'form:my_collect_form' ].map(id =>
+      db.get(id)
+        .then((doc) => db.remove(doc)))));*/
+
 
   describe('without User-Agent header', () => {
 
@@ -74,12 +83,12 @@ Connection: close\r
         // then
         assert.equal(res.statusCode, 200, JSON.stringify(res));
         assert.equal(res.body,
-`100\r
+`108\r
 <?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <xforms xmlns=\"http://openrosa.org/xforms/xformsList\">
   <xform>
     <hash>md5:5dfee698c9998ee4ee8939fc6fe72136</hash>
-    <downloadUrl>http://${host}:${port}/api/v1/forms/MY-FORM.xml</downloadUrl>
+    <downloadUrl>http://${host}:${port}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
   </xform>
 </xforms>\r
 0\r\n\r\n`,
@@ -130,12 +139,12 @@ Connection: close\r
         // then
         assert.equal(res.statusCode, 200, JSON.stringify(res));
         assert.equal(res.body,
-`100\r
+`108\r
 <?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <xforms xmlns=\"http://openrosa.org/xforms/xformsList\">
   <xform>
     <hash>md5:5dfee698c9998ee4ee8939fc6fe72136</hash>
-    <downloadUrl>http://${host}:${port}/api/v1/forms/MY-FORM.xml</downloadUrl>
+    <downloadUrl>http://${host}:${port}/api/v1/forms/MY-COLLECT-FORM.xml</downloadUrl>
   </xform>
 </xforms>\r
 0\r\n\r\n`,
@@ -175,3 +184,9 @@ function rawHttpRequest(rawRequest) {
     });
   });
 }
+
+const saveFormToDb = doc =>
+    Promise.resolve()
+      .then(() => db.put(doc))
+      .then(res => db.putAttachment(doc._id, 'xml', res.rev, new Buffer('<xform/>').toString('base64'), { type: 'text/xml', length:8 }))
+      ;
