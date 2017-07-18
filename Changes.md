@@ -1,5 +1,16 @@
 # Medic Mobile Release Notes
 
+## 2.8.6
+
+### TBD
+
+#### Continuous Integration
+
+- [#3621](https://github.com/medic/medic-webapp/pull/3621) Automatically update
+  to master branches of `api` and `sentinel` submodules before running CI in
+  Travis.
+- Fixed kanso packages that inadvertantly cached data. Issue: #3648
+
 ## 2.8.5
 
 ### December 15, 2016
