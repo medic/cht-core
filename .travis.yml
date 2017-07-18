@@ -43,7 +43,7 @@ install:
 
 before_script:
   - nvm use $NODE_VERSION
-  - npm install --no-package-lock
+  - npm install
   # Create couchdb system tables (this has to be done manually on couchdb 2.0)
   - |
     if [ "$COUCH_VERSION" = 2 ]; then
@@ -55,7 +55,7 @@ before_script:
   - bash ./scripts/ci/setup.sh
   - npm install kanso -g
   - npm install grunt-cli -g
-  - npm --prefix api install --no-package-lock
+  - npm --prefix api install
   - ./node_modules/.bin/webdriver-manager update
   - nohup bash -c "./node_modules/.bin/webdriver-manager start 2>&1 &"
   - until nc -z localhost 4444; do sleep 1; done

@@ -13,20 +13,8 @@ if [ -z "$UPLOAD_URL" ]; then
     exit 1;
 fi
 
-cd sentinel && npm install --production && cd .. && \
-cd api && npm install --production && cd ..
-
-function tagSubmodule {
-    cd $1
-    git tag $TRAVIS_TAG
-    git push --tags
-    cd ..
-}
-
-function tagSubmodules {
-    tagSubmodule 'api'
-    tagSubmodule 'sentinel'
-}
+cd sentinel && npm install && cd .. && \
+cd api && npm install && cd ..
 
 # Try pushing up to $MAX times.
 function push {
@@ -49,12 +37,10 @@ if [ "$TRAVIS_BRANCH" == "master" ]; then
 # match tags of the form "0.n.n"
 elif [[ "$TRAVIS_TAG" =~ ^0\.[0-9]+\.[0-9]+$ ]]; then
     push 'release'
-    tagSubmodules
 
 # match tags of the form "2.n.n"
 elif [[ "$TRAVIS_TAG" =~ ^2\.[0-9]+\.[0-9]+$ ]]; then
     push 'release-v2'
-    tagSubmodules
 
 # match tags of the form "n.n.n-beta.n"
 elif [[ "$TRAVIS_TAG" =~ ^[0-9]+\.[0-9]+\.[0-9]+-beta\.[0-9]+$ ]]; then

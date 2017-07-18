@@ -195,14 +195,14 @@ module.exports = function(grunt) {
       },
       deploytest: {
         stderr: false,
-        cmd: 'cd api && npm install --only=prod --no-package-lock && cd .. ' +
-             ' && cd sentinel && npm install --only=prod --no-package-lock && cd .. ' +
+        cmd: 'cd api && npm install --only=prod && cd .. ' +
+             ' && cd sentinel && npm install --only=prod && cd .. ' +
              ' && curl -X DELETE http://admin:pass@localhost:5984/medic-test' +
              ' && curl -X DELETE http://admin:pass@localhost:5984/medic-audit-test' +
              ' && kanso push http://admin:pass@localhost:5984/medic-test'
       },
       test_api_integration_setup: {
-        cmd: 'cd api && npm install --no-package-lock',
+        cmd: 'cd api && npm install',
       },
       test_api_integration: {
         cmd: 'cd api && grunt test_integration',
@@ -386,10 +386,7 @@ module.exports = function(grunt) {
     },
     auto_install: {
       npm: {
-        bower: false,
-        options: {
-          npm: '--no-package-lock'
-        }
+        bower: false
       }
     },
     'regex-check': {
