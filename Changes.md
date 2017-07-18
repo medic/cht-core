@@ -1,5 +1,11 @@
 # Medic Mobile Release Notes
 
+## 2.11.4
+
+_TBD_
+
+- Fixed kanso packages that inadvertantly cached data. Issue: #3648
+
 ## 2.11.3
 
 _June 9, 2017_
