@@ -13,7 +13,6 @@ module.exports = {
                 callback(null, doc);
             });
         } else {
-            doc.app_settings = settings;
             return callback(null, doc);
         }
     }
