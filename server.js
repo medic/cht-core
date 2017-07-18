@@ -52,6 +52,25 @@ var _ = require('underscore'),
 // requires content-type application/json header
 var jsonParser = bodyParser.json({limit: '32mb'});
 
+const handleJsonRequest = (method, path, callback) => {
+  app[method](path, jsonParser, (req, res) => {
+    const contentType = req.headers['content-type'];
+    if (!contentType || contentType !== 'application/json') {
+      return serverUtils.error({
+        code: 400,
+        message: 'Content-Type must be application/json'
+      }, req, res);
+    } else {
+      callback(req, res);
+    }
+  });
+};
+['deleteJson', 'postJson', 'putJson'].forEach(method => {
+  app[method] = (path, callback) => {
+    return handleJsonRequest(method, path, callback);
+  };
+});
+
 // requires content-type application/x-www-form-urlencoded header
 var formParser = bodyParser.urlencoded({limit: '32mb', extended: false});
 
@@ -85,7 +104,7 @@ app.get('/', function(req, res) {
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.get(pathPrefix + 'login', login.get);
-app.post(pathPrefix + 'login', jsonParser, login.post);
+app.postJson(pathPrefix + 'login', login.post);
 
 var UNAUDITED_ENDPOINTS = [
   // This takes arbitrary JSON, not whole documents with `_id`s, so it's not
@@ -213,7 +232,7 @@ app.get('/api/sms', function(req, res) {
 app.post('/api/sms/', function(req, res) {
   res.redirect(301, '/api/sms');
 });
-app.post('/api/sms', jsonParser, function(req, res) {
+app.postJson('/api/sms', function(req, res) {
   auth.check(req, 'can_access_gateway_api', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res);
@@ -376,7 +395,7 @@ app.get('/api/v1/messages/:id', function(req, res) {
   });
 });
 
-app.put('/api/v1/messages/state/:id', jsonParser, function(req, res) {
+app.putJson('/api/v1/messages/state/:id', function(req, res) {
   auth.check(req, 'can_update_messages', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res, true);
@@ -470,7 +489,7 @@ app.get('/api/v1/users', function(req, res) {
   });
 });
 
-app.post('/api/v1/users', jsonParser, function(req, res) {
+app.postJson('/api/v1/users', function(req, res) {
   auth.check(req, 'can_create_users', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res);
@@ -484,7 +503,7 @@ app.post('/api/v1/users', jsonParser, function(req, res) {
   });
 });
 
-app.post('/api/v1/users/:username', jsonParser, function(req, res) {
+app.postJson('/api/v1/users/:username', function(req, res) {
   auth.check(req, 'can_update_users', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res);
@@ -501,7 +520,7 @@ app.post('/api/v1/users/:username', jsonParser, function(req, res) {
   });
 });
 
-app.delete('/api/v1/users/:username', jsonParser, function(req, res) {
+app.deleteJson('/api/v1/users/:username', function(req, res) {
   auth.check(req, 'can_delete_users', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res);
@@ -515,7 +534,7 @@ app.delete('/api/v1/users/:username', jsonParser, function(req, res) {
   });
 });
 
-app.post('/api/v1/places', jsonParser, function(req, res) {
+app.postJson('/api/v1/places', function(req, res) {
   auth.check(req, 'can_create_places', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res);
@@ -532,7 +551,7 @@ app.post('/api/v1/places', jsonParser, function(req, res) {
   });
 });
 
-app.post('/api/v1/places/:id', jsonParser, function(req, res) {
+app.postJson('/api/v1/places/:id', function(req, res) {
   auth.check(req, 'can_update_places', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res);
@@ -549,7 +568,7 @@ app.post('/api/v1/places/:id', jsonParser, function(req, res) {
   });
 });
 
-app.post('/api/v1/people', jsonParser, function(req, res) {
+app.postJson('/api/v1/people', function(req, res) {
   auth.check(req, 'can_create_people', null, function(err) {
     if (err) {
       return serverUtils.error(err, req, res);
@@ -569,7 +588,7 @@ app.post('/api/v1/people', jsonParser, function(req, res) {
 // DB replication endpoint
 var changesHander = _.partial(require('./handlers/changes').request, proxy);
 app.get(pathPrefix + '_changes', changesHander);
-app.post(pathPrefix + '_changes', jsonParser, changesHander);
+app.postJson(pathPrefix + '_changes', changesHander);
 
 // Attempting to create the user's personal meta db
 app.put('/medic-user-\*-meta/', (req, res) => {
