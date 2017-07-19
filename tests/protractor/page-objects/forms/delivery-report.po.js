@@ -1,6 +1,7 @@
 const utils = require('../../utils'),
   auth = require('../../auth')(),
 <<<<<<< HEAD
+<<<<<<< HEAD
   helper = require('../../helper');
 
 const xml = `<?xml version="1.0"?>
@@ -1051,6 +1052,11 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
   path = require('path'),
   fs = require('fs');
 >>>>>>> Added resources folder for xml forms
+=======
+  helper = require('../../helper'),
+  path = require('path'),
+  fs = require('fs');
+>>>>>>> d135ded91ac0908160b9aaf24f180d12b5bf776f
 
 const FILE = path.join(__dirname, '..', '..', 'resources/xml/delivery-form.xml');
 const userSettingsDocId = `org.couchdb.user:${auth.user}`;
