@@ -1,7 +1,6 @@
 const pregnancyForm = require('../../page-objects/forms/new-pregnancy-form.po.js'),
 	common = require('../../page-objects/common/common.po.js'),
-	utils = require('../../utils'),
-	helper = require('../../helper');
+	utils = require('../../utils');
 
 describe('Submit Delivery Report', () => {
 
@@ -74,6 +73,5 @@ describe('Submit Delivery Report', () => {
 		pregnancyForm.nextPage();
 		pregnancyForm.selectLMPYesButton();
 		pregnancyForm.setLastCycleDate('2017-04-25');
-		helper.waitElementToBeVisisble(element(by.css('[data-value=" /pregnancy/group_lmp/g_edd "]')));
 	});
 });

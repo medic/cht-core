@@ -55,7 +55,6 @@ module.exports = {
     helper.waitElementToBeVisisble(element(by.css('div#reports-content')));
   },
 
-  //patient page
   getPatientPageTitle: () => {
     return element(by.css('span[data-itext-id=/delivery/inputs:label]'));
   },
@@ -72,8 +71,7 @@ module.exports = {
     element(by.css('.name')).click();
   },
 
-  //Delivery Info page -- Pregnancy outcomes
-  selectLiveBirthButton: () => {
+   selectLiveBirthButton: () => {
     selectRadioButton('healthy');
   },
   selectStillBirthButton: () => {
@@ -84,7 +82,6 @@ module.exports = {
     selectRadioButton('miscarriage');
   },
 
-  //Delivery Info page -- Location of delivery
   selectFacilityButton: () => {
     selectRadioButton('f');
   },
@@ -97,11 +94,9 @@ module.exports = {
     selectRadioButton('ns');
   },
 
-  //Delivery Info page -- Delivery date
   enterDeliveryDate: (deliveryDate) => {
     const datePicker = element(by.css('[placeholder="yyyy-mm-dd"]'));
     datePicker.click();
-    //type date in the text box as '2017-04-23'
     datePicker.sendKeys(deliveryDate);
   },
 
@@ -109,12 +104,10 @@ module.exports = {
     element(by.css('.icon.icon-refresh')).click();
   },
 
-  //note to CHW
   getNoteToCHW: () => {
     return element(by.css('textarea')).getAttribute('value');
   },
 
-  //summary page
   getOutcomeText: () => {
     return element(by.css('[data-value=" /delivery/group_delivery_summary/display_delivery_outcome "]'))
       .getInnerHtml();
