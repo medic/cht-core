@@ -16,6 +16,7 @@ exports.tearDown = callback => {
 exports.setUp = callback => {
   // reset alert
   alert = {
+    name: 'you_should_know_about_this',
     isReportCounted: 'function() { return true; }',
     numReportsThreshold: 3,
     message: 'hi',
@@ -78,8 +79,8 @@ exports['filter validation hasRun'] = test => {
   test.done();
 };
 
-const testConfigIsValid = (test, alert) => {
-  sinon.stub(config, 'get').returns([alert]);
+const testConfigIsValid = (test, alerts) => {
+  sinon.stub(config, 'get').returns(alerts);
   try {
     transition.init();
   } catch(e) {
@@ -89,23 +90,31 @@ const testConfigIsValid = (test, alert) => {
 };
 
 exports['validates config : isReportCounted'] = test => {
-  testConfigIsValid(test, _.omit(alert, 'isReportCounted'));
+  testConfigIsValid(test, [_.omit(alert, 'isReportCounted')]);
+};
+
+exports['validates config : name'] = test => {
+  testConfigIsValid(test, [_.omit(alert, 'name')]);
+};
+
+exports['validates config : names are unique'] = test => {
+  testConfigIsValid(test, [alert, alert]);
 };
 
 exports['validates config : numReportsThreshold'] = test => {
-  testConfigIsValid(test, _.omit(alert, 'numReportsThreshold'));
+  testConfigIsValid(test, [_.omit(alert, 'numReportsThreshold')]);
 };
 
 exports['validates config : message'] = test => {
-  testConfigIsValid(test, _.omit(alert, 'message'));
+  testConfigIsValid(test, [_.omit(alert, 'message')]);
 };
 
 exports['validates config : recipients'] = test => {
-  testConfigIsValid(test, _.omit(alert, 'recipients'));
+  testConfigIsValid(test, [_.omit(alert, 'recipients')]);
 };
 
 exports['validates config : timeWindowInDays'] = test => {
-  testConfigIsValid(test, _.omit(alert, 'timeWindowInDays'));
+  testConfigIsValid(test, [_.omit(alert, 'timeWindowInDays')]);
 };
 
 exports['fetches reports within time window'] = test => {
@@ -163,18 +172,24 @@ exports['if no reports in time window, does nothing'] = test => {
   });
 };
 
-const assertMessage = (test, messageArgs, recipient, message) => {
-  test.deepEqual(messageArgs, {
+const assertMessage = (test, messageArgs, recipient, message, alertName) => {
+  const expected = {
     doc: doc,
     phone: recipient,
     message: message,
-    templateContext: { countedReports: [doc, ...hydratedReports] }
-  });
+    templateContext: { countedReports: [doc, ...hydratedReports] },
+    taskFields: {
+      type: 'alert',
+      alert_name: alertName,
+      countedReports: [ doc._id, hydratedReports[0]._id, hydratedReports[1]._id ]
+    }
+  };
+  test.deepEqual(messageArgs, expected);
 };
 
 const assertMessages = (test, addMessageStub, alert) => {
   addMessageStub.getCalls().forEach((call, i) => {
-    assertMessage(test, call.args[0], alert.recipients[i], alert.message);
+    assertMessage(test, call.args[0], alert.recipients[i], alert.message, alert.name);
   });
 };
 
@@ -308,11 +323,11 @@ exports['adds multiple messages when mutiple recipients'] = test => {
     test.equals(messages.addError.getCalls().length, 0);
 
     // first recipient
-    assertMessage(test, messages.addMessage.getCall(0).args[0], '+254111222333', alert.message);
+    assertMessage(test, messages.addMessage.getCall(0).args[0], '+254111222333', alert.message, alert.name);
     // second recipient : matched 3 phones
-    assertMessage(test, messages.addMessage.getCall(1).args[0], doc.contact.phone, alert.message);
-    assertMessage(test, messages.addMessage.getCall(2).args[0], hydratedReports[0].contact.phone, alert.message);
-    assertMessage(test, messages.addMessage.getCall(3).args[0], hydratedReports[1].contact.phone, alert.message);
+    assertMessage(test, messages.addMessage.getCall(1).args[0], doc.contact.phone, alert.message, alert.name);
+    assertMessage(test, messages.addMessage.getCall(2).args[0], hydratedReports[0].contact.phone, alert.message, alert.name);
+    assertMessage(test, messages.addMessage.getCall(3).args[0], hydratedReports[1].contact.phone, alert.message, alert.name);
 
     test.equals(messages.addMessage.getCalls().length, 4);
 
@@ -353,6 +368,7 @@ exports['when unexpected error, callback returns (error, false)'] = test => {
 exports['runs multiple alerts'] = test => {
   var twoAlerts = [
   {
+    name: 'first_alert',
     isReportCounted: 'function() { return true; }',
     numReportsThreshold : 3,
     message : 'hi',
@@ -360,6 +376,7 @@ exports['runs multiple alerts'] = test => {
     timeWindowInDays : 7
   },
   {
+    name: 'second_alert',
     isReportCounted: 'function() { return true; }',
     numReportsThreshold : 2,
     message : 'bye',
@@ -376,9 +393,9 @@ exports['runs multiple alerts'] = test => {
     test.equals(messages.addError.getCalls().length, 0);
 
     test.equals(messages.addMessage.getCalls().length, 3); // alert[0].recipients + alert[1].recipients
-    assertMessage(test, messages.addMessage.getCall(0).args[0], twoAlerts[0].recipients[0], twoAlerts[0].message);
-    assertMessage(test, messages.addMessage.getCall(1).args[0], twoAlerts[1].recipients[0], twoAlerts[1].message);
-    assertMessage(test, messages.addMessage.getCall(2).args[0], twoAlerts[1].recipients[1], twoAlerts[1].message);
+    assertMessage(test, messages.addMessage.getCall(0).args[0], twoAlerts[0].recipients[0], twoAlerts[0].message, twoAlerts[0].name);
+    assertMessage(test, messages.addMessage.getCall(1).args[0], twoAlerts[1].recipients[0], twoAlerts[1].message, twoAlerts[1].name);
+    assertMessage(test, messages.addMessage.getCall(2).args[0], twoAlerts[1].recipients[1], twoAlerts[1].message, twoAlerts[1].name);
 
     test.ok(!err);
     test.ok(docNeedsSaving);

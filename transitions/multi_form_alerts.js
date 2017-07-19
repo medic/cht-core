@@ -7,17 +7,18 @@ const vm = require('vm'),
       messages = require('../lib/messages'),
       utils = require('../lib/utils'),
       transitionUtils = require('./utils'),
-      NAME = 'multi_form_alerts',
+      TRANSITION_NAME = 'multi_form_alerts',
       BATCH_SIZE = 100,
       requiredFields = [
         'isReportCounted',
+        'name',
         'numReportsThreshold',
         'message',
         'recipients',
         'timeWindowInDays'
       ];
 
-const getAlertConfig = () => config.get('multi_form_alerts');
+const getAlertConfig = () => config.get(TRANSITION_NAME);
 
 /* Returned list does not include the change.doc. */
 const fetchReports = (latestTimestamp, timeWindowInDays, formTypes, options) => {
@@ -43,7 +44,7 @@ const countReports = (reports, latestReport, script) => {
   });
 };
 
-const generateMessages = (recipients, messageTemplate, countedReports) => {
+const generateMessages = (alertName, recipients, messageTemplate, countedReports) => {
   let isLatestReportChanged = false;
   const phones = getPhones(recipients, countedReports);
   phones.forEach((phone) => {
@@ -57,7 +58,12 @@ const generateMessages = (recipients, messageTemplate, countedReports) => {
       doc: countedReports[0],
       phone: phone,
       message: messageTemplate,
-      templateContext: {countedReports: countedReports}
+      templateContext: {countedReports: countedReports},
+      taskFields: {
+        type: 'alert',
+        alert_name: alertName,
+        countedReports: countedReports.map(report => report._id)
+      }
     });
     isLatestReportChanged = true;
   });
@@ -131,28 +137,34 @@ const validateConfig = () => {
     });
     alert.timeWindowInDays = parseInt(alert.timeWindowInDays);
     if (isNaN(alert.timeWindowInDays)) {
-      errors.push(`Alert number ${idx}, expecting "timeWindowInDays" to be an integer, eg: "timeWindowInDays": "3"`);
+      errors.push(`Alert "${alert.name}", expecting "timeWindowInDays" to be an integer, eg: "timeWindowInDays": "3"`);
     }
     alert.numReportsThreshold = parseInt(alert.numReportsThreshold);
     if (isNaN(alert.numReportsThreshold)) {
-      errors.push(`Alert number ${idx}, expecting "numReportsThreshold" to be an integer, eg: "numReportsThreshold": "3"`);
+      errors.push(`Alert "${alert.name}", expecting "numReportsThreshold" to be an integer, eg: "numReportsThreshold": "3"`);
     }
     if(!_.isArray(alert.recipients)) {
-      errors.push(`Alert number ${idx}, expecting "recipients" to be an array of strings, eg: "recipients": ["+9779841452277", "countedReports[0].contact.phone"]`);
+      errors.push(`Alert "${alert.name}", expecting "recipients" to be an array of strings, eg: "recipients": ["+9779841452277", "countedReports[0].contact.phone"]`);
     }
     if (alert.forms && (!_.isArray(alert.forms))) {
       alert.forms = null;
-      logger.warn(`Bad config for ${NAME}, alert number ${idx}. Expecting "forms" to be an array of form codes. Continuing without "forms", since it\'s optional.`);
+      logger.warn(`Bad config for ${TRANSITION_NAME}, alert "${alert.name}". Expecting "forms" to be an array of form codes. Continuing without "forms", since it\'s optional.`);
     }
   });
+
+  const names = alertConfig.map(alert => alert.name);
+  if (_.uniq(names).length !== names.length) {
+    errors.push(`Alert names should be unique. Found names: ${names}`);
+  }
+
   if (errors.length) {
-    logger.error(`Validation failed for ${NAME} transition`);
+    logger.error(`Validation failed for ${TRANSITION_NAME} transition`);
     logger.error(errors.join('\n'));
-    throw new Error(`Validation failed for ${NAME} transition`);
+    throw new Error(`Validation failed for ${TRANSITION_NAME} transition`);
   }
 };
 
-const getReports = (alert, latestReport) => {
+const getFilteredReports = (alert, latestReport) => {
   return new Promise((resolve, reject) => {
     const script = vm.createScript(`(${alert.isReportCounted})(report, latestReport)`);
     let reports = countReports([ latestReport ], latestReport, script);
@@ -185,9 +197,9 @@ const runOneAlert = (alert, latestReport) => {
   if (alert.forms && alert.forms.length && !alert.forms.includes(latestReport.form)) {
     return Promise.resolve(false);
   }
-  return getReports(alert, latestReport).then(reports => {
+  return getFilteredReports(alert, latestReport).then(reports => {
     if (reports.length >= alert.numReportsThreshold) {
-      return generateMessages(alert.recipients, alert.message, reports);
+      return generateMessages(alert.name, alert.recipients, alert.message, reports);
     }
     return false;
   });
@@ -224,7 +236,7 @@ module.exports = {
     doc &&
     doc.form &&
     doc.type === 'data_record' &&
-    !transitionUtils.hasRun(doc, NAME)
+    !transitionUtils.hasRun(doc, TRANSITION_NAME)
   ),
   onMatch: onMatch,
   init: validateConfig
