@@ -192,7 +192,7 @@ They live in [tests/protractor](tests/protractor). To run them:
 
 1. Update Webdriver: `./node_modules/.bin/webdriver-manager update`
 2. Start Webdriver: `./node_modules/.bin/webdriver-manager start`
-3. Run tests: `grunt e2e-chrome`
+3. Run tests: `grunt e2e`
 
 ### API integration tests
 `grunt api_e2e`
