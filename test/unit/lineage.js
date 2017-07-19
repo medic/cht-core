@@ -466,7 +466,7 @@ exports['hydrate+minify is noop on a place'] = test => {
 exports['hydrateDocs binds contacts and parents'] = test => {
   const docs = [
     { _id: 'a', contact: { _id: 'b' }, parent: { _id: 'c', parent: { _id: 'e' }} },
-    { _id: 'a', parent: { _id: 'd', parent: { _id: 'e' }} },
+    { _id: 'a2', parent: { _id: 'd', parent: { _id: 'e' }} },
   ];
   const fetch = sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [
     { id: 'b', doc: { _id: 'b', name: 'barney' } },
@@ -474,14 +474,33 @@ exports['hydrateDocs binds contacts and parents'] = test => {
     { id: 'd', doc: { _id: 'd', name: 'donny', parent: { _id: 'e' } } },
     { id: 'e', doc: { _id: 'e', name: 'eric' } }
   ] });
-  lineage.hydrateDocs(docs).then(() => {
-    test.equals(docs[0].contact.name, 'barney');
-    test.equals(docs[0].parent.name, null);
-    test.equals(docs[0].parent.parent.name, 'eric');
-    test.equals(docs[1].parent.name, 'donny');
-    test.equals(docs[1].parent.parent.name, 'eric');
+  lineage.hydrateDocs(docs).then((hydratedDocs) => {
+    test.equals(hydratedDocs[0].contact.name, 'barney');
+    test.equals(hydratedDocs[0].parent.name, null);
+    test.equals(hydratedDocs[0].parent.parent.name, 'eric');
+    test.equals(hydratedDocs[1].parent.name, 'donny');
+    test.equals(hydratedDocs[1].parent.parent.name, 'eric');
     test.equals(fetch.callCount, 1);
     test.deepEqual(fetch.args[0][0].keys, [ 'b', 'c', 'e', 'd' ]);
+    test.done();
+  });
+};
+
+exports['hydrateDocs works on empty array'] = test => {
+  const docs = [];
+  lineage.hydrateDocs(docs).then((hydratedDocs) => {
+    test.equals(hydratedDocs.length, 0);
+    test.done();
+  });
+};
+
+exports['hydrateDocs works on docs without contacts or parents'] = test => {
+  const docs = [
+    { _id: 'a' },
+    { _id: 'b' },
+  ];
+  lineage.hydrateDocs(docs).then((hydratedDocs) => {
+    test.deepEqual(hydratedDocs, docs);
     test.done();
   });
 };
