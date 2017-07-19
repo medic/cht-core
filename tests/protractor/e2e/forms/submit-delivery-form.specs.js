@@ -67,31 +67,24 @@ describe('Submit Delivery Report', () => {
     utils.resetBrowser();
     done();
   });
-
+  
   afterAll(utils.afterEach);
-
 
   it('Submit delivery form', () => {
     common.openForm();
-    //select name
     deliveryReport.selectPatientName('jack');
     deliveryReport.nextPage();
     helper.waitElementToBeVisisble(element(by.css('[value="healthy"]')));
-
-    //Delivery info
     deliveryReport.selectLiveBirthButton();
     deliveryReport.selectFacilityButton();
     deliveryReport.enterDeliveryDate('');
     deliveryReport.nextPage();
     expect(deliveryReport.getNoteToCHW()).toBe(noteToCHW);
     deliveryReport.nextPage();
-
-    //summary page
     expect(deliveryReport.getOutcomeText()).toBe('Live Birth');
     expect(deliveryReport.getDeliveryLocationSummaryText())
       .toBe('Facility');
     expect(deliveryReport.getFollowUpMessage()).toBe(noteToCHW);
-    //submit
     deliveryReport.submit();
     expect(element(by.css('div.details')).isPresent()).toBeTruthy();
   });

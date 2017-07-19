@@ -21,10 +21,7 @@ const docs = [
     }
   }];
 
-const selectApproximateLMPDate = value => {
-  element(by.css(`[value=${value}]`)).click();
-};
-
+const datePicker = $('[placeholder="yyyy-mm-dd"]');
 module.exports = {
   configureForm: (done) => {
 
@@ -54,7 +51,6 @@ module.exports = {
     element(by.css('.btn submit btn-primary')).click();
   },
 
-  //patient page
   getPatientPageTitle: () => {
     return element(by.css('span[data-itext-id=/delivery/inputs:label]'));
   },
@@ -69,27 +65,23 @@ module.exports = {
     helper.waitElementToBeVisisble(element(by.css('.name')));
     element(by.css('.name')).click();
   },
-  //LMP page
+
   selectLMPYesButton: () => {
     element(by.css('[value="calendar"]')).click();
   },
 
   selectLMPNoButton: () => {
-    browser.sleep(100);
     element(by.css('[value="approx"]')).click();
   },
 
   setLastCycleDate: (lmpDate) => {
-    const datePicker = $('[placeholder="yyyy-mm-dd"]');
-    datePicker.click();
-    $('td.today.day').click().then(function() {
-
-      datePicker.sendKeys(protractor.Key.ENTER);
+    datePicker.sendKeys(lmpDate);
+    datePicker.sendKeys(protractor.Key.ENTER);
+    datePicker.getAttribute('value').then(value => {
+      expect(value).toBe(lmpDate);
     });
-    browser.executeScript(
-      'trigger("change");', datePicker);
   },
-  //If no selected
+
   select2Months: () => {
     element(by.css('[value="61"]')).click();
   },
@@ -101,7 +93,6 @@ module.exports = {
     return element(by.css('[data-value=" /pregnancy/group_lmp/g_edd "]')).getText();
   },
 
-  //Risk factor page
   checkFirstPregnancyCheckBox: () => {
     element(by.css('[value="r1"]')).click();
   },
@@ -127,7 +118,6 @@ module.exports = {
     });
   },
 
-  //Danger signs page
   checkPainCheckBox: () => {
     element(by.css('[value="d1"]')).click();
   },
@@ -159,12 +149,10 @@ module.exports = {
     element(by.css('[value="d9"]')).click();
   },
 
-  //note to CHW
-  getTextArea: () => {
-    return element(by.name('/pregnancy/group_note/chw_note'));
+   getNoteToCHW: () => {
+    return element(by.css('textarea')).getAttribute('value');
   },
 
-  //summary page
   getId: () => {
     return element(by.css('[data-value=" /pregnancy/group_review/r_patient_id "]'));
   },
