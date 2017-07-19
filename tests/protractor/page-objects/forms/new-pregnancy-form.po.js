@@ -164,7 +164,7 @@ module.exports = {
   isRiskFactorDisplayed: (riskFactor) => {
     return helper.isTextDisplayed(riskFactor);
   },
-
+  
   isDangerSignDisplayed: (dangerSign) => {
     return helper.isTextDisplayed(dangerSign);
   }
