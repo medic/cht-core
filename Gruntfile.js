@@ -195,8 +195,8 @@ module.exports = function(grunt) {
       },
       deploytest: {
         stderr: false,
-        cmd: 'cd api && npm install --only=prod && cd .. ' +
-             ' && cd sentinel && npm install --only=prod && cd .. ' +
+        cmd: 'cd api && npm install --only=prod --no-package-lock && cd .. ' +
+             ' && cd sentinel && npm install --only=prod --no-package-lock && cd .. ' +
              ' && curl -X DELETE http://admin:pass@localhost:5984/medic-test' +
              ' && curl -X DELETE http://admin:pass@localhost:5984/medic-audit-test' +
              ' && kanso push http://admin:pass@localhost:5984/medic-test'
