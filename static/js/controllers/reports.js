@@ -79,7 +79,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
     var setRightActionBar = function() {
       var model = {};
       model.selected = $scope.selected.map(function(s) {
-        return s.doc || s.summary;
+        return s.doc || s.summary || s;
       });
       var doc = !$scope.selectMode &&
                 model.selected &&
