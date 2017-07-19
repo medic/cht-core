@@ -402,6 +402,11 @@
                 "items": {
                     "type": "object",
                     "properties": {
+                        "name": {
+                            "type": "string",
+                            "title": "Name",
+                            "description": "Name of the alert, e.g. suspected_cholera."
+                        },
                         "numReportsThreshold": {
                             "type": "integer",
                             "title": "Threshold in number of reports",
