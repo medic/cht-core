@@ -50,6 +50,7 @@
         "querystring": null,
         "duality": null
     },
+    "modules_attachment": false,
     "postprocessors": {
         "bundle_templates": "scripts/bundle_templates"
     },
@@ -1092,13 +1093,12 @@
             },
             "tasks": {
                 "title": "Task Generation",
-                "description": "Starting v2.6.0, Medic Mobile computes tasks and targets for each user. Tasks are actions the user has to do (e.g. go see Marie and remind her the ANC visit is due.). Targets are visualization of how far they are in their monthly goals (e.g. register 5 new patients this month).",
                 "type": "object",
                 "properties": {
                     "rules": {
                         "title": "Rules",
                         "type": "string",
-                        "description": "Tasks and targets are defined by set a <a href='https://github.com/C2FO/nools#dsl' rel='external'>Nools DSL</a> rules. The rules define the events, and the 'Tasks' and 'Targets' config define when and how the tasks are diplayed.",
+                        "description": "Rules to generate tasks and targets. <a href=\"https://github.com/medic/medic-docs/blob/master/configuration/tasks.md\" rel=\"external\">Configuration documentation</a>.",
                         "je:hint": "textarea",
                         "je:textarea": {
                             "rows": 20

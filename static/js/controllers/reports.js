@@ -394,7 +394,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
 
     $scope.$on('SelectAll', function() {
       $scope.setLoadingContent(true);
-      Search('reports', $scope.filters, { limit: 10000 })
+      Search('reports', $scope.filters, { limit: 500 })
         .then(function(summaries) {
           summaries.forEach(function(summary) {
             summary.expanded = false;
