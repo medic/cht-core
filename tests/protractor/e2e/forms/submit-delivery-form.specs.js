@@ -80,7 +80,11 @@ describe('Submit Delivery Report', () => {
     }, 10000);
 
     // select form
-   element(by.css('.action-container .general-actions .fa-plus')).click();
+    const addButton = element(by.css('.action-container .general-actions .fa-plus'));
+    browser.wait(() => {
+      return addButton.isPresent();
+    }, 10000);
+    addButton.click();
     element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
     browser.wait(() => {
       return element(by.css('#report-form')).isPresent();
