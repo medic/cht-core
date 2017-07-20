@@ -27,6 +27,7 @@ module.exports = {
   },
 
   goToPeople: () => {
+    browser.driver.navigate().refresh();
     helper.waitUntilReady(contactsLink);
     contactsLink.click();
   },
