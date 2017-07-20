@@ -217,7 +217,7 @@ var add_json = exports.add_json = function(doc, request) {
         data = JSON.parse(req.body);
     } catch(e) {
         kutils.logger.error(req.body);
-        return [null, getErrorResponse('Error: request body not valid JSON.')];
+        return [null, getErrorResponse('Error: request body not valid JSON.', 400)];
     }
 
     // use locale if passed in via query param
@@ -235,7 +235,7 @@ var add_json = exports.add_json = function(doc, request) {
 
     // require form definition
     if (!def) {
-        return [null, getErrorResponse('Form not found: ' + options.form)];
+        return [null, getErrorResponse('Form not found: ' + options.form, 404)];
     }
 
     // For now only save string and number fields, ignore the others.
