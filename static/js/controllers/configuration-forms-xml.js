@@ -101,7 +101,7 @@ angular.module('inboxControllers').controller('ConfigurationFormsXmlCtrl',
         .catch(uploadFinished);
     };
 
-    XmlForms('configuration-forms', { ignoreContext:true }, function(err, forms) {
+    XmlForms('configuration-forms', { ignoreContext: true, includeCollect: true }, function(err, forms) {
       if (err) {
         return $log.error('Error fetching XForms for form config page.', err);
       }

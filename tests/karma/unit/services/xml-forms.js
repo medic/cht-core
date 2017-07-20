@@ -676,4 +676,51 @@ describe('XmlForms service', () => {
       }
     });
   });
+
+  describe('collect forms', () => {
+
+    const collectForm = {
+      id: 'collect',
+      doc: {
+        _id: 'collect',
+        internalId: 'collect',
+        _attachments: { xml: { something: true } },
+        context: { collect: true },
+      }
+    };
+    const enketoForm = {
+      id: 'enketo',
+      doc: {
+        _id: 'enketo',
+        internalId: 'enketo',
+        _attachments: { xml: { something: true } },
+        context: { },
+      }
+    };
+
+    it('are excluded by default', done => {
+      dbQuery.returns(Promise.resolve({ rows: [ collectForm, enketoForm ] }));
+      UserContact.returns(Promise.resolve());
+      const service = $injector.get('XmlForms');
+      service('test', {}, (err, actual) => {
+        chai.expect(err).to.equal(null);
+        chai.expect(actual.length).to.equal(1);
+        chai.expect(actual[0]._id).to.equal('enketo');
+        done();
+      });
+    });
+
+    it('are returned if includeCollect is true', done => {
+      dbQuery.returns(Promise.resolve({ rows: [ collectForm, enketoForm ] }));
+      UserContact.returns(Promise.resolve());
+      const service = $injector.get('XmlForms');
+      service('test', { includeCollect: true }, (err, actual) => {
+        chai.expect(err).to.equal(null);
+        chai.expect(actual.length).to.equal(2);
+        chai.expect(actual[0]._id).to.equal('collect');
+        chai.expect(actual[1]._id).to.equal('enketo');
+        done();
+      });
+    });
+  });
 });
