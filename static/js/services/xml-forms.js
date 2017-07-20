@@ -60,6 +60,10 @@ angular.module('inboxServices').factory('XmlForms',
     };
 
     var filter = function(form, options, user) {
+      if (!options.includeCollect && form.context && form.context.collect) {
+        return false;
+      }
+
       if (options.contactForms !== undefined) {
         var isContactForm = form._id.indexOf('form:contact:') === 0;
         if (options.contactForms !== isContactForm) {
