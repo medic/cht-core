@@ -50,6 +50,7 @@
         "querystring": null,
         "duality": null
     },
+    "modules_attachment": false,
     "postprocessors": {
         "bundle_templates": "scripts/bundle_templates"
     },
