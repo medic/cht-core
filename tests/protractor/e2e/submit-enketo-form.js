@@ -1,5 +1,4 @@
-const utils = require('../utils'),
-  helper = require('../helper');
+const utils = require('../utils');
 
 describe('Submit Enketo form', () => {
 
