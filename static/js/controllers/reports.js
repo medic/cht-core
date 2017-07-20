@@ -440,7 +440,7 @@ var _ = require('underscore'),
 
       $scope.$on('SelectAll', function() {
         $scope.setLoadingContent(true);
-        Search('reports', $scope.filters, { limit: 10000 })
+        Search('reports', $scope.filters, { limit: 500 })
           .then(function(summaries) {
             $scope.selected = summaries.map(function(summary) {
               return {
