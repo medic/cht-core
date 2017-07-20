@@ -86,7 +86,6 @@ describe('Submit Enketo form', () => {
     }
   ];
 
-
   beforeAll(done => {
     utils.seedTestData(done, contactId, docs);
   });
@@ -106,7 +105,11 @@ describe('Submit Enketo form', () => {
     helper.waitElementToBeClickable(element(by.css('.action-container .general-actions .fa-plus')));
 
     // select form
-    element(by.css('.action-container .general-actions .fa-plus')).click();
+    const addButton = element(by.css('.action-container .general-actions .fa-plus'));
+    browser.wait(() => {
+      return addButton.isPresent();
+    }, 10000);
+    addButton.click();
     element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
     browser.wait(() => {
       return element(by.css('#report-form form [name="/data/name"]')).isPresent();
