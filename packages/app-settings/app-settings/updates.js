@@ -11,10 +11,15 @@
 exports.update_config = function (ddoc, req) {
 
     var replace = req.query && req.query.replace;
+    var result = _process(ddoc, req.body, replace);
 
     return [
         ddoc,
-        JSON.stringify(_process(ddoc, req.body, replace))
+        {
+            headers: { "Content-Type" : "application/json" },
+            body: JSON.stringify(result),
+            code: result.code
+        }
     ];
 
 };
@@ -29,6 +34,7 @@ var _process = function (ddoc, body, replace) {
     if (!ddoc) {
         return {
             success: false,
+            code: 404,
             error: 'Design document not found'
         };
     }
@@ -44,6 +50,7 @@ var _process = function (ddoc, body, replace) {
     } catch(e) {
         return {
             success: false,
+            code: 400,
             error: 'Request body must be valid JSON'
         };
     }

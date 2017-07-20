@@ -462,19 +462,20 @@ exports['creates record with empty message field'] = function(test) {
     test.done();
 };
 
-exports['JSON POST: return 500 error if form not found'] = function(test) {
+exports['JSON POST: return 404 error if form not found'] = function(test) {
     var req = {
-        body: '{ "_meta: { "form: "foo" } }'
+        body: '{ "_meta": { "form": "foo" } }'
     };
     var ret = updates.add(null, req),
         resp_body = JSON.parse(ret[1].body);
     test.same(ret[0], null);
     test.same(resp_body.payload.success, false);
-    test.same(ret[1].code, 500);
+    test.same(resp_body.payload.error, 'Form not found: FOO');
+    test.same(ret[1].code, 404);
     test.done();
 };
 
-exports['JSON POST: return 500 error if JSON parse fails'] = function(test) {
+exports['JSON POST: return 400 error if JSON parse fails'] = function(test) {
     var req = {
         body: 'bad json'
     };
@@ -482,7 +483,7 @@ exports['JSON POST: return 500 error if JSON parse fails'] = function(test) {
         resp_body = JSON.parse(ret[1].body);
     test.same(ret[0], null);
     test.same(resp_body.payload.success, false);
-    test.same(ret[1].code, 500);
+    test.same(ret[1].code, 400);
     test.done();
 };
 
