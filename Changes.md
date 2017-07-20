@@ -8,6 +8,7 @@ _TBD_
 
 - Improved error messages for SMS endpoint. Issue: #3587
 - Allow for empty SMS message Content. Issue: #3656
+- Implement 500 item max for bulk delete. Issue: #3605
 
 ### Continuous Integration
 
