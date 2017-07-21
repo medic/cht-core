@@ -20,7 +20,7 @@ const login = browser => {
 };
 
 const startNodeModule = (dir, startOutput) => {
-  return new Promise(resolve => {
+  return new Promise((resolve, reject) => {
     const module = spawn('node', ['server.js'], {
       cwd: dir,
       env: {
@@ -38,7 +38,10 @@ const startNodeModule = (dir, startOutput) => {
       }
       console.log(`[${dir}] ${data}`);
     });
-    module.stderr.on('data', data => console.error(`[${dir}] ${data}`));
+    module.stderr.on('data', data => {
+      console.error(`[${dir}] ${data}`);
+      reject(data);
+    });
     modules.push(module);
   });
 };
@@ -72,15 +75,10 @@ exports.config = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
   specs: ['e2e/**/*.js'],
   framework: 'jasmine2',
-  capabilities: {
-    browserName: 'chrome'
-    // browserName: 'firefox',
-    // 'marionette':'true'
-  },
   onPrepare: () => {
     const startup = startModules();
     browser.ignoreSynchronization = true;
-    browser.driver.wait(startup, 15 * 1000, 'API should start within 15 seconds');
+    browser.driver.wait(startup, 30 * 1000, 'API should start within 15 seconds');
     browser.driver.sleep(1000);
     browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
     browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');

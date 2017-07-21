@@ -65,7 +65,10 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
         if (!model.doc) {
           return model;
         }
+
         model.doc.contact = model.contact;
+        model.doc.lineage = model.lineage;
+
         model.displayFields = getDisplayFields(model.doc);
         return FormatDataRecord(model.doc).then(function(formatted) {
           model.formatted = formatted;
