@@ -1,4 +1,5 @@
-const utils = require('../utils');
+const utils = require('../utils'),
+  common = require('../page-objects/common/common.po.js');
 
 describe('Submit Enketo form', () => {
 
@@ -97,17 +98,7 @@ describe('Submit Enketo form', () => {
   afterAll(utils.afterEach);
 
   it('submits on reports tab', () => {
-    element(by.id('reports-tab')).click();
-
-    // refresh - live list only updates on changes but changes are disabled for e2e
-    browser.driver.navigate().refresh();
-    // select form
-    const addButton = element(by.css('.action-container .general-actions .fa-plus'));
-    browser.wait(() => {
-      return addButton.isPresent();
-    }, 10000);
-    addButton.click();
-    element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
+    common.openForm();
     browser.wait(() => {
       return element(by.css('#report-form form [name="/data/name"]')).isPresent();
     }, 10000);
