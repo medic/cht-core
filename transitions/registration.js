@@ -60,7 +60,44 @@ const getPatientNameField = params => {
   return 'patient_name';
 };
 
+const parseParams = params => {
+  if (!params) {
+    return {};
+  }
+  if (params instanceof Object) {
+    // We support raw JSON even if we can't specify that
+    // correctly in kanso.json
+    return params;
+  }
+  const firstCharacter = params.trim()[0];
+  if (firstCharacter === '[' || firstCharacter === '{') {
+    // We support JSON in a string, eg: '{"foo": "bar"}'
+    return JSON.parse(params);
+  }
+  // And comma delimted strings, eg: "foo,bar", "foo"
+  return params.split(',');
+};
+
 module.exports = {
+  init: () => {
+    const configs = module.exports.getConfig();
+    configs.forEach(config => {
+      if (config.events) {
+        config.events.forEach(event => {
+          let params;
+          try {
+            params = parseParams(event.params);
+          } catch(e) {
+            throw new Error(`Configuration error. Unable to parse params for ${config.form}.${event.trigger}: ${event.params}. Error: ${e}`);
+          }
+          if (event.trigger === 'add_patient' &&
+              params.patient_id_field === 'patient_id') {
+            throw new Error('Configuration error. patient_id_field cannot be set to patient_id');
+          }
+        });
+      }
+    });
+  },
   filter: doc => {
     const self = module.exports,
           form = utils.getForm(doc && doc.form);
@@ -159,7 +196,7 @@ module.exports = {
     }
   },
   getConfig: () => {
-    return _.extend({}, config.get('registrations'));
+    return config.get('registrations');
   },
   /*
    * Given a form code and config array, return config for that form.
@@ -221,43 +258,14 @@ module.exports = {
           if (self.isBoolExprFalse(obj, event.bool_expr)) {
             return cb();
           }
-          const options = { db: db, audit: audit, doc: doc, registrationConfig: registrationConfig };
-
-
-          if (!event.params) {
-            options.params = {};
-          } else {
-            if (event.params instanceof Object) {
-              // We support raw JSON even if we can't specify that
-              // correctly in kanso.json
-              options.params = event.params;
-            } else {
-              try {
-                // We currently support JSON in a string:
-                // "{\"foo\": \"bar\"}"
-                // And comma delimted strings:
-                // "foo,bar" or just "foo"
-                switch (event.params.trim()[0]) {
-                  case '[':
-                  case '{':
-                    options.params = JSON.parse(event.params);
-                    break;
-                  default:
-                    options.params = event.params.split(',');
-
-                }
-              } catch (error) {
-                return cb(new Error(
-    `Unable to parse params for ${registrationConfig.form}.${event.trigger}: ${event.params}
-    Error: ${error}`));
-              }
-            }
-          }
-
-          logger.debug('Parsed params for form', options.form,
-            'trigger', event.trigger,
-            ':', options.params);
-
+          const options = {
+            db: db,
+            audit: audit,
+            doc: doc,
+            registrationConfig: registrationConfig,
+            params: parseParams(event.params)
+          };
+          logger.debug(`Parsed params for form "${options.form}", trigger "${event.trigger}, params: ${options.params}"`);
           trigger.apply(null, [ options, cb ]);
         }
       });
@@ -281,7 +289,6 @@ module.exports = {
       if (options.doc.patient_id) {
         return cb();
       }
-
       async.series([
         _.partial(module.exports.setId, options),
         _.partial(module.exports.addPatient, options)
@@ -375,9 +382,7 @@ module.exports = {
           db = options.db,
           patientIdField = options.params.patient_id_field;
 
-    if (patientIdField === 'patient_id') {
-      callback(new Error('Configuration Error: patient_id_field cannot be patient_id'));
-    } else if (patientIdField) {
+    if (patientIdField) {
       const providedId = doc.fields[options.params.patient_id_field];
 
       if (!providedId) {

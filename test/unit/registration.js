@@ -574,24 +574,48 @@ exports['trigger param configuration supports direct JSON'] = test => {
 };
 
 exports['trigger param configuration parse failure for invalid JSON propagates to the callbacks'] = test => {
-  const eventConfig = {
+  const eventConfig = [ {
     form: 'R',
-    //                                                                                v missing end }
-    events: [ { name: 'on_create', trigger: 'testparamparsing', params: '{"foo": "bar"' } ]
-  };
+    events: [ {
+      name: 'on_create',
+      trigger: 'testparamparsing',
+      params: '{"foo": "bar"' // missing end "}"
+    } ]
+  } ];
 
-  transition.triggers.testparamparsing = (options, cb) => {
-    cb(options);
-  };
-
-  transition.fireConfiguredTriggers({}, {}, eventConfig, {}, err => {
-    test.ok(err instanceof Error);
-
+  sinon.stub(config, 'get').returns(eventConfig);
+  try {
+    transition.init();
+    test.done(new Error('Expected validation error'));
+  } catch(e) {
+    test.ok(e instanceof Error);
+    test.equals(e.message, 'Configuration error. Unable to parse params for R.testparamparsing: {"foo": "bar". Error: SyntaxError: Unexpected end of JSON input');
     test.done();
-  });
+  }
 };
 
-exports['addMessage prepops and passes the right information to messages.addMessage'] = (test) => {
+exports['add_patient trigger fails when patient_id_field is set to patient_id'] = test => {
+  const eventConfig = [ {
+    form: 'R',
+    events: [ {
+      name: 'on_create',
+      trigger: 'add_patient',
+      params: '{ "patient_id_field": "patient_id" }'
+    } ]
+  } ];
+
+  sinon.stub(config, 'get').returns(eventConfig);
+  try {
+    transition.init();
+    test.done(new Error('Expected validation error'));
+  } catch(e) {
+    test.ok(e instanceof Error);
+    test.equals(e.message, 'Configuration error. patient_id_field cannot be set to patient_id');
+    test.done();
+  }
+};
+
+exports['addMessage prepops and passes the right information to messages.addMessage'] = test => {
   const testPhone = '1234',
         testMessage = 'A Test Message',
         testRegistration = 'some registrations',
