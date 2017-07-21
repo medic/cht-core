@@ -50,11 +50,7 @@ module.exports = {
   submit: () => {
     element(by.css('.btn submit btn-primary')).click();
   },
-
-  getPatientPageTitle: () => {
-    return element(by.css('span[data-itext-id=/delivery/inputs:label]'));
-  },
-
+  
   selectPatientName: (name) => {
     browser.driver.navigate().refresh();
     helper.waitElementToBeClickable(element(by.css('button.btn.btn-primary.next-page')));
