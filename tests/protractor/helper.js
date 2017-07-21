@@ -26,13 +26,8 @@ module.exports = {
   },
 
   waitUntilReady: elm=> {
-    return browser.wait(()=> {
-      return elm.isPresent();
-    }, 10000).then(()=> {
-      return browser.wait(()=> {
-        return elm.isDisplayed();
-      }, 12000);
-    });
+    return browser.wait(()=> { return elm.isPresent(); }, 10000) &&
+        browser.wait(()=> { return elm.isDisplayed(); }, 12000);
   },
 
   waitForCheckboxToBeChecked: elem=> {
