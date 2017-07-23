@@ -401,6 +401,8 @@ angular.module('inboxControllers').controller('ReportsCtrl',
               _id: summary._id,
               summary: summary,
               expanded: false,
+              lineage: summary.lineage,
+              contact: summary.contact
             };
           });
           $scope.settingSelected(true);
