@@ -15,6 +15,8 @@ const _ = require('underscore'),
       PROGRESS_REPORT_INTERVAL = 500, // items
       transitions = {};
 
+let changesFeed;
+
 /*
  * Add new transitions here to make them available for configuration and execution.
  *
@@ -112,6 +114,7 @@ const loadTransitions = (autoEnableSystemTransitions = true) => {
 
   const self = module.exports;
   const transitionsConfig = config.get('transitions') || [];
+  let loadError = false;
 
   // Load all system or configured transitions
   AVAILABLE_TRANSITIONS.forEach(transition => {
@@ -123,32 +126,41 @@ const loadTransitions = (autoEnableSystemTransitions = true) => {
     const disabled = conf && conf.disable;
 
     if ((system && disabled) || (!system && !conf || disabled)) {
-      return logger.warn(`transition ${transition} is disabled`);
+      return logger.warn(`Disabled transition "${transition}"`);
     }
 
-    self._loadTransition(transition);
+    try {
+      self._loadTransition(transition);
+    } catch(e) {
+      loadError = true;
+      logger.error(`Failed loading transition "${transition}"`);
+      logger.error(e);
+    }
   });
 
   // Warn if there are configured transitions that are not available
   Object.keys(transitionsConfig).forEach(key => {
-    if (AVAILABLE_TRANSITIONS.indexOf(key) === -1) {
-      return logger.warn(`transition ${key} not available.`);
+    if (!AVAILABLE_TRANSITIONS.includes(key)) {
+      loadError = true;
+      logger.error(`Unknown transition "${key}"`);
     }
   });
+
+  if (loadError) {
+    logger.error(`Transitions are disabled until the above configuration errors are fixed.`);
+    module.exports._detach();
+  } else {
+    module.exports._attach();
+  }
 };
 
 const loadTransition = key => {
-  try {
-    logger.info(`loading transition ${key}`);
-    const transition = require('./' + key);
-    if (transition.init) {
-      transition.init();
-    }
-    transitions[key] = transition;
-  } catch(e) {
-    logger.error(`failed loading transition ${key}`);
-    logger.error(e);
+  logger.info(`Loading transition "${key}"`);
+  const transition = require('./' + key);
+  if (transition.init) {
+    transition.init();
   }
+  transitions[key] = transition;
 };
 
 /*
@@ -353,24 +365,32 @@ const updateMetaData = (seq, callback) =>
     });
   });
 
+const detach = () => {
+  if (changesFeed) {
+    changesFeed.stop();
+    changesFeed = null;
+  }
+};
+
 /*
  *  Setup changes feed listener.
  */
 const attach = () => {
-  // tell everyone we're here
+  if (changesFeed) {
+    return;
+  }
   logger.info('transitions: processing enabled');
-
   getProcessedSeq((err, processedSeq) => {
     if (err) {
       logger.error('transitions: error fetching processed seq', err);
       return;
     }
     logger.info(`transitions: fetching changes feed, starting from ${processedSeq}`);
-    const feed = new follow.Feed({
+    changesFeed = new follow.Feed({
       db: process.env.COUCH_URL,
       since: processedSeq
     });
-    feed.on('change', change => {
+    changesFeed.on('change', change => {
       // skip uninteresting documents
       if (change.deleted ||
           change.id.match(/^_design\//) ||
@@ -380,7 +400,10 @@ const attach = () => {
       }
       changeQueue.push(change);
     });
-    feed.follow();
+    changesFeed.on('error', err => {
+      logger.error('transitions: error from changes feed', err);
+    });
+    changesFeed.follow();
   });
 };
 
@@ -391,15 +414,12 @@ const availableTransitions = () => {
 module.exports = {
   _loadTransition: loadTransition,
   _changeQueue: changeQueue,
+  _attach: attach,
+  _detach: detach,
   availableTransitions: availableTransitions,
   loadTransitions: loadTransitions,
   canRun: canRun,
-  attach: attach,
   finalize: finalize,
   applyTransition: applyTransition,
   applyTransitions: applyTransitions,
 };
-
-if (!process.env.TEST_ENV) {
-  loadTransitions();
-}

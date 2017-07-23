@@ -52,8 +52,6 @@ async.series([
     logger.transports.Console.level = config.get('loglevel');
     logger.debug('loglevel is %s.', logger.transports.Console.level);
   }
-  logger.info('attaching transitions...');
-  require('./transitions').attach();
   require('./schedule').checkSchedule();
   logger.info('startup complete.');
 });

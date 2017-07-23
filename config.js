@@ -29,13 +29,7 @@ const initFeed = () => {
   feed.on('change', change => {
     if (change.id === '_design/medic') {
       logger.info('Reloading configuration');
-      initConfig(err => {
-        if (err) {
-          console.error('Error loading configuration. Exiting...');
-          process.exit(0);
-        }
-        require('./transitions').loadTransitions();
-      });
+      initConfig();
     } else if (change.id.startsWith('messages-')) {
       logger.info('Detected translations change - reloading');
       loadTranslations();
@@ -44,10 +38,11 @@ const initFeed = () => {
   feed.follow();
 };
 
-const initConfig = callback => {
+const initConfig = () => {
   db.medic.get(SETTINGS_PATH, (err, data) => {
     if (err) {
-      return callback(err);
+      console.error('Error loading configuration. Exiting...');
+      process.exit(0);
     }
     _.defaults(data.settings, defaults);
     config = data.settings;
@@ -58,7 +53,7 @@ const initConfig = callback => {
       config.schedule_evening_hours,
       config.schedule_evening_minutes
     );
-    callback();
+    require('./transitions').loadTransitions();
   });
 };
 
@@ -71,9 +66,9 @@ module.exports = {
   getTranslations: () => {
     return translations;
   },
-  init: callback => {
+  init: () => {
     initFeed();
     loadTranslations();
-    initConfig(callback);
+    initConfig();
   }
 };
