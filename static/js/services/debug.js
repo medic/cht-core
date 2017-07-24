@@ -10,6 +10,8 @@
  */
 angular.module('inboxServices').config([
   '$provide', '$logProvider', function($provide, $logProvider) {
+    'use strict';
+
     $provide.service('Debug', [
       'ipCookie', 'pouchDB', function(ipCookie, pouchDB) {
         var cookieName = 'medic-webapp-debug';

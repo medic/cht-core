@@ -25,7 +25,7 @@ angular.module('inboxServices').service('Enketo',
     XmlForm,
     XSLT
   ) {
-
+    'use strict';
     'ngInject';
 
     var objUrls = [];
