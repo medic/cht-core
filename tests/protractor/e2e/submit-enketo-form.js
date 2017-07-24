@@ -102,10 +102,10 @@ describe('Submit Enketo form', () => {
 
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.driver.navigate().refresh();
-    helper.waitElementToBeClickable(element(by.css('.action-container .general-actions .fa-plus')));
+    const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
+    helper.waitElementToBeClickable(addButton);
 
     // select form
-    const addButton = element(by.css('.action-container .general-actions .fa-plus'));
     browser.wait(() => {
       return addButton.isPresent();
     }, 10000);
