@@ -1,5 +1,4 @@
-const helper = require('../../helper'),
-  deliveryReport = require('../../page-objects/forms/delivery-report.po.js'),
+const pregnancyForm = require('../../page-objects/forms/new-pregnancy-form.po.js'),
   common = require('../../page-objects/common/common.po.js'),
   utils = require('../../utils');
 
@@ -55,37 +54,19 @@ describe('Submit Delivery Report', () => {
     }
   ];
 
-  const noteToCHW = 'Good news, Jack! Jack () has delivered at the health facility. We will alert you when it is time to refer them for PNC. Please monitor them for danger signs. Thank you!';
-
   beforeAll(done => {
     browser.ignoreSynchronization = true;
-    deliveryReport.configureForm(done);
+    pregnancyForm.configureForm(done);
     utils.seedTestData(done, contactId, docs);
   });
 
-  afterEach(done => {
-    utils.resetBrowser();
-    done();
-  });
-  
   afterAll(utils.afterEach);
 
-  it('Submit delivery form', () => {
+  it('Test datepicker', () => {
     common.openForm();
-    deliveryReport.selectPatientName('jack');
-    deliveryReport.nextPage();
-    helper.waitElementToBeVisisble(element(by.css('[value="healthy"]')));
-    deliveryReport.selectLiveBirthButton();
-    deliveryReport.selectFacilityButton();
-    deliveryReport.enterDeliveryDate('');
-    deliveryReport.nextPage();
-    expect(deliveryReport.getNoteToCHW()).toBe(noteToCHW);
-    deliveryReport.nextPage();
-    expect(deliveryReport.getOutcomeText()).toBe('Live Birth');
-    expect(deliveryReport.getDeliveryLocationSummaryText())
-      .toBe('Facility');
-    expect(deliveryReport.getFollowUpMessage()).toBe(noteToCHW);
-    deliveryReport.submit();
-    expect(element(by.css('div.details')).isPresent()).toBeTruthy();
+    pregnancyForm.selectPatientName('jack');
+    pregnancyForm.nextPage();
+    pregnancyForm.selectLMPYesButton();
+    pregnancyForm.setLastCycleDate('2017-04-25');
   });
 });
