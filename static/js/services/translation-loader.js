@@ -7,7 +7,7 @@ angular.module('inboxServices').factory('TranslationLoader',
     Settings,
     DB
   ) {
-
+    'use strict';
     'ngInject';
 
     var getLocale = function(options) {
