@@ -5,30 +5,21 @@
 		<model>
 			<instance>
 				<photos-on-android id="photos-on-android">
-					<my_old_photo/>
-					<my_new_photo/>
+					<my_photo/>
 					<meta>
 						<instanceID/>
 					</meta>
 				</photos-on-android>
 			</instance>
 
-			<bind nodeset="/photos-on-android/my_old_photo" type="binary"/>
-			<bind nodeset="/photos-on-android/my_new_photo" type="binary"/>
+			<bind nodeset="/photos-on-android/my_photo" type="binary"/>
 		</model>
 	</h:head>
 
 	<h:body>
-		<upload ref="/photos-on-android/my_old_photo" mediatype="image/*">
-			<hint>Select a picture</hint>
-			<label>Image widget without capture</label>
-		</upload>
-	</h:body>
-
-	<h:body>
-		<upload ref="/photos-on-android/my_new_photo" mediatype="image/*" capture="camera">
-			<hint>Take a new picture</hint>
-			<label>Image widget with capture</label>
+		<upload ref="/photos-on-android/my_photo" mediatype="image/*">
+			<hint>Select a picture or take a photo</hint>
+			<label>Image widget</label>
 		</upload>
 	</h:body>
 </h:html>
