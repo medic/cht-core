@@ -80,9 +80,8 @@ describe('Bulk delete reports', () => {
 
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.driver.navigate().refresh();
-    browser.wait(() => {
-      return element(by.css('#reports-list li:first-child')).isPresent();
-    }, 10000);
+    browser.wait(() => element(by.css('#reports-list')), 10000, 'Refresh completes');
+    browser.wait(() => element(by.css('#reports-list li:first-child')).isPresent(), 10000, 'There should be at least one report in the LHS');
 
     // start select mode
     const selectModeButton = element(by.css('.action-container .select-mode-start'));

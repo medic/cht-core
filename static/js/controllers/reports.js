@@ -396,10 +396,15 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       $scope.setLoadingContent(true);
       Search('reports', $scope.filters, { limit: 500 })
         .then(function(summaries) {
-          summaries.forEach(function(summary) {
-            summary.expanded = false;
+          $scope.selected = summaries.map(function(summary) {
+            return  {
+              _id: summary._id,
+              summary: summary,
+              expanded: false,
+              lineage: summary.lineage,
+              contact: summary.contact
+            };
           });
-          $scope.selected = summaries;
           $scope.settingSelected(true);
           setRightActionBar();
           $('#reports-list input[type="checkbox"]').prop('checked', true);
