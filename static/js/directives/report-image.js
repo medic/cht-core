@@ -3,7 +3,7 @@ angular.module('inboxDirectives').directive('reportImage',
     return {
       template: '<div class="loader"></div>',
       link: function(scope, element, attr) {
-        DB().getAttachment(attr.report, attr.path, { binary:false })
+        DB().getAttachment(attr.report, attr.path)
           .then(function(blob) {
             var reader = new FileReader();
             reader.readAsDataURL(blob);
