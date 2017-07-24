@@ -392,7 +392,9 @@ angular.module('inboxServices').service('Enketo',
         var path = 'user-file' + xpath;
         var $input = $('input[type=file][name="' + xpath + '"]');
         var file = $input[0].files[0];
-        AddAttachment(doc, path, file, file.type);
+        if (file) {
+          AddAttachment(doc, path, file, file.type);
+        } // else file set previously, but not changed during this edit
       });
 
       docsToStore.unshift(doc);
