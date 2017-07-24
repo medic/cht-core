@@ -59,6 +59,8 @@ const initConfig = () => {
       );
       return resolve();
     });
+  }).then(() => {
+    return require('./transitions').loadTransitions();
   });
 };
 
@@ -74,9 +76,6 @@ module.exports = {
   init: () => {
     initFeed();
     return loadTranslations()
-      .then(initConfig)
-      .then(() => {
-        return require('./transitions').loadTransitions();
-      });
+      .then(initConfig);
   }
 };
