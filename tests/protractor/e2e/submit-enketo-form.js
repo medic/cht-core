@@ -102,7 +102,7 @@ describe('Submit Enketo form', () => {
 
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.driver.navigate().refresh();
-    browser.sleep(100); // let the refresh work
+    browser.sleep(1000); // let the refresh work
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     helper.waitElementToBeClickable(addButton);
     // select form
