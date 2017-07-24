@@ -9,17 +9,20 @@ const _ = require('underscore'),
 let config = require('./defaults');
 
 const loadTranslations = () => {
-  const options = {
-    startkey: [ 'translations', false ],
-    endkey: [ 'translations', true ],
-    include_docs: true
-  };
-  db.medic.view('medic-client', 'doc_by_type', options, (err, result) => {
-    if (err) {
-      logger.error('Error loading translations - starting up anyway', err);
-      return;
-    }
-    result.rows.forEach(row => translations[row.doc.code] = row.doc.values );
+  return new Promise(resolve => {
+    const options = {
+      startkey: [ 'translations', false ],
+      endkey: [ 'translations', true ],
+      include_docs: true
+    };
+    db.medic.view('medic-client', 'doc_by_type', options, (err, result) => {
+      if (err) {
+        logger.error('Error loading translations - starting up anyway', err);
+      } else {
+        result.rows.forEach(row => translations[row.doc.code] = row.doc.values);
+      }
+      resolve();
+    });
   });
 };
 
@@ -39,21 +42,23 @@ const initFeed = () => {
 };
 
 const initConfig = () => {
-  db.medic.get(SETTINGS_PATH, (err, data) => {
-    if (err) {
-      console.error('Error loading configuration. Exiting...');
-      process.exit(0);
-    }
-    _.defaults(data.settings, defaults);
-    config = data.settings;
-    logger.debug(
-      'Reminder messages allowed between %s:%s and %s:%s',
-      config.schedule_morning_hours,
-      config.schedule_morning_minutes,
-      config.schedule_evening_hours,
-      config.schedule_evening_minutes
-    );
-    require('./transitions').loadTransitions();
+  return new Promise((resolve, reject) => {
+    db.medic.get(SETTINGS_PATH, (err, data) => {
+      if (err) {
+        console.error(err);
+        return reject(new Error('Error loading configuration'));
+      }
+      _.defaults(data.settings, defaults);
+      config = data.settings;
+      logger.debug(
+        'Reminder messages allowed between %s:%s and %s:%s',
+        config.schedule_morning_hours,
+        config.schedule_morning_minutes,
+        config.schedule_evening_hours,
+        config.schedule_evening_minutes
+      );
+      return resolve();
+    });
   });
 };
 
@@ -68,7 +73,10 @@ module.exports = {
   },
   init: () => {
     initFeed();
-    loadTranslations();
-    initConfig();
+    return loadTranslations()
+      .then(initConfig)
+      .then(() => {
+        return require('./transitions').loadTransitions();
+      });
   }
 };

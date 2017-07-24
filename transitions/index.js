@@ -147,7 +147,7 @@ const loadTransitions = (autoEnableSystemTransitions = true) => {
   });
 
   if (loadError) {
-    logger.error(`Transitions are disabled until the above configuration errors are fixed.`);
+    logger.error('Transitions are disabled until the above configuration errors are fixed.');
     module.exports._detach();
   } else {
     module.exports._attach();

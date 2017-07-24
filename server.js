@@ -1,5 +1,4 @@
-const async = require('async'),
-      config = require('./config'),
+const config = require('./config'),
       logger = require('./lib/logger'),
       loglevel = process.argv[2];
 
@@ -13,45 +12,38 @@ if (process.env.TEST_ENV) {
   return;
 }
 
-
-const nodeVersionCheck = callback => {
+const nodeVersionCheck = () => {
   try {
     const [major, minor, patch] = process.versions.node.split('.').map(Number);
-
-    console.log(`Node Version: ${major}.${minor}.${patch}`);
-
     if (major < 5) {
       // 5 seems to be where the majority of ES6 was added without flags.
       // Seems safeist to not allow api to run
-      callback(new Error(`Node version ${major}.${minor}.${patch} is not supported`));
+      throw new Error(`Node version ${major}.${minor}.${patch} is not supported`);
     }
-
+    console.log(`Node Version: ${major}.${minor}.${patch}`);
     if (major < 6 || ( major === 6 && minor < 5)) {
       console.error('We recommend nodejs 6.5 or higher.');
     }
-
-    callback();
-  } catch (error) {
-    callback(error);
+  } catch (err) {
+    console.error('Fatal error intialising medic-sentinel');
+    console.log(err);
+    process.exit(1);
   }
 };
 
-const asyncLog = message => async.asyncify(() => console.log(message));
+nodeVersionCheck();
 
-async.series([
-  nodeVersionCheck,
-  config.init,
-  asyncLog('loaded config')
-], err => {
-  if (err) {
-    console.error('Fatal error intialising medic-sentinel', err);
+config.init()
+  .then(() => {
+    if (!loglevel) {
+      logger.transports.Console.level = config.get('loglevel');
+      logger.debug('loglevel is %s.', logger.transports.Console.level);
+    }
+    require('./schedule').checkSchedule();
+    logger.info('startup complete.');
+  })
+  .catch(err => {
+    console.error('Fatal error intialising medic-sentinel');
+    console.log(err);
     process.exit(1);
-  }
-
-  if (!loglevel) {
-    logger.transports.Console.level = config.get('loglevel');
-    logger.debug('loglevel is %s.', logger.transports.Console.level);
-  }
-  require('./schedule').checkSchedule();
-  logger.info('startup complete.');
-});
+  });
