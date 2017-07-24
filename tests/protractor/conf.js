@@ -36,10 +36,10 @@ const startNodeModule = (dir, startOutput) => {
         started = true;
         resolve();
       }
-      console.log(`${(new Date()).getSeconds()} [${dir}] ${data}`);
+      console.log(`[${dir}] ${data}`);
     });
     module.stderr.on('data', data => {
-      console.log(`${(new Date()).getSeconds()} [${dir}] ERROR ${data}`);
+      console.error(`[${dir}] ${data}`);
     });
     modules.push(module);
   });
