@@ -99,6 +99,8 @@ function N(tagName, text, attrs, children) {
 angular.module('inboxServices').service('EnketoTranslation', [
   '$translate', '$log',
   function($translate, $log) {
+    'use strict';
+
     var self = this;
 
     function extraAttributesFor(conf) {

@@ -1,6 +1,8 @@
 angular.module('inboxServices').service('FileReader', [
   '$q',
   function($q) {
+    'use strict';
+
     return function(blob) {
       var deferred = $q.defer();
       var reader = new FileReader();

@@ -8,6 +8,8 @@ var inboxServices = angular.module('inboxServices');
  */
 inboxServices.factory('Markdown', [
   function() {
+    'use strict';
+
     var basic = function(html) {
       // Convert markdown
       html = html.replace(/^# (.*)\n/gm, '<h1>$1</h1>');

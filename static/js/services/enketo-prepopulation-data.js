@@ -7,7 +7,7 @@ angular.module('inboxServices').service('EnketoPrepopulationData',
     EnketoTranslation,
     UserSettings
   ) {
-
+    'use strict';
     'ngInject';
 
     return function(model, data) {

@@ -19,7 +19,7 @@ angular.module('inboxServices').factory('LiveListConfig',
     LiveList,
     RulesEngine
   ) {
-
+    'use strict';
     'ngInject';
 
     // Configure LiveList service

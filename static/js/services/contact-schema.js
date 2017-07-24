@@ -158,6 +158,8 @@ function getTypesInOrder() {
 
 angular.module('inboxServices').service('ContactSchema',
   function() {
+    'use strict';
+
     return {
       get: function(type) {
         if(type) {
