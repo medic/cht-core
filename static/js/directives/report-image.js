@@ -1,5 +1,8 @@
 angular.module('inboxDirectives').directive('reportImage',
   function(DB) {
+    'use strict';
+    'ngInject';
+
     return {
       template: '<div class="loader"></div>',
       link: function(scope, element, attr) {
