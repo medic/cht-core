@@ -123,7 +123,7 @@ describe('Send message', () => {
   };
 
   const sendMessage = () => {
-    element(by.css('#send-message a.btn.submit')).click();
+    element(by.css('#send-message a.btn.submit:not(.ng-hide)')).click();
 
     browser.wait(() => {
       return element(by.css('#send-message')).isDisplayed()

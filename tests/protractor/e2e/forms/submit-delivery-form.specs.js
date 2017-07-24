@@ -76,11 +76,11 @@ describe('Submit Delivery Report', () => {
     // refresh - live list only updates on changes but changes are disabled for e2e
     browser.driver.navigate().refresh();
     browser.wait(() => {
-      return element(by.css('.action-container .general-actions .fa-plus')).isPresent();
+      return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();
     }, 10000);
 
     // select form
-    const addButton = element(by.css('.action-container .general-actions .fa-plus'));
+    const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     browser.wait(() => {
       return addButton.isPresent();
     }, 10000);
