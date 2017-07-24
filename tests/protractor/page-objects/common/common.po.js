@@ -38,15 +38,17 @@ module.exports = {
   },
   openForm: () => {
     module.exports.goToReports();
-    // refresh - live list only updates on changes but changes are disabled for e2e
-    browser.driver.navigate().refresh();
+    const addButton = element.all(by.css('[data-toggle="dropdown"]')).get(0);
+    let enabled = 'mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle';
     browser.wait(() => {
-      return element(by.css('.action-container .general-actions .fa-plus')).isPresent();
+      return addButton.getAttribute('class')
+        .then(className => {
+          return className === enabled;
+        });
     }, 10000);
 
     // select form
-    element(by.css('.action-container .general-actions .fa-plus')).click();
-
+    addButton.click();
     element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
     browser.wait(() => {
       return element(by.css('#report-form')).isPresent();
