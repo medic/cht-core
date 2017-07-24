@@ -31,7 +31,7 @@ const getConfirmPasswordField = () => {
   return element(by.id('password-confirm'));
 };
 const getSubmitButton = () => {
-  return element(by.className('btn submit btn-primary'));
+  return element(by.css('.btn.submit.btn-primary:not(.ng-hide)'));
 };
 
 const getCancelButton = () => {

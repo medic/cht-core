@@ -90,7 +90,7 @@ describe('Auditing', () => {
     // delete the message
     newMessage.click();
     element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .fa-trash-o')).click();
-    const confirmButton = element(by.css('#delete-confirm .submit'));
+    const confirmButton = element(by.css('#delete-confirm .submit:not(.ng-hide)'));
     browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton), 5000);
     confirmButton.click();
 

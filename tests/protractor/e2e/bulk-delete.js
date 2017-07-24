@@ -141,7 +141,7 @@ describe('Bulk delete reports', () => {
 
     // delete all selected
     element(by.css('.action-container .detail-actions .delete-all')).click();
-    const confirmButton = element(by.css('#delete-confirm .submit'));
+    const confirmButton = element(by.css('#delete-confirm .submit:not(.ng-hide)'));
     browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton), 5000);
     confirmButton.click();
 
