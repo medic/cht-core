@@ -20,7 +20,7 @@ const login = browser => {
 };
 
 const startNodeModule = (dir, startOutput) => {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     const module = spawn('node', ['server.js'], {
       cwd: dir,
       env: {
@@ -38,10 +38,7 @@ const startNodeModule = (dir, startOutput) => {
       }
       console.log(`[${dir}] ${data}`);
     });
-    module.stderr.on('data', data => {
-      console.error(`[${dir}] ${data}`);
-      reject(data);
-    });
+    module.stderr.on('data', data => console.error(`[${dir}] ${data}`));
     modules.push(module);
   });
 };
