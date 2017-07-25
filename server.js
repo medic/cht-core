@@ -65,11 +65,9 @@ const handleJsonRequest = (method, path, callback) => {
     }
   });
 };
-['deleteJson', 'postJson', 'putJson'].forEach(method => {
-  app[method] = (path, callback) => {
-    return handleJsonRequest(method, path, callback);
-  };
-});
+app.deleteJson = (path, callback) => handleJsonRequest('delete', path, callback);
+app.postJson   = (path, callback) => handleJsonRequest('post',   path, callback);
+app.putJson    = (path, callback) => handleJsonRequest('put',    path, callback);
 
 // requires content-type application/x-www-form-urlencoded header
 var formParser = bodyParser.urlencoded({limit: '32mb', extended: false});
