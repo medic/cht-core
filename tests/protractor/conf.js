@@ -4,6 +4,10 @@ const utils = require('./utils'),
   auth = require('./auth')(),
   modules = [];
 
+if(!process.env.COUCH_NODE_NAME) {
+  throw new Error('Missing require env var: COUCH_NODE_NAME');
+}
+
 const getLoginUrl = () => {
   const redirectUrl = encodeURIComponent(`/${constants.DB_NAME}/_design/medic/_rewrite/#/messages?e2eTesting=true`);
   return `http://${constants.API_HOST}:${constants.API_PORT}/${constants.DB_NAME}/login?redirect=${redirectUrl}`;
