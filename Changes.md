@@ -2,7 +2,7 @@
 
 ## 2.12.1
 
-_TBD_
+_July 25, 2017_
 
 ### Bug fixes
 
@@ -10,10 +10,9 @@ _TBD_
 - Allow for empty SMS message Content. Issue: #3656
 - Implement 500 item max for bulk delete. Issue: #3605
 
-### Continuous Integration
+### Security
 
-- Fixed kanso packages that inadvertantly cached data. Issue: #3648
-
+- Fixed kanso packages that inadvertently cached credentials. Issue: #3648
 
 ## 2.12.0
 
