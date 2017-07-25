@@ -258,6 +258,7 @@ rule GenerateEvents {
           if ( newestDeliveryTimestamp == null || newestDeliveryTimestamp < newestPregnancyTimestamp || maxEDD < now ) {
             var instance = createTargetInstance('active-pregnancies', r, true);
             instance._id = c.contact._id + '-' + 'active-pregnancies';
+            instance.date = now.getTime();
             emitTargetInstance(instance);
 
             // ACTIVE HIGH-RISK PREGNANCIES
@@ -265,6 +266,7 @@ rule GenerateEvents {
               if (r.form === 'F') {
                 var instance = createTargetInstance('active-pregnancies-high-risk', r, true);
                 instance._id = c.contact._id + '-' + 'active-pregnancies-high-risk';
+                instance.date = now.getTime();
                 emitTargetInstance(instance);
               }
             });
