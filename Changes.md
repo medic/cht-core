@@ -16,26 +16,19 @@ _TBC_
 
 - [#1472](https://github.com/medic/medic-webapp/issues/1472) adds password validation so when creating or updating users the new passwords have to be at least 8 characters long and reasonably complex.
 
-### Continuous Integration
-
-- [#3621](https://github.com/medic/medic-webapp/pull/3621) Automatically update
-  to master branches of `api` and `sentinel` submodules before running CI in
-  Travis.
-- Fixed kanso packages that inadvertantly cached data. Issue: #3648
-
-
 ## 2.12.1
 
-_July 14, 2017_
+_July 25, 2017_
 
 ### Bug fixes
 
 - Improved error messages for SMS endpoint. Issue: #3587
 - Allow for empty SMS message Content. Issue: #3656
+- Implement 500 item max for bulk delete. Issue: #3605
 
-### Continuous Integration
+### Security
 
-- Fix build issue in kanso-gardener. Issue: #3648
+- Fixed kanso packages that inadvertently cached credentials. Issue: #3648
 
 ## 2.12.0
 
