@@ -40,11 +40,13 @@ angular.module('inboxServices').factory('ReportViewModelGenerator',
             depth: depth
           };
 
-          var filePath = _.flatten(
-                  [ 'user-file', labelPrefix.split('.').slice(1), key ]
-              ).join('/');
-          if (doc._attachments[filePath] &&
-              doc._attachments[filePath].content_type.startsWith('image/')) {
+          var filePath = 'user-file/' + label.split('.').slice(1).join('/');
+          if (doc &&
+              doc._attachments &&
+              doc._attachments[filePath] &&
+              doc._attachments[filePath].content_type &&
+              doc._attachments[filePath].content_type.startsWith('image/') &&
+                true) {
             result.imagePath = filePath;
           }
 
