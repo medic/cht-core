@@ -38,7 +38,7 @@
   "default_responses": {
     "start_date": "1970-01-01"
   },
-  "district_admins_access_unallocated_messages": true,
+  "district_admins_access_unallocated_messages": false,
   "public_access": false,
   "default_country_code": "254",
   "gateway_number": "+254741095736",
