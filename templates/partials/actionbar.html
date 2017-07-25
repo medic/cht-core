@@ -2,6 +2,27 @@
   <div class="row">
     <div class="inner">
 
+      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && selectMode">
+        <div class="actions dropup">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" ng-click="emit('SelectAll')">
+            <span class="fa fa-check-square-o"></span>
+            <p translate>select.mode.select.all</p>
+          </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption deselect-all" ng-click="emit('DeselectAll')">
+            <span class="fa fa-square-o"></span>
+            <p translate>select.mode.deselect.all</p>
+          </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="deleteDoc(actionBar.selected)" ng-class="{'mm-icon-disabled': !actionBar.selected.length}">
+            <span class="fa fa-trash-o"></span>
+            <p translate>select.mode.delete.all</p>
+          </a>
+          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-stop" ng-click="setSelectMode(false)">
+            <span class="fa fa-times-circle"></span>
+            <p translate>select.mode.stop</p>
+          </a>
+        </div>
+      </div>
+
       <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && !selectMode">
         <div class="actions dropup">
           <a class="mm-icon mm-icon-inverse mm-icon-caption dropdown-toggle" data-toggle="dropdown" ng-class="{'mm-icon-disabled': !nonContactForms.length}">
@@ -23,27 +44,6 @@
           <a class="mm-icon mm-icon-inverse mm-icon-caption" mm-auth="can_access_directly" ng-click="actionBar.left.exportFn()">
             <span class="fa fa-arrow-down"></span>
             <p translate>Export</p>
-          </a>
-        </div>
-      </div>
-
-      <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'reports' && selectMode">
-        <div class="actions dropup">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-all" ng-click="emit('SelectAll')">
-            <span class="fa fa-check-square-o"></span>
-            <p translate>select.mode.select.all</p>
-          </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption deselect-all" ng-click="emit('DeselectAll')">
-            <span class="fa fa-square-o"></span>
-            <p translate>select.mode.deselect.all</p>
-          </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption delete-all" mm-auth="can_bulk_delete_reports" ng-click="deleteDoc(actionBar.selected)" ng-class="{'mm-icon-disabled': !actionBar.selected.length}">
-            <span class="fa fa-trash-o"></span>
-            <p translate>select.mode.delete.all</p>
-          </a>
-          <a class="mm-icon mm-icon-inverse mm-icon-caption select-mode-stop" ng-click="setSelectMode(false)">
-            <span class="fa fa-times-circle"></span>
-            <p translate>select.mode.stop</p>
           </a>
         </div>
       </div>
