@@ -381,17 +381,30 @@ angular.module('inboxServices').service('Enketo',
         return docToStore;
       }).get();
 
+      record = $record[0].outerHTML;
+
+      AddAttachment(doc, REPORT_ATTACHMENT_NAME, record, 'application/xml');
+      doc._id = getId('/*');
+      doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
+
+      $record.find('[type=file]').each(function() {
+        var xpath = xpathPath(this);
+        var path = 'user-file' + xpath;
+        var $input = $('input[type=file][name="' + xpath + '"]');
+        var file = $input[0].files[0];
+        if (file) {
+          AddAttachment(doc, path, file, file.type);
+        } // else file set previously, but not changed during this edit
+      });
+
+      docsToStore.unshift(doc);
+
       return XmlForm(doc.form)
         .then(function(form) {
           return getFormAttachment(form.id);
         })
         .then(function(form) {
-          doc._id = getId('/*');
-          record = $record[0].outerHTML;
-          doc.fields = EnketoTranslation.reportRecordToJs($record[0].outerHTML, form);
-          doc.hidden_fields = EnketoTranslation.getHiddenFieldList(record);
-          AddAttachment(doc, REPORT_ATTACHMENT_NAME, record, 'application/xml');
-          docsToStore.unshift(doc);
+          doc.fields = EnketoTranslation.reportRecordToJs(record, form);
           return docsToStore;
         });
     };
