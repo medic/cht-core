@@ -1102,9 +1102,7 @@ module.exports = {
   },
 
   selectPatientName: (name) => {
-    browser.driver.navigate().refresh();
     helper.waitElementToBeClickable(element(by.css('button.btn.btn-primary.next-page')));
-
     element(by.css('.selection')).click();
     const search = element(by.css('.select2-search__field'));
     search.click();

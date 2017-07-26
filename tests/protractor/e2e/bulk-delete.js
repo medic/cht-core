@@ -58,7 +58,6 @@ describe('Bulk delete reports', () => {
 
   const savedUuids = [];
   beforeEach(done => {
-    browser.ignoreSynchronization = true;
     protractor.promise
       .all(docs.map(utils.saveDoc))
       .then(results => {
@@ -67,10 +66,7 @@ describe('Bulk delete reports', () => {
         });
         done();
       })
-      .catch(err => {
-        console.error('Error saving docs', err);
-        done();
-      });
+      .catch(done.fail);
   });
 
   afterEach(utils.afterEach);
@@ -78,7 +74,6 @@ describe('Bulk delete reports', () => {
   it('reports', () => {
     element(by.id('reports-tab')).click();
 
-    browser.wait(() => element(by.css('#reports-list')), 10000, 'Refresh completes');
     browser.wait(() => element(by.css('#reports-list li:first-child')).isPresent(), 10000, 'There should be at least one report in the LHS');
 
     // start select mode

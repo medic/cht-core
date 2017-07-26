@@ -120,26 +120,15 @@ describe('Contact summary info', () => {
   const DOCS = [ALICE, BOB_PLACE, CAROL, DAVID, PREGNANCY, VISIT];
 
   beforeEach(done => {
-    browser.ignoreSynchronization = true;
     utils.updateSettings({ contact_summary: SCRIPT })
       .then(() => {
         return protractor.promise.all(DOCS.map(utils.saveDoc));
       })
       .then(done)
-      .catch(done);
+      .catch(done.fail);
   });
 
-  afterEach(done => {
-    utils.afterEach()
-      .catch(() => { })
-      .then(() => {
-        browser.driver.navigate().refresh();
-        browser.wait(() => {
-          return element(by.id('contacts-tab')).isPresent();
-        }, 10000);
-        done();
-      });
-  });
+  afterEach(utils.afterEach);
 
   const selectContact = term => {
     element(by.id('contacts-tab')).click();
@@ -152,12 +141,6 @@ describe('Contact summary info', () => {
   };
 
   it('contact summary', () => {
-
-    // select contact
-    browser.driver.navigate().refresh();
-    browser.wait(() => {
-      return element(by.id('contacts-tab')).isPresent();
-    }, 10000);
     selectContact('carol');
 
     // assert the summary card has the right fields

@@ -83,7 +83,6 @@ module.exports = {
 
   setBrowserParams: ()=> {
     browser.driver.manage().window().setSize(browser.params.screenWidth, browser.params.screenHeight);
-    browser.ignoreSynchronization = true;
   },
 
   isTextDisplayed: text=> {

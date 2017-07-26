@@ -37,7 +37,6 @@ describe('Auditing', () => {
 
   let savedUuid;
   beforeEach(done=> {
-    browser.ignoreSynchronization = true;
     utils.saveDoc(message)
       .then(doc=> {
         savedUuid = doc.id;

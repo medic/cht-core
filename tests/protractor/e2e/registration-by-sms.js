@@ -194,16 +194,9 @@ describe('registration transition', () => {
     });
   };
 
-  // refresh after changing settings so the new settings are loaded
-  const refresh = () => {
-    browser.driver.navigate().refresh();
-    return browser.wait(() => element(by.id('reports-tab')).isPresent(), 10000);
-  };
-
   describe('submits new sms messages', () => {
 
     beforeEach(done => {
-      browser.ignoreSynchronization = true;
       const body = {
         messages: [{
           from: PHONE,
@@ -214,17 +207,11 @@ describe('registration transition', () => {
       utils.updateSettings(CONFIG)
         .then(() => protractor.promise.all(DOCS.map(utils.saveDoc)))
         .then(() => submit(body))
-        .then(() => refresh)
         .then(done)
-        .catch(done);
+        .catch(done.fail);
     });
 
-    afterEach(done => {
-      utils.afterEach()
-        .then(refresh)
-        .then(done)
-        .catch(done);
-    });
+    afterEach(utils.afterEach);
 
     const checkItemSummary = () => {
       const summaryElement = element(by.css('#reports-content .item-summary'));
@@ -251,10 +238,6 @@ describe('registration transition', () => {
     };
 
     it('shows content', () => {
-      // wait for sentinel to do its thing
-      // TODO find a better way to wait
-      browser.sleep(1000);
-      refresh();
       element(by.id('reports-tab')).click();
       browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child .name', CAROL.name)).isPresent(), 10000);
 
