@@ -141,7 +141,7 @@ const refreshToGetNewSettings = () => {
     })
     .then(() => {
       return browser.wait(protractor.ExpectedConditions.elementToBeClickable(element(by.id('contacts-tab'))), 10000);
-    })
+    });
 };
 
 const revertDb = () => {
