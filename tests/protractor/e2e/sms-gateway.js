@@ -140,7 +140,6 @@ describe('sms-gateway api', () => {
   describe('- gateway submits new WT sms messages', () => {
 
     beforeEach(done => {
-      browser.ignoreSynchronization = true;
       const body = {
         messages: [{
           from: '+64271234567',
@@ -148,14 +147,11 @@ describe('sms-gateway api', () => {
           id: 'a'
         }]
       };
-      pollSmsApi(body).then(done).catch(done);
+      pollSmsApi(body).then(done).catch(done.fail);
     });
 
     it('- shows content', () => {
       element(by.id('messages-tab')).click();
-
-      // refresh - live list only updates on changes but changes are disabled for e2e
-      browser.driver.navigate().refresh();
 
       // LHS
       browser.wait(() => {
@@ -183,8 +179,6 @@ describe('sms-gateway api', () => {
     let savedDoc;
 
     beforeEach(done => {
-      browser.ignoreSynchronization = true;
-
       utils.saveDoc(report)
         .then(result => {
           savedDoc = result.id;
@@ -195,20 +189,17 @@ describe('sms-gateway api', () => {
               { id: messageId3, status: 'FAILED', reason: 'Insufficient credit' }
             ]
           };
-          pollSmsApi(body).then(done).catch(done);
+          pollSmsApi(body).then(done).catch(done.fail);
         })
-        .catch(done);
+        .catch(done.fail);
     });
 
     afterEach(done => {
-      utils.deleteDoc(savedDoc).then(done).catch(done);
+      utils.deleteDoc(savedDoc).then(done).catch(done.fail);
     });
 
     it('- shows content', () => {
       element(by.id('reports-tab')).click();
-
-      // refresh - live list only updates on changes but changes are disabled for e2e
-      browser.driver.navigate().refresh();
 
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();
@@ -237,8 +228,6 @@ describe('sms-gateway api', () => {
     let response;
 
     beforeEach(done => {
-      browser.ignoreSynchronization = true;
-
       const reportWithTwoMessagesToSend = JSON.parse(JSON.stringify(report));
       // First scheduled message is in forwarded-to-gateway state.
       reportWithTwoMessagesToSend.scheduled_tasks[0].state = 'forwarded-to-gateway';
@@ -258,7 +247,7 @@ describe('sms-gateway api', () => {
     });
 
     afterEach(done => {
-      utils.deleteDoc(savedDoc).then(done).catch(done);
+      utils.deleteDoc(savedDoc).then(done).catch(done.fail);
     });
 
     it('- returns list and updates state', () => {
@@ -292,9 +281,6 @@ describe('sms-gateway api', () => {
       expect(response.messages[1].content).toBe(messageContent2);
 
       element(by.id('reports-tab')).click();
-
-      // refresh - live list only updates on changes but changes are disabled for e2e
-      browser.driver.navigate().refresh();
 
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();

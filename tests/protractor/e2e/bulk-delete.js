@@ -58,7 +58,6 @@ describe('Bulk delete reports', () => {
 
   const savedUuids = [];
   beforeEach(done => {
-    browser.ignoreSynchronization = true;
     protractor.promise
       .all(docs.map(utils.saveDoc))
       .then(results => {
@@ -67,10 +66,7 @@ describe('Bulk delete reports', () => {
         });
         done();
       })
-      .catch(err => {
-        console.error('Error saving docs', err);
-        done();
-      });
+      .catch(done.fail);
   });
 
   afterEach(utils.afterEach);
@@ -78,9 +74,6 @@ describe('Bulk delete reports', () => {
   it('reports', () => {
     element(by.id('reports-tab')).click();
 
-    // refresh - live list only updates on changes but changes are disabled for e2e
-    browser.driver.navigate().refresh();
-    browser.wait(() => element(by.css('#reports-list')), 10000, 'Refresh completes');
     browser.wait(() => element(by.css('#reports-list li:first-child')).isPresent(), 10000, 'There should be at least one report in the LHS');
 
     // start select mode
@@ -145,15 +138,11 @@ describe('Bulk delete reports', () => {
     browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton), 5000);
     confirmButton.click();
 
-    // refresh - live list only updates on changes but changes are disabled for e2e
-    browser.sleep(1000);
-    browser.driver.navigate().refresh();
     browser.wait(() => {
-      return element(by.css('#reports-list li:first-child')).isPresent();
+      return element.all(by.css('#reports-list li')).count().then(utils.countOf(1));
     }, 10000);
 
     // make sure the reports are deleted
-    expect(element.all(by.css('#reports-list li')).count()).toBe(1);
     expect(element.all(by.css('#reports-list li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);
 
   });

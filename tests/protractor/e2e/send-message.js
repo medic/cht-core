@@ -39,12 +39,10 @@ describe('Send message', () => {
   const CONTACTS = [ALICE, BOB_PLACE, CAROL, DAVID];
 
   beforeAll(done => {
-    console.log('beforeAll for send-message');
-    browser.ignoreSynchronization = true;
     protractor.promise
       .all(CONTACTS.map(utils.saveDoc))
       .then(done)
-      .catch(done);
+      .catch(done.fail);
   });
 
   afterEach(done => {

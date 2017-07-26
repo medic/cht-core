@@ -86,7 +86,6 @@ describe('Filters reports', () => {
 
   const savedUuids = [];
   beforeEach(done => {
-    browser.ignoreSynchronization = true;
     protractor.promise
       .all(reports.map(utils.saveDoc))
       .then(results => {
@@ -95,10 +94,7 @@ describe('Filters reports', () => {
         });
         done();
       })
-      .catch(err => {
-        console.error('Error saving docs', err);
-        done();
-      });
+      .catch(done.fail);
   });
 
   afterEach(utils.afterEach);
@@ -106,8 +102,6 @@ describe('Filters reports', () => {
   it('by date', () => {
     element(by.id('reports-tab')).click();
 
-    // refresh - live list only updates on changes but changes are disabled for e2e
-    browser.driver.navigate().refresh();
     browser.wait(() => {
       return element(by.css('#reports-list li:first-child')).isPresent();
     }, 10000);

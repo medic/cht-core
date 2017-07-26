@@ -16,8 +16,7 @@ angular.module('inboxServices').factory('Changes',
   function(
     $log,
     $timeout,
-    DB,
-    E2ETESTING
+    DB
   ) {
 
     'use strict';
@@ -58,11 +57,7 @@ angular.module('inboxServices').factory('Changes',
         });
     };
 
-    // Longpoll requests like changes hangs protractor testing as it waits
-    // for all requests to finish.
-    if (!E2ETESTING) {
-      watchChanges();
-    }
+    watchChanges();
 
     return function(options) {
       callbacks[options.key] = options;
