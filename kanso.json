@@ -438,7 +438,7 @@
                         "recipients": {
                             "type": "array",
                             "title": "Recipients for the alerts",
-                            "description": "The phone numbers to receive alerts. You can use international format phone numbers (e.g. \"+254777888999\") or an expression to fetch phone fields in the countedReports (e.g. \"countedReports[0].contact.parent.contact.phone\" for the Primary Contact of the parent place of the sender. E.g.2: \"countedReports.map((report) => report.contact.phone)\" for the senders of the countedReports.)",
+                            "description": "The phone numbers to receive alerts. You can use international format phone numbers (e.g. \"+254777888999\") or an expression to fetch phone fields in each countedReport (e.g. \"countedReport.contact.parent.contact.phone\" for the Primary Contact of the parent place of the sender.",
                             "items": {
                                 "type": "string"
                             }
