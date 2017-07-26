@@ -168,7 +168,7 @@ describe('view docs_by_replication_key', () => {
       err => {
         if (err) {
           console.error(err);
-          return done(err);
+          return done.fail(err);
         }
         console.log('…done');
 

@@ -83,9 +83,6 @@ _.templateSettings = {
     $compileProvider.debugInfoEnabled(isDevelopment);
   });
 
-  // Protractor waits for requests to complete so we have to disable
-  // long polling requests.
-  app.constant('E2ETESTING', window.location.href.indexOf('e2eTesting=true') !== -1);
   app.constant('APP_CONFIG', {
     name: '@@APP_CONFIG.name',
     version: '@@APP_CONFIG.version'

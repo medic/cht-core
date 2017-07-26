@@ -1,7 +1,7 @@
 const helper = require('../../helper'),
-  deliveryReport = require('../../page-objects/forms/delivery-report.po.js'),
-  common = require('../../page-objects/common/common.po.js'),
-  utils = require('../../utils');
+      deliveryReport = require('../../page-objects/forms/delivery-report.po.js'),
+      common = require('../../page-objects/common/common.po.js'),
+      utils = require('../../utils');
 
 describe('Submit Delivery Report', () => {
 
@@ -58,7 +58,6 @@ describe('Submit Delivery Report', () => {
   const noteToCHW = 'Good news, Jack! Jack () has delivered at the health facility. We will alert you when it is time to refer them for PNC. Please monitor them for danger signs. Thank you!';
 
   beforeAll(done =>{
-    browser.ignoreSynchronization = true;
     deliveryReport.configureForm(done);
     utils.seedTestData(done, contactId, docs);
   });
@@ -70,14 +69,13 @@ describe('Submit Delivery Report', () => {
 
   afterAll(utils.afterEach);
 
-
   it('open delivery form', () => {
     common.goToReports();
-    // refresh - live list only updates on changes but changes are disabled for e2e
-    browser.driver.navigate().refresh();
     browser.wait(() => {
       return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();
     }, 10000);
+
+    browser.sleep(1000); // let the refresh work - #3691
 
     // select form
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));

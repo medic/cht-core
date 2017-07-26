@@ -23,7 +23,6 @@ describe('Submit Enketo form', () => {
   </h:html>`;
 
   const contactId = '3b3d50d275280d2568cd36281d00348b';
-  //const userSettingsDocId = `org.couchdb.user:${auth.user}`;
 
   const docs = [
     {
@@ -90,19 +89,12 @@ describe('Submit Enketo form', () => {
     utils.seedTestData(done, contactId, docs);
   });
 
-  afterEach(done => {
-    utils.resetBrowser();
-    done();
-  });
-
-  afterAll(utils.afterEach);
+  afterEach(utils.afterEach);
 
   it('submits on reports tab', () => {
     element(by.id('reports-tab')).click();
-
-    // refresh - live list only updates on changes but changes are disabled for e2e
-    browser.driver.navigate().refresh();
     browser.sleep(1000); // let the refresh work - #3691
+
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     helper.waitElementToBeClickable(addButton);
     // select form

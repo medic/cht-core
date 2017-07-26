@@ -1,14 +1,13 @@
 const _ = require('underscore'),
-  auth = require('./auth')(),
-  constants = require('./constants'),
-  http = require('http'),
-  path = require('path');
+      auth = require('./auth')(),
+      constants = require('./constants'),
+      http = require('http'),
+      path = require('path'),
+      // The app_settings and update_settings modules are on the main ddoc.
+      mainDdocName = 'medic',
+      userSettingsDocId = `org.couchdb.user:${auth.user}`;
 
-const originalSettings = {};
-
-// The app_settings and update_settings modules are on the main ddoc.
-const mainDdocName = 'medic';
-const userSettingsDocId = `org.couchdb.user:${auth.user}`;
+let originalSettings;
 
 const request = (options, debug) =>  {
   const deferred = protractor.promise.defer();
@@ -32,7 +31,7 @@ const request = (options, debug) =>  {
       try {
         body = JSON.parse(body);
         if (body.error) {
-          deferred.reject(new Error('Request failed: ' + options.path + ',\n  body: ' + JSON.stringify(options.body) + '\n  response: ' + JSON.stringify(body)));
+          deferred.reject(new Error(`Request failed: ${options.path},\n  body: ${JSON.stringify(options.body)}\n  response: ${JSON.stringify(body)}`));
         } else {
           deferred.fulfill(body);
         }
@@ -55,45 +54,46 @@ const request = (options, debug) =>  {
   return deferred.promise;
 };
 
-const updateSettingsForDdoc = (updates, ddocName) =>  {
-  if (originalSettings[ddocName]) {
-    throw new Error('A previous test did not call revertSettings on ' + ddocName);
+const updateSettings = updates =>  {
+  if (originalSettings) {
+    throw new Error('A previous test did not call revertSettings');
   }
   return request({
-    path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/app_settings', ddocName),
+    path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/app_settings', mainDdocName),
     method: 'GET'
   }).then(result =>  {
-    originalSettings[ddocName] = result.settings;
+    originalSettings = result.settings;
 
-    // Make sure all updated fields are present in originalSettings[ddocName], to enable reverting later.
+    // Make sure all updated fields are present in originalSettings, to enable reverting later.
     Object.keys(updates).forEach(updatedField =>  {
-      if (!_.has(originalSettings[ddocName], updatedField)) {
-        originalSettings[ddocName][updatedField] = null;
+      if (!_.has(originalSettings, updatedField)) {
+        originalSettings[updatedField] = null;
       }
     });
     return;
   }).then(() =>  {
     return request({
-      path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/update_settings', ddocName, '?replace=1'),
+      path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/update_settings', mainDdocName, '?replace=1'),
       method: 'PUT',
       body: JSON.stringify(updates)
     });
   });
 };
 
-const revertSettingsForDdoc = ddocName =>  {
-  if (!originalSettings[ddocName]) {
-    return Promise.resolve();
+const revertSettings = () =>  {
+  if (!originalSettings) {
+    return Promise.resolve(false);
   }
 
-  console.log(`Reverting settings for ${ddocName}`);
+  console.log(`Reverting settings`);
 
   return request({
-    path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/update_settings', ddocName, '?replace=1'),
+    path: path.join('/', constants.DB_NAME, '_design', mainDdocName, '_rewrite/update_settings', mainDdocName, '?replace=1'),
     method: 'PUT',
-    body: JSON.stringify(originalSettings[ddocName])
+    body: JSON.stringify(originalSettings)
   }).then(() =>  {
-    delete originalSettings[ddocName];
+    originalSettings = null;
+    return true;
   });
 };
 
@@ -128,6 +128,33 @@ const deleteAll = () => {
     });
 };
 
+const refreshToGetNewSettings = () => {
+  // wait for the updates to replicate
+  return browser.wait(protractor.ExpectedConditions.elementToBeClickable(element(by.css('#update-available .submit'))), 10000)
+    .then(() => {
+      element(by.css('#update-available .submit')).click();
+    })
+    .catch(() => {
+      // sometimes there's a double update which causes the dialog to be redrawn
+      // retry with the new dialog
+      element(by.css('#update-available .submit')).click();
+    })
+    .then(() => {
+      return browser.wait(protractor.ExpectedConditions.elementToBeClickable(element(by.id('contacts-tab'))), 10000);
+    });
+};
+
+const revertDb = () => {
+  return revertSettings().then(needsRefresh => {
+    return deleteAll().then(() => {
+      // only need to refresh if the settings were changed
+      if (needsRefresh) {
+        return refreshToGetNewSettings();
+      }
+    });
+  });
+};
+
 module.exports = {
 
   request: request,
@@ -152,14 +179,14 @@ module.exports = {
 
   getDoc: id =>  {
     return request({
-      path: '/' + constants.DB_NAME + '/' + id,
+      path: `/${constants.DB_NAME}/${id}`,
       method: 'GET'
     });
   },
 
   getAuditDoc: id =>  {
     return request({
-      path: '/' + constants.DB_NAME + '-audit/' + id + '-audit',
+      path: `/${constants.DB_NAME}-audit/${id}-audit`,
       method: 'GET'
     });
   },
@@ -177,21 +204,11 @@ module.exports = {
     // Note that API will be copying changes to medic over to medic-client, so change
     // medic-client first (api does nothing) and medic after (api copies changes over to
     // medic-client, but the changes are already there.)
-    return updateSettingsForDdoc(updates, 'medic-client')
-      .then(() =>  {
-        return updateSettingsForDdoc(updates, 'medic');
-      });
-  },
-
-  revertSettings: () =>  {
-    return revertSettingsForDdoc('medic-client')
-      .then(() =>  {
-        return revertSettingsForDdoc('medic');
-      });
+    return updateSettings(updates)
+      .then(refreshToGetNewSettings);
   },
 
   seedTestData: (done, contactId, documents) => {
-    browser.ignoreSynchronization = true;
     protractor.promise
       .all(documents.map(module.exports.saveDoc))
       .then(() => module.exports.getDoc(userSettingsDocId))
@@ -200,7 +217,7 @@ module.exports = {
         return module.exports.saveDoc(user);
       })
       .then(done)
-      .catch(done);
+      .catch(done.fail);
   },
 
   /**
@@ -208,8 +225,7 @@ module.exports = {
    * and also returns a promise - pick one!
    */
   afterEach: done => {
-    return module.exports.revertSettings()
-      .then(deleteAll)
+    return revertDb()
       .then(() => {
         if (done) {
           done();
@@ -217,9 +233,8 @@ module.exports = {
       })
       .catch(err => {
         if (done) {
-          done(err);
+          done.fail(err);
         } else {
-          console.error('Error deleting all docs');
           throw err;
         }
       });
