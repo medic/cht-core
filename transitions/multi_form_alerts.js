@@ -44,9 +44,9 @@ const countReports = (reports, latestReport, script) => {
   });
 };
 
-const generateMessages = (alertName, recipients, messageTemplate, countedReports) => {
+const generateMessages = (alert, countedReports) => {
   let isLatestReportChanged = false;
-  const phones = getPhones(recipients, countedReports);
+  const phones = getPhones(alert.recipients, countedReports);
   phones.forEach((phone) => {
     if (phone.error) {
       logger.error(phone.error);
@@ -57,11 +57,16 @@ const generateMessages = (alertName, recipients, messageTemplate, countedReports
     messages.addMessage({
       doc: countedReports[0],
       phone: phone,
-      message: messageTemplate,
-      templateContext: {countedReports: countedReports},
+      message: alert.message,
+      templateContext: {
+        countedReports: countedReports,
+        alertName: alert.name,
+        numReportsThreshold: alert.numReportsThreshold,
+        timeWindowInDays: alert.timeWindowInDays
+      },
       taskFields: {
         type: 'alert',
-        alert_name: alertName,
+        alert_name: alert.name,
         countedReports: countedReports.map(report => report._id)
       }
     });
@@ -199,7 +204,7 @@ const runOneAlert = (alert, latestReport) => {
   }
   return getFilteredReports(alert, latestReport).then(reports => {
     if (reports.length >= alert.numReportsThreshold) {
-      return generateMessages(alert.name, alert.recipients, alert.message, reports);
+      return generateMessages(alert, reports);
     }
     return false;
   });

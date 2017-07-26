@@ -172,12 +172,17 @@ exports['if no reports in time window, does nothing'] = test => {
   });
 };
 
-const assertMessage = (test, messageArgs, recipient, message, alertName) => {
+const assertMessage = (test, messageArgs, recipient, message, alertName, numReportsThreshold, timeWindowInDays) => {
   const expected = {
     doc: doc,
     phone: recipient,
     message: message,
-    templateContext: { countedReports: [doc, ...hydratedReports] },
+    templateContext: {
+      countedReports: [doc, ...hydratedReports],
+      alertName: alertName,
+      numReportsThreshold: numReportsThreshold,
+      timeWindowInDays: timeWindowInDays
+    },
     taskFields: {
       type: 'alert',
       alert_name: alertName,
@@ -189,7 +194,7 @@ const assertMessage = (test, messageArgs, recipient, message, alertName) => {
 
 const assertMessages = (test, addMessageStub, alert) => {
   addMessageStub.getCalls().forEach((call, i) => {
-    assertMessage(test, call.args[0], alert.recipients[i], alert.message, alert.name);
+    assertMessage(test, call.args[0], alert.recipients[i], alert.message, alert.name, alert.numReportsThreshold, alert.timeWindowInDays);
   });
 };
 
@@ -323,11 +328,11 @@ exports['adds multiple messages when mutiple recipients'] = test => {
     test.equals(messages.addError.getCalls().length, 0);
 
     // first recipient
-    assertMessage(test, messages.addMessage.getCall(0).args[0], '+254111222333', alert.message, alert.name);
+    assertMessage(test, messages.addMessage.getCall(0).args[0], '+254111222333', alert.message, alert.name, alert.numReportsThreshold, alert.timeWindowInDays);
     // second recipient : matched 3 phones
-    assertMessage(test, messages.addMessage.getCall(1).args[0], doc.contact.phone, alert.message, alert.name);
-    assertMessage(test, messages.addMessage.getCall(2).args[0], hydratedReports[0].contact.phone, alert.message, alert.name);
-    assertMessage(test, messages.addMessage.getCall(3).args[0], hydratedReports[1].contact.phone, alert.message, alert.name);
+    assertMessage(test, messages.addMessage.getCall(1).args[0], doc.contact.phone, alert.message, alert.name, alert.numReportsThreshold, alert.timeWindowInDays);
+    assertMessage(test, messages.addMessage.getCall(2).args[0], hydratedReports[0].contact.phone, alert.message, alert.name, alert.numReportsThreshold, alert.timeWindowInDays);
+    assertMessage(test, messages.addMessage.getCall(3).args[0], hydratedReports[1].contact.phone, alert.message, alert.name, alert.numReportsThreshold, alert.timeWindowInDays);
 
     test.equals(messages.addMessage.getCalls().length, 4);
 
@@ -393,9 +398,9 @@ exports['runs multiple alerts'] = test => {
     test.equals(messages.addError.getCalls().length, 0);
 
     test.equals(messages.addMessage.getCalls().length, 3); // alert[0].recipients + alert[1].recipients
-    assertMessage(test, messages.addMessage.getCall(0).args[0], twoAlerts[0].recipients[0], twoAlerts[0].message, twoAlerts[0].name);
-    assertMessage(test, messages.addMessage.getCall(1).args[0], twoAlerts[1].recipients[0], twoAlerts[1].message, twoAlerts[1].name);
-    assertMessage(test, messages.addMessage.getCall(2).args[0], twoAlerts[1].recipients[1], twoAlerts[1].message, twoAlerts[1].name);
+    assertMessage(test, messages.addMessage.getCall(0).args[0], twoAlerts[0].recipients[0], twoAlerts[0].message, twoAlerts[0].name, twoAlerts[0].numReportsThreshold, twoAlerts[0].timeWindowInDays);
+    assertMessage(test, messages.addMessage.getCall(1).args[0], twoAlerts[1].recipients[0], twoAlerts[1].message, twoAlerts[1].name, twoAlerts[1].numReportsThreshold, twoAlerts[1].timeWindowInDays);
+    assertMessage(test, messages.addMessage.getCall(2).args[0], twoAlerts[1].recipients[1], twoAlerts[1].message, twoAlerts[1].name, twoAlerts[1].numReportsThreshold, twoAlerts[1].timeWindowInDays);
 
     test.ok(!err);
     test.ok(docNeedsSaving);
