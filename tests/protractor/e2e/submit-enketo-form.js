@@ -93,6 +93,7 @@ describe('Submit Enketo form', () => {
 
   it('submits on reports tab', () => {
     element(by.id('reports-tab')).click();
+    browser.sleep(1000); // let the refresh work - #3691
 
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     helper.waitElementToBeClickable(addButton);

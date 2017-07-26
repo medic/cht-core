@@ -75,6 +75,8 @@ describe('Submit Delivery Report', () => {
       return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();
     }, 10000);
 
+    browser.sleep(1000); // let the refresh work - #3691
+
     // select form
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     browser.wait(() => {
