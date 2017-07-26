@@ -1156,15 +1156,16 @@ module.exports = {
   //summary page
   getOutcomeText: () => {
     return element(by.css('[lang="en"] [data-value=" /delivery/group_delivery_summary/display_delivery_outcome "]'))
-      .getInnerHtml();
+      .getText();
   },
 
   getDeliveryLocationSummaryText: () => {
     return element(by.css('[lang="en"] [data-value=" /delivery/group_summary/r_delivery_location "]'))
-      .getInnerHtml();
+      .getText();
   },
 
   getFollowUpMessage: () => {
-    return element(by.css('[lang="en"] [data-value=" /delivery/group_note/g_chw_sms "]')).getInnerHtml();
+    return element(by.css('[lang="en"] [data-value=" /delivery/group_note/g_chw_sms "]'))
+      .getText();
   },
 };
