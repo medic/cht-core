@@ -8,6 +8,7 @@
     "url": "git://github.com/medic/medic-webapp.git"
   },
   "dependencies": {
+    "@medic/enketo-core": "4.27.3",
     "angular": "^1.6.4",
     "angular-cookie": "^4.1.0",
     "angular-nvd3": "^1.0.9",
@@ -23,9 +24,8 @@
     "bootstrap": "^3.3.7",
     "bootstrap-daterangepicker": "^2.1.24",
     "bootstrap-tour": "^0.10.3",
-    "@medic/enketo-core": "4.27.3",
     "font-awesome": "^4.7.0",
-    "google-libphonenumber": "^2.0.15",
+    "google-libphonenumber": "^3.0.0",
     "jquery": "^3.2.1",
     "json2xml": "^0.1.3",
     "medic-enketo-xslt": "^1.1.1",
