@@ -433,7 +433,7 @@
                                 "rows": 3
                             },
                             "title": "Message",
-                            "description": "Text that will be sent out in the alert. Available template fields : alertName, numReportsThreshold, timeWindowInDays, countedReports. You can refer to the latest report as countedReports.0 (not countedReports[0] as in usual javascript! This is specific to the templates we use.), the previous counted report as countedReports.1, etc. E.g. \"{{alertName}} alert! {{countedReports.length}} reports in {{timeWindowInDays}} days, reported at {{countedReports.0.contact.parent.name}}. Reported by {{countedReports.0.contact.name}}, {{countedReports.1.contact.name}}, {{countedReports.2.contact.name}}.\""
+                            "description": "Text that will be sent out in the alert. You can refer to alertName, numReportsThreshold, timeWindowInDays, numCountedReports (total number of reports within the time window) and newReports (the counted reports which haven't been messaged about yet). Refer to the latest report as newReports.0 (not newReports[0] as in usual javascript! This is specific to the templates we use.), the previous report as newReports.1, etc. E.g. \"{{numCountedReports}} patients with {{alertName}} in {{timeWindowInDays}} days reported at {{countedReports.0.contact.parent.name}}. . New reports from: {{newReports.0.contact.name}}, {{newReports.1.contact.name}}, {{newReports.2.contact.name}}.\""
                         },
                         "recipients": {
                             "type": "array",
