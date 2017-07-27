@@ -178,7 +178,8 @@ const assertMessage = (test, messageArgs, recipient, message, alertName, numRepo
     phone: recipient,
     message: message,
     templateContext: {
-      countedReports: [doc, ...hydratedReports],
+      newReports: [doc, ...hydratedReports],
+      numCountedReports: [doc, ...hydratedReports].length,
       alertName: alertName,
       numReportsThreshold: numReportsThreshold,
       timeWindowInDays: timeWindowInDays
@@ -218,12 +219,13 @@ exports['if enough reports pass the isReportCounted func, adds message'] = test 
 };
 
 exports['adds message when recipient is evaled'] = test => {
-  const recipient = 'countedReports[0].contact.phone';
+  const recipient = 'countedReport.contact.phone';
   alert.recipients = [recipient];
+  alert.numReportsThreshold = 1;
   sinon.stub(config, 'get').returns([alert]);
 
-  sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
-  stubFetchHydratedDocs();
+  sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve([]));
+  sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve([]));
   sinon.stub(messages, 'addError');
   sinon.stub(messages, 'addMessage');
 
@@ -237,7 +239,7 @@ exports['adds message when recipient is evaled'] = test => {
 };
 
 exports['adds multiple messages when multiple recipients are evaled'] = test => {
-  alert.recipients = [ 'countedReports.map(report => report.contact.phone)' ];
+  alert.recipients = [ 'countedReport.contact.phone' ];
   sinon.stub(config, 'get').returns([alert]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
@@ -259,7 +261,7 @@ exports['adds multiple messages when multiple recipients are evaled'] = test => 
 };
 
 exports['does not add message when recipient cannot be evaled'] = test => {
-  const recipient = 'countedReports[0].contact.phonekkk'; // field doesn't exist
+  const recipient = 'countedReport.contact.phonekkk'; // field doesn't exist
   alert.recipients = [recipient];
   sinon.stub(config, 'get').returns([alert]);
 
@@ -269,7 +271,7 @@ exports['does not add message when recipient cannot be evaled'] = test => {
   sinon.stub(messages, 'addMessage');
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
-    test.equals(messages.addError.getCalls().length, 1);
+    test.equals(messages.addError.getCalls().length, 3); // 3 countedReports, one failed recipient each
     test.equals(messages.addMessage.getCalls().length, 0);
 
     test.ok(docNeedsSaving);
@@ -289,7 +291,7 @@ exports['does not add message when recipient is bad'] = test => {
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
     test.equals(messages.addMessage.getCalls().length, 0);
-    test.equals(messages.addError.getCalls().length, 1);
+    test.equals(messages.addError.getCalls().length, 3); // 3 countedReports, one failed recipient each
 
     test.ok(docNeedsSaving);
     test.done();
@@ -308,7 +310,70 @@ exports['does not add message when recipient is not international phone number']
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
     test.equals(messages.addMessage.getCalls().length, 0);
-    test.equals(messages.addError.getCalls().length, 1);
+    test.equals(messages.addError.getCalls().length, 3); // 3 countedReports, one failed recipient each
+
+    test.ok(docNeedsSaving);
+    test.done();
+  });
+};
+
+exports['message only contains newReports'] = test => {
+  sinon.stub(config, 'get').returns([alert]);
+
+  const reportsWithOneAlreadyMessaged = [
+    { _id: 'docA', form: 'A', contact: { _id: 'contactA' } },
+    { _id: 'docB', form: 'B', contact: { _id: 'contactB' },
+      tasks: [
+        {
+          type: 'alert',
+          alert_name: alert.name,
+          countedReports: []
+        }
+      ]
+    },
+  ];
+  sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reportsWithOneAlreadyMessaged));
+
+  const hydratedReportsWithOneAlreadyMessaged = [
+    { _id: 'docA', form: 'A', contact: { _id: 'contactA', phone: '+234567'} },
+    {
+      _id: 'docB', form: 'B', contact: { _id: 'contactB', phone: '+345678'},
+      tasks: [
+        {
+          type: 'alert',
+          alert_name: alert.name,
+          countedReports: []
+        }
+      ]
+    }
+  ];
+  sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve(hydratedReportsWithOneAlreadyMessaged));
+
+  sinon.stub(messages, 'addError');
+  sinon.stub(messages, 'addMessage');
+
+  transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
+    test.equals(messages.addMessage.getCalls().length, 1);
+    test.equals(messages.addError.getCalls().length, 0);
+
+    const expected = {
+      doc: doc,
+      phone: alert.recipients[0],
+      message: alert.message,
+      templateContext: {
+        newReports: [doc, hydratedReportsWithOneAlreadyMessaged[0] ],
+        numCountedReports: [doc, ...hydratedReportsWithOneAlreadyMessaged].length,
+        alertName: alert.name,
+        numReportsThreshold: alert.numReportsThreshold,
+        timeWindowInDays: alert.timeWindowInDays
+      },
+      taskFields: {
+        type: 'alert',
+        alert_name: alert.name,
+        countedReports: [ doc._id, hydratedReportsWithOneAlreadyMessaged[0]._id, hydratedReportsWithOneAlreadyMessaged[1]._id ]
+      }
+    };
+    test.deepEqual(messages.addMessage.getCall(0).args[0], expected);
 
     test.ok(docNeedsSaving);
     test.done();
@@ -316,7 +381,7 @@ exports['does not add message when recipient is not international phone number']
 };
 
 exports['adds multiple messages when mutiple recipients'] = test => {
-  alert.recipients = ['+254111222333', 'countedReports.map(report => report.contact.phone)'];
+  alert.recipients = ['+254111222333', 'countedReport.contact.phone'];
   sinon.stub(config, 'get').returns([alert]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
@@ -341,7 +406,8 @@ exports['adds multiple messages when mutiple recipients'] = test => {
 };
 
 exports['dedups message recipients'] = test => {
-  alert.recipients = ['countedReports[0].contact.phone', 'countedReports[0].contact.phone'];
+  // specify same recipient twice.
+  alert.recipients = ['countedReport.contact.phone', 'countedReport.contact.phone'];
   sinon.stub(config, 'get').returns([alert]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
@@ -352,8 +418,10 @@ exports['dedups message recipients'] = test => {
   transition.onMatch({ doc: doc }, undefined, undefined, () => {
     test.equals(messages.addError.getCalls().length, 0);
 
-    test.equals(messages.addMessage.getCalls().length, 1); // 2 recipients specified, deduped to 1.
+    test.equals(messages.addMessage.getCalls().length, 3); // 3 countedReports, 2 recipients specified for each, deduped to 1 for each.
     test.equals(messages.addMessage.getCall(0).args[0].phone, doc.contact.phone);
+    test.equals(messages.addMessage.getCall(1).args[0].phone, hydratedReports[0].contact.phone);
+    test.equals(messages.addMessage.getCall(2).args[0].phone, hydratedReports[1].contact.phone);
 
     test.done();
   });

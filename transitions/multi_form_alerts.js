@@ -44,22 +44,27 @@ const countReports = (reports, latestReport, script) => {
   });
 };
 
-const generateMessages = (alert, countedReports) => {
+/** Has this report already been SMSed about for this alert? */
+const isReportAlreadyMessaged = (report, alertName) => {
+  return report.tasks && report.tasks.filter(task => task.alert_name === alertName).length;
+};
+
+const generateMessages = (alert, phones, latestReport, countedReportsIds, newReports) => {
   let isLatestReportChanged = false;
-  const phones = getPhones(alert.recipients, countedReports);
   phones.forEach((phone) => {
     if (phone.error) {
       logger.error(phone.error);
-      messages.addError(countedReports[0], phone.error);
+      messages.addError(latestReport, phone.error);
       isLatestReportChanged = true;
       return;
     }
     messages.addMessage({
-      doc: countedReports[0],
+      doc: latestReport,
       phone: phone,
       message: alert.message,
       templateContext: {
-        countedReports: countedReports,
+        newReports: newReports,
+        numCountedReports: countedReportsIds.length,
         alertName: alert.name,
         numReportsThreshold: alert.numReportsThreshold,
         timeWindowInDays: alert.timeWindowInDays
@@ -67,7 +72,7 @@ const generateMessages = (alert, countedReports) => {
       taskFields: {
         type: 'alert',
         alert_name: alert.name,
-        countedReports: countedReports.map(report => report._id)
+        countedReports: countedReportsIds
       }
     });
     isLatestReportChanged = true;
@@ -78,57 +83,65 @@ const generateMessages = (alert, countedReports) => {
 // Recipients format examples:
 // [
 //    '+254777888999',
-//    'countedReports[0].contact.parent.parent.contact.phone',   // returns string
-//    'countedReports[0].contact.parent.parent.alertRecipients', // returns string array
-//    'countedReports.map((report) => report.contact.phone)'     // returns string array
+//    'countedReport.contact.parent.parent.contact.phone',   // returns string
+//    'countedReport.contact.parent.parent.alertRecipients', // returns string array
 // ]
-const getPhones = (recipients, countedReports) => {
-  return _.uniq(getPhonesWithDuplicates(recipients, countedReports));
+const getPhones = (recipients, reports) => {
+  let phones = [];
+  reports.forEach(report => {
+    const phonesForReport = getPhonesOneReport(recipients, report);
+    phones = phones.concat(phonesForReport);
+  });
+  phones = _.uniq(phones);
+  return phones;
 };
 
-const getPhonesWithDuplicates = (recipients, countedReports) => {
-  const getPhonesOneRecipient = (recipient, countedReports) => {
-    if (!recipient) {
-      return [];
-    }
-
-    if (/^\+[0-9]+$/.exec(recipient)) {
-      return [recipient];
-    }
-
-    const context = { countedReports: countedReports };
-    try {
-      const evaled = vm.runInNewContext(recipient, context);
-      if (_.isString(evaled)) {
-        return [evaled];
-      }
-      if (_.isArray(evaled)) {
-        return evaled.map((shouldBeAString) => {
-          if (!_.isString(shouldBeAString)) {
-            return { error: `multi_form_alerts : one of the phone numbers for "${recipient}"` +
-              ` is not a string. Message will not be sent. Found : ${JSON.stringify(shouldBeAString)}` };
-          }
-          return shouldBeAString;
-        });
-      }
-      return { error: `multi_form_alerts : phone number for "${recipient}"` +
-        ` is not a string or array of strings. Message will not be sent. Found: "${JSON.stringify(evaled)}"` };
-    } catch(err) {
-      return { error: `multi_form_alerts : Could not find a phone number for "${recipient}". ` +
-        `Message will not be sent. Error: "${err.message}"` };
-    }
-  };
-
+const getPhonesOneReport = (recipients, report) => {
   if (!recipients) {
     return [];
   }
 
+  let phones;
   if (_.isArray(recipients)) {
-    return _.flatten(
-      recipients.map(_.partial(getPhonesOneRecipient, _, countedReports)));
+    phones = _.flatten(
+      recipients.map(_.partial(getPhonesOneReportOneRecipientWithDuplicates, _, report)));
+  } else {
+    phones = getPhonesOneReportOneRecipientWithDuplicates(recipients, report);
   }
 
-  return getPhonesOneRecipient(recipients, countedReports);
+  return _.uniq(phones);
+};
+
+const getPhonesOneReportOneRecipientWithDuplicates = (recipient, countedReport) => {
+  if (!recipient) {
+    return [];
+  }
+
+  if (/^\+[0-9]+$/.exec(recipient)) {
+    return [recipient];
+  }
+
+  const context = { countedReport: countedReport };
+  try {
+    const evaled = vm.runInNewContext(recipient, context);
+    if (_.isString(evaled)) {
+      return [evaled];
+    }
+    if (_.isArray(evaled)) {
+      return evaled.map((shouldBeAString) => {
+        if (!_.isString(shouldBeAString)) {
+          return { error: `multi_form_alerts : one of the phone numbers for "${recipient}"` +
+            ` is not a string. Message will not be sent. Found : ${JSON.stringify(shouldBeAString)}` };
+        }
+        return shouldBeAString;
+      });
+    }
+    return { error: `multi_form_alerts : phone number for "${recipient}"` +
+      ` is not a string or array of strings. Message will not be sent. Found: "${JSON.stringify(evaled)}"` };
+  } catch(err) {
+    return { error: `multi_form_alerts : Could not find a phone number for "${recipient}". ` +
+      `Message will not be sent. Error: "${err.message}"` };
+  }
 };
 
 const validateConfig = () => {
@@ -169,32 +182,57 @@ const validateConfig = () => {
   }
 };
 
-const getFilteredReports = (alert, latestReport) => {
+/**
+ * Returns { countedReportsIds, newReports, phones }.
+ */
+const getCountedReportsAndPhones = (alert, latestReport) => {
   return new Promise((resolve, reject) => {
     const script = vm.createScript(`(${alert.isReportCounted})(report, latestReport)`);
-    let reports = countReports([ latestReport ], latestReport, script);
     let skip = 0;
+    let countedReportsIds = [ latestReport._id ];
+    let newReports = [ latestReport ];
+    let phones = getPhonesOneReport(alert.recipients, latestReport);
     async.doWhilst(
       callback => {
-        const options = { skip: skip, limit: BATCH_SIZE };
-        fetchReports(latestReport.reported_date - 1, alert.timeWindowInDays, alert.forms, options)
-          .then(fetched => callback(null, fetched))
+        getCountedReportsAndPhonesBatch(script, latestReport, alert, skip)
+          .then(output => {
+            countedReportsIds = countedReportsIds.concat(output.countedReportsIds);
+            newReports = newReports.concat(output.newReports);
+            phones = phones.concat(output.phones);
+            callback(null, output.numFetched);
+          })
           .catch(callback);
       },
-      fetched => {
-        const countedReports = countReports(fetched, latestReport, script);
-        reports = reports.concat(countedReports);
+      numFetched => {
         skip += BATCH_SIZE;
-        return fetched.length === BATCH_SIZE;
+        return numFetched === BATCH_SIZE;
       },
       err => {
         if (err) {
           return reject(err);
         }
-        resolve(reports);
+        resolve({ countedReportsIds: countedReportsIds, newReports: newReports, phones: _.uniq(phones) });
       }
     );
   });
+};
+
+/**
+ * Returns Promise({ numFetched, countedReportsIds, newReports, phones }) for the db batch with skip value.
+ */
+const getCountedReportsAndPhonesBatch = (script, latestReport, alert, skip) => {
+  const options = { skip: skip, limit: BATCH_SIZE };
+  return fetchReports(latestReport.reported_date - 1, alert.timeWindowInDays, alert.forms, options)
+    .then(fetched => {
+      const countedReports = countReports(fetched, latestReport, script);
+      const newReports = countedReports.filter(report => !isReportAlreadyMessaged(report, alert.name));
+      return {
+        numFetched: fetched.length,
+        countedReportsIds: countedReports.map(report => report._id),
+        newReports: newReports,
+        phones: getPhones(alert.recipients, newReports)
+      };
+    });
 };
 
 /* Return true if the doc has been changed. */
@@ -202,9 +240,9 @@ const runOneAlert = (alert, latestReport) => {
   if (alert.forms && alert.forms.length && !alert.forms.includes(latestReport.form)) {
     return Promise.resolve(false);
   }
-  return getFilteredReports(alert, latestReport).then(reports => {
-    if (reports.length >= alert.numReportsThreshold) {
-      return generateMessages(alert, reports);
+  return getCountedReportsAndPhones(alert, latestReport).then(output => {
+    if (output.countedReportsIds.length >= alert.numReportsThreshold) {
+      return generateMessages(alert, output.phones, latestReport, output.countedReportsIds, output.newReports);
     }
     return false;
   });
