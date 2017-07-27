@@ -1,8 +1,36 @@
 {
-	"icon": "nurse",
-	"context": {
-		"person": true,
-		"place": false,
-		"expression": "((user && user.parent) && ((user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent && user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1))) && (!contact || (contact.type === 'person' && (!contact.sex || contact.sex === 'female') && (!contact.date_of_birth || (ageInYears(contact) >= 10 && ageInYears(contact) < 65))))"
-	}
+  "title": [
+    {
+      "locale": "en",
+      "content": "Postnatal Care Visit"
+    },
+    {
+      "locale": "hi",
+      "content": "Postnatal Care Visit"
+    },
+    {
+      "locale": "id",
+      "content": "Postnatal Care Visit"
+    }
+  ],
+  "icon": "clinic",
+  "context": {
+    "person": true,
+    "place": false,
+    "expression": "((user && user.parent) && ((user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent && user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1))) && (!contact || (contact.type === 'person' && (!contact.sex || contact.sex === 'female') && (!contact.date_of_birth || (ageInYears(contact) >= 10 && ageInYears(contact) < 65))))"
+  },
+  "hidden_fields": [
+    "inputs",
+    "patient_uuid",
+    "geolocation",
+    "patient_age_in_years",
+    "patient_contact_phone",
+    "group_chw_info",
+    "group_who_assessed",
+    "group_danger_signs_mom",
+    "group_danger_signs_baby",
+    "group_delivery_summary",
+    "group_note",
+    "meta"
+  ]  
 }
