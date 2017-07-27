@@ -51,21 +51,11 @@ var _ = require('underscore');
     if (options.phone) {
       parts.push('<span>' + _.escape(options.phone) + '</span>');
     }
-    var position = exports.lineage(options.parent);
+    var position = exports.lineage(options.parent || options.lineage);
     if (position) {
       parts.push('<div class="position">' + position + '</div>');
     }
     return '<span class="sender">' + parts.join('') + '</span>';
-  };
-
-  exports.contact = function(doc) {
-    var contact = (doc.type !== 'person' && doc.contact) ? doc.contact : doc;
-    var place = doc.place || (doc.type === 'person' ? doc.parent : doc);
-    return exports.sender({
-      name: contact.name,
-      phone: contact.phone,
-      parent: place
-    });
   };
 
 }());
