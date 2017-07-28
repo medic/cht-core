@@ -79,7 +79,7 @@ exports['filter validation hasRun'] = test => {
   test.done();
 };
 
-const testConfigIsValid = (test, alerts) => {
+const assertConfigIsInvalid = (test, alerts) => {
   sinon.stub(config, 'get').returns(alerts);
   try {
     transition.init();
@@ -90,31 +90,36 @@ const testConfigIsValid = (test, alerts) => {
 };
 
 exports['validates config : is_report_counted'] = test => {
-  testConfigIsValid(test, [_.omit(alert, 'is_report_counted')]);
+  assertConfigIsInvalid(test, [_.omit(alert, 'is_report_counted')]);
 };
 
 exports['validates config : name'] = test => {
-  testConfigIsValid(test, [_.omit(alert, 'name')]);
+  assertConfigIsInvalid(test, [_.omit(alert, 'name')]);
 };
 
 exports['validates config : names are unique'] = test => {
-  testConfigIsValid(test, [alert, alert]);
+  assertConfigIsInvalid(test, [alert, alert]);
 };
 
 exports['validates config : num_reports_threshold'] = test => {
-  testConfigIsValid(test, [_.omit(alert, 'num_reports_threshold')]);
+  assertConfigIsInvalid(test, [_.omit(alert, 'num_reports_threshold')]);
+};
+
+exports['validates config : num_reports_threshold < 100'] = test => {
+  alert.num_reports_threshold = 100000000; // arbitrary large number
+  assertConfigIsInvalid(test, [ alert ]);
 };
 
 exports['validates config : message'] = test => {
-  testConfigIsValid(test, [_.omit(alert, 'message')]);
+  assertConfigIsInvalid(test, [_.omit(alert, 'message')]);
 };
 
 exports['validates config : recipients'] = test => {
-  testConfigIsValid(test, [_.omit(alert, 'recipients')]);
+  assertConfigIsInvalid(test, [_.omit(alert, 'recipients')]);
 };
 
 exports['validates config : time_window_in_days'] = test => {
-  testConfigIsValid(test, [_.omit(alert, 'time_window_in_days')]);
+  assertConfigIsInvalid(test, [_.omit(alert, 'time_window_in_days')]);
 };
 
 exports['fetches reports within time window'] = test => {

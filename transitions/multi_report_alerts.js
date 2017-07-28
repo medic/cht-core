@@ -7,6 +7,7 @@ const vm = require('vm'),
       messages = require('../lib/messages'),
       utils = require('../lib/utils'),
       transitionUtils = require('./utils'),
+      MAX_NUM_REPORTS_THRESHOLD = 100,
       TRANSITION_NAME = 'multi_report_alerts',
       BATCH_SIZE = 100,
       requiredFields = [
@@ -161,6 +162,9 @@ const validateConfig = () => {
     alert.num_reports_threshold = parseInt(alert.num_reports_threshold);
     if (isNaN(alert.num_reports_threshold)) {
       errors.push(`Alert "${alert.name}", expecting "num_reports_threshold" to be an integer, eg: "num_reports_threshold": "3"`);
+    }
+    if (alert.num_reports_threshold > MAX_NUM_REPORTS_THRESHOLD) {
+      errors.push(`Alert "${alert.name}", "num_reports_threshold" should be less than ${MAX_NUM_REPORTS_THRESHOLD}. Found ${alert.num_reports_threshold}`);
     }
     if(!_.isArray(alert.recipients)) {
       errors.push(`Alert "${alert.name}", expecting "recipients" to be an array of strings, eg: "recipients": ["+9779841452277", "countedReports[0].contact.phone"]`);
