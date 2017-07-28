@@ -395,8 +395,8 @@
                     }
                 }
             },
-            "multi_form_alerts": {
-                "title": "Multi-form Alerts",
+            "multi_report_alerts": {
+                "title": "Multi-report Alerts",
                 "type": "array",
                 "description": "Send alert messages by SMS when specific conditions are received through reports. More flexible than simple Alerts. E.g. send SMS to the district manager when 3 CHWs within the same district report cholera or diarrhea symptoms within the last week.",
                 "items": {
@@ -407,23 +407,23 @@
                             "title": "Name",
                             "description": "Name of the alert, e.g. suspected_cholera."
                         },
-                        "numReportsThreshold": {
+                        "num_reports_threshold": {
                             "type": "integer",
                             "title": "Threshold in number of reports",
                             "description": "Number of counted reports that will trigger the message sending. E.g. \"3\" (3 reports of either cholera or diarrhea)"
                         },
-                        "timeWindowInDays": {
+                        "time_window_in_days": {
                             "type": "integer",
                             "title": "Time window for reports, in days",
                             "description": "How far back through reports the transition should look when counting reports, in number of days. E.g. \"7\" (look for cholera or diarrhea reports in the 7 previous days)."
                         },
-                        "isReportCounted": {
+                        "is_report_counted": {
                             "type": "string",
                             "je:hint": "textarea",
                             "je:textarea": {
                                 "rows": 10
                             },
-                            "title": "isReportCounted test function",
+                            "title": "is_report_counted test function",
                             "description": "Javascript function to test recent reports to know whether they should be counted for the alert. It should take two (optional) arguments : the report from the time window being tested, and the latest report that triggered the transition. It should return true if the report should be counted. E.g. \"function(report, latestReport) { return (report.form === 'C' || report.form === 'D') && latestReport.contact.parent._id === report.contact.parent._id; }\" (report is about cholera or diarrhea, and its parent place is the same as the latest report.) Note that the latestReport will also be counted using this function."
                         },
                         "message": {
@@ -433,12 +433,12 @@
                                 "rows": 3
                             },
                             "title": "Message",
-                            "description": "Text that will be sent out in the alert. You can refer to alertName, numReportsThreshold, timeWindowInDays, numCountedReports (total number of reports within the time window) and newReports (the counted reports which haven't been messaged about yet). Refer to the latest report as newReports.0 (not newReports[0] as in usual javascript! This is specific to the templates we use.), the previous report as newReports.1, etc. E.g. \"{{numCountedReports}} patients with {{alertName}} in {{timeWindowInDays}} days reported at {{countedReports.0.contact.parent.name}}. . New reports from: {{newReports.0.contact.name}}, {{newReports.1.contact.name}}, {{newReports.2.contact.name}}.\""
+                            "description": "Text that will be sent out in the alert. You can refer to alert_name, num_reports_threshold, time_window_in_days, num_counted_reports (total number of reports within the time window) and new_reports (the counted reports which haven't been messaged about yet). Refer to the latest report as new_reports.0 (not new_reports[0] as in usual javascript! This is specific to the templates we use.), the previous report as new_reports.1, etc. E.g. \"{{num_counted_reports}} patients with {{alert_name}} in {{time_window_in_days}} days reported at {{new_reports.0.contact.parent.name}}. . New reports from: {{new_reports.0.contact.name}}, {{new_reports.1.contact.name}}, {{new_reports.2.contact.name}}.\""
                         },
                         "recipients": {
                             "type": "array",
                             "title": "Recipients for the alerts",
-                            "description": "The phone numbers to receive alerts. You can use international format phone numbers (e.g. \"+254777888999\") or an expression to fetch phone fields in each countedReport (e.g. \"countedReport.contact.parent.contact.phone\" for the Primary Contact of the parent place of the sender.",
+                            "description": "The phone numbers to receive alerts. You can use international format phone numbers (e.g. \"+254777888999\") or an expression to fetch phone fields in each counted_report (e.g. \"counted_report.contact.parent.contact.phone\" for the Primary Contact of the parent place of the sender.",
                             "items": {
                                 "type": "string"
                             }
