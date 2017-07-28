@@ -98,7 +98,7 @@ angular.module('inboxControllers').controller('SendMessageCtrl',
           parent: row.doc.place
         });
       } else {
-        contact = format.contact(row.doc);
+        contact = format.sender(row.doc);
       }
 
       return $('<span class="fa fa-fw ' + icon + '"></span>' + contact);
