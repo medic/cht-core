@@ -410,7 +410,7 @@
                         "num_reports_threshold": {
                             "type": "integer",
                             "title": "Threshold in number of reports",
-                            "description": "Number of counted reports that will trigger the message sending. E.g. \"3\" (3 reports of either cholera or diarrhea)"
+                            "description": "Number of counted reports that will trigger the message sending. Should be less than 100. E.g. \"3\" (3 reports of either cholera or diarrhea)"
                         },
                         "time_window_in_days": {
                             "type": "integer",
