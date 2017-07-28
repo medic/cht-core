@@ -23,8 +23,8 @@ var SP_ID_MASK = 0xFFFFF8;
       Changes,
       ContactSchema,
       ContactSummary,
-      DB,
       Export,
+      GetDataRecords,
       LiveList,
       Search,
       SearchFilters,
@@ -48,23 +48,14 @@ var SP_ID_MASK = 0xFFFFF8;
         return UserSettings()
           .then(function(userSettings) {
             if (userSettings.facility_id) {
-              return DB().query(
-                'medic-client/doc_summaries_by_id',
-                { key: userSettings.facility_id }
-              );
+              return GetDataRecords(userSettings.facility_id);
             }
           })
-          .then(function(results) {
-            var firstRow = results &&
-                           results.rows &&
-                           results.rows.length &&
-                           results.rows[0];
-            if (firstRow) {
-              var summary = firstRow.value;
-              summary._id = firstRow.id;
+          .then(function(summary) {
+            if (summary) {
               summary.home = true;
-              return summary;
             }
+            return summary;
           });
       };
 
