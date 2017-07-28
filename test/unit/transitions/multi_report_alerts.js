@@ -3,7 +3,7 @@ const _ = require('underscore'),
       lineage = require('../../../lib/lineage'),
       messages = require('../../../lib/messages'),
       sinon = require('sinon').sandbox.create(),
-      transition = require('../../../transitions/multi_form_alerts'),
+      transition = require('../../../transitions/multi_report_alerts'),
       utils = require('../../../lib/utils');
 
 let alert;
@@ -17,11 +17,11 @@ exports.setUp = callback => {
   // reset alert
   alert = {
     name: 'you_should_know_about_this',
-    isReportCounted: 'function() { return true; }',
-    numReportsThreshold: 3,
+    is_report_counted: 'function() { return true; }',
+    num_reports_threshold: 3,
     message: 'hi',
     recipients: ['+254777888999'],
-    timeWindowInDays : 7
+    time_window_in_days : 7
   };
   callback();
 };
@@ -74,7 +74,7 @@ exports['filter validation hasRun'] = test => {
   test.equal(transition.filter({
     form: 'x',
     type: 'data_record',
-    transitions : { multi_form_alerts: 'hi' }
+    transitions : { multi_report_alerts: 'hi' }
   }), false);
   test.done();
 };
@@ -84,13 +84,13 @@ const testConfigIsValid = (test, alerts) => {
   try {
     transition.init();
   } catch(e) {
-    test.equals(config.get.getCall(0).args[0], 'multi_form_alerts');
+    test.equals(config.get.getCall(0).args[0], 'multi_report_alerts');
     test.done();
   }
 };
 
-exports['validates config : isReportCounted'] = test => {
-  testConfigIsValid(test, [_.omit(alert, 'isReportCounted')]);
+exports['validates config : is_report_counted'] = test => {
+  testConfigIsValid(test, [_.omit(alert, 'is_report_counted')]);
 };
 
 exports['validates config : name'] = test => {
@@ -101,8 +101,8 @@ exports['validates config : names are unique'] = test => {
   testConfigIsValid(test, [alert, alert]);
 };
 
-exports['validates config : numReportsThreshold'] = test => {
-  testConfigIsValid(test, [_.omit(alert, 'numReportsThreshold')]);
+exports['validates config : num_reports_threshold'] = test => {
+  testConfigIsValid(test, [_.omit(alert, 'num_reports_threshold')]);
 };
 
 exports['validates config : message'] = test => {
@@ -113,8 +113,8 @@ exports['validates config : recipients'] = test => {
   testConfigIsValid(test, [_.omit(alert, 'recipients')]);
 };
 
-exports['validates config : timeWindowInDays'] = test => {
-  testConfigIsValid(test, [_.omit(alert, 'timeWindowInDays')]);
+exports['validates config : time_window_in_days'] = test => {
+  testConfigIsValid(test, [_.omit(alert, 'time_window_in_days')]);
 };
 
 exports['fetches reports within time window'] = test => {
@@ -124,7 +124,7 @@ exports['fetches reports within time window'] = test => {
   transition.onMatch({ doc: doc }, undefined, undefined, () => {
     test.equals(utils.getReportsWithinTimeWindow.callCount, 1);
     test.equals(utils.getReportsWithinTimeWindow.args[0][0], 12344);
-    test.equals(utils.getReportsWithinTimeWindow.args[0][1], alert.timeWindowInDays);
+    test.equals(utils.getReportsWithinTimeWindow.args[0][1], alert.time_window_in_days);
     test.done();
   });
 };
@@ -141,8 +141,8 @@ exports['filters reports by form if forms is present in config'] = test => {
   });
 };
 
-exports['if not enough reports pass the isReportCounted func, does nothing'] = test => {
-  alert.isReportCounted = 'function() { return false; }';
+exports['if not enough reports pass the is_report_counted func, does nothing'] = test => {
+  alert.is_report_counted = 'function() { return false; }';
   sinon.stub(config, 'get').returns([alert]);
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
@@ -172,22 +172,22 @@ exports['if no reports in time window, does nothing'] = test => {
   });
 };
 
-const assertMessage = (test, messageArgs, recipient, message, alertName, numReportsThreshold, timeWindowInDays) => {
+const assertMessage = (test, messageArgs, recipient, message, alertName, num_reports_threshold, time_window_in_days) => {
   const expected = {
     doc: doc,
     phone: recipient,
     message: message,
     templateContext: {
-      newReports: [doc, ...hydratedReports],
-      numCountedReports: [doc, ...hydratedReports].length,
-      alertName: alertName,
-      numReportsThreshold: numReportsThreshold,
-      timeWindowInDays: timeWindowInDays
+      new_reports: [doc, ...hydratedReports],
+      num_counted_reports: [doc, ...hydratedReports].length,
+      alert_name: alertName,
+      num_reports_threshold: num_reports_threshold,
+      time_window_in_days: time_window_in_days
     },
     taskFields: {
       type: 'alert',
       alert_name: alertName,
-      countedReports: [ doc._id, hydratedReports[0]._id, hydratedReports[1]._id ]
+      counted_reports: [ doc._id, hydratedReports[0]._id, hydratedReports[1]._id ]
     }
   };
   test.deepEqual(messageArgs, expected);
@@ -195,11 +195,11 @@ const assertMessage = (test, messageArgs, recipient, message, alertName, numRepo
 
 const assertMessages = (test, addMessageStub, alert) => {
   addMessageStub.getCalls().forEach((call, i) => {
-    assertMessage(test, call.args[0], alert.recipients[i], alert.message, alert.name, alert.numReportsThreshold, alert.timeWindowInDays);
+    assertMessage(test, call.args[0], alert.recipients[i], alert.message, alert.name, alert.num_reports_threshold, alert.time_window_in_days);
   });
 };
 
-exports['if enough reports pass the isReportCounted func, adds message'] = test => {
+exports['if enough reports pass the is_report_counted func, adds message'] = test => {
   sinon.stub(config, 'get').returns([alert]);
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
@@ -221,7 +221,7 @@ exports['if enough reports pass the isReportCounted func, adds message'] = test 
 exports['adds message when recipient is evaled'] = test => {
   const recipient = 'countedReport.contact.phone';
   alert.recipients = [recipient];
-  alert.numReportsThreshold = 1;
+  alert.num_reports_threshold = 1;
   sinon.stub(config, 'get').returns([alert]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve([]));
@@ -361,16 +361,16 @@ exports['message only contains newReports'] = test => {
       phone: alert.recipients[0],
       message: alert.message,
       templateContext: {
-        newReports: [doc, hydratedReportsWithOneAlreadyMessaged[0] ],
-        numCountedReports: [doc, ...hydratedReportsWithOneAlreadyMessaged].length,
-        alertName: alert.name,
-        numReportsThreshold: alert.numReportsThreshold,
-        timeWindowInDays: alert.timeWindowInDays
+        new_reports: [doc, hydratedReportsWithOneAlreadyMessaged[0] ],
+        num_counted_reports: [doc, ...hydratedReportsWithOneAlreadyMessaged].length,
+        alert_name: alert.name,
+        num_reports_threshold: alert.num_reports_threshold,
+        time_window_in_days: alert.time_window_in_days
       },
       taskFields: {
         type: 'alert',
         alert_name: alert.name,
-        countedReports: [ doc._id, hydratedReportsWithOneAlreadyMessaged[0]._id, hydratedReportsWithOneAlreadyMessaged[1]._id ]
+        counted_reports: [ doc._id, hydratedReportsWithOneAlreadyMessaged[0]._id, hydratedReportsWithOneAlreadyMessaged[1]._id ]
       }
     };
     test.deepEqual(messages.addMessage.getCall(0).args[0], expected);
@@ -393,11 +393,11 @@ exports['adds multiple messages when mutiple recipients'] = test => {
     test.equals(messages.addError.getCalls().length, 0);
 
     // first recipient
-    assertMessage(test, messages.addMessage.getCall(0).args[0], '+254111222333', alert.message, alert.name, alert.numReportsThreshold, alert.timeWindowInDays);
+    assertMessage(test, messages.addMessage.getCall(0).args[0], '+254111222333', alert.message, alert.name, alert.num_reports_threshold, alert.time_window_in_days);
     // second recipient : matched 3 phones
-    assertMessage(test, messages.addMessage.getCall(1).args[0], doc.contact.phone, alert.message, alert.name, alert.numReportsThreshold, alert.timeWindowInDays);
-    assertMessage(test, messages.addMessage.getCall(2).args[0], hydratedReports[0].contact.phone, alert.message, alert.name, alert.numReportsThreshold, alert.timeWindowInDays);
-    assertMessage(test, messages.addMessage.getCall(3).args[0], hydratedReports[1].contact.phone, alert.message, alert.name, alert.numReportsThreshold, alert.timeWindowInDays);
+    assertMessage(test, messages.addMessage.getCall(1).args[0], doc.contact.phone, alert.message, alert.name, alert.num_reports_threshold, alert.time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(2).args[0], hydratedReports[0].contact.phone, alert.message, alert.name, alert.num_reports_threshold, alert.time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(3).args[0], hydratedReports[1].contact.phone, alert.message, alert.name, alert.num_reports_threshold, alert.time_window_in_days);
 
     test.equals(messages.addMessage.getCalls().length, 4);
 
@@ -442,19 +442,19 @@ exports['runs multiple alerts'] = test => {
   var twoAlerts = [
   {
     name: 'first_alert',
-    isReportCounted: 'function() { return true; }',
-    numReportsThreshold : 3,
+    is_report_counted: 'function() { return true; }',
+    num_reports_threshold : 3,
     message : 'hi',
     recipients : ['+254777888999'],
-    timeWindowInDays : 7
+    time_window_in_days : 7
   },
   {
     name: 'second_alert',
-    isReportCounted: 'function() { return true; }',
-    numReportsThreshold : 2,
+    is_report_counted: 'function() { return true; }',
+    num_reports_threshold : 2,
     message : 'bye',
     recipients : ['+254777888111', '+2562299383'],
-    timeWindowInDays : 5
+    time_window_in_days : 5
   }];
   sinon.stub(config, 'get').returns(twoAlerts);
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
@@ -466,9 +466,9 @@ exports['runs multiple alerts'] = test => {
     test.equals(messages.addError.getCalls().length, 0);
 
     test.equals(messages.addMessage.getCalls().length, 3); // alert[0].recipients + alert[1].recipients
-    assertMessage(test, messages.addMessage.getCall(0).args[0], twoAlerts[0].recipients[0], twoAlerts[0].message, twoAlerts[0].name, twoAlerts[0].numReportsThreshold, twoAlerts[0].timeWindowInDays);
-    assertMessage(test, messages.addMessage.getCall(1).args[0], twoAlerts[1].recipients[0], twoAlerts[1].message, twoAlerts[1].name, twoAlerts[1].numReportsThreshold, twoAlerts[1].timeWindowInDays);
-    assertMessage(test, messages.addMessage.getCall(2).args[0], twoAlerts[1].recipients[1], twoAlerts[1].message, twoAlerts[1].name, twoAlerts[1].numReportsThreshold, twoAlerts[1].timeWindowInDays);
+    assertMessage(test, messages.addMessage.getCall(0).args[0], twoAlerts[0].recipients[0], twoAlerts[0].message, twoAlerts[0].name, twoAlerts[0].num_reports_threshold, twoAlerts[0].time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(1).args[0], twoAlerts[1].recipients[0], twoAlerts[1].message, twoAlerts[1].name, twoAlerts[1].num_reports_threshold, twoAlerts[1].time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(2).args[0], twoAlerts[1].recipients[1], twoAlerts[1].message, twoAlerts[1].name, twoAlerts[1].num_reports_threshold, twoAlerts[1].time_window_in_days);
 
     test.ok(!err);
     test.ok(docNeedsSaving);

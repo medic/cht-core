@@ -33,7 +33,7 @@ const AVAILABLE_TRANSITIONS = [
   'conditional_alerts',
   'default_responses',
   'maintain_info_document',
-  'multi_form_alerts',
+  'multi_report_alerts',
   'update_sent_by',
   'resolve_pending',
   'registration',
