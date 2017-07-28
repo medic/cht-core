@@ -15,9 +15,9 @@ describe('Contacts controller', () => {
       person,
       scope,
       userSettings,
-      userFaciltyQuery,
       searchResults,
       searchService,
+      getDataRecords,
       typeLabel,
       xmlForms,
       $rootScope;
@@ -61,8 +61,8 @@ describe('Contacts controller', () => {
     forms = 'forms';
     xmlForms.callsArgWith(2, null, forms); // call the callback
     userSettings = KarmaUtils.promiseService(null, { facility_id: district._id });
-    userFaciltyQuery = KarmaUtils.promiseService(null, { rows: [{ id: district._id, value: district }] });
     contactsLiveList = deadList();
+    getDataRecords = KarmaUtils.promiseService(null, district);
     searchResults = [];
 
     createController = () => {
@@ -78,12 +78,7 @@ describe('Contacts controller', () => {
         '$timeout': work => work(),
         '$translate': key => KarmaUtils.mockPromise(null, key + 'translated'),
         'ContactSchema': contactSchema,
-        'DB': () => {
-          return {
-            get: KarmaUtils.promiseService(null, district),
-            query: userFaciltyQuery
-          };
-        },
+        'GetDataRecords': getDataRecords,
         'LiveList': { contacts: contactsLiveList },
         'Search': searchService,
         'SearchFilters': { freetext: sinon.stub(), reset: sinon.stub()},
@@ -103,10 +98,6 @@ describe('Contacts controller', () => {
       });
     };
   }));
-
-  afterEach(() => {
-    KarmaUtils.restore();
-  });
 
   it('sets title', () => {
     return createController().getSetupPromiseForTesting()
@@ -230,7 +221,8 @@ describe('Contacts controller', () => {
     });
 
     it('when user doesn\'t have facility_id', () => {
-      userSettings = userFaciltyQuery = KarmaUtils.promiseService(null, {});
+      userSettings = KarmaUtils.promiseService(null, {});
+      getDataRecords = KarmaUtils.promiseService();
       return createController().getSetupPromiseForTesting().then(() => {
         assert(scope.setLeftActionBar.called);
       });
