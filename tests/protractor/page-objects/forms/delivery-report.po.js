@@ -1,6 +1,5 @@
 const utils = require('../../utils'),
-  auth = require('../../auth')(),
-  helper = require('../../helper');
+      helper = require('../../helper');
 
 const xml = `<?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -1046,8 +1045,6 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
   </h:body>
 </h:html>`;
 
-const userSettingsDocId = `org.couchdb.user:${auth.user}`;
-const contactId = '3b3d50d275280d2568cd36281d00348b';
 const docs = [
   {
     _id: 'form:delivery',
@@ -1067,17 +1064,8 @@ const selectRadioButton = (value) => {
 };
 
 module.exports = {
-  configureForm: (done) => {
+  configureForm: (contactId, done) => {
     utils.seedTestData(done, contactId, docs);
-  },
-  teardown: done => {
-    utils.afterEach()
-      .then(() => utils.getDoc(userSettingsDocId))
-      .then((user) => {
-        user.contact_id = undefined;
-        return utils.saveDoc(user);
-      })
-      .then(done, done);
   },
   nextPage: () => {
     const nextButton = element(by.css('button.btn.btn-primary.next-page'));
