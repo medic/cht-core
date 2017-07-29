@@ -26,6 +26,9 @@
           <text id="/data/clinic:hint">
             <value>mandatory</value>
           </text>
+          <text id="/data/clinic/vaccines/meningococcal:label">
+            <value>Meningococcal</value>
+          </text>
           <text id="/data/contact/role/nurse:label">
             <value>Nurse</value>
           </text>
@@ -43,6 +46,9 @@
           <text id="/data/inputs/user:label">
             <value></value>
           </text>
+          <text id="/data/clinic/vaccines/pneumococcal:label">
+            <value>Pneumococcal Pneumonia</value>
+          </text>
           <text id="/data/inputs/user/name:label">
             <value>Name of the logged in user</value>
           </text>
@@ -58,6 +64,15 @@
           <text id="/data/clinic/notes:label">
             <value>Notes</value>
           </text>
+          <text id="/data/clinic/vaccines/vitamin_a:label">
+            <value>Vitamin A</value>
+          </text>
+          <text id="/data/clinic/vaccines/hep_a:label">
+            <value>Hepatitis A</value>
+          </text>
+          <text id="/data/clinic/vaccines/jap_enc:label">
+            <value>Japanese Encephalitis</value>
+          </text>
           <text id="/data/init:label">
             <value>New <output value=" /data/init/place_type_translation "/></value></text>
           <text id="/data/clinic/external_id:label">
@@ -72,15 +87,48 @@
           <text id="/data/clinic/use_cases/anc:label">
             <value>Antenatal care</value>
           </text>
+          <text id="/data/clinic/vaccines/mmr:label">
+            <value>MMR (Measles, Mumps, Rubella)</value>
+          </text>
+          <text id="/data/clinic/vaccines/yellow_fever:label">
+            <value>Yellow Fever</value>
+          </text>
+          <text id="/data/clinic/vaccines/rotavirus:label">
+            <value>Rotavirus</value>
+          </text>
+          <text id="/data/clinic/vaccines/flu:label">
+            <value>Influenza</value>
+          </text>
           <text id="/data/contact/role/chw:label">
             <value>CHW</value>
           </text>
+          <text id="/data/clinic/vaccines/typhoid:label">
+            <value>Typhoid</value>
+          </text>
+          <text id="/data/clinic/vaccines/penta:label">
+            <value>Pentavalent</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmrv:label">
+            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
+          </text>
+          <text id="/data/clinic/vaccines/hpv:label">
+            <value>HPV (Human Papillomavirus)</value>
+          </text>
           <text id="/data/clinic/use_cases:hint">
             <value>Select all needed for this <output value=" /data/init/place_type_translation "/></value></text>
+          <text id="/data/clinic/vaccines:label">
+            <value>Select vaccines</value>
+          </text>
+          <text id="/data/clinic/vaccines/cholera:label">
+            <value>Cholera</value>
+          </text>
           <text id="/data/init/generated_name/clinic:label">
             <value><output value=" /data/init/contact_name "/>'s Area</value></text>
           <text id="/data/inputs/user/facility_id:label">
             <value>Place ID of the logged in user</value>
+          </text>
+          <text id="/data/clinic/vaccines/bcg:label">
+            <value>BCG</value>
           </text>
           <text id="/data/init/create_new_person/new_person:label">
             <value>Create a new person</value>
@@ -129,6 +177,8 @@
           <text id="/data/contact/external_id:label">
             <value>External ID</value>
           </text>
+          <text id="/data/clinic/vaccines:hint">
+            <value>Select all needed for this <output value=" /data/init/place_type_translation "/></value></text>
           <text id="/data/clinic/meta:label">
             <value></value>
           </text>
@@ -143,6 +193,9 @@
           </text>
           <text id="/data/inputs/user/contact_id:label">
             <value>Contact ID of the logged in user</value>
+          </text>
+          <text id="/data/clinic/vaccines/polio:label">
+            <value>Polio</value>
           </text>
           <text id="/data/init/create_new_person:label">
             <value>Set the Primary Contact</value>
@@ -178,6 +231,9 @@
           <text id="/data/contact/role_other:label">
             <value></value>
           </text>
+          <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
           <text id="/data/contact/role/chw_supervisor:label">
             <value>सामुदायिक स्वास्थ्य कर्मी के मैनेजर</value>
           </text>
@@ -201,6 +257,9 @@
           <text id="/data/inputs/user:label">
             <value></value>
           </text>
+          <text id="/data/clinic/vaccines/pneumococcal:label">
+            <value>Pneumococcal Pneumonia</value>
+          </text>
           <text id="/data/inputs/user/name:label">
             <value>लॉग इन यूज़र का नाम</value>
           </text>
@@ -216,6 +275,15 @@
           <text id="/data/clinic/notes:label">
             <value>नोट्स</value>
           </text>
+          <text id="/data/clinic/vaccines/vitamin_a:label">
+            <value>Vitamin A</value>
+          </text>
+          <text id="/data/clinic/vaccines/hep_a:label">
+            <value>Hepatitis A</value>
+          </text>
+          <text id="/data/clinic/vaccines/jap_enc:label">
+            <value>Japanese Encephalitis</value>
+          </text>
           <text id="/data/init:label">
             <value>नया <output value=" /data/init/place_type_translation "/></value></text>
           <text id="/data/clinic/external_id:label">
@@ -230,16 +298,49 @@
           <text id="/data/clinic/use_cases/anc:label">
             <value>गर्भावस्था की देखभाल</value>
           </text>
+          <text id="/data/clinic/vaccines/mmr:label">
+            <value>MMR (Measles, Mumps, Rubella)</value>
+          </text>
+          <text id="/data/clinic/vaccines/yellow_fever:label">
+            <value>Yellow Fever</value>
+          </text>
+          <text id="/data/clinic/vaccines/rotavirus:label">
+            <value>Rotavirus</value>
+          </text>
+          <text id="/data/clinic/vaccines/flu:label">
+            <value>Influenza</value>
+          </text>
           <text id="/data/contact/role/chw:label">
             <value>सामुदायिक स्वास्थ्य कर्मी</value>
           </text>
+          <text id="/data/clinic/vaccines/typhoid:label">
+            <value>Typhoid</value>
+          </text>
+          <text id="/data/clinic/vaccines/penta:label">
+            <value>Pentavalent</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmrv:label">
+            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
+          </text>
+          <text id="/data/clinic/vaccines/meningococcal:label">
+            <value>Meningococcal</value>
+          </text>
           <text id="/data/clinic/use_cases:hint">
             <value>इस <output value=" /data/init/place_type_translation "/> के लिए आवश्यक सभी का चयन करें</value>
+          </text>
+          <text id="/data/clinic/vaccines:label">
+            <value>टीकाकरण चुनें</value>
+          </text>
+          <text id="/data/clinic/vaccines/cholera:label">
+            <value>Cholera</value>
           </text>
           <text id="/data/init/generated_name/clinic:label">
             <value><output value=" /data/init/contact_name "/> का क्षेत्र</value></text>
           <text id="/data/inputs/user/facility_id:label">
             <value>लॉग इन यूज़र के स्थान का ID</value>
+          </text>
+          <text id="/data/clinic/vaccines/bcg:label">
+            <value>BCG</value>
           </text>
           <text id="/data/init/create_new_person/new_person:label">
             <value>एक नया व्यक्ति बनाएं</value>
@@ -287,6 +388,9 @@
           <text id="/data/contact/external_id:label">
             <value>बाहरी ID</value>
           </text>
+          <text id="/data/clinic/vaccines:hint">
+            <value>इस <output value=" /data/init/place_type_translation "/> के लिए आवश्यक सभी का चयन करें</value>
+          </text>
           <text id="/data/clinic/meta:label">
             <value></value>
           </text>
@@ -296,11 +400,14 @@
           <text id="/data/contact/name:label">
             <value>नाम</value>
           </text>
-          <text id="/data/contact/meta:label">
-            <value>-</value>
+          <text id="/data/clinic/vaccines/hpv:label">
+            <value>HPV (Human Papillomavirus)</value>
           </text>
           <text id="/data/inputs/user/contact_id:label">
             <value>Contact ID of the logged in user</value>
+          </text>
+          <text id="/data/clinic/vaccines/polio:label">
+            <value>Polio</value>
           </text>
           <text id="/data/init/create_new_person:label">
             <value>प्राथमिक कॉंटॅक्ट चुनें</value>
@@ -336,11 +443,17 @@
           <text id="/data/contact/role_other:label">
             <value></value>
           </text>
+          <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
           <text id="/data/contact/role/chw_supervisor:label">
             <value>Mkuu wa wahudumu wa afya</value>
           </text>
           <text id="/data/clinic:hint">
             <value>lazima</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmr:label">
+            <value>-</value>
           </text>
           <text id="/data/contact/role/nurse:label">
             <value>Muuguzi</value>
@@ -359,6 +472,9 @@
           <text id="/data/inputs/user:label">
             <value></value>
           </text>
+          <text id="/data/clinic/vaccines/vitamin_a:label">
+            <value>-</value>
+          </text>
           <text id="/data/inputs/user/name:label">
             <value>Jina la mtumizi wa huduma hii</value>
           </text>
@@ -374,6 +490,12 @@
           <text id="/data/clinic/notes:label">
             <value>Maelezo</value>
           </text>
+          <text id="/data/clinic/vaccines/hep_a:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/meta:label">
+            <value></value>
+          </text>
           <text id="/data/init:label">
             <value>Mpya <output value=" /data/init/place_type_translation "/></value></text>
           <text id="/data/clinic/external_id:label">
@@ -388,15 +510,45 @@
           <text id="/data/clinic/use_cases/anc:label">
             <value>Huduma ya kabla ya kuzaa</value>
           </text>
+          <text id="/data/clinic/vaccines/penta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/rotavirus:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/flu:label">
+            <value>-</value>
+          </text>
           <text id="/data/contact/role/chw:label">
             <value>Mhudumu wa afya</value>
           </text>
+          <text id="/data/clinic/vaccines/typhoid:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmrv:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/meningococcal:label">
+            <value>-</value>
+          </text>
           <text id="/data/clinic/use_cases:hint">
             <value>Chagua zote zinazohitajika kwa hii <output value=" /data/init/place_type_translation "/></value></text>
+          <text id="/data/clinic/vaccines/pneumococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/cholera:label">
+            <value>-</value>
+          </text>
           <text id="/data/init/generated_name/clinic:label">
             <value>Eneo ya  <output value=" /data/init/contact_name "/></value></text>
           <text id="/data/inputs/user/facility_id:label">
             <value>Kitambulisho cha mahali cha mtumizi wa huduma hii</value>
+          </text>
+          <text id="/data/clinic/vaccines/bcg:label">
+            <value>-</value>
           </text>
           <text id="/data/init/create_new_person/new_person:label">
             <value>Ongeza mtumizi mpya</value>
@@ -410,6 +562,9 @@
           <text id="/data/contact/role_other:hint">
             <value>Fafanua vingine</value>
           </text>
+          <text id="/data/clinic/vaccines:label">
+            <value>-</value>
+          </text>
           <text id="/data/init/custom_place_name:hint">
             <value>Jaza jina la eneo hii</value>
           </text>
@@ -418,6 +573,9 @@
           </text>
           <text id="/data/init/custom_place_name_label_translator/name:label">
             <value>Jina</value>
+          </text>
+          <text id="/data/clinic/vaccines/jap_enc:label">
+            <value>-</value>
           </text>
           <text id="/data/clinic/use_cases/imm:label">
             <value>Chanjo</value>
@@ -445,20 +603,22 @@
           <text id="/data/contact/external_id:label">
             <value>Kitambulisho cha nje</value>
           </text>
-          <text id="/data/clinic/meta:label">
-            <value></value>
-          </text>
+          <text id="/data/clinic/vaccines:hint">
+            <value>Chagua zote zinazohitajika kwa hii <output value=" /data/init/place_type_translation "/></value></text>
           <text id="/data/clinic/is_name_generated/true:label">
             <value>Ndio</value>
           </text>
           <text id="/data/contact/name:label">
             <value>Jina</value>
           </text>
-          <text id="/data/contact/meta:label">
+          <text id="/data/clinic/vaccines/hpv:label">
             <value>-</value>
           </text>
           <text id="/data/inputs/user/contact_id:label">
             <value>Namba ya Usajilisho ya mtumiaji wa huduma hii</value>
+          </text>
+          <text id="/data/clinic/vaccines/polio:label">
+            <value>-</value>
           </text>
           <text id="/data/init/create_new_person:label">
             <value>Weka mwasiliwa mkuu</value>
@@ -494,6 +654,9 @@
           <text id="/data/contact/role_other:label">
             <value></value>
           </text>
+          <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
           <text id="/data/contact/role/chw_supervisor:label">
             <value>Kader Pengawas</value>
           </text>
@@ -517,6 +680,9 @@
           <text id="/data/inputs/user:label">
             <value></value>
           </text>
+          <text id="/data/clinic/vaccines/pneumococcal:label">
+            <value>Pneumococcal Pneumonia</value>
+          </text>
           <text id="/data/inputs/user/name:label">
             <value>Nama dari login user</value>
           </text>
@@ -532,6 +698,15 @@
           <text id="/data/clinic/notes:label">
             <value>Catatan</value>
           </text>
+          <text id="/data/clinic/vaccines/vitamin_a:label">
+            <value>Vitamin A</value>
+          </text>
+          <text id="/data/clinic/vaccines/hep_a:label">
+            <value>Hepatitis A</value>
+          </text>
+          <text id="/data/clinic/vaccines/jap_enc:label">
+            <value>Japanese Encephalitis</value>
+          </text>
           <text id="/data/init:label">
             <value>Baru <output value=" /data/init/place_type_translation "/></value></text>
           <text id="/data/clinic/external_id:label">
@@ -546,15 +721,48 @@
           <text id="/data/clinic/use_cases/anc:label">
             <value>Perawatan Antenatal</value>
           </text>
+          <text id="/data/clinic/vaccines/mmr:label">
+            <value>MMR (Measles, Mumps, Rubella)</value>
+          </text>
+          <text id="/data/clinic/vaccines/yellow_fever:label">
+            <value>Yellow Fever</value>
+          </text>
+          <text id="/data/clinic/vaccines/rotavirus:label">
+            <value>Rotavirus</value>
+          </text>
+          <text id="/data/clinic/vaccines/flu:label">
+            <value>Influenza</value>
+          </text>
           <text id="/data/contact/role/chw:label">
             <value>Kader</value>
           </text>
+          <text id="/data/clinic/vaccines/typhoid:label">
+            <value>Typhoid</value>
+          </text>
+          <text id="/data/clinic/vaccines/penta:label">
+            <value>Pentavalent</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmrv:label">
+            <value>MMRV (Measles, Mumps, Rubella, Varicella)</value>
+          </text>
+          <text id="/data/clinic/vaccines/meningococcal:label">
+            <value>Meningococcal</value>
+          </text>
           <text id="/data/clinic/use_cases:hint">
             <value>Pilih semua yang diperlukan untuk ini <output value=" /data/init/place_type_translation "/></value></text>
+          <text id="/data/clinic/vaccines:label">
+            <value>Pilih Jenis Vaksin</value>
+          </text>
+          <text id="/data/clinic/vaccines/cholera:label">
+            <value>Kolera</value>
+          </text>
           <text id="/data/init/generated_name/clinic:label">
             <value>Daerah <output value=" /data/init/contact_name "/></value></text>
           <text id="/data/inputs/user/facility_id:label">
             <value>ID Tempat dari login user</value>
+          </text>
+          <text id="/data/clinic/vaccines/bcg:label">
+            <value>BCG</value>
           </text>
           <text id="/data/init/create_new_person/new_person:label">
             <value>Buat orang baru</value>
@@ -603,6 +811,8 @@
           <text id="/data/contact/external_id:label">
             <value>Eksternal ID</value>
           </text>
+          <text id="/data/clinic/vaccines:hint">
+            <value>Pilih semua yang diperlukan untuk ini <output value=" /data/init/place_type_translation "/></value></text>
           <text id="/data/clinic/meta:label">
             <value></value>
           </text>
@@ -612,11 +822,14 @@
           <text id="/data/contact/name:label">
             <value>Nama</value>
           </text>
-          <text id="/data/contact/meta:label">
-            <value>-</value>
+          <text id="/data/clinic/vaccines/hpv:label">
+            <value>HPV (Human Papillomavirus)</value>
           </text>
           <text id="/data/inputs/user/contact_id:label">
             <value>Contact ID of the logged in user</value>
+          </text>
+          <text id="/data/clinic/vaccines/polio:label">
+            <value>Polio</value>
           </text>
           <text id="/data/init/create_new_person:label">
             <value>Ditetapkan Sebagai Kontak Utama</value>
@@ -652,11 +865,17 @@
           <text id="/data/contact/role_other:label">
             <value></value>
           </text>
+          <text id="/data/contact/meta:label">
+            <value>-</value>
+          </text>
           <text id="/data/contact/role/chw_supervisor:label">
             <value>महिला स्वास्थ्य स्वयम् सेविकाको सुपरभाइजर</value>
           </text>
           <text id="/data/clinic:hint">
             <value>जरुरी</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmr:label">
+            <value>-</value>
           </text>
           <text id="/data/contact/role/nurse:label">
             <value>नर्स</value>
@@ -675,6 +894,9 @@
           <text id="/data/inputs/user:label">
             <value></value>
           </text>
+          <text id="/data/clinic/vaccines/vitamin_a:label">
+            <value>-</value>
+          </text>
           <text id="/data/inputs/user/name:label">
             <value>लग इन गरेको प्रयोगकर्ताको नाम</value>
           </text>
@@ -690,6 +912,12 @@
           <text id="/data/clinic/notes:label">
             <value>टिप्पणि</value>
           </text>
+          <text id="/data/clinic/vaccines/hep_a:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/meta:label">
+            <value></value>
+          </text>
           <text id="/data/init:label">
             <value>नया <output value=" /data/init/place_type_translation "/></value></text>
           <text id="/data/clinic/external_id:label">
@@ -704,16 +932,46 @@
           <text id="/data/clinic/use_cases/anc:label">
             <value>पूर्व प्रसुती स्याहार</value>
           </text>
+          <text id="/data/clinic/vaccines/penta:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/yellow_fever:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/rotavirus:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/flu:label">
+            <value>-</value>
+          </text>
           <text id="/data/contact/role/chw:label">
             <value>महिला स्वास्थ्य स्वयम् सेविका</value>
           </text>
+          <text id="/data/clinic/vaccines/typhoid:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/mmrv:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/meningococcal:label">
+            <value>-</value>
+          </text>
           <text id="/data/clinic/use_cases:hint">
             <value>यस <output value=" /data/init/place_type_translation "/> का लागि आवश्यक सब छान्नुहोस्</value>
+          </text>
+          <text id="/data/clinic/vaccines/pneumococcal:label">
+            <value>-</value>
+          </text>
+          <text id="/data/clinic/vaccines/cholera:label">
+            <value>-</value>
           </text>
           <text id="/data/init/generated_name/clinic:label">
             <value><output value=" /data/init/contact_name "/>को क्षेत्र</value></text>
           <text id="/data/inputs/user/facility_id:label">
             <value>लग इन गरेको प्रयोगकर्ताको स्थानको ID</value>
+          </text>
+          <text id="/data/clinic/vaccines/bcg:label">
+            <value>-</value>
           </text>
           <text id="/data/init/create_new_person/new_person:label">
             <value>एक नया व्यक्ति बनाउनुस</value>
@@ -726,6 +984,9 @@
           <text id="/data/contact/role_other:hint">
             <value>अन्य उल्लेख गर्नुहोस्</value>
           </text>
+          <text id="/data/clinic/vaccines:label">
+            <value>-</value>
+          </text>
           <text id="/data/init/custom_place_name:hint">
             <value>यस स्थानको नाम लेख्नुहोस्</value>
           </text>
@@ -734,6 +995,9 @@
           </text>
           <text id="/data/init/custom_place_name_label_translator/name:label">
             <value>नाम</value>
+          </text>
+          <text id="/data/clinic/vaccines/jap_enc:label">
+            <value>-</value>
           </text>
           <text id="/data/clinic/use_cases/imm:label">
             <value>खोप</value>
@@ -761,8 +1025,8 @@
           <text id="/data/contact/external_id:label">
             <value>बाहिरि ID</value>
           </text>
-          <text id="/data/clinic/meta:label">
-            <value></value>
+          <text id="/data/clinic/vaccines:hint">
+            <value>यस <output value=" /data/init/place_type_translation "/> का लागि आवश्यक सब छान्नुहोस्</value>
           </text>
           <text id="/data/clinic/is_name_generated/true:label">
             <value>हो</value>
@@ -770,11 +1034,14 @@
           <text id="/data/contact/name:label">
             <value>नाम</value>
           </text>
-          <text id="/data/contact/meta:label">
+          <text id="/data/clinic/vaccines/hpv:label">
             <value>-</value>
           </text>
           <text id="/data/inputs/user/contact_id:label">
             <value>लग इन गरेको प्रयोगकर्ताको सम्पर्क ID</value>
+          </text>
+          <text id="/data/clinic/vaccines/polio:label">
+            <value>-</value>
           </text>
           <text id="/data/init/create_new_person:label">
             <value>प्राथमिक सम्पर्क व्यक्ति</value>
@@ -796,7 +1063,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="clinic_create" prefix="J1!clinic_create!" version="2017-05-04_07-15">
+        <data delimiter="#" id="contact:clinic:create" prefix="J1!contact:clinic:create!" version="2017-07-25_08-55">
           <inputs>
             <meta>
               <location>
@@ -819,6 +1086,7 @@
             <name/>
             <external_id/>
             <use_cases/>
+            <vaccines/>
             <notes/>
             <contact/>
             <geolocation/>
@@ -896,6 +1164,7 @@
       <bind calculate="if(  /data/clinic/is_name_generated  = 'true',  /data/init/generated_name_translation ,  /data/init/custom_place_name )" nodeset="/data/clinic/name" required="true()" type="string"/>
       <bind nodeset="/data/clinic/external_id" type="string"/>
       <bind nodeset="/data/clinic/use_cases" relevant="../type = 'district_hospital'" type="select"/>
+      <bind nodeset="/data/clinic/vaccines" relevant="../type = 'district_hospital' and selected( /data/clinic/use_cases ,'imm')" type="select"/>
       <bind nodeset="/data/clinic/notes" type="string"/>
       <bind calculate="if(selected( /data/init/create_new_person ,'none'), &quot;&quot;, coalesce( /data/init/select_person ,&quot;NEW&quot;))" nodeset="/data/clinic/contact" type="string"/>
       <bind calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))" nodeset="/data/clinic/geolocation" type="string"/>
@@ -1066,6 +1335,74 @@
         <item>
           <label ref="jr:itext('/data/clinic/use_cases/imm:label')"/>
           <value>imm</value>
+        </item>
+      </select>
+      <select ref="/data/clinic/vaccines">
+        <label ref="jr:itext('/data/clinic/vaccines:label')"/>
+        <hint ref="jr:itext('/data/clinic/vaccines:hint')"/>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/bcg:label')"/>
+          <value>bcg</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/cholera:label')"/>
+          <value>cholera</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/hep_a:label')"/>
+          <value>hep_a</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/hpv:label')"/>
+          <value>hpv</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/flu:label')"/>
+          <value>flu</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/jap_enc:label')"/>
+          <value>jap_enc</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/meningococcal:label')"/>
+          <value>meningococcal</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/mmr:label')"/>
+          <value>mmr</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/mmrv:label')"/>
+          <value>mmrv</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/polio:label')"/>
+          <value>polio</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/penta:label')"/>
+          <value>penta</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/pneumococcal:label')"/>
+          <value>pneumococcal</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/rotavirus:label')"/>
+          <value>rotavirus</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/typhoid:label')"/>
+          <value>typhoid</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/vitamin_a:label')"/>
+          <value>vitamin_a</value>
+        </item>
+        <item>
+          <label ref="jr:itext('/data/clinic/vaccines/yellow_fever:label')"/>
+          <value>yellow_fever</value>
         </item>
       </select>
       <input appearance="multiline" ref="/data/clinic/notes">
