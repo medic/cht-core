@@ -16,9 +16,6 @@
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d1:label">
             <value>उच्च डायस्टोलिक ब्लड प्रेशर</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_referral_note:label">
-            <value>**खतरे के संकेत हो तो स्वास्थ्य केंद्र भेजें|**</value>
-          </text>
           <text id="/postnatal_visit/patient_uuid:label">
             <value>मरीज UUID</value>
           </text>
@@ -64,9 +61,6 @@
           <text id="/postnatal_visit/inputs/source_id:label">
             <value>सोर्स ID</value>
           </text>
-          <text id="/postnatal_visit/referral_follow_up_needed_mom:label">
-            <value>मरीज़ को भेजें</value>
-          </text>
           <text id="/postnatal_visit/group_chw_info/call_button:label">
             <value>**कृपया <output value=" /postnatal_visit/chw_name "/> के साथ मिल कर देखे के क्या <output value=" /postnatal_visit/patient_name "/> अपने गर्भावस्था के बाद की जांच के लिए आये |** कॉल: <output value=" /postnatal_visit/chw_phone "/></value></text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign1:label">
@@ -102,8 +96,8 @@
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd1:label">
             <value>बुखार</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_referral:label">
-            <value>खतरे के संकेत&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign6:label">
+            <value>बूँद बूँद कर टपकने वाला पेशाब</value>
           </text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign11:label">
             <value>अन्य खतरे के संकेत</value>
@@ -232,9 +226,6 @@
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd11:label">
             <value>अन्य खतरे के संकेत</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign6:label">
-            <value>बूँद बूँद कर टपकने वाला पेशाब</value>
-          </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d5:label">
             <value>बुखार या खराब बू वाला जेर</value>
           </text>
@@ -344,9 +335,6 @@
           <text id="/postnatal_visit/group_review/r_summary:label">
             <value>मरीज़ की जानकारी &lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/postnatal_visit/referral_follow_up_needed_baby:label">
-            <value>बच्चे को भेजें</value>
-          </text>
           <text id="/postnatal_visit/inputs/contact/date_of_birth:label">
             <value>जन्म दिन</value>
           </text>
@@ -368,6 +356,9 @@
           <text id="/postnatal_visit/inputs/contact/_id:hint">
             <value>सूची में से एक व्यक्ति को चुनें</value>
           </text>
+          <text id="/postnatal_visit/group_review/r_danger_signs:label">
+            <value>खतरे के संकेत&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+          </text>
         </translation>
         <translation lang="en">
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:label">
@@ -381,9 +372,6 @@
           </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d1:label">
             <value>Elevated diastolic blood pressure</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_referral_note:label">
-            <value>**Refer to the health facility for danger signs.**</value>
           </text>
           <text id="/postnatal_visit/patient_uuid:label">
             <value>Patient UUID</value>
@@ -430,9 +418,6 @@
           <text id="/postnatal_visit/inputs/source_id:label">
             <value>Source ID</value>
           </text>
-          <text id="/postnatal_visit/referral_follow_up_needed_mom:label">
-            <value>Refer Patient</value>
-          </text>
           <text id="/postnatal_visit/group_chw_info/call_button:label">
             <value>**Please follow up with <output value=" /postnatal_visit/chw_name "/> to see if <output value=" /postnatal_visit/patient_name "/> attended her PNC visit.**
 Call: <output value=" /postnatal_visit/chw_phone "/></value></text>
@@ -469,8 +454,8 @@ Call: <output value=" /postnatal_visit/chw_phone "/></value></text>
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd1:label">
             <value>Fever</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_referral:label">
-            <value>Danger Signs&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign6:label">
+            <value>Dribbling urine</value>
           </text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign11:label">
             <value>Other danger signs</value>
@@ -598,9 +583,6 @@ Call: <output value=" /postnatal_visit/chw_phone "/></value></text>
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd11:label">
             <value>Other danger signs</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign6:label">
-            <value>Dribbling urine</value>
-          </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d5:label">
             <value>Fever or foul-smelling lochia</value>
           </text>
@@ -712,9 +694,6 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           <text id="/postnatal_visit/group_review/r_summary:label">
             <value>Patient Information&lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/postnatal_visit/referral_follow_up_needed_baby:label">
-            <value>Refer Baby</value>
-          </text>
           <text id="/postnatal_visit/inputs/contact/date_of_birth:label">
             <value>Date of Birth</value>
           </text>
@@ -736,6 +715,9 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           <text id="/postnatal_visit/inputs/contact/_id:hint">
             <value>Select a person from list</value>
           </text>
+          <text id="/postnatal_visit/group_review/r_danger_signs:label">
+            <value>Danger Signs&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+          </text>
         </translation>
         <translation lang="id">
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:label">
@@ -749,9 +731,6 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d1:label">
             <value>Tekanan darah diastolik tinggi</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_referral_note:label">
-            <value>**Merujuk ke fasilitas kesehatan untuk tanda bahaya.**</value>
           </text>
           <text id="/postnatal_visit/patient_uuid:label">
             <value>Pasien UUID</value>
@@ -798,9 +777,6 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           <text id="/postnatal_visit/inputs/source_id:label">
             <value>Sumber ID</value>
           </text>
-          <text id="/postnatal_visit/referral_follow_up_needed_mom:label">
-            <value>Merujuk pasien</value>
-          </text>
           <text id="/postnatal_visit/group_chw_info/call_button:label">
             <value>**Mohon dibicarakan dengan <output value=" /postnatal_visit/chw_name "/> untuk memastikan apakah <output value=" /postnatal_visit/patient_name "/> untuk kunjungan perawatan setelah melahirkan nya.** Sebut: <output value=" /postnatal_visit/chw_phone "/></value></text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign1:label">
@@ -836,8 +812,8 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd1:label">
             <value>Demam</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_referral:label">
-            <value>Tanda-tanda bahaya&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign6:label">
+            <value>Urin di tetes</value>
           </text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign11:label">
             <value>Tanda bahaya lainnya</value>
@@ -965,9 +941,6 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd11:label">
             <value>Tanda bahaya lainnya</value>
           </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign6:label">
-            <value>Urin di tetes</value>
-          </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d5:label">
             <value>Demam atau berbau busuk lokia</value>
           </text>
@@ -1080,9 +1053,6 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
           <text id="/postnatal_visit/group_review/r_summary:label">
             <value>Informasi pasien &lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/postnatal_visit/referral_follow_up_needed_baby:label">
-            <value>Merujuk bayi</value>
-          </text>
           <text id="/postnatal_visit/inputs/contact/date_of_birth:label">
             <value>Tanggal lahir</value>
           </text>
@@ -1104,12 +1074,15 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
           <text id="/postnatal_visit/inputs/contact/_id:hint">
             <value>Pilih orang dari daftar</value>
           </text>
+          <text id="/postnatal_visit/group_review/r_danger_signs:label">
+            <value>Tanda-tanda bahaya&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+          </text>
         </translation>
       </itext>
       <instance>
-        <postnatal_visit delimiter="#" id="postnatal_visit" prefix="J1!postnatal_visit!" version="2017-06-09_09-50">
-          <inputs>
-            <meta>
+        <postnatal_visit delimiter="#" id="postnatal_visit" prefix="J1!postnatal_visit!" version="2017-07-28_19-41">
+          <inputs tag="hidden">
+            <meta tag="hidden">
               <location>
                 <lat/>
                 <long/>
@@ -1134,41 +1107,39 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
               </parent>
             </contact>
           </inputs>
-          <patient_age_in_years/>
+          <patient_age_in_years tag="hidden"/>
           <patient_phone/>
-          <patient_uuid/>
+          <patient_uuid tag="hidden"/>
           <patient_id/>
           <patient_name/>
           <chw_name/>
           <chw_phone/>
           <danger_signs_mom/>
           <danger_signs_baby/>
-          <referral_follow_up_needed_mom/>
-          <referral_follow_up_needed_baby/>
           <chw_sms/>
           <visit_confirmed/>
-          <group_chw_info>
+          <group_chw_info tag="hidden">
             <chw_information/>
             <call_button/>
             <attended_pnc>yes</attended_pnc>
           </group_chw_info>
-          <group_who_assessed>
+          <group_who_assessed tag="hidden">
             <g_who_assessed/>
           </group_who_assessed>
-          <group_danger_signs_mom>
+          <group_danger_signs_mom tag="hidden">
             <g_danger_signs_mom/>
             <danger_signs_mom_other/>
           </group_danger_signs_mom>
-          <group_danger_signs_baby>
+          <group_danger_signs_baby tag="hidden">
             <g_danger_signs_baby/>
             <danger_signs_baby_other/>
           </group_danger_signs_baby>
-          <group_note>
+          <group_note tag="hidden">
             <default_chw_sms/>
             <is_sms_edited/>
             <g_chw_sms/>
           </group_note>
-          <group_review>
+          <group_review tag="hidden">
             <submit/>
             <r_summary/>
             <r_patient_id/>
@@ -1176,8 +1147,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
             <r_visit/>
             <r_visit_yes/>
             <r_visit_no/>
-            <r_referral/>
-            <r_referral_note/>
+            <r_danger_signs/>
             <r_mom_danger_signs/>
             <r_mom_danger_sign1/>
             <r_mom_danger_sign2/>
@@ -1209,7 +1179,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
             <r_followup_note1/>
             <r_followup_note2/>
           </group_review>
-          <meta>
+          <meta tag="hidden">
             <instanceID/>
           </meta>
         </postnatal_visit>
@@ -1234,8 +1204,6 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
       <bind calculate="../inputs/contact/parent/contact/phone" nodeset="/postnatal_visit/chw_phone" type="string"/>
       <bind calculate=" /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom " nodeset="/postnatal_visit/danger_signs_mom" type="string"/>
       <bind calculate=" /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby " nodeset="/postnatal_visit/danger_signs_baby" type="string"/>
-      <bind calculate="if (count-selected( /postnatal_visit/danger_signs_mom ) &gt; 0, 'true', 'false')" nodeset="/postnatal_visit/referral_follow_up_needed_mom" type="string"/>
-      <bind calculate="if (count-selected( /postnatal_visit/danger_signs_baby ) &gt; 0, 'true', 'false')" nodeset="/postnatal_visit/referral_follow_up_needed_baby" type="string"/>
       <bind calculate=" /postnatal_visit/group_note/g_chw_sms " nodeset="/postnatal_visit/chw_sms" type="string"/>
       <bind calculate=" /postnatal_visit/group_chw_info/attended_pnc " nodeset="/postnatal_visit/visit_confirmed" type="string"/>
       <bind nodeset="/postnatal_visit/group_chw_info" relevant=" /postnatal_visit/inputs/source  = 'task'"/>
@@ -1284,8 +1252,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
       <bind nodeset="/postnatal_visit/group_review/r_visit" readonly="true()" relevant=" /postnatal_visit/group_chw_info/attended_pnc  != ''" type="string"/>
       <bind nodeset="/postnatal_visit/group_review/r_visit_yes" readonly="true()" relevant="selected( /postnatal_visit/group_chw_info/attended_pnc , 'yes')" type="string"/>
       <bind nodeset="/postnatal_visit/group_review/r_visit_no" readonly="true()" relevant="selected( /postnatal_visit/group_chw_info/attended_pnc ,'no')" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_referral" readonly="true()" relevant=" /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom  != '' or  /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby  != ''" type="string"/>
-      <bind nodeset="/postnatal_visit/group_review/r_referral_note" readonly="true()" relevant=" /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom  != '' or  /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby  != ''" type="string"/>
+      <bind nodeset="/postnatal_visit/group_review/r_danger_signs" readonly="true()" relevant=" /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom  != '' or  /postnatal_visit/group_danger_signs_baby/g_danger_signs_baby  != ''" type="string"/>
       <bind nodeset="/postnatal_visit/group_review/r_mom_danger_signs" readonly="true()" relevant=" /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom  != ''" type="string"/>
       <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign1" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd1')" type="string"/>
       <bind nodeset="/postnatal_visit/group_review/r_mom_danger_sign2" readonly="true()" relevant="selected( /postnatal_visit/group_danger_signs_mom/g_danger_signs_mom , 'd2')" type="string"/>
@@ -1593,11 +1560,8 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
       <input appearance="h4 center" ref="/postnatal_visit/group_review/r_visit_no">
         <label ref="jr:itext('/postnatal_visit/group_review/r_visit_no:label')"/>
       </input>
-      <input appearance="h1 red" ref="/postnatal_visit/group_review/r_referral">
-        <label ref="jr:itext('/postnatal_visit/group_review/r_referral:label')"/>
-      </input>
-      <input ref="/postnatal_visit/group_review/r_referral_note">
-        <label ref="jr:itext('/postnatal_visit/group_review/r_referral_note:label')"/>
+      <input appearance="h1 red" ref="/postnatal_visit/group_review/r_danger_signs">
+        <label ref="jr:itext('/postnatal_visit/group_review/r_danger_signs:label')"/>
       </input>
       <input ref="/postnatal_visit/group_review/r_mom_danger_signs">
         <label ref="jr:itext('/postnatal_visit/group_review/r_mom_danger_signs:label')"/>
