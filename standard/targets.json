@@ -123,21 +123,23 @@
     },
     {
       "type": "count",
-      "id": "immunizations-under-2-years",
+      "id": "imm-children-under-5-years",
       "icon": "children",
       "goal": -1,
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
-          "content": "Active children under 2"
+          "content": "Children under 5 years old"
         }
       ]
     },
     {
       "type": "count",
-      "id": "imm-reg-this-month",
+      "id": "imm-children-registered-this-month",
       "icon": "child",
       "goal": -1,
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -147,9 +149,10 @@
     },
     {
       "type": "count",
-      "id": "vaccine-doses",
+      "id": "imm-vaccines-given-this-month",
       "icon": "immunization",
       "goal": -1,
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -159,37 +162,40 @@
     },
     {
       "type": "count",
-      "id": "immunizations-1-plus-in-last-3-months",
+      "id": "imm-children-vaccinated-prev-3-months",
       "icon": "chw",
       "goal": -1,
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
-          "content": "U6 Immunized in past 3 months"
+          "content": "Children vaccinated in past 3 months"
         }
       ]
     },
     {
       "type": "count",
-      "id": "immunizations-6-months-no-vaccine",
+      "id": "imm-no-vaccine-reported",
       "icon": "risk",
       "goal": -1,
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
-          "content": "U6 without vaccines logged"
+          "content": "Children with no vaccines reported"
         }
       ]
     },
     {
       "type": "percent",
-      "id": "immunizations-full-under-2",
+      "id": "imm-children-with-bcg-reported",
       "icon": "child",
       "goal": 100,
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
-          "content": "U2 fully immunized"
+          "content": "Children with BCG reported"
         }
       ]
     }

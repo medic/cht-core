@@ -93,6 +93,7 @@ rule GenerateEvents {
 
     var immunizationForms = [
       'V',
+      'imm',
       'immunization_visit',
       'DT1',
       'DT2',
@@ -204,6 +205,36 @@ rule GenerateEvents {
       }
     };
 
+    // From medic-sentinel/lib/utils.js
+    var isFormCodeSame = function (formCode, test) {
+      // case insensitive match with junk padding
+      return (new RegExp('^\W*' + formCode + '\\W*$','i')).test(test);
+    };
+    
+    var receivedVaccine = function (report, vaccine) {
+      var fieldName = 'received_' + vaccine;
+      if ( isFormCodeSame(report.form, vaccine)
+        || (isFormCodeSame(report.form, 'immunization_visit') && report.fields.vaccines_received[fieldName] == 'yes')
+        || (isFormCodeSame(report.form, 'imm') && report.fields.vaccines_received[fieldName] == 'yes') ) {
+        return true;
+      }
+      else {
+        return false;
+      }
+    };
+
+    var isBcgReported = function (person) {
+      var bcgReported = false;
+      if (person && person.reports) {
+        person.reports.forEach(function(r){
+          if (receivedVaccine(r, 'bcg')) {
+            bcgReported = true;
+          }
+        });
+      }
+      return bcgReported;
+    };
+
     var countDoses = function (report) {
       var dosesGiven = 0;
       immunizations.forEach(function(i) {
@@ -215,8 +246,16 @@ rule GenerateEvents {
       return dosesGiven;
     };
 
-    // Generate Targets
+    // ==============================
+    // GENERATE TARGETS
+    // ==============================
     if (c.contact != null && c.contact.type === 'person') {
+
+      // INIT
+      var birthDate = new Date(c.contact.date_of_birth);
+      var ageInMs = new Date(Date.now() - birthDate.getTime());
+      var ageInMonths = (Math.abs(ageInMs.getFullYear() - 1970) * 12) + ageInMs.getMonth();
+      // var ageInMsAtRegistration = age - c.contact.reported_date;
 
       // Get most recent of each form to avoid recalculating these
       // var newestPregnancy = Utils.getMostRecentReport(c.reports, 'P');
@@ -231,28 +270,85 @@ rule GenerateEvents {
                                       Utils.getMostRecentTimestamp(c.reports, 'delivery')
                                     );
 
-      var newestImmunizationRegTimestamp = Math.max(
-                Utils.getMostRecentTimestamp(c.reports, 'C'),
-                Utils.getMostRecentTimestamp(c.reports, 'immunization')
-            );
+      // ------------------------------
+      // PERSON-BASED TARGETS
+      // ------------------------------==============================
 
-      // console.log('TARGET ' + c.contact._id + ' newestPregnancyTimestamp: ' + newestPregnancyTimestamp);
+      // TARGETS FOR CHILDREN UNDER 5 YEARS
+      if (ageInMonths < 60) {
+        // IMM: CHILDREN REGISTERED THIS MONTH
+        var instance = createTargetInstance('imm-children-registered-this-month', c.contact, ageInMonths < 60);
+        instance.date = c.contact.reported_date;
+        emitTargetInstance(instance);
+
+        // IMM: CHILDREN WITH BCG REPORTED
+        var instance = createTargetInstance('imm-children-with-bcg-reported', c.contact, isBcgReported(c));
+        instance.date = now.getTime();
+        emitTargetInstance(instance);
+
+        // IMM: NUMBER OF CHILDREN
+        var instance = createTargetInstance('imm-children-under-5-years', c.contact, true);
+        instance.date = now.getTime();
+        emitTargetInstance(instance);
+
+        // IMM: CHILDREN WITH 1+ VISIT IN PAST 3 MONTHS
+        var visits = 0;
+        c.reports.forEach(function(r) {
+          // count the number of visit forms sent within the past 3 months
+          if (isFormFromArraySubmittedInWindow(c.reports, immunizationForms, Utils.addDate(now, 90 * -1).getTime(), now.getTime())) {
+            visits++;
+          }
+        });
+        var instance = createTargetInstance('imm-children-vaccinated-prev-3-months', c.contact, visits >= 1);
+        instance.date = now.getTime();
+        emitTargetInstance(instance);
+
+        // IMM: CHILDREN WITH NO VISITS
+        var noVaccine = true;
+        c.reports.forEach(function(r) {
+          if(immunizationForms.indexOf(r.form) != -1) {
+            noVaccine = false;
+          }
+        });
+        var instance = createTargetInstance('imm-no-vaccine-reported', c.contact, noVaccine);
+        instance.date = now.getTime();
+        emitTargetInstance(instance);
+      }
+
+      // ------------------------------
+      // REPORT-BASED TARGETS
+      // ------------------------------
       c.reports.forEach(function(r) {
-        // console.log('TARGET.forEach ' + c.contact._id + ' report: ' + r.form);
+
+        // IMM: VACCINES DISTRIBUTED THIS MONTH
+        if(immunizationForms.indexOf(r.form) != -1) {
+          if(r.form == 'immunization_visit' || r.form == 'imm') {
+            // Multiple vaccine doses can be reported in a single XForm (app or collect)
+            var totalDoses = countDoses(r);
+            for(i=0; i<totalDoses; i++) {
+              var instance = createTargetInstance('imm-vaccines-given-this-month', r, true);
+              instance._id += i;
+              emitTargetInstance(instance);
+            }
+          }
+          else { // For TextForms each vaccine is separate report
+            var instance = createTargetInstance('imm-vaccines-given-this-month', r, true);
+            emitTargetInstance(instance);
+          }
+        }
 
         // Pregnancy related widgets
         if (r.reported_date === newestPregnancyTimestamp && (r.form === 'P' || r.form === 'pregnancy')) {
+
+          var lmp = new Date(r.lmp_date);
+          var maxEDD = new Date();
+          maxEDD.setDate(lmp.getDate() + 294);
 
           // PREGNANCIES REGISTERED THIS MONTH
           var instance = createTargetInstance('pregnancy-registrations-this-month', r, true);
           // use contact id to avoid counting multiple pregnancies for same person
           instance._id = c.contact._id + '-' + 'pregnancy-registrations-this-month';
           emitTargetInstance(instance);
-
-          // Active pregnancies
-          var lmp = new Date(r.lmp_date);
-          var maxEDD = new Date();
-          maxEDD.setDate(lmp.getDate() + 294);
 
           // ACTIVE PREGNANCIES
           if ( newestDeliveryTimestamp == null || newestDeliveryTimestamp < newestPregnancyTimestamp || maxEDD < now ) {
@@ -332,80 +428,21 @@ rule GenerateEvents {
           emitTargetInstance(instance);
 
         }
-
-        //immunization widgets
-        if (r.form === 'C') {
-
-          // CHILDREN REGISTERED THIS MONTH
-          var instance = createTargetInstance('imm-reg-this-month', r, true);
-          instance._id = c.contact._id + '-' + 'imm-reg-this-month';
-          emitTargetInstance(instance);
-
-          var birthDate = new Date(r.birth_date);
-          var age = Date.now() - birthDate.getTime();
-          var ageDate = new Date(age);
-          var ageMonth = ageDate.getMonth();
-          var ageInMonths = (Math.abs(ageDate.getFullYear() - 1970) * 12) + ageMonth;
-
-          if (ageInMonths < 24) {
-            // ACTIVE CHILDREN UNDER 2
-            var instance = createTargetInstance('immunizations-under-2-years', r, true);
-            instance.date = now.getTime();
-            emitTargetInstance(instance);
-
-            // Children with 1+ visit in the past 3 months
-            var visits = 0;
-            c.reports.forEach(function(r) {
-              // count the number of visit forms sent within the past 3 months
-              if (isFormFromArraySubmittedInWindow(c.reports, immunizationForms, Utils.addDate(now, 90 * -1).getTime(), now.getTime())) {
-                visits++;
-              }
-            });
-            var instance = createTargetInstance('immunizations-1-plus-in-last-3-months', r, visits >= 1);
-            emitTargetInstance(instance);
-
-          }
-          // CHILDREN UNDER 6 MONTHS WITH NO VISITS
-          if (ageInMonths < 6) {
-            var noVaccine = true;
-            c.reports.forEach(function(r) {
-              if(immunizationForms.indexOf(r.form) != -1) {
-                noVaccine = false;
-                return;
-              }
-            });
-            var instance = createTargetInstance('immunizations-6-months-no-vaccine', r, noVaccine);
-            instance.date = now.getTime();
-            emitTargetInstance(instance);
-          }
-
-          // VACCINES DISTRIBUTED THIS MONTH
-          c.reports.forEach(function(r) {
-            if(immunizationForms.indexOf(r.form) != -1) {
-              if(r.form == 'immunization_visit') {
-                var totalDoses = countDoses(r);
-                for(i=0; i<totalDoses; i++) {
-                  var instance = createTargetInstance('vaccine-doses',r,true);
-                  instance._id = r._id + '-' + 'vaccine-doses-' + i;
-                  emitTargetInstance(instance);
-                }
-              }
-              else {
-                var instance = createTargetInstance('vaccine-doses',r,true);
-                emitTargetInstance(instance);
-              }
-            }
-          });
-        }
-
       });
     }
 
-    // Person tasks: add corresponding task for each form
+    // ==============================
+    // GENERATES TASKS
+    // ==============================
     if (c.contact && c.contact.type === 'person') {
+      // ------------------------------
+      // PERSON-BASED TASKS
+      // ------------------------------
+      // None
 
-      // Report based tasks
-
+      // ------------------------------
+      // REPORT-BASED TASKS
+      // ------------------------------
       c.reports.forEach(
         function(r) {
 
