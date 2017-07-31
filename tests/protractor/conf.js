@@ -5,7 +5,7 @@ const utils = require('./utils'),
   modules = [];
 
 if(!process.env.COUCH_NODE_NAME) {
-  throw new Error('Missing require env var: COUCH_NODE_NAME');
+  throw new Error('Missing required env var: COUCH_NODE_NAME');
 }
 
 const getLoginUrl = () => {
