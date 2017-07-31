@@ -1,5 +1,5 @@
 const utils = require('../utils'),
-  async = require('async');
+      async = require('async');
 
 describe('view docs_by_replication_key', () => {
 
@@ -62,6 +62,17 @@ describe('view docs_by_replication_key', () => {
       contact: {
         _id: 'testuser'
       }
+    },
+    {
+      _id: 'report_with_unknown_patient_id',
+      reported_date: 1,
+      form: 'V',
+      type: 'data_record',
+      patient_id: 'unknown_patient',
+      contact: {
+        _id: 'testuser'
+      },
+      errors: [ { code: 'registration_not_found' } ]
     }
   ];
 
@@ -134,7 +145,7 @@ describe('view docs_by_replication_key', () => {
 
   // TODO: consider removing this and just pulling ids from the two arrays above
   let docByPlaceIds,
-    docByPlaceIds_unassigned;
+      docByPlaceIds_unassigned;
 
   beforeAll(done => {
     const alldocs = documentsToReturn.concat(documentsToIgnore, documentsToIgnoreSometimes);
@@ -156,7 +167,7 @@ describe('view docs_by_replication_key', () => {
         });
     };
 
-    console.log('Pushing ' + alldocs.length + ' documents for testing…');
+    console.log(`Pushing ${alldocs.length} documents for testing…`);
     async.each(alldocs,
       (testDoc, callback) => {
         utils.saveDoc(testDoc)
@@ -216,6 +227,10 @@ describe('view docs_by_replication_key', () => {
     it('Should check the contact of data records', () => {
       expect(docByPlaceIds).toContain('report_with_contact');
       expect(docByPlaceIds).not.toContain('test_data_record_wrong_user');
+    });
+
+    it('Falls back to contact id when unknown patient', () => {
+      expect(docByPlaceIds).toContain('report_with_unknown_patient_id');
     });
   });
 
