@@ -34,7 +34,8 @@ let labels = {
   'UI/UX': [],
   'Bug': [],
   'Feature Request': [],
-  'Performance': []
+  'Performance': [],
+  'Security':[]
 };
 issues.forEach(function(issue) {
   // exclude issues closed before date
@@ -73,3 +74,4 @@ outputSection('Features', 'Feature Request');
 outputSection('Bug fixes', 'Bug');
 outputSection('UI/UX improvements', 'UI/UX');
 outputSection('Performance improvements', 'Performance');
+outputSection('Security', 'Security');
