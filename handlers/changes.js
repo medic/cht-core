@@ -340,11 +340,11 @@ var getReplicationKey = function(doc) {
   var getSubject = function() {
     if (doc.form) {
       // report
-      if (doc.errors && doc.errors.length) {
+      if (doc.contact && doc.errors && doc.errors.length) {
         for (var i = 0; i < doc.errors.length; i++) {
           // no patient found, fall back to using contact. #3437
           if (doc.errors[i].code === 'registration_not_found') {
-            return doc.contact && doc.contact._id;
+            return doc.contact._id;
           }
         }
       }
@@ -365,11 +365,10 @@ var getReplicationKey = function(doc) {
              doc.tasks[0].messages[0].contact &&
              doc.tasks[0].messages[0].contact._id;
     }
-    return '_unassigned';
   };
   switch (doc.type) {
     case 'data_record':
-      var subject = getSubject();
+      var subject = getSubject() || '_unassigned';
       var value = {};
       if (doc.form && doc.contact) {
         value.submitter = doc.contact._id;
