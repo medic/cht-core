@@ -36,7 +36,10 @@ module.exports = {
     });
     // An "error" ends up being a doc.error, which is something that is shown
     // on the screen when you view the error. We need both
-    messages.addError(doc, message);
+    messages.addError(doc, {
+      message: message,
+      code: errorKey
+    });
   },
   addRegistrationNotFoundError: (doc, reportConfig) => {
     module.exports.addRejectionMessage(doc, reportConfig, 'registration_not_found');

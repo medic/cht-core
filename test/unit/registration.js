@@ -207,7 +207,10 @@ exports['add_patient errors if the configuration doesnt point to an id'] = test 
 
   transition.onMatch(change, db, audit, () => {
     test.equal(doc.patient_id, undefined);
-    test.deepEqual(doc.errors, [{message: 'messages.generic.no_provided_patient_id', code: 'invalid_report'}]);
+    test.deepEqual(doc.errors, [{
+      message: 'messages.generic.no_provided_patient_id',
+      code: 'no_provided_patient_id'
+    }]);
     test.done();
   });
 };
@@ -247,7 +250,10 @@ exports['add_patient errors if the given id is not unique'] = test => {
 
   transition.onMatch(change, db, audit, () => {
     test.equal(doc.patient_id, undefined);
-    test.deepEqual(doc.errors, [{message: 'messages.generic.provided_patient_id_not_unique', code: 'invalid_report'}]);
+    test.deepEqual(doc.errors, [{
+      message: 'messages.generic.provided_patient_id_not_unique',
+      code: 'provided_patient_id_not_unique'
+    }]);
     test.done();
   });
 };

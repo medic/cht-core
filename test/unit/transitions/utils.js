@@ -26,7 +26,8 @@ exports['addRejectionMessage handles no configured messages'] = test => {
   test.equals(addMessage.args[0][0].phone, phone);
   test.equals(addError.callCount, 1);
   test.equals(addError.args[0][0]._id, 'a');
-  test.equals(addError.args[0][1], 'messages.generic.notfound');
+  test.equals(addError.args[0][1].message, 'messages.generic.notfound');
+  test.equals(addError.args[0][1].code, errorKey);
   test.done();
 };
 
@@ -58,6 +59,7 @@ exports['addRejectionMessage finds configured message'] = test => {
   test.equals(getMessage.args[0][1], 'xyz');
   test.equals(addError.callCount, 1);
   test.equals(addError.args[0][0]._id, 'a');
-  test.equals(addError.args[0][1], 'some message');
+  test.equals(addError.args[0][1].message, 'some message');
+  test.equals(addError.args[0][1].code, errorKey);
   test.done();
 };
