@@ -1,6 +1,6 @@
 const utils = require('../utils'),
-      helper = require('../helper');
-
+  helper = require('../helper'),
+  commonElements = require('../page-objects/common/common.po.js');
 describe('Submit Enketo form', () => {
 
   const xml = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -92,7 +92,7 @@ describe('Submit Enketo form', () => {
   afterEach(utils.afterEach);
 
   it('submits on reports tab', () => {
-    element(by.id('reports-tab')).click();
+    commonElements.goToReports();
     browser.sleep(1000); // let the refresh work - #3691
 
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));

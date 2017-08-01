@@ -1,4 +1,5 @@
-const utils = require('../utils');
+const utils = require('../utils'),
+  commonElements = require('../page-objects/common/common.po.js');
 
 describe('Bulk delete reports', () => {
 
@@ -72,7 +73,7 @@ describe('Bulk delete reports', () => {
   afterEach(utils.afterEach);
 
   it('reports', () => {
-    element(by.id('reports-tab')).click();
+    commonElements.goToReports();
 
     browser.wait(() => element(by.css('#reports-list li:first-child')).isPresent(), 10000, 'There should be at least one report in the LHS');
 

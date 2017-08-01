@@ -1,4 +1,5 @@
-const utils = require('../utils');
+const utils = require('../utils'),
+  commonElements = require('../page-objects/common/common.po.js');
 
 describe('registration transition', () => {
 
@@ -238,7 +239,7 @@ describe('registration transition', () => {
     };
 
     it('shows content', () => {
-      element(by.id('reports-tab')).click();
+      commonElements.goToReports();
       browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child .name', CAROL.name)).isPresent(), 10000);
 
       element(by.css('#reports-list .unfiltered li:first-child .item-summary')).click();
