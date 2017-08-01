@@ -473,3 +473,123 @@ exports['addMessage truncates long unicode sms'] = function(test) {
     test.equals(message.original_message, sms);
     test.done();
 };
+
+exports['getPatientContactUuid returns the ID for the given short code'] = test => {
+    const expected = 'abc123';
+    const given = '55998';
+    const patients = [ { id: expected } ];
+    const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: patients });
+    utils.getPatientContactUuid(db, given, (err, actual) => {
+        test.equals(err, null);
+        test.equals(actual, expected);
+        test.equals(view.callCount, 1);
+        test.equals(view.args[0][0], 'medic');
+        test.equals(view.args[0][1], 'patient_by_patient_shortcode_id');
+        test.equals(view.args[0][2].key, given);
+        test.equals(view.args[0][2].include_docs, false);
+        test.done();
+    });
+};
+
+exports['getPatientContactUuid returns empty when no patient found'] = test => {
+    const given = '55998';
+    const patients = [ ];
+    const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: patients });
+    utils.getPatientContactUuid(db, given, (err, actual) => {
+        test.equals(err, null);
+        test.equals(actual, null);
+        test.equals(view.callCount, 1);
+        test.done();
+    });
+};
+
+exports['getPatientContactUuid returns empty when no shortcode given'] = test => {
+    const view = sinon.stub(db.medic, 'view');
+    utils.getPatientContactUuid(db, null, (err, actual) => {
+        test.equals(err, null);
+        test.equals(actual, null);
+        test.equals(view.callCount, 0);
+        test.done();
+    });
+};
+
+exports['getPatientContact returns the patient for the given short code'] = test => {
+    const expected = 'abc123';
+    const given = '55998';
+    const patients = [ { id: expected, doc: { _id: expected, name: 'jim', patient_id: given } } ];
+    const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: patients });
+    utils.getPatientContact(db, given, (err, actual) => {
+        test.equals(err, null);
+        test.equals(actual.name, 'jim');
+        test.equals(view.callCount, 1);
+        test.equals(view.args[0][0], 'medic');
+        test.equals(view.args[0][1], 'patient_by_patient_shortcode_id');
+        test.equals(view.args[0][2].key, given);
+        test.equals(view.args[0][2].include_docs, true);
+        test.done();
+    });
+};
+
+exports['getPatientContact returns empty when no patient found'] = test => {
+    const given = '55998';
+    const patients = [ ];
+    const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: patients });
+    utils.getPatientContact(db, given, (err, actual) => {
+        test.equals(err, null);
+        test.equals(actual, null);
+        test.equals(view.callCount, 1);
+        test.done();
+    });
+};
+
+exports['getPatientContact returns empty when no shortcode given'] = test => {
+    const view = sinon.stub(db.medic, 'view');
+    utils.getPatientContact(db, null, (err, actual) => {
+        test.equals(err, null);
+        test.equals(actual, null);
+        test.equals(view.callCount, 0);
+        test.done();
+    });
+};
+
+exports['getRegistrations queries by id if given'] = test => {
+    const expected = [ { id: 'a' } ];
+    const given = '22222';
+    const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: expected });
+    utils.getRegistrations({ db: db, id: given }, (err, actual) => {
+        test.equals(err, null);
+        test.deepEqual(actual, expected);
+        test.equals(view.callCount, 1);
+        test.equals(view.args[0][0], 'medic');
+        test.equals(view.args[0][1], 'registered_patients');
+        test.equals(view.args[0][2].key, given);
+        test.equals(view.args[0][2].include_docs, true);
+        test.done();
+    });
+};
+
+exports['getRegistrations queries by ids if given'] = test => {
+    const expected = [ { id: 'a' }, { id: 'b' } ];
+    const given = ['11111', '22222'];
+    const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: expected });
+    utils.getRegistrations({ db: db, ids: given }, (err, actual) => {
+        test.equals(err, null);
+        test.deepEqual(actual, expected);
+        test.equals(view.callCount, 1);
+        test.equals(view.args[0][0], 'medic');
+        test.equals(view.args[0][1], 'registered_patients');
+        test.equals(view.args[0][2].keys, given);
+        test.equals(view.args[0][2].include_docs, true);
+        test.done();
+    });
+};
+
+exports['getRegistrations returns empty array if id or ids'] = test => {
+    const view = sinon.stub(db.medic, 'view');
+    utils.getRegistrations({ db: db }, (err, actual) => {
+        test.equals(err, null);
+        test.deepEqual(actual, []);
+        test.equals(view.callCount, 0);
+        test.done();
+    });
+};
