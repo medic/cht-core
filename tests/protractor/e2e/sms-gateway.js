@@ -200,7 +200,7 @@ describe('sms-gateway api', () => {
     });
 
     it('- shows content', () => {
-      element(by.id('reports-tab')).click();
+      commonElements.goToReports();
 
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();

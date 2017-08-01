@@ -1,5 +1,6 @@
 const utils = require('../utils'),
-  moment = require('moment');
+  moment = require('moment'),
+  commonElements = require('../page-objects/common/common.po.js');
 
 describe('Filters reports', () => {
 
@@ -100,7 +101,7 @@ describe('Filters reports', () => {
   afterEach(utils.afterEach);
 
   it('by date', () => {
-    element(by.id('reports-tab')).click();
+    commonElements.goToReports();
 
     browser.wait(() => {
       return element(by.css('#reports-list li:first-child')).isPresent();
