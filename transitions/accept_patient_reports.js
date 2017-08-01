@@ -62,21 +62,26 @@ module.exports = {
     /* try to match a recipient return undefined otherwise */
     matchRegistrations: function(options, callback) {
         var registrations = options.registrations,
+            patient = options.patient,
             doc = options.doc,
             locale = utils.getLocale(doc),
             report = options.report;
 
-        if (registrations && registrations.length) {
+        if (patient) {
             _.each(report.messages, function(msg) {
                 if (msg.event_type === 'report_accepted') {
                     messages.addMessage({
                         doc: doc,
                         message: messages.getMessage(msg, locale),
                         phone: messages.getRecipientPhone(doc, msg.recipient),
+                        patient: patient,
                         registrations: registrations
                     });
                 }
             });
+        }
+
+        if (registrations && registrations.length) {
             return module.exports.silenceRegistrations({
                 db: options.db,
                 audit: options.audit,
@@ -155,13 +160,11 @@ module.exports = {
             db: db,
             id: doc.fields && doc.fields.patient_id
         }, function(err, registrations) {
-            module.exports.matchRegistrations({
-                db: db,
-                audit: options.audit,
-                doc: doc,
-                registrations: registrations,
-                report: options.report
-            }, callback);
+            if (err) {
+                return callback(err);
+            }
+            options.registrations = registrations;
+            module.exports.matchRegistrations(options, callback);
         });
     },
     onMatch: function(change, _db, _audit, callback) {
@@ -197,20 +200,19 @@ module.exports = {
                 return callback(null, true);
             }
 
-            utils.getPatientContactUuid(_db, doc.fields.patient_id, function(err, patientContactId) {
+            utils.getPatientContact(_db, doc.fields.patient_id, function(err, patientContact) {
                 if (err) {
                     return callback(err);
                 }
-
-                if (!patientContactId) {
+                if (!patientContact) {
                     transitionUtils.addRegistrationNotFoundError(doc, report);
                     return callback(null, true);
                 }
-
                 module.exports.handleReport({
                     db: _db,
                     audit: _audit,
                     doc: doc,
+                    patient: patientContact,
                     report: report
                 }, callback);
             });
