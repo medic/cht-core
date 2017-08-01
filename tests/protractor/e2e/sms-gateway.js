@@ -1,4 +1,5 @@
-const utils = require('../utils');
+const utils = require('../utils'),
+  commonElements = require('../page-objects/common/common.po.js');
 
 const messageId1 = '00f237ab-dd34-44a8-9f17-caaa022be947';
 const messageId2 = '40cb5078-57da-427c-b3a9-b76ae581e5da';
@@ -280,8 +281,7 @@ describe('sms-gateway api', () => {
       expect(response.messages[1].to).toBe(messageTo2);
       expect(response.messages[1].content).toBe(messageContent2);
 
-      element(by.id('reports-tab')).click();
-
+      commonElements.goToReports();
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
