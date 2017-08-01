@@ -1,5 +1,14 @@
 # Medic Mobile Release Notes
 
+## 2.12.2
+
+_TBD_
+
+### Bug fixes
+
+- Accept patient reports for patients created in app. Issue: #3740
+- Stop accept_patient_reports transition clearing messages for unrelated registrations. Issue: #3742
+
 ## 2.12.1
 
 _July 25, 2017_
