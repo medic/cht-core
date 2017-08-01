@@ -2,7 +2,7 @@
 
 ## 2.12.2
 
-_TBD_
+_August 2, 2017_
 
 ### Bug fixes
 
