@@ -17,9 +17,9 @@ npm install nsp -g
 # Final security check to block publishing if we have insecure
 # packages
 function nspcheck {
-    nsp check &&
-    (cd api && nsp check) &&
-    (cd sentinel && nsp check)
+    (echo 'Checking medic-webapp' && nsp check) ||
+    (echo 'Checking medic-api' && cd api && nsp check) ||
+    (echo 'Checking medic-sentinel' && cd sentinel && nsp check)
 }
 
 echo 'Building build for builds database...'
