@@ -5,6 +5,7 @@ const fs = require('fs'),
     PouchDB = require('pouchdb');
 
 const accept_patient_reports = require('../../sentinel/transitions/accept_patient_reports'),
+    config = require('../../sentinel/config'),
     utils = require('../../sentinel/lib/utils');
 
 const VISIT_CODE = 'ग';
@@ -21,6 +22,9 @@ const content = fs.readFileSync(registrationListFile, { encoding: 'UTF8' });
 const registrationList = JSON.parse(content);
 console.log('found', registrationList.length, 'registrations in file', registrationListFile);
 
+const isValid = report => {
+  return !(report.errors && report.errors.length);
+};
 
 const findReportsForPatientId = patientId => {
   return db.query(
@@ -31,7 +35,7 @@ const findReportsForPatientId = patientId => {
       include_docs: true
     }).then(data => {
       return data.rows.map(row => row.doc)
-        .filter(report => !report.errors);
+        .filter(isValid);
     });
 };
 
@@ -49,11 +53,12 @@ const clearScheduledMessages = report => {
 
 // in-place edit of report
 const clearScheduledMessagesBeforeTimestamp = (report, timestamp) => {
+  console.log('clearScheduledMessagesBeforeTimestamp');
   if (!report.scheduled_tasks || report.scheduled_tasks.length === 0) {
     return;
   }
   report.scheduled_tasks.forEach(task => {
-    if (moment(task.due).valueOf() < timestamp && moment(task.state).valueOf() === SCHEDULED) {
+    if (moment(task.due).valueOf() < timestamp && task.state === SCHEDULED) {
       utils.setTaskState(task, CLEARED);
     }
   });
@@ -72,11 +77,12 @@ const scheduleClearedMessages = report => {
 };
 
 const scheduleClearedMessagesAfterTimestamp = (report, timestamp) => {
+  console.log('scheduleClearedMessagesAfterTimestamp');
   if (!report.scheduled_tasks || report.scheduled_tasks.length === 0) {
     return;
   }
   report.scheduled_tasks.forEach(task => {
-    if (moment(task.due).valueOf() > timestamp && moment(task.state).valueOf() === CLEARED) {
+    if (moment(task.due).valueOf() > timestamp && task.state === CLEARED) {
       utils.setTaskState(task, SCHEDULED);
     }
   });
@@ -94,17 +100,19 @@ const findLatestReport = reports => {
 };
 
 const getAcceptedReportsConfig = (formCode) => {
-  const acceptedReportsConfig = accept_patient_reports.getAcceptedReports();
-  return acceptedReportsConfig.find((config) => config.form === formCode);
+  return config.init()
+    .then(() => {
+      const acceptedReportsConfig = config.get('patient_reports');
+      console.log('acceptedReportsConfig', acceptedReportsConfig);
+      return acceptedReportsConfig.find((config) => config.form === formCode);
+    });
 };
-const visitFormConfig = getAcceptedReportsConfig(VISIT_CODE);
 
-// Code plucked from accept_patient_reports.silenceReminders
 const silenceRemindersNoSaving = (
     latestVisitReportedDate,
     registrationReport,
     acceptedReportsConfig) => {
-
+  console.log('silenceRemindersNoSaving');
   const options = {
     reported_date: latestVisitReportedDate,
     registration: registrationReport,
@@ -112,6 +120,7 @@ const silenceRemindersNoSaving = (
     type: acceptedReportsConfig.silence_type
   };
 
+  // Code plucked from accept_patient_reports.silenceReminders
   // filter scheduled message by group
   var toClear = accept_patient_reports.findToClear(options);
   if (!toClear.length) {
@@ -122,6 +131,7 @@ const silenceRemindersNoSaving = (
           utils.setTaskState(task, 'cleared');
       }
   });
+  // end code pluck
 };
 
 const getDoc = id => {
@@ -129,44 +139,52 @@ const getDoc = id => {
 };
 
 // in-place edit of report
-const fixReport = registrationReport => {
-  if (registrationReport.errors || !registrationReport.patient_id) {
+const fixReport = (registrationReport, visitFormConfig) => {
+  if (!isValid(registrationReport) || !registrationReport.patient_id) {
+    console.log('nothing to do');
     return registrationReport;
   }
 
   return findReportsForPatientId(registrationReport.patient_id)
     .then(associatedReports => {
+      console.log('found', associatedReports.length, 'reports for patient', registrationReport.patient_id);
+      console.log('formCodes', associatedReports.map(report => report.form));
       const birthReports = associatedReports.find(report => report.form === DELIVERY_CODE);
       if (birthReports && birthReports.length) { // there is an associated birth report
+        console.log('has birth report', birthReports.map(report => report._id));
         clearScheduledMessages(registrationReport); // clear all scheduled messages
         return registrationReport;
       }
 
-      const visitReports = associatedReports.find(report => report.form === VISIT_CODE);
+      const visitReports = associatedReports.filter(report => report.form === VISIT_CODE);
       if (visitReports && visitReports.length) {
         const latestVisitReport = findLatestReport(visitReports);
+        console.log('has visit report', latestVisitReport._id);
         // Set status "cleared" for all messages whose due date is before latestVisitReport.reported_date
         clearScheduledMessagesBeforeTimestamp(registrationReport, latestVisitReport.reported_date);
         // Set status "scheduled" for all messages whose due date is after latestVisitReport.reported_date
         scheduleClearedMessagesAfterTimestamp(registrationReport, latestVisitReport.reported_date);
         // Run the piece of code in sentinel transition accept_patient_ids that clears the appropriate messages for latestVisitReport, according to config.
         silenceRemindersNoSaving(latestVisitReport.reported_date, registrationReport, visitFormConfig);
+        console.log('all done');
         return registrationReport;
       }
 
+      console.log('no birth or visit report');
       scheduleClearedMessages(registrationReport);
       return registrationReport;
     });
 };
 
-console.log('first registration', registrationList[0]);
-getDoc(registrationList[0])
-  .then(report => {
-    console.log('initial schedule', report.scheduled_tasks);
-    return report;
+const registrationReportId = registrationList[0];
+console.log('first registration', registrationReportId);
+
+Promise.all([getAcceptedReportsConfig(VISIT_CODE), getDoc(registrationList[1])])
+  .then(([ visitFormConfig, report ]) => {
+    console.log('visitFormConfig', visitFormConfig, 'report', report._id);
+    return fixReport(report, visitFormConfig);
   })
-  .then(fixReport)
-  .then((report) => {
+  .then(report => {
     console.log('fixed schedule', report.scheduled_tasks);
   })
   .catch(console.log);
