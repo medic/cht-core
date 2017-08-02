@@ -4,7 +4,7 @@ const fs = require('fs'),
     moment = require('moment'),
     PouchDB = require('pouchdb');
 
-const accept_patient_reports = require('../../sentinel/accept_patient_reports'),
+const accept_patient_reports = require('../../sentinel/transitions/accept_patient_reports'),
     utils = require('../../sentinel/lib/utils');
 
 const VISIT_CODE = 'ग';
@@ -94,7 +94,7 @@ const findLatestReport = reports => {
 };
 
 const getAcceptedReportsConfig = (formCode) => {
-  const acceptedReportsConfig = utils.getAcceptedReports();
+  const acceptedReportsConfig = accept_patient_reports.getAcceptedReports();
   return acceptedReportsConfig.find((config) => config.form === formCode);
 };
 const visitFormConfig = getAcceptedReportsConfig(VISIT_CODE);
@@ -124,6 +124,9 @@ const silenceRemindersNoSaving = (
   });
 };
 
+const getDoc = id => {
+  return db.get(id);
+};
 
 // in-place edit of report
 const fixReport = registrationReport => {
@@ -156,3 +159,14 @@ const fixReport = registrationReport => {
     });
 };
 
+console.log('first registration', registrationList[0]);
+getDoc(registrationList[0])
+  .then(report => {
+    console.log('initial schedule', report.scheduled_tasks);
+    return report;
+  })
+  .then(fixReport)
+  .then((report) => {
+    console.log('fixed schedule', report.scheduled_tasks);
+  })
+  .catch(console.log);
