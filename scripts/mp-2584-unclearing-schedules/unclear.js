@@ -18,10 +18,6 @@ const dbUrl = process.env.COUCH_URL;
 const db = new PouchDB(dbUrl);
 
 const registrationListFile = process.argv[2];
-// I think this breaks if file not found or wrong file format, which is cool.
-const content = fs.readFileSync(registrationListFile, { encoding: 'UTF8' });
-const registrationList = JSON.parse(content);
-console.log('found', registrationList.length, 'registrations in file', registrationListFile);
 
 const isValid = report => {
   return !(report.errors && report.errors.length);
@@ -209,6 +205,10 @@ const doAllBatches = (visitFormConfig, registrationList) => {
 
 
 // ------------ actually do stuff now
+// I think this breaks if file not found or wrong file format, which is cool.
+const registrationList = JSON.parse(fs.readFileSync(registrationListFile, { encoding: 'UTF8' }));
+console.log('found', registrationList.length, 'registrations in file', registrationListFile);
+
 getAcceptedReportsConfig(VISIT_CODE)
   .then(visitFormConfig => {
     doAllBatches(visitFormConfig, registrationList);
