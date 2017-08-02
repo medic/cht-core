@@ -24,9 +24,9 @@ var SP_ID_MASK = 0xFFFFF8;
 
 define( function( require, exports, module ) {
     'use strict';
-    var Widget = require( 'enketo-core/src/js/Widget' );
+    var Widget = require('@medic/enketo-core/src/js/Widget');
     var $ = require( 'jquery' );
-    require( 'enketo-core/src/js/plugins' );
+    require('@medic/enketo-core/src/js/plugins');
 
     var pluginName = 'simprintswidget';
 
