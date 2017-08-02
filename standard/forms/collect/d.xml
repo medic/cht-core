@@ -93,7 +93,7 @@
         </translation>
       </itext>
       <instance>
-        <d delimiter="#" id="d" prefix="J1!d!" version="2017-07-26_08-07">
+        <d delimiter="#" id="d" prefix="J1!d!" version="2017-07-14_11-08">
           <id/>
           <c/>
           <d/>
@@ -108,7 +108,7 @@
       <bind nodeset="/d/id" required="true()" type="string"/>
       <bind nodeset="/d/c" required="true()" type="select1"/>
       <bind constraint=". &gt;= 0 and . &lt;= 365" jr:constraintMsg="jr:itext('/d/d:jr:constraintMsg')" nodeset="/d/d" type="int"/>
-      <bind calculate="jr:choice-name( /d/c , ' /d/c ')" nodeset="/d/c_label" type="string"/>
+      <bind calculate="choice-name( /d/c , &quot; /d/c &quot;)" nodeset="/d/c_label" type="string"/>
       <bind nodeset="/d/review_with_days" readonly="true()" relevant="../d &gt;= 0" type="string"/>
       <bind nodeset="/d/review_without_days" readonly="true()" relevant="not(../d &gt;= 0)" type="string"/>
       <bind calculate="concat('uuid:', uuid())" nodeset="/d/meta/instanceID" readonly="true()" type="string"/>
