@@ -1,5 +1,10 @@
 #!/bin/bash -e
 
+if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
+    echo 'This is a pull request build, and will not be uploaded to builds database.'
+    exit
+fi
+
 # Attempt to reduce size of api and sentinel artifacts
 (cd sentinel &&
     npm install --production &&
