@@ -1,0 +1,79 @@
+<div class="upgrade-config">
+  <div ng-show="loading || upgrading">
+    <div class="loader"></div>
+    <p class="status" ng-show="upgrading"><span>&nbsp;&nbsp;Upgrading…</span></p>
+  </div>
+
+  <div ng-show="error">
+    <p class="error">{{error}}</p>
+  </div>
+
+  <div ng-hide="loading || upgrading">
+
+    <div>
+      <h1>Current version</h1>
+      <p ng-hide="deployInfo">(details unavailable)</p>
+      <table ng-show="deployInfo" class="table table-striped">
+        <tr>
+          <td>Version</td>
+          <td>{{deployInfo.version}}</td>
+        </tr>
+        <tr>
+          <td>Deployed by</td>
+          <td>{{deployInfo.user}}</td>
+        </tr>
+        <tr>
+          <td>At</td>
+          <td>{{deployInfo.timestamp}}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div>
+      <h1>Releases</h1>
+      <p ng-hide="versions.releases.length">No new releases available.</p>
+      <table ng-show="versions.releases.length" class="table table-striped">
+        <tr ng-repeat="v in versions.releases">
+          <td class="col-xs-5"><code>{{v.id}}</code></td>
+          <td class="col-xs-4">{{v.value.build_time}}</td>
+          <td class="col-xs-3"><a ng-click="upgrade(v.id)">Upgrade</a></td>
+        </tr>
+      </table>
+    </div>
+
+    <div>
+      <h1>Betas</h1>
+
+      <p ng-hide="allowBetas">Upgrade to non-release builds is not permitted on production systems.</p>
+
+      <div ng-show="allowBetas">
+        <p ng-hide="versions.betas.length">No build betas available.</p>
+        <table ng-show="versions.betas.length" class="table table-striped">
+          <tr ng-repeat="v in versions.betas">
+            <td class="col-xs-5"><code>{{v.id}}</code></td>
+            <td class="col-xs-4">{{v.value.build_time}}</td>
+            <td class="col-xs-3"><a ng-click="upgrade(v.id)">Upgrade</a></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <div>
+      <h1>Branches</h1>
+
+      <p ng-hide="allowBranches">Upgrade to non-release builds is not permitted on production systems.</p>
+
+      <div ng-show="allowBranches">
+        <p ng-hide="versions.branches.length">No build branches available.</p>
+        <table ng-show="versions.branches.length" class="table table-striped">
+          <tr ng-repeat="v in versions.branches">
+            <td class="col-xs-5"><code>{{v.id}}</code></td>
+            <td class="col-xs-4" ng-bind-html="v.value.build_time | relativeDate"></td>
+            <td class="col-xs-3"><a ng-click="upgrade(v.id)">Upgrade</a></td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
