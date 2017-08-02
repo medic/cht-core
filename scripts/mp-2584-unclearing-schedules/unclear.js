@@ -12,6 +12,7 @@ const VISIT_CODE = 'ग';
 const DELIVERY_CODE = 'ज';
 const CLEARED = 'cleared';
 const SCHEDULED = 'scheduled';
+const BATCH_SIZE = 100; // batch size for db operations.
 
 const dbUrl = process.env.COUCH_URL;
 const db = new PouchDB(dbUrl);
@@ -53,7 +54,6 @@ const clearScheduledMessages = report => {
 
 // in-place edit of report
 const clearScheduledMessagesBeforeTimestamp = (report, timestamp) => {
-  console.log('clearScheduledMessagesBeforeTimestamp');
   if (!report.scheduled_tasks || report.scheduled_tasks.length === 0) {
     return;
   }
@@ -77,7 +77,6 @@ const scheduleClearedMessages = report => {
 };
 
 const scheduleClearedMessagesAfterTimestamp = (report, timestamp) => {
-  console.log('scheduleClearedMessagesAfterTimestamp');
   if (!report.scheduled_tasks || report.scheduled_tasks.length === 0) {
     return;
   }
@@ -103,7 +102,6 @@ const getAcceptedReportsConfig = (formCode) => {
   return config.init()
     .then(() => {
       const acceptedReportsConfig = config.get('patient_reports');
-      console.log('acceptedReportsConfig', acceptedReportsConfig);
       return acceptedReportsConfig.find((config) => config.form === formCode);
     });
 };
@@ -112,7 +110,6 @@ const silenceRemindersNoSaving = (
     latestVisitReportedDate,
     registrationReport,
     acceptedReportsConfig) => {
-  console.log('silenceRemindersNoSaving');
   const options = {
     reported_date: latestVisitReportedDate,
     registration: registrationReport,
@@ -134,8 +131,9 @@ const silenceRemindersNoSaving = (
   // end code pluck
 };
 
-const getDoc = id => {
-  return db.get(id);
+const getDocs = ids => {
+  return db.allDocs({keys: ids, include_docs: true})
+    .then(data => data.rows.map(row => row.doc));
 };
 
 // in-place edit of report
@@ -145,14 +143,15 @@ const fixReport = (registrationReport, visitFormConfig) => {
     return registrationReport;
   }
 
+  fs.appendFileSync('message.txt', 'data to append');
   return findReportsForPatientId(registrationReport.patient_id)
     .then(associatedReports => {
-      console.log('found', associatedReports.length, 'reports for patient', registrationReport.patient_id);
-      console.log('formCodes', associatedReports.map(report => report.form));
-      const birthReports = associatedReports.find(report => report.form === DELIVERY_CODE);
+      console.log('----------\n', registrationReport._id ,'\nfound', associatedReports.length, 'reports for patient', registrationReport.patient_id, associatedReports.map(report => report.form));
+      const birthReports = associatedReports.filter(report => report.form === DELIVERY_CODE);
       if (birthReports && birthReports.length) { // there is an associated birth report
         console.log('has birth report', birthReports.map(report => report._id));
         clearScheduledMessages(registrationReport); // clear all scheduled messages
+        console.log('all done', registrationReport._id);
         return registrationReport;
       }
 
@@ -166,25 +165,53 @@ const fixReport = (registrationReport, visitFormConfig) => {
         scheduleClearedMessagesAfterTimestamp(registrationReport, latestVisitReport.reported_date);
         // Run the piece of code in sentinel transition accept_patient_ids that clears the appropriate messages for latestVisitReport, according to config.
         silenceRemindersNoSaving(latestVisitReport.reported_date, registrationReport, visitFormConfig);
-        console.log('all done');
+        console.log('all done', registrationReport._id);
         return registrationReport;
       }
 
       console.log('no birth or visit report');
       scheduleClearedMessages(registrationReport);
+      console.log('all done', registrationReport._id);
       return registrationReport;
     });
 };
 
-const registrationReportId = registrationList[0];
-console.log('first registration', registrationReportId);
+const saveDocs = docs => {
+  return db.bulkDocs(docs);
+};
 
-Promise.all([getAcceptedReportsConfig(VISIT_CODE), getDoc(registrationList[1])])
-  .then(([ visitFormConfig, report ]) => {
-    console.log('visitFormConfig', visitFormConfig, 'report', report._id);
-    return fixReport(report, visitFormConfig);
+
+const doBatch = (index, visitFormConfig, registrationList) => {
+  const registrationSubList = registrationList.slice(index, BATCH_SIZE);
+  return getDocs(registrationSubList)
+      .then(registrationReports => {
+        console.log('registrationReports', registrationReports.map(report => report._id));
+        return Promise.all(registrationReports.map(report => fixReport(report, visitFormConfig)));
+      })
+    .then(reports => {
+      reports.forEach(report => {
+        fs.writeFileSync('edited_reports/' + report._id + '.json', JSON.stringify(report, null, 2));
+      });
+    });
+};
+
+const doAllBatches = (visitFormConfig, registrationList) => {
+  const promiseChain = Promise.resolve();
+  let index = 0;
+  while (index < registrationList.length) {
+    promiseChain.then(() => {
+      return doBatch(index, visitFormConfig, registrationList);
+    });
+    index += BATCH_SIZE;
+  }
+  return promiseChain;
+};
+
+
+// ------------ actually do stuff now
+getAcceptedReportsConfig(VISIT_CODE)
+  .then(visitFormConfig => {
+    doAllBatches(visitFormConfig, registrationList);
   })
-  .then(report => {
-    console.log('fixed schedule', report.scheduled_tasks);
-  })
+  // todo save results when we're happy with them.
   .catch(console.log);
