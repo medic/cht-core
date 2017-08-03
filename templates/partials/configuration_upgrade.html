@@ -1,4 +1,8 @@
-<div class="upgrade-config col-sm-12">
+<div class="upgrade-config col-sm-12" ng-hide="deployInfo">
+  <legend translate>instance.upgrade.no_horti</legend>
+  <p translate>instance.upgrade.no_horti.detail</p>
+</div>
+<div class="upgrade-config col-sm-12" ng-show="deployInfo">
   <div ng-show="loading || upgrading">
     <div class="loader"></div>
     <p class="status" ng-show="upgrading"><span translate>instance.upgrade.upgrading</span></p>
