@@ -178,7 +178,8 @@ const saveDocs = docs => {
 
 
 const doBatch = (index, visitFormConfig, registrationList) => {
-  const registrationSubList = registrationList.slice(index, BATCH_SIZE);
+  const registrationSubList = registrationList.slice(index, index + BATCH_SIZE);
+  console.log('index', index, 'registrationSubList', registrationSubList);
   return getDocs(registrationSubList)
       .then(registrationReports => {
         console.log('registrationReports', registrationReports.map(report => report._id));
@@ -195,8 +196,9 @@ const doAllBatches = (visitFormConfig, registrationList) => {
   const promiseChain = Promise.resolve();
   let index = 0;
   while (index < registrationList.length) {
+    const doBatchI = doBatch.bind(null, index, visitFormConfig, registrationList);
     promiseChain.then(() => {
-      return doBatch(index, visitFormConfig, registrationList);
+      return doBatchI();
     });
     index += BATCH_SIZE;
   }
