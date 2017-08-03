@@ -1,9 +1,9 @@
-var PouchDB = require('pouchdb-browser');
+var _ = require('underscore'),
+    PouchDB = require('pouchdb-browser');
 
 // REVIEWER: are we OK hard-coding these two concepts? If not, where should
 // we put this? We don't have access to env vars in medic-webapp.
 var IS_PROD_URL = /^https:\/\/[^.]+.app.medicmobile.org\//,
-    IS_LOCAL_URL = /^https?:\/\/(localhost|127.0.0.1)/,
     BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
 
 angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
@@ -22,13 +22,14 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
 
     DB().get('_design/medic')
       .then(function(ddoc) {
-        $scope.deployInfo = ddoc.deploy_info;
+        $scope.deployInfo = ddoc.deploy_info || {
+          version: '2.12.1',
+          user: 'Stefan',
+          timestamp: new Date()
+        };
 
         $scope.allowBetas = $scope.allowBranches =
           !window.location.href.match(IS_PROD_URL);
-
-        $scope.localNote =
-          window.location.href.match(IS_LOCAL_URL);
 
         var buildsDb = new PouchDB(BUILDS_DB);
 

@@ -1,7 +1,7 @@
 <div class="upgrade-config col-sm-12">
   <div ng-show="loading || upgrading">
     <div class="loader"></div>
-    <p class="status" ng-show="upgrading"><span>&nbsp;&nbsp;Upgrading…</span></p>
+    <p class="status" ng-show="upgrading"><span translate>instance.upgrade.upgrading</span></p>
   </div>
 
   <div ng-show="error">
@@ -11,68 +11,61 @@
   <div ng-hide="loading || upgrading">
 
     <div>
-      <legend>Current version</legend>
-      <p ng-hide="deployInfo">(details unavailable)</p>
-      <table ng-show="deployInfo" class="table table-striped">
-        <tr>
-          <td>Version</td>
-          <td>{{deployInfo.version}}</td>
-        </tr>
-        <tr>
-          <td>Deployed by</td>
-          <td>{{deployInfo.user}}</td>
-        </tr>
-        <tr>
-          <td>At</td>
-          <td>{{deployInfo.timestamp}}</td>
-        </tr>
-      </table>
-      <p ng-show="localNote">Remember to run <a href="https://github.com/medic/horticulturalist">Horticulturalist</a> or this won't work properly!</p>
+      <legend translate>instance.upgrade.current_version</legend>
+      <p ng-hide="deployInfo" translate>instance.upgrade.no_details</p>
+      <dl ng-show="deployInfo" class="horizontal">
+        <dt translate>instance.upgrade.version</dt>
+        <dd>{{deployInfo.version}}</dd>
+        <dt translate>instance.upgrade.deployed_by</dt>
+        <dd>{{deployInfo.user}}</dd>
+        <dt translate>instance.upgrade.at</dt>
+        <dd>{{deployInfo.timestamp | date}}</dd>
+      </dl>
     </div>
 
     <div>
-      <legend>Releases</legend>
-      <p ng-hide="versions.releases.length">No new releases available.</p>
-      <table ng-show="versions.releases.length" class="table table-striped">
-        <tr ng-repeat="v in versions.releases">
-          <td class="col-xs-5"><code>{{v.id}}</code></td>
-          <td class="col-xs-4">{{v.value.build_time}}</td>
-          <td class="col-xs-3"><a ng-click="upgrade(v.id)">Upgrade</a></td>
-        </tr>
-      </table>
+      <legend translate>instance.upgrade.releases</legend>
+      <p ng-hide="versions.releases.length" translate>instance.upgrade.no_new_releases</p>
+      <ul ng-show="versions.releases.length" class="table table-striped">
+        <li ng-repeat="v in versions.releases" class="row">
+          <div class="col-xs-5"><code>{{v.id}}</code></div>
+          <div class="col-xs-4">{{v.value.build_time | date}}</div>
+          <div class="col-xs-3"><a ng-click="upgrade(v.id)">Upgrade</a></div>
+        </li>
+      </ul>
     </div>
 
     <div>
-      <legend>Betas</legend>
+      <legend translate>instance.upgrade.betas</legend>
 
-      <p ng-hide="allowBetas">Upgrade to non-release builds is not permitted on production systems.</p>
+      <p ng-hide="allowBetas" translate>instance.upgrade.releases_only</p>
 
       <div ng-show="allowBetas">
-        <p ng-hide="versions.betas.length">No build betas available.</p>
-        <table ng-show="versions.betas.length" class="table table-striped">
-          <tr ng-repeat="v in versions.betas">
-            <td class="col-xs-5"><code>{{v.id}}</code></td>
-            <td class="col-xs-4">{{v.value.build_time}}</td>
-            <td class="col-xs-3"><a ng-click="upgrade(v.id)">Upgrade</a></td>
-          </tr>
-        </table>
+        <p ng-hide="versions.betas.length" translate>instance.upgrade.no_betas</p>
+        <ul ng-show="versions.betas.length" class="table table-striped">
+          <li ng-repeat="v in versions.betas" class="row">
+            <div class="col-xs-5"><code>{{v.id}}</code></div>
+            <div class="col-xs-4">{{v.value.build_time | date}}</div>
+            <div class="col-xs-3"><a ng-click="upgrade(v.id)" translate>upgrade</a></div>
+          </li>
+        </ul>
       </div>
     </div>
 
     <div>
-      <legend>Branches</legend>
+      <legend translate>instance.upgrade.branches</legend>
 
-      <p ng-hide="allowBranches">Upgrade to non-release builds is not permitted on production systems.</p>
+      <p ng-hide="allowBranches" translate>instance.upgrade.releases_only</p>
 
       <div ng-show="allowBranches">
-        <p ng-hide="versions.branches.length">No build branches available.</p>
-        <table ng-show="versions.branches.length" class="table table-striped">
-          <tr ng-repeat="v in versions.branches">
-            <td class="col-xs-5"><code>{{v.id}}</code></td>
-            <td class="col-xs-4" ng-bind-html="v.value.build_time | relativeDate"></td>
-            <td class="col-xs-3"><a ng-click="upgrade(v.id)">Upgrade</a></td>
-          </tr>
-        </table>
+        <p ng-hide="versions.branches.length" translate>instance.upgrade.no_branches</p>
+        <ul ng-show="versions.branches.length" class="table table-striped">
+          <li ng-repeat="v in versions.branches" class="row">
+            <div class="col-xs-5"><code>{{v.id}}</code></div>
+            <div class="col-xs-4" ng-bind-html="v.value.build_time | relativeDate"></div>
+            <div class="col-xs-3"><a ng-click="upgrade(v.id)" translate>upgrade</a></div>
+          </li>
+        </ul>
       </div>
     </div>
 

@@ -57,3 +57,36 @@
   max-height: 100px;
   overflow-y: auto;
 }
+
+dl.horizontal {
+  dt {
+    width: 200px;
+    float: left;
+    text-align: right;
+    margin-bottom: 0.5em;
+  }
+  dd {
+    margin-left: 0;
+    padding-left: 220px;
+  }
+  dd:after {
+    content: '';
+    display: block;
+    clear: both;
+  }
+}
+
+@media (max-width: 767px) {
+  dl.horizontal {
+    dt {
+      width: inherit;
+      float: inherit;
+      text-align: inherit;
+      margin-bottom: 0;
+    }
+    dd {
+      padding-left: 0;
+      margin-bottom: 0.5em;
+    }
+  }
+}
