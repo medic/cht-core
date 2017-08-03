@@ -24,6 +24,9 @@ module.exports = {
         });
     }, 10000);
   },
+   waitElementToBeAttached: locator=> {
+    browser.wait(!EC.stalenessOf(locator), 15000);
+  },
 
   waitUntilReady: elm=> {
     return browser.wait(()=> { return elm.isPresent(); }, 10000) &&
