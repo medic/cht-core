@@ -22,11 +22,7 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
 
     DB().get('_design/medic')
       .then(function(ddoc) {
-        $scope.deployInfo = ddoc.deploy_info || {
-          version: '2.12.1',
-          user: 'Stefan',
-          timestamp: new Date()
-        };
+        $scope.deployInfo = ddoc.deploy_info;
 
         $scope.allowBetas = $scope.allowBranches =
           !window.location.href.match(IS_PROD_URL);
