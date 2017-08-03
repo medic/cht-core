@@ -1,5 +1,4 @@
-var _ = require('underscore'),
-    PouchDB = require('pouchdb-browser');
+var PouchDB = require('pouchdb-browser');
 
 // REVIEWER: are we OK hard-coding these two concepts? If not, where should
 // we put this? We don't have access to env vars in medic-webapp.
