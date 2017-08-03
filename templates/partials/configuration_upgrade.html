@@ -1,4 +1,4 @@
-<div class="upgrade-config">
+<div class="upgrade-config col-sm-12">
   <div ng-show="loading || upgrading">
     <div class="loader"></div>
     <p class="status" ng-show="upgrading"><span>&nbsp;&nbsp;Upgrading…</span></p>
@@ -11,7 +11,7 @@
   <div ng-hide="loading || upgrading">
 
     <div>
-      <h1>Current version</h1>
+      <legend>Current version</legend>
       <p ng-hide="deployInfo">(details unavailable)</p>
       <table ng-show="deployInfo" class="table table-striped">
         <tr>
@@ -27,10 +27,11 @@
           <td>{{deployInfo.timestamp}}</td>
         </tr>
       </table>
+      <p ng-show="localNote">Remember to run <a href="https://github.com/medic/horticulturalist">Horticulturalist</a> or this won't work properly!</p>
     </div>
 
     <div>
-      <h1>Releases</h1>
+      <legend>Releases</legend>
       <p ng-hide="versions.releases.length">No new releases available.</p>
       <table ng-show="versions.releases.length" class="table table-striped">
         <tr ng-repeat="v in versions.releases">
@@ -42,7 +43,7 @@
     </div>
 
     <div>
-      <h1>Betas</h1>
+      <legend>Betas</legend>
 
       <p ng-hide="allowBetas">Upgrade to non-release builds is not permitted on production systems.</p>
 
@@ -59,7 +60,7 @@
     </div>
 
     <div>
-      <h1>Branches</h1>
+      <legend>Branches</legend>
 
       <p ng-hide="allowBranches">Upgrade to non-release builds is not permitted on production systems.</p>
 

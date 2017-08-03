@@ -42,7 +42,7 @@ angular.module('inboxControllers').controller('ConfigurationCtrl',
       },
       {
         state: 'configuration.upgrade',
-        icon: 'fa-cheese',
+        icon: 'fa-rocket',
         name: 'instance.upgrade',
         active: function() {
           return $state.is('configuration.upgrade');

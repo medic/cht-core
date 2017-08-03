@@ -1,5 +1,11 @@
 var PouchDB = require('pouchdb-browser');
 
+// REVIEWER: are we OK hard-coding these two concepts? If not, where should
+// we put this? We don't have access to env vars in medic-webapp.
+var IS_PROD_URL = /^https:\/\/[^.]+.app.medicmobile.org\//,
+    IS_LOCAL_URL = /^https?:\/\/(localhost|127.0.0.1)/,
+    BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
+
 angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
   function(
     $log,
@@ -19,24 +25,24 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
         $scope.deployInfo = ddoc.deploy_info;
 
         $scope.allowBetas = $scope.allowBranches =
-            !window.location.href.match(/^https:\/\/[^.]+.app.medicmobile.org\//);
+          !window.location.href.match(IS_PROD_URL);
 
-        var stagingDb = new PouchDB('https://staging.dev.medicmobile.org/_couch/builds');
+        $scope.localNote =
+          window.location.href.match(IS_LOCAL_URL);
 
+        var buildsDb = new PouchDB(BUILDS_DB);
 
         var viewLookups = [];
 
-
         viewLookups.push(
-            stagingDb
-              .query('builds/branches')
-              .then(function(res) {
-                $scope.versions.branches = res.rows.sort(function(a, b) {
-                  return Date.parse(b.value.build_time) -
-                         Date.parse(a.value.build_time);
-                });
-              }));
-
+          buildsDb
+            .query('builds/branches')
+            .then(function(res) {
+              $scope.versions.branches = res.rows.sort(function(a, b) {
+                return Date.parse(b.value.build_time) -
+                       Date.parse(a.value.build_time);
+              });
+            }));
 
         var versionRestriction;
         var minVersion = parseVersion($scope.deployInfo && $scope.deployInfo.version);
@@ -50,26 +56,24 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
           versionRestriction = { startkey: [ minVersion.major, minVersion.minor, minVersion.patch ] };
         }
 
+        viewLookups.push(
+          buildsDb
+            .query('builds/betas', versionRestriction)
+            .then(function(res) {
+              $scope.versions.betas = res.rows.reverse();
+            }));
 
         viewLookups.push(
-            stagingDb
-              .query('builds/betas', versionRestriction)
-              .then(function(res) {
-                $scope.versions.betas = res.rows.reverse();
-              }));
+          buildsDb
+            .query('builds/releases', versionRestriction)
+            .then(function(res) {
+              $scope.versions.releases = res.rows.reverse();
+            }));
 
-
-        viewLookups.push(
-            stagingDb
-              .query('builds/releases', versionRestriction)
-              .then(function(res) {
-                $scope.versions.releases = res.rows.reverse();
-              }));
-
-          return $q.all(viewLookups);
+        return $q.all(viewLookups);
       })
       .catch(function(err) {
-        $log.error('Error fetching available versions:' + err);
+        $log.error('Error fetching available versions:', err);
         $scope.error = 'Error fetching available versions: ' + err.message;
       })
       .then(function() {
@@ -95,8 +99,7 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
         });
     };
 
-
-    function parseVersion(versionString) {
+    var parseVersion = function(versionString) {
       var versionMatch = versionString &&
           versionString.match(/^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta\.([0-9]+))?$/);
 
@@ -106,6 +109,6 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
         patch: parseInt(versionMatch[3]),
         beta:  parseInt(versionMatch[4]),
       };
-    }
+    };
   }
 );
