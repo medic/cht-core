@@ -54,6 +54,6 @@ module.exports = {
 
     searchBox.sendKeys(query);
     seachButton.click();
-  }
+  },
 };
 

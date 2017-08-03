@@ -2,7 +2,7 @@ const commonElements = require('../../page-objects/common/common.po.js'),
 	contactPage = require('../../page-objects/contacts/contacts.po.js'),
 	helper = require('../../helper'),
 	utils = require('../../utils');
-	
+
 describe('Add new person tests : ', () => {
 	afterEach(done => {
 		utils.resetBrowser();
@@ -22,6 +22,5 @@ describe('Add new person tests : ', () => {
 		let district = element(by.tagName('h3'));
 		expect(district.getText()).toBe('BedeDistrict');
 		expect(name.getText()).toBe('Bede');
-		expect(element(by.css('.position')).getText()).toBe('Primary contact: Bede');
 	});
 });

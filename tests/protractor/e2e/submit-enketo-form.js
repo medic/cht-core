@@ -109,7 +109,9 @@ describe('Submit Enketo form', () => {
 
     // submit form
     element(by.css('#report-form form [name="/data/name"]')).sendKeys('Jones');
-    element(by.css('#report-form .submit')).click();
+    const submitButton= element(by.css('#report-form .submit'));
+    helper.waitUntilReady(submitButton);
+    submitButton.click();
     browser.wait(() => {
       return element(by.css('#reports-content .details ul li:first-child p')).isPresent();
     }, 10000);
