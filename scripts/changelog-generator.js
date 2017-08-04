@@ -13,7 +13,7 @@
 
 const fs = require('fs');
 
-const IGNORE_ISSUES_MARKED_WITH = [ '0 - Backlog', '1 - Scheduled', '6 - Released' ];
+const IGNORE_ISSUES_MARKED_WITH = [ '0 - Backlog', '1 - Scheduled', '6 - Released', 'Duplicate', ' No Action Needed' ];
 
 let file = process.argv[2];
 if (!file) {
