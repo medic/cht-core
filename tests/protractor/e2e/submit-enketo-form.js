@@ -109,7 +109,7 @@ describe('Submit Enketo form', () => {
 
     // submit form
     element(by.css('#report-form form [name="/data/name"]')).sendKeys('Jones');
-    const submitButton= element(by.css('#report-form .submit'));
+    const submitButton = element(by.css('#report-form .submit'));
     helper.waitUntilReady(submitButton);
     submitButton.click();
     browser.wait(() => {
@@ -117,11 +117,14 @@ describe('Submit Enketo form', () => {
     }, 10000);
 
     browser.sleep(100); // TODO required to make the test deterministic. https://github.com/medic/medic-webapp/issues/3509
-
     // check the submitted name
-     // check the submitted name
-    let detail=element(by.css('#reports-content .details ul li:first-child p'));
+    let detail = element(by.css('#reports-content .details ul li:first-child p'));
     helper.waitUntilReady(detail);
-    expect(detail.getText()).toBe('Jones');
+    detail.getText().then(function(name) {
+      expect(name).toBe('Jones');
+    }, function(err) {
+      console.log(err);
+    });
+
   });
 });
