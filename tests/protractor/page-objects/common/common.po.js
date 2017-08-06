@@ -34,7 +34,6 @@ module.exports = {
   goToReports: () => {
     let reportsLink = element(by.id('reports-tab'));
     helper.waitUntilReady(reportsLink);
-    helper.waitElementToBeVisisble();
     reportsLink.click();
   },
 
