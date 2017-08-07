@@ -4,12 +4,8 @@ const commonElements = require('../../page-objects/common/common.po.js'),
 	utils = require('../../utils');
 
 describe('Add new health center tests : ', () => {
-	afterEach(done => {
-		utils.resetBrowser();
-		done();
-	});
 
-	afterAll(utils.afterEach);
+	afterEach(utils.afterEach);
 
 	it('should add new health center', () => {
 		commonElements.goToPeople();
@@ -36,7 +32,7 @@ describe('Add new health center tests : ', () => {
 		element(by.css('[name="/data/health_center/notes"]')).sendKeys('some notes');
 		const submitButton = element(by.css('.btn.submit.btn-primary'));
 		submitButton.click();
-		let center = element(by.tagName('h3'));
+		const center = element(by.tagName('h3'));
 		helper.waitUntilReady(center);
 		expect(center.getText()).toBe('Mavuvu Clinic');
 	});
