@@ -4,7 +4,7 @@ const utils = require('./utils'),
   auth = require('./auth')(),
   modules = [];
 
-if(!process.env.COUCH_NODE_NAME) {
+if (!process.env.COUCH_NODE_NAME) {
   throw new Error('Missing required env var: COUCH_NODE_NAME');
 }
 
@@ -81,7 +81,7 @@ exports.config = {
   capabilities: {
     browserName: 'chrome',
     chromeOptions: {
-      args: [ '--headless', '--disable-gpu', '--window-size=1024,768' ]
+      args: ['--headless', '--disable-gpu', '--window-size=1024,768']
     }
     // browserName: 'firefox',
     // 'marionette':'true'

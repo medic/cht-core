@@ -1,6 +1,6 @@
 const utils = require('../utils'),
   commonElements = require('../page-objects/common/common.po.js'),
-  helper=require('../helper');
+  helper = require('../helper');
 
 const messageId1 = '00f237ab-dd34-44a8-9f17-caaa022be947';
 const messageId2 = '40cb5078-57da-427c-b3a9-b76ae581e5da';
@@ -287,7 +287,7 @@ describe('sms-gateway api', () => {
         return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
 
-      let desc=element(by.css('#reports-list li:first-child .description'));
+      let desc = element(by.css('#reports-list li:first-child .description'));
       helper.waitUntilReady(desc);
       desc.click();
       browser.wait(() => {
@@ -298,8 +298,8 @@ describe('sms-gateway api', () => {
 
       // tasks
       // State for messageId1 has been updated from pending to forwarded-to-gateway.
-      let feedback=element(by.css('#reports-content .details > ul .task-list .task-state .state'));
-     helper.waitUntilReady(feedback);
+      let feedback = element(by.css('#reports-content .details > ul .task-list .task-state .state'));
+      helper.waitUntilReady(feedback);
       expect(feedback.getText())
         .toBe('forwarded to gateway');
 
