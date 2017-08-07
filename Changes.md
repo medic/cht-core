@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 2.8.6
+
+### TBD
+
+#### Security
+
+- Fixed kanso packages that inadvertantly cached data. Issue: #3648
+
 ## 2.8.5
 
 ### December 15, 2016
