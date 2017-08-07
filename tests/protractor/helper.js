@@ -6,6 +6,22 @@ function writeScreenShot(data, filename) {
   stream.write(new Buffer(data, 'base64'));
   stream.end();
 }
+function retryFind(locator) {
+  let result = false;
+  let attempts = 0;
+  while (attempts < 2) {
+    try {
+      browser.actions().mouseMove(locator).perform();
+      result = true;
+      break;
+    } catch (err) {
+      browser.sleep(200);
+      console.log(err);
+    }
+    attempts++;
+  }
+  return result;
+}
 
 module.exports = {
   waitElementToBeVisisble: elm => {
@@ -24,8 +40,9 @@ module.exports = {
         });
     }, 10000);
   },
-  waitElementToBeAttached: locator => {
-    browser.wait(!EC.stalenessOf(locator), 15000);
+  waitElementToBeReattached: locator => {
+    //return browser.wait(() => { return retryFind(locator); }, 10000);
+    return retryFind(locator);
   },
 
   waitUntilReady: elm => {
