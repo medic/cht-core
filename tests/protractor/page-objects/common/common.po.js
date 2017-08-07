@@ -32,7 +32,7 @@ module.exports = {
   },
 
   goToReports: () => {
-    let reportsLink = by.id('reports-tab');
+    const reportsLink = by.id('reports-tab');
     helper.waitElementToBeReattached(reportsLink);
     helper.waitUntilReady(element(reportsLink));
     element(reportsLink).click();

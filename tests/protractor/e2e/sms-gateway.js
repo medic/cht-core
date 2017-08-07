@@ -287,7 +287,7 @@ describe('sms-gateway api', () => {
         return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
 
-      let desc = element(by.css('#reports-list li:first-child .description'));
+      const desc = element(by.css('#reports-list li:first-child .description'));
       helper.waitUntilReady(desc);
       desc.click();
       browser.wait(() => {
@@ -298,7 +298,7 @@ describe('sms-gateway api', () => {
 
       // tasks
       // State for messageId1 has been updated from pending to forwarded-to-gateway.
-      let feedback = element(by.css('#reports-content .details > ul .task-list .task-state .state'));
+      const feedback = element(by.css('#reports-content .details > ul .task-list .task-state .state'));
       helper.waitUntilReady(feedback);
       expect(feedback.getText())
         .toBe('forwarded to gateway');

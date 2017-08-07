@@ -18,8 +18,8 @@ describe('Add new person tests : ', () => {
 		contactPage.addNewDistrict('BedeDistrict');
 		contactPage.completeNewPersonForm('Bede');
 		helper.waitUntilReady(element(by.css('.card-title')));
-		let name = element(by.css('span.name.ng-binding'));
-		let district = element(by.tagName('h3'));
+		const name = element(by.css('span.name.ng-binding'));
+		const district = element(by.tagName('h3'));
 		expect(district.getText()).toBe('BedeDistrict');
 		expect(name.getText()).toBe('Bede');
 	});
