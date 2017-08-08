@@ -23,6 +23,7 @@ script:
 
 after_success:
   - ./scripts/ci/after_success.sh
+  - bash ./scripts/ci/push_to_staging.sh
 #  - python ./scripts/ci/travis_after_all.py
 #  - export $(cat .to_export_back)
 #  - |
