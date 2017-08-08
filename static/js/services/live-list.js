@@ -30,6 +30,9 @@ angular.module('inboxServices').factory('LiveListConfig',
           if (!c1 || !c2) {
             return;
           }
+          if (c1.simprints && c2.simprints) {
+            return c2.simprints.confidence - c1.simprints.confidence;
+          }
           if (c1.type !== c2.type) {
             return ContactSchema.getTypes().indexOf(c1.type) - ContactSchema.getTypes().indexOf(c2.type);
           }
@@ -58,12 +61,6 @@ angular.module('inboxServices').factory('LiveListConfig',
         selector: '#contacts-list ul.filtered',
         orderBy: contacts_config.orderBy,
         listItem: contacts_config.listItemForTemplate('contacts_list_item'),
-      });
-
-      LiveList.$listFor('contact-simprints-search', {
-        selector: '#contacts-list ul.filtered',
-        orderBy: function(a, b) { return b._simprints_confidence - a._simprints_confidence; },
-        listItem: contacts_config.listItemForTemplate('contacts_list_item_simprints'),
       });
 
       var reports_config = {

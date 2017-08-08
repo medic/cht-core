@@ -3,24 +3,6 @@ if ( typeof exports === 'object' && typeof exports.nodeName !== 'string' && type
         factory( require, exports, module );
     };
 }
-/**
- * @preserve Copyright 2012 Martijn van de Rijdt & Modilabs
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-/** Mask used in medic-android for separating request ID from request code. */
-var SP_ID_MASK = 0xFFFFF8;
 
 define( function( require, exports, module ) {
     'use strict';
@@ -36,7 +18,6 @@ define( function( require, exports, module ) {
      * @param {(boolean|{touch: boolean, repeat: boolean})} options options
      * @param {*=} e     event
      */
-
     function Simprintswidget( element, options ) {
         this.namespace = pluginName;
         Widget.call( this, element, options );
@@ -51,22 +32,28 @@ define( function( require, exports, module ) {
 
     Simprintswidget.prototype._init = function() {
         var $el = $( this.element );
+        var $input = $el.find( 'input' );
+        $input.hide();
+        var angularServices = angular.element( document.body ).injector();
+        var $translate = angularServices.get( '$translate' );
+        var service = angularServices.get( 'Simprints' );
 
-        $el.find( 'input' ).attr( 'disabled', true );
-
-        if ( !window.medicmobile_android ) {
-            $el.append( '<p>Simprints is only supported for android app users.</p>' );
+        if ( !service.enabled() ) {
+            $translate('simprints.disabled').then(function(label) {
+                $el.append( '<p>' + label + '</p>' );
+            });
             return;
         }
-        if ( !window.medicmobile_android.simprints_reg ) {
-            $el.append( '<p>Simprints is not supported on this version of the wrapper app.</p>' );
-            return;
-        }
 
-        /* jslint bitwise: true */
-        var simprintsInputId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) & SP_ID_MASK;
-        $el.find( 'input' ).attr( 'data-simprints-reg', simprintsInputId );
-        $el.append( '<button class="btn btn-primary" onclick="medicmobile_android.simprints_reg(' + simprintsInputId + ')"><i class="fa fa-bluetooth"> Get new Simprints ID</button>' );
+        $el.on('click', '.btn.simprints-register', function() {
+            service.register().then(function(response) {
+                $input.val(response.id).trigger('change');
+            });
+        });
+
+        $translate('simprints.register').then(function(label) {
+            $el.append( '<div><a class="btn btn-default simprints-register"><img src="static/img/simprints.png" width="20" height="20"/> ' + label + '</a></div>' );
+        });
     };
 
     Simprintswidget.prototype.destroy = function( element ) {
@@ -93,4 +80,3 @@ define( function( require, exports, module ) {
         'selector': '.or-appearance-simprints-reg',
     };
 } );
-

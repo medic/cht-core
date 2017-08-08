@@ -33,7 +33,8 @@ function(doc) {
       phone: doc.phone,
       type: doc.type,
       contact: doc.contact && doc.contact._id,
-      lineage: getLineage(doc.parent)
+      lineage: getLineage(doc.parent),
+      simprints_id: doc.simprints_id
     });
   }
 }

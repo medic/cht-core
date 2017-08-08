@@ -8,7 +8,8 @@ angular.module('inboxServices').factory('AndroidApi',
   function(
     $rootScope,
     $state,
-    Session
+    Session,
+    Simprints
   ) {
 
     'use strict';
@@ -145,6 +146,20 @@ angular.module('inboxServices').factory('AndroidApi',
           }
 
           return false;
+        },
+
+        /**
+         * Handle the response from the simprints device
+         *
+         * @param requestId The unique ID of the request to the simprints device.
+         * @param response  The stringified JSON response from the simprints device.
+         */
+        simprintsResponse: function(requestId, response) {
+          try {
+            Simprints.response(parseInt(requestId, 10), JSON.parse(response));
+          } catch(e) {
+            console.error('Unable to parse response from android app', response, e);
+          }
         }
       }
     };
