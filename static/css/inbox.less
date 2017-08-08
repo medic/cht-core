@@ -300,7 +300,7 @@ body {
 
   .filter {
     width: 18%;
-    margin: 0 0.2%;
+    margin: 0 1% 0 0;
     text-align: left;
     display: inline-block;
     vertical-align: top;
@@ -356,13 +356,14 @@ body {
     }
   }
 
-  .reset-filter {
+  .reset-filter,
+  .simprints-filter {
     line-height: 38px;
     > a {
       color: @grayDark;
       display: inline-block;
       text-align: center;
-      width: 3em;
+      padding: 0 0.5em;
 
       &.disabled {
         cursor: default;
@@ -1288,6 +1289,21 @@ a.fa:hover {
 .lineage li:last-child:after {
   content: "";
   padding: 0;
+}
+
+.simprints-stars {
+  &:after {
+    font-family: FontAwesome;
+  }
+  &.tier-1:after {
+    content: '\f005\f005\f005'; /* yes sir, yes sir, three stars full */
+  }
+  &.tier-2:after {
+    content: '\f005\f005\f006'; /* two stars full, one empty */
+  }
+  &.tier-3:after {
+    content: '\f005\f006\f006'; /* one star full, two empty */
+  }
 }
 
 @media (max-width: 767px) {

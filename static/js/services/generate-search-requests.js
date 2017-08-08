@@ -33,15 +33,15 @@ var _ = require('underscore'),
       };
 
       var getRequestWithMappedKeys = function(view, keys, mapKeysFunc) {
-          if (!keys || keys.length === 0) {
-            return;
+        if (!keys || keys.length === 0) {
+          return;
+        }
+        return {
+          view: view,
+          params: {
+            keys: mapKeysFunc(keys)
           }
-          return {
-            view: view,
-            params: {
-              keys: mapKeysFunc(keys)
-            }
-          };
+        };
       };
 
       var getRequestForBooleanKey = function(view, key) {
@@ -133,6 +133,19 @@ var _ = require('underscore'),
         return getRequestWithMappedKeys(view, filters.types.selected, getKeysArray);
       };
 
+      var simprintsRequest = function(filters) {
+        if (!filters.simprintsIdentities || !filters.simprintsIdentities.length) {
+          return;
+        }
+        var keys = filters.simprintsIdentities.map(function(identity) {
+          return [ 'simprints', identity.id ];
+        });
+        return {
+          view: 'medic-client/contacts_by_reference',
+          params: { keys: keys }
+        };
+      };
+
       var defaultReportRequest = function() {
         return {
           view: 'medic-client/reports_by_date',
@@ -166,6 +179,11 @@ var _ = require('underscore'),
           return requests;
         },
         contacts: function(filters) {
+          var simprints = simprintsRequest(filters);
+          if (simprints && simprints.params.keys.length) {
+            return [ simprints ];
+          }
+
           var typeRequest = contactTypeRequest(filters);
           var hasTypeRequest = typeRequest && typeRequest.params.keys.length;
 
