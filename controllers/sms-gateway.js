@@ -23,7 +23,7 @@ const _ = require('underscore'),
 // See: https://github.com/medic/medic-webapp/issues/3019
 // Specifically, this should be in a new repo that we can pull in via npm
 function saveToDb(message, callback) {
-  if (!(message.from && message.content)) {
+  if (message.from === undefined || message.content === undefined) {
     return callback(new Error('All SMS messages must contain a from and content field'));
   }
 
