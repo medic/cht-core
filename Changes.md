@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 2.12.3
+
+_August 8, 2017_
+
+### Bug fixes
+
+- Accept messages with empty from or content. See: https://github.com/medic/medic-api/pull/185
+
 ## 2.12.2
 
 _August 2, 2017_
