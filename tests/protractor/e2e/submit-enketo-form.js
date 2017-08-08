@@ -120,11 +120,6 @@ describe('Submit Enketo form', () => {
     // check the submitted name
     const detail = element(by.css('#reports-content .details ul li:first-child p'));
     helper.waitElementToBeVisisble(detail);
-    detail.getText().then(name => {
-      expect(name).toBe('Jones');
-    }, err => {
-      console.log(err);
-    });
-
+    expect(detail.getText()).toBe('Jones');
   });
 });
