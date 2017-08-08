@@ -39,6 +39,7 @@ after_success:
         if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
           echo "All jobs succeeded! Publishing..."
           bash ./scripts/ci/after_success.sh
+          bash ./scripts/ci/push_to_staging.sh
         else
           echo "Some jobs failed. Not publishing."
         fi
