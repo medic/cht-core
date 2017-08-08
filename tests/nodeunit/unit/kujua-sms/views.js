@@ -24,7 +24,6 @@ exports.tearDown = function (callback) {
 exports['views exist'] = function (test) {
   test.strictEqual(typeof views.data_records_by_ancestor, 'object');
   test.strictEqual(typeof views.data_records, 'object');
-  test.strictEqual(typeof views.contacts_by_refid, 'object');
   test.strictEqual(typeof views.tasks_pending, 'object');
   test.done();
 };
