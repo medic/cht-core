@@ -1,9 +1,6 @@
 var _ = require('underscore'),
     scrollLoader = require('../modules/scroll-loader');
 
-/** Mask used in medic-android for separating request ID from request code. */
-var SP_ID_MASK = 0xFFFFF8;
-
 (function () {
 
   'use strict';
@@ -29,6 +26,7 @@ var SP_ID_MASK = 0xFFFFF8;
       Search,
       SearchFilters,
       Session,
+      Simprints,
       Tour,
       UserSettings,
       XmlForms
@@ -83,7 +81,10 @@ var SP_ID_MASK = 0xFFFFF8;
           liveList.set([]);
         }
 
-        var actualFilter = $scope.filters.search ? $scope.filters : defaultTypeFilter;
+        var actualFilter = defaultTypeFilter;
+        if ($scope.filters.search || $scope.filters.simprintsIdentities) {
+          actualFilter = $scope.filters;
+        }
 
         Search('contacts', actualFilter, options).then(function(contacts) {
           // If you have a home place make sure its at the top
@@ -95,8 +96,16 @@ var SP_ID_MASK = 0xFFFFF8;
               // move it to the top
               contacts.splice(homeIndex, 1);
               contacts.unshift(usersHomePlace);
-            } else if (!$scope.filters.search) {
+            } else if (!$scope.filters.search && !$scope.filters.simprintsIdentities) {
               contacts.unshift(usersHomePlace);
+            }
+            if ($scope.filters.simprintsIdentities) {
+              contacts.forEach(function(contact) {
+                var identity = $scope.filters.simprintsIdentities.find(function(identity) {
+                  return identity.id === contact.simprints_id;
+                });
+                contact.simprints = identity || { confidence: 0, tierNumber: 5 };
+              });
             }
           }
 
@@ -194,12 +203,11 @@ var SP_ID_MASK = 0xFFFFF8;
         $scope.selected = null;
         LiveList.contacts.clearSelected();
         LiveList['contact-search'].clearSelected();
-        LiveList['contact-simprints-search'].clearSelected();
       });
 
       $scope.search = function() {
         $scope.loading = true;
-        if ($scope.filters.search) {
+        if ($scope.filters.search || $scope.filters.simprintsIdentities) {
           $scope.filtered = true;
           liveList = LiveList['contact-search'];
           liveList.set([]);
@@ -219,58 +227,23 @@ var SP_ID_MASK = 0xFFFFF8;
         $scope.search();
       };
 
-      $scope.simprintsEnabled = !!(window.medicmobile_android &&
-          window.medicmobile_android.simprints_available &&
-          window.medicmobile_android.simprints_available());
-      $scope.triggerSimprintsIdent = function() {
-        /* jslint bitwise: true */
-        var simprintsInputId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER) & SP_ID_MASK;
-
-        var $input = $($element).find('input[name=simprints-idents]');
-        $input.attr('data-simprints-idents', simprintsInputId);
-        $input.on('change', function() {
-          var $this = $(this);
-          $this.off('change');
-          handleSimprintsIdentResponse(JSON.parse($this.val()));
-        });
-
+      $scope.simprintsEnabled = Simprints.enabled();
+      $scope.simprintsIdentify = function() {
         $scope.loading = true;
-        window.medicmobile_android.simprints_ident(simprintsInputId);
-      };
-
-      var handleSimprintsIdentResponse = function(idents) {
-        $scope.loading = true;
-        $scope.filtered = true;
-        liveList = LiveList['contact-simprints-search'];
-        liveList.set([]);
-
-        DB().query('medic-client/people_by_simprints_id', {
-          keys: _.pluck(idents, 'id'),
-          include_docs: true,
-        })
-          .then(function(results) {
-            var docs = _.pluck(results.rows, 'doc');
-            docs.forEach(function(doc) {
-              var ident = idents.find(function(ident) {
-                return ident.id === doc.simprints_id;
-              });
-              doc._simprints_confidence = ident.confidence;
-              doc._simprints_stars = Array(7 - Number.parseInt(ident.tier.split('_')[1])).join('<span class="fa fa-star"></span>');
-              liveList.update(doc);
-            });
-            liveList.refresh();
-            _initScroll();
-            $scope.moreItems = false;
-            $scope.loading = false;
-            $scope.appending = false;
-            $scope.hasContacts = liveList.count() > 0;
-          })
-          .catch(function(err) {
-            $scope.error = true;
-            $scope.loading = false;
-            $scope.appending = false;
-            $log.error('Error searching for contacts by simprints ID', err);
+        Simprints.identify().then(function(identities) {
+          identities.forEach(function(identity) {
+            // Tier from TIER_1 (best) to TIER_5 (worst)
+            identity.tierNumber = Number.parseInt(identity.tier.split('_')[1]);
           });
+          identities = identities.filter(function(identity) {
+            // TIER_1, TIER_2, and TIER_3 are considered a match
+            // TIER_4, and TIER_5 are considered no match
+            // https://sites.google.com/simprints.com/simprints-for-developers/custom-integrations/tiers
+            return identity.tierNumber < 4;
+          });
+          $scope.filters.simprintsIdentities = identities;
+          $scope.search();
+        });
       };
 
       var setActionBarData = function() {

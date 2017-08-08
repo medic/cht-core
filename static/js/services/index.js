@@ -69,6 +69,7 @@
   require('./send-message');
   require('./session');
   require('./settings');
+  require('./simprints');
   require('./snackbar');
   require('./target-generator');
   require('./tasks-for-contact');
