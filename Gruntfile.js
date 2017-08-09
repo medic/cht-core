@@ -9,6 +9,9 @@ module.exports = function(grunt) {
 
   // Project configuration
   grunt.initConfig({
+    nsp: {
+      package: grunt.file.readJSON('package.json')
+    },
     replace: {
       hardcodeappsettings: {
         src: [ 'static/dist/inbox.js' ],
@@ -405,6 +408,8 @@ module.exports = function(grunt) {
     }
   });
 
+  grunt.loadNpmTasks('grunt-nsp');
+
   grunt.task.run('notify_hooks');
 
   // Build tasks
@@ -490,6 +495,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci_before', '', [
     'regex-check',
     'jshint',
+    'nsp',
     'mmnpm',
     'build',
     'minify',

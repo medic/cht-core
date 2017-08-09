@@ -5,6 +5,11 @@ if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     exit
 fi
 
+# If we've got this far we know webapp has been checked by NSP, but api
+# and sentinel may not have been, so check again.
+(cd api && grunt nsp)
+(cd sentinel && grunt nsp)
+
 # Attempt to reduce size of api and sentinel artifacts
 (cd sentinel &&
     npm install --production &&
