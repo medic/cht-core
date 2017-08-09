@@ -532,7 +532,8 @@ describe('Enketo service', function() {
     });
 
     it('creates extra docs', function() {
-      /* jshint expr: true */
+
+      const startTime = Date.now();
 
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content =
@@ -556,6 +557,8 @@ describe('Enketo service', function() {
       dbGetAttachment.returns(KarmaUtils.mockPromise(null, '<form/>'));
       UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
       return service.save('V', form).then(function(actual) {
+        const endTime = Date.now();
+
         chai.expect(form.validate.callCount).to.equal(1);
         chai.expect(form.getDataStr.callCount).to.equal(1);
         chai.expect(dbPut.callCount).to.equal(3);
@@ -576,17 +579,21 @@ describe('Enketo service', function() {
         chai.expect(actualReport.from).to.equal('555');
         chai.expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
 
-        chai.expect(actualReport.fields.doc1).to.be.undefined;
-        chai.expect(actualReport.fields.doc2).to.be.undefined;
+        chai.expect(actualReport.fields.doc1).to.equal(undefined);
+        chai.expect(actualReport.fields.doc2).to.equal(undefined);
 
         var actualThing1 = actual[1];
         chai.expect(actualThing1._id).to.match(/(\w+-)\w+/);
         chai.expect(actualThing1._rev).to.equal('1-def');
+        chai.expect(actualThing1.reported_date).to.be.above(startTime);
+        chai.expect(actualThing1.reported_date).to.be.below(endTime);
         chai.expect(actualThing1.some_property_1).to.equal('some_value_1');
 
         var actualThing2 = actual[2];
         chai.expect(actualThing2._id).to.match(/(\w+-)\w+/);
         chai.expect(actualThing2._rev).to.equal('1-ghi');
+        chai.expect(actualThing2.reported_date).to.be.above(startTime);
+        chai.expect(actualThing2.reported_date).to.be.below(endTime);
         chai.expect(actualThing2.some_property_2).to.equal('some_value_2');
 
         chai.expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
@@ -594,8 +601,6 @@ describe('Enketo service', function() {
     });
 
     it('creates extra docs with references', function() {
-      /* jshint expr: true */
-
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content =
           `<data>
@@ -653,8 +658,8 @@ describe('Enketo service', function() {
         chai.expect(actualReport.from).to.equal('555');
         chai.expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
 
-        chai.expect(actualReport.fields.doc1).to.be.undefined;
-        chai.expect(actualReport.fields.doc2).to.be.undefined;
+        chai.expect(actualReport.fields.doc1).to.equal(undefined);
+        chai.expect(actualReport.fields.doc2).to.equal(undefined);
 
         var actualThing1 = actual[1];
         chai.expect(actualThing1._id).to.match(/(\w+-)\w+/);
@@ -677,8 +682,6 @@ describe('Enketo service', function() {
     });
 
     it('creates extra docs with repeats', function() {
-      /* jshint expr: true */
-
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content =
           `<data xmlns:jr="http://openrosa.org/javarosa">

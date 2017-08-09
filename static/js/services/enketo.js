@@ -378,6 +378,7 @@ angular.module('inboxServices').service('Enketo',
       var docsToStore = $record.find('[db-doc=true]').map(function() {
         var docToStore = EnketoTranslation.reportRecordToJs(this.outerHTML);
         docToStore._id = getId(xpathPath(this));
+        docToStore.reported_date = Date.now();
         return docToStore;
       }).get();
 
