@@ -11,7 +11,7 @@ _August 1, 2017_
 
 ### Features
 
-- multi_report_alerts transition to added to sentinel. See the documentation in [medic-docs](https://github.com/medic/medic-docs/blob/master/configuration/transitions.md). Issue: [#3416](https://github.com/medic/medic-webapp/issues/3416)
+- multi_report_alerts transition added to sentinel. See the documentation in [medic-docs](https://github.com/medic/medic-docs/blob/master/configuration/transitions.md). Issue: [#3416](https://github.com/medic/medic-webapp/issues/3416)
 - Specify which forms can be downloaded using Collect. Issue: [#3607](https://github.com/medic/medic-webapp/issues/3607)
 - Validate sentinel transition configs at transition load time. Issue: [#3585](https://github.com/medic/medic-webapp/issues/3585)
 - Information from the contact-summary is now available as input to forms. Issue: [#3413](https://github.com/medic/medic-webapp/issues/3413)
@@ -47,7 +47,7 @@ _August 1, 2017_
 - Send Report dropdown menu items are misaligned. Issue: [#3469](https://github.com/medic/medic-webapp/issues/3469)
 - Disable tasks tour for admins. Issue: [#3144](https://github.com/medic/medic-webapp/issues/3144)
 - Confirmation popup should not show on 'Error loading form'. Issue: [#3045](https://github.com/medic/medic-webapp/issues/3045)
-- "May lose data" warning displayed when form has no fields. Issue: [#1601](https://github.com/medic/medic-webapp/issues/1601)
+- 'May lose data' warning displayed when form has no fields. Issue: [#1601](https://github.com/medic/medic-webapp/issues/1601)
 
 ### Performance improvements
 
