@@ -1,45 +1,33 @@
 # Medic Mobile Release Notes
 
-## 2.13.1
-
-_TBD_
-
-### Bug fixes
-
-- Accept messages with empty from or content. See: https://github.com/medic/medic-api/pull/185
-
 ## 2.13.0
 
-_August 1, 2017_
+_August 9, 2017_
 
 ### Migration notes
+
 - [#2635](https://github.com/medic/medic-webapp/issues/2635) changes the context available to the configured contact summary script. The `contact` parameter no longer has information about parents. This information is now in an array called `lineage`. More information is available in the [configuration documentation](https://github.com/medic/medic-docs/blob/master/configuration/contact-summary.md).
 - [#3546](https://github.com/medic/medic-webapp/issues/3546) changes the implementation of the `contact_summary` so instead of declaring the output on the last line of the script, now you have to return the output. Usually this is as easy as adding a return on the last line, so `output;` becomes `return output;`. More information is available in the [configuration documentation](https://github.com/medic/medic-docs/blob/master/configuration/contact-summary.md).
 - [#3419](https://github.com/medic/medic-webapp/issues/3419) exposes the person contact to message templates used by registration forms, to allow the patient's name to be referred to in situations where the initial patient creation did not occur via a registration (ie they were created in the UI). To ensure correct messages use `{{person.name}}` in registration messages instead of `{{patient_name}}`.
 
 ### Features
 
-- [#3416](https://github.com/medic/medic-webapp/issues/3416) adds the mult_form_alerts transition to sentinel. See the documentation in [medic-docs](https://github.com/medic/medic-docs/blob/master/configuration/transitions.md).
+- multi_report_alerts transition added to sentinel. See the documentation in [medic-docs](https://github.com/medic/medic-docs/blob/master/configuration/transitions.md). Issue: [#3416](https://github.com/medic/medic-webapp/issues/3416)
 - Specify which forms can be downloaded using Collect. Issue: [#3607](https://github.com/medic/medic-webapp/issues/3607)
 - Validate sentinel transition configs at transition load time. Issue: [#3585](https://github.com/medic/medic-webapp/issues/3585)
-- Add session expiry date in About screen. Issue: [#3529](https://github.com/medic/medic-webapp/issues/3529)
-- Allow users to enter Bikram Sambat dates in Enketo forms on Android phones. Issue: [#3513](https://github.com/medic/medic-webapp/issues/3513)
 - Information from the contact-summary is now available as input to forms. Issue: [#3413](https://github.com/medic/medic-webapp/issues/3413)
+- Allow users to enter Bikram Sambat dates in Enketo forms on Android phones. Issue: [#3513](https://github.com/medic/medic-webapp/issues/3513)
 - Allow users to enter Bikram Sambat dates in Enketo forms in the web app. Issue: [#3404](https://github.com/medic/medic-webapp/issues/3404)
 - Registration of a person from a report/action form is now possible. Issue: [#2912](https://github.com/medic/medic-webapp/issues/2912)
-- Remove one level of facility hierarchy for local install users. Issue: [#857](https://github.com/medic/medic-webapp/issues/857)
 
 ### Bug fixes
 
-- Primary contact is showing the UUID. Issue: [#3723](https://github.com/medic/medic-webapp/issues/3723)
 - Couch responds with 200 when a bad app_settings file is uploaded. Issue: [#3674](https://github.com/medic/medic-webapp/issues/3674)
 - Select All in bulk delete doesn't work. Issue: [#3646](https://github.com/medic/medic-webapp/issues/3646)
 - Only serve collect-specific XML forms to collect. Issue: [#3642](https://github.com/medic/medic-webapp/issues/3642)
 - Exporting when filtered by report type exports more reports than are displayed in the web app. Issue: [#3615](https://github.com/medic/medic-webapp/issues/3615)
 - Bulk delete fails when deleting more than a few hundred records. Issue: [#3605](https://github.com/medic/medic-webapp/issues/3605)
-- Contact summary isn't rendering lineage. Issue: [#3598](https://github.com/medic/medic-webapp/issues/3598)
 - Exporting reports filtered by place results in an empty xml. Issue: [#3593](https://github.com/medic/medic-webapp/issues/3593)
-- Cannot log out of app. Issue: [#3592](https://github.com/medic/medic-webapp/issues/3592)
 - Requesting forms should respond with 4xx on client error. Issue: [#3569](https://github.com/medic/medic-webapp/issues/3569)
 - Can't view contacts for restricted user. Issue: [#3517](https://github.com/medic/medic-webapp/issues/3517)
 - Bad error message when associated contact is not available in the local DB. Issue: [#3499](https://github.com/medic/medic-webapp/issues/3499)
@@ -60,7 +48,7 @@ _August 1, 2017_
 - Send Report dropdown menu items are misaligned. Issue: [#3469](https://github.com/medic/medic-webapp/issues/3469)
 - Disable tasks tour for admins. Issue: [#3144](https://github.com/medic/medic-webapp/issues/3144)
 - Confirmation popup should not show on 'Error loading form'. Issue: [#3045](https://github.com/medic/medic-webapp/issues/3045)
-- _May lose data_ warning displayed when form has no fields. Issue: [#1601](https://github.com/medic/medic-webapp/issues/1601)
+- 'May lose data' warning displayed when form has no fields. Issue: [#1601](https://github.com/medic/medic-webapp/issues/1601)
 
 ### Performance improvements
 
@@ -69,10 +57,26 @@ _August 1, 2017_
 
 ### Security
 
-- [#1472](https://github.com/medic/medic-webapp/issues/1472) adds password validation so when creating or updating users the new passwords have to be at least 8 characters long and reasonably complex.
+- Password validation so when creating or updating users the new passwords have to be at least 8 characters long and reasonably complex. Issue: [#1472](https://github.com/medic/medic-webapp/issues/1472)
 - Don't eval() user input. Issue: [#3546](https://github.com/medic/medic-webapp/issues/3546)
 - Set `Secure` setting on AuthSession cookie for HTTPS pages. Issue: [#3182](https://github.com/medic/medic-webapp/issues/3182)
 
+## 2.12.3
+
+_August 8, 2017_
+
+### Bug fixes
+
+- Accept messages with empty from or content. See: https://github.com/medic/medic-api/pull/185
+
+## 2.12.2
+
+_August 2, 2017_
+
+### Bug fixes
+
+- Accept patient reports for patients created in app. Issue: #3740
+- Stop accept_patient_reports transition clearing messages for unrelated registrations. Issue: #3742
 
 ## 2.12.1
 
