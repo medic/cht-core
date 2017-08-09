@@ -69,6 +69,42 @@ exports['scheduleMessage supports template variables on doc'] = function(test) {
     test.done();
 };
 
+exports['scheduleMessage lets you use info from a passed person'] = test => {
+    var doc = {
+        form: 'x',
+        reported_date: '2050-03-13T13:06:22.002Z',
+    };
+    var msg = {
+        message: 'Hello {{person.name}}.',
+        due: moment().toISOString()
+    };
+    messages.scheduleMessage(doc, msg, '+13125551212', [], {name: 'Sally'});
+    test.equals(doc.scheduled_tasks.length, 1);
+    test.equals(
+        doc.scheduled_tasks[0].messages[0].message,
+        'Hello Sally.'
+    );
+    test.done();
+};
+
+exports['scheduleMessage aliases person.name to patient_name for backwards compat'] = test => {
+    var doc = {
+        form: 'x',
+        reported_date: '2050-03-13T13:06:22.002Z',
+    };
+    var msg = {
+        message: 'Hello {{patient_name}}.',
+        due: moment().toISOString()
+    };
+    messages.scheduleMessage(doc, msg, '+13125551212', [], {name: 'Sally'});
+    test.equals(doc.scheduled_tasks.length, 1);
+    test.equals(
+        doc.scheduled_tasks[0].messages[0].message,
+        'Hello Sally.'
+    );
+    test.done();
+};
+
 exports['scheduleMessage adds registration details to message context'] = function(test) {
     var doc = {
         form: 'x',

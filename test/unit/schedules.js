@@ -1,12 +1,5 @@
-var _ = require('underscore'),
-    moment = require('moment'),
+var moment = require('moment'),
     schedules = require('../../lib/schedules');
-
-exports['function signature'] = function(test) {
-    test.ok(_.isFunction(schedules.assignSchedule));
-    test.equals(schedules.assignSchedule.length, 3);
-    test.done();
-};
 
 exports['getOffset returns false for bad syntax'] = function(test) {
     test.equals(schedules.getOffset('x'), false);

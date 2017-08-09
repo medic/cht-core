@@ -359,23 +359,25 @@ module.exports = {
     });
   },
   assignSchedule: (options, callback) => {
-    getRegistrations(
-      options.db,
-      options.doc.fields && options.doc.fields.patient_id,
-      (err, registrations) => {
-        if (err) {
-          return callback(err);
-        }
-        options.params.forEach(name => {
-          const schedule = schedules.getScheduleConfig(name);
-          const assigned = schedules.assignSchedule(options.doc, schedule, registrations);
-          if (!assigned) {
-            logger.error('Failed to add schedule please verify settings.');
-          }
-        });
-        callback();
+    const patientId = options.doc.fields && options.doc.fields.patient_id;
+
+    async.parallel({
+      registrations: _.partial(getRegistrations, options.db, patientId),
+      person: _.partial(utils.getPatientContact, options.db, patientId)
+    }, (err, {registrations, person}) => {
+      if (err) {
+        return callback(err);
       }
-    );
+      options.params.forEach(scheduleName => {
+        const schedule = schedules.getScheduleConfig(scheduleName);
+        const assigned = schedules.assignSchedule(
+          options.doc, schedule, registrations, person);
+        if (!assigned) {
+          logger.error('Failed to add schedule please verify settings.');
+        }
+      });
+      callback();
+    });
   },
   setId: (options, callback) => {
     const doc = options.doc,
