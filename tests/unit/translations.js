@@ -201,7 +201,7 @@ exports['merges updated translations where not modified by configuration'] = fun
   } } ];
   var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
   var dbAttachment = sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'some buffer');
-  var parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED', empty: null });
+  var parse = sinon.stub(properties, 'parse').callsArgWith(1, null, { hello: 'Hello UPDATED', bye: 'Goodbye UPDATED', added: 'ADDED' });
   var dbView = sinon.stub(db.medic, 'view');
   dbView.onCall(0).callsArgWith(3, null, { rows: backups });
   dbView.onCall(1).callsArgWith(3, null, { rows: docs });
@@ -221,8 +221,7 @@ exports['merges updated translations where not modified by configuration'] = fun
         values: {
           hello: 'Hello UPDATED',
           bye: 'Goodbye CUSTOMISED',
-          added: 'ADDED',
-          empty: null
+          added: 'ADDED'
         }
       },
       { // updated backup doc
@@ -232,8 +231,7 @@ exports['merges updated translations where not modified by configuration'] = fun
         values: {
           hello: 'Hello UPDATED',
           bye: 'Goodbye UPDATED',
-          added: 'ADDED',
-          empty: null
+          added: 'ADDED'
         }
       }
     ] });
@@ -241,7 +239,7 @@ exports['merges updated translations where not modified by configuration'] = fun
   });
 };
 
-exports['do not update if existing and attached translation is null'] = function(test) {
+exports['do not update if existing and attached translation is empty'] = function(test) {
   // this is a special case broken by checking falsey
   test.expect(2);
   var ddoc = { _attachments: { 'translations/messages-en.properties': {} } };
@@ -249,17 +247,17 @@ exports['do not update if existing and attached translation is null'] = function
     _id: 'messages-en-backup',
     code: 'en',
     type: 'translations-backup',
-    values: { empty: null }
+    values: { empty: '' }
   } } ];
   var docs = [ { doc: {
     _id: 'messages-en',
     code: 'en',
     type: 'translations',
-    values: { empty: null }
+    values: { empty: '' }
   } } ];
   sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
   sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'some buffer');
-  sinon.stub(properties, 'parse').callsArgWith(1, null, { empty: null });
+  sinon.stub(properties, 'parse').callsArgWith(1, null, { empty: '' });
   var dbView = sinon.stub(db.medic, 'view');
   dbView.onCall(0).callsArgWith(3, null, { rows: backups });
   dbView.onCall(1).callsArgWith(3, null, { rows: docs });
@@ -472,6 +470,66 @@ exports['merges multiple translation files'] = function(test) {
           hello: 'Hello FR UPDATED',
           bye: 'Goodbye FR UPDATED',
           added: 'FR ADDED'
+        }
+      }
+    ] });
+    test.done();
+  });
+};
+
+exports['defaults null translation values to the key - #3753'] = function(test) {
+  test.expect(7);
+  var ddoc = { _attachments: {
+    'translations/messages-en.properties': {}
+  } };
+  var backups = [
+    { doc: {
+      _id: 'messages-en-backup',
+      code: 'en',
+      type: 'translations-backup',
+      values: { hello: null, bye: 'Goodbye' }
+    } }
+  ];
+  var docs = [
+    { doc: {
+      _id: 'messages-en',
+      code: 'en',
+      type: 'translations',
+      values: { hello: null, bye: 'Goodbye' }
+    } }
+  ];
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
+  var dbAttachment = sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'some buffer');
+  var parse = sinon.stub(properties, 'parse');
+  parse.onCall(0).callsArgWith(1, null, { hello: null, bye: 'Goodbye' });
+  var dbView = sinon.stub(db.medic, 'view');
+  dbView.onCall(0).callsArgWith(3, null, { rows: backups });
+  dbView.onCall(1).callsArgWith(3, null, { rows: docs });
+  var dbBulk = sinon.stub(db.medic, 'bulk').callsArgWith(1);
+  translations.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(dbGet.callCount, 1);
+    test.equals(dbAttachment.callCount, 1);
+    test.equals(parse.callCount, 1);
+    test.equals(dbView.callCount, 2);
+    test.equals(dbBulk.callCount, 1);
+    test.deepEqual(dbBulk.args[0][0], { docs: [
+      {
+        _id: 'messages-en',
+        code: 'en',
+        type: 'translations',
+        values: {
+          hello: 'hello',
+          bye: 'Goodbye'
+        }
+      },
+      {
+        _id: 'messages-en-backup',
+        code: 'en',
+        type: 'translations-backup',
+        values: {
+          hello: 'hello',
+          bye: 'Goodbye'
         }
       }
     ] });

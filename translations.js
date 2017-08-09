@@ -96,6 +96,11 @@ var getAttachment = function(name, callback) {
       if (err) {
         return callback(err);
       }
+      Object.keys(values).forEach(function(key) {
+        if (values[key] === null) {
+          values[key] = key;
+        }
+      });
       callback(null, {
         code: extractLocaleCode(name),
         values: values
