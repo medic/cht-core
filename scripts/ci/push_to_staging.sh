@@ -17,12 +17,24 @@ fi
     rm -rf ./node_modules/*/test &&
     rm -rf ./node_modules/*/tests)
 
+npm install nsp -g
+
+# Final security check to block publishing if we have insecure
+# packages
+function nspcheck {
+    (echo 'Checking medic-webapp' && nsp check) ||
+    (echo 'Checking medic-api' && cd api && nsp check) ||
+    (echo 'Checking medic-sentinel' && cd sentinel && nsp check)
+}
+
 echo 'Building build for builds database...'
 if [[ -n "$TRAVIS_TAG" ]]; then
+    nspcheck
     node --stack_size=10000 `which kanso` push --minify \
             --id="$TRAVIS_TAG" \
             "$UPLOAD_URL"/_couch/builds
 else
+    nspcheck || true; # We're OK with this failing for branches
     node --stack_size=10000 `which kanso` push --minify \
             --id="$TRAVIS_BRANCH" \
             "$UPLOAD_URL"/_couch/builds
