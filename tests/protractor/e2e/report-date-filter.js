@@ -1,6 +1,6 @@
 const utils = require('../utils'),
-  moment = require('moment'),
-  commonElements = require('../page-objects/common/common.po.js');
+      moment = require('moment'),
+      commonElements = require('../page-objects/common/common.po.js');
 
 describe('Filters reports', () => {
 

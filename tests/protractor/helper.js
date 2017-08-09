@@ -1,5 +1,5 @@
 const fs = require('fs'),
-  EC = protractor.ExpectedConditions;
+      EC = protractor.ExpectedConditions;
 
 function writeScreenShot(data, filename) {
   const stream = fs.createWriteStream(filename);

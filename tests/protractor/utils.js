@@ -1,8 +1,8 @@
 const _ = require('underscore'),
-  auth = require('./auth')(),
-  constants = require('./constants'),
-  http = require('http'),
-  path = require('path'),
+      auth = require('./auth')(),
+      constants = require('./constants'),
+      http = require('http'),
+      path = require('path'),
   // The app_settings and update_settings modules are on the main ddoc.
   mainDdocName = 'medic',
   userSettingsDocId = `org.couchdb.user:${auth.user}`;

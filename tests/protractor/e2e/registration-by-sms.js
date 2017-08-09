@@ -1,5 +1,5 @@
 const utils = require('../utils'),
-  commonElements = require('../page-objects/common/common.po.js');
+      commonElements = require('../page-objects/common/common.po.js');
 
 describe('registration transition', () => {
 

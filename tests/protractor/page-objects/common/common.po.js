@@ -1,5 +1,5 @@
 const helper = require('../../helper'),
-  utils = require('../../utils');
+      utils = require('../../utils');
 
 const medicLogo = element(by.className('logo-full'));
 const messagesLink = element(by.id('messages-tab'));

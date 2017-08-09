@@ -1,6 +1,6 @@
 const _ = require('underscore'),
-  utils = require('../utils'),
-  auth = require('../auth')();
+      utils = require('../utils'),
+      auth = require('../auth')();
 
 describe('Integration', () => {
 

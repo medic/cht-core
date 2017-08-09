@@ -1,7 +1,7 @@
 const helper = require('../../helper'),
-  utils = require('../../utils.js'),
-  auth = require('../../auth')(),
-  loginPage = require('../../page-objects/login/login.po.js');
+      utils = require('../../utils.js'),
+      auth = require('../../auth')(),
+      loginPage = require('../../page-objects/login/login.po.js');
 
 describe('Login tests : ', () => {
   const wrongUsername = 'fakeuser',

@@ -1,6 +1,7 @@
 const utils = require('../utils'),
-  helper = require('../helper'),
-  commonElements = require('../page-objects/common/common.po.js');
+      helper = require('../helper'),
+      commonElements = require('../page-objects/common/common.po.js');
+  
 describe('Submit Enketo form', () => {
 
   const xml = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -120,7 +121,7 @@ describe('Submit Enketo form', () => {
     // check the submitted name
     const detail = element(by.css('#reports-content .details ul li:first-child p'));
     helper.waitElementToBeVisisble(detail);
-     detail.getText().then(name => {
+    detail.getText().then(name => {
       expect(name).toBe('Jones');
     }, err => {
       console.log(err);

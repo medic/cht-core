@@ -1,6 +1,6 @@
 const utils = require('../utils'),
-  auth = require('../auth')(),
-  commonElements = require('../page-objects/common/common.po.js');
+      auth = require('../auth')(),
+      commonElements = require('../page-objects/common/common.po.js');
 
 describe('Auditing', () => {
 
