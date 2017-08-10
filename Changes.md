@@ -1,7 +1,7 @@
 # Medic Mobile Release Notes
 ## 2.12.4
 
-_TBD_
+_August 10, 2017_
 
 ### Bug fixes
 
