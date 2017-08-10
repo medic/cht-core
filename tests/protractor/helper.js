@@ -25,7 +25,7 @@ module.exports = {
     }, 10000);
   },
 
-  waitElementToBeReattached: locator => {
+  waitElementToBeAttached: locator => {
     let result = false;
     let attempts = 0;
     while (attempts < 2) {

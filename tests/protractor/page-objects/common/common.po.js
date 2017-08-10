@@ -36,6 +36,7 @@ module.exports = {
     helper.waitElementToBeReattached(reportsLink);
     helper.waitUntilReady(element(reportsLink));
     element(reportsLink).click();
+    helper.waitUntilReady(element(by.css('#reports-list')));
   },
 
   goToAnalytics: () => {
