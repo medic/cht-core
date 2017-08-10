@@ -79,6 +79,7 @@ const scheduleClearedMessagesAfterTimestamp = (report, timestamp) => {
   report.scheduled_tasks.forEach(task => {
     if (moment(task.due).valueOf() > timestamp && task.state === CLEARED) {
       utils.setTaskState(task, SCHEDULED);
+      console.log(report._id, 'Scheduling task due', task.due);
     }
   });
 };
@@ -110,7 +111,7 @@ const silenceRemindersNoSaving = (
     acceptedReportsConfig) => {
   const options = {
     reported_date: latestVisitReportedDate,
-    registration: registrationReport,
+    registration: { doc: registrationReport },
     silence_for: acceptedReportsConfig.silence_for,
     type: acceptedReportsConfig.silence_type
   };
@@ -123,6 +124,7 @@ const silenceRemindersNoSaving = (
   }
   toClear.forEach(function(task) {
       if (task.state === 'scheduled') {
+          console.log(registrationReport._id, 'Clearing task due', task.due_date);
           utils.setTaskState(task, 'cleared');
       }
   });
@@ -166,7 +168,7 @@ const fixReport = (registrationReport, visitFormConfig) => {
       if (visitReports && visitReports.length) {
         console.log('has visit reports', visitReports.map(report => [report._id, new Date(report.reported_date).toString()]));
         const latestVisitReport = findLatestReport(visitReports);
-        console.log('has laterst visit report', latestVisitReport._id);
+        console.log('has latest visit report', latestVisitReport._id);
         // Set status "cleared" for all messages whose due date is before latestVisitReport.reported_date
         clearScheduledMessagesBeforeTimestamp(registrationReport, latestVisitReport.reported_date);
         // Set status "scheduled" for all messages whose due date is after latestVisitReport.reported_date
@@ -202,7 +204,6 @@ const doBatch = (index, visitFormConfig, registrationList) => {
       reports.forEach(report => {
         fs.writeFileSync('edited_reports/' + report._id + '.json', JSON.stringify(report, null, 2));
       });
-      console.log('doBatch 2', index, 'returning reports', reports.map(report => report._id));
       return reports;
     });
 };
