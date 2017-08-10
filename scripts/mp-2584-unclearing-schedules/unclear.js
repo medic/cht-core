@@ -12,7 +12,7 @@ const VISIT_CODE = 'ग';
 const DELIVERY_CODE = 'ज';
 const CLEARED = 'cleared';
 const SCHEDULED = 'scheduled';
-const BATCH_SIZE = 100; // batch size for db operations.
+const BATCH_SIZE = 2; // batch size for db operations.
 
 const dbUrl = process.env.COUCH_URL;
 const db = new PouchDB(dbUrl);
@@ -89,15 +89,17 @@ const findLatestReport = reports => {
   reports.forEach(report => {
     if (report.reported_date > maxDate) {
       maxReport = report;
+      maxDate = report.reported_date;
     }
   });
   return maxReport;
 };
 
 const getAcceptedReportsConfig = (formCode) => {
-  return config.init()
+  return config._initConfig()
     .then(() => {
       const acceptedReportsConfig = config.get('patient_reports');
+      console.log('acceptedReportsConfig', acceptedReportsConfig);
       return acceptedReportsConfig.find((config) => config.form === formCode);
     });
 };
@@ -129,7 +131,16 @@ const silenceRemindersNoSaving = (
 
 const getDocs = ids => {
   return db.allDocs({keys: ids, include_docs: true})
-    .then(data => data.rows.map(row => row.doc));
+    .then(data => {
+      console.log('got docs', data);
+      return data.rows.filter(row => {
+        if (row.error) {
+          console.error('DOC', row.key, 'NOT FETCHED! Error :', row.error ,'. Ignoring it. You should fix it by hand later.');
+          return false;
+        }
+        return true;
+      }).map(row => row.doc);
+    });
 };
 
 // in-place edit of report
@@ -153,8 +164,9 @@ const fixReport = (registrationReport, visitFormConfig) => {
 
       const visitReports = associatedReports.filter(report => report.form === VISIT_CODE);
       if (visitReports && visitReports.length) {
+        console.log('has visit reports', visitReports.map(report => [report._id, new Date(report.reported_date).toString()]));
         const latestVisitReport = findLatestReport(visitReports);
-        console.log('has visit report', latestVisitReport._id);
+        console.log('has laterst visit report', latestVisitReport._id);
         // Set status "cleared" for all messages whose due date is before latestVisitReport.reported_date
         clearScheduledMessagesBeforeTimestamp(registrationReport, latestVisitReport.reported_date);
         // Set status "scheduled" for all messages whose due date is after latestVisitReport.reported_date
@@ -186,20 +198,28 @@ const doBatch = (index, visitFormConfig, registrationList) => {
         return Promise.all(registrationReports.map(report => fixReport(report, visitFormConfig)));
       })
     .then(reports => {
+      console.log('doBatch', index, 'returning reports', reports.map(report => report._id));
       reports.forEach(report => {
         fs.writeFileSync('edited_reports/' + report._id + '.json', JSON.stringify(report, null, 2));
       });
+      console.log('doBatch 2', index, 'returning reports', reports.map(report => report._id));
+      return reports;
     });
 };
 
 const doAllBatches = (visitFormConfig, registrationList) => {
-  const promiseChain = Promise.resolve();
+  const promiseChain = Promise.resolve([]);
   let index = 0;
   while (index < registrationList.length) {
     const doBatchI = doBatch.bind(null, index, visitFormConfig, registrationList);
-    promiseChain.then(() => {
-      return doBatchI();
-    });
+    promiseChain.then(editedReports => {
+      console.log('editedReports', editedReports.map(report => report._id));
+      return doBatchI()
+        .then(reports => {
+          console.log('reports returned', reports.map(report => report._id));
+          return editedReports.concat(reports);
+        });
+      });
     index += BATCH_SIZE;
   }
   return promiseChain;
@@ -213,7 +233,10 @@ console.log('found', registrationList.length, 'registrations in file', registrat
 
 getAcceptedReportsConfig(VISIT_CODE)
   .then(visitFormConfig => {
-    doAllBatches(visitFormConfig, registrationList);
+    console.log('visitFormConfig', visitFormConfig);
+    return doAllBatches(visitFormConfig, registrationList);
   })
-  // todo save results when we're happy with them.
+  .then(editedReports => {
+    console.log('editedReports final', editedReports.map(report => report._id));
+  })
   .catch(console.log);
