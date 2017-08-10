@@ -1,5 +1,11 @@
 # Medic Mobile Release Notes
+## 2.12.4
 
+_TBD_
+
+### Bug fixes
+
+- Fix issue with /api/v1/records. Issue: #3770
 ## 2.12.3
 
 _August 8, 2017_
