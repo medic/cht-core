@@ -286,4 +286,4 @@ var result = {
   cards: cards,
   context: context
 };
-return result; // output on the last line of the configuration
+result; // output on the last line of the configuration
