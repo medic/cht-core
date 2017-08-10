@@ -4,6 +4,10 @@
 
 ### TBD
 
+#### Bug fixes
+
+- Fixed race condition crashing medic-api causing 502 responses.  Issue: #3111
+
 #### Security
 
 - Fixed kanso packages that inadvertantly cached data. Issue: #3648
