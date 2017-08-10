@@ -60,6 +60,14 @@ _August 1, 2017_
 - Don't eval() user input. Issue: [#3546](https://github.com/medic/medic-webapp/issues/3546)
 - Set `Secure` setting on AuthSession cookie for HTTPS pages. Issue: [#3182](https://github.com/medic/medic-webapp/issues/3182)
 
+## 2.12.4
+
+_August 10, 2017_
+
+### Bug fixes
+
+- Fix issue with /api/v1/records. Issue: #3770
+
 ## 2.12.3
 
 _August 8, 2017_
