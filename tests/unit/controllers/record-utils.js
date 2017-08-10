@@ -21,6 +21,20 @@ exports['create form returns formated error from string'] = function(test) {
   });
 };
 
+// This asserts that we don't rely on any Object properties because req.body doesn't extend Object
+exports['create form handles weird pseudo object returned from req.body - #3770'] = function(test) {
+  sinon.stub(db, 'getPath').returns('dummy/path');
+  var req = sinon.stub(db, 'request').callsArgWith(1, null, { payload: { success: true, id: 5 }});
+  var body = Object.create(null);
+  body.message = 'test';
+  body.from = '+123';
+  controller.createByForm(body, function(err) {
+    test.equals(err, null);
+    test.equals(req.callCount, 1);
+    test.done();
+  });
+};
+
 exports['create form returns error if form value is missing'] = function(test) {
   test.expect(2);
   var req = sinon.stub(db, 'request');

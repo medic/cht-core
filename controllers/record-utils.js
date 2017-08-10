@@ -23,12 +23,12 @@ var request = function(opts, callback) {
 
 var createByForm = function(data, callback) {
   // We're OK with from being empty - sometimes weird things happen with SMS
-  if (!data.hasOwnProperty('from')) {
+  if (data.from === undefined) {
     return callback(new Error('Missing required value: from'));
   }
 
   // We're OK with message being empty, but the field should exist
-  if (!data.hasOwnProperty('message')) {
+  if (data.message === undefined) {
     return callback(new Error('Missing required field: message'));
   }
 
