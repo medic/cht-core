@@ -1,6 +1,7 @@
 const utils = require('../utils'),
-      helper = require('../helper');
-
+      helper = require('../helper'),
+      commonElements = require('../page-objects/common/common.po.js');
+  
 describe('Submit Enketo form', () => {
 
   const xml = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -92,7 +93,7 @@ describe('Submit Enketo form', () => {
   afterEach(utils.afterEach);
 
   it('submits on reports tab', () => {
-    element(by.id('reports-tab')).click();
+    commonElements.goToReports();
     browser.sleep(1000); // let the refresh work - #3691
 
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
@@ -109,15 +110,21 @@ describe('Submit Enketo form', () => {
 
     // submit form
     element(by.css('#report-form form [name="/data/name"]')).sendKeys('Jones');
-    element(by.css('#report-form .submit')).click();
+    const submitButton = element(by.css('#report-form .submit'));
+    helper.waitUntilReady(submitButton);
+    submitButton.click();
     browser.wait(() => {
       return element(by.css('#reports-content .details ul li:first-child p')).isPresent();
     }, 10000);
 
     browser.sleep(100); // TODO required to make the test deterministic. https://github.com/medic/medic-webapp/issues/3509
-
     // check the submitted name
-    expect(element(by.css('#reports-content .details ul li:first-child p')).getText()).toBe('Jones');
-
+    const detail = element(by.css('#reports-content .details ul li:first-child p'));
+    helper.waitElementToBeVisisble(detail);
+    detail.getText().then(name => {
+      expect(name).toBe('Jones');
+    }, err => {
+      console.log(err);
+    });
   });
 });

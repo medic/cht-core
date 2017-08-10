@@ -1,12 +1,12 @@
 const helper = require('../../helper'),
-  utils = require('../../utils');
+      utils = require('../../utils');
 
 const medicLogo = element(by.className('logo-full'));
 const messagesLink = element(by.id('messages-tab'));
 const tasksLink = element(by.id('tasks-tab'));
 const contactsLink = element(by.id('contacts-tab'));
 const analyticsLink = element(by.id('analytics-tab'));
-const reportsLink = element(by.id('reports-tab'));
+//const reportsLink = element(by.id('reports-tab'));
 const configurationLink = element(by.css('[ui-sref=configuration]'));
 const hamburgerMenu = element(by.className('dropdown options'));
 const logoutButton = $('[ng-click=logout]');
@@ -32,8 +32,11 @@ module.exports = {
   },
 
   goToReports: () => {
-    helper.waitUntilReady(reportsLink);
-    reportsLink.click();
+    const reportsLink = by.id('reports-tab');
+    helper.waitElementToBeAttached(reportsLink);
+    helper.waitUntilReady(element(reportsLink));
+    element(reportsLink).click();
+    helper.waitUntilReady(element(by.css('#reports-list')));
   },
 
   goToAnalytics: () => {

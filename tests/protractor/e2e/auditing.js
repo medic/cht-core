@@ -1,5 +1,6 @@
 const utils = require('../utils'),
-  auth = require('../auth')();
+      auth = require('../auth')(),
+      commonElements = require('../page-objects/common/common.po.js');
 
 describe('Auditing', () => {
 
@@ -36,12 +37,12 @@ describe('Auditing', () => {
   };
 
   let savedUuid;
-  beforeEach(done=> {
+  beforeEach(done => {
     utils.saveDoc(message)
-      .then(doc=> {
+      .then(doc => {
         savedUuid = doc.id;
         browser.waitForAngular().then(done);
-      }, err=> {
+      }, err => {
         console.error('Error saving doc', err);
         done();
       });
@@ -52,7 +53,7 @@ describe('Auditing', () => {
   it('audits message deletion', () => {
 
     // reload messages tab page (changes feeds are disabled)
-    element(by.id('reports-tab')).click();
+    commonElements.goToReports();
     browser.sleep(100);
     element(by.id('messages-tab')).click();
 
@@ -70,7 +71,7 @@ describe('Auditing', () => {
     browser.sleep(1000);
 
     // reload messages tab page (changes feeds are disabled)
-    element(by.id('reports-tab')).click();
+    commonElements.goToReports();
     browser.sleep(100);
     element(by.id('messages-tab')).click();
 
@@ -111,11 +112,11 @@ describe('Auditing', () => {
     // check the audit doc is updated
     flow.execute(() => {
       return utils.getAuditDoc(savedUuid);
-    }).then(doc=> {
+    }).then(doc => {
       expect(doc.history.length).toEqual(1);
       expect(doc.history[0].user).toEqual(auth.user);
       expect(doc.history[0].doc._deleted).toEqual(true);
-    }, err=> {
+    }, err => {
       console.error('Error fetching audit doc', err);
       expect(true).toEqual(false);
     });
