@@ -46,13 +46,15 @@ describe('GetContactSummaries service', () => {
       { id: 'c', value: { name: 'charlie', colour: 'green' } },
       { id: 'd', value: { name: 'dannie' } }
     ];
-    const expected = [
-      { contact: 'arnie', lineage: [ 'b', 'charlie' ] },
-      { contact: 'dannie' }
-    ];
     query.returns(KarmaUtils.mockPromise(null, { rows: summaries }));
     return service(given).then(actual => {
-      chai.expect(actual).to.deep.equal(expected);
+      console.log('actual', JSON.stringify(actual));
+      chai.expect(actual[0].contact).to.equal('arnie');
+      chai.expect(actual[0].lineage.length).to.equal(2);
+      chai.expect(actual[0].lineage[0]).to.equal(null);
+      chai.expect(actual[0].lineage[1]).to.equal('charlie');
+      chai.expect(actual[1].contact).to.equal('dannie');
+      chai.expect(actual[1].lineage).to.equal(undefined);
       chai.expect(query.callCount).to.equal(1);
       chai.expect(query.args[0][0]).to.equal('medic-client/doc_summaries_by_id');
       chai.expect(query.args[0][1]).to.deep.equal({ keys: ['a', 'b', 'c', 'd' ] });

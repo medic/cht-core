@@ -11,7 +11,7 @@ angular.module('inboxServices').factory('GetContactSummaries',
 
     var findContactName = function(response, id) {
       var parent = _.findWhere(response.rows, { id: id });
-      return parent && parent.value.name || id;
+      return (parent && parent.value && parent.value.name) || null;
     };
 
     var replaceContactIdsWithNames = function(summaries, response) {
