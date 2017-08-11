@@ -12,7 +12,7 @@ const VISIT_CODE = 'ग';
 const DELIVERY_CODE = 'ज';
 const CLEARED = 'cleared';
 const SCHEDULED = 'scheduled';
-const BATCH_SIZE = 2; // batch size for db operations.
+const BATCH_SIZE = 100; // batch size for db operations.
 
 const dbUrl = process.env.COUCH_URL;
 const db = new PouchDB(dbUrl);
@@ -100,7 +100,6 @@ const getAcceptedReportsConfig = (formCode) => {
   return config._initConfig()
     .then(() => {
       const acceptedReportsConfig = config.get('patient_reports');
-      console.log('acceptedReportsConfig', acceptedReportsConfig);
       return acceptedReportsConfig.find((config) => config.form === formCode);
     });
 };
@@ -124,7 +123,7 @@ const silenceRemindersNoSaving = (
   }
   toClear.forEach(function(task) {
       if (task.state === 'scheduled') {
-          console.log(registrationReport._id, 'Clearing task due', task.due_date);
+          console.log(registrationReport._id, 'Clearing task due', task.due);
           utils.setTaskState(task, 'cleared');
       }
   });
@@ -134,7 +133,6 @@ const silenceRemindersNoSaving = (
 const getDocs = ids => {
   return db.allDocs({keys: ids, include_docs: true})
     .then(data => {
-      console.log('got docs', data);
       return data.rows.filter(row => {
         if (row.error) {
           console.error('DOC', row.key, 'NOT FETCHED! Error :', row.error ,'. Ignoring it. You should fix it by hand later.');
@@ -148,7 +146,7 @@ const getDocs = ids => {
 // in-place edit of report
 const fixReport = (registrationReport, visitFormConfig) => {
   if (!isValid(registrationReport) || !registrationReport.patient_id) {
-    console.log('nothing to do');
+    console.log('nothing to do for', registrationReport._id);
     return registrationReport;
   }
 
@@ -168,7 +166,7 @@ const fixReport = (registrationReport, visitFormConfig) => {
       if (visitReports && visitReports.length) {
         console.log('has visit reports', visitReports.map(report => [report._id, new Date(report.reported_date).toString()]));
         const latestVisitReport = findLatestReport(visitReports);
-        console.log('has latest visit report', latestVisitReport._id);
+        console.log('has latest visit report', latestVisitReport._id, 'with reported_date', new Date(latestVisitReport.reported_date).toString());
         // Set status "cleared" for all messages whose due date is before latestVisitReport.reported_date
         clearScheduledMessagesBeforeTimestamp(registrationReport, latestVisitReport.reported_date);
         // Set status "scheduled" for all messages whose due date is after latestVisitReport.reported_date
@@ -196,11 +194,9 @@ const doBatch = (index, visitFormConfig, registrationList) => {
   console.log('index', index, 'registrationSubList', registrationSubList);
   return getDocs(registrationSubList)
       .then(registrationReports => {
-        console.log('registrationReports', registrationReports.map(report => report._id));
         return Promise.all(registrationReports.map(report => fixReport(report, visitFormConfig)));
       })
     .then(reports => {
-      console.log('doBatch', index, 'returning reports', reports.map(report => report._id));
       reports.forEach(report => {
         fs.writeFileSync('edited_reports/' + report._id + '.json', JSON.stringify(report, null, 2));
       });
@@ -214,10 +210,8 @@ const doAllBatches = (visitFormConfig, registrationList) => {
   while (index < registrationList.length) {
     const doBatchI = doBatch.bind(null, index, visitFormConfig, registrationList);
     promiseChain.then(editedReports => {
-      console.log('editedReports', editedReports.map(report => report._id));
       return doBatchI()
         .then(reports => {
-          console.log('reports returned', reports.map(report => report._id));
           return editedReports.concat(reports);
         });
       });
