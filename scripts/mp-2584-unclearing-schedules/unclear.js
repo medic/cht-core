@@ -205,19 +205,14 @@ const doBatch = (index, visitFormConfig, registrationList) => {
 };
 
 const doAllBatches = (visitFormConfig, registrationList) => {
-  const promiseChain = Promise.resolve([]);
   let index = 0;
+  const promiseArray = [];
   while (index < registrationList.length) {
     const doBatchI = doBatch.bind(null, index, visitFormConfig, registrationList);
-    promiseChain.then(editedReports => {
-      return doBatchI()
-        .then(reports => {
-          return editedReports.concat(reports);
-        });
-      });
+    promiseArray.push(doBatchI());
     index += BATCH_SIZE;
   }
-  return promiseChain;
+  return Promise.all(promiseArray);
 };
 
 
