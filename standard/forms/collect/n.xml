@@ -4,7 +4,23 @@
     <h:title>New Person</h:title>
     <model>
       <itext>
-        <translation lang="en">
+        <translation lang="Bahasa Indonesia (Indonesian)">
+          <text id="/n/n:label">
+            <value>Person's Name</value>
+          </text>
+          <text id="/n/n:hint">
+            <value>Submitting this form will give you a Medic ID associated to this person</value>
+          </text>
+        </translation>
+        <translation lang="हिन्दी (Hindi)">
+          <text id="/n/n:label">
+            <value>Person's Name</value>
+          </text>
+          <text id="/n/n:hint">
+            <value>Submitting this form will give you a Medic ID associated to this person</value>
+          </text>
+        </translation>
+        <translation default="true()" lang="English">
           <text id="/n/n:label">
             <value>Person's Name</value>
           </text>
@@ -14,7 +30,7 @@
         </translation>
       </itext>
       <instance>
-        <n delimiter="#" id="n" prefix="J1!n!" version="2017-07-14_10-55">
+        <n delimiter="#" id="n" prefix="J1!n!" version="2017-08-12_07-06">
           <n/>
           <meta>
             <instanceID/>

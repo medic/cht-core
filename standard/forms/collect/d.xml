@@ -4,36 +4,65 @@
     <h:title>Delivery Report</h:title>
     <model>
       <itext>
-        <translation lang="hi">
+        <translation lang="Bahasa Indonesia (Indonesian)">
           <text id="/d/review_without_days:label">
-            <value>-</value>
+            <value>Submitting delivery report for ID <output value=" /d/id "/>. Delivered at <output value=" /d/c_label "/>.</value>
+          </text>
+          <text id="/d/c/NS:label">
+            <value>Home, with no skilled birth attendant</value>
           </text>
           <text id="/d/c/F:label">
-            <value>-</value>
+            <value>Facility</value>
           </text>
           <text id="/d/c/S:label">
-            <value>-</value>
+            <value>Home, with a skilled birth attendant</value>
           </text>
           <text id="/d/c:label">
+            <value>Where did the delivery take place?</value>
+          </text>
+          <text id="/d/id:label">
+            <value>Pasien ID</value>
+          </text>
+          <text id="/d/review_with_days:label">
+            <value>Submitting delivery report for ID <output value=" /d/id "/>. Delivered at <output value=" /d/c_label "/>, with date of birth noted.</value>
+          </text>
+          <text id="/d/d:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/d/d:label">
-            <value>-</value>
+            <value>How many days since the delivery?</value>
+          </text>
+        </translation>
+        <translation lang="हिन्दी (Hindi)">
+          <text id="/d/review_without_days:label">
+            <value>Submitting delivery report for ID <output value=" /d/id "/>. Delivered at <output value=" /d/c_label "/>.</value>
+          </text>
+          <text id="/d/c/NS:label">
+            <value>Home, with no skilled birth attendant</value>
+          </text>
+          <text id="/d/c/F:label">
+            <value>Facility</value>
+          </text>
+          <text id="/d/c/S:label">
+            <value>Home, with a skilled birth attendant</value>
+          </text>
+          <text id="/d/c:label">
+            <value>Where did the delivery take place?</value>
           </text>
           <text id="/d/id:label">
             <value>मरीज का ID</value>
           </text>
           <text id="/d/review_with_days:label">
-            <value>-</value>
+            <value>Submitting delivery report for ID <output value=" /d/id "/>. Delivered at <output value=" /d/c_label "/>, with date of birth noted.</value>
           </text>
           <text id="/d/d:jr:constraintMsg">
             <value>-</value>
           </text>
-          <text id="/d/c/NS:label">
-            <value>-</value>
+          <text id="/d/d:label">
+            <value>How many days since the delivery?</value>
           </text>
         </translation>
-        <translation lang="en">
+        <translation default="true()" lang="English">
           <text id="/d/review_without_days:label">
             <value>Submitting delivery report for ID <output value=" /d/id "/>. Delivered at <output value=" /d/c_label "/>.</value>
           </text>
@@ -62,38 +91,9 @@
             <value>Home, with no skilled birth attendant</value>
           </text>
         </translation>
-        <translation lang="id">
-          <text id="/d/review_without_days:label">
-            <value>-</value>
-          </text>
-          <text id="/d/c/F:label">
-            <value>-</value>
-          </text>
-          <text id="/d/c/S:label">
-            <value>-</value>
-          </text>
-          <text id="/d/c:label">
-            <value>-</value>
-          </text>
-          <text id="/d/d:label">
-            <value>-</value>
-          </text>
-          <text id="/d/id:label">
-            <value>Pasien ID</value>
-          </text>
-          <text id="/d/review_with_days:label">
-            <value>-</value>
-          </text>
-          <text id="/d/d:jr:constraintMsg">
-            <value>-</value>
-          </text>
-          <text id="/d/c/NS:label">
-            <value>-</value>
-          </text>
-        </translation>
       </itext>
       <instance>
-        <d delimiter="#" id="d" prefix="J1!d!" version="2017-07-26_08-07">
+        <d delimiter="#" id="d" prefix="J1!d!" version="2017-08-12_06-59">
           <id/>
           <c/>
           <d/>

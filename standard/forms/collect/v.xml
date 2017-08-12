@@ -4,32 +4,30 @@
     <h:title>Clinic Visit</h:title>
     <model>
       <itext>
-        <translation lang="hi">
+        <translation lang="Bahasa Indonesia (Indonesian)">
           <text id="/v/review:label">
-            <value>-</value>
+            <value>Submitting visit report for ID <output value=" /v/id "/></value></text>
+          <text id="/v/id:label">
+            <value>Pasien ID</value>
           </text>
+        </translation>
+        <translation lang="हिन्दी (Hindi)">
+          <text id="/v/review:label">
+            <value>Submitting visit report for ID <output value=" /v/id "/></value></text>
           <text id="/v/id:label">
             <value>मरीज का ID</value>
           </text>
         </translation>
-        <translation lang="en">
+        <translation default="true()" lang="English">
           <text id="/v/review:label">
             <value>Submitting visit report for ID <output value=" /v/id "/></value></text>
           <text id="/v/id:label">
             <value>Patient ID</value>
           </text>
         </translation>
-        <translation lang="id">
-          <text id="/v/review:label">
-            <value>-</value>
-          </text>
-          <text id="/v/id:label">
-            <value>Pasien ID</value>
-          </text>
-        </translation>
       </itext>
       <instance>
-        <v delimiter="#" id="v" prefix="J1!v!" version="2017-07-14_10-55">
+        <v delimiter="#" id="v" prefix="J1!v!" version="2017-08-12_07-00">
           <id/>
           <review/>
           <meta>

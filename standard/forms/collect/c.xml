@@ -4,7 +4,39 @@
     <h:title>New Child</h:title>
     <model>
       <itext>
-        <translation lang="en">
+        <translation lang="Bahasa Indonesia (Indonesian)">
+          <text id="/c/review:label">
+            <value>Submitting new person report for <output value=" /c/n "/></value></text>
+          <text id="/c/n:label">
+            <value>Child's Name</value>
+          </text>
+          <text id="/c/w:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c/w:label">
+            <value>Weeks since birth</value>
+          </text>
+          <text id="/c/n:hint">
+            <value>Submitting this form will give you a Medic ID associated to this person</value>
+          </text>
+        </translation>
+        <translation lang="हिन्दी (Hindi)">
+          <text id="/c/review:label">
+            <value>Submitting new person report for <output value=" /c/n "/></value></text>
+          <text id="/c/n:label">
+            <value>Child's Name</value>
+          </text>
+          <text id="/c/w:jr:constraintMsg">
+            <value>-</value>
+          </text>
+          <text id="/c/w:label">
+            <value>Weeks since birth</value>
+          </text>
+          <text id="/c/n:hint">
+            <value>Submitting this form will give you a Medic ID associated to this person</value>
+          </text>
+        </translation>
+        <translation default="true()" lang="English">
           <text id="/c/review:label">
             <value>Submitting new person report for <output value=" /c/n "/></value></text>
           <text id="/c/n:label">
@@ -22,7 +54,7 @@
         </translation>
       </itext>
       <instance>
-        <c delimiter="#" id="c" prefix="J1!c!" version="2017-07-14_10-55">
+        <c delimiter="#" id="c" prefix="J1!c!" version="2017-08-12_07-06">
           <n/>
           <w/>
           <review/>
