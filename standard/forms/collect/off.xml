@@ -4,18 +4,27 @@
     <h:title>Turn Notifications OFF</h:title>
     <model>
       <itext>
-        <translation lang="hi">
+        <translation lang="Bahasa Indonesia (Indonesian)">
           <text id="/off/r:label">
-            <value>-</value>
+            <value>Notes</value>
           </text>
           <text id="/off/review:label">
-            <value>-</value>
+            <value>Submitting report to turn OFF notifications for ID <output value=" /off/id "/>, with the following notes: <output value=" /off/r "/></value></text>
+          <text id="/off/id:label">
+            <value>Pasien ID</value>
           </text>
+        </translation>
+        <translation lang="हिन्दी (Hindi)">
+          <text id="/off/r:label">
+            <value>Notes</value>
+          </text>
+          <text id="/off/review:label">
+            <value>Submitting report to turn OFF notifications for ID <output value=" /off/id "/>, with the following notes: <output value=" /off/r "/></value></text>
           <text id="/off/id:label">
             <value>मरीज का ID</value>
           </text>
         </translation>
-        <translation lang="en">
+        <translation default="true()" lang="English">
           <text id="/off/r:label">
             <value>Notes</value>
           </text>
@@ -25,20 +34,9 @@
             <value>Patient ID</value>
           </text>
         </translation>
-        <translation lang="id">
-          <text id="/off/r:label">
-            <value>-</value>
-          </text>
-          <text id="/off/review:label">
-            <value>-</value>
-          </text>
-          <text id="/off/id:label">
-            <value>Pasien ID</value>
-          </text>
-        </translation>
       </itext>
       <instance>
-        <off delimiter="#" id="off" prefix="J1!off!" version="2017-07-14_10-55">
+        <off delimiter="#" id="off" prefix="J1!off!" version="2017-08-12_07-01">
           <id/>
           <r/>
           <review/>
