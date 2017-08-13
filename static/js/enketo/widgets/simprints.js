@@ -46,8 +46,8 @@ define( function( require, exports, module ) {
         }
 
         $el.on('click', '.btn.simprints-register', function() {
-            service.register().then(function(response) {
-                $input.val(response.id).trigger('change');
+            service.register().then(function(simprintsId) {
+                $input.val(simprintsId).trigger('change');
             });
         });
 

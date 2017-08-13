@@ -231,16 +231,6 @@ var _ = require('underscore'),
       $scope.simprintsIdentify = function() {
         $scope.loading = true;
         Simprints.identify().then(function(identities) {
-          identities.forEach(function(identity) {
-            // Tier from TIER_1 (best) to TIER_5 (worst)
-            identity.tierNumber = Number.parseInt(identity.tier.split('_')[1]);
-          });
-          identities = identities.filter(function(identity) {
-            // TIER_1, TIER_2, and TIER_3 are considered a match
-            // TIER_4, and TIER_5 are considered no match
-            // https://sites.google.com/simprints.com/simprints-for-developers/custom-integrations/tiers
-            return identity.tierNumber < 4;
-          });
           $scope.filters.simprintsIdentities = identities;
           $scope.search();
         });
