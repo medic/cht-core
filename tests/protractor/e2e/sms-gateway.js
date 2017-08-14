@@ -159,6 +159,7 @@ describe('sms-gateway api', () => {
       browser.wait(() => {
         return element(by.css('#message-list li:first-child')).isPresent();
       }, 10000);
+      browser.sleep(500); // without this the elements are found to be detached...
       expect(element(by.css('#message-list li:first-child .name')).getText()).toBe('+64271234567');
       expect(element(by.css('#message-list li:first-child .description')).getText()).toBe('hello');
 
@@ -167,7 +168,7 @@ describe('sms-gateway api', () => {
       browser.wait(() => {
         return element(by.css('#message-content .body li.incoming:first-child .data p:first-child')).isPresent();
       }, 10000);
-      browser.sleep(250); // without this the elements are found to be detached...
+      browser.sleep(500); // without this the elements are found to be detached...
 
       expect(element(by.css('#message-header .name')).getText()).toBe('+64271234567');
       expect(element(by.css('#message-content .body li.incoming:first-child .data p:first-child')).getText()).toBe('hello');
