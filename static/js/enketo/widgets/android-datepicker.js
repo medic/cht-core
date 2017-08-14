@@ -24,6 +24,7 @@ define( function( require, exports, module ) {
     var Widget = require( '@medic/enketo-core/src/js/Widget' );
     var $ = require( 'jquery' );
     require( '@medic/enketo-core/src/js/plugins' );
+    var cookies = require( '../cookies' );
 
     var pluginName = 'androiddatepicker';
 
@@ -63,6 +64,10 @@ define( function( require, exports, module ) {
         var $el;
 
         if ( !window.medicmobile_android || !window.medicmobile_android.datePicker ) {
+            return;
+        }
+
+        if ( cookies().locale === 'ne' ) {
             return;
         }
 
