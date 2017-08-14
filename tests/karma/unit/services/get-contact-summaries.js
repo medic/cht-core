@@ -48,7 +48,6 @@ describe('GetContactSummaries service', () => {
     ];
     query.returns(KarmaUtils.mockPromise(null, { rows: summaries }));
     return service(given).then(actual => {
-      console.log('actual', JSON.stringify(actual));
       chai.expect(actual[0].contact).to.equal('arnie');
       chai.expect(actual[0].lineage.length).to.equal(2);
       chai.expect(actual[0].lineage[0]).to.equal(null);
