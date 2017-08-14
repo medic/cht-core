@@ -288,6 +288,10 @@ var feedback = require('../modules/feedback'),
             $log.error('Error fetching read status', err);
           });
       };
+      // wait for db.info to avoid uncaught exceptions: #3754
+      DB().info().then(function() {
+        $scope.updateUnreadCount();
+      });
       Changes({
         key: 'inbox-read-status',
         filter: function(change) {
