@@ -20,7 +20,10 @@ describe('InboxCtrl controller', () => {
         return { path: 'localhost' };
       });
       $provide.value('DB', () => {
-        return { query: KarmaUtils.nullPromise() };
+        return {
+          query: KarmaUtils.nullPromise(),
+          info: KarmaUtils.nullPromise()
+        };
       });
       $provide.value('WatchDesignDoc', sinon.stub());
       $provide.value('DBSync', sinon.stub());
