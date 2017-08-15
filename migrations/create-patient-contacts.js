@@ -5,16 +5,14 @@ var _ = require('underscore'),
 var BATCH_SIZE = 100;
 
 var registrationIdsWithNoPatientContacts = function(batch, callback) {
-  db.medic.view('medic', 'patient_by_patient_shortcode_id', {
-      keys: batch.map(function(row) {
-        return row[0];
-      })
+  db.medic.view('medic-client', 'contacts_by_reference', {
+      keys: batch.map(row => [ 'shortcode', row[0] ])
     }, function(err, results) {
       if (err) {
         return callback(err);
       }
 
-      var existingContactShortcodes = _.pluck(results.rows, 'key');
+      var existingContactShortcodes = results.rows.map(row => row.key[1]);
 
       var registrationIdsToConsider = _.chain(batch)
         .filter(function(row) {
