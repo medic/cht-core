@@ -5,7 +5,9 @@
 <div class="upgrade-config col-sm-12" ng-show="deployInfo">
   <div ng-show="loading || upgrading">
     <div class="loader"></div>
-    <p class="status" ng-show="upgrading"><span translate>instance.upgrade.upgrading</span></p>
+    <p class="status" ng-show="upgrading"
+      translate="instance.upgrade.upgrading"
+      translate-values="{ before: deployInfo.version, after: version }"></p>
   </div>
 
   <div ng-show="error">
@@ -42,9 +44,9 @@
     <div>
       <legend translate>instance.upgrade.betas</legend>
 
-      <p ng-hide="allowBetas" translate>instance.upgrade.releases_only</p>
+      <p ng-hide="allowPrereleaseBuilds" translate>instance.upgrade.releases_only</p>
 
-      <div ng-show="allowBetas">
+      <div ng-show="allowPrereleaseBuilds">
         <p ng-hide="versions.betas.length" translate>instance.upgrade.no_betas</p>
         <ul ng-show="versions.betas.length" class="table table-striped">
           <li ng-repeat="v in versions.betas" class="row">
@@ -59,9 +61,9 @@
     <div>
       <legend translate>instance.upgrade.branches</legend>
 
-      <p ng-hide="allowBranches" translate>instance.upgrade.releases_only</p>
+      <p ng-hide="allowPrereleaseBuilds" translate>instance.upgrade.releases_only</p>
 
-      <div ng-show="allowBranches">
+      <div ng-show="allowPrereleaseBuilds">
         <p ng-hide="versions.branches.length" translate>instance.upgrade.no_branches</p>
         <ul ng-show="versions.branches.length" class="table table-striped">
           <li ng-repeat="v in versions.branches" class="row">

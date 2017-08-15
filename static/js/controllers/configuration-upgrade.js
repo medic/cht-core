@@ -1,16 +1,15 @@
-var PouchDB = require('pouchdb-browser');
-
-// REVIEWER: are we OK hard-coding these two concepts? If not, where should
-// we put this? We don't have access to env vars in medic-webapp.
 var IS_PROD_URL = /^https:\/\/[^.]+.app.medicmobile.org\//,
-    BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
+    // BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
+    BUILDS_DB = 'http://admin:pass@localhost:5988/builds';
 
 angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
   function(
+    $http,
     $log,
     $q,
     $scope,
-    DB
+    DB,
+    pouchDB
   ) {
 
     'use strict';
@@ -21,48 +20,60 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
 
     DB().get('_design/medic')
       .then(function(ddoc) {
-        $scope.deployInfo = ddoc.deploy_info;
+        $scope.deployInfo = ddoc.deploy_info || {
+          version: '1.2.3-beta.4',
+          user: 'admin',
+          timestamp: new Date()
+        };
 
-        $scope.allowBetas = $scope.allowBranches =
-          !window.location.href.match(IS_PROD_URL);
+        $scope.allowPrereleaseBuilds = !window.location.href.match(IS_PROD_URL);
 
-        var buildsDb = new PouchDB(BUILDS_DB);
+        var buildsDb = pouchDB(BUILDS_DB);
+
+        var minVersion = minimiumNextRelease($scope.deployInfo);
 
         var viewLookups = [];
 
+        // TODO: Once we rely on CouchDB 2.0 combine these three calls
         viewLookups.push(
           buildsDb
-            .query('builds/branches')
+            .query('builds/releases', {
+              startkey: [ 'branch', 'medic', 'medic', {}],
+              endkey: [ 'branch', 'medic', 'medic'],
+              descending: true,
+              limit: 50
+            })
             .then(function(res) {
-              $scope.versions.branches = res.rows.sort(function(a, b) {
-                return Date.parse(b.value.build_time) -
-                       Date.parse(a.value.build_time);
-              });
+              $scope.versions.branches = res.rows;
             }));
 
-        var versionRestriction;
-        var minVersion = parseVersion($scope.deployInfo && $scope.deployInfo.version);
-        if (minVersion) {
-          if (minVersion.beta) {
-            ++minVersion.beta;
-          } else {
-            ++minVersion.patch;
-          }
-
-          versionRestriction = { startkey: [ minVersion.major, minVersion.minor, minVersion.patch ] };
-        }
-
         viewLookups.push(
           buildsDb
-            .query('builds/betas', versionRestriction)
+            .query('builds/releases', {
+              startkey: [ 'beta', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch, minVersion.beta ],
+              endkey: [ 'beta', 'medic', 'medic', {}]
+            })
             .then(function(res) {
+              res.rows.forEach(function(row) {
+                row.id = stripKey(row.id);
+              });
+
+              // TODO can we do this sorting server-side? reverse keys and descending = true?
               $scope.versions.betas = res.rows.reverse();
             }));
 
         viewLookups.push(
           buildsDb
-            .query('builds/releases', versionRestriction)
+            .query('builds/releases', {
+              startkey: [ 'release', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch],
+              endkey: [ 'release', 'medic', 'medic', {}]
+            })
             .then(function(res) {
+              res.rows.forEach(function(row) {
+                row.id = stripKey(row.id);
+              });
+
+              // TODO can we do this sorting server-side? reverse keys and descending = true?
               $scope.versions.releases = res.rows.reverse();
             }));
 
@@ -70,6 +81,7 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
       })
       .catch(function(err) {
         $log.error('Error fetching available versions:', err);
+        // TODO: have this actually show an error...
         $scope.error = 'Error fetching available versions: ' + err.message;
       })
       .then(function() {
@@ -78,21 +90,35 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
 
     $scope.upgrade = function(version) {
       $scope.error = false;
-      $scope.upgrading = true;
+      $scope.upgrading = version;
 
-      window.jQuery.ajax({
-        method: 'POST',
-        url: '/api/upgrade',
-        data: JSON.stringify({ version:version }),
-        contentType: 'application/json',
-      })
-        .fail(function(err) {
+      $http.post('/api/v1/upgrade', { build: {
+        namespace: 'medic',
+        application: 'medic',
+        version: JSON.stringify(version)
+      }})
+        .catch(function(err) {
           err = err.responseText || err.statusText;
           $log.error('Error triggering upgrade:', err);
           $scope.error = 'Error triggering upgrade: ' + err;
           $scope.upgrading = false;
-          $scope.$apply();
         });
+    };
+
+    var stripKey = function(key) {
+      return key.replace(/medic:medic:/, '');
+    };
+
+    var minimiumNextRelease = function(deployInfo) {
+      var minVersion = parseVersion(deployInfo && deployInfo.version);
+      if (minVersion) {
+        if (minVersion.beta) {
+          ++minVersion.beta;
+        } else {
+          ++minVersion.patch;
+        }
+      }
+      return minVersion;
     };
 
     var parseVersion = function(versionString) {
