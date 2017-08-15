@@ -39,21 +39,21 @@ define( function( require, exports, module ) {
         var service = angularServices.get( 'Simprints' );
 
         if ( !service.enabled() ) {
-            $translate('simprints.disabled').then(function(label) {
+            $translate( 'simprints.disabled' ).then(function( label ) {
                 $el.append( '<p>' + label + '</p>' );
             });
             return;
         }
 
-        $el.on('click', '.btn.simprints-register', function() {
-            service.register().then(function(simprintsId) {
-                $input.val(simprintsId).trigger('change');
-            });
-        });
+        $el.on( 'click', '.btn.simprints-register', function() {
+            service.register().then( function(simprintsId) {
+                $input.val( simprintsId ).trigger( 'change' );
+            } );
+        } );
 
-        $translate('simprints.register').then(function(label) {
+        $translate( 'simprints.register' ).then( function( label ) {
             $el.append( '<div><a class="btn btn-default simprints-register"><img src="static/img/simprints.png" width="20" height="20"/> ' + label + '</a></div>' );
-        });
+        } );
     };
 
     Simprintswidget.prototype.destroy = function( element ) {
