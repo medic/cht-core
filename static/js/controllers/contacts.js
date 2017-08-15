@@ -9,6 +9,7 @@ var _ = require('underscore'),
 
   inboxControllers.controller('ContactsCtrl',
     function (
+      $element,
       $log,
       $q,
       $scope,
@@ -25,6 +26,7 @@ var _ = require('underscore'),
       Search,
       SearchFilters,
       Session,
+      Simprints,
       Tour,
       UserSettings,
       XmlForms
@@ -79,7 +81,10 @@ var _ = require('underscore'),
           liveList.set([]);
         }
 
-        var actualFilter = $scope.filters.search ? $scope.filters : defaultTypeFilter;
+        var actualFilter = defaultTypeFilter;
+        if ($scope.filters.search || $scope.filters.simprintsIdentities) {
+          actualFilter = $scope.filters;
+        }
 
         Search('contacts', actualFilter, options).then(function(contacts) {
           // If you have a home place make sure its at the top
@@ -91,8 +96,16 @@ var _ = require('underscore'),
               // move it to the top
               contacts.splice(homeIndex, 1);
               contacts.unshift(usersHomePlace);
-            } else if (!$scope.filters.search) {
+            } else if (!$scope.filters.search && !$scope.filters.simprintsIdentities) {
               contacts.unshift(usersHomePlace);
+            }
+            if ($scope.filters.simprintsIdentities) {
+              contacts.forEach(function(contact) {
+                var identity = $scope.filters.simprintsIdentities.find(function(identity) {
+                  return identity.id === contact.simprints_id;
+                });
+                contact.simprints = identity || { confidence: 0, tierNumber: 5 };
+              });
             }
           }
 
@@ -194,7 +207,7 @@ var _ = require('underscore'),
 
       $scope.search = function() {
         $scope.loading = true;
-        if ($scope.filters.search) {
+        if ($scope.filters.search || $scope.filters.simprintsIdentities) {
           $scope.filtered = true;
           liveList = LiveList['contact-search'];
           liveList.set([]);
@@ -212,6 +225,15 @@ var _ = require('underscore'),
         $scope.filters = {};
         SearchFilters.reset();
         $scope.search();
+      };
+
+      $scope.simprintsEnabled = Simprints.enabled();
+      $scope.simprintsIdentify = function() {
+        $scope.loading = true;
+        Simprints.identify().then(function(identities) {
+          $scope.filters.simprintsIdentities = identities;
+          $scope.search();
+        });
       };
 
       var setActionBarData = function() {

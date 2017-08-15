@@ -6,9 +6,11 @@
  */
 angular.module('inboxServices').factory('AndroidApi',
   function(
+    $log,
     $rootScope,
     $state,
-    Session
+    Session,
+    Simprints
   ) {
 
     'use strict';
@@ -145,6 +147,32 @@ angular.module('inboxServices').factory('AndroidApi',
           }
 
           return false;
+        },
+
+        /**
+         * Handle the response from the simprints device
+         *
+         * @param requestType Indicates the response handler to call. Either 'identify' or 'register'.
+         * @param requestIdString The unique ID of the request to the simprints device.
+         * @param response The stringified JSON response from the simprints device.
+         */
+        simprintsResponse: function(requestType, requestIdString, response) {
+          var requestId = parseInt(requestIdString, 10);
+          if (isNaN(requestId)) {
+            return $log.error(new Error('Unable to parse requestId: "' + requestIdString + '"'));
+          }
+          try {
+            response = JSON.parse(response);
+          } catch(e) {
+            return $log.error(new Error('Unable to parse JSON response from android app: "' + response + '"'));
+          }
+          if (requestType === 'identify') {
+            Simprints.identifyResponse(requestId, response);
+          } else if (requestType === 'register') {
+            Simprints.registerResponse(requestId, response);
+          } else {
+            return $log.error(new Error('Unknown request type: "' + requestType + '"'));
+          }
         }
       }
     };
