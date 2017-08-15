@@ -47,11 +47,22 @@ var createDoc = function(attachment) {
 
 var merge = function(attachments, backups, docs) {
   var updatedDocs = [];
+  var knownKeys = [];
+  var english = _.findWhere(attachments, { code: 'en' });
+  if (english) {
+    knownKeys = Object.keys(english.values);
+  }
   attachments.forEach(function(attachment) {
     var code = attachment.code;
     if (!code) {
       return;
     }
+    knownKeys.forEach(function(knownKey) {
+      var value = attachment.values[knownKey];
+      if (_.isUndefined(value) || value === null) {
+        attachment.values[knownKey] = knownKey;
+      }
+    });
     var backup = _.findWhere(backups, { code: code });
     if (!backup) {
       // new language
@@ -67,7 +78,7 @@ var merge = function(attachments, backups, docs) {
         var existing = doc.values[key];
         var backedUp = backup.values[key];
         var attached = attachment.values[key];
-        if (typeof existing === 'undefined' ||
+        if (_.isUndefined(existing) ||
             (existing === backedUp && backedUp !== attached)) {
           // new or updated translation
           doc.values[key] = attachment.values[key];
@@ -96,11 +107,6 @@ var getAttachment = function(name, callback) {
       if (err) {
         return callback(err);
       }
-      Object.keys(values).forEach(function(key) {
-        if (values[key] === null) {
-          values[key] = key;
-        }
-      });
       callback(null, {
         code: extractLocaleCode(name),
         values: values

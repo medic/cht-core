@@ -536,3 +536,77 @@ exports['defaults null translation values to the key - #3753'] = function(test) 
     test.done();
   });
 };
+
+exports['defaults undefined translation values to the key - #3753'] = function(test) {
+  test.expect(7);
+  var ddoc = { _attachments: {
+    'translations/messages-en.properties': {},
+    'translations/messages-ne.properties': {}
+  } };
+  var backups = [
+    { doc: {
+      _id: 'messages-en-backup',
+      code: 'en',
+      type: 'translations-backup',
+      values: { hello: 'Hello', bye: 'Goodbye' }
+    } },
+    { doc: {
+      _id: 'messages-ne-backup',
+      code: 'ne',
+      type: 'translations-backup',
+      values: { bye: 'Goodbye' }
+    } }
+  ];
+  var docs = [
+    { doc: {
+      _id: 'messages-en',
+      code: 'en',
+      type: 'translations',
+      values: { hello: 'Hello', bye: 'Goodbye' }
+    } },
+    { doc: {
+      _id: 'messages-ne',
+      code: 'ne',
+      type: 'translations',
+      values: { bye: 'Goodbye' }
+    } }
+  ];
+  var dbGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, ddoc);
+  var dbAttachment = sinon.stub(db.medic.attachment, 'get').callsArgWith(2, null, 'some buffer');
+  var parse = sinon.stub(properties, 'parse');
+  parse.onCall(0).callsArgWith(1, null, { hello: 'Hello', bye: 'Goodbye' });
+  parse.onCall(1).callsArgWith(1, null, { bye: 'Goodbye' });
+  var dbView = sinon.stub(db.medic, 'view');
+  dbView.onCall(0).callsArgWith(3, null, { rows: backups });
+  dbView.onCall(1).callsArgWith(3, null, { rows: docs });
+  var dbBulk = sinon.stub(db.medic, 'bulk').callsArgWith(1);
+  translations.run(function(err) {
+    test.equals(err, undefined);
+    test.equals(dbGet.callCount, 1);
+    test.equals(dbAttachment.callCount, 2);
+    test.equals(parse.callCount, 2);
+    test.equals(dbView.callCount, 2);
+    test.equals(dbBulk.callCount, 1);
+    test.deepEqual(dbBulk.args[0][0], { docs: [
+      {
+        _id: 'messages-ne',
+        code: 'ne',
+        type: 'translations',
+        values: {
+          hello: 'hello', // defaults to the translation key
+          bye: 'Goodbye'
+        }
+      },
+      {
+        _id: 'messages-ne-backup',
+        code: 'ne',
+        type: 'translations-backup',
+        values: {
+          hello: 'hello',
+          bye: 'Goodbye'
+        }
+      }
+    ] });
+    test.done();
+  });
+};
