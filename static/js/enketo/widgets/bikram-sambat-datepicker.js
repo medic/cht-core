@@ -10,7 +10,6 @@ define( function( require, exports, module ) {
     var $ = require( 'jquery' );
     require( '@medic/enketo-core/src/js/plugins' );
     var bikram_sambat_bs = require( 'bikram-sambat-bootstrap' );
-    var cookies = require( '../cookies' );
 
     var pluginName = 'bikramsambatdatepicker';
 
@@ -27,31 +26,38 @@ define( function( require, exports, module ) {
     Bikramsambatdatepicker.prototype.constructor = Bikramsambatdatepicker;
 
     Bikramsambatdatepicker.prototype._init = function() {
-        if ( cookies().locale !== 'ne' ) {
-            return;
-        }
+        var el = this.element;
+        var angularServices = angular.element( document.body ).injector();
+        var Language = angularServices.get( 'Language' );
 
-        var $el = $( this.element );
-        var $parent = $el.parent();
-        var $realDateInput = $parent.children( 'input[type=date]' );
-        var initialVal = $realDateInput.val();
+        Language()
+            .then( function( language ) {
+                if ( language.indexOf( 'ne' ) !== 0 ) {
+                    return;
+                }
 
-        // Remove datepicker-extended widget:
-        $parent.children( '.widget.date' ).remove();
-        // Hide standard date input (datepicker-extended may not have removed it
-        // previously due to badSamsung bug).
-        $realDateInput.hide();
+                var $el = $( el );
+                var $parent = $el.parent();
+                var $realDateInput = $parent.children( 'input[type=date]' );
+                var initialVal = $realDateInput.val();
 
-        $parent.append( TEMPLATE );
+                // Remove datepicker-extended widget:
+                $parent.children( '.widget.date' ).remove();
+                // Hide standard date input (datepicker-extended may not have removed it
+                // previously due to badSamsung bug).
+                $realDateInput.hide();
 
-        bikram_sambat_bs.initListeners( $parent, $realDateInput );
+                $parent.append( TEMPLATE );
 
-        if ( initialVal ) {
-            bikram_sambat_bs.setDate_greg_text(
-                    $parent.children( '.bikram-sambat-input-group' ),
-                    $realDateInput,
-                    initialVal );
-        }
+                bikram_sambat_bs.initListeners( $parent, $realDateInput );
+
+                if ( initialVal ) {
+                    bikram_sambat_bs.setDate_greg_text(
+                            $parent.children( '.bikram-sambat-input-group' ),
+                            $realDateInput,
+                            initialVal );
+                }
+            });
     };
 
     Bikramsambatdatepicker.prototype.destroy = function( element ) {
