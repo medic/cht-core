@@ -6,7 +6,6 @@ const mockDb = (idFilterLogicFn) => {
   return { medic: {
     view: sinon.spy((db, view, options, callback) => {
       const ids = options.keys.slice(0);
-
       const toReturn = {
         rows: idFilterLogicFn(ids).map(id => {return {key: id};})
       };
@@ -53,7 +52,7 @@ module.exports['id generator returns ids not already used in the DB'] = test => 
 
   ids.generator(db).next().value.then(patientId => {
     test.ok(patientId, 'should return id');
-    test.ok(potentialIds.includes(patientId), 'id should come from the cached ids');
+    test.ok(potentialIds.some(key => key[1] === patientId), 'id should come from the cached ids');
     test.done();
   }).catch(err => test.fail(err));
 };
@@ -61,12 +60,12 @@ module.exports['id generator returns ids not already used in the DB'] = test => 
 module.exports['id generator doesnt use ids that are already used by the DB'] = test => {
   let idToUse;
   const db = mockDb(ids => {
-    idToUse = ids.pop();
+    idToUse = ids.shift();
     return ids;
   });
 
   ids.generator(db).next().value.then(patientId => {
-    test.equal(patientId, idToUse);
+    test.equal(patientId, idToUse[1]);
     test.done();
   }).catch(err => test.fail(err));
 };
@@ -74,7 +73,7 @@ module.exports['id generator doesnt use ids that are already used by the DB'] = 
 module.exports['addUniqueId retries with a longer id if it only generates duplicates'] = test => {
   let potentialIds;
   const db = mockDb(ids => {
-    if (ids[0].length === 5) {
+    if (ids[0][1].length === 5) {
       return ids;
     }
     potentialIds = ids;
@@ -84,7 +83,7 @@ module.exports['addUniqueId retries with a longer id if it only generates duplic
   ids.generator(db).next().value.then(patientId => {
     test.ok(patientId, 'id should be generated');
     test.equal(patientId.length, 6);
-    test.ok(potentialIds.includes(patientId), 'id should come from the cached ids');
+    test.ok(potentialIds.some(key => key[1] === patientId), 'id should come from the cached ids');
     test.done();
   }).catch(err => test.fail(err));
 };

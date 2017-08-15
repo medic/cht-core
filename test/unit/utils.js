@@ -483,9 +483,10 @@ exports['getPatientContactUuid returns the ID for the given short code'] = test 
         test.equals(err, null);
         test.equals(actual, expected);
         test.equals(view.callCount, 1);
-        test.equals(view.args[0][0], 'medic');
-        test.equals(view.args[0][1], 'patient_by_patient_shortcode_id');
-        test.equals(view.args[0][2].key, given);
+        test.equals(view.args[0][0], 'medic-client');
+        test.equals(view.args[0][1], 'contacts_by_reference');
+        test.equals(view.args[0][2].key[0], 'shortcode');
+        test.equals(view.args[0][2].key[1], given);
         test.equals(view.args[0][2].include_docs, false);
         test.done();
     });
@@ -522,9 +523,10 @@ exports['getPatientContact returns the patient for the given short code'] = test
         test.equals(err, null);
         test.equals(actual.name, 'jim');
         test.equals(view.callCount, 1);
-        test.equals(view.args[0][0], 'medic');
-        test.equals(view.args[0][1], 'patient_by_patient_shortcode_id');
-        test.equals(view.args[0][2].key, given);
+        test.equals(view.args[0][0], 'medic-client');
+        test.equals(view.args[0][1], 'contacts_by_reference');
+        test.equals(view.args[0][2].key[0], 'shortcode');
+        test.equals(view.args[0][2].key[1], given);
         test.equals(view.args[0][2].include_docs, true);
         test.done();
     });

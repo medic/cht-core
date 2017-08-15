@@ -228,7 +228,7 @@ exports['should update clinic by refid and get latest contact'] = function(test)
  * always query with strings too.
  */
 exports['refid field is cast to a string in view query'] = function(test) {
-  test.expect(1);
+  test.expect(2);
   var change = {
     doc: {
       refid: 123,
@@ -238,7 +238,8 @@ exports['refid field is cast to a string in view query'] = function(test) {
   var db = {
     medic: {
       view: function(ddoc, view, q) {
-        test.equals(q.key, '123');
+        test.equals(q.key[0], 'external');
+        test.equals(q.key[1], '123');
         test.done();
       }
     }

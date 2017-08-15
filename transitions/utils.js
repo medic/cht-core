@@ -45,8 +45,8 @@ module.exports = {
     module.exports.addRejectionMessage(doc, reportConfig, 'registration_not_found');
   },
   isIdUnique: (db, id, callback) => {
-    db.medic.view('medic', 'patient_by_patient_shortcode_id', {
-      key: id
+    db.medic.view('medic-client', 'contacts_by_reference', {
+      key: [ 'shortcode', id ]
     }, (err, results) => {
       callback(err, !!(results && results.rows && results.rows.length));
     });

@@ -30,11 +30,11 @@ var associateContact = function(audit, doc, contact, callback) {
 var getContact = function(db, doc, callback) {
     if (doc.refid) { // use reference id to find clinic if defined
         let params = {
-            key: String(doc.refid),
+            key: [ 'external', doc.refid ],
             include_docs: true,
             limit: 1
         };
-        db.medic.view('medic', 'contacts_by_refid', params, function(err, data) {
+        db.medic.view('medic-client', 'contacts_by_reference', params, function(err, data) {
             if (err) {
                 return callback(err);
             }
