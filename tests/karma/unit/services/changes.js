@@ -4,7 +4,8 @@ describe('Changes service', function() {
 
   var service,
       changesCallbacks,
-      changesCount;
+      changesCount,
+      changesOptions;
 
   var onProvider = function() {
     return {
@@ -15,16 +16,25 @@ describe('Changes service', function() {
     };
   };
 
-  beforeEach(function () {
+  beforeEach(function (done) {
     changesCallbacks = {};
     changesCount = 0;
+    changesOptions = {};
+
     module('inboxApp');
     module(function ($provide) {
+      $provide.value('$q', Q);
       $provide.value('DB', function() {
         return {
-          changes: function() {
+          changes: function(options) {
+            changesOptions = options;
             changesCount++;
             return onProvider();
+          },
+          info: function() {
+            return Promise.resolve({
+              update_seq: 'test'
+            });
           }
         };
       });
@@ -34,6 +44,7 @@ describe('Changes service', function() {
     });
     inject(function(_Changes_) {
       service = _Changes_;
+      service().then(done);
     });
   });
 
@@ -201,8 +212,9 @@ describe('Changes service', function() {
     done();
   });
 
-  it('re-attaches if it loses connection', function(done) {
-    var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
+  it('re-attaches where it left off if it loses connection', function(done) {
+    var first = { seq: '2-XYZ', id: 'x', changes: [ { rev: '2-abc' } ] };
+    var second = { seq: '3-ZYX', id: 'y', changes: [ { rev: '1-abc' } ] };
 
     service({
       key: 'test',
@@ -210,12 +222,18 @@ describe('Changes service', function() {
         return true;
       },
       callback: function() {
-        chai.expect(changesCount).to.equal(2);
-        done();
+        if (changesCount === 1) {
+          chai.expect(changesOptions.since).to.equal('test');
+        }
+        if (changesCount === 2) {
+          chai.expect(changesOptions.since).to.equal('2-XYZ');
+          done();
+        }
       }
     });
 
+    changesCallbacks.change(first);
     changesCallbacks.error(new Error('Test error'));
-    changesCallbacks.change(expected);
+    changesCallbacks.change(second);
   });
 });
