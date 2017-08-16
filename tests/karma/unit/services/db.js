@@ -75,6 +75,12 @@ describe('DB service', () => {
       chai.expect(pouchDB.callCount).to.equal(3);
       chai.expect(pouchDB.args[2][0]).to.equal('ftp//myhost:21/medicdb');
       chai.expect(pouchDB.args[2][1]).to.deep.equal({ skip_setup: true, ajax: { timeout: 30000 } });
+
+      // get remote meta
+      service({ remote: true, meta: true });
+      chai.expect(pouchDB.callCount).to.equal(4);
+      chai.expect(pouchDB.args[3][0]).to.equal('ftp//myhost:21/medicdb-user-johnny-meta');
+      chai.expect(pouchDB.args[3][1]).to.deep.equal({ skip_setup: false, ajax: { timeout: 30000 } });
     });
 
     it('caches pouchdb instances', () => {
@@ -98,6 +104,36 @@ describe('DB service', () => {
       const actual2 = service({ remote: true });
       chai.expect(actual2.id).to.equal(expected.id);
       chai.expect(pouchDB.callCount).to.equal(3);
+    });
+
+    /**
+     * Escape database names when talking to CouchDB.
+     * Must be kept in sync with medic-api/lib/userDb.js
+     */
+    it('escapes invalid database characters - #3778', () => {
+      isAdmin.returns(false);
+      Location.dbName = 'medicdb';
+      Location.url = 'ftp//myhost:21/medicdb';
+      userCtx.returns({ name: 'johnny.<>^,?!' });
+
+      // init
+      const service = getService();
+      chai.expect(pouchDB.callCount).to.equal(2);
+      chai.expect(pouchDB.args[0][0]).to.equal('medicdb-user-johnny.<>^,?!');
+      chai.expect(pouchDB.args[1][0]).to.equal('medicdb-user-johnny.<>^,?!-meta');
+
+      // get remote
+      const actual = service({ remote: true });
+      chai.expect(actual.id).to.equal(expected.id);
+      chai.expect(pouchDB.callCount).to.equal(3);
+      chai.expect(pouchDB.args[2][0]).to.equal('ftp//myhost:21/medicdb');
+      chai.expect(pouchDB.args[2][1]).to.deep.equal({ skip_setup: true, ajax: { timeout: 30000 } });
+
+      // get remote meta
+      service({ remote: true, meta: true });
+      chai.expect(pouchDB.callCount).to.equal(4);
+      chai.expect(pouchDB.args[3][0]).to.equal('ftp//myhost:21/medicdb-user-johnny(46)(60)(62)(94)(44)(63)(33)-meta');
+      chai.expect(pouchDB.args[3][1]).to.deep.equal({ skip_setup: false, ajax: { timeout: 30000 } });
     });
   });
 
@@ -165,6 +201,12 @@ describe('DB service', () => {
       chai.expect(pouchDB.args[0][0]).to.equal('ftp//myhost:21/medicdb');
       chai.expect(pouchDB.args[0][1]).to.deep.equal({ skip_setup: true, ajax: { timeout: 30000 } });
       chai.expect(expected.viewCleanup.callCount).to.equal(0);
+
+      // get locale  meta returns remote meta
+      service({ meta: true });
+      chai.expect(pouchDB.callCount).to.equal(2);
+      chai.expect(pouchDB.args[1][0]).to.equal('ftp//myhost:21/medicdb-user-johnny-meta');
+      chai.expect(pouchDB.args[1][1]).to.deep.equal({ skip_setup: false, ajax: { timeout: 30000 } });
     });
 
   });

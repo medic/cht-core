@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     USER_DB_SUFFIX = 'user',
-    META_DB_SUFFIX = 'meta';
+    META_DB_SUFFIX = 'meta',
+    DB_NAME_BLACKLIST = /[^a-z0-9_\$\(\)\+\-/]/g;
 
 angular.module('inboxServices').factory('DB',
   function(
@@ -21,6 +22,17 @@ angular.module('inboxServices').factory('DB',
 
     $window.PouchDB.adapter('worker', require('worker-pouch/client'));
 
+    var getUsername = function(remote) {
+      var username = Session.userCtx().name;
+      if (!remote) {
+        return username;
+      }
+      // escape username in case they user invalid characters
+      return username.replace(DB_NAME_BLACKLIST, function(match) {
+        return '(' + match.charCodeAt(0) + ')';
+      });
+    };
+
     var getDbName = function(remote, meta) {
       var parts = [];
       if (remote) {
@@ -30,7 +42,7 @@ angular.module('inboxServices').factory('DB',
       }
       if (!remote || meta) {
         parts.push(USER_DB_SUFFIX);
-        parts.push(Session.userCtx().name);
+        parts.push(getUsername(remote));
       }
       if (meta) {
         parts.push(META_DB_SUFFIX);
