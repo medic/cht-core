@@ -533,7 +533,7 @@ describe('Enketo service', function() {
 
     it('creates extra docs', function() {
 
-      const startTime = Date.now();
+      const startTime = Date.now() - 1;
 
       form.validate.returns(KarmaUtils.mockPromise(null, true));
       var content =
@@ -557,7 +557,7 @@ describe('Enketo service', function() {
       dbGetAttachment.returns(KarmaUtils.mockPromise(null, '<form/>'));
       UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
       return service.save('V', form).then(function(actual) {
-        const endTime = Date.now();
+        const endTime = Date.now() + 1;
 
         chai.expect(form.validate.callCount).to.equal(1);
         chai.expect(form.getDataStr.callCount).to.equal(1);
