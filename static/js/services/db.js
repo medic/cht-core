@@ -1,7 +1,11 @@
 var _ = require('underscore'),
     USER_DB_SUFFIX = 'user',
-    META_DB_SUFFIX = 'meta',
-    DB_NAME_BLACKLIST = /[^a-z0-9_\$\(\)\+\-/]/g;
+    META_DB_SUFFIX = 'meta';
+
+// Regex to test for characters that are invalid in db names
+// Only lowercase characters (a-z), digits (0-9), and any of the characters _, $, (, ), +, -, and / are allowed.
+// https://wiki.apache.org/couchdb/HTTP_database_API#Naming_and_Addressing
+var DB_NAME_BLACKLIST = /[^a-z0-9_$()+/-]/g;
 
 angular.module('inboxServices').factory('DB',
   function(
