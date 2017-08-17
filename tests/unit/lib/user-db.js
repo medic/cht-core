@@ -7,6 +7,26 @@ exports.tearDown = callback => {
   callback();
 };
 
+exports['getDbName creates the user db name'] = test => {
+  const given = 'jimbob';
+  const expected = 'medic-user-jimbob-meta';
+  const actual = lib.getDbName(given);
+  test.equals(actual, expected);
+  test.done();
+};
+
+exports['getDbName escapes invalid characters - #3778'] = test => {
+  // Only lowercase characters (a-z), digits (0-9), and any of the characters _, $, (, ), +, -, and / are allowed.
+  const valid   = 'abc123_$()+-/';
+  const invalid = '.<>^,?!';
+  const escaped = '(46)(60)(62)(94)(44)(63)(33)';
+  const given   = valid + invalid;
+  const expected = `medic-user-${valid + escaped}-meta`;
+  const actual = lib.getDbName(given);
+  test.equals(actual, expected);
+  test.done();
+};
+
 exports['creates the db'] = test => {
   const create = sinon.stub(db.db, 'create').callsArgWith(1);
   const request = sinon.stub(db, 'request').callsArgWith(1);

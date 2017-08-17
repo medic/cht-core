@@ -1117,3 +1117,43 @@ exports['updateUser sets up response'] = function(test) {
     test.done();
   });
 };
+
+exports['validateNewUsername fails if a user already exists with that name'] = function(test) {
+  var usersGet = sinon.stub(db._users, 'get').callsArgWith(1, null, { id: 'abc', rev: '1-xyz' });
+  controller._validateNewUsername('georgi', function(err) {
+    test.equal(usersGet.callCount, 1);
+    test.equal(usersGet.args[0][0], 'org.couchdb.user:georgi');
+    test.equal(err.code, 400);
+    test.equal(err.message, 'Username "georgi" already taken.');
+    test.done();
+  });
+};
+
+exports['validateNewUsername fails if a user settings already exists with that name'] = function(test) {
+  sinon.stub(db._users, 'get').callsArgWith(1, { statusCode: 404 });
+  var medicGet = sinon.stub(db.medic, 'get').callsArgWith(1, null, { id: 'abc', rev: '1-xyz' });
+  controller._validateNewUsername('georgi', function(err) {
+    test.equal(medicGet.callCount, 1);
+    test.equal(medicGet.args[0][0], 'org.couchdb.user:georgi');
+    test.equal(err.code, 400);
+    test.equal(err.message, 'Username "georgi" already taken.');
+    test.done();
+  });
+};
+
+exports['validateNewUsername fails if username contains invalid characters'] = function(test) {
+  controller._validateNewUsername('^_^', function(err) {
+    test.equal(err.code, 400);
+    test.equal(err.message, 'Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).');
+    test.done();
+  });
+};
+
+exports['validateNewUsername passes if no user exists'] = function(test) {
+  sinon.stub(db._users, 'get').callsArgWith(1, { statusCode: 404 });
+  sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
+  controller._validateNewUsername('georgi', function(err) {
+    test.ok(!err);
+    test.done();
+  });
+};

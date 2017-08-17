@@ -5,7 +5,8 @@ const async = require('async'),
       places = require('./places'),
       db = require('../db'),
       PASSWORD_MINIMUM_LENGTH = 8,
-      PASSWORD_MINIMUM_SCORE = 50;
+      PASSWORD_MINIMUM_SCORE = 50,
+      USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
 
 const USER_EDITABLE_FIELDS = [
   'password',
@@ -128,12 +129,12 @@ var validateUserSettings = function(id, callback) {
 };
 
 var validateNewUsername = function(username, callback) {
+  if (!USERNAME_WHITELIST.test(username)) {
+    return callback(error400('Invalid user name. Valid characters are lower case letters, numbers, underscore (_), and hyphen (-).'));
+  }
   var id = createID(username);
   var error = function() {
-    return {
-      code: 400,
-      message: 'Username "' + username + '" already taken.'
-    };
+    return error400('Username "' + username + '" already taken.');
   };
   async.series([
     function(cb) {
