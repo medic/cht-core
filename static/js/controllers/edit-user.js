@@ -1,6 +1,7 @@
 var passwordTester = require('simple-password-tester'),
     PASSWORD_MINIMUM_LENGTH = 8,
-    PASSWORD_MINIMUM_SCORE = 50;
+    PASSWORD_MINIMUM_SCORE = 50,
+    USERNAME_WHITELIST = /^[a-z0-9_-]+$/;
 
 (function () {
 
@@ -153,7 +154,20 @@ var passwordTester = require('simple-password-tester'),
       };
 
       var validateName = function() {
-        return validateRequired('name', 'User Name');
+        if ($scope.editUserModel.id) {
+          // username is readonly when editing so ignore it
+          return true;
+        }
+        if (!validateRequired('name', 'User Name')) {
+          return false;
+        }
+        if (!USERNAME_WHITELIST.test($scope.editUserModel.name)) {
+          Translate('username.invalid').then(function(value) {
+            $scope.errors.name = value;
+          });
+          return false;
+        }
+        return true;
       };
 
       var validateContactAndFacility = function() {

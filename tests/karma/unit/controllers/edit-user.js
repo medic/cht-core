@@ -107,7 +107,6 @@ describe('EditUserCtrl controller', () => {
       jQuery);
   });
 
-
   const mockFacility = (facility_id) => {
       window.$.withArgs('#edit-user-profile [name=facility]')
         .returns({ val: () => facility_id });
@@ -246,10 +245,25 @@ describe('EditUserCtrl controller', () => {
       Translate.withArgs('User Name').returns(Promise.resolve('uname'));
       Translate.withArgs('field is required', { field: 'uname' }).returns(Promise.resolve('uname req'));
       setTimeout(() => {
+        scope.editUserModel.id = undefined;
         scope.editUserModel.name = '';
         scope.editUserSettings();
         setTimeout(() => {
           chai.expect(scope.errors.name).to.equal('uname req');
+          done();
+        });
+      });
+    });
+
+    it('name cannot contact invalid characters', done => {
+      mockEditAUser(userToEdit);
+      Translate.withArgs('username.invalid').returns(Promise.resolve('invalid'));
+      setTimeout(() => {
+        scope.editUserModel.id = undefined;
+        scope.editUserModel.name = 'someinvalidname?';
+        scope.editUserSettings();
+        setTimeout(() => {
+          chai.expect(scope.errors.name).to.equal('invalid');
           done();
         });
       });
@@ -293,7 +307,10 @@ describe('EditUserCtrl controller', () => {
       Translate.withArgs('User Name').returns(Promise.resolve('uname'));
       Translate.withArgs('field is required', { field: 'uname' }).returns(Promise.resolve('uname req'));
       setTimeout(() => {
+        scope.editUserModel.id = null;
         scope.editUserModel.name = '';
+        scope.editUserModel.password = '1QrAs$$3%%kkkk445234234234';
+        scope.editUserModel.passwordConfirm = scope.editUserModel.password;
         scope.editUser();
         setTimeout(() => {
           chai.expect(scope.errors.name).to.equal('uname req');
