@@ -293,7 +293,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
               doc[fieldName] = _.clone(preparedSibling);
               preparedSibling.parent = doc;
             } else {
-              if (fieldName === 'parent') {
+              if (fieldName === 'parent' || fieldName === 'contact') {
                 doc[fieldName] = ExtractLineage(preparedSibling);
               } else {
                 doc[fieldName] = preparedSibling;
@@ -309,7 +309,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
           } else {
             promiseChain = promiseChain.then(function() {
               return DB().get(doc[fieldName]).then(function(dbFieldValue) {
-                if (fieldName === 'parent') {
+                if (fieldName === 'parent' || fieldName === 'contact') {
                   doc[fieldName] = ExtractLineage(dbFieldValue);
                 } else {
                   doc[fieldName] = dbFieldValue;
