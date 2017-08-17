@@ -20,11 +20,7 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
 
     DB().get('_design/medic')
       .then(function(ddoc) {
-        $scope.deployInfo = ddoc.deploy_info || {
-          version: '1.2.3-beta.4',
-          user: 'admin',
-          timestamp: new Date()
-        };
+        $scope.deployInfo = ddoc.deploy_info;
 
         $scope.allowPrereleaseBuilds = !window.location.href.match(IS_PROD_URL);
 
@@ -44,6 +40,11 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
               limit: 50
             })
             .then(function(res) {
+              res.rows.forEach(function(row) {
+                row.id = stripKey(row.id);
+              });
+
+              // TODO if you have deployed a branch exclude / grey out the branch you already have deployed
               $scope.versions.branches = res.rows;
             }));
 
@@ -95,7 +96,7 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
       $http.post('/api/v1/upgrade', { build: {
         namespace: 'medic',
         application: 'medic',
-        version: JSON.stringify(version)
+        version: version
       }})
         .catch(function(err) {
           err = err.responseText || err.statusText;
@@ -110,14 +111,14 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
     };
 
     var minimiumNextRelease = function(deployInfo) {
-      var minVersion = parseVersion(deployInfo && deployInfo.version);
-      if (minVersion) {
-        if (minVersion.beta) {
-          ++minVersion.beta;
-        } else {
-          ++minVersion.patch;
-        }
+      var minVersion = parseVersion(deployInfo && deployInfo.version) || {};
+
+      if (minVersion.beta) {
+        ++minVersion.beta;
+      } else if (minVersion.patch) {
+        ++minVersion.patch;
       }
+
       return minVersion;
     };
 
