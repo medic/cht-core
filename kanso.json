@@ -438,7 +438,7 @@
                         "recipients": {
                             "type": "array",
                             "title": "Recipients for the alerts",
-                            "description": "The phone numbers to receive alerts. You can use international format phone numbers (e.g. \"+254777888999\") or an expression to fetch phone fields in each new_report (e.g. \"new_report.contact.parent.contact.phone\" for the Primary Contact of the parent place of the sender.",
+                            "description": "The phone numbers to receive alerts. You can use international format phone numbers (e.g. \"+254777888999\") or an expression to fetch phone fields in each new_report (e.g. \"new_report.contact.parent.contact.phone\" for the Primary Contact of the parent place of the sender, for each report in new_reports.)",
                             "items": {
                                 "type": "string"
                             }
