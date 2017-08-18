@@ -234,7 +234,7 @@ This will download, configure and install the latest Master build of medic. If y
 COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984 medic horti --local --bootstrap=3.0.0-beta.1
 ```
 
-To kill Horti (and Medic) hit CTRL+C. To start Horti (and Medic) again, run the same command as above, but this time don't bootstrap:
+To kill Horti hit CTRL+C. To start Horti (and Medic) again, run the same command as above, but this time don't bootstrap:
 
 ```sh
 COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984 medic horti --local
