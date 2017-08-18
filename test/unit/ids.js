@@ -13,7 +13,7 @@ const mockDb = (idFilterLogicFn) => {
       callback(null, toReturn);
     }),
     get: sinon.stub().callsArgWith(1, null, {_id: 'shortcode-id-length', current_length: 5}),
-    put: sinon.stub().callsArgWith(1)
+    insert: sinon.stub().callsArgWith(1)
   }};
 };
 
