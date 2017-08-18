@@ -60,6 +60,14 @@ _August 1, 2017_
 - Don't eval() user input. Issue: [#3546](https://github.com/medic/medic-webapp/issues/3546)
 - Set `Secure` setting on AuthSession cookie for HTTPS pages. Issue: [#3182](https://github.com/medic/medic-webapp/issues/3182)
 
+## 2.12.5
+
+_August 18, 2017_
+
+### Bug fixes
+
+- Fix bug where id generation wouldn't automatically increase id length when it ran out of ids. Issue: #3790
+
 ## 2.12.4
 
 _August 10, 2017_
