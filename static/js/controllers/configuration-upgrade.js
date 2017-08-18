@@ -1,6 +1,5 @@
 var IS_PROD_URL = /^https:\/\/[^.]+.app.medicmobile.org\//,
-    // BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
-    BUILDS_DB = 'http://admin:pass@localhost:5988/builds';
+    BUILDS_DB = 'https://staging.dev.medicmobile.org/_couch/builds';
 
 angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
   function(
@@ -10,6 +9,7 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
     $scope,
     DB,
     pouchDB,
+    Translate,
     Version
   ) {
 
@@ -23,6 +23,12 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
       .then(function(ddoc) {
         $scope.deployInfo = ddoc.deploy_info;
 
+        if (!$scope.deployInfo) {
+          // This user has not deployed via horti, so upgrading via it (for now)
+          // won't work / is not supported
+          return;
+        }
+
         $scope.allowPrereleaseBuilds = !window.location.href.match(IS_PROD_URL);
 
         var buildsDb = pouchDB(BUILDS_DB);
@@ -31,7 +37,8 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
 
         var viewLookups = [];
 
-        // TODO: Once we rely on CouchDB 2.0 combine these three calls
+        // NB: Once we rely on CouchDB 2.0 combine these three calls
+        //     See: http://docs.couchdb.org/en/2.0.0/api/ddoc/views.html#sending-multiple-queries-to-a-view
         viewLookups.push(
           buildsDb
             .query('builds/releases', {
@@ -41,50 +48,41 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
               limit: 50
             })
             .then(function(res) {
-              res.rows.forEach(function(row) {
-                row.id = stripKey(row.id);
-              });
-
-              // TODO if you have deployed a branch exclude / grey out the branch you already have deployed
-              $scope.versions.branches = res.rows;
+              $scope.versions.branches = stripIds(res.rows);
             }));
 
         viewLookups.push(
           buildsDb
             .query('builds/releases', {
-              startkey: [ 'beta', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch, minVersion.beta ],
-              endkey: [ 'beta', 'medic', 'medic', {}]
+              startkey: [ 'beta', 'medic', 'medic', {}],
+              endkey: [ 'beta', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch, minVersion.beta ],
+              descending: true,
+              limit: 50,
             })
             .then(function(res) {
-              res.rows.forEach(function(row) {
-                row.id = stripKey(row.id);
-              });
-
-              // TODO can we do this sorting server-side? reverse keys and descending = true?
-              $scope.versions.betas = res.rows.reverse();
+              $scope.versions.betas = stripIds(res.rows);
             }));
 
         viewLookups.push(
           buildsDb
             .query('builds/releases', {
-              startkey: [ 'release', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch],
-              endkey: [ 'release', 'medic', 'medic', {}]
+              startkey: [ 'release', 'medic', 'medic', {}],
+              endkey: [ 'release', 'medic', 'medic', minVersion.major, minVersion.minor, minVersion.patch],
+              descending: true,
+              limit: 50
             })
             .then(function(res) {
-              res.rows.forEach(function(row) {
-                row.id = stripKey(row.id);
-              });
-
-              // TODO can we do this sorting server-side? reverse keys and descending = true?
-              $scope.versions.releases = res.rows.reverse();
+              $scope.versions.releases = stripIds(res.rows);
             }));
 
         return $q.all(viewLookups);
       })
       .catch(function(err) {
-        $log.error('Error fetching available versions:', err);
-        // TODO: have this actually show an error...
-        $scope.error = 'Error fetching available versions: ' + err.message;
+        return Translate('instance.upgrade.error.version_fetch')
+          .then(function(msg) {
+            $log.error(msg, err);
+            $scope.error = msg;
+          });
       })
       .then(function() {
         $scope.loading = false;
@@ -101,14 +99,24 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
       }})
         .catch(function(err) {
           err = err.responseText || err.statusText;
-          $log.error('Error triggering upgrade:', err);
-          $scope.error = 'Error triggering upgrade: ' + err;
+
+          return Translate('instance.upgrade.error.deploy')
+            .then(function(msg) {
+              $log.error(msg, err);
+              $scope.error = msg;
+            });
+        })
+        .then(function() {
           $scope.upgrading = false;
         });
     };
 
-    var stripKey = function(key) {
-      return key.replace(/medic:medic:/, '');
+    var stripIds = function(releases) {
+      releases.forEach(function(release) {
+        release.id = release.id.replace(/^medic:medic:/, '');
+      });
+
+      return releases;
     };
   }
 );

@@ -33,43 +33,42 @@
       <legend translate>instance.upgrade.releases</legend>
       <p ng-hide="versions.releases.length" translate>instance.upgrade.no_new_releases</p>
       <ul ng-show="versions.releases.length" class="table table-striped">
-        <li ng-repeat="v in versions.releases" class="row">
-          <div class="col-xs-5"><code>{{v.id}}</code></div>
-          <div class="col-xs-4">{{v.value.build_time | date}}</div>
-          <div class="col-xs-3"><a ng-click="upgrade(v.id)">Upgrade</a></div>
+        <li ng-repeat="release in versions.releases" class="row">
+          <div class="col-xs-5"><code>{{release.id}}</code></div>
+          <div class="col-xs-4" title="{{release.value.build_time}}">{{release.value.build_time | date}}</div>
+          <div class="col-xs-3"><button ng-click="upgrade(release.id)" class="btn btn-primary" translate>upgrade</button></div>
         </li>
       </ul>
     </div>
 
-    <div>
+    <div ng-show="allowPrereleaseBuilds">
       <legend translate>instance.upgrade.betas</legend>
-
-      <p ng-hide="allowPrereleaseBuilds" translate>instance.upgrade.releases_only</p>
-
-      <div ng-show="allowPrereleaseBuilds">
+      <div>
         <p ng-hide="versions.betas.length" translate>instance.upgrade.no_betas</p>
         <ul ng-show="versions.betas.length" class="table table-striped">
-          <li ng-repeat="v in versions.betas" class="row">
-            <div class="col-xs-5"><code>{{v.id}}</code></div>
-            <div class="col-xs-4">{{v.value.build_time | date}}</div>
-            <div class="col-xs-3"><a ng-click="upgrade(v.id)" translate>upgrade</a></div>
+          <li ng-repeat="release in versions.betas" class="row">
+            <div class="col-xs-5"><code>{{release.id}}</code></div>
+            <div class="col-xs-4" title="{{release.value.build_time}}">{{release.value.build_time | date}}</div>
+            <div class="col-xs-3"><button ng-click="upgrade(release.id)" class="btn btn-primary" translate>upgrade</button></div>
           </li>
         </ul>
       </div>
     </div>
 
-    <div>
+    <div ng-show="allowPrereleaseBuilds">
       <legend translate>instance.upgrade.branches</legend>
-
-      <p ng-hide="allowPrereleaseBuilds" translate>instance.upgrade.releases_only</p>
-
-      <div ng-show="allowPrereleaseBuilds">
+      <div>
         <p ng-hide="versions.branches.length" translate>instance.upgrade.no_branches</p>
         <ul ng-show="versions.branches.length" class="table table-striped">
-          <li ng-repeat="v in versions.branches" class="row">
-            <div class="col-xs-5"><code>{{v.id}}</code></div>
-            <div class="col-xs-4" ng-bind-html="v.value.build_time | relativeDate"></div>
-            <div class="col-xs-3"><a ng-click="upgrade(v.id)" translate>upgrade</a></div>
+          <li ng-repeat="release in versions.branches" class="row">
+            <div class="col-xs-5"><code>{{release.id}}</code></div>
+            <div class="col-xs-4" ng-bind-html="release.value.build_time | relativeDate"></div>
+            <div class="col-xs-3">
+              <button
+                ng-disabled="deployInfo.version === release.id"
+                title="{{deployInfo.version === release.id ? 'instance.upgrade.on_branch': '' | translate}}"
+                class="btn btn-primary" ng-click="upgrade(release.id)" translate>upgrade</button>
+            </div>
           </li>
         </ul>
       </div>
