@@ -85,8 +85,8 @@ const generateMessages = (alert, phones, latestReport, countedReportsIds, newRep
 // Recipients format examples:
 // [
 //    '+254777888999',
-//    'countedReport.contact.parent.parent.contact.phone',   // returns string
-//    'countedReport.contact.parent.parent.alertRecipients', // returns string array
+//    'new_report.contact.parent.parent.contact.phone',   // returns string
+//    'new_report.contact.parent.parent.alertRecipients', // returns string array
 // ]
 const getPhones = (recipients, reports) => {
   let phones = [];
@@ -114,7 +114,7 @@ const getPhonesOneReport = (recipients, report) => {
   return _.uniq(phones);
 };
 
-const getPhonesOneReportOneRecipientWithDuplicates = (recipient, countedReport) => {
+const getPhonesOneReportOneRecipientWithDuplicates = (recipient, newReport) => {
   if (!recipient) {
     return [];
   }
@@ -123,7 +123,7 @@ const getPhonesOneReportOneRecipientWithDuplicates = (recipient, countedReport) 
     return [recipient];
   }
 
-  const context = { countedReport: countedReport };
+  const context = { new_report: newReport };
   try {
     const evaled = vm.runInNewContext(recipient, context);
     if (_.isString(evaled)) {

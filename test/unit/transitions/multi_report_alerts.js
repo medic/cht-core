@@ -224,7 +224,7 @@ exports['if enough reports pass the is_report_counted func, adds message'] = tes
 };
 
 exports['adds message when recipient is evaled'] = test => {
-  const recipient = 'countedReport.contact.phone';
+  const recipient = 'new_report.contact.phone';
   alert.recipients = [recipient];
   alert.num_reports_threshold = 1;
   sinon.stub(config, 'get').returns([alert]);
@@ -244,7 +244,7 @@ exports['adds message when recipient is evaled'] = test => {
 };
 
 exports['adds multiple messages when multiple recipients are evaled'] = test => {
-  alert.recipients = [ 'countedReport.contact.phone' ];
+  alert.recipients = [ 'new_report.contact.phone' ];
   sinon.stub(config, 'get').returns([alert]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
@@ -266,7 +266,7 @@ exports['adds multiple messages when multiple recipients are evaled'] = test => 
 };
 
 exports['does not add message when recipient cannot be evaled'] = test => {
-  const recipient = 'countedReport.contact.phonekkk'; // field doesn't exist
+  const recipient = 'new_report.contact.phonekkk'; // field doesn't exist
   alert.recipients = [recipient];
   sinon.stub(config, 'get').returns([alert]);
 
@@ -386,7 +386,7 @@ exports['message only contains newReports'] = test => {
 };
 
 exports['adds multiple messages when mutiple recipients'] = test => {
-  alert.recipients = ['+254111222333', 'countedReport.contact.phone'];
+  alert.recipients = ['+254111222333', 'new_report.contact.phone'];
   sinon.stub(config, 'get').returns([alert]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
@@ -412,7 +412,7 @@ exports['adds multiple messages when mutiple recipients'] = test => {
 
 exports['dedups message recipients'] = test => {
   // specify same recipient twice.
-  alert.recipients = ['countedReport.contact.phone', 'countedReport.contact.phone'];
+  alert.recipients = ['new_report.contact.phone', 'new_report.contact.phone'];
   sinon.stub(config, 'get').returns([alert]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
