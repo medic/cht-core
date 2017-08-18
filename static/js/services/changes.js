@@ -16,7 +16,6 @@ angular.module('inboxServices').factory('Changes',
   function(
     $log,
     $timeout,
-    $q,
     DB
   ) {
 
@@ -70,11 +69,7 @@ angular.module('inboxServices').factory('Changes',
       .catch(function(err) {
         $log.error('Error initialising watching for db changes', err);
         $log.error('Attempting changes initialisation in ' + (RETRY_MILLIS / 1000) + ' seconds');
-        return $q(function(resolve) {
-          $timeout(function() {
-            resolve(init);
-          }, RETRY_MILLIS);
-        });
+        return $timeout(init, RETRY_MILLIS);
       });
     };
 

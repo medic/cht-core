@@ -23,7 +23,6 @@ describe('Changes service', function() {
 
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('$q', Q);
       $provide.value('DB', function() {
         return {
           changes: function(options) {
