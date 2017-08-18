@@ -1,4 +1,12 @@
 # Medic Mobile Release Notes
+## 2.12.5
+
+_August 18, 2017_
+
+### Bug fixes
+
+- Fix bug where id generation wouldn't automatically increase id length when it ran out of ids. Issue: #3790
+
 ## 2.12.4
 
 _August 10, 2017_
