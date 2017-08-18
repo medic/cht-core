@@ -82,6 +82,7 @@
   require('./update-user');
   require('./user');
   require('./user-contact');
+  require('./version');
   require('./web-worker');
   require('./xml-form');
   require('./xml-forms');

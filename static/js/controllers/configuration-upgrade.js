@@ -9,7 +9,8 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
     $q,
     $scope,
     DB,
-    pouchDB
+    pouchDB,
+    Version
   ) {
 
     'use strict';
@@ -26,7 +27,7 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
 
         var buildsDb = pouchDB(BUILDS_DB);
 
-        var minVersion = minimiumNextRelease($scope.deployInfo);
+        var minVersion = Version.minimumNextRelease($scope.deployInfo.version);
 
         var viewLookups = [];
 
@@ -108,30 +109,6 @@ angular.module('inboxControllers').controller('ConfigurationUpgradeCtrl',
 
     var stripKey = function(key) {
       return key.replace(/medic:medic:/, '');
-    };
-
-    var minimiumNextRelease = function(deployInfo) {
-      var minVersion = parseVersion(deployInfo && deployInfo.version) || {};
-
-      if (minVersion.beta) {
-        ++minVersion.beta;
-      } else if (minVersion.patch) {
-        ++minVersion.patch;
-      }
-
-      return minVersion;
-    };
-
-    var parseVersion = function(versionString) {
-      var versionMatch = versionString &&
-          versionString.match(/^([0-9]+)\.([0-9]+)\.([0-9]+)(?:-beta\.([0-9]+))?$/);
-
-      return versionMatch && {
-        major: parseInt(versionMatch[1]),
-        minor: parseInt(versionMatch[2]),
-        patch: parseInt(versionMatch[3]),
-        beta:  parseInt(versionMatch[4]),
-      };
     };
   }
 );
