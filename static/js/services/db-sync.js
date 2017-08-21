@@ -30,6 +30,13 @@ angular.module('inboxServices').factory('DBSync',
       return _.findWhere(errors, { status: 401 });
     };
 
+    var readOnlyFilter = function(doc) {
+      // don't try to replicate read only docs back to the server
+      return READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
+             READ_ONLY_IDS.indexOf(doc._id) === -1 &&
+             doc._id.indexOf(DDOC_PREFIX) !== 0;
+    };
+
     var getOptions = function(direction) {
       var options = {
         live: true,
@@ -40,19 +47,15 @@ angular.module('inboxServices').factory('DBSync',
       };
       if (direction === 'to') {
         options.checkpoint = 'source';
-        options.filter = function(doc) {
-          // don't try to replicate read only docs back to the server
-          return READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
-                 READ_ONLY_IDS.indexOf(doc._id) === -1 &&
-                 doc._id.indexOf(DDOC_PREFIX) !== 0;
-        };
+        options.filter = readOnlyFilter;
         return $q.resolve(options);
+      } else {
+        return DB().allDocs().then(function(result) {
+          options.checkpoint = 'target';
+          options.doc_ids = _.pluck(result.rows, 'id');
+          return options;
+        });
       }
-      options.checkpoint = 'target';
-      return DB().allDocs().then(function(result) {
-        options.doc_ids = _.pluck(result.rows, 'id');
-        return options;
-      });
     };
 
     var replicate = function(direction, updateListener) {
