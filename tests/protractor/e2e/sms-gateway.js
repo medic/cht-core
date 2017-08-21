@@ -156,18 +156,14 @@ describe('sms-gateway api', () => {
       element(by.id('messages-tab')).click();
 
       // LHS
-      browser.wait(() => {
-        return element(by.css('#message-list li:first-child')).isPresent();
-      }, 10000);
+      browser.wait(() => element(by.css('#message-list li:first-child')).isPresent());
       browser.sleep(500); // without this the elements are found to be detached...
       expect(element(by.css('#message-list li:first-child .name')).getText()).toBe('+64271234567');
       expect(element(by.css('#message-list li:first-child .description')).getText()).toBe('hello');
 
       // RHS
       element(by.css('#message-list li:first-child .name')).click();
-      browser.wait(() => {
-        return element(by.css('#message-content .body li.incoming:first-child .data p:first-child')).isPresent();
-      }, 10000);
+      browser.wait(() => element(by.css('#message-content .body li.incoming:first-child .data p:first-child')).isPresent());
       browser.sleep(500); // without this the elements are found to be detached...
 
       expect(element(by.css('#message-header .name')).getText()).toBe('+64271234567');
@@ -204,13 +200,9 @@ describe('sms-gateway api', () => {
     it('- shows content', () => {
       commonElements.goToReports();
 
-      browser.wait(() => {
-        return element(by.css('#reports-list li:first-child')).isPresent();
-      }, 10000);
+      browser.wait(() => element(by.css('#reports-list li:first-child')).isPresent());
       element(by.css('#reports-list li:first-child .description')).click();
-      browser.wait(() => {
-        return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
-      }, 10000);
+      browser.wait(() => element(by.css('#reports-content .body .item-summary .icon')).isPresent());
 
       browser.sleep(100); // without this the elements are found to be detached...
 
@@ -284,16 +276,12 @@ describe('sms-gateway api', () => {
       expect(response.messages[1].content).toBe(messageContent2);
 
       commonElements.goToReports();
-      browser.wait(() => {
-        return element(by.css('#reports-list li:first-child')).isPresent();
-      }, 10000);
+      browser.wait(() => element(by.css('#reports-list li:first-child')).isPresent());
 
       const desc = element(by.css('#reports-list li:first-child .description'));
       helper.waitUntilReady(desc);
       desc.click();
-      browser.wait(() => {
-        return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
-      }, 10000);
+      browser.wait(() => element(by.css('#reports-content .body .item-summary .icon')).isPresent());
 
       browser.sleep(100); // without this the elements are found to be detached...
 

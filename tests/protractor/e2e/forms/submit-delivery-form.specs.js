@@ -72,22 +72,16 @@ describe('Submit Delivery Report', () => {
 
   it('open delivery form', () => {
     common.goToReports();
-    browser.wait(() => {
-      return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();
-    }, 10000);
+    browser.wait(() => element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent());
 
     browser.sleep(1000); // let the refresh work - #3691
 
     // select form
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
-    browser.wait(() => {
-      return addButton.isPresent();
-    }, 10000);
+    browser.wait(() => addButton.isPresent());
     addButton.click();
     element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
-    browser.wait(() => {
-      return element(by.css('#report-form')).isPresent();
-    }, 10000);
+    browser.wait(() => element(by.css('#report-form')).isPresent());
 
     //select name
     deliveryReport.selectPatientName('jack');

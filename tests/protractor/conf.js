@@ -4,6 +4,15 @@ const utils = require('./utils'),
       auth = require('./auth')(),
       modules = [];
 
+// According to the protractor docs, it should be possible to set the default
+// timeout for wait() calls across all tests using jasmineNodeOpts.defaultTimeoutInterval.
+// This doesn't currently seem to work, so patchWait() forces a default value
+// instead.  These two values are set separately so it may become obvious if
+// the proper config begins to work in the future, or at least it will be easier
+// to test by modifying the values separately.
+const DEFAULT_TIMEOUT = 55000;
+const DEFAULT_PATCHED_TIMEOUT = DEFAULT_TIMEOUT + 5000;
+
 if (!process.env.COUCH_NODE_NAME) {
   throw new Error('Missing required env var: COUCH_NODE_NAME');
 }
@@ -78,6 +87,9 @@ exports.config = {
   seleniumAddress: 'http://localhost:4444/wd/hub',
   specs: ['e2e/**/*.js'],
   framework: 'jasmine2',
+  jasmineNodeOpts: {
+    defaultTimeoutInterval: DEFAULT_TIMEOUT,
+  },
   capabilities: {
     browserName: 'chrome',
     chromeOptions: {
@@ -94,7 +106,25 @@ exports.config = {
     browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
     browser.driver.wait(setupUser, 5 * 1000, 'User should be setup within 5 seconds');
     browser.driver.sleep(1000);
+
+    patchWait(browser);
+
     return login(browser);
   },
   onCleanUp: () => modules.forEach(module => module.kill())
 };
+
+function patchWait(browser) {
+  const wrapped = browser.wait;
+  browser.wait = function() {
+    let args = Array.prototype.slice.call(arguments);
+
+    if(args.length === 1) {
+      args = [ args[0], DEFAULT_PATCHED_TIMEOUT ];
+    } else if(args.length === 2 && typeof args[1] === 'string') {
+      args = [ args[0], DEFAULT_PATCHED_TIMEOUT, args[1] ];
+    }
+
+    return wrapped.apply(browser, args);
+  };
+}

@@ -71,10 +71,9 @@ describe('Send message', () => {
     element(by.css('.general-actions .send-message')).click();
     browser.wait(() => {
       const modal = element(by.id('send-message'));
-      return modal.isPresent().then(() => {
-        return modal.isDisplayed();
-      });
-    }, 5000);
+      return modal.isPresent()
+        .then(() => modal.isDisplayed());
+    });
   };
 
   const findSelect2Entry = (selector, expectedValue) => {
@@ -103,7 +102,7 @@ describe('Send message', () => {
         // My kingdom for results.reduce(&&);
         return results[0] && results[1] && results[2];
       });
-    }, 10000);
+    });
 
     return findSelect2Entry(entrySelector, entryText).first();
   };
@@ -115,24 +114,19 @@ describe('Send message', () => {
     const entry = searchSelect2(searchText, totalExpectedResults, entrySelector, entryText);
     entry.click();
 
-    browser.wait(() => {
-      return element.all(by.css('li.select2-selection__choice')).count().then(utils.countOf(existingEntryCount + 1));
-    }, 2000);
+    browser.wait(() => element.all(by.css('li.select2-selection__choice')).count().then(utils.countOf(existingEntryCount + 1)));
   };
 
   const sendMessage = () => {
     element(by.css('#send-message a.btn.submit:not(.ng-hide)')).click();
 
-    browser.wait(() => {
-      return element(by.css('#send-message')).isDisplayed()
-        .then(isDisplayed => {
-          return !isDisplayed;
-        })
+    browser.wait(() =>
+      element(by.css('#send-message')).isDisplayed()
+        .then(isDisplayed => !isDisplayed)
         .catch(() => {
           // It's been detached, so it's gone
           return true;
-        });
-    }, 2000);
+        }));
 
     utils.resetBrowser();
   };
@@ -149,11 +143,9 @@ describe('Send message', () => {
     browser.wait(() => {
       const el = element(by.css('#message-header .name'));
       if (helper.waitUntilReady(el)) {
-        return el.getText().then(text => {
-          return text === entryName;
-        });
+        return el.getText().then(text => text === entryName);
       }
-    }, 2000);
+    });
   };
 
   const lastMessageIs = message => {
@@ -219,16 +211,12 @@ describe('Send message', () => {
   describe('Sending from message pane', () => {
     const openMessageContent = (id, name) => {
       element(by.id('messages-tab')).click();
-      browser.wait(() => {
-        return element(by.css(messageInList(id))).isPresent();
-      }, 1000);
+      browser.wait(() => element(by.css(messageInList(id))).isPresent());
       clickLhsEntry(id, name);
     };
     const enterMessageText = message => {
       element(by.css('#message-footer textarea')).click();
-      browser.wait(() => {
-        return element(by.css('#message-footer .message-actions .btn-primary')).isDisplayed();
-      });
+      browser.wait(() => element(by.css('#message-footer .message-actions .btn-primary')).isDisplayed());
       browser.wait(element(by.css('#message-footer textarea')).sendKeys(message));
     };
     describe('Can send additional messages from message pane', () => {
@@ -237,9 +225,7 @@ describe('Send message', () => {
         enterMessageText('Additional Message');
 
         element(by.css('#message-footer .message-actions .btn-primary')).click();
-        browser.wait(() => {
-          return element.all(by.css('#message-content li')).count().then(utils.countOf(2));
-        }, 2000);
+        browser.wait(() => element.all(by.css('#message-content li')).count().then(utils.countOf(2)));
 
         expect(element.all(by.css('#message-content li')).count()).toBe(2);
         lastMessageIs('Additional Message');

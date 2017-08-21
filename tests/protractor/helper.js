@@ -9,21 +9,17 @@ function writeScreenShot(data, filename) {
 
 module.exports = {
   waitElementToBeVisisble: elm => {
-    browser.wait(EC.visibilityOf(elm), 15000);
+    browser.wait(EC.visibilityOf(elm));
   },
 
   waitElementToBeClickable: elm => {
-    browser.wait(EC.elementToBeClickable(elm), 15000);
+    browser.wait(EC.elementToBeClickable(elm));
   },
 
-  waitElementToDisappear: locator => {
-    browser.wait(() => {
-      return element(locator).isPresent()
-        .then(presenceOfElement => {
-          return !presenceOfElement;
-        });
-    }, 10000);
-  },
+  waitElementToDisappear: locator =>
+    browser.wait(() =>
+      element(locator).isPresent()
+        .then(presenceOfElement => !presenceOfElement)),
 
   waitElementToBeAttached: locator => {
     let result = false;
@@ -42,18 +38,14 @@ module.exports = {
     return result;
   },
 
-  waitUntilReady: elm => {
-    return browser.wait(() => { return elm.isPresent(); }, 10000) &&
-      browser.wait(() => { return elm.isDisplayed(); }, 12000);
-  },
+  waitUntilReady: elm =>
+    browser.wait(() => elm.isPresent()) &&
+        browser.wait(() => elm.isDisplayed()),
 
-  waitForCheckboxToBeChecked: elem => {
-    browser.wait(() => {
-      return (elem.getAttribute('checked')).then(isElementChecked => {
-        return (isElementChecked);
-      });
-    }, 10000);
-  },
+  waitForCheckboxToBeChecked: elem =>
+    browser.wait(() => 
+      elem.getAttribute('checked')
+        .then(isElementChecked => isElementChecked)),
 
   /**
   * Usage: selectDropdownByNumber ( element, index)
