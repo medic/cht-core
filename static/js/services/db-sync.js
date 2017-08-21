@@ -30,26 +30,33 @@ angular.module('inboxServices').factory('DBSync',
       return _.findWhere(errors, { status: 401 });
     };
 
-    var getOptions = function(direction, options) {
-      options = options || {};
-      _.defaults(options, {
+    var getOptions = function(direction) {
+      var options = {
         live: true,
         retry: true,
         timeout: false,
         heartbeat: 10000,
         back_off_function: backOffFunction
-      });
+      };
       if (direction === 'to') {
+        options.checkpoint = 'source';
+        options.filter = function(doc) {
+          // don't try to replicate read only docs back to the server
+          return READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
+                 READ_ONLY_IDS.indexOf(doc._id) === -1 &&
+                 doc._id.indexOf(DDOC_PREFIX) !== 0;
+        };
         return $q.resolve(options);
       }
+      options.checkpoint = 'target';
       return DB().allDocs().then(function(result) {
         options.doc_ids = _.pluck(result.rows, 'id');
         return options;
       });
     };
 
-    var replicate = function(direction, updateListener, options) {
-      return getOptions(direction, options)
+    var replicate = function(direction, updateListener) {
+      return getOptions(direction)
         .then(function(options) {
           var remote = DB({ remote: true });
           return DB().replicate[direction](remote, options)
@@ -91,14 +98,7 @@ angular.module('inboxServices').factory('DBSync',
     var replicateTo = function(updateListener) {
       return Auth('can_edit')
         .then(function() {
-          return replicate('to', updateListener, {
-            filter: function(doc) {
-              // don't try to replicate read only docs back to the server
-              return READ_ONLY_TYPES.indexOf(doc.type) === -1 &&
-                     READ_ONLY_IDS.indexOf(doc._id) === -1 &&
-                     doc._id.indexOf(DDOC_PREFIX) !== 0;
-            }
-          });
+          return replicate('to', updateListener);
         })
         .catch(function() {
           // not authorized to replicate to server - that's ok
