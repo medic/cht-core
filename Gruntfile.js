@@ -176,9 +176,6 @@ module.exports = function(grunt) {
       dedupe_jquery: {
         cmd: 'rm -rf node_modules/@medic/enketo-core/node_modules/jquery'
       },
-      dedupe_pouchdb: {
-        cmd: 'rm -rf node_modules/angular-pouchdb/node_modules'
-      },
       deploy: {
         cmd: 'kanso push $COUCH_URL'
       },
@@ -414,7 +411,6 @@ module.exports = function(grunt) {
   grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [
     'exec:undopatches',
     'auto_install:npm',
-    'exec:dedupe_pouchdb',
     'exec:dedupe_jquery',
     'copy:librariestopatch',
     'exec:applypatches'
