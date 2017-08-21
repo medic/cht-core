@@ -54,14 +54,14 @@ describe('DeleteUser service', function() {
         starsign: 'aries',
         _deleted: true
       })
-      .respond(404, 'Not found');
+      .respond(401, 'Unauthorized');
 
     service({ _id: 'org.couchdb.user:gareth', name: 'gareth' })
       .then(function() {
         done(new Error('expected error to be thrown'));
       })
       .catch(function(err) {
-        chai.expect(err.data).to.equal('Not found');
+        chai.expect(err.data).to.equal('Unauthorized');
         chai.expect(cacheRemove.callCount).to.equal(0);
         done();
       });
@@ -90,8 +90,40 @@ describe('DeleteUser service', function() {
       })
       .respond({ success: true });
 
-    get.returns(KarmaUtils.mockPromise(null, { _id: 'org.couchdb.user:gareth' }));
-    DeleteDocs.returns(KarmaUtils.mockPromise());
+    get.returns(Promise.resolve({ _id: 'org.couchdb.user:gareth' }));
+    DeleteDocs.returns(Promise.resolve());
+
+    setTimeout(function() {
+      rootScope.$apply(); // needed to resolve the promises
+      httpBackend.flush();
+      setTimeout(function() {
+        rootScope.$apply();
+        httpBackend.flush();
+      });
+    });
+
+    return service({ _id: 'org.couchdb.user:gareth', name: 'gareth' })
+      .then(function() {
+        chai.expect(get.callCount).to.equal(1);
+        chai.expect(get.args[0][0]).to.equal('org.couchdb.user:gareth');
+
+        chai.expect(DeleteDocs.callCount).to.equal(1);
+        chai.expect(DeleteDocs.args[0][0]._id).to.equal('org.couchdb.user:gareth');
+
+        chai.expect(cacheRemove.callCount).to.equal(2);
+        chai.expect(cacheRemove.args[0][0]).to.equal('/_users/org.couchdb.user%3Agareth');
+        chai.expect(cacheRemove.args[1][0]).to.equal('/_users/_all_docs?include_docs=true');
+      });
+  });
+
+  it('deletes medic user if couch user not found - #3788', function() {
+
+    httpBackend
+      .expect('GET', '/_users/org.couchdb.user%3Agareth')
+      .respond(404, 'Not found');
+
+    get.returns(Promise.resolve({ _id: 'org.couchdb.user:gareth' }));
+    DeleteDocs.returns(Promise.resolve());
 
     setTimeout(function() {
       rootScope.$apply(); // needed to resolve the promises
