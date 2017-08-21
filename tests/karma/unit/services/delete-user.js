@@ -90,8 +90,8 @@ describe('DeleteUser service', function() {
       })
       .respond({ success: true });
 
-    get.returns(KarmaUtils.mockPromise(null, { _id: 'org.couchdb.user:gareth' }));
-    DeleteDocs.returns(KarmaUtils.mockPromise());
+    get.returns(Promise.resolve({ _id: 'org.couchdb.user:gareth' }));
+    DeleteDocs.returns(Promise.resolve());
 
     setTimeout(function() {
       rootScope.$apply(); // needed to resolve the promises
@@ -122,8 +122,8 @@ describe('DeleteUser service', function() {
       .expect('GET', '/_users/org.couchdb.user%3Agareth')
       .respond(404, 'Not found');
 
-    get.returns(KarmaUtils.mockPromise(null, { _id: 'org.couchdb.user:gareth' }));
-    DeleteDocs.returns(KarmaUtils.mockPromise());
+    get.returns(Promise.resolve({ _id: 'org.couchdb.user:gareth' }));
+    DeleteDocs.returns(Promise.resolve());
 
     setTimeout(function() {
       rootScope.$apply(); // needed to resolve the promises
