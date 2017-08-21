@@ -128,6 +128,12 @@ var _ = require('underscore');
 
       return function(user) {
         return deleteCouchUser(user._id)
+          .catch(function(err) {
+            if (err.status !== 404) {
+              throw err;
+            }
+            // CouchDB user already deleted - attempt to delete the medic user
+          })
           .then(function() {
             return deleteMedicUser(user._id);
           })
