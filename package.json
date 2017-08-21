@@ -8,7 +8,7 @@
     "url": "git://github.com/medic/medic-webapp.git"
   },
   "dependencies": {
-    "@medic/enketo-core": "4.27.3",
+    "enketo-core": "4.38.1",
     "angular": "^1.6.5",
     "angular-cookie": "^4.1.0",
     "angular-nvd3": "^1.0.9",
