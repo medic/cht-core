@@ -73,9 +73,11 @@ describe('DBSync service', () => {
       chai.expect(from.args[0][1].live).to.equal(true);
       chai.expect(from.args[0][1].retry).to.equal(true);
       chai.expect(from.args[0][1].doc_ids).to.deep.equal(['m','e','d','i','c']);
+      chai.expect(from.args[0][1].checkpoint).to.equal('target');
       chai.expect(to.callCount).to.equal(1);
       chai.expect(to.args[0][1].live).to.equal(true);
       chai.expect(to.args[0][1].retry).to.equal(true);
+      chai.expect(to.args[0][1].checkpoint).to.equal('source');
       const backoff = to.args[0][1].back_off_function;
       chai.expect(backoff(0)).to.equal(1000);
       chai.expect(backoff(2000)).to.equal(4000);
