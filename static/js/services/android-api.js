@@ -133,12 +133,6 @@ angular.module('inboxServices').factory('AndroidApi',
             return true;
           }
 
-          // If we're viewing a help page, return to the about page
-          if ($state.includes('help')) {
-            $state.go('about');
-            return true;
-          }
-
           // If we're viewing a tab, but not the primary tab, go to primary tab
           var primaryTab = $('.header .tabs').find('> a:visible:first');
           if (!primaryTab.is('.selected')) {

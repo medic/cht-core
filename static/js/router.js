@@ -415,12 +415,6 @@
         templateUrl: 'templates/partials/about.html'
       })
 
-      .state('help', {
-        url: '/help/{page}',
-        controller: 'HelpCtrl',
-        templateUrl: 'templates/partials/help.html'
-      })
-
       // theme design testing page
       .state('theme', {
         url: '/theme',
