@@ -1237,3 +1237,32 @@ DELETE /api/v1/users/mary
 ```
 HTTP/1.1 200 OK
 ```
+
+# Upgrades
+
+Initiates an upgrade to the provided version. Once this endpoint is called [Horticulturalist](https://github.com/medic/horticulturalist) will take over and complete the installation.
+
+### Permissions
+
+`_admin` (CouchDB Administrator)
+
+## Example
+
+```
+POST /api/v1/upgrade
+{
+  "build": {
+    "namespace": "medic",
+    "application": "medic",
+    "version": "3.0.0-beta.1"
+  }
+}
+```
+
+For potential forwards compatibility, you must pass the `namespace` and `application` as `medic`.
+
+The `version` should correspond to a release, pre-release or branch that has been pushed to our builds server (currently hard-coded to https://staging.dev.medicmobile.org/builds). This happens automatically upon a successful travis run.
+
+Calling this endpoint will potentially restart API.
+
+It is expected that the caller ensures forwards or backwards compatibility is maintained between deployed versions. This endpoing does not stop you from "upgrading" to an earlier version, or a branch that is incompatible with your current state.

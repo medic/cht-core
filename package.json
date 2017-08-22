@@ -24,6 +24,8 @@
     "object-path": "^0.11.1",
     "openrosa-formlist": "github:medic/openrosa-formlist#sax",
     "pass-stream": "^1.0.0",
+    "pouchdb-adapter-http": "^6.3.4",
+    "pouchdb-core": "^6.3.4",
     "properties": "^1.2.1",
     "request": "^2.60.0",
     "simple-password-tester": "^1.0.0",
@@ -43,8 +45,6 @@
     "grunt-mocha-test": "^0.13.2",
     "mocha": "^3.5.0",
     "nodeunit": "^0.11.1",
-    "pouchdb-adapter-http": "^6.3.4",
-    "pouchdb-core": "^6.3.4",
     "request-promise-native": "^1.0.3",
     "sinon": "^3.2.0"
   },

@@ -39,6 +39,7 @@ var _ = require('underscore'),
     users = require('./controllers/users'),
     places = require('./controllers/places'),
     people = require('./controllers/people'),
+    upgrade = require('./controllers/upgrade'),
     fti = require('./controllers/fti'),
     createDomain = require('domain').create,
     staticResources = /\/(templates|static)\//,
@@ -170,6 +171,26 @@ app.get('/api/auth/:path', function(req, res) {
     } else {
       res.json(output);
     }
+  });
+});
+
+app.post('/api/v1/upgrade', jsonParser, (req, res) => {
+  auth.check(req, '_admin', null, (err, userCtx) => {
+    if (err) {
+      return serverUtils.error(err, req, res);
+    }
+
+    var buildInfo = req.body.build;
+    if (!buildInfo) {
+      return serverUtils.error({
+        message: 'You must provide a build info body',
+        status: 400
+      }, req, res);
+    }
+
+    upgrade(req.body.build, userCtx.user)
+      .then(() => res.json({ ok: true }))
+      .catch(err => serverUtils.error(err, req, res));
   });
 });
 

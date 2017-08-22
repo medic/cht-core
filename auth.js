@@ -56,7 +56,15 @@ var checkDistrict = function(requested, permitted, callback) {
 
 
 module.exports = {
+  isDbAdmin: (req, callback) => {
+    module.exports.getUserCtx(req, (err, userCtx) => {
+      if (err) {
+        return callback(err);
+      }
 
+      callback(null, isDbAdmin(userCtx));
+    });
+  },
   hasAllPermissions: function(userCtx, permissions) {
     if (isDbAdmin(userCtx)) {
       return true;
