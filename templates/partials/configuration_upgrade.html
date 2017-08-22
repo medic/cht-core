@@ -64,10 +64,7 @@
             <div class="col-xs-5"><code>{{release.id}}</code></div>
             <div class="col-xs-4" ng-bind-html="release.value.build_time | relativeDate"></div>
             <div class="col-xs-3">
-              <button
-                ng-disabled="deployInfo.version === release.id"
-                title="{{deployInfo.version === release.id ? 'instance.upgrade.on_branch': '' | translate}}"
-                class="btn btn-primary" ng-click="upgrade(release.id)" translate>upgrade</button>
+              <button class="btn btn-primary" ng-click="upgrade(release.id)" translate>upgrade</button>
             </div>
           </li>
         </ul>
