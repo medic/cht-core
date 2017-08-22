@@ -16,6 +16,12 @@ For more information about Medic Mobile's architecture and how the pieces fit to
 For more information about the format of docs in the database, see [Database Schema](https://github.com/medic/medic-docs/blob/master/development/db_schema.md).
 For more information about the SMS exchange protocol between webapp and gateway, see [Message States](https://github.com/medic/medic-docs/blob/master/user/message-states.md).
 
+## Easy local deployment
+
+If you want to get up and running with no fuss, [you can use Horticulturalist](#deploy-locally-using-horticulturalist-beta).
+
+If you want to develop against Medic, follow the Development Setup below.
+
 ## Development Setup
 
 Before getting started, read about our [development workflow](https://github.com/medic/medic-docs/blob/master/md/dev/workflow.md) and the [architecture overview](https://github.com/medic/medic-docs/blob/master/development/architecture.md).
@@ -205,6 +211,43 @@ Some kanso tests are run in-browser; you can run them manually if you browse to 
 
 # Other deployment steps
 
+## Deploy locally using Horticulturalist (beta)
+
+[Horticulturalist](https://github.com/medic/horticulturalist) is an easy way to deploy Medic locally if you're not going to be developing against it.
+
+Horti is currently in beta, and will eventually replace the Market, Gardener and Dashboard as our standard way to deploy and manage our software.
+
+To use it locally:
+ - Install, [configure](#setup-couchdb-on-a-single-node) and [secure](#enabling-a-secure-couchdb) CouchDB
+ - Install [npm](https://npms.io/)
+ - Install Horticulturalist with `npm install -g horticulturalist`
+
+Now use the `horti` tool to bootstrap Medic and launch it:
+
+```sh
+COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984 medic horti --local --bootstrap
+```
+
+This will download, configure and install the latest Master build of medic. If you're looking to deploy a specific version, provide it to the `bootstrap` command:
+
+```sh
+COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984 medic horti --local --bootstrap=3.0.0-beta.1
+```
+
+To kill Horti hit CTRL+C. To start Horti (and Medic) again, run the same command as above, but this time don't bootstrap:
+
+```sh
+COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984 medic horti --local
+```
+
+If you wish to change the version of Medic installed, you can either bootstrap again, or use the [Instance Upgrade configuration screen](http://localhost:5988/medic/_design/medic/_rewrite/#/configuration/upgrade).'
+
+**NB**: Horticulturalist doesn't wipe your database when it bootstraps, it just installs the provided version (or master) over whatever you already have. To completely start again, stop Horti and delete the `medic` database, either using Futon / Fauxton, or from the command line:
+
+```sh
+curl -X DELETE $COUCH_URL
+```
+
 ## Run on Medic OS
 
 [What's Medic OS?](https://github.com/medic/medic-docs/blob/master/development/architecture.md#medic-os)
@@ -245,7 +288,6 @@ Finally install our app in the dashboard.
 - Follow the instructions to install the app
 
 Now you've just overwritten your development installation so you probably want to do another `grunt dev` to overwrite it again.
-
 
 ## Deploy to Market (optional)
 
