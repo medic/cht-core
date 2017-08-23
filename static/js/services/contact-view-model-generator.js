@@ -79,8 +79,8 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return model;
     };
 
-    var splitContactsByType = function(results) {
-      return _.groupBy(results.rows, function(child) {
+    var splitContactsByType = function(children) {
+      return _.groupBy(children, function(child) {
         if (child.doc.type === 'person') {
           return 'persons';
         }
@@ -149,21 +149,24 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         include_docs: true
       })
         .then(function(childrenResponse) {
-          var ids = childrenResponse.rows.map(function(child) {
+          return childrenResponse.rows;
+        })
+        .then(function(children) {
+          var ids = _.compact(children.map(function(child) {
             return child.doc.contact && child.doc.contact._id;
-          });
-          return DB().query('medic-client/doc_summaries_by_id', { keys: ids })
+          }));
+          return DB().allDocs({ keys: ids, include_docs: true })
             .then(function(contactsResponse) {
-              childrenResponse.rows.forEach(function(row) {
-                var contactId = row.doc.contact && row.doc.contact._id;
+              children.forEach(function(child) {
+                var contactId = child.doc.contact && child.doc.contact._id;
                 if (contactId) {
                   var contactRow = _.findWhere(contactsResponse.rows, { id: contactId });
                   if (contactRow) {
-                    row.doc.contact.name = contactRow.value.name;
+                    child.doc.contact = contactRow.doc;
                   }
                 }
               });
-              return childrenResponse;
+              return children;
             });
         });
     };

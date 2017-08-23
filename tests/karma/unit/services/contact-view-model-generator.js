@@ -13,6 +13,7 @@ describe('ContactViewModelGenerator service', () => {
       childPlace2,
       dbGet,
       dbQuery,
+      dbAllDocs,
       doc,
       search;
 
@@ -40,12 +41,12 @@ describe('ContactViewModelGenerator service', () => {
       return { doc: doc };
     });
     contacts = contacts.map(doc => {
-      return { id: doc._id, value: { name: doc.name }};
+      return { id: doc._id, doc: { name: doc.name }};
     });
-    var ids = docs.map(child => child.doc.contact && child.doc.contact._id);
+    var ids = docs.map(child => child.doc.contact && child.doc.contact._id).filter(id => !!id);
     dbQuery.withArgs('medic-client/contacts_by_parent', options)
       .returns(KarmaUtils.mockPromise(err, { rows: docs }));
-    dbQuery.withArgs('medic-client/doc_summaries_by_id', { keys: ids })
+    dbAllDocs.withArgs({ keys: ids, include_docs: true })
       .returns(KarmaUtils.mockPromise(err, { rows: contacts }));
   };
 
@@ -59,6 +60,7 @@ describe('ContactViewModelGenerator service', () => {
       search = sinon.stub();
       dbGet = sinon.stub();
       dbQuery = sinon.stub();
+      dbAllDocs = sinon.stub();
       contactSchema = { get: sinon.stub() };
       contactSchema.get.returns({
         pluralLabel: childPlacePluralLabel,
@@ -66,7 +68,7 @@ describe('ContactViewModelGenerator service', () => {
       });
       lineageModelGenerator = { contact: sinon.stub() };
 
-      $provide.factory('DB', KarmaUtils.mockDB({ get: dbGet, query: dbQuery }));
+      $provide.factory('DB', KarmaUtils.mockDB({ get: dbGet, query: dbQuery, allDocs: dbAllDocs }));
       $provide.value('Search', search);
       $provide.value('ContactSchema', contactSchema);
       $provide.value('$q', Q); // bypass $q so we don't have to digest
