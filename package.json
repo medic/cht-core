@@ -45,6 +45,7 @@
     "angular-mocks": "^1.6.5",
     "autoprefixer": "^7.1.2",
     "browserify-ngannotate": "^2.0.0",
+    "bundlesize": "^0.13.2",
     "chai": "^4.1.1",
     "csv": "^1.1.1",
     "grunt": "^1.0.0",
@@ -83,5 +84,19 @@
     "proxyquire": "^1.7.4",
     "sinon": "^3.2.0",
     "time-grunt": "^1.3.0"
-  }
+  },
+  "bundlesize": [
+    {
+      "path": "./static/dist/inbox.js",
+      "maxSize": "800 kB"
+    },
+    {
+      "path": "./static/dist/templates.js",
+      "maxSize": "30 kB"
+    },
+    {
+      "path": "./static/dist/inbox.css",
+      "maxSize": "70 kB"
+    }
+  ]
 }

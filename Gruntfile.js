@@ -201,6 +201,9 @@ module.exports = function(grunt) {
              ' && curl -X DELETE http://admin:pass@localhost:5984/medic-audit-test' +
              ' && kanso push http://admin:pass@localhost:5984/medic-test'
       },
+      bundlesize: {
+        cmd: 'node ./node_modules/bundlesize/index.js'
+      },
       test_api_integration_setup: {
         cmd: 'cd api && npm install',
       },
@@ -227,7 +230,7 @@ module.exports = function(grunt) {
                    ' && echo "Module restored: ' + module + '"' +
                    ' || echo "No restore required for: ' + module + '"';
           }).join(' & ');
-        }
+        },
       },
       // To monkey patch a library...
       // 1. copy the file you want to change
@@ -484,7 +487,8 @@ module.exports = function(grunt) {
   // CI tasks
   grunt.registerTask('minify', 'Minify JS and CSS', [
     'uglify',
-    'cssmin'
+    'cssmin',
+    'exec:bundlesize'
   ]);
 
   grunt.registerTask('ci_before', '', [
