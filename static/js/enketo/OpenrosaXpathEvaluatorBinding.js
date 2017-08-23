@@ -1,5 +1,6 @@
 var ExtendedXpathEvaluator = require('extended-xpath');
 var openrosa_xpath_extensions = require('openrosa-xpath-extensions');
+var translator = require('./translator');
 
 module.exports = function() {
     // re-implement XPathJS ourselves!
@@ -22,7 +23,7 @@ module.exports = function() {
                     var doc = contextPath.ownerDocument;
                     return doc.evaluate(v, contextPath, namespaceResolver, wrappedResultType, result);
                 },
-                openrosa_xpath_extensions);
+                openrosa_xpath_extensions(translator));
         return evaluator.evaluate(e, contextPath, namespaceResolver, resultType, result);
     };
     window.JsXPathException =
