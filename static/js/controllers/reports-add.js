@@ -8,6 +8,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     DB,
     Enketo,
     FileReader,
+    Geolocation,
     Snackbar,
     XmlForm
   ) {
@@ -15,8 +16,16 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
     'ngInject';
     'use strict';
 
+    var geolocation;
+
     var getSelected = function() {
       if ($state.params.formId) { // adding
+        Geolocation()
+          .then(function(position) {
+            geolocation = position;
+          })
+          .catch($log);
+
         return $q.resolve({
           formInternalId: $state.params.formId
         });
@@ -103,7 +112,8 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       var model = $scope.selected[0];
       var reportId = model.doc && model.doc._id;
       var formInternalId = model.formInternalId;
-      Enketo.save(formInternalId, $scope.form, reportId)
+
+      Enketo.save(formInternalId, $scope.form, geolocation, reportId)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           $scope.enketoStatus.saving = false;

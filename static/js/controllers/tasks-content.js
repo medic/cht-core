@@ -6,6 +6,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
     $translate,
     DB,
     Enketo,
+    Geolocation,
     TranslateFrom,
     Snackbar,
     XmlForm
@@ -13,6 +14,13 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
 
     'use strict';
     'ngInject';
+
+    var geolocation;
+    Geolocation()
+      .then(function(position) {
+        geolocation = position;
+      })
+      .catch($log);
 
     var hasOneFormAndNoFields = function(task) {
       return Boolean(
@@ -76,7 +84,7 @@ angular.module('inboxControllers').controller('TasksContentCtrl',
 
       $scope.enketoStatus.saving = true;
       $scope.enketoStatus.error = null;
-      Enketo.save($scope.formId, $scope.form)
+      Enketo.save($scope.formId, $scope.form, geolocation)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           $translate('report.created').then(Snackbar);

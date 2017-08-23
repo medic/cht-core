@@ -245,28 +245,6 @@ describe('EnketoPrepopulationData service', function() {
     rootScope.$digest();
   });
 
-  it('binds location into model on android app', function(done) {
-    var data = {};
-    var user = { name: 'geoff' };
-    var location = { lat: '123', long: '456' };
-    UserSettings.returns(Promise.resolve(user));
-    $window.medicmobile_android = {
-      getLocation: function() {
-        return JSON.stringify(location);
-      }
-    };
-    service(editPersonForm, data)
-      .then(function(actual) {
-        var xml = $($.parseXML(actual));
-        chai.expect(xml.find('inputs > meta > location > lat')[0].innerHTML).to.equal(location.lat);
-        chai.expect(xml.find('inputs > meta > location > long')[0].innerHTML).to.equal(location.long);
-        chai.expect(UserSettings.callCount).to.equal(1);
-        done();
-      })
-      .catch(done);
-    rootScope.$digest();
-  });
-
   it('binds form content into model with custom root node', function(done) {
     var data = { person: { last_name: 'salmon' } };
     var user = { name: 'geoff' };

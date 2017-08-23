@@ -456,7 +456,7 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    this.save = function(formInternalId, form, docId) {
+    this.save = function(formInternalId, form, geolocation, docId) {
       return $q.resolve(form.validate())
         .then(function(valid) {
           if (!valid) {
@@ -469,6 +469,16 @@ angular.module('inboxServices').service('Enketo',
         })
         .then(function(doc) {
           return xmlToDocs(doc, form.getDataStr());
+        })
+        .then(function(docs) {
+          if (geolocation) {
+            // Only update geolocation if one is provided.  Otherwise, maintain
+            // whatever is already set in the docs.
+            docs.forEach(function(doc) {
+              doc.geolocation = geolocation;
+            });
+          }
+          return docs;
         })
         .then(saveDocs);
     };
