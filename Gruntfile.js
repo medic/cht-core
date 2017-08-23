@@ -230,7 +230,7 @@ module.exports = function(grunt) {
                    ' && echo "Module restored: ' + module + '"' +
                    ' || echo "No restore required for: ' + module + '"';
           }).join(' & ');
-        },
+        }
       },
       // To monkey patch a library...
       // 1. copy the file you want to change
