@@ -22,7 +22,6 @@ env:
   - COUCH_NODE_NAME=nonode@nohost
 
 before_install:
-  - npm i -g npm@^5.3.0
   - |
     if [ "$COUCH_VERSION" = 2 ]; then
       # start couchdb 2.x docker instance
