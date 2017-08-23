@@ -20,12 +20,16 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       $scope.enketoStatus.edited = true;
     };
 
-    var setSelected = function(contact) {
+    var setCancelTarget = function() {
       $scope.setCancelTarget(function() {
         $state.go('contacts.detail', { id: $state.params.id });
       });
+    };
+
+    var setSelected = function(contact) {
       return ContactViewModelGenerator(contact._id)
-        .then($scope.setSelected);
+        .then($scope.setSelected)
+        .then(setCancelTarget);
     };
 
     var render = function(contact) {
@@ -78,9 +82,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     $scope.loadingForm = true;
     $scope.setRightActionBar();
     $scope.setShowContent(true);
-    $scope.setCancelTarget(function() {
-      $state.go('contacts.detail', { id: $state.params.id });
-    });
+    setCancelTarget();
     DB()
       .get($state.params.id)
       .then(render)
