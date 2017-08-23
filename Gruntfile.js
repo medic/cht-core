@@ -50,12 +50,13 @@ module.exports = function(grunt) {
             'session': './packages/session/session',
             'kujua-sms/utils': './packages/kujua-sms/kujua-sms/utils',
             'views/lib/objectpath': './packages/kujua-sms/views/lib/objectpath',
-            'text!enketo-config': './static/js/enketo/config.json',
+            'enketo-config': './static/js/enketo/config.json',
             'widgets': './static/js/enketo/widgets',
             './xpath-evaluator-binding':'./static/js/enketo/OpenrosaXpathEvaluatorBinding',
             'extended-xpath': './node_modules/openrosa-xpath-evaluator/src/extended-xpath',
             'openrosa-xpath-extensions': './node_modules/openrosa-xpath-evaluator/src/openrosa-xpath-extensions',
             'translator': './static/js/enketo/translator', // translator for enketo's internal i18n
+            '../../js/dropdown.jquery': 'bootstrap/js/dropdown', // enketo currently duplicates bootstrap's dropdown code.  working to resolve this upstream https://github.com/enketo/enketo-core/issues/454
             'libphonenumber/utils': './packages/libphonenumber/libphonenumber/utils',
             'libphonenumber/libphonenumber': './packages/libphonenumber/libphonenumber/libphonenumber',
             'worker-pouch/workerified': './node_modules/worker-pouch/lib/workerified/',
@@ -143,6 +144,7 @@ module.exports = function(grunt) {
             cwd: 'node_modules',
             src: [
               'bootstrap-daterangepicker/**',
+              'enketo-core/**',
               'font-awesome/**',
               'moment/**',
               'pouchdb-adapter-idb/**',
@@ -173,9 +175,6 @@ module.exports = function(grunt) {
       }
     },
     exec: {
-      dedupe_jquery: {
-        cmd: 'rm -rf node_modules/@medic/enketo-core/node_modules/jquery'
-      },
       deploy: {
         cmd: 'kanso push $COUCH_URL'
       },
@@ -214,6 +213,7 @@ module.exports = function(grunt) {
         cmd: function() {
           var modulesToPatch = [
             'bootstrap-daterangepicker',
+            'enketo-core',
             'font-awesome',
             'moment',
             'pouchdb-adapter-idb',
@@ -251,6 +251,13 @@ module.exports = function(grunt) {
             // patch pouch to improve safari checks
             // https://github.com/medic/medic-webapp/issues/2797
             'patch node_modules/pouchdb-adapter-idb/lib/index.js < patches/pouchdb-ignore-safari-check.patch',
+
+            // patch enketo to support cascading of jr:choice-name() update results
+            // https://github.com/medic/medic-webapp/issues/3804
+            'patch node_modules/enketo-core/src/js/output.js < patches/3804_jr-choice-name.patch',
+
+            // patch enketo's bootstrap-datepicker dependency so that sass compiles properly
+            'patch node_modules/enketo-core/src/widget/date/datepicker-extended.scss < patches/enketo-datepicker-extended-sass-import.patch',
           ];
           return patches.join(' && ');
         }
@@ -411,7 +418,6 @@ module.exports = function(grunt) {
   grunt.registerTask('mmnpm', 'Update and patch npm dependencies', [
     'exec:undopatches',
     'auto_install:npm',
-    'exec:dedupe_jquery',
     'copy:librariestopatch',
     'exec:applypatches'
   ]);
