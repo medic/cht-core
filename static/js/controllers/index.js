@@ -49,7 +49,6 @@
   require('./error');
   require('./feedback');
   require('./guided-setup-modal');
-  require('./help');
   require('./home');
   require('./import-translation');
   require('./medic-reporter-modal');
