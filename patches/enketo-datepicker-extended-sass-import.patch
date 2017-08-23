@@ -1,0 +1,13 @@
+*** original	2017-08-29 12:51:04.000000000 +0200
+--- patched	2017-08-29 12:50:57.000000000 +0200
+***************
+*** 1,4 ****
+! @import "../../../../../node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker";
+  
+  /** fixes by martijn **/
+  
+--- 1,4 ----
+! @import "../../../node_modules/bootstrap-datepicker/dist/css/bootstrap-datepicker";
+  
+  /** fixes by martijn **/
+  

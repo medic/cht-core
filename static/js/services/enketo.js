@@ -267,7 +267,7 @@ angular.module('inboxServices').service('Enketo',
       $wrapper.find('.btn.next-page')
         .off('.pagemode')
         .on('click.pagemode', function() {
-          form.getView().pages.next()
+          form.pages.next()
             .then(function(newPageIndex) {
               if(typeof newPageIndex === 'number') {
                 window.history.pushState({ enketo_page_number: newPageIndex }, '');
@@ -292,7 +292,7 @@ angular.module('inboxServices').service('Enketo',
           var targetPage = event.originalEvent.state.enketo_page_number;
 
           if ($wrapper.find('.container').not(':empty')) {
-            var pages = form.getView().pages;
+            var pages = form.pages;
             pages.flipTo(pages.getAllActive()[targetPage], targetPage);
           }
         }
