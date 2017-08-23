@@ -1,4 +1,5 @@
-var sinon = require('sinon').sandbox.create(),
+var config = require('../../config'),
+    sinon = require('sinon').sandbox.create(),
     utils = require('../../lib/utils'),
     transition = require('../../transitions/accept_patient_reports');
 
@@ -19,7 +20,7 @@ exports['patient id failing validation adds error'] = function(test) {
         form: 'x'
     };
 
-    sinon.stub(transition, 'getAcceptedReports').returns([{
+    sinon.stub(config, 'get').withArgs('patient_reports').returns([{
         validations: {
             list: [{
                 property: 'patient_id',
@@ -54,7 +55,7 @@ exports['validations use translation_key'] = function(test) {
         form: 'x'
     };
 
-    sinon.stub(transition, 'getAcceptedReports').returns([{
+    sinon.stub(config, 'get').withArgs('patient_reports').returns([{
         validations: {
             list: [{
                 property: 'patient_id',
@@ -85,7 +86,7 @@ exports['join responses concats validation response msgs'] = function(test) {
         form: 'x'
     };
 
-    sinon.stub(transition, 'getAcceptedReports').returns([{
+    sinon.stub(config, 'get').withArgs('patient_reports').returns([{
         validations: {
             join_responses: true,
             list: [
@@ -144,7 +145,7 @@ exports['false join_responses does not concat validation msgs'] = function(test)
         form: 'x'
     };
 
-    sinon.stub(transition, 'getAcceptedReports').returns([{
+    sinon.stub(config, 'get').withArgs('patient_reports').returns([{
         validations: {
             join_responses: false,
             list: [
@@ -202,7 +203,7 @@ exports['undefined join_responses does not concat validation msgs'] = function(t
         form: 'x'
     };
 
-    sinon.stub(transition, 'getAcceptedReports').returns([{
+    sinon.stub(config, 'get').withArgs('patient_reports').returns([{
         validations: {
             list: [
                 {

@@ -1,4 +1,5 @@
 var _ = require('underscore'),
+    config = require('../../config'),
     moment = require('moment'),
     sinon = require('sinon').sandbox.create(),
     transition = require('../../transitions/accept_patient_reports'),
@@ -18,7 +19,7 @@ exports['filter validation'] = function(test) {
 };
 
 exports['onMatch callback empty if form not included'] = function(test) {
-    sinon.stub(transition, 'getAcceptedReports').returns([ { form: 'x' }, { form: 'z' } ]);
+    sinon.stub(config, 'get').returns([ { form: 'x' }, { form: 'z' } ]);
 
     transition.onMatch({
         doc: {
@@ -31,12 +32,13 @@ exports['onMatch callback empty if form not included'] = function(test) {
     });
 };
 
-exports['onMatch with matching form calls getRegistrations and then matchRegistrations'] = function(test) {
-    sinon.stub(transition, 'getAcceptedReports').returns([ { form: 'x' }, { form: 'z' } ]);
+exports['onMatch with matching form calls getRegistrations and then getPatientContact and then getLocale'] = function(test) {
+    sinon.stub(config, 'get').returns([ { form: 'x', messages: [] }, { form: 'z' } ]);
 
     var getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []),
-        getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, { _id: 'uuid', name: 'sally' }),
-        matchRegistrations = sinon.stub(transition, 'matchRegistrations').callsArgWith(1, null, true);
+        getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, { _id: 'uuid', name: 'sally' });
+
+    const getLocale = sinon.stub(utils, 'getLocale').returns('en');
 
     transition.onMatch({
         doc: {
@@ -50,17 +52,16 @@ exports['onMatch with matching form calls getRegistrations and then matchRegistr
         test.equal(getPatientContact.called, true);
         test.equal(getPatientContact.callCount, 1);
         test.equal(getPatientContact.args[0][1], 'x');
-        test.equal(matchRegistrations.called, true);
+        test.equal(getLocale.called, true);
 
         test.done();
     });
 };
 
 exports['onMatch with no patient id adds error msg and response'] = function(test) {
-    sinon.stub(transition, 'getAcceptedReports').returns([ { form: 'x' }, { form: 'z' } ]);
+    sinon.stub(config, 'get').returns([ { form: 'x' }, { form: 'z' } ]);
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     sinon.stub(utils, 'getPatientContact').callsArgWith(2);
-    sinon.stub(transition, 'matchRegistrations').callsArgWith(1, null, true);
 
     var doc = {
         form: 'x',
@@ -79,34 +80,37 @@ exports['onMatch with no patient id adds error msg and response'] = function(tes
 
 // Because patients can be created through the UI and not neccessarily have
 // a registration at all
-exports['matchRegistrations with no registrations does not error'] = function(test) {
-
+exports['handleReport with no registrations does not error'] = function(test) {
     var doc = {
         fields: { patient_id: 'x' },
         from: '+123'
     };
+    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+    const config = {
+        messages: [{
+            event_type: 'registration_not_found',
+            message: [{
+                content: 'not found {{patient_id}}',
+                locale: 'en'
+            }],
+            recipient: 'reporting_unit'
+        }]
+    };
 
-    transition.matchRegistrations({
-        registrations: [],
-        doc: doc,
-        report: {
-            messages: [{
-                event_type: 'registration_not_found',
-                message: [{
-                    content: 'not found {{patient_id}}',
-                    locale: 'en'
-                }],
-                recipient: 'reporting_unit'
-            }]
-        }
-    }, function() {
-        test.ok(!doc.errors);
-        test.ok(!doc.tasks);
-        test.done();
-    });
+    transition.handleReport(
+        null,
+        null,
+        doc,
+        null,
+        config,
+        function() {
+            test.ok(!doc.errors);
+            test.ok(!doc.tasks);
+            test.done();
+        });
 };
 
-exports['matchRegistrations with patient adds reply'] = function(test) {
+exports['handleReport with patient adds reply'] = function(test) {
     var doc = {
         fields: { patient_id: '559' },
         contact: {
@@ -120,53 +124,61 @@ exports['matchRegistrations with patient adds reply'] = function(test) {
             }
         }
     };
-
-    transition.matchRegistrations({
-        patient: { patient_name: 'Archibald' },
-        doc: doc,
-        report: {
-            messages: [{
-                event_type: 'report_accepted',
-                message: [{
-                    content: 'Thank you, {{contact.name}}. ANC visit for {{patient_name}} ({{patient_id}}) has been recorded.',
-                    locale: 'en'
-                }],
-                recipient: 'reporting_unit'
-            }]
-        }
-    }, function() {
-        test.ok(doc.tasks);
-        test.equal(
-            _.first(_.first(doc.tasks).messages).message,
-            'Thank you, woot. ANC visit for Archibald (559) has been recorded.'
-        );
-        test.done();
-    });
+    const patient = { patient_name: 'Archibald' };
+    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, patient);
+    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+    const config = {
+        messages: [{
+            event_type: 'report_accepted',
+            message: [{
+                content: 'Thank you, {{contact.name}}. ANC visit for {{patient_name}} ({{patient_id}}) has been recorded.',
+                locale: 'en'
+            }],
+            recipient: 'reporting_unit'
+        }]
+    };
+    transition.handleReport(
+        null,
+        null,
+        doc,
+        patient,
+        config,
+        function() {
+            test.ok(doc.tasks);
+            test.equal(
+                _.first(_.first(doc.tasks).messages).message,
+                'Thank you, woot. ANC visit for Archibald (559) has been recorded.'
+            );
+            test.done();
+        });
 };
 
-exports['adding silence_type to matchRegistrations calls silenceReminders'] = function(test) {
-    sinon.stub(transition, 'silenceReminders').callsArgWith(1);
-
-    transition.matchRegistrations({
-        doc: { _id: 'a' },
-        registrations: [
-            { id: 'a' }, // should not be silenced as it's the doc being processed
-            { id: 'b' }, // should be silenced
-            { id: 'c' }  // should be silenced
-        ],
-        report: {
-            silence_type: 'x'
-        }
-    }, function(err, complete) {
-        test.equals(complete, true);
-        test.equals(transition.silenceReminders.callCount, 2);
-        test.equals(transition.silenceReminders.args[0][0].registration.id, 'b');
-        test.equals(transition.silenceReminders.args[1][0].registration.id, 'c');
-        test.done();
-    });
+exports['adding silence_type to handleReport calls _silenceReminders'] = function(test) {
+    sinon.stub(transition, '_silenceReminders').callsArgWith(4);
+    const doc = { _id: 'a' };
+    const config = { silence_type: 'x' };
+    const registrations = [
+        { doc: { id: 'a' } }, // should not be silenced as it's the doc being processed
+        { doc: { id: 'b' } }, // should be silenced
+        { doc: { id: 'c' } }  // should be silenced
+    ];
+    sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, registrations);
+    transition.handleReport(
+        null,
+        null,
+        doc,
+        null,
+        config,
+        function(err, complete) {
+            test.equals(complete, true);
+            test.equals(transition._silenceReminders.callCount, 2);
+            test.equals(transition._silenceReminders.args[0][1].id, 'b');
+            test.equals(transition._silenceReminders.args[1][1].id, 'c');
+            test.done();
+        });
 };
 
-exports['silenceReminders testing'] = function(test) {
+exports['_silenceReminders testing'] = function(test) {
     var audit = { saveDoc: function() {} },
         now = moment(),
         registration;
@@ -175,239 +187,222 @@ exports['silenceReminders testing'] = function(test) {
 
     // mock up a registered_patients view result
     registration = {
-        doc: {
-            scheduled_tasks: [
-                {
-                    due: now.clone().subtract(5, 'days').toISOString(),
-                    group: 1,
-                    state: 'scheduled',
-                    type: 'x'
-                },
-                {
-                    due: now.clone().subtract(2, 'days').toISOString(),
-                    group: 1,
-                    state: 'scheduled',
-                    type: 'x'
-                },
-                {
-                    due: now.clone().add(10, 'days').toISOString(),
-                    group: 2,
-                    state: 'scheduled',
-                    type: 'x'
-                },
-                {
-                    due: now.clone().add(12, 'days').toISOString(),
-                    group: 2,
-                    state: 'scheduled',
-                    type: 'x'
-                },
-                {
-                    due: now.clone().add(12, 'days').toISOString(),
-                    group: 2,
-                    state: 'scheduled',
-                    // a different type, should be ignored
-                    type: 'y'
-                },
-                {
-                    due: now.clone().add(20, 'days').toISOString(),
-                    group: 3,
-                    state: 'scheduled',
-                    type: 'x'
-                },
-                {
-                    due: now.clone().add(25, 'days').toISOString(),
-                    group: 3,
-                    state: 'scheduled',
-                    type: 'x'
-                },
-                // last one is out of order
-                {
-                    due: now.clone().add(7, 'days').toISOString(),
-                    group: 1,
-                    state: 'scheduled',
-                    type: 'x'
-                }
-            ]
-        }
+        scheduled_tasks: [
+            {
+                due: now.clone().subtract(5, 'days').toISOString(),
+                group: 1,
+                state: 'scheduled',
+                type: 'x'
+            },
+            {
+                due: now.clone().subtract(2, 'days').toISOString(),
+                group: 1,
+                state: 'scheduled',
+                type: 'x'
+            },
+            {
+                due: now.clone().add(10, 'days').toISOString(),
+                group: 2,
+                state: 'scheduled',
+                type: 'x'
+            },
+            {
+                due: now.clone().add(12, 'days').toISOString(),
+                group: 2,
+                state: 'scheduled',
+                type: 'x'
+            },
+            {
+                due: now.clone().add(12, 'days').toISOString(),
+                group: 2,
+                state: 'scheduled',
+                // a different type, should be ignored
+                type: 'y'
+            },
+            {
+                due: now.clone().add(20, 'days').toISOString(),
+                group: 3,
+                state: 'scheduled',
+                type: 'x'
+            },
+            {
+                due: now.clone().add(25, 'days').toISOString(),
+                group: 3,
+                state: 'scheduled',
+                type: 'x'
+            },
+            // last one is out of order
+            {
+                due: now.clone().add(7, 'days').toISOString(),
+                group: 1,
+                state: 'scheduled',
+                type: 'x'
+            }
+        ]
     };
+    const config = { silence_type: 'x', silence_for: '15 days'};
+    const reported_date = now.valueOf();
 
-    transition.silenceReminders({
-        audit: audit,
-        registration: registration,
-        type: 'x',
-        reported_date: now.valueOf(),
-        silence_for: '15 days'
-    }, function(err) {
-        var tasks;
+    transition._silenceReminders(
+        audit, registration, reported_date, config,
+        function(err) {
+            var tasks;
 
-        test.equal(err, null);
+            test.equal(err, null);
 
-        test.equal(audit.saveDoc.called, true);
+            test.equal(audit.saveDoc.called, true);
 
-        tasks = registration.doc.scheduled_tasks;
+            tasks = registration.scheduled_tasks;
 
-        test.equal(tasks[0].state, 'scheduled');
-        test.equal(tasks[1].state, 'scheduled');
-        test.equal(tasks[2].state, 'cleared');
-        test.equal(tasks[2].state_history[0].state, 'cleared');
-        test.equal(tasks[3].state, 'cleared');
-        test.equal(tasks[3].state_history[0].state, 'cleared');
-        test.equal(tasks[4].state, 'scheduled');
-        test.equal(tasks[5].state, 'scheduled');
-        test.equal(tasks[6].state, 'scheduled');
+            test.equal(tasks[0].state, 'scheduled');
+            test.equal(tasks[1].state, 'scheduled');
+            test.equal(tasks[2].state, 'cleared');
+            test.equal(tasks[2].state_history[0].state, 'cleared');
+            test.equal(tasks[3].state, 'cleared');
+            test.equal(tasks[3].state_history[0].state, 'cleared');
+            test.equal(tasks[4].state, 'scheduled');
+            test.equal(tasks[5].state, 'scheduled');
+            test.equal(tasks[6].state, 'scheduled');
 
-        test.done();
-    });
+            test.done();
+        });
 };
 
 exports['empty silence_for option clears all reminders'] = function(test) {
     var audit = { saveDoc: function() {} },
-        now = moment(),
-        registration;
+        now = moment();
 
     sinon.stub(audit, 'saveDoc').callsArgWith(1, null);
 
     // mock up a registered_patients view result
-    registration = {
-        doc: {
-            scheduled_tasks: [
-                {
-                    due: now.clone().subtract(2, 'days'),
-                    group: 0,
-                    state: 'scheduled',
-                    type: 'x'
-                },
-                {
-                    due: now.clone().add(2, 'days'),
-                    group: 1,
-                    state: 'scheduled',
-                    type: 'x'
-                },
-                {
-                    due: now.clone().add(2, 'days'),
-                    group: 2,
-                    state: 'scheduled',
-                    type: 'y'
-                },
-                {
-                    due: now.clone().add(20, 'days'),
-                    group: 2,
-                    state: 'scheduled',
-                    type: 'x'
-                },
-                {
-                    due: now.clone().add(2, 'days'),
-                    group: 1,
-                    state: 'scheduled',
-                    type: 'x'
-                }
-            ]
-        }
+    const registration = {
+        scheduled_tasks: [
+            {
+                due: now.clone().subtract(2, 'days'),
+                group: 0,
+                state: 'scheduled',
+                type: 'x'
+            },
+            {
+                due: now.clone().add(2, 'days'),
+                group: 1,
+                state: 'scheduled',
+                type: 'x'
+            },
+            {
+                due: now.clone().add(2, 'days'),
+                group: 2,
+                state: 'scheduled',
+                type: 'y'
+            },
+            {
+                due: now.clone().add(20, 'days'),
+                group: 2,
+                state: 'scheduled',
+                type: 'x'
+            },
+            {
+                due: now.clone().add(2, 'days'),
+                group: 1,
+                state: 'scheduled',
+                type: 'x'
+            }
+        ]
     };
+    const reported_date = now.clone().toISOString();
+    const config = { silence_type: 'x', silence_for: '' };
+    transition._silenceReminders(
+        audit, registration, reported_date, config,
+        function(err) {
+            var tasks;
 
-    transition.silenceReminders({
-        audit: audit,
-        registration: registration,
-        type: 'x',
-        reported_date: now.clone().toISOString(),
-        silence_for: ''
-    }, function(err) {
-        var tasks;
+            test.equal(err, null);
 
-        test.equal(err, null);
+            test.equal(audit.saveDoc.called, true);
 
-        test.equal(audit.saveDoc.called, true);
+            tasks = registration.scheduled_tasks;
 
-        tasks = registration.doc.scheduled_tasks;
+            // don't clear in the past
+            test.equal(tasks[0].state, 'scheduled');
 
-        // don't clear in the past
-        test.equal(tasks[0].state, 'scheduled');
+            // only clear schedule of the same type
+            test.equal(tasks[2].state, 'scheduled');
 
-        // only clear schedule of the same type
-        test.equal(tasks[2].state, 'scheduled');
+            test.equal(tasks[1].state, 'cleared');
+            test.equal(tasks[1].state_history[0].state, 'cleared');
+            test.equal(tasks[3].state, 'cleared');
+            test.equal(tasks[4].state, 'cleared');
+            test.equal(tasks[4].state_history[0].state, 'cleared');
 
-        test.equal(tasks[1].state, 'cleared');
-        test.equal(tasks[1].state_history[0].state, 'cleared');
-        test.equal(tasks[3].state, 'cleared');
-        test.equal(tasks[4].state, 'cleared');
-        test.equal(tasks[4].state_history[0].state, 'cleared');
-
-        test.done();
+            test.done();
     });
 };
 
 exports['when silence_type is comma separated act on multiple schedules'] = function(test) {
     var audit = { saveDoc: function() {} },
-        now = moment(),
-        registration;
+        now = moment();
 
     sinon.stub(audit, 'saveDoc').callsArgWith(1, null);
 
     // mock up a registered_patients view result
-    registration = {
-        doc: {
-            scheduled_tasks: [
-                {
-                    due: now.clone().subtract(2, 'days').toISOString(),
-                    group: 0,
-                    state: 'scheduled',
-                    type: 'foo'
-                },
-                {
-                    due: now.clone().add(2, 'days').toISOString(),
-                    group: 1,
-                    state: 'scheduled',
-                    type: 'foo'
-                },
-                {
-                    due: now.clone().add(2, 'days').toISOString(),
-                    group: 2,
-                    state: 'scheduled',
-                    type: 'foo'
-                },
-                {
-                    due: now.clone().add(2, 'days').toISOString(),
-                    group: 1,
-                    state: 'scheduled',
-                    type: 'bar'
-                },
-                {
-                    due: now.clone().add(5, 'days').toISOString(),
-                    group: 1,
-                    state: 'scheduled',
-                    type: 'bar'
-                }
-            ]
-        }
+    const registration = {
+        scheduled_tasks: [
+            {
+                due: now.clone().subtract(2, 'days').toISOString(),
+                group: 0,
+                state: 'scheduled',
+                type: 'foo'
+            },
+            {
+                due: now.clone().add(2, 'days').toISOString(),
+                group: 1,
+                state: 'scheduled',
+                type: 'foo'
+            },
+            {
+                due: now.clone().add(2, 'days').toISOString(),
+                group: 2,
+                state: 'scheduled',
+                type: 'foo'
+            },
+            {
+                due: now.clone().subtract(2, 'days').toISOString(),
+                group: 1,
+                state: 'scheduled',
+                type: 'bar'
+            },
+            {
+                due: now.clone().add(5, 'days').toISOString(),
+                group: 1,
+                state: 'scheduled',
+                type: 'bar'
+            }
+        ]
     };
 
-    transition.silenceReminders({
-        audit: audit,
-        registration: registration,
-        type: 'foo, bar',
-        reported_date: now.clone().toISOString(),
-        silence_for: ''
-    }, function(err) {
-        var tasks;
+    const config = { silence_type: 'foo, bar', silence_for: '' };
+    const reported_date = now.clone().toISOString();
+    transition._silenceReminders(
+        audit, registration, reported_date, config,
+        function(err) {
+            test.equal(err, null);
 
-        test.equal(err, null);
+            test.equal(audit.saveDoc.called, true);
 
-        test.equal(audit.saveDoc.called, true);
+            const tasks = registration.scheduled_tasks;
 
-        tasks = registration.doc.scheduled_tasks;
+            // don't clear in the past
+            test.equal(tasks[0].state, 'scheduled');
 
-        // don't clear in the past
-        test.equal(tasks[0].state, 'scheduled');
+            test.equal(tasks[1].state, 'cleared');
+            test.equal(tasks[1].state_history[0].state, 'cleared');
+            test.equal(tasks[2].state, 'cleared');
+            test.equal(tasks[2].state_history[0].state, 'cleared');
+            // don't clear in the past
+            test.equal(tasks[3].state, 'scheduled');
+            test.equal(tasks[4].state, 'cleared');
+            test.equal(tasks[4].state_history[0].state, 'cleared');
 
-        test.equal(tasks[1].state, 'cleared');
-        test.equal(tasks[1].state_history[0].state, 'cleared');
-        test.equal(tasks[2].state, 'cleared');
-        test.equal(tasks[2].state_history[0].state, 'cleared');
-        test.equal(tasks[3].state, 'cleared');
-        test.equal(tasks[3].state_history[0].state, 'cleared');
-        test.equal(tasks[4].state, 'cleared');
-        test.equal(tasks[4].state_history[0].state, 'cleared');
-
-        test.done();
-    });
+            test.done();
+        });
 };

@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     async = require('async'),
-    config = require('../config'),
+    configLib = require('../config'),
     messages = require('../lib/messages'),
     moment = require('moment'),
     validation = require('../lib/validation'),
@@ -9,194 +9,193 @@ var _ = require('underscore'),
     date = require('../date'),
     NAME = 'accept_patient_reports';
 
+const _hasConfig = (doc) => {
+    return Boolean(getConfig(doc.form));
+};
+
+// find the messages to clear
+const findToClear = (registration, reported_date, config) => {
+    const reportedDateMoment = moment(reported_date);
+    const taskTypes = config.silence_type.split(',').map(type => type.trim());
+    let silence_until,
+        firstClearedInGroup;
+
+    if (config.silence_for) {
+        silence_until = reportedDateMoment.clone();
+        silence_until.add(date.getDuration(config.silence_for));
+    }
+
+    return utils.getScheduledTasksByType(registration, taskTypes)
+        .filter(msgTask => {
+            const due = moment(msgTask.due);
+
+            // If we have a silence_until value, and at least one msg of the group falls within
+            // the silence window, then clear the entire group. But not subsequent groups.
+            if (silence_until) {
+                if (!firstClearedInGroup) {
+                    // capture first match for group matching
+                    const isInWindowAndScheduled = (
+                        due >= reportedDateMoment &&
+                        due <= silence_until &&
+                        msgTask.state === 'scheduled'
+                    );
+                    if (isInWindowAndScheduled) {
+                        firstClearedInGroup = msgTask;
+                        return true; // clear!
+                    }
+                }
+                // clear the rest of the group, whether in or out of window.
+                return (firstClearedInGroup && firstClearedInGroup.group === msgTask.group);
+            } else {
+                // If no silence_until value, clear all messages in the future.
+                return (
+                    due >= reportedDateMoment &&
+                    msgTask.state === 'scheduled'
+                );
+            }
+        });
+};
+
+const getConfig = function(form) {
+    const fullConfig = configLib.get('patient_reports') || [];
+    return _.findWhere(fullConfig, { form: form });
+};
+
+const _silenceReminders = (audit, registration, reported_date, config, callback) => {
+    // filter scheduled message by group
+    var toClear = findToClear(registration, reported_date, config);
+    if (!toClear.length) {
+        return callback();
+    }
+    toClear.forEach(function(task) {
+        if (task.state === 'scheduled') {
+            utils.setTaskState(task, 'cleared');
+        }
+    });
+    audit.saveDoc(registration, callback);
+};
+
+const silenceRegistrations = (
+            audit,
+            config,
+            doc,
+            registrations,
+            callback) => {
+    if (!config.silence_type) {
+        return callback(null, true);
+    }
+    async.forEach(
+        registrations,
+        function(registration, callback) {
+            if (doc._id === registration.id) {
+                // don't silence the registration you're processing
+                return callback();
+            }
+            module.exports._silenceReminders(
+                audit, registration, doc.reported_date, config, callback);
+        },
+        function(err) {
+            callback(err, true);
+        }
+    );
+};
+
+const validate = (config, doc, callback) => {
+    var validations = config.validations && config.validations.list;
+    return validation.validate(doc, validations, callback);
+};
+
+const addErrorsToDoc = (errors, doc, config) => {
+    messages.addErrors(doc, errors);
+    if (config.validations.join_responses) {
+        var msgs = [];
+        errors.forEach(err => {
+            if (err.message) {
+                msgs.push(err.message);
+            } else if (err) {
+                msgs.push(err);
+            }
+        });
+        messages.addReply(doc, msgs.join('  '));
+    } else {
+        messages.addReply(doc, errors[0].message || errors[0]);
+    }
+};
+
+const addMessagesToDoc = (doc, config, registrations, patientContact) => {
+    const locale = utils.getLocale(doc);
+    config.messages.forEach(msg => {
+        if (msg.event_type === 'report_accepted') {
+            messages.addMessage({
+                doc: doc,
+                message: messages.getMessage(msg, locale),
+                phone: messages.getRecipientPhone(doc, msg.recipient),
+                patient: patientContact,
+                registrations: registrations
+            });
+        }
+    });
+};
+
 module.exports = {
     filter: function(doc) {
-        var self = module.exports;
         return Boolean(
             doc &&
             doc.type === 'data_record' &&
             doc.form &&
             doc.reported_date &&
             !transitionUtils.hasRun(doc, NAME) &&
-            self._hasConfig(doc) &&
+            _hasConfig(doc) &&
             utils.getClinicPhone(doc)
         );
     },
-    _hasConfig: function(doc) {
-        var self = module.exports;
-        return Boolean(_.findWhere(self.getAcceptedReports(), {
-            form: doc.form
-        }));
-    },
-    getAcceptedReports: function() {
-        return config.get('patient_reports') || [];
-    },
-    silenceRegistration: function(options, registration, callback) {
-        if (options.doc._id === registration.id) {
-            // don't silence the registration you're processing
-            return callback();
-        }
-        module.exports.silenceReminders({
-            db: options.db,
-            audit: options.audit,
-            reported_date: options.doc.reported_date,
-            registration: registration,
-            silence_for: options.report.silence_for,
-            type: options.report.silence_type
-        }, callback);
-    },
-    silenceRegistrations: function(options, callback) {
-        if (!options.report.silence_type) {
-            return callback(null, true);
-        }
-        async.forEach(
-            options.registrations,
-            function(registration, callback) {
-                module.exports.silenceRegistration(options, registration, callback);
-            },
-            function(err) {
-                callback(err, true);
-            }
-        );
-    },
-    /* try to match a recipient return undefined otherwise */
-    matchRegistrations: function(options, callback) {
-        var registrations = options.registrations,
-            patient = options.patient,
-            doc = options.doc,
-            locale = utils.getLocale(doc),
-            report = options.report;
-
-        if (patient) {
-            _.each(report.messages, function(msg) {
-                if (msg.event_type === 'report_accepted') {
-                    messages.addMessage({
-                        doc: doc,
-                        message: messages.getMessage(msg, locale),
-                        phone: messages.getRecipientPhone(doc, msg.recipient),
-                        patient: patient,
-                        registrations: registrations
-                    });
-                }
-            });
-        }
-
-        if (registrations && registrations.length) {
-            return module.exports.silenceRegistrations({
-                db: options.db,
-                audit: options.audit,
-                report: report,
-                doc: doc,
-                registrations: registrations
-            }, callback);
-        }
-
-        return callback(null, true);
-    },
-    // find the messages to clear
-    findToClear: function(options) {
-        var registration = options.registration.doc,
-            reported_date = moment(options.reported_date),
-            types = _.map(options.type.split(','), function(s) {
-                return s.trim();
-            }),
-            silence_until,
-            first;
-
-        if (options.silence_for) {
-            silence_until = reported_date.clone();
-            silence_until.add(date.getDuration(options.silence_for));
-        }
-
-        return _.filter(utils.filterScheduledMessages(registration, types), function(msg) {
-            var due = moment(msg.due),
-                matches;
-
-            // If we have a silence_until value then clear the entire group
-            // matched within the silence window. Otherwise clear all messages
-            // in the future.
-            if (silence_until) {
-                matches = (
-                    due >= reported_date &&
-                    due <= silence_until &&
-                    msg.state === 'scheduled'
-                );
-                // capture first match for group matching
-                if (matches && !first) {
-                    first = msg;
-                }
-                // clear entire group
-                return (first && first.group === msg.group);
-            } else {
-                return (
-                    due >= reported_date &&
-                    msg.state === 'scheduled'
-                );
-            }
-        });
-    },
-    silenceReminders: function(options, callback) {
-        // filter scheduled message by group
-        var toClear = module.exports.findToClear(options);
-        if (!toClear.length) {
-            return callback();
-        }
-        toClear.forEach(function(task) {
-            if (task.state === 'scheduled') {
-                utils.setTaskState(task, 'cleared');
-            }
-        });
-        options.audit.saveDoc(options.registration.doc, callback);
-    },
-    validate: function(config, doc, callback) {
-        var validations = config.validations && config.validations.list;
-        return validation.validate(doc, validations, callback);
-    },
-    handleReport: function(options, callback) {
-        var db = options.db,
-            doc = options.doc;
-
+    _silenceReminders: _silenceReminders,
+    // also used by registrations transition.
+    handleReport: function(
+            db,
+            audit,
+            doc,
+            patientContact,
+            config,
+            callback) {
         utils.getRegistrations({
             db: db,
             id: doc.fields && doc.fields.patient_id
-        }, function(err, registrations) {
+        },
+        function(err, registrationRows) {
             if (err) {
                 return callback(err);
             }
-            options.registrations = registrations;
-            module.exports.matchRegistrations(options, callback);
+            const registrations = registrationRows.map(row => row.doc);
+
+            if (patientContact) {
+                addMessagesToDoc(doc, config, registrations, patientContact);
+            }
+
+            if (registrations && registrations.length) {
+                return silenceRegistrations(
+                    audit,
+                    config,
+                    doc,
+                    registrations,
+                    callback);
+            }
+
+            return callback(null, true);
         });
     },
     onMatch: function(change, _db, _audit, callback) {
-        var doc = change.doc,
-            reports = module.exports.getAcceptedReports(),
-            report;
+        const doc = change.doc;
 
-        report = _.findWhere(reports, {
-            form: doc.form
-        });
+        const config = getConfig(doc.form);
 
-        if (!report) {
+        if (!config) {
             return callback();
         }
 
-        module.exports.validate(report, doc, function(errors) {
-
+        validate(config, doc, function(errors) {
             if (errors && errors.length > 0) {
-                messages.addErrors(doc, errors);
-                if (report.validations.join_responses) {
-                    var msgs = [];
-                    _.each(errors, function(err) {
-                        if (err.message) {
-                            msgs.push(err.message);
-                        } else if (err) {
-                            msgs.push(err);
-                        }
-                    });
-                    messages.addReply(doc, msgs.join('  '));
-                } else {
-                    messages.addReply(doc, _.first(errors).message || _.first(errors));
-                }
+                addErrorsToDoc(errors, doc, config);
                 return callback(null, true);
             }
 
@@ -205,16 +204,16 @@ module.exports = {
                     return callback(err);
                 }
                 if (!patientContact) {
-                    transitionUtils.addRegistrationNotFoundError(doc, report);
+                    transitionUtils.addRegistrationNotFoundError(doc, config);
                     return callback(null, true);
                 }
-                module.exports.handleReport({
-                    db: _db,
-                    audit: _audit,
-                    doc: doc,
-                    patient: patientContact,
-                    report: report
-                }, callback);
+                module.exports.handleReport(
+                    _db,
+                    _audit,
+                    doc,
+                    patientContact,
+                    config,
+                    callback);
             });
         });
     }
