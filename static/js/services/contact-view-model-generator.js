@@ -147,7 +147,25 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
       return DB().query('medic-client/contacts_by_parent', {
         key: contactId,
         include_docs: true
-      });
+      })
+        .then(function(childrenResponse) {
+          var ids = childrenResponse.rows.map(function(child) {
+            return child.doc.contact && child.doc.contact._id;
+          });
+          return DB().query('medic-client/doc_summaries_by_id', { keys: ids })
+            .then(function(contactsResponse) {
+              childrenResponse.rows.forEach(function(row) {
+                var contactId = row.doc.contact && row.doc.contact._id;
+                if (contactId) {
+                  var contactRow = _.findWhere(contactsResponse.rows, { id: contactId });
+                  if (contactRow) {
+                    row.doc.contact.name = contactRow.value.name;
+                  }
+                }
+              });
+              return childrenResponse;
+            });
+        });
     };
 
     var setChildren = function(model) {

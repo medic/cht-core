@@ -31,16 +31,22 @@ describe('ContactViewModelGenerator service', () => {
     }));
   };
 
-  const stubDbQueryChildren = (err, parentId, docs) => {
+  const stubDbQueryChildren = (err, parentId, docs = [], contacts = []) => {
     const options = {
       key: parentId,
       include_docs: true
     };
-    docs = (docs || []).map(function(doc) {
+    docs = docs.map(doc => {
       return { doc: doc };
     });
+    contacts = contacts.map(doc => {
+      return { id: doc._id, value: { name: doc.name }};
+    });
+    var ids = docs.map(child => child.doc.contact && child.doc.contact._id);
     dbQuery.withArgs('medic-client/contacts_by_parent', options)
       .returns(KarmaUtils.mockPromise(err, { rows: docs }));
+    dbQuery.withArgs('medic-client/doc_summaries_by_id', { keys: ids })
+      .returns(KarmaUtils.mockPromise(err, { rows: contacts }));
   };
 
   const stubSearch = (err, reports) => {
@@ -68,10 +74,10 @@ describe('ContactViewModelGenerator service', () => {
 
       const parentId = 'districtsdistrict';
       const contactId = 'mario';
-      childContactPerson = { _id: contactId, type: 'person', parent: { _id: parentId } };
+      childContactPerson = { _id: contactId, name: 'sandy', type: 'person', parent: { _id: parentId } };
       childPerson = { _id: 'peach', type: 'person', name: 'Peach', date_of_birth: '1986-01-01' };
       childPerson2 = { _id: 'zelda', type: 'person', name: 'Zelda', date_of_birth: '1985-01-01' };
-      childPlace = { _id: 'happyplace', type: 'mushroom', name: 'Happy Place' };
+      childPlace = { _id: 'happyplace', type: 'mushroom', name: 'Happy Place', contact: { _id: contactId } };
       childPlace2 = { _id: 'happyplace2', type: 'mushroom', name: 'Happy Place 2' };
 
       doc = {
@@ -84,11 +90,11 @@ describe('ContactViewModelGenerator service', () => {
   });
 
   describe('Place', () => {
-    const runPlaceTest = childrenArray => {
+    const runPlaceTest = (childrenArray, contactsArray) => {
       stubLineageModelGenerator(null, doc);
       stubDbGet(null, childContactPerson);
       stubSearch(null, []);
-      stubDbQueryChildren(null, doc._id, childrenArray);
+      stubDbQueryChildren(null, doc._id, childrenArray, contactsArray);
       return service(doc._id);
     };
 
@@ -185,6 +191,12 @@ describe('ContactViewModelGenerator service', () => {
         model.children.persons.splice(0, 1);
         assert.equal(model.children.persons[0].doc._id, childPerson2._id);
         assert.equal(model.children.persons[1].doc._id, childPerson._id);
+      });
+    });
+
+    it('child contacts are hydrated properly - #3807', () => {
+      return runPlaceTest([childPlace], [childContactPerson]).then(model => {
+        assert.equal(model.children.places[0].doc.contact.name, childContactPerson.name);
       });
     });
   });
