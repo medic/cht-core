@@ -600,6 +600,81 @@ describe('Enketo service', function() {
       });
     });
 
+    it('creates extra docs with geolocation', function() {
+
+      const startTime = Date.now() - 1;
+
+      form.validate.returns(Promise.resolve(true));
+      var content =
+          `<data>
+            <name>Sally</name>
+            <lmp>10</lmp>
+            <secret_code_name tag="hidden">S4L</secret_code_name>
+            <doc1 db-doc="true">
+              <type>thing_1</type>
+              <some_property_1>some_value_1</some_property_1>
+            </doc1>
+            <doc2 db-doc="true">
+              <type>thing_2</type>
+              <some_property_2>some_value_2</some_property_2>
+            </doc2>
+          </data>`;
+      form.getDataStr.returns(content);
+      dbPut.onCall(0).returns(Promise.resolve({ id: '(generated-in-service)', rev: '1-abc' }));
+      dbPut.onCall(1).returns(Promise.resolve({ id: '(generated-in-service)', rev: '1-def' }));
+      dbPut.onCall(2).returns(Promise.resolve({ id: '(generated-in-service)', rev: '1-ghi' }));
+      dbGetAttachment.returns(Promise.resolve('<form/>'));
+      UserContact.returns(Promise.resolve({ _id: '123', phone: '555' }));
+      return service.save('V', form, null, true).then(function(actual) {
+        const endTime = Date.now() + 1;
+
+        chai.expect(form.validate.callCount).to.equal(1);
+        chai.expect(form.getDataStr.callCount).to.equal(1);
+        chai.expect(dbPut.callCount).to.equal(3);
+        chai.expect(UserContact.callCount).to.equal(1);
+
+        chai.expect(actual.length).to.equal(3);
+
+        var actualReport = actual[0];
+        chai.expect(actualReport._id).to.match(/(\w+-)\w+/);
+        chai.expect(actualReport._rev).to.equal('1-abc');
+        chai.expect(actualReport.fields.name).to.equal('Sally');
+        chai.expect(actualReport.fields.lmp).to.equal('10');
+        chai.expect(actualReport.fields.secret_code_name).to.equal('S4L');
+        chai.expect(actualReport.form).to.equal('V');
+        chai.expect(actualReport.type).to.equal('data_record');
+        chai.expect(actualReport.content_type).to.equal('xml');
+        chai.expect(actualReport.contact._id).to.equal('123');
+        chai.expect(actualReport.from).to.equal('555');
+        chai.expect(actualReport.hidden_fields).to.deep.equal([ 'secret_code_name' ]);
+
+        chai.expect(actualReport.fields.doc1).to.equal(undefined);
+        chai.expect(actualReport.fields.doc2).to.equal(undefined);
+
+        chai.expect(actualReport.geolocation).to.equal(true);
+
+        var actualThing1 = actual[1];
+        chai.expect(actualThing1._id).to.match(/(\w+-)\w+/);
+        chai.expect(actualThing1._rev).to.equal('1-def');
+        chai.expect(actualThing1.reported_date).to.be.above(startTime);
+        chai.expect(actualThing1.reported_date).to.be.below(endTime);
+        chai.expect(actualThing1.some_property_1).to.equal('some_value_1');
+
+        chai.expect(actualThing1.geolocation).to.equal(true);
+
+        var actualThing2 = actual[2];
+        chai.expect(actualThing2._id).to.match(/(\w+-)\w+/);
+        chai.expect(actualThing2._rev).to.equal('1-ghi');
+        chai.expect(actualThing2.reported_date).to.be.above(startTime);
+        chai.expect(actualThing2.reported_date).to.be.below(endTime);
+        chai.expect(actualThing2.some_property_2).to.equal('some_value_2');
+
+        chai.expect(actualThing2.geolocation).to.equal(true);
+
+        chai.expect(_.uniq(_.pluck(actual, '_id')).length).to.equal(3);
+      });
+    });
+
     it('creates extra docs with references', function() {
       form.validate.returns(Promise.resolve(true));
       var content =

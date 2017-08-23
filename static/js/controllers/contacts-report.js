@@ -8,6 +8,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     ContactViewModelGenerator,
     DB,
     Enketo,
+    Geolocation,
     Snackbar,
     TranslateFrom,
     XmlForm
@@ -15,6 +16,13 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
 
     'use strict';
     'ngInject';
+
+    var geolocation;
+    Geolocation()
+      .then(function(position) {
+        geolocation = position;
+      })
+      .catch($log);
 
     var markFormEdited = function() {
       $scope.enketoStatus.edited = true;
@@ -62,7 +70,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
 
       $scope.enketoStatus.saving = true;
       $scope.enketoStatus.error = null;
-      Enketo.save($state.params.formId, $scope.form)
+      Enketo.save($state.params.formId, $scope.form, null, geolocation)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           $scope.enketoStatus.saving = false;
