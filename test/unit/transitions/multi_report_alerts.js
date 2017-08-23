@@ -498,3 +498,27 @@ exports['skips doc with wrong form if forms is present in config'] = test => {
     test.done();
   });
 };
+
+exports['latest report has to go through is_report_counted function'] = test => {
+  alert.is_report_counted = 'function(report, latestReport) { return report.form === "B"; }';
+  alert.num_reports_threshold = 2;
+  sinon.stub(config, 'get').returns([alert]);
+
+  // Only 1 report has form B, the latest_report doesn't, so we shouldn't reach the num_reports_threshold.
+  // (pre-asserting the test data so that we don't break this test later by accident)
+  test.equals(doc.form, 'A');
+  test.equals(reports.filter(report => report.form === 'B').length, 1);
+
+  sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
+  stubFetchHydratedDocs();
+  sinon.stub(messages, 'addError');
+  sinon.stub(messages, 'addMessage');
+
+  transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
+    test.equals(messages.addError.getCalls().length, 0);
+    test.equals(messages.addMessage.getCalls().length, 0);
+    test.ok(!err);
+    test.ok(!docNeedsSaving);
+    test.done();
+  });
+};

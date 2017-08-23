@@ -194,6 +194,12 @@ const getCountedReportsAndPhones = (alert, latestReport) => {
   return new Promise((resolve, reject) => {
     const script = vm.createScript(`(${alert.is_report_counted})(report, latestReport)`);
     let skip = 0;
+
+    if (!countReports([latestReport], latestReport, script).length) {
+      // The latest_report didn't pass the is_report_counted function, abort the transition.
+      return resolve({ countedReportsIds: [], newReports: [], phones: [] });
+    }
+
     let countedReportsIds = [ latestReport._id ];
     let newReports = [ latestReport ];
     let phones = getPhonesOneReport(alert.recipients, latestReport);
