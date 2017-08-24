@@ -99,23 +99,17 @@ describe('Submit Enketo form', () => {
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     helper.waitElementToBeClickable(addButton);
     // select form
-    browser.wait(() => {
-      return addButton.isPresent();
-    }, 10000);
+    browser.wait(() => addButton.isPresent());
     addButton.click();
     element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
-    browser.wait(() => {
-      return element(by.css('#report-form form [name="/data/name"]')).isPresent();
-    }, 10000);
+    browser.wait(() => element(by.css('#report-form form [name="/data/name"]')).isPresent());
 
     // submit form
     element(by.css('#report-form form [name="/data/name"]')).sendKeys('Jones');
     const submitButton = element(by.css('#report-form .submit'));
     helper.waitUntilReady(submitButton);
     submitButton.click();
-    browser.wait(() => {
-      return element(by.css('#reports-content .details ul li:first-child p')).isPresent();
-    }, 10000);
+    browser.wait(() => element(by.css('#reports-content .details ul li:first-child p')).isPresent());
 
     browser.sleep(100); // TODO required to make the test deterministic. https://github.com/medic/medic-webapp/issues/3509
     // check the submitted name

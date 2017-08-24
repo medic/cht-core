@@ -62,9 +62,7 @@ describe('Auditing', () => {
     expect(selectedTab.getText()).toEqual('Messages');
 
     let listitem = element(by.css('.inbox-items li[data-record-id="+64555555555"]'));
-    browser.wait(() => {
-      return listitem.isPresent();
-    }, 5000);
+    browser.wait(() => listitem.isPresent());
 
     // mark item read
     listitem.click();
@@ -77,21 +75,17 @@ describe('Auditing', () => {
 
     // check message is displayed correctly
     listitem = element(by.css('.inbox-items li[data-record-id="+64555555555"]'));
-    browser.wait(() => {
-      return listitem.isPresent();
-    }, 5000);
+    browser.wait(() => listitem.isPresent());
     listitem.click();
     const newMessage = element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .data p span'));
-    browser.wait(() => {
-      return newMessage.isPresent();
-    }, 5000);
+    browser.wait(() => newMessage.isPresent());
     expect(newMessage.getText()).toEqual('hello!');
 
     // delete the message
     newMessage.click();
     element(by.css('#message-content ul li[data-record-id="' + savedUuid + '"] .fa-trash-o')).click();
     const confirmButton = element(by.css('#delete-confirm .submit:not(.ng-hide)'));
-    browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton), 5000);
+    browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton));
     confirmButton.click();
 
     // TODO find a better way to wait for DB to update

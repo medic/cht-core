@@ -103,9 +103,7 @@ describe('Filters reports', () => {
   it('by date', () => {
     commonElements.goToReports();
 
-    browser.wait(() => {
-      return element(by.css('#reports-list li:first-child')).isPresent();
-    }, 10000);
+    browser.wait(() => element(by.css('#reports-list li:first-child')).isPresent());
 
     let clear = '';
     for (let i = 0; i < 20; i++) {
@@ -117,9 +115,7 @@ describe('Filters reports', () => {
     element(by.css('.daterangepicker [name="daterangepicker_end"]')).click().sendKeys(clear + '05/17/2016' + protractor.Key.ENTER);
     element(by.css('#freetext')).click(); // blur the datepicker
 
-    browser.wait(() => {
-      return element(by.css('#reports-list .filtered li:first-child')).isPresent();
-    }, 10000);
+    browser.wait(() => element(by.css('#reports-list .filtered li:first-child')).isPresent());
 
     expect(element.all(by.css('#reports-list .filtered li')).count()).toBe(2);
     expect(element.all(by.css('#reports-list .filtered li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);

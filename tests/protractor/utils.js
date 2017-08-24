@@ -130,18 +130,14 @@ const deleteAll = () => {
 
 const refreshToGetNewSettings = () => {
   // wait for the updates to replicate
-  return browser.wait(protractor.ExpectedConditions.elementToBeClickable(element(by.css('#update-available .submit'))), 10000)
-    .then(() => {
-      element(by.css('#update-available .submit')).click();
-    })
+  return browser.wait(protractor.ExpectedConditions.elementToBeClickable(element(by.css('#update-available .submit'))))
+    .then(() => element(by.css('#update-available .submit')).click())
     .catch(() => {
       // sometimes there's a double update which causes the dialog to be redrawn
       // retry with the new dialog
-      element(by.css('#update-available .submit')).click();
+      return element(by.css('#update-available .submit')).click();
     })
-    .then(() => {
-      return browser.wait(protractor.ExpectedConditions.elementToBeClickable(element(by.id('contacts-tab'))), 10000);
-    });
+    .then(() => browser.wait(protractor.ExpectedConditions.elementToBeClickable(element(by.id('contacts-tab')))));
 };
 
 const revertDb = () => {
@@ -241,11 +237,9 @@ module.exports = {
   },
 
   resetBrowser: () => {
-    browser.driver.navigate().refresh().then(() => {
-      return browser.wait(() => {
-        return element(by.css('#messages-tab')).isPresent();
-      }, 10000);
-    });
+    browser.driver.navigate().refresh()
+      .then(() => browser.wait(() =>
+        element(by.css('#messages-tab')).isPresent()));
   },
 
   countOf: count => {

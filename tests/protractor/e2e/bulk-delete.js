@@ -75,13 +75,11 @@ describe('Bulk delete reports', () => {
   it('reports', () => {
     commonElements.goToReports();
 
-    browser.wait(() => element(by.css('#reports-list li:first-child')).isPresent(), 10000, 'There should be at least one report in the LHS');
+    browser.wait(() => element(by.css('#reports-list li:first-child')).isPresent(), 'There should be at least one report in the LHS');
 
     // start select mode
     const selectModeButton = element(by.css('.action-container .select-mode-start'));
-    browser.wait(() => {
-      return selectModeButton.isPresent();
-    }, 1000);
+    browser.wait(() => selectModeButton.isPresent());
     selectModeButton.click();
     expect(element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).isDisplayed()).toBeTruthy();
 
@@ -95,18 +93,14 @@ describe('Bulk delete reports', () => {
 
     // select a report
     element(by.css('#reports-list li[data-record-id="' + savedUuids[0] + '"] input[type="checkbox"]')).click();
-    browser.wait(() => {
-      return element(by.css('#reports-content .selection-count > span:first-child')).isDisplayed();
-    }, 1000);
+    browser.wait(() => element(by.css('#reports-content .selection-count > span:first-child')).isDisplayed());
     expect(element.all(by.css('#reports-content .report-body')).count()).toBe(1);
     expect(element(by.css('#reports-content .report-body .item-summary .sender .name')).getText()).toBe('Sharon');
     expect(element(by.css('#reports-content .report-body .details')).isDisplayed()).toBeFalsy();
 
     // expand selection
     element(by.css('#reports-content .report-body .item-summary')).click();
-    browser.wait(() => {
-      return element(by.css('#reports-content .report-body .details')).isDisplayed();
-    }, 1000);
+    browser.wait(() => element(by.css('#reports-content .report-body .details')).isDisplayed());
 
     // collapse selection
     element(by.css('#reports-content .report-body .item-summary')).click();
@@ -117,9 +111,7 @@ describe('Bulk delete reports', () => {
 
     // select all
     element(by.css('.action-container .select-all')).click();
-    browser.wait(() => {
-      return element(by.css('#reports-content .selection-count > span:nth-child(2)')).isDisplayed();
-    }, 1000);
+    browser.wait(() => element(by.css('#reports-content .selection-count > span:nth-child(2)')).isDisplayed());
     expect(element.all(by.css('#reports-content .report-body')).count()).toBe(3);
 
     // deselect all
@@ -136,12 +128,10 @@ describe('Bulk delete reports', () => {
     // delete all selected
     element(by.css('.action-container .detail-actions .delete-all')).click();
     const confirmButton = element(by.css('#delete-confirm .submit:not(.ng-hide)'));
-    browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton), 5000);
+    browser.wait(protractor.ExpectedConditions.elementToBeClickable(confirmButton));
     confirmButton.click();
 
-    browser.wait(() => {
-      return element.all(by.css('#reports-list li')).count().then(utils.countOf(1));
-    }, 10000);
+    browser.wait(() => element.all(by.css('#reports-list li')).count().then(utils.countOf(1)));
 
     // make sure the reports are deleted
     expect(element.all(by.css('#reports-list li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);

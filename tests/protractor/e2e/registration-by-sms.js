@@ -240,12 +240,12 @@ describe('registration transition', () => {
 
     it('shows content', () => {
       commonElements.goToReports();
-      browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child .name', CAROL.name)).isPresent(), 10000);
+      browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child .name', CAROL.name)).isPresent());
 
       element(by.css('#reports-list .unfiltered li:first-child .item-summary')).click();
 
       // wait for content to load
-      browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 10000);
+      browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent());
 
       checkItemSummary();
       checkAutoResponse();

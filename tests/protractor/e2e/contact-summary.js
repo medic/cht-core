@@ -134,9 +134,7 @@ describe('Contact summary info', () => {
     element(by.id('contacts-tab')).click();
     element(by.id('freetext')).sendKeys(term);
     element(by.id('search')).click();
-    browser.wait(() => {
-      return element(by.css('#contacts-list .filtered .item-summary')).isPresent();
-    }, 10000);
+    browser.wait(() => element(by.css('#contacts-list .filtered .item-summary')).isPresent());
     element(by.css('#contacts-list .filtered .item-summary')).click();
   };
 
@@ -144,9 +142,7 @@ describe('Contact summary info', () => {
     selectContact('carol');
 
     // assert the summary card has the right fields
-    browser.wait(() => {
-      return element(by.css('.content-pane .item-body .meta .card .col-sm-3:nth-child(1) label')).isPresent();
-    }, 10000);
+    browser.wait(() => element(by.css('.content-pane .item-body .meta .card .col-sm-3:nth-child(1) label')).isPresent());
     expect(element(by.css('.content-pane .item-body .meta > .card .col-sm-3:nth-child(1) label')).getText()).toBe('test.pid');
     expect(element(by.css('.content-pane .item-body .meta > .card .col-sm-3:nth-child(1) p')).getText()).toBe(CAROL.patient_id);
     expect(element(by.css('.content-pane .item-body .meta > .card .col-sm-3:nth-child(2) label')).getText()).toBe('test.sex');
