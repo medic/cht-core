@@ -14,7 +14,6 @@ describe('Add new person tests : ', () => {
 	it('should add new person', () => {
 		commonElements.goToPeople();
 		expect(commonElements.isAt('contacts-list'));
-		expect(browser.getCurrentUrl()).toEqual(commonElements.getBaseUrl() + 'contacts/');
 		contactPage.addNewDistrict('BedeDistrict');
 		contactPage.completeNewPersonForm('Bede');
 		helper.waitUntilReady(element(by.css('.card-title')));
