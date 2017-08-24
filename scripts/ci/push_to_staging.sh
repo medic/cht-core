@@ -24,7 +24,7 @@ if [[ -n "$TRAVIS_TAG" ]]; then
             "$UPLOAD_URL"/_couch/builds
 else
     node --stack_size=10000 `which kanso` push --minify \
-            --id="$TRAVIS_BRANCH" \
-            "medic:medic:$UPLOAD_URL"/_couch/builds
+            --id="medic:medic:$TRAVIS_BRANCH" \
+            "$UPLOAD_URL"/_couch/builds
 fi
 echo 'Build for build database built.'
