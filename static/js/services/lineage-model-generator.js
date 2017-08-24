@@ -10,6 +10,7 @@
  */
 angular.module('inboxServices').factory('LineageModelGenerator',
   function(
+    $q,
     DB
   ) {
     'ngInject';
@@ -29,16 +30,47 @@ angular.module('inboxServices').factory('LineageModelGenerator',
         });
     };
 
+    var hydrate = function(lineage) {
+      var contactIds = lineage
+        .map(function(parent) {
+          return parent && parent.contact && parent.contact._id;
+        })
+        .filter(function(id) {
+          return !!id;
+        });
+      if (!contactIds.length) {
+        return $q.resolve(lineage);
+      }
+      return DB().allDocs({ keys: contactIds, include_docs: true })
+        .then(function(response) {
+          lineage.forEach(function(parent) {
+            var contactId = parent && parent.contact && parent.contact._id;
+            if (contactId) {
+              response.rows.forEach(function(row) {
+                if (row.doc && (row.doc._id === contactId)) {
+                  parent.contact = row.doc;
+                  return;
+                }
+              });
+            }
+          });
+          return lineage;
+        });
+    };
+
     return {
       contact: function(id) {
         return get(id).then(function(docs) {
           // the first row is the contact
           var doc = docs.shift();
-          return {
-            _id: id,
-            doc: doc,
-            lineage: docs // everything else is the lineage
-          };
+           // everything else is the lineage
+          return hydrate(docs).then(function(lineage) {
+            return {
+              _id: id,
+              doc: doc,
+              lineage: lineage
+            };
+          });
         });
       },
       report: function(id) {
@@ -47,12 +79,15 @@ angular.module('inboxServices').factory('LineageModelGenerator',
           var doc = docs.shift();
           // the second row is the report's contact
           var contact = docs.shift();
-          return {
-            _id: id,
-            doc: doc,
-            contact: contact,
-            lineage: docs // everything else is the lineage
-          };
+          // everything else is the lineage
+          return hydrate(docs).then(function(lineage) {
+            return {
+              _id: id,
+              doc: doc,
+              contact: contact,
+              lineage: lineage
+            };
+          });
         });
       }
     };
