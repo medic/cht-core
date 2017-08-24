@@ -43,6 +43,8 @@ install:
 
 before_script:
   - nvm use $NODE_VERSION
+  - npm install -g npm@^5.3.0
+  - npm -v
   - npm install
   # Create couchdb system tables (this has to be done manually on couchdb 2.0)
   - |
