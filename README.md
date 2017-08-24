@@ -32,7 +32,7 @@ Export a `COUCH_URL` env variable so sentinel knows what database to use. e.g.
 export COUCH_URL='http://admin:pass@localhost:5984/medic'
 ```
 
-Throughout this document we will be refering to `ddoc`. Here we mean the
+Throughout this document we will be referring to `ddoc`. Here we mean the
 currently deployed `_design/medic` ddoc from medic-webapp.
 
 Default settings values are in `defaults.js`.  On initial start, and when there
