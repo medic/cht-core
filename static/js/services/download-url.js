@@ -5,7 +5,7 @@
   var inboxServices = angular.module('inboxServices');
 
   var TYPES = {
-    reports:  { name: 'reports', apiName: 'forms', format: 'xml', lucene: true },
+    reports:  { name: 'reports', apiName: 'forms', format: 'csv', lucene: true },
     contacts: { name: 'contacts', format: 'json', lucene: true },
     messages: { name: 'messages', format: 'xml' },
     audit:    { name: 'audit', format: 'xml' },
