@@ -1,59 +1,59 @@
-var db = require('../../db'),
-    sinon = require('sinon').sandbox.create(),
-    serverUtils = require('../../server-utils'),
-    req = {
-      url: '',
-      get: function() {}
-    },
-    res = {
-      writeHead: function() {},
-      end: function() {},
-      json: function() {},
-      redirect: function() {},
-      status: function() {}
-    };
+const db = require('../../db'),
+      sinon = require('sinon').sandbox.create(),
+      serverUtils = require('../../server-utils'),
+      req = {
+        url: '',
+        get: function() {}
+      },
+      res = {
+        writeHead: function() {},
+        end: function() {},
+        json: function() {},
+        redirect: function() {},
+        status: function() {}
+      };
 
-exports.setUp = function(callback) {
+exports.setUp = callback => {
   db.settings = { db: 'medic' };
   callback();
 };
 
-exports.tearDown = function (callback) {
+exports.tearDown = callback => {
   sinon.restore();
   db.settings = {};
   callback();
 };
 
-exports['error calls serverError when given string'] = function(test) {
+exports['error calls serverError when given string'] = test => {
   test.expect(2);
-  var serverError = sinon.stub(serverUtils, 'serverError');
+  const serverError = sinon.stub(serverUtils, 'serverError');
   serverUtils.error('some string', req, res);
   test.equals(serverError.callCount, 1);
   test.equals(serverError.args[0][0], 'some string');
   test.done();
 };
 
-exports['error calls serverError when given 500 error'] = function(test) {
+exports['error calls serverError when given 500 error'] = test => {
   test.expect(2);
-  var serverError = sinon.stub(serverUtils, 'serverError');
+  const serverError = sinon.stub(serverUtils, 'serverError');
   serverUtils.error({ code: 500, message: 'some string' }, req, res);
   test.equals(serverError.callCount, 1);
   test.equals(serverError.args[0][0].message, 'some string');
   test.done();
 };
 
-exports['error calls notLoggedIn when given 401 error'] = function(test) {
+exports['error calls notLoggedIn when given 401 error'] = test => {
   test.expect(1);
-  var notLoggedIn = sinon.stub(serverUtils, 'notLoggedIn');
+  const notLoggedIn = sinon.stub(serverUtils, 'notLoggedIn');
   serverUtils.error({ code: 401 }, req, res);
   test.equals(notLoggedIn.callCount, 1);
   test.done();
 };
 
-exports['error handles node errors'] = function(test) {
+exports['error handles node errors'] = test => {
   test.expect(5);
-  var writeHead = sinon.stub(res, 'writeHead');
-  var end = sinon.stub(res, 'end');
+  const writeHead = sinon.stub(res, 'writeHead');
+  const end = sinon.stub(res, 'end');
   serverUtils.error({ code: 503, message: 'some error' }, req, res);
   test.equals(writeHead.callCount, 1);
   test.equals(writeHead.args[0][0], 503);
@@ -63,10 +63,10 @@ exports['error handles node errors'] = function(test) {
   test.done();
 };
 
-exports['error handles nano errors'] = function(test) {
+exports['error handles nano errors'] = test => {
   test.expect(5);
-  var writeHead = sinon.stub(res, 'writeHead');
-  var end = sinon.stub(res, 'end');
+  const writeHead = sinon.stub(res, 'writeHead');
+  const end = sinon.stub(res, 'end');
   serverUtils.error({ statusCode: 503, reason: 'some error' }, req, res);
   test.equals(writeHead.callCount, 1);
   test.equals(writeHead.args[0][0], 503);
@@ -76,10 +76,10 @@ exports['error handles nano errors'] = function(test) {
   test.done();
 };
 
-exports['error handles unknown errors'] = function(test) {
+exports['error handles unknown errors'] = test => {
   test.expect(5);
-  var writeHead = sinon.stub(res, 'writeHead');
-  var end = sinon.stub(res, 'end');
+  const writeHead = sinon.stub(res, 'writeHead');
+  const end = sinon.stub(res, 'end');
   serverUtils.error({ foo: 'bar' }, req, res);
   test.equals(writeHead.callCount, 1);
   test.equals(writeHead.args[0][0], 500);
@@ -89,9 +89,9 @@ exports['error handles unknown errors'] = function(test) {
   test.done();
 };
 
-exports['notLoggedIn redirects to login page for human user'] = function(test) {
+exports['notLoggedIn redirects to login page for human user'] = test => {
   test.expect(3);
-  var redirect = sinon.stub(res, 'redirect');
+  const redirect = sinon.stub(res, 'redirect');
   req.url = 'someurl';
   req.headers = { 'user-agent': 'Mozilla/1.0' };
   serverUtils.notLoggedIn(req, res);
@@ -101,9 +101,9 @@ exports['notLoggedIn redirects to login page for human user'] = function(test) {
   test.done();
 };
 
-exports['notLoggedIn returns 401 for medic-collect'] = function(test) {
+exports['notLoggedIn returns 401 for medic-collect'] = test => {
   test.expect(2);
-  var writeHead = sinon.stub(res, 'writeHead');
+  const writeHead = sinon.stub(res, 'writeHead');
   req.url = 'someurl';
   req.headers = { 'user-agent': null };
   serverUtils.notLoggedIn(req, res);
@@ -112,10 +112,10 @@ exports['notLoggedIn returns 401 for medic-collect'] = function(test) {
   test.done();
 };
 
-exports['notLoggedIn shows prompt if requested'] = function(test) {
+exports['notLoggedIn shows prompt if requested'] = test => {
   test.expect(6);
-  var writeHead = sinon.stub(res, 'writeHead');
-  var end = sinon.stub(res, 'end');
+  const writeHead = sinon.stub(res, 'writeHead');
+  const end = sinon.stub(res, 'end');
   serverUtils.notLoggedIn(req, res, true);
   test.equals(writeHead.callCount, 1);
   test.equals(writeHead.args[0][0], 401);
@@ -126,11 +126,11 @@ exports['notLoggedIn shows prompt if requested'] = function(test) {
   test.done();
 };
 
-exports['notLoggedIn responds with JSON if requested'] = function(test) {
+exports['notLoggedIn responds with JSON if requested'] = test => {
   test.expect(7);
-  var status = sinon.stub(res, 'status');
-  var json = sinon.stub(res, 'json');
-  var get = sinon.stub(req, 'get');
+  const status = sinon.stub(res, 'status');
+  const json = sinon.stub(res, 'json');
+  const get = sinon.stub(req, 'get');
   get.returns('application/json');
   serverUtils.notLoggedIn(req, res);
   test.equals(get.callCount, 1);
@@ -143,10 +143,10 @@ exports['notLoggedIn responds with JSON if requested'] = function(test) {
   test.done();
 };
 
-exports['serverError does not leak errors information to the client'] = function(test) {
+exports['serverError does not leak errors information to the client'] = test => {
   test.expect(5);
-  var writeHead = sinon.stub(res, 'writeHead');
-  var end = sinon.stub(res, 'end');
+  const writeHead = sinon.stub(res, 'writeHead');
+  const end = sinon.stub(res, 'end');
   serverUtils.serverError('boom', req, res);
   test.equals(writeHead.callCount, 1);
   test.equals(writeHead.args[0][0], 500);
@@ -156,11 +156,11 @@ exports['serverError does not leak errors information to the client'] = function
   test.done();
 };
 
-exports['serverError responds with JSON'] = function(test) {
+exports['serverError responds with JSON'] = test => {
   test.expect(7);
-  var status = sinon.stub(res, 'status');
-  var json = sinon.stub(res, 'json');
-  var get = sinon.stub(req, 'get');
+  const status = sinon.stub(res, 'status');
+  const json = sinon.stub(res, 'json');
+  const get = sinon.stub(req, 'get');
   get.returns('application/json');
   serverUtils.serverError({ foo: 'bar' }, req, res);
   test.equals(get.callCount, 1);
