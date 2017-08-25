@@ -17,43 +17,48 @@ const _hasConfig = (doc) => {
 const findToClear = (registration, reported_date, config) => {
     const reportedDateMoment = moment(reported_date);
     const taskTypes = config.silence_type.split(',').map(type => type.trim());
-    let silence_until,
-        firstClearedInGroup;
+    let silence_until;
 
     if (config.silence_for) {
         silence_until = reportedDateMoment.clone();
         silence_until.add(date.getDuration(config.silence_for));
     }
 
-    return utils.getScheduledTasksByType(registration, taskTypes)
-        .filter(msgTask => {
-            const due = moment(msgTask.due);
+    let cleareableTasks = [];
+    taskTypes.forEach(taskType => {
+        let firstClearedInGroup;
+        const cleareableTasksForType = utils.getScheduledTasksByType(registration, taskType)
+            .filter(msgTask => {
+                const due = moment(msgTask.due);
 
-            // If we have a silence_until value, and at least one msg of the group falls within
-            // the silence window, then clear the entire group. But not subsequent groups.
-            if (silence_until) {
-                if (!firstClearedInGroup) {
-                    // capture first match for group matching
-                    const isInWindowAndScheduled = (
+                // If we have a silence_until value, and at least one msg of the group falls within
+                // the silence window, then clear the entire group. But not subsequent groups.
+                if (silence_until) {
+                    if (!firstClearedInGroup) {
+                        // capture first match for group matching
+                        const isInWindowAndScheduled = (
+                            due >= reportedDateMoment &&
+                            due <= silence_until &&
+                            msgTask.state === 'scheduled'
+                        );
+                        if (isInWindowAndScheduled) {
+                            firstClearedInGroup = msgTask;
+                            return true; // clear!
+                        }
+                    }
+                    // clear the rest of the group, whether in or out of window.
+                    return (firstClearedInGroup && firstClearedInGroup.group === msgTask.group);
+                } else {
+                    // If no silence_until value, clear all messages in the future.
+                    return (
                         due >= reportedDateMoment &&
-                        due <= silence_until &&
                         msgTask.state === 'scheduled'
                     );
-                    if (isInWindowAndScheduled) {
-                        firstClearedInGroup = msgTask;
-                        return true; // clear!
-                    }
                 }
-                // clear the rest of the group, whether in or out of window.
-                return (firstClearedInGroup && firstClearedInGroup.group === msgTask.group);
-            } else {
-                // If no silence_until value, clear all messages in the future.
-                return (
-                    due >= reportedDateMoment &&
-                    msgTask.state === 'scheduled'
-                );
-            }
-        });
+            });
+        cleareableTasks = cleareableTasks.concat(cleareableTasksForType);
+    });
+    return cleareableTasks;
 };
 
 const getConfig = function(form) {

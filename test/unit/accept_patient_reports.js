@@ -406,3 +406,79 @@ exports['when silence_type is comma separated act on multiple schedules'] = func
             test.done();
         });
 };
+
+exports['when silence_type is comma separated act on multiple schedules - with silence_for'] = function(test) {
+    var audit = { saveDoc: function() {} },
+        now = moment();
+
+    sinon.stub(audit, 'saveDoc').callsArgWith(1, null);
+
+    // mock up a registered_patients view result
+    const registration = {
+        scheduled_tasks: [
+            // in the past : not cleared
+            {
+                due: now.clone().subtract(2, 'days').toISOString(),
+                group: 0,
+                state: 'scheduled',
+                type: 'foo'
+            },
+            // in time window: cleared
+            {
+                due: now.clone().add(2, 'days').toISOString(),
+                group: 0,
+                state: 'scheduled',
+                type: 'foo'
+            },
+            // other schedule, in the past : not cleared
+            {
+                due: now.clone().subtract(2, 'days').toISOString(),
+                group: 0,
+                state: 'scheduled',
+                type: 'bar'
+            },
+            // other schedule, within time window : cleared
+            {
+                due: now.clone().add(2, 'days').toISOString(),
+                group: 1,
+                state: 'scheduled',
+                type: 'bar'
+            },
+            // yet other schedule, outside time window : not cleared
+            {
+                due: now.clone().add(200, 'days').toISOString(),
+                group: 1,
+                state: 'scheduled',
+                type: 'baz'
+            }
+        ]
+    };
+    const reported_date = now.clone().toISOString();
+    const config = { silence_type: 'foo, bar', silence_for: '15 days' };
+    transition._silenceReminders(
+        audit, registration, reported_date, config,
+        function(err) {
+            test.equal(err, null);
+
+            test.equal(audit.saveDoc.called, true);
+
+            const tasks = registration.scheduled_tasks;
+
+            // in the past : not cleared
+            test.equal(tasks[0].state, 'scheduled');
+            // in time window: cleared
+            test.equal(tasks[1].state, 'cleared');
+            test.equal(tasks[1].state_history[0].state, 'cleared');
+
+            // other schedule, in the past : not cleared
+            test.equal(tasks[2].state, 'scheduled');
+            // other schedule, within time window : cleared
+            test.equal(tasks[3].state, 'cleared');
+            test.equal(tasks[3].state_history[0].state, 'cleared');
+
+            // yet other schedule, outside time window : not cleared
+            test.equal(tasks[4].state, 'scheduled');
+
+            test.done();
+        });
+};
