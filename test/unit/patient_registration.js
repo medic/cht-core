@@ -113,7 +113,7 @@ exports['getDaysSinceDOB supports three property names'] = function(test) {
 
 exports['getDOB uses weeks since dob if available'] = function(test) {
     var today = 1474942416907,
-        expected = moment(today).startOf('week').subtract(5, 'weeks').valueOf();
+        expected = moment(today).startOf('day').subtract(5, 'weeks').valueOf();
     sinon.stub(date, 'getDate').returns(today);
     sinon.stub(transition, 'getWeeksSinceDOB').returns('5');
     test.equal(transition.getDOB({ fields: {} }).valueOf(), expected);

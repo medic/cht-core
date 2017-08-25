@@ -50,7 +50,7 @@ exports.tearDown = function(callback) {
 
 exports['setBirthDate sets birth_date correctly for weeks_since_birth: 0'] = function(test) {
     var doc = { fields: { weeks_since_birth: 0 } },
-        expected = moment().startOf('week').toISOString();
+        expected = moment().startOf('day').toISOString();
     transition.setBirthDate(doc);
     test.ok(doc.birth_date);
     test.equals(doc.birth_date, expected);
@@ -59,7 +59,7 @@ exports['setBirthDate sets birth_date correctly for weeks_since_birth: 0'] = fun
 
 exports['setBirthDate sets birth_date correctly for age_in_weeks 10'] = function(test) {
     var doc = { fields: { age_in_weeks: 10 } },
-        expected = moment().startOf('week').subtract(10, 'weeks').toISOString();
+        expected = moment().startOf('day').subtract(10, 'weeks').toISOString();
     transition.setBirthDate(doc);
     test.ok(doc.birth_date);
     test.equals(doc.birth_date, expected);

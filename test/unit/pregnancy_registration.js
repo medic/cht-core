@@ -168,7 +168,7 @@ exports['setExpectedBirthDate sets lmp_date and expected_date to null when lmp 0
 
 exports['setExpectedBirthDate sets lmp_date and expected_date correctly for lmp: 10'] = function(test) {
     var doc = { fields: { lmp: '10', type: 'data_record'} },
-        start = moment().startOf('week');
+        start = moment().startOf('day');
 
     transition.setExpectedBirthDate(doc);
 
@@ -182,7 +182,7 @@ exports['setExpectedBirthDate sets lmp_date and expected_date correctly for lmp:
 exports['valid adds lmp_date and patient_id'] = function(test) {
     test.expect(5);
     var doc,
-        start = moment().startOf('week').subtract(5, 'weeks');
+        start = moment().startOf('day').subtract(5, 'weeks');
 
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 

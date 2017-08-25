@@ -119,7 +119,7 @@ module.exports = {
     const today = moment(date.getDate()).startOf('day');
     const weeks = parseInt(module.exports.getWeeksSinceDOB(doc), 10);
     if (!isNaN(weeks)) {
-      return today.startOf('week').subtract(weeks, 'weeks');
+      return today.subtract(weeks, 'weeks');
     }
     const days = parseInt(module.exports.getDaysSinceDOB(doc), 10);
     if (!isNaN(days)) {
@@ -178,7 +178,7 @@ module.exports = {
   },
   setExpectedBirthDate: doc => {
     const lmp = Number(module.exports.getWeeksSinceLMP(doc)),
-          start = moment(date.getDate()).startOf('week');
+          start = moment(date.getDate()).startOf('day');
     if (lmp === 0) {
       // means baby was already born, chw just wants a registration.
       doc.lmp_date = null;
