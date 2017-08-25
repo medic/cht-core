@@ -219,7 +219,6 @@ describe('registration transition', () => {
       expect(summaryElement.element(by.css('.name')).getText()).toBe(CAROL.name);
       expect(summaryElement.element(by.css('.phone')).getText()).toBe(CAROL.phone);
       expect(summaryElement.element(by.css('.position a')).getText()).toBe(BOB_PLACE.name);
-      expect(summaryElement.element(by.css('.detail > div:last-child')).getText()).toBe(FORM_NAME);
       expect(summaryElement.element(by.css('.detail .status .fa-circle.green-dot')).isDisplayed()).toBeTruthy();
     };
 
