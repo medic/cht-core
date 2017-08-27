@@ -54,7 +54,7 @@ module.exports = {
     if (code === 401) {
       return module.exports.notLoggedIn(req, res, showPrompt);
     }
-    if (code === 500) {
+    if (code >= 500 && code < 600) {
       return module.exports.serverError(err, req, res);
     }
     respond(req, res, code, err.message || err.reason);

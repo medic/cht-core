@@ -50,29 +50,29 @@ exports['error calls notLoggedIn when given 401 error'] = test => {
   test.done();
 };
 
-exports['error handles node errors'] = test => {
+exports['error function handles 503 errors - #3821'] = test => {
   test.expect(5);
   const writeHead = sinon.stub(res, 'writeHead');
   const end = sinon.stub(res, 'end');
-  serverUtils.error({ code: 503, message: 'some error' }, req, res);
+  // an example error thrown by the `request` library
+  const error = {
+    code: 503,
+    message: {
+      message: 'connect ECONNREFUSED 127.0.0.1:5985',
+      stack: 'Error: connect ECONNREFUSED 127.0.0.1:5985\n    at Object.exports._errnoException (util.js:1016:11)\n    at exports._exceptionWithHostPort (util.js:1039:20)\n    at TCPConnectWrap.afterConnect [as oncomplete] (net.js:1138:14)',
+      code: 'ECONNREFUSED',
+      errno: 'ECONNREFUSED',
+      syscall: 'connect',
+      address: '127.0.0.1',
+      port: 5985
+    }
+  };
+  serverUtils.error(error, req, res);
   test.equals(writeHead.callCount, 1);
-  test.equals(writeHead.args[0][0], 503);
+  test.equals(writeHead.args[0][0], 500);
   test.equals(writeHead.args[0][1]['Content-Type'], 'text/plain');
   test.equals(end.callCount, 1);
-  test.equals(end.args[0][0], 'some error');
-  test.done();
-};
-
-exports['error handles nano errors'] = test => {
-  test.expect(5);
-  const writeHead = sinon.stub(res, 'writeHead');
-  const end = sinon.stub(res, 'end');
-  serverUtils.error({ statusCode: 503, reason: 'some error' }, req, res);
-  test.equals(writeHead.callCount, 1);
-  test.equals(writeHead.args[0][0], 503);
-  test.equals(writeHead.args[0][1]['Content-Type'], 'text/plain');
-  test.equals(end.callCount, 1);
-  test.equals(end.args[0][0], 'some error');
+  test.equals(end.args[0][0], 'Server error');
   test.done();
 };
 
