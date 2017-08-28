@@ -3,7 +3,7 @@ const utils = require('../../utils'),
 			helper = require('../../helper'),
 			addUserModal = require('../../page-objects/users/add-user-modal.po.js');
 
-const addedUser = 'bedetester2020',
+const addedUser = 'aatester2020',
 			fullName = 'Bede Ngaruko',
 			errorMessagePassword = element.all(by.css('span.help-block.ng-binding')).get(3);
 
@@ -21,7 +21,7 @@ describe('Add user  : ', () => {
 		addUserModal.submit();
 		const users = element.all(by.repeater('user in users'));
 		helper.waitUntilReady(users);
-		expect(users.get(1).getText()).toContain(addedUser);
+		expect(helper.isTextDisplayed(addedUser));
 		expect(helper.isTextDisplayed(fullName));
 	});
 
