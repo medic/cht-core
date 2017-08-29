@@ -23,7 +23,7 @@ describe('ScheduledForms service', function() {
   });
 
   it('returns error when Settings errors', function(done) {
-    Settings.returns(KarmaUtils.mockPromise('boom'));
+    Settings.returns(Promise.reject('boom'));
     service()
       .then(function() {
         done(new Error('expected go boom'));
@@ -35,7 +35,7 @@ describe('ScheduledForms service', function() {
   });
 
   it('returns empty if no scheduled forms', function(done) {
-    Settings.returns(KarmaUtils.mockPromise(null, {}));
+    Settings.returns(Promise.resolve({}));
     service()
       .then(function(actual) {
         chai.expect(actual).to.deep.equal([]);
@@ -45,7 +45,7 @@ describe('ScheduledForms service', function() {
   });
 
   it('returns empty if no reporting config', function(done) {
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(Promise.resolve({
       forms: { R: 'registration', D: 'delivery' }
     }));
     service()
@@ -57,7 +57,7 @@ describe('ScheduledForms service', function() {
   });
 
   it('returns multiple forms', function(done) {
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(Promise.resolve({
       forms: { R: 'registration', D: 'delivery', F: 'flag' },
       'kujua-reporting': [ { code: 'R' }, { code: 'X' }, { code: 'D' } ]
     }));

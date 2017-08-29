@@ -80,7 +80,7 @@ describe('EditTranslationCtrl controller', function() {
         { doc: { code: 'es', values: { 'title.key': 'Hola', 'bye': 'Hasta luego' } } }
       ]
     };
-    bulkDocs.returns(KarmaUtils.mockPromise());
+    bulkDocs.returns(Promise.resolve());
     createController();
     scope.model.values.en = 'Hello';
     scope.model.values.fr = 'Bienvenue';
@@ -107,7 +107,7 @@ describe('EditTranslationCtrl controller', function() {
         { doc: { code: 'es', newValue: '', values: { 'title.key': 'Hola', 'bye': 'Hasta luego' } } }
       ]
     };
-    bulkDocs.returns(KarmaUtils.mockPromise());
+    bulkDocs.returns(Promise.resolve());
     createController();
     scope.model.key = 'somethingelse';
     scope.model.values.en = 'a';

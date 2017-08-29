@@ -57,7 +57,7 @@ describe('Auth service', function() {
 
   it('rejects when settings errors', function(done) {
     userCtx.returns({ roles: [ 'district_admin' ] });
-    Settings.returns(KarmaUtils.mockPromise('boom'));
+    Settings.returns(Promise.reject('boom'));
     service([ 'can_backup_facilities' ])
       .catch(function(err) {
         chai.expect(err).to.equal('boom');
@@ -68,7 +68,7 @@ describe('Auth service', function() {
 
   it('rejects when perm is empty string', function(done) {
     userCtx.returns({ roles: [ 'district_admin' ] });
-    Settings.returns(KarmaUtils.mockPromise(null, { permissions: [
+    Settings.returns(Promise.resolve({ permissions: [
       { name: 'can_backup_facilities', roles: ['national_admin'] },
       { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
     ] }));
@@ -89,7 +89,7 @@ describe('Auth service', function() {
 
     it('rejects when unknown permission', function(done) {
       userCtx.returns({ roles: [ 'district_admin' ] });
-      Settings.returns(KarmaUtils.mockPromise(null, { permissions: [
+      Settings.returns(Promise.resolve({ permissions: [
         { name: 'can_backup_facilities', roles: ['national_admin'] },
         { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
       ] }));
@@ -105,7 +105,7 @@ describe('Auth service', function() {
 
     it('resolves when !unknown permission', function(done) {
       userCtx.returns({ roles: [ 'district_admin' ] });
-      Settings.returns(KarmaUtils.mockPromise(null, { permissions: [
+      Settings.returns(Promise.resolve({ permissions: [
         { name: 'can_backup_facilities', roles: ['national_admin'] },
         { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
       ] }));
@@ -119,7 +119,7 @@ describe('Auth service', function() {
 
   it('rejects when user does not have permission', function(done) {
     userCtx.returns({ roles: [ 'district_admin' ] });
-    Settings.returns(KarmaUtils.mockPromise(null, { permissions: [
+    Settings.returns(Promise.resolve({ permissions: [
       { name: 'can_backup_facilities', roles: ['national_admin'] },
       { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
     ] }));
@@ -135,7 +135,7 @@ describe('Auth service', function() {
 
   it('rejects when user does not have all permissions', function(done) {
     userCtx.returns({ roles: [ 'district_admin' ] });
-    Settings.returns(KarmaUtils.mockPromise(null, { permissions: [
+    Settings.returns(Promise.resolve({ permissions: [
       { name: 'can_backup_facilities', roles: ['national_admin'] },
       { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
     ] }));
@@ -151,7 +151,7 @@ describe('Auth service', function() {
 
   it('resolves when user has all permissions', function(done) {
     userCtx.returns({ roles: [ 'national_admin' ] });
-    Settings.returns(KarmaUtils.mockPromise(null, { permissions: [
+    Settings.returns(Promise.resolve({ permissions: [
       { name: 'can_backup_facilities', roles: ['national_admin'] },
       { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
     ] }));
@@ -175,7 +175,7 @@ describe('Auth service', function() {
 
   it('rejects when user has one of the !permissions', function(done) {
     userCtx.returns({ roles: [ 'analytics' ] });
-    Settings.returns(KarmaUtils.mockPromise(null, { permissions: [
+    Settings.returns(Promise.resolve({ permissions: [
       { name: 'can_backup_facilities', roles: ['national_admin'] },
       { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
     ] }));
@@ -191,7 +191,7 @@ describe('Auth service', function() {
 
   it('resolves when user has none of the !permissions', function(done) {
     userCtx.returns({ roles: [ 'analytics' ] });
-    Settings.returns(KarmaUtils.mockPromise(null, { permissions: [
+    Settings.returns(Promise.resolve({ permissions: [
       { name: 'can_backup_facilities', roles: ['national_admin'] },
       { name: 'can_export_messages', roles: [ 'national_admin', 'district_admin', 'analytics' ] }
     ] }));

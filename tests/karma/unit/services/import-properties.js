@@ -42,8 +42,8 @@ describe('ImportProperties service', function() {
         'Goodbye': 'bye'
       }
     };
-    Settings.returns(KarmaUtils.mockPromise(null, {}));
-    put.returns(KarmaUtils.mockPromise(null, {}));
+    Settings.returns(Promise.resolve({}));
+    put.returns(Promise.resolve({}));
     setTimeout(function() {
       rootScope.$digest();
       setTimeout(function() {
@@ -74,8 +74,8 @@ describe('ImportProperties service', function() {
         'Hello': 'hello'
       }
     };
-    Settings.returns(KarmaUtils.mockPromise(null, {}));
-    put.returns(KarmaUtils.mockPromise(null, {}));
+    Settings.returns(Promise.resolve({}));
+    put.returns(Promise.resolve({}));
     setTimeout(function() {
       rootScope.$digest();
       setTimeout(function() {
@@ -104,9 +104,9 @@ describe('ImportProperties service', function() {
                   'registrations[0].messages[0] = MESSAGE 1\n' +
                   'registrations[0].validations.list[0] = VALIDATION 1\n' +
                   'registrations[0].validations.list[1] = VALIDATION 2';
-    Settings.returns(KarmaUtils.mockPromise(null, settings()));
-    UpdateSettings.returns(KarmaUtils.mockPromise());
-    put.returns(KarmaUtils.mockPromise(null, {}));
+    Settings.returns(Promise.resolve(settings()));
+    UpdateSettings.returns(Promise.resolve());
+    put.returns(Promise.resolve({}));
     setTimeout(function() {
       rootScope.$digest();
       setTimeout(function() {
@@ -126,13 +126,13 @@ describe('ImportProperties service', function() {
                   'registrations[0].validations.list[0] = VALIDATION 1\n' +
                   'registrations[0].validations.list[1] = VALIDATION 2\n' +
                   'registrations[0].validations.list[2] =  ';
-    Settings.returns(KarmaUtils.mockPromise(null, settings(s => {
+    Settings.returns(Promise.resolve(settings(s => {
       s.registrations[0].validations.list[2] = {
         translation_key: 'test.translation.key',
       };
     })));
-    UpdateSettings.returns(KarmaUtils.mockPromise());
-    put.returns(KarmaUtils.mockPromise(null, {}));
+    UpdateSettings.returns(Promise.resolve());
+    put.returns(Promise.resolve({}));
     setTimeout(() => {
       rootScope.$digest();
       setTimeout(() => {

@@ -69,7 +69,7 @@ describe('UpdateUser service', function() {
       .expect('PUT', '/_users/org.couchdb.user%3Asally', JSON.stringify(expectedUser))
       .respond(201, '');
 
-    put.returns(KarmaUtils.mockPromise());
+    put.returns(Promise.resolve());
 
     service(null, settings, user);
 
@@ -122,13 +122,13 @@ describe('UpdateUser service', function() {
       .expect('PUT', '/_users/org.couchdb.user%3Ajerome', JSON.stringify(expectedUser))
       .respond(201, '');
 
-    get.returns(KarmaUtils.mockPromise(null, {
+    get.returns(Promise.resolve({
       _id: 'org.couchdb.user:jerome',
       type: 'user-settings',
       name: 'jerome',
       favcolour: 'teal'
     }));
-    put.returns(KarmaUtils.mockPromise());
+    put.returns(Promise.resolve());
 
     service('org.couchdb.user:jerome', settings, user);
 
@@ -228,13 +228,13 @@ describe('UpdateUser service', function() {
       starsign: 'libra'
     };
 
-    get.returns(KarmaUtils.mockPromise(null, {
+    get.returns(Promise.resolve({
       _id: 'org.couchdb.user:jerome',
       type: 'user-settings',
       name: 'jerome',
       favcolour: 'teal'
     }));
-    put.returns(KarmaUtils.mockPromise());
+    put.returns(Promise.resolve());
 
     setTimeout(function() {
       scope.$apply(); // needed to resolve the promises

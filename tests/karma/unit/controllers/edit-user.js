@@ -17,7 +17,7 @@ describe('EditUserCtrl controller', () => {
     module('inboxApp');
 
     translationsDbQuery = sinon.stub();
-    translationsDbQuery.returns(KarmaUtils.mockPromise(null, { rows: [
+    translationsDbQuery.returns(Promise.resolve({ rows: [
       { value: { code: 'en' } },
       { value: { code: 'fr' } }
     ] }));
@@ -42,7 +42,7 @@ describe('EditUserCtrl controller', () => {
     module($provide => {
       $provide.factory('$uibModalInstance', () => {
         return {
-          rendered: KarmaUtils.mockPromise(),
+          rendered: Promise.resolve(),
           close: () => {}
         };
       });
@@ -80,20 +80,20 @@ describe('EditUserCtrl controller', () => {
         });
       };
       mockEditCurrentUser = user => {
-        UserSettings.returns(KarmaUtils.mockPromise(null, user));
-        UpdateUser.returns(KarmaUtils.mockPromise());
+        UserSettings.returns(Promise.resolve(user));
+        UpdateUser.returns(Promise.resolve());
         createController();
       };
 
       mockEditAUser = user => {
         // Don't mock UserSettings, we're not fetching current user.
-        UpdateUser.returns(KarmaUtils.mockPromise());
+        UpdateUser.returns(Promise.resolve());
         createController(user);
       };
 
       mockCreateNewUser = () => {
         // Don't mock UserSettings, we're not fetching current user.
-        UpdateUser.returns(KarmaUtils.mockPromise());
+        UpdateUser.returns(Promise.resolve());
         createController({});
       };
     });
@@ -270,7 +270,7 @@ describe('EditUserCtrl controller', () => {
     });
 
     it('user is updated', done => {
-      UpdateUser.returns(KarmaUtils.mockPromise());
+      UpdateUser.returns(Promise.resolve());
       mockEditAUser(userToEdit);
 
       scope.editUserSettings();
@@ -361,7 +361,7 @@ describe('EditUserCtrl controller', () => {
 
     it('should not change password when none is supplied', done => {
       // given
-      UpdateUser.returns(KarmaUtils.mockPromise());
+      UpdateUser.returns(Promise.resolve());
       mockEditAUser(userToEdit);
       mockContact(userToEdit.contact_id);
       mockFacility(userToEdit.facility_id);

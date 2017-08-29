@@ -43,7 +43,7 @@ describe('AnalyticsCtrl controller', function() {
   });
 
   it('set up controller with no modules', function(done) {
-    AnalyticsModules.returns(KarmaUtils.mockPromise(null, []));
+    AnalyticsModules.returns(Promise.resolve([]));
     stateIs.returns(false);
     createController('anc');
     scope.$digest();
@@ -54,7 +54,7 @@ describe('AnalyticsCtrl controller', function() {
   });
 
   it('renders specified module', function(done) {
-    AnalyticsModules.returns(KarmaUtils.mockPromise(null, [
+    AnalyticsModules.returns(Promise.resolve([
       { state: 'reporting' },
       { state: 'anc' }
     ]));
@@ -68,7 +68,7 @@ describe('AnalyticsCtrl controller', function() {
   });
 
   it('jumps to child state if single module present', function(done) {
-    AnalyticsModules.returns(KarmaUtils.mockPromise(null, [
+    AnalyticsModules.returns(Promise.resolve([
       { state: 'anc' }
     ]));
     stateIs.returns(true);
@@ -82,7 +82,7 @@ describe('AnalyticsCtrl controller', function() {
   });
 
   it('does not jump to child state if multiple modules present', function(done) {
-    AnalyticsModules.returns(KarmaUtils.mockPromise(null, [
+    AnalyticsModules.returns(Promise.resolve([
       { state: 'reporting' },
       { state: 'anc' }
     ]));

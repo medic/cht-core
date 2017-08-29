@@ -26,7 +26,7 @@ describe('ContactSummary service', () => {
   });
 
   it('returns empty when no script configured', () => {
-    Settings.returns(KarmaUtils.mockPromise(null, { contact_summary: '' }));
+    Settings.returns(Promise.resolve({ contact_summary: '' }));
     const contact = {};
     const reports = [];
     return service(contact, reports).then(actual => {
@@ -40,7 +40,7 @@ describe('ContactSummary service', () => {
                       { label: "Notes", value: "Hello " + contact.name },
                       { label: "Num reports", value: reports.length }
                     ] };`;
-    Settings.returns(KarmaUtils.mockPromise(null, { contact_summary: script }));
+    Settings.returns(Promise.resolve({ contact_summary: script }));
     const contact = { name: 'jack' };
     const reports = [ { _id: 1 }, { _id: 2} ];
     return service(contact, reports).then(actual => {
@@ -57,7 +57,7 @@ describe('ContactSummary service', () => {
     const script = `return { fields: [
                       { label: "Notes", value: "Hello", filter: "reversify" }
                     ] };`;
-    Settings.returns(KarmaUtils.mockPromise(null, { contact_summary: script }));
+    Settings.returns(Promise.resolve({ contact_summary: script }));
     const contact = {};
     const reports = [];
     return service(contact, reports).then(actual => {

@@ -34,7 +34,7 @@ describe('MarkRead service', () => {
   it('marks messages read', () => {
     const given = [ { _id: 'xyz' } ];
     const expected = [ { _id: 'read:message:xyz' } ];
-    bulkDocs.returns(KarmaUtils.mockPromise());
+    bulkDocs.returns(Promise.resolve());
     return service(given).then(() => {
       chai.expect(db.args[0][0].meta).to.equal(true);
       chai.expect(bulkDocs.args[0][0]).to.deep.equal(expected);
@@ -44,7 +44,7 @@ describe('MarkRead service', () => {
   it('marks reports read', () => {
     const given = [ { _id: 'xyz', form: 'P' } ];
     const expected = [ { _id: 'read:report:xyz' } ];
-    bulkDocs.returns(KarmaUtils.mockPromise());
+    bulkDocs.returns(Promise.resolve());
     return service(given).then(() => {
       chai.expect(db.args[0][0].meta).to.equal(true);
       chai.expect(bulkDocs.args[0][0]).to.deep.equal(expected);
@@ -54,7 +54,7 @@ describe('MarkRead service', () => {
   it('ignores conflicts when marking a document read thats already read', () => {
     const given = [ { _id: 'xyz' } ];
     const conflictResult = { ok: false, id: 'read:message:xyz', rev: '1' };
-    bulkDocs.returns(KarmaUtils.mockPromise(null, [ conflictResult ]));
+    bulkDocs.returns(Promise.resolve([ conflictResult ]));
     return service(given).then(() => {
       chai.expect(bulkDocs.callCount).to.equal(1);
     });
@@ -63,7 +63,7 @@ describe('MarkRead service', () => {
   it('returns bulkDocs errors', done => {
     const given = { _id: 'xyz' };
     const expected = 'errcode2';
-    bulkDocs.returns(KarmaUtils.mockPromise(expected));
+    bulkDocs.returns(Promise.reject(expected));
     service([given]).catch(err => {
       chai.expect(err).to.equal(expected);
       done();
@@ -81,7 +81,7 @@ describe('MarkRead service', () => {
       { _id: 'read:message:b' }
     ];
 
-    bulkDocs.returns(KarmaUtils.mockPromise());
+    bulkDocs.returns(Promise.resolve());
 
     return service(given).then(() => {
       chai.expect(bulkDocs.args[0][0]).to.deep.equal(expected);

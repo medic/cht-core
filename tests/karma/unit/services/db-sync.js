@@ -54,11 +54,11 @@ describe('DBSync service', () => {
 
   it('initiates sync for non-admin', () => {
     isAdmin.returns(false);
-    to.returns(KarmaUtils.mockPromise());
-    from.returns(KarmaUtils.mockPromise());
-    Auth.returns(KarmaUtils.mockPromise());
+    to.returns(Promise.resolve());
+    from.returns(Promise.resolve());
+    Auth.returns(Promise.resolve());
     userCtx.returns({ name: 'mobile', roles: [ 'district-manager' ] });
-    allDocs.returns(KarmaUtils.mockPromise(null, { rows: [
+    allDocs.returns(Promise.resolve({ rows: [
       { id: 'm' },
       { id: 'e' },
       { id: 'd' },
@@ -87,11 +87,11 @@ describe('DBSync service', () => {
 
   it('does not sync to remote if user lacks "can_edit" permission', () => {
     isAdmin.returns(false);
-    to.returns(KarmaUtils.mockPromise());
-    from.returns(KarmaUtils.mockPromise());
-    Auth.returns(KarmaUtils.mockPromise('unauthorized'));
+    to.returns(Promise.resolve());
+    from.returns(Promise.resolve());
+    Auth.returns(Promise.reject('unauthorized'));
     userCtx.returns({ name: 'mobile', roles: [ 'district-manager' ] });
-    allDocs.returns(KarmaUtils.mockPromise(null, { rows: [
+    allDocs.returns(Promise.resolve({ rows: [
       { id: 'm' },
       { id: 'e' },
       { id: 'd' },
@@ -116,11 +116,11 @@ describe('DBSync service', () => {
 
     before(() => {
       isAdmin.returns(false);
-      to.returns(KarmaUtils.mockPromise());
-      from.returns(KarmaUtils.mockPromise());
-      Auth.returns(KarmaUtils.mockPromise());
+      to.returns(Promise.resolve());
+      from.returns(Promise.resolve());
+      Auth.returns(Promise.resolve());
       userCtx.returns({ name: 'mobile', roles: [ 'district-manager' ] });
-      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [] }));
+      allDocs.returns(Promise.resolve({ rows: [] }));
       return service().then(() => {
         chai.expect(to.callCount).to.equal(1);
         filterFunction = to.args[0][1].filter;

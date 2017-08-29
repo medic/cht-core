@@ -29,7 +29,7 @@ describe('PlaceHierarchy service', function() {
   });
 
   it('returns errors from Contacts service', function(done) {
-    Contacts.returns(KarmaUtils.mockPromise('boom'));
+    Contacts.returns(Promise.reject('boom'));
     service()
       .then(function() {
         done(new Error('error expected'));
@@ -41,7 +41,7 @@ describe('PlaceHierarchy service', function() {
   });
 
   it('builds empty hierarchy when no facilities', function() {
-    Contacts.returns(KarmaUtils.mockPromise(null, []));
+    Contacts.returns(Promise.resolve([]));
     return service().then(function(actual) {
       chai.expect(actual.length).to.equal(0);
     });
@@ -54,7 +54,7 @@ describe('PlaceHierarchy service', function() {
     var d = { _id: 'd', parent: { _id: 'b', parent: { _id: 'c' } } };
     var e = { _id: 'e', parent: { _id: 'x' } }; // unknown parent is ignored
     var f = { _id: 'f' };
-    Contacts.returns(KarmaUtils.mockPromise(null, [ a, b, c, d, e, f ]));
+    Contacts.returns(Promise.resolve([ a, b, c, d, e, f ]));
     return service().then(function(actual) {
       chai.expect(actual).to.deep.equal([
         {

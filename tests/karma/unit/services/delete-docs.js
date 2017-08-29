@@ -24,7 +24,7 @@ describe('DeleteDocs service', function() {
   });
 
   it('returns bulkDocs errors', function(done) {
-    bulkDocs.returns(KarmaUtils.mockPromise('errcode2'));
+    bulkDocs.returns(Promise.reject('errcode2'));
     service({ _id: 'xyz' })
       .then(function() {
         done('expected error to be thrown');
@@ -55,8 +55,8 @@ describe('DeleteDocs service', function() {
         _id: 'b'
       }
     };
-    get.returns(KarmaUtils.mockPromise(null, clinic));
-    bulkDocs.returns(KarmaUtils.mockPromise(null,
+    get.returns(Promise.resolve(clinic));
+    bulkDocs.returns(Promise.resolve(
       // person is not deleted, but clinic is edited just fine. Oops.
       [
         { id: person._id, error:'conflict' },
@@ -107,7 +107,7 @@ describe('DeleteDocs service', function() {
         _id: 'b'
       }
     };
-    get.returns(KarmaUtils.mockPromise(null, clinic));
+    get.returns(Promise.resolve(clinic));
     service([ person, clinic ])
       .then(function() {
         done(new Error('expected error to be thrown'));
@@ -118,7 +118,7 @@ describe('DeleteDocs service', function() {
   });
 
   it('marks the record deleted', function() {
-    bulkDocs.returns(KarmaUtils.mockPromise());
+    bulkDocs.returns(Promise.resolve());
     var record = {
       _id: 'xyz',
       _rev: '123',
@@ -138,7 +138,7 @@ describe('DeleteDocs service', function() {
   });
 
   it('marks multiple records deleted', function() {
-    bulkDocs.returns(KarmaUtils.mockPromise());
+    bulkDocs.returns(Promise.resolve());
     var record1 = {
       _id: 'xyz',
       _rev: '123',
@@ -187,8 +187,8 @@ describe('DeleteDocs service', function() {
         _id: 'b'
       }
     };
-    get.returns(KarmaUtils.mockPromise(null, clinic));
-    bulkDocs.returns(KarmaUtils.mockPromise());
+    get.returns(Promise.resolve(clinic));
+    bulkDocs.returns(Promise.resolve());
     return service(person).then(function() {
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.args[0][0]).to.equal(clinic._id);
@@ -218,8 +218,8 @@ describe('DeleteDocs service', function() {
         _id: 'b'
       }
     };
-    get.returns(KarmaUtils.mockPromise(null, clinic));
-    bulkDocs.returns(KarmaUtils.mockPromise());
+    get.returns(Promise.resolve(clinic));
+    bulkDocs.returns(Promise.resolve());
     return service(person).then(function() {
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.args[0][0]).to.equal(clinic._id);
@@ -243,8 +243,8 @@ describe('DeleteDocs service', function() {
         _id: 'b'
       }
     };
-    get.returns(KarmaUtils.mockPromise(null, clinic));
-    bulkDocs.returns(KarmaUtils.mockPromise());
+    get.returns(Promise.resolve(clinic));
+    bulkDocs.returns(Promise.resolve());
     return service(person).then(function() {
       chai.expect(get.callCount).to.equal(1);
       chai.expect(get.args[0][0]).to.equal(clinic._id);
@@ -273,8 +273,8 @@ describe('DeleteDocs service', function() {
       }
     };
     var docs = [ person ];
-    get.returns(KarmaUtils.mockPromise(null, clinic));
-    bulkDocs.returns(KarmaUtils.mockPromise());
+    get.returns(Promise.resolve(clinic));
+    bulkDocs.returns(Promise.resolve());
     return service(docs).then(function() {
       chai.expect(docs.length).to.equal(1);
       chai.expect(bulkDocs.args[0][0].length).to.equal(2);

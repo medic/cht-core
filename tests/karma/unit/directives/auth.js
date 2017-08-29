@@ -20,7 +20,7 @@ describe('auth directive', function() {
   });
 
   it('should be shown when auth does not error', function(done) {
-    Auth.returns(KarmaUtils.mockPromise());
+    Auth.returns(Promise.resolve());
     var element = compile('<a mm-auth="can_do_stuff">')(scope);
     scope.$digest();
     setTimeout(function() {
@@ -32,7 +32,7 @@ describe('auth directive', function() {
   });
 
   it('should be hidden when auth errors', function(done) {
-    Auth.returns(KarmaUtils.mockPromise('boom'));
+    Auth.returns(Promise.reject('boom'));
     var element = compile('<a mm-auth="can_do_stuff">')(scope);
     scope.$digest();
     setTimeout(function() {
@@ -44,7 +44,7 @@ describe('auth directive', function() {
   });
 
   it('splits comma separated permissions', function(done) {
-    Auth.returns(KarmaUtils.mockPromise());
+    Auth.returns(Promise.resolve());
     var element = compile('<a mm-auth="can_do_stuff,!can_not_do_stuff">')(scope);
     scope.$digest();
     setTimeout(function() {

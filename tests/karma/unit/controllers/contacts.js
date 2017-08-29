@@ -67,7 +67,7 @@ describe('Contacts controller', () => {
 
     createController = () => {
       searchService = sinon.stub();
-      searchService.returns(KarmaUtils.mockPromise(null, searchResults));
+      searchService.returns(Promise.resolve(searchResults));
 
       return $controller('ContactsCtrl', {
         '$element': sinon.stub(),
@@ -77,7 +77,7 @@ describe('Contacts controller', () => {
         '$q': Q,
         '$state': { includes: sinon.stub() },
         '$timeout': work => work(),
-        '$translate': key => KarmaUtils.mockPromise(null, key + 'translated'),
+        '$translate': key => Promise.resolve(key + 'translated'),
         'ContactSchema': contactSchema,
         'GetDataRecords': getDataRecords,
         'LiveList': { contacts: contactsLiveList },
@@ -89,7 +89,7 @@ describe('Contacts controller', () => {
         'UserSettings': userSettings,
         'XmlForms': xmlForms,
         'ContactSummary': () => {
-          return KarmaUtils.mockPromise(null, {});
+          return Promise.resolve({});
         },
         'Changes': () => {
           return { unsubscribe: () => {} };

@@ -22,7 +22,7 @@ describe('SendMessage service', function() {
       }));
       $provide.value('$q', Q); // bypass $q so we don't have to digest
       $provide.value('UserSettings', function() {
-        return KarmaUtils.mockPromise(null, { phone: '+5551', name: 'jack' });
+        return Promise.resolve({ phone: '+5551', name: 'jack' });
       });
       $provide.value('Settings', Settings);
     });
@@ -50,7 +50,7 @@ describe('SendMessage service', function() {
     if (!Array.isArray(docs)) {
       docs = [docs];
     }
-    return KarmaUtils.mockPromise(null, {
+    return Promise.resolve({
       rows: docs.map(function(doc) {return {doc: doc};})
     });
   }
@@ -66,8 +66,8 @@ describe('SendMessage service', function() {
 
   it('create doc for one recipient', function(done) {
 
-    post.returns(KarmaUtils.mockPromise());
-    Settings.returns(KarmaUtils.mockPromise(null, {}));
+    post.returns(Promise.resolve());
+    Settings.returns(Promise.resolve({}));
 
     var recipient = {
       _id: 'abc',
@@ -95,8 +95,8 @@ describe('SendMessage service', function() {
 
   it('create doc for non-contact recipient from select2', function(done) {
 
-    post.returns(KarmaUtils.mockPromise());
-    Settings.returns(KarmaUtils.mockPromise(null, {}));
+    post.returns(Promise.resolve());
+    Settings.returns(Promise.resolve({}));
 
     var recipient = {
       selected: false,
@@ -125,7 +125,7 @@ describe('SendMessage service', function() {
   it('normalizes phone numbers', function(done) {
     // Note : only valid phone numbers can be normalized.
 
-    post.returns(KarmaUtils.mockPromise());
+    post.returns(Promise.resolve());
 
     var phoneNumber = '700123456';
     var recipient = {
@@ -135,7 +135,7 @@ describe('SendMessage service', function() {
       }
     };
     allDocs.returns(mockAllDocs(recipient));
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(Promise.resolve({
       default_country_code: 254
     }));
 
@@ -154,8 +154,8 @@ describe('SendMessage service', function() {
 
   it('create doc for multiple recipients', function(done) {
 
-    post.returns(KarmaUtils.mockPromise());
-    Settings.returns(KarmaUtils.mockPromise(null, {}));
+    post.returns(Promise.resolve());
+    Settings.returns(Promise.resolve({}));
 
     var recipients = [
       {
@@ -198,8 +198,8 @@ describe('SendMessage service', function() {
 
   it('create doc for everyoneAt recipients', function(done) {
 
-    post.returns(KarmaUtils.mockPromise());
-    Settings.returns(KarmaUtils.mockPromise(null, {}));
+    post.returns(Promise.resolve());
+    Settings.returns(Promise.resolve({}));
 
     var recipients = [
       {
@@ -271,8 +271,8 @@ describe('SendMessage service', function() {
 
   it('returns post errors', function(done) {
 
-    post.returns(KarmaUtils.mockPromise('errcode2'));
-    Settings.returns(KarmaUtils.mockPromise(null, {}));
+    post.returns(Promise.reject('errcode2'));
+    Settings.returns(Promise.resolve({}));
 
     var recipient = {
       _id: 'abc',

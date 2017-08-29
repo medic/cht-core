@@ -18,17 +18,17 @@ describe('UserLanguageModalCtrl controller', function() {
     scope.setFinished = sinon.stub();
     scope.setError = sinon.stub();
     stubSetLanguage = sinon.stub();
-    stubSetLanguage.returns(KarmaUtils.mockPromise());
+    stubSetLanguage.returns(Promise.resolve());
     stubLanguage = sinon.stub();
-    stubLanguage.returns(KarmaUtils.mockPromise(null, 'ab'));
+    stubLanguage.returns(Promise.resolve('ab'));
     stubLanguages = sinon.stub();
-    stubLanguages.returns(KarmaUtils.mockPromise(null, [
+    stubLanguages.returns(Promise.resolve([
       { code: 'en', name: 'English' },
       { code: 'sw', name: 'Swahili' }
     ]));
     spyUibModalInstance = {close: sinon.spy(), dismiss: sinon.spy()};
     stubUpdateUser = sinon.stub();
-    stubUpdateUser.returns(KarmaUtils.mockPromise());
+    stubUpdateUser.returns(Promise.resolve());
 
     createController = function() {
       return $controller('UserLanguageModalCtrl', {
@@ -100,7 +100,7 @@ describe('UserLanguageModalCtrl controller', function() {
   it('displays error when saving error', function(done) {
     createController();
     stubUpdateUser.reset();
-    stubUpdateUser.returns(KarmaUtils.mockPromise({err: 'oh noes language is all wrong'}));
+    stubUpdateUser.returns(Promise.reject({err: 'oh noes language is all wrong'}));
 
     setTimeout(function() {
       scope.submit().then(function() {
@@ -116,7 +116,7 @@ describe('UserLanguageModalCtrl controller', function() {
   it('resets language when saving error', function(done) {
     createController();
     stubUpdateUser.reset();
-    stubUpdateUser.returns(KarmaUtils.mockPromise({err: 'oh noes language is all wrong'}));
+    stubUpdateUser.returns(Promise.reject({err: 'oh noes language is all wrong'}));
     setTimeout(function() {
       var initialLang = scope.selectedLanguage;
       scope.submit().then(function() {
@@ -129,7 +129,7 @@ describe('UserLanguageModalCtrl controller', function() {
 
   it('does nothing when no language selected', function(done) {
     stubUpdateUser.reset();
-    stubLanguage.returns(KarmaUtils.mockPromise());
+    stubLanguage.returns(Promise.resolve());
     createController();
     setTimeout(function() {
       scope.submit()

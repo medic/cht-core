@@ -25,7 +25,7 @@ describe('AppInfo service', function() {
   });
 
   it('returns errors', function(done) {
-    Settings.returns(KarmaUtils.mockPromise('boom'));
+    Settings.returns(Promise.reject('boom'));
     service()
       .then(function() {
         done('SHOULD NOT GET HERE');
@@ -38,7 +38,7 @@ describe('AppInfo service', function() {
   });
 
   it('gets the form', function(done) {
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(Promise.resolve({
       forms: {
         a: { id: 'a' },
         b: { id: 'b' }
@@ -57,7 +57,7 @@ describe('AppInfo service', function() {
   });
 
   it('formats the date', function(done) {
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(Promise.resolve({
       date_format: 'YYYY'
     }));
     service()
@@ -76,7 +76,7 @@ describe('AppInfo service', function() {
 
   it('translates the key', function(done) {
     var expected = 'kia ora';
-    Settings.returns(KarmaUtils.mockPromise(null, {}));
+    Settings.returns(Promise.resolve({}));
     var translate = sinon.stub($translate, 'instant').returns(expected);
     service()
       .then(function(appinfo) {

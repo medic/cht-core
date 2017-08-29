@@ -34,7 +34,7 @@ describe('Settings service', function() {
         isTrue: true,
         isString: 'hello'
       };
-      get.returns(KarmaUtils.mockPromise(null, { app_settings: expected }));
+      get.returns(Promise.resolve({ app_settings: expected }));
       service()
         .then(function(actual) {
           chai.expect(actual.isTrue).to.equal(expected.isTrue);
@@ -48,7 +48,7 @@ describe('Settings service', function() {
     });
 
     it('returns errors', function(done) {
-      get.returns(KarmaUtils.mockPromise('Not found'));
+      get.returns(Promise.reject('Not found'));
       service()
         .then(function() {
           done('Unexpected resolution of promise.');

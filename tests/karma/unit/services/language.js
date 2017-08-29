@@ -26,7 +26,7 @@ describe('Language service', function() {
 
   it('uses the language configured in user', function(done) {
     ipCookie.returns(null);
-    UserSettings.returns(KarmaUtils.mockPromise(null, { language: 'latin' }));
+    UserSettings.returns(Promise.resolve({ language: 'latin' }));
     service().then(function(actual) {
       chai.expect(actual).to.equal('latin');
       chai.expect(UserSettings.callCount).to.equal(1);
@@ -42,8 +42,8 @@ describe('Language service', function() {
 
   it('uses the language configured in settings', function(done) {
     ipCookie.returns(null);
-    UserSettings.returns(KarmaUtils.mockPromise(null, { }));
-    Settings.returns(KarmaUtils.mockPromise(null, { locale: 'yiddish' }));
+    UserSettings.returns(Promise.resolve({ }));
+    Settings.returns(Promise.resolve({ locale: 'yiddish' }));
     service().then(function(actual) {
       chai.expect(actual).to.equal('yiddish');
       chai.expect(UserSettings.callCount).to.equal(1);
@@ -59,8 +59,8 @@ describe('Language service', function() {
 
   it('defaults', function(done) {
     ipCookie.returns(null);
-    UserSettings.returns(KarmaUtils.mockPromise(null, { }));
-    Settings.returns(KarmaUtils.mockPromise(null, { }));
+    UserSettings.returns(Promise.resolve({ }));
+    Settings.returns(Promise.resolve({ }));
     service().then(function(actual) {
       chai.expect(actual).to.equal('en');
       chai.expect(UserSettings.callCount).to.equal(1);
