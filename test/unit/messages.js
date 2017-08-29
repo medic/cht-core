@@ -144,6 +144,25 @@ exports['addMessage supports template variables on doc'] = function(test) {
     test.done();
 };
 
+exports['addMessage does not escape characters - #3795'] = function(test) {
+    var doc = {
+        form: 'x',
+        reported_date: '2050-03-13T13:06:22.002Z',
+        place: 'Sharon\'s Place &<>"/`='
+    };
+    messages.addMessage({
+        doc: doc,
+        phone: '+13125551212',
+        message: 'You\'re from {{place}}'
+    });
+    test.equals(doc.tasks.length, 1);
+    test.equals(
+        doc.tasks[0].messages[0].message,
+        'You\'re from Sharon\'s Place &<>"/`='
+    );
+    test.done();
+};
+
 exports['addMessage template supports contact obj'] = function(test) {
     var doc = {
         form: 'x',
