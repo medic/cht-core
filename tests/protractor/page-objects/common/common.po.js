@@ -62,6 +62,7 @@ module.exports = {
     helper.waitUntilReady(medicLogo);
     return element(by.id(list)).isPresent();
   },
+
   logout: () => {
     hamburgerMenu.click();
     helper.waitElementToBeVisisble(logoutButton);
