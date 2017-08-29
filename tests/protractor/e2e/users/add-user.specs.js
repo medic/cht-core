@@ -28,7 +28,6 @@ describe('Add user  : ', () => {
 					return true;
 				});
 		}, 2000);
-
 		expect(helper.isTextDisplayed(addedUser));
 		expect(helper.isTextDisplayed(fullName));
 	});
