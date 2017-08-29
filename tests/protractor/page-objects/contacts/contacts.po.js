@@ -19,6 +19,7 @@ const searchBox = element.all(by.css('#freetext')),
       submitButton = element(by.css('.btn.submit.btn-primary.ng-scope'));
 
 module.exports = {
+  
   getSubmitButton: () => {
     return submitButton;
   },
