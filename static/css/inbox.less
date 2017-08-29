@@ -6,8 +6,8 @@
 @import (inline) "node_modules/nvd3/build/nv.d3.css";
 @import (inline) "node_modules/bootstrap-tour/build/css/bootstrap-tour.css";
 
-@import "font";
 @import "variables";
+@import "font";
 @import "mixins";
 @import "theme";
 @import "angular";
@@ -61,7 +61,7 @@ body {
       height: 0;
     }
     .page {
-      top: 5.5em;
+      top: 75px;
     }
   }
   &.error {
@@ -98,13 +98,13 @@ body {
 .header {
   background-color: @medic-slate-color;
   text-align: center;
-  padding-top: 0.25em;
+  padding-top: 5px;
   z-index: 3;
   position: relative;
   .button-text-inverse;
 
   .inner {
-    height: 4.5em;
+    height: 60px;
   }
 
   a {
@@ -115,16 +115,15 @@ body {
 
   .mm-icon {
     margin: 0 auto;
-    font-size: 2em;
+    font-size: 1.5rem;
   }
 
   .logo {
     float: left;
     opacity: 0.9;
-    padding: 0.15em 1.25em;
+    padding: 2px 10px;
     img {
-      width: 14.2em;
-      height: 3.8em;
+      height: 50px;
     }
   }
 
@@ -193,13 +192,12 @@ body {
     white-space: nowrap;
 
     .button-label {
-      top: -0.5em;
+      top: -5px;
       position: relative;
-      font-size: 0.9em;
     }
 
     a {
-      width: 6em;
+      width: 90px;
       border-radius: @radius-size @radius-size 0 0;
       cursor: pointer;
 
@@ -273,23 +271,22 @@ body {
 }
 
 .filters {
-  height: 4.2em;
-  font-size: 0.95em;
+  height: 58px;
   white-space: nowrap;
-  padding: 0.4em 0;
+  padding: 5px 0;
 
   .navigation {
     display: none;
     float: left;
     text-align: center;
-    padding-right: 6em;
+    padding-right: 50px;
     a {
       display: inline-block;
       text-align: center;
       color: @grayDark;
-      font-size: 2em;
+      font-size: @font-extra-extra-large;
       float: left;
-      width: 3em;
+      width: 50px;
       line-height: 38px;
     }
   }
@@ -325,7 +322,7 @@ body {
 
   .basic-filters,
   .navigation {
-    padding-top: 0.2em;
+    padding-top: 2px;
   }
 
   .basic-filters {
@@ -340,16 +337,17 @@ body {
   }
 
   .freetext-filter {
-    padding-right: 2em;
-    input, .btn {
-      height: 2.85em;
+    padding-right: 28px;
+    input,
+    .btn {
+      height: 40px;
       background-color: rgba(255, 255, 255, 0.45);
       border: 0;
     }
     input {
-      padding: 0.6em;
+      padding: 5px;
       color: #000000;
-      margin-right: -2em;
+      margin-right: -28px;
     }
     .input-group-btn {
       float: right;
@@ -382,7 +380,6 @@ body {
     padding-left: 0;
   }
   h2 {
-    font-size: 20px;
     line-height: 40px;
     overflow: hidden;
     font-weight: bold;
@@ -402,7 +399,7 @@ body {
 
 .content {
   .page {
-    top: 8.7em;
+    top: 123px;
     bottom: 0;
     position: absolute;
     width: 100%;
@@ -426,11 +423,7 @@ body {
   text-align: center;
   color: #C2C2C2;
   text-shadow: 1px 1px 4px rgba(255, 255, 255, 1);
-  font-size: 2em;
-
-  .fa {
-    font-size: 2em;
-  }
+  font-size: @font-extra-extra-large;
 
   > div {
     display: flex;
@@ -594,28 +587,20 @@ body {
       border-color: @reports-color;
     }
   }
-  h4 {
-    padding-left: 15px;
-    margin-top: 20px;
-    margin-bottom: 5px;
-  }
   .action-header {
     overflow: auto;
 
-    h4 {
+    h3 {
       float: left;
     }
 
     .table-filter {
       float: right;
-
       padding-top: 15px;
 
       a {
         padding-left: 6px;
         padding-right: 6px;
-        font-size: 90%;
-
         color: @grey;
 
         &.selected {
@@ -663,9 +648,9 @@ body {
       }
 
       .message-wrapper {
-        padding-left: 0.5em;
+        padding-left: 5px;
         border-left: 5px solid transparent;
-        min-height: 4em;
+        min-height: 50px;
         display: block;
         text-decoration: none;
         color: inherit;
@@ -690,7 +675,7 @@ body {
   }
 
   .padding {
-    height: 150px;
+    height: 120px;
   }
 
 }
@@ -760,7 +745,7 @@ body {
     }
   }
   .padding {
-    height: 10em;
+    height: 120px;
     clear: left;
   }
   .deselect {
@@ -873,34 +858,20 @@ a.fa:hover {
       background-color: @form-background-color;
       border: 1px solid @seperator-color;
       border-radius: @radius-size;
-      margin: 1em;
-
-      p {
-        font-weight: bold;
-        font-size: 1.4em;
-      }
-
-      h2 {
-        margin-left: 1em;
-      }
-
-      h5 {
-        text-align: center;
-        margin-top: -1em;
-      }
+      margin: 10px;
 
       > div > ul > li {
         border-top: 1px solid @seperator-color;
-        padding: 1em 3em 1em 2em;
+        padding: 10px 30px 10px 20px;
         margin: 0;
         &.indent-1 {
-          padding-left: 3em;
+          padding-left: 30px;
         }
         &.indent-2 {
-          padding-left: 4em;
+          padding-left: 40px;
         }
         &.indent-3 {
-          padding-left: 5em;
+          padding-left: 50px;
         }
       }
 
@@ -918,7 +889,10 @@ a.fa:hover {
 
     }
     .task-list > li {
-      margin-top: 1em;
+      margin-top: 10px;
+      &:first-child {
+        margin-top: 0;
+      }
     }
   }
 }
@@ -979,7 +953,6 @@ a.fa:hover {
 .sender {
   .position {
     color: @label-color;
-    font-size: 0.8em;
     white-space: normal;
   }
   .name {
@@ -997,16 +970,15 @@ a.fa:hover {
   pointer-events: none;
 
   .actions {
-    min-height: 5em;
+    max-width: 500px;
     background-color: @grey;
     background-color: rgba(0, 0, 0, 0.65);
     border-color: @lightgrey;
     border-color: rgba(0, 0, 0, 0.8);
     border-width: 1px;
     border-style: solid;
-    max-width: 30em;
     text-align: center;
-    margin: 0 auto 1em;
+    margin: 0 auto 10px;
     pointer-events: auto;
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.63);
     display: flex;
@@ -1020,39 +992,29 @@ a.fa:hover {
     }
 
     .mm-icon {
-      margin: 1.5em 0 0;
+      margin: 10px 0 0;
       flex-grow: 1;
-      max-width: 10em;
+      max-width: 120px;
       outline: 0;
       border-bottom: 5px solid transparent;
       .fa {
-        font-size: 3em;
+        font-size: 30px;
       }
       &:hover {
         text-decoration: none;
       }
     }
 
-    .fa-stack .fa-plus {
-      left: 0.4em;
-      top: -0.2em;
-      text-shadow: 0px 0px 2px rgba(255, 255, 255, 1);
-      font-size: 2em;
-      color: #000000;
-    }
-
     .fa-stack {
-      width: 3em;
-      height: 3em;
+      width: 30px;
+      height: 30px;
       line-height: inherit;
-      .stack-bottom-left {
-        font-size: 2em;
-        margin-top: 0.4em;
-        margin-left: -0.4em;
-      }
-      .stack-top-right {
-        font-size: 2em;
-        margin-left: 0.4em;
+      .fa-plus {
+        left: 8px;
+        top: -4px;
+        text-shadow: 0 0 2px rgba(255, 255, 255, 1);
+        font-size: 20px;
+        color: #000000;
       }
     }
   }
@@ -1308,6 +1270,10 @@ a.fa:hover {
   }
 }
 
+.upgrade-config .status {
+  text-align: center;
+}
+
 @media (max-width: 767px) {
   #mobile-detection {
     display: inline;
@@ -1338,11 +1304,19 @@ a.fa:hover {
     padding-left: 0;
   }
   .filters {
+    height: 46px;
     padding: 0;
-    padding-bottom: 1em;
-    font-size: 0.77em;
     .navigation {
       display: inline-block;
+    }
+    .filter {
+      margin: 0;
+    }
+    .mm-button {
+      padding-left: 0;
+    }
+    .mm-button-icon {
+      padding: 5px 0 0 5px;
     }
     .right-pane {
       position: absolute;
@@ -1361,39 +1335,29 @@ a.fa:hover {
       vertical-align: top;
     }
     .dropdown {
-      width: 4.3em;
-
+      max-width: 80px;
       &.analytics-module {
-        width: 5em;
+        width: 80px;
       }
     }
     .mm-button-text {
       width: 0;
       visibility: hidden;
-      padding-right: 0.75em;
     }
     .basic-filters {
-      left: 0.2em;
+      left: 2px;
     }
     .freetext-filter {
       display: none;
       &.only-filter {
         display: inline-block;
         width: auto;
-        padding-right: 3em;
-        input, .btn {
-          height: 2.4em;
-        }
       }
-    }
-    .advanced-filter {
-      width: 3em;
     }
     .mobile-freetext-filter {
       display: inline-block;
-
       .search-pane {
-        padding: 1em;
+        padding: 10px;
       }
     }
     .reset-filter {
@@ -1401,32 +1365,30 @@ a.fa:hover {
     }
   }
   .header {
-    font-size: 0.65em;
     .dropdown-menu {
-      font-size: 1.5em;
       margin: 0;
-      top: 0.6em;
-      right: 0.2em;
+      top: 8px;
+      right: 5px;
     }
     .tabs {
       display: flex;
       flex-direction: row;
       a {
         flex-grow: 1;
-        min-width: 6em;
-        max-width: 9em;
+        min-width: 70px;
+        max-width: 90px;
       }
-    }
-    .mm-icon {
-      font-size: 2em;
     }
     .logo {
       display: none;
     }
     .extras a {
-      padding-top: 0.3em;
-      margin-top: 0.2em;
-      font-size: 1.2em;
+      padding-top: 2px;
+      margin-top: 2px;
+
+      .fa-bars {
+        font-size: @font-extra-extra-large;
+      }
     }
   }
 
@@ -1446,10 +1408,7 @@ a.fa:hover {
   }
   .content {
     .page {
-      top: 5.75em;
-      &.about {
-        top: 3.8em;
-      }
+      top: 111px;
     }
     .meta {
       padding-bottom: 0;
@@ -1461,15 +1420,15 @@ a.fa:hover {
   .reports,
   .tasks {
     .content .item-content .body > div > ul > li {
-      padding: 1em;
+      padding: 10px;
       &.indent-1 {
-        padding-left: 2em;
+        padding-left: 20px;
       }
       &.indent-2 {
-        padding-left: 3em;
+        padding-left: 30px;
       }
       &.indent-3 {
-        padding-left: 4em;
+        padding-left: 40px;
       }
     }
   }
@@ -1524,8 +1483,8 @@ a.fa:hover {
   }
 
   .filter-daterangepicker {
-    width: 245px;
-    height: 240px;
+    width: 255px;
+    height: 320px;
     .calendar {
       transition: left 500ms ease 0s;
       position: absolute;
@@ -1552,13 +1511,13 @@ a.fa:hover {
     }
   }
   .mm-button {
-    padding-left: 0.8em;
+    padding-left: 5px;
   }
   .mm-button-dropdown {
-    padding-right: 0.6em;
+    padding-right: 5px;
   }
   .mm-button-icon {
-    padding-right: 0.1em;
+    padding-right: 1px;
   }
   .message-content-wrapper {
     .name-header {
@@ -1574,46 +1533,36 @@ a.fa:hover {
   .logo {
     display: none;
   }
-  .filters .filter {
-    margin: 0;
+  .filters .mm-button-icon {
+    font-size: @font-medium;
+    padding-top: 10px;
   }
-  .header .tabs {
-    padding-left: 2px;
-    a {
-      padding-top: 0.8em;
-      min-width: 5em;
-    }
-    .button-label {
-      display: none;
-    }
-  }
-  .message-content-wrapper {
-    .item-content {
-      top: 3em;
-    }
-    .name-header {
-      height: 3em;
-      line-height: 1.2em;
-      padding-top: 0.5em;
-      .sender .position {
-        position: inherit;
+  .header {
+    .tabs {
+      padding-left: 2px;
+      a {
+        padding-top: 10px;
+        min-width: 40px;
       }
+      .button-label {
+        display: none;
+      }
+    }
+    .mm-badge-overlay {
+      right: 3px;
     }
   }
   .action-container .actions {
-    min-height: 4em;
+    min-height: 50px;
     p {
       display: none;
     }
     .fa-stack {
-      font-size: 0.8em;
-      height: 4.4em;
+      height: 50px;
+      margin-top: -5px;
     }
     .mm-icon {
-      min-height: 4em;
-      .fa {
-        font-size: 2.5em;
-      }
+      min-height: 50px;
     }
   }
   .header .tabs .configuration-tab {
@@ -1624,11 +1573,5 @@ a.fa:hover {
   }
   .desktop-only {
     display: none;
-  }
-}
-
-.upgrade-config {
-  .status {
-    text-align: center;
   }
 }

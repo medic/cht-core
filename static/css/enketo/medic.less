@@ -1,3 +1,5 @@
+@import "../variables";
+
 /**
  * Some of the widths set up in the enketo.css file assume the form is being
  * viewed full-screen.  These overrides are required when enketo is embedded in
@@ -14,6 +16,39 @@
   h3,
   h4 {
     text-align: left;
+  }
+  h2 {
+    font-size: @font-extra-extra-large;
+  }
+  h3 {
+    font-size: @font-extra-large;
+  }
+  h4 {
+    font-size: @font-large;
+  }
+  label,
+  legend,
+  .btn,
+  .note,
+  .or-required-msg.active,
+  .or-constraint-msg.active,
+  .or-hint.active,
+  input[type=text],
+  input[type=password],
+  input[type=url],
+  input[type=email],
+  input[type=file],
+  input[type=date],
+  input[type=time],
+  input[type=datetime],
+  input[type=number],
+  select,
+  textarea,
+  input[type="tel"] {
+    font-size: inherit;
+  }
+  .required-subtle {
+    font-size: @font-small;
   }
   .or {
     h2,
@@ -117,9 +152,6 @@
     width: 100%;
     max-width: 320px;
     display: block;
-  }
-  .or-hint.active {
-    font-size: 13px;
   }
   .option-wrapper > label:not(.filler) {
     padding-top: 6px;

@@ -8,11 +8,10 @@
 .mm-dropdown-menu {
   top: 0;
   right: 0;
-  padding: 1em 0;
-  margin: 3.6em 0;
-  font-size: 0.85em;
+  padding: 10px 0;
+  margin: 41px 0;
   overflow-x: hidden;
-  border-radius: 0 0 0.4em 0.4em;
+  border-radius: 0 0 5px 5px;
   border: 0;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
   height: auto;
@@ -20,13 +19,16 @@
 
   li a,
   li.dropdown-header a {
-    font-size: 1.1em;
     text-overflow: ellipsis;
     overflow: hidden;
     cursor: pointer;
     &:hover {
       background-color: @highlight-color;
     }
+  }
+
+  li.dropdown-header a {
+    font-size: @font-small;
   }
 
   &.with-icon li > a {
@@ -78,12 +80,14 @@
       overflow-x: hidden;
     }
     li {
-      a, &.dropdown-header {
-        padding-left: 1em;
-        padding-right: 1em;
+      a,
+      &.dropdown-header {
+        padding-left: 10px;
+        padding-right: 10px;
       }
       &.dropdown-header {
-        margin-top: 1em;
+        margin-top: 10px;
+        font-size: @font-small;
         &:first-child {
           margin-top: 0;
         }
@@ -172,12 +176,11 @@
   margin: 0;
   position: fixed;
   display: block;
-  padding: 1em 0;
-  font-size: 1.25em;
+  padding: 10px 0;
   border-width: 1px;
 
   li a {
-    padding: 0.5em 1em;
+    padding: 5px 10px;
     text-shadow: none;
     font-weight: bold;
   }
@@ -185,6 +188,9 @@
 }
 
 .mm-dropdown .mm-dropdown-menu {
+  ul {
+    margin-bottom: 0;
+  }
   li > a {
     display: block;
     padding: 3px 20px;
@@ -221,9 +227,9 @@
 
 @media (max-width: 767px) {
   .open .mm-dropdown-menu {
-    top: 6em;
-    left: 2em;
-    right: 2em;
+    top: 111px;
+    left: 20px;
+    right: 20px;
     .mm-dropdown-menu-modal
   }
 

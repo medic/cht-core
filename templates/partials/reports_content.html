@@ -25,7 +25,7 @@
           <i class="fa fa-minus-circle"></i>
         </a>
         <div class="detail">
-          <div class="time" ng-bind-html="summary.reported_date | fullDate"></div>
+          <div class="time small-font" ng-bind-html="summary.reported_date | fullDate"></div>
           <div class="status">
             <i ng-show="valid && !summary.verified" class="fa fa-circle green-dot"></i>
             <i ng-show="!valid && !summary.verified" class="fa fa-circle red-dot"></i>
@@ -88,8 +88,8 @@
           <h2 translate>tasks</h2>
           <ul>
             <li ng-repeat="group in selection.doc.scheduled_tasks_by_group">
+              <h3>{{group.name}}</h3>
               <p>
-                {{group.name}}
                 <span ng-hide="group.loading">
                   <a class="btn btn-link" ng-click="edit(selection, group)" translate>Edit</a>
                   <a class="btn btn-link" ng-click="mute(selection, group)" ng-show="canMute(group)" translate>Mute</a>

@@ -1,3 +1,5 @@
+@import "variables";
+
 @font-face {
   font-family: 'Noto';
   src: url(../fonts/NotoSans-Regular.ttf) format("truetype");
@@ -25,4 +27,32 @@
 
 body {
   font-family: Noto, sans-serif;
+}
+
+html,
+.input-group-btn { /* for some reason bootstrap sets this to 0 */
+  font-size: 16px;
+}
+
+body,
+.dropdown-menu,
+.btn,
+.form-control {
+  font-size: 100%;
+}
+
+h1 {
+  font-size: @font-extra-extra-large;
+}
+
+h2 {
+  font-size: @font-extra-large;
+}
+
+h3 {
+  font-size: @font-large;
+}
+
+.small-font {
+  font-size: @font-small;
 }

@@ -4,9 +4,9 @@
   display: inline-block;
   vertical-align: top;
   cursor: pointer;
-  min-height: 3em;
+  min-height: 40px;
   overflow: hidden;
-  padding-left: 1em;
+  padding-left: 10px;
   box-shadow: rgba(0, 0, 0, 0.25) 1px 1px 1px;
   background-color: rgba(255, 255, 255, 0.45);
 }
@@ -20,7 +20,7 @@
 .mm-button-dropdown {
   color: #333;
   float: right;
-  padding: 0.8em 1em 0 0;
+  padding: 10px 10px 0 0;
   cursor: pointer;
 }
 
@@ -39,33 +39,27 @@
 .mm-button-icon {
   float: left;
   color: #222;
-  font-size: 1.5em;
+  font-size: 1.4rem;
   text-shadow: rgba(255, 255, 255, 0.5) 1px 1px 1px;
-  padding: 0.3em 0.5em 0.22em 0;
+  padding: 5px 5px 5px 0;
 }
 
 .mm-button-text {
   color: #222;
-  font-size: 0.95em;
   font-weight: normal;
-  padding-right: 3em;
+  padding-right: 32px;
   text-overflow: ellipsis;
   vertical-align: bottom;
   text-shadow: rgba(255, 255, 255, 0.5) 1px 1px 1px;
 }
 
 span.mm-button-text {
-  line-height: 3.15em;
+  line-height: 40px;
   vertical-align: middle;
 }
 
 div.mm-button-text {
   padding: 0.95em 0 0 0;
-}
-
-.mm-button-nudge-down .mm-button-icon {
-  position: relative;
-  top: 0.1em;
 }
 
 .mm-button-disabled .mm-button-text,
@@ -86,14 +80,12 @@ div.mm-button-text {
 
 .mm-navigation-menu {
   text-align: center;
-  max-width: 60em;
-  margin: 2em auto;
+  margin: 10px auto;
   li {
-    min-height: 5em;
-    width: 9em;
+    width: 200px;
     vertical-align: top;
-    font-size: 1.5em;
-    margin: 1em;
+    font-size: @font-extra-extra-large;
+    margin: 20px;
     display: inline-block;
     a {
       color: inherit;
@@ -103,9 +95,9 @@ div.mm-button-text {
       border-radius: @radius-size;
       box-sizing: border-box;
       text-align: center;
-      padding: 0.25em;
+      padding: 5px;
       width: 100%;
-      min-height: 5em;
+      min-height: 130px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -114,20 +106,20 @@ div.mm-button-text {
         text-decoration: none;
       }
       .fa {
-        font-size: 1.5em;
+        font-size: 30px;
       }
     }
   }
 }
 
 @media (max-width: 767px) {
-  .mm-navigation-menu a {
-    font-size: 1em;
+  .mm-navigation-menu li {
+    font-size: @font-large;
   }
 }
 
 @media (max-width: 400px) {
-  .mm-navigation-menu a {
-    margin: 0.5em;
+  .mm-navigation-menu li {
+    margin: 10px;
   }
 }
