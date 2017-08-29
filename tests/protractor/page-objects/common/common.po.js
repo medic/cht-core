@@ -6,7 +6,6 @@ const messagesLink = element(by.id('messages-tab'));
 const tasksLink = element(by.id('tasks-tab'));
 const contactsLink = element(by.id('contacts-tab'));
 const analyticsLink = element(by.id('analytics-tab'));
-//const reportsLink = element(by.id('reports-tab'));
 const configurationLink = element(by.css('[ui-sref=configuration]'));
 const hamburgerMenu = element(by.className('dropdown options'));
 const logoutButton = $('[ng-click=logout]');

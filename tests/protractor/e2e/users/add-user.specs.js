@@ -27,8 +27,8 @@ describe('Add user  : ', () => {
 				.catch(() => {
 					return true;
 				});
-		}, 2000);	
-		
+		}, 2000);
+
 		expect(helper.isTextDisplayed(addedUser));
 		expect(helper.isTextDisplayed(fullName));
 	});
@@ -58,7 +58,7 @@ describe('Add user  : ', () => {
 	it('should require password', () => {
 		usersPage.openAddUserModal();
 		addUserModal.fillForm('user0', 'Not Saved', '');
-		addUserModal.submit();		
+		addUserModal.submit();
 		expect(errorMessagePassword.getText()).toBe('Password is a required field.');
 	});
 
