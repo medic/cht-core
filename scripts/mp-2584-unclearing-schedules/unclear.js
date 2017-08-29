@@ -13,6 +13,7 @@ const DELIVERY_CODE = 'ज';
 const CLEARED = 'cleared';
 const SCHEDULED = 'scheduled';
 const BATCH_SIZE = 100; // batch size for db operations.
+const WAIT_BETWEEN_BATCHES_SEC = 5;
 
 const dbUrl = process.env.COUCH_URL;
 const db = new PouchDB(dbUrl);
@@ -108,16 +109,11 @@ const silenceRemindersNoSaving = (
     latestVisitReportedDate,
     registrationReport,
     acceptedReportsConfig) => {
-  const options = {
-    reported_date: latestVisitReportedDate,
-    registration: { doc: registrationReport },
-    silence_for: acceptedReportsConfig.silence_for,
-    type: acceptedReportsConfig.silence_type
-  };
 
   // Code plucked from accept_patient_reports.silenceReminders
   // filter scheduled message by group
-  var toClear = accept_patient_reports.findToClear(options);
+  var toClear = accept_patient_reports._findToClear(
+    registrationReport, latestVisitReportedDate, acceptedReportsConfig);
   if (!toClear.length) {
       return;
   }
@@ -158,7 +154,7 @@ const fixReport = (registrationReport, visitFormConfig) => {
       if (birthReports && birthReports.length) { // there is an associated birth report
         console.log('has birth report', birthReports.map(report => report._id));
         clearScheduledMessages(registrationReport); // clear all scheduled messages
-        console.log('all done', registrationReport._id);
+        console.log('Report fixed', registrationReport._id);
         return registrationReport;
       }
 
@@ -173,13 +169,13 @@ const fixReport = (registrationReport, visitFormConfig) => {
         scheduleClearedMessagesAfterTimestamp(registrationReport, latestVisitReport.reported_date);
         // Run the piece of code in sentinel transition accept_patient_ids that clears the appropriate messages for latestVisitReport, according to config.
         silenceRemindersNoSaving(latestVisitReport.reported_date, registrationReport, visitFormConfig);
-        console.log('all done', registrationReport._id);
+        console.log('Report fixed', registrationReport._id);
         return registrationReport;
       }
 
       console.log('no birth or visit report');
       scheduleClearedMessages(registrationReport);
-      console.log('all done', registrationReport._id);
+      console.log('Report fixed', registrationReport._id);
       return registrationReport;
     });
 };
@@ -188,6 +184,15 @@ const saveDocs = docs => {
   return db.bulkDocs(docs);
 };
 
+const wait = (timerName) => {
+  console.log('start wait', timerName);
+  return new Promise(resolve => {
+    setTimeout(() => {
+      console.log('end wait', timerName);
+      resolve();
+    }, WAIT_BETWEEN_BATCHES_SEC * 1000);
+  });
+};
 
 const doBatch = (index, visitFormConfig, registrationList) => {
   const registrationSubList = registrationList.slice(index, index + BATCH_SIZE);
@@ -200,19 +205,24 @@ const doBatch = (index, visitFormConfig, registrationList) => {
       reports.forEach(report => {
         fs.writeFileSync('edited_reports/' + report._id + '.json', JSON.stringify(report, null, 2));
       });
-      return reports;
+      return wait(index).then(() => reports);
     });
 };
 
 const doAllBatches = (visitFormConfig, registrationList) => {
   let index = 0;
-  const promiseArray = [];
+  let reports = [];
+  let promiseChain = Promise.resolve();
   while (index < registrationList.length) {
     const doBatchI = doBatch.bind(null, index, visitFormConfig, registrationList);
-    promiseArray.push(doBatchI());
+    promiseChain = promiseChain.then(doBatchI)
+      .then(reportBatch => {
+        reports = reports.concat(reportBatch);
+        return reports;
+      });
     index += BATCH_SIZE;
   }
-  return Promise.all(promiseArray);
+  return promiseChain;
 };
 
 
