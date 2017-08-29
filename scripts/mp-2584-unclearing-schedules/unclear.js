@@ -205,7 +205,12 @@ const doBatch = (index, visitFormConfig, registrationList) => {
       reports.forEach(report => {
         fs.writeFileSync('edited_reports/' + report._id + '.json', JSON.stringify(report, null, 2));
       });
-      return wait(index).then(() => reports);
+      return saveDocs(reports)
+        .catch(err => {
+          console.log('Batch', index, 'failed.', err);
+        })
+        .then(() => wait(index))
+        .then(() => reports);
     });
 };
 
