@@ -235,14 +235,14 @@ describe('RulesEngine service', function() {
   };
 
   it('returns search errors', function(done) {
-    Search.returns(KarmaUtils.mockPromise('boom'));
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Search.returns(Promise.reject('boom'));
+    Settings.returns(Promise.resolve({
       tasks: {
         rules: rules,
         schedules: schedules
       }
     }));
-    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    UserContact.returns(Promise.resolve({ name: 'Jim' }));
     var service = getService();
     service.listen('test', 'task', function(err) {
       chai.expect(err).to.equal('boom');
@@ -252,8 +252,8 @@ describe('RulesEngine service', function() {
   });
 
   it('returns settings errors', function(done) {
-    Settings.returns(KarmaUtils.mockPromise('boom'));
-    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    Settings.returns(Promise.reject('boom'));
+    UserContact.returns(Promise.resolve({ name: 'Jim' }));
     var service = getService();
     service.listen('test', 'task', function(err) {
       chai.expect(err).to.equal('boom');
@@ -263,8 +263,8 @@ describe('RulesEngine service', function() {
   });
 
   it('returns empty when settings returns no config', function(done) {
-    Settings.returns(KarmaUtils.mockPromise(null, {}));
-    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    Settings.returns(Promise.resolve({}));
+    UserContact.returns(Promise.resolve({ name: 'Jim' }));
     var service = getService();
     service.listen('test', 'task', function(err, actual) {
       chai.expect(Search.callCount).to.equal(0);
@@ -276,15 +276,15 @@ describe('RulesEngine service', function() {
 
   it('generates tasks when given registrations', function(done) {
 
-    Search.onFirstCall().returns(KarmaUtils.mockPromise(null, dataRecords));
-    Search.onSecondCall().returns(KarmaUtils.mockPromise(null, contacts));
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Search.onFirstCall().returns(Promise.resolve(dataRecords));
+    Search.onSecondCall().returns(Promise.resolve(contacts));
+    Settings.returns(Promise.resolve({
       tasks: {
         rules: rules,
         schedules: schedules
       }
     }));
-    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    UserContact.returns(Promise.resolve({ name: 'Jim' }));
 
     var expectations = {
       '1-visit-1': {
@@ -397,15 +397,15 @@ describe('RulesEngine service', function() {
       name: 'Jenny',
       patient_id: '12345'
     };
-    Search.onFirstCall().returns(KarmaUtils.mockPromise(null, [ dataRecord ]));
-    Search.onSecondCall().returns(KarmaUtils.mockPromise(null, [ contact ]));
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Search.onFirstCall().returns(Promise.resolve([ dataRecord ]));
+    Search.onSecondCall().returns(Promise.resolve([ contact ]));
+    Settings.returns(Promise.resolve({
       tasks: {
         rules: rules,
         schedules: schedules
       }
     }));
-    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    UserContact.returns(Promise.resolve({ name: 'Jim' }));
 
     var expectations = {
       '1-visit-1': {
@@ -457,15 +457,15 @@ describe('RulesEngine service', function() {
 
   it('caches tasks', function(done) {
 
-    Search.onFirstCall().returns(KarmaUtils.mockPromise(null, dataRecords));
-    Search.onSecondCall().returns(KarmaUtils.mockPromise(null, contacts));
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Search.onFirstCall().returns(Promise.resolve(dataRecords));
+    Search.onSecondCall().returns(Promise.resolve(contacts));
+    Settings.returns(Promise.resolve({
       tasks: {
         rules: rules,
         schedules: schedules
       }
     }));
-    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    UserContact.returns(Promise.resolve({ name: 'Jim' }));
 
     var service = getService();
     var expected = {};
@@ -505,15 +505,15 @@ describe('RulesEngine service', function() {
       { _id: 1, name: 'Jenny' }
     ];
 
-    Search.onFirstCall().returns(KarmaUtils.mockPromise(null, dataRecords));
-    Search.onSecondCall().returns(KarmaUtils.mockPromise(null, contacts));
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Search.onFirstCall().returns(Promise.resolve(dataRecords));
+    Search.onSecondCall().returns(Promise.resolve(contacts));
+    Settings.returns(Promise.resolve({
       tasks: {
         rules: rules,
         schedules: schedules
       }
     }));
-    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    UserContact.returns(Promise.resolve({ name: 'Jim' }));
 
     var callbackCount = 0;
     var service = getService();
@@ -560,15 +560,15 @@ describe('RulesEngine service', function() {
       { _id: 1, name: 'Jenny' }
     ];
 
-    Search.onFirstCall().returns(KarmaUtils.mockPromise(null, dataRecords));
-    Search.onSecondCall().returns(KarmaUtils.mockPromise(null, contacts));
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Search.onFirstCall().returns(Promise.resolve(dataRecords));
+    Search.onSecondCall().returns(Promise.resolve(contacts));
+    Settings.returns(Promise.resolve({
       tasks: {
         rules: rules,
         schedules: schedules
       }
     }));
-    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    UserContact.returns(Promise.resolve({ name: 'Jim' }));
 
     var callbackCount = 0;
     var service = getService();
@@ -613,15 +613,15 @@ describe('RulesEngine service', function() {
 
     var newContact = { _id: 4, name: 'Sarah' };
 
-    Search.onFirstCall().returns(KarmaUtils.mockPromise(null, dataRecords));
-    Search.onSecondCall().returns(KarmaUtils.mockPromise(null, contacts));
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Search.onFirstCall().returns(Promise.resolve(dataRecords));
+    Search.onSecondCall().returns(Promise.resolve(contacts));
+    Settings.returns(Promise.resolve({
       tasks: {
         rules: rules,
         schedules: schedules
       }
     }));
-    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    UserContact.returns(Promise.resolve({ name: 'Jim' }));
 
     var callbackCount = 0;
     var service = getService();
@@ -671,15 +671,15 @@ describe('RulesEngine service', function() {
       { _id: 1, name: 'Jenny' }
     ];
 
-    Search.onFirstCall().returns(KarmaUtils.mockPromise(null, dataRecords));
-    Search.onSecondCall().returns(KarmaUtils.mockPromise(null, contacts));
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Search.onFirstCall().returns(Promise.resolve(dataRecords));
+    Search.onSecondCall().returns(Promise.resolve(contacts));
+    Settings.returns(Promise.resolve({
       tasks: {
         rules: rules,
         schedules: schedules
       }
     }));
-    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    UserContact.returns(Promise.resolve({ name: 'Jim' }));
 
     var callbackCount = 0;
     var service = getService();
@@ -728,15 +728,15 @@ describe('RulesEngine service', function() {
       { _id: 'some_uuid', name: 'Jenny', patient_id: 1 }
     ];
 
-    Search.onFirstCall().returns(KarmaUtils.mockPromise(null, dataRecords));
-    Search.onSecondCall().returns(KarmaUtils.mockPromise(null, contacts));
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Search.onFirstCall().returns(Promise.resolve(dataRecords));
+    Search.onSecondCall().returns(Promise.resolve(contacts));
+    Settings.returns(Promise.resolve({
       tasks: {
         rules: rules,
         schedules: schedules
       }
     }));
-    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    UserContact.returns(Promise.resolve({ name: 'Jim' }));
 
     var callbackCount = 0;
     var service = getService();
@@ -778,15 +778,15 @@ describe('RulesEngine service', function() {
       { _id: 1, name: 'Jenny' }
     ];
 
-    Search.onFirstCall().returns(KarmaUtils.mockPromise(null, dataRecords));
-    Search.onSecondCall().returns(KarmaUtils.mockPromise(null, contacts));
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Search.onFirstCall().returns(Promise.resolve(dataRecords));
+    Search.onSecondCall().returns(Promise.resolve(contacts));
+    Settings.returns(Promise.resolve({
       tasks: {
         rules: rules,
         schedules: schedules
       }
     }));
-    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    UserContact.returns(Promise.resolve({ name: 'Jim' }));
 
     var callbackCount = 0;
     var service = getService();
@@ -828,15 +828,15 @@ describe('RulesEngine service', function() {
       { _id: 1, name: 'Jenny' }
     ];
 
-    Search.onFirstCall().returns(KarmaUtils.mockPromise(null, dataRecords));
-    Search.onSecondCall().returns(KarmaUtils.mockPromise(null, contacts));
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Search.onFirstCall().returns(Promise.resolve(dataRecords));
+    Search.onSecondCall().returns(Promise.resolve(contacts));
+    Settings.returns(Promise.resolve({
       tasks: {
         rules: rules,
         schedules: schedules
       }
     }));
-    UserContact.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+    UserContact.returns(Promise.resolve({ name: 'Jim' }));
 
     var callbackCount = 0;
     var service = getService();

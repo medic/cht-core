@@ -33,7 +33,7 @@ describe('UpdateFacility service', function() {
       ]
     };
     var facility = { _id: 'xyz' };
-    var expected = { 
+    var expected = {
       _id: 'abc',
       _rev: 1,
       errors: [
@@ -45,9 +45,9 @@ describe('UpdateFacility service', function() {
     };
 
     get
-      .onFirstCall().returns(KarmaUtils.mockPromise(null, message))
-      .onSecondCall().returns(KarmaUtils.mockPromise(null, facility));
-    put.returns(KarmaUtils.mockPromise(null, { _id: message._id, _rev: 2 }));
+      .onFirstCall().returns(Promise.resolve(message))
+      .onSecondCall().returns(Promise.resolve(facility));
+    put.returns(Promise.resolve({ _id: message._id, _rev: 2 }));
 
     return service('abc', 'xyz')
       .then(function() {
@@ -58,8 +58,8 @@ describe('UpdateFacility service', function() {
 
   it('returns db errors', function(done) {
     get
-      .onFirstCall().returns(KarmaUtils.mockPromise('errcode1'))
-      .onSecondCall().returns(KarmaUtils.mockPromise(null, {}));
+      .onFirstCall().returns(Promise.reject('errcode1'))
+      .onSecondCall().returns(Promise.resolve({}));
     service('abc', 'xyz')
       .then(function() {
         done(new Error('expected error to be thrown'));
@@ -72,8 +72,8 @@ describe('UpdateFacility service', function() {
 
   it('returns db errors from second call', function(done) {
     get
-      .onFirstCall().returns(KarmaUtils.mockPromise(null, {}))
-      .onSecondCall().returns(KarmaUtils.mockPromise('errcode2'));
+      .onFirstCall().returns(Promise.resolve({}))
+      .onSecondCall().returns(Promise.reject('errcode2'));
     service('abc', 'xyz')
       .then(function() {
         done(new Error('expected error to be thrown'));
@@ -86,9 +86,9 @@ describe('UpdateFacility service', function() {
 
   it('returns save errors', function(done) {
     get
-      .onFirstCall().returns(KarmaUtils.mockPromise(null, {}))
-      .onSecondCall().returns(KarmaUtils.mockPromise(null, {}));
-    put.returns(KarmaUtils.mockPromise('errcode3'));
+      .onFirstCall().returns(Promise.resolve({}))
+      .onSecondCall().returns(Promise.resolve({}));
+    put.returns(Promise.reject('errcode3'));
     service('abc', 'xyz')
       .then(function() {
         done(new Error('expected error to be thrown'));

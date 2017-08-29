@@ -20,7 +20,7 @@ describe('JsonForms service', function() {
   });
 
   it('returns zero when no forms', function(done) {
-    Settings.returns(KarmaUtils.mockPromise(null, { forms: {} }));
+    Settings.returns(Promise.resolve({ forms: {} }));
     service()
       .then(function(actual) {
         chai.expect(actual).to.deep.equal([]);
@@ -30,7 +30,7 @@ describe('JsonForms service', function() {
   });
 
   it('returns forms with old style labels', function(done) {
-    Settings.returns(KarmaUtils.mockPromise(null, { forms: {
+    Settings.returns(Promise.resolve({ forms: {
       A: { meta: { code: 'A', label: 'First',  icon: 'a' } },
       B: { meta: { code: 'B', label: 'Second', icon: 'b' } },
       C: { meta: { code: 'C', label: 'Third',  icon: 'c' } },
@@ -50,7 +50,7 @@ describe('JsonForms service', function() {
   });
 
   it('handles forms with no label', function(done) {
-    Settings.returns(KarmaUtils.mockPromise(null, { forms: {
+    Settings.returns(Promise.resolve({ forms: {
       A: { meta: { code: 'A' } },
       B: { meta: { code: 'B', icon: 'b' } },
       C: { meta: { code: 'C', label: 'Third' } },

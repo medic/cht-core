@@ -95,8 +95,8 @@ describe('ReportsCtrl controller', () => {
   });
 
   it('verifies the given report', done => {
-    get.returns(KarmaUtils.mockPromise(null, { _id: 'def', name: 'hello' }));
-    post.returns(KarmaUtils.mockPromise());
+    get.returns(Promise.resolve({ _id: 'def', name: 'hello' }));
+    post.returns(Promise.resolve());
     createController();
     scope.selected[0] = {
       _id: 'abc',
@@ -116,8 +116,8 @@ describe('ReportsCtrl controller', () => {
 
   it('when selecting a report, it sets the phone number in the actionbar', done => {
     const phone = 12345;
-    get.returns(KarmaUtils.mockPromise(null, { _id: 'def', name: 'hello', phone: phone }));
-    post.returns(KarmaUtils.mockPromise());
+    get.returns(Promise.resolve({ _id: 'def', name: 'hello', phone: phone }));
+    post.returns(Promise.resolve());
     createController();
     scope.setSelected({ doc: {
       _id: 'abc',

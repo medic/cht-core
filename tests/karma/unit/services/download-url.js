@@ -23,35 +23,35 @@ describe('DownloadUrl service', function() {
   });
 
   it('builds url for messages', function() {
-    Language.returns(KarmaUtils.mockPromise(null, 'en'));
+    Language.returns(Promise.resolve('en'));
     return service(null, 'messages').then(function(actual) {
       chai.expect(actual).to.equal('/api/v1/export/messages?format=xml&locale=en');
     });
   });
 
   it('builds url for audit', function() {
-    Language.returns(KarmaUtils.mockPromise(null, 'en'));
+    Language.returns(Promise.resolve('en'));
     return service(null, 'audit').then(function(actual) {
       chai.expect(actual).to.equal('/api/v1/export/audit?format=xml&locale=en');
     });
   });
 
   it('builds url for feedback', function() {
-    Language.returns(KarmaUtils.mockPromise(null, 'en'));
+    Language.returns(Promise.resolve('en'));
     return service(null, 'feedback').then(function(actual) {
       chai.expect(actual).to.equal('/api/v1/export/feedback?format=xml&locale=en');
     });
   });
 
   it('builds url for logs', function() {
-    Language.returns(KarmaUtils.mockPromise(null, 'en'));
+    Language.returns(Promise.resolve('en'));
     return service(null, 'logs').then(function(actual) {
       chai.expect(actual).to.equal('/api/v1/export/logs?format=zip&locale=en');
     });
   });
 
   it('builds url for forms', function() {
-    Language.returns(KarmaUtils.mockPromise(null, 'en'));
+    Language.returns(Promise.resolve('en'));
     GenerateLuceneQuery.returns({ query: 'form:P' });
     return service(null, 'reports').then(function(actual) {
       chai.expect(decodeURIComponent(actual))
@@ -60,7 +60,7 @@ describe('DownloadUrl service', function() {
   });
 
   it('builds url for contacts backup', function() {
-    Language.returns(KarmaUtils.mockPromise(null, 'en'));
+    Language.returns(Promise.resolve('en'));
     GenerateLuceneQuery.returns({ query: 'district:2' });
     return service(null, 'contacts').then(function(actual) {
       chai.expect(decodeURIComponent(actual))

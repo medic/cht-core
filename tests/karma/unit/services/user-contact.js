@@ -20,7 +20,7 @@ describe('UserContact service', function() {
   });
 
   it('returns error from user settings', function(done) {
-    UserSettings.returns(KarmaUtils.mockPromise(new Error('boom')));
+    UserSettings.returns(Promise.reject(new Error('boom')));
     service()
       .then(function() {
         done('Expected error to be thrown');
@@ -32,27 +32,27 @@ describe('UserContact service', function() {
   });
 
   it('returns null when no configured contact', function() {
-    UserSettings.returns(KarmaUtils.mockPromise(null, {}));
+    UserSettings.returns(Promise.resolve({}));
     return service().then(function(contact) {
       chai.expect(contact).to.equal(undefined);
     });
   });
 
   it('returns null when configured contact not in the database', function() {
-    UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: 'not-found' }));
+    UserSettings.returns(Promise.resolve({ contact_id: 'not-found' }));
     var err = new Error('not_found');
     err.reason = 'missing';
     err.message = 'missing';
     err.status = 404;
-    get.returns(KarmaUtils.mockPromise(err));
+    get.returns(Promise.reject(err));
     return service().then(function(contact) {
       chai.expect(contact).to.equal(undefined);
     });
   });
 
   it('returns error from getting contact', function(done) {
-    UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: 'nobody' }));
-    get.returns(KarmaUtils.mockPromise(new Error('boom')));
+    UserSettings.returns(Promise.resolve({ contact_id: 'nobody' }));
+    get.returns(Promise.reject(new Error('boom')));
     service()
       .then(function() {
         done('Expected error to be thrown');
@@ -67,8 +67,8 @@ describe('UserContact service', function() {
 
   it('returns contact', function() {
     var expected = { _id: 'somebody', name: 'Some Body' };
-    UserSettings.returns(KarmaUtils.mockPromise(null, { contact_id: 'somebody' }));
-    get.returns(KarmaUtils.mockPromise(null, expected));
+    UserSettings.returns(Promise.resolve({ contact_id: 'somebody' }));
+    get.returns(Promise.resolve(expected));
     return service().then(function(contact) {
       chai.expect(contact).to.deep.equal(expected);
       chai.expect(get.callCount).to.equal(1);

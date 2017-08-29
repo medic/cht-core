@@ -22,7 +22,7 @@ describe('TasksContentCtrl', function() {
       },
       enketoStatus: { edited: true }
     };
-    render.returns(KarmaUtils.mockPromise());
+    render.returns(Promise.resolve());
     inject(function($controller) {
       createController = function() {
         $controller('TasksContentCtrl', {
@@ -48,7 +48,7 @@ describe('TasksContentCtrl', function() {
         content: 'nothing'
       }]
     };
-    XmlForm.returns(KarmaUtils.mockPromise(null, { id: 'myform', doc: { title: 'My Form' } }));
+    XmlForm.returns(Promise.resolve({ id: 'myform', doc: { title: 'My Form' } }));
     createController();
     watchCallback();
     chai.expect($scope.formId).to.equal('A');

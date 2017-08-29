@@ -40,7 +40,7 @@ describe('ZScore service', function() {
       var configDoc = {
         charts: []
       };
-      dbGet.returns(KarmaUtils.mockPromise(null, configDoc));
+      dbGet.returns(Promise.resolve(configDoc));
       return service(options).then(function(scores) {
         chai.expect(scores.weightForAge).to.equal(undefined);
       });
@@ -57,7 +57,7 @@ describe('ZScore service', function() {
           data: {}
         }]
       };
-      dbGet.returns(KarmaUtils.mockPromise(null, configDoc));
+      dbGet.returns(Promise.resolve(configDoc));
       return service(options).then(function(scores) {
         chai.expect(scores.weightForAge).to.equal(undefined);
       });
@@ -74,7 +74,7 @@ describe('ZScore service', function() {
           data: {}
         }]
       };
-      dbGet.returns(KarmaUtils.mockPromise(null, configDoc));
+      dbGet.returns(Promise.resolve(configDoc));
       return service(options).then(function(scores) {
         chai.expect(scores.weightForAge).to.equal(undefined);
       });
@@ -91,7 +91,7 @@ describe('ZScore service', function() {
           data: {}
         }]
       };
-      dbGet.returns(KarmaUtils.mockPromise(null, configDoc));
+      dbGet.returns(Promise.resolve(configDoc));
       return service(options).then(function(scores) {
         chai.expect(scores.weightForAge).to.equal(undefined);
       });
@@ -103,7 +103,7 @@ describe('ZScore service', function() {
         weight: 25,
         age: 1
       };
-      dbGet.returns(KarmaUtils.mockPromise(null, CONFIG_DOC));
+      dbGet.returns(Promise.resolve(CONFIG_DOC));
       return service(options).then(function(scores) {
         chai.expect(scores.weightForAge).to.equal(1);
         chai.expect(dbGet.callCount).to.equal(1);
@@ -117,7 +117,7 @@ describe('ZScore service', function() {
         weight: 25.753,
         age: 1
       };
-      dbGet.returns(KarmaUtils.mockPromise(null, CONFIG_DOC));
+      dbGet.returns(Promise.resolve(CONFIG_DOC));
       return service(options).then(function(scores) {
         // round to 3dp to ignore tiny errors caused by floats
         var actual = (scores.weightForAge * 1000) / 1000;
@@ -131,7 +131,7 @@ describe('ZScore service', function() {
         weight: 25.7,
         age: 1
       };
-      dbGet.returns(KarmaUtils.mockPromise(null, CONFIG_DOC));
+      dbGet.returns(Promise.resolve(CONFIG_DOC));
       return service(options).then(function(scores) {
         chai.expect(scores.weightForAge).to.equal(undefined);
       });
@@ -154,7 +154,7 @@ describe('ZScore service', function() {
           }
         }]
       };
-      dbGet.returns(KarmaUtils.mockPromise(null, configDoc));
+      dbGet.returns(Promise.resolve(configDoc));
       return service(options).then(function(scores) {
         chai.expect(scores.weightForAge).to.equal(undefined);
       });
@@ -166,7 +166,7 @@ describe('ZScore service', function() {
         weight: 25.7,
         age: 5
       };
-      dbGet.returns(KarmaUtils.mockPromise(null, CONFIG_DOC));
+      dbGet.returns(Promise.resolve(CONFIG_DOC));
       return service(options).then(function(scores) {
         chai.expect(scores.weightForAge).to.equal(undefined);
       });
@@ -178,7 +178,7 @@ describe('ZScore service', function() {
         weight: 19,
         age: 1
       };
-      dbGet.returns(KarmaUtils.mockPromise(null, CONFIG_DOC));
+      dbGet.returns(Promise.resolve(CONFIG_DOC));
       return service(options).then(function(scores) {
         chai.expect(scores.weightForAge).to.equal(-4);
       });
@@ -190,7 +190,7 @@ describe('ZScore service', function() {
         weight: 29,
         age: 1
       };
-      dbGet.returns(KarmaUtils.mockPromise(null, CONFIG_DOC));
+      dbGet.returns(Promise.resolve(CONFIG_DOC));
       return service(options).then(function(scores) {
         chai.expect(scores.weightForAge).to.equal(4);
       });
@@ -220,7 +220,7 @@ describe('ZScore service', function() {
         height: 56.1,
         age: 1
       };
-      dbGet.returns(KarmaUtils.mockPromise(null, CONFIG_DOC));
+      dbGet.returns(Promise.resolve(CONFIG_DOC));
       return service(options).then(function(scores) {
         chai.expect(scores.heightForAge).to.equal(1.5);
         chai.expect(dbGet.callCount).to.equal(1);
@@ -251,7 +251,7 @@ describe('ZScore service', function() {
         height: 45.1,
         weight: 26.5
       };
-      dbGet.returns(KarmaUtils.mockPromise(null, CONFIG_DOC));
+      dbGet.returns(Promise.resolve(CONFIG_DOC));
       return service(options).then(function(scores) {
         chai.expect(scores.weightForHeight).to.equal(2.5);
         chai.expect(dbGet.callCount).to.equal(1);
@@ -300,7 +300,7 @@ describe('ZScore service', function() {
         height: 83,
         weight: 11.704545
       };
-      dbGet.returns(KarmaUtils.mockPromise(null, CONFIG_DOC));
+      dbGet.returns(Promise.resolve(CONFIG_DOC));
       return service(options).then(function(scores) {
         chai.expect(scores.heightForAge).to.equal(-3.424135113048216);
         chai.expect(scores.weightForAge).to.equal(-1.6321967559943587);

@@ -73,7 +73,7 @@ describe('EditTranslationMessagesCtrl controller', function() {
       ]
     };
     createController();
-    Settings.returns(KarmaUtils.mockPromise(null, {
+    Settings.returns(Promise.resolve({
       forms: [
         {
           registration: {

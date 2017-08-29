@@ -50,7 +50,7 @@ describe('phone-widget', function() {
   }
 
   it('is placed in dom', function() {
-    settings.returns(KarmaUtils.mockPromise(null, {}));
+    settings.returns(Promise.resolve({}));
     buildHtml();
     new phoneWidget.widget($(phoneWidget.selector)[0], {}, settings);
 
@@ -66,7 +66,7 @@ describe('phone-widget', function() {
   });
 
   it('formats input', function() {
-    settings.returns(KarmaUtils.mockPromise(null, {}));
+    settings.returns(Promise.resolve({}));
     buildHtml();
     new phoneWidget.widget($(phoneWidget.selector)[0], {}, settings);
     var input = inputSelector(inputName);
@@ -78,7 +78,7 @@ describe('phone-widget', function() {
   });
 
   it('still formats if no settings are found', function() {
-    settings.returns(KarmaUtils.mockPromise(null, {}));
+    settings.returns(Promise.resolve({}));
     buildHtml();
     new phoneWidget.widget($(phoneWidget.selector)[0], {}, settings);
 
@@ -91,7 +91,7 @@ describe('phone-widget', function() {
   });
 
   it('doesn\'t format invalid input', function() {
-    settings.returns(KarmaUtils.mockPromise(null, {}));
+    settings.returns(Promise.resolve({}));
     buildHtml();
     new phoneWidget.widget($(phoneWidget.selector)[0], {}, settings);
 
@@ -105,7 +105,7 @@ describe('phone-widget', function() {
   });
 
   it('keeps formatted input', function() {
-    settings.returns(KarmaUtils.mockPromise(null, {}));
+    settings.returns(Promise.resolve({}));
     buildHtml();
     new phoneWidget.widget($(phoneWidget.selector)[0], {}, settings);
 
@@ -119,7 +119,7 @@ describe('phone-widget', function() {
   });
 
   it('doesn\'t modify non-phone fields', function() {
-    settings.returns(KarmaUtils.mockPromise(null, {}));
+    settings.returns(Promise.resolve({}));
     buildHtml('other');
     new phoneWidget.widget($(phoneWidget.selector)[0], {}, settings);
 

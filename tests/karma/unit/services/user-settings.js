@@ -40,7 +40,7 @@ describe('UserSettings service', function() {
 
   it('gets from local db', function() {
     userCtx.returns({ name: 'jack' });
-    get.returns(KarmaUtils.mockPromise(null, { id: 'j' }));
+    get.returns(Promise.resolve({ id: 'j' }));
     return service()
       .then(function(actual) {
         chai.expect(actual.id).to.equal('j');
@@ -53,8 +53,8 @@ describe('UserSettings service', function() {
   it('gets from remote db', function() {
     userCtx.returns({ name: 'jack' });
     get
-      .onCall(0).returns(KarmaUtils.mockPromise({ code: 404 }))
-      .onCall(1).returns(KarmaUtils.mockPromise(null, { id: 'j' }));
+      .onCall(0).returns(Promise.reject({ code: 404 }))
+      .onCall(1).returns(Promise.resolve({ id: 'j' }));
     return service()
       .then(function(actual) {
         chai.expect(actual.id).to.equal('j');
@@ -68,8 +68,8 @@ describe('UserSettings service', function() {
   it('errors if remote db errors', function(done) {
     userCtx.returns({ name: 'jack' });
     get
-      .onCall(0).returns(KarmaUtils.mockPromise({ code: 404 }))
-      .onCall(1).returns(KarmaUtils.mockPromise({ code: 503, message: 'nope' }));
+      .onCall(0).returns(Promise.reject({ code: 404 }))
+      .onCall(1).returns(Promise.reject({ code: 503, message: 'nope' }));
     service()
       .then(function() {
         done(new Error('expected error to be thrown'));

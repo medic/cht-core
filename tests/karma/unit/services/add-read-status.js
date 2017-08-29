@@ -28,7 +28,7 @@ describe('AddReadStatus service', () => {
     });
 
     it('sets the read status', () => {
-      allDocs.returns(KarmaUtils.mockPromise(null, {
+      allDocs.returns(Promise.resolve({
         rows: [
           { id: 'a', key: 'a', value: { rev: 'x' } },
           { key: 'b', error: 'not_found' },
@@ -69,7 +69,7 @@ describe('AddReadStatus service', () => {
     });
 
     it('sets the read status', () => {
-      allDocs.returns(KarmaUtils.mockPromise(null, {
+      allDocs.returns(Promise.resolve({
         rows: [
           { id: 'a', key: 'a', value: { rev: 'x' } },
           { key: 'b', error: 'not_found' },

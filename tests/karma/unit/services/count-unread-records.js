@@ -18,7 +18,7 @@ describe('CountUnreadRecords service', () => {
   });
 
   it('returns zero when no data_records', () => {
-    query.returns(KarmaUtils.mockPromise(null, { rows: [] }));
+    query.returns(Promise.resolve({ rows: [] }));
     return service().then(actual => {
       chai.expect(actual).to.deep.equal({
         report: 0,
@@ -28,11 +28,11 @@ describe('CountUnreadRecords service', () => {
   });
 
   it('returns all data_records when none read', () => {
-    query.onCall(0).returns(KarmaUtils.mockPromise(null, { rows: [
+    query.onCall(0).returns(Promise.resolve({ rows: [
       { key: 'report', value: 13 },
       { key: 'message', value: 5 }
     ] }));
-    query.onCall(1).returns(KarmaUtils.mockPromise(null, { rows: [] }));
+    query.onCall(1).returns(Promise.resolve({ rows: [] }));
     return service().then(actual => {
       chai.expect(actual).to.deep.equal({
         report: 13,
@@ -42,11 +42,11 @@ describe('CountUnreadRecords service', () => {
   });
 
   it('returns total', () => {
-    query.onCall(0).returns(KarmaUtils.mockPromise(null, { rows: [
+    query.onCall(0).returns(Promise.resolve({ rows: [
       { key: 'report', value: 13 },
       { key: 'message', value: 5 }
     ] }));
-    query.onCall(1).returns(KarmaUtils.mockPromise(null, { rows: [
+    query.onCall(1).returns(Promise.resolve({ rows: [
       { key: 'report', value: 3 }
     ] }));
     return service().then(actual => {

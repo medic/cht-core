@@ -43,7 +43,7 @@ describe('InboxCtrl controller', () => {
         // ConfirmModal : Always return as if user clicked delete. This ignores the DeleteDocs
         // altogether. The calling of the processingFunction is tested in
         // modal.js, not here.
-        stubModal.returns(KarmaUtils.mockPromise());
+        stubModal.returns(Promise.resolve());
         return stubModal;
       });
       $provide.value('ReadMessages', sinon.stub());
@@ -116,7 +116,7 @@ describe('InboxCtrl controller', () => {
 
   it('doesn\'t deleteContact if user cancels modal', () => {
     stubModal.reset();
-    stubModal.returns(KarmaUtils.mockPromise({err: 'user cancelled'}));
+    stubModal.returns(Promise.reject({err: 'user cancelled'}));
 
     scope.deleteDoc(dummyId);
 

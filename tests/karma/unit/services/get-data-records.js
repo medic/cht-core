@@ -35,7 +35,7 @@ describe('GetDataRecords service', () => {
   describe('summaries', () => {
 
     it('db errors', () => {
-      query.returns(KarmaUtils.mockPromise('missing'));
+      query.returns(Promise.reject('missing'));
       return service('5')
         .then(() => {
           throw new Error('expected error to be thrown');
@@ -44,8 +44,8 @@ describe('GetDataRecords service', () => {
     });
 
     it('no result', () => {
-      query.returns(KarmaUtils.mockPromise(null, { rows: [] }));
-      GetContactSummaries.returns(KarmaUtils.mockPromise(null, [ ]));
+      query.returns(Promise.resolve({ rows: [] }));
+      GetContactSummaries.returns(Promise.resolve([ ]));
       return service('5').then(actual => {
         chai.expect(actual).to.equal(null);
         chai.expect(query.callCount).to.equal(1);
@@ -62,7 +62,7 @@ describe('GetDataRecords service', () => {
         contact: 'jim',
         lineage: [ 'area', 'center' ]
       };
-      query.returns(KarmaUtils.mockPromise(null, { rows: [
+      query.returns(Promise.resolve({ rows: [
         {
           id: '5',
           value: {
@@ -72,7 +72,7 @@ describe('GetDataRecords service', () => {
           }
         }
       ] }));
-      GetContactSummaries.returns(KarmaUtils.mockPromise(null, [ expected ]));
+      GetContactSummaries.returns(Promise.resolve([ expected ]));
       return service('5').then(actual => {
         chai.expect(actual).to.deep.equal(expected);
         chai.expect(query.callCount).to.equal(1);
@@ -95,12 +95,12 @@ describe('GetDataRecords service', () => {
         { _id: '6', name: 'six' },
         { _id: '7', name: 'seven' }
       ];
-      query.returns(KarmaUtils.mockPromise(null, { rows: [
+      query.returns(Promise.resolve({ rows: [
         { id: '5', value: { name: 'five' } },
         { id: '6', value: { name: 'six' } },
         { id: '7', value: { name: 'seven' } }
       ] }));
-      GetContactSummaries.returns(KarmaUtils.mockPromise(null, expected));
+      GetContactSummaries.returns(Promise.resolve(expected));
       return service([ '5', '6', '7' ]).then(actual => {
         chai.expect(actual).to.deep.equal(expected);
         chai.expect(query.callCount).to.equal(1);
@@ -115,7 +115,7 @@ describe('GetDataRecords service', () => {
   describe('details', () => {
 
     it('db errors', () => {
-      allDocs.returns(KarmaUtils.mockPromise('missing'));
+      allDocs.returns(Promise.reject('missing'));
       return service('5', { include_docs: true })
         .then(() => {
           throw new Error('expected error to be thrown');
@@ -124,7 +124,7 @@ describe('GetDataRecords service', () => {
     });
 
     it('no result', () => {
-      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [] }));
+      allDocs.returns(Promise.resolve({ rows: [] }));
       return service('5', { include_docs: true }).then(actual => {
         chai.expect(actual).to.equal(null);
         chai.expect(allDocs.callCount).to.equal(1);
@@ -134,7 +134,7 @@ describe('GetDataRecords service', () => {
     });
 
     it('single result', () => {
-      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [
+      allDocs.returns(Promise.resolve({ rows: [
         { doc: { _id: '5', name: 'five' } }
       ] }));
       return service('5', { include_docs: true }).then(actual => {
@@ -146,7 +146,7 @@ describe('GetDataRecords service', () => {
     });
 
     it('multiple results', () => {
-      allDocs.returns(KarmaUtils.mockPromise(null, { rows: [
+      allDocs.returns(Promise.resolve({ rows: [
         { doc: { _id: '5', name: 'five' } },
         { doc: { _id: '6', name: 'six' } },
         { doc: { _id: '7', name: 'seven' } }

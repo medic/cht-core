@@ -79,8 +79,8 @@ describe('UserDistrict service', function() {
       facility_id: 'x'
     };
 
-    get.onCall(0).returns(KarmaUtils.mockPromise(null, user));
-    get.onCall(1).returns(KarmaUtils.mockPromise(null, { type: 'district_hospital' }));
+    get.onCall(0).returns(Promise.resolve(user));
+    get.onCall(1).returns(Promise.resolve({ type: 'district_hospital' }));
 
     return service()
       .then(function(actual) {
@@ -105,7 +105,7 @@ describe('UserDistrict service', function() {
       roles: ['district_admin']
     };
 
-    get.onCall(0).returns(KarmaUtils.mockPromise(null, user));
+    get.onCall(0).returns(Promise.resolve(user));
 
     return service()
       .then(function() {
@@ -133,9 +133,9 @@ describe('UserDistrict service', function() {
 
     var err404 = {status: 404, name: 'not_found', message: 'missing', error: true, reason: 'missing'};
 
-    get.onCall(0).returns(KarmaUtils.mockPromise(null, user));
-    get.onCall(1).returns(KarmaUtils.mockPromise(err404));
-    get.onCall(2).returns(KarmaUtils.mockPromise(err404));
+    get.onCall(0).returns(Promise.resolve(user));
+    get.onCall(1).returns(Promise.reject(err404));
+    get.onCall(2).returns(Promise.reject(err404));
 
     return service()
       .then(function() {

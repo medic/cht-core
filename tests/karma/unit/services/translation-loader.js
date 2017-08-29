@@ -27,7 +27,7 @@ describe('TranslationLoader service', function() {
   it('returns error when db throws error', function(done) {
     var options = { key: 'err' };
     var expected = { status: 503 };
-    DBGet.returns(KarmaUtils.mockPromise(expected));
+    DBGet.returns(Promise.reject(expected));
     service(options)
       .then(function() {
         done(new Error('expected error to be thrown'));
@@ -40,7 +40,7 @@ describe('TranslationLoader service', function() {
 
   it('returns empty when no translation document', function() {
     var options = { key: 'notfound' };
-    DBGet.returns(KarmaUtils.mockPromise({ status: 404 }));
+    DBGet.returns(Promise.reject({ status: 404 }));
     return service(options).then(function(actual) {
       chai.expect(actual).to.deep.equal({});
       chai.expect(Settings.callCount).to.equal(0);
@@ -55,7 +55,7 @@ describe('TranslationLoader service', function() {
       prawn: 'shrimp',
       bbq: 'barbie'
     };
-    DBGet.returns(KarmaUtils.mockPromise(null, { values: expected }));
+    DBGet.returns(Promise.resolve({ values: expected }));
     return service(options).then(function(actual) {
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(Settings.callCount).to.equal(0);
@@ -71,8 +71,8 @@ describe('TranslationLoader service', function() {
       prawn: 'prawn',
       bbq: 'grill'
     };
-    Settings.returns(KarmaUtils.mockPromise(null, settings));
-    DBGet.returns(KarmaUtils.mockPromise(null, { values: expected }));
+    Settings.returns(Promise.resolve(settings));
+    DBGet.returns(Promise.resolve({ values: expected }));
     return service(options).then(function(actual) {
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(Settings.callCount).to.equal(1);
@@ -88,8 +88,8 @@ describe('TranslationLoader service', function() {
       prawn: 'prawn',
       bbq: 'barbeque'
     };
-    Settings.returns(KarmaUtils.mockPromise(null, settings));
-    DBGet.returns(KarmaUtils.mockPromise(null, { values: expected }));
+    Settings.returns(Promise.resolve(settings));
+    DBGet.returns(Promise.resolve({ values: expected }));
     return service(options).then(function(actual) {
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(Settings.callCount).to.equal(1);
@@ -108,7 +108,7 @@ describe('TranslationLoader service', function() {
       prawn: '-prawn-',
       bbq: '-barbeque-'
     };
-    DBGet.returns(KarmaUtils.mockPromise(null, { values: doc }));
+    DBGet.returns(Promise.resolve({ values: doc }));
     return service(options).then(function(actual) {
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(Settings.callCount).to.equal(0);

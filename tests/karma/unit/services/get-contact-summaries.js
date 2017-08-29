@@ -30,7 +30,7 @@ describe('GetContactSummaries service', () => {
       contact: 'a',
       lineage: [ 'b', 'c' ]
     }];
-    query.returns(KarmaUtils.mockPromise(null, { rows: [] }));
+    query.returns(Promise.resolve({ rows: [] }));
     return service(given).then(actual => {
       chai.expect(actual).to.deep.equal(given);
     });
@@ -46,7 +46,7 @@ describe('GetContactSummaries service', () => {
       { id: 'c', value: { name: 'charlie', colour: 'green' } },
       { id: 'd', value: { name: 'dannie' } }
     ];
-    query.returns(KarmaUtils.mockPromise(null, { rows: summaries }));
+    query.returns(Promise.resolve({ rows: summaries }));
     return service(given).then(actual => {
       chai.expect(actual[0].contact).to.equal('arnie');
       chai.expect(actual[0].lineage.length).to.equal(2);

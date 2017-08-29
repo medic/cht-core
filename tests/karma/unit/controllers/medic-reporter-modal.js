@@ -31,20 +31,20 @@ describe('MedicReporterModalCtrl', function() {
       $provide.factory('UserContact', function() {
         userNumber = 12345;
         userContact = sinon.stub();
-        userContact.returns(KarmaUtils.mockPromise(null, {phone: userNumber}));
+        userContact.returns(Promise.resolve({phone: userNumber}));
         return userContact;
       });
 
       $provide.factory('$http', function() {
         http = { head: sinon.stub() };
-        http.head.returns(KarmaUtils.mockPromise(null, 'happy'));
+        http.head.returns(Promise.resolve('happy'));
         return http;
       });
 
       $provide.factory('Language', function() {
         userLocale = 'sw';
         language = sinon.stub();
-        language.returns(KarmaUtils.mockPromise(null, userLocale));
+        language.returns(Promise.resolve(userLocale));
         return language;
       });
 
@@ -55,13 +55,13 @@ describe('MedicReporterModalCtrl', function() {
 
       $provide.factory('Settings', function() {
         settings = sinon.stub();
-        settings.returns(KarmaUtils.mockPromise(null, { muvuku_webapp_url: settingsUri }));
+        settings.returns(Promise.resolve({ muvuku_webapp_url: settingsUri }));
         return settings;
       });
 
       $provide.factory('MergeUriParameters', function() {
         merge = sinon.stub();
-        merge.returns(KarmaUtils.mockPromise(null, mergedUri));
+        merge.returns(Promise.resolve(mergedUri));
         return merge;
       });
 
@@ -107,7 +107,7 @@ describe('MedicReporterModalCtrl', function() {
 
   it('Does not display medic-reporter if no auth', function(done) {
     var err = { status: 403 };
-    http.head.returns(KarmaUtils.mockPromise(err));
+    http.head.returns(Promise.reject(err));
 
     runTest(done, function() {
       chai.expect(scope.setError.called).to.equal(true);

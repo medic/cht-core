@@ -171,7 +171,7 @@ describe('EnketoPrepopulationData service', function() {
   it('rejects when user settings fails', function(done) {
     var model = '';
     var data = {};
-    UserSettings.returns(KarmaUtils.mockPromise('phail'));
+    UserSettings.returns(Promise.reject('phail'));
     service(model, data)
       .then(function() {
         done('Expected fail');
@@ -187,7 +187,7 @@ describe('EnketoPrepopulationData service', function() {
   it('binds user details into model', function(done) {
     var data = {};
     var user = { name: 'geoff' };
-    UserSettings.returns(KarmaUtils.mockPromise(null, user));
+    UserSettings.returns(Promise.resolve(user));
     service(editPersonForm, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
@@ -202,7 +202,7 @@ describe('EnketoPrepopulationData service', function() {
   it('binds form content into model', function(done) {
     var data = { person: { last_name: 'salmon' } };
     var user = { name: 'geoff' };
-    UserSettings.returns(KarmaUtils.mockPromise(null, user));
+    UserSettings.returns(Promise.resolve(user));
     service(editPersonFormWithoutInputs, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
@@ -217,7 +217,7 @@ describe('EnketoPrepopulationData service', function() {
   it('binds form content into generated form model', function(done) {
     var data = { person: { name: 'sally' } };
     var user = { name: 'geoff' };
-    UserSettings.returns(KarmaUtils.mockPromise(null, user));
+    UserSettings.returns(Promise.resolve(user));
     service(generatedForm, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
@@ -232,7 +232,7 @@ describe('EnketoPrepopulationData service', function() {
   it('binds user details and form content into model', function(done) {
     var data = { person: { last_name: 'salmon' } };
     var user = { name: 'geoff' };
-    UserSettings.returns(KarmaUtils.mockPromise(null, user));
+    UserSettings.returns(Promise.resolve(user));
     service(editPersonForm, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
@@ -249,7 +249,7 @@ describe('EnketoPrepopulationData service', function() {
     var data = {};
     var user = { name: 'geoff' };
     var location = { lat: '123', long: '456' };
-    UserSettings.returns(KarmaUtils.mockPromise(null, user));
+    UserSettings.returns(Promise.resolve(user));
     $window.medicmobile_android = {
       getLocation: function() {
         return JSON.stringify(location);
@@ -270,7 +270,7 @@ describe('EnketoPrepopulationData service', function() {
   it('binds form content into model with custom root node', function(done) {
     var data = { person: { last_name: 'salmon' } };
     var user = { name: 'geoff' };
-    UserSettings.returns(KarmaUtils.mockPromise(null, user));
+    UserSettings.returns(Promise.resolve(user));
     service(pregnancyForm, data)
       .then(function(actual) {
         var xml = $($.parseXML(actual));
