@@ -91,6 +91,10 @@ module.exports = {
    */
   serverError: function(err, req, res) {
     console.error('Server error:\n', err);
-    respond(req, res, 500, 'Server error');
+    if (err.publicMessage) {
+      respond(req, res, 500, `Server error: ${err.publicMessage}`);
+    } else {
+      respond(req, res, 500, 'Server error');
+    }
   }
 };

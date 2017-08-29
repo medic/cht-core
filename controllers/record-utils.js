@@ -1,5 +1,6 @@
 var _ = require('underscore'),
-    db = require('../db');
+    db = require('../db'),
+    PublicError = require('../public-error');
 
 var empty = function(val) {
   return val === '' ||
@@ -29,7 +30,7 @@ var createByForm = function(data, callback) {
 
   // We're OK with message being empty, but the field should exist
   if (data.message === undefined) {
-    return callback(new Error('Missing required field: message'));
+    return callback(new PublicError('Missing required field: message'));
   }
 
   var fields = ['from', 'message', 'reported_date', 'locale', 'gateway_ref'];
@@ -51,7 +52,7 @@ var createRecordByJSON = function(data, callback) {
   }
   for (var k of required) {
     if (empty(data._meta[k])) {
-      return callback(new Error('Missing required field: ' + k));
+      return callback(new PublicError('Missing required field: ' + k));
     }
   }
   // filter out any unwanted fields

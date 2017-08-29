@@ -156,6 +156,19 @@ exports['serverError does not leak errors information to the client'] = test => 
   test.done();
 };
 
+exports['serverError() shares public information with the client'] = test => {
+  test.expect(5);
+  const writeHead = sinon.stub(res, 'writeHead');
+  const end = sinon.stub(res, 'end');
+  serverUtils.serverError({ publicMessage: 'explanation' }, req, res);
+  test.equals(writeHead.callCount, 1);
+  test.equals(writeHead.args[0][0], 500);
+  test.equals(writeHead.args[0][1]['Content-Type'], 'text/plain');
+  test.equals(end.callCount, 1);
+  test.equals(end.args[0][0], 'Server error: explanation');
+  test.done();
+};
+
 exports['serverError responds with JSON'] = test => {
   test.expect(7);
   const status = sinon.stub(res, 'status');
