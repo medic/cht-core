@@ -412,7 +412,7 @@ module.exports = {
         callback(null, true);
       });
     } else {
-      transitionUtils.addUniqueId(db, doc, callback);
+      transitionUtils.addUniqueId(doc, callback);
     }
   },
   addPatient: (options, callback) => {

@@ -6,6 +6,6 @@ module.exports = {
            !doc.patient_id;
   },
   onMatch: function(change, db, audit, callback) {
-    transitionUtils.addUniqueId(db, change.doc, err => callback(err, !err));
+    transitionUtils.addUniqueId(change.doc, err => callback(err, !err));
   }
 };

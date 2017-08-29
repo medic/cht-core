@@ -51,7 +51,7 @@ module.exports = {
       callback(err, !!(results && results.rows && results.rows.length));
     });
   },
-  addUniqueId: (db, doc, callback) => {
+  addUniqueId: (doc, callback) => {
     idGenerator.next().value.then(patientId => {
       doc.patient_id = patientId;
       callback();

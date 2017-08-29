@@ -157,7 +157,7 @@ exports['valid form adds patient_id and patient document'] = function(test) {
 
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);
 
-    sinon.stub(transitionUtils, 'addUniqueId').callsFake((db, doc, callback) => {
+    sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
         doc.patient_id = 12345;
         callback();
     });
@@ -214,7 +214,7 @@ exports['registration sets up responses'] = function(test) {
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
-    sinon.stub(transitionUtils, 'addUniqueId').callsArgWith(2);
+    sinon.stub(transitionUtils, 'addUniqueId').callsArgWith(1);
 
     var doc = {
         form: 'PATR',
@@ -277,7 +277,7 @@ exports['registration responses support locale'] = function(test) {
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
-    sinon.stub(transitionUtils, 'addUniqueId').callsArgWith(2);
+    sinon.stub(transitionUtils, 'addUniqueId').callsArgWith(1);
 
     var doc = {
         form: 'PATR',

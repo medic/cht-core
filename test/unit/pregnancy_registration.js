@@ -186,7 +186,7 @@ exports['valid adds lmp_date and patient_id'] = function(test) {
 
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
-    sinon.stub(transitionUtils, 'addUniqueId').callsFake((db, doc, callback) => {
+    sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
         doc.patient_id = 12345;
         callback();
     });
@@ -263,7 +263,7 @@ exports['pregnancies on existing patients succeeds with a valid patient id'] = f
 exports['zero lmp value only registers patient'] = function(test) {
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
-    sinon.stub(transitionUtils, 'addUniqueId').callsFake((db, doc, callback) => {
+    sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
         doc.patient_id = 12345;
         callback();
     });
@@ -294,7 +294,7 @@ exports['id only logic with valid name'] = function(test) {
 
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, {_id: 'uuid'});
 
-    sinon.stub(transitionUtils, 'addUniqueId').callsFake((db, doc, callback) => {
+    sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
         doc.patient_id = 12345;
         callback();
     });

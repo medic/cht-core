@@ -88,7 +88,7 @@ exports['add_patient trigger creates a new patient'] = test => {
   sinon.stub(config, 'get').returns([ eventConfig ]);
   sinon.stub(transition, 'validate').callsArgWith(2);
   sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-  sinon.stub(transitionUtils, 'addUniqueId').callsFake((db, doc, callback) => {
+  sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
     doc.patient_id = patientId;
     callback();
   });
@@ -286,7 +286,7 @@ exports['add_patient event parameter overwrites the default property for the nam
   sinon.stub(transition, 'validate').callsArgWith(2);
   sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
 
-  sinon.stub(transitionUtils, 'addUniqueId').callsFake((db, doc, callback) => {
+  sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
     doc.patient_id = patientId;
     callback();
   });
@@ -326,7 +326,7 @@ exports['add_patient event parameter overwrites the default property for the nam
   sinon.stub(transition, 'validate').callsArgWith(2);
   sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
 
-  sinon.stub(transitionUtils, 'addUniqueId').callsFake((db, doc, callback) => {
+  sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
     doc.patient_id = patientId;
     callback();
   });
@@ -369,7 +369,7 @@ exports['add_patient and add_patient_id triggers are idempotent'] = test => {
   sinon.stub(transition, 'validate').callsArgWith(2);
   sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
 
-  sinon.stub(transitionUtils, 'addUniqueId').callsFake((db, doc, callback) => {
+  sinon.stub(transitionUtils, 'addUniqueId').callsFake((doc, callback) => {
     doc.patient_id = patientId;
     callback();
   });
