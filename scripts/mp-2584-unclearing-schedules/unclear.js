@@ -14,9 +14,10 @@ const CLEARED = 'cleared';
 const SCHEDULED = 'scheduled';
 const BATCH_SIZE = 10; // batch size for db operations.
 const WAIT_BETWEEN_BATCHES_SEC = 5;
+const HTTP_TIMEOUT_SEC = 60;
 
 const dbUrl = process.env.COUCH_URL;
-const db = new PouchDB(dbUrl);
+const db = new PouchDB(dbUrl, {ajax: {timeout: HTTP_TIMEOUT_SEC * 1000 }});
 
 const registrationListFile = process.argv[2];
 
@@ -269,6 +270,13 @@ const doAllBatches = (visitFormConfig, registrationList) => {
 
 // ------------ actually do stuff now
 // I think this breaks if file not found or wrong file format, which is cool.
+
+// add timestamps to logs
+console.normalLog = console.log;
+console.log = (...args) => {
+  console.normalLog(new Date(), ...args);
+};
+
 const registrationList = JSON.parse(fs.readFileSync(registrationListFile, { encoding: 'UTF8' }));
 console.log('found', registrationList.length, 'registrations in file', registrationListFile);
 
