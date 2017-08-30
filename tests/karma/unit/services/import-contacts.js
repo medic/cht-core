@@ -55,7 +55,7 @@ describe('ImportContacts service', function() {
     $httpBackend
       .expect('HEAD', 'BASEURL/_db/1')
       .respond(404);
-    put.returns(KarmaUtils.mockPromise('boom'));
+    put.returns(Promise.reject('boom'));
     service([{ _id: 1 }], true)
       .then(function() {
         done(new Error('Expected error to be thrown'));
@@ -78,8 +78,8 @@ describe('ImportContacts service', function() {
       .expect('HEAD', 'BASEURL/_db/2')
       .respond(404);
     put
-      .onFirstCall().returns(KarmaUtils.mockPromise(null, { _id: 1, _rev: 1 }))
-      .onSecondCall().returns(KarmaUtils.mockPromise(null, { _id: 2, _rev: 1 }));
+      .onFirstCall().returns(Promise.resolve({ _id: 1, _rev: 1 }))
+      .onSecondCall().returns(Promise.resolve({ _id: 2, _rev: 1 }));
     var contact1 = { _id: 1 };
     var contact2 = { _id: 2 };
 
@@ -109,8 +109,8 @@ describe('ImportContacts service', function() {
       .expect('HEAD', 'BASEURL/_db/2')
       .respond(200, '', { ETag: 'def' });
     put
-      .onFirstCall().returns(KarmaUtils.mockPromise(null, { _id: 1, _rev: 1 }))
-      .onSecondCall().returns(KarmaUtils.mockPromise(null, { _id: 2, _rev: 1 }));
+      .onFirstCall().returns(Promise.resolve({ _id: 1, _rev: 1 }))
+      .onSecondCall().returns(Promise.resolve({ _id: 2, _rev: 1 }));
 
     service([{ _id: 1 }, { _id: 2 }], true)
       .then(function() {
@@ -138,8 +138,8 @@ describe('ImportContacts service', function() {
       .expect('HEAD', 'BASEURL/_db/2')
       .respond(200, '', { ETag: 'def' });
     put
-      .onFirstCall().returns(KarmaUtils.mockPromise(null, { _id: 1, _rev: 1 }))
-      .onSecondCall().returns(KarmaUtils.mockPromise(null, { _id: 2, _rev: 1 }));
+      .onFirstCall().returns(Promise.resolve({ _id: 1, _rev: 1 }))
+      .onSecondCall().returns(Promise.resolve({ _id: 2, _rev: 1 }));
 
     service([{ _id: 1 }, { _id: 2 }], false)
       .then(function() {
@@ -165,10 +165,10 @@ describe('ImportContacts service', function() {
     $httpBackend
       .expect('HEAD', 'BASEURL/_db/2')
       .respond(404);
-    put.onCall(0).returns(KarmaUtils.mockPromise(null, { _id: 1, _rev: 1 }));
-    put.onCall(1).returns(KarmaUtils.mockPromise(null, { }));
-    put.onCall(2).returns(KarmaUtils.mockPromise(null, { _id: 4, _rev: 1 }));
-    put.onCall(3).returns(KarmaUtils.mockPromise(null, { }));
+    put.onCall(0).returns(Promise.resolve({ _id: 1, _rev: 1 }));
+    put.onCall(1).returns(Promise.resolve({ }));
+    put.onCall(2).returns(Promise.resolve({ _id: 4, _rev: 1 }));
+    put.onCall(3).returns(Promise.resolve({ }));
     var contact1 = { _id: 1, contact: { name: 'john', phone: '+123' } };
     var contact2 = { _id: 2, contact: { _id: 3, name: 'jack', phone: '+123' } };
 

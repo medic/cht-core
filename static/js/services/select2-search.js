@@ -8,6 +8,7 @@ angular.module('inboxServices').factory('Select2Search',
     $q,
     $translate,
     DB,
+    LineageModelGenerator,
     Search,
     Session,
     Settings
@@ -96,6 +97,22 @@ angular.module('inboxServices').factory('Select2Search',
           });
       };
 
+      var getDoc = function(id) {
+        return LineageModelGenerator.contact(id).then(function(model) {
+          var current = model.doc;
+          model.lineage.forEach(function(hydrated) {
+            if (!current) {
+              return;
+            }
+            if (hydrated) {
+              current.parent = hydrated;
+            }
+            current = current.parent;
+          });
+          return model.doc;
+        });
+      };
+
       var resolveInitialValue = function(selectEl, initialValue) {
         if (initialValue) {
           if (!selectEl.children('option[value="' + initialValue + '"]').length) {
@@ -122,7 +139,7 @@ angular.module('inboxServices').factory('Select2Search',
             selectEl.select2('data')[0].text = text;
             resolution = $q.resolve();
           } else {
-            resolution = DB().get(value).then(function(doc) {
+            resolution = getDoc(value).then(function(doc) {
               selectEl.select2('data')[0].doc = doc;
             });
           }
@@ -166,10 +183,9 @@ angular.module('inboxServices').factory('Select2Search',
                         e.params.data.id;
 
             if (docId) {
-              DB().get(docId)
+              getDoc(docId)
                 .then(function(doc) {
                   selectEl.select2('data')[0].doc = doc;
-
                   selectEl.trigger('change');
                 })
                 .catch(function(err) {

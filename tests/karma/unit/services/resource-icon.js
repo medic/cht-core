@@ -30,7 +30,7 @@ describe('ResourceIcons service', function() {
   describe('getImg function', function() {
 
     it('returns undefined when given no name', function(done) {
-      get.returns(KarmaUtils.mockPromise());
+      get.returns(Promise.resolve());
       var service = injector.get('ResourceIcons');
       var actual = service.getImg();
       chai.expect(actual).to.equal(undefined);
@@ -38,7 +38,7 @@ describe('ResourceIcons service', function() {
     });
 
     it('returns undefined when no doc yet', function(done) {
-      get.returns(KarmaUtils.mockPromise());
+      get.returns(Promise.resolve());
       var service = injector.get('ResourceIcons');
       var actual = service.getImg('delivery');
       chai.expect(actual).to.equal(undefined);
@@ -62,7 +62,7 @@ describe('ResourceIcons service', function() {
           }
         }
       };
-      get.returns(KarmaUtils.mockPromise(null, resources));
+      get.returns(Promise.resolve(resources));
       var service = injector.get('ResourceIcons');
       setTimeout(function() {
         var actual = service.getImg('child');
@@ -88,7 +88,7 @@ describe('ResourceIcons service', function() {
           }
         }
       };
-      get.returns(KarmaUtils.mockPromise(null, resources));
+      get.returns(Promise.resolve(resources));
       var dom = $('<ul>' +
                   '<li><img class="resource-icon" title="child"/></li>' +
                   '<li><img class="resource-icon" title="adult"/></li>' +
@@ -133,8 +133,8 @@ describe('ResourceIcons service', function() {
         }
       };
       get
-        .onFirstCall().returns(KarmaUtils.mockPromise(null, resources1))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, resources2));
+        .onFirstCall().returns(Promise.resolve(resources1))
+        .onSecondCall().returns(Promise.resolve(resources2));
       var dom = $('<ul>' +
                   '<li><img class="resource-icon" title="child"/></li>' +
                   '<li><img class="resource-icon" title="adult"/></li>' +

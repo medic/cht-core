@@ -26,23 +26,9 @@ window.KarmaUtils = {
   // A service that returns a promise,
   // to mock out e.g. UserSettings().then(function(promiseResult) { ... })
   promiseService: function(err, promiseResult) {
-    return function() {
-      return KarmaUtils.mockPromise(err, promiseResult);
-    };
+    return () => KarmaUtils.promise(err, promiseResult);
   },
-  mockPromise: function(err, payload) {
-    var result = new Promise(function(resolve, reject) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(payload);
-      }
-    });
-    result.on = function() {
-      return result;
-    };
-    return result;
-  },
+  promise: (err, payload) => err ? Promise.reject(err) : Promise.resolve(payload),
   // a promise than never resolves or rejects
   nullPromise: function() {
     return function() {

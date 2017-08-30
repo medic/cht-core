@@ -52,7 +52,7 @@ describe('MessageState service', function() {
   });
 
   it('set returns get errors', function(done) {
-    get.returns(KarmaUtils.mockPromise('db messed up'));
+    get.returns(Promise.reject('db messed up'));
     service.set('123', 2, 'scheduled', 'muted').catch(function(err) {
       chai.expect(err).to.equal('db messed up');
       done();
@@ -67,7 +67,7 @@ describe('MessageState service', function() {
         { group: 3, state: 'sent' }
       ]
     };
-    get.returns(KarmaUtils.mockPromise(null, doc));
+    get.returns(Promise.resolve(doc));
     service.set('123', 2, 'scheduled', 'muted').then(function() {
       done();
     });
@@ -81,8 +81,8 @@ describe('MessageState service', function() {
         { group: 3, state: 'sent' }
       ]
     };
-    get.returns(KarmaUtils.mockPromise(null, doc));
-    put.returns(KarmaUtils.mockPromise('save borked'));
+    get.returns(Promise.resolve(doc));
+    put.returns(Promise.reject('save borked'));
     service.set('123', 2, 'muted', 'scheduled').catch(function(err) {
       chai.expect(err).to.equal('save borked');
       done();
@@ -99,8 +99,8 @@ describe('MessageState service', function() {
         { group: 3, state: 'sent' }
       ]
     };
-    get.returns(KarmaUtils.mockPromise(null, doc));
-    put.returns(KarmaUtils.mockPromise());
+    get.returns(Promise.resolve(doc));
+    put.returns(Promise.resolve());
     service.set('123', 2, 'muted', 'scheduled').then(function() {
       chai.expect(get.args[0][0]).to.equal('123');
       var actual = put.args[0][0];

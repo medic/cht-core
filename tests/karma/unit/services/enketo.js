@@ -94,7 +94,7 @@ describe('Enketo service', function() {
       init: enketoInit
     });
 
-    XmlForm.returns(KarmaUtils.mockPromise(null, { id: 'abc' }));
+    XmlForm.returns(Promise.resolve({ id: 'abc' }));
 
     module(function($provide) {
       $provide.factory('DB', KarmaUtils.mockDB({
@@ -123,7 +123,7 @@ describe('Enketo service', function() {
     inject(function(_Enketo_) {
       service = _Enketo_;
     });
-    Language.returns(KarmaUtils.mockPromise(null, 'en'));
+    Language.returns(Promise.resolve('en'));
     TranslateFrom.returns('translated');
   });
 
@@ -134,7 +134,7 @@ describe('Enketo service', function() {
   describe('render', function() {
 
     it('renders error when user does not have associated contact', function(done) {
-      UserContact.returns(KarmaUtils.mockPromise());
+      UserContact.returns(Promise.resolve());
       service
         .render(null, 'not-defined')
         .then(function() {
@@ -147,13 +147,13 @@ describe('Enketo service', function() {
     });
 
     it('return error when form initialisation fails', function(done) {
-      UserContact.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
-      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
-      dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xml'));
+      UserContact.returns(Promise.resolve({ contact_id: '123' }));
+      dbGet.returns(Promise.resolve(mockEnketoDoc('myform')));
+      dbGetAttachment.returns(Promise.resolve('xml'));
       transform
-        .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL));
-      EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, '<xml></xml>'));
+        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onSecondCall().returns(Promise.resolve(VISIT_MODEL));
+      EnketoPrepopulationData.returns(Promise.resolve('<xml></xml>'));
       var expected = [ 'nope', 'still nope' ];
       enketoInit.returns(expected);
       service
@@ -169,15 +169,15 @@ describe('Enketo service', function() {
     });
 
     it('return form when everything works', function() {
-      UserContact.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
-      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
-      dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
+      UserContact.returns(Promise.resolve({ contact_id: '123' }));
+      dbGet.returns(Promise.resolve(mockEnketoDoc('myform')));
+      dbGetAttachment.returns(Promise.resolve('xmlblob'));
       enketoInit.returns([]);
-      FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
-      EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, '<xml></xml>'));
+      FileReader.returns(Promise.resolve('<some-blob name="xml"/>'));
+      EnketoPrepopulationData.returns(Promise.resolve('<xml></xml>'));
       transform
-        .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL));
+        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onSecondCall().returns(Promise.resolve(VISIT_MODEL));
       return service.render($('<div></div>'), 'ok').then(function() {
         chai.expect(UserContact.callCount).to.equal(1);
         chai.expect(EnketoPrepopulationData.callCount).to.equal(2);
@@ -191,18 +191,18 @@ describe('Enketo service', function() {
     });
 
     it('replaces img src with obj urls', function() {
-      UserContact.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
-      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
+      UserContact.returns(Promise.resolve({ contact_id: '123' }));
+      dbGet.returns(Promise.resolve(mockEnketoDoc('myform')));
       transform
-        .onFirstCall().returns(KarmaUtils.mockPromise(null, '<div><img src="jr://myimg"></div>'))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL));
+        .onFirstCall().returns(Promise.resolve('<div><img src="jr://myimg"></div>'))
+        .onSecondCall().returns(Promise.resolve(VISIT_MODEL));
       dbGetAttachment
-        .onFirstCall().returns(KarmaUtils.mockPromise(null, 'xmlblob'))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, 'myobjblob'));
+        .onFirstCall().returns(Promise.resolve('xmlblob'))
+        .onSecondCall().returns(Promise.resolve('myobjblob'));
       createObjectURL.returns('myobjurl');
       enketoInit.returns([]);
-      FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
-      EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, '<xml></xml>'));
+      FileReader.returns(Promise.resolve('<some-blob name="xml"/>'));
+      EnketoPrepopulationData.returns(Promise.resolve('<xml></xml>'));
       var wrapper = $('<div><div class="container"></div><form></form></div>');
       return service.render(wrapper, 'ok').then(function() {
         // need to wait for async get attachment to complete
@@ -220,17 +220,17 @@ describe('Enketo service', function() {
     });
 
     it('leaves img wrapped if failed to load', function() {
-      UserContact.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
-      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
+      UserContact.returns(Promise.resolve({ contact_id: '123' }));
+      dbGet.returns(Promise.resolve(mockEnketoDoc('myform')));
       transform
-        .onFirstCall().returns(KarmaUtils.mockPromise(null, '<div><img src="jr://myimg"></div>'))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL));
+        .onFirstCall().returns(Promise.resolve('<div><img src="jr://myimg"></div>'))
+        .onSecondCall().returns(Promise.resolve(VISIT_MODEL));
       dbGetAttachment
-        .onFirstCall().returns(KarmaUtils.mockPromise(null, 'xmlblob'))
-        .onSecondCall().returns(KarmaUtils.mockPromise('not found'));
+        .onFirstCall().returns(Promise.resolve('xmlblob'))
+        .onSecondCall().returns(Promise.reject('not found'));
       enketoInit.returns([]);
-      FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
-      EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, '<xml></xml>'));
+      FileReader.returns(Promise.resolve('<some-blob name="xml"/>'));
+      EnketoPrepopulationData.returns(Promise.resolve('<xml></xml>'));
       var wrapper = $('<div><div class="container"></div><form></form></div>');
       return service.render(wrapper, 'ok').then(function() {
         var img = wrapper.find('img').first();
@@ -245,15 +245,15 @@ describe('Enketo service', function() {
 
     it('passes xml instance data through to Enketo', function() {
       var data = '<data><patient_id>123</patient_id></data>';
-      UserContact.returns(KarmaUtils.mockPromise(null, { contact_id: '123' }));
-      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
-      dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
+      UserContact.returns(Promise.resolve({ contact_id: '123' }));
+      dbGet.returns(Promise.resolve(mockEnketoDoc('myform')));
+      dbGetAttachment.returns(Promise.resolve('xmlblob'));
       enketoInit.returns([]);
-      FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
-      EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, data));
+      FileReader.returns(Promise.resolve('<some-blob name="xml"/>'));
+      EnketoPrepopulationData.returns(Promise.resolve(data));
       transform
-        .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, 'my model'));
+        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onSecondCall().returns(Promise.resolve('my model'));
       return service.render($('<div></div>'), 'ok', data).then(function() {
         chai.expect(EnketoForm.callCount).to.equal(1);
         chai.expect(EnketoForm.args[0][1].modelStr).to.equal('my model');
@@ -263,19 +263,19 @@ describe('Enketo service', function() {
 
     it('passes json instance data through to Enketo', function() {
       var data = '<data><patient_id>123</patient_id></data>';
-      UserContact.returns(KarmaUtils.mockPromise(null, {
+      UserContact.returns(Promise.resolve({
         _id: '456',
         contact_id: '123',
         facility_id: '789'
       }));
-      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
-      dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
+      dbGet.returns(Promise.resolve(mockEnketoDoc('myform')));
+      dbGetAttachment.returns(Promise.resolve('xmlblob'));
       enketoInit.returns([]);
-      FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
-      EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, data));
+      FileReader.returns(Promise.resolve('<some-blob name="xml"/>'));
+      EnketoPrepopulationData.returns(Promise.resolve(data));
       transform
-        .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL));
+        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onSecondCall().returns(Promise.resolve(VISIT_MODEL));
       var instanceData = {
         inputs: {
           patient_id: 123,
@@ -291,19 +291,19 @@ describe('Enketo service', function() {
 
     it('passes contact summary data to enketo', function() {
       var data = '<data><patient_id>123</patient_id></data>';
-      UserContact.returns(KarmaUtils.mockPromise(null, {
+      UserContact.returns(Promise.resolve({
         _id: '456',
         contact_id: '123',
         facility_id: '789'
       }));
-      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
-      dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
+      dbGet.returns(Promise.resolve(mockEnketoDoc('myform')));
+      dbGetAttachment.returns(Promise.resolve('xmlblob'));
       enketoInit.returns([]);
-      FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
-      EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, data));
+      FileReader.returns(Promise.resolve('<some-blob name="xml"/>'));
+      EnketoPrepopulationData.returns(Promise.resolve(data));
       transform
-        .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL_WITH_CONTACT_SUMMARY));
+        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onSecondCall().returns(Promise.resolve(VISIT_MODEL_WITH_CONTACT_SUMMARY));
       var instanceData = {
         contact: {
           _id: 'fffff',
@@ -339,19 +339,19 @@ describe('Enketo service', function() {
 
     it('handles arrays and escaping characters', function() {
       var data = '<data><patient_id>123</patient_id></data>';
-      UserContact.returns(KarmaUtils.mockPromise(null, {
+      UserContact.returns(Promise.resolve({
         _id: '456',
         contact_id: '123',
         facility_id: '789'
       }));
-      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
-      dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
+      dbGet.returns(Promise.resolve(mockEnketoDoc('myform')));
+      dbGetAttachment.returns(Promise.resolve('xmlblob'));
       enketoInit.returns([]);
-      FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
-      EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, data));
+      FileReader.returns(Promise.resolve('<some-blob name="xml"/>'));
+      EnketoPrepopulationData.returns(Promise.resolve(data));
       transform
-        .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL_WITH_CONTACT_SUMMARY));
+        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onSecondCall().returns(Promise.resolve(VISIT_MODEL_WITH_CONTACT_SUMMARY));
       var instanceData = {
         contact: {
           _id: 'fffff'
@@ -382,19 +382,19 @@ describe('Enketo service', function() {
 
     it('does not get contact summary when the form has no instance for it', function() {
       var data = '<data><patient_id>123</patient_id></data>';
-      UserContact.returns(KarmaUtils.mockPromise(null, {
+      UserContact.returns(Promise.resolve({
         _id: '456',
         contact_id: '123',
         facility_id: '789'
       }));
-      dbGet.returns(KarmaUtils.mockPromise(null, mockEnketoDoc('myform')));
-      dbGetAttachment.returns(KarmaUtils.mockPromise(null, 'xmlblob'));
+      dbGet.returns(Promise.resolve(mockEnketoDoc('myform')));
+      dbGetAttachment.returns(Promise.resolve('xmlblob'));
       enketoInit.returns([]);
-      FileReader.returns(KarmaUtils.mockPromise(null, '<some-blob name="xml"/>'));
-      EnketoPrepopulationData.returns(KarmaUtils.mockPromise(null, data));
+      FileReader.returns(Promise.resolve('<some-blob name="xml"/>'));
+      EnketoPrepopulationData.returns(Promise.resolve(data));
       transform
-        .onFirstCall().returns(KarmaUtils.mockPromise(null, $('<div>my form</div>')))
-        .onSecondCall().returns(KarmaUtils.mockPromise(null, VISIT_MODEL));
+        .onFirstCall().returns(Promise.resolve($('<div>my form</div>')))
+        .onSecondCall().returns(Promise.resolve(VISIT_MODEL));
       var instanceData = {
         contact: {
           _id: 'fffff'
@@ -416,7 +416,7 @@ describe('Enketo service', function() {
   describe('save', function() {
 
     it('rejects on invalid form', function(done) {
-      form.validate.returns(KarmaUtils.mockPromise(null, false));
+      form.validate.returns(Promise.resolve(false));
       service.save('V', form).catch(function(actual) {
         chai.expect(actual.message).to.equal('Form is invalid');
         chai.expect(form.validate.callCount).to.equal(1);
@@ -425,13 +425,13 @@ describe('Enketo service', function() {
     });
 
     it('creates report', function() {
-      form.validate.returns(KarmaUtils.mockPromise(null, true));
+      form.validate.returns(Promise.resolve(true));
       var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
       form.getDataStr.returns(content);
-      dbPut.returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
-      dbGetAttachment.returns(KarmaUtils.mockPromise(null, '<form/>'));
-      UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
-      UserSettings.returns(KarmaUtils.mockPromise(null, { name: 'Jim' }));
+      dbPut.returns(Promise.resolve({ id: '(generated-in-service)', rev: '1-abc' }));
+      dbGetAttachment.returns(Promise.resolve('<form/>'));
+      UserContact.returns(Promise.resolve({ _id: '123', phone: '555' }));
+      UserSettings.returns(Promise.resolve({ name: 'Jim' }));
       return service.save('V', form).then(function(actual) {
         actual = actual[0];
 
@@ -459,7 +459,7 @@ describe('Enketo service', function() {
     });
 
     it('creates report with hidden fields', function() {
-      form.validate.returns(KarmaUtils.mockPromise(null, true));
+      form.validate.returns(Promise.resolve(true));
       var content =
         `<doc>
           <name>Sally</name>
@@ -467,9 +467,9 @@ describe('Enketo service', function() {
           <secret_code_name tag="hidden">S4L</secret_code_name>
         </doc>`;
       form.getDataStr.returns(content);
-      dbPut.returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
-      dbGetAttachment.returns(KarmaUtils.mockPromise(null, '<form/>'));
-      UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
+      dbPut.returns(Promise.resolve({ id: '(generated-in-service)', rev: '1-abc' }));
+      dbGetAttachment.returns(Promise.resolve('<form/>'));
+      UserContact.returns(Promise.resolve({ _id: '123', phone: '555' }));
       return service.save('V', form).then(function(actual) {
         actual = actual[0];
 
@@ -492,10 +492,10 @@ describe('Enketo service', function() {
     });
 
     it('updates report', function() {
-      form.validate.returns(KarmaUtils.mockPromise(null, true));
+      form.validate.returns(Promise.resolve(true));
       var content = '<doc><name>Sally</name><lmp>10</lmp></doc>';
       form.getDataStr.returns(content);
-      dbGet.returns(KarmaUtils.mockPromise(null, {
+      dbGet.returns(Promise.resolve({
         _id: '6',
         _rev: '1-abc',
         form: 'V',
@@ -505,8 +505,8 @@ describe('Enketo service', function() {
         type: 'data_record',
         reported_date: 500,
       }));
-      dbPut.returns(KarmaUtils.mockPromise(null, { id: '6', rev: '2-abc' }));
-      dbGetAttachment.returns(KarmaUtils.mockPromise(null, '<form/>'));
+      dbPut.returns(Promise.resolve({ id: '6', rev: '2-abc' }));
+      dbGetAttachment.returns(Promise.resolve('<form/>'));
       return service.save('V', form, '6').then(function(actual) {
         actual = actual[0];
 
@@ -535,7 +535,7 @@ describe('Enketo service', function() {
 
       const startTime = Date.now() - 1;
 
-      form.validate.returns(KarmaUtils.mockPromise(null, true));
+      form.validate.returns(Promise.resolve(true));
       var content =
           `<data>
             <name>Sally</name>
@@ -551,11 +551,11 @@ describe('Enketo service', function() {
             </doc2>
           </data>`;
       form.getDataStr.returns(content);
-      dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
-      dbPut.onCall(1).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-def' }));
-      dbPut.onCall(2).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-ghi' }));
-      dbGetAttachment.returns(KarmaUtils.mockPromise(null, '<form/>'));
-      UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
+      dbPut.onCall(0).returns(Promise.resolve({ id: '(generated-in-service)', rev: '1-abc' }));
+      dbPut.onCall(1).returns(Promise.resolve({ id: '(generated-in-service)', rev: '1-def' }));
+      dbPut.onCall(2).returns(Promise.resolve({ id: '(generated-in-service)', rev: '1-ghi' }));
+      dbGetAttachment.returns(Promise.resolve('<form/>'));
+      UserContact.returns(Promise.resolve({ _id: '123', phone: '555' }));
       return service.save('V', form).then(function(actual) {
         const endTime = Date.now() + 1;
 
@@ -601,7 +601,7 @@ describe('Enketo service', function() {
     });
 
     it('creates extra docs with references', function() {
-      form.validate.returns(KarmaUtils.mockPromise(null, true));
+      form.validate.returns(Promise.resolve(true));
       var content =
           `<data>
             <name>Sally</name>
@@ -626,11 +626,11 @@ describe('Enketo service', function() {
             <my_child_02 db-doc-ref="/data/doc2"/>
           </data>`;
       form.getDataStr.returns(content);
-      dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
-      dbPut.onCall(1).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-def' }));
-      dbPut.onCall(2).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-ghi' }));
-      dbGetAttachment.returns(KarmaUtils.mockPromise(null, '<form/>'));
-      UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
+      dbPut.onCall(0).returns(Promise.resolve({ id: '(generated-in-service)', rev: '1-abc' }));
+      dbPut.onCall(1).returns(Promise.resolve({ id: '(generated-in-service)', rev: '1-def' }));
+      dbPut.onCall(2).returns(Promise.resolve({ id: '(generated-in-service)', rev: '1-ghi' }));
+      dbGetAttachment.returns(Promise.resolve('<form/>'));
+      UserContact.returns(Promise.resolve({ _id: '123', phone: '555' }));
       return service.save('V', form).then(function(actual) {
         chai.expect(form.validate.callCount).to.equal(1);
         chai.expect(form.getDataStr.callCount).to.equal(1);
@@ -682,7 +682,7 @@ describe('Enketo service', function() {
     });
 
     it('creates extra docs with repeats', function() {
-      form.validate.returns(KarmaUtils.mockPromise(null, true));
+      form.validate.returns(Promise.resolve(true));
       var content =
           `<data xmlns:jr="http://openrosa.org/javarosa">
             <name>Sally</name>
@@ -705,12 +705,12 @@ describe('Enketo service', function() {
             </repeat_doc>
           </data>`;
       form.getDataStr.returns(content);
-      dbPut.onCall(0).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-abc' }));
-      dbPut.onCall(1).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '1-xxx' }));
-      dbPut.onCall(2).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '2-xxx' }));
-      dbPut.onCall(3).returns(KarmaUtils.mockPromise(null, { id: '(generated-in-service)', rev: '3-xxx' }));
-      dbGetAttachment.returns(KarmaUtils.mockPromise(null, '<form/>'));
-      UserContact.returns(KarmaUtils.mockPromise(null, { _id: '123', phone: '555' }));
+      dbPut.onCall(0).returns(Promise.resolve({ id: '(generated-in-service)', rev: '1-abc' }));
+      dbPut.onCall(1).returns(Promise.resolve({ id: '(generated-in-service)', rev: '1-xxx' }));
+      dbPut.onCall(2).returns(Promise.resolve({ id: '(generated-in-service)', rev: '2-xxx' }));
+      dbPut.onCall(3).returns(Promise.resolve({ id: '(generated-in-service)', rev: '3-xxx' }));
+      dbGetAttachment.returns(Promise.resolve('<form/>'));
+      UserContact.returns(Promise.resolve({ _id: '123', phone: '555' }));
       return service.save('V', form).then(function(actual) {
         chai.expect(form.validate.callCount).to.equal(1);
         chai.expect(form.getDataStr.callCount).to.equal(1);

@@ -21,11 +21,11 @@ describe('ContactViewModelGenerator service', () => {
         childPlaceIcon = 'fa-mushroom';
 
   const stubDbGet = (err, doc) => {
-    dbGet.withArgs(doc._id).returns(KarmaUtils.mockPromise(err, doc));
+    dbGet.withArgs(doc._id).returns(KarmaUtils.promise(err, doc));
   };
 
   const stubLineageModelGenerator = (err, contact, lineage) => {
-    lineageModelGenerator.contact.returns(KarmaUtils.mockPromise(err, {
+    lineageModelGenerator.contact.returns(KarmaUtils.promise(err, {
       _id: contact && contact._id,
       doc: contact,
       lineage: lineage
@@ -45,13 +45,13 @@ describe('ContactViewModelGenerator service', () => {
     });
     var ids = docs.map(child => child.doc.contact && child.doc.contact._id).filter(id => !!id);
     dbQuery.withArgs('medic-client/contacts_by_parent', options)
-      .returns(KarmaUtils.mockPromise(err, { rows: docs }));
+      .returns(KarmaUtils.promise(err, { rows: docs }));
     dbAllDocs.withArgs({ keys: ids, include_docs: true })
-      .returns(KarmaUtils.mockPromise(err, { rows: contacts }));
+      .returns(KarmaUtils.promise(err, { rows: contacts }));
   };
 
   const stubSearch = (err, reports) => {
-    search.returns(KarmaUtils.mockPromise(err, reports));
+    search.returns(KarmaUtils.promise(err, reports));
   };
 
   beforeEach(() => {

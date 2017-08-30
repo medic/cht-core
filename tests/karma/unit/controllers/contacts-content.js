@@ -31,7 +31,7 @@ describe('ContactsContentCtrl', () => {
       children: { persons: childRows }
     };
     contactViewModelGenerator.withArgs(doc._id)
-      .returns(KarmaUtils.mockPromise(null, model));
+      .returns(Promise.resolve(model));
   };
 
   const stubTasksForContact = tasks => {

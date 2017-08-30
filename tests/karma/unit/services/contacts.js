@@ -29,7 +29,7 @@ describe('Contacts service', function() {
   });
 
   it('returns errors from request', function(done) {
-    dbQuery.returns(KarmaUtils.mockPromise('boom'));
+    dbQuery.returns(Promise.reject('boom'));
     service({})
       .then(function() {
         done(new Error('expected error to be thrown'));
@@ -41,7 +41,7 @@ describe('Contacts service', function() {
   });
 
   it('returns zero when no facilities', function() {
-    dbQuery.returns(KarmaUtils.mockPromise(null, { rows: [] }));
+    dbQuery.returns(Promise.resolve({ rows: [] }));
     return service({}).then(function(actual) {
       chai.expect(actual).to.deep.equal([]);
     });
@@ -132,8 +132,8 @@ describe('Contacts service', function() {
       }
     };
 
-    dbQuery.withArgs('medic-client/contacts_by_type', {include_docs: true, key: ['clinic']}).returns(KarmaUtils.mockPromise(null, { rows: [ { doc: clinicA }, { doc: clinicB } ] }));
-    dbQuery.withArgs('medic-client/contacts_by_type', {include_docs: true, key: ['health_center']}).returns(KarmaUtils.mockPromise(null, { rows: [ { doc: healthCenter } ] }));
+    dbQuery.withArgs('medic-client/contacts_by_type', {include_docs: true, key: ['clinic']}).returns(Promise.resolve({ rows: [ { doc: clinicA }, { doc: clinicB } ] }));
+    dbQuery.withArgs('medic-client/contacts_by_type', {include_docs: true, key: ['health_center']}).returns(Promise.resolve({ rows: [ { doc: healthCenter } ] }));
 
     return service({ types: ['clinic'] }).then(function(actual) {
       chai.expect(actual).to.deep.equal([ clinicA, clinicB ]);
