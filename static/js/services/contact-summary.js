@@ -15,10 +15,22 @@ angular.module('inboxServices').service('ContactSummary',
     'use strict';
     'ngInject';
 
-    var getScript = function() {
-      return Settings().then(function(settings) {
-        return settings[SETTING_NAME];
-      });
+    var generatorFunction;
+
+    var getGeneratorFunction = function() {
+      if (!generatorFunction) {
+        generatorFunction = Settings()
+          .then(function(settings) {
+            return settings[SETTING_NAME];
+          })
+          .then(function(script) {
+            if (!script) {
+              return function() {};
+            }
+            return new Function('contact', 'reports', 'lineage', script); // jshint ignore:line
+          });
+      }
+      return generatorFunction;
     };
 
     var applyFilter = function(field) {
@@ -46,12 +58,8 @@ angular.module('inboxServices').service('ContactSummary',
     };
 
     return function(contact, reports, lineage) {
-      return getScript()
-        .then(function(script) {
-          if (!script) {
-            return;
-          }
-          var fn = new Function('contact', 'reports', 'lineage', script); // jshint ignore:line
+      return getGeneratorFunction()
+        .then(function(fn) {
           return fn(contact, reports || [], lineage || []);
         })
         .then(applyFilters);
