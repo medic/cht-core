@@ -308,10 +308,7 @@ exports['mute responds correctly'] = function(test) {
         off_form: 'off'
     });
 
-    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [{
-        _id: 'x',
-        doc: regDoc
-    }]);
+    sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [regDoc]);
 
     var audit = {
         saveDoc: function(doc, callback) {

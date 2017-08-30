@@ -167,11 +167,10 @@ module.exports = {
             db: db,
             id: doc.fields && doc.fields.patient_id
         },
-        function(err, registrationRows) {
+        function(err, registrations) {
             if (err) {
                 return callback(err);
             }
-            const registrations = registrationRows.map(row => row.doc);
 
             if (patientContact) {
                 addMessagesToDoc(doc, config, registrations, patientContact);

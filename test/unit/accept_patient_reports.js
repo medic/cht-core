@@ -158,9 +158,9 @@ exports['adding silence_type to handleReport calls _silenceReminders'] = functio
     const doc = { _id: 'a' };
     const config = { silence_type: 'x' };
     const registrations = [
-        { doc: { id: 'a' } }, // should not be silenced as it's the doc being processed
-        { doc: { id: 'b' } }, // should be silenced
-        { doc: { id: 'c' } }  // should be silenced
+        { id: 'a' }, // should not be silenced as it's the doc being processed
+        { id: 'b' }, // should be silenced
+        { id: 'c' }  // should be silenced
     ];
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, registrations);
     transition.handleReport(

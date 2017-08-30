@@ -346,7 +346,7 @@ exports['two phase registration sets up schedule using bool_expr'] = function(te
         ]
     }]);
     sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
-    var getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [ { doc: { fields: { patient_name: 'barry' } } } ]);
+    var getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [ { fields: { patient_name: 'barry' } } ]);
     sinon.stub(schedules, 'getScheduleConfig').returns({
         name: 'group1',
         start_from: 'reported_date',

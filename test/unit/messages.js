@@ -116,7 +116,8 @@ exports['scheduleMessage adds registration details to message context'] = functi
         due: moment().toISOString()
     };
     var registrations = [ { doc: { fields: { patient_name: 'Marc' } } } ];
-    messages.scheduleMessage(doc, msg, '+13125551212', registrations);
+    var person = { _id: '123', name: 'Marc' };
+    messages.scheduleMessage(doc, msg, '+13125551212', registrations, person);
     test.equals(doc.scheduled_tasks.length, 1);
     test.equals(
         doc.scheduled_tasks[0].messages[0].message,

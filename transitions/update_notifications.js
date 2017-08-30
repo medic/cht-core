@@ -150,7 +150,7 @@ module.exports = {
                         self.modifyRegistration({
                             audit: audit,
                             mute: eventType.mute,
-                            registration: registration.doc
+                            registration: registration
                         }, callback);
                     }, function(err) {
                         if (err) {

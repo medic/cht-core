@@ -555,12 +555,13 @@ exports['getPatientContact returns empty when no shortcode given'] = test => {
 };
 
 exports['getRegistrations queries by id if given'] = test => {
-    const expected = [ { id: 'a' } ];
+    const expectedDoc = { _id: 'a' };
+    const expected = [ { doc: expectedDoc } ];
     const given = '22222';
     const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: expected });
     utils.getRegistrations({ db: db, id: given }, (err, actual) => {
         test.equals(err, null);
-        test.deepEqual(actual, expected);
+        test.deepEqual(actual, [ expectedDoc ]);
         test.equals(view.callCount, 1);
         test.equals(view.args[0][0], 'medic');
         test.equals(view.args[0][1], 'registered_patients');
@@ -571,12 +572,14 @@ exports['getRegistrations queries by id if given'] = test => {
 };
 
 exports['getRegistrations queries by ids if given'] = test => {
-    const expected = [ { id: 'a' }, { id: 'b' } ];
+    const expectedDoc1 = { id: 'a' };
+    const expectedDoc2 = { id: 'b' };
+    const expected = [ { doc: expectedDoc1 } , { doc: expectedDoc2 } ];
     const given = ['11111', '22222'];
     const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: expected });
     utils.getRegistrations({ db: db, ids: given }, (err, actual) => {
         test.equals(err, null);
-        test.deepEqual(actual, expected);
+        test.deepEqual(actual, [expectedDoc1, expectedDoc2 ]);
         test.equals(view.callCount, 1);
         test.equals(view.args[0][0], 'medic');
         test.equals(view.args[0][1], 'registered_patients');
