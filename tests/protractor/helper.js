@@ -35,7 +35,6 @@ module.exports = {
         break;
       } catch (err) {
         browser.sleep(200);
-        console.log(err);
       }
       attempts++;
     }
