@@ -625,14 +625,14 @@ exports['addMessage prepops and passes the right information to messages.addMess
   const testPhone = '1234',
         testMessage = 'A Test Message',
         testRegistration = 'some registrations',
-        testPerson = 'a patient contact';
+        testPatient = 'a patient contact';
 
   sinon.stub(messages, 'getRecipientPhone').returns(testPhone);
   sinon.stub(messages, 'getMessage').returns(testMessage);
   const addMessage = sinon.stub(messages, 'addMessage');
 
   sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, testRegistration);
-  sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, testPerson);
+  sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, testPatient);
 
   const testConfig = {
     messages: [{
@@ -657,7 +657,7 @@ exports['addMessage prepops and passes the right information to messages.addMess
       message: testMessage,
       templateContext: { next_msg: { minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 } },
       registrations: testRegistration,
-      person: testPerson
+      patient: testPatient
     };
 
     test.deepEqual(addMessage.args[0][0], expected);

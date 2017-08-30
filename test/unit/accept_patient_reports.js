@@ -86,6 +86,8 @@ exports['handleReport with no registrations does not error'] = function(test) {
         from: '+123'
     };
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
+    sinon.stub(utils, 'getPatientContact').callsArgWithAsync(2, null, {});
+
     const config = {
         messages: [{
             event_type: 'registration_not_found',
@@ -163,6 +165,7 @@ exports['adding silence_type to handleReport calls _silenceReminders'] = functio
         { id: 'c' }  // should be silenced
     ];
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, registrations);
+    sinon.stub(utils, 'getPatientContact').callsArgWithAsync(2, null, {});
     transition.handleReport(
         null,
         null,

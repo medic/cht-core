@@ -49,7 +49,7 @@ module.exports = {
             messages.addError(doc, err_msg.replace('%s', event_type));
         }
     },
-    _addMsg: function(event_type, config, doc, registrations) {
+    _addMsg: function(event_type, config, doc, registrations, patient) {
         var locale = utils.getLocale(doc),
             evConf = _.findWhere(config.messages, {
                 event_type: event_type
@@ -60,7 +60,8 @@ module.exports = {
                 doc: doc,
                 message: msg,
                 phone: messages.getRecipientPhone(doc, msg.recipient),
-                registrations: registrations
+                registrations: registrations,
+                patient: patient
             });
         } else {
             module.exports._addErr(event_type, config, doc);
@@ -127,24 +128,26 @@ module.exports = {
                 return callback(null, true);
             }
 
-            utils.getRegistrations({
-                db: db,
-                id: patient_id
-            }, function(err, registrations) {
+            async.parallel({
+              registrations: _.partial(utils.getRegistrations, {db: db, id: patient_id}),
+              patient: _.partial(utils.getPatientContact, db, patient_id)
+            }, (err, {registrations, patient}) => {
 
                 if (err) {
-                    callback(err);
-                } else if (registrations.length) {
+                    return callback(err);
+                }
+
+                if (registrations.length) {
                     if (eventType.mute) {
                         if (config.confirm_deactivation) {
                             self._addErr('confirm_deactivation', config, doc);
-                            self._addMsg('confirm_deactivation', config, doc, registrations);
+                            self._addMsg('confirm_deactivation', config, doc, registrations, patient);
                             return callback(null, true);
                         } else {
-                            self._addMsg('on_mute', config, doc, registrations);
+                            self._addMsg('on_mute', config, doc, registrations, patient);
                         }
                     } else {
-                        self._addMsg('on_unmute', config, doc, registrations);
+                        self._addMsg('on_unmute', config, doc, registrations, patient);
                     }
                     async.each(registrations, function(registration, callback) {
                         self.modifyRegistration({
@@ -161,7 +164,7 @@ module.exports = {
                     });
                 } else {
                     self._addErr('patient_not_found', config, doc);
-                    self._addMsg('patient_not_found', config, doc, registrations);
+                    self._addMsg('patient_not_found', config, doc);
                     callback(null, true);
                 }
             });

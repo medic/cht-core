@@ -337,8 +337,8 @@ module.exports = {
     }
     async.parallel({
       registrations: _.partial(getRegistrations, db, patientId),
-      person: _.partial(utils.getPatientContact, db, patientId)
-    }, (err, {registrations, person}) => {
+      patient: _.partial(utils.getPatientContact, db, patientId)
+    }, (err, {registrations, patient}) => {
       if (err) {
         return callback(err);
       }
@@ -351,7 +351,7 @@ module.exports = {
             message: messages.getMessage(msg, locale),
             templateContext: extra,
             registrations: registrations,
-            person: person
+            patient: patient
           });
         }
       });
@@ -363,15 +363,15 @@ module.exports = {
 
     async.parallel({
       registrations: _.partial(getRegistrations, options.db, patientId),
-      person: _.partial(utils.getPatientContact, options.db, patientId)
-    }, (err, {registrations, person}) => {
+      patient: _.partial(utils.getPatientContact, options.db, patientId)
+    }, (err, {registrations, patient}) => {
       if (err) {
         return callback(err);
       }
       options.params.forEach(scheduleName => {
         const schedule = schedules.getScheduleConfig(scheduleName);
         const assigned = schedules.assignSchedule(
-          options.doc, schedule, registrations, person);
+          options.doc, schedule, registrations, patient);
         if (!assigned) {
           logger.error('Failed to add schedule please verify settings.');
         }

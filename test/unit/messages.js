@@ -69,25 +69,7 @@ exports['scheduleMessage supports template variables on doc'] = function(test) {
     test.done();
 };
 
-exports['scheduleMessage lets you use info from a passed person'] = test => {
-    var doc = {
-        form: 'x',
-        reported_date: '2050-03-13T13:06:22.002Z',
-    };
-    var msg = {
-        message: 'Hello {{person.name}}.',
-        due: moment().toISOString()
-    };
-    messages.scheduleMessage(doc, msg, '+13125551212', [], {name: 'Sally'});
-    test.equals(doc.scheduled_tasks.length, 1);
-    test.equals(
-        doc.scheduled_tasks[0].messages[0].message,
-        'Hello Sally.'
-    );
-    test.done();
-};
-
-exports['scheduleMessage aliases person.name to patient_name for backwards compat'] = test => {
+exports['scheduleMessage aliases patient.name to patient_name'] = test => {
     var doc = {
         form: 'x',
         reported_date: '2050-03-13T13:06:22.002Z',
@@ -290,28 +272,12 @@ exports['addMessage template supports fields'] = function(test) {
     test.done();
 };
 
-exports['addMessage lets you use info from a passed person'] = test => {
+exports['addMessage aliases patient.name to patient_name'] = test => {
     const doc = {};
     messages.addMessage({
         doc: doc,
         phone: '123',
-        person: {name: 'Sally'},
-        message: 'Thank you {{person.name}}.',
-    });
-    test.equals(doc.tasks.length, 1);
-    test.equals(
-        doc.tasks[0].messages[0].message,
-        'Thank you Sally.'
-    );
-    test.done();
-};
-
-exports['addMessage aliases person.name to patient_name for backwards compat'] = test => {
-    const doc = {};
-    messages.addMessage({
-        doc: doc,
-        phone: '123',
-        person: {name: 'Sally'},
+        patient: {name: 'Sally'},
         message: 'Thank you {{patient_name}}.',
     });
     test.equals(doc.tasks.length, 1);
