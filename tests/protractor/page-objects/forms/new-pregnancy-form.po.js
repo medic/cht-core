@@ -18,7 +18,6 @@ module.exports = {
     element(by.css('.btn submit btn-primary')).click();
   },
 
-  //patient page
   getPatientPageTitle: () => {
     return element(by.css('span[data-itext-id=/delivery/inputs:label]'));
   },
@@ -26,7 +25,7 @@ module.exports = {
   selectPatientName: () => {
     getPatientNameDropDown().click();
   },
-  //LMP page
+
   selectLMPYesButton: () => {
     element(by.css('[value="calendar"]')).click();
   },
@@ -38,27 +37,29 @@ module.exports = {
   setLastCycleDate: (lmpDate) => {
     const datePicker = element(by.css('[placeholder="yyyy-mm-dd"]'));
     datePicker.click();
-    //type date in the text box as '2017-04-23'
     datePicker.sendKeys(lmpDate);
-
   },
+
   reset: () => {
     element(by.css('.icon.icon-refresh')).click();
   },
+  
   getEstimatedDeliveryDate: () => {
     return element(by.css('[data-value=" /pregnancy/group_lmp/g_edd "]')).getText();
   },
 
-  //Risk factor page
   checkFirstPregnancyCheckBox: () => {
     element(by.css('[value="r1"]')).click();
   },
+
   checkMoreThanFourChildrenCheckBox: () => {
     element(by.css('[value="r2"]')).click();
   },
+
   checkMastBabyYearBeforeCheckBox: () => {
     element(by.css('[value="r3"]')).click();
   },
+
   checkPreviousMiscarriagesCheckBox: () => {
     element(by.css('[value="r4"]')).click();
   },
@@ -66,11 +67,11 @@ module.exports = {
   checkConditionsCheckBox: () => {
     element(by.css('[value="r5"]')).click();
   },
+
   checkHIVPisotiveCheckBox: () => {
     element(by.css('[value="r6"]')).click();
   },
 
-  //Danger signs page
   checkPainCheckBox: () => {
     element(by.css('[value="d1"]')).click();
   },
@@ -78,9 +79,11 @@ module.exports = {
   checkBleedingCheckBox: () => {
     element(by.css('[value="d2"]')).click();
   },
+
   checkNauseaCheckBox: () => {
     element(by.css('[value="d3"]')).click();
   },
+
   checkFeverCheckBox: () => {
     element(by.css('[value="d4"]')).click();
   },
@@ -88,9 +91,11 @@ module.exports = {
   checkHeadacheCheckBox: () => {
     element(by.css('[value="d5"]')).click();
   },
+
   checkWeightGainCheckBox: () => {
     element(by.css('[value="d6"]')).click();
   },
+
   checkLessMovementCheckBox: () => {
     element(by.css('[value="d7"]')).click();
   },
@@ -98,17 +103,16 @@ module.exports = {
   checkBloodCheckBox: () => {
     element(by.css('[value="d8"]')).click();
   },
+
   checkDiarrheaCheckBox: () => {
     element(by.css('[value="d9"]')).click();
   },
 
-  //note to CHW
   getTextArea: () => {
     return element(by.name('/pregnancy/group_note/chw_note'));
   },
 
-  //summary page
- getId: () => {
+  getId: () => {
     return element(by.css('[data-value=" /pregnancy/group_review/r_patient_id "]'));
   },
 

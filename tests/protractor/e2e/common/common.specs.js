@@ -30,6 +30,7 @@ describe('Navigation tests : ', () => {
     expect(browser.getCurrentUrl()).toEqual(commonElements.getBaseUrl() + 'analytics');
 
   });
+
   it('should open Configuration tab', () => {
     commonElements.goToConfiguration();
     expect(browser.getCurrentUrl()).toEqual(commonElements.getBaseUrl() + 'configuration');

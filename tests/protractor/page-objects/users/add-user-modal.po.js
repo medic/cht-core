@@ -49,7 +49,7 @@ module.exports = {
     getCancelButton().click();
   },
 
-  fillForm: (username, fullName) => {
+  fillForm: (username, fullName, password) => {
     helper.waitUntilReady(getSubmitButton()); // wait for form to load
     getUsernameField().sendKeys(username);
     getFullNameField().sendKeys(fullName);
@@ -57,8 +57,8 @@ module.exports = {
     getPhoneField().sendKeys('0064212134566');
     helper.selectDropdownByText(getLanguageField(), 'English', 2);
     helper.selectDropdownByText(getUserTypeField(), 'Full access');
-    getPasswordField().sendKeys('pass');
-    getConfirmPasswordField().sendKeys('pass');
+    getPasswordField().sendKeys(password);
+    getConfirmPasswordField().sendKeys(password);
   }
 };
 

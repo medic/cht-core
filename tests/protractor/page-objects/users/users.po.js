@@ -1,4 +1,5 @@
-const helper = require('../../helper');
+const helper = require('../../helper'),
+      utils = require('../../utils');
 
 const getAddUserButton = () => {
   return element(by.id('add-user'));
@@ -24,6 +25,7 @@ module.exports = {
   },
 
   openAddUserModal: () => {
+    browser.get(utils.getBaseUrl() + '/_design/medic/_rewrite/#/configuration/users');
     helper.waitElementToBeClickable(getAddUserButton());
     getAddUserButton().click();
   },

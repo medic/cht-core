@@ -1,7 +1,7 @@
 const commonElements = require('../../page-objects/common/common.po.js'),
-			contactPage = require('../../page-objects/contacts/contacts.po.js'),
-			helper = require('../../helper'),
-			utils = require('../../utils');
+      contactPage = require('../../page-objects/contacts/contacts.po.js'),
+      helper = require('../../helper'),
+      utils = require('../../utils');
 
 describe('Add new person tests : ', () => {
 	afterEach(done => {
