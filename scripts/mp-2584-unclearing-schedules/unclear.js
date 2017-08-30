@@ -12,7 +12,7 @@ const VISIT_CODE = 'ग';
 const DELIVERY_CODE = 'ज';
 const CLEARED = 'cleared';
 const SCHEDULED = 'scheduled';
-const BATCH_SIZE = 10; // batch size for db operations.
+const BATCH_SIZE = 100; // batch size for db operations.
 const WAIT_BETWEEN_BATCHES_SEC = 5;
 const HTTP_TIMEOUT_SEC = 60;
 
