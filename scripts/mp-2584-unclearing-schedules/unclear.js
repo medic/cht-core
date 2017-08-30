@@ -149,14 +149,15 @@ const getDocs = ids => {
 
 // in-place edit of report
 const fixReport = (registrationReport, visitFormConfig) => {
+  console.log('----------\n Start work for', registrationReport._id);
   if (!isValid(registrationReport) || !registrationReport.patient_id) {
     console.log('nothing to do for', registrationReport._id);
-    return registrationReport;
+    return Promise.resolve(registrationReport);
   }
 
   return findReportsForPatientId(registrationReport.patient_id)
     .then(associatedReports => {
-      console.log('----------\n', registrationReport._id ,'\nfound', associatedReports.length, 'reports for patient', registrationReport.patient_id, associatedReports.map(report => report.form));
+      console.log(registrationReport._id ,'\nfound', associatedReports.length, 'reports for patient', registrationReport.patient_id, associatedReports.map(report => report.form));
       const birthReports = associatedReports.filter(report => report.form === DELIVERY_CODE);
       if (birthReports && birthReports.length) { // there is an associated birth report
         console.log('has birth report', birthReports.map(report => report._id));
@@ -201,12 +202,32 @@ const wait = (timerName) => {
   });
 };
 
+// todo pass the result along, otherwise using this func is complicated.
+const chainPromises = funcs => {
+  let promiseChain = Promise.resolve();
+  funcs.forEach(func => {
+    promiseChain = promiseChain.then(func);
+  });
+  return promiseChain;
+};
+
 const doBatch = (index, visitFormConfig, registrationList) => {
+  console.log('--------------------------------------------\nStart batch', index);
   const registrationSubList = registrationList.slice(index, index + BATCH_SIZE);
-  console.log('index', index, 'registrationSubList', registrationSubList);
+  console.log('registrationSubList', registrationSubList);
   return getDocs(registrationSubList)
     .then(registrationReports => {
-      return Promise.all(registrationReports.map(report => fixReport(report, visitFormConfig)));
+      let fixedReports = [];
+      const funcs = registrationReports.map(report => {
+        return () => {
+          return fixReport(report, visitFormConfig)
+            .then(fixedReportsBatch => {
+              fixedReports = fixedReports.concat(fixedReportsBatch);
+            });
+        };
+      });
+      return chainPromises(funcs)
+        .then(() => fixedReports);
     })
     .then(reports => {
       reports.forEach(report => {
@@ -229,17 +250,17 @@ const doBatch = (index, visitFormConfig, registrationList) => {
 const doAllBatches = (visitFormConfig, registrationList) => {
   let index = 0;
   let reports = [];
-  let promiseChain = Promise.resolve();
+  const funcArray = [];
   while (index < registrationList.length) {
     const doBatchI = doBatch.bind(null, index, visitFormConfig, registrationList);
-    promiseChain = promiseChain.then(doBatchI)
-      .then(reportBatch => {
+    funcArray.push(() => {
+      return doBatchI().then(reportBatch => {
         reports = reports.concat(reportBatch);
-        return reports;
       });
+    });
     index += BATCH_SIZE;
   }
-  return promiseChain;
+  return chainPromises(funcArray);
 };
 
 
