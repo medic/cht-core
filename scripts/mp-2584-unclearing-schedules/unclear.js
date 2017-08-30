@@ -34,6 +34,10 @@ const findReportsForPatientId = patientId => {
     }).then(data => {
       return data.rows.map(row => row.doc)
         .filter(isValid);
+    })
+    .catch(err => {
+      console.log('findReportsForPatientId failed for patientId', patientId, err);
+      throw err;
     });
 };
 
@@ -136,6 +140,10 @@ const getDocs = ids => {
         }
         return true;
       }).map(row => row.doc);
+    })
+    .catch(err => {
+      console.log('getDocs failed', err);
+      throw err;
     });
 };
 
@@ -146,7 +154,6 @@ const fixReport = (registrationReport, visitFormConfig) => {
     return registrationReport;
   }
 
-  fs.appendFileSync('message.txt', 'data to append');
   return findReportsForPatientId(registrationReport.patient_id)
     .then(associatedReports => {
       console.log('----------\n', registrationReport._id ,'\nfound', associatedReports.length, 'reports for patient', registrationReport.patient_id, associatedReports.map(report => report.form));
@@ -198,19 +205,24 @@ const doBatch = (index, visitFormConfig, registrationList) => {
   const registrationSubList = registrationList.slice(index, index + BATCH_SIZE);
   console.log('index', index, 'registrationSubList', registrationSubList);
   return getDocs(registrationSubList)
-      .then(registrationReports => {
-        return Promise.all(registrationReports.map(report => fixReport(report, visitFormConfig)));
-      })
+    .then(registrationReports => {
+      return Promise.all(registrationReports.map(report => fixReport(report, visitFormConfig)));
+    })
     .then(reports => {
       reports.forEach(report => {
         fs.writeFileSync('edited_reports/' + report._id + '.json', JSON.stringify(report, null, 2));
       });
       return saveDocs(reports)
         .catch(err => {
-          console.log('Batch', index, 'failed.', err);
+          console.log('Save for batch', index, 'failed.', err);
+          throw err;
         })
         .then(() => wait(index))
         .then(() => reports);
+    })
+    .catch(err => {
+      console.log('Batch', index, 'failed.', err);
+      throw err;
     });
 };
 
@@ -244,4 +256,4 @@ getAcceptedReportsConfig(VISIT_CODE)
   .then(editedReports => {
     console.log('editedReports final', editedReports.map(report => report._id));
   })
-  .catch(console.log);
+  .catch(err => console.log('Final error catch', err));
