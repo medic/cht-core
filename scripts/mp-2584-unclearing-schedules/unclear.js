@@ -12,7 +12,7 @@ const VISIT_CODE = 'ग';
 const DELIVERY_CODE = 'ज';
 const CLEARED = 'cleared';
 const SCHEDULED = 'scheduled';
-const BATCH_SIZE = 100; // batch size for db operations.
+const BATCH_SIZE = 10; // batch size for db operations.
 const WAIT_BETWEEN_BATCHES_SEC = 5;
 
 const dbUrl = process.env.COUCH_URL;
@@ -162,7 +162,7 @@ const fixReport = (registrationReport, visitFormConfig) => {
       if (birthReports && birthReports.length) { // there is an associated birth report
         console.log('has birth report', birthReports.map(report => report._id));
         clearScheduledMessages(registrationReport); // clear all scheduled messages
-        console.log('Report fixed', registrationReport._id);
+        console.log('Report fixed (not saved yet)', registrationReport._id);
         return registrationReport;
       }
 
@@ -177,13 +177,13 @@ const fixReport = (registrationReport, visitFormConfig) => {
         scheduleClearedMessagesAfterTimestamp(registrationReport, latestVisitReport.reported_date);
         // Run the piece of code in sentinel transition accept_patient_ids that clears the appropriate messages for latestVisitReport, according to config.
         silenceRemindersNoSaving(latestVisitReport.reported_date, registrationReport, visitFormConfig);
-        console.log('Report fixed', registrationReport._id);
+        console.log('Report fixed (not saved yet)', registrationReport._id);
         return registrationReport;
       }
 
       console.log('no birth or visit report');
       scheduleClearedMessages(registrationReport);
-      console.log('Report fixed', registrationReport._id);
+      console.log('Report fixed (not saved yet)', registrationReport._id);
       return registrationReport;
     });
 };
