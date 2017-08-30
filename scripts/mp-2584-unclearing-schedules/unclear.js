@@ -233,13 +233,16 @@ const doBatch = (index, visitFormConfig, registrationList) => {
       reports.forEach(report => {
         fs.writeFileSync('edited_reports/' + report._id + '.json', JSON.stringify(report, null, 2));
       });
+      console.log('Saving batch', index);
       return saveDocs(reports)
         .catch(err => {
           console.log('Save for batch', index, 'failed.', err);
           throw err;
         })
-        .then(() => wait(index))
-        .then(() => reports);
+        .then(() => {
+          console.log('Successfully saved batch', index);
+          return reports;
+        });
     })
     .catch(err => {
       console.log('Batch', index, 'failed.', err);
