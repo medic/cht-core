@@ -343,6 +343,11 @@ module.exports = function(grunt) {
     nodeunit: {
       all: ['tests/nodeunit/unit/**/*.js', '!tests/nodeunit/unit/*/utils.js']
     },
+    mochaTest: {
+      unit: {
+        src: [ 'tests/mocha/unit/**/*.spec.js' ],
+      },
+    },
     ngtemplates: {
       inboxApp: {
         src: [
@@ -482,6 +487,7 @@ module.exports = function(grunt) {
     'jshint',
     'karma:unit',
     'nodeunit',
+    'mochaTest:unit',
   ]);
 
   grunt.registerTask('test', 'Lint, unit tests, api_integration tests and e2e tests', [
@@ -505,6 +511,7 @@ module.exports = function(grunt) {
     'minify',
     'karma:unit_ci',
     'nodeunit',
+    'mochaTest:unit',
   ]);
   grunt.registerTask('ci_after', '', [
     'exec:deploy',
