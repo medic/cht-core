@@ -20,14 +20,14 @@ describe('Add user  : ', () => {
     addUserModal.fillForm(addedUser, fullName, 'StrongP@ssword1');
     addUserModal.submit();
     browser.wait(() => {
-     return element(by.css('#edit-user-profile')).isDisplayed()
-     .then(isDisplayed => {
-       return !isDisplayed;
-     })
-     .catch(() => {
-       return true;
-     });
-   }, 2000);
+      return element(by.css('#edit-user-profile')).isDisplayed()
+        .then(isDisplayed => {
+          return !isDisplayed;
+        })
+        .catch(() => {
+          return true;
+        });
+    }, 2000);
     expect(helper.isTextDisplayed(addedUser));
     expect(helper.isTextDisplayed(fullName));
   });
