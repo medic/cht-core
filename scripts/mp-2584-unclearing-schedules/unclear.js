@@ -14,7 +14,7 @@ const CLEARED = 'cleared';
 const SCHEDULED = 'scheduled';
 const BATCH_SIZE = 100; // batch size for db operations.
 const WAIT_BETWEEN_BATCHES_SEC = 5;
-const HTTP_TIMEOUT_SEC = 60;
+const HTTP_TIMEOUT_SEC = 120;
 
 const dbUrl = process.env.COUCH_URL;
 const db = new PouchDB(dbUrl, {ajax: {timeout: HTTP_TIMEOUT_SEC * 1000 }});
@@ -264,7 +264,8 @@ const doAllBatches = (visitFormConfig, registrationList) => {
     });
     index += BATCH_SIZE;
   }
-  return chainPromises(funcArray);
+  return chainPromises(funcArray)
+    .then(() => reports);
 };
 
 
