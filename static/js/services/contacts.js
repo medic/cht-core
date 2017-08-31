@@ -30,14 +30,14 @@ angular.module('inboxServices').factory('Contacts',
     });
 
     /**
-    * Fetches all contacts for specified types (see ContactSchema.getTypes()).
-    * If no types are specified, fetches for all contact types.
-    * Watch out, that could be a lot of data.
-    *
-    * options {
-    *   types: ['district_hospital', 'person']
-    * }
-    */
+     * Fetches all contacts for specified types (see ContactSchema.getTypes()).
+     * If no types are specified, fetches for all contact types.
+     * Watch out, that could be a lot of data.
+     *
+     * options {
+     *   types: ['district_hospital', 'person']
+     * }
+     */
     return function(options) {
       options = options || {};
 
