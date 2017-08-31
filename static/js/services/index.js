@@ -16,6 +16,7 @@
   require('./child-facility');
   require('./clean-etag');
   require('./contact-form');
+  require('./contact-save');
   require('./contact-schema');
   require('./contact-summary');
   require('./contact-view-model-generator');
