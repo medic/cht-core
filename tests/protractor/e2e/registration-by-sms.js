@@ -231,7 +231,7 @@ describe('registration transition', () => {
 
     const checkScheduledTask = (childIndex, title, message) => {
       const taskElement = element(by.css('#reports-content .details .scheduled-tasks > ul > li:nth-child(' + childIndex + ')'));
-      expect(taskElement.element(by.css('p')).getText()).toContain(title);
+      expect(taskElement.element(by.css('h3')).getText()).toContain(title);
       expect(taskElement.element(by.css('.task-list li > ul > li')).getText()).toBe(message);
       expect(taskElement.element(by.css('.task-list li .task-state .state.scheduled')).isDisplayed()).toBeTruthy();
       expect(taskElement.element(by.css('.task-list li .task-state .recipient')).getText()).toBe(' to +64271234567');

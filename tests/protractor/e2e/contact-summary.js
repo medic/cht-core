@@ -153,9 +153,8 @@ describe('Contact summary info', () => {
     expect(element(by.css('.content-pane .item-body .meta > .card .col-sm-3:nth-child(2) p')).getText()).toBe(CAROL.sex);
 
     // assert that the pregnancy card exists and has the right fields
-    expect(element(by.css('.content-pane .item-body .meta .action-header h4')).getText()).toBe('test.pregnancy');
+    expect(element(by.css('.content-pane .item-body .meta .action-header h3')).getText()).toBe('test.pregnancy');
     expect(element(by.css('.content-pane .item-body .meta .action-list label')).getText()).toBe('test.visits');
     expect(element(by.css('.content-pane .item-body .meta .action-list p')).getText()).toBe('1');
   });
 });
-
