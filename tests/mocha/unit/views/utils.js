@@ -1,6 +1,7 @@
-const fs = require('fs'),
-	path = require('path'),
-  vm = require('vm');
+const assert = require('chai').assert;
+const fs = require('fs');
+const path = require('path');
+const vm = require('vm');
 
 const MAP_ARG_NAME = 'doc';
 
@@ -28,10 +29,10 @@ module.exports.loadMedicClientView = (viewName) => {
   };
 };
 
-module.exports.assertIncludesPair = (test, array, pair) => {
-  test.ok(array.find((keyArray) => keyArray[0] === pair[0] && keyArray[1] === pair[1]));
+module.exports.assertIncludesPair = (array, pair) => {
+  assert.ok(array.find((keyArray) => keyArray[0] === pair[0] && keyArray[1] === pair[1]));
 };
 
-module.exports.assertDoesNotIncludePair = (test, array, pair) => {
-  test.ok(!array.find((keyArray) => keyArray[0] === pair[0] && keyArray[1] === pair[1]));
+module.exports.assertDoesNotIncludePair = (array, pair) => {
+  assert.ok(!array.find((keyArray) => keyArray[0] === pair[0] && keyArray[1] === pair[1]));
 };
