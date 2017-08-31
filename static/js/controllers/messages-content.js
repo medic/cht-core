@@ -125,7 +125,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
             });
             $scope.allLoaded = data.length < 50;
             if (options.skip) {
-              $scope.firstUnread = undefined;
+              delete $scope.firstUnread;
             }
             markAllRead();
             $timeout(function() {
