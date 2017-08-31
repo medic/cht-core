@@ -343,7 +343,7 @@ angular.module('inboxServices').service('EnketoTranslation', [
       var root = $.parseXML(record).firstChild;
 
       var result = {
-        doc: undefined,
+        doc: null,
         siblings: {},
       };
       var repeats = repeatsToJs(root);

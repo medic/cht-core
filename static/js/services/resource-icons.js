@@ -9,7 +9,7 @@ angular.module('inboxServices').factory('ResourceIcons',
     'ngInject';
 
     var cache = {
-      doc: undefined,
+      doc: null,
       src: {}
     };
 

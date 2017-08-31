@@ -40,7 +40,6 @@ angular.module('inboxServices').factory('SendMessage',
         if (typeof recipient === 'string') {
           return {
             phone: recipient,
-            contact: undefined
           };
         }
 

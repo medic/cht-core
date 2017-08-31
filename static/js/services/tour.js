@@ -447,7 +447,7 @@ angular.module('inboxServices').service('Tour',
             }
             if (step.mobilePlacement) {
               if (step.mobilePlacement === 'orphan') {
-                step.element = undefined;
+                delete step.element;
               } else {
                 step.placement = step.mobilePlacement;
               }
@@ -483,7 +483,7 @@ angular.module('inboxServices').service('Tour',
         current.tour.end();
         // remove any popovers that have become disassociated
         $('.popover.tour-' + current.name).remove();
-        current = undefined;
+        current = null;
       }
     };
 

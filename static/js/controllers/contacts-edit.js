@@ -202,7 +202,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
          newMsg += result.id + ' with ' + result.message + '; ';
         }
         return newMsg;
-      }, undefined);
+      }, null);
     }
 
     function save(form, docId) {
