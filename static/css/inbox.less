@@ -83,7 +83,7 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 2em;
+  padding: 30px;
 }
 
 .bootstrapped .bootstrap-layer {
@@ -141,10 +141,9 @@ body {
     padding-right: 5px;
 
     a {
-      width: 2.8em;
-      height: 3em;
-      margin-top: 0.5em;
-      border-radius: 0.5em 0.5em 0 0;
+      width: 40px;
+      margin-top: 10px;
+      border-radius: @radius-size @radius-size 0 0;
 
       .mm-icon {
         width: inherit;
@@ -167,7 +166,6 @@ body {
   .dropdown ul a {
     width: 100%;
     height: auto;
-    line-height: 1.5em;
   }
 
   .options .dropdown-menu {
@@ -258,7 +256,7 @@ body {
 }
 
 .configuration-form {
-  margin-bottom: 1em;
+  margin-bottom: 20px;
   .delete {
     float: right;
   }
@@ -267,7 +265,7 @@ body {
 .header .options .dropdown-menu {
   width: 250px;
   left: auto;
-  margin-top: 1.9em;
+  margin-top: 30px;
 }
 
 .filters {
@@ -307,7 +305,7 @@ body {
   }
 
   .dropdown-menu .fa {
-    margin-left: -0.5em;
+    margin-left: -5px;
   }
 
   .mm-button-text {
@@ -322,7 +320,7 @@ body {
 
   .basic-filters,
   .navigation {
-    padding-top: 2px;
+    padding-top: 3px;
   }
 
   .basic-filters {
@@ -330,10 +328,6 @@ body {
     top: 0;
     left: 0;
     right: 0;
-  }
-
-  .about {
-    line-height: 3em;
   }
 
   .freetext-filter {
@@ -361,7 +355,7 @@ body {
       color: @grayDark;
       display: inline-block;
       text-align: center;
-      padding: 0 0.5em;
+      padding: 0 10px;
 
       &.disabled {
         cursor: default;
@@ -372,9 +366,6 @@ body {
 
   .mobile-freetext-filter {
     display: none;
-  }
-  .advanced-filter {
-    width: 3.3em;
   }
   .right-pane {
     padding-left: 0;
@@ -441,26 +432,27 @@ body {
   height: 100%;
   .item-content {
     bottom: 57px;
-    top: 2em;
+    top: 30px;
     position: absolute;
     height: auto;
     right: 0;
   }
-  .name-header, .reply {
+  .name-header,
+  .reply {
     background-color: @lightgrey;
   }
   .reply {
     position: absolute;
     right: 0;
     bottom: 0;
-    padding: 0.5em;
+    padding: 7px;
     div {
       padding: 0;
     }
     textarea {
       width: 100%;
-      height: 3em;
-      padding: 0.5em;
+      height: 40px;
+      padding: 7px;
       resize: none;
       overflow: hidden;
     }
@@ -471,12 +463,12 @@ body {
         float: left;
       }
       .note {
-        margin-right: 1em;
+        margin-right: 15px;
       }
     }
     &.sending {
       textarea {
-        height: 6em;
+        height: 100px;
         overflow: auto;
       }
       .message-actions {
@@ -485,8 +477,8 @@ body {
     }
   }
   .name-header {
-    height: 2em;
-    line-height: 2em;
+    height: 30px;
+    line-height: 30px;
     .sender .position {
       position: absolute;
       top: 0;
@@ -527,7 +519,6 @@ body {
     input[type="checkbox"] {
       display: none;
       float: left;
-      height: 2em;
       margin-left: -5px;
       margin-right: 5px;
     }
@@ -563,7 +554,7 @@ body {
       background-color: lighten(@contacts-color, 30%);
     }
     &.orphan .detail {
-      margin-top: 0.42em;
+      margin-top: 7px;
     }
   }
   .action-list .accent {
@@ -619,8 +610,8 @@ body {
   }
   .item-content {
     .actions a {
-      margin-right: 1em;
-      margin-bottom: 1em;
+      margin-right: 10px;
+      margin-bottom: 10px;
     }
     .body > div > ul > li:first-child {
       border-top: 0;
@@ -671,7 +662,7 @@ body {
   }
 
   .alert {
-    margin: 1em;
+    margin: 10px;
   }
 
   .padding {
@@ -681,13 +672,13 @@ body {
 }
 
 .loading-status {
-  margin: 1em;
+  margin: 10px;
   text-align: center;
   font-weight: bold;
 }
 
 .scheduled-tasks {
-  padding: 1em;
+  padding: 10px;
   .loader {
     font-size: 6px;
   }
@@ -700,8 +691,8 @@ body {
     &:before {
       content: '\f111';
       font-family: FontAwesome;
-      font-size: 0.8em;
-      margin-right: 0.5em;
+      font-size: 8px;
+      margin-right: 5px;
     }
     &.received:before {
       content: '';
@@ -739,7 +730,7 @@ body {
     margin: 0;
   }
   > div {
-    margin-top: 1em;
+    margin-top: 10px;
     &.enketo, &.material {
       margin-top: 0;
     }
@@ -751,7 +742,6 @@ body {
   .deselect {
     float: right;
     clear: right;
-    font-size: 1.2em;
     margin-right: -10px;
     margin-top: -14px;
   }
@@ -770,30 +760,30 @@ a.fa:hover {
 
 .messages .item-content .body {
   .actions {
-    width: 2em;
+    width: 20px;
     float: right;
     visibility: hidden;
     a {
-      padding: 0.5em;
+      padding: 5px;
     }
   }
   .data {
-    padding: 1em;
-    margin-right: 1.5em;
+    padding: 10px;
+    margin-right: 15px;
   }
   .marker {
     color: @grey;
-    font-size: 0.8em;
+    font-size: @font-small;
     font-weight: bold;
     background-color: @background-color;
-    margin: 1em 0;
-    padding: 0.5em;
+    margin: 10px 0;
+    padding: 5px;
     text-align: center;
     box-shadow: 0 5px 5px 0 rgba(50, 50, 50, 0.45);
     position: relative;
     &:after {
       position: absolute;
-      bottom: -1em;
+      bottom: -10px;
       left: 48%;
       border-style: solid;
       border-color: @background-color transparent;
@@ -811,8 +801,8 @@ a.fa:hover {
         background-color: #ffffff;
         border: 1px solid @seperator-color;
         border-radius: @radius-size;
-        margin-top: 0.5em;
-        margin-bottom: 0.5em;
+        margin-top: 5px;
+        margin-bottom: 5px;
       }
     }
     .message-body:hover, .selected {
@@ -831,14 +821,14 @@ a.fa:hover {
       border-top-left-radius: 0;
       border-bottom-left-radius: 0;
       border-left: 0;
-      margin-right: 1em;
+      margin-right: 10px;
     }
     .outgoing .message-body {
       border-color: @messages-color;
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
       border-right: 0;
-      margin-left: 1em;
+      margin-left: 10px;
       &, p {
         float: right;
       }
@@ -900,11 +890,11 @@ a.fa:hover {
 .item-content,
 .inbox-items {
   .selection-count {
-    padding: 0.5em 1em;
+    padding: 5px 10px;
     margin: 0;
     background-color: @label-color;
     color: #FFFFFF;
-    font-size: 1.1em;
+    font-size: @font-small;
     font-weight: bold;
   }
 }
@@ -1050,13 +1040,6 @@ a.fa:hover {
   clear: both;
 }
 
-.no-records {
-  color: @grayDark;
-  text-align: center;
-  font-size: 1.5em;
-  padding: 20px;
-}
-
 .filter-daterangepicker {
   padding: 0;
   margin: 0;
@@ -1070,7 +1053,7 @@ a.fa:hover {
   z-index: 2000;
   .tour-option {
     width: 100px;
-    margin: 1em;
+    margin: 10px;
     padding: 0.5em 0;
     .button-text;
     .button-label {
@@ -1081,7 +1064,7 @@ a.fa:hover {
     text-align: center;
   }
   .fa {
-    font-size: 2em;
+    font-size: 20px;
   }
   .tour-option-messages {
     background-color: @messages-color;
@@ -1109,7 +1092,7 @@ a.fa:hover {
 
 .select2-results, .select2-choice {
   .sender span {
-    margin-right: 1em;
+    margin-right: 10px;
   }
   .everyone-at {
     font-weight: bold;
@@ -1124,17 +1107,17 @@ a.fa:hover {
 
 .screenshot {
   text-align: center;
-  margin-top: 1em;
+  margin-top: 10px;
 }
 
 .horizontal-options {
   a {
     display: inline-block;
     outline: none;
-    margin: 0.5em;
+    margin: 5px;
   }
   .fa {
-    margin-right: 0.25em;
+    margin-right: 2px;
   }
   .circle, .rectangle {
     display: inline-block;
@@ -1145,7 +1128,7 @@ a.fa:hover {
     border-radius: 100px;
   }
   .rectangle {
-    padding: 0.5em 1em;
+    padding: 5px 10px;
   }
   .selected .circle, .selected .rectangle {
     background-color: @ok-color;
@@ -1156,9 +1139,6 @@ a.fa:hover {
 .guided-setup {
   .panel-group .panel-body {
     text-align: center;
-    h5 {
-      font-size: 1.2em;
-    }
   }
   .horizontal-options {
     .icon {
@@ -1197,17 +1177,16 @@ a.fa:hover {
     width: 150px;
     vertical-align: top;
     .circle {
-      height: 2em;
-      width: 2em;
+      height: 20px;
+      width: 20px;
       .fa {
         visibility: hidden;
-        line-height: 1.25em;
-        font-size: 1.5em;
+        line-height: 30px;
+        font-size: 20px;
       }
     }
     .description {
       display: inline-block;
-      margin-top: 0.5em;
     }
     &.selected .fa {
       visibility: visible;
@@ -1215,18 +1194,15 @@ a.fa:hover {
   }
   .modem-setup-content {
     label {
-      margin-top: 0.5em;
+      margin-top: 10px;
       margin-bottom: 0;
       display: block;
-    }
-    .small-field {
-      width: 3em;
     }
   }
 }
 
 .section {
-  margin-top: 2em;
+  margin-top: 30px;
 }
 
 .mobile-only, #mobile-detection {
@@ -1438,11 +1414,6 @@ a.fa:hover {
   .item-content .reply .note {
     display: inline;
   }
-  .message-content-wrapper .reply textarea {
-    width: 100%;
-    height: 3em;
-  }
-
   .action-container {
     .inner > div {
       padding: 0;
@@ -1472,7 +1443,7 @@ a.fa:hover {
       display: none;
     }
     .content .page {
-      top: 2.75em;
+      top: 46px;
     }
     .left-pane {
       left: -100%;
@@ -1541,15 +1512,21 @@ a.fa:hover {
     .tabs {
       padding-left: 2px;
       a {
-        padding-top: 10px;
+        padding-top: 5px;
         min-width: 40px;
       }
       .button-label {
         display: none;
       }
+      .configuration-tab {
+        display: none;
+      }
     }
     .mm-badge-overlay {
       right: 3px;
+    }
+    .inner {
+      height: 50px;
     }
   }
   .action-container .actions {
@@ -1565,13 +1542,16 @@ a.fa:hover {
       min-height: 50px;
     }
   }
-  .header .tabs .configuration-tab {
-    display: none;
+  .content .page {
+    top: 101px;
   }
   .mobile-only {
     display: initial;
   }
   .desktop-only {
     display: none;
+  }
+  body.about .page {
+    top: 55px;
   }
 }

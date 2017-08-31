@@ -1,26 +1,22 @@
 @import "variables";
 
 .analytics-widget {
-  padding: 0.5em;
+  padding: 10px;
   &.count-only .widget-body {
-    padding-bottom: 1em;
+    padding-bottom: 10px;
   }
   .title {
     font-weight: bold;
     text-align: center;
-    padding-top: 1em;
+    padding-top: 10px;
     .count {
       margin: 0;
-      line-height: 0.9em;
-      font-size: 3em;
+      line-height: 10px;
+      font-size: 40px
     }
     .name {
-      font-size: 1.5em;
+      font-size: @font-extra-extra-large;
       margin: 0;
-    }
-    .fa {
-      font-size: 0.7em;
-      vertical-align: middle;
     }
   }
   .content {
@@ -36,7 +32,7 @@
       content: '\f0dd';
       font-family: FontAwesome;
       vertical-align: text-bottom;
-      margin-left: 0.2em;
+      margin-left: 2px;
       color: #FFFFFF;
       color: rgba(0, 0, 0, 0);
     }
@@ -52,11 +48,11 @@
     margin-bottom: 0;
   }
   .widget-body {
-    box-shadow: 0 0 0.5em #AAA;
+    box-shadow: 0 0 5px #AAA;
   }
   .btn-link {
     padding: 0;
-    line-height: 1em;
+    line-height: 10px;
   }
   .fa-list-alt {
     padding-top: 1px;
@@ -70,7 +66,7 @@
     &:after {
       content: @upcoming-edd-icon;
       font-family: FontAwesome;
-      padding-left: 0.25em;
+      padding-left: 2px;
     }
   }
   .high-risk a {
@@ -91,10 +87,10 @@
     }
   }
   .loading {
-    padding: 0.5em;
+    padding: 5px;
   }
   .error {
-    padding: 1em;
+    padding: 10px;
   }
   .loading, .error {
     text-align: center;
@@ -120,7 +116,7 @@
   .name:after {
     content: @upcoming-edd-icon;
     font-family: FontAwesome;
-    padding-left: 0.25em;
+    padding-left: 2px;
   }
 }
 
@@ -141,10 +137,10 @@
 }
 
 .reporting-rates {
-  padding: 0.5em;
+  padding: 5px;
 
   .filter {
-    margin: 0.5em 0;
+    margin: 5px 0;
     label {
       width: 150px;
     }
@@ -154,16 +150,16 @@
     margin: 0;
     &.title {
       font-weight: bold;
-      font-size: 1.2em;
+      font-size: @font-extra-large;
     }
   }
 
   .records, .fields {
-    padding-left: 2em;
+    padding-left: 30px;
   }
 
   .fields {
-    line-height: 1.5em;
+    line-height: 30px;
     label {
       margin: 0;
     }
@@ -187,11 +183,11 @@
   }
 
   .facility-select {
-    line-height: 3em;
+    line-height: 40px;
     .facility {
-      padding-top: 0.5em;
-      padding-bottom: 0.5em;
-      font-size: 1.1em;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      font-size: @font-large;
       cursor: pointer;
       &:hover {
         background-color: @highlight-color;
@@ -200,7 +196,7 @@
   }
 
   .mini-pie {
-    line-height: 1em;
+    line-height: 10px;
   }
 
   .mini-pie, .large-pie {
@@ -216,11 +212,11 @@
     }
     h4 {
       text-align: center;
-      font-size: 4em;
+      font-size: 50px;
     }
     .fa {
-      margin-top: 2em;
-      font-size: 2em;
+      margin-top: 20px;
+      font-size: 20px;
       color: @label-color;
     }
     .large-pie {
@@ -251,13 +247,13 @@
     }
     h4,
     .icon {
-      margin-right: 0.5em;
+      margin-right: 5px;
     }
     .large {
-      font-size: 4em;
+      font-size: 50px;
     }
     .has-goal .large {
-      font-size: 2em;
+      font-size: 30px;
     }
     .goal {
       color: @analytics-color;
