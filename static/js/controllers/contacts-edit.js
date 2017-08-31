@@ -1,6 +1,3 @@
-var _ = require('underscore'),
-    uuidV4 = require('uuid/v4');
-
 angular.module('inboxControllers').controller('ContactsEditCtrl',
   function (
     $log,
@@ -10,11 +7,10 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
     $timeout,
     $translate,
     ContactForm,
+    ContactSave,
     ContactSchema,
     DB,
     Enketo,
-    EnketoTranslation,
-    ExtractLineage,
     Snackbar
   ) {
 
@@ -168,7 +164,8 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
             throw new Error('Validation failed.');
           }
 
-          return save(form, docId)
+          var type = $scope.enketoContact.type;
+          return ContactSave($scope.unmodifiedSchema[type], form, docId, type)
             .then(function(result) {
               $log.debug('saved report', result);
               $scope.enketoStatus.saving = false;
