@@ -43,7 +43,7 @@ describe('Add user  : ', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('user0', 'Not Saved', 'weakPassword');
     addUserModal.submit();
-    expect(errorMessagePassword.getText()).toBe('The password is too easy to guess. Include a range of types of characters to increase the score.');
+    expect(errorMessagePassword.getText()).toContain('The password is too easy to guess.');
   });
 
   it('should reject non-matching passwords', () => {
