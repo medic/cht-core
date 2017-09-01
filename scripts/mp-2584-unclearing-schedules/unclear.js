@@ -1,3 +1,7 @@
+/*
+* This script requires exposing accept_patient_reports._findToClear, in sentinel code.
+* It's not a public func in the current master, so I hack-exposed it for this script.
+*/
 /*jshint esversion: 6 */
 'use strict';
 const fs = require('fs'),
