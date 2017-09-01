@@ -507,7 +507,7 @@ describe('Enketo service', function() {
       }));
       dbPut.returns(Promise.resolve({ id: '6', rev: '2-abc' }));
       dbGetAttachment.returns(Promise.resolve('<form/>'));
-      return service.save('V', form, '6').then(function(actual) {
+      return service.save('V', form, null, '6').then(function(actual) {
         actual = actual[0];
 
         chai.expect(form.validate.callCount).to.equal(1);
