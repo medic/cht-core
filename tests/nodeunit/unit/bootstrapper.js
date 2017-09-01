@@ -1,5 +1,5 @@
 var proxyquire = require('proxyquire').noCallThru(),
-    bootstrap = proxyquire('../../../static/js/bootstrapper', {
+    bootstrapper = proxyquire('../../../static/js/bootstrapper', {
       'kujua-utils': {
         isUserAdmin: function() {
           return isAdmin;
@@ -57,7 +57,7 @@ exports.tearDown = function(cb) {
 
 exports['does nothing for admins'] = function(test) {
   isAdmin = true;
-  bootstrap(pouchDbOptions, function(err) {
+  bootstrapper(pouchDbOptions, function(err) {
     test.equal(null, err);
     test.equal(pouchDb.callCount, 0);
     test.done();
@@ -68,7 +68,7 @@ exports['returns if local db already has client ddoc'] = function(test) {
   var localGet = sinon.stub();
   pouchDb.returns({ get: localGet });
   localGet.returns(Promise.resolve());
-  bootstrap(pouchDbOptions, function(err) {
+  bootstrapper(pouchDbOptions, function(err) {
     test.equal(null, err);
     test.equal(pouchDb.callCount, 1);
     test.equal(pouchDb.args[0][0], 'medic-user-jim');
@@ -91,7 +91,7 @@ exports['performs initial replication'] = function(test) {
   var localReplicateResult = Promise.resolve();
   localReplicateResult.on = function() {};
   localReplicate.returns(localReplicateResult);
-  bootstrap(pouchDbOptions, function(err) {
+  bootstrapper(pouchDbOptions, function(err) {
     test.equal(null, err);
     test.equal(pouchDb.callCount, 2);
     test.equal(pouchDb.args[0][0], 'medic-user-jim');
@@ -125,7 +125,7 @@ exports['handles unauthorized initial replication'] = function(test) {
   var localReplicateResult = Promise.reject({ status: 401 });
   localReplicateResult.on = function() {};
   localReplicate.returns(localReplicateResult);
-  bootstrap(pouchDbOptions, function(err) {
+  bootstrapper(pouchDbOptions, function(err) {
     test.equal(err.status, 401);
     test.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
     test.done();
@@ -144,7 +144,7 @@ exports['handles other errors in initial replication'] = function(test) {
   var localReplicateResult = Promise.reject({ status: 404 });
   localReplicateResult.on = function() {};
   localReplicate.returns(localReplicateResult);
-  bootstrap(pouchDbOptions, function(err) {
+  bootstrapper(pouchDbOptions, function(err) {
     test.equal(err.status, 404);
     test.equal(err.redirect, null);
     test.done();
