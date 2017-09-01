@@ -33,9 +33,9 @@
       cursor: pointer;
       width: 100%;
       display: block;
-      padding-top: 0.3em;
+      padding-top: 3px;
       outline: 0;
-      font-size: 1.2em;
+      font-size: @font-extra-large;
       &:hover, &:focus {
         text-decoration: none;
       }
@@ -57,21 +57,21 @@
     .count {
       box-sizing: border-box;
       display: inline-block;
-      width: 1.5em;
-      height: 1.5em;
-      line-height: 1.25em;
-      border-radius: 1em;
+      width: 20px;
+      height: 20px;
+      line-height: 15px;
+      border-radius: 10px;
       border: 2px solid @seperator-color;
       text-align: center;
-      margin-right: 0.5em;
+      margin-right: 5px;
       .fa {
         display: none;
       }
     }
     .value {
       float: right;
-      font-size: 0.9em;
-      line-height: 1.6em;
+      font-size: @font-small;
+      line-height: 20px;
       text-align: right;
     }
   }

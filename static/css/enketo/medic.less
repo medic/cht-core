@@ -1,3 +1,5 @@
+@import "../variables";
+
 /**
  * Some of the widths set up in the enketo.css file assume the form is being
  * viewed full-screen.  These overrides are required when enketo is embedded in
@@ -9,11 +11,44 @@
 
 .enketo {
   background-color: #FFFFFF;
-  padding-bottom: 2em;
+  padding-bottom: 20px;
   h2,
   h3,
   h4 {
     text-align: left;
+  }
+  h2 {
+    font-size: @font-extra-extra-large;
+  }
+  h3 {
+    font-size: @font-extra-large;
+  }
+  h4 {
+    font-size: @font-large;
+  }
+  label,
+  legend,
+  .btn,
+  .note,
+  .or-required-msg.active,
+  .or-constraint-msg.active,
+  .or-hint.active,
+  input[type=text],
+  input[type=password],
+  input[type=url],
+  input[type=email],
+  input[type=file],
+  input[type=date],
+  input[type=time],
+  input[type=datetime],
+  input[type=number],
+  select,
+  textarea,
+  input[type="tel"] {
+    font-size: inherit;
+  }
+  .required-subtle {
+    font-size: @font-small;
   }
   .or {
     h2,
@@ -24,7 +59,7 @@
   }
   .form-footer {
     margin: 0;
-    margin-bottom: 1em;
+    margin-bottom: 10px;
     padding: 0 15px;
     text-align: right;
     .previous-page::before {
@@ -118,9 +153,6 @@
     max-width: 320px;
     display: block;
   }
-  .or-hint.active {
-    font-size: 13px;
-  }
   .option-wrapper > label:not(.filler) {
     padding-top: 6px;
     padding-bottom: 6px;
@@ -148,7 +180,7 @@
     }
 
     label {
-      margin: 0 1em;
+      margin: 0 10px;
       .question-label {
         display: block;
       }
@@ -158,10 +190,9 @@
     }
 
     .or-appearance-h1:not(.disabled) {
-      padding: 0.5em;
+      padding: 5px;
       text-align: center;
-      font-size: 1.25em;
-      font-family: 'OpenSans', Arial, sans-serif;
+      font-size: 15px;
       font-weight: bold;
       margin-top: 0;
 
@@ -186,36 +217,36 @@
         color: #fff;
       }
       i.fa {
-        font-size: 1.25em;
+        font-size: 15px;
         position: absolute;
-        left: 0.5em;
+        left: 5px;
       }
     }
     .or-appearance-h2 {
-      padding: 0.5em 0 0.45em;
-      margin: 0 1em;
+      padding: 5px 0 5px;
+      margin: 0 10px;
       text-align: center;
-      font-size: 1.5em;
+      font-size: @font-extra-extra-large;
       font-weight: bold;
 
       &.or-appearance-red {
-        border-bottom: 0.15em solid @red;
+        border-bottom: 2px solid @red;
         color: @red;
       }
       &.or-appearance-green {
-        border-bottom: 0.15em solid @green;
+        border-bottom: 2px solid @green;
         color: @green;
       }
       &.or-appearance-blue {
-        border-bottom: 0.15em solid @blue;
+        border-bottom: 2px solid @blue;
         color: @blue;
       }
       &.or-appearance-yellow {
-        border-bottom: 0.15em solid @yellow;
+        border-bottom: 2px solid @yellow;
         color: @yellow;
       }
       &.or-appearance-lime {
-        border-bottom: 0.15em solid @lime;
+        border-bottom: 2px solid @lime;
         color: @lime;
       }
     }
@@ -223,33 +254,33 @@
       font-weight:bold; 
 
       &.or-appearance-red {
-        margin: 0 2em;
-        border-bottom:0.1em solid #ccc;
+        margin: 0 20px;
+        border-bottom: 1px solid #ccc;
         color: @red;
       }
       &.or-appearance-green {
-        margin: 0 2em;
-        border-bottom:0.1em solid #ccc;
+        margin: 0 20px;
+        border-bottom: 1px solid #ccc;
         color: @green;
       }
       &.or-appearance-blue {
-        margin: 0 2em;
-        border-bottom:0.1em solid #ccc;
+        margin: 0 20px;
+        border-bottom: 1px solid #ccc;
         color: @blue;
       }
       &.or-appearance-yellow {
-        margin: 0 2em;
-        border-bottom:0.1em solid #ccc;
+        margin: 0 20px;
+        border-bottom: 1px solid #ccc;
         color: @yellow;
       }
       &.or-appearance-lime {
-        margin: 0 2em;
-        border-bottom:0.1em solid #ccc;
+        margin: 0 20px;
+        border-bottom: 1px solid #ccc;
         color: @lime;
       }
     }
     .or-appearance-li:not(.disabled) {
-      margin: 0 2em;
+      margin: 0 20px;
       padding-top: 3px;
       padding-bottom: 3px;
       &:nth-child(1) {

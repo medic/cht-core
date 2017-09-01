@@ -15,30 +15,32 @@ a {
 }
 
 .nav-tabs {
-  padding: 0 1em;
+  padding: 0 10px;
   a {
     outline: 0;
   }
 }
 
 .tab-content {
-  padding: 1em;
+  padding: 10px;
 }
 
-.form-control.medium {
-  max-width: 21em;
-}
+.form-control {
+  padding-top: 5px;
+  padding-bottom: 5px;
 
-.form-control.small {
-  max-width: 14em;
-}
-
-.form-control.tiny {
-  max-width: 5em;
-}
-
-.form-control.inline {
-  display: inline-block;
+  &.medium {
+    max-width: 400px;
+  }
+  &.small {
+    max-width: 180px;
+  }
+  &.tiny {
+    max-width: 80px;
+  }
+  &.inline {
+    display: inline-block;
+  }
 }
 
 .form-actions, .form-group, .form-footer {
@@ -52,7 +54,7 @@ a {
   clear: right;
 }
 .form-actions {
-  line-height: 2em;
+  line-height: 20px;
   .success {
     display: inline-block !important;
     opacity: 1;
@@ -68,19 +70,19 @@ a {
 }
 
 .fa-stack.default {
-  font-size: 0.5em;
+  font-size: 7px;
   .fa-star {
     top: 0;
     color: @warning-color;
-    font-size: 1.5em;
-    left: 0.5em;
-    line-height: 0.5em;
+    font-size: @font-extra-extra-large;
+    left: 5px;
+    line-height: 5px;
   }
 }
 
 .action-list .btn {
   .fa, .fa-stack {
-    margin-right: 0.5em;
+    margin-right: 5px;
   }
 }
 
@@ -91,7 +93,29 @@ a {
 .select2-chosen,
 .select2-choice > span:first-child,
 .select2-container .select2-choices .select2-search-field input {
-  padding: 0.5em;
+  padding: 5px;
+}
+
+.select2-container .select2-selection--single {
+  height: 34px;
+}
+
+.select2-container--default .select2-selection--single {
+  border: 1px solid #ccc;
+  .select2-selection__arrow b {
+    margin-top: 0;
+  }
+}
+
+.select2-container .select2-selection--single {
+  height: 34px;
+}
+
+.select2-container--default .select2-selection--single {
+  border: 1px solid #ccc;
+  .select2-selection__arrow b {
+    margin-top: 0;
+  }
 }
 
 .popover .popover-title {
@@ -139,9 +163,8 @@ ul {
 }
 
 .item-summary {
-  padding: 1em;
+  padding: 10px;
   .icon {
-    padding-right: 0.5em;
     float: left;
   }
   .detail {
@@ -151,11 +174,10 @@ ul {
       float: right;
       text-align: right;
       clear: right;
-      margin-left: 1em;
+      margin-left: 10px;
     }
     .time .full-date {
       color: @label-color;
-      font-size: 0.8em;
     }
     .name {
       font-weight: bold;
