@@ -1,4 +1,7 @@
 /*
+* Unclear the messages that were erroneously cleared by a bug, see
+* https://github.com/medic/medic-projects/issues/2584
+*
 * This script requires exposing accept_patient_reports._findToClear, in sentinel code.
 * It's not a public func in the current master, so I hack-exposed it for this script.
 */

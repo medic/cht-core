@@ -1,3 +1,7 @@
+/*
+ * Find all the registration forms, for specific form type.
+ * Used for fixing https://github.com/medic/medic-projects/issues/2584
+ */
 /*jshint esversion: 6 */
 'use strict';
 
