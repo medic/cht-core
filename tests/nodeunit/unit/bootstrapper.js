@@ -1,5 +1,5 @@
 var proxyquire = require('proxyquire').noCallThru(),
-    bootstrap = proxyquire('../../../static/js/bootstrap', {
+    bootstrap = proxyquire('../../../static/js/bootstrapper', {
       'kujua-utils': {
         isUserAdmin: function() {
           return isAdmin;
