@@ -456,7 +456,7 @@ angular.module('inboxServices').service('Enketo',
       });
     };
 
-    this.save = function(formInternalId, form, docId, geolocation) {
+    this.save = function(formInternalId, form, geolocation, docId) {
       return $q.resolve(form.validate())
         .then(function(valid) {
           if (!valid) {

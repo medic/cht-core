@@ -70,7 +70,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
 
       $scope.enketoStatus.saving = true;
       $scope.enketoStatus.error = null;
-      Enketo.save($state.params.formId, $scope.form, null, geolocation)
+      Enketo.save($state.params.formId, $scope.form, geolocation)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           $scope.enketoStatus.saving = false;

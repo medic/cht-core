@@ -113,7 +113,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       var reportId = model.doc && model.doc._id;
       var formInternalId = model.formInternalId;
 
-      Enketo.save(formInternalId, $scope.form, reportId, geolocation)
+      Enketo.save(formInternalId, $scope.form, geolocation, reportId)
         .then(function(docs) {
           $log.debug('saved report and associated docs', docs);
           $scope.enketoStatus.saving = false;

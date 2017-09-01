@@ -625,7 +625,7 @@ describe('Enketo service', function() {
       dbPut.onCall(2).returns(Promise.resolve({ id: '(generated-in-service)', rev: '1-ghi' }));
       dbGetAttachment.returns(Promise.resolve('<form/>'));
       UserContact.returns(Promise.resolve({ _id: '123', phone: '555' }));
-      return service.save('V', form, null, true).then(function(actual) {
+      return service.save('V', form, true).then(function(actual) {
         const endTime = Date.now() + 1;
 
         chai.expect(form.validate.callCount).to.equal(1);
