@@ -70,7 +70,8 @@ if (couchUrl) {
     request(opts, function(err, response, result) {
       if (err) {
         // the request itself failed
-        return cb(err);
+        console.error(err);
+        return cb(new Error('Error when making lucene request'));
       }
 
       try {
