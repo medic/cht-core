@@ -37,7 +37,7 @@ require('./filters');
 require('./directives');
 require('./enketo/main');
 
-var bootstrapper = require('./bootstrap');
+var bootstrapper = require('./bootstrapper');
 var router = require('./router');
 var _ = require('underscore');
 _.templateSettings = {
