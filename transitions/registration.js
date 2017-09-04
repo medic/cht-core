@@ -325,7 +325,13 @@ module.exports = {
         silence_type: options.params.join(','),
         silence_for: null
       };
-      acceptPatientReports.handleReport(options, cb);
+      acceptPatientReports.handleReport(
+        options.db,
+        options.audit,
+        options.doc,
+        options.patient,
+        options.report,
+        cb);
     }
   },
   addMessages: (db, config, doc, callback) => {
