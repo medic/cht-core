@@ -92,7 +92,7 @@ describe('bootstrapper', () => {
       replicate: { from: localReplicate }
     });
     pouchDb.onCall(1).returns({ remote: true });
-    localGet.returns(Promise.reject());
+    localGet.returns(Promise.resolve());
     var localReplicateResult = Promise.resolve();
     localReplicateResult.on = function() {};
     localReplicate.returns(localReplicateResult);
