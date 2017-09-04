@@ -58,7 +58,8 @@ describe('bootstrapper', () => {
   // jshint +W020
 
   it('does nothing for admins', (done) => {
-    isAdmin = true;
+    //isAdmin = true;
+
     bootstrapper(pouchDbOptions, function(err) {
       assert.isNull(err);
       assert.equal(pouchDb.callCount, 0);
