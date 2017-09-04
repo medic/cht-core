@@ -579,6 +579,63 @@ exports['trigger param configuration supports direct JSON'] = test => {
   });
 };
 
+exports['trigger param configuration fails with no parameters'] = test => {
+  const eventConfig = [ {
+    form: 'R',
+    events: [ {
+      name: 'on_create',
+      trigger: 'assign_schedule',
+      params: ''
+    } ]
+  } ];
+
+  sinon.stub(config, 'get').returns(eventConfig);
+  try {
+    transition.init();
+    test.done(new Error('Expected validation error'));
+  } catch(e) {
+    test.ok(e instanceof Error);
+    test.equals(e.message, 'Configuration error. Expecting params to be defined as the name of the schedule(s) for R.assign_schedule');
+    test.done();
+  }
+};
+
+exports['trigger param configuration fails with object parameters'] = test => {
+  const eventConfig = [ {
+    form: 'R',
+    events: [ {
+      name: 'on_create',
+      trigger: 'assign_schedule',
+      params: '{ "name": "hello" }'
+    } ]
+  } ];
+
+  sinon.stub(config, 'get').returns(eventConfig);
+  try {
+    transition.init();
+    test.done(new Error('Expected validation error'));
+  } catch(e) {
+    test.ok(e instanceof Error);
+    test.equals(e.message, 'Configuration error. Expecting params to be a string, comma separated list, or an array for R.assign_schedule: \'{ "name": "hello" }\'');
+    test.done();
+  }
+};
+
+exports['trigger param configuration succeeds with array parameters'] = test => {
+  const eventConfig = [ {
+    form: 'R',
+    events: [ {
+      name: 'on_create',
+      trigger: 'assign_schedule',
+      params: 'a,b'
+    } ]
+  } ];
+
+  sinon.stub(config, 'get').returns(eventConfig);
+  transition.init();
+  test.done();
+};
+
 exports['trigger param configuration parse failure for invalid JSON propagates to the callbacks'] = test => {
   const eventConfig = [ {
     form: 'R',
@@ -595,7 +652,7 @@ exports['trigger param configuration parse failure for invalid JSON propagates t
     test.done(new Error('Expected validation error'));
   } catch(e) {
     test.ok(e instanceof Error);
-    test.equals(e.message, 'Configuration error. Unable to parse params for R.testparamparsing: {"foo": "bar". Error: SyntaxError: Unexpected end of JSON input');
+    test.equals(e.message, 'Configuration error. Unable to parse params for R.testparamparsing: \'{"foo": "bar"\'. Error: SyntaxError: Unexpected end of JSON input');
     test.done();
   }
 };

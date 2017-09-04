@@ -88,11 +88,19 @@ module.exports = {
           try {
             params = parseParams(event.params);
           } catch(e) {
-            throw new Error(`Configuration error. Unable to parse params for ${config.form}.${event.trigger}: ${event.params}. Error: ${e}`);
+            throw new Error(`Configuration error. Unable to parse params for ${config.form}.${event.trigger}: '${event.params}'. Error: ${e}`);
           }
           if (event.trigger === 'add_patient' &&
               params.patient_id_field === 'patient_id') {
             throw new Error('Configuration error. patient_id_field cannot be set to patient_id');
+          }
+          if (event.trigger === 'assign_schedule' || event.trigger === 'clear_schedule') {
+            if (!event.params) {
+              throw new Error(`Configuration error. Expecting params to be defined as the name of the schedule(s) for ${config.form}.${event.trigger}`);
+            }
+            if (!_.isArray(params)) {
+              throw new Error(`Configuration error. Expecting params to be a string, comma separated list, or an array for ${config.form}.${event.trigger}: '${event.params}'`);
+            }
           }
         });
       }
@@ -308,15 +316,9 @@ module.exports = {
       cb();
     },
     assign_schedule: (options, cb) => {
-      if (!options.params) {
-        return cb('Please specify schedule name in settings.');
-      }
       module.exports.assignSchedule(options, cb);
     },
     clear_schedule: (options, cb) => {
-      if (!options.params) {
-        return cb('Please specify at least one schedule name in settings.');
-      }
       // Registration forms that clear schedules do so fully
       // silence_type will be split again later, so join them back
       options.report = {
