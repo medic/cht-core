@@ -194,11 +194,7 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         if (report.fields && !report.fields.patient_name) {
           var patientId = report.fields.patient_id ||
                           report.patient_id;
-
-          var patient = contacts.find(function(contact) {
-            return contact.patient_id === patientId;
-          });
-
+          var patient = _.findWhere(contacts, { patient_id: patientId });
           if (patient) {
             report.fields.patient_name = patient.name;
           }

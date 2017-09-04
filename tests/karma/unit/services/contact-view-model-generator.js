@@ -266,6 +266,21 @@ describe('ContactViewModelGenerator service', () => {
       });
     });
 
+    it('adds patient name to reports', () => {
+      childPerson.patient_id = '12345';
+      const report1 = { _id: 'ab', fields: { patient_id: childPerson.patient_id } };
+      const report2 = { _id: 'cd', fields: { patient_id: childPerson.patient_id, patient_name: 'Jack' } };
+      stubSearch(null, [ report1, report2 ]);
+      return runReportsTest([childPerson, childPerson2]).then(model => {
+        chai.expect(search.callCount).to.equal(1);
+        chai.expect(model.reports.length).to.equal(2);
+        chai.expect(model.reports[0]._id).to.equal('ab');
+        chai.expect(model.reports[0].fields.patient_name).to.equal(childPerson.name);
+        chai.expect(model.reports[1]._id).to.equal('cd');
+        chai.expect(model.reports[1].fields.patient_name).to.equal('Jack'); // don't add if name already defined
+      });
+    });
+
     it('sorts reports by reported_date, not by parent vs. child', () => {
       const expectedReports = [
         { _id: 'aa', reported_date: 123 },
