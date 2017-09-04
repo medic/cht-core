@@ -63,6 +63,7 @@ describe('bootstrapper', () => {
     bootstrapper(pouchDbOptions, function(err) {
       assert.isNull(err);
       assert.equal(pouchDb.callCount, 0);
+      assert.isOk(false);
       done();
     });
   });
