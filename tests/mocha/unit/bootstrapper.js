@@ -80,6 +80,7 @@ describe('bootstrapper', () => {
       assert.deepEqual(pouchDb.args[0][1], { auto_compaction: true });
       assert.equal(localGet.callCount, 1);
       assert.equal(localGet.args[0][0], '_design/medic-client');
+      assert.isOk(false);
       done();
     });
   });
@@ -92,7 +93,7 @@ describe('bootstrapper', () => {
       replicate: { from: localReplicate }
     });
     pouchDb.onCall(1).returns({ remote: true });
-    localGet.returns(Promise.resolve());
+    localGet.returns(Promise.reject());
     var localReplicateResult = Promise.resolve();
     localReplicateResult.on = function() {};
     localReplicate.returns(localReplicateResult);
@@ -115,6 +116,7 @@ describe('bootstrapper', () => {
         timeout: 600000,
         doc_ids: [ 'org.couchdb.user:jim' ]
       });
+      assert.isOk(false);
       done();
     });
   });
