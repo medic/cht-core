@@ -1,3 +1,5 @@
+// TODO: this doesn't need to exist. We can just work this out dynamically when
+//       gateway queries, it's not slow or complicated.
 var async = require('async'),
     _ = require('underscore'),
     moment = require('moment'),
@@ -31,6 +33,6 @@ module.exports = function(db, audit, callback) {
         }, function(err) {
             callback(err);
         });
-        
+
     });
 };

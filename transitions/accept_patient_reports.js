@@ -13,52 +13,53 @@ const _hasConfig = (doc) => {
     return Boolean(getConfig(doc.form));
 };
 
+// This is more complicated than it needs to be because JS / _ always use ===
+// for equality, complicating the use of unique tuples (i.e. [1,2] !== [1,2])
+const hasGroupAndType = (groupTypeColl, [group, type]) =>
+    groupTypeColl.find(([g, t]) => g === group && t === type);
+
+// This should just be
+//   Object.keys(_.groupBy(tasksToClear, ({group, task}) => [group, task]))
+// but JS only supports strings as keys
+const uniqueGroupTypeCombos = tasks => {
+    const unique = [];
+    tasks.forEach(t => {
+        if (!hasGroupAndType(unique, [t.group, t.type])) {
+            unique.push([t.group, t.type]);
+        }
+    });
+    return unique;
+};
+
 // find the messages to clear
 const findToClear = (registration, reported_date, config) => {
+    // See: https://github.com/medic/medic-docs/blob/master/user/message-states.md#message-states-in-medic-webapp
+    // Both scheduled and pending have not yet been either seen by a gateway or
+    // delivered, so they are both clearable.
+    const typesToClear = ['pending', 'scheduled'];
+
     const reportedDateMoment = moment(reported_date);
     const taskTypes = config.silence_type.split(',').map(type => type.trim());
-    let silence_until;
 
-    if (config.silence_for) {
-        silence_until = reportedDateMoment.clone();
-        silence_until.add(date.getDuration(config.silence_for));
+    const tasksUnderReview = utils.getScheduledTasksByType(registration, taskTypes);
+
+    if (!config.silence_for) {
+        // No range, all clearable tasks should be cleared
+        return tasksUnderReview.filter(task => typesToClear.includes(task.state));
+    } else {
+        // Clear all tasks that are members of a group that "exists" before the
+        // silenceUntil date. e.g., they have at least one task in their group
+        // whose due date is before silenceUntil.
+        const silenceUntil = reportedDateMoment.clone();
+        silenceUntil.add(date.getDuration(config.silence_for));
+
+        const allTasksBeforeSilenceUntil = tasksUnderReview.filter(task =>
+            moment(task.due) <= silenceUntil);
+        const groupTypeCombosToClear = uniqueGroupTypeCombos(allTasksBeforeSilenceUntil);
+
+        return tasksUnderReview.filter(({group, type}) =>
+            hasGroupAndType(groupTypeCombosToClear, [group, type]));
     }
-
-    let cleareableTasks = [];
-    taskTypes.forEach(taskType => {
-        let firstClearedInGroup;
-        const cleareableTasksForType = utils.getScheduledTasksByType(registration, taskType)
-            .filter(msgTask => {
-                const due = moment(msgTask.due);
-
-                // If we have a silence_until value, and at least one msg of the group falls within
-                // the silence window, then clear the entire group. But not subsequent groups.
-                if (silence_until) {
-                    if (!firstClearedInGroup) {
-                        // capture first match for group matching
-                        const isInWindowAndScheduled = (
-                            due >= reportedDateMoment &&
-                            due <= silence_until &&
-                            msgTask.state === 'scheduled'
-                        );
-                        if (isInWindowAndScheduled) {
-                            firstClearedInGroup = msgTask;
-                            return true; // clear!
-                        }
-                    }
-                    // clear the rest of the group, whether in or out of window.
-                    return (firstClearedInGroup && firstClearedInGroup.group === msgTask.group);
-                } else {
-                    // If no silence_until value, clear all messages in the future.
-                    return (
-                        due >= reportedDateMoment &&
-                        msgTask.state === 'scheduled'
-                    );
-                }
-            });
-        cleareableTasks = cleareableTasks.concat(cleareableTasksForType);
-    });
-    return cleareableTasks;
 };
 
 const getConfig = function(form) {
@@ -67,16 +68,12 @@ const getConfig = function(form) {
 };
 
 const _silenceReminders = (audit, registration, reported_date, config, callback) => {
-    // filter scheduled message by group
-    var toClear = findToClear(registration, reported_date, config);
+    var toClear = module.exports._findToClear(registration, reported_date, config);
     if (!toClear.length) {
         return callback();
     }
-    toClear.forEach(function(task) {
-        if (task.state === 'scheduled') {
-            utils.setTaskState(task, 'cleared');
-        }
-    });
+
+    toClear.forEach(task => utils.setTaskState(task, 'cleared'));
     audit.saveDoc(registration, callback);
 };
 
@@ -155,6 +152,7 @@ module.exports = {
         );
     },
     _silenceReminders: _silenceReminders,
+    _findToClear: findToClear,
     // also used by registrations transition.
     handleReport: function(
             db,

@@ -4,11 +4,17 @@ module.exports = function(grunt) {
 
   // Project configuration
   grunt.initConfig({
+    // DEPRECATED
     nodeunit: {
       all: [
         'test/unit/**/*.js',
         'test/functional/**/*.js'
       ]
+    },
+    mochaTest: {
+      unit: {
+        src: [ 'test/mocha/**/*.js' ]
+      }
     },
     jshint: {
       options: {
@@ -44,10 +50,12 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
   grunt.loadNpmTasks('grunt-env');
+  grunt.loadNpmTasks('grunt-mocha-test');
 
   grunt.registerTask('unit', [
     'env:test',
     'nodeunit',
+    'mochaTest:unit',
     'env:dev'
   ]);
 
