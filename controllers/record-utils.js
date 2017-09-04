@@ -25,7 +25,7 @@ var request = function(opts, callback) {
 var createByForm = function(data, callback) {
   // We're OK with from being empty - sometimes weird things happen with SMS
   if (data.from === undefined) {
-    return callback(new Error('Missing required value: from'));
+    return callback(new PublicError('Missing required value: from'));
   }
 
   // We're OK with message being empty, but the field should exist
@@ -48,7 +48,7 @@ var createRecordByJSON = function(data, callback) {
       optional = ['reported_date', 'locale'];
   // check required fields are in _meta property
   if (empty(data._meta)) {
-    return callback(new Error('Missing _meta property.'));
+    return callback(new PublicError('Missing _meta property.'));
   }
   for (var k of required) {
     if (empty(data._meta[k])) {
