@@ -99,7 +99,7 @@ const revertSettings = () => {
 
 const deleteAll = () => {
   const typesToIgnore = ['translations', 'translations-backup', 'user-settings', 'info'];
-  const idsToIgnore = ['appcache', 'migration-log', 'resources', 'sentinel-meta-data'];
+  const idsToIgnore = ['appcache', 'migration-log', 'resources', '_local/sentinel-meta-data'];
   return request({
     path: path.join('/', constants.DB_NAME, '_all_docs?include_docs=true'),
     method: 'GET'
