@@ -1,0 +1,82 @@
+.content-list > li {
+  cursor: pointer;
+  border-bottom: 1px solid @seperator-color;
+
+  > a {
+    display: flex;
+    align-items: center;
+    min-height: 70px;
+    padding: 10px;
+    padding-left: 5px;
+    color: inherit;
+    border-left: 5px solid transparent;
+
+    &:hover,
+    &:focus {
+      text-decoration: none;
+    }
+
+    .icon img {
+      max-height: 30px;
+      max-width: 30px;
+    }
+
+    .content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      flex-flow: center;
+      align-content: center;
+      margin-left: 10px;
+      min-width: 0; /* magic to make the ellipsis work: https://css-tricks.com/flexbox-truncated-text/ */
+
+      h4,
+      p {
+        margin: 0;
+      }
+
+      .date {
+        color: @label-color;
+        white-space: nowrap;
+      }
+
+      .date,
+      .detail {
+        font-size: @font-small;
+      }
+
+      .heading,
+      .summary,
+      .detail {
+        margin: 2px 0;
+      }
+
+      .heading {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .summary {
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .heading h4,
+      .detail .lineage,
+      .summary p {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+    }
+  }
+}
+
+.reports .content-list > li {
+  &.selected {
+    background-color: lighten(@reports-color, 30%);
+  }
+   > a:hover {
+    border-left-color: @reports-color;
+  }
+}

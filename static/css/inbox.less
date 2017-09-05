@@ -14,6 +14,7 @@
 @import "analytics-widgets";
 @import "configuration";
 @import "material";
+@import "content-list";
 
 @import "enketo/medic";
 
@@ -512,12 +513,6 @@ body {
 
 .reports {
   .inbox-items li {
-    .message-wrapper:hover {
-      border-left-color: @reports-color;
-    }
-    &.selected {
-      background-color: lighten(@reports-color, 30%);
-    }
     input[type="checkbox"] {
       display: none;
       float: left;
@@ -642,28 +637,6 @@ body {
   padding: 0;
   background-color: @form-background-color;
   border-left: 1px solid @seperator-color;
-
-  ul {
-    margin-bottom: 0;
-    > li {
-      border-bottom: 1px solid @seperator-color;
-      cursor: pointer;
-
-      span {
-        white-space: normal;
-      }
-
-      .message-wrapper {
-        padding-left: 5px;
-        border-left: 5px solid transparent;
-        min-height: 50px;
-        display: block;
-        text-decoration: none;
-        color: inherit;
-        outline: 0;
-      }
-    }
-  }
 
   .read {
     background-color: @background-color;

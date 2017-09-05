@@ -10,7 +10,8 @@ angular.module('inboxServices').factory('LiveListConfig',
     $timeout,
     ContactSchema,
     LiveList,
-    RulesEngine
+    RulesEngine,
+    TranslateFrom
   ) {
     'use strict';
     'ngInject';
@@ -87,10 +88,19 @@ angular.module('inboxServices').factory('LiveListConfig',
           return r2.reported_date - r1.reported_date;
         },
         listItem: function(report, removedDomElement) {
-          var template = $templateCache.get('templates/partials/reports_list_item.html');
+          var reportHtml = $templateCache.get('templates/partials/content_row_list_item.html');
           var scope = $scope.$new();
-          scope.report = report;
-          var element = evaluateExpressions(template, scope);
+          scope._id = report._id;
+          var form = _.findWhere($scope.forms, { code: report.form });
+          scope.route = 'reports';
+          scope.icon = form && form.icon;
+          scope.heading = report.contact || report.from;
+          scope.date = report.reported_date;
+          scope.summary = form ? TranslateFrom(form.name) : report.form;
+          scope.valid = report.valid;
+          scope.verified = report.verified;
+          scope.lineage = report.lineage;
+          var element = evaluateExpressions(reportHtml, scope);
           if (removedDomElement &&
               removedDomElement.find('input[type="checkbox"]').is(':checked')) {
             // updating an item that was selected in select mode
