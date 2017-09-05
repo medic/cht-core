@@ -17,7 +17,7 @@ module.exports = {
             function(folder_name, callbackEach) {
                 var working_folder_name = folder_name + '_working',
                     src_folder = path.join(root, folder_name),
-                    package_folder = path.join(root, working_folder_name),
+                    package_folder = path.join(root, working_folder_name) + '/',
                     generated_package_json,
                     expected_tgz_name;
 
