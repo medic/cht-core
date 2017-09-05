@@ -68,7 +68,7 @@ const SYSTEM_TRANSITIONS = [
   }
 })();
 
-const METADATA_DOCUMENT = 'sentinel-meta-data';
+const METADATA_DOCUMENT = '_local/sentinel-meta-data';
 
 let processed = 0;
 

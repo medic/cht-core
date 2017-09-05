@@ -195,7 +195,7 @@ exports['loadTransitions does not load system transistions that have been explic
 
 exports['attach handles missing meta data doc'] = test => {
   const get = sinon.stub(db.medic, 'get');
-  get.withArgs('sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
+  get.withArgs('_local/sentinel-meta-data').callsArgWith(1, { statusCode: 404 });
   const fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
   const insert = sinon.stub(db.medic, 'insert').callsArg(1);
   const on = sinon.stub();
@@ -212,7 +212,7 @@ exports['attach handles missing meta data doc'] = test => {
     test.equal(applyTransitions.args[0][0].change.id, 'abc');
     test.equal(applyTransitions.args[0][0].change.seq, 55);
     test.equal(insert.callCount, 1);
-    test.equal(insert.args[0][0]._id, 'sentinel-meta-data');
+    test.equal(insert.args[0][0]._id, '_local/sentinel-meta-data');
     test.equal(insert.args[0][0].processed_seq, 55);
     test.done();
   };
@@ -229,7 +229,7 @@ exports['attach handles missing meta data doc'] = test => {
 
 exports['attach handles existing meta data doc'] = test => {
   const get = sinon.stub(db.medic, 'get');
-  get.withArgs('sentinel-meta-data').callsArgWith(1, null, { _id: 'sentinel-meta-data', processed_seq: 22 });
+  get.withArgs('_local/sentinel-meta-data').callsArgWith(1, null, { _id: '_local/sentinel-meta-data', processed_seq: 22 });
   const fetchHydratedDoc = sinon.stub(lineage, 'fetchHydratedDoc').returns(Promise.resolve({ type: 'data_record' }));
   const insert = sinon.stub(db.medic, 'insert').callsArg(1);
   const on = sinon.stub();
@@ -246,7 +246,7 @@ exports['attach handles existing meta data doc'] = test => {
     test.equal(applyTransitions.args[0][0].change.id, 'abc');
     test.equal(applyTransitions.args[0][0].change.seq, 55);
     test.equal(insert.callCount, 1);
-    test.equal(insert.args[0][0]._id, 'sentinel-meta-data');
+    test.equal(insert.args[0][0]._id, '_local/sentinel-meta-data');
     test.equal(insert.args[0][0].processed_seq, 55);
     test.done();
   };
