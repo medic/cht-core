@@ -156,6 +156,17 @@
           <div class="row" ng-repeat="report in selected.reports | filter:filterReports as filteredReports track by report._id">
             <ng-include src="'templates/partials/contacts_content_report.html'"></ng-include>
           </div>
+          <ul class="content-list">
+            <mm-content-row ng-repeat="report in selected.reports | filter:filterReports as filteredReports track by report._id"
+              _id="report._id"
+              route="'report'"
+              icon="report.icon"
+              date="report.reported_date"
+              heading="report | summary:forms"
+              valid="report.valid"
+              verified="report.verified"
+            />
+          </ul>
           <div class="row" ng-show="!filteredReports.length">
             <div class="cell">
               <span ng-show="!reportsTimeWindowMonths" translate>reports.none</span>

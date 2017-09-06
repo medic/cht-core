@@ -5,6 +5,7 @@
   angular.module('inboxDirectives', ['ngSanitize']);
 
   require('./auth');
+  require('./content-row');
   require('./enketo');
   require('./modal');
   require('./report-image');

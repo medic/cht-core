@@ -1,10 +1,10 @@
 <li data-record-id="{{_id}}" class="{{selected ? 'selected' : ''}}">
   <a href="#{{route}}/{{_id}}">
-    <div class="icon">{{icon | resourceIcon}}</div>
+    <div class="icon" ng-bind-html="icon | resourceIcon"></div>
     <div class="content">
       <div class="heading">
         <h4>{{heading}}</h4>
-        <div class="date">{{date | relativeDay}}</div>
+        <div class="date" ng-bind-html="date | relativeDay"></div>
       </div>
       <div class="summary">
         <p>{{summary}}</p>
@@ -12,7 +12,7 @@
           <i class="fa {{valid ? 'green-dot' : 'red-dot'}} {{verified ? 'fa-check-circle' : 'fa-circle'}}"></i>
         </div>
       </div>
-      <div class="detail">{{lineage | lineage}}</div>
+      <div class="detail" ng-bind-html="lineage | lineage"></div>
     </div>
   </a>
 </li>
