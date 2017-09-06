@@ -43,22 +43,19 @@ You will need to install the following:
 
 NB: multiple CouchDB nodes will be more complicated, but the general pattern outlined below will be the same.
 
-After installation and initial startup, visit Fauxton at
-[http://127.0.0.1:5984/_utils#setup](http://127.0.0.1:5984/_utils#setup) and
-finish setup for a single-node instance.  For more information see
-the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
-
 ### Enabling a secure CouchDB
 
 By default CouchDB runs in "admin party" mode, which means you do not need users to read or edit any data. This is great for some, but to use Medic safely we're going to disable this feature.
 
-First, setup admin access in config (note 5986 for single-node access):
+First, add an admin user:
 
+ - If you are running CouchDB 2.x there is a wizard in Fauxton that does this for you, as well as initialising some databases. For more information see the [CouchDB install doc](http://docs.couchdb.org/en/2.0.0/install/).
+ - If you are running CouchDB 1.x, run the following command to add an admin user:
 ```shell
-curl -X PUT http://localhost:5986/_config/admins/admin -d '"pass"'
+curl -X PUT http://localhost:5984/_config/admins/admin -d '"pass"'
 ```
 
-Then reconfigure CouchDB to require authentication:
+Now that's done, we must reconfigure CouchDB to require authentication:
 
 ```shell
 # CouchDB 1.6
@@ -70,7 +67,7 @@ curl -X PUT http://admin:pass@localhost:5986/_config/chttpd/require_valid_user \
 
 ```
 
-Now, create an actual admin user (note the username and password are the same as the admin user you created in the first step of this section):
+Then create an actual admin user (note the username and password are the same as the admin user you created in the first step of this section):
 
 ```shell
 curl -X POST http://admin:pass@localhost:5984/_users \
