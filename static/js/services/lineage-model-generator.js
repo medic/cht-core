@@ -24,6 +24,11 @@ angular.module('inboxServices').factory('LineageModelGenerator',
           include_docs: true
         })
         .then(function(result) {
+          if (!result.rows.length) {
+            var err = new Error('Document not found');
+            err.code = 404;
+            throw err;
+          }
           return result.rows.map(function(row) {
             return row && row.doc;
           });

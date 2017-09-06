@@ -87,7 +87,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
           getTasks();
         })
         .catch(function(err) {
-          if (err.error === 'not_found') {
+          if (err.code === 404) {
             $translate('error.404.title').then(Snackbar);
           }
           $scope.clearSelected();
