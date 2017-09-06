@@ -19,12 +19,17 @@ describe('LineageModelGenerator service', () => {
 
   describe('contact', () => {
 
-    it('handles not found', () => {
+    it('handles not found', done => {
       dbQuery.returns(Promise.resolve({ rows: [] }));
-      return service.contact('a').then(model => {
-        chai.expect(model._id).to.equal('a');
-        chai.expect(model.doc).to.equal(undefined);
-      });
+      service.contact('a')
+        .then(() => {
+          done(new Error('expected error to be thrown'));
+        })
+        .catch(err => {
+          chai.expect(err.message).to.equal('Document not found');
+          chai.expect(err.code).to.equal(404);
+          done();
+        });
     });
 
     it('handles no lineage', () => {
@@ -90,12 +95,17 @@ describe('LineageModelGenerator service', () => {
 
   describe('report', () => {
 
-    it('handles not found', () => {
+    it('handles not found', done => {
       dbQuery.returns(Promise.resolve({ rows: [] }));
-      return service.report('a').then(model => {
-        chai.expect(model._id).to.equal('a');
-        chai.expect(model.doc).to.equal(undefined);
-      });
+      service.report('a')
+        .then(() => {
+          done(new Error('expected error to be thrown'));
+        })
+        .catch(err => {
+          chai.expect(err.message).to.equal('Document not found');
+          chai.expect(err.code).to.equal(404);
+          done();
+        });
     });
 
     it('handles no lineage', () => {
