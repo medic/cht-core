@@ -225,19 +225,19 @@ To use it locally:
 Now use the `horti` tool to bootstrap Medic and launch it:
 
 ```sh
-COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984 medic horti --local --bootstrap
+COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984/medic horti --local --bootstrap
 ```
 
 This will download, configure and install the latest Master build of medic. If you're looking to deploy a specific version, provide it to the `bootstrap` command:
 
 ```sh
-COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984 medic horti --local --bootstrap=3.0.0-beta.1
+COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984/medic horti --local --bootstrap=3.0.0-beta.1
 ```
 
 To kill Horti hit CTRL+C. To start Horti (and Medic) again, run the same command as above, but this time don't bootstrap:
 
 ```sh
-COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984 medic horti --local
+COUCH_NODE_NAME=couchdb@localhost COUCH_URL=http://admin:pass@localhost:5984/medic horti --local
 ```
 
 If you wish to change the version of Medic installed, you can either bootstrap again, or use the [Instance Upgrade configuration screen](http://localhost:5988/medic/_design/medic/_rewrite/#/configuration/upgrade).'
