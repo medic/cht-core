@@ -1,9 +1,9 @@
 <li class="{{report.read ? 'read' : ''}}" data-record-id="{{report._id}}">
   <a class="item-summary message-wrapper" href="#reports/{{report._id}}">
     <input type="checkbox">
-    <span class="icon">{{report | formIcon:forms}}</span>
+    <span class="icon" ng-bind-html="report | formIcon:forms"></span>
     <div class="detail">
-      <div class="time">{{report.reported_date | relativeDay}}</div>
+      <div class="time" ng-bind-html="report.reported_date | relativeDay"></div>
       <div class="status">
         <i class="fa {{report.valid ? 'green-dot' : 'red-dot'}} {{report.verified ? 'fa-check-circle' : 'fa-circle'}}"></i>
       </div>
@@ -12,7 +12,7 @@
           <span class="name">{{report.contact || report.from}}</span>
           <span class="phone">{{report.phone}}</span>
         </div>
-        <div class="position small-font">{{report.lineage | lineage}}</div>
+        <div class="position small-font" ng-bind-html="report.lineage | lineage"></div>
       </div>
       <div class="description">{{report | summary:forms}}</div>
     </div>

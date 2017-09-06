@@ -1,12 +1,5 @@
 var _ = require('underscore');
 
-function PARSER($parse, scope) {
-  return function(expr) {
-    expr = expr.substring(2, expr.length-2);
-    return $parse(expr)(scope) || '';
-  };
-}
-
 // medic-webapp specific config for LiveList.
 // This service should be invoked once at startup.
 angular.module('inboxServices').factory('LiveListConfig',
@@ -21,6 +14,23 @@ angular.module('inboxServices').factory('LiveListConfig',
   ) {
     'use strict';
     'ngInject';
+
+    var HTML_BIND_REGEX = /ng-bind-html="([^"]*)"([^>]*>)/gi;
+    var EXPRESSION_REGEX = /\{\{([^}]*)}}/g;
+
+    var parse = function(expr, scope) {
+      return $parse(expr)(scope) || '';
+    };
+
+    var evaluateExpressions = function(template, scope) {
+      return template
+        .replace(HTML_BIND_REGEX, function(match, expr, extras) {
+          return extras + parse(expr, scope);
+        })
+        .replace(EXPRESSION_REGEX, function(match, expr) {
+          return _.escape(parse(expr, scope));
+        });
+    };
 
     // Configure LiveList service
     return function($scope) {
@@ -38,15 +48,13 @@ angular.module('inboxServices').factory('LiveListConfig',
           }
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
-        listItemForTemplate: function(template) {
+        listItemForTemplate: function() {
           return function(contact) {
-            var contactHtml = $templateCache.get('templates/partials/' + template + '.html');
-
+            var template = $templateCache.get('templates/partials/contacts_list_item.html');
             var scope = $scope.$new();
             scope.contact = contact;
             scope.primaryContactName = { name: contact.contact };
-
-            return contactHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
+            return evaluateExpressions(template, scope);
           };
         },
       };
@@ -54,13 +62,13 @@ angular.module('inboxServices').factory('LiveListConfig',
       LiveList.$listFor('contacts', {
         selector: '#contacts-list ul.unfiltered',
         orderBy: contacts_config.orderBy,
-        listItem: contacts_config.listItemForTemplate('contacts_list_item'),
+        listItem: contacts_config.listItemForTemplate(),
       });
 
       LiveList.$listFor('contact-search', {
         selector: '#contacts-list ul.filtered',
         orderBy: contacts_config.orderBy,
-        listItem: contacts_config.listItemForTemplate('contacts_list_item'),
+        listItem: contacts_config.listItemForTemplate(),
       });
 
       var reports_config = {
@@ -79,10 +87,10 @@ angular.module('inboxServices').factory('LiveListConfig',
           return r2.reported_date - r1.reported_date;
         },
         listItem: function(report, removedDomElement) {
-          var reportHtml = $templateCache.get('templates/partials/reports_list_item.html');
+          var template = $templateCache.get('templates/partials/reports_list_item.html');
           var scope = $scope.$new();
           scope.report = report;
-          var element = reportHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
+          var element = evaluateExpressions(template, scope);
           if (removedDomElement &&
               removedDomElement.find('input[type="checkbox"]').is(':checked')) {
             // updating an item that was selected in select mode
@@ -125,10 +133,10 @@ angular.module('inboxServices').factory('LiveListConfig',
           return Date.parse(lhs) - Date.parse(rhs);
         },
         listItem: function(task) {
-          var taskHtml = $templateCache.get('templates/partials/tasks_list_item.html');
+          var template = $templateCache.get('templates/partials/tasks_list_item.html');
           var scope = $scope.$new();
           scope.task = task;
-          return taskHtml.replace(/\{\{[^}]+}}/g, PARSER($parse, scope));
+          return evaluateExpressions(template, scope);
         },
       });
 

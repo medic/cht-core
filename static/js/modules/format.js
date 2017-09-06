@@ -9,10 +9,11 @@ var _ = require('underscore');
       return;
     }
     if (_.isString(entity)) {
-      return entity;
+      return _.escape(entity);
     }
     var part = entity.name || (entity.contact && entity.contact.phone);
     if (part) {
+      part = _.escape(part);
       if (entity._id && $state) {
         var url = $state.href('contacts.detail', { id: entity._id });
         part = '<a href="' + url + '">' + part + '</a>';
