@@ -15,16 +15,20 @@ angular.module('inboxServices').factory('LiveListConfig',
     'use strict';
     'ngInject';
 
-    var HTML_BIND_REGEX = /ng-bind-html="([^"]+)"([^>]*>)/gi;
+    var HTML_BIND_REGEX = /ng-bind-html="([^"]*)"([^>]*>)/gi;
     var EXPRESSION_REGEX = /\{\{([^}]*)}}/g;
 
-    var parse = function(template, scope) {
+    var parse = function(expr, scope) {
+      return $parse(expr)(scope) || '';
+    };
+
+    var evaluateExpressions = function(template, scope) {
       return template
         .replace(HTML_BIND_REGEX, function(match, expr, extras) {
-          return extras + $parse(expr)(scope);
+          return extras + parse(expr, scope);
         })
         .replace(EXPRESSION_REGEX, function(match, expr) {
-          return _.escape($parse(expr)(scope)) || '';
+          return _.escape(parse(expr, scope));
         });
     };
 
@@ -50,7 +54,7 @@ angular.module('inboxServices').factory('LiveListConfig',
             var scope = $scope.$new();
             scope.contact = contact;
             scope.primaryContactName = { name: contact.contact };
-            return parse(template, scope);
+            return evaluateExpressions(template, scope);
           };
         },
       };
@@ -86,7 +90,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           var template = $templateCache.get('templates/partials/reports_list_item.html');
           var scope = $scope.$new();
           scope.report = report;
-          var element = parse(template, scope);
+          var element = evaluateExpressions(template, scope);
           if (removedDomElement &&
               removedDomElement.find('input[type="checkbox"]').is(':checked')) {
             // updating an item that was selected in select mode
@@ -132,7 +136,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           var template = $templateCache.get('templates/partials/tasks_list_item.html');
           var scope = $scope.$new();
           scope.task = task;
-          return parse(template, scope);
+          return evaluateExpressions(template, scope);
         },
       });
 
