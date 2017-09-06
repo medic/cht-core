@@ -49,6 +49,17 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
       }
     };
 
+    var getContact = function(id) {
+      return LineageModelGenerator.contact(id)
+        .catch(function(err) {
+          if (err.code === 404) {
+            // might be an unknown contact so do the best we can
+            return { name: id };
+          }
+          throw err;
+        });
+    };
+
     var selectContact = function(id, options) {
       options = options || {};
       if (!id) {
@@ -63,7 +74,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         $scope.setLoadingContent(id);
       }
       $q.all([
-        LineageModelGenerator.contact(id),
+        getContact(id),
         MessageContacts({ id: id })
       ])
         .then(function(results) {
