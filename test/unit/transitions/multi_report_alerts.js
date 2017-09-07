@@ -332,7 +332,7 @@ exports['message only contains newReports'] = test => {
         {
           type: 'alert',
           alert_name: alert.name,
-          countedReports: []
+          counted_reports: ['docB']
         }
       ]
     },
@@ -347,7 +347,7 @@ exports['message only contains newReports'] = test => {
         {
           type: 'alert',
           alert_name: alert.name,
-          countedReports: []
+          counted_reports: ['docB']
         }
       ]
     }

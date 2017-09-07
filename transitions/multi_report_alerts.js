@@ -45,18 +45,11 @@ const countReports = (reports, latestReport, script) => {
   });
 };
 
-/** Has this report already been SMSed about for this alert? */
-const isReportAlreadyMessaged = (report, alertName) => {
-  return report.tasks && report.tasks.filter(task => task.alert_name === alertName).length;
-};
-
 const generateMessages = (alert, phones, latestReport, countedReportsIds, newReports) => {
-  let isLatestReportChanged = false;
   phones.forEach((phone) => {
     if (phone.error) {
       logger.error(phone.error);
       messages.addError(latestReport, phone.error);
-      isLatestReportChanged = true;
       return;
     }
     messages.addMessage({
@@ -77,9 +70,10 @@ const generateMessages = (alert, phones, latestReport, countedReportsIds, newRep
         counted_reports: countedReportsIds
       }
     });
-    isLatestReportChanged = true;
   });
-  return isLatestReportChanged;
+
+  // true to save the report
+  return phones.length >= 0;
 };
 
 // Recipients format examples:
@@ -94,8 +88,7 @@ const getPhones = (recipients, reports) => {
     const phonesForReport = getPhonesOneReport(recipients, report);
     phones = phones.concat(phonesForReport);
   });
-  phones = _.uniq(phones);
-  return phones;
+  return _.uniq(phones);
 };
 
 const getPhonesOneReport = (recipients, report) => {
@@ -197,19 +190,21 @@ const getCountedReportsAndPhones = (alert, latestReport) => {
 
     if (!countReports([latestReport], latestReport, script).length) {
       // The latest_report didn't pass the is_report_counted function, abort the transition.
-      return resolve({ countedReportsIds: [], newReports: [], phones: [] });
+      return resolve({
+        countedReportsIds: [],
+        newReports: [],
+        phones: []
+      });
     }
 
-    let countedReportsIds = [ latestReport._id ];
-    let newReports = [ latestReport ];
-    let phones = getPhonesOneReport(alert.recipients, latestReport);
+    let countedReports = [ latestReport ];
+    let oldReportIds = [ ];
     async.doWhilst(
       callback => {
-        getCountedReportsAndPhonesBatch(script, latestReport, alert, skip)
+        getCountedReportsBatch(script, latestReport, alert, skip)
           .then(output => {
-            countedReportsIds = countedReportsIds.concat(output.countedReportsIds);
-            newReports = newReports.concat(output.newReports);
-            phones = phones.concat(output.phones);
+            countedReports = countedReports.concat(output.countedReports);
+            oldReportIds = oldReportIds.concat(output.oldReportIds);
             callback(null, output.numFetched);
           })
           .catch(callback);
@@ -222,26 +217,41 @@ const getCountedReportsAndPhones = (alert, latestReport) => {
         if (err) {
           return reject(err);
         }
-        resolve({ countedReportsIds: countedReportsIds, newReports: newReports, phones: _.uniq(phones) });
+        const countedReportsIds = countedReports.map(report => report._id);
+        const newReports = countedReports.filter(report => !oldReportIds.includes(report._id));
+        const phones = getPhones(alert.recipients, newReports);
+        resolve({
+          countedReportsIds: countedReportsIds,
+          newReports: newReports,
+          phones: phones
+        });
       }
     );
   });
 };
 
 /**
- * Returns Promise({ numFetched, countedReportsIds, newReports, phones }) for the db batch with skip value.
+ * Returns Promise({ numFetched, countedReports, oldReportIds }):
+ * numFetched: skip value for batch
+ * countedReports: reports in batch that 'count', determined by the script logic
+ * oldReportIds: report ids that have counted towards previous alerts, see generateMessages()
+ *   These may include ids for documents returned in countedReports.
  */
-const getCountedReportsAndPhonesBatch = (script, latestReport, alert, skip) => {
+const getCountedReportsBatch = (script, latestReport, alert, skip) => {
   const options = { skip: skip, limit: BATCH_SIZE };
   return fetchReports(latestReport.reported_date - 1, alert.time_window_in_days, alert.forms, options)
     .then(fetched => {
       const countedReports = countReports(fetched, latestReport, script);
-      const newReports = countedReports.filter(report => !isReportAlreadyMessaged(report, alert.name));
+      const oldReportIds = _.flatten(countedReports.map(report => {
+        if (report.tasks) {
+          const tasks = report.tasks.filter(task => task.alert_name === alert.name);
+          return tasks.map(task => task.counted_reports);
+        }
+      }));
       return {
         numFetched: fetched.length,
-        countedReportsIds: countedReports.map(report => report._id),
-        newReports: newReports,
-        phones: getPhones(alert.recipients, newReports)
+        countedReports: countedReports,
+        oldReportIds: oldReportIds
       };
     });
 };
