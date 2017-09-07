@@ -32,6 +32,8 @@ angular.module('inboxServices').service('ContactSave',
 
       return prepareAndAttachSiblingDocs(schema, submitted.doc, original, submitted.siblings)
         .then(function(siblings) {
+          doc.parent = ExtractLineage(doc.parent);
+          doc.contact = ExtractLineage(doc.contact);
           return {
             docId: doc._id,
             preparedDocs: [].concat(repeated, siblings, doc)
