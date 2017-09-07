@@ -64,7 +64,7 @@ describe('ContactSave service', () => {
 
         assert.equal(savedDocs[2]._id, 'main1');
 
-        assert.isTrue(ExtractLineage.calledOnce);
+        assert.equal(ExtractLineage.callCount, 78);
       });
   });
 
