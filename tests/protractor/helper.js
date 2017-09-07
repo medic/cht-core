@@ -25,26 +25,9 @@ module.exports = {
     }, 10000);
   },
 
-  waitElementToBeAttached: locator => {
-    let result = false;
-    let attempts = 0;
-    while (attempts < 2) {
-      try {
-        browser.actions().mouseMove(locator).perform();
-        result = true;
-        break;
-      } catch (err) {
-        browser.sleep(200);
-        console.log(err);
-      }
-      attempts++;
-    }
-    return result;
-  },
-
   waitUntilReady: elm => {
-    return browser.wait(() => { return elm.isPresent(); }, 10000) &&
-      browser.wait(() => { return elm.isDisplayed(); }, 12000);
+    return browser.wait(() => elm.isPresent(), 10000) &&
+           browser.wait(() => elm.isDisplayed(), 12000);
   },
 
   waitForCheckboxToBeChecked: elem => {
