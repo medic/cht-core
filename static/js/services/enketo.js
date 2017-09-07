@@ -361,6 +361,14 @@ angular.module('inboxServices').service('Enketo',
           ._couchId;
       }
 
+      // Chrome 30 doesn't support $xml.outerHTML: #3880
+      function getOuterHTML(xml) {
+        if (xml.outerHTML) {
+          return xml.outerHTML;
+        }
+        return $('<temproot>').append($(xml).clone()).html();
+      }
+
       var recordDoc = $.parseXML(record);
       var $record = $($(recordDoc).children()[0]);
       mapOrAssignId($record[0], doc._id || uuid());
@@ -376,13 +384,13 @@ angular.module('inboxServices').service('Enketo',
       });
 
       var docsToStore = $record.find('[db-doc=true]').map(function() {
-        var docToStore = EnketoTranslation.reportRecordToJs(this.outerHTML);
+        var docToStore = EnketoTranslation.reportRecordToJs(getOuterHTML(this));
         docToStore._id = getId(xpathPath(this));
         docToStore.reported_date = Date.now();
         return docToStore;
       }).get();
 
-      record = $record[0].outerHTML;
+      record = getOuterHTML($record[0]);
 
       AddAttachment(doc, REPORT_ATTACHMENT_NAME, record, 'application/xml');
       doc._id = getId('/*');
