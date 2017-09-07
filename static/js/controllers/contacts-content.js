@@ -77,7 +77,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
         });
     };
 
-    var selectContact = function(id) {
+    var selectContact = function(id, silent) {
       $scope.setLoadingContent(id);
       return ContactViewModelGenerator(id)
         .then(function(model) {
@@ -87,7 +87,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
           getTasks();
         })
         .catch(function(err) {
-          if (err.code === 404) {
+          if (err.code === 404 && !silent) {
             $translate('error.404.title').then(Snackbar);
           }
           $scope.clearSelected();
@@ -106,7 +106,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
       }
       return getHomePlaceId().then(function(id) {
         if (id) {
-          return selectContact(id);
+          return selectContact(id, true);
         }
       });
     });
@@ -124,14 +124,14 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
                          $scope.selected.doc.parent._id;
           if (parentId) {
             // select the parent
-            selectContact(parentId);
+            selectContact(parentId, true);
           } else {
             // top level contact deleted - clear selection
             $scope.clearSelected();
           }
         } else {
           // refresh the updated contact
-          selectContact(change.id);
+          selectContact(change.id, true);
         }
       }
     });
