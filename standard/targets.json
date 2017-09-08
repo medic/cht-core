@@ -123,6 +123,126 @@
     },
     {
       "type": "count",
+      "id": "pnc-active",
+      "icon": "mother-child",
+      "goal": -1,
+      "name": [
+        {
+          "locale": "en",
+          "content": "Women in active PNC period"
+        },
+        {
+          "locale": "hi",
+          "content": ""
+        },
+        {
+          "locale": "id",
+          "content": ""
+        }
+      ]
+    },
+    {
+      "type": "count",
+      "id": "pnc-registered-this-month",
+      "icon": "infant",
+      "goal": -1,
+      "name": [
+        {
+          "locale": "en",
+          "content": "pnc-registered-this-month"
+        },
+        {
+          "locale": "hi",
+          "content": ""
+        },
+        {
+          "locale": "id",
+          "content": ""
+        }
+      ]
+    },
+    {
+      "type": "count",
+      "id": "pnc-visits-this-month",
+      "icon": "infant",
+      "goal": -1,
+      "name": [
+        {
+          "locale": "en",
+          "content": "PNC visits this month"
+        },
+        {
+          "locale": "hi",
+          "content": ""
+        },
+        {
+          "locale": "id",
+          "content": ""
+        }
+      ]
+    },
+    {
+      "type": "count",
+      "id": "pnc-homebirth-0-visits",
+      "icon": "household",
+      "goal": 0,
+      "name": [
+        {
+          "locale": "en",
+          "content": "Homebirths with 0 visits in PNC period"
+        },
+        {
+          "locale": "hi",
+          "content": ""
+        },
+        {
+          "locale": "id",
+          "content": ""
+        }
+      ]
+    },
+    {
+      "type": "percent",
+      "id": "pnc-homebirth-min-1-visit",
+      "icon": "nurse",
+      "goal": 100,
+      "name": [
+        {
+          "locale": "en",
+          "content": "Homebirths with 1+ PNC visit all time"
+        },
+        {
+          "locale": "hi",
+          "content": ""
+        },
+        {
+          "locale": "id",
+          "content": ""
+        }
+      ]
+    },
+    {
+      "type": "percent",
+      "id": "pnc-3-visits",
+      "icon": "nurse",
+      "goal": 50,
+      "name": [
+        {
+          "locale": "en",
+          "content": "Women with 3 PNC visits all time"
+        },
+        {
+          "locale": "hi",
+          "content": ""
+        },
+        {
+          "locale": "id",
+          "content": ""
+        }
+      ]
+    },
+    {
+      "type": "count",
       "id": "imm-children-under-5-years",
       "icon": "children",
       "goal": -1,
