@@ -87,13 +87,14 @@ rule GenerateEvents {
     ];
 
     var postnatalForms = [
-      'M',
+      'PNC',
+      'V',
       'postnatal_visit'
     ];
 
     var immunizationForms = [
       'V',
-      'imm',
+      'IMM',
       'immunization_visit',
       'DT1',
       'DT2',
@@ -176,6 +177,55 @@ rule GenerateEvents {
       'vitamin_a',
       'yellow_fever'
     ];
+
+    // Copied locally to use the function where `form` can be an array. This needs to be ported to nootils.
+    var getMostRecentTimestamp = function(reports, form) {
+      var report = this.getMostRecentReport(reports, form);
+      return report && report.reported_date;
+    };
+    // This is identical to the ones in nootils, but `form` can be an array. This needs to be ported to nootils.
+    var getMostRecentReport = function(reports, form) {
+      var result = null;
+      reports.forEach(function(report) {
+        // if (report.form === form &&
+        if (form.indexOf(report.form) >= 0 &&
+           !report.deleted &&
+           (!result || report.reported_date > result.reported_date)) {
+          result = report;
+        }
+      });
+      return result;
+    };
+    // This was identical to the ones in nootils, but now `form` can be an array, and can count for number of forms in the window. This needs to be ported to nootils.
+    var isFormSubmittedInWindow = function(reports, form, start, end, count) {
+      var result = false;
+      var reportsFound = 0;
+      reports.forEach(function(report) {
+        if (!result && form.indexOf(report.form) >= 0) {
+          if (report.reported_date >= start && report.reported_date <= end) {
+            reportsFound++;
+            if (!count ||
+               (report.fields && report.fields.follow_up_count > count) ||
+               (reportsFound >= count) ) {
+              result = true;
+            }
+          }
+        }
+      });
+      return result;
+    };
+
+    var countReportsSubmittedInWindow = function(reports, form, start, end) {
+      var reportsFound = 0;
+      reports.forEach(function(report) {
+        if (form.indexOf(report.form) >= 0) {
+          if (report.reported_date >= start && report.reported_date <= end) {
+            reportsFound++;
+          }
+        }
+      });
+      return reportsFound;
+    };
 
     var isFormFromArraySubmittedInWindow = function (reports, formsArray, startTime, endTime) {
       for ( var i=0; i < formsArray.length; i++ ) {
@@ -264,11 +314,12 @@ rule GenerateEvents {
                                         Utils.getMostRecentTimestamp(c.reports, 'pregnancy')
                                      );
 
-      // var newestDelivery = Utils.getMostRecentReport(c.reports, 'D');
-      var newestDeliveryTimestamp = Math.max(
+      var newestDelivery = getMostRecentReport(c.reports, deliveryForms);
+      /* var newestDeliveryTimestamp = Math.max(
                                       Utils.getMostRecentTimestamp(c.reports, 'D'),
                                       Utils.getMostRecentTimestamp(c.reports, 'delivery')
-                                    );
+                                    ); */
+      var newestDeliveryTimestamp = newestDelivery.reported_date;
 
       // ------------------------------
       // PERSON-BASED TARGETS
@@ -292,13 +343,8 @@ rule GenerateEvents {
         emitTargetInstance(instance);
 
         // IMM: CHILDREN WITH 1+ VISIT IN PAST 3 MONTHS
-        var visits = 0;
-        c.reports.forEach(function(r) {
-          // count the number of visit forms sent within the past 3 months
-          if (isFormFromArraySubmittedInWindow(c.reports, immunizationForms, Utils.addDate(now, 90 * -1).getTime(), now.getTime())) {
-            visits++;
-          }
-        });
+        // count the number of visit forms sent within the past 3 months
+        var visits = countReportsSubmittedInWindow(c.reports, immunizationForms, now.getTime() - 92 * MS_IN_DAY, now.getTime());
         var instance = createTargetInstance('imm-children-vaccinated-prev-3-months', c.contact, visits >= 1);
         instance.date = now.getTime();
         emitTargetInstance(instance);
@@ -315,6 +361,34 @@ rule GenerateEvents {
         emitTargetInstance(instance);
       }
 
+      // TARGETS FOR 6-WEEK PNC PERIOD
+      // The PNC period ending today started 6 weeks ago, rounded down to midnight
+      var startPNCperiod = new Date(now.getFullYear(), now.getMonth(), now.getDate() - DAYS_IN_PNC);
+      if (newestDeliveryTimestamp > startPNCperiod.getTime()) {
+        // PNC: WOMEN IN ACTIVE PNC PERIOD
+        var instance = createTargetInstance('pnc-active', c.contact, true);
+        instance.date = now.getTime();
+        emitTargetInstance(instance);
+        
+        // PNC: Homebirths with 0 visits currently in PNC period
+        // Women who gave birth at home and had 0 PNC visits in their active period (up to 6 weeks after delivery) - includes V forms and postnatal visit forms - all-time.
+        var instance = createTargetInstance('pnc-homebirth-0-visits', c.contact, !isFormSubmittedInWindow(c.reports, postnatalForms, newestDeliveryTimestamp, now.getTime()));
+        instance.date = now.getTime();
+        emitTargetInstance(instance);
+      }
+
+      // PNC: PNC registrations this month
+      // Total number of delivery reports received this month (includes D forms and delivery reports)
+      var instance = createTargetInstance('pnc-registered-this-month', c.contact, true);
+      instance.date = newestDeliveryTimestamp;  // will only be counted if delivered this month
+      emitTargetInstance(instance);
+
+      // PNC: PNC visits this month ??????
+      // Total number of V forms + postnatal visit forms received for women in active PNC period (6 weeks from delivery) + postnatal visit forms submitted this month
+      var instance = createTargetInstance('pnc-visits-this-month', c.contact, true);
+      instance.date = newestDeliveryTimestamp;
+      // emitTargetInstance(instance);
+       
       // ------------------------------
       // REPORT-BASED TARGETS
       // ------------------------------
@@ -387,7 +461,9 @@ rule GenerateEvents {
         }
 
         // Birth related widgets
-        if (r.reported_date === newestDeliveryTimestamp && (r.form === 'D' || r.form === 'delivery')) {
+        // Previously we were eliminating deliveries for previous pregnancies :(
+        // if (r.reported_date === newestDeliveryTimestamp && (r.form === 'D' || r.form === 'delivery')) {
+        if (r.form === 'D' || r.form === 'delivery') {
 
           // BIRTHS THIS MONTH
           var instance = createTargetInstance('births-this-month', r, true);
@@ -412,13 +488,8 @@ rule GenerateEvents {
           emitTargetInstance(instance);
 
           // % DELIVERIES ALL TIME WITH 1+ AND 4+ VISITS
-          var visits = 0;
-          c.reports.forEach(function(r) {
-            // count the number of visit forms sent between pregnancy registration and delivery
-            if (r.reported_date > newestPregnancyTimestamp && (r.form === 'V' || r.form === 'pregnancy_visit')) {
-              visits++;
-            }
-          });
+          var visits = countReportsSubmittedInWindow(c.reports, antenatalForms, r.reported_date - MAX_DAYS_IN_PREGNANCY*MS_IN_DAY, r.reported_date);
+          
           var instance = createTargetInstance('delivery-with-min-1-visit', r, visits >= 1);
           instance.date = now.getTime();
           emitTargetInstance(instance);
@@ -427,6 +498,23 @@ rule GenerateEvents {
           instance.date = now.getTime();
           emitTargetInstance(instance);
 
+          // Find PNC period based on delivery date, not reported date
+          var startPNCperiod = new Date(r.birth_date);
+          var endPNCperiod = new Date(startPNCperiod.getFullYear(), startPNCperiod.getMonth(), startPNCperiod.getDate() + DAYS_IN_PNC);
+
+          // PNC: HOMEBIRTHS WITH 1+ PNC VISITS, ALL TIME
+          // Women who gave birth at home and had at least 1 PNC visit during 6-week PNC Period (includes V forms and postnatal visit forms) - all-time.
+          if (r.fields && r.fields.delivery_code && r.fields.delivery_code.toUpperCase() !== 'F') {
+            var instance = createTargetInstance('pnc-homebirth-min-1-visit', c.contact, isFormSubmittedInWindow(c.reports, postnatalForms, startPNCperiod.getTime(), endPNCperiod.getTime()));
+            instance.date = now.getTime();
+            emitTargetInstance(instance);
+          }
+
+          // PNC: WOMEN WITH 3 PNC VISITS, ALL TIME
+          // Women who had 3 PNC visits confirmed during their 6-week PNC period (includes V forms and postnatal visit forms) - all-time
+          var instance = createTargetInstance('pnc-3-visits', c.contact, isFormSubmittedInWindow(c.reports, postnatalForms, startPNCperiod.getTime(), endPNCperiod.getTime(), 3));
+          instance.date = now.getTime();
+          emitTargetInstance(instance);
         }
       });
     }
