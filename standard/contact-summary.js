@@ -167,7 +167,7 @@ if (contact.type === 'person') {
     { label: 'contact.age', value: contact.date_of_birth, width: 4, filter: 'age' },
     { label: 'Phone Number', value: contact.phone, width: 4, filter: 'phone' },
     { label: 'Notes', value: contact.notes, width: 12 },
-    { label: 'contact.parent', value: contact.parent, filter: 'lineage' }
+    { label: 'contact.parent', value: lineage, filter: 'lineage' }
   ];
   var pregnancy;
   var pregnancyDate;
@@ -248,7 +248,7 @@ if (contact.type === 'person') {
   if (pastPregnancies.fields.length > 0) {
     cards.push(pastPregnancies);
   }
-  if (isCoveredByUseCase(contact, "imm")) {
+  if (isCoveredByUseCase(contact, 'imm')) {
     var imm_card = {
       label: 'contact.profile.immunizations',
       fields: []
@@ -277,7 +277,7 @@ if (contact.type === 'person') {
     { label: 'Notes', value: contact.notes, width: 12 }
   ];
   if (contact.parent) {
-    fields.push({ label: 'contact.parent', value: contact.parent, filter: 'lineage' });
+    fields.push({ label: 'contact.parent', value: lineage, filter: 'lineage' });
   }
 }
 
@@ -286,4 +286,5 @@ var result = {
   cards: cards,
   context: context
 };
-result; // output on the last line of the configuration
+// return the result for 2.13+ as per #2635
+return result; 
