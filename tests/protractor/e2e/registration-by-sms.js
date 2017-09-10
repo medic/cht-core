@@ -239,7 +239,9 @@ describe('registration transition', () => {
 
     it('shows content', () => {
       commonElements.goToReports();
-      browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child .name', CAROL.name)).isPresent(), 10000);
+
+      // long delay because we have to wait for sentinel to finish and the changes feed to update
+      browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child .name', CAROL.name)).isPresent(), 30000);
 
       element(by.css('#reports-list .unfiltered li:first-child .item-summary')).click();
 
