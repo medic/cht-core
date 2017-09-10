@@ -136,7 +136,7 @@ angular.module('inboxServices').service('ContactSave',
           return null;
         })
         .then(function(original) {
-          var submitted = EnketoTranslation.contactRecordToJs(form.getDataStr());
+          var submitted = EnketoTranslation.contactRecordToJs(form.getDataStr({ irrelevant: false }));
 
           if(original) {
             submitted.doc = $.extend({}, original, submitted.doc);
