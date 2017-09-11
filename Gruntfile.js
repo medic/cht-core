@@ -258,9 +258,6 @@ module.exports = function(grunt) {
             // patch enketo to support cascading of jr:choice-name() update results
             // https://github.com/medic/medic-webapp/issues/3804
             'patch node_modules/enketo-core/src/js/output.js < patches/3804_jr-choice-name.patch',
-
-            // patch enketo's bootstrap-datepicker dependency so that sass compiles properly
-            'patch node_modules/enketo-core/src/widget/date/datepicker-extended.scss < patches/enketo-datepicker-extended-sass-import.patch',
           ];
           return patches.join(' && ');
         }

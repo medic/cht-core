@@ -23,7 +23,7 @@
     "bootstrap": "^3.3.7",
     "bootstrap-daterangepicker": "^2.1.24",
     "bootstrap-tour": "^0.10.3",
-    "enketo-core": "^4.38.2",
+    "enketo-core": "^4.39.0",
     "font-awesome": "^4.7.0",
     "google-libphonenumber": "^3.0.0",
     "jquery": "^3.2.1",
