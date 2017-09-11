@@ -520,7 +520,7 @@ var feedback = require('../modules/feedback'),
             .tooltip({
               placement: 'bottom',
               trigger: 'manual',
-              container: $(this).closest('.inbox-items, .item-content')
+              container: $(this).closest('.inbox-items, .item-content, .page')
             })
             .tooltip('show');
         }
