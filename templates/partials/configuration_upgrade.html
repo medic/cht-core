@@ -25,7 +25,7 @@
         <dt translate>instance.upgrade.deployed_by</dt>
         <dd>{{deployInfo.user}}</dd>
         <dt translate>instance.upgrade.at</dt>
-        <dd ng-bind-html="deployInfo.timestamp | relativeDate"></dd>
+        <dd ng-bind-html="deployInfo.timestamp | simpleDate"></dd>
       </dl>
     </div>
 
@@ -35,7 +35,7 @@
       <ul ng-show="versions.releases.length" class="table table-striped">
         <li ng-repeat="release in versions.releases" class="row">
           <div class="col-xs-5"><code>{{release.id}}</code></div>
-          <div class="col-xs-4" ng-bind-html="release.value.build_time | relativeDate"></div>
+          <div class="col-xs-4" ng-bind-html="release.value.build_time | simpleDate"></div>
           <div class="col-xs-3"><button ng-click="upgrade(release.id)" class="btn btn-primary" translate>upgrade</button></div>
         </li>
       </ul>
@@ -48,7 +48,7 @@
         <ul ng-show="versions.betas.length" class="table table-striped">
           <li ng-repeat="release in versions.betas" class="row">
             <div class="col-xs-5"><code>{{release.id}}</code></div>
-            <div class="col-xs-4" ng-bind-html="release.value.build_time | relativeDate"></div>
+            <div class="col-xs-4" ng-bind-html="release.value.build_time | simpleDate"></div>
             <div class="col-xs-3"><button ng-click="upgrade(release.id)" class="btn btn-primary" translate>upgrade</button></div>
           </li>
         </ul>
