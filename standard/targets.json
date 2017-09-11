@@ -149,7 +149,7 @@
       "name": [
         {
           "locale": "en",
-          "content": "PNC registrations this month"
+          "content": "Registrations for PNC this month"
         },
         {
           "locale": "hi",
@@ -169,7 +169,7 @@
       "name": [
         {
           "locale": "en",
-          "content": "PNC visits this month"
+          "content": "Visits for PNC this month"
         },
         {
           "locale": "hi",
@@ -189,7 +189,7 @@
       "name": [
         {
           "locale": "en",
-          "content": "Homebirths with 0 visits in PNC period"
+          "content": "Homebirths with 0 PNC visits"
         },
         {
           "locale": "hi",
@@ -209,7 +209,7 @@
       "name": [
         {
           "locale": "en",
-          "content": "Homebirths with 1+ PNC visit all time"
+          "content": "Homebirths with 1+ PNC visit"
         },
         {
           "locale": "hi",
@@ -229,7 +229,7 @@
       "name": [
         {
           "locale": "en",
-          "content": "Women with 3 PNC visits all time"
+          "content": "Deliveries with 3 PNC visits"
         },
         {
           "locale": "hi",
@@ -246,7 +246,7 @@
       "id": "imm-children-under-5-years",
       "icon": "children",
       "goal": -1,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+      "context": "true || (user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -259,11 +259,11 @@
       "id": "imm-children-registered-this-month",
       "icon": "child",
       "goal": -1,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+      "context": "true || (user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
-          "content": "Children registered this month"
+          "content": "New children under 5 this month"
         }
       ]
     },
@@ -272,7 +272,7 @@
       "id": "imm-vaccines-given-this-month",
       "icon": "immunization",
       "goal": -1,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+      "context": "true || (user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -285,7 +285,7 @@
       "id": "imm-children-vaccinated-prev-3-months",
       "icon": "chw",
       "goal": -1,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+      "context": "true || (user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -298,7 +298,7 @@
       "id": "imm-no-vaccine-reported",
       "icon": "risk",
       "goal": -1,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+      "context": "true || (user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -311,7 +311,7 @@
       "id": "imm-children-with-bcg-reported",
       "icon": "child",
       "goal": 100,
-      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+      "context": "true || (user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
