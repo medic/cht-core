@@ -319,7 +319,7 @@ rule GenerateEvents {
                                       Utils.getMostRecentTimestamp(c.reports, 'D'),
                                       Utils.getMostRecentTimestamp(c.reports, 'delivery')
                                     ); */
-      var newestDeliveryTimestamp = newestDelivery.reported_date;
+      var newestDeliveryTimestamp = newestDelivery ? newestDelivery.reported_date : 0;
 
       // ------------------------------
       // PERSON-BASED TARGETS
