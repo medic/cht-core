@@ -1063,7 +1063,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:clinic:create" prefix="J1!contact:clinic:create!" version="2017-07-25_08-55">
+        <data delimiter="#" id="contact:clinic:create" prefix="J1!contact:clinic:create!" version="2017-09-11_12-29">
           <inputs>
             <meta>
               <location>
@@ -1110,7 +1110,7 @@
             <generated_name_translation/>
           </init>
           <contact>
-            <parent/>
+            <parent>PARENT</parent>
             <type>person</type>
             <name/>
             <phone/>
