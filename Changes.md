@@ -1,10 +1,19 @@
 # Medic Mobile Release Notes
 
+## 2.14.0
+
+_TBD_
+
+### Migration notes
+
+- [#3449](https://github.com/medic/medic-webapp/issues/3449) includes a feature which makes it unnecessary to use a `repeat-relevant` node in Enketo forms to workaround a bug which created an empty child. This node should now be removed.
+
 ## 2.13.0
 
 _August 1, 2017_
 
 ### Migration notes
+
 - [#2635](https://github.com/medic/medic-webapp/issues/2635) changes the context available to the configured contact summary script. The `contact` parameter no longer has information about parents. This information is now in an array called `lineage`. More information is available in the [configuration documentation](https://github.com/medic/medic-docs/blob/master/configuration/contact-summary.md).
 - [#3546](https://github.com/medic/medic-webapp/issues/3546) changes the implementation of the `contact_summary` so instead of declaring the output on the last line of the script, now you have to return the output. Usually this is as easy as adding a return on the last line, so `output;` becomes `return output;`. More information is available in the [configuration documentation](https://github.com/medic/medic-docs/blob/master/configuration/contact-summary.md).
 
