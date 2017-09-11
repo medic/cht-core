@@ -208,7 +208,10 @@ describe('registration transition', () => {
       utils.updateSettings(CONFIG)
         .then(() => protractor.promise.all(DOCS.map(utils.saveDoc)))
         .then(() => submit(body))
-        .then(done)
+        .then(() => {
+          // delay by a second to allow sentinel to process the message
+          setTimeout(done, 1000);
+        })
         .catch(done.fail);
     });
 
@@ -239,9 +242,7 @@ describe('registration transition', () => {
 
     it('shows content', () => {
       commonElements.goToReports();
-
-      // long delay because we have to wait for sentinel to finish and the changes feed to update
-      browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child .name', CAROL.name)).isPresent(), 30000);
+      browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child .name', CAROL.name)).isPresent(), 10000);
 
       element(by.css('#reports-list .unfiltered li:first-child .item-summary')).click();
 
