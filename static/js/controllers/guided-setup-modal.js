@@ -87,7 +87,6 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
     var selectOption = function(e) {
       e.preventDefault();
       var elem = $(this);
-      console.log('selecting', elem);
       elem.closest('.horizontal-options')
         .find('.selected')
         .removeClass('selected');
