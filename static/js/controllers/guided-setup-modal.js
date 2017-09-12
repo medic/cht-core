@@ -120,31 +120,30 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
 
     Languages().then(function(languages) {
       $scope.enabledLocales = languages;
+      $uibModalInstance.rendered.then(function() {
+        $('#guided-setup').on('click', '.horizontal-options a', selectOption);
+        $('#guided-setup [name=gateway-number]').on('input', updateNumbers);
+        $('#guided-setup [name=default-country-code]').select2({ width: '20em', data: countries.list });
+        $('#guided-setup [name=default-country-code]').on('change', updateNumbers);
+        Settings()
+          .then(function(res) {
+            if (res.setup_complete) {
+              setTimeout(function() {
+                $('#guided-setup [name=default-country-code]').val(res.default_country_code).change();
+                $('#guided-setup [name=gateway-number]').val(res.gateway_number).trigger('input');
+                $('#primary-contact-content a[data-value=' + res.care_coordinator + ']').trigger('click');
+                $('#language-preference-content .locale a[data-value="' + res.locale + '"]').trigger('click');
+                $('#language-preference-content .locale-outgoing a[data-value="' + res.locale_outgoing + '"]').trigger('click');
+                $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']').trigger('click');
+                $('#anonymous-statistics-content a[data-value=' + res.statistics_submission + ']').trigger('click');
+              });
+            }
+          })
+          .catch(function(err) {
+            $log.error('Error fetching settings', err);
+          });
+      });
     });
 
-    $uibModalInstance.rendered.then(function() {
-      $('#guided-setup').on('click', '.horizontal-options a', selectOption);
-      $('#guided-setup [name=gateway-number]').on('input', updateNumbers);
-      $('#guided-setup [name=default-country-code]').select2({ width: '20em', data: countries.list });
-      $('#guided-setup [name=default-country-code]').on('change', updateNumbers);
-      Settings()
-        .then(function(res) {
-          // don't show any default values - encourage the user to select them
-          if (res.setup_complete) {
-            window.setTimeout(function() {
-              $('#guided-setup [name=default-country-code]').val(res.default_country_code).change();
-              $('#guided-setup [name=gateway-number]').val(res.gateway_number).trigger('input');
-              $('#primary-contact-content a[data-value=' + res.care_coordinator + ']').trigger('click');
-              $('#language-preference-content .locale a[data-value=' + res.locale + ']').trigger('click');
-              $('#language-preference-content .locale-outgoing a[data-value=' + res.locale_outgoing + ']').trigger('click');
-              $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']').trigger('click');
-              $('#anonymous-statistics-content a[data-value=' + res.statistics_submission + ']').trigger('click');
-            }, 1);
-          }
-        })
-        .catch(function(err) {
-          $log.error('Error fetching settings', err);
-        });
-    });
   }
 );
