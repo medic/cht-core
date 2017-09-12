@@ -63,6 +63,19 @@ var IMMUNIZATION_LIST = [
   'yellow_fever'
 ];
 
+var isCoveredByUseCaseInLineage = function(lineage, usecase) {
+  if (Array.isArray(lineage)) {
+    for (var i=0; i < lineage.length; i++) {
+      if (lineage[i] && lineage[i].use_cases && lineage[i].use_cases.split(' ').indexOf(usecase) !== -1) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
+// This function is now broken. Since #2635 the parent does not have the fields populated.
+// Use isCoveredByUseCaseInLineage() instead until contact is hydrated
 var isCoveredByUseCase = function(contact, usecase) {
 
   if (!contact) {
@@ -248,7 +261,7 @@ if (contact.type === 'person') {
   if (pastPregnancies.fields.length > 0) {
     cards.push(pastPregnancies);
   }
-  if (isCoveredByUseCase(contact, 'imm')) {
+  if (isCoveredByUseCaseInLineage(lineage, 'imm')) {
     var imm_card = {
       label: 'contact.profile.immunizations',
       fields: []
