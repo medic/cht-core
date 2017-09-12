@@ -58,21 +58,50 @@ angular.module('inboxServices').factory('LineageModelGenerator',
         });
     };
 
+    var mergeParents = function(doc, lineage) {
+      var current = doc;
+      lineage.forEach(function(hydrated) {
+        if (!current) {
+          return;
+        }
+        if (hydrated) {
+          current.parent = hydrated;
+        }
+        current = current.parent;
+      });
+      return doc;
+    };
+
     return {
-      contact: function(id) {
+
+      /**
+       * Fetch a contact and its lineage by the given uuid. Returns a
+       * contact model, or if options.merge is true the doc with the
+       * lineage inline.
+       */
+      contact: function(id, options) {
+        options = options || {};
         return get(id).then(function(docs) {
           // the first row is the contact
           var doc = docs.shift();
            // everything else is the lineage
           return hydrate(docs).then(function(lineage) {
-            return {
-              _id: id,
-              doc: doc,
-              lineage: lineage
-            };
+            var result = { _id: id };
+            if (options.merge) {
+              result.doc = mergeParents(doc, lineage);
+            } else {
+              result.doc = doc;
+              result.lineage = lineage;
+            }
+            return result;
           });
         });
       },
+
+      /**
+       * Fetch a contact and its lineage by the given uuid. Returns a
+       * report model.
+       */
       report: function(id) {
         return get(id).then(function(docs) {
           // the first row is the report
