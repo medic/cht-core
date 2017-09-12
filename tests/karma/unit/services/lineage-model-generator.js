@@ -91,6 +91,35 @@ describe('LineageModelGenerator service', () => {
         chai.expect(model.lineage[1].contact).to.deep.equal(grandparentContact);
       });
     });
+
+    it('merges lineage when merge passed', () => {
+      const contact = { _id: 'a', name: '1', parent: { _id: 'b', parent: { _id: 'c' } } };
+      const parent = { _id: 'b', name: '2' };
+      const grandparent = { _id: 'c', name: '3' };
+      const expected = {
+        _id: 'a',
+        doc: {
+          _id: 'a',
+          name: '1',
+          parent: {
+            _id: 'b',
+            name: '2',
+            parent: {
+              _id: 'c',
+              name: '3'
+            }
+          }
+        }
+      };
+      dbQuery.returns(Promise.resolve({ rows: [
+        { doc: contact },
+        { doc: parent },
+        { doc: grandparent }
+      ] }));
+      return service.contact('a', { merge: true }).then(actual => {
+        chai.expect(actual).to.deep.equal(expected);
+      });
+    });
   });
 
   describe('report', () => {
