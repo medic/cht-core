@@ -98,19 +98,7 @@ angular.module('inboxServices').factory('Select2Search',
       };
 
       var getDoc = function(id) {
-        return LineageModelGenerator.contact(id).then(function(model) {
-          var current = model.doc;
-          model.lineage.forEach(function(hydrated) {
-            if (!current) {
-              return;
-            }
-            if (hydrated) {
-              current.parent = hydrated;
-            }
-            current = current.parent;
-          });
-          return model.doc;
-        });
+        return LineageModelGenerator.contact(id, { merge: true });
       };
 
       var resolveInitialValue = function(selectEl, initialValue) {
