@@ -731,8 +731,8 @@ rule GenerateEvents {
                 for (var i = 0; i < r.scheduled_tasks.length; i++) {
 
                   // Associate tasks to the last message of each group. Be mindful of overflow when peaking ahead!
-                  if (i+1 == r.scheduled_tasks.length
-                    || i+1 < r.scheduled_tasks.length && r.scheduled_tasks[i].group != r.scheduled_tasks[i+1].group) {
+                  if (i+1 >= r.scheduled_tasks.length
+                    || r.scheduled_tasks[i].group != r.scheduled_tasks[i+1].group) {
                     var schedule = Utils.getSchedule('postnatal-missing-visit');
                     if (schedule) {
                       for (var k = 0; k < schedule.events.length; k++) {
