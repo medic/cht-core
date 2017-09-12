@@ -13,6 +13,9 @@ angular.module('inboxServices').factory('UserContact',
           }
           return LineageModelGenerator.contact(user.contact_id, { merge: true });
         })
+        .then(function(contact) {
+          return contact && contact.doc;
+        })
         .catch(function(err) {
           if (err.code === 404) {
             return;

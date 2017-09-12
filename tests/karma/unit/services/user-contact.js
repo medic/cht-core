@@ -68,11 +68,12 @@ describe('UserContact service', function() {
   it('returns contact', function() {
     var expected = { _id: 'somebody', name: 'Some Body' };
     UserSettings.returns(Promise.resolve({ contact_id: 'somebody' }));
-    contact.returns(Promise.resolve(expected));
+    contact.returns(Promise.resolve({ doc: expected }));
     return service().then(function(actual) {
       chai.expect(actual).to.deep.equal(expected);
       chai.expect(contact.callCount).to.equal(1);
       chai.expect(contact.args[0][0]).to.equal('somebody');
+      chai.expect(contact.args[0][1].merge).to.equal(true);
     });
   });
 

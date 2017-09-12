@@ -98,7 +98,10 @@ angular.module('inboxServices').factory('Select2Search',
       };
 
       var getDoc = function(id) {
-        return LineageModelGenerator.contact(id, { merge: true });
+        return LineageModelGenerator.contact(id, { merge: true })
+          .then(function(contact) {
+            return contact && contact.doc;
+          });
       };
 
       var resolveInitialValue = function(selectEl, initialValue) {

@@ -91,14 +91,14 @@ angular.module('inboxServices').factory('LineageModelGenerator',
           var doc = docs.shift();
            // everything else is the lineage
           return hydrate(docs).then(function(lineage) {
+            var result = { _id: id };
             if (options.merge) {
-              return mergeParents(doc, lineage);
+              result.doc = mergeParents(doc, lineage);
+            } else {
+              result.doc = doc;
+              result.lineage = lineage;
             }
-            return {
-              _id: id,
-              doc: doc,
-              lineage: lineage
-            };
+            return result;
           });
         });
       },
