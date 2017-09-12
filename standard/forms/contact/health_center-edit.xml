@@ -726,7 +726,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" version="2017-07-25_08-57">
+        <data delimiter="#" id="contact:health_center:edit" prefix="J1!contact:health_center:edit!" version="2017-09-12_14-34">
           <inputs>
             <meta>
               <location>
@@ -794,8 +794,8 @@
       <bind nodeset="/data/health_center/is_name_generated" required="true()" type="select1"/>
       <bind calculate="if(  /data/health_center/is_name_generated  = 'true',  /data/init/generated_name_translation , coalesce( /data/init/custom_place_name ,.))" nodeset="/data/health_center/name" type="string"/>
       <bind nodeset="/data/health_center/external_id" type="string"/>
-      <bind nodeset="/data/health_center/use_cases" relevant="../type = 'district_hospital'" type="select"/>
-      <bind nodeset="/data/health_center/vaccines" relevant="../type = 'district_hospital' and selected( /data/health_center/use_cases ,'imm')" type="select"/>
+      <bind nodeset="/data/health_center/use_cases" relevant="../type = 'health_center'" type="select"/>
+      <bind nodeset="/data/health_center/vaccines" relevant="../type = 'health_center' and selected( /data/health_center/use_cases ,'imm')" type="select"/>
       <bind nodeset="/data/health_center/notes" type="string"/>
       <bind calculate="coalesce( /data/init/select_person , .)" nodeset="/data/health_center/contact" type="string"/>
       <bind calculate="concat(../../inputs/meta/location/lat, concat(' ', ../../inputs/meta/location/long))" nodeset="/data/health_center/geolocation" type="string"/>
