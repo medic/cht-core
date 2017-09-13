@@ -59,7 +59,17 @@ angular.module('inboxControllers').controller('ConfigurationFormsXmlCtrl',
           var meta = results[1];
 
           var $xml = $($.parseXML(xml));
+
+          // TODO $xml.find('title') works in Chrome 44, but not in Chrome 60.
+          // It's probably related to XML namespaces, but we should work out why
+          // it doesn't work in newer Chrome and get it working.
           var title = $xml.find('title').text();
+          if (!title) {
+            var match = xml.match(/<h:title[^>]*>([^<]*)<\/h:title>/);
+            if (match) {
+              title = match[1];
+            }
+          }
 
           var dataNode = $xml.find('instance').children().first();
           if (!dataNode.children('meta').children('instanceID').length) {
