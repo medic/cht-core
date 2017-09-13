@@ -199,6 +199,17 @@ if (contact.type === 'person') {
   
   var immunizations = initImmunizations();
 
+  // INIT
+  var birthDate = null;
+  var ageInMs = null;
+  var ageInMonths = null;
+
+  if (contact.date_of_birth && contact.date_of_birth !== '') {
+    birthDate = new Date(contact.date_of_birth);
+    ageInMs = new Date(Date.now() - birthDate.getTime());
+    ageInMonths = (Math.abs(ageInMs.getFullYear() - 1970) * 12) + ageInMs.getMonth();
+  }
+
   reports.forEach(function(report) {
     if (report.form === 'pregnancy' || report.form === 'P') {
       var subsequentDeliveries = reports.filter(function(report2) {
@@ -272,7 +283,7 @@ if (contact.type === 'person') {
   if (pastPregnancies.fields.length > 0) {
     cards.push(pastPregnancies);
   }
-  if (isCoveredByUseCaseInLineage(lineage, 'imm')) {
+  if (ageInMonths && ageInMonths < 144 && isCoveredByUseCaseInLineage(lineage, 'imm')) {
     var imm_card = {
       label: 'contact.profile.immunizations',
       fields: []
