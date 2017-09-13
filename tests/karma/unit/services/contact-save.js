@@ -4,6 +4,7 @@ describe('ContactSave service', () => {
 
   let service;
   let bulkDocs;
+  let get;
   let EnketoTranslation;
   let ExtractLineage;
 
@@ -12,19 +13,97 @@ describe('ContactSave service', () => {
       contactRecordToJs: sinon.stub(),
     };
 
-    ExtractLineage = sinon.stub().returnsArg(0);
+    ExtractLineage = sinon.stub();
     bulkDocs = sinon.stub();
+    get = sinon.stub();
 
     module('inboxApp');
     module($provide => {
       $provide.value('$q', Q); // bypass $q so we don't have to digest
-      $provide.factory('DB', KarmaUtils.mockDB({ bulkDocs: bulkDocs }));
+      $provide.factory('DB', KarmaUtils.mockDB({
+        bulkDocs: bulkDocs,
+        get: get
+      }));
       $provide.value('EnketoTranslation', EnketoTranslation);
       $provide.value('ExtractLineage', ExtractLineage);
     });
     inject(_ContactSave_ => {
       service = _ContactSave_;
     });
+  });
+
+  it('fetches and binds db types and minifies string contacts', () => {
+
+    // given
+    const schema = { fields: { contact: { type: 'db:person' } } };
+    const form = { getDataStr: () => '<data></data>' };
+    const docId = null;
+    const type = 'some-contact-type';
+
+    EnketoTranslation.contactRecordToJs.returns({
+      doc: { _id: 'main1', type: 'main', contact: 'abc' }
+    });
+    bulkDocs.returns(Promise.resolve());
+    get.returns(Promise.resolve({ _id: 'abc', name: 'gareth', parent: { _id: 'def' } }));
+    ExtractLineage.returns({ _id: 'abc', parent: { _id: 'def' } });
+
+    // when
+    return service(schema, form, docId, type)
+      .then(() => {
+
+        // then
+        assert.equal(get.callCount, 1);
+        assert.equal(get.args[0][0], 'abc');
+
+        assert.equal(bulkDocs.callCount, 1);
+
+        const savedDocs = bulkDocs.args[0][0];
+
+        assert.equal(savedDocs.length, 1);
+        assert.deepEqual(savedDocs[0].contact, {
+          _id: 'abc',
+          parent: {
+            _id: 'def'
+          }
+        });
+      });
+  });
+
+  it('fetches and binds db types and minifies object contacts', () => {
+
+    // given
+    const schema = { fields: { contact: { type: 'db:person' } } };
+    const form = { getDataStr: () => '<data></data>' };
+    const docId = null;
+    const type = 'some-contact-type';
+
+    EnketoTranslation.contactRecordToJs.returns({
+      doc: { _id: 'main1', type: 'main', contact: { _id: 'abc', name: 'Richard' } }
+    });
+    bulkDocs.returns(Promise.resolve());
+    get.returns(Promise.resolve({ _id: 'abc', name: 'Richard', parent: { _id: 'def' } }));
+    ExtractLineage.returns({ _id: 'abc', parent: { _id: 'def' } });
+
+    // when
+    return service(schema, form, docId, type)
+      .then(() => {
+
+        // then
+        assert.equal(get.callCount, 1);
+        assert.equal(get.args[0][0], 'abc');
+
+        assert.equal(bulkDocs.callCount, 1);
+
+        const savedDocs = bulkDocs.args[0][0];
+
+        assert.equal(savedDocs.length, 1);
+        assert.deepEqual(savedDocs[0].contact, {
+          _id: 'abc',
+          parent: {
+            _id: 'def'
+          }
+        });
+      });
   });
 
   it('should include parent ID in repeated children', () => {
@@ -44,6 +123,8 @@ describe('ContactSave service', () => {
         child_data: [ { _id: 'kid1', type: 'child', parent: 'PARENT', } ],
       },
     });
+
+    ExtractLineage.returnsArg(0);
 
     bulkDocs.returns(Promise.resolve());
 

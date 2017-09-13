@@ -66,6 +66,13 @@ angular.module('inboxServices').service('ContactSave',
       }
     }
 
+    function extractIfRequired(name, value) {
+      if (name === 'parent' || name === 'contact') {
+        return ExtractLineage(value);
+      }
+      return value;
+    }
+
     // Mutates the passed doc to attach prepared siblings, and returns all
     // prepared siblings to be persisted
     function prepareAndAttachSiblingDocs(schema, doc, original, siblings) {
@@ -79,9 +86,13 @@ angular.module('inboxServices').service('ContactSave',
       _.each(schema.fields, function(fieldConf, fieldName) {
         var customType = fieldConf.type.match(/^(db|custom):(.*)$/);
         if (customType) {
-          if(!doc[fieldName]) {
+          var value = doc[fieldName];
+          if (_.isObject(value)) {
+            value = doc[fieldName]._id;
+          }
+          if(!value) {
             doc[fieldName] = {};
-          } else if(doc[fieldName] === 'NEW') {
+          } else if(value === 'NEW') {
             var preparedSibling = prepare(siblings[fieldName]);
             preparedSibling.type = customType[2];
 
@@ -95,27 +106,18 @@ angular.module('inboxServices').service('ContactSave',
               doc[fieldName] = _.clone(preparedSibling);
               preparedSibling.parent = doc;
             } else {
-              if (fieldName === 'parent' || fieldName === 'contact') {
-                doc[fieldName] = ExtractLineage(preparedSibling);
-              } else {
-                doc[fieldName] = preparedSibling;
-              }
+              doc[fieldName] = extractIfRequired(fieldName, preparedSibling);
             }
 
             preparedSiblings.push(preparedSibling);
-          } else if(original &&
-                    original[fieldName] &&
-                    original[fieldName]._id === doc[fieldName]) {
-
+          } else if (original &&
+                     original[fieldName] &&
+                     original[fieldName]._id === value) {
             doc[fieldName] = original[fieldName];
           } else {
             promiseChain = promiseChain.then(function() {
-              return DB().get(doc[fieldName]).then(function(dbFieldValue) {
-                if (fieldName === 'parent' || fieldName === 'contact') {
-                  doc[fieldName] = ExtractLineage(dbFieldValue);
-                } else {
-                  doc[fieldName] = dbFieldValue;
-                }
+              return DB().get(value).then(function(dbFieldValue) {
+                doc[fieldName] = extractIfRequired(fieldName, dbFieldValue);
               });
             });
           }
