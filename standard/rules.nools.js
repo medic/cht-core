@@ -551,8 +551,10 @@ rule GenerateEvents {
                 // Assign a missing visit schedule to last SMS of each group
                 for (var i = 0; i < r.scheduled_tasks.length; i++) {
 
-                  // Associate tasks to the last message of each group, except the last one which needs a Missing Birth Report task. Be mindful of overflow when peaking ahead!
-                  if (i+1 < r.scheduled_tasks.length && r.scheduled_tasks[i].group != r.scheduled_tasks[i+1].group) {
+                  // Associate tasks to the last message of each group, except the last one which needs a Missing Birth Report task.
+                  // The group needing Birth Report task is now in a separate schedule, which could have the same group number... so check the type as well.
+                  // Be mindful of overflow when peaking ahead!
+                  if (i+1 < r.scheduled_tasks.length && (r.scheduled_tasks[i].group != r.scheduled_tasks[i+1].group || r.scheduled_tasks[i].type != r.scheduled_tasks[i+1].type)) {
                     var schedule = Utils.getSchedule('pregnancy-missing-visit');
                     if (schedule) {
                       for (var k = 0; k < schedule.events.length; k++) {
