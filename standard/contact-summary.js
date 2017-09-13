@@ -63,6 +63,17 @@ var IMMUNIZATION_LIST = [
   'yellow_fever'
 ];
 
+var isVaccineInLineage = function(lineage, vaccine) {
+  if (Array.isArray(lineage)) {
+    for (var i=0; i < lineage.length; i++) {
+      if (lineage[i] && lineage[i].vaccines && lineage[i].vaccines.split(' ').indexOf(vaccine) !== -1) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
+
 var isCoveredByUseCaseInLineage = function(lineage, usecase) {
   if (Array.isArray(lineage)) {
     for (var i=0; i < lineage.length; i++) {
@@ -268,20 +279,22 @@ if (contact.type === 'person') {
     };
 
     IMMUNIZATION_LIST.forEach( function(imm) {
-      var field = {};
-      field.label = 'contact.profile.imm.' + imm;
-      field.translate = true;
-      field.width = 6;
-      if (isSingleDose(imm)) {
-        field.value = immunizations[imm] ? 'yes' : 'no';
+      if (isVaccineInLineage(lineage, imm)) {  
+        var field = {};
+        field.label = 'contact.profile.imm.' + imm;
+        field.translate = true;
+        field.width = 6;
+        if (isSingleDose(imm)) {
+          field.value = immunizations[imm] ? 'yes' : 'no';
+        }
+        else {
+          field.value= 'contact.profile.imm.doses';
+          field.context = {};
+          field.context.count = countDosesReceived(immunizations, imm);
+          field.context.total = countDosesPossible(imm);
+        }
+        imm_card.fields.push(field);
       }
-      else {
-        field.value= 'contact.profile.imm.doses';
-        field.context = {};
-        field.context.count = countDosesReceived(immunizations, imm);
-        field.context.total = countDosesPossible(imm);
-      }
-      imm_card.fields.push(field);
     });
     cards.push(imm_card);
   }
