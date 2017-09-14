@@ -17,7 +17,7 @@
   "context": {
     "person": true,
     "place": false,
-    "expression": "((user && user.parent) && ((user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent && user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1))) && (!contact || (contact.type === 'person' && (!contact.sex || contact.sex === 'female') && (!contact.date_of_birth || (ageInYears(contact) >= 10 && ageInYears(contact) < 65))))"
+    "expression": "!contact || (summary.use_cases && summary.use_cases.imm && contact.type === 'person' && (!contact.sex || contact.sex === 'female') && (!contact.date_of_birth || (ageInYears(contact) >= 10 && ageInYears(contact) < 65)))"
   },
   "hidden_fields": [
     "inputs",

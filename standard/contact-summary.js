@@ -318,6 +318,13 @@ if (contact.type === 'person') {
   }
 }
 
+var use_cases = {};
+use_cases.anc = isCoveredByUseCaseInLineage(lineage, 'anc');
+use_cases.pnc = isCoveredByUseCaseInLineage(lineage, 'pnc');
+use_cases.imm = isCoveredByUseCaseInLineage(lineage, 'imm');
+
+context.use_cases = use_cases;
+
 var result = {
   fields: fields,
   cards: cards,
