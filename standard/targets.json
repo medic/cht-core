@@ -126,6 +126,7 @@
       "id": "pnc-active",
       "icon": "mother-child",
       "goal": -1,
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -146,6 +147,7 @@
       "id": "pnc-registered-this-month",
       "icon": "infant",
       "goal": -1,
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -166,6 +168,7 @@
       "id": "pnc-visits-this-month",
       "icon": "infant",
       "goal": -1,
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -186,6 +189,7 @@
       "id": "pnc-homebirth-0-visits",
       "icon": "household",
       "goal": 0,
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -206,6 +210,7 @@
       "id": "pnc-homebirth-min-1-visit",
       "icon": "nurse",
       "goal": 100,
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -226,6 +231,7 @@
       "id": "pnc-3-visits",
       "icon": "nurse",
       "goal": 50,
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('pnc') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -246,7 +252,7 @@
       "id": "imm-children-under-5-years",
       "icon": "children",
       "goal": -1,
-      "context": "true || (user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -259,7 +265,7 @@
       "id": "imm-children-registered-this-month",
       "icon": "child",
       "goal": -1,
-      "context": "true || (user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -272,7 +278,7 @@
       "id": "imm-vaccines-given-this-month",
       "icon": "immunization",
       "goal": -1,
-      "context": "true || (user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -285,7 +291,7 @@
       "id": "imm-children-vaccinated-prev-3-months",
       "icon": "chw",
       "goal": -1,
-      "context": "true || (user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -298,7 +304,7 @@
       "id": "imm-no-vaccine-reported",
       "icon": "risk",
       "goal": -1,
-      "context": "true || (user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
@@ -311,7 +317,7 @@
       "id": "imm-children-with-bcg-reported",
       "icon": "child",
       "goal": 100,
-      "context": "true || (user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
+      "context": "(user.parent.use_cases && user.parent.use_cases.split(' ').indexOf('imm') !== -1) || (user.parent.parent.use_cases && user.parent.parent.use_cases.split(' ').indexOf('imm') !== -1)",
       "name": [
         {
           "locale": "en",
