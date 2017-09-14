@@ -282,6 +282,38 @@ exports['fetchHydratedDoc attaches the contacts'] = test => {
   });
 };
 
+// This is a classic use-case: report from CHW who is the contact for their own area
+exports['fetchHydratedDoc attaches re-used contacts, minify handles the circular references'] = test => {
+  const docId = 'docId';
+  const chwId = 'chwId';
+  const areaId = 'areaId';
+
+  const doc = {type: 'data_record', _id: docId, contact: {_id: chwId, parent: {_id: areaId}}};
+  const chw = {type: 'person', _id: chwId, parent: {_id: areaId}, hydrated: true};
+  const area = {type: 'clinic', _id: areaId, contact: {_id: chwId }};
+
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+    { doc: doc},
+    { doc: chw},
+    { doc: area},
+  ]});
+  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [
+    { doc: chw },
+    { doc: chw }
+  ]});
+  lineage.fetchHydratedDoc(docId).then(actual => {
+    // The contact and the contact's parent's contact are the hydrated CHW
+    test.equal(actual.contact.parent.contact.hydrated, true);
+    test.equal(actual.contact.hydrated, true);
+
+    // And we can minifiy back to the original without error
+    lineage.minify(actual);
+    test.deepEqual(actual, doc);
+
+    test.done();
+  });
+};
+
 exports['minify handles null argument'] = test => {
   lineage.minify(null);
   // just make sure it doesn't blow up!
@@ -513,3 +545,4 @@ exports['hydrateDocs ignores db-fetch errors'] = test => {
   }).catch(test.done);
 
 };
+
