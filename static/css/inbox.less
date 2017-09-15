@@ -596,7 +596,7 @@ body {
       a {
         padding-left: 0;
         padding-right: 0;
-        color: @grey;
+        color: @label-color;
         text-decoration: none;
 
         &.selected {
@@ -606,7 +606,7 @@ body {
 
         &::after {
           content: ' |'; /* asymmetrical because there's already whitespace after */
-          color: #797979;
+          color: @label-color;
           font-weight: normal;
         }
 
@@ -1314,7 +1314,7 @@ a.fa:hover {
       top: 0;
       .filter-bar-back a {
         &:hover, &:active {
-          color: #777777;
+          color: @label-color;
         }
       }
     }
