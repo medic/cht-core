@@ -195,9 +195,11 @@ body {
     }
 
     a {
-      width: 90px;
       border-radius: @radius-size @radius-size 0 0;
       cursor: pointer;
+      min-width: 80px;
+      padding-left: 5px;
+      padding-right: 5px;
 
       &.selected {
         .button-label, .mm-icon:hover {
@@ -587,16 +589,29 @@ body {
 
     .table-filter {
       float: right;
-      padding-top: 15px;
+      padding-top: 13px;
+      display: flex;
+      font-size: @font-small;
 
       a {
-        padding-left: 6px;
-        padding-right: 6px;
+        padding-left: 0;
+        padding-right: 0;
         color: @grey;
+        text-decoration: none;
 
         &.selected {
           color: #000;
           font-weight: bold;
+        }
+
+        &::after {
+          content: ' |'; /* asymmetrical because there's already whitespace after */
+          color: #797979;
+          font-weight: normal;
+        }
+
+        &:last-child::after {
+          content: '';
         }
       }
     }
@@ -1352,7 +1367,7 @@ a.fa:hover {
       a {
         flex-grow: 1;
         min-width: 70px;
-        max-width: 90px;
+        max-width: 100px;
       }
     }
     .logo {
@@ -1521,12 +1536,6 @@ a.fa:hover {
       .configuration-tab {
         display: none;
       }
-    }
-    .mm-badge-overlay {
-      right: 3px;
-    }
-    .inner {
-      height: 50px;
     }
     .mm-badge-overlay {
       right: 3px;
