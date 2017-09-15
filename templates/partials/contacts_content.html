@@ -122,11 +122,9 @@
       <div ng-if="selected.areTasksEnabled" mm-auth="can_view_tasks">
         <div class="action-header">
           <h3 translate>Tasks</h3>
-          <span class="table-filter small-font">
+          <span class="table-filter">
             <a ng-click="setTasksTimeWindowWeeks(1)" class="btn btn-link" ng-class="{selected: tasksTimeWindowWeeks === 1}" translate translate-values="{WEEKS: 1}" translate-interpolation="messageformat">n.week</a>
-            |
             <a ng-click="setTasksTimeWindowWeeks(2)" class="btn btn-link" ng-class="{selected: tasksTimeWindowWeeks === 2}" translate translate-values="{WEEKS: 2}" translate-interpolation="messageformat">n.week</a>
-            |
             <a ng-click="setTasksTimeWindowWeeks()" class="btn btn-link" ng-class="{selected: !tasksTimeWindowWeeks}" translate>view.all</a>
           </span>
         </div>
@@ -147,11 +145,9 @@
       <div mm-auth="can_view_reports">
         <div class="action-header">
           <h3 translate>Reports</h3>
-          <span class="table-filter small-font">
+          <span class="table-filter">
             <a ng-click="setReportsTimeWindowMonths(3)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 3}"  translate translate-values="{ MONTHS: 3 }" translate-interpolation="messageformat">n.month</a>
-            |
             <a ng-click="setReportsTimeWindowMonths(6)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 6}"  translate translate-values="{ MONTHS: 6 }" translate-interpolation="messageformat">n.month</a>
-            |
             <a ng-click="setReportsTimeWindowMonths()" class="btn btn-link" ng-class="{selected: !reportsTimeWindowMonths}" translate>view.all</a>
           </span>
         </div>
