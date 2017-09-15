@@ -238,8 +238,8 @@ angular.module('inboxServices').factory('ContactViewModelGenerator',
         });
     };
 
-    return function(id) {
-      return LineageModelGenerator.contact(id)
+    return function(id, options) {
+      return LineageModelGenerator.contact(id, options)
         .then(setChildren)
         .then(setReports)
         .then(setPrimaryContact)

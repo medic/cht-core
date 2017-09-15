@@ -84,7 +84,7 @@ describe('LineageModelGenerator service', () => {
       return service.contact('a').then(model => {
         chai.expect(dbAllDocs.callCount).to.equal(1);
         chai.expect(dbAllDocs.args[0][0]).to.deep.equal({
-          keys: [ 'd', 'e' ],
+          keys: [ 'x', 'd', 'e' ],
           include_docs: true
         });
         chai.expect(model.lineage[0].contact).to.deep.equal(parentContact);
@@ -109,7 +109,21 @@ describe('LineageModelGenerator service', () => {
               name: '3'
             }
           }
-        }
+        },
+        lineage: [
+          {
+            _id: 'b',
+            name: '2',
+            parent: {
+              _id: 'c',
+              name: '3'
+            }
+          },
+          {
+            _id: 'c',
+            name: '3'
+          }
+        ]
       };
       dbQuery.returns(Promise.resolve({ rows: [
         { doc: contact },
@@ -187,7 +201,7 @@ describe('LineageModelGenerator service', () => {
       return service.report('a').then(model => {
         chai.expect(dbAllDocs.callCount).to.equal(1);
         chai.expect(dbAllDocs.args[0][0]).to.deep.equal({
-          keys: [ 'e', 'f' ],
+          keys: [ 'x', 'y', 'e', 'f' ],
           include_docs: true
         });
         chai.expect(model.lineage[0].contact).to.deep.equal(parentContact);
