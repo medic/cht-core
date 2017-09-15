@@ -2,7 +2,9 @@ var cards = [];
 var context = {};
 var fields = [];
 
+var MS_IN_DAY = 24*60*60*1000;  // 1 day in ms
 var MAX_DAYS_IN_PREGNANCY = 44*7;  // 44 weeks
+var DAYS_IN_PNC = 42;
 
 var IMMUNIZATION_DOSES = [
   'bcg',
@@ -99,7 +101,11 @@ var isCoveredByUseCase = function(contact, usecase) {
     return isCoveredByUseCase(contact.parent, usecase);
   }
 };
- 
+
+var isFacilityDelivery = function(report) {
+  return report && report.fields && report.fields.delivery_code.toLowerCase() === 'f';
+};
+
 var initImmunizations = function() {
   var master = {};
   IMMUNIZATION_DOSES.forEach(function(dose) {
@@ -219,10 +225,6 @@ if (contact.type === 'person') {
       // Handle past pregnancies
       if (subsequentDeliveries.length > 0) {
         var relevantDelivery = getOldestReport(subsequentDeliveries);
-        var relevantVisits = reports.filter(function(report2) {
-          return (report2.form === 'V' || report2.form === 'pregnancy_visit') && report2.reported_date > report.reported_date && report2.reported_date < relevantDelivery.reported_date;
-        });
-        
         var birthdate = relevantDelivery.birth_date || relevantDelivery.fields.birth_date || relevantDelivery.reported_date;
         // High risk status for previous pregnancies is temporarily unused
         // var isHighRiskPregnancy = (report.form === 'pregnancy' && report.fields && (report.fields.risk_factors || report.fields.danger_signs))
@@ -233,9 +235,24 @@ if (contact.type === 'person') {
         // no need to distinguish the prefix `anc_only_`, so remove it
         deliveryCode = deliveryCode.replace('anc_only_', '').toLowerCase();
         
+        var relevantVisitsANC = reports.filter(function(report2) {
+          return (report2.form === 'V' || report2.form === 'pregnancy_visit') && report2.reported_date > report.reported_date && report2.reported_date < relevantDelivery.reported_date;
+        });
+        var relevantVisitsPNC = reports.filter(function(report2) {
+          return (report2.form === 'M' || report2.form === 'postnatal_visit') && report2.reported_date > relevantDelivery.reported_date && report2.reported_date < (relevantDelivery.reported_date + DAYS_IN_PNC*MS_IN_DAY) ;
+        });
+
+        var visitsANC = relevantVisitsANC.length;
+        var visitsPNC = relevantVisitsPNC.length;
+
+        if (isFacilityDelivery(relevantDelivery)) {
+          visitsPNC++;
+        }
+
         pastPregnancies.fields.push(
-          { label: 'contact.profile.delivery_code.' + deliveryCode, value: birthdate, filter: 'relativeDay', width: 6 },
-          { label: 'contact.profile.visit', value: 'contact.profile.visits.of', translate: true, context: { count: relevantVisits.length, total: 4 }, width: 6 }
+          { label: 'contact.profile.delivery_code.' + deliveryCode, value: birthdate, filter: 'relativeDay', width: 4 },
+          { label: 'contact.profile.anc_visit', value: 'contact.profile.visits.of', translate: true, context: { count: visitsANC, total: 4 }, width: 4 },
+          { label: 'contact.profile.pnc_visit', value: 'contact.profile.visits.of', translate: true, context: { count: visitsPNC, total: 4 }, width: 4 }
         );
         return;
       }
