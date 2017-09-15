@@ -1,12 +1,10 @@
 angular.module('inboxControllers').controller('ContactsReportCtrl',
   function (
     $log,
-    $q,
     $scope,
     $state,
     $translate,
     ContactViewModelGenerator,
-    DB,
     Enketo,
     Snackbar,
     TranslateFrom,
@@ -26,22 +24,14 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
       });
     };
 
-    var setSelected = function(contact) {
-      return ContactViewModelGenerator(contact._id)
-        .then($scope.setSelected)
-        .then(setCancelTarget);
-    };
-
     var render = function(contact) {
-      return $q.all([
-        setSelected(contact),
-        XmlForm($state.params.formId, { include_docs: true })
-      ])
-        .then(function(results) {
-          var form = results[1];
+      $scope.setSelected(contact);
+      setCancelTarget();
+      return XmlForm($state.params.formId, { include_docs: true })
+        .then(function(form) {
           var instanceData = {
             source: 'contact',
-            contact: contact,
+            contact: contact.doc,
           };
           $scope.enketoStatus.edited = false;
           return Enketo
@@ -83,8 +73,7 @@ angular.module('inboxControllers').controller('ContactsReportCtrl',
     $scope.setRightActionBar();
     $scope.setShowContent(true);
     setCancelTarget();
-    DB()
-      .get($state.params.id)
+    ContactViewModelGenerator($state.params.id, { merge: true })
       .then(render)
       .catch(function(err) {
         $log.error('Error loading form', err);

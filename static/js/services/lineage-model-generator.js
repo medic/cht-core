@@ -30,8 +30,8 @@ angular.module('inboxServices').factory('LineageModelGenerator',
         });
     };
 
-    var hydrate = function(lineage) {
-      var contactIds = lineage
+    var hydrate = function(docs) {
+      var contactIds = docs
         .map(function(parent) {
           return parent && parent.contact && parent.contact._id;
         })
@@ -39,11 +39,11 @@ angular.module('inboxServices').factory('LineageModelGenerator',
           return !!id;
         });
       if (!contactIds.length) {
-        return $q.resolve(lineage);
+        return $q.resolve(docs);
       }
       return DB().allDocs({ keys: contactIds, include_docs: true })
         .then(function(response) {
-          lineage.forEach(function(parent) {
+          docs.forEach(function(parent) {
             var contactId = parent && parent.contact && parent.contact._id;
             if (contactId) {
               response.rows.forEach(function(row) {
@@ -54,7 +54,7 @@ angular.module('inboxServices').factory('LineageModelGenerator',
               });
             }
           });
-          return lineage;
+          return docs;
         });
     };
 
@@ -82,16 +82,18 @@ angular.module('inboxServices').factory('LineageModelGenerator',
       contact: function(id, options) {
         options = options || {};
         return get(id).then(function(docs) {
-          // the first row is the contact
-          var doc = docs.shift();
-           // everything else is the lineage
-          return hydrate(docs).then(function(lineage) {
-            var result = { _id: id };
+          return hydrate(docs).then(function(docs) {
+            // the first row is the contact
+            var doc = docs.shift();
+            // everything else is the lineage
+            var result = {
+              _id: id,
+              lineage: docs
+            };
             if (options.merge) {
-              result.doc = mergeParents(doc, lineage);
+              result.doc = mergeParents(doc, docs);
             } else {
               result.doc = doc;
-              result.lineage = lineage;
             }
             return result;
           });
@@ -104,17 +106,17 @@ angular.module('inboxServices').factory('LineageModelGenerator',
        */
       report: function(id) {
         return get(id).then(function(docs) {
-          // the first row is the report
-          var doc = docs.shift();
-          // the second row is the report's contact
-          var contact = docs.shift();
-          // everything else is the lineage
-          return hydrate(docs).then(function(lineage) {
+          return hydrate(docs).then(function(docs) {
+            // the first row is the report
+            var doc = docs.shift();
+            // the second row is the report's contact
+            var contact = docs.shift();
+            // everything else is the lineage
             return {
               _id: id,
               doc: doc,
               contact: contact,
-              lineage: lineage
+              lineage: docs
             };
           });
         });
