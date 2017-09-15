@@ -43,7 +43,14 @@ a {
   }
 }
 
-.form-actions, .form-group, .form-footer {
+.form-group.required label::after {
+  content: '*';
+  margin-left: 5px;
+}
+
+.form-actions,
+.form-group,
+.form-footer {
   .error {
     color: @error-color;
     font-weight: bold;
