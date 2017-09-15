@@ -131,7 +131,9 @@ rule GenerateEvents {
       'HPV1',
       'HPV2',
       'HPV3',
-      'CH',
+      'CH1',
+      'CH2',
+      'CH3',
       'RB1',
       'RB2',
       'RB3',
@@ -264,8 +266,8 @@ rule GenerateEvents {
     var receivedVaccine = function (report, vaccine) {
       var fieldName = 'received_' + vaccine;
       if ( isFormCodeSame(report.form, vaccine)
-        || (isFormCodeSame(report.form, 'immunization_visit') && report.fields.vaccines_received[fieldName] == 'yes')
-        || (isFormCodeSame(report.form, 'imm') && report.fields.vaccines_received[fieldName] == 'yes') ) {
+        || (isFormCodeSame(report.form, 'immunization_visit') && report.fields.vaccines_received && report.fields.vaccines_received[fieldName] == 'yes')
+        || (isFormCodeSame(report.form, 'imm') && report.fields.vaccines_received && report.fields.vaccines_received[fieldName] == 'yes') ) {
         return true;
       }
       else {
@@ -499,7 +501,7 @@ rule GenerateEvents {
           emitTargetInstance(instance);
 
           // Find PNC period based on delivery date, not reported date
-          var startPNCperiod = new Date(r.birth_date);
+          var startPNCperiod = new Date(r.birth_date || r.fields.birth_date);
           var endPNCperiod = new Date(startPNCperiod.getFullYear(), startPNCperiod.getMonth(), startPNCperiod.getDate() + DAYS_IN_PNC);
 
           // PNC: HOMEBIRTHS WITH 1+ PNC VISITS, ALL TIME

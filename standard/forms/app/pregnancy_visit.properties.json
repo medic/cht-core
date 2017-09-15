@@ -17,7 +17,7 @@
   "context": {
     "person": true,
     "place": false,
-    "expression": "!contact || (contact.type === 'person' && (!contact.sex || contact.sex === 'female') && (!contact.date_of_birth || (ageInYears(contact) >= 10 && ageInYears(contact) < 65)))"
+    "expression": "!contact || (contact.type === 'person' && summary.pregnant)"
   },
   "hidden_fields": [
     "patient_age_in_years",
