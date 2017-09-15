@@ -66,6 +66,28 @@ describe('LineageModelGenerator service', () => {
       });
     });
 
+    it('binds contacts', () => {
+      const contact = { _id: 'a', _rev: '1', contact: { _id: 'd' } };
+      const contactsContact = { _id: 'd', name: 'dave' };
+      const parent = { _id: 'b', _rev: '1', contact: { _id: 'e' } };
+      const parentsContact = { _id: 'e', name: 'eliza' };
+      const grandparent = { _id: 'c', _rev: '1' };
+      dbQuery.returns(Promise.resolve({ rows: [
+        { doc: contact },
+        { doc: parent },
+        { doc: grandparent }
+      ] }));
+      dbAllDocs.returns(Promise.resolve({ rows: [
+        { doc: contactsContact },
+        { doc: parentsContact }
+      ] }));
+      return service.contact('a', { merge: true }).then(model => {
+        chai.expect(model._id).to.equal('a');
+        chai.expect(model.doc.contact.name).to.equal('dave');
+        chai.expect(model.lineage[0].contact.name).to.equal('eliza');
+      });
+    });
+
     it('hydrates lineage contacts - #3812', () => {
       const contact = { _id: 'a', _rev: '1', contact: { _id: 'x' } };
       const parent = { _id: 'b', _rev: '1', contact: { _id: 'd' } };
