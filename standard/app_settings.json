@@ -399,6 +399,37 @@
       ]
     },
     {
+      "form": "CHILD",
+      "events": [
+        {
+          "name": "on_create",
+          "trigger": "add_birth_date",
+          "params": "days_since_birth",
+          "bool_expr": "doc.fields.days_since_birth"
+        },
+        {
+          "name": "on_create",
+          "trigger": "add_patient",
+          "params": "",
+          "bool_expr": ""
+        },
+        {
+          "name": "on_create",
+          "trigger": "assign_schedule",
+          "params": "Immunizations",
+          "bool_expr": "doc.fields.days_since_birth"
+        }
+      ],
+      "validations": {},
+      "messages": [
+        {
+          "translation_key": "messages.c.report_accepted",
+          "event_type": "report_accepted",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
       "form": "P",
       "events": [
         {
@@ -3289,6 +3320,67 @@
             },
             "short": {
               "en": "Weeks"
+            }
+          },
+          "position": 0,
+          "type": "integer",
+          "length": [
+            1,
+            2
+          ],
+          "range": [
+            0,
+            90
+          ],
+          "required": true,
+          "validations": {},
+          "flags": {}
+        },
+        "patient_name": {
+          "labels": {
+            "tiny": {
+              "en": "N"
+            },
+            "description": {
+              "en": "Patient Name"
+            },
+            "short": {
+              "en": "Name"
+            }
+          },
+          "position": 1,
+          "type": "string",
+          "length": [
+            1,
+            30
+          ],
+          "required": true
+        }
+      },
+      "public_form": false,
+      "use_sentinel": true
+    },
+    "CHILD": {
+      "meta": {
+        "code": "CHILD",
+        "icon": "child",
+        "label": {
+          "en": "New child + immunization registration (Collect)",
+          "hi": "नया बच्चा + टीकाकरण का रेजिस्ट्रेशन (Collect)",
+          "id": "Baru anak dan pendaftaran imunisasi (Collect)"
+        }
+      },
+      "fields": {
+        "days_since_birth": {
+          "labels": {
+            "tiny": {
+              "en": "D"
+            },
+            "description": {
+              "en": "Days since birth"
+            },
+            "short": {
+              "en": "Days"
             }
           },
           "position": 0,
