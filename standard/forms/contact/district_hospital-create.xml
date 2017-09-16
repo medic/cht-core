@@ -36,7 +36,8 @@
             <value></value>
           </text>
           <text id="/data/district_hospital:label">
-            <value>New <output value=" /data/init/place_type_translation "/></value></text>
+            <value></value>
+          </text>
           <text id="/data/contact/role:label">
             <value>Role</value>
           </text>
@@ -74,7 +75,8 @@
             <value>Japanese Encephalitis</value>
           </text>
           <text id="/data/init:label">
-            <value>New <output value=" /data/init/place_type_translation "/></value></text>
+            <value></value>
+          </text>
           <text id="/data/district_hospital/external_id:label">
             <value>External ID</value>
           </text>
@@ -247,7 +249,8 @@
             <value></value>
           </text>
           <text id="/data/district_hospital:label">
-            <value>नया <output value=" /data/init/place_type_translation "/></value></text>
+            <value></value>
+          </text>
           <text id="/data/contact/role:label">
             <value>भूमिका</value>
           </text>
@@ -285,7 +288,8 @@
             <value>Japanese Encephalitis</value>
           </text>
           <text id="/data/init:label">
-            <value>नया <output value=" /data/init/place_type_translation "/></value></text>
+            <value></value>
+          </text>
           <text id="/data/district_hospital/external_id:label">
             <value>बाहरी ID</value>
           </text>
@@ -462,7 +466,8 @@
             <value></value>
           </text>
           <text id="/data/district_hospital:label">
-            <value>Mpya <output value=" /data/init/place_type_translation "/></value></text>
+            <value></value>
+          </text>
           <text id="/data/contact/role:label">
             <value>Namba ya simu Nyingine</value>
           </text>
@@ -497,7 +502,8 @@
             <value></value>
           </text>
           <text id="/data/init:label">
-            <value>Mpya <output value=" /data/init/place_type_translation "/></value></text>
+            <value></value>
+          </text>
           <text id="/data/district_hospital/external_id:label">
             <value>Namba ya nje</value>
           </text>
@@ -670,7 +676,8 @@
             <value></value>
           </text>
           <text id="/data/district_hospital:label">
-            <value>Baru <output value=" /data/init/place_type_translation "/></value></text>
+            <value></value>
+          </text>
           <text id="/data/contact/role:label">
             <value>Peran</value>
           </text>
@@ -708,7 +715,8 @@
             <value>Japanese Encephalitis</value>
           </text>
           <text id="/data/init:label">
-            <value>Baru <output value=" /data/init/place_type_translation "/></value></text>
+            <value></value>
+          </text>
           <text id="/data/district_hospital/external_id:label">
             <value>Eksternal ID</value>
           </text>
@@ -884,7 +892,8 @@
             <value></value>
           </text>
           <text id="/data/district_hospital:label">
-            <value>नया <output value=" /data/init/place_type_translation "/></value></text>
+            <value></value>
+          </text>
           <text id="/data/contact/role:label">
             <value>भुमिका</value>
           </text>
@@ -919,7 +928,8 @@
             <value></value>
           </text>
           <text id="/data/init:label">
-            <value>नया <output value=" /data/init/place_type_translation "/></value></text>
+            <value></value>
+          </text>
           <text id="/data/district_hospital/external_id:label">
             <value>बाहिरि ID</value>
           </text>
@@ -1063,7 +1073,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:district_hospital:create" prefix="J1!contact:district_hospital:create!" version="2017-09-12_14-31">
+        <data delimiter="#" id="contact:district_hospital:create" prefix="J1!contact:district_hospital:create!" version="2017-09-14_10-04">
           <inputs>
             <meta>
               <location>

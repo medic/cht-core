@@ -74,11 +74,13 @@ do
 
   # Move place to above person
   #   eg mv <clinic>...</clinic> to just after </inputs>
+  # No longer needed for the 'edit' forms due to form changes for medic-webapp/3889
   sed -e "/<${PLACE_TYPE_MARKER}>/,/<\/${PLACE_TYPE_MARKER}>/!d" data.xml > data.tmp \
   && sed -i.sedbak -e "/<${PLACE_TYPE_MARKER}>/,/<\/${PLACE_TYPE_MARKER}>/d" data.xml \
   && sed -i.sedbak -e '/<\/inputs>/ r data.tmp' data.xml
 
   # Move custom place field from init to within place form - so that it isn't saved in place doc
+  # No longer needed for the 'edit' forms due to form changes for medic-webapp/3889
   sed -e '/<input ref="\/data\/init\/custom_place_name">/,/<\/input>/!d' data.xml > data.tmp \
   && sed -i.sedbak -e '/<input ref="\/data\/init\/custom_place_name">/,/<\/input>/d' data.xml \
   && sed -n -i.sedbak -e "/<input ref=\"\/data\/${PLACE_TYPE_MARKER}\/external_id\">/r data.tmp" -e 1x -e '2,${x;p}' -e '${x;p}' data.xml
