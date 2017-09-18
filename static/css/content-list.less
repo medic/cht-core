@@ -1,6 +1,12 @@
-.content-list > li {
+@import "variables";
+
+.content-row {
   cursor: pointer;
   border-bottom: 1px solid @seperator-color;
+
+  &.primary {
+    background-color: @seperator-color;
+  }
 
   > a {
     display: flex;
@@ -16,19 +22,28 @@
       text-decoration: none;
     }
 
-    .icon img {
-      max-height: 30px;
-      max-width: 30px;
+    .icon {
+      margin-right: 5px;
+      .fa {
+        color: @ok-color;
+      }
+      img {
+        max-height: 30px;
+        max-width: 30px;
+      }
     }
 
     .content {
       flex-grow: 1;
       display: flex;
       flex-direction: column;
-      flex-flow: center;
       align-content: center;
-      margin-left: 10px;
+      margin-left: 5px;
       min-width: 0; /* magic to make the ellipsis work: https://css-tricks.com/flexbox-truncated-text/ */
+
+      h4 {
+        line-height: 1.2rem;
+      }
 
       h4,
       p {
@@ -38,6 +53,11 @@
       .date {
         color: @label-color;
         white-space: nowrap;
+
+        &.overdue {
+          color: @high-risk-color;
+          font-weight: bold;
+        }
       }
 
       .date,
@@ -72,11 +92,44 @@
   }
 }
 
-.reports .content-list > li {
-  &.selected {
-    background-color: lighten(@reports-color, 30%);
+.reports,
+.contacts .reports {
+  .content-row {
+    &.selected {
+      background-color: lighten(@reports-color, 30%);
+    }
+    > a:hover {
+      border-left-color: @reports-color;
+    }
   }
-   > a:hover {
-    border-left-color: @reports-color;
+}
+
+.contacts .content-row {
+  &.selected {
+    background-color: lighten(@contacts-color, 30%);
+  }
+  > a:hover {
+    border-left-color: @contacts-color;
+  }
+}
+
+.messages .content-row {
+  &.selected {
+    background-color: lighten(@messages-color, 30%);
+  }
+  > a:hover {
+    border-left-color: @messages-color;
+  }
+}
+
+.tasks,
+.contacts .tasks {
+  .content-row {
+    &.selected {
+      background-color: lighten(@tasks-color, 25%);
+    }
+    > a:hover {
+      border-left-color: @tasks-color;
+    }
   }
 }

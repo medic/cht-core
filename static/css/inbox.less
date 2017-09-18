@@ -493,24 +493,6 @@ body {
   }
 }
 
-.messages .inbox-items li {
-  .message-wrapper:hover {
-    border-left-color: @messages-color;
-  }
-  &.selected {
-    background-color: lighten(@messages-color, 30%);
-  }
-}
-
-.tasks .inbox-items li {
-  .message-wrapper:hover {
-    border-left-color: @tasks-color;
-  }
-  &.selected {
-    background-color: lighten(@tasks-color, 25%);
-  }
-}
-
 .reports {
   .inbox-items li {
     input[type="checkbox"] {
@@ -539,20 +521,6 @@ body {
     color: @primary-color;
     font-size: 12px;
     vertical-align: middle;
-  }
-  .inbox-items li {
-    .message-wrapper:hover {
-      border-left-color: @contacts-color;
-    }
-    &.home {
-      background-color: @seperator-color;
-    }
-    &.selected {
-      background-color: lighten(@contacts-color, 30%);
-    }
-    &.orphan .detail {
-      margin-top: 7px;
-    }
   }
   .action-list .accent {
     border-top: 5px solid @label-color;
@@ -627,10 +595,6 @@ body {
       border-top: 0;
     }
   }
-}
-
-.contacts .message-wrapper .fa {
-  color: @ok-color;
 }
 
 .inbox-items {
@@ -892,40 +856,9 @@ a.fa:hover {
   display: none;
 }
 
-.tasks {
-  .inbox-items {
-    .message-wrapper:after {
-      visibility: hidden;
-      display: block;
-      font-size: 0;
-      content: " ";
-      clear: both;
-      height: 0;
-    }
-  }
-  .priority .fa {
-    display: none;
-  }
-  .priority-label {
-    overflow: initial;
-  }
-  .high-priority {
-    .priority,
-    .priority-label {
-      color: @high-risk-color;
-    }
-    .high-priority-icon {
-      display: inherit;
-    }
-  }
-  .medium-priority {
-    .priority {
-      color: @warning-color;
-    }
-    .medium-priority-icon {
-      display: inherit;
-    }
-  }
+.tasks .warning {
+  overflow: initial;
+  color: @high-risk-color;
 }
 
 .sender {

@@ -8,6 +8,7 @@ angular.module('inboxServices').factory('LiveListConfig',
     $parse,
     $templateCache,
     $timeout,
+    $translate,
     ContactSchema,
     LiveList,
     RulesEngine,
@@ -49,27 +50,38 @@ angular.module('inboxServices').factory('LiveListConfig',
           }
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
-        listItemForTemplate: function() {
-          return function(contact) {
-            var template = $templateCache.get('templates/partials/contacts_list_item.html');
-            var scope = $scope.$new();
-            scope.contact = contact;
-            scope.primaryContactName = { name: contact.contact };
-            return evaluateExpressions(template, scope);
-          };
+        icons: {
+          person: 'fa-user',
+          clinic: 'fa-group',
+          health_center: 'fa-hospital-o',
+          district_hospital: 'fa-building'
+        },
+        listItem: function(contact) {
+          var template = $templateCache.get('templates/partials/content_row_list_item.html');
+          var scope = $scope.$new();
+          scope.id = contact._id;
+          scope.route = 'contacts';
+          scope.fontIcon = contacts_config.icons[contact.type];
+          scope.heading = contact.name;
+          scope.primary = contact.home;
+          scope.simprintsTier = contact.simprints && contact.simprints.tierNumber;
+          if (contact.type !== 'person') {
+            scope.summary = $translate.instant('contact.primary_contact_name', { name: contact.contact });
+          }
+          return evaluateExpressions(template, scope);
         },
       };
 
       LiveList.$listFor('contacts', {
         selector: '#contacts-list ul.unfiltered',
         orderBy: contacts_config.orderBy,
-        listItem: contacts_config.listItemForTemplate(),
+        listItem: contacts_config.listItem,
       });
 
       LiveList.$listFor('contact-search', {
         selector: '#contacts-list ul.filtered',
         orderBy: contacts_config.orderBy,
-        listItem: contacts_config.listItemForTemplate(),
+        listItem: contacts_config.listItem,
       });
 
       var reports_config = {
@@ -88,19 +100,20 @@ angular.module('inboxServices').factory('LiveListConfig',
           return r2.reported_date - r1.reported_date;
         },
         listItem: function(report, removedDomElement) {
-          var reportHtml = $templateCache.get('templates/partials/content_row_list_item.html');
+          var template = $templateCache.get('templates/partials/content_row_list_item.html');
           var scope = $scope.$new();
-          scope._id = report._id;
+          scope.id = report._id;
           var form = _.findWhere($scope.forms, { code: report.form });
           scope.route = 'reports';
-          scope.icon = form && form.icon;
+          scope.resourceIcon = form && form.icon;
           scope.heading = report.contact || report.from;
           scope.date = report.reported_date;
           scope.summary = form ? TranslateFrom(form.name) : report.form;
+          scope.showStatus = true;
           scope.valid = report.valid;
           scope.verified = report.verified;
           scope.lineage = report.lineage;
-          var element = evaluateExpressions(reportHtml, scope);
+          var element = evaluateExpressions(template, scope);
           if (removedDomElement &&
               removedDomElement.find('input[type="checkbox"]').is(':checked')) {
             // updating an item that was selected in select mode
@@ -143,9 +156,18 @@ angular.module('inboxServices').factory('LiveListConfig',
           return Date.parse(lhs) - Date.parse(rhs);
         },
         listItem: function(task) {
-          var template = $templateCache.get('templates/partials/tasks_list_item.html');
+          var template = $templateCache.get('templates/partials/content_row_list_item.html');
           var scope = $scope.$new();
-          scope.task = task;
+          var startOfToday = (new Date()).setHours(0, 0, 0, 0);
+          scope.id = task._id;
+          scope.route = 'tasks';
+          scope.date = task.date;
+          scope.overdue = Date.parse(task.date) < startOfToday;
+          scope.resourceIcon = task.icon;
+          scope.heading = task.contact && task.contact.name;
+          scope.summary = TranslateFrom(task.title, task);
+          scope.warning = TranslateFrom(task.priorityLabel, task);
+          scope.hideTime = true;
           return evaluateExpressions(template, scope);
         },
       });
