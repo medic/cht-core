@@ -6,7 +6,7 @@
       <div class="heading">
         <h4>
           <i class="fa fa-star primary {{primaryContact ? '' : 'ng-hide'}}" translate translate-attr-title="Primary contact"></i>
-          {{heading}}
+          <span>{{heading}}</span>
         </h4>
         <div class="date {{overdue ? 'overdue' : ''}}">
           <span class="{{hideTime ? 'ng-hide' : ''}}" ng-bind-html="date | relativeDate"></span>

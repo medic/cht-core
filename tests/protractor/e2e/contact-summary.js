@@ -135,9 +135,9 @@ describe('Contact summary info', () => {
     element(by.id('freetext')).sendKeys(term);
     element(by.id('search')).click();
     browser.wait(() => {
-      return element(by.css('#contacts-list .filtered .item-summary')).isPresent();
+      return element(by.css('#contacts-list .filtered .content')).isPresent();
     }, 10000);
-    element(by.css('#contacts-list .filtered .item-summary')).click();
+    element(by.css('#contacts-list .filtered .content')).click();
   };
 
   it('contact summary', () => {
