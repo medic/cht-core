@@ -406,7 +406,7 @@ body {
   }
 }
 
-.inbox-items, .item-content {
+.item-content {
   overflow-y: auto;
   overflow-x: hidden;
   height: 100%;
@@ -493,23 +493,8 @@ body {
   }
 }
 
-.reports {
-  .inbox-items li {
-    input[type="checkbox"] {
-      display: none;
-      float: left;
-      margin-left: -5px;
-      margin-right: 5px;
-    }
-  }
-  &.select-mode {
-    .inbox-items li input[type="checkbox"] {
-      display: inline;
-    }
-    .report-body .summary {
-      cursor: pointer;
-    }
-  }
+.reports.select-mode .report-body .item-summary {
+  cursor: pointer;
 }
 
 .report-image {

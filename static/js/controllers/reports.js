@@ -363,7 +363,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       });
     }
 
-    $('.inbox').on('click', '#reports-list .message-wrapper', function(e) {
+    $('.inbox').on('click', '#reports-list .content-row', function(e) {
       if ($scope.selectMode) {
         e.preventDefault();
         e.stopPropagation();

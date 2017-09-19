@@ -4,6 +4,13 @@
   cursor: pointer;
   border-bottom: 1px solid @seperator-color;
 
+  input[type="checkbox"] {
+    display: none;
+    float: left;
+    margin-left: -5px;
+    margin-right: 5px;
+  }
+
   &.primary {
     background-color: @seperator-color;
   }
@@ -90,6 +97,10 @@
       }
     }
   }
+}
+
+.select-mode .content-row input[type="checkbox"] {
+  display: inline;
 }
 
 .reports,

@@ -1,5 +1,6 @@
 <li data-record-id="{{id}}" class="content-row {{selected ? 'selected' : ''}} {{primary ? 'primary' : ''}}">
   <a href="#{{route}}/{{id}}">
+    <div><input type="checkbox"></div>
     <div class="icon {{resourceIcon ? '' : 'ng-hide'}}" ng-bind-html="resourceIcon | resourceIcon"></div>
     <div class="icon {{fontIcon ? '' : 'ng-hide'}}"><i class="fa {{fontIcon}}"></i></div>
     <div class="content">
