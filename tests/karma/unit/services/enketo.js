@@ -91,7 +91,8 @@ describe('Enketo service', function() {
 
     window.EnketoForm = EnketoForm;
     EnketoForm.returns({
-      init: enketoInit
+      init: enketoInit,
+      calc: { update: function() {} }
     });
 
     XmlForm.returns(KarmaUtils.mockPromise(null, { id: 'abc' }));
