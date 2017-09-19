@@ -28,12 +28,18 @@ angular.module('inboxServices').service('ContactSave',
 
     function prepareSubmittedDocsForSave(schema, original, submitted) {
       var doc = prepare(submitted.doc);
-      var repeated = prepareRepeatedDocs(submitted.doc, submitted.repeats);
 
       return prepareAndAttachSiblingDocs(schema, submitted.doc, original, submitted.siblings)
         .then(function(siblings) {
-          doc.parent = ExtractLineage(doc.parent);
-          doc.contact = ExtractLineage(doc.contact);
+          siblings.concat(doc).map(function(item) {
+            item.parent = item.parent && ExtractLineage(item.parent);
+            item.contact = item.contact && ExtractLineage(item.contact);
+          });
+
+          // This must be done after prepareAndAttachSiblingDocs, as it relies
+          // on the doc's parents being attached.
+          var repeated = prepareRepeatedDocs(submitted.doc, submitted.repeats);
+
           return {
             docId: doc._id,
             preparedDocs: [].concat(repeated, siblings, doc)
@@ -74,7 +80,9 @@ angular.module('inboxServices').service('ContactSave',
     }
 
     // Mutates the passed doc to attach prepared siblings, and returns all
-    // prepared siblings to be persisted
+    // prepared siblings to be persisted.
+    // This will (on a correctly configured form) attach the full parent to
+    // doc, and in turn siblings. See internal comments.
     function prepareAndAttachSiblingDocs(schema, doc, original, siblings) {
       if (!doc._id) {
         throw new Error('doc passed must already be prepared with an _id');
@@ -104,6 +112,8 @@ angular.module('inboxServices').service('ContactSave',
               // Cloning to avoid the circular reference we would make:
               //   doc.fieldName.parent.fieldName.parent...
               doc[fieldName] = _.clone(preparedSibling);
+              // Because we're assigning the actual doc referencem, the DB().get
+              // to attach the full parent to the doc will also attach it here.
               preparedSibling.parent = doc;
             } else {
               doc[fieldName] = extractIfRequired(fieldName, preparedSibling);
@@ -117,6 +127,10 @@ angular.module('inboxServices').service('ContactSave',
           } else {
             promiseChain = promiseChain.then(function() {
               return DB().get(value).then(function(dbFieldValue) {
+                // In a correctly configured form one of these will be the
+                // parent This must happen before we attempt to run
+                // ExtractLineage on any siblings or repeats, otherwise they
+                // will extract an incomplete lineage
                 doc[fieldName] = extractIfRequired(fieldName, dbFieldValue);
               });
             });
