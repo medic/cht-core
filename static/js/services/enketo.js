@@ -269,15 +269,10 @@ angular.module('inboxServices').service('Enketo',
         .off('.pagemode')
         .on('click.pagemode', function() {
           form.pages.next()
-            .then(function() {
-              forceRecalculate(form);
-            })
             .then(function(newPageIndex) {
               if(typeof newPageIndex === 'number') {
                 window.history.pushState({ enketo_page_number: newPageIndex }, '');
               }
-            })
-            .then(function() {
               forceRecalculate(form);
             });
           return false;
