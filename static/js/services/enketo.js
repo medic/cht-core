@@ -258,6 +258,7 @@ angular.module('inboxServices').service('Enketo',
         window.history.replaceState({ enketo_page_number: 0 }, '');
         overrideNavigationButtons(form, wrapper);
         addPopStateHandler(form, wrapper);
+        forceRecalculate(form);
 
         return form;
       });
@@ -272,6 +273,7 @@ angular.module('inboxServices').service('Enketo',
               if(typeof newPageIndex === 'number') {
                 window.history.pushState({ enketo_page_number: newPageIndex }, '');
               }
+              forceRecalculate(form);
             });
           return false;
         });
@@ -280,6 +282,7 @@ angular.module('inboxServices').service('Enketo',
         .off('.pagemode')
         .on('click.pagemode', function() {
           window.history.back();
+          forceRecalculate(form);
           return false;
         });
     };
@@ -462,6 +465,10 @@ angular.module('inboxServices').service('Enketo',
           from: contact && contact.phone
         };
       });
+    };
+
+    var forceRecalculate = function(form) {
+      form.calc.update();
     };
 
     this.save = function(formInternalId, form, geolocation, docId) {

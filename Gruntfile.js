@@ -254,10 +254,6 @@ module.exports = function(grunt) {
             // patch pouch to improve safari checks
             // https://github.com/medic/medic-webapp/issues/2797
             'patch node_modules/pouchdb-adapter-idb/lib/index.js < patches/pouchdb-ignore-safari-check.patch',
-
-            // patch enketo to support cascading of jr:choice-name() update results
-            // https://github.com/medic/medic-webapp/issues/3804
-            'patch node_modules/enketo-core/src/js/output.js < patches/3804_jr-choice-name.patch',
           ];
           return patches.join(' && ');
         }
