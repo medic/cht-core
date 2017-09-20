@@ -22,7 +22,7 @@ var utils = require('kujua-utils');
     }
   };
 
-  var getDbInfo = function(username) {
+  var getDbInfo = function() {
     // parse the URL to determine the remote and local database names
     var url = window.location.href;
     var protocolLocation = url.indexOf('//') + 2;
@@ -31,9 +31,12 @@ var utils = require('kujua-utils');
     var dbName = url.slice(hostLocation, dbNameLocation);
     return {
       name: dbName,
-      local: dbName + '-user-' + username,
       remote: url.slice(0, dbNameLocation)
     };
+  };
+
+  var getLocalDbName = function(dbInfo, username) {
+    return dbInfo.name + '-user-' + username;
   };
 
   var initialReplication = function(localDb, remoteDb, username) {
@@ -73,16 +76,27 @@ var utils = require('kujua-utils');
     }
   };
 
+  var redirectToLogin = function(dbInfo, err, callback) {
+    console.warn('User must reauthenticate');
+    var currentUrl = encodeURIComponent(window.location.href);
+    err.redirect = '/' + dbInfo.name + '/login?redirect=' + currentUrl;
+    return callback(err);
+  };
+
   module.exports = function(POUCHDB_OPTIONS, callback) {
+    var dbInfo = getDbInfo();
     var userCtx = getUserCtx();
+    if (!userCtx) {
+      var err = new Error('User must reauthenticate');
+      return redirectToLogin(dbInfo, err, callback);
+    }
     if (utils.isUserAdmin(userCtx)) {
       return callback();
     }
 
     var username = userCtx && userCtx.name;
-    var dbInfo = getDbInfo(username);
-
-    var localDb = window.PouchDB(dbInfo.local, POUCHDB_OPTIONS.local);
+    var localDbName = getLocalDbName(dbInfo, username);
+    var localDb = window.PouchDB(localDbName, POUCHDB_OPTIONS.local);
 
     localDb
       .get('_design/medic-client')
@@ -102,9 +116,7 @@ var utils = require('kujua-utils');
           })
           .catch(function(err) {
             if (err.status === 401) {
-              console.warn('User must reauthenticate');
-              err.redirect = '/' + dbInfo.name + '/login?redirect=' +
-                encodeURIComponent(window.location.href);
+              return redirectToLogin(err, dbInfo, callback);
             }
             callback(err);
           });

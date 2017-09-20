@@ -25,10 +25,10 @@ angular.module('inboxServices').config([
           var db = pouchDB.debug ? pouchDB : window.PouchDB;
           if (bool) {
             db.debug.enable('*');
-            ipCookie(cookieName, bool, {expires: 360});
+            ipCookie(cookieName, bool, { expires: 360, path: '/' });
           } else {
             db.debug.disable();
-            ipCookie.remove(cookieName);
+            ipCookie.remove(cookieName, { path: '/' });
           }
         };
         set(get()); // initialize
