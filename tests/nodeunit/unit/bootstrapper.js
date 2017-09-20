@@ -14,8 +14,7 @@ var proxyquire = require('proxyquire').noCallThru(),
     pouchDbOptions = {
       local: { auto_compaction: true },
       remote: { skip_setup: true }
-    },
-    userCtx;
+    };
 
 // ignore "Read Only" jshint error for overwriting `document` and `window`
 // jshint -W020
