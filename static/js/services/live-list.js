@@ -113,6 +113,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.valid = report.valid;
           scope.verified = report.verified;
           scope.lineage = report.lineage;
+          scope.unread = !report.read;
           var element = evaluateExpressions(template, scope);
           if (removedDomElement &&
               removedDomElement.find('input[type="checkbox"]').is(':checked')) {

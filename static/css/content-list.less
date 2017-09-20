@@ -3,16 +3,36 @@
 .content-row {
   cursor: pointer;
   border-bottom: 1px solid @seperator-color;
+  position: relative;
+
+  &.primary {
+    background-color: @seperator-color;
+  }
+
+  &.unread > a {
+    &:before {
+      content: '';
+      background: @unread-color;
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 50px;
+      background: #007DC6;
+      border-bottom-left-radius: 10px;
+      height: 4px;
+      border-top-left-radius: 10px;
+    }
+    .content .date {
+      color: @unread-color;
+      font-weight: bold;
+    }
+  }
 
   input[type="checkbox"] {
     display: none;
     float: left;
     margin-left: -5px;
     margin-right: 5px;
-  }
-
-  &.primary {
-    background-color: @seperator-color;
   }
 
   > a {
