@@ -115,7 +115,7 @@ describe('ContactSave service', () => {
     const type = 'some-contact-type';
 
     EnketoTranslation.contactRecordToJs.returns({
-      doc: { _id: 'main1', type: 'main', sis: 'NEW', },
+      doc: { _id: 'main1', type: 'main', sis: 'NEW', contact: 'this-would-be-the-chw-id'},
       siblings: {
         sis: { _id: 'sis1', type: 'sister', parent: 'PARENT', },
       },
@@ -124,7 +124,10 @@ describe('ContactSave service', () => {
       },
     });
 
-    ExtractLineage.returnsArg(0);
+    ExtractLineage.callsFake(contact => {
+      contact.extracted = true;
+      return contact;
+    });
 
     bulkDocs.returns(Promise.resolve());
 
@@ -139,9 +142,11 @@ describe('ContactSave service', () => {
 
         assert.equal(savedDocs[0]._id, 'kid1');
         assert.equal(savedDocs[0].parent._id, 'main1');
+        assert.equal(savedDocs[0].parent.extracted, true);
 
         assert.equal(savedDocs[1]._id, 'sis1');
         assert.equal(savedDocs[1].parent._id, 'main1');
+        assert.equal(savedDocs[1].parent.extracted, true);
 
         assert.equal(savedDocs[2]._id, 'main1');
 
