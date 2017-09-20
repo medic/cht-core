@@ -87,8 +87,7 @@ rule GenerateEvents {
     ];
 
     var postnatalForms = [
-      'PNC',
-      'V',
+      'M',
       'postnatal_visit'
     ];
 
@@ -263,6 +262,10 @@ rule GenerateEvents {
       return (new RegExp('^\W*' + formCode + '\\W*$','i')).test(test);
     };
     
+    var isFacilityDelivery = function(report) {
+      return report && report.fields && report.fields.delivery_code.toLowerCase() === 'f';
+    };
+
     var receivedVaccine = function (report, vaccine) {
       var fieldName = 'received_' + vaccine;
       if ( isFormCodeSame(report.form, vaccine)
@@ -384,12 +387,6 @@ rule GenerateEvents {
       var instance = createTargetInstance('pnc-registered-this-month', c.contact, true);
       instance.date = newestDeliveryTimestamp;  // will only be counted if delivered this month
       emitTargetInstance(instance);
-
-      // PNC: PNC visits this month ??????
-      // Total number of V forms + postnatal visit forms received for women in active PNC period (6 weeks from delivery) + postnatal visit forms submitted this month
-      var instance = createTargetInstance('pnc-visits-this-month', c.contact, true);
-      instance.date = newestDeliveryTimestamp;
-      // emitTargetInstance(instance);
        
       // ------------------------------
       // REPORT-BASED TARGETS
@@ -463,10 +460,8 @@ rule GenerateEvents {
         }
 
         // Birth related widgets
-        // Previously we were eliminating deliveries for previous pregnancies :(
-        // if (r.reported_date === newestDeliveryTimestamp && (r.form === 'D' || r.form === 'delivery')) {
-        if (r.form === 'D' || r.form === 'delivery') {
-
+        if (r.form === 'D' || (r.form === 'delivery' && r.fields.pregnancy_outcome === 'healthy')) {
+        
           // BIRTHS THIS MONTH
           var instance = createTargetInstance('births-this-month', r, true);
           instance._id = c.contact._id + '-' + 'births-this-month';
@@ -501,8 +496,19 @@ rule GenerateEvents {
           emitTargetInstance(instance);
 
           // Find PNC period based on delivery date, not reported date
-          var startPNCperiod = new Date(r.birth_date || r.fields.birth_date);
+          var startPNCperiod = new Date(r && (r.birth_date || r.fields.birth_date || r.report_date));
           var endPNCperiod = new Date(startPNCperiod.getFullYear(), startPNCperiod.getMonth(), startPNCperiod.getDate() + DAYS_IN_PNC);
+
+          // PNC: PNC visits this month (TODO: Test)
+          // Total number of Delivery at Facility, M forms + postnatal visit
+          c.reports.forEach(function(report) {
+            if (report && postnatalForms.indexOf(report.form) >= 0) {
+              if (report.reported_date >= startPNCperiod.getTime() && report.reported_date <= endPNCperiod.getTime()) {
+                var instance = createTargetInstance('pnc-visits-this-month', c.contact, true);
+                emitTargetInstance(instance);
+              }
+            }
+          });
 
           // PNC: HOMEBIRTHS WITH 1+ PNC VISITS, ALL TIME
           // Women who gave birth at home and had at least 1 PNC visit during 6-week PNC Period (includes V forms and postnatal visit forms) - all-time.
@@ -514,7 +520,11 @@ rule GenerateEvents {
 
           // PNC: WOMEN WITH 3 PNC VISITS, ALL TIME
           // Women who had 3 PNC visits confirmed during their 6-week PNC period (includes V forms and postnatal visit forms) - all-time
-          var instance = createTargetInstance('pnc-3-visits', c.contact, isFormSubmittedInWindow(c.reports, postnatalForms, startPNCperiod.getTime(), endPNCperiod.getTime(), 3));
+          var postnatalVisits = countReportsSubmittedInWindow(c.reports, postnatalForms, startPNCperiod.getTime(), endPNCperiod.getTime());
+          if (isFacilityDelivery(r)){
+            postnatalVisits++;
+          }
+          var instance = createTargetInstance('pnc-3-visits', c.contact, postnatalVisits >= 3);
           instance.date = now.getTime();
           emitTargetInstance(instance);
         }
