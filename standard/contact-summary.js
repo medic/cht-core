@@ -5,7 +5,7 @@ var fields = [];
 var now = new Date();
 var MS_IN_DAY = 24*60*60*1000;  // 1 day in ms
 var MAX_DAYS_IN_PREGNANCY = 44*7;  // 44 weeks
-var DAYS_IN_PNC = 42; // TODO: should be longer to allow stragglers
+var DAYS_IN_PNC = 45; // Allow for 3 extra days to receive PNC reports
 
 var deliveryForms = [
   'D',
