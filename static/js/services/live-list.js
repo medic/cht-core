@@ -24,7 +24,8 @@ angular.module('inboxServices').factory('LiveListConfig',
       return $parse(expr)(scope) || '';
     };
 
-    var evaluateExpressions = function(template, scope) {
+    var renderTemplate = function(scope) {
+      var template = $templateCache.get('templates/partials/content_row_list_item.html');
       return template
         .replace(HTML_BIND_REGEX, function(match, expr, extras) {
           return extras + parse(expr, scope);
@@ -57,7 +58,6 @@ angular.module('inboxServices').factory('LiveListConfig',
           district_hospital: 'fa-building'
         },
         listItem: function(contact) {
-          var template = $templateCache.get('templates/partials/content_row_list_item.html');
           var scope = $scope.$new();
           scope.id = contact._id;
           scope.route = 'contacts';
@@ -68,7 +68,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           if (contact.type !== 'person') {
             scope.summary = $translate.instant('contact.primary_contact_name', { name: contact.contact });
           }
-          return evaluateExpressions(template, scope);
+          return renderTemplate(scope);
         },
       };
 
@@ -100,7 +100,6 @@ angular.module('inboxServices').factory('LiveListConfig',
           return r2.reported_date - r1.reported_date;
         },
         listItem: function(report, removedDomElement) {
-          var template = $templateCache.get('templates/partials/content_row_list_item.html');
           var scope = $scope.$new();
           scope.id = report._id;
           var form = _.findWhere($scope.forms, { code: report.form });
@@ -114,7 +113,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.verified = report.verified;
           scope.lineage = report.lineage;
           scope.unread = !report.read;
-          var element = evaluateExpressions(template, scope);
+          var element = renderTemplate(scope);
           if (removedDomElement &&
               removedDomElement.find('input[type="checkbox"]').is(':checked')) {
             // updating an item that was selected in select mode
@@ -157,7 +156,6 @@ angular.module('inboxServices').factory('LiveListConfig',
           return Date.parse(lhs) - Date.parse(rhs);
         },
         listItem: function(task) {
-          var template = $templateCache.get('templates/partials/content_row_list_item.html');
           var scope = $scope.$new();
           var startOfToday = (new Date()).setHours(0, 0, 0, 0);
           scope.id = task._id;
@@ -169,7 +167,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.summary = TranslateFrom(task.title, task);
           scope.warning = TranslateFrom(task.priorityLabel, task);
           scope.hideTime = true;
-          return evaluateExpressions(template, scope);
+          return renderTemplate(scope);
         },
       });
 
