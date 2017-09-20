@@ -5,7 +5,7 @@ var fields = [];
 var now = new Date();
 var MS_IN_DAY = 24*60*60*1000;  // 1 day in ms
 var MAX_DAYS_IN_PREGNANCY = 44*7;  // 44 weeks
-var DAYS_IN_PNC = 42;
+var DAYS_IN_PNC = 42; // TODO: should be longer to allow stragglers
 
 var deliveryForms = [
   'D',
@@ -117,12 +117,13 @@ var isNonFacilityDelivery = function(report) {
 };
 
 var getBirthDate = function(report) {
-  return report && (report.birth_date || report.fields.birth_date || report.reported_date);
+  var rawDate = report && (report.birth_date || report.fields.birth_date || report.reported_date);
+  return new Date(rawDate);
 };
 
 var getPNCperiod = function(deliveryReport){
   var obj = {};
-  obj.start = new Date(getBirthDate(deliveryReport));
+  obj.start = getBirthDate(deliveryReport);
   obj.end = new Date(obj.start.getFullYear(), obj.start.getMonth(), obj.start.getDate() + DAYS_IN_PNC);
   return obj;
 };
@@ -297,10 +298,10 @@ if (contact.type === 'person') {
         var birthdate = getBirthDate(relevantDelivery);
         
         var relevantVisitsANC = reports.filter(function(report2) {
-          return (report2.form === 'V' || report2.form === 'pregnancy_visit') && report2.reported_date > report.reported_date && report2.reported_date < relevantDelivery.reported_date;
+          return (report2.form === 'V' || report2.form === 'pregnancy_visit') && report2.reported_date > report.reported_date && report2.reported_date < birthdate.getTime();
         });
         var relevantVisitsPNC = reports.filter(function(report2) {
-          return (report2.form === 'M' || report2.form === 'postnatal_visit') && report2.reported_date > relevantDelivery.reported_date && report2.reported_date < (relevantDelivery.reported_date + DAYS_IN_PNC*MS_IN_DAY) ;
+          return (report2.form === 'M' || report2.form === 'postnatal_visit') && report2.reported_date > birthdate.getTime() && report2.reported_date < (birthdate.getTime() + DAYS_IN_PNC*MS_IN_DAY);
         });
 
         var visitsANC = relevantVisitsANC.length;
@@ -361,11 +362,14 @@ if (contact.type === 'person') {
   });
 
   var newestPNCperiod = getPNCperiod(newestDelivery);
+  var birthdate = getBirthDate(newestDelivery);
+    
   if (isCoveredByUseCaseInLineage(lineage, 'pnc') && now >= newestPNCperiod.start && now <= newestPNCperiod.end) {
     context.in_pnc_period = true;
     var highRiskPostnatal = isHighRiskPostnatal(reports, newestPNCperiod);
     var relevantVisitsPNC = reports.filter(function(report2) {
-      return (report2.form === 'M' || report2.form === 'postnatal_visit') && report2.reported_date > newestDelivery.reported_date && report2.reported_date < (newestDelivery.reported_date + DAYS_IN_PNC*MS_IN_DAY) ;
+      // look for reports in the PNC period
+      return (report2.form === 'M' || report2.form === 'postnatal_visit') && report2.reported_date > birthdate.getTime() && report2.reported_date < (birthdate.getTime() + DAYS_IN_PNC*MS_IN_DAY);
     });
     var visitsPNC = relevantVisitsPNC.length;
     if (isFacilityDelivery(newestDelivery)) {
@@ -375,7 +379,7 @@ if (contact.type === 'person') {
     var postnatal_card = {
       label: 'contact.profile.postnatal',
       fields: [
-        { label: 'contact.profile.delivery_code.' + getDeliveryCode(newestDelivery), value: getBirthDate(newestDelivery), filter: 'relativeDay', width: 12 },
+        { label: 'contact.profile.delivery_code.' + getDeliveryCode(newestDelivery), value: birthdate.getTime(), filter: 'relativeDay', width: 12 },
         { label: 'contact.profile.pnc_visit', value: 'contact.profile.visits.of', translate: true, context: { count: visitsPNC, total: 4 }, width: 6 },
         { label: 'contact.profile.risk.title', value: highRiskPostnatal ? 'contact.profile.risk.high':'contact.profile.risk.normal', translate: true, width: 5},
         { label: '', value: highRiskPostnatal ? 'risk':'', filter: 'resourceIcon', width: 1}
@@ -432,10 +436,6 @@ use_cases.pnc = isCoveredByUseCaseInLineage(lineage, 'pnc');
 use_cases.imm = isCoveredByUseCaseInLineage(lineage, 'imm');
 
 context.use_cases = use_cases;
-
-console.log(contact);
-console.log(context);
-console.log(newestDelivery);
 
 var result = {
   fields: fields,
