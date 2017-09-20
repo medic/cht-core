@@ -88,6 +88,7 @@ var utils = require('kujua-utils');
     var userCtx = getUserCtx();
     if (!userCtx) {
       var err = new Error('User must reauthenticate');
+      err.status = 401;
       return redirectToLogin(dbInfo, err, callback);
     }
     if (utils.isUserAdmin(userCtx)) {
@@ -116,7 +117,7 @@ var utils = require('kujua-utils');
           })
           .catch(function(err) {
             if (err.status === 401) {
-              return redirectToLogin(err, dbInfo, callback);
+              return redirectToLogin(dbInfo, err, callback);
             }
             callback(err);
           });

@@ -14,7 +14,8 @@ var proxyquire = require('proxyquire').noCallThru(),
     pouchDbOptions = {
       local: { auto_compaction: true },
       remote: { skip_setup: true }
-    };
+    },
+    userCtx;
 
 // ignore "Read Only" jshint error for overwriting `document` and `window`
 // jshint -W020
@@ -27,9 +28,7 @@ exports.setUp = function(cb) {
   if (typeof window !== 'undefined') {
     originalWindow = window;
   }
-  document = {
-    cookie: 'userCtx={"name":"jim"};something=true'
-  };
+  document = { cookie: '' };
   window = {
     location: {
       href: 'http://localhost:5988/medic/_design/medic/_rewrite/#/messages'
@@ -38,6 +37,10 @@ exports.setUp = function(cb) {
   };
   $ = sinon.stub().returns({ text:sinon.stub() });
   cb();
+};
+
+var setUserCtxCookie = function(userCtx) {
+  document.cookie = `userCtx=${JSON.stringify(userCtx)};something=true`;
 };
 
 exports.tearDown = function(cb) {
@@ -56,6 +59,7 @@ exports.tearDown = function(cb) {
 // jshint +W020
 
 exports['does nothing for admins'] = function(test) {
+  setUserCtxCookie({ name: 'jim' });
   isAdmin = true;
   bootstrapper(pouchDbOptions, function(err) {
     test.equal(null, err);
@@ -65,6 +69,7 @@ exports['does nothing for admins'] = function(test) {
 };
 
 exports['returns if local db already has client ddoc'] = function(test) {
+  setUserCtxCookie({ name: 'jim' });
   var localGet = sinon.stub();
   pouchDb.returns({ get: localGet });
   localGet.returns(Promise.resolve());
@@ -80,6 +85,7 @@ exports['returns if local db already has client ddoc'] = function(test) {
 };
 
 exports['performs initial replication'] = function(test) {
+  setUserCtxCookie({ name: 'jim' });
   var localGet = sinon.stub();
   var localReplicate = sinon.stub();
   pouchDb.onCall(0).returns({
@@ -113,7 +119,7 @@ exports['performs initial replication'] = function(test) {
   });
 };
 
-exports['handles unauthorized initial replication'] = function(test) {
+exports['returns redirect to login error when no userCtx cookie found'] = function(test) {
   var localGet = sinon.stub();
   var localReplicate = sinon.stub();
   pouchDb.onCall(0).returns({
@@ -132,7 +138,28 @@ exports['handles unauthorized initial replication'] = function(test) {
   });
 };
 
-exports['handles other errors in initial replication'] = function(test) {
+exports['returns redirect to login error when initial replication returns unauthorized'] = function(test) {
+  setUserCtxCookie({ name: 'jim' });
+  var localGet = sinon.stub();
+  var localReplicate = sinon.stub();
+  pouchDb.onCall(0).returns({
+    get: localGet,
+    replicate: { from: localReplicate }
+  });
+  pouchDb.onCall(1).returns({ remote: true });
+  localGet.returns(Promise.reject());
+  var localReplicateResult = Promise.reject({ status: 401 });
+  localReplicateResult.on = function() {};
+  localReplicate.returns(localReplicateResult);
+  bootstrapper(pouchDbOptions, function(err) {
+    test.equal(err.status, 401);
+    test.equal(err.redirect, '/medic/login?redirect=http%3A%2F%2Flocalhost%3A5988%2Fmedic%2F_design%2Fmedic%2F_rewrite%2F%23%2Fmessages');
+    test.done();
+  });
+};
+
+exports['returns other errors in initial replication'] = function(test) {
+  setUserCtxCookie({ name: 'jim' });
   var localGet = sinon.stub();
   var localReplicate = sinon.stub();
   pouchDb.onCall(0).returns({
