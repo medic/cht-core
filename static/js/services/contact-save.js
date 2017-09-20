@@ -31,10 +31,13 @@ angular.module('inboxServices').service('ContactSave',
 
       return prepareAndAttachSiblingDocs(schema, submitted.doc, original, submitted.siblings)
         .then(function(siblings) {
-          siblings.concat(doc).map(function(item) {
+          var extract = function(item) {
             item.parent = item.parent && ExtractLineage(item.parent);
             item.contact = item.contact && ExtractLineage(item.contact);
-          });
+          };
+
+          siblings.forEach(extract);
+          extract(doc);
 
           // This must be done after prepareAndAttachSiblingDocs, as it relies
           // on the doc's parents being attached.
