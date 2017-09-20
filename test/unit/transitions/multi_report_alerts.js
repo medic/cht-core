@@ -522,3 +522,25 @@ exports['latest report has to go through is_report_counted function'] = test => 
     test.done();
   });
 };
+
+exports['getCountedReportsAndPhones batches properly'] = test => {
+  const report = () => ({ _id: 'docA', form: 'A', contact: { _id: 'contactA' } });
+
+  const firstBatch = [...Array(100).keys()].map(report);
+  const secondBatch = [...Array(50).keys()].map(report);
+
+  const hdStub = sinon.stub(lineage, 'hydrateDocs');
+  hdStub.onCall(0).returns(Promise.resolve(firstBatch));
+  hdStub.onCall(1).returns(Promise.resolve(secondBatch));
+  const grwtwStub = sinon.stub(utils, 'getReportsWithinTimeWindow');
+  grwtwStub.onCall(0).returns(Promise.resolve(firstBatch));
+  grwtwStub.onCall(1).returns(Promise.resolve(secondBatch));
+
+  transition._getCountedReportsAndPhones(alert, doc)
+    .then(({countedReportsIds, newReports}) => {
+      // Two batches above, plus the doc passed in
+      test.equal(countedReportsIds.length, 151);
+      test.equal(newReports.length, 151);
+      test.done();
+    });
+};

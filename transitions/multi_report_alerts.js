@@ -1,6 +1,5 @@
 const vm = require('vm'),
       _ = require('underscore'),
-      async = require('async'),
       config = require('../config'),
       lineage = require('../lib/lineage'),
       logger = require('../lib/logger'),
@@ -184,50 +183,42 @@ const validateConfig = () => {
  * Returns { countedReportsIds, newReports, phones }.
  */
 const getCountedReportsAndPhones = (alert, latestReport) => {
-  return new Promise((resolve, reject) => {
-    const script = vm.createScript(`(${alert.is_report_counted})(report, latestReport)`);
-    let skip = 0;
+  const script = vm.createScript(`(${alert.is_report_counted})(report, latestReport)`);
 
-    if (!countReports([latestReport], latestReport, script).length) {
-      // The latest_report didn't pass the is_report_counted function, abort the transition.
-      return resolve({
-        countedReportsIds: [],
-        newReports: [],
-        phones: []
-      });
-    }
+  if (!countReports([latestReport], latestReport, script).length) {
+    // The latest_report didn't pass the is_report_counted function, abort the transition.
+    return Promise.resolve({
+      countedReportsIds: [],
+      newReports: [],
+      phones: []
+    });
+  }
 
-    let countedReports = [ latestReport ];
-    let oldReportIds = [ ];
-    async.doWhilst(
-      callback => {
-        getCountedReportsBatch(script, latestReport, alert, skip)
-          .then(output => {
-            countedReports = countedReports.concat(output.countedReports);
-            oldReportIds = oldReportIds.concat(output.oldReportIds);
-            callback(null, output.numFetched);
-          })
-          .catch(callback);
-      },
-      numFetched => {
-        skip += BATCH_SIZE;
-        return numFetched === BATCH_SIZE;
-      },
-      err => {
-        if (err) {
-          return reject(err);
+  const promiseLoop = (skip, allCountedReports, allOldReportIds) =>
+    getCountedReportsBatch(script, latestReport, alert, skip)
+      .then(({countedReports, oldReportIds, numFetched}) => {
+        allCountedReports = allCountedReports.concat(countedReports);
+        allOldReportIds = allOldReportIds.concat(oldReportIds);
+
+        if (numFetched === BATCH_SIZE) {
+          return promiseLoop(skip += BATCH_SIZE, allCountedReports, allOldReportIds);
+        } else {
+          return {countedReports: allCountedReports, oldReportIds: allOldReportIds};
         }
-        const countedReportsIds = countedReports.map(report => report._id);
-        const newReports = countedReports.filter(report => !oldReportIds.includes(report._id));
-        const phones = getPhones(alert.recipients, newReports);
-        resolve({
-          countedReportsIds: countedReportsIds,
-          newReports: newReports,
-          phones: phones
-        });
-      }
-    );
-  });
+      });
+
+  return promiseLoop(0, [ latestReport ], [])
+    .then(({countedReports, oldReportIds}) => {
+      const countedReportsIds = countedReports.map(report => report._id);
+      const newReports = countedReports.filter(report => !oldReportIds.includes(report._id));
+      const phones = getPhones(alert.recipients, newReports);
+
+      return {
+        countedReportsIds: countedReportsIds,
+        newReports: newReports,
+        phones: phones
+      };
+    });
 };
 
 /**
@@ -303,5 +294,6 @@ module.exports = {
     !transitionUtils.hasRun(doc, TRANSITION_NAME)
   ),
   onMatch: onMatch,
-  init: validateConfig
+  init: validateConfig,
+  _getCountedReportsAndPhones: getCountedReportsAndPhones
 };
