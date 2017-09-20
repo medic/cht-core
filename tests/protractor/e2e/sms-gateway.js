@@ -160,11 +160,11 @@ describe('sms-gateway api', () => {
         return element(by.css('#message-list li:first-child')).isPresent();
       }, 10000);
       browser.sleep(500); // without this the elements are found to be detached...
-      expect(element(by.css('#message-list li:first-child .name')).getText()).toBe('+64271234567');
-      expect(element(by.css('#message-list li:first-child .description')).getText()).toBe('hello');
+      expect(element(by.css('#message-list li:first-child .heading h4')).getText()).toBe('+64271234567');
+      expect(element(by.css('#message-list li:first-child .summary p')).getText()).toBe('hello');
 
       // RHS
-      element(by.css('#message-list li:first-child .name')).click();
+      element(by.css('#message-list li:first-child .summary')).click();
       browser.wait(() => {
         return element(by.css('#message-content .body li.incoming:first-child .data p:first-child')).isPresent();
       }, 10000);
@@ -207,7 +207,7 @@ describe('sms-gateway api', () => {
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
-      element(by.css('#reports-list li:first-child .description')).click();
+      element(by.css('#reports-list li:first-child .heading')).click();
       browser.wait(() => {
         return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
       }, 10000);
@@ -288,7 +288,7 @@ describe('sms-gateway api', () => {
         return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
 
-      const desc = element(by.css('#reports-list li:first-child .description'));
+      const desc = element(by.css('#reports-list li:first-child .heading'));
       helper.waitUntilReady(desc);
       desc.click();
       browser.wait(() => {

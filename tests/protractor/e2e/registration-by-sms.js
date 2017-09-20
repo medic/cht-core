@@ -244,7 +244,7 @@ describe('registration transition', () => {
       commonElements.goToReports();
       browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', CAROL.name)).isPresent(), 10000);
 
-      element(by.css('#reports-list .unfiltered li:first-child .item-summary')).click();
+      element(by.css('#reports-list .unfiltered li:first-child .summary')).click();
 
       // wait for content to load
       browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 10000);
