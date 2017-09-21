@@ -14,6 +14,7 @@
 @import "analytics-widgets";
 @import "configuration";
 @import "material";
+@import "content-list";
 
 @import "enketo/medic";
 
@@ -492,47 +493,8 @@ body {
   }
 }
 
-.messages .inbox-items li {
-  .message-wrapper:hover {
-    border-left-color: @messages-color;
-  }
-  &.selected {
-    background-color: lighten(@messages-color, 30%);
-  }
-}
-
-.tasks .inbox-items li {
-  .message-wrapper:hover {
-    border-left-color: @tasks-color;
-  }
-  &.selected {
-    background-color: lighten(@tasks-color, 25%);
-  }
-}
-
-.reports {
-  .inbox-items li {
-    .message-wrapper:hover {
-      border-left-color: @reports-color;
-    }
-    &.selected {
-      background-color: lighten(@reports-color, 30%);
-    }
-    input[type="checkbox"] {
-      display: none;
-      float: left;
-      margin-left: -5px;
-      margin-right: 5px;
-    }
-  }
-  &.select-mode {
-    .inbox-items li input[type="checkbox"] {
-      display: inline;
-    }
-    .report-body .summary {
-      cursor: pointer;
-    }
-  }
+.reports.select-mode .report-body .item-summary {
+  cursor: pointer;
 }
 
 .report-image {
@@ -544,20 +506,6 @@ body {
     color: @primary-color;
     font-size: 12px;
     vertical-align: middle;
-  }
-  .inbox-items li {
-    .message-wrapper:hover {
-      border-left-color: @contacts-color;
-    }
-    &.home {
-      background-color: @seperator-color;
-    }
-    &.selected {
-      background-color: lighten(@contacts-color, 30%);
-    }
-    &.orphan .detail {
-      margin-top: 7px;
-    }
   }
   .action-list .accent {
     border-top: 5px solid @label-color;
@@ -618,63 +566,20 @@ body {
   }
 }
 
-.tasks {
-  .inbox-items .mm-badge {
-    padding-top: 0;
-    margin-top: 0;
+.tasks .item-content {
+  .actions a {
+    margin-right: 10px;
+    margin-bottom: 10px;
   }
-  .item-content {
-    .actions a {
-      margin-right: 10px;
-      margin-bottom: 10px;
-    }
-    .body > div > ul > li:first-child {
-      border-top: 0;
-    }
+  .body > div > ul > li:first-child {
+    border-top: 0;
   }
-}
-
-.contacts .message-wrapper .fa {
-  color: @ok-color;
 }
 
 .inbox-items {
   padding: 0;
   background-color: @form-background-color;
   border-left: 1px solid @seperator-color;
-
-  ul {
-    margin-bottom: 0;
-    > li {
-      border-bottom: 1px solid @seperator-color;
-      cursor: pointer;
-
-      span {
-        white-space: normal;
-      }
-
-      .message-wrapper {
-        padding-left: 5px;
-        border-left: 5px solid transparent;
-        min-height: 50px;
-        display: block;
-        text-decoration: none;
-        color: inherit;
-        outline: 0;
-      }
-    }
-  }
-
-  .read {
-    background-color: @background-color;
-    .sender .name {
-      font-weight: normal;
-    }
-  }
-
-  .sender .phone {
-    display: none;
-  }
 
   .alert {
     margin: 10px;
@@ -683,7 +588,6 @@ body {
   .padding {
     height: 120px;
   }
-
 }
 
 .loading-status {
@@ -920,40 +824,9 @@ a.fa:hover {
   display: none;
 }
 
-.tasks {
-  .inbox-items {
-    .message-wrapper:after {
-      visibility: hidden;
-      display: block;
-      font-size: 0;
-      content: " ";
-      clear: both;
-      height: 0;
-    }
-  }
-  .priority .fa {
-    display: none;
-  }
-  .priority-label {
-    overflow: initial;
-  }
-  .high-priority {
-    .priority,
-    .priority-label {
-      color: @high-risk-color;
-    }
-    .high-priority-icon {
-      display: inherit;
-    }
-  }
-  .medium-priority {
-    .priority {
-      color: @warning-color;
-    }
-    .medium-priority-icon {
-      display: inherit;
-    }
-  }
+.tasks .warning {
+  overflow: initial;
+  color: @high-risk-color;
 }
 
 .sender {
@@ -1280,9 +1153,6 @@ a.fa:hover {
     border-left: 0;
     li.selected {
       background-color: inherit;
-      &.read {
-        background-color: @background-color;
-      }
     }
     .padding {
       height: 100px;

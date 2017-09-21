@@ -1,0 +1,32 @@
+<li data-record-id="{{id}}" class="content-row {{selected ? 'selected' : ''}} {{primary ? 'primary' : ''}} {{unread ? 'unread' : ''}}">
+  <a href="#{{route}}/{{id}}">
+    <div><input type="checkbox"></div>
+    <div class="icon {{resourceIcon ? '' : 'ng-hide'}}" ng-bind-html="resourceIcon | resourceIcon"></div>
+    <div class="icon {{fontIcon ? '' : 'ng-hide'}}"><i class="fa fa-fw {{fontIcon}}"></i></div>
+    <div class="content">
+      <div class="heading">
+        <h4>
+          <i class="fa fa-star primary {{primaryContact ? '' : 'ng-hide'}}" translate translate-attr-title="Primary contact"></i>
+          <span>{{heading}}</span>
+        </h4>
+        <div class="date {{overdue ? 'overdue' : ''}}">
+          <span class="{{hideTime ? 'ng-hide' : ''}}" ng-bind-html="date | relativeDate"></span>
+          <span class="{{hideTime ? '' : 'ng-hide'}}" ng-bind-html="date | relativeDay"></span>
+        </div>
+        <div class="status tasks-count {{taskCount ? '' : 'ng-hide'}}">
+          <span class="badge">{{taskCount}}</span>
+        </div>
+      </div>
+      <div class="summary">
+        <p>{{summary}}</p>
+        <div class="status {{showStatus ? '' : 'ng-hide'}}">
+          <i class="fa {{status.valid ? 'green-dot' : 'red-dot'}} {{status.verified ? 'fa-check-circle' : 'fa-circle'}}"></i>
+        </div>
+      </div>
+      <p ng-bind-html="dob | age"></p>
+      <div class="simprints-stars tier-{{simprintsTier}} {{simprintsTier ? '' : 'ng-hide'}}"></div>
+      <div class="detail {{lineage && lineage.length ? '' : 'ng-hide'}}" ng-bind-html="lineage | lineage"></div>
+      <div class="warning">{{warning}}</div>
+    </div>
+  </a>
+</li>

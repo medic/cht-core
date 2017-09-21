@@ -46,7 +46,7 @@ angular.module('inboxServices').factory('TasksForContact',
     var addLateStatus = function(tasks) {
       tasks.forEach(function(task) {
         var momentDate = moment(task.date);
-        var now = moment();
+        var now = moment().startOf('day');
         task.isLate = momentDate.isBefore(now);
       });
     };

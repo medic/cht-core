@@ -46,6 +46,9 @@ describe('ContactsContentCtrl', () => {
       'Changes': () => {
         return { unsubscribe: () => {} };
       },
+      'Auth': () => {
+        return Promise.resolve();
+      },
       'ContactViewModelGenerator': contactViewModelGenerator,
       'TasksForContact': tasksForContact,
       'UserSettings': KarmaUtils.promiseService(null, '')

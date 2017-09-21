@@ -6,6 +6,7 @@
 
   require('./date');
   require('./form-icon');
+  require('./form-icon-name');
   require('./message');
   require('./phone');
   require('./resource-icon');

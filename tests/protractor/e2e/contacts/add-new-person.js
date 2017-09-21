@@ -19,7 +19,7 @@ describe('Add new person tests : ', () => {
 		helper.waitUntilReady(element(by.css('.card-title')));
 		const district = element(by.css('.card-title h2'));
 		expect(district.getText()).toBe('BedeDistrict');
-		const name = element(by.css('span.name.ng-binding'));
+		const name = element(by.css('.children h4 span'));
 		expect(name.getText()).toBe('Bede');
 	});
 });

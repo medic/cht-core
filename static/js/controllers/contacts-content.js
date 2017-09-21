@@ -8,6 +8,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     $scope,
     $stateParams,
     $translate,
+    Auth,
     Changes,
     ContactViewModelGenerator,
     Snackbar,
@@ -52,28 +53,34 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
     };
 
     var getTasks = function() {
-      $scope.selected.tasks = [];
-      var children = $scope.selected.children.persons || [];
-      TasksForContact(
-        $scope.selected.doc._id,
-        $scope.selected.doc.type,
-        _.pluck(children, 'id'),
-        'ContactsContentCtrl',
-        function(areTasksEnabled, tasks) {
-          if ($scope.selected) {
-            $scope.selected.areTasksEnabled = areTasksEnabled;
-            $scope.selected.tasks = tasks;
-            children.forEach(function(child) {
-              child.taskCount = tasks.filter(function(task) {
-                return task.doc &&
-                       task.doc.contact &&
-                       task.doc.contact._id === child.doc._id;
-              }).length;
+      return Auth('can_view_tasks')
+        .then(function() {
+          $scope.selected.tasks = [];
+          var children = $scope.selected.children.persons || [];
+          TasksForContact(
+            $scope.selected.doc._id,
+            $scope.selected.doc.type,
+            _.pluck(children, 'id'),
+            'ContactsContentCtrl',
+            function(areTasksEnabled, tasks) {
+              if ($scope.selected) {
+                $scope.selected.areTasksEnabled = areTasksEnabled;
+                $scope.selected.tasks = tasks;
+                children.forEach(function(child) {
+                  child.taskCount = tasks.filter(function(task) {
+                    return task.doc &&
+                           task.doc.contact &&
+                           task.doc.contact._id === child.doc._id;
+                  }).length;
+                });
+                if (!$scope.$$phase) {
+                  $scope.$apply();
+                }
+              }
             });
-            if (!$scope.$$phase) {
-              $scope.$apply();
-            }
-          }
+        })
+        .catch(function() {
+          $log.debug('Not authorized to view tasks');
         });
     };
 
@@ -84,7 +91,7 @@ angular.module('inboxControllers').controller('ContactsContentCtrl',
           var refreshing = ($scope.selected && $scope.selected.doc._id) === id;
           $scope.setSelected(model);
           $scope.settingSelected(refreshing);
-          getTasks();
+          return getTasks();
         })
         .catch(function(err) {
           if (err.code === 404 && !silent) {

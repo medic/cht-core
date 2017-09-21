@@ -72,30 +72,25 @@
         <div ng-show="selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
         <div class="card action-list children persons">
           <div class="accent"></div>
-          <div class="row" ng-repeat="child in selected.children.persons">
-            <a ui-sref="contacts.detail({ id: child.doc._id })" class=" item-summary cell col-xs-12">
-              <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12 detail">
-                <div class="cell-label">
-                  <i class="fa fa-star primary" ng-show="child.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
-                  <span class="name">{{child.doc.name}}</span>
-                </div>
-                <div class="col-sm-3" ng-bind-html="child.doc.title"></div>
-              </div>
-
-              <div ng-show="selected.doc.type === 'clinic'" class="col-xs-11 detail">
-                <div class="cell-label">
-                  <i class="fa fa-star primary" ng-show="child.isPrimaryContact" translate translate-attr-title="clinic.field.contact"></i>
-                  <span class="name">{{child.doc.name}}</span>
-                </div>
-                <div>
-                  <span ng-bind-html="child.doc.date_of_birth | age"></span>
-                </div>
-              </div>
-              <div ng-show="selected.doc.type === 'clinic' && child.taskCount > 0" mm-auth="can_view_tasks" class="col-xs-1 tasks-count">
-                <span class="badge">{{child.taskCount}}</span>
-              </div>
-            </a>
-          </div>
+          <ul ng-if="selected.doc.type !== 'clinic'">
+            <mm-content-row ng-repeat="child in selected.children.persons"
+              id="child.doc._id"
+              route="'contacts'"
+              heading="child.doc.name"
+              summary="child.doc.title"
+              primary-contact="child.isPrimaryContact"
+            />
+          </ul>
+          <ul ng-if="selected.doc.type === 'clinic'">
+            <mm-content-row ng-repeat="child in selected.children.persons"
+              id="child.doc._id"
+              route="'contacts'"
+              heading="child.doc.name"
+              dob="child.doc.date_of_birth"
+              primary-contact="child.isPrimaryContact"
+              task-count="child.taskCount"
+            />
+          </ul>
         </div>
       </div>
 
@@ -116,6 +111,14 @@
               </a>
             </div>
           </div>
+          <ul>
+            <mm-content-row ng-repeat="child in selected.children.places"
+              id="child.doc._id"
+              route="'contacts'"
+              heading="child.doc.name"
+              summary="'contact.primary_contact_name' | translate:child.doc.contact"
+            />
+          </ul>
         </div>
       </div>
 
@@ -130,9 +133,18 @@
         </div>
         <div class="card action-list tasks">
           <div class="accent"></div>
-          <div class="row" ng-repeat="task in selected.tasks | filter:filterTasks as filteredTasks">
-            <ng-include src="'templates/partials/contacts_content_task.html'"></ng-include>
-          </div>
+          <ul>
+            <mm-content-row ng-repeat="task in selected.tasks | filter:filterTasks as filteredTasks"
+              id="task._id"
+              route="'tasks'"
+              resource-icon="task.icon"
+              date="task.date"
+              overdue="task.isLate"
+              hide-time="true"
+              heading="task.title | translateFrom:task"
+              warning="task.priorityLabel | translateFrom:task"
+            />
+          </ul>
           <div class="row" ng-show="!filteredTasks.length">
             <div class="cell">
               <span ng-show="!tasksTimeWindowWeeks" translate>tasks.none</span>
@@ -153,9 +165,19 @@
         </div>
         <div class="card action-list reports">
           <div class="accent"></div>
-          <div class="row" ng-repeat="report in selected.reports | filter:filterReports as filteredReports track by report._id">
-            <ng-include src="'templates/partials/contacts_content_report.html'"></ng-include>
-          </div>
+          <ul>
+            <mm-content-row ng-repeat="report in selected.reports | filter:filterReports as filteredReports track by report._id"
+              id="report._id"
+              route="'reports'"
+              resource-icon="report | formIconName:forms"
+              date="report.reported_date"
+              heading="selected.doc.type === 'person' ? (report | summary:forms) : (report.fields.place_name ? report.fields.place_name : report.fields.patient_name)"
+              summary="selected.doc.type === 'person' ? '' : (report | summary:forms)"
+              show-status="true"
+              valid="report.valid"
+              verified="report.verified"
+            />
+          </ul>
           <div class="row" ng-show="!filteredReports.length">
             <div class="cell">
               <span ng-show="!reportsTimeWindowMonths" translate>reports.none</span>

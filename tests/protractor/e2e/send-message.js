@@ -144,7 +144,7 @@ describe('Send message', () => {
     helper.waitUntilReady(element(by.css(liIdentifier)));
 
     expect(element.all(by.css(liIdentifier)).count()).toBe(1);
-    element(by.css(liIdentifier + ' a.message-wrapper')).click();
+    element(by.css(liIdentifier + ' a')).click();
 
     browser.wait(() => {
       const el = element(by.css('#message-header .name'));

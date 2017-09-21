@@ -1,0 +1,68 @@
+/**
+ * Directive for boilerplate for showing content rows.
+ */
+angular.module('inboxDirectives').directive('mmContentRow', function() {
+  'use strict';
+  return {
+    restrict: 'E',
+    templateUrl: 'templates/partials/content_row_list_item.html',
+    scope: {
+      // string: (required) the _id of the doc
+      id: '=',
+
+      // string: (required) the name of the route to link to
+      route: '=',
+
+      // boolean: (optional) whether to mark this row read
+      read: '=',
+
+      // string: (optional) the id of the resource icon to render
+      resourceIcon: '=',
+
+      // string: (optional) the class of the font awesome icon to render
+      fontIcon: '=',
+
+      // date: (optional) the date to show on the row
+      date: '=',
+
+      // boolean: (optional) whether or not to mark this row as overdue
+      overdue: '=',
+
+      // string: (optional) the primary information for the row
+      heading: '=',
+
+      // string: (optional) the secondary information for the row
+      summary: '=',
+
+      // date: (optional) the date of birth
+      dob: '=',
+
+      // string: (optional) warning information for the row
+      warning: '=',
+
+      // boolean: (optional) whether to render the date without time of day
+      hideTime: '=',
+
+      // boolean: (optional) whether or not to show the status bubble
+      showStatus: '=',
+
+      // boolean: (optional) whether to mark the row as valid
+      valid: '=',
+
+      // boolean: (optional) whether to mark the row as verified
+      verified: '=',
+
+      // array: (optional) the hierarchy for the row
+      lineage: '=',
+
+      // integer: (optional) the simprints tier of the contact match
+      simprintsTier: '=',
+
+      // boolean: (optional) whether to mark this row as a primary contact
+      primaryContact: '=',
+
+      // integer: (optional) how much tasks to show as pending for this contact
+      taskCount: '='
+    }
+  };
+});

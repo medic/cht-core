@@ -25,7 +25,7 @@ describe('Add new health center tests : ', () => {
 			.sendKeys(protractor.Key.ENTER).perform();
 		browser.actions()
 			.sendKeys('Kiwi').perform();
-		const contactName = element.all(by.css('.name')).get(1);
+		const contactName = element.all(by.css('.select2-results .name')).get(0);
 		helper.waitElementToBeVisisble(contactName);
 		contactName.click();
 		element(by.css('[name="/data/health_center/external_id"]')).sendKeys('1234457');
