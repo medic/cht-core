@@ -192,7 +192,8 @@
             <value>Mendapatkan Meningococcal 2</value>
           </text>
           <text id="/imm/group_review:label">
-            <value>Vaksin yang diberikan ID <output value=" /imm/id "/></value></text>
+            <value>Vaksin yang diberikan ID <output value=" /imm/id "/></value>
+          </text>
           <text id="/imm/group_select_vaccines:label">
             <value>Pilih Jenis Vaksin</value>
           </text>
@@ -305,7 +306,8 @@
             <value>Mendapatkan Typhoid 2</value>
           </text>
           <text id="/imm/group_review_vaccines:label">
-            <value>Vaksin yang diberikan ID <output value=" /imm/id "/></value></text>
+            <value>Vaksin yang diberikan ID <output value=" /imm/id "/></value>
+          </text>
           <text id="/imm/group_typhoid/g_typhoid/none:label">
             <value>Tak satupun</value>
           </text>
@@ -657,12 +659,14 @@
             <value>Meningococcal 4</value>
           </text>
           <text id="/imm/group_typhoid/g_typhoid:label">
-            <value><output value=" /imm/id "/>को Typhoid का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /imm/id "/> को Typhoid का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/imm/received/pcv1:label">
             <value>Pneumococcal 1 मिला</value>
           </text>
           <text id="/imm/group_hep_a/g_hep_a:label">
-            <value><output value=" /imm/id "/>को Hepatitis का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /imm/id "/> को Hepatitis का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/imm/group_review_vaccines/r_hep_a_1:label">
             <value>Hepatitis A 1</value>
           </text>
@@ -790,7 +794,8 @@
             <value>Meningococcal 2 मिला</value>
           </text>
           <text id="/imm/group_review:label">
-            <value>दिए गए टीकाकरण ID <output value=" /imm/id "/></value></text>
+            <value>दिए गए टीकाकरण ID <output value=" /imm/id "/></value>
+          </text>
           <text id="/imm/group_select_vaccines:label">
             <value>टीकाकरण चुनें</value>
           </text>
@@ -819,7 +824,8 @@
             <value>हाँ</value>
           </text>
           <text id="/imm/group_hpv/g_hpv:label">
-            <value><output value=" /imm/id "/>को HPV का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /imm/id "/> को HPV का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/imm/group_flu/g_flu:label">
             <value>क्या <output value=" /imm/id "/> को flu का टीकाकरण मिला ?</value>
           </text>
@@ -845,7 +851,8 @@
             <value>Oral Polio 3</value>
           </text>
           <text id="/imm/group_mmr/g_mmr:label">
-            <value><output value=" /imm/id "/>को MMR का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /imm/id "/> को MMR का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/imm/group_pentavalent/g_pentavalent/DT2:label">
             <value>Pentavalent 2</value>
           </text>
@@ -859,7 +866,8 @@
             <value>टीकाकरण की जांच पूरी की गयी है</value>
           </text>
           <text id="/imm/group_rotavirus/g_rotavirus:label">
-            <value><output value=" /imm/id "/>को Rotavirus का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /imm/id "/> को Rotavirus का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/imm/group_select_vaccines/g_vaccines/pneumococcal:label">
             <value>Pneumococcal Pneumonia</value>
           </text>
@@ -900,7 +908,8 @@
             <value>Typhoid 2 मिला</value>
           </text>
           <text id="/imm/group_review_vaccines:label">
-            <value>दिए गए टीकाकरण ID <output value=" /imm/id "/></value></text>
+            <value>दिए गए टीकाकरण ID <output value=" /imm/id "/></value>
+          </text>
           <text id="/imm/group_typhoid/g_typhoid/none:label">
             <value>कोई नहीं</value>
           </text>
@@ -1010,7 +1019,8 @@
             <value>Meningococcal 1</value>
           </text>
           <text id="/imm/group_mmrv/g_mmrv:label">
-            <value><output value=" /imm/id "/>को MMRV का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /imm/id "/> को MMRV का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/imm/received/mn3:label">
             <value>Meningococcal 3 मिला</value>
           </text>
@@ -1033,7 +1043,8 @@
             <value>कोई नहीं</value>
           </text>
           <text id="/imm/group_pentavalent/g_pentavalent:label">
-            <value><output value=" /imm/id "/>को Pentavalent का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /imm/id "/> को Pentavalent का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/imm/group_review/r_visit_no:label">
             <value>टीकाकरण की जांच पूरी नहीं की गयी है</value>
           </text>
@@ -1056,7 +1067,8 @@
             <value>हाँ</value>
           </text>
           <text id="/imm/group_meningococcal/g_meningococcal:label">
-            <value><output value=" /imm/id "/>को Meningococcal का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /imm/id "/> को Meningococcal का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/imm/group_review_vaccines/r_mmrv_1:label">
             <value>MMRV 1</value>
           </text>
@@ -1070,7 +1082,8 @@
             <value>मरीज का ID</value>
           </text>
           <text id="/imm/group_pneumococcal/g_pneumococcal:label">
-            <value><output value=" /imm/id "/>को Pneumococcal Pneumonia का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /imm/id "/> को Pneumococcal Pneumonia का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/imm/received/dt1:label">
             <value>Pentavalent 1 मिला</value>
           </text>
@@ -1129,7 +1142,8 @@
             <value>Pentavalent 1</value>
           </text>
           <text id="/imm/group_cholera/g_cholera:label">
-            <value><output value=" /imm/id "/>को Cholera का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /imm/id "/> को Cholera का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/imm/group_pentavalent/g_pentavalent:jr:constraintMsg">
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
@@ -1185,7 +1199,8 @@
             <value>नहीं</value>
           </text>
           <text id="/imm/group_polio/g_polio:label">
-            <value><output value=" /imm/id "/>को Polio का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /imm/id "/> को Polio का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/imm/group_select_vaccines/g_vaccines/jap_enc:label">
             <value>Japanese Encephalitis</value>
           </text>
@@ -1381,7 +1396,8 @@
             <value>Received Meningococcal 2</value>
           </text>
           <text id="/imm/group_review:label">
-            <value>Reporting for ID <output value=" /imm/id "/></value></text>
+            <value>Reporting for ID <output value=" /imm/id "/></value>
+          </text>
           <text id="/imm/group_select_vaccines:label">
             <value>Select Vaccines</value>
           </text>
@@ -1494,7 +1510,8 @@
             <value>Received Typhoid 2</value>
           </text>
           <text id="/imm/group_review_vaccines:label">
-            <value>New vaccines for ID <output value=" /imm/id "/></value></text>
+            <value>New vaccines for ID <output value=" /imm/id "/></value>
+          </text>
           <text id="/imm/group_typhoid/g_typhoid/none:label">
             <value>None</value>
           </text>
@@ -1795,7 +1812,7 @@
         </translation>
       </itext>
       <instance>
-        <imm delimiter="#" id="imm" prefix="J1!imm!" version="2017-08-12_06-50">
+        <imm delimiter="#" id="imm" prefix="J1!imm!" version="2017-09-14_18-20">
           <id/>
           <c/>
           <received>
