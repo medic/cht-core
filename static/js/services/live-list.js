@@ -51,17 +51,11 @@ angular.module('inboxServices').factory('LiveListConfig',
           }
           return (c1.name || '').toLowerCase() < (c2.name || '').toLowerCase() ? -1 : 1;
         },
-        icons: {
-          person: 'fa-user',
-          clinic: 'fa-group',
-          health_center: 'fa-hospital-o',
-          district_hospital: 'fa-building'
-        },
         listItem: function(contact) {
           var scope = $scope.$new();
           scope.id = contact._id;
           scope.route = 'contacts';
-          scope.fontIcon = contacts_config.icons[contact.type];
+          scope.fontIcon = ContactSchema.get(contact.type).icon;
           scope.heading = contact.name;
           scope.primary = contact.home;
           scope.simprintsTier = contact.simprints && contact.simprints.tierNumber;

@@ -54,7 +54,6 @@ angular.module('inboxControllers').controller('MessagesCtrl',
         mergeUpdatedMessages(options.messages);
       } else {
         $scope.messages = options.messages || [];
-        console.log('messages', options.messages);
       }
     };
 
@@ -81,7 +80,6 @@ angular.module('inboxControllers').controller('MessagesCtrl',
 
     $scope.setSelected = function(doc) {
       var refreshing = ($scope.selected && $scope.selected.id) === doc.id;
-      console.log('selected', doc);
       $scope.selected = doc;
       $scope.settingSelected(refreshing);
     };
