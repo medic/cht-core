@@ -93,6 +93,11 @@ _.templateSettings = {
   };
   app.constant('POUCHDB_OPTIONS', POUCHDB_OPTIONS);
 
+  if (window.location.href === 'http://localhost:9876/context.html') {
+    // karma unit testing - do not bootstrap
+    return;
+  }
+
   bootstrapper(POUCHDB_OPTIONS, function(err) {
     if (err) {
       if (err.redirect) {

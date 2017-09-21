@@ -32,7 +32,7 @@ var COOKIE_NAME = 'userCtx',
 
       var navigateToLogin = function() {
         $log.warn('User must reauthenticate');
-        ipCookie.remove(COOKIE_NAME);
+        ipCookie.remove(COOKIE_NAME, { path: '/' });
         waitForAppCache(function() {
           $window.location.href = '/' + Location.dbName + '/login' +
             '?redirect=' + encodeURIComponent($window.location.href);
