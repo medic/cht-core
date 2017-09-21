@@ -1,65 +1,65 @@
 <?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
-    <h:title>Delivery Report</h:title>
+    <h:title>Delivery Report (D)</h:title>
     <model>
       <itext>
         <translation lang="Bahasa Indonesia (Indonesian)">
           <text id="/d/review_without_days:label">
-            <value>Submitting delivery report for ID <output value=" /d/id "/>. Delivered at <output value=" /d/c_label "/>.</value>
+            <value>Mengirimkan laporan kelahiran untuk ID <output value=" /d/id "/>. Persalinan di <output value=" /d/c_label "/>.</value>
           </text>
           <text id="/d/c/NS:label">
-            <value>Home, with no skilled birth attendant</value>
+            <value>Rumah tanpa dukun bersalin</value>
           </text>
           <text id="/d/c/F:label">
-            <value>Facility</value>
+            <value>Fasilitas kesehatan</value>
           </text>
           <text id="/d/c/S:label">
-            <value>Home, with a skilled birth attendant</value>
+            <value>Rumah dengan dukun bersalin</value>
           </text>
           <text id="/d/c:label">
-            <value>Where did the delivery take place?</value>
+            <value>Apa lokasi melahirkan?</value>
           </text>
           <text id="/d/id:label">
             <value>Pasien ID</value>
           </text>
           <text id="/d/review_with_days:label">
-            <value>Submitting delivery report for ID <output value=" /d/id "/>. Delivered at <output value=" /d/c_label "/>, with date of birth noted.</value>
+            <value>Mengirimkan laporan kelahiran untuk ID. Persalinan di <output value=" /d/c_label "/>, dengan tanggal lahir telah dicatat.</value>
           </text>
           <text id="/d/d:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/d/d:label">
-            <value>How many days since the delivery?</value>
+            <value>Berapa hari sejak melahirkan?</value>
           </text>
         </translation>
         <translation lang="हिन्दी (Hindi)">
           <text id="/d/review_without_days:label">
-            <value>Submitting delivery report for ID <output value=" /d/id "/>. Delivered at <output value=" /d/c_label "/>.</value>
+            <value>आप ID <output value=" /d/id "/> के लिए डिलिवरी की रिपोर्ट भेज रहे हैं | डिलीवरी कि स्थान <output value=" /d/c_label "/> |</value>
           </text>
           <text id="/d/c/NS:label">
-            <value>Home, with no skilled birth attendant</value>
+            <value>घर पर, अनुभवी दाई के सहायता के बिना</value>
           </text>
           <text id="/d/c/F:label">
-            <value>Facility</value>
+            <value>स्वास्थ्य केंद्र</value>
           </text>
           <text id="/d/c/S:label">
-            <value>Home, with a skilled birth attendant</value>
+            <value>घर पर, अनुभवी दाई के सहायता के साथ</value>
           </text>
           <text id="/d/c:label">
-            <value>Where did the delivery take place?</value>
+            <value>डिलीवरी कहां पर हुई?</value>
           </text>
           <text id="/d/id:label">
             <value>मरीज का ID</value>
           </text>
           <text id="/d/review_with_days:label">
-            <value>Submitting delivery report for ID <output value=" /d/id "/>. Delivered at <output value=" /d/c_label "/>, with date of birth noted.</value>
+            <value>आप ID <output value=" /d/id "/> के लिए डिलिवरी की रिपोर्ट भेज रहे हैं | डिलीवरी कि स्थान <output value=" /d/c_label "/>, और जन्म की तारीख दर्ज की गयी है |</value>
           </text>
           <text id="/d/d:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/d/d:label">
-            <value>How many days since the delivery?</value>
+            <value>डिलीवरी के बाद कितने दिन बीत चुके हैं?</value>
           </text>
         </translation>
         <translation default="true()" lang="English">
@@ -93,7 +93,7 @@
         </translation>
       </itext>
       <instance>
-        <d delimiter="#" id="d" prefix="J1!d!" version="2017-08-12_06-59">
+        <d delimiter="#" id="d" prefix="J1!d!" version="2017-09-14_18-20">
           <id/>
           <c/>
           <d/>

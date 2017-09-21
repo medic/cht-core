@@ -6,7 +6,7 @@
       <itext>
         <translation lang="Bahasa Indonesia (Indonesian)">
           <text id="/f/n:label">
-            <value>Notes</value>
+            <value>Catatan</value>
           </text>
           <text id="/f/review:label">
             <value>Submitting danger sign report for ID <output value=" /f/id "/>, with the following notes: <output value=" /f/n "/></value></text>
@@ -16,7 +16,7 @@
         </translation>
         <translation lang="हिन्दी (Hindi)">
           <text id="/f/n:label">
-            <value>Notes</value>
+            <value>नोट्स</value>
           </text>
           <text id="/f/review:label">
             <value>Submitting danger sign report for ID <output value=" /f/id "/>, with the following notes: <output value=" /f/n "/></value></text>
@@ -36,7 +36,7 @@
         </translation>
       </itext>
       <instance>
-        <f delimiter="#" id="f" prefix="J1!f!" version="2017-08-12_06-44">
+        <f delimiter="#" id="f" prefix="J1!f!" version="2017-09-14_18-20">
           <id/>
           <n/>
           <review/>

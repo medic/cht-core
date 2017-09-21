@@ -6,7 +6,7 @@
       <itext>
         <translation lang="Bahasa Indonesia (Indonesian)">
           <text id="/n/n:label">
-            <value>Person's Name</value>
+            <value>Nama orang</value>
           </text>
           <text id="/n/n:hint">
             <value>Submitting this form will give you a Medic ID associated to this person</value>
@@ -14,7 +14,7 @@
         </translation>
         <translation lang="हिन्दी (Hindi)">
           <text id="/n/n:label">
-            <value>Person's Name</value>
+            <value>व्यक्ति का नाम</value>
           </text>
           <text id="/n/n:hint">
             <value>Submitting this form will give you a Medic ID associated to this person</value>
@@ -30,7 +30,7 @@
         </translation>
       </itext>
       <instance>
-        <n delimiter="#" id="n" prefix="J1!n!" version="2017-08-12_07-06">
+        <n delimiter="#" id="n" prefix="J1!n!" version="2017-09-14_18-20">
           <n/>
           <meta>
             <instanceID/>

@@ -9,9 +9,9 @@
             <value>Pasien ID</value>
           </text>
           <text id="/on/review:label">
-            <value>Submitting report to turn ON notifications for ID <output value=" /on/id "/>, with the following notes: <output value=" /on/r "/></value></text>
+            <value>Mengirimkan laporan untuk menghidupkan pesan untuk ID <output value=" /on/id "/>, dengan catatan: <output value=" /on/r "/></value></text>
           <text id="/on/r:label">
-            <value>Notes</value>
+            <value>Catatan</value>
           </text>
         </translation>
         <translation lang="हिन्दी (Hindi)">
@@ -19,9 +19,9 @@
             <value>मरीज का ID</value>
           </text>
           <text id="/on/review:label">
-            <value>Submitting report to turn ON notifications for ID <output value=" /on/id "/>, with the following notes: <output value=" /on/r "/></value></text>
+            <value>आप ID <output value=" /on/id "/> के लिए सूचनाएं शूरू करने के लिए रिपोर्ट भेज रहे हैं, इन नोट्स के साथ: <output value=" /on/r "/></value></text>
           <text id="/on/r:label">
-            <value>Notes</value>
+            <value>नोट्स</value>
           </text>
         </translation>
         <translation default="true()" lang="English">
@@ -36,7 +36,7 @@
         </translation>
       </itext>
       <instance>
-        <on delimiter="#" id="on" prefix="J1!on!" version="2017-08-12_07-01">
+        <on delimiter="#" id="on" prefix="J1!on!" version="2017-09-14_18-16">
           <id/>
           <r/>
           <review/>

@@ -1,27 +1,27 @@
 <?xml version="1.0"?>
 <h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <h:head>
-    <h:title>New Pregnancy</h:title>
+    <h:title>New Pregnancy (P)</h:title>
     <model>
       <itext>
         <translation lang="Bahasa Indonesia (Indonesian)">
           <text id="/p/review_without_lmp:label">
-            <value>Submitting pregnancy report for ID <output value=" /p/id "/>, with unknown last menstrual period.</value>
+            <value>Mengirimkan laporan kehamilan untuk ID <output value=" /p/id "/>, dengan tidak diketahui menstruasi terakhir</value>
           </text>
           <text id="/p/review_with_lmp:label">
-            <value>Submitting pregnancy report for ID <output value=" /p/id "/>, with last menstrual period <output value=" /p/lmp "/> weeks ago.</value>
+            <value>Mengirimkan laporan kehamilan untuk ID <output value=" /p/id "/>, dengan menstruasi terakhir <output value=" /p/lmp "/> minggu yang lalu</value>
           </text>
           <text id="/p/lmp_known/yes:label">
             <value>Iya</value>
           </text>
           <text id="/p/lmp_known:label">
-            <value>Is the last menstrual period known?</value>
+            <value>Apakah menstruasi terakhir diketahui?</value>
           </text>
           <text id="/p/lmp:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/p/lmp:label">
-            <value>Weeks since last menstrual period</value>
+            <value>Minggu sejak menstruasi terakhir</value>
           </text>
           <text id="/p/id:label">
             <value>Pasien ID</value>
@@ -32,22 +32,22 @@
         </translation>
         <translation lang="हिन्दी (Hindi)">
           <text id="/p/review_without_lmp:label">
-            <value>Submitting pregnancy report for ID <output value=" /p/id "/>, with unknown last menstrual period.</value>
+            <value>आप ID <output value=" /p/id "/> के लिए गर्भावस्था की रिपोर्ट भेज रहे हैं, अज्ञात पिछली मासिक के साथ</value>
           </text>
           <text id="/p/review_with_lmp:label">
-            <value>Submitting pregnancy report for ID <output value=" /p/id "/>, with last menstrual period <output value=" /p/lmp "/> weeks ago.</value>
+            <value>आप ID <output value=" /p/id "/> के लिए गर्भावस्था की रिपोर्ट भेज रहे हैं, पिछली मासिक <output value=" /p/lmp "/> सप्ताह पहले के साथ</value>
           </text>
           <text id="/p/lmp_known/yes:label">
             <value>हाँ</value>
           </text>
           <text id="/p/lmp_known:label">
-            <value>Is the last menstrual period known?</value>
+            <value>क्या पिछली मासिक जानते है?</value>
           </text>
           <text id="/p/lmp:jr:constraintMsg">
             <value>-</value>
           </text>
           <text id="/p/lmp:label">
-            <value>Weeks since last menstrual period</value>
+            <value>पिछली मासिक के बाद कितने साप्ताह बीत चुके</value>
           </text>
           <text id="/p/id:label">
             <value>मरीज का ID</value>
@@ -84,7 +84,7 @@
         </translation>
       </itext>
       <instance>
-        <p delimiter="#" id="p" prefix="J1!p!" version="2017-08-12_07-00">
+        <p delimiter="#" id="p" prefix="J1!p!" version="2017-09-14_18-20">
           <id/>
           <lmp_known/>
           <lmp/>
