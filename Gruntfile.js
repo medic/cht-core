@@ -4,8 +4,10 @@ module.exports = function(grunt) {
 
   'use strict';
 
+  require('jit-grunt')(grunt, {
+    notify_hooks: 'grunt-notify'
+  });
   require('time-grunt')(grunt);
-  require('load-grunt-tasks')(grunt);
 
   // Project configuration
   grunt.initConfig({
