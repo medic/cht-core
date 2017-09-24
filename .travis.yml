@@ -6,6 +6,7 @@ node_js:
 
 addons:
   firefox: latest-esr
+  chrome: "stable"
 
 services:
   - couchdb

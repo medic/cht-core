@@ -67,8 +67,10 @@ exports.config = {
   specs: [ 'e2e/**/*.js' ],
   framework: 'jasmine2',
   capabilities: {
-    // browserName: 'chrome'
-    browserName: 'firefox'
+    browserName: 'chrome',
+    chromeOptions: {
+      args: ['--headless', '--disable-gpu', '--window-size=1024,768']
+    }
   },
   onPrepare: function() {
     var started = startApi();
