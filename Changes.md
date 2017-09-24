@@ -1,5 +1,13 @@
 # Medic Mobile Release Notes
 
+## 2.9.2
+
+_TBD_
+
+### Security
+
+- Fixed kanso packages that inadvertantly cached data. Issue: #3648
+
 ## 2.9.1
 
 _January 27, 2017_
@@ -179,6 +187,20 @@ _December 9, 2016_
 - Create a client side ddoc. Issue: #2206
 - Store translations in a separate doc. Issue: #1706
 - Remove empty parents migration scalability. Issue: #2629
+
+## 2.8.6
+
+_TBD_
+
+### Security
+
+- Fixed kanso packages that inadvertantly cached data. Issue: #3648
+
+## 2.8.5
+
+_December 15, 2016_
+
+- No changes, only a bump in version number to trigger a new release.
 
 ## 2.8.4
 
