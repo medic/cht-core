@@ -398,9 +398,26 @@ module.exports = function(grunt) {
       }
     },
     'regex-check': {
-      files: 'tests/**/*.js',
-      options: {
-        pattern: /.only\(/g
+      only_in_tests: {
+        files: [ { src: [ 'tests/**/*.js' ] } ],
+        options: {
+          pattern: /\.only\(/g
+        }
+      },
+      console_in_angular: {
+        files: [ { src: [
+          'static/js/**/*.js',
+
+           // ignored because they don't have access to angular
+          '!static/js/app.js',
+          '!static/js/bootstrapper.js',
+
+          // ignored because its job is to log to console
+          '!static/js/modules/feedback.js'
+        ] } ],
+        options: {
+          pattern: /console\./g
+        }
       }
     },
     xmlmin: {
@@ -497,8 +514,7 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('ci_before', '', [
-    'regex-check',
-    'jshint',
+    'precommit',
     'mmnpm',
     'build',
     'minify',
@@ -529,6 +545,11 @@ module.exports = function(grunt) {
   grunt.registerTask('dev', 'Build and deploy for dev', [
     'mmnpm',
     'dev-no-npm'
+  ]);
+
+  grunt.registerTask('precommit', 'Static analysis checks', [
+    'regex-check',
+    'jshint',
   ]);
 
   grunt.registerTask('dev-no-npm', 'Build and deploy for dev, without reinstalling dependencies.', [

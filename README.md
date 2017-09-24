@@ -121,6 +121,22 @@ cd medic-webapp
 npm install
 ```
 
+### Add a precommit hook
+
+Add a precommit hook to do static analysis before you commit to pick up issues before the build fails.
+
+```
+cp .git/hooks/pre-commit.sample .git/hooks/pre-commit
+```
+
+Then edit `.git/hooks/pre-commit` and add the following at the top just below the comments:
+
+```
+exec grunt precommit
+```
+
+### Configure kanso
+
 Create a `.kansorc` file in the app directory with your CouchDB credentials, e.g.:
 
 ```
@@ -132,7 +148,7 @@ exports.env = {
 };
 ```
 
-### Push the webapp
+### Deploy the webapp
 
 `grunt dev` will build and deploy the webapp, then watch for changes and redeploy when necessary.
 

@@ -78,7 +78,7 @@ var _ = require('underscore');
       });
 
       return function() {
-        return Contacts({ types: hierarchyTypes })
+        return Contacts(hierarchyTypes)
           .then(function(places) {
             return buildHierarchy(places);
           });

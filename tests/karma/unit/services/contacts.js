@@ -1,55 +1,48 @@
-describe('Contacts service', function() {
+describe('Contacts service', () => {
 
   'use strict';
 
-  var service,
+  let service,
       dbQuery;
 
-  beforeEach(function() {
+  beforeEach(() => {
     module('inboxApp');
     dbQuery = sinon.stub();
-    module(function($provide) {
+    module($provide => {
       $provide.factory('DB', KarmaUtils.mockDB({ query: dbQuery }));
-      $provide.value('Cache', function(options) {
-        return options.get;
+      $provide.value('Cache', options => options.get);
+      $provide.value('ContactSchema', {
+        getPlaceTypes: () => [ 'district_hospital', 'health_center', 'clinic' ]
       });
-      $provide.factory('ContactSchema',
-        function() {
-          return {
-            getTypes: function() { return [ 'district_hospital', 'health_center', 'clinic', 'person' ]; },
-            getPlaceTypes: function() { return [ 'district_hospital', 'health_center', 'clinic' ]; }
-          };
-        }
-      );
       $provide.value('$q', Q); // bypass $q so we don't have to digest
     });
-    inject(function($injector) {
+    inject($injector => {
       service = $injector.get('Contacts');
     });
   });
 
-  it('returns errors from request', function(done) {
+  it('returns errors from request', done => {
     dbQuery.returns(Promise.reject('boom'));
-    service({})
-      .then(function() {
+    service(['district_hospital'])
+      .then(() => {
         done(new Error('expected error to be thrown'));
       })
-      .catch(function(err) {
+      .catch(err => {
         chai.expect(err).to.equal('boom');
         done();
       });
   });
 
-  it('returns zero when no facilities', function() {
+  it('returns zero when no facilities', () => {
     dbQuery.returns(Promise.resolve({ rows: [] }));
-    return service({}).then(function(actual) {
+    return service(['district_hospital']).then(actual => {
       chai.expect(actual).to.deep.equal([]);
     });
   });
 
-  it('returns all clinics when no user district', function() {
+  it('returns all clinics when no user district', () => {
 
-    var clinicA = {
+    const clinicA = {
       _id: '920a7f6a-d01d-5cfe-7c9182fe6551322a',
       _rev: '2-55151d808dacc7f12fdd1513f2eddc75',
       type: 'clinic',
@@ -77,7 +70,7 @@ describe('Contacts service', function() {
       }
     };
 
-    var clinicB = {
+    const clinicB = {
       _id: 'a301463e-74ba-6e2a-3424d30ef508a488',
       _rev: '74-30d4791ba64f13592f86023344fa9449',
       type: 'clinic',
@@ -116,7 +109,7 @@ describe('Contacts service', function() {
       }
     };
 
-    var healthCenter = {
+    const healthCenter = {
       _id: '920a7f6a-d01d-5cfe-7c9182fe65516194',
       _rev: '4-d7d7e3ab5276fbd1bc9c9ca6b10f4ee1',
       type: 'health_center',
@@ -135,7 +128,7 @@ describe('Contacts service', function() {
     dbQuery.withArgs('medic-client/contacts_by_type', {include_docs: true, key: ['clinic']}).returns(Promise.resolve({ rows: [ { doc: clinicA }, { doc: clinicB } ] }));
     dbQuery.withArgs('medic-client/contacts_by_type', {include_docs: true, key: ['health_center']}).returns(Promise.resolve({ rows: [ { doc: healthCenter } ] }));
 
-    return service({ types: ['clinic'] }).then(function(actual) {
+    return service(['clinic']).then(actual => {
       chai.expect(actual).to.deep.equal([ clinicA, clinicB ]);
     });
   });

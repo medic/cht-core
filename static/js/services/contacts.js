@@ -14,7 +14,7 @@ angular.module('inboxServices').factory('Contacts',
     'ngInject';
 
     var cacheByType = {};
-    ContactSchema.getTypes().forEach(function(type) {
+    ContactSchema.getPlaceTypes().forEach(function(type) {
       cacheByType[type] = Cache({
         get: function(callback) {
           DB().query('medic-client/contacts_by_type', { include_docs: true, key: [type] })
@@ -30,27 +30,19 @@ angular.module('inboxServices').factory('Contacts',
     });
 
     /**
-     * Fetches all contacts for specified types (see ContactSchema.getTypes()).
-     * If no types are specified, fetches for all contact types.
-     * Watch out, that could be a lot of data.
+     * Fetches all contacts for specified types (see ContactSchema.getPlaceTypes()).
      *
-     * options {
-     *   types: ['district_hospital', 'person']
-     * }
+     * @param: types (array), eg: ['district_hospital', 'clinic']
      */
-    return function(options) {
-      options = options || {};
-
-      if (!options.types || options.types.indexOf('person') !== -1) {
-        // We want to remove as many of these as possible, because for admins
-        // it involves downloading a _huge_ amount of data.
-        console.trace('WARNING: call made to Contacts with the expectation of having person data');
+    return function(types) {
+      var deferred = $q.defer();
+      if (!types || types.indexOf('person') !== -1) {
+        // For admins this involves downloading a _huge_ amount of data.
+        return deferred.reject(new Error('Call made to Contacts requesting Person data'));
       }
-
-      var relevantCaches = (options.types ? options.types : ContactSchema.getTypes()).map(function(type) {
+      var relevantCaches = types.map(function(type) {
         return cacheByType[type];
       });
-      var deferred = $q.defer();
       parallel(relevantCaches, function(err, results) {
         if (err) {
           return deferred.reject(err);

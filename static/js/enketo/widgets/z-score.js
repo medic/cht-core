@@ -34,6 +34,7 @@ define( function( require, exports, module ) {
         var self = this;
         var angularServices = angular.element(document.body).injector();
         this.zScoreService = angularServices.get('ZScore');
+        this.logService = angularServices.get('$log');
         this.group = $( this.element ).closest( '.or-appearance-zscore' );
         this.group.find('.or-appearance-zscore-sex, .or-appearance-zscore-age, .or-appearance-zscore-weight, .or-appearance-zscore-height')
                   .on('change change.bymap change.bysearch', function() {
@@ -66,7 +67,7 @@ define( function( require, exports, module ) {
                           .trigger( 'change' );
             })
             .catch(function(err) {
-                console.error('Error calculating z-score', err);
+                self.logService.error('Error calculating z-score', err);
             });
     };
 

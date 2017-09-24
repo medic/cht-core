@@ -18,7 +18,7 @@ angular.module('inboxControllers').controller('AnalyticsReportingCtrl',
 
     $q.all([
       ScheduledForms(),
-      Contacts({ types: [ 'district_hospital' ] })
+      Contacts([ 'district_hospital' ])
     ])
       .then(function(results) {
         var forms = results[0];
