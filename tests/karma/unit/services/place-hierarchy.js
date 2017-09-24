@@ -1,61 +1,58 @@
-describe('PlaceHierarchy service', function() {
+describe('PlaceHierarchy service', () => {
 
   'use strict';
 
-  var service,
+  let service,
       Contacts;
 
-  beforeEach(function() {
+  beforeEach(() => {
     module('inboxApp');
     Contacts = sinon.stub();
-    module(function ($provide) {
+    module($provide => {
       $provide.value('Contacts', Contacts);
-      $provide.factory('ContactSchema',
-        function() {
-          return {
-            getTypes: function() { return [ 'district_hospital', 'health_center', 'clinic', 'person' ]; },
-            getPlaceTypes: function() { return [ 'district_hospital', 'health_center', 'clinic' ]; }
-          };
-        }
-      );
+      $provide.value('ContactSchema', {
+        getPlaceTypes: () => [ 'district_hospital', 'health_center', 'clinic' ]
+      });
     });
-    inject(function($injector) {
+    inject($injector => {
       service = $injector.get('PlaceHierarchy');
     });
   });
 
-  afterEach(function() {
+  afterEach(() => {
     KarmaUtils.restore(Contacts);
   });
 
-  it('returns errors from Contacts service', function(done) {
+  it('returns errors from Contacts service', done => {
     Contacts.returns(Promise.reject('boom'));
     service()
-      .then(function() {
+      .then(() => {
         done(new Error('error expected'));
       })
-      .catch(function(err) {
+      .catch(err => {
         chai.expect(err).to.equal('boom');
         done();
       });
   });
 
-  it('builds empty hierarchy when no facilities', function() {
+  it('builds empty hierarchy when no facilities', () => {
     Contacts.returns(Promise.resolve([]));
-    return service().then(function(actual) {
+    return service().then(actual => {
       chai.expect(actual.length).to.equal(0);
     });
   });
 
-  it('builds hierarchy for facilities', function() {
-    var a = { _id: 'a', parent: { _id: 'b', parent: { _id: 'c' } } };
-    var b = { _id: 'b', parent: { _id: 'c' } };
-    var c = { _id: 'c' };
-    var d = { _id: 'd', parent: { _id: 'b', parent: { _id: 'c' } } };
-    var e = { _id: 'e', parent: { _id: 'x' } }; // unknown parent is ignored
-    var f = { _id: 'f' };
+  it('builds hierarchy for facilities', () => {
+    const a = { _id: 'a', parent: { _id: 'b', parent: { _id: 'c' } } };
+    const b = { _id: 'b', parent: { _id: 'c' } };
+    const c = { _id: 'c' };
+    const d = { _id: 'd', parent: { _id: 'b', parent: { _id: 'c' } } };
+    const e = { _id: 'e', parent: { _id: 'x' } }; // unknown parent is ignored
+    const f = { _id: 'f' };
     Contacts.returns(Promise.resolve([ a, b, c, d, e, f ]));
-    return service().then(function(actual) {
+    return service().then(actual => {
+      chai.expect(Contacts.callCount).to.equal(1);
+      chai.expect(Contacts.args[0][0]).to.deep.equal([ 'district_hospital', 'health_center' ]);
       chai.expect(actual).to.deep.equal([
         {
           doc: c,

@@ -1,89 +1,82 @@
 var _ = require('underscore');
 
-(function () {
+/**
+  Returns all places except clinics, in a hierarchy tree.
+  E.g.
+  [
+      { doc: c, children: [{ doc: b, children: [] }] },
+      { doc: f, children: [] }
+    ]
+*/
+angular.module('inboxServices').factory('PlaceHierarchy',
+  function(
+    ContactSchema,
+    Contacts
+  ) {
 
-  'use strict';
+    'use strict';
+    'ngInject';
 
-  var inboxServices = angular.module('inboxServices');
-
-  // E.g. [ grandparentId, parentId, placeId]
-  var getIdLineage = function(place) {
-    var path = [];
-    while(place && place._id) {
-      path.splice(0, 0, place._id);
-      place = place.parent;
-    }
-    return path;
-  };
-
-  var getNodeFromArray = function(id, array) {
-    return _.find(array, function(r) {
-        return r.doc._id === id;
-    });
-  };
-
-  var addLineageToHierarchy = function(placeToSort, lineage, children) {
-    lineage.forEach(function(idInLineage) {
-      var node = getNodeFromArray(idInLineage, children);
-
-      if (!node) {
-        node = { doc: { _id: idInLineage, stub: true }, children: []};
-        children.push(node);
+    // E.g. [ grandparentId, parentId, placeId ]
+    var getIdLineage = function(place) {
+      var path = [];
+      while(place && place._id) {
+        path.splice(0, 0, place._id);
+        place = place.parent;
       }
+      return path;
+    };
 
-      if (idInLineage === placeToSort._id) {
-        // Replace stub by real doc.
-        node.doc = placeToSort;
-      }
-
-      children = node.children;
-    });
-  };
-
-  var removeStubNodes = function(children) {
-    for (var i = children.length - 1; i >= 0; i--) {
-      if (children[i].doc.stub) {
-        children.splice(i, 1);
-      } else {
-        removeStubNodes(children[i].children);
-      }
-    }
-  };
-
-  var buildHierarchy = function(places) {
-    var hierarchy = [];
-    places.forEach(function(placeToSort) {
-      addLineageToHierarchy(placeToSort, getIdLineage(placeToSort), hierarchy);
-    });
-    removeStubNodes(hierarchy);
-    return hierarchy;
-  };
-
-  /**
-    Returns all places except clinics, in a hierarchy tree.
-    E.g.
-    [
-        { doc: c, children: [{ doc: b, children: [] }] },
-        { doc: f, children: [] }
-      ]
-  */
-  inboxServices.factory('PlaceHierarchy',
-    function(
-      ContactSchema,
-      Contacts
-    ) {
-      'ngInject';
-      var hierarchyTypes = ContactSchema.getPlaceTypes().filter(function(pt) {
-        return pt !== 'clinic';
+    var getNodeFromArray = function(id, array) {
+      return _.find(array, function(r) {
+          return r.doc._id === id;
       });
+    };
 
-      return function() {
-        return Contacts(hierarchyTypes)
-          .then(function(places) {
-            return buildHierarchy(places);
-          });
-      };
-    }
-  );
+    var addLineageToHierarchy = function(placeToSort, lineage, children) {
+      lineage.forEach(function(idInLineage) {
+        var node = getNodeFromArray(idInLineage, children);
 
-}());
+        if (!node) {
+          node = { doc: { _id: idInLineage, stub: true }, children: []};
+          children.push(node);
+        }
+
+        if (idInLineage === placeToSort._id) {
+          // Replace stub by real doc.
+          node.doc = placeToSort;
+        }
+
+        children = node.children;
+      });
+    };
+
+    var removeStubNodes = function(children) {
+      for (var i = children.length - 1; i >= 0; i--) {
+        if (children[i].doc.stub) {
+          children.splice(i, 1);
+        } else {
+          removeStubNodes(children[i].children);
+        }
+      }
+    };
+
+    var buildHierarchy = function(places) {
+      var hierarchy = [];
+      places.forEach(function(placeToSort) {
+        addLineageToHierarchy(placeToSort, getIdLineage(placeToSort), hierarchy);
+      });
+      removeStubNodes(hierarchy);
+      return hierarchy;
+    };
+
+    var hierarchyTypes = ContactSchema.getPlaceTypes().filter(function(type) {
+      return type !== 'clinic';
+    });
+
+    return function() {
+      return Contacts(hierarchyTypes)
+        .then(buildHierarchy);
+    };
+  }
+);
