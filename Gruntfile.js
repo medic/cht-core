@@ -5,10 +5,11 @@ module.exports = function(grunt) {
   'use strict';
 
   require('jit-grunt')(grunt, {
-    'notify_hooks': 'grunt-notify',
-    'replace': 'grunt-text-replace',
+    'couch-compile': 'grunt-couch',
     'ngtemplates': 'grunt-angular-templates',
-    'couch-compile': 'grunt-couch'
+    'notify_hooks': 'grunt-notify',
+    'protractor': 'grunt-protractor-runner',
+    'replace': 'grunt-text-replace',
   });
   require('time-grunt')(grunt);
 
