@@ -327,7 +327,9 @@ angular.module('inboxServices').service('Enketo',
           return renderForm(selector, id, instanceData, editedListener);
         })
         .then(function(formInstance) {
-          formInstance.pages.flipToFirst(); // temporary fix for #3928
+          if (formInstance.pages.active) {
+            formInstance.pages.flipToFirst(); // temporary fix for #3928
+          }
           return formInstance;
         });
     };
