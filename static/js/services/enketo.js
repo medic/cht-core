@@ -315,8 +315,13 @@ angular.module('inboxServices').service('Enketo',
         })
         .then(function(doc) {
           replaceJavarosaMediaWithLoaders(id, doc.html);
-          var form = renderFromXmls(doc, selector, instanceData);
+          return renderFromXmls(doc, selector, instanceData);
+        })
+        .then(function(form) {
           registerEditedListener(selector, editedListener);
+          if (form.pages.active) {
+            form.pages.flipToFirst(); // temporary fix for #3928
+          }
           return form;
         });
     };
@@ -325,12 +330,6 @@ angular.module('inboxServices').service('Enketo',
       return getUserContact()
         .then(function() {
           return renderForm(selector, id, instanceData, editedListener);
-        })
-        .then(function(formInstance) {
-          if (formInstance.pages.active) {
-            formInstance.pages.flipToFirst(); // temporary fix for #3928
-          }
-          return formInstance;
         });
     };
 
@@ -343,7 +342,9 @@ angular.module('inboxServices').service('Enketo',
         })
         .then(transformXml)
         .then(function(doc) {
-          var form = renderFromXmls(doc, selector, instanceData);
+          return renderFromXmls(doc, selector, instanceData);
+        })
+        .then(function(form) {
           registerEditedListener(selector, editedListener);
           return form;
         });
