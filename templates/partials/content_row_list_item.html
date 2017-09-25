@@ -20,7 +20,7 @@
       <div class="summary">
         <p>{{summary}}</p>
         <div class="status {{showStatus ? '' : 'ng-hide'}}">
-          <i class="fa {{status.valid ? 'green-dot' : 'red-dot'}} {{status.verified ? 'fa-check-circle' : 'fa-circle'}}"></i>
+          <i class="fa {{valid ? 'green-dot' : 'red-dot'}} {{verified ? 'fa-check-circle' : 'fa-circle'}}"></i>
         </div>
       </div>
       <p ng-bind-html="dob | age"></p>
