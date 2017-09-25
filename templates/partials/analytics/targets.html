@@ -1,40 +1,42 @@
-<div class="item-content empty-selection" ng-show="targetsDisabled">
-  <div translate>targets.disabled</div>
-</div>
-<div class="targets">
-  <div class="target" ng-repeat="target in targets" ng-class="{ 'has-goal': target.goal >= 0, 'goal-met': target.count >= target.goal }">
-    <div class="heading">
-      <div class="icon" ng-bind-html="target.icon | resourceIcon"></div>
-      <div class="title">
-        <h2>{{target.name | translateFrom}}</h2>
-        <p>This month</p>
+<div class="page scrolling">
+  <div class="item-content empty-selection" ng-show="targetsDisabled">
+    <div translate>targets.disabled</div>
+  </div>
+  <div class="targets">
+    <div class="target" ng-repeat="target in targets" ng-class="{ 'has-goal': target.goal >= 0, 'goal-met': (target.value.pass >= target.goal) || (target.value.percent >= target.goal) }">
+      <div class="heading">
+        <div class="icon" ng-bind-html="target.icon | resourceIcon"></div>
+        <div class="title">
+          <h2 ng-if="target.translation_key" translate>{{target.translation_key}}</h2>
+          <h2 ng-if="!target.translation_key">{{target.name | translateFrom}}</h2>
+          <p ng-if="target.subtitle_translation_key" translate>{{target.subtitle_translation_key}}</p>
+        </div>
+      </div>
+      <div class="body">
+        <div class="percent" ng-if="target.type === 'percent'">
+          <div class="progress">
+            <div class="progress-bar" style="width:{{target.value.percent}}%" ng-class="{'ng-hide': target.value.percent === 0}"></div>
+          </div>
+          <div class="goal" style="left:{{target.goal < 15 ? '0' : ''}}{{target.goal >= 15 && target.goal <= 85 ? target.goal : ''}}{{target.goal > 85 ? '100' : ''}}%">
+            <label ng-class="{ 'pin-left': target.goal < 15, 'pin-right': target.goal > 85 }">
+              <span translate>analytics.target.monthly_goal</span>
+              {{target.goal}}%
+            </label>
+            <div class="bar"></div>
+          </div>
+          <div class="number">
+            <span class="value">{{target.value.percent}}%</span>
+            <span translate translate-values="target.value">{{target.percentage_count_translation_key || 'targets.count.default'}}</span>
+          </div>
+        </div>
+        <div class="count" ng-if="target.type !== 'percent'">
+          <div class="goal" ng-if="target.goal >= 0">
+            <label translate>analytics.target.monthly_goal</label>
+            <p>{{target.goal}}</p>
+          </div>
+          <div class="number">{{target.value.pass}}</div>
+        </div>
       </div>
     </div>
-    <div class="body">
-      <div class="percent" ng-if="target.type === 'percent'">
-        <p>Count: {{target.count}}, goal: {{target.goal}}, progress: {{target.displayProgress}}</p>
-      </div>
-      <div class="count" ng-if="target.type !== 'percent'">
-        <div class="goal" ng-if="target.goal >= 0">
-          <label translate>analytics.target.monthly_goal</label>
-          <p>{{target.goal}}</p>
-        </div>
-        <div class="number">{{target.count}}</div>
-      </div>
-    </div>
-      <!-- <div ng-if="target.goal >= 0">
-        <div class="progress">
-          <div class="progress-bar" role="progressbar" aria-valuenow="{{target.count}}" aria-valuemin="0" aria-valuemax="{{target.goal}}"
-          style="width:{{target.displayProgress}}%"></div>
-        </div>
-        <div
-          style="padding-left: {{target.displayProgress - 5}}%; padding-right: {{100 - target.displayProgress - 5}}%;"
-          ng-class="{'pull-right': target.displayProgress > 50, 'goal': target.count >= target.goal}">
-          <span class="count">{{target.count}}</span><span ng-if="target.type === 'percent'">%</span>
-        </div>
-      </div>
-      <div ng-if="target.goal < 0" class="count-only">
-        <span class="count">{{target.count}}</span><span ng-if="target.type === 'percent'">%</span>
-      </div> -->
   </div>
 </div>

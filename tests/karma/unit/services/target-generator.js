@@ -98,7 +98,7 @@ describe('TargetGenerator service', function() {
       chai.expect(actual.length).to.equal(1);
       chai.expect(actual[0].id).to.equal('report');
       chai.expect(actual[0].type).to.equal('count');
-      chai.expect(actual[0].count).to.equal(2);
+      chai.expect(actual[0].value.pass).to.equal(2);
       done();
     });
   });
@@ -117,7 +117,7 @@ describe('TargetGenerator service', function() {
       chai.expect(actual.length).to.equal(1);
       chai.expect(actual[0].id).to.equal('report');
       chai.expect(actual[0].type).to.equal('count');
-      chai.expect(actual[0].count).to.equal(1);
+      chai.expect(actual[0].value.pass).to.equal(1);
       done();
     });
   });
@@ -137,24 +137,28 @@ describe('TargetGenerator service', function() {
       chai.expect(actual.length).to.equal(1);
       chai.expect(actual[0].id).to.equal('report');
       chai.expect(actual[0].type).to.equal('percent');
-      chai.expect(actual[0].count).to.equal(33);
+      chai.expect(actual[0].value.pass).to.equal(1);
+      chai.expect(actual[0].value.total).to.equal(3);
+      chai.expect(actual[0].value.percent).to.equal(33);
       done();
     });
   });
 
-  it('handles divison by zero in percent', function(done) {
+  it('return zero percent when no reports (or: avoids divide by zero)', function(done) {
     Settings.returns(Promise.resolve({ tasks: { targets: { items: [
       { id: 'report', type: 'percent' }
     ] } } }));
     UserContact.returns(Promise.resolve());
     RulesEngine.listen.callsArgWith(2, null, [
-      { _id: '1', type: 'report', pass: true, date: 0 } // too old to be relevant, so not included in count
+      { _id: '2', type: 'report', date: 0, pass: false } // ancient - not relevant
     ]);
     injector.get('TargetGenerator')(function(err, actual) {
       chai.expect(actual.length).to.equal(1);
       chai.expect(actual[0].id).to.equal('report');
       chai.expect(actual[0].type).to.equal('percent');
-      chai.expect(actual[0].count).to.equal(0);
+      chai.expect(actual[0].value.pass).to.equal(0);
+      chai.expect(actual[0].value.total).to.equal(0);
+      chai.expect(actual[0].value.percent).to.equal(0);
       done();
     });
   });
@@ -175,10 +179,12 @@ describe('TargetGenerator service', function() {
       chai.expect(actual.length).to.equal(2);
       chai.expect(actual[0].id).to.equal('report');
       chai.expect(actual[0].type).to.equal('count');
-      chai.expect(actual[0].count).to.equal(2);
+      chai.expect(actual[0].value.pass).to.equal(2);
       chai.expect(actual[1].id).to.equal('registration');
       chai.expect(actual[1].type).to.equal('percent');
-      chai.expect(actual[1].count).to.equal(50);
+      chai.expect(actual[1].value.pass).to.equal(1);
+      chai.expect(actual[1].value.total).to.equal(2);
+      chai.expect(actual[1].value.percent).to.equal(50);
       done();
     });
   });
@@ -210,13 +216,13 @@ describe('TargetGenerator service', function() {
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0].id).to.equal('report');
         chai.expect(actual[0].type).to.equal('count');
-        chai.expect(actual[0].count).to.equal(2);
+        chai.expect(actual[0].value.pass).to.equal(2);
       } else if (callbackCount === 1) {
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0].id).to.equal('report');
         chai.expect(actual[0].type).to.equal('count');
         // Only one counted
-        chai.expect(actual[0].count).to.equal(1);
+        chai.expect(actual[0].value.pass).to.equal(1);
         done();
       } else {
         done(new Error('callback called too many times'));
@@ -248,12 +254,12 @@ describe('TargetGenerator service', function() {
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0].id).to.equal('report');
         chai.expect(actual[0].type).to.equal('count');
-        chai.expect(actual[0].count).to.equal(1);
+        chai.expect(actual[0].value.pass).to.equal(1);
       } else if (callbackCount === 1) {
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0].id).to.equal('report');
         chai.expect(actual[0].type).to.equal('count');
-        chai.expect(actual[0].count).to.equal(2);
+        chai.expect(actual[0].value.pass).to.equal(2);
         done();
       } else {
         done(new Error('callback called too many times'));
@@ -284,12 +290,12 @@ describe('TargetGenerator service', function() {
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0].id).to.equal('report');
         chai.expect(actual[0].type).to.equal('count');
-        chai.expect(actual[0].count).to.equal(2);
+        chai.expect(actual[0].value.pass).to.equal(2);
       } else if (callbackCount === 1) {
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0].id).to.equal('report');
         chai.expect(actual[0].type).to.equal('count');
-        chai.expect(actual[0].count).to.equal(3);
+        chai.expect(actual[0].value.pass).to.equal(3);
         done();
       } else {
         done(new Error('callback called too many times'));
@@ -330,10 +336,10 @@ describe('TargetGenerator service', function() {
       chai.expect(actual.length).to.equal(2);
       chai.expect(actual[0].id).to.equal('none');
       chai.expect(actual[0].type).to.equal('count');
-      chai.expect(actual[0].count).to.equal(1);
+      chai.expect(actual[0].value.pass).to.equal(1);
       chai.expect(actual[1].id).to.equal('true');
       chai.expect(actual[1].type).to.equal('count');
-      chai.expect(actual[1].count).to.equal(1);
+      chai.expect(actual[1].value.pass).to.equal(1);
       done();
     });
   });
@@ -349,12 +355,12 @@ describe('TargetGenerator service', function() {
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0].id).to.equal('report');
         chai.expect(actual[0].type).to.equal('count');
-        chai.expect(actual[0].count).to.equal(1);
+        chai.expect(actual[0].value.pass).to.equal(1);
       } else if (callbackCount === 1) {
         chai.expect(actual.length).to.equal(1);
         chai.expect(actual[0].id).to.equal('report');
         chai.expect(actual[0].type).to.equal('count');
-        chai.expect(actual[0].count).to.equal(undefined);
+        chai.expect(actual[0].value.pass).to.equal(0);
         done();
       } else {
         done('callback called too many times');

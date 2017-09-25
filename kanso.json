@@ -1136,7 +1136,7 @@
                                             "enum": ["count", "percent"]
                                         },
                                         "name": {
-                                            "title": "Title",
+                                            "title": "Title (deprecated - use translation_key instead)",
                                             "type": "array",
                                             "description": "Title of this target displayed to the user.",
                                             "items": {
@@ -1153,6 +1153,22 @@
                                                     }
                                                 }
                                             }
+                                        },
+                                        "translation_key": {
+                                            "type": "string",
+                                            "title": "Translation key",
+                                            "description": "The key to look up in the translation files for the main title. The translation value supports mustache templating."
+                                        },
+                                        "subtitle_translation_key": {
+                                            "type": "string",
+                                            "title": "Subtitle translation key (optional)",
+                                            "description": "The key to look up in the translation files for the subtitle. The translation value supports mustache templating."
+                                        },
+                                        "percentage_count_translation_key": {
+                                            "type": "string",
+                                            "title": "Percentage count translation key",
+                                            "description": "The key to look up in the translation files for the percentage count, eg: '(5 of 9 on-time)'. Defaults to 'targets.count.default'. Available translation context variables are the 'pass' and 'total' target counts.",
+                                            "default": "targets.count.default"
                                         },
                                         "icon": {
                                             "title": "Icon",

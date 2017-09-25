@@ -4,8 +4,8 @@
   </div>
 </div>
 
-<div class="inner" data-page="reporting_rates" ng-cloak>
-  <div class="page reporting" ui-view="content">
+<div class="inner" data-page="reporting_rates" ng-cloak ui-view="content">
+  <div class="page reporting">
     <ul class="mm-navigation-menu" ng-show="analyticsModules.length">
       <li ng-repeat="module in analyticsModules">
         <a ui-sref="{{module.state}}">
