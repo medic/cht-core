@@ -97,18 +97,17 @@ describe('Submit Enketo form', () => {
 
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     helper.waitElementToBeClickable(addButton);
+
     // select form
-    browser.wait(() => {
-      return addButton.isPresent();
-    }, 10000);
     addButton.click();
     element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
-    browser.wait(() => {
-      return element(by.css('#report-form form [name="/data/name"]')).isPresent();
-    }, 10000);
+
+    // enter name
+    const nameField = element(by.css('#report-form form [name="/data/name"]'));
+    helper.waitElementToBeClickable(nameField);
+    nameField.sendKeys('Jones');
 
     // submit form
-    element(by.css('#report-form form [name="/data/name"]')).sendKeys('Jones');
     element(by.css('#report-form .submit')).click();
     browser.wait(() => {
       return element(by.css('#reports-content .details ul li:first-child p')).isPresent();
