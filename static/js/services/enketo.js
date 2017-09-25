@@ -21,7 +21,6 @@ angular.module('inboxServices').service('Enketo',
     Search,
     TranslateFrom,
     UserContact,
-    UserSettings,
     XmlForm,
     XSLT
   ) {
