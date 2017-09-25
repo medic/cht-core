@@ -107,7 +107,7 @@ angular.module('inboxControllers').controller('ContactsEditCtrl',
         $scope.enketoStatus.edited = false;
         var instanceData = getFormInstanceData();
         if (form.id) {
-          return Enketo.renderContactForm('#contact-form', form.id, instanceData, markFormEdited);
+          return Enketo.renderForm('#contact-form', form.id, instanceData, markFormEdited);
         }
         return Enketo.renderFromXmlString('#contact-form', form.xml, instanceData, markFormEdited);
       });

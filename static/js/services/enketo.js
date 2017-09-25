@@ -334,8 +334,6 @@ angular.module('inboxServices').service('Enketo',
         });
     };
 
-    this.renderContactForm = renderForm;
-
     this.renderFromXmlString = function(selector, xmlString, instanceData, editedListener) {
       return Language()
         .then(function(language) {
