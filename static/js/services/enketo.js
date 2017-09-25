@@ -322,9 +322,14 @@ angular.module('inboxServices').service('Enketo',
     };
 
     this.render = function(selector, id, instanceData, editedListener) {
-      return getUserContact().then(function() {
-        return renderForm(selector, id, instanceData, editedListener);
-      });
+      return getUserContact()
+        .then(function() {
+          return renderForm(selector, id, instanceData, editedListener);
+        })
+        .then(function(formInstance) {
+          formInstance.pages.flipToFirst(); // temporary fix for #3928
+          return formInstance;
+        });
     };
 
     this.renderContactForm = renderForm;
