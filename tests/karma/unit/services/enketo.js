@@ -78,6 +78,9 @@ describe('Enketo service', function() {
       form = {
         validate: sinon.stub(),
         getDataStr: sinon.stub(),
+        pages: {
+          flipToFirst: sinon.stub(),
+        },
       },
       AddAttachment = sinon.stub(),
       EnketoForm = sinon.stub(),
@@ -92,7 +95,8 @@ describe('Enketo service', function() {
     window.EnketoForm = EnketoForm;
     EnketoForm.returns({
       init: enketoInit,
-      calc: { update: function() {} }
+      calc: { update: function() {} },
+      pages: { flipToFirst: function() {} },
     });
 
     XmlForm.returns(Promise.resolve({ id: 'abc' }));
@@ -129,7 +133,7 @@ describe('Enketo service', function() {
   });
 
   afterEach(function() {
-    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbPut, transform, createObjectURL, ContactSummary, FileReader, UserContact, form.validate, form.getDataStr, Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
+    KarmaUtils.restore(EnketoForm, enketoInit, dbGetAttachment, dbGet, dbPut, transform, createObjectURL, ContactSummary, FileReader, UserContact, form.validate, form.getDataStr, form.pages.flipToFirst, Language, TranslateFrom, AddAttachment, Search, LineageModelGenerator.contact);
   });
 
   describe('render', function() {
