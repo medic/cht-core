@@ -1,0 +1,13 @@
+{
+  "name": "standard-tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "test": "./contact-summary-test-lib/bin/contact-summary-test ../contact-summary.js ./contact-summary"
+  },
+  "author": "",
+  "dependencies": {
+    "redact-basic-auth": "^0.1.1"
+  }
+}
