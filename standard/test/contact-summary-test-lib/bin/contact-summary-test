@@ -34,6 +34,7 @@ fs.readdir(testDir)
       const testContext = {
         contact: fs.readJson(`${dir}/contact.json`),
         lineage: fs.readJson(`${dir}/lineage.json`),
+        reports: fs.readJson(`${dir}/reports.json`),
       };
       const actualOutput = contactSummary.runInNewContext(testContext);
 
