@@ -35,20 +35,26 @@ var moment = require('moment'),
         return instanceDate.isAfter(start) && instanceDate.isBefore(end);
       };
 
-      var calculateCount = function(target) {
+      var calculatePercent = function(pass, total) {
+        if (total === 0) {
+          return 0;
+        }
+        return Math.round(pass * 100 / total);
+      };
+
+      var calculateValue = function(target) {
         var counts = _.countBy(target.instances, function(instance) {
           return instance.pass ? 'pass' : 'fail';
         });
-        if (target.type === 'count') {
-          return counts.pass;
-        }
+        _.defaults(counts, { pass: 0, fail: 0 });
+        var result = {
+          pass: counts.pass,
+          total: counts.pass + counts.fail
+        };
         if (target.type === 'percent') {
-          var total = (counts.pass || 0) + (counts.fail || 0);
-          if (total === 0) {
-            return 0;
-          }
-          return Math.round(counts.pass * 100 / total);
+          result.percent = calculatePercent(result.pass, result.total);
         }
+        return result;
       };
 
       var mergeTarget = function(instance) {
@@ -64,7 +70,7 @@ var moment = require('moment'),
           // deleted or not for this month - remove from the cache
           delete target.instances[instance._id];
         }
-        target.count = calculateCount(target);
+        target.value = calculateValue(target);
       };
 
       var init = $q.all([ Settings(), UserContact() ])
