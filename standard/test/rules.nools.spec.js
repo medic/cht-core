@@ -61,6 +61,15 @@ describe('Standard Configuration', function() {
       "reported_date": Date.now()
     };
 
+    var flagReport = {
+      "_id":"flag-1",
+      "fields": {
+        "notes": ""
+      },
+      "form": "F",
+      "reported_date": Date.now()
+    };
+
     var pncVisitAppReport = {
       "_id": "report-2",
       "fields": {},
@@ -128,6 +137,27 @@ describe('Standard Configuration', function() {
         .then(function(tasks) {
           assert.equal(tasks.length, 1, "Should have a single task created");
           assert.deepInclude(tasks[0], {resolved: true}, "Should have a resolved field set to true");
+        });
+    });
+    it(`should have a 'postnatal-danger-sign' task if a flag is sent during PNC period`, function() {
+      var reports = [
+        deliveryReport,
+        flagReport,
+      ];
+      deliveryReport = setDate(deliveryReport, Date.now()-(25*MS_IN_DAY)); 
+      flagReport.reported_date = Date.now()-(4*MS_IN_DAY); 
+      
+      session.assert(new Contact({
+        contact: person,
+        reports: reports,
+      }));
+
+      // expect
+      return session.emitTasks()
+        .then(function(tasks) {
+          // console.log(JSON.stringify(tasks,null,2));
+          assert.equal(tasks.length, 1, "Should have a single task created");
+          assert.include(tasks[0]._id, 'postnatal-danger-sign', "Task id should have correct schedule name included");
         });
     });
 
