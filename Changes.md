@@ -53,6 +53,7 @@ _October 2, 2017_
 
 - Remove modules.js attachment. Issue: [#3684](https://github.com/medic/medic-webapp/issues/3684)
 - Use alternative pagination method for running batched migrations. Issue: [#3553](https://github.com/medic/medic-webapp/issues/3553)
+- The read status of documents is now stored in a user specific database to reduce unnecessary doc updates. Issue: [#2418](https://github.com/medic/medic-webapp/issues/2418)
 
 ### Security
 
