@@ -130,6 +130,47 @@ describe('Standard Configuration', function() {
           assert.deepInclude(tasks[0], {resolved: true}, "Should have a resolved field set to true");
         });
     });
+    describe('Postnatal visit schedule', function() {
+      var taskOffset = 0; // days between last message and task, weekday offset, task offset in tasks.json  
+      var taskDuration = 7;
+      var taskStartDays = [3, 6, 42];
+      var pregnancyTaskDays = getDayRanges(taskStartDays, taskDuration, taskOffset);
+      var deliveryTaskDays = getDayRanges([40*WEEKS],14,-1);
+      
+      range(0, DAYS_IN_PNC+10).forEach(day => {
+
+        describe(`Postnatal period: day ${day}`, function() {
+
+          if (pregnancyTaskDays.includes(day)) {
+            it(`should have 'postnatal-home-birth' visit task on day ${day}`, function() {
+              // given
+              setupPregnancyTasks(Contact, session, person, day);
+
+              // expect
+              return session.emitTasks()
+                .then(function(tasks) {
+                  assert.equal(tasks.length, 1, "Should have a single task created");
+                  assert.include(tasks[0]._id, 'postnatal-home-birth', "Task id should have correct schedule name included");
+                });
+            });
+          }
+          else {
+            it(`should not have 'postnatal-home-birth' visit task on day ${day}`, function() {
+              // given
+              setupPregnancyTasks(Contact, session, person, day);
+
+              // expect
+              return session.emitTasks()
+                .then(function(tasks) {
+                  tasks.forEach(t => { 
+                    assert.notInclude(t._id, 'postnatal-home-birth', "Task id should not include 'postnatal-home-birth'");
+                  });
+                });
+            });
+          }
+        });
+      });
+    });    
   });
 
   describe('Pregnancy without LMP', function() {
