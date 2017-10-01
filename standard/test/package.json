@@ -3,11 +3,17 @@
   "version": "1.0.0",
   "description": "",
   "main": "",
+  "directories": {
+    "test": "test"
+  },
   "scripts": {
-    "test": "./contact-summary-test-lib/bin/contact-summary-test ../contact-summary.js ./contact-summary"
+    "test": "mocha ./rules.nools.spec.js && ./contact-summary-test-lib/bin/contact-summary-test ../contact-summary.js ./contact-summary"
   },
   "author": "",
   "dependencies": {
-    "redact-basic-auth": "^0.1.1"
+    "redact-basic-auth": "^0.1.1",
+    "chai": "^4.0.2",
+    "medic-nootils": "^1.0.1",
+    "mocha": "^3.4.2"
   }
 }
