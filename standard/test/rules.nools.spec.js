@@ -130,47 +130,49 @@ describe('Standard Configuration', function() {
           assert.deepInclude(tasks[0], {resolved: true}, "Should have a resolved field set to true");
         });
     });
+
     describe('Postnatal visit schedule', function() {
-      var taskOffset = 0; // days between last message and task, weekday offset, task offset in tasks.json  
-      var taskDuration = 7;
+      var taskOffset = 2; // days between last message and task, weekday offset, task offset in tasks.json  
+      var taskDuration = 5;
       var taskStartDays = [3, 6, 42];
-      var pregnancyTaskDays = getDayRanges(taskStartDays, taskDuration, taskOffset);
+      var pncTaskDays = getDayRanges(taskStartDays, taskDuration, taskOffset);
       var deliveryTaskDays = getDayRanges([40*WEEKS],14,-1);
       
       range(0, DAYS_IN_PNC+10).forEach(day => {
 
         describe(`Postnatal period: day ${day}`, function() {
-
-          if (pregnancyTaskDays.includes(day)) {
-            it(`should have 'postnatal-home-birth' visit task on day ${day}`, function() {
+          if (pncTaskDays.includes(day)) {
+            it(`should have 'postnatal-missing-visit' visit task on day ${day}`, function() {
               // given
-              setupPregnancyTasks(Contact, session, person, day);
+              var reports = [require('./d.json')];
+              setupTasks(Contact, session, person, day, reports);
 
               // expect
               return session.emitTasks()
                 .then(function(tasks) {
                   assert.equal(tasks.length, 1, "Should have a single task created");
-                  assert.include(tasks[0]._id, 'postnatal-home-birth', "Task id should have correct schedule name included");
+                  assert.include(tasks[0]._id, 'postnatal-missing-visit', "Task id should have correct schedule name included");
                 });
             });
           }
           else {
-            it(`should not have 'postnatal-home-birth' visit task on day ${day}`, function() {
+            it(`should not have 'postnatal-missing-visit' visit task on day ${day}`, function() {
               // given
-              setupPregnancyTasks(Contact, session, person, day);
+              var reports = [require('./d.json')];
+              setupTasks(Contact, session, person, day, reports);
 
               // expect
               return session.emitTasks()
                 .then(function(tasks) {
                   tasks.forEach(t => { 
-                    assert.notInclude(t._id, 'postnatal-home-birth', "Task id should not include 'postnatal-home-birth'");
+                    assert.notInclude(t._id, 'postnatal-missing-visit', "Task id should not include 'postnatal-missing-visit'");
                   });
                 });
             });
           }
         });
       });
-    });    
+    }); /* */   
   });
 
   describe('Pregnancy without LMP', function() {
@@ -200,7 +202,7 @@ describe('Standard Configuration', function() {
           35*WEEKS,
     ];
     var pregnancyTaskDays = getDayRanges(taskStartDays, taskDuration, taskOffset);
-    var deliveryTaskDays = getDayRanges([40*WEEKS],14,-1);
+    var deliveryTaskDays = getDayRanges([40*WEEKS], 14, -1);
     
     range(250, MAX_DAYS_IN_PREGNANCY).forEach(day => {
 
@@ -209,7 +211,8 @@ describe('Standard Configuration', function() {
         if (pregnancyTaskDays.includes(day)) {
           it(`should have 'pregnancy-missing-visit' visit task on day ${day}`, function() {
             // given
-            setupPregnancyTasks(Contact, session, person, day);
+            var reports = [require('./p.json')];
+            setupTasks(Contact, session, person, day, reports);
 
             // expect
             return session.emitTasks()
@@ -222,7 +225,8 @@ describe('Standard Configuration', function() {
         else {
           it(`should not have 'pregnancy-missing-visit' visit task on day ${day}`, function() {
             // given
-            setupPregnancyTasks(Contact, session, person, day);
+            var reports = [require('./p.json')];
+            setupTasks(Contact, session, person, day, reports);
 
             // expect
             return session.emitTasks()
@@ -236,7 +240,8 @@ describe('Standard Configuration', function() {
         if (deliveryTaskDays.includes(day)) {
           it(`should have 'pregnancy-missing-birth' visit task on day ${day}`, function() {
             // given
-            setupPregnancyTasks(Contact, session, person, day);
+            var reports = [require('./p.json')];
+            setupTasks(Contact, session, person, day, reports);
 
             // expect
             return session.emitTasks()
@@ -249,7 +254,8 @@ describe('Standard Configuration', function() {
         else {
           it(`should not have 'pregnancy-missing-birth' visit task on day ${day}`, function() {
             // given
-            setupPregnancyTasks(Contact, session, person, day);
+            var reports = [require('./p.json')];
+            setupTasks(Contact, session, person, day, reports);
 
             // expect
             return session.emitTasks()
@@ -284,9 +290,11 @@ function getRange(startDay, durationInDays, offset) {
 };
 
 function setDate(form, newDate) {
+  // Sets the newDate as the form's reported date, and modifies other dates in doc by the same offset
   var originalDate = new Date(form.reported_date);
   var diff = originalDate - newDate;
   form.reported_date = newDate;
+  traverse(form, resetDate, "birth_date", diff);
   traverse(form, resetDate, "due", diff);
   // traverse(form, logField, "due");
   return form;
@@ -317,16 +325,16 @@ function traverse(object, func, key, offset) {
     }
 }
 
-var setupPregnancyTasks = function(Contact, session, person, day) {
-  var pregnancyReport = require('./p.json');
+var setupTasks = function(Contact, session, person, day, reports) {
+  // Sets up the tasks by using the doc and reports 
+  reports.forEach(r => {
+    r = setDate(r, Date.now()-(day*MS_IN_DAY)); 
+  });
   // TODO: Investigate how timezone affect showing task.
   // Tests pass vs fail with task window being off by one at 11pm vs 12:15am on GMT+2.
-  pregnancyReport = setDate(pregnancyReport, Date.now()-(day*MS_IN_DAY));
 
   session.assert(new Contact({
     contact: person,
-    reports: [
-      pregnancyReport,
-    ],
+    reports: reports,
   }));
 };
