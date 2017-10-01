@@ -234,6 +234,28 @@ describe('Standard Configuration', function() {
     var pregnancyTaskDays = getDayRanges(taskStartDays, taskDuration, taskOffset);
     var deliveryTaskDays = getDayRanges([40*WEEKS], 14, -1);
     
+    it(`should have a 'pregnancy-danger-sign' task if a flag is sent during pregnancy`, function() {
+      var reports = [
+        pregnancyReport,
+        flagReport,
+      ];
+      pregnancyReport = setDate(pregnancyReport, Date.now()-(100*MS_IN_DAY)); 
+      flagReport.reported_date = Date.now()-(4*MS_IN_DAY); 
+      
+      session.assert(new Contact({
+        contact: person,
+        reports: reports,
+      }));
+
+      // expect
+      return session.emitTasks()
+        .then(function(tasks) {
+          // console.log(JSON.stringify(tasks,null,2));
+          assert.equal(tasks.length, 1, "Should have a single task created");
+          assert.include(tasks[0]._id, 'pregnancy-danger-sign', "Task id should have correct schedule name included");
+        });
+    });
+
     range(250, MAX_DAYS_IN_PREGNANCY).forEach(day => {
 
       describe(`Pregnancy without LMP: day ${day}`, function() {
