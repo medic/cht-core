@@ -11,7 +11,7 @@ _TBD_
 
 ## 2.13.0
 
-_August 1, 2017_
+_October 2, 2017_
 
 ### Migration notes
 
