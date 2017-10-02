@@ -38,11 +38,10 @@
         </div>
 
         <div ng-repeat="card in selected.summary.cards">
-          <div class="action-header">
-            <h3 translate>{{card.label}}</h3>
-          </div>
           <div class="card action-list">
-            <div class="accent"></div>
+            <div class="action-header cell">
+              <h3 translate>{{card.label}}</h3>
+            </div>
             <div class="row">
               <div class="col col-xs-12 col-sm-{{field.width || 12}}" ng-repeat="field in card.fields">
                 <div class="cell">
@@ -66,7 +65,6 @@
         </div>
         <div ng-show="selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
         <div class="card action-list children persons">
-          <div class="accent"></div>
           <ul ng-if="selected.doc.type !== 'clinic'">
             <mm-content-row ng-repeat="child in selected.children.persons"
               id="child.doc._id"
@@ -95,7 +93,6 @@
           <span translate>{{selected.children.childPlacesLabel}}</span>
         </h3>
         <div class="card action-list children">
-          <div class="accent"></div>
           <div class="row" ng-repeat="child in selected.children.places">
             <div class="col-sm-12">
               <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell item-summary">
@@ -118,16 +115,15 @@
       </div>
 
       <div ng-if="selected.areTasksEnabled" mm-auth="can_view_tasks">
-        <div class="action-header">
-          <h3 translate>Tasks</h3>
-          <span class="table-filter">
-            <a ng-click="setTasksTimeWindowWeeks(1)" class="btn btn-link" ng-class="{selected: tasksTimeWindowWeeks === 1}" translate translate-values="{WEEKS: 1}" translate-interpolation="messageformat">n.week</a>
-            <a ng-click="setTasksTimeWindowWeeks(2)" class="btn btn-link" ng-class="{selected: tasksTimeWindowWeeks === 2}" translate translate-values="{WEEKS: 2}" translate-interpolation="messageformat">n.week</a>
-            <a ng-click="setTasksTimeWindowWeeks()" class="btn btn-link" ng-class="{selected: !tasksTimeWindowWeeks}" translate>view.all</a>
-          </span>
-        </div>
         <div class="card action-list tasks">
-          <div class="accent"></div>
+          <div class="action-header cell">
+            <h3 translate>Tasks</h3>
+            <span class="table-filter">
+              <a ng-click="setTasksTimeWindowWeeks(1)" class="btn btn-link" ng-class="{selected: tasksTimeWindowWeeks === 1}" translate translate-values="{WEEKS: 1}" translate-interpolation="messageformat">n.week</a>
+              <a ng-click="setTasksTimeWindowWeeks(2)" class="btn btn-link" ng-class="{selected: tasksTimeWindowWeeks === 2}" translate translate-values="{WEEKS: 2}" translate-interpolation="messageformat">n.week</a>
+              <a ng-click="setTasksTimeWindowWeeks()" class="btn btn-link" ng-class="{selected: !tasksTimeWindowWeeks}" translate>view.all</a>
+            </span>
+          </div>
           <ul>
             <mm-content-row ng-repeat="task in selected.tasks | filter:filterTasks as filteredTasks"
               id="task._id"
@@ -150,16 +146,15 @@
       </div>
 
       <div mm-auth="can_view_reports">
-        <div class="action-header">
-          <h3 translate>Reports</h3>
-          <span class="table-filter">
-            <a ng-click="setReportsTimeWindowMonths(3)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 3}"  translate translate-values="{ MONTHS: 3 }" translate-interpolation="messageformat">n.month</a>
-            <a ng-click="setReportsTimeWindowMonths(6)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 6}"  translate translate-values="{ MONTHS: 6 }" translate-interpolation="messageformat">n.month</a>
-            <a ng-click="setReportsTimeWindowMonths()" class="btn btn-link" ng-class="{selected: !reportsTimeWindowMonths}" translate>view.all</a>
-          </span>
-        </div>
         <div class="card action-list reports">
-          <div class="accent"></div>
+          <div class="action-header cell">
+            <h3 translate>Reports</h3>
+            <span class="table-filter">
+              <a ng-click="setReportsTimeWindowMonths(3)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 3}"  translate translate-values="{ MONTHS: 3 }" translate-interpolation="messageformat">n.month</a>
+              <a ng-click="setReportsTimeWindowMonths(6)" class="btn btn-link" ng-class="{selected: reportsTimeWindowMonths === 6}"  translate translate-values="{ MONTHS: 6 }" translate-interpolation="messageformat">n.month</a>
+              <a ng-click="setReportsTimeWindowMonths()" class="btn btn-link" ng-class="{selected: !reportsTimeWindowMonths}" translate>view.all</a>
+            </span>
+          </div>
           <ul>
             <mm-content-row ng-repeat="report in selected.reports | filter:filterReports as filteredReports track by report._id"
               id="report._id"

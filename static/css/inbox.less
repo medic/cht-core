@@ -509,26 +509,14 @@ body {
     font-size: 12px;
     vertical-align: middle;
   }
-  .action-list .accent {
-    border-top: 5px solid @label-color;
+  .action-list.children .row a:hover {
+    border-color: @contacts-color;
   }
-  .action-list.children {
-    .accent,
-    .row a:hover {
-      border-color: @contacts-color;
-    }
+  .action-list.tasks .row a:hover {
+    border-color: @tasks-color;
   }
-  .action-list.tasks {
-    .accent,
-    .row a:hover {
-      border-color: @tasks-color;
-    }
-  }
-  .action-list.reports {
-    .accent,
-    .row a:hover {
-      border-color: @reports-color;
-    }
+  .action-list.reports .row a:hover {
+    border-color: @reports-color;
   }
   .action-header {
     overflow: auto;
@@ -539,7 +527,6 @@ body {
 
     .table-filter {
       float: right;
-      padding-top: 13px;
       display: flex;
       font-size: @font-small;
 
@@ -783,12 +770,13 @@ a.fa:hover {
         }
       }
 
+      .details p {
+        font-weight: bold;
+      }
+
       label {
         display: block;
         margin: 0;
-        font-weight: normal;
-        font-style: italic;
-        color: @label-color;
       }
 
       .missing p {
