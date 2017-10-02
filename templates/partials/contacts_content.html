@@ -10,30 +10,25 @@
     <div translate>No contact selected</div>
   </div>
 
-  <div class="col-sm-8 item-content item-body" ng-show="selected && !loadingContent">
+  <div class="col-sm-8 item-content" ng-show="selected && !loadingContent">
     <div class="material">
       <div class="body meta">
-        <div class="card-title">
-          <div>
-            <i class="fa fa-fw {{selected.icon}}"></i>
-          </div>
-          <div>
-            <h2 class="xs-block">
-              <i class="fa fa-star primary" ng-show="selected.isPrimaryContact" translate translate-attr-title="Primary contact"></i>
-              <span>{{selected.doc.name}}</span>
-            </h2>
-            <div class="xs-block" ng-show="selected.isPrimaryContact">
-              <span ng-show="selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
-              <span ng-show="selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
+        <div class="card">
+          <div class="row heading">
+            <div>
+              <i class="fa main-icon {{selected.icon}}"></i>
+              <h2>{{selected.doc.name}}</h2>
+              <div class="primary-contact" ng-if="selected.isPrimaryContact">
+                <i class="fa fa-star primary" translate translate-attr-title="Primary contact"></i>
+                <span ng-if="selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
+                <span ng-if="selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div class="card">
           <div class="row flex">
             <div class="col col-xs-12 col-sm-{{field.width || 12}}" ng-repeat="field in selected.summary.fields">
               <div class="cell">
-                <label translate>{{field.label}}</label>
+                <label translate ng-if="field.label">{{field.label}}</label>
                 <p ng-if="field.translate" translate translate-values="{{field.context}}">{{field.value}}</p>
                 <p ng-if="!field.translate && field.filter" ng-bind-html="field.value"></p>
                 <p ng-if="!field.translate && !field.filter">{{field.value}}</p>

@@ -10,7 +10,7 @@
     <div translate>No report selected</div>
   </div>
 
-  <div id="reports-content" class="col-sm-8 item-content item-body" ng-show="selectMode || (!loadingContent && selected.length && selected[0].doc.form !== undefined)">
+  <div id="reports-content" class="col-sm-8 item-content" ng-show="selectMode || (!loadingContent && selected.length && selected[0].doc.form !== undefined)">
 
     <div class="selection-count" ng-show="selectMode && selected.length">
       <span ng-show="selected.length === 1" translate>select.mode.count.singular</span>

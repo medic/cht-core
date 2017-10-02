@@ -407,7 +407,8 @@ body {
   }
 }
 
-.inbox-items, .item-content {
+.inbox-items,
+.item-content {
   overflow-y: auto;
   overflow-x: hidden;
   height: 100%;
@@ -425,7 +426,7 @@ body {
     align-items: center;
     justify-content: center;
     height: 100%;
-    margin: 0px;
+    margin: 0;
   }
 }
 
@@ -643,7 +644,7 @@ body {
 }
 
 .item-content {
-  padding: 0;
+  padding: 30px;
   border: 1px solid @seperator-color;
   border-width: 0 1px;
   .body p {
@@ -651,13 +652,10 @@ body {
     margin: 0;
   }
   > div {
-    margin-top: 10px;
-    &.enketo, &.material {
-      margin-top: 0;
-    }
+    margin-bottom: 10px;
   }
   .padding {
-    height: 120px;
+    height: 80px;
     clear: left;
   }
   .deselect {
@@ -768,8 +766,7 @@ a.fa:hover {
 
       background-color: @form-background-color;
       border: 1px solid @seperator-color;
-      border-radius: @radius-size;
-      margin: 10px;
+      border-radius: @radius-size-small;
 
       > div > ul > li {
         border-top: 1px solid @seperator-color;
@@ -1151,6 +1148,8 @@ a.fa:hover {
   }
   .item-content {
     border-width: 0;
+    padding: 0;
+    padding-top: 16px;
     h2 {
       display: none;
     }
@@ -1161,7 +1160,7 @@ a.fa:hover {
       background-color: inherit;
     }
     .padding {
-      height: 100px;
+      height: 60px;
     }
   }
   .inbox-items .selection-count,
@@ -1283,6 +1282,8 @@ a.fa:hover {
     }
     .item-content .body {
       padding-bottom: 0;
+      border-radius: 0;
+      border-width: 1px 0;
     }
   }
   .reports,
