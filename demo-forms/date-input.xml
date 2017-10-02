@@ -6,6 +6,7 @@
 			<instance>
 				<date-input id="date-input">
 					<my_date/>
+					<my_bikram_date/>
 					<meta>
 						<instanceID/>
 					</meta>
@@ -13,12 +14,16 @@
 			</instance>
 
 			<bind nodeset="/date-input/my_date" type="date"/>
+			<bind nodeset="/date-input/my_bikram_date" type="date"/>
 		</model>
 	</h:head>
 
 	<h:body>
 		<input ref="/date-input/my_date">
 			<label>Choose a date</label>
+		</input>
+		<input ref="/date-input/my_bikram_date" appearance="bikram-sambat">
+			<label>Choose a date (this picker should be Nepali-style)</label>
 		</input>
 	</h:body>
 </h:html>

@@ -32,11 +32,15 @@ define( function( require, exports, module ) {
 
         Language()
             .then( function( language ) {
-                if ( language.indexOf( 'ne' ) !== 0 ) {
+                var $el = $( el );
+
+                // Here we support the appearance="bikram-sambat" attribute as
+                // well to maintain compatibility with collect.
+                if ( language.indexOf( 'ne' ) !== 0 &&
+                        $el.parent('.or-appearance-bikram-sambat').length === 0) {
                     return;
                 }
 
-                var $el = $( el );
                 var $parent = $el.parent();
                 var $realDateInput = $parent.children( 'input[type=date]' );
                 var initialVal = $realDateInput.val();
