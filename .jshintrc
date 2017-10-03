@@ -72,7 +72,7 @@
     "worker"        : false,    // Web Workers
     "wsh"           : false,    // Windows Scripting Host
     "yui"           : false,    // Yahoo User Interface
-    "jasmine"       : false,
+    "jasmine"       : true,
 
     // Custom Globals
     "globals"       : {         // additional predefined global variables
