@@ -143,18 +143,20 @@ describe('Contact summary info', () => {
   it('contact summary', () => {
     selectContact('carol');
 
+// .content-pane .meta > .card
+
     // assert the summary card has the right fields
     browser.wait(() => {
-      return element(by.css('.content-pane .item-body .meta .card .col-sm-3:nth-child(1) label')).isPresent();
+      return element(by.css('..content-pane .meta > .card .col-sm-3:nth-child(1) label')).isPresent();
     }, 10000);
-    expect(element(by.css('.content-pane .item-body .meta > .card .col-sm-3:nth-child(1) label')).getText()).toBe('test.pid');
-    expect(element(by.css('.content-pane .item-body .meta > .card .col-sm-3:nth-child(1) p')).getText()).toBe(CAROL.patient_id);
-    expect(element(by.css('.content-pane .item-body .meta > .card .col-sm-3:nth-child(2) label')).getText()).toBe('test.sex');
-    expect(element(by.css('.content-pane .item-body .meta > .card .col-sm-3:nth-child(2) p')).getText()).toBe(CAROL.sex);
+    expect(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')).getText()).toBe('test.pid');
+    expect(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) p')).getText()).toBe(CAROL.patient_id);
+    expect(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) label')).getText()).toBe('test.sex');
+    expect(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) p')).getText()).toBe(CAROL.sex);
 
     // assert that the pregnancy card exists and has the right fields
-    expect(element(by.css('.content-pane .item-body .meta .action-header h3')).getText()).toBe('test.pregnancy');
-    expect(element(by.css('.content-pane .item-body .meta .action-list label')).getText()).toBe('test.visits');
-    expect(element(by.css('.content-pane .item-body .meta .action-list p')).getText()).toBe('1');
+    expect(element(by.css('.content-pane .meta > div > .card .action-header h3')).getText()).toBe('test.pregnancy');
+    expect(element(by.css('.content-pane .meta > div > .card .action-list label')).getText()).toBe('test.visits');
+    expect(element(by.css('.content-pane .meta > div > .card .action-list p')).getText()).toBe('1');
   });
 });

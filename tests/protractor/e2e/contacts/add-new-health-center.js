@@ -11,7 +11,7 @@ describe('Add new health center tests : ', () => {
     commonElements.goToPeople();
     contactPage.addNewDistrict('Auckland');
     contactPage.completeNewPersonForm('Kiwimate');
-    helper.waitUntilReady(element(by.css('.card-title')));
+    helper.waitUntilReady(element(by.css('.card .heading')));
     const newHealthCenterButton = element(by.css('[ng-show="actionBar.right.selected[0].child.type"]'));
     helper.waitUntilReady(newHealthCenterButton);
     newHealthCenterButton.click();

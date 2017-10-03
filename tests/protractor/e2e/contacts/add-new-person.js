@@ -16,7 +16,7 @@ describe('Add new person tests : ', () => {
     expect(commonElements.isAt('contacts-list'));
     contactPage.addNewDistrict('BedeDistrict');
     contactPage.completeNewPersonForm('Bede');
-    helper.waitUntilReady(element(by.css('.card-title')));
+    helper.waitUntilReady(element(by.css('.card .heading')));
     const district = element(by.css('.card-title h2'));
     expect(district.getText()).toBe('BedeDistrict');
     const name = element(by.css('.children h4 span'));
