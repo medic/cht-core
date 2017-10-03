@@ -17,7 +17,7 @@
           <div class="progress">
             <div class="progress-bar" style="width:{{target.value.percent}}%" ng-class="{'ng-hide': target.value.percent === 0}"></div>
           </div>
-          <div class="goal" style="left:{{target.goal < 15 ? '0' : ''}}{{target.goal >= 15 && target.goal <= 85 ? target.goal : ''}}{{target.goal > 85 ? '100' : ''}}%">
+          <div class="goal" style="left:{{target.goal}}%">
             <label ng-class="{ 'pin-left': target.goal < 15, 'pin-right': target.goal > 85 }">
               <span translate>analytics.target.monthly_goal</span>
               {{target.goal}}%
