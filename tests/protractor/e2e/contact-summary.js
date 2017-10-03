@@ -154,7 +154,7 @@ describe('Contact summary info', () => {
 
     // assert that the pregnancy card exists and has the right fields
     expect(element(by.css('.content-pane .meta > div > .card .action-header h3')).getText()).toBe('test.pregnancy');
-    expect(element(by.css('.content-pane .meta > div > .card .action-list label')).getText()).toBe('test.visits');
-    expect(element(by.css('.content-pane .meta > div > .card .action-list p')).getText()).toBe('1');
+    expect(element(by.css('.content-pane .meta > div > .card .row label')).getText()).toBe('test.visits');
+    expect(element(by.css('.content-pane .meta > div > .card .row p')).getText()).toBe('1');
   });
 });
