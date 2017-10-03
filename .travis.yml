@@ -20,7 +20,8 @@ env:
   - COUCH_URL=http://admin:pass@localhost:5984/medic
   - API_URL=http://admin:pass@localhost:5988
   - COUCH_NODE_NAME=nonode@nohost
-
+  - secure: AnTJRBRSs7bSfGTPEoQpgk7ZjoIG3CvqVck3j4AxZhoact0acRerp4gP6d1IQyOS8sdwCF3pgj0OcZGXW7uxLf2MK5lpBBpNOUZ2ZSzw0qwtMguX5A94hekMG0WBlmhKCKsWy2FqrQ1iclHFwxQ9nS9x31/rQRd8meIfYsAOhbg=
+  - secure: OmNATdj8nkfeJaKl5HY3ugYHoHJD1w25R39JxxF3BvcjQxepIPelfGpFKnJVwxw+VDTmHxkaYJFki8Zq51N30OqT0yRMYMjRXFhIsRDY96GTZvkiQpgnDyvOzEx45AsIlBS3chwr6YeI4ram09jG/nBICh1h6dlN2OvNiKSsEeg=
 before_install:
   - |
     if [ "$COUCH_VERSION" = 2 ]; then
