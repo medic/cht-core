@@ -25,7 +25,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
     };
 
     var scrollToUnread = function() {
-      var content = $('#message-content');
+      var content = $('.message-content-wrapper');
       var markers = content.find('.marker');
       var scrollTo;
       if (markers.length) {
@@ -34,7 +34,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         scrollTo = content[0].scrollHeight;
       }
       content.scrollTop(scrollTo);
-      $('#message-content').on('scroll', _checkScroll);
+      $('.message-content-wrapper').on('scroll', _checkScroll);
     };
 
     var markAllRead = function() {
@@ -68,7 +68,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         $scope.clearSelected();
         return;
       }
-      $('#message-content').off('scroll', _checkScroll);
+      $('.message-content-wrapper').off('scroll', _checkScroll);
       $scope.setSelected({ id: id, messages: [] });
       if (!options.silent) {
         $scope.setLoadingContent(id);
@@ -120,7 +120,7 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
         MessageContacts(opts)
           .then(function(data) {
             $scope.loadingMoreContent = false;
-            var contentElem = $('#message-content');
+            var contentElem = $('.message-content-wrapper');
             var scrollToBottom = contentElem.scrollTop() + contentElem.height() + 30 > contentElem[0].scrollHeight;
             var first = $('.item-content .body > ul > li').filter(':first');
             data.forEach(function(updated) {
@@ -143,12 +143,12 @@ angular.module('inboxControllers').controller('MessagesContentCtrl',
               var scroll = false;
               if (options.skip) {
                 var spinnerHeight = 102;
-                scroll = $('#message-content li')[data.length].offsetTop - spinnerHeight;
+                scroll = $('.message-content-wrapper li')[data.length].offsetTop - spinnerHeight;
               } else if (first.length && scrollToBottom) {
-                scroll = $('#message-content')[0].scrollHeight;
+                scroll = $('.message-content-wrapper')[0].scrollHeight;
               }
               if (scroll) {
-                $('#message-content').scrollTop(scroll);
+                $('.message-content-wrapper').scrollTop(scroll);
               }
             });
           })

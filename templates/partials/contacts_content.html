@@ -28,7 +28,7 @@
           <div class="row flex">
             <div class="col col-xs-12 col-sm-{{field.width || 12}}" ng-repeat="field in selected.summary.fields">
               <div class="cell">
-                <label translate ng-if="field.label">{{field.label}}</label>
+                <label translate ng-show="field.label">{{field.label}}</label>
                 <p ng-if="field.translate" translate translate-values="{{field.context}}">{{field.value}}</p>
                 <p ng-if="!field.translate && field.filter" ng-bind-html="field.value"></p>
                 <p ng-if="!field.translate && !field.filter">{{field.value}}</p>
@@ -38,14 +38,14 @@
         </div>
 
         <div ng-repeat="card in selected.summary.cards">
-          <div class="card action-list">
+          <div class="card">
             <div class="action-header cell">
               <h3 translate>{{card.label}}</h3>
             </div>
             <div class="row">
               <div class="col col-xs-12 col-sm-{{field.width || 12}}" ng-repeat="field in card.fields">
                 <div class="cell">
-                  <label translate>{{field.label}}</label>
+                  <label translate ng-show="field.label">{{field.label}}</label>
                   <p ng-if="field.translate" translate translate-values="{{field.context}}">{{field.value}}</p>
                   <p ng-if="!field.translate && field.filter" ng-bind-html="field.value"></p>
                   <p ng-if="!field.translate && !field.filter">{{field.value}}</p>
@@ -57,14 +57,16 @@
       </div>
 
       <div ng-if="selected.children.persons.length">
-        <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12">
-          <h3><i class="fa fa-fw fa-user"></i><span translate>People</span></h3>
-        </div>
-        <div ng-show="selected.doc.type === 'clinic'" class="col-xs-10">
-          <h3><i class="fa fa-fw fa-user"></i><span translate>clinic.field.children</span></h3>
-        </div>
-        <div ng-show="selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
-        <div class="card action-list children persons">
+        <div class="card children persons">
+          <div class="action-header cell">
+            <div ng-show="selected.doc.type !== 'clinic'" class="col-xs-12">
+              <h3 translate>People</h3>
+            </div>
+            <div ng-show="selected.doc.type === 'clinic'" class="col-xs-10">
+              <h3 translate>clinic.field.children</h3>
+            </div>
+            <div ng-show="selected.doc.type === 'clinic'" mm-auth="can_view_tasks" class="col-xs-2 tasks-title" translate>Tasks</div>
+          </div>
           <ul ng-if="selected.doc.type !== 'clinic'">
             <mm-content-row ng-repeat="child in selected.children.persons"
               id="child.doc._id"
@@ -88,20 +90,9 @@
       </div>
 
       <div ng-if="selected.children.places">
-        <h3>
-          <i class="fa fa-fw {{selected.children.childPlacesIcon}}"></i>
-          <span translate>{{selected.children.childPlacesLabel}}</span>
-        </h3>
-        <div class="card action-list children">
-          <div class="row" ng-repeat="child in selected.children.places">
-            <div class="col-sm-12">
-              <a ui-sref="contacts.detail({ id: child.doc._id })" class="cell item-summary">
-                <div class="detail">
-                  <div class="name">{{child.doc.name}}</div>
-                  <div translate translate-values="child.doc.contact">contact.primary_contact_name</div>
-                </div>
-              </a>
-            </div>
+        <div class="card children">
+          <div class="action-header cell">
+            <h3 translate>{{selected.children.childPlacesLabel}}</h3>
           </div>
           <ul>
             <mm-content-row ng-repeat="child in selected.children.places"
@@ -115,7 +106,7 @@
       </div>
 
       <div ng-if="selected.areTasksEnabled" mm-auth="can_view_tasks">
-        <div class="card action-list tasks">
+        <div class="card tasks">
           <div class="action-header cell">
             <h3 translate>Tasks</h3>
             <span class="table-filter">
@@ -137,7 +128,7 @@
             />
           </ul>
           <div class="row" ng-show="!filteredTasks.length">
-            <div class="cell">
+            <div class="cell col">
               <span ng-show="!tasksTimeWindowWeeks" translate>tasks.none</span>
               <span ng-show="tasksTimeWindowWeeks" translate translate-values="{WEEKS: tasksTimeWindowWeeks}" translate-interpolation="messageformat">tasks.none.n.weeks</span>
             </div>
@@ -146,7 +137,7 @@
       </div>
 
       <div mm-auth="can_view_reports">
-        <div class="card action-list reports">
+        <div class="card reports">
           <div class="action-header cell">
             <h3 translate>Reports</h3>
             <span class="table-filter">
@@ -169,7 +160,7 @@
             />
           </ul>
           <div class="row" ng-show="!filteredReports.length">
-            <div class="cell">
+            <div class="cell col">
               <span ng-show="!reportsTimeWindowMonths" translate>reports.none</span>
               <span ng-show="reportsTimeWindowMonths" translate translate-values="{MONTHS: reportsTimeWindowMonths}" translate-interpolation="messageformat">reports.none.n.months</span>
             </div>

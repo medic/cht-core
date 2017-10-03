@@ -6,26 +6,23 @@
     </div>
   </div>
 
-  <div class="col-sm-8 item-content empty-selection" ng-show="!selected.messages[0] && !loadingContent">
+  <div class="item-content empty-selection" ng-show="!selected.messages[0] && !loadingContent">
     <div translate>No message selected</div>
   </div>
 
-  <div class="message-content-wrapper" ng-show="selected.messages[0] && !loadingContent">
-    <div id="message-header" class="col-sm-8 name-header">
-      <mm-sender message="selected.contact"></mm-sender>
-    </div>
-    <div id="message-content" class="col-sm-8 item-content">
-      <div class="loader" ng-show="loadingMoreContent"></div>
-      <p class="loading-status" ng-show="allLoaded" translate>No more messages</p>
-      <div>
-        <div class="body">
+  <div class="message-content-wrapper item-content" ng-show="selected.messages[0] && !loadingContent">
+    <div class="body">
+      <div id="message-header" class="name-header">
+        <mm-sender message="selected.contact"></mm-sender>
+      </div>
+      <div id="message-content">
+        <div class="loader" ng-show="loadingMoreContent"></div>
+        <p class="loading-status" ng-show="allLoaded" translate>No more messages</p>
+        <div>
           <ul>
-            <li class="animate-repeat" ng-repeat="message in selected.messages | orderBy:'doc.reported_date'" data-record-id="{{message.doc._id}}" ng-class="{'outgoing': message.doc.kujua_message, 'incoming': !message.doc.kujua_message}">
+            <li ng-repeat="message in selected.messages | orderBy:'doc.reported_date'" data-record-id="{{message.doc._id}}" ng-class="{'outgoing': message.doc.kujua_message, 'incoming': !message.doc.kujua_message}">
               <div class="marker" ng-if="firstUnread.id === message.doc._id" translate>Unread below</div>
               <span class="message-body">
-                <div class="actions">
-                  <a class="btn btn-link fa fa-trash-o" translate-attr-title="Delete" ng-click="deleteDoc(message.doc)" mm-auth="can_delete_messages"></a>
-                </div>
                 <div class="data">
                   <p>
                     {{message.doc.sms_message.message}}
@@ -33,43 +30,45 @@
                       {{message.doc.tasks[0].messages[0].message}}
                     </span>
                   </p>
-                  <!-- outgoing message //-->
+                  <!-- outgoing message -->
                   <span
                     class="task-state"
                     ng-if="message.doc.kujua_message"
                     ng-bind-html="message.doc.tasks[0] | state"
                   ></span>
-                  <!-- incoming message //-->
+                  <!-- incoming message -->
                   <span
                     class="task-state"
                     ng-if="!message.doc.kujua_message"
                     ng-bind-html="message.doc | state"
                   ></span>
-                  <!-- incoming message autoreply //-->
+                  <!-- incoming message autoreply -->
                   <span
                     class="task-state"
                     ng-if="!message.doc.kujua_message && message.doc.tasks[0]"
                     ng-bind-html="message.doc.tasks[0] | autoreply"
                   ></span>
                 </div>
+                <div class="actions">
+                  <a class="btn btn-link fa fa-trash-o" translate-attr-title="Delete" ng-click="deleteDoc(message.doc)" mm-auth="can_delete_messages"></a>
+                </div>
               </span>
             </li>
           </ul>
         </div>
       </div>
-    </div>
-    <div id="message-footer" class="reply message-form col-sm-8" ng-if="selected.messages[0]">
-      <div class="control-group">
-        <div class="controls">
-          <textarea name="message" ng-model="send.message" translate translate-attr-placeholder="Reply to name" translate-values="{ contact: (selected.contact.doc.name || selected.contact.name) }"></textarea>
+      <div id="message-footer" class="reply message-form" ng-if="selected.messages[0]">
+        <div class="control-group">
+          <div class="controls">
+            <textarea name="message" ng-model="send.message" translate translate-attr-placeholder="Reply to name" translate-values="{ contact: (selected.contact.doc.name || selected.contact.name) }"></textarea>
+          </div>
         </div>
-      </div>
-      <div class="message-actions">
-        <a class="btn btn-link" ng-mousedown="addRecipients()" translate>Add recipient</a>
-        <span class="count"></span>
-        <a class="btn submit btn-primary" ng-class="{disabled: send.message.length === 0}" ng-mousedown="sendMessage()" translate>Send</a>
+        <div class="message-actions">
+          <a class="btn btn-link" ng-mousedown="addRecipients()" translate>Add recipient</a>
+          <span class="count"></span>
+          <a class="btn submit btn-primary" ng-class="{disabled: send.message.length === 0}" ng-mousedown="sendMessage()" translate>Send</a>
+        </div>
       </div>
     </div>
   </div>
-
 </div>

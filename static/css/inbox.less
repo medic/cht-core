@@ -444,13 +444,17 @@ body {
   }
   .name-header,
   .reply {
-    background-color: @lightgrey;
+    padding: 10px;
+  }
+  .name-header {
+    border-bottom: 1px solid @seperator-color;
+    .name {
+      display: block;
+      font-size: @font-extra-large;
+    }
   }
   .reply {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    padding: 7px;
+    border-top: 1px solid @seperator-color;
     div {
       padding: 0;
     }
@@ -481,15 +485,6 @@ body {
       }
     }
   }
-  .name-header {
-    height: 30px;
-    line-height: 30px;
-    .sender .position {
-      position: absolute;
-      top: 0;
-      right: 15px;
-    }
-  }
   .recipient {
     display: none;
   }
@@ -509,13 +504,13 @@ body {
     font-size: 12px;
     vertical-align: middle;
   }
-  .action-list.children .row a:hover {
+  .card.children .row a:hover {
     border-color: @contacts-color;
   }
-  .action-list.tasks .row a:hover {
+  .card.tasks .row a:hover {
     border-color: @tasks-color;
   }
-  .action-list.reports .row a:hover {
+  .card.reports .row a:hover {
     border-color: @reports-color;
   }
   .action-header {
@@ -632,8 +627,6 @@ body {
 
 .item-content {
   padding: 30px;
-  border: 1px solid @seperator-color;
-  border-width: 0 1px;
   .body p {
     word-wrap: break-word;
     margin: 0;
@@ -666,33 +659,28 @@ a.fa:hover {
 
 .messages .item-content .body {
   .actions {
-    width: 25px;
-    float: right;
+    width: 35px;
+    float: left;
     visibility: hidden;
     a {
-      padding: 5px;
+      padding: 0 10px;
     }
   }
-  .data {
-    padding: 10px;
-    margin-right: 15px;
-  }
   .marker {
-    color: @grey;
     font-size: @font-small;
     font-weight: bold;
     background-color: @background-color;
     margin: 10px 0;
     padding: 5px;
     text-align: center;
-    box-shadow: 0 5px 5px 0 rgba(50, 50, 50, 0.45);
+    box-shadow: 0 5px 5px -2px rgba(50, 50, 50, 0.45);
     position: relative;
     &:after {
       position: absolute;
       bottom: -10px;
       left: 48%;
       border-style: solid;
-      border-color: @background-color transparent;
+      border-color: #FFFFFF transparent;
       display: block;
       width: 0;
       border-width: 15px 15px 0;
@@ -700,53 +688,51 @@ a.fa:hover {
       margin: 0 auto;
     }
   }
-  & > ul {
-    > li {
-      clear: both;
-      > span {
-        background-color: #ffffff;
-        border: 1px solid @seperator-color;
-        border-radius: @radius-size;
-        margin-top: 5px;
-        margin-bottom: 5px;
-      }
-    }
-    .message-body:hover, .selected {
+  ul {
+    .message-body:hover,
+    .selected {
       .actions {
         visibility: visible;
       }
     }
     .message-body {
       display: inline-block;
+      width: 100%;
+      margin-top: 16px;
     }
-    .message-body, .message-body p {
-      max-width: 100%;
+    .data p {
+      display: inline-block;
+      padding: 10px;
+      max-width: 90%;
     }
-    .incoming .message-body {
-      border-color: @received-state-color;
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-      border-left: 0;
-      margin-right: 10px;
+    .incoming .message-body .data p {
+      border-radius: 0 @radius-size-small @radius-size-small 0;
+      background-color: @seperator-color;
     }
     .outgoing .message-body {
-      border-color: @messages-color;
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-      border-right: 0;
-      margin-left: 10px;
-      &, p {
+      .data p {
+        border-radius: @radius-size-small 0 0 @radius-size-small;
+        background-color: @messages-color;
+        color: #FFFFFF;
         float: right;
+      }
+      .actions {
+        float: right;
+      }
+      .task-state {
+        text-align: right;
       }
     }
     .task-state {
       clear: right;
       display: block;
+      margin: 0 10px;
     }
   }
 }
 
 .reports,
+.messages,
 .tasks {
   .item-content {
     .body {
@@ -793,16 +779,13 @@ a.fa:hover {
   }
 }
 
-.item-content,
-.inbox-items {
-  .selection-count {
-    padding: 5px 10px;
-    margin: 0;
-    background-color: @label-color;
-    color: #FFFFFF;
-    font-size: @font-small;
-    font-weight: bold;
-  }
+.inbox-items .selection-count {
+  padding: 5px 10px;
+  margin: 0;
+  background-color: @label-color;
+  color: #FFFFFF;
+  font-size: @font-small;
+  font-weight: bold;
 }
 
 .inbox-items .selection-count,
@@ -1135,7 +1118,6 @@ a.fa:hover {
     display: inline;
   }
   .item-content {
-    border-width: 0;
     padding: 0;
     padding-top: 16px;
     h2 {
@@ -1255,11 +1237,6 @@ a.fa:hover {
   .content-pane {
     position: absolute;
     padding-top: 0;
-  }
-  .message-content-wrapper {
-    .item-content, .reply {
-      left: 0;
-    }
   }
   .content {
     .page {

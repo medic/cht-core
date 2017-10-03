@@ -4,9 +4,32 @@
     background-color: white;
     margin-bottom: 16px;
     border-radius: @radius-size-small;
-    p {
+    padding-top: 0;
+    padding-bottom: 0;
+    clear: both;
+    label + p {
       font-weight: bold;
     }
+    a.cell {
+      display: inline-block;
+      width: 100%;
+      padding-left: 10px;
+      border-left: 5px solid transparent;
+      color: inherit;
+      &:hover {
+        text-decoration: none;
+      }
+    }
+    .action-icon {
+      float: left;
+    }
+    &.persons .cell {
+      display: flex;
+      align-items: center;
+    }
+  }
+  mm-content-row:last-child li {
+    border-bottom: 0;
   }
   .meta .heading {
     padding: 20px;
@@ -26,11 +49,7 @@
     }
   }
   .cell {
-    padding: 10px 15px;
-  }
-  .tasks-title {
-    margin-top: 20px;
-    margin-bottom: 5px;
+    padding: 10px 20px;
   }
   .tasks-count,
   .tasks-title {
@@ -52,28 +71,7 @@
       padding: 6px 0;
     }
   }
-  .action-list {
-    padding-top: 0;
-    padding-bottom: 0;
-    clear: both;
-    a.cell {
-      display: inline-block;
-      width: 100%;
-      padding-left: 10px;
-      border-left: 5px solid transparent;
-      color: inherit;
-      &:hover {
-        text-decoration: none;
-      }
-    }
-    .action-icon {
-      float: left;
-    }
-    &.persons .cell {
-      display: flex;
-      align-items: center;
-    }
-  }
+
   .col-xs-1,
   .col-xs-2,
   .col-xs-3,
@@ -137,14 +135,10 @@
 }
 
 @media (max-width: 767px) {
-  .material {
-    .card {
-      margin: 0;
-      border-width: 1px 0;
-    }
-    .meta .col {
-      border-bottom: 1px solid @seperator-color;
-    }
+  .material .card {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
   }
   #snackbar .snackbar-content {
     width: 100%;
