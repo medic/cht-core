@@ -3,6 +3,7 @@ const _ = require('underscore'),
       constants = require('./constants'),
       http = require('http'),
       path = require('path'),
+      htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter'),
   // The app_settings and update_settings modules are on the main ddoc.
   mainDdocName = 'medic',
   userSettingsDocId = `org.couchdb.user:${auth.user}`;
@@ -158,6 +159,20 @@ const revertDb = () => {
 module.exports = {
 
   request: request,
+
+  reporter: new htmlScreenshotReporter({
+    reportTitle: 'e2e Test Report',
+    inlineImages: true,
+    showConfiguration: true,
+    captureOnlyFailedSpecs: true,
+    reportOnlyFailedSpecs: false,
+    showQuickLinks: true,
+    dest: 'tests/results',
+    filename: 'report.html',
+    pathBuilder: function(currentSpec) {
+      return currentSpec.fullName.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, '_');
+    }
+  }),
 
   requestOnTestDb: (options, debug) => {
     options.path = '/' + constants.DB_NAME + options.path;
