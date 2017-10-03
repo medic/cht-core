@@ -7,7 +7,9 @@
   <div class="col-sm-8 item-content empty-selection" ng-show="!loadingContent && contentError">
     <div translate>error.loading.form</div>
   </div>
-  <div class="col-sm-8 item-content" ng-show="!loadingContent && !contentError">
-    <mm-enketo id="'contact-form'" editing="enketoContact.docId" status="enketoStatus" on-submit="save()" on-cancel="navigationCancel()" />
+  <div class="col-sm-8 item-content material" ng-show="!loadingContent && !contentError">
+    <div class="card">
+      <mm-enketo id="'contact-form'" editing="enketoContact.docId" status="enketoStatus" on-submit="save()" on-cancel="navigationCancel()" />
+    </div>
   </div>
 </div>

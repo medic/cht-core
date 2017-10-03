@@ -11,7 +11,7 @@ describe('Add new health center tests : ', () => {
     commonElements.goToPeople();
     contactPage.addNewDistrict('Auckland');
     contactPage.completeNewPersonForm('Kiwimate');
-    helper.waitUntilReady(element(by.css('.card-title')));
+    helper.waitUntilReady(element(by.css('.card .heading')));
     const newHealthCenterButton = element(by.css('[ng-show="actionBar.right.selected[0].child.type"]'));
     helper.waitUntilReady(newHealthCenterButton);
     newHealthCenterButton.click();
@@ -32,7 +32,7 @@ describe('Add new health center tests : ', () => {
     element(by.css('[name="/data/health_center/notes"]')).sendKeys('some notes');
     const submitButton = element(by.css('.btn.submit.btn-primary'));
     submitButton.click();
-    const center = element(by.css('.card-title h2'));
+    const center = element(by.css('.card h2'));
     helper.waitUntilReady(center);
     expect(center.getText()).toBe('Mavuvu Clinic');
   });

@@ -10,7 +10,7 @@
     <div translate>No report selected</div>
   </div>
 
-  <div id="reports-content" class="col-sm-8 item-content item-body" ng-show="selectMode || (!loadingContent && selected.length && selected[0].doc.form !== undefined)">
+  <div id="reports-content" class="col-sm-8 item-content" ng-show="selectMode || (!loadingContent && selected.length && selected[0].doc.form !== undefined)">
 
     <div class="selection-count" ng-show="selectMode && selected.length">
       <span ng-show="selected.length === 1" translate>select.mode.count.singular</span>
@@ -60,7 +60,7 @@
             <label translate>Errors</label>
             <ul>
               <li ng-repeat="error in selection.doc.errors">
-                {{error.message}}
+                <p>{{error.message}}</p>
               </li>
             </ul>
           </li>
@@ -75,7 +75,7 @@
               <li ng-repeat="task in selection.doc.tasks">
                 <ul>
                   <li ng-repeat="message in task.messages">
-                    {{selection.doc.kujua_message ? message.to : message.message}}
+                    <p>{{selection.doc.kujua_message ? message.to : message.message}}</p>
                   </li>
                 </ul>
                 <span class="task-state" ng-bind-html="task | state"></span>
@@ -101,7 +101,7 @@
                 <li ng-repeat="task in group.rows | orderBy:'timestamp'">
                   <ul>
                     <li ng-repeat="message in task.messages">
-                      {{message.message}}
+                      <p>{{message.message}}</p>
                     </li>
                   </ul>
                   <span class="task-state" ng-bind-html="task | state"></span>

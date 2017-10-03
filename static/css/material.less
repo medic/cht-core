@@ -1,66 +1,15 @@
 .material {
-  padding: 5px;
   .card {
     border: 1px solid @seperator-color;
-    border-bottom: 0;
     background-color: white;
-  }
-  .row {
-    border-bottom: 1px solid @seperator-color;
-    margin: 0;
-    .cell {
-      padding: 10px 15px;
-    }
-    &.flex {
-      display: flex;
-      flex-wrap: wrap;
-    }
-  }
-  .card-title {
-    margin-bottom: 5px;
-    margin-top: 10px;
-    i {
-      font-size: 20px;
-    }
-    div,
-    h2 {
-      display: inline-block;
-    }
-    h2,
-    h3 {
-      padding-left: 0;
-      margin-top: 0;
-      margin-bottom: 0;
-      padding-right: 10px;
-    }
-  }
-  .tasks-title {
-    margin-top: 20px;
-    margin-bottom: 5px;
-  }
-  .tasks-count,
-  .tasks-title {
-    text-align: right;
-    line-height: 1;
-  }
-  h2 {
-    margin-top: 0;
-  }
-  .field-list {
-    label {
-      color: @label-color;
-      font-style: italic;
-      font-weight: normal;
-    }
-    li {
-      margin-bottom: 10px;
-    }
-  }
-  .action-list {
-    border-bottom: 0;
+    margin-bottom: 16px;
+    border-radius: @radius-size-small;
     padding-top: 0;
     padding-bottom: 0;
     clear: both;
+    label + p {
+      font-weight: bold;
+    }
     a.cell {
       display: inline-block;
       width: 100%;
@@ -79,6 +28,50 @@
       align-items: center;
     }
   }
+  mm-content-row:last-child li {
+    border-bottom: 0;
+  }
+  .meta .heading {
+    padding: 20px;
+  }
+  .main-icon {
+    float: left;
+    width: 60px;
+    font-size: 60px;
+    text-align: center;
+    color: @contacts-color;
+  }
+  .row {
+    margin: 0;
+    &.flex {
+      display: flex;
+      flex-wrap: wrap;
+    }
+  }
+  .cell {
+    padding: 10px 20px;
+  }
+  .tasks-count,
+  .tasks-title {
+    text-align: right;
+    line-height: 1;
+  }
+  h2,
+  .primary-contact {
+    margin-left: 80px;
+  }
+  h2 {
+    margin-top: 0;
+  }
+  .action-header {
+    border-bottom: 3px solid @seperator-color;
+    h3 {
+      margin: 0;
+      font-weight: normal;
+      padding: 6px 0;
+    }
+  }
+
   .col-xs-1,
   .col-xs-2,
   .col-xs-3,
@@ -142,21 +135,10 @@
 }
 
 @media (max-width: 767px) {
-  .material {
-    .action-list {
-      margin-left: -15px;
-      margin-right: -15px;
-    }
-    .card-title .xs-block {
-      display: block;
-    }
-    .meta .card .row {
-      border-bottom: 0;
-      .col-sm-3,
-      .col-sm-12 {
-        border-bottom: 1px solid @seperator-color;
-      }
-    }
+  .material .card {
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
   }
   #snackbar .snackbar-content {
     width: 100%;
