@@ -5,8 +5,8 @@ const _ = require('underscore'),
       path = require('path'),
       htmlScreenshotReporter = require('protractor-jasmine2-screenshot-reporter'),
   // The app_settings and update_settings modules are on the main ddoc.
-  mainDdocName = 'medic',
-  userSettingsDocId = `org.couchdb.user:${auth.user}`;
+      mainDdocName = 'medic',
+      userSettingsDocId = `org.couchdb.user:${auth.user}`;
 
 let originalSettings;
 
