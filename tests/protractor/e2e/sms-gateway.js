@@ -166,13 +166,13 @@ describe('sms-gateway api', () => {
       // RHS
       element(by.css('#message-list li:first-child .summary')).click();
       browser.wait(() => {
-        return element(by.css('#message-content .body li.incoming:first-child .data p:first-child')).isPresent();
+        return element(by.css('#message-content li.incoming:first-child .data p:first-child')).isPresent();
       }, 10000);
       browser.sleep(500); // without this the elements are found to be detached...
 
       expect(element(by.css('#message-header .name')).getText()).toBe('+64271234567');
-      expect(element(by.css('#message-content .body li.incoming:first-child .data p:first-child')).getText()).toBe('hello');
-      expect(element(by.css('#message-content .body li.incoming:first-child .data .state.received')).getText()).toBe('received');
+      expect(element(by.css('#message-content li.incoming:first-child .data p:first-child')).getText()).toBe('hello');
+      expect(element(by.css('#message-content li.incoming:first-child .data .state.received')).getText()).toBe('received');
     });
 
   });
