@@ -2,7 +2,8 @@ const utils = require('./utils'),
       spawn = require('child_process').spawn,
       constants = require('./constants'),
       auth = require('./auth')(),
-      modules = [];
+      modules = [],
+      reporter= utils.reporter;
 
 if (!process.env.COUCH_NODE_NAME) {
   throw new Error('Missing required env var: COUCH_NODE_NAME');
@@ -86,7 +87,17 @@ exports.config = {
     // browserName: 'firefox',
     // 'marionette':'true'
   },
+  beforeLaunch: function() {
+    process.on('uncaughtException', function() {
+      reporter.jasmineDone();
+      reporter.afterLaunch();
+    });
+    return new Promise(function(resolve) {
+      reporter.beforeLaunch(resolve);
+    });
+  },
   onPrepare: () => {
+    jasmine.getEnv().addReporter(reporter);
     const startup = startModules();
     browser.ignoreSynchronization = true;
     browser.driver.wait(startup, 30 * 1000, 'API and Sentinel should start within 30 seconds');
