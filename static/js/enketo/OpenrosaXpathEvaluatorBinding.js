@@ -23,7 +23,7 @@ module.exports = function() {
                     var doc = contextPath.ownerDocument;
                     return doc.evaluate(v, contextPath, namespaceResolver, wrappedResultType, result);
                 },
-                openrosa_xpath_extensions(translator));
+                openrosa_xpath_extensions(translator.t));
         return evaluator.evaluate(e, contextPath, namespaceResolver, resultType, result);
     };
     window.JsXPathException =
