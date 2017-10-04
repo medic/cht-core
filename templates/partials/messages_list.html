@@ -19,6 +19,7 @@
   </ul>
   <p ng-show="error" class="alert alert-danger" role="alert" translate>Error fetching messages</p>
   <p class="loading-status" ng-show="!error && !loading && !messages.length" translate>No messages found</p>
+  <p class="loading-status" ng-show="!error && !loading && messages.length" translate>message.list.complete</p>
   <div class="loader" ng-show="loading"></div>
   <div class="padding"></div>
 </div>

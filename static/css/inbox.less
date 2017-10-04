@@ -563,7 +563,9 @@ body {
 .inbox-items {
   padding: 0;
   background-color: @form-background-color;
-  border-left: 1px solid @seperator-color;
+  border: 1px solid @seperator-color;
+  border-top: 0;
+  border-bottom: 0;
 
   .alert {
     margin: 10px;
@@ -577,7 +579,8 @@ body {
 .loading-status {
   margin: 10px;
   text-align: center;
-  font-weight: bold;
+  font-size: @font-small;
+  color: @label-color;
 }
 
 .scheduled-tasks {
