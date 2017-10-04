@@ -35,11 +35,11 @@
     padding: 20px;
   }
   .main-icon {
-    float: left;
     width: 60px;
     font-size: 60px;
     text-align: center;
     color: @contacts-color;
+    vertical-align: middle;
   }
   .row {
     margin: 0;
@@ -56,9 +56,13 @@
     text-align: right;
     line-height: 1;
   }
+  .heading-content {
+    display: inline-block;
+  }
   h2,
   .primary-contact {
-    margin-left: 80px;
+    margin-left: 20px;
+    display: inline-block;
   }
   h2 {
     margin-top: 0;
@@ -135,10 +139,24 @@
 }
 
 @media (max-width: 767px) {
-  .material .card {
-    border-radius: 0;
-    border-left: 0;
-    border-right: 0;
+  .material {
+    .card {
+      border-radius: 0;
+      border-left: 0;
+      border-right: 0;
+    }
+    .main-icon {
+      vertical-align: inherit;
+      float: left;
+    }
+    .heading-content {
+      display: inherit;
+      margin-left: 60px;
+    }
+    h2,
+    .primary-contact {
+      display: block;
+    }
   }
   #snackbar .snackbar-content {
     width: 100%;

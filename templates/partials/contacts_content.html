@@ -17,11 +17,13 @@
           <div class="row heading">
             <div>
               <i class="fa main-icon {{selected.icon}}"></i>
-              <h2>{{selected.doc.name}}</h2>
-              <div class="primary-contact" ng-if="selected.isPrimaryContact">
-                <i class="fa fa-star primary" translate translate-attr-title="Primary contact"></i>
-                <span ng-if="selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
-                <span ng-if="selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
+              <div class="heading-content">
+                <h2>{{selected.doc.name}}</h2>
+                <div class="primary-contact" ng-if="selected.isPrimaryContact">
+                  <i class="fa fa-star primary" translate translate-attr-title="Primary contact"></i>
+                  <span ng-if="selected.doc.parent.type !== 'clinic'" translate>Primary contact</span>
+                  <span ng-if="selected.doc.parent.type === 'clinic'" translate>clinic.field.contact</span>
+                </div>
               </div>
             </div>
           </div>
