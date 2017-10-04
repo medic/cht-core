@@ -16,7 +16,7 @@ npm-debug.log
 logs
 /config.js
 /build/
-/tests/results
+tests/results
 
 *.sublime-project
 *.sublime-workspace
