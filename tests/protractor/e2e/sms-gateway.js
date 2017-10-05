@@ -287,7 +287,6 @@ describe('sms-gateway api', () => {
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
-      helper.waitElementToBeVisible(by.css('#reports-list li:first-child'));
       const desc = element(by.css('#reports-list li:first-child .heading'));
       helper.waitElementToBeClickable(desc);
       desc.click();
