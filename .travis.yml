@@ -75,7 +75,7 @@ after_script:
   if [${TRAVIS_PULL_REQUEST}="true"]; then
     aws s3 cp tests/results s3://medic-tests/PR_$TRAVIS_PULL_REQUEST/ --recursive
   else 
-    aws s3 cp tests/results s3://medic-tests/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_ID/ --recursive
+    aws s3 cp tests/results s3://medic-tests/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER/ --recursive
   fi
 after_success:
  - python ./scripts/ci/travis_after_all.py
