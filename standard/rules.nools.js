@@ -571,7 +571,7 @@ rule GenerateEvents {
                     if (schedule) {
                       for (var k = 0; k < schedule.events.length; k++) {
                         var s = schedule.events[k];
-                        var dueDate = new Date(r.scheduled_tasks[i].due);
+                        var dueDate = new Date(Utils.addDate(new Date(r.scheduled_tasks[i].due), s.days));
                         var task = createTask(c, s, r);
                         // each group needs its own task, otherwise will be combined into one
                         task._id += '-' + i;
@@ -605,7 +605,7 @@ rule GenerateEvents {
                   for (var k = 0; k < schedule.events.length; k++) {
                     var s = schedule.events[k];
 
-                    var dueDate = new Date(r.scheduled_tasks[r.scheduled_tasks.length-1].due);
+                    var dueDate = new Date(Utils.addDate(new Date(r.scheduled_tasks[r.scheduled_tasks.length-1].due), s.days));
                     var task = createTask(c, s, r);
                     task.date = dueDate;
                     task.priority = isHighRiskPregnancy ? 'high' : null;
@@ -645,7 +645,7 @@ rule GenerateEvents {
                     if (schedule) {
                       for (var k = 0; k < schedule.events.length; k++) {
                         var s = schedule.events[k];
-                        var dueDate = new Date(r.scheduled_tasks[i].due);
+                        var dueDate = new Date(Utils.addDate(new Date(r.scheduled_tasks[i].due), s.days));
                         var task = createTask(c, s, r);
                         // each group needs its own task, otherwise will be combined into one
                         task._id += '-' + i;
@@ -688,7 +688,7 @@ rule GenerateEvents {
                 if (schedule) {
                   for (var k = 0; k < schedule.events.length; k++) {
                     var s = schedule.events[k];
-                    var dueDate = new Date(r.reported_date);
+                    var dueDate = new Date(Utils.addDate(new Date(r.reported_date), s.days));
                     var task = createTask(c, s, r);
                     task.date = dueDate;
                     task.actions.push({
@@ -717,7 +717,7 @@ rule GenerateEvents {
                 if (schedule) {
                   for (var k = 0; k < schedule.events.length; k++) {
                     var s = schedule.events[k];
-                    var dueDate = new Date(r.reported_date);
+                    var dueDate = new Date(Utils.addDate(new Date(r.reported_date), s.days));
                     var task = createTask(c, s, r);
                     task.date = dueDate;
                     task.actions.push({
@@ -751,7 +751,7 @@ rule GenerateEvents {
                     if (schedule) {
                       for (var k = 0; k < schedule.events.length; k++) {
                         var s = schedule.events[k];
-                        var dueDate = new Date(r.scheduled_tasks[i].due);
+                        var dueDate = new Date(Utils.addDate(new Date(r.scheduled_tasks[i].due), s.days));
                         var task = createTask(c, s, r);
                         // each group needs its own task, otherwise will be combined into one
                         task._id += '-' + i;
