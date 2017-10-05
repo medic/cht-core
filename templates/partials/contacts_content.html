@@ -16,7 +16,7 @@
         <div class="card">
           <div class="row heading">
             <div>
-              <i class="fa main-icon {{selected.icon}}"></i>
+              <span ng-bind-html="selected.icon | resourceIcon"></span>
               <div class="heading-content">
                 <h2>{{selected.doc.name}}</h2>
                 <div class="primary-contact" ng-if="selected.isPrimaryContact">
@@ -123,7 +123,7 @@
             <mm-content-row ng-repeat="task in selected.tasks | filter:filterTasks as filteredTasks"
               id="task._id"
               route="'tasks'"
-              resource-icon="task.icon"
+              icon="task.icon"
               date="task.date"
               overdue="task.isLate"
               hide-time="true"
@@ -155,7 +155,7 @@
             <mm-content-row ng-repeat="report in selected.reports | filter:filterReports as filteredReports track by report._id"
               id="report._id"
               route="'reports'"
-              resource-icon="report | formIconName:forms"
+              icon="report | formIconName:forms"
               date="report.reported_date"
               heading="selected.doc.type === 'person' ? (report | summary:forms) : (report.fields.place_name ? report.fields.place_name : report.fields.patient_name)"
               summary="selected.doc.type === 'person' ? '' : (report | summary:forms)"

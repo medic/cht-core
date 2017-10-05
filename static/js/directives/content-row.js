@@ -17,10 +17,7 @@ angular.module('inboxDirectives').directive('mmContentRow', function() {
       read: '=',
 
       // string: (optional) the id of the resource icon to render
-      resourceIcon: '=',
-
-      // string: (optional) the class of the font awesome icon to render
-      fontIcon: '=',
+      icon: '=',
 
       // date: (optional) the date to show on the row
       date: '=',
