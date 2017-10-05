@@ -17,6 +17,9 @@ module.exports = {
       if (err) {
         return callback(err);
       }
+      if (!doc._attachments) {
+        doc._attachments = {};
+      }
       asyncEach(
         resources,
         (resource, callback) => {
