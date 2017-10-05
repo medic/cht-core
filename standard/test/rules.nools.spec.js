@@ -518,7 +518,7 @@ var setupReports = function(reports, day) {
   //  reports:   array of reports
   //  day:       number of days to push back all the dates in reports
 
-  if (day && reports) {
+  if (day !== undefined && reports) {
     // Sets up the tasks by using the doc and reports 
     reports.forEach(r => {
       r = setDate(r, Date.now()-(day*MS_IN_DAY)); 
