@@ -179,6 +179,10 @@ var passwordTester = require('simple-password-tester'),
         return hasFacility && hasContact;
       };
 
+      var validateRole = function() {
+        return validateRequired('type', 'User Type');
+      };
+
       var getRoles = function(type, includeAdmin) {
         if (includeAdmin && type === '_admin') {
           return ['_admin'];
@@ -264,7 +268,10 @@ var passwordTester = require('simple-password-tester'),
         $scope.setProcessing();
         $scope.errors = {};
         computeFields();
-        if (validatePasswordForEditUser() && validateName() && validateContactAndFacility()) {
+        if (validateName() &&
+            validateRole() &&
+            validateContactAndFacility() &&
+            validatePasswordForEditUser()) {
           saveEdit('#edit-user-profile', $scope.editUserModel.id, getSettingsUpdates(false), getUserUpdates());
         } else {
           $scope.setError();
