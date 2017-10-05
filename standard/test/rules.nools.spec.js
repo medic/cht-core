@@ -5,7 +5,7 @@ const parseRules = require('medic-nootils/src/node/test-utils').parseRules;
 const now = new Date();
 const MS_IN_DAY = 24*60*60*1000;  // 1 day in ms
 const MAX_DAYS_IN_PREGNANCY = 44*7;  // 44 weeks
-const IMMUNIZATION_PERIOD = 2*365 + 10; // Test for 10 days beyond the immunization period
+const IMMUNIZATION_PERIOD = 2*365;
 const DAYS_IN_PNC = 42;
 const WEEKS = 7;  // days per week
 
@@ -216,7 +216,7 @@ describe('Standard Configuration', function() {
           }
         });
       });
-    }); /* */   
+    }); 
   });
 
   describe('Pregnancy without LMP', function() {
@@ -402,7 +402,8 @@ describe('Standard Configuration', function() {
     var immunizationTaskDays = getDayRanges(taskStartDays, taskDuration, taskOffset);
     var ageInDaysWhenRegistered = Math.floor((newChildReport.reported_date - (new Date(newChildReport.birth_date).getTime()))/MS_IN_DAY);
 
-    range(ageInDaysWhenRegistered, IMMUNIZATION_PERIOD).forEach(day => {
+    // Test for 10 days beyond the immunization period
+    range(ageInDaysWhenRegistered, IMMUNIZATION_PERIOD + 10).forEach(day => {
       describe(`Immunization: day ${day}`, function() {
 
         if (immunizationTaskDays.includes(day)) {
