@@ -55,7 +55,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           var scope = $scope.$new();
           scope.id = contact._id;
           scope.route = 'contacts';
-          scope.fontIcon = ContactSchema.get(contact.type).icon;
+          scope.icon = ContactSchema.get(contact.type).icon;
           scope.heading = contact.name;
           scope.primary = contact.home;
           scope.simprintsTier = contact.simprints && contact.simprints.tierNumber;
@@ -98,7 +98,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.id = report._id;
           var form = _.findWhere($scope.forms, { code: report.form });
           scope.route = 'reports';
-          scope.resourceIcon = form && form.icon;
+          scope.icon = form && form.icon;
           scope.heading = report.contact || report.from;
           scope.date = report.reported_date;
           scope.summary = form ? TranslateFrom(form.name) : report.form;
@@ -156,7 +156,7 @@ angular.module('inboxServices').factory('LiveListConfig',
           scope.route = 'tasks';
           scope.date = task.date;
           scope.overdue = Date.parse(task.date) < startOfToday;
-          scope.resourceIcon = task.icon;
+          scope.icon = task.icon;
           scope.heading = task.contact && task.contact.name;
           scope.summary = TranslateFrom(task.title, task);
           scope.warning = TranslateFrom(task.priorityLabel, task);
