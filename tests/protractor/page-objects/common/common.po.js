@@ -35,7 +35,6 @@ module.exports = {
     helper.waitUntilReady(element(reportsLink));
     element(reportsLink).click();
     helper.waitElementToBeVisible(element(by.css('#reports-list')));
-    helper.waitElementToBeVisible(element(by.css('ul.unfiltered')));
   },
 
   goToAnalytics: () => {
