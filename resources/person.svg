@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="30px" height="30px" viewBox="0 0 30 30" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 46.2 (44496) - http://www.bohemiancoding.com/sketch -->
+    <title>icon/people/icon-personcrop</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <path d="M24.9761429,22.8241469 C24.9761429,25.187902 23.4437619,26.6034122 21.1880476,26.6034122 L8.78804762,26.6034122 C6.53233333,26.6034122 4.99995238,25.187902 4.99995238,22.8241469 C4.99995238,19.5258612 5.75185714,14.462351 9.909,14.462351 C10.349,14.462351 12.2075714,16.4905959 14.9880476,16.4905959 C17.769,16.4905959 19.6275714,14.462351 20.0670952,14.462351 C24.2242381,14.462351 24.9761429,19.5258612 24.9761429,22.8241469 M20.4361429,8.60390204 C20.4361429,11.6974531 17.9956667,14.2071673 14.9880476,14.2071673 C11.9804286,14.2071673 9.53995238,11.6974531 9.53995238,8.60390204 C9.53995238,5.50986122 11.9804286,2.99965714 14.9880476,2.99965714 C17.9956667,2.99965714 20.4361429,5.50986122 20.4361429,8.60390204" id="path-1"></path>
+    </defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="icon/people/icon-personcrop">
+            <mask id="mask-2" fill="white">
+                <use xlink:href="#path-1"></use>
+            </mask>
+            <use id="personcrop" fill="#F47963" xlink:href="#path-1"></use>
+            <g id="color/03-rose" mask="url(#mask-2)">
+                <g transform="translate(-5.000000, -5.000000)"></g>
+            </g>
+        </g>
+    </g>
+</svg>
