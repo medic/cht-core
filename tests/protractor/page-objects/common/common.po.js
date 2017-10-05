@@ -1,14 +1,13 @@
 const helper = require('../../helper'),
-      utils = require('../../utils');
-
-const medicLogo = element(by.className('logo-full'));
-const messagesLink = element(by.id('messages-tab'));
-const tasksLink = element(by.id('tasks-tab'));
-const contactsLink = element(by.id('contacts-tab'));
-const analyticsLink = element(by.id('analytics-tab'));
-const configurationLink = element(by.css('[ui-sref=configuration]'));
-const hamburgerMenu = element(by.className('dropdown options'));
-const logoutButton = $('[ng-click=logout]');
+      utils = require('../../utils'),
+      medicLogo = element(by.className('logo-full')),
+      messagesLink = element(by.id('messages-tab')),
+      tasksLink = element(by.id('tasks-tab')),
+      contactsLink = element(by.id('contacts-tab')),
+      analyticsLink = element(by.id('analytics-tab')),
+      configurationLink = element(by.css('[ui-sref=configuration]')),
+      hamburgerMenu = element(by.className('dropdown options')),
+      logoutButton = $('[ng-click=logout]');
 
 module.exports = {
   getBaseUrl: () => {
@@ -68,6 +67,3 @@ module.exports = {
     logoutButton.click();
   }
 };
-
-
-

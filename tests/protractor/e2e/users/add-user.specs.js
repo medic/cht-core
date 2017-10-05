@@ -5,13 +5,9 @@ const utils = require('../../utils'),
 
 const addedUser = 'fulltester' + new Date().getTime(),
       fullName = 'Bede Ngaruko',
-      errorMessagePassword = element.all(by.css('span.help-block.ng-binding')).get(3);
+      errorMessagePassword = element(by.css('#password ~ .help-block'));
 
 describe('Add user  : ', () => {
-  afterEach(done => {
-    utils.resetBrowser();
-    done();
-  });
 
   afterAll(utils.afterEach);
 
@@ -75,7 +71,7 @@ describe('Add user  : ', () => {
     addUserModal.fillForm('restricted', 'Not Saved', '%4wbbygxkgdwvdwT65');
     helper.selectDropdownByText(element(by.id('type')), 'Restricted to their place');
     addUserModal.submit();
-    expect(element.all(by.css('span.help-block.ng-binding')).get(1).getText()).toBe('Place is a required field.');
-    expect(element.all(by.css('span.help-block.ng-binding')).get(2).getText()).toBe('Associated contact is a required field.');
+    expect(element(by.css('#facility ~ .help-block')).getText()).toBe('Place is a required field.');
+    expect(element(by.css('#contact ~ .help-block')).getText()).toBe('Associated contact is a required field.');
   });
 });
