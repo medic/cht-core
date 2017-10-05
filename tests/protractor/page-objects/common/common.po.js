@@ -34,8 +34,7 @@ module.exports = {
     const reportsLink = by.id('reports-tab');    
     helper.waitUntilReady(element(reportsLink));
     element(reportsLink).click();
-    helper.waitElementToDisappear(element(by.css('.loading-status ng-hide')));
-    helper.waitUntilReady(element(by.css('#reports-list')));
+    helper.waitElementToBeVisisble(element(by.css('#reports-list')));
   },
 
   goToAnalytics: () => {
