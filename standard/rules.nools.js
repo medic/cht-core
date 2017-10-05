@@ -717,7 +717,7 @@ rule GenerateEvents {
                 if (schedule) {
                   for (var k = 0; k < schedule.events.length; k++) {
                     var s = schedule.events[k];
-                    var dueDate = new Date(Utils.addDate(new Date(r.reported_date), s.days));
+                    var dueDate = new Date(Utils.addDate(new Date(Utils.getMostRecentTimestamp(c.reports, 'F')), s.days));
                     var task = createTask(c, s, r);
                     task.date = dueDate;
                     task.actions.push({
