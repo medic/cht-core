@@ -100,9 +100,9 @@
     "events": [
       {
         "id": "postnatal-missing-visit",
-        "days": 2,
+        "days": 1,
         "start": 0,
-        "end": 4,
+        "end": 3,
         "type": "mother-child",
         "title": [
           {
