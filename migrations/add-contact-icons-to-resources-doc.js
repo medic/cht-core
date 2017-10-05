@@ -1,4 +1,5 @@
 const fs = require('fs'),
+      path = require('path'),
       asyncEach = require('async/each'),
       db = require('../db');
 
@@ -27,7 +28,8 @@ module.exports = {
             // don't overwrite the existing attachment
             return callback();
           }
-          fs.readFile('resources/' + resource.file, (err, data) => {
+          const source = path.join(__dirname, '..', 'resources', resource.file);
+          fs.readFile(source, (err, data) => {
             if (err) {
               return callback(err);
             }
