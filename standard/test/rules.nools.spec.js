@@ -173,20 +173,24 @@ describe('Standard Configuration', function() {
     });
 
     describe('Postnatal visit schedule', function() {
-      var taskOffset = 2; // days between last message and task, weekday offset, task offset in tasks.json  
-      var taskDuration = 5;
-      var taskStartDays = [3, 6, 42];
+      var taskOffset = 1;
+      var taskDuration = 4;
+      var taskStartDays = [4, 8, 43];
       var pncTaskDays = getDayRanges(taskStartDays, taskDuration, taskOffset);
       var deliveryTaskDays = getDayRanges([40*WEEKS],14,-1);
+      console.log(pncTaskDays);
       
-      range(0, DAYS_IN_PNC+10).forEach(day => {
+      var d = require('./d.json');
+      var ageInDaysWhenRegistered = Math.floor((d.reported_date - (new Date(d.birth_date).getTime()))/MS_IN_DAY);
+      
+      range(ageInDaysWhenRegistered, DAYS_IN_PNC+10).forEach(day => {
 
         describe(`Postnatal period: day ${day}`, function() {
           if (pncTaskDays.includes(day)) {
             it(`should have 'postnatal-missing-visit' visit task on day ${day}`, function() {
               // given
               var reports = [require('./d.json')];
-              var c = setupContact(Contact, person, setupReports(reports, day));
+              var c = setupContact(Contact, person, setupReports(reports, day-ageInDaysWhenRegistered));
               session.assert(c);
 
               // expect
@@ -201,7 +205,7 @@ describe('Standard Configuration', function() {
             it(`should not have 'postnatal-missing-visit' visit task on day ${day}`, function() {
               // given
               var reports = [require('./d.json')];
-              var c = setupContact(Contact, person, setupReports(reports, day));
+              var c = setupContact(Contact, person, setupReports(reports, day-ageInDaysWhenRegistered));
               session.assert(c);
 
 
@@ -257,7 +261,6 @@ describe('Standard Configuration', function() {
       // expect
       return session.emitTasks()
         .then(function(tasks) {
-          // console.log(JSON.stringify(tasks,null,2));
           assert.equal(tasks.length, 1, "Should have a single task created");
           assert.include(tasks[0]._id, 'pregnancy-danger-sign', "Task id should have correct schedule name included");
         });
@@ -280,7 +283,6 @@ describe('Standard Configuration', function() {
       // expect
       return session.emitTasks()
         .then(function(tasks) {
-          console.log(JSON.stringify(tasks,null,2));
           assert.equal(tasks.length, 1, "Should have a single task created");
           assert.include(tasks[0]._id, 'pregnancy-danger-sign', "Task id should have correct schedule name included");
         });
@@ -412,8 +414,6 @@ describe('Standard Configuration', function() {
             var reports = setupReports([newChildReport], day - ageInDaysWhenRegistered);
             var c = setupContact(Contact, person, reports);
             session.assert(c);
-            // console.log(new Date(newChildReport.birth_date));
-            // console.log(new Date(newChildReport.reported_date));
 
             // expect
             return session.emitTasks()
@@ -468,7 +468,9 @@ function range(a, b) {
 function getDayRanges(startDays, duration, offset) {
   var a = new Array();
   startDays.forEach(day => {
-    a.push(range(day+offset, day+offset+duration));
+    var startVal = day + offset;
+    var endVal = startVal + duration - 1;
+    a.push(range(startVal, endVal));
   });
 
   // return the flattened 1D array
@@ -483,6 +485,7 @@ function setDate(form, newDate) {
   // Sets the newDate as the form's reported date, and modifies other dates in doc by the same offset
   var originalDate = new Date(form.reported_date);
   var diff = originalDate - newDate;
+  diff = (Math.round(diff/MS_IN_DAY))*MS_IN_DAY; // to avoid changing the number of days between event get diff in days, not ms
   form.reported_date = newDate;
   traverse(form, resetDate, "birth_date", diff);
   traverse(form, resetDate, "due", diff);
