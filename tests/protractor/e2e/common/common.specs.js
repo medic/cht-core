@@ -14,7 +14,7 @@ describe('Navigation tests : ', () => {
   });
 
   it('should open Reports or History tab', () => {
-    commonElements.goToReports();
+    element(by.id('reports-tab')).click();
     expect(commonElements.isAt('reports-list'));
     expect(browser.getCurrentUrl()).toEqual(commonElements.getBaseUrl() + 'reports/');
   });
