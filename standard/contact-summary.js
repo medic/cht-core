@@ -123,6 +123,7 @@ var getBirthDate = function(report) {
 
 var getPNCperiod = function(deliveryReport){
   var obj = {};
+  // Find PNC period based on delivery date, not reported date
   obj.start = getBirthDate(deliveryReport);
   obj.end = new Date(obj.start.getFullYear(), obj.start.getMonth(), obj.start.getDate() + DAYS_IN_PNC);
   return obj;
@@ -249,7 +250,7 @@ var addDate = function(date, days) {
 
 // Opposite of the following, with no form arg: https://github.com/medic/medic-webapp/blob/31762050095dd775941d1db3a2fc6f6b633522f3/static/js/modules/nootils.js#L37-L47
 var getOldestReport = function(reports) {
-  var result = null;
+  var result;
   reports.forEach(function(report) {
     if (!result || report.reported_date < result.reported_date) {
       result = report;
@@ -273,18 +274,13 @@ if (contact.type === 'person') {
   var immunizations = initImmunizations();
 
   // INIT
-  var birthDate = null;
-  var ageInMs = null;
-  var ageInMonths = null;
+  var birthDate, ageInMs, ageInMonths, newestDelivery;
 
   if (contact.date_of_birth && contact.date_of_birth !== '') {
     birthDate = new Date(contact.date_of_birth);
     ageInMs = new Date(Date.now() - birthDate.getTime());
     ageInMonths = (Math.abs(ageInMs.getFullYear() - 1970) * 12) + ageInMs.getMonth();
   }
-
-  // Find PNC period based on delivery date, not reported date
-  var newestDelivery = null;
 
   reports.forEach(function(report) {
     if (report.form === 'pregnancy' || report.form === 'P') {
@@ -401,7 +397,7 @@ if (contact.type === 'person') {
       fields: []
     };
 
-    IMMUNIZATION_LIST.forEach( function(imm) {
+    IMMUNIZATION_LIST.forEach(function(imm) {
       if (isVaccineInLineage(lineage, imm)) {  
         var field = {};
         field.label = 'contact.profile.imm.' + imm;
@@ -411,7 +407,7 @@ if (contact.type === 'person') {
           field.value = immunizations[imm] ? 'yes' : 'no';
         }
         else {
-          field.value= 'contact.profile.imm.doses';
+          field.value = 'contact.profile.imm.doses';
           field.context = {};
           field.context.count = countDosesReceived(immunizations, imm);
           field.context.total = countDosesPossible(imm);
@@ -419,6 +415,7 @@ if (contact.type === 'person') {
         imm_card.fields.push(field);
       }
     });
+    // TODO: if no vaccines on card show something instead of card header only
     cards.push(imm_card);
   }
 } else {
