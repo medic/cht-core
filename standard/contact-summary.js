@@ -12,6 +12,54 @@ var deliveryForms = [
   'delivery'
 ];
 
+var immunizationForms = [
+  'V',
+  'IMM',
+  'immunization_visit',
+  'DT1',
+  'DT2',
+  'DT3',
+  'BCG',
+  'OPV0',
+  'OPV1',
+  'OPV2',
+  'OPV3',
+  'PCV1',
+  'PCV2',
+  'PCV3',
+  'RV1',
+  'RV2',
+  'RV3',
+  'VA',
+  'MTV1',
+  'MTV2',
+  'MMR1',
+  'MMR2',
+  'MMRV1',
+  'MMRV2',
+  'MN1',
+  'MN2',
+  'MN3',
+  'MN4',
+  'FLU',
+  'HA1',
+  'HA2',
+  'JE',
+  'YF',
+  'TY1',
+  'TY2',
+  'HPV1',
+  'HPV2',
+  'HPV3',
+  'CH1',
+  'CH2',
+  'CH3',
+  'RB1',
+  'RB2',
+  'RB3',
+  'TBE'
+];
+
 var IMMUNIZATION_DOSES = [
   ['bcg','BCG'],
   ['cholera_1','CH1'],
@@ -219,6 +267,19 @@ var isSingleDose = function(name) {
   return singleDose;
 };
 
+// from rules.nools.js https://github.com/medic/medic-projects/blob/4dafaeed547ea61d362662f136e1e1f7c7335e9c/standard/rules.nools.js#L219-L229
+var countReportsSubmittedInWindow = function(reports, form, start, end) {
+  var reportsFound = 0;
+  reports.forEach(function(report) {
+    if (form.indexOf(report.form) >= 0) {
+      if (report.reported_date >= start && report.reported_date <= end) {
+        reportsFound++;
+      }
+    }
+  });
+  return reportsFound;
+};
+
 // from nootils.js: https://github.com/medic/medic-webapp/blob/1cc25f2aeab60258065329bd1365ee1d316a1f50/static/js/modules/nootils.js
 var isFormSubmittedInWindow = function(reports, form, start, end, count) {
   var result = false;
@@ -415,7 +476,15 @@ if (contact.type === 'person') {
         imm_card.fields.push(field);
       }
     });
-    // TODO: if no vaccines on card show something instead of card header only
+    // Show a report count if no specific immunizations are being tracked
+    if (imm_card.fields.length == 0) {
+      imm_card.fields.push({
+        label: 'contact.profile.imm.generic',
+        translate: true,
+        value: countReportsSubmittedInWindow(reports, immunizationForms, null, Date.now()),
+        width: 12,
+      });
+    }
     cards.push(imm_card);
   }
 } else {
