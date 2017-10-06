@@ -176,7 +176,7 @@ describe('Standard Configuration', function() {
         triggers: [4, 8, 43]
       };
 
-      var postnatalTaskDays = getRangeFromTask(pncTasks, 0);
+      var postnatalTaskDays = getRangeFromTask(postnatalTasks, 0);
 
       var d = require('./d.json');
       var ageInDaysWhenRegistered = Math.floor((d.reported_date - (new Date(d.birth_date).getTime()))/MS_IN_DAY);
