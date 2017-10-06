@@ -1,5 +1,6 @@
 const utils = require('../utils'),
-      commonElements = require('../page-objects/common/common.po.js');
+      commonElements = require('../page-objects/common/common.po.js'),
+      helper=require('../helper');
 
 describe('registration transition', () => {
 
@@ -242,6 +243,7 @@ describe('registration transition', () => {
 
     it('shows content', () => {
       commonElements.goToReports();
+      helper.waitElementToBeVisible(element(by.cssContainingText('#reports-list .unfiltered li:first-child')));
       browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', CAROL.name)).isPresent(), 10000);
 
       element(by.css('#reports-list .unfiltered li:first-child .summary')).click();
