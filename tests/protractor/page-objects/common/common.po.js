@@ -1,7 +1,7 @@
 const helper = require('../../helper'),
       utils = require('../../utils');
 
-const medicLogo = element(by.className('logo-full'));//no change ---just testing 2
+const medicLogo = element(by.className('logo-full'));//no change ---just testing 3
 const messagesLink = element(by.id('messages-tab'));
 const tasksLink = element(by.id('tasks-tab'));
 const contactsLink = element(by.id('contacts-tab'));
