@@ -558,6 +558,37 @@ rule GenerateEvents {
               var isHighRiskPregnancy = (r.form === 'pregnancy' && r.fields && (r.fields.risk_factors || r.fields.danger_signs))
                 || Utils.isFormSubmittedInWindow(c.reports, 'F', r.reported_date, Utils.addDate(new Date(r.reported_date), MAX_DAYS_IN_PREGNANCY).getTime());
 
+              // ANC TASK if a F flag during pregnancy
+              if (Utils.isFormSubmittedInWindow(c.reports, 'F', r.reported_date, Utils.addDate(new Date(r.reported_date), MAX_DAYS_IN_PREGNANCY).getTime())) {
+                var schedule = Utils.getSchedule('pregnancy-danger-sign');
+                if (schedule) {
+                  for (var k = 0; k < schedule.events.length; k++) {
+                    var s = schedule.events[k];
+                    var dueDate = new Date(Utils.addDate(new Date(Utils.getMostRecentTimestamp(c.reports, 'F')), s.days));
+                    var task = createTask(c, s, r);
+                    task.date = dueDate;
+                    task.priority = true;
+                    task.priorityLabel = schedule.description;
+                    task.actions.push({
+                      type: 'report',
+                      form: 'pregnancy_visit',
+                      label: 'Follow up',
+                      content: {
+                        source: 'task',
+                        source_id: r._id,
+                        contact: c.contact
+                      }
+                    });
+                    // Resolved with a newer pregnancy, newer delivery, or a visit report received from nurse in time window
+                    task.resolved = r.reported_date < newestDeliveryTimestamp
+                          || r.reported_date < newestPregnancyTimestamp
+                          || isFormFromArraySubmittedInWindow(c.reports, 'pregnancy_visit', Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end + 1).getTime());
+
+                    emitTask(task, s);
+                  }
+                }
+              }
+
               if (r.scheduled_tasks) {
 
                 // Assign a missing visit schedule to last SMS of each group
@@ -591,7 +622,7 @@ rule GenerateEvents {
                         // Resolved if there is a newer pregnancy, there has been a delivery, or visit received in window
                         task.resolved = r.reported_date < newestPregnancyTimestamp
                           || r.reported_date < newestDeliveryTimestamp
-                          || isFormFromArraySubmittedInWindow(c.reports, antenatalForms, Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end).getTime());
+                          || isFormFromArraySubmittedInWindow(c.reports, antenatalForms, Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end + 1).getTime());
 
                         emitTask(task, s);
                       }
@@ -622,8 +653,7 @@ rule GenerateEvents {
                     });
                     // Missing Birth Report
                     // Resolved only if a birth report was submitted
-                    // TODO: Need to account for duplicates: multiple registrations for same pregnancy
-                    task.resolved = isFormFromArraySubmittedInWindow(c.reports, deliveryForms, r.reported_date, now.getTime());
+                    task.resolved = isFormFromArraySubmittedInWindow(c.reports, deliveryForms, r.reported_date, r.reported_date + (MAX_DAYS_IN_PREGNANCY+DAYS_IN_PNC)*MS_IN_DAY);
                     emitTask(task, s);
                   }
                 }
@@ -660,8 +690,8 @@ rule GenerateEvents {
                             contact: c.contact
                           }
                         });
-                        // Resolved if there an immunization report has been received in time window
-                        task.resolved = isFormFromArraySubmittedInWindow(c.reports, immunizationForms, Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end).getTime());
+                        // Resolved if there an immunization report has been received in time window. Be lenient on tail end of window.
+                        task.resolved = isFormFromArraySubmittedInWindow(c.reports, immunizationForms, Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end + 1).getTime());
 
                         emitTask(task, s);
                       }
@@ -704,7 +734,7 @@ rule GenerateEvents {
                     // Resolved if there a visit report received in time window or a newer pregnancy
                     task.resolved = r.reported_date < newestDeliveryTimestamp
                           || r.reported_date < newestPregnancyTimestamp
-                          || isFormFromArraySubmittedInWindow(c.reports, postnatalForms, Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end).getTime());
+                          || isFormFromArraySubmittedInWindow(c.reports, postnatalForms, Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end + 1).getTime());
 
                     emitTask(task, s);
                   }
@@ -733,7 +763,7 @@ rule GenerateEvents {
                     // Only resolved with PNC report received from nurse in time window or a newer pregnancy
                     task.resolved = r.reported_date < newestDeliveryTimestamp
                           || r.reported_date < newestPregnancyTimestamp
-                          || isFormFromArraySubmittedInWindow(c.reports, 'postnatal_visit', Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end).getTime());
+                          || isFormFromArraySubmittedInWindow(c.reports, 'postnatal_visit', Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end + 1).getTime());
 
                     emitTask(task, s);
                   }
@@ -771,7 +801,7 @@ rule GenerateEvents {
                         // Resolved if there a visit report received in time window or a newer pregnancy
                         task.resolved = r.reported_date < newestDeliveryTimestamp
                           || r.reported_date < newestPregnancyTimestamp
-                          || isFormFromArraySubmittedInWindow(c.reports, postnatalForms, Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end).getTime());
+                          || isFormFromArraySubmittedInWindow(c.reports, postnatalForms, Utils.addDate(dueDate, s.start * -1).getTime(), Utils.addDate(dueDate, s.end + 1).getTime());
 
                         emitTask(task, s);
                       }
