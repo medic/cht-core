@@ -22,10 +22,12 @@ var person = {
   "reported_date": Date.now(),
   "_id": "contact-1"
 };
+
+// form id must be upper case
 var pregnancyReport = {
   "_id":"pregnancy-1",
   "fields": { },
-  "form": "p",
+  "form": "P",
   "reported_date": Date.now()
 };
 var flagReport = {
@@ -92,16 +94,14 @@ describe('Standard Configuration', function() {
   });
 
   describe('Birth not at facility', function() {
-    // given
 
     it('should have a clinic visit task', function() {
-      // and
-      session.assert(new Contact({
-        contact: person,
-        reports: [
+      // given
+      var reports = [
           deliveryReport,
-        ],
-      }));
+      ];
+      var c = setupContact(Contact, person, reports);
+      session.assert(c);
 
       // expect
       return session.emitTasks()
@@ -117,14 +117,13 @@ describe('Standard Configuration', function() {
         });
     });
     it('should have first visit task completed when PNC app form is submitted', function() {
-      // and
-      session.assert(new Contact({
-        contact: person,
-        reports: [
-          deliveryReport,
-          pncVisitAppReport
-        ],
-      }));
+      // given
+      var reports = [
+        deliveryReport,
+        pncVisitAppReport
+      ];
+      var c = setupContact(Contact, person, reports);
+      session.assert(c);
 
       // expect
       return session.emitTasks()
@@ -134,14 +133,13 @@ describe('Standard Configuration', function() {
         });
     });
     it('should have first visit task completed when PNC SMS form is submitted', function() {
-      // and
-      session.assert(new Contact({
-        contact: person,
-        reports: [
-          deliveryReport,
-          pncVisitSMSReport
-        ],
-      }));
+      // given
+      var reports = [
+        deliveryReport,
+        pncVisitSMSReport
+      ];
+      var c = setupContact(Contact, person, reports);
+      session.assert(c);
 
       // expect
       return session.emitTasks()
@@ -151,42 +149,42 @@ describe('Standard Configuration', function() {
         });
     });
     it(`should have a 'postnatal-danger-sign' task if a flag is sent during PNC period`, function() {
+      // given
+      deliveryReport = setDate(deliveryReport, Date.now()-(25*MS_IN_DAY)); 
+      flagReport.reported_date = Date.now()-(4*MS_IN_DAY); 
+
       var reports = [
         deliveryReport,
         flagReport,
       ];
-      deliveryReport = setDate(deliveryReport, Date.now()-(25*MS_IN_DAY)); 
-      flagReport.reported_date = Date.now()-(4*MS_IN_DAY); 
-      
-      session.assert(new Contact({
-        contact: person,
-        reports: reports,
-      }));
+      var c = setupContact(Contact, person, reports);
+      session.assert(c);
 
       // expect
       return session.emitTasks()
         .then(function(tasks) {
-          // console.log(JSON.stringify(tasks,null,2));
           assert.equal(tasks.length, 1, "Should have a single task created");
           assert.include(tasks[0]._id, 'postnatal-danger-sign', "Task id should have correct schedule name included");
         });
     });
 
     describe('Postnatal visit schedule', function() {
-      var taskOffset = 1;
-      var taskDuration = 4;
-      var taskStartDays = [4, 8, 43];
-      var pncTaskDays = getDayRanges(taskStartDays, taskDuration, taskOffset);
-      var deliveryTaskDays = getDayRanges([40*WEEKS],14,-1);
-      console.log(pncTaskDays);
-      
+      var postnatalTasks = {
+        offset: 1,
+        pre: 0,
+        post: 3,
+        triggers: [4, 8, 43]
+      };
+
+      var postnatalTaskDays = getRangeFromTask(pncTasks, 0);
+
       var d = require('./d.json');
       var ageInDaysWhenRegistered = Math.floor((d.reported_date - (new Date(d.birth_date).getTime()))/MS_IN_DAY);
       
       range(ageInDaysWhenRegistered, DAYS_IN_PNC+10).forEach(day => {
 
         describe(`Postnatal period: day ${day}`, function() {
-          if (pncTaskDays.includes(day)) {
+          if (postnatalTaskDays.includes(day)) {
             it(`should have 'postnatal-missing-visit' visit task on day ${day}`, function() {
               // given
               var reports = [require('./d.json')];
@@ -224,27 +222,39 @@ describe('Standard Configuration', function() {
   });
 
   describe('Pregnancy without LMP', function() {
-
-    // Offset needed if scheduled message created on specific weekday.
-    // In this case it is -3, but coincidentally the task shows up 3 days later (instead of 7 like in Nitty Gritty).
-    // TODO: This needs to be cleaned up!
-    var taskOffset = -7-3+3; // days between last message and task, weekday offset, task offset in tasks.json  
-    var taskDuration = 7;
-    var taskStartDays = [
-          3*WEEKS, 
-          7*WEEKS, 
-          11*WEEKS,
-          15*WEEKS,
-          19*WEEKS,
-          23*WEEKS,
-          27*WEEKS,
-          31*WEEKS,
-          35*WEEKS,
-    ];
-    var pregnancyTaskDays = getDayRanges(taskStartDays, taskDuration, taskOffset);
-    var deliveryTaskDays = getDayRanges([40*WEEKS], 14, -1);
     
+    // A weekday offset needed if scheduled messages are set to a specific weekday eg Monday 9am
+    // In this case it is -3, since the test report on Thursday has 1 week notification going out on the first Monday.
+    var weekdayOffset = -3;
+    
+    var pregancyTasks = {
+      offset: 7,
+      pre: 0,
+      post: 6,
+      triggers: [
+        2*WEEKS, 
+        6*WEEKS, 
+        10*WEEKS,
+        14*WEEKS,
+        18*WEEKS,
+        22*WEEKS,
+        26*WEEKS,
+        30*WEEKS,
+        34*WEEKS,
+      ]
+    };
+    var deliveryTasks = {
+      offset: 7,
+      pre: 1,
+      post: 13,
+      triggers: [39*WEEKS]
+    };
+    var pregnancyTaskDays = getRangeFromTask(pregancyTasks, weekdayOffset);
+    var deliveryTaskDays = getRangeFromTask(deliveryTasks, weekdayOffset);
+
+
     it(`should have a 'pregnancy-danger-sign' task if a flag is sent during active pregnancy`, function() {
+      // given
       pregnancyReport.reported_date = Date.now()-(6*MS_IN_DAY); 
       flagReport.reported_date = Date.now()-(4*MS_IN_DAY);
 
@@ -252,11 +262,9 @@ describe('Standard Configuration', function() {
         pregnancyReport,
         flagReport,
       ];
-      
-      session.assert(new Contact({
-        contact: person,
-        reports: reports,
-      }));
+
+      var c = setupContact(Contact, person, reports);
+      session.assert(c);
 
       // expect
       return session.emitTasks()
@@ -267,6 +275,7 @@ describe('Standard Configuration', function() {
     });
 
     it(`should not have a 'pregnancy-danger-sign' task if a flag is sent before pregnancy`, function() {
+      // given
       pregnancyReport.reported_date = Date.now()-(2*MS_IN_DAY); 
       flagReport.reported_date = Date.now()-(4*MS_IN_DAY);
 
@@ -274,21 +283,18 @@ describe('Standard Configuration', function() {
         pregnancyReport,
         flagReport,
       ];
-
-      session.assert(new Contact({
-        contact: person,
-        reports: reports,
-      }));
+      var c = setupContact(Contact, person, reports);
+      session.assert(c);
 
       // expect
       return session.emitTasks()
         .then(function(tasks) {
-          assert.equal(tasks.length, 1, "Should have a single task created");
-          assert.include(tasks[0]._id, 'pregnancy-danger-sign', "Task id should have correct schedule name included");
+          assert.equal(tasks.length, 0, "Should have no tasks created");
         });
     });
 
     it(`should not have a 'pregnancy-danger-sign' task if a flag is sent after pregnancy`, function() {
+      // given
       pregnancyReport.reported_date = Date.now()-(8*MS_IN_DAY);
       deliveryReport.reported_date = Date.now()-(6*MS_IN_DAY);
       flagReport.reported_date = Date.now()-(4*MS_IN_DAY);
@@ -298,22 +304,22 @@ describe('Standard Configuration', function() {
         deliveryReport,
         flagReport,
       ];
-      
-      session.assert(new Contact({
-        contact: person,
-        reports: reports,
-      }));
+
+      var c = setupContact(Contact, person, reports);
+      session.assert(c);
 
       // expect
       return session.emitTasks()
         .then(function(tasks) {
           // console.log(JSON.stringify(tasks,null,2));
-          assert.equal(tasks.length, 1, "Should have a single task created"); // should have a postnatal task, not a pregnancy task
-          assert.notInclude(tasks[0]._id, 'pregnancy-danger-sign', "Task id should have correct schedule name included");
+          // should have an unresolved postnatal task and a resolved pregnancy task
+          assert.equal(tasks.length, 2, "Should have two tasks created"); 
+          assert.include(tasks[0]._id, 'pregnancy-danger-sign', "Task id should have correct schedule name included");
+          assert.deepInclude(tasks[0], {resolved: true}, "Should have a resolved field set to true");
         });
     });
 
-    range(0, MAX_DAYS_IN_PREGNANCY).forEach(day => { 
+    range(weekdayOffset, MAX_DAYS_IN_PREGNANCY).forEach(day => {
 
       describe(`Pregnancy without LMP: day ${day}`, function() {
 
@@ -385,23 +391,26 @@ describe('Standard Configuration', function() {
   describe('Childhood Immunizations', function() {
 
     var newChildReport = require('./c.json');
+    
+    var weekdayOffset = -5;
 
-    // taskOffset is relative to (a) the SMS due date, which corresponds to event[].days in tasks.json, and (b) the offset when SMS notification are tied to a particular weekday
-    var weekdayOffset = 5;
-    var taskOffset = 7 - weekdayOffset; 
-    var taskDuration = 14;
-    var taskStartDays = [
-          7*WEEKS, 
-          13*WEEKS, 
-          19*WEEKS,
-          25*WEEKS,
-          36*WEEKS,
-          53*WEEKS,
-          65*WEEKS,
-          73*WEEKS,
-          90*WEEKS,
-    ];
-    var immunizationTaskDays = getDayRanges(taskStartDays, taskDuration, taskOffset);
+    var immunizationTasks = {
+      offset: 7,
+      pre: 0,
+      post: 13,
+      triggers: [
+        7*WEEKS, 
+        13*WEEKS, 
+        19*WEEKS,
+        25*WEEKS,
+        36*WEEKS,
+        53*WEEKS,
+        65*WEEKS,
+        73*WEEKS,
+        90*WEEKS,
+      ]
+    };
+    var immunizationTaskDays = getRangeFromTask(immunizationTasks, weekdayOffset);
     var ageInDaysWhenRegistered = Math.floor((newChildReport.reported_date - (new Date(newChildReport.birth_date).getTime()))/MS_IN_DAY);
 
     // Test for 10 days beyond the immunization period
@@ -427,8 +436,7 @@ describe('Standard Configuration', function() {
           it(`should have a cleared visit task on day ${day} if received a visit`, function() {
             // given
             var reports = setupReports([newChildReport, immVisitSMSReport], day - ageInDaysWhenRegistered);
-            // make sure the immuniztion report was sent today
-            reports[1].reported_date = Date.now();
+            reports[1].reported_date = Date.now();  // make sure the immuniztion report was sent today
             var c = setupContact(Contact, person, reports);
             session.assert(c);
 
@@ -471,6 +479,18 @@ function getDayRanges(startDays, duration, offset) {
     var startVal = day + offset;
     var endVal = startVal + duration - 1;
     a.push(range(startVal, endVal));
+  });
+
+  // return the flattened 1D array
+  return [].concat.apply([], a);
+};
+
+function getRangeFromTask(task, offset) {
+  var a = new Array();
+  task.triggers.forEach(t => {
+    var start = t + task.offset - task.pre;
+    var end = t + task.offset + task.post;
+    a.push(range(start + offset, end + offset));
   });
 
   // return the flattened 1D array
@@ -524,7 +544,9 @@ var setupReports = function(reports, day) {
   if (day !== undefined && reports) {
     // Sets up the tasks by using the doc and reports 
     reports.forEach(r => {
-      r = setDate(r, Date.now()-(day*MS_IN_DAY)); 
+      // r = setDate(r, Date.now()-(day*MS_IN_DAY)); 
+      var noonToday = (new Date()).setHours(12,0,0,0);
+      r = setDate(r, noonToday-(day*MS_IN_DAY)); 
     });
   }
   return reports;
