@@ -465,7 +465,7 @@
         {
           "name": "on_create",
           "trigger": "clear_schedule",
-          "params": "ANC Reminders LMP from App, ANC Reminders LMP, ANC Reminders, Delivery Reminders LMP from App, Delivery Reminders LMP, Delivery Reminders, Postnatal Care, Postnatal Care for Facility Birth, Postnatal Care from App",
+          "params": "ANC Reminders LMP from App, ANC Reminders LMP, ANC Reminders, Delivery Reminders LMP from App, Delivery Reminders LMP, Delivery Reminders, Postnatal Care, Postnatal Care for Facility Birth, Postnatal Care from App, Registration Followup ANC, Registration Followup ANC PNC",
           "bool_expr": ""
         }
       ],
@@ -521,7 +521,7 @@
         {
           "name": "on_create",
           "trigger": "clear_schedule",
-          "params": "ANC Reminders LMP from App, ANC Reminders LMP, ANC Reminders, Delivery Reminders LMP from App, Delivery Reminders LMP, Delivery Reminders, Postnatal Care, Postnatal Care for Facility Birth, Postnatal Care from App",
+          "params": "ANC Reminders LMP from App, ANC Reminders LMP, ANC Reminders, Delivery Reminders LMP from App, Delivery Reminders LMP, Delivery Reminders, Postnatal Care, Postnatal Care for Facility Birth, Postnatal Care from App, Registration Followup ANC, Registration Followup ANC PNC",
           "bool_expr": ""
         }
       ],
@@ -565,7 +565,7 @@
         {
           "name": "on_create",
           "trigger": "clear_schedule",
-          "params": "ANC Reminders LMP from App, ANC Reminders LMP, ANC Reminders, Delivery Reminders LMP from App, Delivery Reminders LMP, Delivery Reminders, Postnatal Care, Postnatal Care for Facility Birth, Postnatal Care from App",
+          "params": "ANC Reminders LMP from App, ANC Reminders LMP, ANC Reminders, Delivery Reminders LMP from App, Delivery Reminders LMP, Delivery Reminders, Postnatal Care, Postnatal Care for Facility Birth, Postnatal Care from App, Registration Followup ANC, Registration Followup ANC PNC",
           "bool_expr": ""
         }
       ],
@@ -596,7 +596,7 @@
         {
           "name": "on_create",
           "trigger": "clear_schedule",
-          "params": "ANC Reminders LMP from App, ANC Reminders LMP, ANC Reminders, Delivery Reminders LMP from App, Delivery Reminders LMP, Delivery Reminders, Postnatal Care, Postnatal Care for Facility Birth, Postnatal Care from App",
+          "params": "ANC Reminders LMP from App, ANC Reminders LMP, ANC Reminders, Delivery Reminders LMP from App, Delivery Reminders LMP, Delivery Reminders, Postnatal Care, Postnatal Care for Facility Birth, Postnatal Care from App, Registration Followup ANC, Registration Followup ANC PNC",
           "bool_expr": ""
         }
       ],
@@ -617,6 +617,18 @@
           "trigger": "add_patient",
           "params": "",
           "bool_expr": ""
+        },
+        {
+          "name": "on_create",
+          "trigger": "assign_schedule",
+          "params": "Registration Followup ANC",
+          "bool_expr": "doc.contact.parent && doc.contact.parent.parent && doc.contact.parent.parent.use_cases && doc.contact.parent.parent.use_cases.split(' ').indexOf('pnc') === -1"
+        },
+        {
+          "name": "on_create",
+          "trigger": "assign_schedule",
+          "params": "Registration Followup ANC PNC",
+          "bool_expr": "doc.contact.parent && doc.contact.parent.parent && doc.contact.parent.parent.use_cases && doc.contact.parent.parent.use_cases.split(' ').indexOf('pnc') !== -1"
         }
       ],
       "validations": {
@@ -1660,6 +1672,40 @@
     }
   ],
   "schedules": [
+    {
+      "name": "Registration Followup ANC",
+      "translation_key": "schedule.registration_anc",
+      "summary": "",
+      "description": "",
+      "start_from": "reported_date",
+      "messages": [
+        {
+          "translation_key": "messages.schedule.registration.followup_anc",
+          "group": 1,
+          "offset": "7 days",
+          "send_day": "",
+          "send_time": "",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
+    {
+      "name": "Registration Followup ANC PNC",
+      "translation_key": "schedule.registration_anc_pnc",
+      "summary": "",
+      "description": "",
+      "start_from": "reported_date",
+      "messages": [
+        {
+          "translation_key": "messages.schedule.registration.followup_anc_pnc",
+          "group": 1,
+          "offset": "7 days",
+          "send_day": "",
+          "send_time": "",
+          "recipient": "reporting_unit"
+        }
+      ]
+    },
     {
       "name": "Postnatal Care",
       "translation_key": "schedule.pnc",
