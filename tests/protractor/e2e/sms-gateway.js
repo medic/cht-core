@@ -203,10 +203,10 @@ describe('sms-gateway api', () => {
 
     it('- shows content', () => {
       commonElements.goToReports();
-
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
+      helper.waitElementToBeVisisble(element(by.css('#reports-list li:first-child')));
       element(by.css('#reports-list li:first-child .heading')).click();
       browser.wait(() => {
         return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
@@ -287,6 +287,7 @@ describe('sms-gateway api', () => {
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
+      helper.waitElementToBeVisisble(element(by.css('#reports-list li:first-child')));
 
       const desc = element(by.css('#reports-list li:first-child .heading'));
       helper.waitUntilReady(desc);
