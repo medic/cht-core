@@ -297,10 +297,7 @@ exports['fetchHydratedDoc attaches re-used contacts, minify handles the circular
     { doc: chw},
     { doc: area},
   ]});
-  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [
-    { doc: chw },
-    { doc: chw }
-  ]});
+  sinon.stub(db.medic, 'fetch').callsArgWith(1, Error('Calling fetch should not be required'));
   lineage.fetchHydratedDoc(docId).then(actual => {
     // The contact and the contact's parent's contact are the hydrated CHW
     test.equal(actual.contact.parent.contact.hydrated, true);
@@ -311,7 +308,40 @@ exports['fetchHydratedDoc attaches re-used contacts, minify handles the circular
     test.deepEqual(actual, doc);
 
     test.done();
-  });
+  }).catch(test.done);
+};
+
+// Same as above but expanded to need to pull _some_ contacts
+exports['fetchHydratedDoc only fetches contacts that it has not got via lineage'] = test => {
+  const docId = 'docId';
+  const chwId = 'chwId';
+  const areaId = 'areaId';
+  const dhId = 'dhId';
+  const dhContactId = 'dhContactId';
+
+  const doc = {type: 'data_record', _id: docId, contact: {_id: chwId, parent: {_id: areaId, parent: {_id: dhId}}}};
+  const chw = {type: 'person', _id: chwId, parent: {_id: areaId, parent: {_id: dhId}}, hydrated: true};
+  const area = {type: 'clinic', _id: areaId, contact: {_id: chwId }, parent: {_id: dhId}};
+  const dh = {type: 'district-hospital', _id: dhId, contact: {_id: dhContactId}};
+  const dhContact = {type: 'person', _id: dhContactId, hydrated: true};
+
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+    { doc: doc},
+    { doc: chw},
+    { doc: area},
+    { doc: dh}
+  ]});
+  const fetchStub = sinon.stub(db.medic, 'fetch');
+  fetchStub.callsArgWith(1, null, { rows: [{doc: dhContact}]});
+  lineage.fetchHydratedDoc(docId).then(actual => {
+    test.equal(actual.contact.hydrated, true);
+    test.equal(actual.contact.parent.contact.hydrated, true);
+    test.equal(actual.contact.parent.parent.contact.hydrated, true);
+
+    test.deepEqual(fetchStub.args[0][0], {keys: [dhContactId]});
+
+    test.done();
+  }).catch(test.done);
 };
 
 exports['minify handles null argument'] = test => {
