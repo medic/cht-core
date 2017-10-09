@@ -28,6 +28,9 @@
   .grid .cell {
     display: flex;
     align-items: center;
+    div {
+      flex-grow: 100;
+    }
   }
   mm-content-row:last-child li {
     border-bottom: 0;
@@ -39,7 +42,6 @@
     width: 60px;
   }
   .field-icon {
-    float: left;
     margin-right: 10px;
   }
   .row {
@@ -150,7 +152,9 @@
       float: left;
     }
     .field-icon {
-      float: right;
+      margin-right: 0;
+      margin-left: 10px;
+      order: 1;
     }
     .heading-content {
       display: inherit;
