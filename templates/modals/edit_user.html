@@ -35,7 +35,7 @@
       <select id="language" class="form-control" ng-model="editUserModel.language" ng-options="locale.name for locale in enabledLocales track by locale.code"></select>
     </div>
 
-    <div class="form-group" mm-auth="can_configure">
+    <div class="form-group required" mm-auth="can_configure" ng-class="{'has-error': errors.type}">
       <label for="type" translate>User Type</label>
       <input id="name" type="text" class="form-control" ng-model="editUserModel.type" disabled="disabled" ng-if="editUserModel.type === '_admin'" />
       <select id="type" class="form-control" ng-model="editUserModel.type" ng-if="editUserModel.type !== '_admin'">
@@ -50,6 +50,7 @@
           <option value="gateway" translate>usertype.gateway</option>
         </optgroup>
       </select>
+      <span class="help-block">{{errors.type}}</span>
     </div>
 
     <div class="form-group" mm-auth="can_configure" ng-class="{'has-error': errors.facility_id, 'required': editUserModel.type === 'district-manager'}">

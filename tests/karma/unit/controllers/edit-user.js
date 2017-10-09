@@ -321,6 +321,8 @@ describe('EditUserCtrl controller', () => {
 
     it('password must be filled when creating new user', done => {
       mockCreateNewUser();
+      scope.editUserModel.name = 'newuser';
+      scope.editUserModel.type = 'data-entry';
       Translate.withArgs('Password').returns(Promise.resolve('pswd'));
       Translate.withArgs('field is required', { field: 'pswd' }).returns(Promise.resolve('pswd field must be filled'));
       setTimeout(() => {
@@ -347,6 +349,8 @@ describe('EditUserCtrl controller', () => {
 
     it('error if password and confirm do not match when creating new user', done => {
       mockEditCurrentUser();
+      scope.editUserModel.name = 'newuser';
+      scope.editUserModel.type = 'data-entry';
       Translate.withArgs('Passwords must match').returns(Promise.resolve('wrong'));
       setTimeout(() => {
         const password = '1QrAs$$3%%kkkk445234234234';
