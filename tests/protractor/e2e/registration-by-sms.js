@@ -243,7 +243,7 @@ describe('registration transition', () => {
 
     it('shows content', () => {
       commonElements.goToReports();
-      helper.waitElementToBeVisisble(element(by.css('#reports - list .unfiltered li:first - child')));
+      helper.waitElementToBeVisisble(element(by.css('#reports-list .unfiltered li:first-child')));
       browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', CAROL.name)).isPresent(), 10000);
 
       element(by.css('#reports-list .unfiltered li:first-child .summary')).click();
