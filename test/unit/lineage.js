@@ -159,11 +159,11 @@ exports['fetchHydratedDoc handles no lineage and no contact'] = test => {
 
 exports['fetchHydratedDoc handles doc with deleted parent'] = test => {
   const docId = 'abc';
-  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { _id: 'abc' } }, { doc: null } ] });
-  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [ { doc: { _id: 'cba' } } ] });
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { _id: 'abc', contact: { _id: 'def' } } }, { doc: null } ] });
+  sinon.stub(db.medic, 'fetch').callsArgWith(1, null, { rows: [ { doc: { _id: 'cba' } }, { doc: { _id: 'def' } } ] });
   lineage.fetchHydratedDoc(docId)
   .then(actual => {
-    test.deepEqual(actual, { _id: 'abc', parent: null });
+    test.deepEqual(actual, { _id: 'abc', contact: { _id: 'def' }, parent: null });
     test.done();
   })
   .catch(err => {
