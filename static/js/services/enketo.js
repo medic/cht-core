@@ -318,9 +318,6 @@ angular.module('inboxServices').service('Enketo',
         })
         .then(function(form) {
           registerEditedListener(selector, editedListener);
-          if (form.pages.active) {
-            form.pages.flipToFirst(); // temporary fix for #3928
-          }
           return form;
         });
     };
