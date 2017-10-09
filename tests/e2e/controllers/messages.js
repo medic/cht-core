@@ -72,101 +72,73 @@ const data_record = {
 
 describe('messages controller', function() {
   var data_record_rev;
-  beforeEach(function(done) {
+  beforeEach(() =>
     utils.cleanDb()
       .then(() => utils.adminDb.put(data_record))
       .then((result) => {
         data_record_rev = result.rev;
-        done();
-      })
-      .catch(done);
-  });
+      }));
 
-  afterEach(function(done) {
-    utils.adminDb.remove(data_record._id, data_record_rev)
-      .then(() => done())
-      .catch(done);
-  });
+  afterEach(() => utils.adminDb.remove(data_record._id, data_record_rev));
 
-  it('should fetch all messages', function(done) {
+  it('should fetch all messages', () =>
     utils.apiRequest('/api/v1/messages')
       .then((result) => {
         // TODO stop emitting everything twice : https://github.com/medic/medic-webapp/issues/3400
         // assert.equal(result.length, 3);
         assert.equal(result.length, 6);
-        done();
-      })
-      .catch(done);
-  });
+      }));
 
-  it('should fetch messages in ascending order', function(done) {
+  it('should fetch messages in ascending order', () =>
     utils.apiRequest('/api/v1/messages')
       .then((result) => {
         assertSortedByAscendingDate(result);
-        done();
-      })
-      .catch(done);
-  });
+      }));
 
-  it('should fetch messages in descending order', function(done) {
+  it('should fetch messages in descending order', () =>
     utils.apiRequest('/api/v1/messages', {
         descending: true
       })
       .then((result) => {
         assertSortedByDescendingDate(result);
-        done();
-      })
-      .catch(done);
-  });
+      }));
 
-  it('should fetch messages by state', function(done) {
+  it('should fetch messages by state', () =>
     utils.apiRequest('/api/v1/messages', {
         state: 'pending'
       })
       .then((result) => {
         assert.equal(result.length, 1);
         assert.equal(result[0].id, pendingId);
-        done();
-      })
-      .catch(done);
-  });
+      }));
 
-  it('should fetch messages by multiple states', function(done) {
+  it('should fetch messages by multiple states', () =>
     utils.apiRequest('/api/v1/messages', {
         states: ['pending', 'sent']
       })
       .then((result) => {
         assert.equal(result.length, 3); // fetches all
-        done();
-      })
-      .catch(done);
-  });
+      }));
 
-  it('should fetch messages by state in descending order', function(done) {
+  it('should fetch messages by state in descending order', () =>
     utils.apiRequest('/api/v1/messages', {
         state: 'pending',
         descending: true
       })
       .then((result) => {
         assertSortedByDescendingDate(result);
-        done();
-      })
-      .catch(done);
-  });
+      }));
 
-  it('should fetch messages by multiple states in descending order', function(done) {
+  it('should fetch messages by multiple states in descending order', () =>
     utils.apiRequest('/api/v1/messages', {
         states: ['pending', 'sent'],
         descending: true
       })
       .then((result) => {
         assertSortedByDescendingDate(result);
-        done();
-      })
-      .catch(done);
-  });
+      }));
 
-  var assertSortedByDescendingDate = (arr) => {
+  const assertSortedByDescendingDate = arr => {
     for (let i = 1; i < arr.length; i++) {
       assert.ok(
         arr[i - 1].sending_due_date >=
@@ -175,7 +147,7 @@ describe('messages controller', function() {
     }
   };
 
-  var assertSortedByAscendingDate = (arr) => {
+  const assertSortedByAscendingDate = arr => {
     for (let i = 1; i < arr.length; i++) {
       assert.ok(
         arr[i - 1].sending_due_date <=
