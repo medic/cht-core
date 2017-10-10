@@ -1,18 +1,9 @@
 angular.module('inboxFilters').filter('resourceIcon',
-  function(ResourceIcons) {
+  function($sce, ResourceIcons) {
     'use strict';
     'ngInject';
     return function(name) {
-      if (!name) {
-        return '';
-      }
-      var src = ResourceIcons.getImg(name);
-      if (src) {
-        src = 'src="' + src + '"';
-      } else {
-        src = '';
-      }
-      return '<img class="resource-icon" title="' + name + '" ' + src + ' />';
+      return $sce.trustAsHtml(ResourceIcons.getImg(name));
     };
   }
 );

@@ -37,9 +37,13 @@
   }
   .meta .heading {
     padding: 20px;
-  }
-  .heading img {
-    width: 60px;
+    display: flex;
+    align-items: center;
+    img,
+    svg {
+      width: 60px;
+      height: 60px;
+    }
   }
   .field-icon {
     margin-right: 10px;
@@ -59,16 +63,13 @@
     text-align: right;
     line-height: 1;
   }
-  .heading-content {
-    display: inline-block;
+  h2 {
+    margin: 0;
   }
   h2,
   .primary-contact {
-    margin-left: 20px;
     display: inline-block;
-  }
-  h2 {
-    margin-top: 0;
+    margin-left: 10px;
   }
   .action-header {
     border-bottom: 3px solid @seperator-color;
@@ -156,13 +157,9 @@
       margin-left: 10px;
       order: 1;
     }
-    .heading-content {
-      display: inherit;
-      margin-left: 60px;
-    }
     h2,
     .primary-contact {
-      display: block;
+      display: inherit;
     }
   }
   #snackbar .snackbar-content {
