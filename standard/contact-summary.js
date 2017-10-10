@@ -452,7 +452,7 @@ if (contact.type === 'person') {
   if (pastPregnancies.fields.length > 0) {
     cards.push(pastPregnancies);
   }
-  if (Number.isInteger(ageInMonths) && ageInMonths < 144 && isCoveredByUseCaseInLineage(lineage, 'imm')) {
+  if (typeof ageInMonths === 'number' && ageInMonths < 144 && isCoveredByUseCaseInLineage(lineage, 'imm')) {
     var imm_card = {
       label: 'contact.profile.immunizations',
       fields: []
