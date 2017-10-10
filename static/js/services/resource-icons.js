@@ -10,36 +10,44 @@ angular.module('inboxServices').factory('ResourceIcons',
 
     var cache = {
       doc: null,
-      src: {}
+      htmlContent: {}
     };
 
-    var getIcon = function(name) {
+    var getAttachment = function(name) {
       return cache.doc &&
              cache.doc.resources[name] &&
              cache.doc._attachments[cache.doc.resources[name]];
     };
 
-    var getSrc = function(name) {
-      if (!cache.src[name]) {
-        var icon = getIcon(name);
+    var getHtmlContent = function(name) {
+      if (!cache.htmlContent[name]) {
+        var icon = getAttachment(name);
         if (!icon) {
-          return;
+          return '';
         }
-        cache.src[name] = 'data:' + icon.content_type + ';base64,' + icon.data;
+        var content;
+        if (icon.content_type === 'image/svg+xml') {
+          // SVG: include the raw data in the page so it can be styled
+          content = atob(icon.data);
+        } else {
+          // OTHER: base64 encode the img src
+          content = '<img src="data:' + icon.content_type + ';base64,' + icon.data + '" />';
+        }
+        cache.htmlContent[name] = content;
       }
-      return cache.src[name];
+      return cache.htmlContent[name];
     };
 
-    var updateDom = function(elem) {
-      elem = elem || $(document.body);
-      elem.find('.resource-icon').each(function() {
-        var elem = $(this);
-        var src = getSrc(elem.attr('title'));
-        if (src) {
-          elem.attr('src', src);
-        } else {
-          elem.removeAttr('src');
-        }
+    var getHtml = function(name) {
+      var image = getHtmlContent(name);
+      return '<span class="resource-icon" title="' + name + '">' + image + '</span>';
+    };
+
+    var updateDom = function($elem) {
+      $elem = $elem || $(document.body);
+      $elem.find('.resource-icon').each(function() {
+        var $this = $(this);
+        $this.html(getHtmlContent($this.attr('title')));
       });
     };
 
@@ -49,7 +57,7 @@ angular.module('inboxServices').factory('ResourceIcons',
         .then(function(res) {
           cache = {
             doc: res,
-            src: {}
+            htmlContent: {}
           };
           updateDom();
         })
@@ -73,13 +81,13 @@ angular.module('inboxServices').factory('ResourceIcons',
     return {
       getImg: function(name) {
         if (!name) {
-          return;
+          return '';
         }
-        return getSrc(name);
+        return getHtml(name);
       },
-      replacePlaceholders: function(elem) {
+      replacePlaceholders: function($elem) {
         init.then(function() {
-          updateDom(elem);
+          updateDom($elem);
         });
       }
     };

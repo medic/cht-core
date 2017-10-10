@@ -29,23 +29,23 @@ describe('ResourceIcons service', function() {
 
   describe('getImg function', function() {
 
-    it('returns undefined when given no name', function(done) {
+    it('returns empty string when given no name', function(done) {
       get.returns(Promise.resolve());
       var service = injector.get('ResourceIcons');
       var actual = service.getImg();
-      chai.expect(actual).to.equal(undefined);
+      chai.expect(actual).to.equal('');
       done();
     });
 
-    it('returns undefined when no doc yet', function(done) {
+    it('returns empty string when no doc yet', function(done) {
       get.returns(Promise.resolve());
       var service = injector.get('ResourceIcons');
       var actual = service.getImg('delivery');
-      chai.expect(actual).to.equal(undefined);
+      chai.expect(actual).to.equal('<span class="resource-icon" title="delivery"></span>');
       done();
     });
 
-    it('returns src when resources doc already cached', function(done) {
+    it('returns img when resources doc already cached', function(done) {
       var resources = {
         resources: {
           child: 'child.png',
@@ -66,12 +66,39 @@ describe('ResourceIcons service', function() {
       var service = injector.get('ResourceIcons');
       setTimeout(function() {
         var actual = service.getImg('child');
-        var expected = 'data:image/png;base64,kiddlywinks';
+        var expected =
+          '<span class="resource-icon" title="child">' +
+            '<img src="data:image/png;base64,kiddlywinks" />' +
+          '</span>';
         chai.expect(actual).to.equal(expected);
         done();
       });
     });
 
+    it('returns inline svg for svg images', function(done) {
+      var data = `<svg  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                    <rect x="10" y="10" height="100" width="100" style="stroke:#ff0000; fill: #0000ff"/>
+                  </svg>`;
+      var resources = {
+        resources: {
+          mother: 'mother.png'
+        },
+        _attachments: {
+          'mother.png': {
+            content_type: 'image/svg+xml',
+            data: btoa(data)
+          }
+        }
+      };
+      get.returns(Promise.resolve(resources));
+      var service = injector.get('ResourceIcons');
+      setTimeout(function() {
+        var actual = service.getImg('mother');
+        var expected = '<span class="resource-icon" title="mother">' + data + '</span>';
+        chai.expect(actual).to.equal(expected);
+        done();
+      });
+    });
   });
 
   describe('replacePlaceholders function', function() {
@@ -90,15 +117,15 @@ describe('ResourceIcons service', function() {
       };
       get.returns(Promise.resolve(resources));
       var dom = $('<ul>' +
-                  '<li><img class="resource-icon" title="child"/></li>' +
-                  '<li><img class="resource-icon" title="adult"/></li>' +
-                '</ul>');
+                    '<li><img class="resource-icon" title="child"/></li>' +
+                    '<li><img class="resource-icon" title="adult"/></li>' +
+                  '</ul>');
       var service = injector.get('ResourceIcons');
       service.replacePlaceholders(dom);
       setTimeout(function() {
-        chai.expect(dom.find('.resource-icon[title="child"]').attr('src'))
+        chai.expect(dom.find('.resource-icon[title="child"] img').attr('src'))
           .to.equal('data:image/png;base64,kiddlywinks');
-        chai.expect(dom.find('.resource-icon[title="adult"]').attr('src'))
+        chai.expect(dom.find('.resource-icon[title="adult"] img').attr('src'))
           .to.equal(undefined);
         done();
       });
@@ -142,17 +169,17 @@ describe('ResourceIcons service', function() {
       var service = injector.get('ResourceIcons');
       service.replacePlaceholders(dom);
       setTimeout(function() {
-        chai.expect(dom.find('.resource-icon[title="child"]').attr('src'))
+        chai.expect(dom.find('.resource-icon[title="child"] img').attr('src'))
           .to.equal('data:image/png;base64,kiddlywinks');
-        chai.expect(dom.find('.resource-icon[title="adult"]').attr('src'))
+        chai.expect(dom.find('.resource-icon[title="adult"] img').attr('src'))
           .to.equal(undefined);
 
         Changes.args[0][0].callback(); // invoke the changes listener
         service.replacePlaceholders(dom);
         setTimeout(function() {
-          chai.expect(dom.find('.resource-icon[title="child"]').attr('src'))
+          chai.expect(dom.find('.resource-icon[title="child"] img').attr('src'))
             .to.equal('data:image/png;base64,kiddlywinks');
-          chai.expect(dom.find('.resource-icon[title="adult"]').attr('src'))
+          chai.expect(dom.find('.resource-icon[title="adult"] img').attr('src'))
             .to.equal('data:image/png;base64,coffinstuffer');
           chai.expect(get.callCount).to.equal(2);
           done();
