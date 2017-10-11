@@ -1073,7 +1073,7 @@
         </translation>
       </itext>
       <instance>
-        <data delimiter="#" id="contact:health_center:create" prefix="J1!contact:health_center:create!" version="2017-09-14_10-04">
+        <data delimiter="#" id="contact:health_center:create" prefix="J1!contact:health_center:create!" version="2017-10-11_11-39">
           <inputs>
             <meta>
               <location>
@@ -1159,8 +1159,8 @@
       <bind calculate="." nodeset="/data/contact/parent" type="string"/>
       <bind calculate="." nodeset="/data/contact/type" type="string"/>
       <bind nodeset="/data/contact/name" required="true()" type="string"/>
-      <bind nodeset="/data/contact/phone" type="tel"/>
-      <bind nodeset="/data/contact/phone_alternate" type="tel"/>
+      <bind constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" nodeset="/data/contact/phone" type="tel"/>
+      <bind constraint="true()" jr:constraintMsg="Please enter a valid local number, or use the standard international format, which includes a plus sign (+) and country code. For example: +254712345678" nodeset="/data/contact/phone_alternate" type="tel"/>
       <bind nodeset="/data/contact/role" type="select1"/>
       <bind nodeset="/data/contact/role_other" relevant="selected(  /data/contact/role ,'other')" required="true()" type="string"/>
       <bind nodeset="/data/contact/external_id" type="string"/>
