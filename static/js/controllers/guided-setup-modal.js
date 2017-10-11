@@ -66,10 +66,6 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
       if (val) {
         settings.anc_registration_lmp = val === 'true';
       }
-      val = $('#anonymous-statistics-content .horizontal-options .selected').attr('data-value');
-      if (val) {
-        settings.statistics_submission = val;
-      }
       return UpdateSettings(settings)
         .then(function() {
           $scope.setFinished();
@@ -135,7 +131,6 @@ angular.module('inboxControllers').controller('GuidedSetupModalCtrl',
                 $('#language-preference-content .locale a[data-value="' + res.locale + '"]').trigger('click');
                 $('#language-preference-content .locale-outgoing a[data-value="' + res.locale_outgoing + '"]').trigger('click');
                 $('#registration-form-content a[data-value=' + res.anc_registration_lmp + ']').trigger('click');
-                $('#anonymous-statistics-content a[data-value=' + res.statistics_submission + ']').trigger('click');
               });
             }
           })
