@@ -10,7 +10,6 @@ var _ = require('underscore'),
     config = require('./config'),
     auth = require('./auth'),
     isClientHuman = require('./is-client-human'),
-    scheduler = require('./scheduler'),
     AuditProxy = require('./audit-proxy'),
     migrations = require('./migrations'),
     ddocExtraction = require('./ddoc-extraction'),
@@ -447,20 +446,6 @@ app.post('/api/v1/records', [jsonParser, formParser], function(req, res) {
   });
 });
 
-app.get('/api/v1/scheduler/:name', function(req, res) {
-  auth.check(req, 'can_execute_schedules', null, function(err) {
-    if (err) {
-      return serverUtils.error(err, req, res, true);
-    }
-    scheduler.exec(req.params.name, function(err) {
-      if (err) {
-        return serverUtils.serverError(err.message, req, res);
-      }
-      res.json({ schedule: req.params.name, result: 'success' });
-    });
-  });
-});
-
 app.get('/api/v1/forms', function(req, res) {
   forms.listForms(req.headers, function(err, body, headers) {
     if (err) {
@@ -809,7 +794,6 @@ async.series([
   asyncLog('Translations merged successfully'),
   migrations.run,
   asyncLog('Database migrations completed successfully'),
-  async.asyncify(scheduler.init)
 ], err => {
   if (err) {
     console.error('Fatal error initialising medic-api');
