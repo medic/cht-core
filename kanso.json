@@ -689,7 +689,7 @@
                         "silence_for": {
                             "type": "string",
                             "title": "Silence Window",
-                            "description": "The length of time used to find the next reminder group to clear.  Leave blank to clear all reminder groups.  Supported units: years, months, weeks, days, hours, minutes. e.g. 25 days"
+                            "description": "The length of time used to find reminder groups to clear. Will clear all groups that are within the silence window. Leave blank to clear all reminder groups.  Supported units: years, months, weeks, days, hours, minutes. e.g. 25 days"
                         },
                         "fields": {
                             "title": "Fields",

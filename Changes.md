@@ -8,6 +8,7 @@ _TBD_
 
 - [#3449](https://github.com/medic/medic-webapp/issues/3449) includes a feature which makes it unnecessary to use a `repeat-relevant` node in Enketo forms to workaround a bug which created an empty child. This node should now be removed.
 - [#3629](https://github.com/medic/medic-webapp/issues/3629) added more configurable text to the target widgets. Also, configuring an array of target titles is now deprecated in favor specifying a single translation key. Reconfigure your targets to specify values for `translation_key`, `subtitle_translation_key`, and `percentage_count_translation_key` properties. [Full documentation](https://github.com/medic/medic-docs/blob/master/configuration/targets.md).
+- [#3818](https://github.com/medic/medic-webapp/issues/3818) changed the way groups of scheduled messages are silenced when using `silence_for`. Previously, only the first group found to be in the silence window was silenced. Now, all groups are.
 
 ## 2.13.0
 
