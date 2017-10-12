@@ -34,6 +34,7 @@ if (couchUrl) {
 } else if (process.env.TEST_ENV) {
     // Running tests only
     module.exports = {
+        use: function() {},
         fti: function() {},
         medic: {
             view: function() {},

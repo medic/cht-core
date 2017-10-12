@@ -79,13 +79,27 @@ const processChange = (change, callback) => {
   if (!change) {
     return callback();
   }
+  logger.debug(`change event on doc ${change.id} seq ${change.seq}`);
+  if (processed > 0 && (processed % PROGRESS_REPORT_INTERVAL) === 0) {
+    logger.info(`transitions: ${processed} items processed (since sentinel started)`);
+  }
+  if (change.deleted) {
+    // don't run transitions on deleted docs, but do clean up
+    async.parallel([
+      async.apply(deleteInfoDoc, change),
+      async.apply(deleteReadDocs, change)
+    ], err => {
+      if (err) {
+        logger.error('Error cleaning up deleted doc', err);
+      }
+      processed++;
+      updateMetaData(change.seq, callback);
+    });
+    return;
+  }
   lineage.fetchHydratedDoc(change.id)
     .then(doc => {
-      if (processed > 0 && (processed % PROGRESS_REPORT_INTERVAL) === 0) {
-        logger.info(`transitions: ${processed} items processed (since sentinel started)`);
-      }
       change.doc = doc;
-      logger.debug(`change event on doc ${change.id} seq ${change.seq}`);
       const audit = require('couchdb-audit')
             .withNano(db, db.settings.db, db.settings.auditDb, db.settings.ddoc, db.settings.username);
       module.exports.applyTransitions({
@@ -101,6 +115,78 @@ const processChange = (change, callback) => {
       logger.error(`transitions: fetch failed for ${change.id} (${err})`);
       return callback();
     });
+};
+
+const deleteInfoDoc = (change, callback) => {
+  db.medic.get(`${change.id}-info`, (err, doc) => {
+    if (err) {
+      if (err.statusCode === 404) {
+        // don't worry about deleting a non-existant doc
+        return callback();
+      }
+      return callback(err);
+    }
+    doc._deleted = true;
+    db.medic.insert(doc, callback);
+  });
+};
+
+const getAdminNames = callback => {
+  db.medic.view('medic', 'online_user_settings_by_id', {}, (err, results) => {
+    if (err) {
+      return callback(err);
+    }
+    const admins = results.rows
+      .map(row => {
+        const parts = row.id.split(':');
+        return parts.length > 1 && parts[1];
+      })
+      .filter(name => !!name);
+    callback(null, admins);
+  });
+};
+
+const deleteReadDocs = (change, callback) => {
+
+  // we don't know if the deleted doc was a report or a message so
+  // attempt to delete both
+  const possibleReadDocIds = [ 'report', 'message' ]
+    .map(type => `read:${type}:${change.id}`);
+
+  getAdminNames((err, admins) => {
+    if (err) {
+      return callback(err);
+    }
+
+    async.each(
+      admins,
+      (admin, callback) => {
+        const metaDb = db.use(`medic-user-${admin}-meta`);
+        metaDb.info(err => {
+          if (err) {
+            if (err.statusCode === 404) {
+              // no meta data db exists for this user - ignore
+              return callback();
+            }
+            return callback(err);
+          }
+          metaDb.fetch({ keys: possibleReadDocIds }, (err, results) => {
+            if (err) {
+              return callback(err);
+            }
+            // find which of the possible ids was the right one
+            const row = results.rows.find(row => !!row.doc);
+            if (!row) {
+              return callback();
+            }
+            row.doc._deleted = true;
+            metaDb.insert(row.doc, callback);
+          });
+        });
+      },
+      callback
+    );
+  });
 };
 
 /*
@@ -392,10 +478,7 @@ const attach = () => {
     });
     changesFeed.on('change', change => {
       // skip uninteresting documents
-      if (change.deleted ||
-          change.id.match(/^_design\//) ||
-          change.id === METADATA_DOCUMENT) {
-
+      if (change.id.match(/^_design\//) || change.id === METADATA_DOCUMENT) {
         return;
       }
       changeQueue.push(change);
@@ -416,6 +499,8 @@ module.exports = {
   _changeQueue: changeQueue,
   _attach: attach,
   _detach: detach,
+  _deleteInfoDoc: deleteInfoDoc,
+  _deleteReadDocs: deleteReadDocs,
   availableTransitions: availableTransitions,
   loadTransitions: loadTransitions,
   canRun: canRun,

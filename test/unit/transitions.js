@@ -276,3 +276,97 @@ transitions.availableTransitions().forEach(name => {
     };
   });
 });
+
+exports['deleteInfo doc handles missing info doc'] = test => {
+  const given = { id: 'abc' };
+  sinon.stub(db.medic, 'get').callsArgWith(1, { statusCode: 404 });
+  transitions._deleteInfoDoc(given, err => {
+    test.equal(err, undefined);
+    test.done();
+  });
+};
+
+exports['deleteInfoDoc deletes info doc'] = test => {
+  const given = { id: 'abc' };
+  const get = sinon.stub(db.medic, 'get').callsArgWith(1, null, { _id: 'abc', _rev: '123' });
+  const insert = sinon.stub(db.medic, 'insert').callsArg(1);
+  transitions._deleteInfoDoc(given, err => {
+    test.equal(err, undefined);
+    test.equal(get.callCount, 1);
+    test.equal(get.args[0][0], 'abc-info');
+    test.equal(insert.callCount, 1);
+    test.equal(insert.args[0][0]._deleted, true);
+    test.done();
+  });
+};
+
+exports['deleteReadDocs handles missing meta db'] = test => {
+  const given = { id: 'abc' };
+  const metaDb = { info: function() {} };
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+    rows: [ { id: 'org.couchdb.user:gareth' } ]
+  });
+  sinon.stub(db, 'use').returns(metaDb);
+  sinon.stub(metaDb, 'info').callsArgWith(0, { statusCode: 404 });
+  transitions._deleteReadDocs(given, err => {
+    test.equal(err, undefined);
+    test.done();
+  });
+};
+
+exports['deleteReadDocs handles missing read doc'] = test => {
+  const given = { id: 'abc' };
+  const metaDb = {
+    info: function() {},
+    fetch: function() {}
+  };
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+    { id: 'org.couchdb.user:gareth' }
+  ] });
+  sinon.stub(db, 'use').returns(metaDb);
+  sinon.stub(metaDb, 'info').callsArg(0);
+  sinon.stub(metaDb, 'fetch').callsArgWith(1, null, { rows: [ { error: 'notfound' } ] });
+  transitions._deleteReadDocs(given, err => {
+    test.equal(err, undefined);
+    test.done();
+  });
+};
+
+exports['deleteReadDocs deletes read doc for all admins'] = test => {
+  const given = { id: 'abc' };
+  const metaDb = {
+    info: function() {},
+    fetch: function() {},
+    insert: function() {}
+  };
+  const view = sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+    { id: 'org.couchdb.user:gareth' },
+    { id: 'org.couchdb.user:jim' }
+  ] });
+  const use = sinon.stub(db, 'use').returns(metaDb);
+  const info = sinon.stub(metaDb, 'info').callsArg(0);
+  const fetch = sinon.stub(metaDb, 'fetch').callsArgWith(1, null, { rows: [
+    { error: 'notfound' },
+    { doc: { id: 'xyz' } }
+  ] });
+  const insert = sinon.stub(metaDb, 'insert').callsArg(1);
+  transitions._deleteReadDocs(given, err => {
+    test.equal(err, undefined);
+    test.equal(view.callCount, 1);
+    test.equal(use.callCount, 2);
+    test.equal(use.args[0][0], 'medic-user-gareth-meta');
+    test.equal(use.args[1][0], 'medic-user-jim-meta');
+    test.equal(info.callCount, 2);
+    test.equal(fetch.callCount, 2);
+    test.equal(fetch.args[0][0].keys.length, 2);
+    test.equal(fetch.args[0][0].keys[0], 'read:report:abc');
+    test.equal(fetch.args[0][0].keys[1], 'read:message:abc');
+    test.equal(fetch.args[1][0].keys.length, 2);
+    test.equal(fetch.args[1][0].keys[0], 'read:report:abc');
+    test.equal(fetch.args[1][0].keys[1], 'read:message:abc');
+    test.equal(insert.callCount, 2);
+    test.equal(insert.args[0][0]._deleted, true);
+    test.equal(insert.args[1][0]._deleted, true);
+    test.done();
+  });
+};
