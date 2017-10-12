@@ -137,7 +137,7 @@ describe('UnreadRecords service', () => {
       get.returns(Promise.resolve({ _id: 'abc' }));
       put.returns(Promise.resolve());
       let call = 0;
-      service((err, actual) => {
+      service(err => {
         if (err) {
           return done(err);
         }
