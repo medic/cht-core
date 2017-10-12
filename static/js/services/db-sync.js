@@ -51,7 +51,9 @@ angular.module('inboxServices').factory('DBSync',
         return $q.resolve(options);
       } else {
         return DB().allDocs().then(function(result) {
-          options.checkpoint = 'target';
+          // TODO reenable this when single sided checkpointing is fixed:
+          //      https://github.com/pouchdb/pouchdb/issues/6730
+          // options.checkpoint = 'target';
           options.doc_ids = _.pluck(result.rows, 'id');
           return options;
         });
