@@ -5,7 +5,8 @@ var _ = require('underscore'),
 angular.module('inboxServices').factory('UnreadRecords', function(
   $q,
   Changes,
-  DB
+  DB,
+  Session
 ) {
 
   'use strict';
@@ -19,7 +20,7 @@ angular.module('inboxServices').factory('UnreadRecords', function(
     return DB({ meta: true }).query('medic-user/read', { group: true });
   };
 
-  var getValue = function(response, type) {
+  var getRowValueForType = function(response, type) {
     var result = _.findWhere(response.rows, { key: type });
     return (result && result.value) || 0;
   };
@@ -30,14 +31,16 @@ angular.module('inboxServices').factory('UnreadRecords', function(
       var read = results[1];
       var result = {};
       TYPES.forEach(function(type) {
-        result[type] = getValue(total, type) - getValue(read, type);
+        result[type] = getRowValueForType(total, type) - getRowValueForType(read, type);
       });
       return result;
     });
   };
 
   var updateReadDocs = function(change) {
-    if (!change.deleted) {
+    // update the meta db if a doc is deleted by a non-admin
+    // admin dbs are updated by sentinel instead
+    if (!change.deleted || Session.isAdmin()) {
       return $q.resolve();
     }
     var metaDb = DB({ meta: true });
