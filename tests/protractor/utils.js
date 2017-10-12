@@ -159,6 +159,14 @@ const revertDb = () => {
 module.exports = {
 
   request: request,
+  
+  saveLogs: () => {
+    browser.manage().logs()
+      .get('browser').then(function(browserLog) {
+        console.log('log: ' +
+          require('util').inspect(browserLog));
+      });
+  },
 
   reporter: new htmlScreenshotReporter({
     reportTitle: 'e2e Test Report',
