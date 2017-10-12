@@ -1,3 +1,5 @@
+var readDocs = require('../modules/read-docs');
+
 angular.module('inboxServices').factory('MarkRead', function(
   $q,
   DB
@@ -11,9 +13,7 @@ angular.module('inboxServices').factory('MarkRead', function(
       return $q.resolve();
     }
     var metaDocs = docs.map(function(doc) {
-      var type = doc.form ? 'report' : 'message';
-      var id = [ 'read', type, doc._id ].join(':');
-      return { _id: id };
+      return { _id: readDocs.id(doc) };
     });
     return DB({ meta: true }).bulkDocs(metaDocs);
   };
