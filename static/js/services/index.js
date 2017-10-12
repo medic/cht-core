@@ -22,7 +22,6 @@
   require('./contact-view-model-generator');
   require('./contacts');
   require('./count-messages');
-  require('./count-unread-records');
   require('./db');
   require('./db-sync');
   require('./debug');
@@ -79,6 +78,7 @@
   require('./translate');
   require('./translate-from');
   require('./translation-loader');
+  require('./unread-records');
   require('./update-facility');
   require('./update-settings');
   require('./update-user');

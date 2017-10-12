@@ -24,7 +24,6 @@ var feedback = require('../modules/feedback'),
       CheckDate,
       ContactSchema,
       CountMessages,
-      CountUnreadRecords,
       DB,
       DBSync,
       Enketo,
@@ -42,6 +41,7 @@ var feedback = require('../modules/feedback'),
       Settings,
       Snackbar,
       Tour,
+      UnreadRecords,
       UpdateSettings,
       UpdateUser,
       UserSettings,
@@ -279,25 +279,11 @@ var feedback = require('../modules/feedback'),
       });
 
       $scope.unreadCount = {};
-      $scope.updateUnreadCount = function() {
-        CountUnreadRecords()
-          .then(function(data) {
-            $scope.unreadCount = data;
-          })
-          .catch(function(err) {
-            $log.error('Error fetching read status', err);
-          });
-      };
-      // wait for db.info to avoid uncaught exceptions: #3754
-      DB().info().then(function() {
-        $scope.updateUnreadCount();
-      });
-      Changes({
-        key: 'inbox-read-status',
-        filter: function(change) {
-          return change.doc.type === 'data_record';
-        },
-        callback: $scope.updateUnreadCount
+      UnreadRecords(function(err, data) {
+        if (err) {
+          return $log.error('Error fetching read status', err);
+        }
+        $scope.unreadCount = data;
       });
 
       // get the forms for the forms filter
