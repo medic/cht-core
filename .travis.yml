@@ -8,7 +8,9 @@ jdk:
 addons:
   chrome: "stable"
   artifacts:
-    debug: true  
+    debug: true 
+    paths:
+      - ./tests/_output     
     target_paths: $TRAVIS_BUILD_ID
     working_dir: WORKING_DIR
     bucket: medic-tests
