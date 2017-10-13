@@ -28,7 +28,7 @@
     "google-libphonenumber": "^3.0.6",
     "jquery": "^3.2.1",
     "json2xml": "^0.1.3",
-    "medic-enketo-xslt": "^1.4.1",
+    "medic-enketo-xslt": "^1.5.0",
     "medic-nootils": "^1.0.3",
     "messageformat": "^1.0.0",
     "moment": "^2.17.1",
