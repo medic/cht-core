@@ -12,7 +12,7 @@ addons:
     target_paths: $TRAVIS_BUILD_ID
     working_dir: WORKING_DIR
     bucket: medic-tests
-    s3_region: us-west-1
+    s3_region: us-east-1
 
 services:
   # docker is used for couchdb 2.0 (not currently available as a travis service)
