@@ -129,7 +129,7 @@ const deleteAll = () => {
     });
 };
 
-const refreshToGetNewSettings = () => { //no change. Just testing 2
+const refreshToGetNewSettings = () => { //no change. Just testing 3
   // wait for the updates to replicate
   return browser.wait(protractor.ExpectedConditions.elementToBeClickable(element(by.css('#update-available .submit:not(.disabled)'))), 10000)
     .then(() => {
