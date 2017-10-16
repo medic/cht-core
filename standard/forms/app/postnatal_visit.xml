@@ -59,9 +59,6 @@
           <text id="/postnatal_visit/chw_name:label">
             <value>सामुदायिक स्वास्थ्य कर्मी का नाम</value>
           </text>
-          <text id="/postnatal_visit/inputs/source_id:label">
-            <value>सोर्स ID</value>
-          </text>
           <text id="/postnatal_visit/group_chw_info/call_button:label">
             <value>**कृपया <output value=" /postnatal_visit/chw_name "/> के साथ मिल कर देखे के क्या <output value=" /postnatal_visit/patient_name "/> अपने गर्भावस्था के बाद की जांच के लिए आये |** कॉल: <output value=" /postnatal_visit/chw_phone "/></value></text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign1:label">
@@ -69,9 +66,6 @@
           </text>
           <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit_ds:label">
             <value>-</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/parent/contact/name:label">
-            <value>सामुदायिक स्वास्थ्य कर्मी का नाम</value>
           </text>
           <text id="/postnatal_visit/group_who_assessed/g_who_assessed/both:label">
             <value>मां और बच्चा दोनों</value>
@@ -82,17 +76,14 @@
           <text id="/postnatal_visit/group_note/default_chw_sms:label">
             <value>-</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:hint">
-            <value>लागू होने वाले सभी का चयन करें</value>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign14:label">
+            <value>अन्य खतरे के संकेत</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d12:label">
             <value>TB के दवाइयां लेना</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_baby/danger_signs_baby_other:label">
             <value>अन्य क स्पष्ट करें:</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign14:label">
-            <value>अन्य खतरे के संकेत</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd1:label">
             <value>बुखार</value>
@@ -109,14 +100,8 @@
           <text id="/postnatal_visit/group_review/r_mom_danger_sign5:label">
             <value>बुखार या खराब बू वाला जेर</value>
           </text>
-          <text id="/postnatal_visit/inputs/contact/patient_id:label">
-            <value>मरीज का ID</value>
-          </text>
           <text id="/postnatal_visit/patient_phone:label">
             <value>मरीज का फोन नंबर</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/phone:label">
-            <value>व्यक्ति का फ़ोन</value>
           </text>
           <text id="/postnatal_visit/group_review/r_visit_yes:label">
             <value>गर्भावस्था की बाद की जांच पूरी की गयी है</value>
@@ -138,9 +123,6 @@
           </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d14:label">
             <value>अन्य खतरे के संकेत</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/parent/contact/phone:label">
-            <value>सामुदायिक स्वास्थ्य कर्मी का फोन नंबर</value>
           </text>
           <text id="/postnatal_visit/chw_sms:label">
             <value>सामुदायिक स्वास्थ्य कर्मी का नोट</value>
@@ -210,6 +192,9 @@
           </text>
           <text id="/postnatal_visit/group_review/r_mom_danger_sign8:label">
             <value>दुखी महसूस करना या आसानी से रो देना</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:hint">
+            <value>लागू होने वाले सभी का चयन करें</value>
           </text>
           <text id="/postnatal_visit/group_chw_info/attended_pnc/no:label">
             <value>नहीं</value>
@@ -303,9 +288,6 @@
           <text id="/postnatal_visit/group_note/default_chw_sms/baby_visit_ds:label">
             <value>-</value>
           </text>
-          <text id="/postnatal_visit/inputs/source:label">
-            <value>सोर्स</value>
-          </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:hint">
             <value>लागू होने वाले सभी का चयन करें</value>
           </text>
@@ -324,9 +306,6 @@
           <text id="/postnatal_visit/group_chw_info:label">
             <value>लापता जांच की रिपोर्टों</value>
           </text>
-          <text id="/postnatal_visit/inputs/contact/sex:label">
-            <value>लिंग</value>
-          </text>
           <text id="/postnatal_visit/group_review/r_mom_danger_sign3:label">
             <value>सिरदर्द या चेहरे की सूजन</value>
           </text>
@@ -336,17 +315,11 @@
           <text id="/postnatal_visit/group_review/r_summary:label">
             <value>मरीज़ की जानकारी &lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/postnatal_visit/inputs/contact/date_of_birth:label">
-            <value>जन्म दिन</value>
-          </text>
           <text id="/postnatal_visit/patient_name:label">
             <value>मरीज का नाम</value>
           </text>
           <text id="/postnatal_visit/group_review/r_mom_danger_sign10:label">
             <value>स्तन में समस्या या दर्द</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/name:label">
-            <value>नाम</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_baby:label">
             <value>बच्चे की खतरे के संकेत</value>
@@ -416,9 +389,6 @@
           <text id="/postnatal_visit/chw_name:label">
             <value>CHW Name</value>
           </text>
-          <text id="/postnatal_visit/inputs/source_id:label">
-            <value>Source ID</value>
-          </text>
           <text id="/postnatal_visit/group_chw_info/call_button:label">
             <value>**Please follow up with <output value=" /postnatal_visit/chw_name "/> to see if <output value=" /postnatal_visit/patient_name "/> attended her PNC visit.**
 Call: <output value=" /postnatal_visit/chw_phone "/></value></text>
@@ -427,9 +397,6 @@ Call: <output value=" /postnatal_visit/chw_phone "/></value></text>
           </text>
           <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit_ds:label">
             <value>Hi, <output value=" /postnatal_visit/chw_name "/>. <output value=" /postnatal_visit/patient_name "/> (<output value=" /postnatal_visit/group_review/r_patient_id "/>) attended PNC. Only the mother was assessed. The nurse reported danger signs in the mother. Please follow up to see if they need additional support. Thank you!</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/parent/contact/name:label">
-            <value>CHW Name</value>
           </text>
           <text id="/postnatal_visit/group_who_assessed/g_who_assessed/both:label">
             <value>Both mother and baby</value>
@@ -467,14 +434,8 @@ Call: <output value=" /postnatal_visit/chw_phone "/></value></text>
           <text id="/postnatal_visit/group_review/r_mom_danger_sign5:label">
             <value>Fever or foul-smelling lochia</value>
           </text>
-          <text id="/postnatal_visit/inputs/contact/patient_id:label">
-            <value>Patient ID</value>
-          </text>
           <text id="/postnatal_visit/patient_phone:label">
             <value>Patient Phone</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/phone:label">
-            <value>Patient's Phone</value>
           </text>
           <text id="/postnatal_visit/group_review/r_visit_yes:label">
             <value>Postnatal care visit completed</value>
@@ -496,9 +457,6 @@ Call: <output value=" /postnatal_visit/chw_phone "/></value></text>
           </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d14:label">
             <value>Other danger signs</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/parent/contact/phone:label">
-            <value>CHW Phone</value>
           </text>
           <text id="/postnatal_visit/chw_sms:label">
             <value>CHW's Note</value>
@@ -662,9 +620,6 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d4:label">
             <value>Heavy vaginal bleeding</value>
           </text>
-          <text id="/postnatal_visit/inputs/source:label">
-            <value>Source</value>
-          </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:hint">
             <value>Select all that apply</value>
           </text>
@@ -683,9 +638,6 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           <text id="/postnatal_visit/group_chw_info:label">
             <value>Missing Visit Report</value>
           </text>
-          <text id="/postnatal_visit/inputs/contact/sex:label">
-            <value>Sex</value>
-          </text>
           <text id="/postnatal_visit/group_review/r_mom_danger_sign3:label">
             <value>Headaches or swelling of the face</value>
           </text>
@@ -695,17 +647,11 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           <text id="/postnatal_visit/group_review/r_summary:label">
             <value>Patient Information&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/postnatal_visit/inputs/contact/date_of_birth:label">
-            <value>Date of Birth</value>
-          </text>
           <text id="/postnatal_visit/patient_name:label">
             <value>Patient Name</value>
           </text>
           <text id="/postnatal_visit/group_review/r_mom_danger_sign10:label">
             <value>Breast problem or pain</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/name:label">
-            <value>Name</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_baby:label">
             <value>Baby Danger Signs</value>
@@ -775,9 +721,6 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           <text id="/postnatal_visit/chw_name:label">
             <value>Nama Kader</value>
           </text>
-          <text id="/postnatal_visit/inputs/source_id:label">
-            <value>Sumber ID</value>
-          </text>
           <text id="/postnatal_visit/group_chw_info/call_button:label">
             <value>**Mohon dibicarakan dengan <output value=" /postnatal_visit/chw_name "/> untuk memastikan apakah <output value=" /postnatal_visit/patient_name "/> untuk kunjungan perawatan setelah melahirkan nya.** Sebut: <output value=" /postnatal_visit/chw_phone "/></value></text>
           <text id="/postnatal_visit/group_review/r_baby_danger_sign1:label">
@@ -785,9 +728,6 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           </text>
           <text id="/postnatal_visit/group_note/default_chw_sms/mom_visit_ds:label">
             <value>-</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/parent/contact/name:label">
-            <value>Nama Kader</value>
           </text>
           <text id="/postnatal_visit/group_who_assessed/g_who_assessed/both:label">
             <value>Ibu dan bayi</value>
@@ -798,17 +738,14 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           <text id="/postnatal_visit/group_note/default_chw_sms:label">
             <value>-</value>
           </text>
-          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:hint">
-            <value>Pilih semua yang berlaku</value>
+          <text id="/postnatal_visit/group_review/r_mom_danger_sign14:label">
+            <value>Tanda bahaya lainnya</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d12:label">
             <value>Mengambil obat anti-TBC</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_baby/danger_signs_baby_other:label">
             <value>Tentukan lainnya:</value>
-          </text>
-          <text id="/postnatal_visit/group_review/r_mom_danger_sign14:label">
-            <value>Tanda bahaya lainnya</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby/bd1:label">
             <value>Demam</value>
@@ -825,13 +762,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           <text id="/postnatal_visit/group_review/r_mom_danger_sign5:label">
             <value>Demam atau berbau busuk lokia</value>
           </text>
-          <text id="/postnatal_visit/inputs/contact/patient_id:label">
-            <value>Pasien ID</value>
-          </text>
           <text id="/postnatal_visit/patient_phone:label">
-            <value>Nomor Telepon Pasien</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/phone:label">
             <value>Nomor Telepon Pasien</value>
           </text>
           <text id="/postnatal_visit/group_review/r_visit_yes:label">
@@ -854,9 +785,6 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom/d14:label">
             <value>Tanda bahaya lainnya</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/parent/contact/phone:label">
-            <value>Nomor Telepon Kader</value>
           </text>
           <text id="/postnatal_visit/chw_sms:label">
             <value>Catatan Kader</value>
@@ -926,6 +854,9 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/></value></text
           </text>
           <text id="/postnatal_visit/group_review/r_mom_danger_sign8:label">
             <value>Merasa sedih atau menangis dengan mudah</value>
+          </text>
+          <text id="/postnatal_visit/group_danger_signs_baby/g_danger_signs_baby:hint">
+            <value>Pilih semua yang berlaku</value>
           </text>
           <text id="/postnatal_visit/group_chw_info/attended_pnc/no:label">
             <value>Tidak</value>
@@ -1021,9 +952,6 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
           <text id="/postnatal_visit/group_note/default_chw_sms/baby_visit_ds:label">
             <value>-</value>
           </text>
-          <text id="/postnatal_visit/inputs/source:label">
-            <value>Sumber</value>
-          </text>
           <text id="/postnatal_visit/group_danger_signs_mom/g_danger_signs_mom:hint">
             <value>Pilih semua yang berlaku</value>
           </text>
@@ -1042,9 +970,6 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
           <text id="/postnatal_visit/group_chw_info:label">
             <value>Laporan Kunjungan Hilang</value>
           </text>
-          <text id="/postnatal_visit/inputs/contact/sex:label">
-            <value>Jenis kelamin</value>
-          </text>
           <text id="/postnatal_visit/group_review/r_mom_danger_sign3:label">
             <value>Sakit kepala atau pembengkakan wajah</value>
           </text>
@@ -1054,17 +979,11 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
           <text id="/postnatal_visit/group_review/r_summary:label">
             <value>Informasi pasien &lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/postnatal_visit/inputs/contact/date_of_birth:label">
-            <value>Tanggal lahir</value>
-          </text>
           <text id="/postnatal_visit/patient_name:label">
             <value>Nama Pasien</value>
           </text>
           <text id="/postnatal_visit/group_review/r_mom_danger_sign10:label">
             <value>Masalah payudara atau nyeri</value>
-          </text>
-          <text id="/postnatal_visit/inputs/contact/name:label">
-            <value>Nama</value>
           </text>
           <text id="/postnatal_visit/group_danger_signs_baby:label">
             <value>Tanda-tanda bahaya bayi</value>
@@ -1081,7 +1000,7 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
         </translation>
       </itext>
       <instance>
-        <postnatal_visit delimiter="#" id="postnatal_visit" prefix="J1!postnatal_visit!" version="2017-07-28_19-41">
+        <postnatal_visit delimiter="#" id="postnatal_visit" prefix="J1!postnatal_visit!" version="2017-10-16_12-04">
           <inputs tag="hidden">
             <meta tag="hidden">
               <location>
@@ -1187,16 +1106,16 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
       </instance>
       <instance id="contact-summary"/>
       <bind nodeset="/postnatal_visit/inputs" relevant="./source = 'user'"/>
-      <bind nodeset="/postnatal_visit/inputs/source" type="string"/>
-      <bind nodeset="/postnatal_visit/inputs/source_id" type="string"/>
+      <bind calculate="." nodeset="/postnatal_visit/inputs/source" type="string"/>
+      <bind calculate="." nodeset="/postnatal_visit/inputs/source_id" type="string"/>
       <bind nodeset="/postnatal_visit/inputs/contact/_id" required="true()" type="db:person"/>
-      <bind nodeset="/postnatal_visit/inputs/contact/patient_id" type="string"/>
-      <bind nodeset="/postnatal_visit/inputs/contact/name" type="string"/>
-      <bind nodeset="/postnatal_visit/inputs/contact/date_of_birth" type="string"/>
-      <bind nodeset="/postnatal_visit/inputs/contact/sex" type="string"/>
-      <bind nodeset="/postnatal_visit/inputs/contact/phone" type="string"/>
-      <bind nodeset="/postnatal_visit/inputs/contact/parent/contact/phone" type="string"/>
-      <bind nodeset="/postnatal_visit/inputs/contact/parent/contact/name" type="string"/>
+      <bind calculate="." nodeset="/postnatal_visit/inputs/contact/patient_id" type="string"/>
+      <bind calculate="." nodeset="/postnatal_visit/inputs/contact/name" type="string"/>
+      <bind calculate="." nodeset="/postnatal_visit/inputs/contact/date_of_birth" type="string"/>
+      <bind calculate="." nodeset="/postnatal_visit/inputs/contact/sex" type="string"/>
+      <bind calculate="." nodeset="/postnatal_visit/inputs/contact/phone" type="string"/>
+      <bind calculate="." nodeset="/postnatal_visit/inputs/contact/parent/contact/phone" type="string"/>
+      <bind calculate="." nodeset="/postnatal_visit/inputs/contact/parent/contact/name" type="string"/>
       <bind calculate="if (  /postnatal_visit/inputs/contact/date_of_birth ='', '', floor( difference-in-months(  /postnatal_visit/inputs/contact/date_of_birth , today() ) div 12 ) )" nodeset="/postnatal_visit/patient_age_in_years" type="string"/>
       <bind calculate="../inputs/contact/phone" nodeset="/postnatal_visit/patient_phone" type="string"/>
       <bind calculate="../inputs/contact/_id" nodeset="/postnatal_visit/patient_uuid" type="string"/>
@@ -1291,41 +1210,13 @@ ID: <output value=" /postnatal_visit/group_review/r_patient_id "/>&quot;</value>
   <h:body class="pages">
     <group appearance="field-list" ref="/postnatal_visit/inputs">
       <label ref="jr:itext('/postnatal_visit/inputs:label')"/>
-      <input appearance="hidden" ref="/postnatal_visit/inputs/source">
-        <label ref="jr:itext('/postnatal_visit/inputs/source:label')"/>
-      </input>
-      <input appearance="hidden" ref="/postnatal_visit/inputs/source_id">
-        <label ref="jr:itext('/postnatal_visit/inputs/source_id:label')"/>
-      </input>
       <group ref="/postnatal_visit/inputs/contact">
         <input appearance="db-object" ref="/postnatal_visit/inputs/contact/_id">
           <label ref="jr:itext('/postnatal_visit/inputs/contact/_id:label')"/>
           <hint ref="jr:itext('/postnatal_visit/inputs/contact/_id:hint')"/>
         </input>
-        <input appearance="hidden" ref="/postnatal_visit/inputs/contact/patient_id">
-          <label ref="jr:itext('/postnatal_visit/inputs/contact/patient_id:label')"/>
-        </input>
-        <input appearance="hidden" ref="/postnatal_visit/inputs/contact/name">
-          <label ref="jr:itext('/postnatal_visit/inputs/contact/name:label')"/>
-        </input>
-        <input appearance="hidden" ref="/postnatal_visit/inputs/contact/date_of_birth">
-          <label ref="jr:itext('/postnatal_visit/inputs/contact/date_of_birth:label')"/>
-        </input>
-        <input appearance="hidden" ref="/postnatal_visit/inputs/contact/sex">
-          <label ref="jr:itext('/postnatal_visit/inputs/contact/sex:label')"/>
-        </input>
-        <input appearance="hidden" ref="/postnatal_visit/inputs/contact/phone">
-          <label ref="jr:itext('/postnatal_visit/inputs/contact/phone:label')"/>
-        </input>
         <group ref="/postnatal_visit/inputs/contact/parent">
-          <group ref="/postnatal_visit/inputs/contact/parent/contact">
-            <input appearance="hidden" ref="/postnatal_visit/inputs/contact/parent/contact/phone">
-              <label ref="jr:itext('/postnatal_visit/inputs/contact/parent/contact/phone:label')"/>
-            </input>
-            <input appearance="hidden" ref="/postnatal_visit/inputs/contact/parent/contact/name">
-              <label ref="jr:itext('/postnatal_visit/inputs/contact/parent/contact/name:label')"/>
-            </input>
-          </group>
+          <group ref="/postnatal_visit/inputs/contact/parent/contact"/>
         </group>
       </group>
     </group>
