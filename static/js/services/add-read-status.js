@@ -13,6 +13,10 @@ angular.module('inboxServices').factory('AddReadStatus',
       });
     };
 
+    var docExists = function(row) {
+      return !!(row.value && !row.value.deleted);
+    };
+
     var addRead = function(type, models) {
       if (!models.length) {
         return $q.resolve(models);
@@ -22,7 +26,7 @@ angular.module('inboxServices').factory('AddReadStatus',
         .allDocs({ keys: keys })
         .then(function(response) {
           for (var i = 0; i < models.length; i++) {
-            models[i].read = !!response.rows[i].value;
+            models[i].read = docExists(response.rows[i]);
           }
           return models;
         });

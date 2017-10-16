@@ -3,38 +3,41 @@ describe('Changes service', function() {
   'use strict';
 
   var service,
-      changesCallbacks,
-      changesCount,
-      changesOptions;
+      changesCalls;
 
-  var onProvider = function() {
+  var onProvider = function(db) {
     return {
       on: function(type, callback) {
-        changesCallbacks[type] = callback;
-        return onProvider();
+        db.callbacks[type] = callback;
+        return onProvider(db);
       }
     };
   };
 
   beforeEach(function (done) {
-    changesCallbacks = {};
-    changesCount = 0;
-    changesOptions = {};
+    changesCalls = {
+      medic: { callCount: 0, callOptions: null, callbacks: {} },
+      meta:  { callCount: 0, callOptions: null, callbacks: {} }
+    };
 
     module('inboxApp');
     module(function ($provide) {
-      $provide.value('DB', function() {
-        return {
-          changes: function(options) {
-            changesOptions = options;
-            changesCount++;
-            return onProvider();
-          },
-          info: function() {
-            return Promise.resolve({
-              update_seq: 'test'
-            });
-          }
+      $provide.value('$q', Q); // bypass $q so we don't have to digest
+      $provide.factory('DB', function() {
+        return function(dbOptions) {
+          return {
+            changes: function(changesOptions) {
+              var db = changesCalls[dbOptions.meta ? 'meta' : 'medic'];
+              db.callOptions = changesOptions;
+              db.callCount++;
+              return onProvider(db);
+            },
+            info: function() {
+              return Promise.resolve({
+                update_seq: 'test'
+              });
+            }
+          };
         };
       });
       $provide.value('$timeout', function(fn) {
@@ -58,12 +61,34 @@ describe('Changes service', function() {
       },
       callback: function(actual) {
         chai.expect(actual).to.equal(expected);
-        chai.expect(changesCount).to.equal(1);
+        chai.expect(changesCalls.medic.callCount).to.equal(1);
+        chai.expect(changesCalls.meta.callCount).to.equal(1);
         done();
       }
     });
 
-    changesCallbacks.change(expected);
+    changesCalls.medic.callbacks.change(expected);
+  });
+
+  it('calls the callback for the meta db too', function(done) {
+
+    var expected = { id: 'x', changes: [ { rev: '2-abc' } ] };
+
+    service({
+      key: 'test',
+      metaDb: true,
+      filter: function() {
+        return true;
+      },
+      callback: function(actual) {
+        chai.expect(actual).to.equal(expected);
+        chai.expect(changesCalls.medic.callCount).to.equal(1);
+        chai.expect(changesCalls.meta.callCount).to.equal(1);
+        done();
+      }
+    });
+
+    changesCalls.meta.callbacks.change(expected);
   });
 
   it('calls the most recent callback only', function(done) {
@@ -87,12 +112,13 @@ describe('Changes service', function() {
       },
       callback: function(actual) {
         chai.expect(actual).to.equal(expected);
-        chai.expect(changesCount).to.equal(1);
+        chai.expect(changesCalls.medic.callCount).to.equal(1);
+        chai.expect(changesCalls.meta.callCount).to.equal(1);
         done();
       }
     });
 
-    changesCallbacks.change(expected);
+    changesCalls.medic.callbacks.change(expected);
   });
 
   it('calls all registered callbacks', function(done) {
@@ -120,13 +146,14 @@ describe('Changes service', function() {
       }
     });
 
-    changesCallbacks.change(expected);
+    changesCalls.medic.callbacks.change(expected);
 
     chai.expect(results.key1.length).to.equal(1);
     chai.expect(results.key2.length).to.equal(1);
     chai.expect(results.key1[0]).to.equal(expected);
     chai.expect(results.key2[0]).to.equal(expected);
-    chai.expect(changesCount).to.equal(1);
+    chai.expect(changesCalls.medic.callCount).to.equal(1);
+    chai.expect(changesCalls.meta.callCount).to.equal(1);
 
     done();
   });
@@ -155,12 +182,13 @@ describe('Changes service', function() {
       }
     });
 
-    changesCallbacks.change(expected);
+    changesCalls.medic.callbacks.change(expected);
 
     chai.expect(results.key1.length).to.equal(0);
     chai.expect(results.key2.length).to.equal(1);
     chai.expect(results.key2[0]).to.equal(expected);
-    chai.expect(changesCount).to.equal(1);
+    chai.expect(changesCalls.medic.callCount).to.equal(1);
+    chai.expect(changesCalls.meta.callCount).to.equal(1);
 
     done();
   });
@@ -177,9 +205,10 @@ describe('Changes service', function() {
     // unsubscribe callback
     listener.unsubscribe();
 
-    changesCallbacks.change({ id: 'x', changes: [ { rev: '2-abc' } ] });
+    changesCalls.medic.callbacks.change({ id: 'x', changes: [ { rev: '2-abc' } ] });
 
-    chai.expect(changesCount).to.equal(1);
+    chai.expect(changesCalls.medic.callCount).to.equal(1);
+    chai.expect(changesCalls.meta.callCount).to.equal(1);
 
     done();
   });
@@ -203,7 +232,8 @@ describe('Changes service', function() {
       key: 'yek',
       callback: function(actual) {
         chai.expect(actual).to.equal(expected);
-        chai.expect(changesCount).to.equal(1);
+        chai.expect(changesCalls.medic.callCount).to.equal(1);
+        chai.expect(changesCalls.meta.callCount).to.equal(1);
         done();
       }
     });
@@ -221,18 +251,18 @@ describe('Changes service', function() {
         return true;
       },
       callback: function() {
-        if (changesCount === 1) {
-          chai.expect(changesOptions.since).to.equal('test');
+        if (changesCalls.medic.callCount === 1) {
+          chai.expect(changesCalls.medic.callOptions.since).to.equal('test');
         }
-        if (changesCount === 2) {
-          chai.expect(changesOptions.since).to.equal('2-XYZ');
+        if (changesCalls.medic.callCount === 2) {
+          chai.expect(changesCalls.medic.callOptions.since).to.equal('2-XYZ');
           done();
         }
       }
     });
 
-    changesCallbacks.change(first);
-    changesCallbacks.error(new Error('Test error'));
-    changesCallbacks.change(second);
+    changesCalls.medic.callbacks.change(first);
+    changesCalls.medic.callbacks.error(new Error('Test error'));
+    changesCalls.medic.callbacks.change(second);
   });
 });
