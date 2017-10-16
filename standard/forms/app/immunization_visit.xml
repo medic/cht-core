@@ -15,7 +15,8 @@
             <value>हाँ</value>
           </text>
           <text id="/immunization_visit/group_rotavirus/g_rotavirus:label">
-            <value><output value=" /immunization_visit/patient_name "/>को Rotavirus का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /immunization_visit/patient_name "/> को Rotavirus का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/immunization_visit/group_typhoid/g_typhoid:jr:constraintMsg">
             <value>अगर कोई और डोज़ चयनित हो तोह आप 'कोई नहीं' को नहीं चुन सकते है |</value>
           </text>
@@ -29,7 +30,8 @@
             <value>Japanese Encephalitis</value>
           </text>
           <text id="/immunization_visit/group_mmrv/g_mmrv:label">
-            <value><output value=" /immunization_visit/patient_name "/>को MMRV का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /immunization_visit/patient_name "/> को MMRV का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/immunization_visit/vaccines_received/received_polio_1:label">
             <value>Polio 1 मिला</value>
           </text>
@@ -198,9 +200,11 @@
             <value>Hepatitis A</value>
           </text>
           <text id="/immunization_visit/group_cholera/g_cholera:label">
-            <value><output value=" /immunization_visit/patient_name "/>को Cholera का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /immunization_visit/patient_name "/> को Cholera का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/immunization_visit/group_pentavalent/g_pentavalent:label">
-            <value><output value=" /immunization_visit/patient_name "/>को Pentavalent का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /immunization_visit/patient_name "/> को Pentavalent का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/immunization_visit/group_meningococcal/g_meningococcal/MN3:label">
             <value>Meningococcal 3</value>
           </text>
@@ -220,7 +224,8 @@
             <value>**सुनिश्चित करें के यह कार्रवाई पूरा करने के लिए आप सबमिट दबाये |**</value>
           </text>
           <text id="/immunization_visit/group_pneumococcal/g_pneumococcal:label">
-            <value><output value=" /immunization_visit/patient_name "/>को Pneumococcal Pneumonia का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /immunization_visit/patient_name "/> को Pneumococcal Pneumonia का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/immunization_visit/inputs/contact/name:label">
             <value>नाम</value>
           </text>
@@ -291,7 +296,7 @@
             <value>सूची में से एक व्यक्ति को चुनें</value>
           </text>
           <text id="/immunization_visit/group_review/r_visit:label">
-            <value>जांच की जानकारी &lt;i class=&quot;fa fa-plus-square&quot;&gt;&lt;/i&gt;</value>
+            <value>जांच की जानकारी &lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_visit/vaccines_received/received_penta_2:label">
             <value>Pentavalent 2 मिला</value>
@@ -300,9 +305,11 @@
             <value>HPV 3</value>
           </text>
           <text id="/immunization_visit/group_meningococcal/g_meningococcal:label">
-            <value><output value=" /immunization_visit/patient_name "/>को Meningococcal का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /immunization_visit/patient_name "/> को Meningococcal का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/immunization_visit/group_hpv/g_hpv:label">
-            <value><output value=" /immunization_visit/patient_name "/>को HPV का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /immunization_visit/patient_name "/> को HPV का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/immunization_visit/group_meningococcal/g_meningococcal/MN1:label">
             <value>Meningococcal 1</value>
           </text>
@@ -486,7 +493,8 @@
             <value>मरीज</value>
           </text>
           <text id="/immunization_visit/group_typhoid/g_typhoid:label">
-            <value><output value=" /immunization_visit/patient_name "/>को Typhoid का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /immunization_visit/patient_name "/> को Typhoid का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/immunization_visit/group_review/r_vaccines_given:label">
             <value>दिए गए टीकाकरण</value>
           </text>
@@ -512,9 +520,11 @@
             <value>Cholera 3</value>
           </text>
           <text id="/immunization_visit/group_mmr/g_mmr:label">
-            <value><output value=" /immunization_visit/patient_name "/>को MMR का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /immunization_visit/patient_name "/> को MMR का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/immunization_visit/group_polio/g_polio:label">
-            <value><output value=" /immunization_visit/patient_name "/>को Polio का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /immunization_visit/patient_name "/> को Polio का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/immunization_visit/group_note/default_chw_sms/default:label">
             <value>-</value>
           </text>
@@ -558,7 +568,8 @@
             <value>Rotavirus 3</value>
           </text>
           <text id="/immunization_visit/group_hep_a/g_hep_a:label">
-            <value><output value=" /immunization_visit/patient_name "/>को Hepatitis का कौनसा डोज़ मिला ?</value></text>
+            <value><output value=" /immunization_visit/patient_name "/> को Hepatitis का कौनसा डोज़ मिला ?</value>
+          </text>
           <text id="/immunization_visit/vaccines_received/received_cholera_3:label">
             <value>Cholera 3 मिला</value>
           </text>
@@ -635,7 +646,7 @@
             <value>Influenza</value>
           </text>
           <text id="/immunization_visit/group_review/r_followup:label">
-            <value>सुनिश्चित करने के लिए सन्देश &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>सुनिश्चित करने के लिए सन्देश &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_visit/group_review/r_typhoid_2:label">
             <value>Typhoid 2</value>
@@ -647,13 +658,14 @@
             <value>Pneimococcal 3</value>
           </text>
           <text id="/immunization_visit/group_review/r_summary:label">
-            <value>मरीज़ की जानकारी &lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>मरीज़ की जानकारी &lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_visit/inputs/contact/date_of_birth:label">
             <value>जन्म दिन</value>
           </text>
           <text id="/immunization_visit/group_chw_info/chw_information:label">
-            <value><output value=" /immunization_visit/patient_name "/>के जांच की रिपोर्ट दर्ज नहीं की गयी है</value></text>
+            <value><output value=" /immunization_visit/patient_name "/> के जांच की रिपोर्ट दर्ज नहीं की गयी है</value>
+          </text>
           <text id="/immunization_visit/group_select_vaccines/g_vaccines/jap_enc:label">
             <value>Japanese Encephalitis</value>
           </text>
@@ -993,7 +1005,7 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/></value></t
             <value>Select a person from list</value>
           </text>
           <text id="/immunization_visit/group_review/r_visit:label">
-            <value>Visit Information&lt;i class=&quot;fa fa-plus-square&quot;&gt;&lt;/i&gt;</value>
+            <value>Visit Information&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_visit/vaccines_received/received_penta_2:label">
             <value>Received Pentavalent 2</value>
@@ -1344,7 +1356,7 @@ Call: <output value=" /immunization_visit/chw_phone "/></value></text>
             <value>Influenza</value>
           </text>
           <text id="/immunization_visit/group_review/r_followup:label">
-            <value>Follow Up Message &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>Follow Up Message &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_visit/group_review/r_typhoid_2:label">
             <value>Typhoid 2</value>
@@ -1356,7 +1368,7 @@ Call: <output value=" /immunization_visit/chw_phone "/></value></text>
             <value>Pneumococcal 3</value>
           </text>
           <text id="/immunization_visit/group_review/r_summary:label">
-            <value>Patient Information&lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>Patient Information&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_visit/inputs/contact/date_of_birth:label">
             <value>Date of Birth</value>
@@ -1704,7 +1716,7 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
             <value>Pilih orang dari daftar</value>
           </text>
           <text id="/immunization_visit/group_review/r_visit:label">
-            <value>Mengunjungi informasi&lt;i class=&quot;fa fa-plus-square&quot;&gt;&lt;/i&gt;</value>
+            <value>Mengunjungi informasi&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_visit/vaccines_received/received_penta_2:label">
             <value>Mendapatkan Pentavalent 2</value>
@@ -2054,7 +2066,7 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
             <value>Influenza</value>
           </text>
           <text id="/immunization_visit/group_review/r_followup:label">
-            <value>Follow Up Pesan &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>Follow Up Pesan &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_visit/group_review/r_typhoid_2:label">
             <value>Typhoid 2</value>
@@ -2066,7 +2078,7 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
             <value>Pneimococcal 3</value>
           </text>
           <text id="/immunization_visit/group_review/r_summary:label">
-            <value>Informasi pasien &lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>Informasi pasien &lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/immunization_visit/inputs/contact/date_of_birth:label">
             <value>Tanggal lahir</value>
@@ -2313,6 +2325,7 @@ ID: <output value=" /immunization_visit/group_review/r_patient_id "/>&quot;</val
           </meta>
         </immunization_visit>
       </instance>
+      <instance id="contact-summary"/>
       <bind nodeset="/immunization_visit/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/immunization_visit/inputs/source" type="string"/>
       <bind nodeset="/immunization_visit/inputs/source_id" type="string"/>
