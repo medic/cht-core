@@ -25,16 +25,18 @@ angular.module('inboxServices').factory('UnreadRecords', function(
     return (result && result.value) || 0;
   };
 
-  var getCount = function() {
-    return $q.all([ getTotal(), getRead() ]).then(function(results) {
-      var total = results[0];
-      var read = results[1];
-      var result = {};
-      TYPES.forEach(function(type) {
-        result[type] = getRowValueForType(total, type) - getRowValueForType(read, type);
-      });
-      return result;
-    });
+  var getCount = function(callback) {
+    return $q.all([ getTotal(), getRead() ])
+      .then(function(results) {
+        var total = results[0];
+        var read = results[1];
+        var result = {};
+        TYPES.forEach(function(type) {
+          result[type] = getRowValueForType(total, type) - getRowValueForType(read, type);
+        });
+        callback(null, result);
+      })
+      .catch(callback);
   };
 
   var updateReadDocs = function(change) {
@@ -58,32 +60,41 @@ angular.module('inboxServices').factory('UnreadRecords', function(
       });
   };
 
-  var changeHandler = function(change) {
+  var changeHandler = function(change, callback) {
     return updateReadDocs(change)
-      .then(getCount);
+      .then(function() {
+        getCount(callback);
+      });
   };
 
   return function(callback) {
+
     // wait for db.info to avoid uncaught exceptions: #3754
     DB().info().then(function() {
-      getCount()
-        .then(function(count) {
-          callback(null, count);
-        })
-        .catch(callback);
+
+      // get the initial count
+      getCount(callback);
+
+      // listen for changes in the medic db and update the count
       Changes({
-        key: 'read-status',
+        key: 'read-status-medic',
         filter: function(change) {
           return change.doc.type === 'data_record';
         },
         callback: function(change) {
-          changeHandler(change)
-            .then(function(count) {
-              callback(null, count);
-            })
-            .catch(callback);
+          changeHandler(change, callback);
+        }
+      });
+
+      // listen for changes in the meta db and update the count
+      Changes({
+        metaDb: true,
+        key: 'read-status-meta',
+        callback: function() {
+          getCount(callback);
         }
       });
     });
   };
+
 });

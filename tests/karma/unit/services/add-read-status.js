@@ -31,19 +31,22 @@ describe('AddReadStatus service', () => {
       allDocs.returns(Promise.resolve({
         rows: [
           { id: 'a', key: 'a', value: { rev: 'x' } },
-          { key: 'b', error: 'not_found' },
-          { id: 'c', key: 'c', value: { rev: 'y' } },
+          { key: 'b', error: 'not_found' }, // read doc never existed
+          { id: 'c', key: 'c', value: { rev: 'y', deleted: true } }, // read doc has been deleted
+          { id: 'd', key: 'd', value: { rev: 'z' } }
         ]
       }));
       const given = [
         { id: 'a' },  // supports no underscore prefix
         { _id: 'b' }, // AND works with underscore prefix
-        { _id: 'c' }
+        { _id: 'c' },
+        { _id: 'd' }
       ];
       const expected = [
         { id: 'a', read: true },
         { _id: 'b', read: false },
-        { _id: 'c', read: true }
+        { _id: 'c', read: false },
+        { _id: 'd', read: true }
       ];
       return service.reports(given).then(actual => {
         chai.expect(actual).to.deep.equal(expected);
@@ -51,7 +54,8 @@ describe('AddReadStatus service', () => {
         chai.expect(allDocs.args[0][0].keys).to.deep.equal([
           'read:report:a',
           'read:report:b',
-          'read:report:c'
+          'read:report:c',
+          'read:report:d'
         ]);
       });
     });

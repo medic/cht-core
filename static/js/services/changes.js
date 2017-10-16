@@ -1,6 +1,9 @@
 /**
  * Module to listen for database changes.
  *
+ * This function combines all the app changes listeners into one
+ * db listener so only one connection is required.
+ *
  * @param (Object) options
  *   - id (String): Some unique id to stop duplicate registrations
  *   - callback (function): The function to invoke when a change is detected.
@@ -8,6 +11,7 @@
  *        including the changed doc.
  *   - filter (function) (optional): A function to invoke to determine if the
  *        callback should be called on the given change object.
+ *   - metaDb (boolean) (optional): Watch the meta db instead of the medic db
  * @returns (Object)
  *   - unsubscribe (function): Invoke this function to stop being notified of
  *        any further changes.
@@ -15,6 +19,7 @@
 angular.module('inboxServices').factory('Changes',
   function(
     $log,
+    $q,
     $timeout,
     DB
   ) {
@@ -22,16 +27,26 @@ angular.module('inboxServices').factory('Changes',
     'use strict';
     'ngInject';
 
-    var callbacks = {};
+    var RETRY_MILLIS = 5000;
 
-    var lastSeq;
+    var dbs = {
+      medic: {
+        lastSeq: null,
+        callbacks: {}
+      },
+      meta: {
+        lastSeq: null,
+        callbacks: {}
+      }
+    };
 
-    var notifyAll = function(change) {
-      $log.debug('Change notification firing', change);
-      lastSeq = change.seq;
-      Object.keys(callbacks).forEach(function(key) {
-        var options = callbacks[key];
-        if (!options.filter || options.filter(change)) {
+    var notifyAll = function(meta, change) {
+      $log.debug('Change notification firing', meta, change);
+      var db = meta ? dbs.meta : dbs.medic;
+      db.lastSeq = change.seq;
+      Object.keys(db.callbacks).forEach(function(key) {
+        var options = db.callbacks[key];
+        if (!options || !options.filter || options.filter(change)) {
           try {
             options.callback(change);
           } catch(e) {
@@ -41,36 +56,44 @@ angular.module('inboxServices').factory('Changes',
       });
     };
 
-    var RETRY_MILLIS = 5000;
-
-    var watchChanges = function() {
+    var watchChanges = function(meta) {
       $log.info('Initiating changes watch');
-      DB()
+      DB({ meta: meta })
         .changes({
           live: true,
-          since: lastSeq,
+          since: meta ? dbs.meta.lastSeq : dbs.medic.lastSeq,
           timeout: false,
           include_docs: true
         })
-        .on('change', notifyAll)
+        .on('change', function(change) {
+          notifyAll(meta, change);
+        })
         .on('error', function(err) {
           $log.error('Error watching for db changes', err);
           $log.error('Attempting changes reconnection in ' + (RETRY_MILLIS / 1000) + ' seconds');
-          $timeout(watchChanges, RETRY_MILLIS);
+          $timeout(function() {
+            watchChanges(meta);
+          }, RETRY_MILLIS);
         });
     };
 
     var init = function() {
       $log.info('Initiating changes service');
-      return DB().info().then(function(info) {
-        lastSeq = info.update_seq;
-      })
-      .then(watchChanges)
-      .catch(function(err) {
-        $log.error('Error initialising watching for db changes', err);
-        $log.error('Attempting changes initialisation in ' + (RETRY_MILLIS / 1000) + ' seconds');
-        return $timeout(init, RETRY_MILLIS);
-      });
+      return $q.all([
+        DB().info(),
+        DB({ meta: true }).info()
+      ])
+        .then(function(results) {
+          dbs.medic.lastSeq = results[0].update_seq;
+          dbs.meta.lastSeq = results[1].update_seq;
+          watchChanges(false);
+          watchChanges(true);
+        })
+        .catch(function(err) {
+          $log.error('Error initialising watching for db changes', err);
+          $log.error('Attempting changes initialisation in ' + (RETRY_MILLIS / 1000) + ' seconds');
+          return $timeout(init, RETRY_MILLIS);
+        });
     };
 
     var initPromise = init();
@@ -81,10 +104,12 @@ angular.module('inboxServices').factory('Changes',
         return initPromise;
       }
 
-      callbacks[options.key] = options;
+      var db = options.metaDb ? dbs.meta : dbs.medic;
+      db.callbacks[options.key] = options;
+
       return {
         unsubscribe: function() {
-          delete callbacks[options.key];
+          db.callbacks[options.key] = null;
         }
       };
     };

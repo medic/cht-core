@@ -101,8 +101,39 @@ describe('UnreadRecords service', () => {
       let call = 0;
       service((err, actual) => {
         if (call === 0) {
-          chai.expect(Changes.callCount).to.equal(1);
+          chai.expect(Changes.callCount).to.equal(2); // one for medic and one for meta
           Changes.args[0][0].callback({ id: 'abc' });
+        } else if (call === 1) {
+          chai.expect(query.callCount).to.equal(4);
+          chai.expect(actual).to.deep.equal({
+            report: 11,
+            message: 5
+          });
+          done();
+        }
+        call++;
+      });
+    });
+
+    it('updates the count if the meta db is updated', done => {
+      query.onCall(0).returns(Promise.resolve({ rows: [
+        { key: 'report', value: 13 },
+        { key: 'message', value: 5 }
+      ] }));
+      query.onCall(1).returns(Promise.resolve({ rows: [
+        { key: 'report', value: 3 }
+      ] }));
+      query.onCall(2).returns(Promise.resolve({ rows: [
+        { key: 'report', value: 14 },
+        { key: 'message', value: 5 }
+      ] }));
+      query.onCall(3).returns(Promise.resolve({ rows: [
+        { key: 'report', value: 3 }
+      ] }));
+      let call = 0;
+      service((err, actual) => {
+        if (call === 0) {
+          Changes.args[1][0].callback({ id: 'abc' });
         } else if (call === 1) {
           chai.expect(query.callCount).to.equal(4);
           chai.expect(actual).to.deep.equal({
@@ -142,7 +173,7 @@ describe('UnreadRecords service', () => {
           return done(err);
         }
         if (call === 0) {
-          chai.expect(Changes.callCount).to.equal(1);
+          chai.expect(Changes.callCount).to.equal(2);
           Changes.args[0][0].callback({
             deleted: true,
             id: 'abc',
@@ -182,7 +213,7 @@ describe('UnreadRecords service', () => {
           return done(err);
         }
         if (call === 0) {
-          chai.expect(Changes.callCount).to.equal(1);
+          chai.expect(Changes.callCount).to.equal(2);
           Changes.args[0][0].callback({
             deleted: true,
             id: 'abc',
