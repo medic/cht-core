@@ -5,23 +5,14 @@
     <model>
       <itext>
         <translation lang="hi">
-          <text id="/pregnancy_visit/group_note/is_sms_edited/yes:label">
-            <value>हाँ</value>
-          </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d8:label">
             <value>पेशाब में खून या दर्दनाक, जलता हुआ पेशाब</value>
-          </text>
-          <text id="/pregnancy_visit/group_note/g_chw_sms:hint">
-            <value>संदेश <output value=" /pregnancy_visit/chw_name "/> (<output value=" /pregnancy_visit/chw_phone "/>) को भेजा जायेगा | संदेश की लंबाई सीमित है ताकी SMS का मूल्य उच्च ना हो|</value>
           </text>
           <text id="/pregnancy_visit/patient_name:label">
             <value>मरीज़ का नाम</value>
           </text>
-          <text id="/pregnancy_visit/referral_follow_up_needed:label">
-            <value>मरीज को स्वास्थ्य केंद्र भेजें।</value>
-          </text>
-          <text id="/pregnancy_visit/group_review/r_danger_sign4:label">
-            <value>38 डिग्री या अधिक का बुखार</value>
+          <text id="/pregnancy_visit/group_danger_signs:label">
+            <value>ख़तरे के संकेत</value>
           </text>
           <text id="/pregnancy_visit/group_note/default_chw_sms/highrisk:label">
             <value>शाबाश, <output value=" /pregnancy_visit/chw_name "/>! <output value=" /pregnancy_visit/patient_name "/> (<output value=" /pregnancy_visit/group_review/r_patient_id "/>) अपने गर्भावस्था जांच के लिए स्वास्थ्य केंद्र आ चुकी है | कृपया ध्यान दें के <output value=" /pregnancy_visit/patient_name "/> को एक या अधिक खतरे के संकेत है एक जोखिम वाला गर्भावस्था के लिए | उनकी अगली जांच से पहले हम आपको संदेश भेजेंगे | धन्यवाद!</value>
@@ -29,17 +20,14 @@
           <text id="/pregnancy_visit/group_note/is_sms_edited:label">
             <value>क्या आप सन्देश में कुछ जोड़ना या बदलना चाहते है?</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/patient_id:label">
-            <value>मरीज़ का ID</value>
+          <text id="/pregnancy_visit/group_review/r_danger_sign1:label">
+            <value>पेट में दर्द, दबाव या ऐंठन</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_followup_note1:label">
             <value>** ये SMS के रूप में <output value=" /pregnancy_visit/chw_name "/> <output value=" /pregnancy_visit/chw_phone "/> को भेजा जायेगा **</value>
           </text>
           <text id="/pregnancy_visit/chw_phone:label">
             <value>सामुदायिक स्वास्थ्य कर्मी का फोन नंबर</value>
-          </text>
-          <text id="/pregnancy_visit/inputs/contact/date_of_birth:label">
-            <value>जन्म की तारीख</value>
           </text>
           <text id="/pregnancy_visit/group_note/default_chw_sms:label">
             <value>-</value>
@@ -68,8 +56,8 @@
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d9:label">
             <value>दस्त जो कम नहीं होता</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/parent/contact/name:label">
-            <value>सामुदायिक स्वास्थ्य कर्मी का नाम</value>
+          <text id="/pregnancy_visit/patient_age_in_years:label">
+            <value>वर्षों</value>
           </text>
           <text id="/pregnancy_visit/inputs/contact/_id:label">
             <value>मरीज का नाम क्या है?</value>
@@ -77,14 +65,11 @@
           <text id="/pregnancy_visit/chw_name:label">
             <value>सामुदायिक स्वास्थ्य कर्मी का नाम</value>
           </text>
-          <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d7:label">
-            <value>बच्चे का कम हिलना या लात मारना</value>
+          <text id="/pregnancy_visit/group_note/is_sms_edited/yes:label">
+            <value>हाँ</value>
           </text>
-          <text id="/pregnancy_visit/inputs/source:label">
-            <value>सोर्स</value>
-          </text>
-          <text id="/pregnancy_visit/group_danger_signs:label">
-            <value>ख़तरे के संकेत</value>
+          <text id="/pregnancy_visit/referral_follow_up_needed:label">
+            <value>मरीज को स्वास्थ्य केंद्र भेजें।</value>
           </text>
           <text id="/pregnancy_visit/group_note/is_sms_edited/no:label">
             <value>नहीं</value>
@@ -92,8 +77,8 @@
           <text id="/pregnancy_visit/danger_signs:label">
             <value>ख़तरे के संकेत</value>
           </text>
-          <text id="/pregnancy_visit/patient_phone:label">
-            <value>मरीज़ का फोन नंबर</value>
+          <text id="/pregnancy_visit/group_chw_info/call_button:label">
+            <value>**कृपया सुनिश्चित करें <output value=" /pregnancy_visit/chw_name "/> की <output value=" /pregnancy_visit/patient_name "/> एएनसी की जाँच पूरी की गयी.** कॉल: <output value=" /pregnancy_visit/chw_phone "/>&quot;</value>
           </text>
           <text id="/pregnancy_visit/group_note/g_chw_sms:label">
             <value>यह सन्देश ऐसे ही भेजा जा सकता है या आप इस को बदल कर भी भेज सकते है</value>
@@ -119,14 +104,14 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d2:label">
             <value>योनि से खून या द्रव पदार्थ का बहाव, या खराब बू के साथ योनि से बहाव</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/name:label">
-            <value>नाम</value>
+          <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d7:label">
+            <value>बच्चे का कम हिलना या लात मारना</value>
           </text>
           <text id="/pregnancy_visit/inputs:label">
             <value>मरीज़</value>
           </text>
-          <text id="/pregnancy_visit/group_chw_info/call_button:label">
-            <value>**कृपया सुनिश्चित करें <output value=" /pregnancy_visit/chw_name "/> की <output value=" /pregnancy_visit/patient_name "/> एएनसी की जाँच पूरी की गयी.** कॉल: <output value=" /pregnancy_visit/chw_phone "/>&quot;</value>
+          <text id="/pregnancy_visit/patient_phone:label">
+            <value>मरीज़ का फोन नंबर</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_visit_no:label">
             <value>गर्भावस्था की जाँच पूरी नहीं हुई</value>
@@ -146,9 +131,6 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           <text id="/pregnancy_visit/chw_sms:label">
             <value>सामुदायिक स्वास्थ्य कर्मी का नोट</value>
           </text>
-          <text id="/pregnancy_visit/group_review/r_danger_sign1:label">
-            <value>पेट में दर्द, दबाव या ऐंठन</value>
-          </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d6:label">
             <value>अचानक वजन का बढ़ना या पैर, टखनों, चेहरे या हाथों में गंभीर सूजन</value>
           </text>
@@ -167,32 +149,23 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           <text id="/pregnancy_visit/group_review/r_summary:label">
             <value>मरीज़ की जानकारी,&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/parent/contact/phone:label">
-            <value>सामुदायिक स्वास्थ्य कर्मी का फोन नंबर</value>
-          </text>
           <text id="/pregnancy_visit/group_note/g_chw_sms:jr:constraintMsg">
             <value>आपका सन्देश 5 SMS से ऊपर नहीं हो सकता है | कृपया SMS का मूल्य को कम करने के लिए अपना सन्देश छोटा करें |</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d1:label">
             <value>पेट में दर्द, दबाव या ऐंठन</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/phone:label">
-            <value>मरीज़ का फ़ोन नंबर</value>
-          </text>
-          <text id="/pregnancy_visit/inputs/source_id:label">
-            <value>सोर्स ID</value>
+          <text id="/pregnancy_visit/group_note/g_chw_sms:hint">
+            <value>संदेश <output value=" /pregnancy_visit/chw_name "/> (<output value=" /pregnancy_visit/chw_phone "/>) को भेजा जायेगा | संदेश की लंबाई सीमित है ताकी SMS का मूल्य उच्च ना हो|</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d5:label">
-            <value>गंभीर सिरदर्द या नए, धुंधली दृष्टि की समस्याएं</value>
-          </text>
-          <text id="/pregnancy_visit/group_review/r_danger_sign5:label">
             <value>गंभीर सिरदर्द या नए, धुंधली दृष्टि की समस्याएं</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_visit_unknown:label">
             <value>गर्भावस्था की जांच की स्थिति पता नहीं</value>
           </text>
-          <text id="/pregnancy_visit/patient_age_in_years:label">
-            <value>वर्षों</value>
+          <text id="/pregnancy_visit/group_review/r_danger_sign4:label">
+            <value>38 डिग्री या अधिक का बुखार</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign6:label">
             <value>अचानक वजन का बढ़ना या पैर, टखनों, चेहरे या हाथों में गंभीर सूजन</value>
@@ -215,31 +188,22 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           <text id="/pregnancy_visit/group_review/r_visit_yes:label">
             <value>गर्भावस्था की जाँच पूरी हुई</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/sex:label">
-            <value>लिंग</value>
+          <text id="/pregnancy_visit/group_review/r_danger_sign5:label">
+            <value>गंभीर सिरदर्द या नए, धुंधली दृष्टि की समस्याएं</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_referral_note:label">
             <value>**खतरे की सूचना होने पर उसे स्वास्थ्य केंद्र भेजें.**</value>
           </text>
         </translation>
         <translation lang="en">
-          <text id="/pregnancy_visit/group_note/is_sms_edited/yes:label">
-            <value>Yes</value>
-          </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d8:label">
             <value>Blood in the urine or painful, burning urination</value>
-          </text>
-          <text id="/pregnancy_visit/group_note/g_chw_sms:hint">
-            <value>Message will be sent to <output value=" /pregnancy_visit/chw_name "/> (<output value=" /pregnancy_visit/chw_phone "/>). Messages are limited in length to avoid high SMS costs.</value>
           </text>
           <text id="/pregnancy_visit/patient_name:label">
             <value>Patient Name</value>
           </text>
-          <text id="/pregnancy_visit/referral_follow_up_needed:label">
-            <value>Refer Patient</value>
-          </text>
-          <text id="/pregnancy_visit/group_review/r_danger_sign4:label">
-            <value>Fever of 38 degrees or higher</value>
+          <text id="/pregnancy_visit/group_danger_signs:label">
+            <value>Danger Signs</value>
           </text>
           <text id="/pregnancy_visit/group_note/default_chw_sms/highrisk:label">
             <value>Nice work, <output value=" /pregnancy_visit/chw_name "/>! <output value=" /pregnancy_visit/patient_name "/> (<output value=" /pregnancy_visit/group_review/r_patient_id "/>) has attended ANC at the health facility. Please note that <output value=" /pregnancy_visit/patient_name "/> has one or more danger signs for a high risk pregnancy. We will send you a message when they are due for their next visit. Thank you!</value>
@@ -247,17 +211,14 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           <text id="/pregnancy_visit/group_note/is_sms_edited:label">
             <value>Would you like to edit or add info to the message?</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/patient_id:label">
-            <value>Patient ID</value>
+          <text id="/pregnancy_visit/group_review/r_danger_sign1:label">
+            <value>Pain or cramping in abdomen</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_followup_note1:label">
             <value>**The following will be sent as a SMS to <output value=" /pregnancy_visit/chw_name "/> <output value=" /pregnancy_visit/chw_phone "/>**</value>
           </text>
           <text id="/pregnancy_visit/chw_phone:label">
             <value>CHW Phone</value>
-          </text>
-          <text id="/pregnancy_visit/inputs/contact/date_of_birth:label">
-            <value>Date of Birth</value>
           </text>
           <text id="/pregnancy_visit/group_note/default_chw_sms:label">
             <value>Default SMS to send to CHW</value>
@@ -286,8 +247,8 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d9:label">
             <value>Diarrhea that doesn't go away</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/parent/contact/name:label">
-            <value>CHW Name</value>
+          <text id="/pregnancy_visit/patient_age_in_years:label">
+            <value>Years</value>
           </text>
           <text id="/pregnancy_visit/inputs/contact/_id:label">
             <value>What is the patient's name?</value>
@@ -295,14 +256,11 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           <text id="/pregnancy_visit/chw_name:label">
             <value>CHW Name</value>
           </text>
-          <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d7:label">
-            <value>Less movement and kicking from the baby</value>
+          <text id="/pregnancy_visit/group_note/is_sms_edited/yes:label">
+            <value>Yes</value>
           </text>
-          <text id="/pregnancy_visit/inputs/source:label">
-            <value>Source</value>
-          </text>
-          <text id="/pregnancy_visit/group_danger_signs:label">
-            <value>Danger Signs</value>
+          <text id="/pregnancy_visit/referral_follow_up_needed:label">
+            <value>Refer Patient</value>
           </text>
           <text id="/pregnancy_visit/group_note/is_sms_edited/no:label">
             <value>No</value>
@@ -310,9 +268,9 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           <text id="/pregnancy_visit/danger_signs:label">
             <value>Danger Signs</value>
           </text>
-          <text id="/pregnancy_visit/patient_phone:label">
-            <value>Patient Phone</value>
-          </text>
+          <text id="/pregnancy_visit/group_chw_info/call_button:label">
+            <value>**Please follow up with <output value=" /pregnancy_visit/chw_name "/> to see if <output value=" /pregnancy_visit/patient_name "/> attended her ANC visit.**
+Call: <output value=" /pregnancy_visit/chw_phone "/></value></text>
           <text id="/pregnancy_visit/group_note/g_chw_sms:label">
             <value>The following message can be sent as is or modified to add a personal note</value>
           </text>
@@ -337,15 +295,15 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d2:label">
             <value>Bleeding or fluid leaking from vagina or vaginal discharge with bad odour</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/name:label">
-            <value>Name</value>
+          <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d7:label">
+            <value>Less movement and kicking from the baby</value>
           </text>
           <text id="/pregnancy_visit/inputs:label">
             <value>Patient</value>
           </text>
-          <text id="/pregnancy_visit/group_chw_info/call_button:label">
-            <value>**Please follow up with <output value=" /pregnancy_visit/chw_name "/> to see if <output value=" /pregnancy_visit/patient_name "/> attended her ANC visit.**
-Call: <output value=" /pregnancy_visit/chw_phone "/></value></text>
+          <text id="/pregnancy_visit/patient_phone:label">
+            <value>Patient Phone</value>
+          </text>
           <text id="/pregnancy_visit/group_review/r_visit_no:label">
             <value>Pregnancy visit not completed</value>
           </text>
@@ -363,9 +321,6 @@ Call: <output value=" /pregnancy_visit/chw_phone "/></value></text>
           </text>
           <text id="/pregnancy_visit/chw_sms:label">
             <value>CHW's Note</value>
-          </text>
-          <text id="/pregnancy_visit/group_review/r_danger_sign1:label">
-            <value>Pain or cramping in abdomen</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d6:label">
             <value>Sudden weight gain or severe swelling of feet, ankles, face, or hands</value>
@@ -385,32 +340,23 @@ Call: <output value=" /pregnancy_visit/chw_phone "/></value></text>
           <text id="/pregnancy_visit/group_review/r_summary:label">
             <value>Patient Information&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/parent/contact/phone:label">
-            <value>CHW Phone</value>
-          </text>
           <text id="/pregnancy_visit/group_note/g_chw_sms:jr:constraintMsg">
             <value>Your message cannot be longer than 5 SMS messages. Please shorten your message to reduce SMS costs.</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d1:label">
             <value>Pain, pressure or cramping in abdomen</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/phone:label">
-            <value>Patient's Phone</value>
-          </text>
-          <text id="/pregnancy_visit/inputs/source_id:label">
-            <value>Source ID</value>
+          <text id="/pregnancy_visit/group_note/g_chw_sms:hint">
+            <value>Message will be sent to <output value=" /pregnancy_visit/chw_name "/> (<output value=" /pregnancy_visit/chw_phone "/>). Messages are limited in length to avoid high SMS costs.</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d5:label">
-            <value>Severe headache or new, blurry vision problems</value>
-          </text>
-          <text id="/pregnancy_visit/group_review/r_danger_sign5:label">
             <value>Severe headache or new, blurry vision problems</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_visit_unknown:label">
             <value>Not sure if pregnancy visit was completed</value>
           </text>
-          <text id="/pregnancy_visit/patient_age_in_years:label">
-            <value>Years</value>
+          <text id="/pregnancy_visit/group_review/r_danger_sign4:label">
+            <value>Fever of 38 degrees or higher</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign6:label">
             <value>Sudden weight gain or severe swelling of feet, ankles, face, or hands</value>
@@ -433,31 +379,22 @@ Call: <output value=" /pregnancy_visit/chw_phone "/></value></text>
           <text id="/pregnancy_visit/group_review/r_visit_yes:label">
             <value>Pregnancy visit completed</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/sex:label">
-            <value>Sex</value>
+          <text id="/pregnancy_visit/group_review/r_danger_sign5:label">
+            <value>Severe headache or new, blurry vision problems</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_referral_note:label">
             <value>**Refer to the health facility for danger signs.**</value>
           </text>
         </translation>
         <translation lang="id">
-          <text id="/pregnancy_visit/group_note/is_sms_edited/yes:label">
-            <value>Iya</value>
-          </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d8:label">
             <value>Darah dalam urin atau nyeri sekali, rasa seperti terbakar saat buang air kecil</value>
-          </text>
-          <text id="/pregnancy_visit/group_note/g_chw_sms:hint">
-            <value>Pesan akan dikirim ke <output value=" /pregnancy_visit/chw_name "/> (<output value=" /pregnancy_visit/chw_phone "/>). Pesan dibatasi panjang untuk menghindari biaya SMS yang tinggi.</value>
           </text>
           <text id="/pregnancy_visit/patient_name:label">
             <value>Nama Pasien</value>
           </text>
-          <text id="/pregnancy_visit/referral_follow_up_needed:label">
-            <value>Merujuk pasien</value>
-          </text>
-          <text id="/pregnancy_visit/group_review/r_danger_sign4:label">
-            <value>Demam 38 derajat atau lebih tinggi</value>
+          <text id="/pregnancy_visit/group_danger_signs:label">
+            <value>Tanda-tanda bahaya</value>
           </text>
           <text id="/pregnancy_visit/group_note/default_chw_sms/highrisk:label">
             <value>Kerja sama yang baik, <output value=" /pregnancy_visit/chw_name "/>! <output value=" /pregnancy_visit/patient_name "/> (<output value=" /pregnancy_visit/group_review/r_patient_id "/>) telah melakukan kunjungan  ANC di fasilitas kesehatan. Harap dicatat bahwa Cai Kase memiliki satu atau lebih tanda-tanda bahaya k kehamilan berisiko tinggi. Kami akan mengirimkan pesan peringatan  untuk kunjungan berikutnya. Terima kasih!</value>
@@ -465,17 +402,14 @@ Call: <output value=" /pregnancy_visit/chw_phone "/></value></text>
           <text id="/pregnancy_visit/group_note/is_sms_edited:label">
             <value>Apakah Anda ingin mengedit atau menambahkan info untuk pesan?</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/patient_id:label">
-            <value>Pasien ID</value>
+          <text id="/pregnancy_visit/group_review/r_danger_sign1:label">
+            <value>Nyeri, tekanan atau kram di perut</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_followup_note1:label">
             <value>**Berikut ini akan dikirim sebagai SMS ke <output value=" /pregnancy_visit/chw_name "/> <output value=" /pregnancy_visit/chw_phone "/>**</value>
           </text>
           <text id="/pregnancy_visit/chw_phone:label">
             <value>Nomor Telepon Kader</value>
-          </text>
-          <text id="/pregnancy_visit/inputs/contact/date_of_birth:label">
-            <value>Tanggal lahir</value>
           </text>
           <text id="/pregnancy_visit/group_note/default_chw_sms:label">
             <value>-</value>
@@ -504,8 +438,8 @@ Call: <output value=" /pregnancy_visit/chw_phone "/></value></text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d9:label">
             <value>Diare yang tidak kunjung sembuh</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/parent/contact/name:label">
-            <value>Nama Kader</value>
+          <text id="/pregnancy_visit/patient_age_in_years:label">
+            <value>Umur</value>
           </text>
           <text id="/pregnancy_visit/inputs/contact/_id:label">
             <value>Apa nama pasien?</value>
@@ -513,14 +447,11 @@ Call: <output value=" /pregnancy_visit/chw_phone "/></value></text>
           <text id="/pregnancy_visit/chw_name:label">
             <value>Nama Kader</value>
           </text>
-          <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d7:label">
-            <value>Kurang gerak dan menendang dari bayi</value>
+          <text id="/pregnancy_visit/group_note/is_sms_edited/yes:label">
+            <value>Iya</value>
           </text>
-          <text id="/pregnancy_visit/inputs/source:label">
-            <value>Sumber</value>
-          </text>
-          <text id="/pregnancy_visit/group_danger_signs:label">
-            <value>Tanda-tanda bahaya</value>
+          <text id="/pregnancy_visit/referral_follow_up_needed:label">
+            <value>Merujuk pasien</value>
           </text>
           <text id="/pregnancy_visit/group_note/is_sms_edited/no:label">
             <value>Tidak</value>
@@ -528,9 +459,8 @@ Call: <output value=" /pregnancy_visit/chw_phone "/></value></text>
           <text id="/pregnancy_visit/danger_signs:label">
             <value>Tanda-tanda bahaya</value>
           </text>
-          <text id="/pregnancy_visit/patient_phone:label">
-            <value>Nomor Telepon Pasien</value>
-          </text>
+          <text id="/pregnancy_visit/group_chw_info/call_button:label">
+            <value>**Mohon dibicarakan dengan <output value=" /pregnancy_visit/chw_name "/> untuk melihat apakah <output value=" /pregnancy_visit/patient_name "/> menghadiri kunjungan ANC nya.** Sebut: <output value=" /pregnancy_visit/chw_phone "/></value></text>
           <text id="/pregnancy_visit/group_note/g_chw_sms:label">
             <value>Pesan berikut dapat dikirim sebagai adalah atau dimodifikasi untuk menambahkan catatan pribadi</value>
           </text>
@@ -556,14 +486,15 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/>&quot;</value>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d2:label">
             <value>Perdarahan atau cairan merembes dari vagina atau mengalir dari vagina dengan bau busuk</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/name:label">
-            <value>Nama</value>
+          <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d7:label">
+            <value>Kurang gerak dan menendang dari bayi</value>
           </text>
           <text id="/pregnancy_visit/inputs:label">
             <value>Pasien</value>
           </text>
-          <text id="/pregnancy_visit/group_chw_info/call_button:label">
-            <value>**Mohon dibicarakan dengan <output value=" /pregnancy_visit/chw_name "/> untuk melihat apakah <output value=" /pregnancy_visit/patient_name "/> menghadiri kunjungan ANC nya.** Sebut: <output value=" /pregnancy_visit/chw_phone "/></value></text>
+          <text id="/pregnancy_visit/patient_phone:label">
+            <value>Nomor Telepon Pasien</value>
+          </text>
           <text id="/pregnancy_visit/group_review/r_visit_no:label">
             <value>Kunjungan kehamilan tidak lengkap</value>
           </text>
@@ -581,9 +512,6 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/>&quot;</value>
           </text>
           <text id="/pregnancy_visit/chw_sms:label">
             <value>Catatan Kader</value>
-          </text>
-          <text id="/pregnancy_visit/group_review/r_danger_sign1:label">
-            <value>Nyeri, tekanan atau kram di perut</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d6:label">
             <value>Lonjakan berat badan atau berat pembengkakan kaki, pergelangan kaki, wajah, atau tangan</value>
@@ -603,32 +531,23 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/>&quot;</value>
           <text id="/pregnancy_visit/group_review/r_summary:label">
             <value>Pasien informasi&lt;I class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/parent/contact/phone:label">
-            <value>Nomor Telepon Kader</value>
-          </text>
           <text id="/pregnancy_visit/group_note/g_chw_sms:jr:constraintMsg">
             <value>Pesan Anda tidak boleh lebih dari 5 pesan SMS. Persingkat pesan Anda untuk mengurangi biaya SMS.</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d1:label">
             <value>Nyeri, tekanan atau kram di perut</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/phone:label">
-            <value>Nomor Telepon Pasien</value>
-          </text>
-          <text id="/pregnancy_visit/inputs/source_id:label">
-            <value>Sumber ID</value>
+          <text id="/pregnancy_visit/group_note/g_chw_sms:hint">
+            <value>Pesan akan dikirim ke <output value=" /pregnancy_visit/chw_name "/> (<output value=" /pregnancy_visit/chw_phone "/>). Pesan dibatasi panjang untuk menghindari biaya SMS yang tinggi.</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d5:label">
-            <value>Sakit kepala berat atau baru, penglihatan kabur</value>
-          </text>
-          <text id="/pregnancy_visit/group_review/r_danger_sign5:label">
             <value>Sakit kepala berat atau baru, penglihatan kabur</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_visit_unknown:label">
             <value>Tidak yakin jika kunjungan kehamilan lengkap</value>
           </text>
-          <text id="/pregnancy_visit/patient_age_in_years:label">
-            <value>Umur</value>
+          <text id="/pregnancy_visit/group_review/r_danger_sign4:label">
+            <value>Demam 38 derajat atau lebih tinggi</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign6:label">
             <value>Lonjakan berat badan atau berat pembengkakan kaki, pergelangan kaki, wajah, atau tangan</value>
@@ -651,8 +570,8 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/>&quot;</value>
           <text id="/pregnancy_visit/group_review/r_visit_yes:label">
             <value>Kunjungan kehamilan lengkap</value>
           </text>
-          <text id="/pregnancy_visit/inputs/contact/sex:label">
-            <value>Jenis kelamin</value>
+          <text id="/pregnancy_visit/group_review/r_danger_sign5:label">
+            <value>Sakit kepala berat atau baru, penglihatan kabur</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_referral_note:label">
             <value>**Merujuk ke fasilitas kesehatan untuk tanda bahaya.**</value>
@@ -660,7 +579,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/>&quot;</value>
         </translation>
       </itext>
       <instance>
-        <pregnancy_visit delimiter="#" id="pregnancy_visit" prefix="J1!pregnancy_visit!" version="2017-06-09_09-23">
+        <pregnancy_visit delimiter="#" id="pregnancy_visit" prefix="J1!pregnancy_visit!" version="2017-10-16_12-05">
           <inputs>
             <meta tag="hidden">
               <location>
@@ -742,16 +661,16 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/>&quot;</value>
       </instance>
       <instance id="contact-summary"/>
       <bind nodeset="/pregnancy_visit/inputs" relevant="./source = 'user'"/>
-      <bind nodeset="/pregnancy_visit/inputs/source" type="string"/>
-      <bind nodeset="/pregnancy_visit/inputs/source_id" type="string"/>
+      <bind calculate="." nodeset="/pregnancy_visit/inputs/source" type="string"/>
+      <bind calculate="." nodeset="/pregnancy_visit/inputs/source_id" type="string"/>
       <bind nodeset="/pregnancy_visit/inputs/contact/_id" required="true()" type="db:person"/>
-      <bind nodeset="/pregnancy_visit/inputs/contact/patient_id" type="string"/>
-      <bind nodeset="/pregnancy_visit/inputs/contact/name" type="string"/>
-      <bind nodeset="/pregnancy_visit/inputs/contact/date_of_birth" type="string"/>
-      <bind nodeset="/pregnancy_visit/inputs/contact/sex" type="string"/>
-      <bind nodeset="/pregnancy_visit/inputs/contact/phone" type="string"/>
-      <bind nodeset="/pregnancy_visit/inputs/contact/parent/contact/phone" type="string"/>
-      <bind nodeset="/pregnancy_visit/inputs/contact/parent/contact/name" type="string"/>
+      <bind calculate="." nodeset="/pregnancy_visit/inputs/contact/patient_id" type="string"/>
+      <bind calculate="." nodeset="/pregnancy_visit/inputs/contact/name" type="string"/>
+      <bind calculate="." nodeset="/pregnancy_visit/inputs/contact/date_of_birth" type="string"/>
+      <bind calculate="." nodeset="/pregnancy_visit/inputs/contact/sex" type="string"/>
+      <bind calculate="." nodeset="/pregnancy_visit/inputs/contact/phone" type="string"/>
+      <bind calculate="." nodeset="/pregnancy_visit/inputs/contact/parent/contact/phone" type="string"/>
+      <bind calculate="." nodeset="/pregnancy_visit/inputs/contact/parent/contact/name" type="string"/>
       <bind calculate="if (  /pregnancy_visit/inputs/contact/date_of_birth ='', '', floor( difference-in-months(  /pregnancy_visit/inputs/contact/date_of_birth , today() ) div 12 ) )" nodeset="/pregnancy_visit/patient_age_in_years" type="string"/>
       <bind calculate="../inputs/contact/phone" nodeset="/pregnancy_visit/patient_phone" type="string"/>
       <bind calculate="../inputs/contact/_id" nodeset="/pregnancy_visit/patient_uuid" type="string"/>
@@ -806,41 +725,13 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/>&quot;</value>
   <h:body class="pages">
     <group appearance="field-list" ref="/pregnancy_visit/inputs">
       <label ref="jr:itext('/pregnancy_visit/inputs:label')"/>
-      <input appearance="hidden" ref="/pregnancy_visit/inputs/source">
-        <label ref="jr:itext('/pregnancy_visit/inputs/source:label')"/>
-      </input>
-      <input appearance="hidden" ref="/pregnancy_visit/inputs/source_id">
-        <label ref="jr:itext('/pregnancy_visit/inputs/source_id:label')"/>
-      </input>
       <group ref="/pregnancy_visit/inputs/contact">
         <input appearance="db-object" ref="/pregnancy_visit/inputs/contact/_id">
           <label ref="jr:itext('/pregnancy_visit/inputs/contact/_id:label')"/>
           <hint ref="jr:itext('/pregnancy_visit/inputs/contact/_id:hint')"/>
         </input>
-        <input appearance="hidden" ref="/pregnancy_visit/inputs/contact/patient_id">
-          <label ref="jr:itext('/pregnancy_visit/inputs/contact/patient_id:label')"/>
-        </input>
-        <input appearance="hidden" ref="/pregnancy_visit/inputs/contact/name">
-          <label ref="jr:itext('/pregnancy_visit/inputs/contact/name:label')"/>
-        </input>
-        <input appearance="hidden" ref="/pregnancy_visit/inputs/contact/date_of_birth">
-          <label ref="jr:itext('/pregnancy_visit/inputs/contact/date_of_birth:label')"/>
-        </input>
-        <input appearance="hidden" ref="/pregnancy_visit/inputs/contact/sex">
-          <label ref="jr:itext('/pregnancy_visit/inputs/contact/sex:label')"/>
-        </input>
-        <input appearance="hidden" ref="/pregnancy_visit/inputs/contact/phone">
-          <label ref="jr:itext('/pregnancy_visit/inputs/contact/phone:label')"/>
-        </input>
         <group ref="/pregnancy_visit/inputs/contact/parent">
-          <group ref="/pregnancy_visit/inputs/contact/parent/contact">
-            <input appearance="hidden" ref="/pregnancy_visit/inputs/contact/parent/contact/phone">
-              <label ref="jr:itext('/pregnancy_visit/inputs/contact/parent/contact/phone:label')"/>
-            </input>
-            <input appearance="hidden" ref="/pregnancy_visit/inputs/contact/parent/contact/name">
-              <label ref="jr:itext('/pregnancy_visit/inputs/contact/parent/contact/name:label')"/>
-            </input>
-          </group>
+          <group ref="/pregnancy_visit/inputs/contact/parent/contact"/>
         </group>
       </group>
     </group>
