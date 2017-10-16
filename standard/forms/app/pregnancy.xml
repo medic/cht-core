@@ -75,7 +75,7 @@
             <value>38 डिग्री या अधिक का बुखार</value>
           </text>
           <text id="/pregnancy/group_review/r_referral:label">
-            <value>उसे स्वास्थ्य केंद्र भेजें।&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+            <value>उसे स्वास्थ्य केंद्र भेजें।&lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy/group_review/r_risk_factor2:label">
             <value>चार बच्चों से ज़्यादा</value>
@@ -114,7 +114,7 @@
             <value>पिछली मासिक के शूरू होने की तारीख</value>
           </text>
           <text id="/pregnancy/group_review/r_reminders:label">
-            <value>स्वस्थ्य गर्भावस्था के सुझाव &lt;i class=&quot;fa fa-heart&quot;&gt;&lt;/i&gt;</value>
+            <value>स्वस्थ्य गर्भावस्था के सुझाव &lt;i class="fa fa-heart"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy/group_note/is_sms_edited/no:label">
             <value>नहीं</value>
@@ -162,7 +162,7 @@
             <value>पेशाब में खून या दर्दनाक, जलता हुआ पेशाब</value>
           </text>
           <text id="/pregnancy/group_review/r_followup:label">
-            <value>सुनिश्चित करने के लिए सन्देश &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>सुनिश्चित करने के लिए सन्देश &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy/group_review/r_danger_sign6:label">
             <value>अचानक वजन का बढ़ना या पैर, टखनों, चेहरे या हाथों में गंभीर सूजन</value>
@@ -222,7 +222,7 @@
             <value>खतरे का कारण</value>
           </text>
           <text id="/pregnancy/group_review/submit:label">
-            <value>&lt;h4 style=&quot;text-align:center;&quot;&gt; सुनिश्चित करें के यह कार्रवाई पूरा करने के लिए आप सबमिट दबाये | &lt;/h4&gt;</value>
+            <value>&lt;h4 style="text-align:center;"&gt; सुनिश्चित करें के यह कार्रवाई पूरा करने के लिए आप सबमिट दबाये | &lt;/h4&gt;</value>
           </text>
           <text id="/pregnancy/group_danger_signs/g_danger_signs/d7:label">
             <value>बच्चे का कम हिलना या लात मारना</value>
@@ -237,7 +237,7 @@
             <value>पिछली गर्भावस्था या गर्भपात में कोई कठिनाइयाँ</value>
           </text>
           <text id="/pregnancy/group_review/r_summary:label">
-            <value>गर्भावस्था का विवरण&lt;I class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>गर्भावस्था का विवरण&lt;I class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy/patient_name:label">
             <value>मरीज का ID</value>
@@ -287,7 +287,8 @@
           </text>
           <text id="/pregnancy/group_lmp/g_display_edd:label">
             <value>**डेलिवरी की अपेक्षित तारीख है**
-<output value=" /pregnancy/group_lmp/g_edd "/></value></text>
+<output value=" /pregnancy/group_lmp/g_edd "/></value>
+          </text>
           <text id="/pregnancy/group_review/r_reminder_trim3:label">
             <value>&quot;कृपया महिला को ** स्वस्थ गर्भावस्था से जुड़े 6 सुझावों की याद दिलायें ** &lt;ol style=&quot;margin-left:1em; list-style: decimal inside;&quot;&gt;&lt;li&gt; नियमित रूप से उपस्थित रहें गर्भावस्था की देख भाल के लिए&lt;/li&gt;&lt;li&gt; *हर* रात दवाइया वाली मच्छरदानी मच्छरदानी में सोएँ&lt;/li&gt;&lt;li&gt;<output value=" /pregnancy/patient_name "/> वह अपने *तीसरी तिमाही* में है कृपया उसे दवा लेने के लिए याद दिलायें:&lt;ul style=&quot;margin-left:1em; list-style: disc inside;&quot;&gt;&lt;li&gt;_आयरन फोलेट को दैनिक ले_&lt;/li&gt;&lt;li&gt;_डीवर्मिंग / अल्बेन्डाजोल को एक बार ले_&lt;/li&gt;&lt;li&gt;_हर महीने मलेरिया प्रोफिलैक्सिस / फंसिदर ले&lt;/li&gt;&lt;/ul&gt;&lt;/li&gt;&lt;li&gt;ज़्यादा खाएं: सामान्य से अधिक बार खाएं और आपको ताकत देने के लिए कई प्रकार के खाद्य पदार्थ खाएं, ये आपको शक्ती देगा एवं बच्चे के विकास में मदद करेगा&lt;/li&gt;&lt;li&gt;एक स्वास्थ्य केंद्र में अपने बच्चे को डिलीवर करें&lt;/li&gt;&lt;li&gt;बच्चे को जन्म के बाद *तुरंत* स्तनपान करायें.बच्चे को जन्म के बाद तुरंत स्तनपान करायें. बच्चे को कुछ और खाना या पीने के लिए बिल्कुल नही दें &lt;/ol&gt;</value>
           </text>
@@ -301,7 +302,8 @@
             <value>35 साल से अधिक</value>
           </text>
           <text id="/pregnancy/group_note:label">
-            <value>सामुदायिक स्वास्थ्य कर्मी के लिए नोट <output value=" /pregnancy/patient_name "/></value></text>
+            <value>सामुदायिक स्वास्थ्य कर्मी के लिए नोट <output value=" /pregnancy/patient_name "/></value>
+          </text>
           <text id="/pregnancy/group_review/r_risk_factor1:label">
             <value>प्रथम गर्भावस्था</value>
           </text>
@@ -389,7 +391,7 @@
             <value>Fever of 38 degrees or higher</value>
           </text>
           <text id="/pregnancy/group_review/r_referral:label">
-            <value>Refer to a health facility&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+            <value>Refer to a health facility&lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy/group_review/r_risk_factor2:label">
             <value>More than 4 children</value>
@@ -428,7 +430,7 @@
             <value>Start date of last cycle</value>
           </text>
           <text id="/pregnancy/group_review/r_reminders:label">
-            <value>Healthy Pregnancy Tips&lt;i class=&quot;fa fa-heart&quot;&gt;&lt;/i&gt;</value>
+            <value>Healthy Pregnancy Tips&lt;i class="fa fa-heart"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy/group_note/is_sms_edited/no:label">
             <value>No</value>
@@ -478,7 +480,7 @@
             <value>Blood in the urine or painful, burning urination</value>
           </text>
           <text id="/pregnancy/group_review/r_followup:label">
-            <value>Follow Up Message &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>Follow Up Message &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy/group_review/r_danger_sign6:label">
             <value>Sudden weight gain or severe swelling of feet, ankles, face, or hands</value>
@@ -540,7 +542,7 @@
             <value>Risk Factors</value>
           </text>
           <text id="/pregnancy/group_review/submit:label">
-            <value>&lt;h4 style=&quot;text-align:center;&quot;&gt;Be sure you Submit to complete this action.&lt;/h4&gt;</value>
+            <value>&lt;h4 style="text-align:center;"&gt;Be sure you Submit to complete this action.&lt;/h4&gt;</value>
           </text>
           <text id="/pregnancy/group_danger_signs/g_danger_signs/d7:label">
             <value>Less movement and kicking from the baby</value>
@@ -555,7 +557,7 @@
             <value>Had previous miscarriages or previous difficulties in childbirth</value>
           </text>
           <text id="/pregnancy/group_review/r_summary:label">
-            <value>Pregnancy Details&lt;I class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>Pregnancy Details&lt;I class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy/patient_name:label">
             <value>Patient Name</value>
@@ -605,7 +607,8 @@ Estimated delivery date: <output value=" /pregnancy/group_lmp/g_edd "/></value><
           </text>
           <text id="/pregnancy/group_lmp/g_display_edd:label">
             <value>**Estimated delivery date is**
-<output value=" /pregnancy/group_lmp/g_edd "/></value></text>
+<output value=" /pregnancy/group_lmp/g_edd "/></value>
+          </text>
           <text id="/pregnancy/group_note/default_chw_sms:label">
             <value>Default SMS to send to CHW</value>
           </text>
@@ -620,7 +623,8 @@ heart conditions, asthma, high blood pressure, known diabetes</value>
             <value>Over 35 years old</value>
           </text>
           <text id="/pregnancy/group_note:label">
-            <value>Note to CHW about <output value=" /pregnancy/patient_name "/></value></text>
+            <value>Note to CHW about <output value=" /pregnancy/patient_name "/></value>
+          </text>
           <text id="/pregnancy/group_review/r_risk_factor1:label">
             <value>First pregnancy</value>
           </text>
@@ -710,7 +714,7 @@ heart conditions, asthma, high blood pressure, known diabetes</value>
             <value>Demam 38 derajat atau lebih tinggi</value>
           </text>
           <text id="/pregnancy/group_review/r_referral:label">
-            <value>Merujuk ke fasilitas kesehatan&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+            <value>Merujuk ke fasilitas kesehatan&lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy/group_review/r_risk_factor2:label">
             <value>Lebih dari 4 anak</value>
@@ -750,7 +754,7 @@ kehamilan dengan tanda-tanda bahaya untuk <output value=" /pregnancy/patient_nam
             <value>Tanggal mulai siklus menstruasi terakhir</value>
           </text>
           <text id="/pregnancy/group_review/r_reminders:label">
-            <value>Tips kehamilan sehat&lt;i class=&quot;fa fa-heart&quot;&gt;&lt;/i&gt;</value>
+            <value>Tips kehamilan sehat&lt;i class="fa fa-heart"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy/group_note/is_sms_edited/no:label">
             <value>Tidak</value>
@@ -800,7 +804,7 @@ kehamilan dengan tanda-tanda bahaya untuk <output value=" /pregnancy/patient_nam
             <value>Darah dalam urin atau menyakitkan, terbakar buang air kecil</value>
           </text>
           <text id="/pregnancy/group_review/r_followup:label">
-            <value>Follow Up Pesan &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>Follow Up Pesan &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy/group_review/r_danger_sign6:label">
             <value>Lonjakan berat badan atau berat pembengkakan kaki, pergelangan kaki, wajah, atau tangan</value>
@@ -860,7 +864,7 @@ kehamilan dengan tanda-tanda bahaya untuk <output value=" /pregnancy/patient_nam
             <value>Faktor risiko</value>
           </text>
           <text id="/pregnancy/group_review/submit:label">
-            <value>&lt;h4 style=&quot;text-align:center;&quot;&gt;Pastikan anda sudah mengirim untuk menyelesaikan tindakan ini.&lt;/h4&gt;</value>
+            <value>&lt;h4 style="text-align:center;"&gt;Pastikan anda sudah mengirim untuk menyelesaikan tindakan ini.&lt;/h4&gt;</value>
           </text>
           <text id="/pregnancy/group_danger_signs/g_danger_signs/d7:label">
             <value>Kurang gerak dan menendang dari bayi</value>
@@ -875,7 +879,7 @@ kehamilan dengan tanda-tanda bahaya untuk <output value=" /pregnancy/patient_nam
             <value>Mengalami keguguran sebelumnya atau kesulitan sebelumnya saat melahirkan</value>
           </text>
           <text id="/pregnancy/group_review/r_summary:label">
-            <value>Kehamilan rincian&lt;I class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>Kehamilan rincian&lt;I class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy/patient_name:label">
             <value>Nama Pasien</value>
@@ -924,7 +928,8 @@ Tanggal taksiran persalinan: <output value=" /pregnancy/group_lmp/g_edd "/></val
             <value>Faktor risiko</value>
           </text>
           <text id="/pregnancy/group_lmp/g_display_edd:label">
-            <value>**Tanggal taksiran persalinan adalah** <output value=" /pregnancy/group_lmp/g_edd "/></value></text>
+            <value>**Tanggal taksiran persalinan adalah** <output value=" /pregnancy/group_lmp/g_edd "/></value>
+          </text>
           <text id="/pregnancy/group_review/r_reminder_trim3:label">
             <value>Mengingatkan wanita tentang ** 6 LANGKAH A KEHAMILAN SEHAT: **
 
@@ -940,7 +945,8 @@ Tanggal taksiran persalinan: <output value=" /pregnancy/group_lmp/g_edd "/></val
             <value>Lebih dari 35 tahun</value>
           </text>
           <text id="/pregnancy/group_note:label">
-            <value>Catatan ke kader tentang <output value=" /pregnancy/patient_name "/></value></text>
+            <value>Catatan ke kader tentang <output value=" /pregnancy/patient_name "/></value>
+          </text>
           <text id="/pregnancy/group_review/r_risk_factor1:label">
             <value>Kehamilan pertama</value>
           </text>
@@ -1065,6 +1071,7 @@ Tanggal taksiran persalinan: <output value=" /pregnancy/group_lmp/g_edd "/></val
           </meta>
         </pregnancy>
       </instance>
+      <instance id="contact-summary"/>
       <bind nodeset="/pregnancy/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/pregnancy/inputs/source" type="string"/>
       <bind nodeset="/pregnancy/inputs/source_id" type="string"/>

@@ -42,7 +42,7 @@
             <value>नमस्ते <output value=" /delivery/chw_name "/>, <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) का बच्चा का स्वास्थ्य केंद्र में मृत जन्म हुआ | जब उनकी गर्भावस्था की बाद की जांच का समय आएगा, हम आपको सूचित करेंगे | कृपया उनकी खतरे के संकेत पे निगरानी रखें और इस मुश्किल समय में <output value=" /delivery/patient_name "/> को सहारा दे | धन्यवाद |</value>
           </text>
           <text id="/delivery/group_summary/r_followup:label">
-            <value>सुनिश्चित करने के लिए सन्देश &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>सुनिश्चित करने के लिए सन्देश &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/delivery/inputs:label">
             <value>मरीज</value>
@@ -92,11 +92,10 @@
             <value>घर पर, अनुभवी दाई के सहायता के बिना</value>
           </text>
           <text id="/delivery/group_summary/submit:label">
-            <value>&lt;h4 style=&quot;text-align:center;&quot;&gt; सुनिश्चित करें के यह कार्रवाई पूरा करने के लिए आप सबमिट दबाये |&lt;/h4&gt;</value>
+            <value>&lt;h4 style="text-align:center;"&gt; सुनिश्चित करें के यह कार्रवाई पूरा करने के लिए आप सबमिट दबाये |&lt;/h4&gt;</value>
           </text>
           <text id="/delivery/group_summary/r_birth_date:label">
-            <value>
-              <output value=" /delivery/group_summary/r_delivery_location "/>पे डिलिवरी की गयी <output value=" /delivery/group_delivery_summary/display_birth_date "/></value></text>
+            <value><output value=" /delivery/group_summary/r_delivery_location "/> पे डिलिवरी की गयी <output value=" /delivery/group_delivery_summary/display_birth_date "/></value></text>
           <text id="/delivery/group_note/default_chw_sms/anc_only_home_sba_stillbirth:label">
             <value>नमस्ते <output value=" /delivery/chw_name "/>, <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) का बच्चा का मृत जन्म हुआ घर पर, अनुभवी दाई के साथ | कृपया इस मुश्किल समय में <output value=" /delivery/patient_name "/> को सहारा दे | धन्यवाद |</value>
           </text>
@@ -107,13 +106,14 @@
             <value>माफ़ कीजिये, आगे बढ़ने से पहले गर्भावस्था को पूरा करना होगा</value>
           </text>
           <text id="/delivery/group_summary/r_summary:label">
-            <value>डिलीवरी के विवरण&lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>डिलीवरी के विवरण&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/delivery/group_delivery_summary/g_pregnancy_outcome/miscarriage:label">
             <value>गर्भपात</value>
           </text>
           <text id="/delivery/group_summary/r_pregnancy_outcome:label">
-            <value>परिणाम: <output value=" /delivery/group_delivery_summary/display_delivery_outcome "/></value></text>
+            <value>परिणाम: <output value=" /delivery/group_delivery_summary/display_delivery_outcome "/></value>
+          </text>
           <text id="/delivery/group_note/default_chw_sms/miscarriage:label">
             <value>नमस्ते <output value=" /delivery/chw_name "/>, हमें स्वास्थ्य केंद्र से रिपोर्ट मिली है के <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) का गर्भपात हुआ | कृपया इस मुश्किल समय में <output value=" /delivery/patient_name "/> को सहारा दे | धन्यवाद |</value>
           </text>
@@ -193,7 +193,8 @@
             <value>नमस्ते <output value=" /delivery/chw_name "/>, <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) की घर पर, अनुभवी दाई के बिना डिलिवरी हो चुकी है | जब उनकी गर्भावस्था की बाद की जांच का समय आएगा, हम आपको सूचित करेंगे | कृपया उनकी खतरे के संकेत पे निगरानी रखें| धन्यवाद!</value>
           </text>
           <text id="/delivery/group_chw_info/chw_information:label">
-            <value><output value=" /delivery/patient_name "/>के लिए जन्म की रिपोर्ट दर्ज नहीं की गयी है</value></text>
+            <value><output value=" /delivery/patient_name "/> के लिए जन्म की रिपोर्ट दर्ज नहीं की गयी है</value>
+          </text>
           <text id="/delivery/chw_phone:label">
             <value>सामुदायिक स्वास्थ्य कर्मी का फोन नंबर</value>
           </text>
@@ -210,8 +211,7 @@
             <value>क्या आप सन्देश में कुछ जोड़ना या बदलना चाहते है?</value>
           </text>
           <text id="/delivery/group_note/g_chw_sms:hint">
-            <value>
-              <output value=" /delivery/chw_name "/>(<output value=" /delivery/chw_phone "/>) को संदेश भेजा जायेगा | संदेश की लंबाई सीमित है ताकी SMS का मूल्य उच्च ना हो|</value>
+            <value><output value=" /delivery/chw_name "/> (<output value=" /delivery/chw_phone "/>) को संदेश भेजा जायेगा | संदेश की लंबाई सीमित है ताकी SMS का मूल्य उच्च ना हो|</value>
           </text>
           <text id="/delivery/group_chw_info/call_button:label">
             <value>**कृपया <output value=" /delivery/chw_name "/> के साथ मिल कर देखे के <output value=" /delivery/patient_name "/> अभी भी गर्भवती है |** कॉल: <output value=" /delivery/chw_phone "/></value></text>
@@ -263,7 +263,7 @@
             <value>Hi <output value=" /delivery/chw_name "/>, <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) had a stillbirth at the health facility. We will alert you when it is time for their PNC visits. Please support <output value=" /delivery/patient_name "/> during this difficult time. Thank you.</value>
           </text>
           <text id="/delivery/group_summary/r_followup:label">
-            <value>Follow Up Message &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>Follow Up Message &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/delivery/inputs:label">
             <value>Patient</value>
@@ -314,7 +314,7 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
             <value>Home with No Skilled Attendant</value>
           </text>
           <text id="/delivery/group_summary/submit:label">
-            <value>&lt;h4 style=&quot;text-align:center;&quot;&gt;Be sure you Submit to complete this action.&lt;/h4&gt;</value>
+            <value>&lt;h4 style="text-align:center;"&gt;Be sure you Submit to complete this action.&lt;/h4&gt;</value>
           </text>
           <text id="/delivery/group_summary/r_birth_date:label">
             <value>Delivered <output value=" /delivery/group_delivery_summary/display_birth_date "/> at <output value=" /delivery/group_summary/r_delivery_location "/></value></text>
@@ -328,13 +328,14 @@ ID: <output value=" /delivery/group_summary/r_patient_id "/></value></text>
             <value>Sorry, the pregnancy must be complete to continue.</value>
           </text>
           <text id="/delivery/group_summary/r_summary:label">
-            <value>Delivery Details&lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>Delivery Details&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/delivery/group_delivery_summary/g_pregnancy_outcome/miscarriage:label">
             <value>Miscarriage</value>
           </text>
           <text id="/delivery/group_summary/r_pregnancy_outcome:label">
-            <value>Outcome: <output value=" /delivery/group_delivery_summary/display_delivery_outcome "/></value></text>
+            <value>Outcome: <output value=" /delivery/group_delivery_summary/display_delivery_outcome "/></value>
+          </text>
           <text id="/delivery/group_note/default_chw_sms/miscarriage:label">
             <value>Hi <output value=" /delivery/chw_name "/>, we received a report from the facility that <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) had a miscarriage. Please support <output value=" /delivery/patient_name "/> during this difficult time. Thank you.</value>
           </text>
@@ -479,7 +480,7 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
             <value>Halo <output value=" /delivery/chw_name "/>, <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) memiliki kelahiran mati di fasilitas. Kami akan mengingatkan Anda bila waktu untuk merujuk mereka untuk PNC. Silahkan mendukung <output value=" /delivery/patient_name "/> selama masa sulit ini. Terima kasih.</value>
           </text>
           <text id="/delivery/group_summary/r_followup:label">
-            <value>Follow Up Pesan &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>Follow Up Pesan &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/delivery/inputs:label">
             <value>Pasien</value>
@@ -529,7 +530,7 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
             <value>Rumah tanpa dukun bersalin</value>
           </text>
           <text id="/delivery/group_summary/submit:label">
-            <value>&lt;h4 style=&quot;text-align:center;&quot;&gt;Pastikan anda sudah mengirim untuk menyelesaikan tindakan ini.&lt;/h4&gt;</value>
+            <value>&lt;h4 style="text-align:center;"&gt;Pastikan anda sudah mengirim untuk menyelesaikan tindakan ini.&lt;/h4&gt;</value>
           </text>
           <text id="/delivery/group_summary/r_birth_date:label">
             <value>Disampaikan <output value=" /delivery/group_delivery_summary/display_birth_date "/> di <output value=" /delivery/group_summary/r_delivery_location "/></value></text>
@@ -543,13 +544,14 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
             <value>Maaf, kehamilan harus diselesaikan sebelum melanjutkan.</value>
           </text>
           <text id="/delivery/group_summary/r_summary:label">
-            <value>Rincian kelahiran&lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>Rincian kelahiran&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/delivery/group_delivery_summary/g_pregnancy_outcome/miscarriage:label">
             <value>Keguguran</value>
           </text>
           <text id="/delivery/group_summary/r_pregnancy_outcome:label">
-            <value>Hasil: <output value=" /delivery/group_delivery_summary/display_delivery_outcome "/></value></text>
+            <value>Hasil: <output value=" /delivery/group_delivery_summary/display_delivery_outcome "/></value>
+          </text>
           <text id="/delivery/group_note/default_chw_sms/miscarriage:label">
             <value>Halo <output value=" /delivery/chw_name "/>, kami menerima laporan dari fasilitas yang <output value=" /delivery/patient_name "/> (<output value=" /delivery/group_summary/r_patient_id "/>) memiliki keguguran. Silahkan mendukung <output value=" /delivery/patient_name "/> selama masa sulit ini. Terima kasih.</value>
           </text>
@@ -738,6 +740,7 @@ Call: <output value=" /delivery/chw_phone "/></value></text>
           </meta>
         </delivery>
       </instance>
+      <instance id="contact-summary"/>
       <bind nodeset="/delivery/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/delivery/inputs/source" type="string"/>
       <bind nodeset="/delivery/inputs/source_id" type="string"/>

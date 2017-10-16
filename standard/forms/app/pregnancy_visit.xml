@@ -48,7 +48,7 @@
             <value>दस्त जो कम नहीं होता</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_followup:label">
-            <value>सुनिश्चित करने के लिए सन्देश &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>सुनिश्चित करने के लिए सन्देश &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d4:label">
             <value>38 डिग्री या अधिक का बुखार</value>
@@ -63,7 +63,7 @@
             <value>सूची से एक व्यक्ति का चयन करें</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_referral:label">
-            <value>ख़तरे के संकेत &lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+            <value>ख़तरे के संकेत &lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d9:label">
             <value>दस्त जो कम नहीं होता</value>
@@ -132,8 +132,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
             <value>गर्भावस्था की जाँच पूरी नहीं हुई</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs:label">
-            <value>
-              <output value=" /pregnancy_visit/chw_name "/>के साथ पुष्टि करें के क्या <output value=" /pregnancy_visit/patient_name "/> को इनमें से कोई खतरा है |</value>
+            <value><output value=" /pregnancy_visit/chw_name "/> के साथ पुष्टि करें के क्या <output value=" /pregnancy_visit/patient_name "/> को इनमें से कोई खतरा है |</value>
           </text>
           <text id="/pregnancy_visit/group_note/default_chw_sms/default:label">
             <value>शाबाश, <output value=" /pregnancy_visit/chw_name "/>! <output value=" /pregnancy_visit/patient_name "/> (<output value=" /pregnancy_visit/group_review/r_patient_id "/>) अपने गर्भावस्था जांच के लिए स्वास्थ्य केंद्र आ चुकी है | कृपया उनकी देख भाल जारी रखें और खतरे के संकेत पे निगरानी रखें | उनकी अगली जांच से पहले हम आपको संदेश भेजेंगे | धन्यवाद!</value>
@@ -166,7 +165,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
             <value>मरीज़ UUID</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_summary:label">
-            <value>मरीज़ की जानकारी,&lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>मरीज़ की जानकारी,&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy_visit/inputs/contact/parent/contact/phone:label">
             <value>सामुदायिक स्वास्थ्य कर्मी का फोन नंबर</value>
@@ -208,7 +207,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
             <value>योनि से खून या द्रव पदार्थ का बहाव, या खराब बू के साथ योनि से बहाव</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_visit:label">
-            <value>जाँच की जानकारी&lt;i class=&quot;fa fa-plus-square&quot;&gt;&lt;/i&gt;</value>
+            <value>जाँच की जानकारी&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign7:label">
             <value>बच्चे का कम हिलना या लात मारना</value>
@@ -267,7 +266,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
             <value>Diarrhea that doesn't go away</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_followup:label">
-            <value>Follow Up Message &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>Follow Up Message &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d4:label">
             <value>Fever of 38 degrees or higher</value>
@@ -282,7 +281,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/></value></text
             <value>Select a person from list</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_referral:label">
-            <value>Danger Signs&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+            <value>Danger Signs&lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d9:label">
             <value>Diarrhea that doesn't go away</value>
@@ -384,7 +383,7 @@ Call: <output value=" /pregnancy_visit/chw_phone "/></value></text>
             <value>Patient UUID</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_summary:label">
-            <value>Patient Information&lt;i class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>Patient Information&lt;i class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy_visit/inputs/contact/parent/contact/phone:label">
             <value>CHW Phone</value>
@@ -426,7 +425,7 @@ Call: <output value=" /pregnancy_visit/chw_phone "/></value></text>
             <value>Bleeding or fluid leaking from vagina or vaginal discharge with bad odour</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_visit:label">
-            <value>Visit Information&lt;i class=&quot;fa fa-plus-square&quot;&gt;&lt;/i&gt;</value>
+            <value>Visit Information&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign7:label">
             <value>Less movement and kicking from the baby</value>
@@ -485,7 +484,7 @@ Call: <output value=" /pregnancy_visit/chw_phone "/></value></text>
             <value>Diare yang tidak kunjung sembuh</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_followup:label">
-            <value>Follow Up Pesan &lt;i class=&quot;fa fa-envelope&quot;&gt;&lt;/i&gt;</value>
+            <value>Follow Up Pesan &lt;i class="fa fa-envelope"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d4:label">
             <value>Demam 38 derajat atau lebih tinggi</value>
@@ -500,7 +499,7 @@ Call: <output value=" /pregnancy_visit/chw_phone "/></value></text>
             <value>Pilih orang dari daftar</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_referral:label">
-            <value>Tanda-tanda bahaya&lt;i class=&quot;fa fa-warning&quot;&gt;&lt;/i&gt;</value>
+            <value>Tanda-tanda bahaya&lt;i class="fa fa-warning"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy_visit/group_danger_signs/g_danger_signs/d9:label">
             <value>Diare yang tidak kunjung sembuh</value>
@@ -602,7 +601,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/>&quot;</value>
             <value>Pasien UUID</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_summary:label">
-            <value>Pasien informasi&lt;I class=&quot;fa fa-user&quot;&gt;&lt;/i&gt;</value>
+            <value>Pasien informasi&lt;I class="fa fa-user"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy_visit/inputs/contact/parent/contact/phone:label">
             <value>Nomor Telepon Kader</value>
@@ -644,7 +643,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/>&quot;</value>
             <value>Perdarahan atau cairan merembes dari vagina atau mengalir dari vagina dengan bau busuk</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_visit:label">
-            <value>Mengunjungi informasi&lt;i class=&quot;fa fa-plus-square&quot;&gt;&lt;/i&gt;</value>
+            <value>Mengunjungi informasi&lt;i class="fa fa-plus-square"&gt;&lt;/i&gt;</value>
           </text>
           <text id="/pregnancy_visit/group_review/r_danger_sign7:label">
             <value>Kurang gerak dan menendang dari bayi</value>
@@ -741,6 +740,7 @@ ID: <output value=" /pregnancy_visit/group_review/r_patient_id "/>&quot;</value>
           </meta>
         </pregnancy_visit>
       </instance>
+      <instance id="contact-summary"/>
       <bind nodeset="/pregnancy_visit/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/pregnancy_visit/inputs/source" type="string"/>
       <bind nodeset="/pregnancy_visit/inputs/source_id" type="string"/>

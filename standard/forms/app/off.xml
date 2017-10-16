@@ -46,6 +46,7 @@
           </meta>
         </off>
       </instance>
+      <instance id="contact-summary"/>
       <bind nodeset="/off/inputs" relevant="./source = 'user'"/>
       <bind nodeset="/off/inputs/source" type="string"/>
       <bind nodeset="/off/inputs/source_id" type="string"/>
