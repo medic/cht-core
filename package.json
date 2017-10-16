@@ -19,7 +19,7 @@
     "lucene-query-generator": "^0.2.0",
     "moment": "^2.10.6",
     "morgan": "^1.6.1",
-    "nano": "^6.4.0",
+    "nano": "6.4.0",
     "object-path": "^0.11.1",
     "openrosa-formlist": "github:medic/openrosa-formlist#sax",
     "pass-stream": "^1.0.0",
