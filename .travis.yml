@@ -39,6 +39,8 @@ before_install:
     fi
     until nc -z localhost 5984; do sleep 1; done
     echo "CouchDB Started"
+  - pip install --user awscli
+  - export PATH=$PATH:$HOME/.local/bin
 
 install:
   nvm install $NODE_VERSION
