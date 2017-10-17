@@ -153,13 +153,14 @@ describe('sms-gateway api', () => {
     });
 
     it('- shows content', () => {
-      element(by.id('messages-tab')).click();
+      commonElements.goToMessages();
 
       // LHS
       browser.wait(() => {
         return element(by.css('#message-list li:first-child')).isPresent();
       }, 10000);
       browser.sleep(500); // without this the elements are found to be detached...
+      helper.waitElementToBeVisisble(element(by.css('#message-list li:first-child')));
       expect(element(by.css('#message-list li:first-child .heading h4')).getText()).toBe('+64271234567');
       expect(element(by.css('#message-list li:first-child .summary p')).getText()).toBe('hello');
 
