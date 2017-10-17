@@ -130,7 +130,7 @@ const deleteAll = () => {
 
 const refreshToGetNewSettings = () => {
   // wait for the updates to replicate
-  const dialog=element(by.css('#update-available .submit:not(.disabled)')).click();
+  const dialog=element(by.css('#update-available .submit:not(.disabled)'));
   return browser.wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
     .then(() => {
       dialog.click();
