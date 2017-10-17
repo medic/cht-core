@@ -149,7 +149,7 @@ const refreshToGetNewSettings = () => {
 const revertDb = () => {
   return revertSettings().then(needsRefresh => {
     return deleteAll().then(() => {
-      // only need to refresh if the settings were changed
+      // only needs to refresh if the settings were changed
       if (needsRefresh) {
         return refreshToGetNewSettings();
       }
