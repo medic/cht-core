@@ -217,6 +217,7 @@ describe('sms-gateway api', () => {
       browser.sleep(100); // without this the elements are found to be detached...
 
       // tasks
+      helper.waitElementToBeVisisble(element(by.css('#reports-content .details')));
       expect(element(by.css('#reports-content .details > ul .task-list .task-state .state')).getText()).toBe('sent');
 
       // scheduled tasks
