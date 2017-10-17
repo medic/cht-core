@@ -17,19 +17,19 @@ module.exports = {
   goToMessages: () => {
     helper.waitUntilReady(messagesLink);
     messagesLink.click();
-    helper.waitElementToBeVisisble(element(by.css('message-list')));
+    helper.waitElementToBeVisisble(element(by.css('#message-list')));
   },
 
   goToTasks: () => {
     helper.waitUntilReady(tasksLink);
     tasksLink.click();
-    helper.waitElementToBeVisisble(element(by.css('tasks-list')));
+    helper.waitElementToBeVisisble(element(by.css('#tasks-list')));
   },
 
   goToPeople: () => {
     helper.waitUntilReady(contactsLink);
     contactsLink.click();
-    helper.waitElementToBeVisisble(element(by.css('contacts-list')));
+    helper.waitElementToBeVisisble(element(by.css('#contacts-list')));
   },
 
   goToReports: () => {
