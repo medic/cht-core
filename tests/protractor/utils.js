@@ -3,9 +3,10 @@ const _ = require('underscore'),
       constants = require('./constants'),
       http = require('http'),
       path = require('path'),
+      helper=require('./helper'),
   // The app_settings and update_settings modules are on the main ddoc.
-  mainDdocName = 'medic',
-  userSettingsDocId = `org.couchdb.user:${auth.user}`;
+      mainDdocName = 'medic',
+      userSettingsDocId = `org.couchdb.user:${auth.user}`;
 
 let originalSettings;
 
@@ -130,7 +131,8 @@ const deleteAll = () => {
 
 const refreshToGetNewSettings = () => {
   // wait for the updates to replicate
-  const dialog=element(by.css('#update-available .submit:not(.disabled)'));
+  const dialog = element(by.css('#update-available .submit:not(.disabled)'));
+  helper.waitElementToBeVisisble(dialog);
   return browser.wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
     .then(() => {
       dialog.click();
