@@ -4,14 +4,7 @@ jdk:
 - oraclejdk8
 addons:
   chrome: stable
-  artifacts:
-    debug: true
-    paths:
-    - ./tests/_output
-    target_paths: $TRAVIS_BUILD_ID
-    working_dir: WORKING_DIR
-    bucket: medic-tests
-    s3_region: us-east-1
+  
 services:
 - docker
 env:
@@ -68,9 +61,13 @@ script:
     node --stack_size=10000 `which grunt` ci1
   fi
 after_script:
-- "if [${TRAVIS_PULL_REQUEST}=\"true\"]; then\n  aws s3 cp tests/results s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST/
-  --recursive\nelse \n  aws s3 cp tests/results s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER/
-  --recursive\nfi\n"
+- |
+  if [${TRAVIS_PULL_REQUEST}=\"true\"]; then
+   aws s3 cp tests/results s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST/  --recursive
+  else 
+   aws s3 cp tests/results s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER/  --recursive
+  fi
+  
 after_success:
 - python ./scripts/ci/travis_after_all.py
 - export $(cat .to_export_back)
