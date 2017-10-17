@@ -30,8 +30,8 @@ module.exports = {
     helper.waitUntilReady(newPlaceForm);
     newPlaceName.sendKeys(districtName);
     newPersonButton.click();
-    helper.waitElementToBeVisisble(externalId);
-    externalId.sendKeys('1245');
+   // helper.waitElementToBeVisisble(externalId);
+   // externalId.sendKeys('1245');
     notesTextArea.sendKeys('Some notes, just for testing purposes.&element.all(by.css@#!_)_@519874-#@1-3-element.all(by.css^%%');
     nextButton.click();
   },
