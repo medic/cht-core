@@ -81,13 +81,22 @@ exports.config = {
   capabilities: {
     browserName: 'chrome',
     chromeOptions: {
-      args: ['--headless', '--disable-gpu', '--window-size=1024,768']
+      args: ['--disable-gpu', '--window-size=1024,768']
     }
     // browserName: 'firefox',
     // 'marionette':'true'
   },
-  
+  beforeLaunch: function() {
+    process.on('uncaughtException', function() {
+      utils.reporter.jasmineDone();
+      utils.reporter.afterLaunch();
+    });
+    return new Promise(function(resolve) {
+      utils.reporter.beforeLaunch(resolve);
+    });
+  },
   onPrepare: () => {
+    jasmine.getEnv().addReporter(utils.reporter);
     const startup = startModules();
     browser.ignoreSynchronization = true;
     browser.driver.wait(startup, 30 * 1000, 'API and Sentinel should start within 30 seconds');
