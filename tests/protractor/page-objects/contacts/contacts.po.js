@@ -1,21 +1,21 @@
 const helper = require('../../helper');
 
-const searchBox = element.all(by.css('#freetext')),
-      seachButton = element.all(by.css('#search')),
-      refreshButton = element.all(by.css('.fa fa-undo')),
-      newDistrictButton = element.all(by.css('a[href="#/contacts//add/district_hospital"]')),
-      newPlaceForm = element.all(by.css('#district_hospital')),
-      newPlaceName = element.all(by.css('[name="/data/district_hospital/name"]')),
-      newPersonButton = element.all(by.css('a.btn.btn-link.add-new')),
-      externalId = element.all(by.css('[name="/data/district_hospital/external_id"]')),
-      notesTextArea = element.all(by.css('[name="/data/district_hospital/notes"]')),
-      nextButton = element.all(by.css('button.btn.btn-primary.next-page.ng-scope')),
-      newPersonTextBox = element.all(by.css('[name="/data/contact/name"]')),
-      datePicker = element.all(by.css('[placeholder="yyyy-mm-dd"]')),
+const searchBox = element(by.css('#freetext')),
+      seachButton = element(by.css('#search')),
+      refreshButton = element(by.css('.fa fa-undo')),
+      newDistrictButton = element(by.css('a[href="#/contacts//add/district_hospital"]')),
+      newPlaceForm = element(by.css('#district_hospital')),
+      newPlaceName = element(by.css('[name="/data/district_hospital/name"]')),
+      newPersonButton = element(by.css('a.btn.btn-link.add-new')),
+      externalId = element(by.css('[name="/data/district_hospital/external_id"]')),
+      notesTextArea = element(by.css('[name="/data/district_hospital/notes"]')),
+      nextButton = element(by.css('button.btn.btn-primary.next-page.ng-scope')),
+      newPersonTextBox = element(by.css('[name="/data/contact/name"]')),
+      datePicker = element(by.css('[placeholder="yyyy-mm-dd"]')),
       phoneNumbers = element.all(by.css(':not([style="display: none;"])[type="tel"]')),
       phoneNumber = phoneNumbers.first(),
       alternativePhoneNumber = phoneNumbers.get(1),
-      personNotes = element.all(by.css('[name="/data/contact/notes"]')),
+      personNotes = element(by.css('[name="/data/contact/notes"]')),
       submitButton = element(by.css('.btn.submit.btn-primary.ng-scope'));
 
 module.exports = {
@@ -30,8 +30,7 @@ module.exports = {
     helper.waitUntilReady(newPlaceForm);
     newPlaceName.sendKeys(districtName);
     newPersonButton.click();
-   // helper.waitElementToBeVisisble(externalId);
-   // externalId.sendKeys('1245');
+    externalId.sendKeys('1245');
     notesTextArea.sendKeys('Some notes, just for testing purposes.&element.all(by.css@#!_)_@519874-#@1-3-element.all(by.css^%%');
     nextButton.click();
   },
