@@ -86,6 +86,7 @@ exports.config = {
     // browserName: 'firefox',
     // 'marionette':'true'
   },
+  
   onPrepare: () => {
     const startup = startModules();
     browser.ignoreSynchronization = true;
