@@ -1,25 +1,19 @@
-# Setting up as a java project allows us to ensure that the JRE/JDK version used
-# is actually compatible with webdriver-manager.
 language: java
 sudo: true
 jdk:
-  - oraclejdk8
-
+- oraclejdk8
 addons:
-  chrome: "stable"
+  chrome: stable
   artifacts:
-    debug: true 
+    debug: true
     paths:
-      - ./tests/_output     
+    - ./tests/_output
     target_paths: $TRAVIS_BUILD_ID
     working_dir: WORKING_DIR
     bucket: medic-tests
     s3_region: us-east-1
-
 services:
-  # docker is used for couchdb 2.0 (not currently available as a travis service)
-  - docker
-
+- docker
 env:
   matrix:
   - NODE_VERSION=8 COUCH_VERSION=2
@@ -28,91 +22,81 @@ env:
   - COUCH_URL=http://admin:pass@localhost:5984/medic
   - API_URL=http://admin:pass@localhost:5988
   - COUCH_NODE_NAME=nonode@nohost
-  - secure: AnTJRBRSs7bSfGTPEoQpgk7ZjoIG3CvqVck3j4AxZhoact0acRerp4gP6d1IQyOS8sdwCF3pgj0OcZGXW7uxLf2MK5lpBBpNOUZ2ZSzw0qwtMguX5A94hekMG0WBlmhKCKsWy2FqrQ1iclHFwxQ9nS9x31/rQRd8meIfYsAOhbg=
-  - secure: OmNATdj8nkfeJaKl5HY3ugYHoHJD1w25R39JxxF3BvcjQxepIPelfGpFKnJVwxw+VDTmHxkaYJFki8Zq51N30OqT0yRMYMjRXFhIsRDY96GTZvkiQpgnDyvOzEx45AsIlBS3chwr6YeI4ram09jG/nBICh1h6dlN2OvNiKSsEeg=
+  - secure: TR1UN2r3beDtIF+VJpLF2ocTv/uxuOKyVWWhzMLre0ZrrBaIP1sLZV7Z4S/km5M92EfPgGW87BogdWE/R+kTTRiPTCbFB/U/3jFKxEZRXKST66YK5JMwsYqb17UtZtFdqEtO9GGbAVzXwpZfMMoXvlKNrors2W32xBm2uIkOSpI=
+  - secure: Q8RH65NClRBryxfvlwHQjeR4wGs+GXeUBRIBd1kspAM7Uv+5K3iP+q/TPCIrTL/OpJ5tyCYfeq5hKIFFwrY3JikNXnyHICOjXPE6zSLUm8E8NHaP/orPNWjze2x4yDSRCifqzr2ZiXVq9sxlZfNbZ9eyJxpPFTYDSpuN9T5UEE0=
 before_install:
-  - |
-    if [ "$COUCH_VERSION" = 2 ]; then
-      # start couchdb 2.x docker instance
-      docker run -d -p 5984:5984 --name couch klaemo/couchdb:2.0.0
-      echo "Starting CouchDB 2.0"
-    elif [ "$COUCH_VERSION" = 1 ]; then
-      # because we're on a java project we don't get CouchDB1.x for free
-      sudo apt-get install -y couchdb
-      # though sometimes we may do, so make sure it's running
-      sudo service couchdb start
-      until nc -z localhost 5984; do sleep 1; done
-      echo "Starting CouchDB 1.x started"
-    fi
-    until nc -z localhost 5984; do sleep 1; done
-    echo "CouchDB Started"
-   #for screenshots
-  - pip install --user awscli
-  - export PATH=$PATH:$HOME/.local/bin
-install:
-  nvm install $NODE_VERSION
-
-before_script:
-  - nvm use $NODE_VERSION
-  - npm install -g npm@^5.3.0
-  - npm -v
-  - npm install
-  # Create couchdb system tables (this has to be done manually on couchdb 2.0)
-  - |
-    if [ "$COUCH_VERSION" = 2 ]; then
-      curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
-    fi
-  - curl -X PUT localhost:5984/medic
-  - bash ./scripts/ci/setup.sh
-  - npm install kanso -g
-  - npm install grunt-cli -g
-  - npm --prefix api install
-  - ./node_modules/.bin/webdriver-manager update
-  - ./node_modules/.bin/webdriver-manager start &
-  - until nc -z localhost 4444; do sleep 1; done
-
-script:
-  - |
-    if [ "$COUCH_VERSION" = 2 ]; then
-      node --stack_size=10000 `which grunt` ci2
-    elif [ "$COUCH_VERSION" = 1 ]; then
-      node --stack_size=10000 `which grunt` ci1
-    fi
-after_script:
 - |
-  if [${TRAVIS_PULL_REQUEST}="true"]; then
-    aws s3 cp tests/results s3://medic-tests/PR_$TRAVIS_PULL_REQUEST/ --recursive
-  else 
-    aws s3 cp tests/results s3://medic-tests/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER/ --recursive
+  if [ "$COUCH_VERSION" = 2 ]; then
+    # start couchdb 2.x docker instance
+    docker run -d -p 5984:5984 --name couch klaemo/couchdb:2.0.0
+    echo "Starting CouchDB 2.0"
+  elif [ "$COUCH_VERSION" = 1 ]; then
+    # because we're on a java project we don't get CouchDB1.x for free
+    sudo apt-get install -y couchdb
+    # though sometimes we may do, so make sure it's running
+    sudo service couchdb start
+    until nc -z localhost 5984; do sleep 1; done
+    echo "Starting CouchDB 1.x started"
   fi
+  until nc -z localhost 5984; do sleep 1; done
+  echo "CouchDB Started"
+- pip install --user awscli
+- export PATH=$PATH:$HOME/.local/bin
+install: nvm install $NODE_VERSION
+before_script:
+- nvm use $NODE_VERSION
+- npm install -g npm@^5.3.0
+- npm -v
+- npm install
+- |
+  if [ "$COUCH_VERSION" = 2 ]; then
+    curl -X PUT http://127.0.0.1:5984/{_users,_replicator,_global_changes,_metadata,admins}
+  fi
+- curl -X PUT localhost:5984/medic
+- bash ./scripts/ci/setup.sh
+- npm install kanso -g
+- npm install grunt-cli -g
+- npm --prefix api install
+- ./node_modules/.bin/webdriver-manager update
+- ./node_modules/.bin/webdriver-manager start &
+- until nc -z localhost 4444; do sleep 1; done
+script:
+- |
+  if [ "$COUCH_VERSION" = 2 ]; then
+    node --stack_size=10000 `which grunt` ci2
+  elif [ "$COUCH_VERSION" = 1 ]; then
+    node --stack_size=10000 `which grunt` ci1
+  fi
+after_script:
+- "if [${TRAVIS_PULL_REQUEST}=\"true\"]; then\n  aws s3 cp tests/results s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST/
+  --recursive\nelse \n  aws s3 cp tests/results s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER/
+  --recursive\nfi\n"
 after_success:
- - python ./scripts/ci/travis_after_all.py
- - export $(cat .to_export_back)
- - |
-     if [ "$BUILD_LEADER" = "YES" ]; then
-       if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
-         echo "All jobs succeeded! Publishing..."
-         ./scripts/ci/push_to_staging.sh
-         bash ./scripts/ci/push_to_market.sh
-       else
-         echo "Some jobs failed. Not publishing."
-       fi
-     fi
-
-after_failure:
-  - |
-    if [ "COUCH_VERSION" = 2 ]; then
-      # show the couchdb logs from the docker instance when there was a problem
-      docker ps -a
-      docker logs couch
+- python ./scripts/ci/travis_after_all.py
+- export $(cat .to_export_back)
+- |
+  if [ "$BUILD_LEADER" = "YES" ]; then
+    if [ "$BUILD_AGGREGATE_STATUS" = "others_succeeded" ]; then
+      echo "All jobs succeeded! Publishing..."
+      ./scripts/ci/push_to_staging.sh
+      bash ./scripts/ci/push_to_market.sh
+    else
+      echo "Some jobs failed. Not publishing."
     fi
-
+  fi
+after_failure:
+- |
+  if [ "COUCH_VERSION" = 2 ]; then
+    # show the couchdb logs from the docker instance when there was a problem
+    docker ps -a
+    docker logs couch
+  fi
 notifications:
   webhooks:
     urls:
-      - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
+    - https://medic.slack.com/services/hooks/travis?token=xcYT8yusfEdSwLskhBxK4Vwj
     on_success: change
     on_failure: always
   email:
     recipients:
-      - dev@medicmobile.org
+    - dev@medicmobile.org
