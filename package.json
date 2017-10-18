@@ -31,7 +31,7 @@
     "medic-enketo-xslt": "^1.5.0",
     "medic-nootils": "^1.0.3",
     "messageformat": "^1.0.0",
-    "moment": "^2.17.1",
+    "moment": "^2.19.1",
     "openrosa-xpath-evaluator": "^1.4.2",
     "pouchdb-browser": "^6.3.4",
     "properties": "^1.2.1",
