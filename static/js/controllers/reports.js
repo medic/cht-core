@@ -37,7 +37,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
     var liveList = LiveList.reports;
 
     var updateLiveList = function(updated) {
-      AddReadStatus.reports(updated).then(function() {
+      return AddReadStatus.reports(updated).then(function() {
         updated.forEach(function(report) {
           liveList.update(report);
         });
@@ -46,6 +46,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
         if ($state.params.id) {
           liveList.setSelected($state.params.id);
         }
+        return updated;
       });
     };
 
@@ -198,13 +199,13 @@ angular.module('inboxControllers').controller('ReportsCtrl',
       }
 
       Search('reports', $scope.filters, options)
+        .then(updateLiveList)
         .then(function(data) {
           $scope.moreItems = liveList.moreItems = data.length >= options.limit;
           $scope.loading = false;
           $scope.appending = false;
           $scope.error = false;
           $scope.errorSyntax = false;
-          updateLiveList(data);
           if (!$state.params.id &&
               !$scope.isMobile() &&
               !$scope.selected &&

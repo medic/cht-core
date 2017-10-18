@@ -15,6 +15,11 @@ angular.module('inboxControllers').controller('MessagesCtrl',
     'use strict';
     'ngInject';
 
+    $scope.allLoaded = false;
+    $scope.messages = [];
+    $scope.selected = null;
+    $scope.loading = true;
+
     var removeDeletedMessages = function(messages) {
       var existingKey;
       var checkExisting = function(updated) {
@@ -62,9 +67,9 @@ angular.module('inboxControllers').controller('MessagesCtrl',
         $scope.loading = true;
       }
       return MessageContacts().then(function(data) {
-        $scope.loading = false;
         options.messages = data;
         setMessages(options);
+        $scope.loading = false;
       });
     };
 
@@ -84,9 +89,6 @@ angular.module('inboxControllers').controller('MessagesCtrl',
       $scope.settingSelected(refreshing);
     };
 
-    $scope.allLoaded = false;
-    $scope.messages = [];
-    $scope.selected = null;
     setMessages();
     updateConversations({ })
       .then(function() {
