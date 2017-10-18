@@ -6,7 +6,6 @@ require('../../node_modules/select2/dist/js/select2.full');
 require('bootstrap');
 require('./bootstrap-multidropdown');
 require('bootstrap-daterangepicker');
-require('bootstrap-tour');
 require('nvd3');
 
 require('angular');

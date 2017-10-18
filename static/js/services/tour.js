@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _ = require('underscore'),
+    Tour = require('bootstrap-tour');
 
 angular.module('inboxServices').service('Tour',
   function(
@@ -431,6 +432,7 @@ angular.module('inboxServices').service('Tour',
     var getSettings = function(name) {
 
       var settings = getTour(name);
+      settings.autoscroll = false;
 
       if (!settings.transmogrified) {
 
@@ -465,11 +467,6 @@ angular.module('inboxServices').service('Tour',
     var createTour = function(name) {
       var settings = getSettings(name);
       var tour = new Tour(settings);
-      tour._scrollIntoView = function(element, callback) {
-        // override scrollIntoView as it doesn't handle scolling containers
-        this._debug('Not scrolling into view - overridden by Medic Mobile custom tour.js');
-        callback();
-      };
       tour.init();
       tour.restart();
       current = {
