@@ -241,7 +241,7 @@ describe('registration transition', () => {
       expect(taskElement.element(by.css('.task-list li .task-state .recipient')).getText()).toBe(' to +64271234567');
     };
 
-    it('shows content', () => {
+    xit('shows content', () => {
       commonElements.goToReports();
       helper.waitElementToBeVisisble(element(by.css('#reports-list .unfiltered li:first-child')));
       browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', CAROL.name)).isPresent(), 10000);
