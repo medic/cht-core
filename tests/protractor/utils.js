@@ -139,9 +139,11 @@ const refreshToGetNewSettings = () => {
     .catch(() => {
       // sometimes there's a double update which causes the dialog to be redrawn
       // retry with the new dialog
-      if (dialog.isPresent()){
-        dialog.click();
-      }
+      dialog.isPresent().then(function(result) {
+        if (result) {
+          dialog.click();
+        }
+      });
     })
     .then(() => {
       return browser.wait(protractor.ExpectedConditions.elementToBeClickable(element(by.id('contacts-tab'))), 10000);
