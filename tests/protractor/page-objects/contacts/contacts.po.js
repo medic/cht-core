@@ -26,6 +26,7 @@ module.exports = {
     helper.waitUntilReady(newDistrictButton);
     newDistrictButton.click();
     helper.waitUntilReady(newPlaceForm);
+    helper.waitElementToBeVisisble(newPlaceName);
     newPlaceName.sendKeys(districtName);
     newPersonButton.click();
     nextButton.click();
