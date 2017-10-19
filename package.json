@@ -8,17 +8,16 @@
     "bikram-sambat": "^1.5.0",
     "couchdb-audit": "^1.1.1",
     "epi-week": "^0.0.1",
-    "follow": "^0.12.1",
+    "follow": "^1.0.0",
     "google-libphonenumber": "^3.0.6",
     "gsm": "^0.1.4",
     "later": "^1.1.6",
-    "moment": "^2.10.6",
+    "moment": "^2.19.1",
     "mustache": "^2.1.3",
-    "nano": "^6.4.0",
-    "request": "^2.60.0",
+    "nano": "^6.4.2",
     "underscore": "^1.8.3",
     "uuid": "^3.1.0",
-    "winston": "^2.2.0"
+    "winston": "^2.4.0"
   },
   "devDependencies": {
     "chai": "^4.1.2",
@@ -26,12 +25,12 @@
     "grunt-contrib-jshint": "^1.1.0",
     "grunt-contrib-nodeunit": "^1.0.0",
     "grunt-env": "^0.4.4",
-    "grunt-mocha-test": "^0.13.2",
-    "jsverify": "^0.8.1",
+    "grunt-mocha-test": "^0.13.3",
+    "jsverify": "^0.8.3",
     "kanso": "^0.5.2",
-    "mocha": "^3.5.0",
+    "mocha": "^4.0.1",
     "nodeunit": "^0.11.1",
-    "sinon": "^3.2.0"
+    "sinon": "^4.0.1"
   },
   "scripts": {
     "start": "node server.js",
