@@ -90,6 +90,27 @@
             </a>
           </li>
 
+          <li role="separator" class="divider" ng-if="can_switch_account"></li>
+          <li role="presentation disabled" ng-show="can_switch_account">
+            <a class="no-click">
+              <i class="fa fa-fw fa-user"></i>
+              <span translate>Logged in as: {{currentUsername}}</span>
+            </a>
+          </li>
+          <li role="presentation" ng-show="can_switch_account">
+            <a role="menuitem" tabindex="-1" rel="external" ng-click="switchAccount()">
+              <i class="fa fa-fw fa-exchange"></i>
+              <span translate>Switch Account</span>
+            </a>
+          </li>
+          <li role="presentation" ng-repeat="account in availableAccounts">
+            <a role="menuitem" tabindex="-1" rel="external" ng-click="switchAccount(account)">
+              <i class="fa fa-fw fa-exchange"></i>
+              <i class="fa fa-fw fa-long-arrow-right"></i>
+              Switch to: <span ng-bind="account"></span>
+            </a>
+          </li>
+
           <li role="separator" class="divider" ng-if="!replicationStatus.disabled"></li>
           <li role="presentation disabled" ng-show="!replicationStatus.disabled && replicationStatus.current !== 'unknown'">
             <a class="no-click">

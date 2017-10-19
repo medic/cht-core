@@ -51,6 +51,22 @@ var feedback = require('../modules/feedback'),
 
       Session.init();
 
+      $scope.can_switch_account = !!(window.medicmobile_android && window.medicmobile_android.getAuthedAccounts);
+      $scope.switchAccount = function(account) {
+        if (account) {
+          window.medicmobile_android.switchToAuthedAccount(account);
+        } else {
+          window.medicmobile_android.switchToUnauthedAccount();
+        }
+      };
+      $scope.currentUsername = Session.userCtx().name;
+      $scope.availableAccounts = window.medicmobile_android &&
+          JSON.parse(window.medicmobile_android.getAuthedAccounts())
+              .filter(function(name) {
+                return name !== $scope.currentUsername;
+              });
+      console.log('availableAccounts', $scope.availableAccounts);
+
       $scope.replicationStatus = {
         disabled: false,
         lastSuccess: {},
