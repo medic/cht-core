@@ -17,29 +17,37 @@ var _ = require('underscore'),
   var getRelativeDateString = function(date, options) {
     if (options.age) {
       return options.FormatDate.age(date);
+    } else if (!options.withoutTime && moment(date).isSame(moment(), 'day')) {
+      return options.FormatDate.time(date);
+    } else {
+      return options.FormatDate.relative(date, options);
     }
-    return options.FormatDate.relative(date, options);
   };
 
   var getRelativeDate = function(date, options) {
     options = options || {};
     _.defaults(options, { prefix: '', suffix: '' });
+
     if (!date) {
       return '<span>' + options.prefix + options.suffix + '</span>';
     }
+
     var momentDate = moment(date);
     var absolute = getAbsoluteDateString(momentDate, options);
     var relative = getRelativeDateString(momentDate, options);
     var classes = ['relative-date'];
     var now = moment();
+
     if (options.withoutTime) {
       now = now.startOf('day');
     }
+
     if (momentDate.isBefore(now)) {
       classes.push('past');
     } else {
       classes.push('future');
     }
+
     return options.prefix +
            '<span class="' + classes.join(' ') + '" title="' + absolute + '">' +
              '<span class="relative-date-content">' + relative + '</span>' +

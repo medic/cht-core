@@ -170,4 +170,13 @@ describe('FormatDate service', function() {
 
   });
 
+  describe('time', () => {
+    it('returns just the time of a given date', done => {
+      const now = moment();
+      const time = now.format('h:mm A');
+      var actual = service.time(now);
+      chai.expect(actual).to.equal(time);
+      done();
+    });
+  });
 });
