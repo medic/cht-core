@@ -84,7 +84,7 @@ describe('Send message', () => {
           return text === expectedValue;
         })
         .catch(err => {
-          // item may have been detached from the page, so whatever it's invalid
+          // item may have been detached from the page, so whatever it's invalid,
           // we ignore it. Log the error just for kicks.
           console.log('Caught and ignoring an error trying to getText', err);
         });
@@ -157,6 +157,7 @@ describe('Send message', () => {
   };
 
   const lastMessageIs = message => {
+    helper.waitElementToBeVisisble(element.all(by.css('#message-content li div.data>p>span')).last());
     expect(element.all(by.css('#message-content li div.data>p>span')).last().getText()).toBe(message);
   };
 

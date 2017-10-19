@@ -53,7 +53,7 @@ const startApi = () => startNodeModule('api', 'Medic API listening on port');
 
 const startSentinel = () => startNodeModule('sentinel', 'startup complete.');
 
-// start sentinel serially because it relies on api
+// start sentinel serially because it relies on api.
 const startModules = () => startApi().then(startSentinel);
 
 const setupSettings = () => {
@@ -86,7 +86,17 @@ exports.config = {
     // browserName: 'firefox',
     // 'marionette':'true'
   },
+  beforeLaunch: function() {
+    process.on('uncaughtException', function() {
+      utils.reporter.jasmineDone();
+      utils.reporter.afterLaunch();
+    });
+    return new Promise(function(resolve) {
+      utils.reporter.beforeLaunch(resolve);
+    });
+  },
   onPrepare: () => {
+    jasmine.getEnv().addReporter(utils.reporter);
     const startup = startModules();
     browser.ignoreSynchronization = true;
     browser.driver.wait(startup, 30 * 1000, 'API and Sentinel should start within 30 seconds');

@@ -7,8 +7,6 @@ const searchBox = element.all(by.css('#freetext')),
       newPlaceForm = element.all(by.css('#district_hospital')),
       newPlaceName = element.all(by.css('[name="/data/district_hospital/name"]')),
       newPersonButton = element.all(by.css('a.btn.btn-link.add-new')),
-      externalId = element.all(by.css('[name="/data/district_hospital/external_id"]')),
-      notesTextArea = element.all(by.css('[name="/data/district_hospital/notes"]')),
       nextButton = element.all(by.css('button.btn.btn-primary.next-page.ng-scope')),
       newPersonTextBox = element.all(by.css('[name="/data/contact/name"]')),
       datePicker = element.all(by.css('[placeholder="yyyy-mm-dd"]')),
@@ -30,8 +28,6 @@ module.exports = {
     helper.waitUntilReady(newPlaceForm);
     newPlaceName.sendKeys(districtName);
     newPersonButton.click();
-    externalId.sendKeys('1245');
-    notesTextArea.sendKeys('Some notes, just for testing purposes.&element.all(by.css@#!_)_@519874-#@1-3-element.all(by.css^%%');
     nextButton.click();
   },
 
