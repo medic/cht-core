@@ -1,0 +1,16 @@
+{
+  "name": "conflicts",
+  "version": "0.1.0",
+  "description": "Utilities to aid in managing and resolving CouchDB conflicts",
+  "author": "SCdF",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "json-diff": "^0.5.2",
+    "just-diff": "^2.0.2",
+    "minimist": "^1.2.0",
+    "pouchdb-adapter-http": "^6.2.0",
+    "pouchdb-core": "^6.2.0",
+    "pouchdb-mapreduce": "^6.2.0",
+    "underscore": "^1.8.3"
+  }
+}
