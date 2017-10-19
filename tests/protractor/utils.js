@@ -131,14 +131,17 @@ const deleteAll = () => {
 
 const refreshToGetNewSettings = () => {
   // wait for the updates to replicate
-  return browser.wait(protractor.ExpectedConditions.elementToBeClickable(element(by.css('#update-available .submit:not(.disabled)'))), 10000)
+  const dialog = element(by.css('#update-available .submit:not(.disabled)'));
+  return browser.wait(protractor.ExpectedConditions.elementToBeClickable(dialog), 10000)
     .then(() => {
-      element(by.css('#update-available .submit:not(.disabled)')).click();
+      dialog.click();
     })
     .catch(() => {
       // sometimes there's a double update which causes the dialog to be redrawn
       // retry with the new dialog
-      element(by.css('#update-available .submit:not(.disabled)')).click();
+      if (dialog.isPresent()){
+        dialog.click();
+      }
     })
     .then(() => {
       return browser.wait(protractor.ExpectedConditions.elementToBeClickable(element(by.id('contacts-tab'))), 10000);
