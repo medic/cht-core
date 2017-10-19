@@ -25,7 +25,6 @@ module.exports = {
   addNewDistrict: districtName => {
     helper.waitUntilReady(newDistrictButton);
     newDistrictButton.click();
-    helper.waitElementToBeVisisble(newPlaceForm);
     helper.waitElementToBeVisisble(newPlaceName);
     newPlaceName.sendKeys(districtName);
     newPersonButton.click();
