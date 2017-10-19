@@ -1,18 +1,18 @@
 const helper = require('../../helper');
 
-const searchBox = element.all(by.css('#freetext')),
-      seachButton = element.all(by.css('#search')),
-      refreshButton = element.all(by.css('.fa fa-undo')),
-      newDistrictButton = element.all(by.css('a[href="#/contacts//add/district_hospital"]')),
-      newPlaceName = element.all(by.css('[name="/data/district_hospital/name"]')),
-      newPersonButton = element.all(by.css('a.btn.btn-link.add-new')),
-      nextButton = element.all(by.css('button.btn.btn-primary.next-page.ng-scope')),
-      newPersonTextBox = element.all(by.css('[name="/data/contact/name"]')),
-      datePicker = element.all(by.css('[placeholder="yyyy-mm-dd"]')),
+const searchBox = element(by.css('#freetext')),
+      seachButton = element(by.css('#search')),
+      refreshButton = element(by.css('.fa fa-undo')),
+      newDistrictButton = element(by.css('a[href="#/contacts//add/district_hospital"]')),
+      newPlaceName = element(by.css('[name="/data/district_hospital/name"]')),
+      newPersonButton = element(by.css('a.btn.btn-link.add-new')),
+      nextButton = element(by.css('button.btn.btn-primary.next-page.ng-scope')),
+      newPersonTextBox = element(by.css('[name="/data/contact/name"]')),
+      datePicker = element(by.css('[placeholder="yyyy-mm-dd"]')),
       phoneNumbers = element.all(by.css(':not([style="display: none;"])[type="tel"]')),
       phoneNumber = phoneNumbers.first(),
       alternativePhoneNumber = phoneNumbers.get(1),
-      personNotes = element.all(by.css('[name="/data/contact/notes"]')),
+      personNotes = element(by.css('[name="/data/contact/notes"]')),
       submitButton = element(by.css('.btn.submit.btn-primary.ng-scope'));
 
 module.exports = {
