@@ -50,7 +50,7 @@
 
       <div class="col-sm-4 general-actions left-pane" ng-show="currentTab === 'contacts'">
         <div class="actions dropup">
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.left.userChildPlace.type" ui-sref="contacts.addChild({ type: actionBar.left.userChildPlace.type, parent_id: actionBar.left.userFacilityId })">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.left.userChildPlace.type" ui-sref="contacts.addChild({ type: actionBar.left.userChildPlace.type, parent_id: actionBar.left.userFacilityId })" mm-auth="can_create_places">
             <span class="fa-stack">
               <i ng-bind-html="actionBar.left.userChildPlace.icon | resourceIcon"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
@@ -137,7 +137,7 @@
             </li>
           </ul>
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.right.selected[0].child.type" ui-sref="contacts.addChild({ type: actionBar.right.selected[0].child.type, parent_id: actionBar.right.selected[0]._id })">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.right.selected[0].child.type" ui-sref="contacts.addChild({ type: actionBar.right.selected[0].child.type, parent_id: actionBar.right.selected[0]._id })" mm-auth="can_create_places">
             <span class="fa-stack">
               <i ng-bind-html="actionBar.right.selected[0].child.icon | resourceIcon"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
@@ -145,7 +145,7 @@
             <p translate>{{actionBar.right.selected[0].child.addPlaceLabel}}</p>
           </a>
 
-          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.right.selected[0].type !== 'person'" ui-sref="contacts.addChild({ type: 'person', parent_id: actionBar.right.selected[0]._id })">
+          <a class="mm-icon mm-icon-inverse mm-icon-caption" ng-show="actionBar.right.selected[0].type !== 'person'" ui-sref="contacts.addChild({ type: 'person', parent_id: actionBar.right.selected[0]._id })" mm-auth="can_create_people">
             <span class="fa-stack">
               <i ng-bind-html="'person' | resourceIcon"></i>
               <i class="fa fa-plus fa-stack-1x"></i>
