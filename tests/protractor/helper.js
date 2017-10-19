@@ -48,7 +48,19 @@ module.exports = {
       .then(options => {
         options[index].click();
       });
-    if (typeof milliseconds !== 'undefined') {
+    if (milliseconds) {
+      browser.sleep(milliseconds);
+    }
+  },
+
+  selectDropdownByValue: (element, value, milliseconds) => {
+    element.all(by.css(`option[value="${value}"]`))
+      .then(options => {
+        if (options[0]) {
+          options[0].click();
+        }
+      });
+    if (milliseconds) {
       browser.sleep(milliseconds);
     }
   },
@@ -58,25 +70,18 @@ module.exports = {
   * selector : select element
   * item : option(s) in the dropdown.
   */
-  selectDropdownByText: function selectOption(element, item, milliseconds) {
-    let desiredOption;
+  selectDropdownByText: (element, item, milliseconds) => {
     element.all(by.tagName('option'))
-      .then(function findMatchingOption(options) {
+      .then(options => {
         options.some(option => {
-          option.getText().then(function doesOptionMatch(text) {
+          option.getText().then(text => {
             if (text.indexOf(item) !== -1) {
-              desiredOption = option;
-              return true;
+              option.click();
             }
           });
         });
-      })
-      .then(function clickOption() {
-        if (desiredOption) {
-          desiredOption.click();
-        }
       });
-    if (typeof milliseconds !== 'undefined') {
+    if (milliseconds) {
       browser.sleep(milliseconds);
     }
   },

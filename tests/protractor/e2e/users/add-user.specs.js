@@ -69,7 +69,7 @@ describe('Add user  : ', () => {
   it('should require place and contact for restricted user', () => {
     usersPage.openAddUserModal();
     addUserModal.fillForm('restricted', 'Not Saved', '%4wbbygxkgdwvdwT65');
-    helper.selectDropdownByText(element(by.id('type')), 'Restricted to their place');
+    helper.selectDropdownByValue(element(by.id('type')), 'district-manager');
     addUserModal.submit();
     expect(element(by.css('#facility ~ .help-block')).getText()).toBe('Place is a required field.');
     expect(element(by.css('#contact ~ .help-block')).getText()).toBe('Associated contact is a required field.');
