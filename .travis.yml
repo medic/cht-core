@@ -20,6 +20,9 @@ env:
   - COUCH_URL=http://admin:pass@localhost:5984/medic
   - API_URL=http://admin:pass@localhost:5988
   - COUCH_NODE_NAME=nonode@nohost
+  #AWS Access Key Id and AWS Secret Access Key encrypted by travis to access the S3 buckets where reports and screenshots are saved 
+  - secure: TR1UN2r3beDtIF+VJpLF2ocTv/uxuOKyVWWhzMLre0ZrrBaIP1sLZV7Z4S/km5M92EfPgGW87BogdWE/R+kTTRiPTCbFB/U/3jFKxEZRXKST66YK5JMwsYqb17UtZtFdqEtO9GGbAVzXwpZfMMoXvlKNrors2W32xBm2uIkOSpI=
+  - secure: Q8RH65NClRBryxfvlwHQjeR4wGs+GXeUBRIBd1kspAM7Uv+5K3iP+q/TPCIrTL/OpJ5tyCYfeq5hKIFFwrY3JikNXnyHICOjXPE6zSLUm8E8NHaP/orPNWjze2x4yDSRCifqzr2ZiXVq9sxlZfNbZ9eyJxpPFTYDSpuN9T5UEE0=
 
 before_install:
   - |
@@ -37,6 +40,8 @@ before_install:
     fi
     until nc -z localhost 5984; do sleep 1; done
     echo "CouchDB Started"
+  - pip install --user awscli
+  - export PATH=$PATH:$HOME/.local/bin
 
 install:
   nvm install $NODE_VERSION
@@ -67,6 +72,14 @@ script:
     elif [ "$COUCH_VERSION" = 1 ]; then
       node --stack_size=10000 `which grunt` ci1
     fi
+
+after_script:
+- |
+  if [${TRAVIS_PULL_REQUEST}=\"true\"]; then
+   aws s3 cp tests/results s3://medic-e2e/PR_$TRAVIS_PULL_REQUEST/  --recursive
+  else 
+   aws s3 cp tests/results s3://medic-e2e/BUILD_$TRAVIS_BUILD_NUMBER/JOB_$TRAVIS_JOB_NUMBER/  --recursive
+  fi
 
 after_success:
  - python ./scripts/ci/travis_after_all.py

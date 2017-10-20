@@ -152,7 +152,7 @@ describe('sms-gateway api', () => {
       pollSmsApi(body).then(done).catch(done.fail);
     });
 
-    it('- shows content', () => {
+    xit('- shows content', () => {
       element(by.id('messages-tab')).click();
 
       // LHS
@@ -160,6 +160,7 @@ describe('sms-gateway api', () => {
         return element(by.css('#message-list li:first-child')).isPresent();
       }, 10000);
       browser.sleep(500); // without this the elements are found to be detached...
+      helper.waitElementToBeVisisble(element(by.css('#message-list li:first-child')));
       expect(element(by.css('#message-list li:first-child .heading h4')).getText()).toBe('+64271234567');
       expect(element(by.css('#message-list li:first-child .summary p')).getText()).toBe('hello');
 
@@ -170,7 +171,9 @@ describe('sms-gateway api', () => {
       }, 10000);
       browser.sleep(1000); // without this the elements are found to be detached...
 
+      helper.waitElementToBeVisisble(element(by.css('#message-header .name')));      
       expect(element(by.css('#message-header .name')).getText()).toBe('+64271234567');
+      helper.waitElementToBeVisisble(element(by.css('#message-content')));
       expect(element(by.css('#message-content li.incoming:first-child .data p:first-child')).getText()).toBe('hello');
       expect(element(by.css('#message-content li.incoming:first-child .data .state.received')).getText()).toBe('received');
     });
@@ -201,7 +204,7 @@ describe('sms-gateway api', () => {
       utils.deleteDoc(savedDoc).then(done).catch(done.fail);
     });
 
-    it('- shows content', () => {
+    xit('- shows content', () => {
       commonElements.goToReports();
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();
@@ -215,6 +218,7 @@ describe('sms-gateway api', () => {
       browser.sleep(100); // without this the elements are found to be detached...
 
       // tasks
+      helper.waitElementToBeVisisble((element(by.css('#reports-content .details > ul .task-list .task-state .state'))));
       expect(element(by.css('#reports-content .details > ul .task-list .task-state .state')).getText()).toBe('sent');
 
       // scheduled tasks
@@ -253,7 +257,7 @@ describe('sms-gateway api', () => {
       utils.deleteDoc(savedDoc).then(done).catch(done.fail);
     });
 
-    it('- returns list and updates state', () => {
+    xit('- returns list and updates state', () => {
 
       // TEMP: This is a flaky test, because sometimes there are more messages
       //       than the 2 that we expect there to be. Outputting so when it
