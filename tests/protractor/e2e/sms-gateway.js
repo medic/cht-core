@@ -152,7 +152,7 @@ describe('sms-gateway api', () => {
       pollSmsApi(body).then(done).catch(done.fail);
     });
 
-    xit('- shows content', () => {
+    it('- shows content', () => {
       element(by.id('messages-tab')).click();
 
       // LHS
@@ -204,7 +204,7 @@ describe('sms-gateway api', () => {
       utils.deleteDoc(savedDoc).then(done).catch(done.fail);
     });
 
-    xit('- shows content', () => {
+    it('- shows content', () => {
       commonElements.goToReports();
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();
@@ -257,7 +257,7 @@ describe('sms-gateway api', () => {
       utils.deleteDoc(savedDoc).then(done).catch(done.fail);
     });
 
-    xit('- returns list and updates state', () => {
+    it('- returns list and updates state', () => {
 
       // TEMP: This is a flaky test, because sometimes there are more messages
       //       than the 2 that we expect there to be. Outputting so when it
