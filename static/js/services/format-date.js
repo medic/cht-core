@@ -19,7 +19,7 @@ var moment = require('moment');
       var config = {
         date: 'DD-MMM-YYYY',
         datetime: 'DD-MMM-YYYY HH:mm:ss',
-        time: 'h:mm A',
+        time: MomentLocaleData().longDateFormat('LT'),
         ageBreaks: [
           { unit: 'years', key: { singular: 'y', plural: 'yy' }, min: 1 },
           { unit: 'months', key: { singular: 'M', plural: 'MM' }, min: 1 },
