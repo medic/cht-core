@@ -157,7 +157,7 @@ describe('Send message', () => {
   };
 
   const lastMessageIs = message => {
-    helper.waitElementToBeVisisble(element.all(by.css('#message-content li div.data>p>span')).last());
+    helper.waitElementToBeVisible(element.all(by.css('#message-content li div.data>p>span')).last());
     expect(element.all(by.css('#message-content li div.data>p>span')).last().getText()).toBe(message);
   };
 
