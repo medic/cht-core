@@ -19,6 +19,7 @@ var moment = require('moment');
       var config = {
         date: 'DD-MMM-YYYY',
         datetime: 'DD-MMM-YYYY HH:mm:ss',
+        time: MomentLocaleData().longDateFormat('LT'),
         ageBreaks: [
           { unit: 'years', key: { singular: 'y', plural: 'yy' }, min: 1 },
           { unit: 'months', key: { singular: 'M', plural: 'MM' }, min: 1 },
@@ -90,9 +91,12 @@ var moment = require('moment');
         },
         age: function(date) {
           return relativeDate(date);
+        },
+        time: function(date) {
+          return format(date, 'time');
         }
       };
     }
   );
-  
-}()); 
+
+}());
