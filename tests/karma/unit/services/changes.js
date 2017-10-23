@@ -3,7 +3,8 @@ describe('Changes service', function() {
   'use strict';
 
   var service,
-      changesCalls;
+      changesCalls,
+      log;
 
   var onProvider = function(db) {
     return {
@@ -19,6 +20,13 @@ describe('Changes service', function() {
       medic: { callCount: 0, callOptions: null, callbacks: {} },
       meta:  { callCount: 0, callOptions: null, callbacks: {} }
     };
+
+    log = {
+      debug: sinon.stub(),
+      info: sinon.stub(),
+      error: sinon.stub()
+    };
+
 
     module('inboxApp');
     module(function ($provide) {
@@ -43,6 +51,7 @@ describe('Changes service', function() {
       $provide.value('$timeout', function(fn) {
         return fn();
       });
+      $provide.value('$log', log);
     });
     inject(function(_Changes_) {
       service = _Changes_;
@@ -207,6 +216,7 @@ describe('Changes service', function() {
 
     changesCalls.medic.callbacks.change({ id: 'x', changes: [ { rev: '2-abc' } ] });
 
+    chai.expect(log.error.callCount).to.equal(0);
     chai.expect(changesCalls.medic.callCount).to.equal(1);
     chai.expect(changesCalls.meta.callCount).to.equal(1);
 
