@@ -107,7 +107,7 @@ const createSession = (req, callback) => {
 
 const getCookieOptions = () => {
   return {
-    sameSite: 'lax', // prevents the browser from sending this cookie along with cross-site requests
+    sameSite: 'lax', // prevents the browser from sending this cookie along with some cross-site requests
     secure: production // only transmit when requesting via https unless in development mode
   };
 };
