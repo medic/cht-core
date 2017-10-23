@@ -46,7 +46,7 @@ angular.module('inboxServices').factory('Changes',
       db.lastSeq = change.seq;
       Object.keys(db.callbacks).forEach(function(key) {
         var options = db.callbacks[key];
-        if (!options || !options.filter || options.filter(change)) {
+        if (options && options.filter && options.filter(change)) {
           try {
             options.callback(change);
           } catch(e) {
