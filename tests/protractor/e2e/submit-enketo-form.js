@@ -120,7 +120,7 @@ describe('Submit Enketo form', () => {
     browser.sleep(100); // TODO required to make the test deterministic. https://github.com/medic/medic-webapp/issues/3509
     // check the submitted name
     const detail = element(by.css('#reports-content .details ul li:first-child p'));
-    helper.waitElementToBeVisisble(detail);
+    helper.waitElementToBeVisible(detail);
     detail.getText().then(name => {
       expect(name).toBe('Jones');
     }, err => {
