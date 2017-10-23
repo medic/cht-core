@@ -8,7 +8,7 @@ function writeScreenShot(data, filename) {
 }
 
 module.exports = {
-  waitElementToBeVisisble: elm => {
+  waitElementToBeVisible: elm => {
     browser.wait(EC.visibilityOf(elm), 15000);
   },
 

@@ -15,7 +15,7 @@ const getLoginButton = () => {
 
 module.exports = {
   login: (username, password) => {
-    helper.waitElementToBeVisisble(getUsernameField());
+    helper.waitElementToBeVisible(getUsernameField());
     getUsernameField().clear();
     getPasswordField().clear();
     getUsernameField().sendKeys(username);

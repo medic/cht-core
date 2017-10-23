@@ -31,7 +31,7 @@ module.exports = {
 
   goToReports: () => {
     const reportsLink = by.id('reports-tab');
-    helper.waitElementToBeVisisble(element(reportsLink));
+    helper.waitElementToBeVisible(element(reportsLink));
     element(reportsLink).click();
     helper.waitUntilReady(element(by.css('#reports-list')));
   },
@@ -63,7 +63,7 @@ module.exports = {
 
   logout: () => {
     hamburgerMenu.click();
-    helper.waitElementToBeVisisble(logoutButton);
+    helper.waitElementToBeVisible(logoutButton);
     logoutButton.click();
   }
 };
