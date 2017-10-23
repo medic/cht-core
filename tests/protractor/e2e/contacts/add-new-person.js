@@ -14,7 +14,6 @@ describe('Add new person tests : ', () => {
   it('should add new person', () => {
     commonElements.goToPeople();
     expect(commonElements.isAt('contacts-list'));
-    browser.refresh();
     helper.waitElementToBeVisisble(element(by.css('[ng-show="!error && !loading && !hasContacts"]')));
     contactPage.addNewDistrict('BedeDistrict');
     contactPage.completeNewPersonForm('Bede');
