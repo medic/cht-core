@@ -55,10 +55,9 @@ module.exports = {
     getFullNameField().sendKeys(fullName);
     getEmailField().sendKeys('bede@mobile.org');
     getPhoneField().sendKeys('0064212134566');
-    helper.selectDropdownByText(getLanguageField(), 'English', 2);
-    helper.selectDropdownByText(getUserTypeField(), 'Full access');
+    helper.selectDropdownByValue(getLanguageField(), 'en', 2);
+    helper.selectDropdownByValue(getUserTypeField(), 'national-manager');
     getPasswordField().sendKeys(password);
     getConfirmPasswordField().sendKeys(password);
   }
 };
-
