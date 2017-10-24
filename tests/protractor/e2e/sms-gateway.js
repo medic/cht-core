@@ -159,7 +159,7 @@ describe('sms-gateway api', () => {
       browser.wait(() => {
         return element(by.css('#message-list li:first-child')).isPresent();
       }, 10000);
-      browser.sleep(500); // without this the elements are found to be detached...
+      //browser.sleep(500); // without this the elements are found to be detached...
       helper.waitElementToBeVisisble(element(by.css('#message-list li:first-child')));
       expect(element(by.css('#message-list li:first-child .heading h4')).getText()).toBe('+64271234567');
       expect(element(by.css('#message-list li:first-child .summary p')).getText()).toBe('hello');
@@ -218,14 +218,14 @@ describe('sms-gateway api', () => {
       browser.sleep(100); // without this the elements are found to be detached...
 
       // tasks
-      helper.waitElementToBeVisisble((element(by.css('#reports-content .details > ul .task-list .task-state .state'))));
-      expect(element(by.css('#reports-content .details > ul .task-list .task-state .state')).getText()).toBe('sent');
-
-      // scheduled tasks
-      expect(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state')).getText()).toBe('delivered');
-      expect(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(2) .task-state .state')).getText()).toBe('scheduled'); // unchanged
-      expect(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state')).getText()).toBe('failed');
-
+      const sentTaskState = helper.getTextFromElement(element(by.css('#reports-content .details > ul .task-list .task-state .state')));
+      const deliveredTaskState = helper.getTextFromElement(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state')));
+      const scheduledTaskState = helper.getTextFromElement(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(2) .task-state .state')));
+      const failedTaskState = helper.getTextFromElement(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state')));
+      expect(sentTaskState).toBe('sent');
+      expect(deliveredTaskState).toBe('delivered');
+      expect(scheduledTaskState).toBe('scheduled');
+      expect(failedTaskState).toBe('failed');
     });
   });
 
