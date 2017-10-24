@@ -172,7 +172,7 @@ describe('sms-gateway api', () => {
       //browser.sleep(1000); // without this the elements are found to be detached...
       const messageHeader = helper.getTextFromElement(element(by.css('#message-header .name')));
       const messageText = helper.getTextFromElement(element(by.css('#message-content li.incoming:first-child .data p:first-child')));
-      const messageStatus = helper.getTextFromElement(element(by.css('#message-content li.incoming:first-child .data .state.received')).getText());
+      const messageStatus = helper.getTextFromElement(element(by.css('#message-content li.incoming:first-child .data .state.received')));
       expect(messageHeader).toBe('+64271234567');
       expect(messageText).toBe('hello');
       expect(messageStatus).toBe('received');
