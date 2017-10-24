@@ -1,0 +1,9 @@
+#!/bin/bash -eu
+export API_URL=http://admin:pass@localhost:5988
+export COUCH_URL=http://admin:pass@localhost:5984/medic-e2e-temp
+
+grunt jshint
+
+scripts/e2e/create_fixtures
+
+grunt test_e2e
