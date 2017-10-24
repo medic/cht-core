@@ -27,7 +27,7 @@ module.exports = {
 
   waitUntilReady: elm => {
     return browser.wait(() => elm.isPresent(), 10000) &&
-           browser.wait(() => elm.isDisplayed(), 12000);
+      browser.wait(() => elm.isDisplayed(), 12000);
   },
 
   waitForCheckboxToBeChecked: elem => {
@@ -36,6 +36,17 @@ module.exports = {
         return (isElementChecked);
       });
     }, 10000);
+  },
+
+  getTextFromElement: element => {
+    return browser.wait(EC.visibilityOf(element), 12000)
+      .then(() => {
+        return element.getText();
+      })
+      .catch(() => {
+        browser.wait(EC.visibilityOf(element), 10000);
+        return element.getText();
+      });
   },
 
   /**
