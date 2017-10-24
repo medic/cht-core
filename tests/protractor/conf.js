@@ -98,7 +98,7 @@ exports.config = {
   onPrepare: () => {
     jasmine.getEnv().addReporter(utils.reporter);
     const startup = startModules();
-    browser.ignoreSynchronization = true;
+    browser.waitForAngularEnabled(false);
     browser.driver.wait(startup, 30 * 1000, 'API and Sentinel should start within 30 seconds');
     browser.driver.sleep(1000);
     browser.driver.wait(setupSettings, 5 * 1000, 'Settings should be setup within 5 seconds');
