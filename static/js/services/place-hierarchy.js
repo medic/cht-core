@@ -78,7 +78,7 @@ angular.module('inboxServices').factory('PlaceHierarchy',
 
     return function() {
       return Settings().then(function(settings) {
-        var types = settings['place_hierarchy_types'] || defaultHierarchyTypes;
+        var types = settings.place_hierarchy_types || defaultHierarchyTypes;
 
         return Contacts(types).then(buildHierarchy);
       });
