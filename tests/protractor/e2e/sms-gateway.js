@@ -169,20 +169,13 @@ describe('sms-gateway api', () => {
       browser.wait(() => {
         return element(by.css('#message-content li.incoming:first-child .data p:first-child')).isPresent();
       }, 10000);
-      browser.sleep(1000); // without this the elements are found to be detached...
-
-      helper.waitElementToBeVisisble(element(by.css('#message-header .name')));      
-      expect(element(by.css('#message-header .name')).getText()).toBe('+64271234567');
-      return browser.wait(protractor.ExpectedConditions.visibilityOf(element(by.css('#message-content'))), 12000)
-        .then(() => {
-          expect(element(by.css('#message-content li.incoming:first-child .data p:first-child')).getText()).toBe('hello');
-          expect(element(by.css('#message-content li.incoming:first-child .data .state.received')).getText()).toBe('received');
-        })
-        .catch(() => {
-          helper.waitUntilReady(element(by.css('#message-content')));
-          expect(element(by.css('#message-content li.incoming:first-child .data p:first-child')).getText()).toBe('hello');
-          expect(element(by.css('#message-content li.incoming:first-child .data .state.received')).getText()).toBe('received');
-        });
+      //browser.sleep(1000); // without this the elements are found to be detached...
+      const messageHeader = helper.getTextFromElement(element(by.css('#message-header .name')));
+      const messageText = helper.getTextFromElement(element(by.css('#message-content li.incoming:first-child .data p:first-child')));
+      const messageStatus = helper.getTextFromElement(element(by.css('#message-content li.incoming:first-child .data .state.received')).getText());
+      expect(messageHeader).toBe('+64271234567');
+      expect(messageText).toBe('hello');
+      expect(messageStatus).toBe('received');
     });
 
   });
