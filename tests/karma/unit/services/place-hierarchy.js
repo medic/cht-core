@@ -2,17 +2,22 @@ describe('PlaceHierarchy service', () => {
 
   'use strict';
 
+  const sandbox = sinon.sandbox.create();
+
   let service,
-      Contacts;
+      Contacts,
+      settings;
 
   beforeEach(() => {
     module('inboxApp');
-    Contacts = sinon.stub();
+    Contacts = sandbox.stub();
+    settings = {};
     module($provide => {
       $provide.value('Contacts', Contacts);
       $provide.value('ContactSchema', {
         getPlaceTypes: () => [ 'district_hospital', 'health_center', 'clinic' ]
       });
+      $provide.value('Settings', () => Promise.resolve(settings));
     });
     inject($injector => {
       service = $injector.get('PlaceHierarchy');
@@ -20,7 +25,7 @@ describe('PlaceHierarchy service', () => {
   });
 
   afterEach(() => {
-    KarmaUtils.restore(Contacts);
+    sandbox.restore();
   });
 
   it('returns errors from Contacts service', done => {
@@ -77,6 +82,15 @@ describe('PlaceHierarchy service', () => {
           children: []
         }
       ]);
+    });
+  });
+
+
+  it('pulls the hierarchy level from config', () => {
+    Contacts.returns(Promise.resolve([]));
+    settings.place_hierarchy_types = ['a', 'b', 'c'];
+    return service().then(() => {
+      chai.expect(Contacts.args[0][0]).to.deep.equal(settings.place_hierarchy_types);
     });
   });
 

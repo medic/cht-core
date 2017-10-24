@@ -121,6 +121,15 @@
                 "default": false,
                 "description": "All incoming messages will be parsed as forms. Unstractured messages will be rejected."
             },
+            "place_hierarchy_types": {
+                "type": "array",
+                "title": "Report place heirarchy types",
+                "default": ["district_hospital", "health_center"],
+                "description": "Place types to appear in the report-page's heirarchy filter. Defaults to all except clinic to improve performance",
+                "items": {
+                    "type": "string"
+                }
+            },
             "default_responses": {
                 "title": "Auto-replies",
                 "type": "object",

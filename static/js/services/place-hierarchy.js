@@ -1,7 +1,7 @@
 var _ = require('underscore');
 
 /**
-  Returns all places except clinics, in a hierarchy tree.
+  Returns all places, in a hierarchy tree.
   E.g.
   [
       { doc: c, children: [{ doc: b, children: [] }] },
@@ -10,8 +10,9 @@ var _ = require('underscore');
 */
 angular.module('inboxServices').factory('PlaceHierarchy',
   function(
+    Contacts,
     ContactSchema,
-    Contacts
+    Settings
   ) {
 
     'use strict';
@@ -70,13 +71,17 @@ angular.module('inboxServices').factory('PlaceHierarchy',
       return hierarchy;
     };
 
-    var hierarchyTypes = ContactSchema.getPlaceTypes().filter(function(type) {
+    // By default exclude clinic (the lowest level) to increase performance.
+    var defaultHierarchyTypes = ContactSchema.getPlaceTypes().filter(function(type) {
       return type !== 'clinic';
     });
 
     return function() {
-      return Contacts(hierarchyTypes)
-        .then(buildHierarchy);
+      return Settings().then(function(settings) {
+        var types = settings.place_hierarchy_types || defaultHierarchyTypes;
+
+        return Contacts(types).then(buildHierarchy);
+      });
     };
   }
 );
