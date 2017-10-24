@@ -11,7 +11,7 @@ describe('Login tests : ', () => {
     expect(browser.getTitle()).toEqual('Medic Mobile');
   });
 
-  xit('should try to sign in and verify that credentials were incorrect', () => {
+  it('should try to sign in and verify that credentials were incorrect', () => {
     browser.manage().deleteAllCookies();
     browser.driver.get(utils.getLoginUrl());
     loginPage.login(wrongUsername, wrongPassword);
