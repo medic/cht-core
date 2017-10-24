@@ -44,8 +44,9 @@ module.exports = {
         return element.getText();
       })
       .catch(() => {
-        browser.wait(EC.presenceOf(element), 10000);
-        return element.getText();
+        browser.wait(EC.presenceOf(element), 10000).then(() => {
+          return element.getText();
+        });
       });
   },
 
