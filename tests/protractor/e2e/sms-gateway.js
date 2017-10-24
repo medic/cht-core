@@ -257,7 +257,7 @@ describe('sms-gateway api', () => {
       utils.deleteDoc(savedDoc).then(done).catch(done.fail);
     });
 
-    xit('- returns list and updates state', () => {
+    it('- returns list and updates state', () => {
 
       // TEMP: This is a flaky test, because sometimes there are more messages
       //       than the 2 that we expect there to be. Outputting so when it
@@ -301,18 +301,15 @@ describe('sms-gateway api', () => {
       }, 10000);
 
       browser.sleep(100); // without this the elements are found to be detached...
-
       // tasks
       // State for messageId1 has been updated from pending to forwarded-to-gateway.
       const feedback = element(by.css('#reports-content .details > ul .task-list .task-state .state'));
       helper.waitUntilReady(feedback);
-      expect(feedback.getText())
-        .toBe('forwarded to gateway');
-
+      expect(helper.getTextFromElement(feedback)).toBe('forwarded to gateway');
       // scheduled tasks
       // State for messageId2 is still forwarded-to-gateway
-      expect(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state'))
-        .getText()).toBe('forwarded to gateway');
+      expect(helper.getTextFromElement(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state'))))
+        .toBe('forwarded to gateway');
     });
   });
 });
