@@ -152,7 +152,7 @@ describe('sms-gateway api', () => {
       pollSmsApi(body).then(done).catch(done.fail);
     });
 
-    xit('- shows content', () => {
+    it('- shows content', () => {
       element(by.id('messages-tab')).click();
 
       // LHS
