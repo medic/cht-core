@@ -172,10 +172,17 @@ describe('sms-gateway api', () => {
       browser.sleep(1000);//without this the elements are found to be detached.
       helper.waitElementToBeVisible(element(by.css('#message-header .name')));
       expect(element(by.css('#message-header .name')).getText()).toBe('+64271234567');
-      helper.waitElementToBeVisible(element(by.css('#message-content')));
-      expect(element(by.css('#message-content li.incoming:first-child .data p:first-child')).getText()).toBe('hello');
-      expect(element(by.css('#message-content li.incoming:first-child .data .state.received')).getText()).toBe('received');
-    });
+      return browser.wait(protractor.ExpectedConditions.visibilityOf(element(by.css('#message-content'))),12000)
+        .then(() => {
+          expect(element(by.css('#message-content li.incoming:first-child .data p:first-child')).getText()).toBe('hello');
+          expect(element(by.css('#message-content li.incoming:first-child .data .state.received')).getText()).toBe('received');
+        })
+        .catch(() => {
+          helper.waitUntilReady(element(by.css('#message-content')));
+          expect(element(by.css('#message-content li.incoming:first-child .data p:first-child')).getText()).toBe('hello');
+          expect(element(by.css('#message-content li.incoming:first-child .data .state.received')).getText()).toBe('received');
+        });
+     });
 
   });
 
