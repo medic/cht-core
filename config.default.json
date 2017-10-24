@@ -27,6 +27,7 @@
   "date_format": "DD-MMM-YYYY",
   "reported_date_format": "DD-MMM-YYYY HH:mm:ss",
   "forms_only_mode": false,
+  "place_hierarchy_types": ["district_hospital", "health_center"],
   "default_responses": {
     "start_date": ""
   },
