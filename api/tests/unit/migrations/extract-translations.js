@@ -1,10 +1,16 @@
 var sinon = require('sinon').sandbox.create(),
     db = require('../../../db'),
-    migration = require('../../../migrations/extract-translations');
+    migration = require('../../../migrations/extract-translations'),
+    originalDbSettings;
+
+exports.setUp = function(callback) {
+  originalDbSettings = db.settings;
+  callback();
+};
 
 exports.tearDown = function (callback) {
   sinon.restore();
-  db.settings = {};
+  db.settings = originalDbSettings;
   callback();
 };
 

@@ -10,7 +10,8 @@ const controller = require('../../../controllers/login'),
       DDOC_NAME = 'medic';
 
 let req,
-    res;
+    res,
+    originalDbSettings;
 
 exports.setUp = callback => {
   req = {
@@ -25,6 +26,7 @@ exports.setUp = callback => {
     json: () => {},
     cookie: () => {}
   };
+  originalDbSettings = db.settings;
   db.settings = {
     db: DB_NAME,
     ddoc: DDOC_NAME,
@@ -37,7 +39,7 @@ exports.setUp = callback => {
 };
 
 exports.tearDown = callback => {
-  db.settings = {};
+  db.settings = originalDbSettings;
   sinon.restore();
   callback();
 };

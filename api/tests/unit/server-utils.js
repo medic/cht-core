@@ -13,14 +13,17 @@ const db = require('../../db'),
         status: function() {}
       };
 
+let originalDbSettings;
+
 exports.setUp = callback => {
+  originalDbSettings = db.settings;
   db.settings = { db: 'medic' };
   callback();
 };
 
 exports.tearDown = callback => {
   sinon.restore();
-  db.settings = {};
+  db.settings = originalDbSettings;
   callback();
 };
 

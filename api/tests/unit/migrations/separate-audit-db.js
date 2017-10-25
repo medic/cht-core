@@ -1,6 +1,7 @@
 var sinon = require('sinon').sandbox.create(),
     db = require('../../../db'),
-    migration = require('../../../migrations/separate-audit-db.js');
+    migration = require('../../../migrations/separate-audit-db.js'),
+    originalDbSettings;
 
 var ERR_404 = {statusCode: 404};
 
@@ -20,11 +21,14 @@ var LAST_VIEW_BATCH = {
   rows: []
 };
 
+exports.setUp = function(callback) {
+  originalDbSettings = db.settings;
+  callback();
+};
+
 exports.tearDown = function (callback) {
   sinon.restore();
-
-  db.settings = {};
-
+  db.settings = originalDbSettings;
   callback();
 };
 
