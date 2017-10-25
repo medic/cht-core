@@ -166,6 +166,7 @@ describe('sms-gateway api', () => {
 
       // RHS
       element(by.css('#message-list li:first-child .summary')).click();
+      helper.waitElementToBeVisisble(element(by.css('#message-content li.incoming:first-child .data p:first-child')));
       browser.wait(() => {
         return element(by.css('#message-content li.incoming:first-child .data p:first-child')).isPresent();
       }, 10000);
