@@ -4,7 +4,7 @@ medic-api
 Node server to support medic-webapp.
 
 Currently supports auditing by proxying requests to CouchDB and updating the
-audit history where required.
+audit history when required.
 
 
 # Table of contents
