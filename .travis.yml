@@ -61,6 +61,7 @@ before_script:
   - npm install kanso -g
   - npm install grunt-cli -g
   - npm --prefix api install
+  - npm --prefix sentinel install
   - ./node_modules/.bin/webdriver-manager update
   - ./node_modules/.bin/webdriver-manager start &
   - until nc -z localhost 4444; do sleep 1; done
