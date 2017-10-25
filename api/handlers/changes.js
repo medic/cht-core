@@ -411,8 +411,9 @@ var updateFeeds = function(changes) {
 
 var init = function(since) {
   inited = true;
+  since = since || 'now';
   var options = {
-    since: since || 'now',
+    since: since,
     heartbeat: true,
     feed: 'longpoll',
     include_docs: true
@@ -420,10 +421,11 @@ var init = function(since) {
   db.medic.changes(options, function(err, changes) {
     if (!err) {
       updateFeeds(changes);
+      since = changes.last_seq;
     }
     // use setTimeout to break recursion so stack doesn't blow out
     setTimeout(function() {
-      init(changes.last_seq);
+      init(since);
     }, 1000);
   });
 };
