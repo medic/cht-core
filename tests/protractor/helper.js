@@ -1,5 +1,6 @@
-const fs = require('fs'),
-      EC = protractor.ExpectedConditions;
+const fs = require('fs');
+const EC = protractor.ExpectedConditions;
+const retry = require('webdriverjs-retry');
 
 function writeScreenShot(data, filename) {
   const stream = fs.createWriteStream(filename);
@@ -41,12 +42,19 @@ module.exports = {
   getTextFromElement: element => {
     return browser.wait(EC.presenceOf(element), 12000)
       .then(() => {
-        return element.getText();
+        return element.getText().then(function(val) {
+            return val;
+          });
       })
-      .catch(() => {
-        browser.wait(EC.presenceOf(element), 10000).then(() => {
-          return element.getText();
-        });
+     .catch(() => {
+       if (EC.stalenessOf(element)) {
+         browser.sleep(1000);
+         browser.wait(EC.presenceOf(element), 12000).then(() => {
+           return element.getText().then(function(val) {
+             return val;
+           });
+         });
+       }
       });
   },
 
