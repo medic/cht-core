@@ -157,8 +157,8 @@ describe('Send message', () => {
   };
 
   const lastMessageIs = message => {
-    helper.waitElementToBeVisisble(element.all(by.css('#message-content li div.data>p>span')).last());
-    expect(element.all(by.css('#message-content li div.data>p>span')).last().getText()).toBe(message);
+    const last = element.all(by.css('#message-content li div.data>p>span')).last();
+    expect(helper.getTextFromElement(last)).toBe(message);
   };
 
   const contactNameSelector = ' .sender .name';
