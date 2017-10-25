@@ -6,7 +6,7 @@ const _ = require('underscore'),
       transition = require('../../../transitions/multi_report_alerts'),
       utils = require('../../../lib/utils');
 
-let alert;
+let alertConfig;
 
 exports.tearDown = callback => {
   sinon.restore();
@@ -15,7 +15,7 @@ exports.tearDown = callback => {
 
 exports.setUp = callback => {
   // reset alert
-  alert = {
+  alertConfig = {
     name: 'you_should_know_about_this',
     is_report_counted: 'function() { return true; }',
     num_reports_threshold: 3,
@@ -90,52 +90,52 @@ const assertConfigIsInvalid = (test, alerts) => {
 };
 
 exports['validates config : is_report_counted'] = test => {
-  assertConfigIsInvalid(test, [_.omit(alert, 'is_report_counted')]);
+  assertConfigIsInvalid(test, [_.omit(alertConfig, 'is_report_counted')]);
 };
 
 exports['validates config : name'] = test => {
-  assertConfigIsInvalid(test, [_.omit(alert, 'name')]);
+  assertConfigIsInvalid(test, [_.omit(alertConfig, 'name')]);
 };
 
 exports['validates config : names are unique'] = test => {
-  assertConfigIsInvalid(test, [alert, alert]);
+  assertConfigIsInvalid(test, [alertConfig, alertConfig]);
 };
 
 exports['validates config : num_reports_threshold'] = test => {
-  assertConfigIsInvalid(test, [_.omit(alert, 'num_reports_threshold')]);
+  assertConfigIsInvalid(test, [_.omit(alertConfig, 'num_reports_threshold')]);
 };
 
 exports['validates config : num_reports_threshold < 100'] = test => {
-  alert.num_reports_threshold = 100000000; // arbitrary large number
-  assertConfigIsInvalid(test, [ alert ]);
+  alertConfig.num_reports_threshold = 100000000; // arbitrary large number
+  assertConfigIsInvalid(test, [ alertConfig ]);
 };
 
 exports['validates config : message'] = test => {
-  assertConfigIsInvalid(test, [_.omit(alert, 'message')]);
+  assertConfigIsInvalid(test, [_.omit(alertConfig, 'message')]);
 };
 
 exports['validates config : recipients'] = test => {
-  assertConfigIsInvalid(test, [_.omit(alert, 'recipients')]);
+  assertConfigIsInvalid(test, [_.omit(alertConfig, 'recipients')]);
 };
 
 exports['validates config : time_window_in_days'] = test => {
-  assertConfigIsInvalid(test, [_.omit(alert, 'time_window_in_days')]);
+  assertConfigIsInvalid(test, [_.omit(alertConfig, 'time_window_in_days')]);
 };
 
 exports['fetches reports within time window'] = test => {
-  sinon.stub(config, 'get').returns([alert]);
+  sinon.stub(config, 'get').returns([alertConfig]);
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
   transition.onMatch({ doc: doc }, undefined, undefined, () => {
     test.equals(utils.getReportsWithinTimeWindow.callCount, 1);
     test.equals(utils.getReportsWithinTimeWindow.args[0][0], 12344);
-    test.equals(utils.getReportsWithinTimeWindow.args[0][1], alert.time_window_in_days);
+    test.equals(utils.getReportsWithinTimeWindow.args[0][1], alertConfig.time_window_in_days);
     test.done();
   });
 };
 
 exports['filters reports by form if forms is present in config'] = test => {
-  sinon.stub(config, 'get').returns([_.extend({forms: ['A']} , alert)]);
+  sinon.stub(config, 'get').returns([_.extend({forms: ['A']} , alertConfig)]);
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve([hydratedReports[0]]));
   transition.onMatch({ doc: doc }, undefined, undefined, () => {
@@ -147,8 +147,8 @@ exports['filters reports by form if forms is present in config'] = test => {
 };
 
 exports['if not enough reports pass the is_report_counted func, does nothing'] = test => {
-  alert.is_report_counted = 'function() { return false; }';
-  sinon.stub(config, 'get').returns([alert]);
+  alertConfig.is_report_counted = 'function() { return false; }';
+  sinon.stub(config, 'get').returns([alertConfig]);
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
   sinon.stub(messages, 'addError');
@@ -162,7 +162,7 @@ exports['if not enough reports pass the is_report_counted func, does nothing'] =
 };
 
 exports['if no reports in time window, does nothing'] = test => {
-  sinon.stub(config, 'get').returns([alert]);
+  sinon.stub(config, 'get').returns([alertConfig]);
   // No reports
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve([]));
   sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve([]));
@@ -205,7 +205,7 @@ const assertMessages = (test, addMessageStub, alert) => {
 };
 
 exports['if enough reports pass the is_report_counted func, adds message'] = test => {
-  sinon.stub(config, 'get').returns([alert]);
+  sinon.stub(config, 'get').returns([alertConfig]);
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
   sinon.stub(messages, 'addError');
@@ -214,8 +214,8 @@ exports['if enough reports pass the is_report_counted func, adds message'] = tes
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
     test.equals(messages.addError.getCalls().length, 0);
 
-    test.equals(messages.addMessage.getCalls().length, alert.recipients.length);
-    assertMessages(test, messages.addMessage, alert);
+    test.equals(messages.addMessage.getCalls().length, alertConfig.recipients.length);
+    assertMessages(test, messages.addMessage, alertConfig);
 
     test.ok(!err);
     test.ok(docNeedsSaving);
@@ -225,9 +225,9 @@ exports['if enough reports pass the is_report_counted func, adds message'] = tes
 
 exports['adds message when recipient is evaled'] = test => {
   const recipient = 'new_report.contact.phone';
-  alert.recipients = [recipient];
-  alert.num_reports_threshold = 1;
-  sinon.stub(config, 'get').returns([alert]);
+  alertConfig.recipients = [recipient];
+  alertConfig.num_reports_threshold = 1;
+  sinon.stub(config, 'get').returns([alertConfig]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve([]));
   sinon.stub(lineage, 'hydrateDocs').returns(Promise.resolve([]));
@@ -244,8 +244,8 @@ exports['adds message when recipient is evaled'] = test => {
 };
 
 exports['adds multiple messages when multiple recipients are evaled'] = test => {
-  alert.recipients = [ 'new_report.contact.phone' ];
-  sinon.stub(config, 'get').returns([alert]);
+  alertConfig.recipients = [ 'new_report.contact.phone' ];
+  sinon.stub(config, 'get').returns([alertConfig]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
@@ -267,8 +267,8 @@ exports['adds multiple messages when multiple recipients are evaled'] = test => 
 
 exports['does not add message when recipient cannot be evaled'] = test => {
   const recipient = 'new_report.contact.phonekkk'; // field doesn't exist
-  alert.recipients = [recipient];
-  sinon.stub(config, 'get').returns([alert]);
+  alertConfig.recipients = [recipient];
+  sinon.stub(config, 'get').returns([alertConfig]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
@@ -286,8 +286,8 @@ exports['does not add message when recipient cannot be evaled'] = test => {
 
 exports['does not add message when recipient is bad'] = test => {
   const recipient = 'ssdfds';
-  alert.recipients = [recipient];
-  sinon.stub(config, 'get').returns([alert]);
+  alertConfig.recipients = [recipient];
+  sinon.stub(config, 'get').returns([alertConfig]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
@@ -305,8 +305,8 @@ exports['does not add message when recipient is bad'] = test => {
 
 exports['does not add message when recipient is not international phone number'] = test => {
   const recipient = '0623456789';
-  alert.recipients = [recipient];
-  sinon.stub(config, 'get').returns([alert]);
+  alertConfig.recipients = [recipient];
+  sinon.stub(config, 'get').returns([alertConfig]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
@@ -323,7 +323,7 @@ exports['does not add message when recipient is not international phone number']
 };
 
 exports['message only contains newReports'] = test => {
-  sinon.stub(config, 'get').returns([alert]);
+  sinon.stub(config, 'get').returns([alertConfig]);
 
   const reportsWithOneAlreadyMessaged = [
     { _id: 'docA', form: 'A', contact: { _id: 'contactA' } },
@@ -331,7 +331,7 @@ exports['message only contains newReports'] = test => {
       tasks: [
         {
           type: 'alert',
-          alert_name: alert.name,
+          alert_name: alertConfig.name,
           counted_reports: ['docB']
         }
       ]
@@ -346,7 +346,7 @@ exports['message only contains newReports'] = test => {
       tasks: [
         {
           type: 'alert',
-          alert_name: alert.name,
+          alert_name: alertConfig.name,
           counted_reports: ['docB']
         }
       ]
@@ -363,18 +363,18 @@ exports['message only contains newReports'] = test => {
 
     const expected = {
       doc: doc,
-      phone: alert.recipients[0],
-      message: alert.message,
+      phone: alertConfig.recipients[0],
+      message: alertConfig.message,
       templateContext: {
         new_reports: [doc, hydratedReportsWithOneAlreadyMessaged[0] ],
         num_counted_reports: [doc, ...hydratedReportsWithOneAlreadyMessaged].length,
-        alert_name: alert.name,
-        num_reports_threshold: alert.num_reports_threshold,
-        time_window_in_days: alert.time_window_in_days
+        alert_name: alertConfig.name,
+        num_reports_threshold: alertConfig.num_reports_threshold,
+        time_window_in_days: alertConfig.time_window_in_days
       },
       taskFields: {
         type: 'alert',
-        alert_name: alert.name,
+        alert_name: alertConfig.name,
         counted_reports: [ doc._id, hydratedReportsWithOneAlreadyMessaged[0]._id, hydratedReportsWithOneAlreadyMessaged[1]._id ]
       }
     };
@@ -386,8 +386,8 @@ exports['message only contains newReports'] = test => {
 };
 
 exports['adds multiple messages when mutiple recipients'] = test => {
-  alert.recipients = ['+254111222333', 'new_report.contact.phone'];
-  sinon.stub(config, 'get').returns([alert]);
+  alertConfig.recipients = ['+254111222333', 'new_report.contact.phone'];
+  sinon.stub(config, 'get').returns([alertConfig]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
@@ -398,11 +398,11 @@ exports['adds multiple messages when mutiple recipients'] = test => {
     test.equals(messages.addError.getCalls().length, 0);
 
     // first recipient
-    assertMessage(test, messages.addMessage.getCall(0).args[0], '+254111222333', alert.message, alert.name, alert.num_reports_threshold, alert.time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(0).args[0], '+254111222333', alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
     // second recipient : matched 3 phones
-    assertMessage(test, messages.addMessage.getCall(1).args[0], doc.contact.phone, alert.message, alert.name, alert.num_reports_threshold, alert.time_window_in_days);
-    assertMessage(test, messages.addMessage.getCall(2).args[0], hydratedReports[0].contact.phone, alert.message, alert.name, alert.num_reports_threshold, alert.time_window_in_days);
-    assertMessage(test, messages.addMessage.getCall(3).args[0], hydratedReports[1].contact.phone, alert.message, alert.name, alert.num_reports_threshold, alert.time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(1).args[0], doc.contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(2).args[0], hydratedReports[0].contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
+    assertMessage(test, messages.addMessage.getCall(3).args[0], hydratedReports[1].contact.phone, alertConfig.message, alertConfig.name, alertConfig.num_reports_threshold, alertConfig.time_window_in_days);
 
     test.equals(messages.addMessage.getCalls().length, 4);
 
@@ -412,8 +412,8 @@ exports['adds multiple messages when mutiple recipients'] = test => {
 
 exports['dedups message recipients'] = test => {
   // specify same recipient twice.
-  alert.recipients = ['new_report.contact.phone', 'new_report.contact.phone'];
-  sinon.stub(config, 'get').returns([alert]);
+  alertConfig.recipients = ['new_report.contact.phone', 'new_report.contact.phone'];
+  sinon.stub(config, 'get').returns([alertConfig]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
@@ -433,7 +433,7 @@ exports['dedups message recipients'] = test => {
 };
 
 exports['when unexpected error, callback returns (error, false)'] = test => {
-  sinon.stub(config, 'get').returns([alert]);
+  sinon.stub(config, 'get').returns([alertConfig]);
   sinon.stub(utils, 'getReportsWithinTimeWindow').throws(new Error('much error'));
 
   transition.onMatch({ doc: doc }, undefined, undefined, (err, docNeedsSaving) => {
@@ -482,8 +482,8 @@ exports['runs multiple alerts'] = test => {
 };
 
 exports['skips doc with wrong form if forms is present in config'] = test => {
-  alert.forms = ['B'];
-  sinon.stub(config, 'get').returns([alert]);
+  alertConfig.forms = ['B'];
+  sinon.stub(config, 'get').returns([alertConfig]);
 
   sinon.stub(utils, 'getReportsWithinTimeWindow').returns(Promise.resolve(reports));
   stubFetchHydratedDocs();
@@ -500,9 +500,9 @@ exports['skips doc with wrong form if forms is present in config'] = test => {
 };
 
 exports['latest report has to go through is_report_counted function'] = test => {
-  alert.is_report_counted = 'function(report, latestReport) { return report.form === "B"; }';
-  alert.num_reports_threshold = 2;
-  sinon.stub(config, 'get').returns([alert]);
+  alertConfig.is_report_counted = 'function(report, latestReport) { return report.form === "B"; }';
+  alertConfig.num_reports_threshold = 2;
+  sinon.stub(config, 'get').returns([alertConfig]);
 
   // Only 1 report has form B, the latest_report doesn't, so we shouldn't reach the num_reports_threshold.
   // (pre-asserting the test data so that we don't break this test later by accident)
@@ -536,7 +536,7 @@ exports['getCountedReportsAndPhones batches properly'] = test => {
   grwtwStub.onCall(0).returns(Promise.resolve(firstBatch));
   grwtwStub.onCall(1).returns(Promise.resolve(secondBatch));
 
-  transition._getCountedReportsAndPhones(alert, doc)
+  transition._getCountedReportsAndPhones(alertConfig, doc)
     .then(({countedReportsIds, newReports}) => {
       // Two batches above, plus the doc passed in
       test.equal(countedReportsIds.length, 151);

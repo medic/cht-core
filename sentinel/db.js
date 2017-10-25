@@ -31,7 +31,7 @@ if (couchUrl) {
         var uri = path.join('/_fti/local', module.exports.settings.db, '_design', module.exports.settings.ddoc, index);
         module.exports.request({ path: uri, qs: data }, cb);
     };
-} else if (process.env.TEST_ENV) {
+} else if (process.env.UNIT_TEST_ENV) {
     // Running tests only
     module.exports = {
         use: function() {},
@@ -48,7 +48,7 @@ if (couchUrl) {
     console.log(
         'Please define a COUCH_URL in your environment e.g. \n' +
         'export COUCH_URL="http://admin:123qwe@localhost:5984/medic"\n' +
-        'If you are running tests use TEST_ENV=1 in your environment.\n'
+        'If you are running tests use UNIT_TEST_ENV=1 in your environment.\n'
     );
     process.exit(1);
 }

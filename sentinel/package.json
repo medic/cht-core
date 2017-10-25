@@ -20,21 +20,6 @@
     "winston": "^2.4.0"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "grunt": "^1.0.0",
-    "grunt-contrib-jshint": "^1.1.0",
-    "grunt-contrib-nodeunit": "^1.0.0",
-    "grunt-env": "^0.4.4",
-    "grunt-mocha-test": "^0.13.3",
-    "jsverify": "^0.8.3",
-    "kanso": "^0.5.2",
-    "mocha": "^4.0.1",
-    "nodeunit": "^0.11.1",
-    "sinon": "^4.0.1"
-  },
-  "scripts": {
-    "start": "node server.js",
-    "debug": "node server.js debug",
-    "test": "TEST_ENV=1 node_modules/nodeunit/bin/nodeunit test/unit test/functional"
+    "jsverify": "^0.8.3"
   }
 }

@@ -34,22 +34,6 @@
     "xmlbuilder": "^9.0.4"
   },
   "devDependencies": {
-    "chai": "^4.1.2",
-    "doctoc": "^1.0.0",
-    "grunt": "^1.0.0",
-    "grunt-contrib-jshint": "^1.1.0",
-    "grunt-contrib-nodeunit": "^1.0.0",
-    "grunt-env": "^0.4.4",
-    "grunt-exec": "^3.0.0",
-    "grunt-mocha-test": "^0.13.3",
-    "mocha": "^4.0.1",
-    "nodeunit": "^0.11.1",
-    "request-promise-native": "^1.0.5",
-    "sinon": "^4.0.1"
-  },
-  "scripts": {
-    "start": "node server.js",
-    "test": "grunt test",
-    "updatetoc": "./node_modules/.bin/doctoc --maxlevel 2 README.md"
+    "request-promise-native": "^1.0.5"
   }
 }
