@@ -5,8 +5,16 @@ const request = require('request'),
       config = require('../../config'),
       db = require('../../db');
 
-exports.tearDown = function (callback) {
+let originalDbSettings;
+
+exports.setUp = function(callback) {
+  originalDbSettings = db.settings;
+  callback();
+};
+
+exports.tearDown = function(callback) {
   sinon.restore();
+  db.settings = originalDbSettings;
   callback();
 };
 
