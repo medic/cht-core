@@ -39,6 +39,7 @@
     "simple-password-tester": "^1.0.0",
     "underscore": "^1.8.3",
     "uuid": "^3.1.0",
+    "webdriverjs-retry": "^0.2.0",
     "worker-pouch": "^2.0.0"
   },
   "devDependencies": {
