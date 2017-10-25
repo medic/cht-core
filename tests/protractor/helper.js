@@ -1,5 +1,6 @@
-const fs = require('fs'),
-      EC = protractor.ExpectedConditions;
+const fs = require('fs');
+const EC = protractor.ExpectedConditions;
+const retry = require('webdriverjs-retry');
 
 function writeScreenShot(data, filename) {
   const stream = fs.createWriteStream(filename);
