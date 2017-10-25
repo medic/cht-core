@@ -39,21 +39,22 @@ module.exports = {
   },
 
   getTextFromElement: element => {
+
     return browser.wait(EC.presenceOf(element), 12000)
       .then(() => {
-        return element.getText().then(function(val) {
-            return val;
-          });
+        return element.getText().then(val => {
+          return val;
+        });
       })
-     .catch(() => {
-       if (EC.stalenessOf(element)) {
-         browser.sleep(1000);
-         browser.wait(EC.presenceOf(element), 12000).then(() => {
-           return element.getText().then(function(val) {
-             return val;
-           });
-         });
-       }
+      .catch(() => {
+        if (EC.stalenessOf(element)) {
+          browser.sleep(100);
+          return browser.wait(EC.presenceOf(element), 12000).then(() => {
+            return element.getText().then(val => {
+              return val;
+            });
+          });
+        }
       });
   },
 
