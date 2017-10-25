@@ -580,8 +580,10 @@ module.exports = function(grunt) {
     'build',
     'minify',
     'karma:unit_ci',
+    'env:test',
     'nodeunit',
     'mochaTest:unit',
+    'env:dev',
   ]);
 
   grunt.registerTask('ci_after', '', [
