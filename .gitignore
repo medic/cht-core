@@ -6,7 +6,7 @@ sentinel/Procfile
 sentinel_working
 api_working
 npm-debug.log
-/node_modules/
+node_modules
 /node_modules_backup/
 /scripts/node_modules/
 /static/dist/
