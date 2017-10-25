@@ -127,7 +127,8 @@ if (couchUrl) {
       protocol: 'http',
       port: '123',
       host: 'local',
-      db: 'medic'
+      db: 'medic',
+      ddoc: 'medic'
     },
     getSettings: function() {},
     updateSettings: function() {},
