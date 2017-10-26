@@ -47,15 +47,28 @@ module.exports = {
         });
       })
       .catch(() => {
-          browser.sleep(1000);
-          return browser.wait(!EC.stalenessOf(element), 12000).then(() => {
-            return element.getText().then(val => {
-              return val;
-            });
+        browser.sleep(1000);
+        return browser.wait(!EC.stalenessOf(element), 12000).then(() => {
+          return element.getText().then(val => {
+            return val;
           });
+        });
       });
   },
 
+  clickElement: element => {
+
+    return browser.wait(EC.presenceOf(element), 12000)
+      .then(() => {
+        element.click();
+      })
+      .catch(() => {
+        browser.sleep(1000);
+        return browser.wait(!EC.stalenessOf(element), 12000).then(() => {
+          element.click();
+        });
+      });
+  },
   /**
   * Usage: selectDropdownByNumber ( element, index)
   * element : select element

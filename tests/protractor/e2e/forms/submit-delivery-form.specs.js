@@ -83,7 +83,7 @@ describe('Submit Delivery Report', () => {
     browser.wait(() => {
       return addButton.isPresent();
     }, 10000);
-    addButton.click();
+    helper.clickElement(addButton);
     element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
     browser.wait(() => {
       return element(by.css('#report-form')).isPresent();
