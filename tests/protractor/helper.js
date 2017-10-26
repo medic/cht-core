@@ -48,7 +48,7 @@ module.exports = {
       })
       .catch(() => {
         browser.sleep(1000);
-        return browser.wait(!EC.stalenessOf(element), 12000).then(() => {
+        return browser.wait(EC.presenceOf(element), 12000).then(() => {
           return element.getText().then(val => {
             return val;
           });
