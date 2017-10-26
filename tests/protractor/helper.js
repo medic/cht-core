@@ -2,7 +2,7 @@ const fs = require('fs'),
       EC = protractor.ExpectedConditions;
 
 function writeScreenShot(data, filename) {
-  const stream = fs.createWriteStream(filename);
+  const stream = fs.createWriteStream('./tests/results/' + filename);
   stream.write(new Buffer(data, 'base64'));
   stream.end();
 }
