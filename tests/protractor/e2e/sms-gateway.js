@@ -159,7 +159,7 @@ describe('sms-gateway api', () => {
       browser.wait(() => {
         return element(by.css('#message-list li:first-child')).isPresent();
       }, 10000);
-      browser.sleep(500); // without this the elements are found to be detached....
+      browser.sleep(500); // without this the elements are found to be detached...
       helper.waitElementToBeVisisble(element(by.css('#message-list li:first-child')));
       expect(helper.getTextFromElement(element(by.css('#message-list li:first-child .heading h4')))).toBe('+64271234567');
       expect(helper.getTextFromElement(element(by.css('#message-list li:first-child .summary p')))).toBe('hello');
