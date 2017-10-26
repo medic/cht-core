@@ -1,4 +1,5 @@
-const utils = require('../utils');
+const utils = require('../utils'),
+      common = require('../page-objects/common/common.po')  ;
 
 describe('Contact summary info', () => {
 
@@ -131,7 +132,7 @@ describe('Contact summary info', () => {
   afterEach(utils.afterEach);
 
   const selectContact = term => {
-    element(by.id('contacts-tab')).click();
+    common.goToPeople();
     element(by.id('freetext')).sendKeys(term);
     element(by.id('search')).click();
     browser.wait(() => {
