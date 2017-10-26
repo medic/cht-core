@@ -1,5 +1,6 @@
 const utils = require('../utils'),
-      common = require('../page-objects/common/common.po');
+      common = require('../page-objects/common/common.po'),
+      helper = require('../helper');
 
 describe('Contact summary info', () => {
 
@@ -133,6 +134,7 @@ describe('Contact summary info', () => {
 
   const selectContact = term => {
     common.goToPeople();
+    helper.waitUntilReady(element(by.id('freetext')));
     element(by.id('freetext')).sendKeys(term);
     element(by.id('search')).click();
     browser.wait(() => {
