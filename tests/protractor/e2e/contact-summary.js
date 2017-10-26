@@ -1,5 +1,5 @@
 const utils = require('../utils'),
-      common = require('../page-objects/common/common.po')  ;
+      common = require('../page-objects/common/common.po');
 
 describe('Contact summary info', () => {
 
