@@ -47,14 +47,12 @@ module.exports = {
         });
       })
       .catch(() => {
-        if (EC.stalenessOf(element)) {
-          browser.sleep(100);
+          browser.sleep(1000);
           return browser.wait(EC.presenceOf(element), 12000).then(() => {
             return element.getText().then(val => {
               return val;
             });
           });
-        }
       });
   },
 
