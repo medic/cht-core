@@ -141,11 +141,13 @@ describe('Contact summary info', () => {
       return element(by.css('#contacts-list .filtered .content')).isPresent();
     }, 10000);
     element(by.css('#contacts-list .filtered .content')).click();
+    browser.wait(() => {
+      return element(by.css('#contacts-list')).isPresent();
+    }, 10000);
   };
 
   it('contact summary', () => {
     selectContact('carol');
-    helper.takeScreenshot('flaky');
     // assert the summary card has the right fields
     browser.wait(() => {
       return element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')).isPresent();
