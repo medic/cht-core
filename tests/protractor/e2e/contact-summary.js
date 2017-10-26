@@ -145,7 +145,7 @@ describe('Contact summary info', () => {
 
   it('contact summary', () => {
     selectContact('carol');
-
+    helper.takeScreenshot('flaky');
     // assert the summary card has the right fields
     browser.wait(() => {
       return element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')).isPresent();
