@@ -40,7 +40,7 @@ module.exports = {
 
   getTextFromElement: element => {
 
-    return browser.wait(EC.presenceOf(element), 12000)
+    return browser.wait(EC.presenceOf(element), 12000, 'Element taking too long to appear in the DOM.Let us retry')
       .then(() => {
         return element.getText().then(val => {
           return val;
@@ -48,7 +48,8 @@ module.exports = {
       })
       .catch(() => {
         browser.sleep(1000);
-        return browser.wait(EC.presenceOf(element), 12000).then(() => {
+        return browser.wait(EC.visibilityOf(element), 12000, 'Element taking too long to appear in the DOM. Giving up!')
+          .then(() => {
           return element.getText().then(val => {
             return val;
           });
@@ -58,13 +59,13 @@ module.exports = {
 
   clickElement: element => {
 
-    return browser.wait(EC.presenceOf(element), 12000)
+    return browser.wait(EC.presenceOf(element), 12000, 'Element taking too long to appear in the DOM')
       .then(() => {
         element.click();
       })
       .catch(() => {
         browser.sleep(1000);
-        return browser.wait(!EC.stalenessOf(element), 12000).then(() => {
+        return browser.wait(EC.presenceOf(element), 12000).then(() => {
           element.click();
         });
       });
