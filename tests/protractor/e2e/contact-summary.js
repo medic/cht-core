@@ -146,7 +146,7 @@ describe('Contact summary info', () => {
     }, 10000);
   };
 
-  it('contact summary', () => {
+  xit('contact summary', () => {
     selectContact('carol');
     // assert the summary card has the right fields
     browser.wait(() => {
