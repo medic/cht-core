@@ -155,7 +155,7 @@ describe('Contact summary info', () => {
     expect(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) label')).getText()).toBe('test.sex');
     expect(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) p')).getText()).toBe(CAROL.sex);
 
-    // assert that the pregnancy card exists and has the right fields
+    // assert that the pregnancy card exists and has the right fields.
     expect(element(by.css('.content-pane .meta > div > .card .action-header h3')).getText()).toBe('test.pregnancy');
     expect(element(by.css('.content-pane .meta > div > .card .row label')).getText()).toBe('test.visits');
     expect(element(by.css('.content-pane .meta > div > .card .row p')).getText()).toBe('1');
