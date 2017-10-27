@@ -10,10 +10,8 @@
 }
 
 .enketo {
-  h2,
-  h3,
-  h4 {
-    text-align: left;
+  #form-title {
+    border-bottom: 1px solid @seperator-color;
   }
   h2 {
     font-size: @font-extra-extra-large;
@@ -24,11 +22,46 @@
   h4 {
     font-size: @font-large;
   }
-  .or-group > h4::before {
-    display: none;
+  .or-group {
+    margin: 15px 0 0 0;
   }
-  .pages.or #form-title {
-    margin: 20px;
+  .or-group > h4{
+    margin: 0;
+    &::before {
+      display: none;
+    }
+  }
+  .or {
+    h2,
+    h3,
+    h4 {
+      padding: 15px 20px;
+      text-align: left;
+    }
+  }
+  // nested group
+  .or-group .or-group {
+    margin: 0;
+    > h4 {
+      color: inherit;
+      font-weight: normal;
+      padding-bottom: 5px;
+      .active {
+        font-size: @font-large;
+        &::before {
+          // hide the chevrons
+          display: none;
+        }
+      }
+    }
+  }
+  .or > h3 {
+    color: inherit;
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+  .question-label {
+    font-size: @font-large;
   }
   label,
   legend,
@@ -50,21 +83,18 @@
   textarea,
   input[type="tel"] {
     font-size: inherit;
+    line-height: inherit;
+  }
+  legend > span {
+    vertical-align: inherit;
   }
   .required-subtle {
     font-size: @font-small;
   }
-  .or {
-    h2,
-    h3,
-    h4 {
-      padding: 0 15px;
-    }
-  }
   .form-footer {
     margin: 0;
     margin-bottom: 10px;
-    padding: 0 15px;
+    padding: 0 20px;
     text-align: right;
     .previous-page::before {
       content: "< ";
@@ -86,8 +116,8 @@
   label,
   .question,
   .note {
-    padding-left: 15px;
-    padding-right: 15px;
+    padding-left: 20px;
+    padding-right: 20px;
   }
   .note {
     border: 0;
@@ -114,20 +144,34 @@
       width: 100%;
     }
   }
+  .required {
+    color: inherit;
+    position: inherit;
+    top: inherit;
+    left: 5px;
+  }
   .question {
-    .required {
-      float: left;
-      position: relative;
-      left: -10px;
-      margin-right: -10px;
-      top: 0;
-    }
+    margin: 0;
+    padding-top: 15px;
+    padding-bottom: 15px;
     .geopicker input {
       width: 80%;
     }
     input[type="tel"] {
       /* inherit all standard TEXT input styles */
       &:extend(.enketo .question input[type="text"]);
+    }
+    input[type=radio],
+    input[type=checkbox] {
+      height: 24px;
+      width: 24px;
+      margin-top: -2px;
+    }
+    input[type=radio] {
+      border-radius: 50%;
+    }
+    input[type=checkbox]:checked {
+      background-position: -1px;
     }
   }
   input[type="tel"] {
@@ -137,8 +181,8 @@
   .invalid-constraint,
   .invalid-required {
     margin: 0;
-    padding-left: 15px;
-    padding-right: 15px;
+    padding-left: 20px;
+    padding-right: 20px;
     border-radius: 0;
   }
   .or-required-msg.active,
@@ -158,8 +202,8 @@
     display: block;
   }
   .option-wrapper > label:not(.filler) {
-    padding-top: 6px;
-    padding-bottom: 6px;
+    padding-top: 8px;
+    padding-bottom: 8px;
     border-radius: 4px;
   }
   button[disabled] {
@@ -170,6 +214,11 @@
   }
   .or-appearance-allow-new .add-new {
     padding-top: 3px;
+  }
+
+  input:not([type="radio"]):not([type="checkbox"]),
+  .enketo textarea {
+    height: 45px;
   }
 
   .or-appearance-summary {
