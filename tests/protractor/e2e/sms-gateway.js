@@ -160,13 +160,13 @@ describe('sms-gateway api', () => {
         return element(by.css('#message-list li:first-child')).isPresent();
       }, 10000);
       browser.sleep(500); // without this the elements are found to be detached...
-      helper.waitElementToBeVisisble(element(by.css('#message-list li:first-child')));
+      helper.waitElementToBeVisible(element(by.css('#message-list li:first-child')));
       expect(helper.getTextFromElement(element(by.css('#message-list li:first-child .heading h4')))).toBe('+64271234567');
       expect(helper.getTextFromElement(element(by.css('#message-list li:first-child .summary p')))).toBe('hello');
 
       // RHS
       element(by.css('#message-list li:first-child .summary')).click();
-      helper.waitElementToBeVisisble(element(by.css('#message-content li.incoming:first-child .data p:first-child')));
+      helper.waitElementToBeVisible(element(by.css('#message-content li.incoming:first-child .data p:first-child')));
       browser.wait(() => {
         return element(by.css('#message-content li.incoming:first-child .data p:first-child')).isPresent();
       }, 10000);
@@ -210,7 +210,7 @@ describe('sms-gateway api', () => {
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
-      helper.waitElementToBeVisisble(element(by.css('#reports-list li:first-child')));
+      helper.waitElementToBeVisible(element(by.css('#reports-list li:first-child')));
       element(by.css('#reports-list li:first-child .heading')).click();
       browser.wait(() => {
         return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
@@ -292,7 +292,7 @@ describe('sms-gateway api', () => {
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
-      helper.waitElementToBeVisisble(element(by.css('#reports-list li:first-child')));
+      helper.waitElementToBeVisible(element(by.css('#reports-list li:first-child')));
 
       const desc = element(by.css('#reports-list li:first-child .heading'));
       helper.waitUntilReady(desc);

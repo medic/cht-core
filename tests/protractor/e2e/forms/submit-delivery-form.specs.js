@@ -92,7 +92,7 @@ describe('Submit Delivery Report', () => {
     //select name
     deliveryReport.selectPatientName('jack');
     deliveryReport.nextPage();
-    helper.waitElementToBeVisisble(element(by.css('[value="healthy"]')));
+    helper.waitElementToBeVisible(element(by.css('[value="healthy"]')));
 
     //Delivery info
     deliveryReport.selectLiveBirthButton();
