@@ -153,7 +153,7 @@ describe('Send message', () => {
           return text === entryName;
         });
       }
-    }, 2000);
+    }, 12000);
   };
 
   const lastMessageIs = message => {
