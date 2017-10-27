@@ -1,6 +1,7 @@
 const utils = require('../utils'),
       auth = require('../auth')(),
-      commonElements = require('../page-objects/common/common.po.js');
+      commonElements = require('../page-objects/common/common.po.js'),
+      helper = require('../helper');
 
 describe('Auditing', () => {
 
@@ -62,6 +63,7 @@ describe('Auditing', () => {
     expect(selectedTab.getText()).toEqual('Messages');
 
     let listitem = element(by.css('.inbox-items li[data-record-id="+64555555555"]'));
+    helper.waitUntilReady(listitem);
     browser.wait(() => {
       return listitem.isPresent();
     }, 5000);
