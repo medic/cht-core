@@ -72,7 +72,7 @@ describe('Auditing', () => {
     listitem.click();
     browser.sleep(1000);
 
-    // reload messages tab page (changes feeds are disabled)..
+    // reload messages tab page (changes feeds are disabled).
     commonElements.goToReports();
     browser.sleep(100);
     element(by.id('messages-tab')).click();
