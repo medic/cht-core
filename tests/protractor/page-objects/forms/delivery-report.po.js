@@ -1081,7 +1081,7 @@ module.exports = {
     const submitButton = element(by.css('[ng-click="onSubmit()"]'));
     helper.waitElementToBeClickable(submitButton);
     submitButton.click();
-    helper.waitElementToBeVisisble(element(by.css('div#reports-content')));
+    helper.waitElementToBeVisible(element(by.css('div#reports-content')));
   },
 
   //patient page
@@ -1095,7 +1095,7 @@ module.exports = {
     const search = element(by.css('.select2-search__field'));
     search.click();
     search.sendKeys(name);
-    helper.waitElementToBeVisisble(element(by.css('.name')));
+    helper.waitElementToBeVisible(element(by.css('.name')));
     element(by.css('.name')).click();
   },
 

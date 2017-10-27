@@ -134,7 +134,7 @@ describe('Contact summary info', () => {
 
   const selectContact = term => {
     common.goToPeople();
-    helper.waitElementToBeVisisble(element(by.id('freetext')));
+    helper.waitElementToBeVisible(element(by.id('freetext')));
     element(by.id('freetext')).sendKeys(term);
     element(by.id('search')).click();
     browser.wait(() => {

@@ -148,7 +148,7 @@ describe('Send message', () => {
 
     browser.wait(() => {
       const el = element(by.css('#message-header .name'));
-      if (helper.waitElementToBeVisisble(el)) {
+      if (helper.waitElementToBeVisible(el)) {
         return el.getText().then(text => {
           return text === entryName;
         });
