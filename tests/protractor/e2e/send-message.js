@@ -148,8 +148,8 @@ describe('Send message', () => {
 
     browser.wait(() => {
       const el = element(by.css('#message-header .name'));
-      if (helper.waitElementToBeVisible(el)) {
-        return el.getText().then(text => {
+      if (helper.waitUntilReady(el)) {
+        return helper.getTextFromElement(el).then(text => {
           return text === entryName;
         });
       }
