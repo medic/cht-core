@@ -301,7 +301,7 @@ describe('sms-gateway api', () => {
         return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
       }, 10000);
 
-      browser.sleep(100); // without this the elements are found to be detached....
+      browser.sleep(100); // without this the elements are found to be detached...
       // tasks
       // State for messageId1 has been updated from pending to forwarded-to-gateway.
       const feedback = element(by.css('#reports-content .details > ul .task-list .task-state .state'));
