@@ -18,7 +18,7 @@ module.exports = {
 
   waitElementToDisappear: locator => {
     browser.wait(() => {
-      return element(locator).isPresent()
+      return element(locator).isDisplayed()
         .then(presenceOfElement => {
           return !presenceOfElement;
         });
@@ -71,7 +71,7 @@ module.exports = {
   /**
   * Usage: selectDropdownByNumber ( element, index)
   * element : select element
-  * index : index in the dropdown, 1 base
+  * index : index in the dropdown, 1 base.
   */
   selectDropdownByNumber: (element, index, milliseconds) => {
     element.findElements(by.tagName('option'))
