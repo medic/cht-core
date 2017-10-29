@@ -53,7 +53,7 @@ const startApi = () => startNodeModule('api', 'Medic API listening on port');
 
 const startSentinel = () => startNodeModule('sentinel', 'startup complete.');
 
-// start sentinel serially because it relies on api..
+// start sentinel serially because it relies on api.
 const startModules = () => startApi().then(startSentinel);
 
 const setupSettings = () => {
