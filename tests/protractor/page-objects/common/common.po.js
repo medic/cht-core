@@ -29,7 +29,7 @@ module.exports = {
 
   goToReports: () => {
     browser.get(utils.getBaseUrl() + 'reports/');
-    helper.waitUntilReady(medicLogo);
+    helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
     helper.waitUntilReady(element(by.id('reports-list')));
   },
 
