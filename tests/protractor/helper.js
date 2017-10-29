@@ -58,14 +58,13 @@ module.exports = {
   },
 
   clickElement: element => {
-
-    return browser.wait(EC.presenceOf(element), 12000, 'Element taking too long to appear in the DOM')
+    return browser.wait(EC.elementToBeClickable(element), 12000, 'Element taking too long to appear in the DOM')
       .then(() => {
         element.click();
       })
       .catch(() => {
         browser.sleep(1000);
-        return browser.wait(EC.presenceOf(element), 12000).then(() => {
+        return browser.wait(EC.elementToBeClickable(element), 12000).then(() => {
           element.click();
         });
       });
