@@ -259,7 +259,7 @@ describe('Send message', () => {
         enterMessageText('A third message');
 
         element(by.css('.message-actions .btn.btn-link')).click();
-        browser.sleep(1000); // TODO: work out how to tell that the documents etc have beeen saved.
+        browser.sleep(1000); // TODO: work out how to tell that the documents etc have beeen saved..
         expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
         expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
         expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(RAW_PH);
