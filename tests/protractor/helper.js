@@ -39,7 +39,6 @@ module.exports = {
   },
 
   getTextFromElement: element => {
-
     return browser.wait(EC.presenceOf(element), 12000, 'Element taking too long to appear in the DOM.Let us retry')
       .then(() => {
         return element.getText().then(val => {
