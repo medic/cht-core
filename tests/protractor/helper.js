@@ -98,7 +98,7 @@ module.exports = {
   /**
   * Usage: selectDropdownByText (selector, item)
   * selector : select element
-  * item : option(s) in the dropdown....
+  * item : option(s) in the dropdown.
   */
   selectDropdownByText: (element, item, milliseconds) => {
     element.all(by.tagName('option'))
