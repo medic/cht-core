@@ -7,7 +7,6 @@ const helper = require('../../helper'),
       hamburgerMenu = element(by.className('dropdown options')),
       logoutButton = $('[ng-click=logout]');
 
-
 module.exports = {
   goToMessages: () => {
     browser.get(utils.getBaseUrl() + 'messages/');
