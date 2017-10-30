@@ -30,7 +30,8 @@ module.exports = {
   goToReports: () => {
     browser.get(utils.getBaseUrl() + 'reports/');
     helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
-    helper.waitElementToDisappear(element(by.css('.loader.ng-hide')));
+    const loader = element(by.css('.loader.ng-hide'));
+    helper.waitElementToDisappear(loader);
   },
 
   goToAnalytics: () => {
