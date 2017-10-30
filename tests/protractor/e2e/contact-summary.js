@@ -140,7 +140,7 @@ describe('Contact summary info', () => {
     browser.wait(() => {
       return element(by.css('#contacts-list .filtered .content')).isPresent();
     }, 10000);
-    element(by.css('#contacts-list .filtered .content')).click();
+    helper.clickElement(element(by.css('#contacts-list .filtered .content')));
     browser.wait(() => {
       return element(by.css('#contacts-list')).isPresent();
     }, 10000);
@@ -152,14 +152,14 @@ describe('Contact summary info', () => {
     browser.wait(() => {
       return element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')).isPresent();
     }, 10000);
-    expect(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')).getText()).toBe('test.pid');
-    expect(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) p')).getText()).toBe(CAROL.patient_id);
-    expect(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) label')).getText()).toBe('test.sex');
-    expect(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) p')).getText()).toBe(CAROL.sex);
+    expect(helper.getTextFromElement(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label'))).toBe('test.pid');
+    expect(helper.getTextFromElement(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) p'))).toBe(CAROL.patient_id);
+    expect(helper.getTextFromElement(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) label'))).toBe('test.sex');
+    expect(helper.getTextFromElement(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) p'))).toBe(CAROL.sex);
 
     // assert that the pregnancy card exists and has the right fields.
-    expect(element(by.css('.content-pane .meta > div > .card .action-header h3')).getText()).toBe('test.pregnancy');
-    expect(element(by.css('.content-pane .meta > div > .card .row label')).getText()).toBe('test.visits');
-    expect(element(by.css('.content-pane .meta > div > .card .row p')).getText()).toBe('1');
+    expect(helper.getTextFromElement(by.css('.content-pane .meta > div > .card .action-header h3'))).toBe('test.pregnancy');
+    expect(helper.getTextFromElement(by.css('.content-pane .meta > div > .card .row label'))).toBe('test.visits');
+    expect(helper.getTextFromElement(by.css('.content-pane .meta > div > .card .row p'))).toBe('1');
   });
 });
