@@ -31,7 +31,9 @@ module.exports = {
     browser.get(utils.getBaseUrl() + 'reports/');
     helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
     const loader = element(by.css('.loader.ng-hide'));
-    helper.waitElementToDisappear(loader);
+    if (loader.isPresent()) {
+      helper.waitElementToDisappear(loader);
+    }
   },
 
   goToAnalytics: () => {
