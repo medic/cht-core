@@ -25,7 +25,7 @@ module.exports = {
   },
 
   openAddUserModal: () => {
-    browser.get(utils.getBaseUrl() + '/_design/medic/_rewrite/#/configuration/users');
+    browser.get(utils.getBaseUrl() + 'configuration/users');
     helper.waitElementToBeClickable(getAddUserButton());
     getAddUserButton().click();
   },

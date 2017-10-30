@@ -100,7 +100,7 @@ describe('Filters reports', () => {
 
   afterEach(utils.afterEach);
 
-  xit('by date', () => {
+  it('by date', () => {
     commonElements.goToReports();
 
     browser.wait(() => {
@@ -121,7 +121,6 @@ describe('Filters reports', () => {
       return element(by.css('#reports-list .filtered li:first-child')).isPresent();
     }, 10000);
 
-    //expectations failing. Isolated to get master to pass while investigating this....
     expect(element.all(by.css('#reports-list .filtered li')).count()).toBe(2);
     expect(element.all(by.css('#reports-list .filtered li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);
     expect(element.all(by.css('#reports-list .filtered li[data-record-id="' + savedUuids[3] + '"]')).count()).toBe(1);

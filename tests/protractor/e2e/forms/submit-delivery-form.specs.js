@@ -76,14 +76,14 @@ describe('Submit Delivery Report', () => {
       return element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')).isPresent();
     }, 10000);
 
-    browser.sleep(1000); // let the refresh work - #3691
+    browser.sleep(1000); // let the refresh work here - #3691
 
     // select form
     const addButton = element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus'));
     browser.wait(() => {
       return addButton.isPresent();
     }, 10000);
-    addButton.click();
+    helper.clickElement(addButton);
     element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
     browser.wait(() => {
       return element(by.css('#report-form')).isPresent();
@@ -92,7 +92,7 @@ describe('Submit Delivery Report', () => {
     //select name
     deliveryReport.selectPatientName('jack');
     deliveryReport.nextPage();
-    helper.waitElementToBeVisisble(element(by.css('[value="healthy"]')));
+    helper.waitElementToBeVisible(element(by.css('[value="healthy"]')));
 
     //Delivery info
     deliveryReport.selectLiveBirthButton();

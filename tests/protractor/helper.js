@@ -2,13 +2,13 @@ const fs = require('fs'),
       EC = protractor.ExpectedConditions;
 
 function writeScreenShot(data, filename) {
-  const stream = fs.createWriteStream(filename);
+  const stream = fs.createWriteStream('./tests/results/' + filename);
   stream.write(new Buffer(data, 'base64'));
   stream.end();
 }
 
 module.exports = {
-  waitElementToBeVisisble: elm => {
+  waitElementToBeVisible: elm => {
     browser.wait(EC.visibilityOf(elm), 15000);
   },
 
@@ -18,7 +18,7 @@ module.exports = {
 
   waitElementToDisappear: locator => {
     browser.wait(() => {
-      return element(locator).isPresent()
+      return element(locator).isDisplayed()
         .then(presenceOfElement => {
           return !presenceOfElement;
         });
@@ -27,7 +27,7 @@ module.exports = {
 
   waitUntilReady: elm => {
     return browser.wait(() => elm.isPresent(), 10000) &&
-           browser.wait(() => elm.isDisplayed(), 12000);
+      browser.wait(() => elm.isDisplayed(), 12000);
   },
 
   waitForCheckboxToBeChecked: elem => {
@@ -38,6 +38,36 @@ module.exports = {
     }, 10000);
   },
 
+  getTextFromElement: element => {
+    return browser.wait(EC.presenceOf(element), 12000, 'Element taking too long to appear in the DOM.Let us retry')
+      .then(() => {
+        return element.getText().then(val => {
+          return val;
+        });
+      })
+      .catch(() => {
+        browser.sleep(1000);
+        return browser.wait(EC.visibilityOf(element), 12000, 'Element taking too long to appear in the DOM. Giving up!')
+          .then(() => {
+          return element.getText().then(val => {
+            return val;
+          });
+        });
+      });
+  },
+
+  clickElement: element => {
+    return browser.wait(EC.elementToBeClickable(element), 12000, 'Element taking too long to appear in the DOM')
+      .then(() => {
+        element.click();
+      })
+      .catch(() => {
+        browser.sleep(1000);
+        return browser.wait(EC.elementToBeClickable(element), 12000).then(() => {
+          element.click();
+        });
+      });
+  },
   /**
   * Usage: selectDropdownByNumber ( element, index)
   * element : select element

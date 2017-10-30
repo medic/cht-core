@@ -2,47 +2,43 @@ const helper = require('../../helper'),
       utils = require('../../utils'),
       medicLogo = element(by.className('logo-full')),
       messagesLink = element(by.id('messages-tab')),
-      tasksLink = element(by.id('tasks-tab')),
-      contactsLink = element(by.id('contacts-tab')),
       analyticsLink = element(by.id('analytics-tab')),
       configurationLink = element(by.css('[ui-sref=configuration]')),
       hamburgerMenu = element(by.className('dropdown options')),
       logoutButton = $('[ng-click=logout]');
 
 module.exports = {
-  getBaseUrl: () => {
-    return utils.getBaseUrl() + '/_design/medic/_rewrite/#/';
-  },
-
   goToMessages: () => {
-    helper.waitUntilReady(messagesLink);
-    messagesLink.click();
+    browser.get(utils.getBaseUrl() + 'messages/');
+    helper.waitUntilReady(medicLogo);
+    helper.waitUntilReady(element(by.id('message-list')));
   },
 
   goToTasks: () => {
-    helper.waitUntilReady(tasksLink);
-    tasksLink.click();
+    browser.get(utils.getBaseUrl() + 'tasks/');
+    helper.waitUntilReady(medicLogo);
+    helper.waitUntilReady(element(by.id('tasks-list')));
   },
 
   goToPeople: () => {
-    helper.waitUntilReady(contactsLink);
-    contactsLink.click();
+    browser.get(utils.getBaseUrl() + 'contacts/');
+    helper.waitUntilReady(medicLogo);
+    helper.waitUntilReady(element(by.id('contacts-list')));
   },
 
   goToReports: () => {
-    const reportsLink = by.id('reports-tab');
-    helper.waitElementToBeVisisble(element(reportsLink));
-    element(reportsLink).click();
-    helper.waitUntilReady(element(by.css('#reports-list')));
+    browser.get(utils.getBaseUrl() + 'reports/');
+    helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
+    helper.waitElementToBeVisible(element(by.id('reports-list')));
   },
 
   goToAnalytics: () => {
-    helper.waitUntilReady(analyticsLink);
     analyticsLink.click();
+    helper.waitUntilReady(medicLogo);
   },
 
   goToConfiguration: () => {
-    helper.waitUntilReady(configurationLink);
+    helper.waitUntilReady(medicLogo);
     configurationLink.click();
   },
 
@@ -63,7 +59,7 @@ module.exports = {
 
   logout: () => {
     hamburgerMenu.click();
-    helper.waitElementToBeVisisble(logoutButton);
+    helper.waitElementToBeVisible(logoutButton);
     logoutButton.click();
   }
 };

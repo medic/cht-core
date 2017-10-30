@@ -149,16 +149,16 @@ describe('Send message', () => {
     browser.wait(() => {
       const el = element(by.css('#message-header .name'));
       if (helper.waitUntilReady(el)) {
-        return el.getText().then(text => {
+        return helper.getTextFromElement(el).then(text => {
           return text === entryName;
         });
       }
-    }, 2000);
+    }, 12000);
   };
 
   const lastMessageIs = message => {
-    helper.waitElementToBeVisisble(element.all(by.css('#message-content li div.data>p>span')).last());
-    expect(element.all(by.css('#message-content li div.data>p>span')).last().getText()).toBe(message);
+    const last = element.all(by.css('#message-content li div.data>p>span')).last();
+    expect(helper.getTextFromElement(last)).toBe(message);
   };
 
   const contactNameSelector = ' .sender .name';
@@ -278,7 +278,7 @@ describe('Send message', () => {
         enterMessageText('A third message');
 
         element(by.css('.message-actions .btn.btn-link')).click();
-        browser.sleep(1000); // TODO: work out how to tell that the documents etc have beeen saved
+        browser.sleep(1000); // TODO: work out how to tell that the documents etc have beeen saved.
         expect(element(by.id('send-message')).isDisplayed()).toBeTruthy();
         expect(element.all(by.css('li.select2-selection__choice')).count()).toBe(1);
         expect(element(by.css('#send-message select>option')).getAttribute('value')).toBe(ALICE._id);
