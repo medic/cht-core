@@ -133,7 +133,6 @@ describe('Contact summary info', () => {
   afterEach(utils.afterEach);
 
   const selectContact = term => {
-    common.goToPeople();
     helper.waitElementToBeVisible(element(by.id('freetext')));
     element(by.id('freetext')).sendKeys(term);
     element(by.id('search')).click();
@@ -142,15 +141,19 @@ describe('Contact summary info', () => {
     }, 10000);
     helper.waitElementToBeClickable(element(by.css('#contacts-list .filtered .content')));
     helper.clickElement(element(by.css('#contacts-list .filtered .content')));
-    browser.wait(() => {
-      return element(by.css('#contacts-list')).isPresent();
-    }, 10000);
+    helper.waitElementToBeVisible(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')));
   };
 
-  it('contact summary', () => { //disabled
-    selectContact('carol');
-    // assert the summary card has the right fields
-    helper.waitElementToBeVisible(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')));
+  it('contact summary', () => {
+    common.goToPeople();
+    try {
+      selectContact('carol');
+    }
+    catch (err) {
+      helper.clickElement(element(by.css('#contacts-tab')));
+      selectContact('carol');
+    }
+    //assert the summary card has the right fields
     browser.wait(() => {
       return element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')).isPresent();
     }, 10000);
