@@ -293,10 +293,8 @@ describe('sms-gateway api', () => {
         return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
       helper.waitElementToBeVisible(element(by.css('#reports-list li:first-child')));
-
-      const desc = element(by.css('#reports-list li:first-child .heading'));
-      helper.waitUntilReady(desc);
-      helper.clickElement(desc);
+      helper.waitUntilReady(element(by.css('#reports-list li:first-child .heading')));
+      helper.clickElement(element(by.css('#reports-list li:first-child .heading')));
       browser.wait(() => {
         return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
       }, 10000);
