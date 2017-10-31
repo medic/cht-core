@@ -158,8 +158,8 @@ describe('Contact summary info', () => {
     expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) p')))).toBe(CAROL.sex);
 
     // assert that the pregnancy card exists and has the right fields.
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > div > .card .action-header h3'))).toBe('test.pregnancy'));
-    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > div > .card .row label'))).toBe('test.visits'));
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > div > .card .action-header h3')))).toBe('test.pregnancy');
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > div > .card .row label')))).toBe('test.visits');
     expect(helper.getTextFromElement(element(by.css('.content-pane .meta > div > .card .row p')))).toBe('1');
   });
 });
