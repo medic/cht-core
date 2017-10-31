@@ -12,23 +12,63 @@ var _parseDuration = function(duration) {
     return moment.duration(parseInt(parts[0]), parts[1]);
 };
 
-var _exists = function(doc, query, callback) {
-    db.fti(
-        'data_records',
-        { q: query, include_docs: true },
-        function(err, result) {
+const _getIntersection = responses => {
+    let ids = responses.pop().rows.map(row => row.id);
+    responses.forEach(response => {
+        ids = ids.filter(id => _.findWhere(response.rows, { id: id }));
+    });
+    return ids;
+};
+
+const _executeExistsRequest = (options, callback) => {
+    db.medic.view(
+        'medic-client',
+        'reports_by_freetext',
+        options,
+        (err, response) => callback(err, response) // strip out unnecessary third argument
+    );
+};
+
+const _exists = (doc, fields, options, callback) => {
+    options = options || {};
+    if (!fields.length) {
+        return callback(new Error('No arguments provided to "exists" validation function'));
+    }
+    const requestOptions = fields.map(field => {
+        return { key: [ `${field}:${doc[field]}` ] };
+    });
+    if (options.additionalFilter) {
+        requestOptions.push({ key: [ options.additionalFilter ] });
+    }
+    async.map(requestOptions, _executeExistsRequest, (err, responses) => {
+        if (err) {
+            return callback(err);
+        }
+        const ids = _getIntersection(responses)
+            .filter(id => id !== doc._id);
+        if (!ids.length) {
+            return callback(null, false);
+        }
+        db.medic.fetch({ keys: ids }, (err, result) => {
             if (err) {
                 return callback(err);
             }
-            var found = _.some(result.rows, function(row) {
-                return row.id !== doc._id &&
-                       row.doc &&
-                       row.doc.errors &&
-                       row.doc.errors.length === 0;
+            // filter out docs with errors
+            const rows = result.rows.filter(row => {
+                return (!row.doc.errors || row.doc.errors.length === 0);
             });
-            return callback(null, found);
-        }
-    );
+            if (!rows.length) {
+                return callback(null, false);
+            }
+            if (!options.startDate) {
+                return callback(null, true);
+            }
+            // the views all respond with the reported_date as the value
+            // and in ascending order so check the last value in the intersection
+            const latestReportedDate = rows[rows.length - 1].doc.reported_date;
+            callback(null, latestReportedDate >= options.startDate);
+        });
+    });
 };
 
 var _formatParam = function(name, value) {
@@ -87,41 +127,34 @@ module.exports = {
          * Check if fields on a doc are unique in the db, return true if unique
          * false otherwise.
          */
-        unique: function(doc, validation, callback) {
-            var conjunctions = _.map(validation.funcArgs, function(field) {
-                return _formatParam(field, doc[field]);
-            });
-            _exists(doc, conjunctions.join(' AND '), function(err, result) {
+        unique: (doc, validation, callback) => {
+            _exists(doc, validation.funcArgs, null, (err, result) => {
+                if (err) {
+                    logger.error('Error running "unique" validation', err);
+                }
                 callback(err, !result);
             });
         },
-        uniqueWithin: function(doc, validation, callback) {
-            var fields = _.clone(validation.funcArgs);
-            var duration = _parseDuration(fields.pop());
-            var conjunctions = _.map(fields, function(field) {
-                return _formatParam(field, doc[field]);
-            });
-            // lucene date range query bug
-            // fails: "yyyy-MM-dd'T'HH:mm:ss.SSSZ"
-            // works: "yyyy-MM-dd'T'HH:mm:ss.SSS"
-            var start = moment().subtract(duration).toISOString().replace(/Z$/,'');
-            var endOfTime = '3000-01-01T00:00:00';
-            conjunctions.push(
-                'reported_date<date>:[' +  start + ' TO ' + endOfTime + ']'
-            );
-            _exists(doc, conjunctions.join(' AND '), function(err, result) {
+        uniqueWithin: (doc, validation, callback) => {
+            const fields = _.clone(validation.funcArgs);
+            const duration = _parseDuration(fields.pop());
+            const startDate = moment().subtract(duration).valueOf();
+            _exists(doc, fields, { startDate: startDate }, (err, result) => {
+                if (err) {
+                    logger.error('Error running "uniqueWithin" validation', err);
+                }
                 callback(err, !result);
             });
         },
-        exists: function(doc, validation, callback) {
-            var formName = validation.funcArgs[0];
-            var fieldName = validation.funcArgs[1];
-            var fieldValue = doc[validation.field];
-            var conjunctions = [
-                _formatParam('form', formName),
-                _formatParam(fieldName, fieldValue)
-            ];
-            _exists(doc, conjunctions.join(' AND '), callback);
+        exists: (doc, validation, callback) => {
+            const formName = validation.funcArgs[0];
+            const fieldName = validation.funcArgs[1];
+            _exists(doc, [ fieldName ], { additionalFilter: `form:${formName}` }, (err, result) => {
+                if (err) {
+                    logger.error('Error running "exists" validation', err);
+                }
+                callback(err, result);
+            });
         }
     },
     /**

@@ -50,9 +50,8 @@ exports['validate handles pupil regex'] = function(test) {
 };
 
 exports['pass unique validation when no doc found'] = function(test) {
-    test.expect(2);
-    // simulate view results with doc attribute
-    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+    test.expect(5);
+    var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
         rows: []
     });
     var validations = [{
@@ -64,22 +63,21 @@ exports['pass unique validation when no doc found'] = function(test) {
         patient_id: '111'
     };
     validation.validate(doc, validations, function(errors) {
-        test.ok(fti.calledWith('data_records', {
-            q: 'patient_id:"111"',
-            include_docs: true
-        }));
-        test.deepEqual(errors, []);
+        test.equal(view.callCount, 1);
+        test.equal(view.args[0][0], 'medic-client');
+        test.equal(view.args[0][1], 'reports_by_freetext');
+        test.deepEqual(view.args[0][2], { key: ['patient_id:111'] });
+        test.equal(errors.length, 0);
         test.done();
     });
 };
 
 exports['pass unique validation when doc is the same'] = function(test) {
-    test.expect(2);
-    // simulate view results with doc attribute
-    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+    test.expect(5);
+    var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
         rows: [{
             id: 'same',
-            doc: { errors: [] }
+            doc: { _id: 'same', errors: [] }
         }]
     });
     var validations = [{
@@ -91,22 +89,24 @@ exports['pass unique validation when doc is the same'] = function(test) {
         patient_id: '111'
     };
     validation.validate(doc, validations, function(errors) {
-        test.ok(fti.calledWith('data_records', {
-            q: 'patient_id:"111"',
-            include_docs: true
-        }));
-        test.deepEqual(errors, []);
+        test.equal(view.callCount, 1);
+        test.equal(view.args[0][0], 'medic-client');
+        test.equal(view.args[0][1], 'reports_by_freetext');
+        test.deepEqual(view.args[0][2], { key: ['patient_id:111'] });
+        test.equal(errors.length, 0);
         test.done();
     });
 };
 
 exports['pass unique validation when doc has errors'] = function(test) {
-    test.expect(2);
-    // simulate view results with doc attribute
-    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+    test.expect(7);
+    var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+        rows: [{ id: 'different' }]
+    });
+    var fetch = sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {
         rows: [{
             id: 'different',
-            doc: { errors: [{foo: 'bar'}] }
+            doc: { errors: [{ foo: 'bar' }] }
         }]
     });
     var validations = [{
@@ -118,22 +118,26 @@ exports['pass unique validation when doc has errors'] = function(test) {
         patient_id: '111'
     };
     validation.validate(doc, validations, function(errors) {
-        test.ok(fti.calledWith('data_records', {
-            q: 'patient_id:"111"',
-            include_docs: true
-        }));
-        test.deepEqual(errors, []);
+        test.equal(view.callCount, 1);
+        test.equal(view.args[0][0], 'medic-client');
+        test.equal(view.args[0][1], 'reports_by_freetext');
+        test.deepEqual(view.args[0][2], { key: ['patient_id:111'] });
+        test.equal(fetch.callCount, 1);
+        test.deepEqual(fetch.args[0][0], { keys: [ 'different' ] });
+        test.equal(errors.length, 0);
         test.done();
     });
 };
 
 exports['fail unique validation on doc with no errors'] = function(test) {
-    test.expect(2);
-    // simulate view results with doc attribute
-    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+    test.expect(1);
+    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+        rows: [{ id: 'different' }]
+    });
+    sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {
         rows: [{
             id: 'different',
-            doc: { errors: [] }
+            doc: { _id: 'different', errors: [] }
         }]
     });
     var validations = [{
@@ -149,10 +153,6 @@ exports['fail unique validation on doc with no errors'] = function(test) {
         xyz: '444'
     };
     validation.validate(doc, validations, function(errors) {
-        test.ok(fti.calledWith('data_records', {
-            q: 'xyz:"444"',
-            include_docs: true
-        }));
         test.deepEqual(errors, [{
             code: 'invalid_xyz_unique',
             message: 'Duplicate: {{xyz}}.'
@@ -162,12 +162,14 @@ exports['fail unique validation on doc with no errors'] = function(test) {
 };
 
 exports['fail multiple field unique validation on doc with no errors'] = function(test) {
-    test.expect(2);
-    // simulate view results with doc attribute
-    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+    test.expect(10);
+    var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+        rows: [{ id: 'different' }]
+    });
+    var fetch = sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {
         rows: [{
             id: 'different',
-            doc: { errors: [] }
+            doc: { _id: 'different', errors: [] }
         }]
     });
     var validations = [{
@@ -184,10 +186,15 @@ exports['fail multiple field unique validation on doc with no errors'] = functio
         abc: 'cheese'
     };
     validation.validate(doc, validations, function(errors) {
-        test.ok(fti.calledWith('data_records', {
-            q: 'xyz:"444" AND abc:"cheese"',
-            include_docs: true
-        }));
+        test.equal(view.callCount, 2);
+        test.equal(view.args[0][0], 'medic-client');
+        test.equal(view.args[0][1], 'reports_by_freetext');
+        test.deepEqual(view.args[0][2], { key: ['xyz:444'] });
+        test.equal(view.args[1][0], 'medic-client');
+        test.equal(view.args[1][1], 'reports_by_freetext');
+        test.deepEqual(view.args[1][2], { key: ['abc:cheese'] });
+        test.equal(fetch.callCount, 1);
+        test.deepEqual(fetch.args[0][0], { keys: [ 'different' ] });
         test.deepEqual(errors, [{
             code: 'invalid_xyz_unique',
             message: 'Duplicate xyz {{xyz}} and abc {{abc}}.'
@@ -197,13 +204,19 @@ exports['fail multiple field unique validation on doc with no errors'] = functio
 };
 
 exports['pass uniqueWithin validation on old doc'] = function(test) {
-    test.expect(2);
+    test.expect(1);
     clock = sinon.useFakeTimers();
-    // simulate view results with doc attribute
-    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+        rows: [{ id: 'different' }]
+    });
+    sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {
         rows: [{
             id: 'different',
-            doc: { errors: [] }
+            doc: {
+                _id: 'different',
+                errors: [],
+                reported_date: moment().subtract(3, 'weeks').valueOf()
+            }
         }]
     });
     var validations = [{
@@ -219,12 +232,40 @@ exports['pass uniqueWithin validation on old doc'] = function(test) {
         xyz: '444'
     };
     validation.validate(doc, validations, function(errors) {
-        var start = moment().subtract(2, 'weeks').toISOString().replace(/Z$/,'');
-        test.ok(fti.calledWith('data_records', {
-            q: 'xyz:"444" AND reported_date<date>:[' + start + ' TO 3000-01-01T00:00:00]',
-            include_docs: true
-        }));
+        test.equal(errors.length, 0);
+        test.done();
+    });
+};
 
+exports['fail uniqueWithin validation on new doc'] = function(test) {
+    test.expect(1);
+    clock = sinon.useFakeTimers();
+    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+        rows: [{ id: 'different' }]
+    });
+    sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {
+        rows: [{
+            id: 'different',
+            doc: {
+                _id: 'different',
+                errors: [],
+                reported_date: moment().subtract(1, 'weeks').valueOf()
+            }
+        }]
+    });
+    var validations = [{
+        property: 'xyz',
+        rule: 'uniqueWithin("xyz","2 weeks")',
+        message: [{
+            content: 'Duplicate xyz {{xyz}}.',
+            locale: 'en'
+        }]
+    }];
+    var doc = {
+        _id: 'same',
+        xyz: '444'
+    };
+    validation.validate(doc, validations, function(errors) {
         test.deepEqual(errors, [{
             code: 'invalid_xyz_uniqueWithin',
             message: 'Duplicate xyz {{xyz}}.'
@@ -271,12 +312,14 @@ exports['formatParam use <int> query on integers'] = function(test) {
 };
 
 exports['pass exists validation when matching document'] = function(test) {
-    test.expect(2);
-    // simulate view results with doc attribute
-    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+    test.expect(8);
+    var view = sinon.stub(db.medic, 'view').callsArgWith(3, null, {
+        rows: [{ id: 'different' }]
+    });
+    sinon.stub(db.medic, 'fetch').callsArgWith(1, null, {
         rows: [{
             id: 'different',
-            doc: { errors: [] }
+            doc: { _id: 'different', errors: [] }
         }]
     });
     var validations = [{
@@ -289,24 +332,24 @@ exports['pass exists validation when matching document'] = function(test) {
     }];
     var doc = {
         _id: 'same',
-        parent_id: '444'
+        patient_id: '444'
     };
     validation.validate(doc, validations, function(errors) {
-        test.ok(fti.calledWith('data_records', {
-            q: 'form:"REGISTRATION" AND patient_id:"444"',
-            include_docs: true
-        }));
-
+        test.equal(view.callCount, 2);
+        test.equal(view.args[0][0], 'medic-client');
+        test.equal(view.args[0][1], 'reports_by_freetext');
+        test.deepEqual(view.args[0][2], { key: ['patient_id:444'] });
+        test.equal(view.args[1][0], 'medic-client');
+        test.equal(view.args[1][1], 'reports_by_freetext');
+        test.deepEqual(view.args[1][2], { key: ['form:REGISTRATION'] });
         test.deepEqual(errors, []);
         test.done();
-
     });
 };
 
 exports['fail exists validation when no matching document'] = function(test) {
-    test.expect(2);
-    // simulate view results with doc attribute
-    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+    test.expect(1);
+    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
         rows: []
     });
     var validations = [{
@@ -322,27 +365,20 @@ exports['fail exists validation when no matching document'] = function(test) {
         parent_id: '444'
     };
     validation.validate(doc, validations, function(errors) {
-        test.ok(fti.calledWith('data_records', {
-            q: 'form:"REGISTRATION" AND patient_id:"444"',
-            include_docs: true
-        }));
-
         test.deepEqual(errors, [{
             code: 'invalid_parent_id_exists',
             message: 'Unknown patient {{parent_id}}.'
         }]);
         test.done();
-
     });
 };
 
 exports['fail exists validation when matching document is same as this'] = function(test) {
-    test.expect(2);
-    // simulate view results with doc attribute
-    var fti = sinon.stub(db, 'fti').callsArgWithAsync(2, null, {
+    test.expect(1);
+    sinon.stub(db.medic, 'view').callsArgWith(3, null, {
         rows: [{
             id: 'same',
-            doc: { errors: [] }
+            doc: { _id: 'same', errors: [] }
         }]
     });
     var validations = [{
@@ -358,16 +394,10 @@ exports['fail exists validation when matching document is same as this'] = funct
         parent_id: '444'
     };
     validation.validate(doc, validations, function(errors) {
-        test.ok(fti.calledWith('data_records', {
-            q: 'form:"REGISTRATION" AND patient_id:"444"',
-            include_docs: true
-        }));
-
         test.deepEqual(errors, [{
             code: 'invalid_parent_id_exists',
             message: 'Unknown patient {{parent_id}}.'
         }]);
         test.done();
-
     });
 };
