@@ -140,6 +140,7 @@ describe('Contact summary info', () => {
     browser.wait(() => {
       return element(by.css('#contacts-list .filtered .content')).isPresent();
     }, 10000);
+    helper.waitElementToBeClickable(element(by.css('#contacts-list .filtered .content')));
     helper.clickElement(element(by.css('#contacts-list .filtered .content')));
     browser.wait(() => {
       return element(by.css('#contacts-list')).isPresent();
