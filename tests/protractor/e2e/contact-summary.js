@@ -51,7 +51,7 @@ describe('Contact summary info', () => {
     };
   `;
 
-  // contacts.
+  // contacts
   const ALICE = {
     _id: 'alice-contact',
     reported_date: 1,
