@@ -152,14 +152,14 @@ describe('Contact summary info', () => {
     browser.wait(() => {
       return element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')).isPresent();
     }, 10000);
-    expect(helper.getTextFromElement(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label'))).toBe('test.pid');
-    expect(helper.getTextFromElement(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) p'))).toBe(CAROL.patient_id);
-    expect(helper.getTextFromElement(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) label'))).toBe('test.sex');
-    expect(helper.getTextFromElement(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) p'))).toBe(CAROL.sex);
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')))).toBe('test.pid');
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) p')))).toBe(CAROL.patient_id);
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) label')))).toBe('test.sex');
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) p')))).toBe(CAROL.sex);
 
     // assert that the pregnancy card exists and has the right fields.
-    expect(helper.getTextFromElement(by.css('.content-pane .meta > div > .card .action-header h3'))).toBe('test.pregnancy');
-    expect(helper.getTextFromElement(by.css('.content-pane .meta > div > .card .row label'))).toBe('test.visits');
-    expect(helper.getTextFromElement(by.css('.content-pane .meta > div > .card .row p'))).toBe('1');
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > div > .card .action-header h3'))).toBe('test.pregnancy'));
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > div > .card .row label'))).toBe('test.visits'));
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > div > .card .row p')))).toBe('1');
   });
 });
