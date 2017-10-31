@@ -23,7 +23,7 @@ module.exports = {
   goToPeople: () => {
     browser.get(utils.getBaseUrl() + 'contacts/');
     helper.waitUntilReady(medicLogo);
-    helper.waitUntilReady(element(by.id('contacts-list')));
+    helper.waitElementToBeVisible(element(by.id('contacts-list')));
   },
 
   goToReports: () => {
