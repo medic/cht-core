@@ -84,7 +84,7 @@ describe('Contact summary info', () => {
     parent: BOB_PLACE
   };
 
-  // reports.
+  // reports
   const PREGNANCY = {
     form: 'P',
     type: 'data_record',
