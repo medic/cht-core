@@ -85,13 +85,33 @@ module.exports = function(grunt) {
         }
       }
     },
+    env: {
+      test: {
+        options: {
+          add: {
+            UNIT_TEST_ENV: '1'
+          }
+        }
+      },
+      dev: {
+        options: {
+          replace: {
+            UNIT_TEST_ENV: ''
+          }
+        }
+      }
+    },
     jshint: {
       options: {
         jshintrc: true,
         reporter: require('jshint-stylish'),
         ignores: [
           'static/js/modules/xpath-element-path.js',
-          'tests/karma/q.js'
+          'tests/karma/q.js',
+          'node_modules/**',
+          'api/node_modules/**',
+          'sentinel/node_modules/**',
+          'sentinel/lib/pupil/**',
         ]
       },
       all: [
@@ -99,7 +119,9 @@ module.exports = function(grunt) {
         'static/js/**/*.js',
         'tests/**/*.js',
         'ddocs/**/*.js',
-        'lib/**/*.js'
+        'lib/**/*.js',
+        'api/**/*.js',
+        'sentinel/**/*.js',
       ]
     },
     less: {
@@ -209,15 +231,16 @@ module.exports = function(grunt) {
       bundlesize: {
         cmd: 'node ./node_modules/bundlesize/index.js'
       },
-      test_api_integration_setup: {
+      setup_api_integration: {
         cmd: 'cd api && npm install',
       },
-      test_api_integration: {
-        cmd: 'cd api && grunt test_integration',
+      setup_api_e2e: {
+        cmd: 'node api/server.js & sleep 20 && ./api/scripts/e2e/setup_fixtures',
       },
-      test_api_e2e: {
-        cmd: 'cd api && node server.js & sleep 20 && cd api && ./scripts/e2e/setup_fixtures && grunt test_e2e',
-      },
+      check_env_vars:
+        'if [ -z $COUCH_URL ] || [ -z $API_URL ] || [ -z $COUCH_NODE_NAME ]; then ' +
+            'echo "Missing required env var.  Check that all are set: ' +
+            'COUCH_URL, API_URL, COUCH_NODE_NAME" && exit 1; fi',
       undopatches: {
         cmd: function() {
           var modulesToPatch = [
@@ -340,11 +363,38 @@ module.exports = function(grunt) {
       }
     },
     nodeunit: {
-      all: ['tests/nodeunit/unit/**/*.js', '!tests/nodeunit/unit/*/utils.js']
+      all: [
+        'tests/nodeunit/unit/**/*.js',
+        '!tests/nodeunit/unit/*/utils.js',
+        'api/tests/unit/**/*.js',
+        '!api/tests/unit/utils.js',
+        '!api/tests/unit/integration/**/*.js',
+        '!api/tests/unit/e2e/**/*.js',
+        'sentinel/test/unit/**/*.js',
+        'sentinel/test/functional/**/*.js'
+      ]
     },
     mochaTest: {
       unit: {
-        src: [ 'tests/mocha/unit/**/*.spec.js' ],
+        src: [
+          'tests/mocha/unit/**/*.spec.js',
+          'sentinel/test/mocha/**/*.js'
+        ],
+      },
+      api_integration: {
+        src: [ 'api/tests/integration/**/*.js' ],
+        options: {
+          timeout: 10000
+        }
+      },
+      api_e2e: {
+        src: [
+          'api/tests/e2e/*.spec.js',
+          'api/tests/e2e/**/*.js',
+        ],
+        options: {
+          timeout: 20000,
+        },
       },
     },
     ngtemplates: {
@@ -484,9 +534,11 @@ module.exports = function(grunt) {
     'protractor:default'
   ]);
 
-  grunt.registerTask('api_e2e', 'Deploy app for testing and run e2e tests', [
+  grunt.registerTask('api_e2e', 'Deploy app for testing and run api e2e tests', [
+    'exec:check_env_vars',
     'exec:deploytest',
-    'exec:test_api_e2e',
+    'exec:setup_api_e2e',
+    'mochaTest:api_e2e'
   ]);
 
   grunt.registerTask('unit_continuous', 'Lint, karma unit tests running on a loop', [
@@ -495,15 +547,18 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('test_api_integration', 'Integration tests for medic-api', [
-    'exec:test_api_integration_setup',
-    'exec:test_api_integration',
+    'exec:check_env_vars',
+    'exec:setup_api_integration',
+    'mochaTest:api_integration'
   ]);
 
   grunt.registerTask('unit', 'Lint and unit tests', [
     'jshint',
     'karma:unit',
+    'env:test',
     'nodeunit',
     'mochaTest:unit',
+    'env:dev',
   ]);
 
   grunt.registerTask('test', 'Lint, unit tests, api_integration tests and e2e tests', [
@@ -525,9 +580,12 @@ module.exports = function(grunt) {
     'build',
     'minify',
     'karma:unit_ci',
+    'env:test',
     'nodeunit',
     'mochaTest:unit',
+    'env:dev',
   ]);
+
   grunt.registerTask('ci_after', '', [
     'exec:deploy',
     'test_api_integration',

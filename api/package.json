@@ -1,0 +1,39 @@
+{
+  "name": "medic-api",
+  "description": "Provides a server side API.",
+  "private": true,
+  "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/medic/medic-api.git"
+  },
+  "dependencies": {
+    "async": "^2.5.0",
+    "body-parser": "^1.18.2",
+    "couchdb-audit": "^1.1.1",
+    "express": "^4.16.2",
+    "fast-csv": "^2.4.1",
+    "follow": "^1.0.0",
+    "http-proxy": "^1.11.1",
+    "jszip": "^3.1.4",
+    "lucene-query-generator": "^0.2.0",
+    "moment": "^2.19.1",
+    "morgan": "^1.9.0",
+    "nano": "^6.4.2",
+    "object-path": "^0.11.1",
+    "openrosa-formlist": "github:medic/openrosa-formlist#sax",
+    "pass-stream": "^1.0.0",
+    "pouchdb-adapter-http": "^6.3.4",
+    "pouchdb-core": "^6.3.4",
+    "properties": "^1.2.1",
+    "request": "^2.83.0",
+    "simple-password-tester": "^1.0.0",
+    "underscore": "^1.8.3",
+    "url": "^0.11.0",
+    "uuid": "^3.1.0",
+    "xmlbuilder": "^9.0.4"
+  },
+  "devDependencies": {
+    "request-promise-native": "^1.0.5"
+  }
+}

@@ -1,0 +1,9 @@
+#!/bin/bash -eu
+export COUCH_URL=http://admin:pass@localhost:5984/medic-e2e-temp
+
+grunt jshint
+curl -X DELETE "$COUCH_URL"
+curl -X PUT "$COUCH_URL"
+
+scripts/copy_ddoc http://admin:pass@localhost:5984 medic medic-e2e-temp
+node server.js
