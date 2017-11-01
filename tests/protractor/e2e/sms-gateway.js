@@ -300,7 +300,7 @@ describe('sms-gateway api', () => {
       }, 10000);
 
       browser.sleep(100); // without this the elements are found to be detached...
-      // tasks
+      // tasks.
       // State for messageId1 has been updated from pending to forwarded-to-gateway.
       helper.waitUntilReady(element(by.css('#reports-content .details > ul .task-list .task-state .state')));
       expect(helper.getTextFromElement('#reports-content .details > ul .task-list .task-state .state')).toBe('forwarded to gateway');
