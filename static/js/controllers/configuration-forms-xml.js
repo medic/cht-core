@@ -51,8 +51,8 @@ angular.module('inboxControllers').controller('ConfigurationFormsXmlCtrl',
       }
 
       $q.all([
-        FileReader(formFiles[0]),
-        FileReader(metaFiles[0]).then(JsonParse)
+        FileReader.utf8(formFiles[0]),
+        FileReader.utf8(metaFiles[0]).then(JsonParse)
       ])
         .then(function(results) {
           var xml = results[0];

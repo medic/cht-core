@@ -68,7 +68,7 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
       }
       // check new style attached form content
       return DB().getAttachment(doc._id, Enketo.REPORT_ATTACHMENT_NAME)
-        .then(FileReader);
+        .then(FileReader.utf8);
     };
 
     var markFormEdited = function() {
@@ -88,6 +88,29 @@ angular.module('inboxControllers').controller('ReportsAddCtrl',
             .then(function(form) {
               $scope.form = form;
               $scope.loadingContent = false;
+            })
+            .then(function() {
+              if (!model.doc || !model.doc._id) {
+                return;
+              }
+              return $q.all($('#report-form input[type=file]')
+                .map(function() {
+                  var $this = $(this);
+                  var attachmentName = 'user-file' + $this.attr('name');
+
+                  return DB().getAttachment(model.doc._id, attachmentName)
+                    .then(FileReader.base64)
+                    .then(function(base64) {
+                      var $picker = $this.closest('.question')
+                        .find('.widget.file-picker');
+
+                      $picker.find('.file-feedback').empty();
+
+                      var $preview = $picker.find('.file-preview');
+                      $preview.empty();
+                      $preview.append('<img src="data:' + base64 + '">');
+                    });
+                }));
             })
             .catch(function(err) {
               $scope.loadingContent = false;

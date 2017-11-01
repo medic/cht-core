@@ -58,7 +58,7 @@ angular.module('inboxControllers').controller('ConfigurationFormsJsonCtrl',
         uploadFinished(new Error('File not found'));
       }
       var settings = { forms: {} };
-      FileReader(files[0])
+      FileReader.utf8(files[0])
         .then(JsonParse)
         .then(function(json) {
           json.forEach(function(form) {

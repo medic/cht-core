@@ -35,7 +35,7 @@ angular.module('inboxControllers').controller('ConfigurationExportContactsCtrl',
       }
       $scope.error = false;
       $scope.importing = true;
-      FileReader(file)
+      FileReader.utf8(file)
         .then(JsonParse)
         .then(function(contacts) {
           return ImportContacts(contacts, $scope.overwrite);
