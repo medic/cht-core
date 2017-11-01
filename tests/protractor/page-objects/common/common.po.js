@@ -9,7 +9,7 @@ const helper = require('../../helper'),
 
 module.exports = {
   goToMessages: () => {
-    browser.sleep(500);//wait for browser to settle
+    browser.sleep(500);//wait for browser to settle.
     browser.get(utils.getBaseUrl() + 'messages/');
     helper.waitUntilReady(medicLogo);
     helper.waitUntilReady(element(by.id('message-list')));
