@@ -153,7 +153,7 @@ describe('sms-gateway api', () => {
     });
 
     it('- shows content', () => {
-      element(by.id('messages-tab')).click();
+      helper.clickElement(element(by.id('messages-tab')));
 
       // LHS
       browser.wait(() => {
@@ -171,12 +171,12 @@ describe('sms-gateway api', () => {
         return element(by.css('#message-content li.incoming:first-child .data p:first-child')).isPresent();
       }, 10000);
       browser.sleep(1000); // without this the elements are found to be detached....
-      const messageHeader = helper.getTextFromElement(element(by.css('#message-header .name')));
-      const messageText = helper.getTextFromElement(element(by.css('#message-content li.incoming:first-child .data p:first-child')));
-      const messageStatus = helper.getTextFromElement(element(by.css('#message-content li.incoming:first-child .data .state.received')));
-      expect(messageHeader).toBe('+64271234567');
-      expect(messageText).toBe('hello');
-      expect(messageStatus).toBe('received');
+      expect(helper.getTextFromElement('#message-header .name'))
+        .toBe('+64271234567');
+      expect(helper.getTextFromElement('#message-content li.incoming:first-child .data p:first-child'))
+        .toBe('hello');
+      expect(helper.getTextFromElement('#message-content li.incoming:first-child .data .state.received'))
+        .toBe('received');
     });
 
   });

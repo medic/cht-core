@@ -38,18 +38,18 @@ module.exports = {
     }, 10000);
   },
 
-  getTextFromElement: element => {
-    return browser.wait(EC.presenceOf(element), 12000, 'Element taking too long to appear in the DOM.Let us retry')
+  getTextFromElement: selector => {
+    return browser.wait(EC.presenceOf(element(by.css(selector))), 12000)
       .then(() => {
-        return element.getText().then(val => {
+        return element(by.css(selector)).getText().then(val => {
           return val;
         });
       })
       .catch(() => {
         browser.sleep(1000);
-        return browser.wait(EC.visibilityOf(element), 12000, 'Element taking too long to appear in the DOM. Giving up!')
+        return browser.wait(EC.visibilityOf(element(by.css(selector))), 12000)
           .then(() => {
-          return element.getText().then(val => {
+            return element(by.css(selector)).getText().then(val => {
             return val;
           });
         });

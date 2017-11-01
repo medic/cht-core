@@ -147,9 +147,8 @@ describe('Send message', () => {
     element(by.css(liIdentifier + ' a')).click();
 
     browser.wait(() => {
-      const el = element(by.css('#message-header .name'));
-      if (helper.waitUntilReady(el)) {
-        return helper.getTextFromElement(el).then(text => {
+      if (helper.waitUntilReady(element(by.css('#message-header .name')))) {
+        return helper.getTextFromElement('#message-header .name').then(text => {
           return text === entryName;
         });
       }
@@ -157,8 +156,7 @@ describe('Send message', () => {
   };
 
   const lastMessageIs = message => {
-    const last = element.all(by.css('#message-content li div.data>p>span')).last();
-    expect(helper.getTextFromElement(last)).toBe(message);
+    expect((element.all(by.css('#message-content li div.data>p>span')).last()).getText()).toBe(message);
   };
 
   const contactNameSelector = ' .sender .name';
