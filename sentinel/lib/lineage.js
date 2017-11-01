@@ -79,12 +79,14 @@ const fetchHydratedDoc = id =>
   lineageById(id).then(lineage => {
     if (lineage.length === 0) {
       // Not a doc that has lineage, just do a normal fetch.
-      return db.medic.get(id, (err, doc) => {
-        if (err) {
-          return Promise.reject(err);
-        }
-        return doc;
-      });
+      return new Promise((resolve, reject) =>
+          db.medic.get(id, (err, doc) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(doc);
+            }
+          }));
     }
 
     const patientId = findPatientId(lineage[0]);

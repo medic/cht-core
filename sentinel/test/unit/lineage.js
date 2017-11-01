@@ -176,6 +176,16 @@ exports['fetchHydratedDoc handles no lineage and no contact'] = test => {
   });
 };
 
+exports['fetchHydratedDoc handles non-lineage types with empty lineages'] = test => {
+  const expected = {_id: 'blah-info'};
+  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [] });
+  sinon.stub(db.medic, 'get').callsArgWith(1, null, expected);
+  lineage.fetchHydratedDoc(expected._id).then(actual => {
+    test.deepEqual(actual, expected);
+    test.done();
+  });
+};
+
 exports['fetchHydratedDoc handles doc with deleted parent'] = test => {
   const docId = 'abc';
   sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [ { doc: { _id: 'abc', contact: { _id: 'def' } } }, { doc: null } ] });
