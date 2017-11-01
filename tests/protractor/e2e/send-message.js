@@ -176,6 +176,7 @@ describe('Send message', () => {
       element(by.css('#send-message textarea')).sendKeys(smsMsg('raw'));
       sendMessage();
       clickLhsEntry(RAW_PH);
+      browser.sleep(1000); //wait page to reload
 
       expect(element.all(by.css('#message-content li')).count()).toBe(1);
       lastMessageIs(smsMsg('raw'));
