@@ -161,6 +161,7 @@ describe('sms-gateway api', () => {
       }, 10000);
       browser.sleep(1000); // without this the elements are found to be detached...
       helper.waitElementToBeVisible(element(by.css('#message-list li:first-child')));
+      helper.waitElementToBeVisible(element(by.css('.detail')));
       expect(helper.getTextFromElement(element(by.css('#message-list li:first-child .heading h4')))).toBe('+64271234567');
       expect(helper.getTextFromElement(element(by.css('#message-list li:first-child .summary p')))).toBe('hello');
 
