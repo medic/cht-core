@@ -80,9 +80,9 @@ const parseParams = params => {
 const booleanExpressionFails = (doc, expr) => {
   let result = false;
 
-  if (utils.isValidBooleanExpression(expr)) {
+  if (utils.isNonEmptyString(expr)) {
     try {
-      result = !utils.evalExpression({doc: doc}, expr);
+      result = !utils.evalExpression(expr, {doc: doc});
     } catch (err) {
       // TODO should this count as a fail or as a real error
       logger.warn('Failed to eval boolean expression:');
@@ -99,8 +99,8 @@ const booleanExpressionFails = (doc, expr) => {
 const messageRelevant = (msg, doc) => {
     if (!msg.event_type || msg.event_type === 'report_accepted') {
         const expr = msg.bool_expr;
-        if (utils.isValidBooleanExpression(expr)) {
-            return utils.evalExpression({doc: doc}, expr);
+        if (utils.isNonEmptyString(expr)) {
+            return utils.evalExpression(expr, {doc: doc});
         } else {
             return true;
         }

@@ -531,9 +531,9 @@ module.exports = {
   getPatientContact: (db, patientShortcodeId, callback) => {
     getPatient(db, patientShortcodeId, true, callback);
   },
-  isValidBooleanExpression: expr =>
+  isNonEmptyString: expr =>
     typeof expr === 'string' && expr.trim() !== '',
-  evalExpression: (context, expr) =>
+  evalExpression: (expr, context) =>
     vm.runInNewContext(expr, context),
   _isMessageFromGateway: _isMessageFromGateway
 };

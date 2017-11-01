@@ -2,6 +2,10 @@ const _ = require('underscore'),
     db = require('../db'),
     utils = require('./utils');
 
+const findPatientId = doc =>
+  doc.type === 'data_record' &&
+  ((doc.fields && doc.fields.patient_id) || doc.patient_id);
+
 const fillContactsInDocs = (docs, contacts) => {
   if (!contacts || !contacts.length) {
     return docs;
@@ -48,51 +52,53 @@ const minifyContact = contact => {
   return result;
 };
 
-// TODO: optimise this so we don't have to recurse here
-//       Intergrate this tigher into fetchHydratedDoc (if we want to keep this)
-//       so we call docs_by_lineage twice, and then combine our contact fetch
-//       calls. This saves us one fetch call, and probably quite a few duplicate
-//       documents pulled. (It is probable that the contact hierarchy of the
-//       patient is the same or similar to the contact)
-const attachPatient = doc =>
-  new Promise((resolve, reject) => {
-    utils.getPatientContactUuid(db, doc.fields.patient_id, function(err, uuid) {
-      if (err) {
-        reject(err);
-      } else {
-        fetchHydratedDoc(uuid).then(hydratedPatientDoc => {
-          doc.patient = hydratedPatientDoc;
-          resolve(doc);
-        });
-      }
-    });
-  });
+const patientLineageByShortcode = shortcode =>
+  new Promise((resolve, reject) => utils.getPatientContactUuid(db, shortcode, (err, uuid) => {
+    if (err) {
+      reject(err);
+    } else {
+      lineageById(uuid).then(resolve);
+    }
+  }));
 
-const fetchHydratedDoc = id => {
-  return new Promise((resolve, reject) => {
+const lineageById = id =>
+  new Promise((resolve, reject) =>
     db.medic.view('medic-client', 'docs_by_id_lineage', {
       startkey: [ id ],
       endkey: [ id, {} ],
       include_docs: true
     }, (err, result) => {
       if (err) {
-        return reject(err);
+        reject(err);
+      } else {
+        resolve(result.rows.map(row => row.doc));
       }
-      const lineage = result.rows.map(row => row.doc);
+    }));
 
-      if (lineage.length === 0) {
-        // Not a doc that has lineage, just do a normal fetch.
-        return db.medic.get(id, (err, doc) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve(doc);
-        });
-      }
+const fetchHydratedDoc = id =>
+  lineageById(id).then(lineage => {
+    if (lineage.length === 0) {
+      // Not a doc that has lineage, just do a normal fetch.
+      return db.medic.get(id, (err, doc) => {
+        if (err) {
+          return Promise.reject(err);
+        }
+        return doc;
+      });
+    }
 
-      const contactIds = _.uniq(lineage
-        .map(doc => doc && doc.contact && doc.contact._id)
-        .filter(id => !!id));
+    const patientId = findPatientId(lineage[0]);
+    const patientLineagePromise =
+      patientId ? patientLineageByShortcode(patientId) : Promise.resolve([]);
+
+    return patientLineagePromise.then(patientLineage => {
+      const lineages = lineage.concat(patientLineage);
+
+      const contactIds = _.uniq(
+        lineages
+          .map(doc => doc && doc.contact && doc.contact._id)
+          .filter(id => !!id)
+      );
 
       // Only fetch docs that are new to us
       const lineageContacts = [],
@@ -106,23 +112,24 @@ const fetchHydratedDoc = id => {
         }
       });
 
-      return resolve(fetchDocs(contactsToFetch)
+      return fetchDocs(contactsToFetch)
         .then(fetchedContacts => {
           const allContacts = lineageContacts.concat(fetchedContacts);
-          fillContactsInDocs(lineage, allContacts);
+          fillContactsInDocs(lineages, allContacts);
+
           const doc = lineage.shift();
           buildHydratedDoc(doc, lineage);
 
-          // Also attach the patient if we should
-          if (doc.type === 'data_record' && doc.fields && doc.fields.patient_id) {
-            return attachPatient(doc);
-          } else {
-            return doc;
+          if (patientLineage.length) {
+            const patientDoc = patientLineage.shift();
+            buildHydratedDoc(patientDoc, patientLineage);
+            doc.patient = patientDoc;
           }
-        }));
+
+          return doc;
+        });
     });
   });
-};
 
 // for data_records, include the first-level contact.
 const collectParentIds = docs => {
@@ -257,7 +264,8 @@ module.exports = {
    * @param docs The array of docs to hydrate
    * @returns Promise
    */
-   //TODO @gareth should I add patients to this?
+   // TODO: add patient hydration support for consistency
+   //       https://github.com/medic/medic-webapp/issues/4003
   hydrateDocs: hydrateDocs,
 
   /**

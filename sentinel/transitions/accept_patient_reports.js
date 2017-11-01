@@ -129,8 +129,8 @@ const addErrorsToDoc = (errors, doc, config) => {
 const messageRelevant = (msg, doc) => {
     if (msg.event_type === 'report_accepted') {
         const expr = msg.bool_expr;
-        if (utils.isValidBooleanExpression(expr)) {
-            return utils.evalExpression({doc: doc}, expr);
+        if (utils.isNonEmptyString(expr)) {
+            return utils.evalExpression(expr, {doc: doc});
         } else {
             return true;
         }

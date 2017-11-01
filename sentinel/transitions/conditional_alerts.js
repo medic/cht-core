@@ -8,7 +8,7 @@ var config = require('../config'),
 
 const runCondition = (condition, context, callback) => {
     try {
-        callback(null, utils.evalExpression(context, condition));
+        callback(null, utils.evalExpression(condition, context));
     } catch(e) {
         callback(e.message);
     }

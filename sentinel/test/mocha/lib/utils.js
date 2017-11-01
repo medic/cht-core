@@ -57,24 +57,24 @@ describe('utils util', () => {
 
     utils.getDistrictPhone(doc).should.equal(phone);
   });
-  it('isValidBooleanExpression, a valid expression is a non-empty string', () => {
-    utils.isValidBooleanExpression().should.equal(false);
-    utils.isValidBooleanExpression('').should.equal(false);
-    utils.isValidBooleanExpression(123).should.equal(false);
-    utils.isValidBooleanExpression(['hello']).should.equal(false);
-    utils.isValidBooleanExpression('foo.bar').should.equal(true);
+  it('isNonEmptyString works', () => {
+    utils.isNonEmptyString().should.equal(false);
+    utils.isNonEmptyString('').should.equal(false);
+    utils.isNonEmptyString(123).should.equal(false);
+    utils.isNonEmptyString(['hello']).should.equal(false);
+    utils.isNonEmptyString('foo.bar').should.equal(true);
   });
   describe('evalExpression', () => {
     it('evals a given expression', () => {
-      utils.evalExpression({}, '(1+2+3) !== 24').should.equal(true);
-      utils.evalExpression({}, '(1+2+3) === 24').should.equal(false);
+      utils.evalExpression('(1+2+3) !== 24', {}).should.equal(true);
+      utils.evalExpression('(1+2+3) === 24', {}).should.equal(false);
     });
     it('provides the passed context to the exprssion', () => {
-      utils.evalExpression({doc: {foo: 42, bar: 24}}, 'doc.foo + doc.bar')
+      utils.evalExpression('doc.foo + doc.bar', {doc: {foo: 42, bar: 24}})
         .should.equal(66);
     });
     it('throws an exception if the expression errors', () => {
-      should.Throw(() => utils.evalExpression({}, `doc.foo.bar.smang === 'cats'`));
+      should.Throw(() => utils.evalExpression(`doc.foo.bar.smang === 'cats'`, {}));
     });
   });
 });

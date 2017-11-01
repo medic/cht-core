@@ -279,7 +279,7 @@ exports['fetchHydratedDoc attaches the full lineage for reports'] = test => {
     // patient parents
     test.equals(actual.patient.parent.name, report_contact.name);
 
-    test.equals(fetch.callCount, 2);
+    test.equals(fetch.callCount, 1);
     test.done();
   }).catch(console.error);
 };
@@ -555,6 +555,8 @@ exports['hydrateDocs binds contacts and parents'] = test => {
     test.equals(hydratedReport.contact.parent.contact.name, report_parentContact.name);
     test.equals(hydratedReport.contact.parent.parent.name, report_grandparent.name);
     test.equals(hydratedReport.contact.parent.parent.contact.name, report_grandparentContact.name);
+    // TODO: https://github.com/medic/medic-webapp/issues/4003
+    // test.equals(hydratedReport.patient._id, report_patient._id);
 
     test.equals(hydratedPlace.contact.name, place_contact.name);
     test.equals(hydratedPlace.parent.name, place_parent.name);

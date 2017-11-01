@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     template = require('./template'),
     utils = require('./utils'),
+    objectPath = require('object-path'),
     logger = require('./logger');
 
 function extendedTemplateContext(doc, extras) {
@@ -184,7 +185,7 @@ module.exports = {
         } else if (recipient.indexOf('.') > -1) {
             // Or multiple layers by executing it as a statement
             try {
-                phone = utils.evalExpression({doc: doc}, 'doc.' + recipient);
+                phone = objectPath.get(doc, recipient);
             } catch (err) {
                 logger.error(`Recipient expression "${recipient}" failed on ${doc._id}`);
             }
