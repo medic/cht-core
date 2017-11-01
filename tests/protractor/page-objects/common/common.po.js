@@ -9,18 +9,21 @@ const helper = require('../../helper'),
 
 module.exports = {
   goToMessages: () => {
+    browser.sleep(500);//wait for browser to settle
     browser.get(utils.getBaseUrl() + 'messages/');
     helper.waitUntilReady(medicLogo);
     helper.waitUntilReady(element(by.id('message-list')));
   },
 
   goToTasks: () => {
+    browser.sleep(500);//wait for browser to settle
     browser.get(utils.getBaseUrl() + 'tasks/');
     helper.waitUntilReady(medicLogo);
     helper.waitUntilReady(element(by.id('tasks-list')));
   },
 
   goToPeople: () => {
+    browser.sleep(500);//wait for browser to settle
     browser.get(utils.getBaseUrl() + 'contacts/');
     helper.waitUntilReady(medicLogo);
     helper.waitElementToBeVisible(element(by.css('#contacts-list')));
@@ -28,6 +31,7 @@ module.exports = {
   },
 
   goToReports: () => {
+    browser.sleep(500);//wait for browser to settle
     browser.get(utils.getBaseUrl() + 'reports/');
     helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
     helper.waitElementToBeVisible(element(by.id('reports-list')));
