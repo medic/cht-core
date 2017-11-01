@@ -94,7 +94,7 @@ angular.module('inboxServices').service('Enketo',
 
     var getFormAttachment = function(id) {
       return DB().getAttachment(id, FORM_ATTACHMENT_NAME)
-        .then(FileReader);
+        .then(FileReader.utf8);
     };
 
     var getFormXml = function(form, language) {

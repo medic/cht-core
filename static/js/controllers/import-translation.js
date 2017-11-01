@@ -28,7 +28,7 @@
           return;
         }
         $scope.setProcessing();
-        FileReader(file)
+        FileReader.utf8(file)
           .then(function(result) {
             return ImportProperties(result, $scope.locale);
           })
