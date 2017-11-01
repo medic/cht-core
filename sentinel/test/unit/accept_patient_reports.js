@@ -31,36 +31,9 @@ exports['onMatch callback empty if form not included'] = function(test) {
     });
 };
 
-exports['onMatch with matching form calls getRegistrations and then getPatientContact and then getLocale'] = function(test) {
-    sinon.stub(config, 'get').returns([ { form: 'x', messages: [] }, { form: 'z' } ]);
-
-    var getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []),
-        getPatientContact = sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, { _id: 'uuid', name: 'sally' });
-
-    const getLocale = sinon.stub(utils, 'getLocale').returns('en');
-
-    transition.onMatch({
-        doc: {
-            form: 'x',
-            fields: { patient_id: 'x' }
-        }
-    }, {}, {}, function(err, complete) {
-        test.equal(complete, true);
-
-        test.equal(getRegistrations.called, true);
-        test.equal(getPatientContact.called, true);
-        test.equal(getPatientContact.callCount, 1);
-        test.equal(getPatientContact.args[0][1], 'x');
-        test.equal(getLocale.called, true);
-
-        test.done();
-    });
-};
-
 exports['onMatch with no patient id adds error msg and response'] = function(test) {
     sinon.stub(config, 'get').returns([ { form: 'x' }, { form: 'z' } ]);
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-    sinon.stub(utils, 'getPatientContact').callsArgWith(2);
 
     var doc = {
         form: 'x',
@@ -85,7 +58,6 @@ exports['onMatch with no registrations does not error'] = function(test) {
         from: '+123'
     };
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
-    sinon.stub(utils, 'getPatientContact').callsArgWithAsync(2, null, {});
 
     const config = {
         messages: [{
@@ -102,7 +74,6 @@ exports['onMatch with no registrations does not error'] = function(test) {
         null,
         null,
         doc,
-        null,
         config,
         function() {
             test.ok(!doc.errors);
@@ -112,6 +83,7 @@ exports['onMatch with no registrations does not error'] = function(test) {
 };
 
 exports['handleReport with patient adds reply'] = function(test) {
+    const patient = { patient_name: 'Archibald' };
     var doc = {
         fields: { patient_id: '559' },
         contact: {
@@ -123,10 +95,9 @@ exports['handleReport with patient adds reply'] = function(test) {
                     name: 'woot'
                 }
             }
-        }
+        },
+        patient: patient
     };
-    const patient = { patient_name: 'Archibald' };
-    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, patient);
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, []);
     const config = {
         messages: [{
@@ -142,7 +113,6 @@ exports['handleReport with patient adds reply'] = function(test) {
         null,
         null,
         doc,
-        patient,
         config,
         function() {
             test.ok(doc.tasks);
@@ -164,12 +134,10 @@ exports['adding silence_type to handleReport calls _silenceReminders'] = functio
         { id: 'c' }  // should be silenced
     ];
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, registrations);
-    sinon.stub(utils, 'getPatientContact').callsArgWithAsync(2, null, {});
     transition._handleReport(
         null,
         null,
         doc,
-        null,
         config,
         function(err, complete) {
             test.equals(complete, true);

@@ -137,7 +137,7 @@ const messageRelevant = (msg, doc) => {
     }
 };
 
-const addMessagesToDoc = (doc, config, registrations, patientContact) => {
+const addMessagesToDoc = (doc, config, registrations) => {
     const locale = utils.getLocale(doc);
     config.messages.forEach(msg => {
         if (messageRelevant(msg, doc)) {
@@ -145,14 +145,14 @@ const addMessagesToDoc = (doc, config, registrations, patientContact) => {
                 doc: doc,
                 message: messages.getMessage(msg, locale),
                 phone: messages.getRecipientPhone(doc, msg.recipient),
-                patient: patientContact,
+                patient: doc.patient,
                 registrations: registrations
             });
         }
     });
 };
 
-const handleReport = (db, audit, doc, patientContact, config, callback) => {
+const handleReport = (db, audit, doc, config, callback) => {
     utils.getRegistrations({
         db: db,
         id: doc.fields.patient_id
@@ -161,7 +161,7 @@ const handleReport = (db, audit, doc, patientContact, config, callback) => {
             return callback(err);
         }
 
-        addMessagesToDoc(doc, config, registrations, patientContact);
+        addMessagesToDoc(doc, config, registrations);
 
         module.exports.silenceRegistrations(
             audit,
@@ -201,19 +201,12 @@ module.exports = {
                 return callback(null, true);
             }
 
-            // TODO: we don't need to do this anymore, it's done in lineage?
-            utils.getPatientContact(db, doc.fields.patient_id, function(err, patientContact) {
-                if (err) {
-                    return callback(err);
-                }
+            if (!doc.patient) {
+                transitionUtils.addRegistrationNotFoundError(doc, config);
+                return callback(null, true);
+            }
 
-                if (!patientContact) {
-                    transitionUtils.addRegistrationNotFoundError(doc, config);
-                    return callback(null, true);
-                }
-
-                handleReport(db, audit, doc, patientContact, config, callback);
-            });
+            handleReport(db, audit, doc, config, callback);
         });
     },
     _silenceReminders: _silenceReminders,

@@ -98,37 +98,3 @@ describe('messages util', () => {
     });
   });
 });
-
-// exports['getRecipientPhone defaults to doc.from if no recipient'] = function(test) {
-//     var phone = '+13125551213';
-//     var doc = {
-//         form: 'x',
-//         from: phone
-//     };
-//     var result = messages.getRecipientPhone(doc);
-//     test.equals(result, phone);
-//     test.done();
-// };
-
-// exports['getRecipientPhone defaults to doc.from if no known recipient'] = function(test) {
-//     var phone = '+13125551213';
-//     var doc = {
-//         form: 'x',
-//         from: phone
-//     };
-//     var result = messages.getRecipientPhone(doc, 'greatgrandparent');
-//     test.equals(result, phone);
-//     test.done();
-// };
-
-// exports['getRecipientPhone defaults to given default'] = function(test) {
-//     var phone = '+13125551213';
-//     var doc = {
-//         form: 'x',
-//         from: '+6666666666'
-//     };
-//     var result = messages.getRecipientPhone(doc, 'greatgrandparent', phone);
-//     test.equals(result, phone);
-//     test.done();
-// };
-

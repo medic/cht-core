@@ -23,7 +23,6 @@ describe('registrations', () => {
       const addMessage = sinon.stub(messages, 'addMessage');
 
       sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, testRegistration);
-      sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, testPatient);
 
       const testConfig = {
         messages: [{
@@ -35,7 +34,8 @@ describe('registrations', () => {
       const testDoc = {
         fields: {
           patient_id: '12345'
-        }
+        },
+        patient: testPatient
       };
 
       transition.addMessages({}, testConfig, testDoc, err => {
@@ -68,7 +68,6 @@ describe('registrations', () => {
       const addMessage = sinon.stub(messages, 'addMessage');
 
       sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, testRegistration);
-      sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, testPatient);
 
       const testConfig = {
         messages: [{
@@ -81,7 +80,8 @@ describe('registrations', () => {
       const testDoc = {
         fields: {
           patient_id: '12345'
-        }
+        },
+        patient: testPatient
       };
 
       transition.addMessages({}, testConfig, testDoc, err => {

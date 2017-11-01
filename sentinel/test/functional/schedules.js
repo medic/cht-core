@@ -71,7 +71,6 @@ exports['registration sets up schedule'] = function(test) {
             }
         ]
     }]);
-    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
     sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, []);
     sinon.stub(schedules, 'getScheduleConfig').returns({
         name: 'group1',
@@ -345,7 +344,6 @@ exports['two phase registration sets up schedule using bool_expr'] = function(te
             }
         ]
     }]);
-    sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, {_id: 'uuid'});
     var getRegistrations = sinon.stub(utils, 'getRegistrations').callsArgWithAsync(1, null, [ { fields: { patient_name: 'barry' } } ]);
     sinon.stub(schedules, 'getScheduleConfig').returns({
         name: 'group1',
@@ -373,7 +371,10 @@ exports['two phase registration sets up schedule using bool_expr'] = function(te
         from: contact.phone,
         contact: contact,
         foo: 'baz',
-        fields: { patient_id: '123' }
+        fields: { patient_id: '123' },
+        patient: {
+            _id: 'uuid'
+        }
     };
 
     transition.onMatch({
