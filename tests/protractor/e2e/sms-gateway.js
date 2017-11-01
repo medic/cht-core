@@ -161,8 +161,8 @@ describe('sms-gateway api', () => {
       }, 10000);
       browser.sleep(1000); // without this the elements are found to be detached...
       helper.waitElementToBeVisible(element(by.css('#message-list li:first-child')));
-      expect(helper.getTextFromElement(element(by.css('#message-list li:first-child .heading h4')))).toBe('+64271234567');
-      expect(helper.getTextFromElement(element(by.css('#message-list li:first-child .summary p')))).toBe('hello');
+      expect(helper.getTextFromElement('#message-list li:first-child .heading h4')).toBe('+64271234567');
+      expect(helper.getTextFromElement('#message-list li:first-child .summary p')).toBe('hello');
 
       // RHS
       element(by.css('#message-list li:first-child .summary')).click();
@@ -219,10 +219,10 @@ describe('sms-gateway api', () => {
       browser.sleep(100); // without this the elements are found to be detached...
 
       // tasks
-      const sentTaskState = helper.getTextFromElement(element(by.css('#reports-content .details > ul .task-list .task-state .state')));
-      const deliveredTaskState = helper.getTextFromElement(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state')));
-      const scheduledTaskState = helper.getTextFromElement(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(2) .task-state .state')));
-      const failedTaskState = helper.getTextFromElement(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state')));
+      const sentTaskState = helper.getTextFromElement('#reports-content .details > ul .task-list .task-state .state');
+      const deliveredTaskState = helper.getTextFromElement('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state');
+      const scheduledTaskState = helper.getTextFromElement('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(2) .task-state .state');
+      const failedTaskState = helper.getTextFromElement('#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state');
       expect(sentTaskState).toBe('sent');
       expect(deliveredTaskState).toBe('delivered');
       expect(scheduledTaskState).toBe('scheduled');
@@ -302,12 +302,11 @@ describe('sms-gateway api', () => {
       browser.sleep(100); // without this the elements are found to be detached...
       // tasks
       // State for messageId1 has been updated from pending to forwarded-to-gateway.
-      const feedback = element(by.css('#reports-content .details > ul .task-list .task-state .state'));
-      helper.waitUntilReady(feedback);
-      expect(helper.getTextFromElement(feedback)).toBe('forwarded to gateway');
+      helper.waitUntilReady(element(by.css('#reports-content .details > ul .task-list .task-state .state')));
+      expect(helper.getTextFromElement('#reports-content .details > ul .task-list .task-state .state')).toBe('forwarded to gateway');
       // scheduled tasks
       // State for messageId2 is still forwarded-to-gateway
-      expect(helper.getTextFromElement(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state'))))
+      expect(helper.getTextFromElement('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state'))
         .toBe('forwarded to gateway');
     });
   });
