@@ -139,6 +139,26 @@ const addMessagesToDoc = (doc, config, registrations, patientContact) => {
     });
 };
 
+const handleReport = (db, audit, doc, patientContact, config, callback) => {
+    utils.getRegistrations({
+        db: db,
+        id: doc.fields.patient_id
+    }, (err, registrations) => {
+        if (err) {
+            return callback(err);
+        }
+
+        addMessagesToDoc(doc, config, registrations, patientContact);
+
+        silenceRegistrations(
+            audit,
+            config,
+            doc,
+            registrations,
+            callback);
+    });
+};
+
 module.exports = {
     filter: function(doc) {
         return Boolean(
@@ -151,42 +171,9 @@ module.exports = {
             utils.getClinicPhone(doc)
         );
     },
-    _silenceReminders: _silenceReminders,
-    _findToClear: findToClear,
     // also used by registrations transition.
-    handleReport: function(
-            db,
-            audit,
-            doc,
-            patientContact,
-            config,
-            callback) {
-        utils.getRegistrations({
-            db: db,
-            id: doc.fields && doc.fields.patient_id
-        },
-        function(err, registrations) {
-            if (err) {
-                return callback(err);
-            }
-
-            if (patientContact) {
-                addMessagesToDoc(doc, config, registrations, patientContact);
-            }
-
-            if (registrations && registrations.length) {
-                return silenceRegistrations(
-                    audit,
-                    config,
-                    doc,
-                    registrations,
-                    callback);
-            }
-
-            return callback(null, true);
-        });
-    },
-    onMatch: function(change, _db, _audit, callback) {
+    silenceRegistrations: silenceRegistrations,
+    onMatch: function(change, db, audit, callback) {
         const doc = change.doc;
 
         const config = getConfig(doc.form);
@@ -201,22 +188,21 @@ module.exports = {
                 return callback(null, true);
             }
 
-            utils.getPatientContact(_db, doc.fields.patient_id, function(err, patientContact) {
+            utils.getPatientContact(db, doc.fields.patient_id, function(err, patientContact) {
                 if (err) {
                     return callback(err);
                 }
+
                 if (!patientContact) {
                     transitionUtils.addRegistrationNotFoundError(doc, config);
                     return callback(null, true);
                 }
-                module.exports.handleReport(
-                    _db,
-                    _audit,
-                    doc,
-                    patientContact,
-                    config,
-                    callback);
+
+                handleReport(db, audit, doc, patientContact, config, callback);
             });
         });
-    }
+    },
+    _silenceReminders: _silenceReminders,
+    _findToClear: findToClear,
+    _handleReport: handleReport
 };

@@ -79,7 +79,7 @@ exports['onMatch with no patient id adds error msg and response'] = function(tes
 
 // Because patients can be created through the UI and not neccessarily have
 // a registration at all
-exports['handleReport with no registrations does not error'] = function(test) {
+exports['onMatch with no registrations does not error'] = function(test) {
     var doc = {
         fields: { patient_id: 'x' },
         from: '+123'
@@ -98,7 +98,7 @@ exports['handleReport with no registrations does not error'] = function(test) {
         }]
     };
 
-    transition.handleReport(
+    transition._handleReport(
         null,
         null,
         doc,
@@ -138,7 +138,7 @@ exports['handleReport with patient adds reply'] = function(test) {
             recipient: 'reporting_unit'
         }]
     };
-    transition.handleReport(
+    transition._handleReport(
         null,
         null,
         doc,
@@ -156,8 +156,8 @@ exports['handleReport with patient adds reply'] = function(test) {
 
 exports['adding silence_type to handleReport calls _silenceReminders'] = function(test) {
     sinon.stub(transition, '_silenceReminders').callsArgWith(4);
-    const doc = { _id: 'a' };
-    const config = { silence_type: 'x' };
+    const doc = { _id: 'a', fields: { patient_id: 'x'}};
+    const config = { silence_type: 'x', messages: [] };
     const registrations = [
         { id: 'a' }, // should not be silenced as it's the doc being processed
         { id: 'b' }, // should be silenced
@@ -165,7 +165,7 @@ exports['adding silence_type to handleReport calls _silenceReminders'] = functio
     ];
     sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, registrations);
     sinon.stub(utils, 'getPatientContact').callsArgWithAsync(2, null, {});
-    transition.handleReport(
+    transition._handleReport(
         null,
         null,
         doc,

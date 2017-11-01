@@ -321,17 +321,26 @@ module.exports = {
     clear_schedule: (options, cb) => {
       // Registration forms that clear schedules do so fully
       // silence_type will be split again later, so join them back
-      options.report = {
+      const config = {
         silence_type: options.params.join(','),
         silence_for: null
       };
-      acceptPatientReports.handleReport(
-        options.db,
-        options.audit,
-        options.doc,
-        options.patient,
-        options.report,
-        cb);
+
+      utils.getRegistrations({
+        db: options.db,
+        id: options.doc.fields && options.doc.fields.patient_id
+      }, (err, registrations) => {
+        if (err) {
+          return cb(err);
+        }
+
+        acceptPatientReports.silenceRegistrations(
+          options.audit,
+          config,
+          options.doc,
+          registrations,
+          cb);
+      });
     }
   },
   addMessages: (db, config, doc, callback) => {
