@@ -140,19 +140,6 @@ exports['getDOB falls back to today if necessary'] = function(test) {
     test.done();
 };
 
-exports['isBoolExprFalse returns false/true based on regex'] = function(test) {
-    var regex1 = '/^\\s*[5]\\d+/.test(doc.foo)',
-        regex2 = '/^\\s*[3]\\d+/.test(doc.foo)',
-        doc = {
-            foo: '533884'
-        };
-    test.equal(transition.isBoolExprFalse(doc, regex1), false);
-    test.equal(transition.isBoolExprFalse(doc, regex2), true);
-    // undefined expr always returns true
-    test.equal(transition.isBoolExprFalse(doc), false);
-    test.done();
-};
-
 exports['valid form adds patient_id and patient document'] = function(test) {
 
     sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2);

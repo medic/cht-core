@@ -1,4 +1,5 @@
 const db = require('../../db'),
+      utils = require('../../lib/utils'),
       sinon = require('sinon').sandbox.create(),
       lineage = require('../../lib/lineage');
 
@@ -12,6 +13,7 @@ let report_parentContact,
   report_grandparent,
   report_parent,
   report_contact,
+  report_patient,
   report,
   place_parentContact,
   place_grandparentContact,
@@ -57,6 +59,20 @@ exports.setUp = callback => {
       }
     }
   };
+  report_patient = {
+    _id: 'report-patient',
+    type: 'person',
+    name: 'patient_name',
+    parent: {
+      _id: report_contact._id,
+      parent: {
+        _id: report_parent._id,
+        parent: {
+          _id: report_grandparent._id
+        }
+      }
+    }
+  };
   report = {
     _id: 'report',
     type: 'data_record',
@@ -69,6 +85,9 @@ exports.setUp = callback => {
           _id: report_grandparent._id
         }
       }
+    },
+    fields: {
+      patient_id: 'abc123'
     }
   };
 
@@ -220,17 +239,26 @@ exports['fetchHydratedDoc attaches the lineage'] = test => {
 };
 
 exports['fetchHydratedDoc attaches the full lineage for reports'] = test => {
-  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+  sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
+  const viewStub = sinon.stub(db.medic, 'view');
+  viewStub.onCall(0).callsArgWith(3, null, { rows: [
     { doc: report },
     { doc: report_contact },
     { doc: report_parent },
     { doc: report_grandparent }
   ] });
+  viewStub.onCall(1).callsArgWith(3, null, { rows: [
+    { doc: report_patient },
+    { doc: report_contact },
+    { doc: report_parent },
+    { doc: report_grandparent }
+  ] });
+  viewStub.onCall(2).callsArgWith(3, 'Too many calls!');
 
   const fetch = sinon.stub(db.medic, 'fetch');
   fetch.callsFake((options, callback) => {
     const contactDocs = options.keys.map(id => {
-      return [ report_contact, report_parentContact, report_grandparentContact ]
+      return [ report_contact, report_parentContact, report_grandparentContact, report_patient ]
         .find(contact => contact._id === id);
     });
     callback(null, { rows: contactDocs.map(doc => { return {doc: doc}; }) });
@@ -246,10 +274,14 @@ exports['fetchHydratedDoc attaches the full lineage for reports'] = test => {
     // contacts of parents
     test.equals(actual.contact.parent.contact.phone, '+123');
     test.equals(actual.contact.parent.parent.contact.phone, '+456');
+    // patient
+    test.equals(actual.patient.name, report_patient.name);
+    // patient parents
+    test.equals(actual.patient.parent.name, report_contact.name);
 
-    test.equals(fetch.callCount, 1);
+    test.equals(fetch.callCount, 2);
     test.done();
-  });
+  }).catch(console.error);
 };
 
 exports['fetchHydratedDoc attaches the contacts'] = test => {
@@ -420,9 +452,43 @@ exports['minify minifies the contact and lineage'] = test => {
   test.done();
 };
 
+
+exports['minify removes the patient'] = test => {
+  const actual = {
+    _id: 'c',
+    type: 'data_record',
+    patient_id: '123',
+    patient: {
+      _id: 'a',
+      name: 'Alice',
+      patient_id: '123',
+      parent: {
+        _id: 'b',
+        name: 'Bob'
+      }
+    }
+  };
+  const expected = {
+    _id: 'c',
+    type: 'data_record',
+    patient_id: '123'
+  };
+  lineage.minify(actual);
+  test.deepEqual(actual, expected);
+  test.done();
+};
+
 exports['fetchHydratedDoc+minify is noop on a report'] = test => {
-  sinon.stub(db.medic, 'view').callsArgWith(3, null, { rows: [
+  sinon.stub(utils, 'getPatientContactUuid').callsArgWith(2, null, report_patient._id);
+  const viewStub = sinon.stub(db.medic, 'view');
+  viewStub.onCall(0).callsArgWith(3, null, { rows: [
     { doc: JSON.parse(JSON.stringify(report)) },
+    { doc: report_contact },
+    { doc: report_parent },
+    { doc: report_grandparent }
+  ] });
+  viewStub.onCall(1).callsArgWith(3, null, { rows: [
+    { doc: report_patient },
     { doc: report_contact },
     { doc: report_parent },
     { doc: report_grandparent }
@@ -431,7 +497,7 @@ exports['fetchHydratedDoc+minify is noop on a report'] = test => {
   const fetch = sinon.stub(db.medic, 'fetch');
   fetch.callsFake((options, callback) => {
     const contactDocs = options.keys.map(id => {
-      return [ report_contact, report_parentContact, report_grandparentContact ]
+      return [ report_contact, report_parentContact, report_grandparentContact, report_patient ]
         .find(contact => contact._id === id);
     });
     callback(null, { rows: contactDocs.map(doc => { return {doc: doc}; }) });

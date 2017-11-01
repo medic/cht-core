@@ -32,7 +32,7 @@ module.exports = {
     },
     _isReportedAfterStartDate: function(doc) {
         var self = module.exports,
-            config = self._getConfig('default_responses'),
+            config = self._getConfig(NAME),
             start_date;
 
         function isEmpty() {

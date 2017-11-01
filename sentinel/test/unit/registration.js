@@ -1,7 +1,6 @@
 const sinon = require('sinon').sandbox.create(),
       transition = require('../../transitions/registration'),
       transitionUtils = require('../../transitions/utils'),
-      messages = require('../../lib/messages'),
       utils = require('../../lib/utils'),
       schedules = require('../../lib/schedules'),
       config = require('../../config');
@@ -11,53 +10,20 @@ exports.tearDown = callback => {
   callback();
 };
 
-exports['bool expr is true when property exists on doc'] = test => {
-  test.equals(false, transition.isBoolExprFalse({foo: 'bar'}, 'doc.foo'));
-  test.equals(false, transition.isBoolExprFalse(
-    {foo: {bar: 'baz'}},
-    'doc.foo.bar'
-  ));
+exports['booleanExpressionFails is false if there is no valid expression'] = test => {
+  test.equal(transition._booleanExpressionFails({}, ''), false);
   test.done();
 };
 
-exports['bool expr supports complex logic'] = test => {
-  test.equals(false, transition.isBoolExprFalse(
-    {
-      age_in_years: 21,
-      last_mentrual_period: ''
-    },
-    'doc.age_in_years && doc.last_mentrual_period === \'\''
-  ));
-  test.equals(true, transition.isBoolExprFalse(
-    {
-      age_in_years: 21,
-      last_mentrual_period: ''
-    },
-    '!(doc.age_in_years && doc.last_mentrual_period === \'\')'
-  ));
+exports['booleanExpressionFails is true if the expresison fails'] = test => {
+  test.equal(transition._booleanExpressionFails({foo: 'bar'}, `doc.foo !== 'bar'`), true);
   test.done();
 };
 
-exports['bool expr is false if property does not exist on doc'] = test => {
-  test.equals(true, transition.isBoolExprFalse({}, 'doc.mouse'));
-  test.equals(true, transition.isBoolExprFalse({}, 'doc.mouse.cheese'));
-  test.equals(true, transition.isBoolExprFalse({}, 'nothing to see here'));
-  test.done();
-};
-
-exports['bool expr is false if throws errors on bad syntax'] = test => {
-  test.equals(true, transition.isBoolExprFalse({}, '+!;'));
-  test.equals(true, transition.isBoolExprFalse({}, '.\'..'));
-  test.done();
-};
-
-exports['bool expr is ignored (returns true) if not a string or empty'] = test => {
-  test.equals(false, transition.isBoolExprFalse({}, {}));
-  test.equals(false, transition.isBoolExprFalse({}, 1));
-  test.equals(false, transition.isBoolExprFalse({}, false));
-  test.equals(false, transition.isBoolExprFalse({}, undefined));
-  test.equals(false, transition.isBoolExprFalse({}, ''));
-  test.equals(false, transition.isBoolExprFalse({}, ' \t\n '));
+exports['booleanExpressionFails is true if the expression is invalid'] = test => {
+  // TODO: should this error instead of just returning false?
+  //       If there is a typo we're not going to know about it
+  test.equal(transition._booleanExpressionFails({}, `doc.foo.bar === 'smang'`), true);
   test.done();
 };
 
@@ -676,49 +642,4 @@ exports['add_patient trigger fails when patient_id_field is set to patient_id'] 
     test.equals(e.message, 'Configuration error. patient_id_field cannot be set to patient_id');
     test.done();
   }
-};
-
-exports['addMessage prepops and passes the right information to messages.addMessage'] = test => {
-  const testPhone = '1234',
-        testMessage = 'A Test Message',
-        testRegistration = 'some registrations',
-        testPatient = 'a patient contact';
-
-  sinon.stub(messages, 'getRecipientPhone').returns(testPhone);
-  sinon.stub(messages, 'getMessage').returns(testMessage);
-  const addMessage = sinon.stub(messages, 'addMessage');
-
-  sinon.stub(utils, 'getRegistrations').callsArgWith(1, null, testRegistration);
-  sinon.stub(utils, 'getPatientContact').callsArgWith(2, null, testPatient);
-
-  const testConfig = {
-    messages: [{
-    },
-    {
-      event_type: 'report_accepted'
-    }]
-  };
-  const testDoc = {
-    fields: {
-      patient_id: '12345'
-    }
-  };
-
-  transition.addMessages({}, testConfig, testDoc, err => {
-    test.equal(err, undefined);
-    test.equal(addMessage.callCount, 2);
-
-    const expected = {
-      doc: testDoc,
-      phone: testPhone,
-      message: testMessage,
-      templateContext: { next_msg: { minutes: 0, hours: 0, days: 0, weeks: 0, months: 0, years: 0 } },
-      registrations: testRegistration,
-      patient: testPatient
-    };
-
-    test.deepEqual(addMessage.args[0][0], expected);
-    test.deepEqual(addMessage.args[1][0], expected);
-    test.done();
-  });
 };

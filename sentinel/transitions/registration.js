@@ -1,5 +1,4 @@
-const vm = require('vm'),
-      _ = require('underscore'),
+const _ = require('underscore'),
       async = require('async'),
       utils = require('../lib/utils'),
       transitionUtils = require('./utils'),
@@ -76,6 +75,36 @@ const parseParams = params => {
   }
   // And comma delimted strings, eg: "foo,bar", "foo"
   return params.split(',');
+};
+
+const booleanExpressionFails = (doc, expr) => {
+  let result = false;
+
+  if (utils.isValidBooleanExpression(expr)) {
+    try {
+      result = !utils.evalExpression({doc: doc}, expr);
+    } catch (err) {
+      // TODO should this count as a fail or as a real error
+      logger.warn('Failed to eval boolean expression:');
+      logger.warn(err);
+      result = true;
+    }
+  }
+
+  return result;
+};
+
+// NB: this is very similar to a function in accept_patient_reports, except
+//     we also allow for an empty event_type
+const messageRelevant = (msg, doc) => {
+    if (!msg.event_type || msg.event_type === 'report_accepted') {
+        const expr = msg.bool_expr;
+        if (utils.isValidBooleanExpression(expr)) {
+            return utils.evalExpression({doc: doc}, expr);
+        } else {
+            return true;
+        }
+    }
 };
 
 module.exports = {
@@ -167,23 +196,6 @@ module.exports = {
     /* if true skip schedule creation */
     return Boolean(doc.getid || doc.skip_schedule_creation);
   },
-  isBoolExprFalse: (doc, expr) => {
-    if (typeof expr !== 'string') {
-      return false;
-    }
-    if (expr.trim() === '') {
-      return false;
-    }
-    try {
-      //TODO eval in separate process
-      const sandbox = { doc: doc };
-      return !vm.runInNewContext(expr, sandbox);
-    } catch(e) {
-      logger.warn('Failed to eval boolean expression:');
-      logger.warn(e);
-      return true;
-    }
-  },
   setExpectedBirthDate: doc => {
     const lmp = Number(module.exports.getWeeksSinceLMP(doc)),
           start = moment(date.getDate()).startOf('day');
@@ -263,9 +275,11 @@ module.exports = {
         }
         if (event.name === 'on_create') {
           const obj = _.defaults({}, doc, doc.fields);
-          if (self.isBoolExprFalse(obj, event.bool_expr)) {
+
+          if (booleanExpressionFails(obj, event.bool_expr)) {
             return cb();
           }
+
           const options = {
             db: db,
             audit: audit,
@@ -354,6 +368,7 @@ module.exports = {
     }
     async.parallel({
       registrations: _.partial(getRegistrations, db, patientId),
+      // TODO: we already have this, get rid of it
       patient: _.partial(utils.getPatientContact, db, patientId)
     }, (err, {registrations, patient}) => {
       if (err) {
@@ -361,7 +376,7 @@ module.exports = {
       }
 
       config.messages.forEach(msg => {
-        if (!msg.event_type || msg.event_type === 'report_accepted') {
+        if (messageRelevant(msg, doc)) {
           messages.addMessage({
             doc: doc,
             phone: messages.getRecipientPhone(doc, msg.recipient),
@@ -380,6 +395,7 @@ module.exports = {
 
     async.parallel({
       registrations: _.partial(getRegistrations, options.db, patientId),
+      // TODO: we don't need to do this anymore, it's done in lineage?
       patient: _.partial(utils.getPatientContact, options.db, patientId)
     }, (err, {registrations, patient}) => {
       if (err) {
@@ -472,5 +488,6 @@ module.exports = {
         audit.saveDoc(patient, callback);
       });
     });
-  }
+  },
+  _booleanExpressionFails: booleanExpressionFails
 };

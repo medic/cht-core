@@ -1,6 +1,6 @@
 var _ = require('underscore'),
     async = require('async'),
-    configLib = require('../config'),
+    config = require('../config'),
     messages = require('../lib/messages'),
     moment = require('moment'),
     validation = require('../lib/validation'),
@@ -63,7 +63,7 @@ const findToClear = (registration, reported_date, config) => {
 };
 
 const getConfig = function(form) {
-    const fullConfig = configLib.get('patient_reports') || [];
+    const fullConfig = config.get('patient_reports') || [];
     return _.findWhere(fullConfig, { form: form });
 };
 
@@ -124,10 +124,23 @@ const addErrorsToDoc = (errors, doc, config) => {
     }
 };
 
+// NB: this is very similar to a function in accept_patient_reports, except
+//     they also allow for an empty event_type
+const messageRelevant = (msg, doc) => {
+    if (msg.event_type === 'report_accepted') {
+        const expr = msg.bool_expr;
+        if (utils.isValidBooleanExpression(expr)) {
+            return utils.evalExpression({doc: doc}, expr);
+        } else {
+            return true;
+        }
+    }
+};
+
 const addMessagesToDoc = (doc, config, registrations, patientContact) => {
     const locale = utils.getLocale(doc);
     config.messages.forEach(msg => {
-        if (msg.event_type === 'report_accepted') {
+        if (messageRelevant(msg, doc)) {
             messages.addMessage({
                 doc: doc,
                 message: messages.getMessage(msg, locale),
@@ -150,7 +163,7 @@ const handleReport = (db, audit, doc, patientContact, config, callback) => {
 
         addMessagesToDoc(doc, config, registrations, patientContact);
 
-        silenceRegistrations(
+        module.exports.silenceRegistrations(
             audit,
             config,
             doc,
@@ -188,6 +201,7 @@ module.exports = {
                 return callback(null, true);
             }
 
+            // TODO: we don't need to do this anymore, it's done in lineage?
             utils.getPatientContact(db, doc.fields.patient_id, function(err, patientContact) {
                 if (err) {
                     return callback(err);
@@ -204,5 +218,6 @@ module.exports = {
     },
     _silenceReminders: _silenceReminders,
     _findToClear: findToClear,
-    _handleReport: handleReport
+    _handleReport: handleReport,
+    _addMessageToDoc: addMessagesToDoc
 };

@@ -175,12 +175,21 @@ module.exports = {
             phone = utils.getHealthCenterPhone(doc);
         } else if (recipient === 'grandparent') {
             phone = utils.getDistrictPhone(doc);
+        } else if (doc.fields && doc.fields[recipient]) {
+            // Try to resolve a specified property/field name
+            phone = doc.fields[recipient];
+        } else if (doc[recipient]) {
+            // Or directly on the doc
+            phone = doc[recipient];
+        } else if (recipient.indexOf('.') > -1) {
+            // Or multiple layers by executing it as a statement
+            try {
+                phone = utils.evalExpression({doc: doc}, 'doc.' + recipient);
+            } catch (err) {
+                logger.error(`Recipient expression "${recipient}" failed on ${doc._id}`);
+            }
         }
 
-        if (!phone && doc.fields && doc.fields[recipient]) {
-            // try to resolve a specified property/field name
-            phone = doc.fields[recipient];
-        }
         return phone || _default || doc.from;
     },
     addMessage: addMessage,

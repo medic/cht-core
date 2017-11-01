@@ -1,5 +1,6 @@
 const _ = require('underscore'),
-    db = require('../db');
+    db = require('../db'),
+    utils = require('./utils');
 
 const fillContactsInDocs = (docs, contacts) => {
   if (!contacts || !contacts.length) {
@@ -47,6 +48,26 @@ const minifyContact = contact => {
   return result;
 };
 
+// TODO: optimise this so we don't have to recurse here
+//       Intergrate this tigher into fetchHydratedDoc (if we want to keep this)
+//       so we call docs_by_lineage twice, and then combine our contact fetch
+//       calls. This saves us one fetch call, and probably quite a few duplicate
+//       documents pulled. (It is probable that the contact hierarchy of the
+//       patient is the same or similar to the contact)
+const attachPatient = doc =>
+  new Promise((resolve, reject) => {
+    utils.getPatientContactUuid(db, doc.fields.patient_id, function(err, uuid) {
+      if (err) {
+        reject(err);
+      } else {
+        fetchHydratedDoc(uuid).then(hydratedPatientDoc => {
+          doc.patient = hydratedPatientDoc;
+          resolve(doc);
+        });
+      }
+    });
+  });
+
 const fetchHydratedDoc = id => {
   return new Promise((resolve, reject) => {
     db.medic.view('medic-client', 'docs_by_id_lineage', {
@@ -91,7 +112,13 @@ const fetchHydratedDoc = id => {
           fillContactsInDocs(lineage, allContacts);
           const doc = lineage.shift();
           buildHydratedDoc(doc, lineage);
-          return doc;
+
+          // Also attach the patient if we should
+          if (doc.type === 'data_record' && doc.fields && doc.fields.patient_id) {
+            return attachPatient(doc);
+          } else {
+            return doc;
+          }
         }));
     });
   });
@@ -218,7 +245,8 @@ const hydrateDocs = docs => {
 
 module.exports = {
   /**
-   * Given a doc id get a doc and all parents and contacts
+   * Given a doc id get a doc and all parents, contact (and parents) and
+   * patient (and parents)
    * @param id The id of the doc
    * @returns Promise
    */
@@ -229,10 +257,11 @@ module.exports = {
    * @param docs The array of docs to hydrate
    * @returns Promise
    */
+   //TODO @gareth should I add patients to this?
   hydrateDocs: hydrateDocs,
 
   /**
-   * Remove all fields except for parent and _id from parents and contacts.
+   * Remove all hyrdrated items and leave just the ids
    * @param doc The doc to minify
    */
   minify: doc => {
@@ -248,6 +277,9 @@ module.exports = {
         miniContact.parent = minifyContact(doc.contact.parent);
       }
       doc.contact = miniContact;
+    }
+    if (doc.type === 'data_record') {
+      delete doc.patient;
     }
   }
 };

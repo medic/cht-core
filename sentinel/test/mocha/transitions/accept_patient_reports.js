@@ -3,9 +3,10 @@ const sinon = require('sinon').sandbox.create(),
       moment = require('moment');
 
 describe('accept_patient_reports', () => {
-  const transition = require('../../../transitions/accept_patient_reports');
+  const transition = require('../../../transitions/accept_patient_reports'),
+        messages = require('../../../lib/messages');
 
-  beforeEach(done => {
+  afterEach(done => {
     sinon.restore();
     done();
   });
@@ -104,6 +105,32 @@ describe('accept_patient_reports', () => {
         const results = transition._findToClear(registration, now.valueOf(), {silence_type: 'x,y', silence_for: silence_for});
         ids(results).should.deep.equal([1, 2, 3, 4, 31, 41, 6, 7]);
       });
+    });
+  });
+  describe('addMessageToDoc', () => {
+    it('Does not add a message if the bool_expr fails', () => {
+      const doc = {};
+      const config = {messages: [{
+        event_type: 'report_accepted',
+        bool_expr: 'false'
+      }]};
+      const patient = {};
+
+      const stub = sinon.stub(messages, 'addMessage');
+      transition._addMessageToDoc(doc, config, [], patient);
+      stub.callCount.should.equal(0);
+    });
+    it('Adds a message if the bool_expr passes', () => {
+      const doc = {};
+      const config = {messages: [{
+        event_type: 'report_accepted',
+        bool_expr: 'true'
+      }]};
+      const patient = {};
+
+      const stub = sinon.stub(messages, 'addMessage');
+      transition._addMessageToDoc(doc, config, [], patient);
+      stub.callCount.should.equal(1);
     });
   });
 });

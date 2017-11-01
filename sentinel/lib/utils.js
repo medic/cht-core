@@ -1,4 +1,5 @@
 const _ = require('underscore'),
+      vm = require('vm'),
       db = require('../db'),
       uuid = require('uuid'),
       moment = require('moment'),
@@ -530,5 +531,9 @@ module.exports = {
   getPatientContact: (db, patientShortcodeId, callback) => {
     getPatient(db, patientShortcodeId, true, callback);
   },
+  isValidBooleanExpression: expr =>
+    typeof expr === 'string' && expr.trim() !== '',
+  evalExpression: (context, expr) =>
+    vm.runInNewContext(expr, context),
   _isMessageFromGateway: _isMessageFromGateway
 };
