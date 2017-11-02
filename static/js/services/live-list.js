@@ -19,6 +19,7 @@ angular.module('inboxServices').factory('LiveListConfig',
 
     var HTML_BIND_REGEX = /ng-bind-html="([^"]*)"([^>]*>)/gi;
     var EXPRESSION_REGEX = /\{\{([^}]*)}}/g;
+    var TASK_DUE_PERIOD = 24 * 60 * 60 * 1000; // 1 day in millis
 
     var parse = function(expr, scope) {
       return $parse(expr)(scope) || '';
@@ -151,11 +152,13 @@ angular.module('inboxServices').factory('LiveListConfig',
         },
         listItem: function(task) {
           var scope = $scope.$new();
+          var dueDate = Date.parse(task.date);
           var startOfToday = (new Date()).setHours(0, 0, 0, 0);
           scope.id = task._id;
           scope.route = 'tasks';
           scope.date = task.date;
-          scope.overdue = Date.parse(task.date) < startOfToday;
+          scope.overdue = dueDate < startOfToday;
+          scope.due = !scope.overdue && (dueDate - startOfToday) < TASK_DUE_PERIOD;
           scope.icon = task.icon;
           scope.heading = task.contact && task.contact.name;
           scope.summary = TranslateFrom(task.title, task);

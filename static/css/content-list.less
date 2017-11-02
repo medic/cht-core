@@ -76,7 +76,10 @@
       .date {
         color: @label-color;
         white-space: nowrap;
-
+        &.due {
+          color: @unread-color;
+          font-weight: bold;
+        }
         &.overdue {
           color: @high-risk-color;
           font-weight: bold;
