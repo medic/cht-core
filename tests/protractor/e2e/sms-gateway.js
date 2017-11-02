@@ -202,6 +202,7 @@ describe('sms-gateway api', () => {
     });
 
     afterEach(done => {
+      helper.logConsoleErrors('sms-gateway');
       utils.deleteDoc(savedDoc).then(done).catch(done.fail);
     });
 
