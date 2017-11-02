@@ -1,6 +1,7 @@
 var _ = require('underscore'),
     template = require('./template'),
     utils = require('./utils'),
+    objectPath = require('object-path'),
     logger = require('./logger');
 
 function extendedTemplateContext(doc, extras) {
@@ -175,12 +176,17 @@ module.exports = {
             phone = utils.getHealthCenterPhone(doc);
         } else if (recipient === 'grandparent') {
             phone = utils.getDistrictPhone(doc);
+        } else if (doc.fields && doc.fields[recipient]) {
+            // Try to resolve a specified property/field name
+            phone = doc.fields[recipient];
+        } else if (doc[recipient]) {
+            // Or directly on the doc
+            phone = doc[recipient];
+        } else if (recipient.indexOf('.') > -1) {
+            // Or multiple layers by executing it as a statement
+            phone = objectPath.get(doc, recipient);
         }
 
-        if (!phone && doc.fields && doc.fields[recipient]) {
-            // try to resolve a specified property/field name
-            phone = doc.fields[recipient];
-        }
         return phone || _default || doc.from;
     },
     addMessage: addMessage,

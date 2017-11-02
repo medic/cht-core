@@ -1,5 +1,4 @@
-const vm = require('vm'),
-      _ = require('underscore'),
+const _ = require('underscore'),
       async = require('async'),
       utils = require('../lib/utils'),
       transitionUtils = require('./utils'),
@@ -76,6 +75,36 @@ const parseParams = params => {
   }
   // And comma delimted strings, eg: "foo,bar", "foo"
   return params.split(',');
+};
+
+const booleanExpressionFails = (doc, expr) => {
+  let result = false;
+
+  if (utils.isNonEmptyString(expr)) {
+    try {
+      result = !utils.evalExpression(expr, {doc: doc});
+    } catch (err) {
+      // TODO should this count as a fail or as a real error
+      logger.warn('Failed to eval boolean expression:');
+      logger.warn(err);
+      result = true;
+    }
+  }
+
+  return result;
+};
+
+// NB: this is very similar to a function in accept_patient_reports, except
+//     we also allow for an empty event_type
+const messageRelevant = (msg, doc) => {
+    if (!msg.event_type || msg.event_type === 'report_accepted') {
+        const expr = msg.bool_expr;
+        if (utils.isNonEmptyString(expr)) {
+            return utils.evalExpression(expr, {doc: doc});
+        } else {
+            return true;
+        }
+    }
 };
 
 module.exports = {
@@ -167,23 +196,6 @@ module.exports = {
     /* if true skip schedule creation */
     return Boolean(doc.getid || doc.skip_schedule_creation);
   },
-  isBoolExprFalse: (doc, expr) => {
-    if (typeof expr !== 'string') {
-      return false;
-    }
-    if (expr.trim() === '') {
-      return false;
-    }
-    try {
-      //TODO eval in separate process
-      const sandbox = { doc: doc };
-      return !vm.runInNewContext(expr, sandbox);
-    } catch(e) {
-      logger.warn('Failed to eval boolean expression:');
-      logger.warn(e);
-      return true;
-    }
-  },
   setExpectedBirthDate: doc => {
     const lmp = Number(module.exports.getWeeksSinceLMP(doc)),
           start = moment(date.getDate()).startOf('day');
@@ -263,9 +275,11 @@ module.exports = {
         }
         if (event.name === 'on_create') {
           const obj = _.defaults({}, doc, doc.fields);
-          if (self.isBoolExprFalse(obj, event.bool_expr)) {
+
+          if (booleanExpressionFails(obj, event.bool_expr)) {
             return cb();
           }
+
           const options = {
             db: db,
             audit: audit,
@@ -321,17 +335,26 @@ module.exports = {
     clear_schedule: (options, cb) => {
       // Registration forms that clear schedules do so fully
       // silence_type will be split again later, so join them back
-      options.report = {
+      const config = {
         silence_type: options.params.join(','),
         silence_for: null
       };
-      acceptPatientReports.handleReport(
-        options.db,
-        options.audit,
-        options.doc,
-        options.patient,
-        options.report,
-        cb);
+
+      utils.getRegistrations({
+        db: options.db,
+        id: options.doc.fields && options.doc.fields.patient_id
+      }, (err, registrations) => {
+        if (err) {
+          return cb(err);
+        }
+
+        acceptPatientReports.silenceRegistrations(
+          options.audit,
+          config,
+          options.doc,
+          registrations,
+          cb);
+      });
     }
   },
   addMessages: (db, config, doc, callback) => {
@@ -343,23 +366,21 @@ module.exports = {
     if (!config.messages || !config.messages.length) {
       return callback();
     }
-    async.parallel({
-      registrations: _.partial(getRegistrations, db, patientId),
-      patient: _.partial(utils.getPatientContact, db, patientId)
-    }, (err, {registrations, patient}) => {
+
+    getRegistrations(db, patientId, (err, registrations) => {
       if (err) {
         return callback(err);
       }
 
       config.messages.forEach(msg => {
-        if (!msg.event_type || msg.event_type === 'report_accepted') {
+        if (messageRelevant(msg, doc)) {
           messages.addMessage({
             doc: doc,
             phone: messages.getRecipientPhone(doc, msg.recipient),
             message: messages.getMessage(msg, locale),
             templateContext: extra,
             registrations: registrations,
-            patient: patient
+            patient: doc.patient
           });
         }
       });
@@ -369,17 +390,14 @@ module.exports = {
   assignSchedule: (options, callback) => {
     const patientId = options.doc.fields && options.doc.fields.patient_id;
 
-    async.parallel({
-      registrations: _.partial(getRegistrations, options.db, patientId),
-      patient: _.partial(utils.getPatientContact, options.db, patientId)
-    }, (err, {registrations, patient}) => {
+    getRegistrations(options.db, patientId, (err, registrations) => {
       if (err) {
         return callback(err);
       }
       options.params.forEach(scheduleName => {
         const schedule = schedules.getScheduleConfig(scheduleName);
         const assigned = schedules.assignSchedule(
-          options.doc, schedule, registrations, patient);
+          options.doc, schedule, registrations, options.doc.patient);
         if (!assigned) {
           logger.error('Failed to add schedule please verify settings.');
         }
@@ -463,5 +481,6 @@ module.exports = {
         audit.saveDoc(patient, callback);
       });
     });
-  }
+  },
+  _booleanExpressionFails: booleanExpressionFails
 };

@@ -116,29 +116,6 @@ exports['getClinicName gets name'] = function(test) {
     test.done();
 };
 
-exports['getClinicPhone gets phone'] = function(test) {
-    test.equal(utils.getClinicPhone({
-        contact: {
-            parent: {
-                type: 'clinic',
-                contact: {
-                    phone: '123'
-                }
-            }
-        }
-    }), '123');
-    test.done();
-};
-
-exports['getClinicPhone gets phone if contact'] = function(test) {
-    test.equal(utils.getClinicPhone({
-        contact: {
-            phone: '123'
-        }
-    }), '123');
-    test.done();
-};
-
 exports['addMessage adds uuid'] = function(test) {
     var doc = {},
         message,

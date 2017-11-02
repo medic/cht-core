@@ -1,5 +1,10 @@
 const _ = require('underscore'),
-    db = require('../db');
+    db = require('../db'),
+    utils = require('./utils');
+
+const findPatientId = doc =>
+  doc.type === 'data_record' &&
+  ((doc.fields && doc.fields.patient_id) || doc.patient_id);
 
 const fillContactsInDocs = (docs, contacts) => {
   if (!contacts || !contacts.length) {
@@ -47,31 +52,55 @@ const minifyContact = contact => {
   return result;
 };
 
-const fetchHydratedDoc = id => {
-  return new Promise((resolve, reject) => {
+const patientLineageByShortcode = shortcode =>
+  new Promise((resolve, reject) => utils.getPatientContactUuid(db, shortcode, (err, uuid) => {
+    if (err) {
+      reject(err);
+    } else {
+      lineageById(uuid).then(resolve).catch(reject);
+    }
+  }));
+
+const lineageById = id =>
+  new Promise((resolve, reject) =>
     db.medic.view('medic-client', 'docs_by_id_lineage', {
       startkey: [ id ],
       endkey: [ id, {} ],
       include_docs: true
     }, (err, result) => {
       if (err) {
-        return reject(err);
+        reject(err);
+      } else {
+        resolve(result.rows.map(row => row.doc));
       }
-      const lineage = result.rows.map(row => row.doc);
+    }));
 
-      if (lineage.length === 0) {
-        // Not a doc that has lineage, just do a normal fetch.
-        return db.medic.get(id, (err, doc) => {
-          if (err) {
-            return reject(err);
-          }
-          resolve(doc);
-        });
-      }
+const fetchHydratedDoc = id =>
+  lineageById(id).then(lineage => {
+    if (lineage.length === 0) {
+      // Not a doc that has lineage, just do a normal fetch.
+      return new Promise((resolve, reject) =>
+          db.medic.get(id, (err, doc) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(doc);
+            }
+          }));
+    }
 
-      const contactIds = _.uniq(lineage
-        .map(doc => doc && doc.contact && doc.contact._id)
-        .filter(id => !!id));
+    const patientId = findPatientId(lineage[0]);
+    const patientLineagePromise =
+      patientId ? patientLineageByShortcode(patientId) : Promise.resolve([]);
+
+    return patientLineagePromise.then(patientLineage => {
+      const lineages = lineage.concat(patientLineage);
+
+      const contactIds = _.uniq(
+        lineages
+          .map(doc => doc && doc.contact && doc.contact._id)
+          .filter(id => !!id)
+      );
 
       // Only fetch docs that are new to us
       const lineageContacts = [],
@@ -85,17 +114,24 @@ const fetchHydratedDoc = id => {
         }
       });
 
-      return resolve(fetchDocs(contactsToFetch)
+      return fetchDocs(contactsToFetch)
         .then(fetchedContacts => {
           const allContacts = lineageContacts.concat(fetchedContacts);
-          fillContactsInDocs(lineage, allContacts);
+          fillContactsInDocs(lineages, allContacts);
+
           const doc = lineage.shift();
           buildHydratedDoc(doc, lineage);
+
+          if (patientLineage.length) {
+            const patientDoc = patientLineage.shift();
+            buildHydratedDoc(patientDoc, patientLineage);
+            doc.patient = patientDoc;
+          }
+
           return doc;
-        }));
+        });
     });
   });
-};
 
 // for data_records, include the first-level contact.
 const collectParentIds = docs => {
@@ -218,7 +254,8 @@ const hydrateDocs = docs => {
 
 module.exports = {
   /**
-   * Given a doc id get a doc and all parents and contacts
+   * Given a doc id get a doc and all parents, contact (and parents) and
+   * patient (and parents)
    * @param id The id of the doc
    * @returns Promise
    */
@@ -229,10 +266,12 @@ module.exports = {
    * @param docs The array of docs to hydrate
    * @returns Promise
    */
+   // TODO: add patient hydration support for consistency
+   //       https://github.com/medic/medic-webapp/issues/4003
   hydrateDocs: hydrateDocs,
 
   /**
-   * Remove all fields except for parent and _id from parents and contacts.
+   * Remove all hyrdrated items and leave just the ids
    * @param doc The doc to minify
    */
   minify: doc => {
@@ -248,6 +287,9 @@ module.exports = {
         miniContact.parent = minifyContact(doc.contact.parent);
       }
       doc.contact = miniContact;
+    }
+    if (doc.type === 'data_record') {
+      delete doc.patient;
     }
   }
 };
