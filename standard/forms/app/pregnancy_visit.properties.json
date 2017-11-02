@@ -13,7 +13,7 @@
       "content": "Kunjungan kehamilan"
     }
   ],
-  "icon": "village-clinic",
+  "icon": "clinic",
   "context": {
     "person": true,
     "place": false,
