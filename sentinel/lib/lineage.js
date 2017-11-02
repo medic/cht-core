@@ -57,7 +57,7 @@ const patientLineageByShortcode = shortcode =>
     if (err) {
       reject(err);
     } else {
-      lineageById(uuid).then(resolve);
+      lineageById(uuid).then(resolve).catch(reject);
     }
   }));
 

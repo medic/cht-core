@@ -184,11 +184,7 @@ module.exports = {
             phone = doc[recipient];
         } else if (recipient.indexOf('.') > -1) {
             // Or multiple layers by executing it as a statement
-            try {
-                phone = objectPath.get(doc, recipient);
-            } catch (err) {
-                logger.error(`Recipient expression "${recipient}" failed on ${doc._id}`);
-            }
+            phone = objectPath.get(doc, recipient);
         }
 
         return phone || _default || doc.from;
