@@ -3536,7 +3536,7 @@
     "V": {
       "meta": {
         "code": "V",
-        "icon": "clinic",
+        "icon": "village-clinic",
         "label": {
           "en": "Clinic visit (SMS)",
           "hi": "अस्पताल में जांच (SMS)",
@@ -3574,7 +3574,7 @@
     "M": {
       "meta": {
         "code": "M",
-        "icon": "clinic",
+        "icon": "village-clinic",
         "label": {
           "en": "Postnatal visit (SMS)",
           "hi": " (SMS)",
@@ -6188,7 +6188,7 @@
         {
           "type": "percent",
           "id": "delivery-at-facility-total",
-          "icon": "clinic",
+          "icon": "village-clinic",
           "goal": 100,
           "name": [
             {
