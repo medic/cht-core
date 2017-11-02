@@ -13,7 +13,7 @@
       "content": "Postnatal Care Visit"
     }
   ],
-  "icon": "clinic",
+  "icon": "village-clinic",
   "context": {
     "person": true,
     "place": false,
