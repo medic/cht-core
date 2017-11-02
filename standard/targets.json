@@ -104,7 +104,7 @@
     {
       "type": "percent",
       "id": "delivery-at-facility-total",
-      "icon": "village-clinic",
+      "icon": "clinic",
       "goal": 100,
       "name": [
         {
