@@ -166,7 +166,7 @@ describe('Send message', () => {
 
   describe('Send message modal', () => {
     it('can send messages to raw phone numbers', () => {
-      helper.clickElement(element(by.id('messages-tab')));
+      helper.clickElement('#messages-tab');
       expect(element(by.css(messageInList(RAW_PH))).isPresent()).toBeFalsy();
 
       openSendMessageModal();
@@ -181,7 +181,7 @@ describe('Send message', () => {
     });
 
     it('can send messages to contacts with phone numbers', () => {
-      helper.clickElement(element(by.id('messages-tab')));
+      helper.clickElement('#messages-tab');
 
       expect(element(by.css(messageInList(ALICE._id))).isPresent()).toBeFalsy();
 
@@ -196,7 +196,7 @@ describe('Send message', () => {
     });
 
     it('can send messages to contacts under everyone at with phone numbers', () => {
-      helper.clickElement(element(by.id('messages-tab')));
+      helper.clickElement('#messages-tab');
 
       expect(element(by.css(messageInList(CAROL.phone))).isPresent()).toBeFalsy();
       expect(element(by.css(messageInList(DAVID.phone))).isPresent()).toBeFalsy();
@@ -218,7 +218,7 @@ describe('Send message', () => {
   // Requires that 'Send message modal' describe has been run
   describe('Sending from message pane', () => {
     const openMessageContent = (id, name) => {
-      helper.clickElement(element(by.id('messages-tab')));
+      helper.clickElement('#messages-tab');
       browser.wait(() => {
         return element(by.css(messageInList(id))).isPresent();
       }, 1000);

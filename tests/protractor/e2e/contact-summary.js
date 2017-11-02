@@ -140,7 +140,7 @@ describe('Contact summary info', () => {
       return element(by.css('#contacts-list .filtered .content')).isPresent();
     }, 10000);
     helper.waitElementToBeClickable(element(by.css('#contacts-list .filtered .content')));
-    helper.clickElement(element(by.css('#contacts-list .filtered .content')));
+    helper.clickElement('#contacts-list .filtered .content');
     helper.waitElementToBeVisible(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')));
   };
 
@@ -151,7 +151,7 @@ describe('Contact summary info', () => {
     }
     catch (err) {
       browser.sleep(500);//wait for browser to settle
-      helper.clickElement(element(by.css('#contacts-tab')));
+      helper.clickElement('#contacts-tab');
       selectContact('carol');
     }
     //assert the summary card has the right fields

@@ -56,15 +56,15 @@ module.exports = {
       });
   },
 
-  clickElement: element => {
-    return browser.wait(EC.elementToBeClickable(element), 12000, 'Element taking too long to appear in the DOM')
+  clickElement: selector => {
+    return browser.wait(EC.elementToBeClickable(element(by.css(selector))), 12000, 'Element taking too long to appear in the DOM')
       .then(() => {
-        element.click();
+        element(by.css(selector)).click();
       })
       .catch(() => {
         browser.sleep(1000);
-        return browser.wait(EC.elementToBeClickable(element), 12000).then(() => {
-          element.click();
+        return browser.wait(EC.elementToBeClickable(element(by.css(selector))), 12000).then(() => {
+          element(by.css(selector)).click();
         });
       });
   },

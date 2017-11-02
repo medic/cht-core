@@ -153,7 +153,7 @@ describe('sms-gateway api', () => {
     });
 
     it('- shows content', () => {
-      helper.clickElement(element(by.id('messages-tab')));
+      helper.clickElement('#messages-tab');
 
       // LHS
       browser.wait(() => {
@@ -295,7 +295,7 @@ describe('sms-gateway api', () => {
       }, 10000);
       helper.waitElementToBeVisible(element(by.css('#reports-list li:first-child')));
       helper.waitUntilReady(element(by.css('#reports-list li:first-child .heading')));
-      helper.clickElement(element(by.css('#reports-list li:first-child .heading')));
+      helper.clickElement('#reports-list li:first-child .heading');
       browser.wait(() => {
         return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
       }, 10000);
