@@ -52,13 +52,27 @@ angular.module('inboxServices').factory('PlaceHierarchy',
       });
     };
 
-    var removeStubNodes = function(children) {
-      for (var i = children.length - 1; i >= 0; i--) {
-        if (children[i].doc.stub) {
-          children.splice(i, 1);
-        } else {
-          removeStubNodes(children[i].children);
-        }
+    // This works because our current hierarchy model only allows you to
+    // have one parent. Because you only have one parent, if you are a
+    // restricted user whose parent lineage contains stubs, all stubs will
+    // only have one child.
+    //
+    // CHW example:
+    //   district_hospital [stub]
+    //    \-> health_center [stub]
+    //         \-> clinic [real, CHW sits here]
+    //
+    //  District Manager example:
+    //   district_hospital [stub]
+    //    \-> health_center [real, DM sits here]
+    //         |-> clinic
+    //         |-> clinic
+    //         |-> clinic
+    var firstNonStubNode = function(children) {
+      if (children[0] && children[0].doc.stub) {
+        return firstNonStubNode(children[0].children);
+      } else {
+        return children;
       }
     };
 
@@ -67,8 +81,7 @@ angular.module('inboxServices').factory('PlaceHierarchy',
       places.forEach(function(placeToSort) {
         addLineageToHierarchy(placeToSort, getIdLineage(placeToSort), hierarchy);
       });
-      removeStubNodes(hierarchy);
-      return hierarchy;
+      return firstNonStubNode(hierarchy);
     };
 
     // By default exclude clinic (the lowest level) to increase performance.

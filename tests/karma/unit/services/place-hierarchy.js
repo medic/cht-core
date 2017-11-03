@@ -85,7 +85,6 @@ describe('PlaceHierarchy service', () => {
     });
   });
 
-
   it('pulls the hierarchy level from config', () => {
     Contacts.returns(Promise.resolve([]));
     settings.place_hierarchy_types = ['a', 'b', 'c'];
@@ -93,5 +92,7 @@ describe('PlaceHierarchy service', () => {
       chai.expect(Contacts.args[0][0]).to.deep.equal(settings.place_hierarchy_types);
     });
   });
+
+  it('supports partial hierarchies that have parent stubs');
 
 });
