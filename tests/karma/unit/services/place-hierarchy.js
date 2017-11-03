@@ -1,4 +1,4 @@
-describe('PlaceHierarchy service', () => {
+describe.skip('PlaceHierarchy service', () => {
 
   'use strict';
 
