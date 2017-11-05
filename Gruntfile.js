@@ -203,6 +203,12 @@ module.exports = function(grunt) {
       }
     },
     exec: {
+      closureCompiler: {
+        cmd: 'java -jar ./closure-compiler-v20171023.jar --strict_mode_input false static/dist/inbox.js > static/dist/inbox.js.bak 2> build/closure-compiler.log && ' +
+             'mv static/dist/inbox.js.bak static/dist/inbox.js && ' +
+             'java -jar ./closure-compiler-v20171023.jar static/dist/templates.js > static/dist/templates.js.bak 2> build/closure-compiler.log && ' +
+             'mv static/dist/templates.js.bak static/dist/templates.js',
+      },
       deploy: {
         cmd: 'kanso push $COUCH_URL'
       },
@@ -570,6 +576,7 @@ module.exports = function(grunt) {
   // CI tasks
   grunt.registerTask('minify', 'Minify JS and CSS', [
     'uglify',
+    'exec:closureCompiler',
     'cssmin',
     'exec:bundlesize'
   ]);
