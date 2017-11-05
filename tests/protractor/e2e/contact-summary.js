@@ -136,7 +136,7 @@ describe('Contact summary info', () => {
     common.goToPeople();
     helper.waitElementToBeVisible(element(by.id('freetext')));
     element(by.id('freetext')).sendKeys(term);
-    element(by.id('search')).click();
+    helper.clickElement(element(by.id('search')));
     browser.wait(() => {
       return element(by.css('#contacts-list .filtered .content')).isPresent();
     }, 10000);
