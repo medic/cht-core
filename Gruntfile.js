@@ -483,7 +483,11 @@ module.exports = function(grunt) {
           'static/dist/xslt/openrosa2xmlmodel.xsl': 'static/dist/xslt/openrosa2xmlmodel.xsl'
         }
       }
-    }
+    },
+    'optimize-js': {
+      'static/dist/inbox.js': 'static/dist/inbox.js',
+      'static/dist/templates.js': 'static/dist/templates.js',
+    },
   });
 
   grunt.task.run('notify_hooks');
@@ -570,6 +574,7 @@ module.exports = function(grunt) {
   // CI tasks
   grunt.registerTask('minify', 'Minify JS and CSS', [
     'uglify',
+    'optimize-js',
     'cssmin',
     'exec:bundlesize'
   ]);
