@@ -111,10 +111,11 @@ angular.module('inboxServices').factory('LiveListConfig',
           var element = renderTemplate(scope);
           if (removedDomElement &&
               removedDomElement.find('input[type="checkbox"]').is(':checked')) {
-            // updating an item that was selected in select mode
             element = $(element);
+            // updating an item that was selected in select mode
             element.find('input[type="checkbox"]').prop('checked', true);
           }
+
           return element;
         },
       };

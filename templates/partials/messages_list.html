@@ -6,7 +6,7 @@
           <div class="heading">
             <h4>{{message.contact || message.from}}</h4>
             <div class="date">
-              <span ng-bind-html="message.date | relativeDate"></span>
+              <relative-date date="message.date"></relative-date>
             </div>
           </div>
           <div class="summary">

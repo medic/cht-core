@@ -1,0 +1,11 @@
+<span ng-if="hasState">
+  <task-state state="task.state"></task-state>
+  {{' '}}
+  <span class="autoreply" title="{{title}}">
+    <span class="autoreply-content">
+      {{autoreplyContent}}
+    </span>
+  </span>
+  {{' '}}
+  <relative-date date="taskDate"></relative-date>
+</span>

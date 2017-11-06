@@ -28,7 +28,9 @@
               </a>
             </td>
             <td ng-bind-html="pregnancy.weeks | weeksPregnant"></td>
-            <td ng-bind-html="pregnancy.lastAppointmentDate | relativeDate"></td>
+            <td>
+              <relative-date date="pregnancy.lastAppointmentDate"></relative-date>
+            </td>
             <td ng-class="{'no-visits': pregnancy.visits === 0}">
               <span>{{pregnancy.visits}}</span>
             </td>

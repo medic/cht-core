@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var UPDATE_RELATIVE_TIME = require('../modules/constants').UPDATE_RELATIVE_TIME;
 
 (function () {
 
@@ -12,7 +13,8 @@ var _ = require('underscore');
       $scope,
       $stateParams,
       Changes,
-      MessageState
+      MessageState,
+      RecurringProcessesManager
     ) {
 
       'ngInject';
@@ -94,7 +96,16 @@ var _ = require('underscore');
         }
       });
 
-      $scope.$on('$destroy', changeListener.unsubscribe);
+      $scope.$on('$destroy', function() {
+        changeListener.unsubscribe();
+        RecurringProcessesManager.stopProcessByName(
+          UPDATE_RELATIVE_TIME
+        );
+      });
+
+      RecurringProcessesManager.startProcessByName(
+        UPDATE_RELATIVE_TIME
+      );
     }
   );
 

@@ -94,7 +94,9 @@
           <li role="presentation disabled" ng-show="!replicationStatus.disabled && replicationStatus.current !== 'unknown'">
             <a class="no-click">
               <span translate>sync.last_success</span> <i class="fa fa-fw fa-refresh"></i><br>
-              <span ng-bind-html="replicationStatus.lastCompleted | relativeDate"></span>
+              <span>
+                <relative-date date="replicationStatus.lastCompleted"></relative-date>
+              </span>
             </a>
           </li>
           <li role="presentation disabled" ng-if="!replicationStatus.disabled" class="sync-status">

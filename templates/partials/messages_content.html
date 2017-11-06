@@ -34,20 +34,23 @@
                   <span
                     class="task-state"
                     ng-if="message.doc.kujua_message"
-                    ng-bind-html="message.doc.tasks[0] | state"
-                  ></span>
+                  >
+                    <task-state-with-recipient task="message.doc.tasks[0]"></task-state-with-recipient>
+                  </span>
                   <!-- incoming message -->
                   <span
                     class="task-state"
                     ng-if="!message.doc.kujua_message"
-                    ng-bind-html="message.doc | state"
-                  ></span>
+                  >
+                    <task-state-with-recipient task="message.doc"></task-state-with-recipient>
+                  </span>
                   <!-- incoming message autoreply -->
                   <span
                     class="task-state"
                     ng-if="!message.doc.kujua_message && message.doc.tasks[0]"
-                    ng-bind-html="message.doc.tasks[0] | autoreply"
-                  ></span>
+                  >
+                    <autoreply task="message.doc.tasks[0]"></autoreply>
+                  </span>
                 </div>
                 <div class="actions">
                   <a class="btn btn-link fa fa-trash-o" translate-attr-title="Delete" ng-click="deleteDoc(message.doc)" mm-auth="can_delete_messages"></a>
