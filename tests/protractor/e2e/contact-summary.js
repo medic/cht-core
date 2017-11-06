@@ -151,6 +151,7 @@ describe('Contact summary info', () => {
       selectContact('carol');
     }
     catch (err) {
+      browser.refresh();
       browser.sleep(500);//wait for browser to settle
       helper.clickElement('#contacts-tab');
       selectContact('carol');
