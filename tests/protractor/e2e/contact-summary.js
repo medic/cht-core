@@ -133,7 +133,6 @@ describe('Contact summary info', () => {
   afterEach(utils.afterEach);
 
   const selectContact = term => {
-    common.goToPeople();
     helper.waitElementToBeVisible(element(by.id('freetext')));
     element(by.id('freetext')).sendKeys(term);
     helper.clickElement(element(by.id('search')));
@@ -147,7 +146,15 @@ describe('Contact summary info', () => {
   };
 
   it('contact summary', () => { //disabled.
-    selectContact('carol');
+    common.goToPeople();
+    try {
+      selectContact('carol');
+    }
+    catch (err) {
+      browser.sleep(500);//wait for browser to settle
+      helper.clickElement('#contacts-tab');
+      selectContact('carol');
+    }
     // assert the summary card has the right fields
     browser.wait(() => {
       return element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')).isPresent();
