@@ -139,21 +139,21 @@ describe('Contact summary info', () => {
     browser.wait(() => {
       return element(by.css('#contacts-list .filtered .content')).isPresent();
     }, 10000);
-    element(by.css('#contacts-list .filtered .content')).click();
+    helper.clickElement(element(by.css('#contacts-list .filtered .content')));
     browser.wait(() => {
       return element(by.css('#contacts-list')).isPresent();
     }, 10000);
   };
 
   it('contact summary', () => { //disabled.
-    common.goToPeople();
+    helper.clickElement(element(by.css('#contacts-tab')));
     try {
       selectContact('carol');
     }
     catch (err) {
       browser.refresh();
       browser.sleep(500);//wait for browser to settle
-      helper.clickElement('#contacts-tab');
+      helper.clickElement(element(by.css('#contacts-tab')));
       selectContact('carol');
     }
     // assert the summary card has the right fields
