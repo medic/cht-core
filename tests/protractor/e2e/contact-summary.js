@@ -145,7 +145,7 @@ describe('Contact summary info', () => {
     }, 10000);
   };
 
-  it('contact summary', () => { //disabled.
+  it('contact summary', () => { //disabled
     common.goToPeople();
     try {
       selectContact('carol');
