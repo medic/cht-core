@@ -135,7 +135,7 @@ module.exports = {
     browser.manage().logs().get('browser').then(function(browserLogs) {
       // browserLogs is an array of objects with level and message fields
       browserLogs.forEach(function(log) {
-        if (log.level.value > 900) { // it's an error log
+        if (log.level.value > 900) { // it's an error log.
           fs.appendFile(`tests/results/${spec}-logs.txt`, `\r\n Console errors: ${log.message}\r\n`, function(err) {
             if (err) { throw err; }
           });
