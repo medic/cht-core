@@ -1,4 +1,4 @@
-describe.skip('PlaceHierarchy service', () => {
+describe('PlaceHierarchy service', () => {
 
   'use strict';
 
@@ -52,7 +52,7 @@ describe.skip('PlaceHierarchy service', () => {
     const b = { _id: 'b', parent: { _id: 'c' } };
     const c = { _id: 'c' };
     const d = { _id: 'd', parent: { _id: 'b', parent: { _id: 'c' } } };
-    const e = { _id: 'e', parent: { _id: 'x' } }; // unknown parent is ignored
+    const e = { _id: 'e', parent: { _id: 'x' } };
     const f = { _id: 'f' };
     Contacts.returns(Promise.resolve([ a, b, c, d, e, f ]));
     return service().then(actual => {
@@ -76,6 +76,16 @@ describe.skip('PlaceHierarchy service', () => {
               ]
             }
           ]
+        },
+        {
+          doc: {
+            _id: 'x',
+            stub: true
+          },
+          children: [{
+            doc: e,
+            children: []
+          }]
         },
         {
           doc: f,
