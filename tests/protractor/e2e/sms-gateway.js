@@ -159,20 +159,24 @@ describe('sms-gateway api', () => {
       browser.wait(() => {
         return element(by.css('#message-list li:first-child')).isPresent();
       }, 10000);
-      browser.sleep(500); // without this the elements are found to be detached...
-      expect(element(by.css('#message-list li:first-child .heading h4')).getText()).toBe('+64271234567');
-      expect(element(by.css('#message-list li:first-child .summary p')).getText()).toBe('hello');
+      browser.sleep(1000); // without this the elements are found to be detached...
+      helper.waitElementToBeVisible(element(by.css('#message-list li:first-child')));
+      expect(helper.getTextFromElement(element(by.css('#message-list li:first-child .heading h4')))).toBe('+64271234567');
+      expect(helper.getTextFromElement(element(by.css('#message-list li:first-child .summary p')))).toBe('hello');
 
       // RHS
       element(by.css('#message-list li:first-child .summary')).click();
+      helper.waitElementToBeVisible(element(by.css('#message-content li.incoming:first-child .data p:first-child')));
       browser.wait(() => {
         return element(by.css('#message-content li.incoming:first-child .data p:first-child')).isPresent();
       }, 10000);
-      browser.sleep(1000); // without this the elements are found to be detached...
-
-      expect(element(by.css('#message-header .name')).getText()).toBe('+64271234567');
-      expect(element(by.css('#message-content li.incoming:first-child .data p:first-child')).getText()).toBe('hello');
-      expect(element(by.css('#message-content li.incoming:first-child .data .state.received')).getText()).toBe('received');
+      browser.sleep(1000); // without this the elements are found to be detached....
+      const messageHeader = helper.getTextFromElement(element(by.css('#message-header .name')));
+      const messageText = helper.getTextFromElement(element(by.css('#message-content li.incoming:first-child .data p:first-child')));
+      const messageStatus = helper.getTextFromElement(element(by.css('#message-content li.incoming:first-child .data .state.received')));
+      expect(messageHeader).toBe('+64271234567');
+      expect(messageText).toBe('hello');
+      expect(messageStatus).toBe('received');
     });
 
   });
@@ -206,7 +210,7 @@ describe('sms-gateway api', () => {
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
-      helper.waitElementToBeVisisble(element(by.css('#reports-list li:first-child')));
+      helper.waitElementToBeVisible(element(by.css('#reports-list li:first-child')));
       element(by.css('#reports-list li:first-child .heading')).click();
       browser.wait(() => {
         return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
@@ -215,13 +219,14 @@ describe('sms-gateway api', () => {
       browser.sleep(100); // without this the elements are found to be detached...
 
       // tasks
-      expect(element(by.css('#reports-content .details > ul .task-list .task-state .state')).getText()).toBe('sent');
-
-      // scheduled tasks
-      expect(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state')).getText()).toBe('delivered');
-      expect(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(2) .task-state .state')).getText()).toBe('scheduled'); // unchanged
-      expect(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state')).getText()).toBe('failed');
-
+      const sentTaskState = helper.getTextFromElement(element(by.css('#reports-content .details > ul .task-list .task-state .state')));
+      const deliveredTaskState = helper.getTextFromElement(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state')));
+      const scheduledTaskState = helper.getTextFromElement(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(2) .task-state .state')));
+      const failedTaskState = helper.getTextFromElement(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(2) > ul > li:nth-child(1) .task-state .state')));
+      expect(sentTaskState).toBe('sent');
+      expect(deliveredTaskState).toBe('delivered');
+      expect(scheduledTaskState).toBe('scheduled');
+      expect(failedTaskState).toBe('failed');
     });
   });
 
@@ -250,6 +255,7 @@ describe('sms-gateway api', () => {
     });
 
     afterEach(done => {
+      helper.logConsoleErrors('sms-gateway');
       utils.deleteDoc(savedDoc).then(done).catch(done.fail);
     });
 
@@ -287,28 +293,23 @@ describe('sms-gateway api', () => {
       browser.wait(() => {
         return element(by.css('#reports-list li:first-child')).isPresent();
       }, 10000);
-      helper.waitElementToBeVisisble(element(by.css('#reports-list li:first-child')));
+      helper.waitElementToBeVisible(element(by.css('#reports-list li:first-child')));
 
-      const desc = element(by.css('#reports-list li:first-child .heading'));
-      helper.waitUntilReady(desc);
-      desc.click();
+      helper.clickElement(element(by.css('#reports-list li:first-child .heading')));
       browser.wait(() => {
         return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
       }, 10000);
 
       browser.sleep(100); // without this the elements are found to be detached...
-
       // tasks
       // State for messageId1 has been updated from pending to forwarded-to-gateway.
       const feedback = element(by.css('#reports-content .details > ul .task-list .task-state .state'));
       helper.waitUntilReady(feedback);
-      expect(feedback.getText())
-        .toBe('forwarded to gateway');
-
+      expect(helper.getTextFromElement(feedback)).toBe('forwarded to gateway');
       // scheduled tasks
       // State for messageId2 is still forwarded-to-gateway
-      expect(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state'))
-        .getText()).toBe('forwarded to gateway');
+      expect(helper.getTextFromElement(element(by.css('#reports-content .scheduled-tasks > ul > li:nth-child(1) > ul > li:nth-child(1) .task-state .state'))))
+        .toBe('forwarded to gateway');
     });
   });
 });

@@ -1,4 +1,5 @@
-const utils = require('../utils');
+const utils = require('../utils'),
+      helper = require('../helper');
 
 describe('Contact summary info', () => {
 
@@ -131,30 +132,41 @@ describe('Contact summary info', () => {
   afterEach(utils.afterEach);
 
   const selectContact = term => {
-    element(by.id('contacts-tab')).click();
+    helper.waitElementToBeVisible(element(by.id('freetext')));
     element(by.id('freetext')).sendKeys(term);
-    element(by.id('search')).click();
+    helper.clickElement(element(by.id('search')));
     browser.wait(() => {
       return element(by.css('#contacts-list .filtered .content')).isPresent();
     }, 10000);
-    element(by.css('#contacts-list .filtered .content')).click();
+    helper.clickElement(element(by.css('#contacts-list .filtered .content')));
+    browser.wait(() => {
+      return element(by.css('#contacts-list')).isPresent();
+    }, 10000);
   };
 
-  it('contact summary', () => {
-    selectContact('carol');
-
+  it('contact summary', () => { //disabled.
+    helper.clickElement(element(by.css('#contacts-tab')));
+    try {
+      selectContact('carol');
+    }
+    catch (err) {
+      browser.refresh();
+      browser.sleep(500);//wait for browser to settle
+      helper.clickElement(element(by.css('#contacts-tab')));
+      selectContact('carol');
+    }
     // assert the summary card has the right fields
     browser.wait(() => {
       return element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')).isPresent();
     }, 10000);
-    expect(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')).getText()).toBe('test.pid');
-    expect(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) p')).getText()).toBe(CAROL.patient_id);
-    expect(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) label')).getText()).toBe('test.sex');
-    expect(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) p')).getText()).toBe(CAROL.sex);
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) label')))).toBe('test.pid');
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(1) p')))).toBe(CAROL.patient_id);
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) label')))).toBe('test.sex');
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > .card .col-sm-3:nth-child(2) p')))).toBe(CAROL.sex);
 
-    // assert that the pregnancy card exists and has the right fields
-    expect(element(by.css('.content-pane .meta > div > .card .action-header h3')).getText()).toBe('test.pregnancy');
-    expect(element(by.css('.content-pane .meta > div > .card .row label')).getText()).toBe('test.visits');
-    expect(element(by.css('.content-pane .meta > div > .card .row p')).getText()).toBe('1');
+    // assert that the pregnancy card exists and has the right fields.
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > div > .card .action-header h3')))).toBe('test.pregnancy');
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > div > .card .row label')))).toBe('test.visits');
+    expect(helper.getTextFromElement(element(by.css('.content-pane .meta > div > .card .row p')))).toBe('1');
   });
 });

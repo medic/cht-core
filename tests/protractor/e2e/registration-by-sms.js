@@ -243,10 +243,11 @@ describe('registration transition', () => {
 
     it('shows content', () => {
       commonElements.goToReports();
-      helper.waitElementToBeVisisble(element(by.css('#reports-list .unfiltered li:first-child')));
+      helper.waitElementToBeClickable(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
+      helper.waitElementToBeVisible(element(by.css('#reports-list .unfiltered li:first-child')));
       browser.wait(() => element(by.cssContainingText('#reports-list .unfiltered li:first-child h4 span', CAROL.name)).isPresent(), 10000);
 
-      element(by.css('#reports-list .unfiltered li:first-child .summary')).click();
+      helper.clickElement(element(by.css('#reports-list .unfiltered li:first-child .summary')));
 
       // wait for content to load
       browser.wait(() => element(by.cssContainingText('#reports-content .item-summary .name', CAROL.name)).isPresent(), 10000);

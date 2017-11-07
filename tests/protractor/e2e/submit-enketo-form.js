@@ -1,7 +1,7 @@
 const utils = require('../utils'),
       helper = require('../helper'),
       commonElements = require('../page-objects/common/common.po.js');
-  
+
 describe('Submit Enketo form', () => {
 
   const xml = `<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms/" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
@@ -100,8 +100,8 @@ describe('Submit Enketo form', () => {
     helper.waitElementToBeClickable(addButton);
 
     // select form
-    addButton.click();
-    element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
+    helper.clickElement(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
+    helper.clickElement(element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')));
 
     // enter name
     const nameField = element(by.css('#report-form form [name="/data/name"]'));
@@ -120,7 +120,7 @@ describe('Submit Enketo form', () => {
     browser.sleep(100); // TODO required to make the test deterministic. https://github.com/medic/medic-webapp/issues/3509
     // check the submitted name
     const detail = element(by.css('#reports-content .details ul li:first-child p'));
-    helper.waitElementToBeVisisble(detail);
+    helper.waitElementToBeVisible(detail);
     detail.getText().then(name => {
       expect(name).toBe('Jones');
     }, err => {
