@@ -52,24 +52,13 @@ angular.module('inboxServices').factory('PlaceHierarchy',
       });
     };
 
-    // This works because our current hierarchy model only allows you to
-    // have one parent. Because you only have one parent, if you are a
-    // restricted user whose parent lineage contains stubs, all stubs will
-    // only have one child.
-    //
-    // CHW example:
-    //   district_hospital [stub]
-    //    \-> health_center [stub]
-    //         \-> clinic [real, CHW sits here]
-    //
-    //  District Manager example:
-    //   district_hospital [stub]
-    //    \-> health_center [real, DM sits here]
-    //         |-> clinic
-    //         |-> clinic
-    //         |-> clinic
+    // For restricted users. Hoist the highest place they have access to, to the
+    // top of the tree.
     var firstNonStubNode = function(children) {
-      if (children[0] && children[0].doc.stub) {
+      // Only hoist if there is one child. This will be the case for CHWs. There
+      // may be situations where the first child is a stub but there are more
+      // children, in which case we want to expose that in the UI.
+      if (children.length === 1 && children[0].doc.stub) {
         return firstNonStubNode(children[0].children);
       } else {
         return children;
