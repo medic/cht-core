@@ -63,7 +63,7 @@ module.exports = {
 
   logout: () => {
     hamburgerMenu.click();
-    helper.waitElementToBeVisisble(logoutButton);
+    helper.waitElementToBeVisible(logoutButton);
     logoutButton.click();
   }
 };

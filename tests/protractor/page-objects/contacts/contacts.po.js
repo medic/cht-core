@@ -19,7 +19,7 @@ const searchBox = element.all(by.css('#freetext')),
       submitButton = element(by.css('.btn.submit.btn-primary.ng-scope'));
 
 module.exports = {
-  
+
   getSubmitButton: () => {
     return submitButton;
   },
@@ -40,7 +40,7 @@ module.exports = {
     newPersonTextBox.sendKeys(name);
     datePicker.sendKeys('22-03-2016');
     datePicker.sendKeys(protractor.Key.ENTER);
-    helper.waitElementToBeVisisble(phoneNumber);
+    helper.waitElementToBeVisible(phoneNumber);
     phoneNumber.sendKeys('+64212156789');
     alternativePhoneNumber.sendKeys('+64212345719');
     personNotes.sendKeys('some notes for the person');
