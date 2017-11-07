@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git://github.com/medic/medic-webapp.git"
   },
+  "scripts": {
+    "start": "nf start"
+  },
   "dependencies": {
     "angular": "^1.6.6",
     "angular-cookie": "^4.1.0",
@@ -48,6 +51,7 @@
     "bundlesize": "^0.15.3",
     "chai": "^4.1.2",
     "csv": "^1.1.1",
+    "foreman": "^2.0.0",
     "grunt": "^1.0.0",
     "grunt-angular-templates": "^1.0.3",
     "grunt-appcache": "^0.2.0",

@@ -1,5 +1,7 @@
 @import "../variables";
 
+@input-height: 45px;
+
 /**
  * Some of the widths set up in the enketo.css file assume the form is being
  * viewed full-screen.  These overrides are required when enketo is embedded in
@@ -217,8 +219,9 @@
   }
 
   input:not([type="radio"]):not([type="checkbox"]),
-  .enketo textarea {
-    height: 45px;
+  select,
+  textarea {
+    height: @input-height;
   }
 
   .or-appearance-summary {
@@ -351,6 +354,15 @@
   }
   .or .simprints-register img {
     display: inherit;
+  }
+  .select2-container .select2-selection--single {
+    height: @input-height;
+  }
+  .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: @input-height;
+  }
+  .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 39px;
   }
 }
 
