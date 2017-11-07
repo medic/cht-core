@@ -575,8 +575,8 @@ module.exports = function(grunt) {
 
   // CI tasks
   grunt.registerTask('minify', 'Minify JS and CSS', [
-    'uglify',
     'exec:closureCompiler',
+    'uglify',
     'cssmin',
     'exec:bundlesize'
   ]);
