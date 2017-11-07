@@ -159,7 +159,7 @@ describe('sms-gateway api', () => {
       browser.wait(() => {
         return element(by.css('#message-list li:first-child')).isPresent();
       }, 10000);
-      browser.sleep(500); // without this the elements are found to be detached...
+      browser.sleep(1000); // without this the elements are found to be detached...
       helper.waitElementToBeVisible(element(by.css('#message-list li:first-child')));
       expect(helper.getTextFromElement(element(by.css('#message-list li:first-child .heading h4')))).toBe('+64271234567');
       expect(helper.getTextFromElement(element(by.css('#message-list li:first-child .summary p')))).toBe('hello');
@@ -255,6 +255,7 @@ describe('sms-gateway api', () => {
     });
 
     afterEach(done => {
+      helper.logConsoleErrors('sms-gateway');
       utils.deleteDoc(savedDoc).then(done).catch(done.fail);
     });
 
@@ -294,9 +295,7 @@ describe('sms-gateway api', () => {
       }, 10000);
       helper.waitElementToBeVisible(element(by.css('#reports-list li:first-child')));
 
-      const desc = element(by.css('#reports-list li:first-child .heading'));
-      helper.waitUntilReady(desc);
-      helper.clickElement(desc);
+      helper.clickElement(element(by.css('#reports-list li:first-child .heading')));
       browser.wait(() => {
         return element(by.css('#reports-content .body .item-summary .icon')).isPresent();
       }, 10000);

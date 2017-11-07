@@ -100,8 +100,8 @@ describe('Submit Enketo form', () => {
     helper.waitElementToBeClickable(addButton);
 
     // select form
-    addButton.click();
-    element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')).click();
+    helper.clickElement(element(by.css('.action-container .general-actions:not(.ng-hide) .fa-plus')));
+    helper.clickElement(element(by.css('.action-container .general-actions .dropup.open .dropdown-menu li:first-child a')));
 
     // enter name
     const nameField = element(by.css('#report-form form [name="/data/name"]'));

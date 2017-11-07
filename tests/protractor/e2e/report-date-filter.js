@@ -120,6 +120,7 @@ describe('Filters reports', () => {
     browser.wait(() => {
       return element(by.css('#reports-list .filtered li:first-child')).isPresent();
     }, 10000);
+    browser.sleep(1000); //allow new filtered list to load....fails at times on Travis with count = 4
 
     expect(element.all(by.css('#reports-list .filtered li')).count()).toBe(2);
     expect(element.all(by.css('#reports-list .filtered li[data-record-id="' + savedUuids[1] + '"]')).count()).toBe(1);
