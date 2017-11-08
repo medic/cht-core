@@ -68,24 +68,25 @@ describe('ReportsCtrl controller', () => {
     createController = () => {
       return $controller('ReportsCtrl', {
         '$scope': scope,
-        'UserDistrict': UserDistrict,
-        'Changes': Changes,
-        'MarkRead': MarkRead,
-        'Search': Search,
-        'Verified': {},
-        'DeleteDocs': {},
-        'UpdateFacility': {},
-        'MessageState': {},
-        'EditGroup': {},
-        'FormatDataRecord': FormatDataRecord,
-        'Settings': KarmaUtils.nullPromise(),
-        'DB': KarmaUtils.mockDB({ get: get, post: post })(),
-        'LiveList': LiveList,
-        'ReportViewModelGenerator': {},
         'AddReadStatus': () => {},
-        'Tour': () => {},
+        'Changes': Changes,
+        'DB': KarmaUtils.mockDB({ get: get, post: post })(),
+        'DeleteDocs': {},
+        'EditGroup': {},
+        'Export': () => {},
+        'FormatDataRecord': FormatDataRecord,
+        'LiveList': LiveList,
+        'MarkRead': MarkRead,
+        'MessageState': {},
+        'ReportViewModelGenerator': {},
+        'Search': Search,
         'SearchFilters': () => {},
-        'Export': () => {}
+        'Settings': KarmaUtils.nullPromise(),
+        'Session': {isAdmin: () => {}},
+        'Tour': () => {},
+        'UpdateFacility': {},
+        'UserDistrict': UserDistrict,
+        'Verified': {}
       });
     };
   }));

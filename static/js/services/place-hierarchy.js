@@ -52,13 +52,16 @@ angular.module('inboxServices').factory('PlaceHierarchy',
       });
     };
 
-    var removeStubNodes = function(children) {
-      for (var i = children.length - 1; i >= 0; i--) {
-        if (children[i].doc.stub) {
-          children.splice(i, 1);
-        } else {
-          removeStubNodes(children[i].children);
-        }
+    // For restricted users. Hoist the highest place they have access to, to the
+    // top of the tree.
+    var firstNonStubNode = function(children) {
+      // Only hoist if there is one child. This will be the case for CHWs. There
+      // may be situations where the first child is a stub but there are more
+      // children, in which case we want to expose that in the UI.
+      if (children.length === 1 && children[0].doc.stub) {
+        return firstNonStubNode(children[0].children);
+      } else {
+        return children;
       }
     };
 
@@ -67,8 +70,7 @@ angular.module('inboxServices').factory('PlaceHierarchy',
       places.forEach(function(placeToSort) {
         addLineageToHierarchy(placeToSort, getIdLineage(placeToSort), hierarchy);
       });
-      removeStubNodes(hierarchy);
-      return hierarchy;
+      return firstNonStubNode(hierarchy);
     };
 
     // By default exclude clinic (the lowest level) to increase performance.

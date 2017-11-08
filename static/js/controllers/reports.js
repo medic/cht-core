@@ -18,6 +18,7 @@ angular.module('inboxControllers').controller('ReportsCtrl',
     ReportViewModelGenerator,
     Search,
     SearchFilters,
+    Session,
     Tour,
     TranslateFrom
   ) {
@@ -339,6 +340,9 @@ angular.module('inboxControllers').controller('ReportsCtrl',
         $scope.search();
       });
     };
+
+    $scope.isAdmin = Session.isAdmin();
+
     $scope.resetFilterModel = function() {
       if ($scope.selectMode && $scope.selected && $scope.selected.length) {
         // can't filter when in select mode
