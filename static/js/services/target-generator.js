@@ -86,6 +86,7 @@ var moment = require('moment'),
           targets = items.map(function(item) {
             var result = _.clone(item);
             result.instances = {};
+            result.value = calculateValue(result);
             return result;
           }).filter(function(item) {
             if (item.context) {
