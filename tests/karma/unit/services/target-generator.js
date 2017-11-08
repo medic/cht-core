@@ -144,21 +144,27 @@ describe('TargetGenerator service', function() {
     });
   });
 
-  it('return zero percent when no reports (or: avoids divide by zero)', function(done) {
+  it('defaults targets to zero with no reports', function(done) {
     Settings.returns(Promise.resolve({ tasks: { targets: { items: [
-      { id: 'report', type: 'percent' }
+      { id: 'target-1', type: 'percent' },
+      { id: 'target-2', type: 'count' }
     ] } } }));
     UserContact.returns(Promise.resolve());
-    RulesEngine.listen.callsArgWith(2, null, [
-      { _id: '2', type: 'report', date: 0, pass: false } // ancient - not relevant
-    ]);
+    RulesEngine.listen.callsArgWith(2, null, []);
+
     injector.get('TargetGenerator')(function(err, actual) {
-      chai.expect(actual.length).to.equal(1);
-      chai.expect(actual[0].id).to.equal('report');
+      chai.expect(actual.length).to.equal(2);
+
+      chai.expect(actual[0].id).to.equal('target-1');
       chai.expect(actual[0].type).to.equal('percent');
       chai.expect(actual[0].value.pass).to.equal(0);
       chai.expect(actual[0].value.total).to.equal(0);
       chai.expect(actual[0].value.percent).to.equal(0);
+
+      chai.expect(actual[1].id).to.equal('target-2');
+      chai.expect(actual[1].type).to.equal('count');
+      chai.expect(actual[1].value.pass).to.equal(0);
+      chai.expect(actual[1].value.total).to.equal(0);
       done();
     });
   });
