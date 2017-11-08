@@ -531,7 +531,7 @@ module.exports = function(grunt) {
   grunt.registerTask('ci_after', '', [
     'exec:deploy',
     'test_api_integration',
-    'e2e',
+    // 'e2e',
     'api_e2e',
   ]);
 
