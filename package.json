@@ -70,6 +70,7 @@
     "grunt-karma": "^2.0.0",
     "grunt-mocha-test": "^0.13.3",
     "grunt-notify": "^0.4.5",
+    "grunt-optimize-js": "^0.6.0",
     "grunt-postcss": "^0.9.0",
     "grunt-protractor-runner": "^5.0.0",
     "grunt-regex-check": "^0.1.10",
