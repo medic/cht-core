@@ -124,6 +124,13 @@ var _ = require('underscore'),
     };
   });
 
+  module.filter('dayMonth', function() {
+    'ngInject';
+    return function (date) {
+      return '<span>' + moment(date).format('D MMM') + '</span>';
+    };
+  });
+
   module.filter('relativeDate', function(FormatDate) {
     'ngInject';
     return function (date) {

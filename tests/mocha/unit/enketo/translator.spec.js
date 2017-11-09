@@ -7,15 +7,7 @@ describe('enketo translator', () => {
 
   /*global document:true*/
   document = {};
-  angular = {
-    element: () => ({
-      injector: () => ({
-        get: () => ({
-          instant: key => key,
-        }),
-      }),
-    }),
-  };
+  require('../mock-angular');
 
   describe('#t()', () => {
 
