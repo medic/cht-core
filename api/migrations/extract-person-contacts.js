@@ -208,7 +208,9 @@ var createPerson = function(id, callback) {
  */
 var updateParents = function(id, callback) {
   var checkParent = function(facility, callback) {
+    console.log('checking parent for', facility._id);
     if (!facility.parent || (Object.keys(facility.parent).length === 0)) {
+      console.log('skipping');
       return callback({ skip: true });
     }
 
@@ -224,15 +226,19 @@ var updateParents = function(id, callback) {
     // Check the parent exists before doing anything crazy.
     db.medic.get(facility.parent._id, function(err) {
       if (err) {
-        if (err.statusCode !== 404) {
-          return callback(err);
+        if (err.statusCode === 404) {
+          // TODO: why wouldn't we extract and create this facility at this point?
+          return callback(new Error('facility parent ' + facility.parent._id + ' not found.'));
         }
+        return callback(err);
       }
+
       return callback();
     });
   };
 
   var removeParent = function(facility, callback) {
+    console.log('removing parent of', facility._id);
     var parentId = facility.parent._id;
     delete facility.parent;
     db.medic.insert(facility, function(err) {
@@ -245,14 +251,20 @@ var updateParents = function(id, callback) {
   };
 
   var resetParent = function(facilityId, parentId, callback) {
+    console.log('resetting parent of', facilityId);
     db.medic.get(parentId, function(err) {
       if (err) {
-        if (err.statusCode === 404) {
-          // Parent does not exist, so cannot be reset
-          return callback();
-        }
+        // How could we EVER get into this state, and why would we consider it
+        // safe!?!
+        // if (err.statusCode === 404) {
+        //   // Parent does not exist, so cannot be reset
+
+        //   return callback();
+        // }
         return callback(err);
       }
+      // Why is this so complicated? Is it not just implanting the parent document
+      // into the outer document?
       places.updatePlace(facilityId, { parent: parentId },
         function(err) {
           if (err) {
@@ -302,6 +314,7 @@ var migrateOneType = function(type, callback) {
     'contacts_by_type',
     { key: [ type ] },
     function(err, result) {
+      console.log('Migrating all', type);
       if (err) {
         return callback(err);
       }
